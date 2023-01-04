@@ -1,0 +1,198 @@
+.ll-content {
+    height: 100%;
+    background-color: rgba(241, 242, 247, 1);
+    box-sizing: border-box;
+    padding: 25px 26px;
+}
+
+
+.el-card__body {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.el-card {
+    box-sizing: border-box;
+}
+
+
+.radar-box {
+    background: red;
+}
+
+
+.ll-map-info {
+    display: flex;
+    align-items: center;
+
+    .ll-map-left {
+        margin-right: 16px;
+    }
+
+    .ll-map-right {
+        display: flex;
+        flex-direction: column;
+
+        .ll-map-row {
+            display: flex;
+            margin-bottom: 4px;
+            display: flex;
+            margin-bottom: 4px;
+            font-weight: 700;
+
+            .ll-map-jd {
+                padding: 1px 3px;
+                
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 3px;
+                margin-left: 10px;
+                font-weight: 400;
+            }
+        }
+
+        .ll-map-gray {
+            display: flex;
+            margin-bottom: 4px;
+            font-weight: 700;
+            color: #C1C6D5;
+        }
+    }
+}
+
+.ll-map-legend{
+    display: flex;
+    background-color: rgba(248, 248, 248, 1);
+    // justify-content: end;
+    .ll-block{
+        display: flex;
+        margin-right: 10px;
+        font-weight: 700;
+        align-items: center;
+        .ll-icon{
+            width: 15px;
+            height: 15px;
+            margin-right: 10px;
+        }
+    }
+}
+
+.deepBlueB{
+    background: #3945AB;
+}
+
+.deepGrayC{
+    color: #848EAC;
+}
+
+.deepGrayB{
+    background: #848EAC;
+}
+.orangeB{
+    background: #F77A50;
+}
+
+.shallowBlueB{
+    background: #3894FF;
+}
+
+.deepBlueC{
+    color: #3945AB;
+}
+
+.orangeC{
+    color: #F77A50;
+}
+
+.orangeCI{
+    color: #F77A50 !important;
+}
+
+
+.shallowBlueC{
+    color: #3894FF;
+}
+
+.shallowBlueCI{
+    color: #3894FF !important;
+}
+
+.greenC{
+    color: #13D7A6;
+}
+
+.greenCI{
+    color: #13D7A6 !important;
+}
+
+
+
+.hide{
+    display: none;
+}
+
+.flex-between{
+    display: flex;
+    width:100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex {
+    display: flex;
+    // width:100%;
+    align-items: center;
+}
+
+.flex-percent {
+    display: flex;
+    width:100%;
+    align-items: center;
+}
+
+.flex-column{
+    display: flex;
+    // width:100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-column-centerJA{
+    display: flex;
+    // width:100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-column-between{
+    display: flex;
+    // width:100%;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-column-percent{
+    display: flex;
+    width:100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-center {
+    // width:100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-center-percent {
+    width:100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
