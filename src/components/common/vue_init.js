@@ -49,10 +49,11 @@ function init() {
       // back_server_ip: "192.168.0.241",    // 240 139.129.128.155:5021   中铁
       // back_server_port: "8080",
 
-      // back_server_protocol: "https",
-      // back_server_ip: "wx.100xsys.cn",    // 100xsys
+      back_server_protocol: "https",
+      back_server_ip: "wx.100xsys.cn",    // 100xsys
       // back_server_ip: "srvms.100xsys.cn",    // 100xsys
       // back_server_port: "443",
+      back_server_port: "",
 
     };
     backendIpAddr = server_cfg.back_server_protocol + "://" + server_cfg.back_server_ip + ":" + server_cfg.back_server_port;
