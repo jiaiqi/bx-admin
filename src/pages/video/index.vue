@@ -31,17 +31,17 @@
         let condition = [{
 							"colName": "sn",
 							"ruleType": "eq",
-							"value": this.option.sn
+							"value": this.option.sn || ''
 						},
 						{
 							"colName": "channel_no",
 							"ruleType": "eq",
-							"value": this.option.channel_no
+							"value": this.option.channel_no || ''
 						},
 						{
 							"colName": "vcode",
 							"ruleType": "eq",
-							"value": this.option.vcode
+							"value": this.option.vcode || ''
 						},
 					]
         this.select("srvliot_play_address_select", condition,null,null,null,null,'liot').then(response => {
