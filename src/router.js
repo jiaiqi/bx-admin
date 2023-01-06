@@ -304,6 +304,11 @@ let routes=[
       compName:'wxmsg'
     }
   },
+  { // 摄像头视频播放页
+    path:'/video',
+    name:'video',
+    component: video
+  }
  
 
 ];
@@ -359,11 +364,6 @@ routes.push( {
     component: test
 
   },
-  { // 摄像头视频播放页
-    path:'/video',
-    name:'video',
-    component: video
-  }
 
   
 

@@ -31,16 +31,19 @@
         let condition = [{
 							"colName": "sn",
 							"ruleType": "eq",
+							// "value": 'F97911722'
 							"value": this.option.sn || ''
 						},
 						{
 							"colName": "channel_no",
 							"ruleType": "eq",
+							// "value": '1'
 							"value": this.option.channel_no || ''
 						},
 						{
 							"colName": "vcode",
 							"ruleType": "eq",
+							// "value": 'UVLYDZ'
 							"value": this.option.vcode || ''
 						},
 					]
@@ -66,7 +69,7 @@
       });
 			},
 			initPlayer() {
-        const windowWidth = document.documentElement.clientWidth
+        const windowWidth = document.documentElement.clientWidth - 360
         const windowHeight = document.documentElement.clientHeight
 				console.log('initPlayer...');
 				
