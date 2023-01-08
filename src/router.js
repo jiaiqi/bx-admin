@@ -93,6 +93,8 @@ import business from '@/pages/business'
 
 import test from '@/pages/test/test'
 
+import video from '@/pages/video/index'
+
 // const excelEditView = ()=>import("@/components/common/luckysheet.vue")
 // pages
 Vue.use(Router);
@@ -301,6 +303,11 @@ let routes=[
       compName:'wxmsg'
     }
   },
+  { // 摄像头视频播放页
+    path:'/video',
+    name:'video',
+    component: video
+  }
  
 
 ];
@@ -355,7 +362,7 @@ routes.push( {
     name:'test',
     component: test
 
-  }
+  },
 
   
 
