@@ -1128,7 +1128,7 @@ export default {
         box-sizing: border-box;
 
         width: 594px;
-        // height: 253px;
+        height: 253px;
       }
     }
   }

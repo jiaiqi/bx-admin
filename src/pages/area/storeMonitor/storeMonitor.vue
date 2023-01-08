@@ -20,8 +20,7 @@
               font-size: 14px;
               text-align: left;
               margin-left: 10px;
-              font-family: SourceHanSansSC-regular;
-            "
+              font-family: SourceHanSansSC-regular;"
             >仓库态势图</span
           >
         </div>
@@ -241,6 +240,7 @@ export default {
   mixins: [commonMixin],
   props: {},
   name:"filter-ooooooooooooooooooooooooooooooooooo",
+  tree:null,
   data() {
     return {
       applicationUrl: "lpark",
@@ -272,7 +272,7 @@ export default {
   },
 
   methods: {
-
+    
     getV2TableInfo(url) {},
     getMainTableInfo(sucessData) {
       let b = "123$<b>455";
@@ -485,7 +485,13 @@ export default {
 
   created: function () {},
 
-  mounted: function () {
+  mounted: async function () {
+    this.tree=await this.getArrayList("srvpark_park_area_select",[{
+       key:'area_name'
+    },{
+      key:'park_name'
+    }]);
+    console.log(this.tree,"tree是什么快说----")
     console.log(this,"---$echarts--")
     // this.initEchats();
     // this.initEchats2();

@@ -79,6 +79,7 @@ export default {
        async  getArrayList(service,filterColumn) {
             let columnArray;
             let appName; 
+            console.log("啊哈哈哈")
             if(this[`${service}V2`]){
                 columnArray = this[`${service}V2`].srv_cols;
                 appName = this[`${service}V2`].gridButton[0].application;
@@ -87,9 +88,6 @@ export default {
                  columnArray = this[`${service}V2`].srv_cols;
                  appName = this[`${service}V2`].gridButton[0].application;
             }
-          
-       
-
             let resultArray = this.getV2Columns(
                 filterColumn,
                 columnArray,
@@ -102,18 +100,19 @@ export default {
                     }
                 }
             );
-           
+            console.log(resultArray,"什么是resultArray-resultArray-resultArray")
             let array2 = resultArray.sort((a, b) => a.souceSort < b.souceSort);
-         
+            
             let returnData=await this.makeOptions2222(service,array2);
             console.log(returnData,"==returnData==他是什么returnData==returnData==");
             return returnData;
         },
         async getMainTable4444() {
+             console.log(this.condition,"this--condition是什么？？？")
             let condition = {
                 serviceName: this.tableInfo.mainTableInfo.select.serviceName,
                 colNames: ["*"],
-                condition: [],
+                condition: this.condition||[],
                 relation_condition: {},
                 order: [],
                 draft: false,

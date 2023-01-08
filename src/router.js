@@ -123,7 +123,6 @@ let routes=[
     name: 'update',
     component: Update
   },
-
   {
     path: '/simple-filter/:service_name',
     name: 'simple-filter',
@@ -366,7 +365,7 @@ routes.push( {
 
 ]
 
-},)
+});
 export default new Router({
   routes
 })
