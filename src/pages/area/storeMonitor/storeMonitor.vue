@@ -3,9 +3,14 @@
     <el-card shadow="always">
       <div class="parent-content">
         <div style="box-sizing: border-box; padding-bottom: 19px">
-          <el-select size="mini" v-model="value" placeholder="请选择">
+          <el-select
+            @change="onChange"
+            size="mini"
+            v-model="areaValue"
+            placeholder="请选择"
+          >
             <el-option
-              v-for="item in options"
+              v-for="item in area"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -20,7 +25,8 @@
               font-size: 14px;
               text-align: left;
               margin-left: 10px;
-              font-family: SourceHanSansSC-regular;"
+              font-family: SourceHanSansSC-regular;
+            "
             >仓库态势图</span
           >
         </div>
@@ -31,9 +37,13 @@
             class="left"
           >
             <div style="padding: 10px 20px" class="header custom-input-box">
-              <el-input v-model="content" size="mini" placeholder="请输入内容">
+              <el-input
+                v-model="searchValue"
+                size="mini"
+                placeholder="请输入内容"
+              >
                 <template #prefix>
-                  <div style="cursor: pointer">
+                  <div @click="searchChange" style="cursor: pointer">
                     <i class="el-icon-search"></i>
                   </div>
                 </template>
@@ -45,12 +55,19 @@
                 style="box-sizing: border-box; padding-top: 20px"
                 class="tree-content"
               >
-                <div
+                <el-tree
+                  :data="treeData"
+                  :props="defaultProps"
+                  @node-click="handleNodeClick"
+                  :key="treeKey"
+                  :default-checked-keys="checkedItems"
+                ></el-tree>
+                <!-- <div
                   v-for="(item, index) in layers"
                   :class="item.isActive ? 'left-row' : 'left-row isActive'"
                 >
                   {{ item.name }}
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -71,23 +88,19 @@
                 </el-date-picker>
               </div>
 
-              <div
-                style="
-                  box-sizing: border-box;
-                  padding-bottom: 10px;
-                  padding-top: 20px;
-                "
-                class="zx-block"
-                v-for="(item, val) in classifyArray"
-                :key="item"
-              >
+              <!-- device_nodeid: 
+              device_sn: -->
+              <div v-if="device.length > 0">
                 <div
-                  :ref="`echarts${item.uuid}`"
-                  :style="`width:100%;height:300px`"
+                  :ref="`echarts${item.device_sn}${item.device_nodeid}`"
+                  :key="`${item.device_sn}${item.device_nodeid}`"
+                  style="width: 100%; height: 300px"
+                  v-for="item in device"
                 ></div>
               </div>
-
-            
+              <div v-if="device.length == 0">
+                <el-empty :image-size="200"></el-empty>
+              </div>
             </div>
             <div class="vedio">
               <div class="custom-title flex-between">
@@ -101,6 +114,7 @@
                 >
                 </el-date-picker>
               </div>
+
               <div
                 style="box-sizing: border-box; padding-top: 15px"
                 class="vedio-content"
@@ -225,7 +239,7 @@
 import _ from "lodash";
 import "@/assets/common.scss";
 let $ = require("jquery");
-import commonMixin from "@/components/mixin/global-page-mixin";
+import commonMixin from "@/components/mixin/global-page-mixin2";
 
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/popover";
@@ -239,192 +253,110 @@ export default {
   components: {},
   mixins: [commonMixin],
   props: {},
-  name:"filter-ooooooooooooooooooooooooooooooooooo",
-  tree:null,
+  name: "filter-ooooooooooooooooooooooooooooooooooo",
+  tree: null,
   data() {
     return {
-      applicationUrl: "lpark",
-      serviceName: "srvpark_temperature_record_select",
-      myCharts1: null,
-      myCharts2: null,
-      autoMainTable: true,
-      classifyArray: {},
-      layers: [
+      treeKey: "",
+      checkedItems: [],
+      treeData: [],
+      areaValue: "",
+      searchValue: "",
+      options: {},
+      area: [],
+      data: [
         {
-          name: "A座B01",
-          isActive: false,
+          label: "一级 1",
+          children: [],
         },
         {
-          name: "A座B02",
-          isActive: false,
+          label: "一级 2",
+          children: [
+            {
+              label: "二级 2-1",
+              children: [
+                {
+                  label: "三级 2-1-1",
+                },
+              ],
+            },
+            {
+              label: "二级 2-2",
+              children: [
+                {
+                  label: "三级 2-2-1",
+                },
+              ],
+            },
+          ],
         },
         {
-          name: "A座B03",
-          isActive: false,
-        },
-        {
-          name: "A座B03",
-          isActive: true,
+          label: "一级 3",
+          children: [
+            {
+              label: "二级 3-1",
+              children: [
+                {
+                  label: "三级 3-1-1",
+                },
+              ],
+            },
+            {
+              label: "二级 3-2",
+              children: [
+                {
+                  label: "三级 3-2-1",
+                },
+              ],
+            },
+          ],
         },
       ],
-      options: {},
+      device: [],
+      defaultProps: {
+        children: "children",
+        label: "label",
+      },
     };
   },
 
   methods: {
-    
-    getV2TableInfo(url) {},
-    getMainTableInfo(sucessData) {
-      let b = "123$<b>455";
-      let reg = /\$\<[\s\S]*?\>/g;
-      let matchStr = b.match(reg);
-      console.log(matchStr, "--matchStr---");
-
-      // this.initEchats3();
-
-      this.tableInfo = {
-        tableClassify: {
-          column: ["device_addr"],
-          echarts: {
-            width: "400px",
-            height: "500px",
-            title: {
-              text: "123$<title>455", //图表顶部的标题
-              formatter: "",
-              show: true,
-              x: "20px",
-              y: "10px",
-              textStyle: {
-                //文字颜色
-                color: `rgba(50, 66, 116, 1)`,
-                //字体风格,'normal','italic','oblique'
-                fontStyle: "normal",
-                //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
-                fontWeight: "510",
-                //字体系列
-                fontFamily: "sans-serif",
-                //字体大小
-                fontSize: 16,
-              },
-            },
-            color: ["#4D5FCC", "#F77A50"],
-            tooltip: {
-              //鼠标悬浮框的提示文字
-              trigger: "axis",
-            },
-            legend: {
-              data: ["实时温度", "最高标准线"],
-              icon: "square",
-              x: "center",
-              y: "10px",
-            },
-            yAxis: [
-              {
-                //y轴坐标数据
-                type: "value",
-                axisLabel: {
-                  textStyle: {
-                    // color: "#837884",
-                    color: "#837884",
-                  },
-                },
-                axisTick: {
-                  show: false,
-                },
-                axisLine: {
-                  show: false,
-                },
-                textStyle: {
-                  color: "#837884",
-                },
-                // axisLabel: {
-                //   formatter: "{value} °C",
-                // },
-              },
-            ],
-            xAxis: [
-              {
-                //x轴坐标数据
-                type: "category",
-                // boundaryGap: false,
-                data: "$<data_time>",
-                dataFormatter: "$<data_time>",
-                dataZoom: [
-                  {
-                    type: "slider",
-                    show: true,
-                    xAxisIndex: [0],
-                    left: "9%",
-                    bottom: -5,
-                    start: 10,
-                    end: 90, //初始化滚动条
-                  },
-                ],
-
-                axisTick: {
-                  lineStyle: {
-                    color: "#837884", //x轴轴线颜色
-                  },
-                },
-
-                axisLabel: {
-                  textStyle: {
-                    // color: "#837884",
-                    color: "#837884",
-                  },
-                },
-                axisLine: {
-                  lineStyle: {
-                    color: "#837884", //x轴轴线颜色
-                  },
-                },
-              },
-            ],
-            series: [
-              {
-                name: "温度",
-                type: "line",
-                column: "$<report_temperature>",
-                areaStyle: {
-                  color: "#DBDFF5",
-                },
-              },
-              {
-                name: "湿度",
-                type: "line",
-                column: "$<report_humidity>",
-              },
-            ],
-          },
-        },
-      };
-
-      if (this.tableInfo.tableClassify) {
-        let classifyArray = {};
-
-        sucessData.data.data.forEach((item, index) => {
-          let key = "";
-          this.tableInfo.tableClassify.column.forEach((classifyItem) => {
-            key = key + item[classifyItem];
-          });
-
-          if (!classifyArray[`${key}`]) {
-            let echarts = _.cloneDeep(this.tableInfo.tableClassify.echarts);
-          
-
-            classifyArray[`${key}`] ={
-                   echarts,
-                   data:[item]
-            };
-          } else {
-             classifyArray[`${key}`].data.push(item)
-          }
-        });
-        this.classifyArray = classifyArray;
+    onChange() {
+      console.log(
+        this.areaValue,
+        "--this.areaValue---this.areaValue---this.areaValue--"
+      );
+      this.getTree();
+    },
+    searchChange() {
+      this.getTree();
+    },
+    handleNodeClick(data) {
+      console.log(data);
+      if (data.is_leaf == "是") {
+        // data.device_sn
+        // data.device_nodeid
+        this.getTableData(data.area_no);
       }
-
-   
-      // data.data.forEach((item, index) => {});
+    },
+    getTableData2(obj) {
+      let condition = {
+        serviceName: "srvpark_temperature_device_select",
+        colNames: ["*"],
+        condition: [
+          { colName: "area_no", ruleType: "like", value: obj.area_no },
+        ],
+        relation_condition: {},
+        order: [],
+        draft: false,
+        query_source: "list_page",
+      };
+      this.$axios
+        .post(
+          `/lpark/select/srvpark_temperature_device_select?srvpark_temperature_device_select`,
+          condition
+        )
+        .then((res) => {});
     },
     legend(str) {
       if (str == "jd") {
@@ -435,7 +367,312 @@ export default {
         $(".gz-icon").toggleClass("hide");
       }
     },
+    getTableData(area_no) {
+      let condition = {
+        serviceName: "srvpark_temperature_device_select",
+        colNames: ["*"],
+        condition: [{ colName: "area_no", ruleType: "like", value: area_no }],
+        relation_condition: {},
+        page: { pageNo: 1, rownumber: 10 },
+        order: [],
+        draft: false,
+        query_source: "list_page",
+      };
+      this.$axios
+        .post(
+          `/lpark/select/srvpark_temperature_device_select?srvpark_temperature_device_select`,
+          condition
+        )
+        .then((res) => {
+          this.device = res.data.data;
 
+          // console.log(this.device, "==this.device==this.device==this.device");
+          res.data.data.forEach(async (item, index) => {
+            let innerCondition = {
+              serviceName: "srvpark_temp_hum_record_select",
+              colNames: ["*"],
+              condition: [
+                { colName: "sn", ruleType: "like", value: item.device_sn },
+                {
+                  colName: "nodeid",
+                  ruleType: "like",
+                  value: item.device_nodeid,
+                },
+              ],
+              relation_condition: {},
+              order: [],
+              draft: false,
+              query_source: "list_page",
+            };
+
+            let res = await this.$axios.post(
+              `/lpark/select/srvpark_temp_hum_record_select?srvpark_temp_hum_record_select`,
+              innerCondition
+            );
+            item.echartOption = {
+              tem: [],
+              hum: [],
+              categories: [],
+            };
+            res.data.data.forEach((temItem, temIndex) => {
+              item.echartOption.tem.push(temItem.tem);
+              item.echartOption.hum.push(temItem.hum);
+              item.echartOption.categories.push(temItem.occur_date);
+            });
+
+            this.$nextTick(() => {
+              let dom =
+                this.$refs[`echarts${item.device_sn}${item.device_nodeid}`][0];
+              let echart = this.$echarts.init(dom);
+              let options = {
+                title: {
+                  text: `${item.device_addr}传感器A（门口）`, //图表顶部的标题
+                  show: true,
+                  x: "20px",
+                  y: "10px",
+                  textStyle: {
+                    //文字颜色
+                    color: `rgba(50, 66, 116, 1)`,
+                    //字体风格,'normal','italic','oblique'
+                    fontStyle: "normal",
+                    //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+                    fontWeight: "510",
+                    //字体系列
+                    fontFamily: "sans-serif",
+                    //字体大小
+                    fontSize: 16,
+                  },
+                },
+                dataZoom: [
+                  {
+                    type: "slider",
+                    start: 0,
+                    end: 10,
+                    height: 20,
+                    backgroundColor: "rgba(2,96,171,0.5)",
+                    dataBackground: {
+                      lineStyle: {
+                        color: "#fff9c1",
+                        width: 1,
+                      },
+                    },
+                    fillerColor: "rgba(53,204,251,0.2)",
+                    borderColor: "rgba(53,204,251,0.9)",
+                    //handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: "80%",
+                    handleStyle: {
+                      color: "#a0f1fb",
+                      shadowBlur: 3,
+                      shadowColor: "rgba(0, 0, 0, 0.6)",
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 2,
+                    },
+                    textStyle: {
+                      color: "#fff",
+                    },
+                    bottom: 5,
+                  },
+                ],
+                color: ["#4D5FCC", "#F77A50"],
+                tooltip: {
+                  //鼠标悬浮框的提示文字
+                  trigger: "axis",
+                },
+                legend: {
+                  data: ["温度", "湿度"],
+                  icon: "square",
+                  x: "center",
+                  y: "10px",
+                },
+                xAxis: [
+                  {
+                    //x轴坐标数据
+                    type: "category",
+                    // boundaryGap: false,
+                    data: [...item.echartOption.categories],
+                    dataZoom: [
+                      {
+                        type: "slider",
+                        show: true,
+                        xAxisIndex: [0],
+                        left: "9%",
+                        bottom: -5,
+                        start: 10,
+                        end: 90, //初始化滚动条
+                      },
+                    ],
+                    axisTick: {
+                      lineStyle: {
+                        color: "#837884", //x轴轴线颜色
+                      },
+                    },
+                    axisLabel: {
+                      textStyle: {
+                        // color: "#837884",
+                        color: "#837884",
+                      },
+                    },
+                    axisLine: {
+                      lineStyle: {
+                        color: "#837884", //x轴轴线颜色
+                      },
+                    },
+                  },
+                ],
+                yAxis: [
+                  {
+                    //y轴坐标数据
+                    type: "value",
+                    axisLabel: {
+                      textStyle: {
+                        // color: "#837884",
+                        color: "#837884",
+                      },
+                    },
+                    axisTick: {
+                      show: false,
+                    },
+                    axisLine: {
+                      show: false,
+                    },
+                    textStyle: {
+                      color: "#837884",
+                    },
+                  },
+                ],
+                series: [
+                  //驱动图表生成的数据内容数组，几条折现，数组中就会有几个对应对象，来表示对应的折线
+                  {
+                    name: "温度",
+                    type: "line", //pie->饼状图  line->折线图  bar->柱状图
+                    data: [...item.echartOption.tem],
+                    areaStyle: {
+                      color: "#DBDFF5",
+                    },
+                  },
+                  {
+                    name: "湿度",
+                    type: "line", //pie->饼状图  line->折线图  bar->柱状图
+                    data: [...item.echartOption.hum],
+                  },
+                ],
+              };
+
+              echart.setOption(options);
+
+              // console.log(this.$refs, "--refs---refs-refs");
+            });
+          });
+          // data.device_sn
+          // data.device_nodeid
+          console.log(res, "res--------");
+        });
+    },
+    getTree() {
+      let _this = this;
+      let conditionArray = [];
+      if (conditionArray) {
+        if (this.areaValue != "") {
+          conditionArray.push({
+            colName: "park_no",
+            ruleType: "like",
+            value: this.areaValue,
+          });
+        }
+
+        if (this.searchValue != "") {
+          conditionArray.push({
+            colName: "area_name",
+            ruleType: "like",
+            value: this.searchValue,
+          });
+        }
+      }
+      let condition = {
+        serviceName: "srvpark_park_area_select",
+        colNames: ["*"],
+        condition: [
+          { colName: "parent_no", ruleType: "isnull" },
+          ...conditionArray,
+        ],
+        relation_condition: {},
+        // page: { pageNo: 1, rownumber: 10 },
+        order: [],
+      };
+      this.$axios
+        .post(
+          `/lpark/select/srvpark_park_area_select?srvpark_park_area_select`,
+          condition
+        )
+        .then(async (res) => {
+          console.log(res.data, "我晕了我实在是晕了--------无语可以嘛？？？？");
+          if(res.data.data.length == 0){
+              this.device=[];
+              return
+          }
+          let recursion = function (array) {
+            return new Promise(async (resolve) => {
+              for (let i = 0; i < array.length; i++) {
+                let item = array[i];
+
+                item.label = item.area_name;
+                item.value = item.area_no;
+
+                if (item.is_leaf == "否") {
+                  let findContion = {
+                    serviceName: "srvpark_park_area_select",
+                    colNames: ["*"],
+                    condition: [
+                      {
+                        colName: "parent_no",
+                        value: item.area_no,
+                        ruleType: "eq",
+                      },
+                    ],
+                    relation_condition: {},
+                    page: { pageNo: 1, rownumber: 300 },
+                    order: [],
+                  };
+                  let res = await _this.$axios.post(
+                    `/lpark/select/srvpark_park_area_select?srvpark_park_area_select`,
+                    findContion
+                  );
+                  // recursion
+                  item.children = res.data.data;
+                  await recursion(item.children);
+                }
+              }
+
+              resolve();
+            });
+          };
+
+          let ff = await recursion(res.data.data);
+
+          this.treeKey = this.getUuid();
+          this.treeData = res.data.data;
+
+          let leafItem = { result: null };
+
+          let findLeaf = function (item, leafItem) {
+            if (item.is_leaf == "是") {
+              leafItem.result = item;
+              return leafItem;
+            } else {
+              let nowItem = item.children[0];
+              return findLeaf(nowItem, leafItem);
+            }
+          };
+
+          findLeaf(this.treeData[0], leafItem);
+          let obj = leafItem.result;
+
+          this.checkedItems = [obj.area_no];
+          // this.treeKey = this.getUuid();
+          this.getTableData(obj.area_no);
+          // console.log(res,"到底什么是res啊--什么是res啊说话啊？？？")
+        });
+    },
     resize() {
       // 自适应缩放
       let resizeFull = () => {
@@ -486,21 +723,22 @@ export default {
   created: function () {},
 
   mounted: async function () {
-    this.tree=await this.getArrayList("srvpark_park_area_select",[{
-       key:'area_name'
-    },{
-      key:'park_name'
-    }]);
-    console.log(this.tree,"tree是什么快说----")
-    console.log(this,"---$echarts--")
-    // this.initEchats();
-    // this.initEchats2();
-    // this.initEchats3();
-    // this.$refs.twoEcharts.addEventListener("resize", () => {
-    //     console.log(this.myCharts1, "==this.myCharts1==");
-    //     this.myCharts2.resize();
-    // });
-    // this.initEchats2();
+    // console.log("我晕=======")
+    let tree = await this.getArrayList("lpark", "srvpark_park_area_select", [
+      {
+        key: "park_no",
+      },
+    ]);
+
+    this.area = tree.park_no.array.map((item, index) => {
+      return {
+        ...item,
+        label: item.park_name,
+        value: item.park_no,
+      };
+    });
+    this.getTree();
+    console.log(this.area, "什么是this.area");
   },
 };
 </script>

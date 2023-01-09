@@ -458,13 +458,11 @@ export default {
                 end: 90, //初始化滚动条
               },
             ],
-
             axisTick: {
               lineStyle: {
                 color: "#837884", //x轴轴线颜色
               },
             },
-
             axisLabel: {
               textStyle: {
                 // color: "#837884",
@@ -496,10 +494,7 @@ export default {
             },
             textStyle: {
               color: "#837884",
-            },
-            // axisLabel: {
-            //   formatter: "{value} °C",
-            // },
+            }
           },
         ],
         series: [
@@ -515,10 +510,7 @@ export default {
           {
             name: "整发",
             type: "line", //pie->饼状图  line->折线图  bar->柱状图
-            data: [50, 120, 130, 50, 60, 400, 750],
-            // areaStyle: {
-            //     color: "#E1CBD4",
-            // },
+            data: [50, 120, 130, 50, 60, 400, 750]
           },
         ],
       };

@@ -26,15 +26,15 @@ function init_util() {
     "procdetail_v2": "/vpages/index.html#/v2/procdetail",
     "start-proc_v2": "/vpages/index.html#/v2/startproc",
     "editgrid": "/vpages/index.html#/editgrid",
-    "explain":"/vpages/index.html#/explain?",
-    "report":"/vpages/index.html#/reportList"
+    "explain": "/vpages/index.html#/explain?",
+    "report": "/vpages/index.html#/reportList"
   }
 
 
-  Vue.prototype.download = function(filePath,name){
+  Vue.prototype.download = function (filePath, name) {
 
     // let url = this.serviceApi().downloadFile + filePath
-      window.location.href = filePath
+    window.location.href = filePath
     // 利用原生fetch直接下载文件
     // return new Promise((resolve, reject) => {
     //   this.$http({
@@ -68,93 +68,94 @@ function init_util() {
     //             window.URL.revokeObjectURL(link.href)
     //           }
     //       }
-          
+
     //     },
     //     err => {
     //       reject(err)
     //     }
     //   )
     // })
-}
-Vue.prototype.word2number = function(w,type){
+  }
+  Vue.prototype.word2number = function (w, type) {
     //阿拉伯数字转中文数字
 
     // 节内转换算法 
-    function SectionToChinese(section){
-      var strIns = '', chnStr = ''; 
-      var unitPos = 0; 
-      var zero = true; 
-      while(section > 0){ 
-        var v = section % 10; 
-        if(v === 0){ 
-          if(!zero){ 
-            zero = true; 
-            chnStr = chnNumChar[v] + chnStr; 
-          } }else{ 
-            zero = false; 
-            strIns = chnNumChar[v]; 
-            strIns += chnUnitChar[unitPos]; 
-            chnStr = strIns + chnStr; 
-          } unitPos++; 
-          section = Math.floor(section / 10); 
-        } 
-        return chnStr; 
-      } 
+    function SectionToChinese(section) {
+      var strIns = '', chnStr = '';
+      var unitPos = 0;
+      var zero = true;
+      while (section > 0) {
+        var v = section % 10;
+        if (v === 0) {
+          if (!zero) {
+            zero = true;
+            chnStr = chnNumChar[v] + chnStr;
+          }
+        } else {
+          zero = false;
+          strIns = chnNumChar[v];
+          strIns += chnUnitChar[unitPos];
+          chnStr = strIns + chnStr;
+        } unitPos++;
+        section = Math.floor(section / 10);
+      }
+      return chnStr;
+    }
     // 转换算法主函数 
-    function NumberToChinese(num){ 
-      var unitPos = 0; var strIns = '', chnStr = ''; 
-      var needZero = false; 
-      if(num === 0){ 
-        return chnNumChar[0]; 
-      } 
-      while(num > 0){ 
-        var section = num % 10000; 
-        if(needZero){ 
-          chnStr = chnNumChar[0] + chnStr; 
-        } 
-        strIns = SectionToChinese(section); 
-        strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0]; 
-        chnStr = strIns + chnStr; 
-        needZero = (section < 1000) && (section > 0); 
-        num = Math.floor(num / 10000); 
-        unitPos++; 
-      } 
-      return chnStr; 
+    function NumberToChinese(num) {
+      var unitPos = 0; var strIns = '', chnStr = '';
+      var needZero = false;
+      if (num === 0) {
+        return chnNumChar[0];
+      }
+      while (num > 0) {
+        var section = num % 10000;
+        if (needZero) {
+          chnStr = chnNumChar[0] + chnStr;
+        }
+        strIns = SectionToChinese(section);
+        strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0];
+        chnStr = strIns + chnStr;
+        needZero = (section < 1000) && (section > 0);
+        num = Math.floor(num / 10000);
+        unitPos++;
+      }
+      return chnStr;
     }
     //中文数字转阿拉伯数字
-    var chnNumChar = { 零:0, 一:1, 二:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9 }; 
-    var chnNameValue = { 
-      十:{value:10, secUnit:false}, 
-      百:{value:100, secUnit:false}, 
-      千:{value:1000, secUnit:false}, 
-      万:{value:10000, secUnit:true},
-      亿:{value:100000000, secUnit:true} 
-    } 
-    function ChineseToNumber(chnStr){ 
-      var rtn = 0; var section = 0; var number = 0; var secUnit = false; var str = chnStr.split(''); 
-      for(var i = 0; i < str.length; i++){ 
-        var num = chnNumChar[str[i]]; 
-        if(typeof num !== 'undefined'){ 
-          number = num; 
-          if(i === str.length - 1){ 
-            section += number; 
-          }
-        }else{ 
-          var unit = chnNameValue[str[i]].value;
-          secUnit = chnNameValue[str[i]].secUnit; 
-          if(secUnit){ 
-            section = (section + number) * unit; rtn += section; section = 0; 
-          }else{ 
-            section += (number * unit);
-          } 
-          number = 0; 
-        } 
-      } 
-      return rtn + section; 
+    var chnNumChar = { 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+    var chnNameValue = {
+      十: { value: 10, secUnit: false },
+      百: { value: 100, secUnit: false },
+      千: { value: 1000, secUnit: false },
+      万: { value: 10000, secUnit: true },
+      亿: { value: 100000000, secUnit: true }
     }
-    if(type){
+    function ChineseToNumber(chnStr) {
+      var rtn = 0; var section = 0; var number = 0; var secUnit = false; var str = chnStr.split('');
+      for (var i = 0; i < str.length; i++) {
+        var num = chnNumChar[str[i]];
+        if (typeof num !== 'undefined') {
+          number = num;
+          if (i === str.length - 1) {
+            section += number;
+          }
+        } else {
+          var unit = chnNameValue[str[i]].value;
+          secUnit = chnNameValue[str[i]].secUnit;
+          if (secUnit) {
+            section = (section + number) * unit; rtn += section; section = 0;
+          } else {
+            section += (number * unit);
+          }
+          number = 0;
+        }
+      }
+      return rtn + section;
+    }
+    if (type) {
       return ChineseToNumber(w)
-    }else{
+    } else {
       return NumberToChinese(w)
     }
   }
@@ -165,17 +166,17 @@ Vue.prototype.word2number = function(w,type){
 
   Vue.prototype.isJSON = function (str) {
     if (typeof str == 'string') {
-        JSON.parse(str);
-        try {
-            
-            return true;
-        } catch(e) {
-            console.log(e);
-            return false;
-        }
+      JSON.parse(str);
+      try {
+
+        return true;
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
     }
     //console.log('It is not a string!')    
-}
+  }
   Vue.prototype.onEvent = function (nodePath, eventType, callback) {
     let eventKey = eventType + "#" + nodePath;
     eventBus.$on(eventKey, callback)
@@ -184,19 +185,19 @@ Vue.prototype.word2number = function(w,type){
    * 
    * @param {*} randomLength 
    */
-  Vue.prototype.GenNonDuplicateID = function (s,e){
+  Vue.prototype.GenNonDuplicateID = function (s, e) {
     //  let str = Number(Math.floor((Math.random()+Math.floor(Math.random()*9+1))*Math.pow(10,9)) + Date.now()).toString(12)
-     let str = Math.floor((Math.random()+Math.floor(Math.random()*9+1))*Math.pow(10,9)).toString(16) + Date.now().toString(16)
+    let str = Math.floor((Math.random() + Math.floor(Math.random() * 9 + 1)) * Math.pow(10, 9)).toString(16) + Date.now().toString(16)
     //  console.log(Math.random().toString().substr(3,randomLength),Date.now(),str)
-     if(s){
-       str = s + str
-     }
-     if(e){
-       str = str + e
-     }
-     return str
+    if (s) {
+      str = s + str
+    }
+    if (e) {
+      str = str + e
+    }
+    return str
   }
-    //GenNonDuplicateID()将生成 rfmipbs8ag0kgkcogc 类似的ID
+  //GenNonDuplicateID()将生成 rfmipbs8ag0kgkcogc 类似的ID
   /**
    * resolve default srvapp from vue component
    * @returns {*}
@@ -243,7 +244,7 @@ Vue.prototype.word2number = function(w,type){
     return backendIpAddr + "/" + app + "/" + operate_type + "/" + service;
   }
 
-  
+
   /**
    *
    * @param operate
@@ -260,7 +261,7 @@ Vue.prototype.word2number = function(w,type){
     if (page_origin == gateway_origin) {
       try {
 
-        var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid+"?bx_auth_ticket="+sessionStorage.getItem("bx_auth_ticket");
+        var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
         location.href = url;
         var loading = this.openLoading();
 
@@ -294,7 +295,7 @@ Vue.prototype.word2number = function(w,type){
       }
 
     } else {
-      var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid+"?bx_auth_ticket="+sessionStorage.getItem("bx_auth_ticket");
+      var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
       window.location.href = url;
 
     }
@@ -345,14 +346,14 @@ Vue.prototype.word2number = function(w,type){
    * @param use_type
    * @returns {*}
    */
-  Vue.prototype.loadColsV2 = function (service_name, use_type,app) {
+  Vue.prototype.loadColsV2 = function (service_name, use_type, app) {
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
     let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type);
     if (cacheP) {
-      return cacheP 
+      return cacheP
     }
 
-    let loadedP = this.doLoadColsV2(service_name, use_type,app)
+    let loadedP = this.doLoadColsV2(service_name, use_type, app)
     this.$store && this.$store.commit('addSrvCols', {
       service: fullServiceName,
       useType: use_type,
@@ -366,7 +367,7 @@ Vue.prototype.word2number = function(w,type){
     //   response: loadedP,
     // })
 
-      
+
     // })
     return loadedP
   }
@@ -397,11 +398,11 @@ Vue.prototype.word2number = function(w,type){
     };
     let url = decodeURIComponent(window.location.href)
     let params = parseUrlParams(url)
-    if(params && params.v2Params){
+    if (params && params.v2Params) {
       try {
         let v2Params = params.v2Params
         v2Params = JSON.parse(decodeURIComponent(v2Params))
-        if(v2Params && Array.isArray(v2Params.condition)){
+        if (v2Params && Array.isArray(v2Params.condition)) {
           requestData.condition = requestData.condition.concat(v2Params.condition)
         }
       } catch (error) {
@@ -411,10 +412,10 @@ Vue.prototype.word2number = function(w,type){
     return requestData
   }
 
-  Vue.prototype.doLoadColsV2 = function (service_name, use_type,app) {
+  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app) {
     var data = getV2RequestData(service_name, use_type);
 
-    var url = this.getServiceUrl("select", "srvsys_service_columnex_v2_select",app);
+    var url = this.getServiceUrl("select", "srvsys_service_columnex_v2_select", app);
     url = url + "?colsel_v2=" + service_name;
     return this.$http.post(url, data).then(response => {
       //region mock data
@@ -486,10 +487,10 @@ Vue.prototype.word2number = function(w,type){
 
 
   /**查询生成导出excel*/
-  Vue.prototype.genExportExcel = function (service_name, condition, page, order, group, mapcondition,isproc,columns) {
+  Vue.prototype.genExportExcel = function (service_name, condition, page, order, group, mapcondition, isproc, columns) {
     // var url = this.service_api.exportExcel;
     var url = this.getServiceUrl("export", service_name);
-    return this.doSelect(url, service_name, condition, page, order, group, mapcondition,isproc,columns)
+    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns)
   };
 
 
@@ -509,26 +510,26 @@ Vue.prototype.word2number = function(w,type){
   };
 
   /**查询列表*/
-  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition,draft,pageType,srvAuth) {
+  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth) {
     var url = this.getServiceUrl("select", service_name, app);
-    return this.doSelect(url, service_name, condition, page, order, group, mapcondition,isproc,columns,relationCondition,draft,pageType,srvAuth)
+    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth)
   }
 
   /***
    * 根据文件data 获取文件类别 
    */
-  Vue.prototype.getFileType = function(e){
+  Vue.prototype.getFileType = function (e) {
     let types = {
-      img:['jpg','JPG','PNG','JPEG','jpeg','png','bmp','tiff'],
-      doc:['xlsx','xls','xlsm','docx','doc','wps','ppt'],
-      pdf:['pdf'],
-      media:['mp3','mp4','avi','mov','mkv','wav'],
+      img: ['jpg', 'JPG', 'PNG', 'JPEG', 'jpeg', 'png', 'bmp', 'tiff'],
+      doc: ['xlsx', 'xls', 'xlsm', 'docx', 'doc', 'wps', 'ppt'],
+      pdf: ['pdf'],
+      media: ['mp3', 'mp4', 'avi', 'mov', 'mkv', 'wav'],
     }
     let type = 'more'
-    for(let key in types){
-      if(e.hasOwnProperty('file_type')){
-        for(let item of types[key]){
-          if(e.file_type === item){
+    for (let key in types) {
+      if (e.hasOwnProperty('file_type')) {
+        for (let item of types[key]) {
+          if (e.file_type === item) {
             type = key
           }
         }
@@ -564,20 +565,20 @@ Vue.prototype.word2number = function(w,type){
   }
 
   /**查询*/
-  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition,isproc,columns,relationCondition,draft,pageType,srvAuth) {
+  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth) {
     var query = {
       "serviceName": service_name,
       "colNames": columns || ['*'],
       "condition": condition || [],
-      "relation_condition":relationCondition || {},
+      "relation_condition": relationCondition || {},
       "page": page,
       "order": order,
-      "draft":draft
+      "draft": draft
     };
-    if(pageType && pageType === 'list_page'){
-      query['query_source']="list_page"
+    if (pageType && pageType === 'list_page') {
+      query['query_source'] = "list_page"
     }
-    if(isproc){
+    if (isproc) {
       query["proc_data_type"] = isproc
     }
     if (group) {
@@ -590,24 +591,24 @@ Vue.prototype.word2number = function(w,type){
 
     url = url + "?" + service_name;
     let defaultApp = this.resolveDefaultSrvApp()
-    if(srvAuth && sessionStorage.getItem(`bx_srv_auth_ticket-${defaultApp}-${service_name}`)){
+    if (srvAuth && sessionStorage.getItem(`bx_srv_auth_ticket-${defaultApp}-${service_name}`)) {
       let bx_srv_auth_ticket = sessionStorage.getItem(`bx_srv_auth_ticket-${defaultApp}-${service_name}`)
-      
-      return this.$http.post(url, query,{
+
+      return this.$http.post(url, query, {
         headers: {
           bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
-          bx_srv_auth_ticket:bx_srv_auth_ticket,
+          bx_srv_auth_ticket: bx_srv_auth_ticket,
         },
       });
       // url = `${url}&bx_srv_auth_ticket=${bx_srv_auth_ticket}`
-    }else{
+    } else {
       return this.$http.post(url, query);
     }
-   
+
   };
 
   /**查询*/
-  Vue.prototype.selectByUser = function (service_name, condition, page, order, group, mapcondition,pageType) {
+  Vue.prototype.selectByUser = function (service_name, condition, page, order, group, mapcondition, pageType) {
     var url = this.getServiceUrl("select", service_name);
     var params = {
       "serviceName": service_name,
@@ -617,8 +618,8 @@ Vue.prototype.word2number = function(w,type){
       "page": page,
       "order": order
     };
-    if(pageType && pageType === 'list_page'){
-      params['query_source']="list_page"
+    if (pageType && pageType === 'list_page') {
+      params['query_source'] = "list_page"
     }
     if (mapcondition != undefined && mapcondition != '' && mapcondition != null) {
       params["map_table_condtion"] = mapcondition;
@@ -628,7 +629,7 @@ Vue.prototype.word2number = function(w,type){
   };
 
   /**查询*/
-  Vue.prototype.selectproc = function (service_name, condition, page, order, proc_type,pageType) {
+  Vue.prototype.selectproc = function (service_name, condition, page, order, proc_type, pageType) {
     //var url = this.service_api.select;
 
     var url = this.getServiceUrl("select", service_name);
@@ -640,8 +641,8 @@ Vue.prototype.word2number = function(w,type){
       "page": page,
       "order": order
     };
-    if(pageType && pageType === 'list_page'){
-      params['query_source']="list_page"
+    if (pageType && pageType === 'list_page') {
+      params['query_source'] = "list_page"
     }
     url = url + "?" + service_name;
     return this.$http.post(url, params);
@@ -661,48 +662,48 @@ Vue.prototype.word2number = function(w,type){
   };
 
 
-  Vue.prototype.selectOne = function (service_name, condition,draft=false,isHisVer,srvAuth) {
+  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth) {
     var url = this.getServiceUrl("select", service_name);
     var params = {
       "serviceName": service_name,
       "colNames": ['*'],
       "condition": condition,
-      "draft":draft === 'true' ? true : false,
-      "hisVer":isHisVer || false
+      "draft": draft === 'true' ? true : false,
+      "hisVer": isHisVer || false
     };
-    
+
     url = url + "?" + service_name;
     let defaultApp = this.resolveDefaultSrvApp()
     let bx_srv_auth_ticket = sessionStorage.getItem(`bx_srv_auth_ticket-${defaultApp}-${service_name}`)
-    if(srvAuth){
-      return this.$http.post(url, params,{
+    if (srvAuth) {
+      return this.$http.post(url, params, {
         headers: {
           bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
-          bx_srv_auth_ticket:bx_srv_auth_ticket,
+          bx_srv_auth_ticket: bx_srv_auth_ticket,
         },
       })
-      .then(response => {
-        if (response.body.data && response.body.data.length > 0) {
-          response.body = response.body.data[0];
-        }
-        return response;
-      });
+        .then(response => {
+          if (response.body.data && response.body.data.length > 0) {
+            response.body = response.body.data[0];
+          }
+          return response;
+        });
       // url = `${url}&bx_srv_auth_ticket=${bx_srv_auth_ticket}`
-    }else{
-      return this.$http.post(url, params,{
+    } else {
+      return this.$http.post(url, params, {
         headers: {
           bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
-          bx_srv_auth_ticket:bx_srv_auth_ticket,
+          bx_srv_auth_ticket: bx_srv_auth_ticket,
         },
       })
-      .then(response => {
-        if (response.body.data && response.body.data.length > 0) {
-          response.body = response.body.data[0];
-        }
-        return response;
-      });
+        .then(response => {
+          if (response.body.data && response.body.data.length > 0) {
+            response.body = response.body.data[0];
+          }
+          return response;
+        });
     }
-    
+
   };
 
   /**操作*/
@@ -730,7 +731,7 @@ Vue.prototype.word2number = function(w,type){
   }
 
   /**操作*/
-  Vue.prototype.addTab = function (type, urlParams, tab_title,srv,button) {
+  Vue.prototype.addTab = function (type, urlParams, tab_title, srv, button) {
     if (tab_title == undefined || tab_title == null || tab_title == "") {
       tab_title = "新标页签";
     }
@@ -739,18 +740,18 @@ Vue.prototype.word2number = function(w,type){
     if (versionNo != "" && ("procdetail" == type || "start-proc" == type)) {
       type = type + "_" + versionNo;
     }
-    let url = common_page_path[type] +  urlParams;
-    if(type === 'explain'){
+    let url = common_page_path[type] + urlParams;
+    if (type === 'explain') {
       // 自定义 字段说明页面的参数
-      url = common_page_path[type] + '?data=' +  urlParams;
-    }else if(type === 'report'){
-      url = common_page_path[type] + '?operate_params=' +  urlParams;
-    }else if(type === 'list'){
+      url = common_page_path[type] + '?data=' + urlParams;
+    } else if (type === 'report') {
+      url = common_page_path[type] + '?operate_params=' + urlParams;
+    } else if (type === 'list') {
       let params = JSON.parse(urlParams)
-      url = common_page_path[type] + '/'+ srvName + '?operate_params=' +  urlParams;
+      url = common_page_path[type] + '/' + srvName + '?operate_params=' + urlParams;
     }
     let more_config = ''
-    if(button&&button.more_config){
+    if (button && button.more_config) {
       more_config = button.more_config
     }
     if (window.top.tab) {
@@ -760,12 +761,12 @@ Vue.prototype.word2number = function(w,type){
         icon: ""
       };
 
-      if(more_config && more_config.indexOf('openInCurrentTab')!==-1){
+      if (more_config && more_config.indexOf('openInCurrentTab') !== -1) {
         // window.location.href = url
         // window.top.tab.replaceTab(page);
         window.top.tab.addTab(page);
-  
-      }else{
+
+      } else {
         window.top.tab.addTab(page);
 
       }
@@ -773,24 +774,24 @@ Vue.prototype.word2number = function(w,type){
       window.open(url)
     }
   };
-   /**
-    *  //字符串截取
-    * @param {*} str  
-    * @param {*} n 
-    */
+  /**
+   *  //字符串截取
+   * @param {*} str  
+   * @param {*} n 
+   */
   Vue.prototype.getStrIntercept = function (str, n) {
     let strs = str
-    if(n){
-      if(str.length > n){
-        strs = str.substring(0,n) + '...'
+    if (n) {
+      if (str.length > n) {
+        strs = str.substring(0, n) + '...'
         return strs
-      }else{
+      } else {
         return strs
       }
-    }else{
+    } else {
       return strs
     }
-    
+
   };
   /**
    * 
@@ -798,19 +799,19 @@ Vue.prototype.word2number = function(w,type){
    */
   Vue.prototype.getDownloadFile = function (file) {
     let self = this
-    if(!file.hasOwnProperty('_dl_auth') || (file.hasOwnProperty('_dl_auth') && file['_dl_auth'])){
+    if (!file.hasOwnProperty('_dl_auth') || (file.hasOwnProperty('_dl_auth') && file['_dl_auth'])) {
       let url = self.serviceApi().downloadFile + file.fileurl
       window.location.href = url
-    }else{
+    } else {
       self.$alert('您无权限下载，请确认后重试！', '提示', {
-          confirmButtonText: '确定'
+        confirmButtonText: '确定'
       });
     }
-      
+
   };
 
-  Vue.prototype.addTabByUrl = function (url, tab_title,urlParams,type) {
-    url = url || common_page_path[type] + '?data=' +  urlParams;
+  Vue.prototype.addTabByUrl = function (url, tab_title, urlParams, type) {
+    url = url || common_page_path[type] + '?data=' + urlParams;
     let page = {
       title: tab_title || "新标页签",
       url,
@@ -828,7 +829,7 @@ Vue.prototype.word2number = function(w,type){
 
 
   /**操作*/
-  Vue.prototype.forwardAddTab = function (address, tab_title,button) {
+  Vue.prototype.forwardAddTab = function (address, tab_title, button) {
 
     if (tab_title == undefined || tab_title == null || tab_title == "") {
       tab_title = "新标页签";
@@ -840,7 +841,7 @@ Vue.prototype.word2number = function(w,type){
       icon: ""
     };
 
-    if(button&&button.more_config && button.more_config.indexOf('openInCurrentTab')!==-1){
+    if (button && button.more_config && button.more_config.indexOf('openInCurrentTab') !== -1) {
       // window.location.href = address
       window.top.tab.replaceTab(page);
       return
@@ -851,7 +852,7 @@ Vue.prototype.word2number = function(w,type){
 
 
   /**操作*/
-  Vue.prototype.custAddTab = function (type, urlParams, tab_title,button) {
+  Vue.prototype.custAddTab = function (type, urlParams, tab_title, button) {
 
     if (tab_title == undefined || tab_title == null || tab_title == "") {
       tab_title = "新标页签";
@@ -864,15 +865,15 @@ Vue.prototype.word2number = function(w,type){
     };
 
     let more_config = ''
-    if(button&&button.more_config){
+    if (button && button.more_config) {
       more_config = button.more_config
     }
-    if(more_config && more_config.indexOf('openInCurrentTab')!==-1){
+    if (more_config && more_config.indexOf('openInCurrentTab') !== -1) {
       // window.location.href = page.url
       // window.top.tab.replaceTab(page)
       window.top.tab.addTab(page)
 
-      return 
+      return
     }
 
     window.top.tab.addTab(page);
@@ -917,41 +918,41 @@ Vue.prototype.word2number = function(w,type){
   };
 
   // 唯一性校验
-  Vue.prototype.isUniqueCheck = async function(UniqueCheckConfig,model){
-     let url = this.getServiceUrl('select',UniqueCheckConfig.serviceName,UniqueCheckConfig.srvApp)
-     let cols = UniqueCheckConfig.columns;
-     cols = cols.split(',')
-     let reqs = {
+  Vue.prototype.isUniqueCheck = async function (UniqueCheckConfig, model) {
+    let url = this.getServiceUrl('select', UniqueCheckConfig.serviceName, UniqueCheckConfig.srvApp)
+    let cols = UniqueCheckConfig.columns;
+    cols = cols.split(',')
+    let reqs = {
       "serviceName": UniqueCheckConfig.serviceName,
-      "colNames":cols,
+      "colNames": cols,
       "condition": []
     }
-    for(let i = 0;i<cols.length;i++){
-      
+    for (let i = 0; i < cols.length; i++) {
+
       let cond = {
         colName: cols[i],
         ruleType: "eq",
         value: model[cols[i]],
       }
-      if(model[cols[i]] !== null && model[cols[i]] !== '' && model[cols[i]] !== undefined){
+      if (model[cols[i]] !== null && model[cols[i]] !== '' && model[cols[i]] !== undefined) {
         reqs.condition.push(this.bxDeepClone(cond))
       }
     }
     console.log('isUniqueCheck')
-     return  this.$http.post(url, reqs)
-     
-    
-    
+    return this.$http.post(url, reqs)
+
+
+
     //  let cols = this.$http.post(url, requests);
   },
-  Vue.prototype.bxDeepClone = function (obj) {
-    if (obj == null) return null;
-    let newObj = obj instanceof Array ? [] : {};
-    for (var i in obj) {
-      newObj[i] = typeof obj[i] === "object" ? this.bxDeepClone(obj[i]) : obj[i];
+    Vue.prototype.bxDeepClone = function (obj) {
+      if (obj == null) return null;
+      let newObj = obj instanceof Array ? [] : {};
+      for (var i in obj) {
+        newObj[i] = typeof obj[i] === "object" ? this.bxDeepClone(obj[i]) : obj[i];
+      }
+      return newObj;
     }
-    return newObj;
-  }
 
   Vue.prototype.parseDateTime = function (dateStr) {
     return moment(dateStr).toDate();
@@ -973,14 +974,14 @@ Vue.prototype.word2number = function(w,type){
     return moment(date).add(amount, flag).toDate();
   }
 
-  Vue.prototype.templateToString = function(row,temp){
-      let datas =  row || {}
-      let template = temp || ''
-      let str = 'return ' + '`'+template+'`'; // 根据配置的模版字符串解析内容
-      let func = new Function('row', str);
-      let srv =  func(datas)
-      // console.log("templateToString",datas,temp,srv)
-      return func(datas)
+  Vue.prototype.templateToString = function (row, temp) {
+    let datas = row || {}
+    let template = temp || ''
+    let str = 'return ' + '`' + template + '`'; // 根据配置的模版字符串解析内容
+    let func = new Function('row', str);
+    let srv = func(datas)
+    // console.log("templateToString",datas,temp,srv)
+    return func(datas)
 
   }
   Vue.prototype.popupDialog = function (params) {
@@ -995,7 +996,7 @@ Vue.prototype.word2number = function(w,type){
       // create dialog
       let ComponentClass = Vue.extend(Dialog)
       let dialog = new ComponentClass({
-        propsData: {type: 'primary'},
+        propsData: { type: 'primary' },
         store: this.$store,
       })
       this.dialog = dialog;
@@ -1014,7 +1015,7 @@ Vue.prototype.word2number = function(w,type){
     dialog.buttonInfo = btninfo
     if (btninfo && btninfo.application) {
       dialog.srvApp = btninfo.application;
-      dialog.$srvApp = btninfo.application!=='this'?btninfo.application:null;
+      dialog.$srvApp = btninfo.application !== 'this' ? btninfo.application : null;
     }
 
 
@@ -1059,6 +1060,17 @@ Vue.prototype.word2number = function(w,type){
     dialog.activeForm = formType;
   }
 
+
+  Vue.prototype.getUuid = function () {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  }
+
   Vue.prototype.guid = function () {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000)
@@ -1099,12 +1111,12 @@ Vue.prototype.word2number = function(w,type){
 
 
   Vue.prototype.isListTopComp = function () {
-    if(this.$route &&　this.$route.meta.compName){
+    if (this.$route && this.$route.meta.compName) {
       return (this.$parent.$parent.$parent === this.$root || this.$options.name === this.$route.meta.compName)
-    }else{
+    } else {
       return (this.$parent.$parent.$parent === this.$root)
     }
-    
+
   }
 
 
@@ -1204,7 +1216,7 @@ Vue.prototype.word2number = function(w,type){
       let user = top.user;
       return eval(expr)
     } catch (e) {
-      
+
       return defaultValue || null
     }
   }
@@ -1260,7 +1272,7 @@ Vue.prototype.word2number = function(w,type){
 
     return tokens.join("/");
   }
-  Vue.prototype.msgTips = function(){
+  Vue.prototype.msgTips = function () {
     console.log("Vue.prototype.msgTips")
     window.top.limitingTips();
   }
@@ -1277,123 +1289,123 @@ Vue.prototype.word2number = function(w,type){
    * @param {*} type 
    * @param {*} predict 
    */
-  Vue.prototype.buildChildListConfig = function(e,mainData){
-      let self = this
-      let list = {
-        "form":{
-          "append":[],
-          "prepend":[]
-        },
-        "field":{
-        }
+  Vue.prototype.buildChildListConfig = function (e, mainData) {
+    let self = this
+    let list = {
+      "form": {
+        "append": [],
+        "prepend": []
+      },
+      "field": {
       }
-      if(e && e.length > 0){
-        e.forEach(async (child,index)=>{
-            child['showPagination'] = window.sessionStorage.getItem('childPagination') || true
-            // Vue.set(child,'showPagination',true)
-            let config = child.foreign_key.more_config
-            if(config && config.indexOf('field') !== -1){
-              config = JSON.parse(config)
-              child["_childMoreConfig"] = config
-              if(config.hasOwnProperty("showPagination")){
-                child['showPagination'] = config.showPagination
-              }
-              try {
-                if(config.type){
-                  if(config.type === 'field' && config.colName && config.position){
-                    
-                    // 依附在字段的 子表
-                    if(list.field.hasOwnProperty(config.colName)){
-                      list.field[config.colName][config.position].push(child)
-                    }else{
-                      let childObj = {
-                        "append":[],
-                        "prepend":[]
-                      }
-                      childObj[config.position].push(child)
-                      list.field[config.colName]  = childObj
-                    }
-                    
-                  }else if(config.type === 'form'){
-                    // 依附在表单的 子表
-                    if(config.position  && config.positon === 'prepend'){
-                      list.form.prepend.push(child)
-                    }else{
-                      list.form.append.push(child)
-                    }
-                  }else{
-                    // 没有moreconfig 配置默认 
-                    list.form.append.push(child)
+    }
+    if (e && e.length > 0) {
+      e.forEach(async (child, index) => {
+        child['showPagination'] = window.sessionStorage.getItem('childPagination') || true
+        // Vue.set(child,'showPagination',true)
+        let config = child.foreign_key.more_config
+        if (config && config.indexOf('field') !== -1) {
+          config = JSON.parse(config)
+          child["_childMoreConfig"] = config
+          if (config.hasOwnProperty("showPagination")) {
+            child['showPagination'] = config.showPagination
+          }
+          try {
+            if (config.type) {
+              if (config.type === 'field' && config.colName && config.position) {
+
+                // 依附在字段的 子表
+                if (list.field.hasOwnProperty(config.colName)) {
+                  list.field[config.colName][config.position].push(child)
+                } else {
+                  let childObj = {
+                    "append": [],
+                    "prepend": []
                   }
+                  childObj[config.position].push(child)
+                  list.field[config.colName] = childObj
                 }
-              } catch (error) {
-                
-              }
-            }else{
-              if(config){
-                config = JSON.parse(config)
-                child["_childMoreConfig"] = config
-                if(config.hasOwnProperty("showPagination")){
-                  child['showPagination'] = config.showPagination
+
+              } else if (config.type === 'form') {
+                // 依附在表单的 子表
+                if (config.position && config.positon === 'prepend') {
+                  list.form.prepend.push(child)
+                } else {
+                  list.form.append.push(child)
                 }
-              }else{
-                child["_childMoreConfig"] = config
+              } else {
+                // 没有moreconfig 配置默认 
+                list.form.append.push(child)
               }
-              
-              list.form.append.push(child)
             }
-        })
-        
-      }
-      self.childrenListLoaded = true
-      // let childs = {childs:list,feildKeys:list.feild.keys()}
-      return list
+          } catch (error) {
+
+          }
+        } else {
+          if (config) {
+            config = JSON.parse(config)
+            child["_childMoreConfig"] = config
+            if (config.hasOwnProperty("showPagination")) {
+              child['showPagination'] = config.showPagination
+            }
+          } else {
+            child["_childMoreConfig"] = config
+          }
+
+          list.form.append.push(child)
+        }
+      })
+
+    }
+    self.childrenListLoaded = true
+    // let childs = {childs:list,feildKeys:list.feild.keys()}
+    return list
   }
   /**
    * build 子表配置的 
    * @param {*} type 
    * @param {*} predict 
    */
-  Vue.prototype.buildCollapsed = function(childs,cols){
+  Vue.prototype.buildCollapsed = function (childs, cols) {
     // 处理子表 Collapsed 组件的默认展开效果
     let childCollapsed = {
-      "form_append":[],
-      "form_prepend":[],
+      "form_append": [],
+      "form_prepend": [],
     }
-    function collapseds(e,type){
-       let eds = []
-       for(let key = 0;key<e.length;key++){
-         let moreConfig = e[key]['_childMoreConfig']
-         if(moreConfig && moreConfig.collapse && moreConfig.collapse === true){
-           let num = type + key
-           eds.push(num)
-         }
-       }
-       if(eds.length === 0){
+    function collapseds(e, type) {
+      let eds = []
+      for (let key = 0; key < e.length; key++) {
+        let moreConfig = e[key]['_childMoreConfig']
+        if (moreConfig && moreConfig.collapse && moreConfig.collapse === true) {
+          let num = type + key
+          eds.push(num)
+        }
+      }
+      if (eds.length === 0) {
         let num = type + 0
         eds.push(num)
-       }
-       return eds
+      }
+      return eds
     }
     let keys = Object.keys(childs)
-    for(let i = 0;i<keys.length;i++){
-       if(keys[i] === 'form'){
+    for (let i = 0; i < keys.length; i++) {
+      if (keys[i] === 'form') {
 
-          childCollapsed['form_append'] = collapseds(childs[keys[i]]['append'],'form_append_')
-          childCollapsed['form_prepend'] = collapseds(childs[keys[i]]['prepend'],'form_prepend_')
-       }else if(keys[i] === 'field' ){
-          let fieldChild = childs['field']
+        childCollapsed['form_append'] = collapseds(childs[keys[i]]['append'], 'form_append_')
+        childCollapsed['form_prepend'] = collapseds(childs[keys[i]]['prepend'], 'form_prepend_')
+      } else if (keys[i] === 'field') {
+        let fieldChild = childs['field']
 
-          for(let c = 0;c<cols.length;c++){
-            let appends = fieldChild[cols[c]]['append']
-            let prepends = fieldChild[cols[c]]['prepend']
-            if(appends.length > 0){
-              childCollapsed[cols[c] + '_append'] = collapseds(appends,cols[c]+'_append_')
-            }else if(prepends.length > 0){
-              childCollapsed[cols[c] + '_prepend'] = collapseds(prepends,cols[c]+'_prepend_')
-            }
+        for (let c = 0; c < cols.length; c++) {
+          let appends = fieldChild[cols[c]]['append']
+          let prepends = fieldChild[cols[c]]['prepend']
+          if (appends.length > 0) {
+            childCollapsed[cols[c] + '_append'] = collapseds(appends, cols[c] + '_append_')
+          } else if (prepends.length > 0) {
+            childCollapsed[cols[c] + '_prepend'] = collapseds(prepends, cols[c] + '_prepend_')
           }
-       }
+        }
+      }
     }
     return childCollapsed
 
@@ -1427,7 +1439,7 @@ Vue.prototype.word2number = function(w,type){
       } else if (_.isFunction(value)) {
         return value(data);
       } else {
-        
+
       }
     } catch (e) {
       if (_.isUndefined(defaultValue)) {
@@ -1479,7 +1491,7 @@ Vue.prototype.word2number = function(w,type){
 
 
   Vue.prototype.serviceApi = function (e) {
-    
+
     let defaultApp = this.resolveDefaultSrvApp();
     var service_api = {
       selectOne: backendIpAddr + "/" + defaultApp + "/select",
@@ -1489,9 +1501,9 @@ Vue.prototype.word2number = function(w,type){
       approval: backendIpAddr + "/" + defaultApp + "/process/approval",
 
       uploadFile: backendIpAddr + "/file/upload",
-      downloadFile: backendIpAddr + "/file/download?" + "bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket")  +"&filePath=",
+      downloadFile: backendIpAddr + "/file/download?" + "bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket") + "&filePath=",
       deleteFile: backendIpAddr + "/file/delete",
-      downloadFileNo: backendIpAddr + "/file/download?" + "bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket")  + "&fileNo=",
+      downloadFileNo: backendIpAddr + "/file/download?" + "bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket") + "&fileNo=",
       exportExcel: backendIpAddr + "/" + defaultApp + "/export/exportExcel",
       importExcel: backendIpAddr + "/" + defaultApp + "/bizDataImport",
 
@@ -1501,7 +1513,7 @@ Vue.prototype.word2number = function(w,type){
       // saveDraft: backendIpAddr + defaultApp + "/bxsys/saveDraft",
       // startDataProc: backendIpAddr + defaultApp + "/bxsys/startDataProc",
     };
-    if(e && e.indexOf('http') !== -1){
+    if (e && e.indexOf('http') !== -1) {
       service_api.downloadFileNo = ""
       return service_api;
     }
@@ -1509,7 +1521,7 @@ Vue.prototype.word2number = function(w,type){
   }
 
   //设置二级密码
-  Vue.prototype.srvAuthSet = function(srv,pwd,app) {
+  Vue.prototype.srvAuthSet = function (srv, pwd, app) {
     let req = [
       {
         serviceName: "srvsso_service_pwd_set",
@@ -1524,7 +1536,7 @@ Vue.prototype.word2number = function(w,type){
       },
     ];
     let url = this.getServiceUrl("operate", "srvsso_service_pwd_set", "sso");
-     this.$http.post(url, req).then((res) => {
+    this.$http.post(url, req).then((res) => {
       if (res.data.state == "FAILURE") {
         this.$message({
           message: res.data.resultMessage,
@@ -1541,7 +1553,7 @@ Vue.prototype.word2number = function(w,type){
     });
   }
   //登录
- 
+
   Vue.prototype.makeTree = function (passArray, keyObj) {
 
     let { parentKey, labelKey, valueKey } = keyObj;
@@ -1610,7 +1622,115 @@ Vue.prototype.word2number = function(w,type){
 
           if (!startNode) {
             startNode = item;
+          }
 
+          if (!nowNode) {
+            nowNode = item;
+            nowNode.preNode = null
+          }
+
+          item.preNode = nowNode;
+          nowNode.nextNode = item
+
+          nowNode = item;
+
+
+        }
+
+
+
+      }
+
+      return startNode;
+    }
+
+
+    let array = [...passArray];
+
+    let parentNode = [];
+    let chain = makeChain(array, parentNode);
+    // let result = [];
+    // debugger
+    /*
+     * 递归把商品费雷给成children
+     */
+    if (chain) {
+      parentNode.forEach((item, index) => {
+        recuisionChain(chain, item);
+      })
+    }
+
+    let treeData = parentNode;
+
+    return treeData;
+
+  }
+
+  Vue.prototype.makeTree2 = function (passArray, keyObj) {
+
+    let { parentKey, labelKey, valueKey } = keyObj;
+
+    let recuisionChain = (chain, compareNode, result) => {
+      // let nKey = 'no';
+      // let nLabel = "classify_name";
+      let parentNum = chain[parentKey];
+      parentNum = parentNum.replaceAll("/", "")
+      if (parentNum == compareNode[valueKey]) {
+        if (!compareNode.children) {
+          compareNode.children = []
+        }
+        compareNode.children.push(chain);
+        let preNode = chain.preNode;
+        let nextNode = chain.nextNode;
+        chain.isFind = true;
+        chain.nextNode = nextNode;
+        recuisionChain(chain, chain, result);
+
+      } else {
+        let nowNode = chain;
+        while (nowNode.nextNode) {
+          nowNode = nowNode.nextNode;
+          let parentNum = compareNode[valueKey];
+
+          parentNum = parentNum.replaceAll("/", "");
+
+          if (nowNode[parentKey] == parentNum) {
+
+            if (!compareNode.children) {
+              compareNode.children = []
+            };
+
+            compareNode.children.push(nowNode);
+            let preNode = nowNode.preNode;
+            let nextNode = nowNode.nextNode;
+            nowNode.isFind = true;
+            preNode.nextNode = nextNode;
+            if (nextNode) {
+              nextNode.preNode = preNode;
+            }
+
+            recuisionChain(chain, nowNode);
+
+          }
+        }
+      }
+
+    }
+
+    let makeChain = (array, parentNode) => {
+      let startNode = null;
+      let nowNode = null;
+      for (let i = 0; i < array.length; i++) {
+        let item = array[i];
+        item.label = item[`${labelKey}`];
+        item.value = item[`${valueKey}`]
+        // item.children = [];
+        if (!item[parentKey]) {
+          parentNode.push(item);
+        } else {
+
+          if (!startNode) {
+            startNode = item;
           }
 
           if (!nowNode) {
@@ -1940,7 +2060,7 @@ Vue.prototype.word2number = function(w,type){
 
   }
 
-  Vue.prototype.srvAuthlogin = function(srv,pwd,app) {
+  Vue.prototype.srvAuthlogin = function (srv, pwd, app) {
     let req = [
       {
         serviceName: "srvuser_service_login",
@@ -1957,7 +2077,7 @@ Vue.prototype.word2number = function(w,type){
     return this.$http.post(url, req)
   }
 
-  
+
   Vue.prototype.parseDate2 = function parseDate(date, time, type) {
 
     /** let date =newe Date();

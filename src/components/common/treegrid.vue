@@ -1004,8 +1004,9 @@ export default {
               item._children = item.children;
               delete item.children;
             });
-
+           
           this.buildData(response.body.data, true);
+         
           this.gridData = response.body.data;
           if (response.body.page) {
             this.gridPage.currentPage = response.body["page"]["pageNo"];

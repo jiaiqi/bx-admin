@@ -20,7 +20,10 @@
           ></filterColumn>
           <div class="c-border"></div>
 
-          <div style="flex:1" v-if="Object.keys(objData).length > 0">
+          <div
+            style="height: calc(100vh - 190px); overflow: scroll"
+            v-if="Object.keys(objData).length > 0"
+          >
             <div :key="key" v-for="(val, key) in objData" class="block-content">
               <div
                 style="
