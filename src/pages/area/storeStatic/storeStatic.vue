@@ -92,14 +92,14 @@
 
                       <div class="height-row middle flex-between">
                         <div style="font-size: 20px" class="left">
-                          <span v-if="item.rent_status != '空置'">
+                          <span v-if="item.rent_status != '未租'">
                             {{ item.rent_store_name }}</span
                           >
                           <span v-else> 未租售</span>
                         </div>
                         <div class="right over-progress">
                           <el-progress
-                            v-if="item.rent_status != '空置'"
+                            v-if="item.rent_status != '未租'"
                             color="white"
                             text-color="black"
                             define-back-color="yellow"
@@ -214,8 +214,9 @@ export default {
           item.background = "isGreen";
         }
         item.key = this.guid();
-        if (item.rent_type == "空置") {
+        if (item.rent_status == "未租") {
           item.background = "isGray";
+          // item.category_no="未租售"
         }
       });
       this.objData = obj;
