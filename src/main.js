@@ -1,6 +1,5 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-console.log("我晕-==--")
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -11,25 +10,20 @@ import '../theme/less/common-theme.less'
 import VueResource from 'vue-resource';
 import VueInit from '@/components/common/vue_init'
 import VueUtil from '@/components/common/vue_util'
+import vueAxiosInit from '@/components/common/vueAxiosInit';
 import store from './store'
 import bxPlugin from './plugin/bx-plugin.js'
 import Fragment from 'vue-fragment'
 Vue.use(Fragment.Plugin)
 
-import Viewer from 'v-viewer'
-import 'viewerjs/dist/viewer.css'
-import echarts from 'echarts'
-
+import Viewer from 'v-viewer';
+import 'viewerjs/dist/viewer.css';
+import echarts from 'echarts';
 import More from './components/ll/more.vue';
 import SmallButtonTag from './components/ll/smallButtonTag.vue';
-
 import filterColumn from './components/globalComponent/filter-column.vue';
-
-
-
-import upperFirst from 'lodash/upperFirst'
-import camelCase from 'lodash/camelCase'
-
+import upperFirst from 'lodash/upperFirst';
+import camelCase from 'lodash/camelCase';
 const requireComponent = require.context(
   // 其组件目录的相对路径
   './components/globalComponent',
@@ -67,11 +61,7 @@ requireComponent.keys().forEach(fileName => {
 Vue.component("more", More);
 Vue.component("filterColumn", filterColumn);
 Vue.component("small-button-tag", SmallButtonTag);
-
 Vue.prototype.$echarts = echarts;
-
-
-
 Vue.component("recursionTree", {
   functional: true, 
   injections: true,
@@ -135,6 +125,7 @@ Viewer.setDefaults({
 
 VueInit();
 VueUtil();
+vueAxiosInit();
 Vue.use(bxPlugin)
 Vue.use(ElementUI);
 Vue.use(VueResource);

@@ -420,13 +420,11 @@ export default {
                 end: 90, //初始化滚动条
               },
             ],
-
             axisTick: {
               lineStyle: {
                 color: "#837884", //x轴轴线颜色
               },
             },
-
             axisLabel: {
               textStyle: {
                 // color: "#837884",
@@ -580,7 +578,7 @@ export default {
                 return false;
               }
             });
-            return `${findItem.name}  ${findItem.perncent}% ${findItem.value}次`;
+            return `${findItem.name}  ${findItem.perncent.toFixed(2)}% ${findItem.value}次`;
           },
         },
         title: {
@@ -769,7 +767,10 @@ export default {
              <img src="${poinImage}" />
       </div>`,
                 callBack: {
-                  click: ({ cover }) => {
+                  mouseover: ({ cover }) => {
+                    $(cover.dom).popover("toggle");
+                  },
+                   mouseout: ({ cover }) => {
                     $(cover.dom).popover("toggle");
                   },
                 },

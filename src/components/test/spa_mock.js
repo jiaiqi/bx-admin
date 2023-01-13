@@ -33,7 +33,6 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "fyzhmd";
   // top.pathConfig.application = "config";
   // top.pathConfig.application = "factory";
-
   top.user = {
     create_time: "2019-08-11 22:30:15",
     create_user: "admin",
@@ -83,10 +82,10 @@ if (!top.pathConfig) {
     }
   }
 
-  sessionStorage.setItem("bx_auth_ticket", "xabxdzkj-273f0fa9-7e62-4bb6-8ff5-25d0d2940892"); 
+  sessionStorage.setItem("bx_auth_ticket", "xabxdzkj-7dc6fa33-6a16-4a2f-9892-bf3e6abb02c9");
 }
 
 
-export default function dummy () {
+export default function dummy() {
 
 }

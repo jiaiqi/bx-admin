@@ -35,53 +35,40 @@ function init() {
       // back_server_port: "8101",
       // back_server_ip: "api.vanxum.com",    // http://api.vanxum.com:9080
       // back_server_port: "9080",
-
       // back_server_ip: "192.168.0.240",    // 240 139.129.128.155:5021   中铁
       // back_server_port: "8106",
       // back_server_ip: "192.168.0.121",    // 240 139.129.128.155:5021
       // back_server_port: "8101",
       // v2/procdetail/20200904153515052100
-
       // back_server_ip: "192.168.0.241",    // 240 139.129.128.155:5021   中铁
       // back_server_port: "8080",
-
-
       // back_server_ip: "192.168.0.241",    // 240 139.129.128.155:5021   中铁
       // back_server_port: "8080",
-
-      back_server_protocol: "https",
-      back_server_ip: "wx.100xsys.cn",    // 100xsys
+      // back_server_protocol: "https",
+      // back_server_ip: "wx.100xsys.cn",    
       // back_server_ip: "srvms.100xsys.cn",    // 100xsys
       // back_server_port: "443",
-      back_server_port: "",
-
+      // back_server_port: "",
     };
     backendIpAddr = server_cfg.back_server_protocol + "://" + server_cfg.back_server_ip + ":" + server_cfg.back_server_port;
   }
   window.backendIpAddr = backendIpAddr;
 
   let defaultApp = (window.frameElement && window.frameElement.dataset["app"]) || (top.window.pathConfig && top.window.pathConfig.application);
-
+  
   var service_api = {
     selectOne: backendIpAddr + "/" + defaultApp + "/select",
     select: backendIpAddr + "/" + defaultApp + "/select",
     selectByUser: backendIpAddr + "/" + defaultApp + "/select",
     operate: backendIpAddr + "/" + defaultApp + "/operate",
     approval: backendIpAddr + "/" + defaultApp + "/process/approval",
-
     uploadFile: backendIpAddr + "/file/upload",
     downloadFile: backendIpAddr + "/file/download?filePath=",
     deleteFile: backendIpAddr + "/file/delete",
-
     exportExcel: backendIpAddr + "/" + defaultApp + "/export/exportExcel",
     importExcel: backendIpAddr + "/" + defaultApp + "/bizDataImport",
-
     qrcode: backendIpAddr + "/" + defaultApp + "/bxsys/qrcode",
     downloadTemplate: backendIpAddr + "/" + defaultApp + "/downloadTemplate/excel/"
-    // http://IP:PORT/应用编号/downloadTemplate/excel/对应更新服务?tmplType=dynamic
-    // startProc: backendIpAddr + defaultApp + "/bxsys/startProc",
-    // saveDraft: backendIpAddr + defaultApp + "/bxsys/saveDraft",
-    // startDataProc: backendIpAddr + defaultApp + "/bxsys/startDataProc",
   }
 
   window.serviceApi = service_api;

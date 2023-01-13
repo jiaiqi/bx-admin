@@ -153,9 +153,7 @@ $(function () {
 
 export default {
   mixins: [commonMixin],
-
   props: {},
-
   data() {
     return {
       name: "123",
@@ -192,7 +190,6 @@ export default {
       ],
     };
   },
-
   methods: {
     async search(sucessList) {
       //  console.log(sucessList,"==sucessList==")
@@ -284,11 +281,9 @@ export default {
     //   //    this.filterArrayList=array2;
     // },
   },
-
   created: function () {
     window.h = this.$createElement;
   },
-
   mounted: function () {
     // this.getColumns();
   },

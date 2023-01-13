@@ -5,20 +5,17 @@
         <div class="ll-card-block">
           <div class="card-row">
             <el-row :gutter="24">
-              <el-col :key="val.label" v-for="val in tagsObj"  :span="6">
+              <el-col :key="val.label" v-for="val in tagsObj" :span="6">
                 <div class="ll-custom-card flex-between">
                   <div class="left flex">
-                    <div class="top-title number">{{val.label}}</div>
+                    <div class="top-title number">{{ val.label }}</div>
                   </div>
 
-    
                   <div class="right flex">
                     <div class="number deepBlueC">{{ val.time }}</div>
                   </div>
                 </div>
               </el-col>
-
-             
             </el-row>
           </div>
         </div>
@@ -73,12 +70,12 @@ export default {
           key: "trans_status",
         },
       ],
-      tagsObj:[],
-      tagsObjTemplate:{},
-      transitionStatus:[],
+      tagsObj: [],
+      tagsObjTemplate: {},
+      transitionStatus: [],
       tableInfo: null,
-      getArray:[],
-      legends:[],
+      getArray: [],
+      legends: [],
       mapData: {
         working: 0,
         rest: 0,
@@ -91,22 +88,20 @@ export default {
 
   methods: {
     search(sucessList) {
-        this.map.clearOverlays();
-      
+      this.map.clearOverlays();
+
       this.renderMap(sucessList);
     },
     renderMap(data) {
       this.map.clearOverlays();
       this.covers = data;
-      
-      let tagsObj=JSON.parse(JSON.stringify(this.tagsObjTemplate))
 
-      
+      let tagsObj = JSON.parse(JSON.stringify(this.tagsObjTemplate));
+
       let mapData = data.filter((item, index) => {
-         if (tagsObj[item.trans_status]) {
-            tagsObj[item.trans_status].time++;
-          }
-
+        if (tagsObj[item.trans_status]) {
+          tagsObj[item.trans_status].time++;
+        }
 
         if (!item.last_lat) {
           return false;
@@ -115,8 +110,8 @@ export default {
         }
       });
 
-      this.tagsObj=tagsObj;
-      console.log(mapData,"什么是mapData----")
+      this.tagsObj = tagsObj;
+      console.log(mapData, "什么是mapData----");
       let covers = new MapPlus.Covers({
         points: mapData,
         mapJd: "last_lon",
@@ -136,7 +131,7 @@ export default {
               className = "deepBlueB";
               name = "xx";
               poinImage = require(`@/assets/image/deepBlue1.png`);
-            } else{
+            } else {
               className = "orangeB";
               name = "gz";
               poinImage = require(`@/assets/image/orange1.png`);
@@ -149,7 +144,10 @@ export default {
              <img src="${poinImage}" />
       </div>`,
               callBack: {
-                click: ({ cover }) => {
+                mouseover: ({ cover }) => {
+                  $(cover.dom).popover("toggle");
+                },
+                mouseout: ({ cover }) => {
                   $(cover.dom).popover("toggle");
                 },
               },
@@ -195,7 +193,7 @@ export default {
           },
         },
       });
-      
+
       this.map.addOverlay(covers);
     },
     async getMapData() {
@@ -237,9 +235,9 @@ export default {
           };
         }
       });
-      this.transitionStatus=getData.trans_status.array;
-      this.tagsObjTemplate=obj;
-     
+      this.transitionStatus = getData.trans_status.array;
+      this.tagsObjTemplate = obj;
+
       this.getMapData();
     },
   },

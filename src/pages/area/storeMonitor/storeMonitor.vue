@@ -80,10 +80,12 @@
                 <span>仓库温度监控</span>
 
                 <el-date-picker
-                  size="mini "
-                  v-model="value1"
-                  type="date"
-                  placeholder="选择日期"
+                  v-model="dateValue"
+                  type="datetimerange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  @change="dateChange"
+                  end-placeholder="结束日期"
                 >
                 </el-date-picker>
               </div>
@@ -261,57 +263,14 @@ export default {
       checkedItems: [],
       treeData: [],
       areaValue: "",
+      dateValue: "",
       searchValue: "",
+      dateRange: {
+        start: null,
+        end: null,
+      },
       options: {},
       area: [],
-      data: [
-        {
-          label: "一级 1",
-          children: [],
-        },
-        {
-          label: "一级 2",
-          children: [
-            {
-              label: "二级 2-1",
-              children: [
-                {
-                  label: "三级 2-1-1",
-                },
-              ],
-            },
-            {
-              label: "二级 2-2",
-              children: [
-                {
-                  label: "三级 2-2-1",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: "一级 3",
-          children: [
-            {
-              label: "二级 3-1",
-              children: [
-                {
-                  label: "三级 3-1-1",
-                },
-              ],
-            },
-            {
-              label: "二级 3-2",
-              children: [
-                {
-                  label: "三级 3-2-1",
-                },
-              ],
-            },
-          ],
-        },
-      ],
       device: [],
       defaultProps: {
         children: "children",
@@ -321,11 +280,25 @@ export default {
   },
 
   methods: {
+    dateChange() {
+      if (!this.dateValue) {
+        this.dateRange.start = null;
+        this.dateRange.end = null;
+        this.getEchartsData();
+        return
+      }
+      let startTime = new Date(this.dateValue[0]);
+      let endTime = new Date(this.dateValue[1]);
+      let time1 = this.formatDateTime(startTime);
+      let time2 = this.formatDateTime(endTime);
+      this.dateRange.start = time1;
+      this.dateRange.end = time2;
+      this.getEchartsData();
+
+      // console.log(time1, "==time1==");
+      // console.log(time2, "-time2-");
+    },
     onChange() {
-      console.log(
-        this.areaValue,
-        "--this.areaValue---this.areaValue---this.areaValue--"
-      );
       this.getTree();
     },
     searchChange() {
@@ -339,25 +312,7 @@ export default {
         this.getTableData(data.area_no);
       }
     },
-    getTableData2(obj) {
-      let condition = {
-        serviceName: "srvpark_temperature_device_select",
-        colNames: ["*"],
-        condition: [
-          { colName: "area_no", ruleType: "like", value: obj.area_no },
-        ],
-        relation_condition: {},
-        order: [],
-        draft: false,
-        query_source: "list_page",
-      };
-      this.$axios
-        .post(
-          `/lpark/select/srvpark_temperature_device_select?srvpark_temperature_device_select`,
-          condition
-        )
-        .then((res) => {});
-    },
+
     legend(str) {
       if (str == "jd") {
         $(".jd-icon").toggleClass("hide");
@@ -366,6 +321,200 @@ export default {
       } else if (str == "gz") {
         $(".gz-icon").toggleClass("hide");
       }
+    },
+    getEchartsData() {
+      this.device.forEach(async (item, index) => {
+        let innerCondition = {
+          serviceName: "srvpark_temp_hum_record_select",
+          colNames: ["*"],
+          condition: [
+            { colName: "sn", ruleType: "like", value: item.device_sn },
+            {
+              colName: "nodeid",
+              ruleType: "like",
+              value: item.device_nodeid,
+            },
+          ],
+          relation_condition: {},
+          order: [],
+          draft: false,
+          query_source: "list_page",
+        };
+
+        // dateRange: {
+        //   start: null,
+        //   end: null,
+        // }
+
+        console.log("你是谁我是谁我兄弟姐妹和爱人---");
+        if (this.dateRange) {
+          if (this.dateRange.start && this.dateRange.end) {
+            innerCondition.condition.push({
+              colName: "occur_date",
+              ruleType: "between",
+              value: [this.dateRange.start, this.dateRange.end],
+            });
+          }
+        }
+
+        let res = await this.$axios.post(
+          `/lpark/select/srvpark_temp_hum_record_select?srvpark_temp_hum_record_select`,
+          innerCondition
+        );
+        item.echartOption = {
+          tem: [],
+          hum: [],
+          categories: [],
+        };
+        res.data.data.forEach((temItem, temIndex) => {
+          item.echartOption.tem.push(temItem.tem);
+          item.echartOption.hum.push(temItem.hum);
+          item.echartOption.categories.push(temItem.occur_date);
+        });
+
+        this.$nextTick(() => {
+          let dom =
+            this.$refs[`echarts${item.device_sn}${item.device_nodeid}`][0];
+          let echart = this.$echarts.init(dom);
+          let options = {
+            title: {
+              text: `${item.device_addr}传感器A（门口）`, //图表顶部的标题
+              show: true,
+              x: "20px",
+              y: "10px",
+              textStyle: {
+                //文字颜色
+                color: `rgba(50, 66, 116, 1)`,
+                //字体风格,'normal','italic','oblique'
+                fontStyle: "normal",
+                //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+                fontWeight: "510",
+                //字体系列
+                fontFamily: "sans-serif",
+                //字体大小
+                fontSize: 16,
+              },
+            },
+            dataZoom: [
+              {
+                type: "slider",
+                start: 0,
+                end: 10,
+                height: 20,
+                backgroundColor: "rgba(2,96,171,0.5)",
+                dataBackground: {
+                  lineStyle: {
+                    color: "#fff9c1",
+                    width: 1,
+                  },
+                },
+                fillerColor: "rgba(53,204,251,0.2)",
+                borderColor: "rgba(53,204,251,0.9)",
+                //handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                handleSize: "80%",
+                handleStyle: {
+                  color: "#a0f1fb",
+                  shadowBlur: 3,
+                  shadowColor: "rgba(0, 0, 0, 0.6)",
+                  shadowOffsetX: 2,
+                  shadowOffsetY: 2,
+                },
+                textStyle: {
+                  color: "#fff",
+                },
+                bottom: 5,
+              },
+            ],
+            color: ["#4D5FCC", "#F77A50"],
+            tooltip: {
+              //鼠标悬浮框的提示文字
+              trigger: "axis",
+            },
+            legend: {
+              data: ["温度", "湿度"],
+              icon: "square",
+              x: "center",
+              y: "10px",
+            },
+            xAxis: [
+              {
+                //x轴坐标数据
+                type: "category",
+                // boundaryGap: false,
+                data: [...item.echartOption.categories],
+                dataZoom: [
+                  {
+                    type: "slider",
+                    show: true,
+                    xAxisIndex: [0],
+                    left: "9%",
+                    bottom: -5,
+                    start: 10,
+                    end: 90, //初始化滚动条
+                  },
+                ],
+                axisTick: {
+                  lineStyle: {
+                    color: "#837884", //x轴轴线颜色
+                  },
+                },
+                axisLabel: {
+                  textStyle: {
+                    // color: "#837884",
+                    color: "#837884",
+                  },
+                },
+                axisLine: {
+                  lineStyle: {
+                    color: "#837884", //x轴轴线颜色
+                  },
+                },
+              },
+            ],
+            yAxis: [
+              {
+                //y轴坐标数据
+                type: "value",
+                axisLabel: {
+                  textStyle: {
+                    // color: "#837884",
+                    color: "#837884",
+                  },
+                },
+                axisTick: {
+                  show: false,
+                },
+                axisLine: {
+                  show: false,
+                },
+                textStyle: {
+                  color: "#837884",
+                },
+              },
+            ],
+            series: [
+              //驱动图表生成的数据内容数组，几条折现，数组中就会有几个对应对象，来表示对应的折线
+              {
+                name: "温度",
+                type: "line", //pie->饼状图  line->折线图  bar->柱状图
+                data: [...item.echartOption.tem],
+                areaStyle: {
+                  color: "#DBDFF5",
+                },
+              },
+              {
+                name: "湿度",
+                type: "line", //pie->饼状图  line->折线图  bar->柱状图
+                data: [...item.echartOption.hum],
+              },
+            ],
+          };
+
+          echart.setOption(options);
+
+          // console.log(this.$refs, "--refs---refs-refs");
+        });
+      });
     },
     getTableData(area_no) {
       let condition = {
@@ -385,187 +534,8 @@ export default {
         )
         .then((res) => {
           this.device = res.data.data;
-
+          this.getEchartsData();
           // console.log(this.device, "==this.device==this.device==this.device");
-          res.data.data.forEach(async (item, index) => {
-            let innerCondition = {
-              serviceName: "srvpark_temp_hum_record_select",
-              colNames: ["*"],
-              condition: [
-                { colName: "sn", ruleType: "like", value: item.device_sn },
-                {
-                  colName: "nodeid",
-                  ruleType: "like",
-                  value: item.device_nodeid,
-                },
-              ],
-              relation_condition: {},
-              order: [],
-              draft: false,
-              query_source: "list_page",
-            };
-
-            let res = await this.$axios.post(
-              `/lpark/select/srvpark_temp_hum_record_select?srvpark_temp_hum_record_select`,
-              innerCondition
-            );
-            item.echartOption = {
-              tem: [],
-              hum: [],
-              categories: [],
-            };
-            res.data.data.forEach((temItem, temIndex) => {
-              item.echartOption.tem.push(temItem.tem);
-              item.echartOption.hum.push(temItem.hum);
-              item.echartOption.categories.push(temItem.occur_date);
-            });
-
-            this.$nextTick(() => {
-              let dom =
-                this.$refs[`echarts${item.device_sn}${item.device_nodeid}`][0];
-              let echart = this.$echarts.init(dom);
-              let options = {
-                title: {
-                  text: `${item.device_addr}传感器A（门口）`, //图表顶部的标题
-                  show: true,
-                  x: "20px",
-                  y: "10px",
-                  textStyle: {
-                    //文字颜色
-                    color: `rgba(50, 66, 116, 1)`,
-                    //字体风格,'normal','italic','oblique'
-                    fontStyle: "normal",
-                    //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
-                    fontWeight: "510",
-                    //字体系列
-                    fontFamily: "sans-serif",
-                    //字体大小
-                    fontSize: 16,
-                  },
-                },
-                dataZoom: [
-                  {
-                    type: "slider",
-                    start: 0,
-                    end: 10,
-                    height: 20,
-                    backgroundColor: "rgba(2,96,171,0.5)",
-                    dataBackground: {
-                      lineStyle: {
-                        color: "#fff9c1",
-                        width: 1,
-                      },
-                    },
-                    fillerColor: "rgba(53,204,251,0.2)",
-                    borderColor: "rgba(53,204,251,0.9)",
-                    //handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                    handleSize: "80%",
-                    handleStyle: {
-                      color: "#a0f1fb",
-                      shadowBlur: 3,
-                      shadowColor: "rgba(0, 0, 0, 0.6)",
-                      shadowOffsetX: 2,
-                      shadowOffsetY: 2,
-                    },
-                    textStyle: {
-                      color: "#fff",
-                    },
-                    bottom: 5,
-                  },
-                ],
-                color: ["#4D5FCC", "#F77A50"],
-                tooltip: {
-                  //鼠标悬浮框的提示文字
-                  trigger: "axis",
-                },
-                legend: {
-                  data: ["温度", "湿度"],
-                  icon: "square",
-                  x: "center",
-                  y: "10px",
-                },
-                xAxis: [
-                  {
-                    //x轴坐标数据
-                    type: "category",
-                    // boundaryGap: false,
-                    data: [...item.echartOption.categories],
-                    dataZoom: [
-                      {
-                        type: "slider",
-                        show: true,
-                        xAxisIndex: [0],
-                        left: "9%",
-                        bottom: -5,
-                        start: 10,
-                        end: 90, //初始化滚动条
-                      },
-                    ],
-                    axisTick: {
-                      lineStyle: {
-                        color: "#837884", //x轴轴线颜色
-                      },
-                    },
-                    axisLabel: {
-                      textStyle: {
-                        // color: "#837884",
-                        color: "#837884",
-                      },
-                    },
-                    axisLine: {
-                      lineStyle: {
-                        color: "#837884", //x轴轴线颜色
-                      },
-                    },
-                  },
-                ],
-                yAxis: [
-                  {
-                    //y轴坐标数据
-                    type: "value",
-                    axisLabel: {
-                      textStyle: {
-                        // color: "#837884",
-                        color: "#837884",
-                      },
-                    },
-                    axisTick: {
-                      show: false,
-                    },
-                    axisLine: {
-                      show: false,
-                    },
-                    textStyle: {
-                      color: "#837884",
-                    },
-                  },
-                ],
-                series: [
-                  //驱动图表生成的数据内容数组，几条折现，数组中就会有几个对应对象，来表示对应的折线
-                  {
-                    name: "温度",
-                    type: "line", //pie->饼状图  line->折线图  bar->柱状图
-                    data: [...item.echartOption.tem],
-                    areaStyle: {
-                      color: "#DBDFF5",
-                    },
-                  },
-                  {
-                    name: "湿度",
-                    type: "line", //pie->饼状图  line->折线图  bar->柱状图
-                    data: [...item.echartOption.hum],
-                  },
-                ],
-              };
-
-              echart.setOption(options);
-
-              // console.log(this.$refs, "--refs---refs-refs");
-            });
-          });
-          // data.device_sn
-          // data.device_nodeid
-          console.log(res, "res--------");
         });
     },
     getTree() {
@@ -605,10 +575,10 @@ export default {
           condition
         )
         .then(async (res) => {
-          console.log(res.data, "我晕了我实在是晕了--------无语可以嘛？？？？");
-          if(res.data.data.length == 0){
-              this.device=[];
-              return
+          if (res.data.data.length == 0) {
+            this.device = [];
+            this.treeData = [];
+            return;
           }
           let recursion = function (array) {
             return new Promise(async (resolve) => {

@@ -11,7 +11,7 @@ import {
   parseUrlParams
 } from "../../util/DataUtil";
 import Vue from "vue";
-import vueAxiosInit from './vueAxiosInit';
+
 import _ from "lodash";
 
 function init_util() {
@@ -712,15 +712,12 @@ function init_util() {
     let srvApp = requests[0].srvApp;
     var url = this.getServiceUrl("operate", service, srvApp);
     return this.$http.post(url, requests);
-  };
+  }; /**删除文件*/
 
-  /**删除文件*/
   Vue.prototype.deleteFile = function (params) {
     var url = this.serviceApi().deleteFile;
     return this.$http.post(url, params);
   };
-
-
   /**
    * 返回常用的页面路径
    * @param type：页面类型
@@ -825,10 +822,7 @@ function init_util() {
       let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures)
       newWindow.document.title = tab_title;
     }
-  };
-
-
-  /**操作*/
+  };/**操作*/
   Vue.prototype.forwardAddTab = function (address, tab_title, button) {
 
     if (tab_title == undefined || tab_title == null || tab_title == "") {
@@ -848,10 +842,7 @@ function init_util() {
     }
 
     window.top.tab.addTab(page);
-  };
-
-
-  /**操作*/
+  };/**操作*/
   Vue.prototype.custAddTab = function (type, urlParams, tab_title, button) {
 
     if (tab_title == undefined || tab_title == null || tab_title == "") {
@@ -878,14 +869,10 @@ function init_util() {
 
     window.top.tab.addTab(page);
   };
-
-
   Vue.prototype.approval = function (requests) {
     var url = this.serviceApi().approval;
     return this.$http.post(url, requests);
   };
-
-
   //直接启动流程
   Vue.prototype.startProc = function (requests) {
     let service = requests.length > 0 ? requests[0].serviceName : "";
@@ -915,9 +902,8 @@ function init_util() {
       item.proc_data_type = "old";
     }
     return this.$http.post(url, requests);
-  };
+  }; // 唯一性校验
 
-  // 唯一性校验
   Vue.prototype.isUniqueCheck = async function (UniqueCheckConfig, model) {
     let url = this.getServiceUrl('select', UniqueCheckConfig.serviceName, UniqueCheckConfig.srvApp)
     let cols = UniqueCheckConfig.columns;
@@ -944,16 +930,15 @@ function init_util() {
 
 
     //  let cols = this.$http.post(url, requests);
-  },
-    Vue.prototype.bxDeepClone = function (obj) {
+  }
+  Vue.prototype.bxDeepClone = function (obj) {
       if (obj == null) return null;
       let newObj = obj instanceof Array ? [] : {};
       for (var i in obj) {
         newObj[i] = typeof obj[i] === "object" ? this.bxDeepClone(obj[i]) : obj[i];
       }
       return newObj;
-    }
-
+  }
   Vue.prototype.parseDateTime = function (dateStr) {
     return moment(dateStr).toDate();
   }
