@@ -68,7 +68,8 @@
                               font-weight: 800;
                             "
                           >
-                            {{ item.category_no }}
+                          {{ item.target_name }}
+                            <!-- {{ item.target_name }} -->
                           </span>
                         </div>
 
@@ -93,8 +94,9 @@
                       <div class="height-row middle flex-between">
                         <div style="font-size: 20px" class="left">
                           <span v-if="item.rent_status != '未租'">
-                            {{ item.rent_store_name }}</span
-                          >
+                            {{ item.store_name }}
+                            <!-- {{ item.rent_store_name }} -->
+                          </span>
                           <span v-else> 未租售</span>
                         </div>
                         <div class="right over-progress">
@@ -113,10 +115,13 @@
                       </div>
 
                       <div
-                        style="font-weight: 700"
                         class="height-row bottom flex-between"
                       >
-                        <div class="left">{{ item.tonnage }}吨</div>
+                        <div class="left">
+                          <span v-if="item.rent_type === '冷库' && (item.tonnage || item.tonnage===0)">{{ item.tonnage }}吨</span>
+                          <span v-else-if="item.rent_type === '干库' && (item.area_extent || item.area_extent===0)">{{ item.area_extent }}m²</span>
+                        </div>
+                        <div class="right" v-if="item.rent_leftdays || item.rent_leftdays===0">剩余{{item.rent_leftdays}}天</div>
                         <!-- <div v-if="item.rent_status != '空置'" class="right">
                         欠费{{ item.rent_arrears }}元
                       </div> -->
