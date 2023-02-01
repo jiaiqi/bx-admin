@@ -1,6 +1,6 @@
 <template>
   <div class="ll-container">
-    <div class="left">
+    <!-- <div class="left">
       <el-row class="tac">
         <el-col :span="24">
           <div class="menu-title">金汇园区管理平台</div>
@@ -13,9 +13,9 @@
           />
         </el-col>
       </el-row>
-    </div>
+    </div> -->
     <div class="right">
-      <div class="top flex-between">
+      <!-- <div class="top flex-between">
         <div class="left-son flex">
           <div
             style="
@@ -70,7 +70,7 @@
             :src="loginImage"
           />
         </div>
-      </div>
+      </div> -->
       <div class="bottom">
         <router-view> </router-view>
       </div>

@@ -104,7 +104,7 @@
                 <el-empty :image-size="200"></el-empty>
               </div>
             </div>
-            <div class="vedio">
+            <!-- <div class="vedio">
               <div class="custom-title flex-between">
                 <span>仓库视频监控</span>
 
@@ -223,7 +223,7 @@
                   </el-col>
                 </el-row>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

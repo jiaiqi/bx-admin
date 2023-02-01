@@ -68,7 +68,8 @@ function init() {
     exportExcel: backendIpAddr + "/" + defaultApp + "/export/exportExcel",
     importExcel: backendIpAddr + "/" + defaultApp + "/bizDataImport",
     qrcode: backendIpAddr + "/" + defaultApp + "/bxsys/qrcode",
-    downloadTemplate: backendIpAddr + "/" + defaultApp + "/downloadTemplate/excel/"
+    downloadTemplate: backendIpAddr + "/" + defaultApp + "/downloadTemplate/excel/",
+    imageFileNo: backendIpAddr + "/file/download?fileNo=",
   }
 
   window.serviceApi = service_api;

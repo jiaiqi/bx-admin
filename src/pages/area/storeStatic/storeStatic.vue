@@ -4,124 +4,95 @@
       <slot name="name"></slot>
       <slot name="name2"></slot>
 
-      <el-card shadow="always">
+      <el-card shadow="always" style="border-radius:8px">
         <!-- allow_input: "下拉选择",
                 is_tree: true,
                 key_disp_col: "category_name",
                 parent_col: "parent_no",
                 refed_col: "category_no",
                serviceName: "srvpark_stockroom_category_select" -->
-        <div style="display:flex;flex-direction:column;height100%">
-          <filterColumn
-            v-if="tableInfo"
-            :filterColumn="filterColumn"
-            :tableInfo="tableInfo"
-            @search="search"
-          ></filterColumn>
+        <div style="display:flex;flex-direction:column;height:100%">
+          <filterColumn v-if="tableInfo" :filterColumn="filterColumn" :tableInfo="tableInfo" @search="search">
+          </filterColumn>
           <div class="c-border"></div>
 
-          <div
-            style="height: calc(100vh - 190px); overflow: scroll"
-            v-if="Object.keys(objData).length > 0"
-          >
-            <div :key="key" v-for="(val, key) in objData" class="block-content">
-              <div
-                style="
-                  height: 30px;
-                  display: flex;
-                  align-items: center;
-                  font-weight: 800;
-                "
-                class="custom-title"
-              >
-                <span style="margin-left: 17px">{{ key }}</span>
+          <div style="height: calc(100vh - 173px); overflow-x: hidden;" v-if="Object.keys(objData).length > 0">
+            <div :key="key" v-for="(val, key, index) in objData" class="block-content">
+              <div :class="index === 0 ? 'custom-title first-item' : 'custom-title'">
+                <span style="margin-left: 11px;font-size: 14px;" v-if="key && key != 'null'">{{ key }}</span>
               </div>
               <div class="bottom-content">
-                <el-row :gutter="24">
-                  <el-col :key="item.key" v-for="item in val" :span="6">
-                    <div
-                      style="
+                <el-row :gutter="14">
+                  <el-col :key="item.key" v-for="item in val" :span="4">
+                    <div style="
                         color: white;
                         border-radius: 4px;
                         background-color: rgba(99, 129, 234, 1);
                         width: 100%;
-                      "
-                      :class="`custom-card flex-column-between ${item.background}`"
-                    >
+                      " :class="`custom-card flex-column-between ${item.background}`">
                       <div class="height-row top flex-between">
                         <div class="left">
-                          <span
-                            style="
-                              margin-right: 15px;
+                          <span style="
                               color: rgba(255, 255, 255, 1);
-                              font-size: 16px;
-                              text-align: right;
-                              font-family: SourceHanSansSC-regular;
-                            "
-                          >
+                              font-size: 14px;
+                            ">
                             {{ item.rent_type }}
                           </span>
-                          <span
-                            style="
+                        </div>
+
+                        <div class="middle">
+                          <span style="
                               color: rgba(255, 255, 255, 1);
-                              font-size: 19px;
-                              font-weight: 800;
-                            "
-                          >
-                          {{ item.target_name }}
+                              font-size: 16px;
+                              font-weight: bold;
+                            " :title="item.target_name">
+                            {{ item.target_name }}
                             <!-- {{ item.target_name }} -->
                           </span>
                         </div>
 
                         <div class="right">
-                          <div
-                            style="
-                              height: 22px;
-                              width: 28px;
-                              border-radius: 3px;
+                          <div style="
+                              border-radius: 4px;
                               height: 20px;
                               width: 20px;
                               background-color: rgba(255, 255, 255, 1);
                               color: rgba(77, 95, 204, 1);
-                            "
-                            class="button-tag flex-center"
-                          >
+                              font-size: 14px;
+                              line-height: 20px;
+                            " class="button-tag flex-center">
                             {{ item.rent_status == "已租" ? "租" : "空" }}
                           </div>
                         </div>
                       </div>
 
                       <div class="height-row middle flex-between">
-                        <div style="font-size: 20px" class="left">
-                          <span v-if="item.rent_status != '未租'">
+                        <div style="font-size: 14px" class="left">
+                          <span v-if="item.rent_status != '未租'" :title="item.store_name">
                             {{ item.store_name }}
                             <!-- {{ item.rent_store_name }} -->
                           </span>
                           <span v-else> 未租售</span>
                         </div>
                         <div class="right over-progress">
-                          <el-progress
-                            v-if="item.rent_status != '未租'"
-                            color="white"
-                            text-color="black"
-                            define-back-color="yellow"
-                            style="width: 80px"
-                            :text-inside="true"
-                            :stroke-width="80"
-                            :percentage="item.rent_store_ratio"
-                          >
+                          <el-progress v-if="item.rent_status != '未租'" color="white" text-color="#101010"
+                            define-back-color="yellow" style="width: 60px;" :text-inside="true" :stroke-width="60"
+                            :percentage="item.rent_store_ratio">
                           </el-progress>
                         </div>
                       </div>
 
-                      <div
-                        class="height-row bottom flex-between"
-                      >
+                      <div class="height-row bottom flex-between" style="font-size:14px; min-height: 22px;">
                         <div class="left">
-                          <span v-if="item.rent_type === '冷库' && (item.tonnage || item.tonnage===0)">{{ item.tonnage }}吨</span>
-                          <span v-else-if="item.rent_type === '干库' && (item.area_extent || item.area_extent===0)">{{ item.area_extent }}m²</span>
+                          <span v-if="item.rent_type === '冷库' && (item.tonnage || item.tonnage === 0)">{{
+                            item.tonnage
+                          }}吨</span>
+                          <span v-else-if="item.rent_type === '干库' && (item.area_extent || item.area_extent === 0)">{{
+                            item.area_extent
+                          }}m²</span>
                         </div>
-                        <div class="right" v-if="item.rent_leftdays || item.rent_leftdays===0">剩余{{item.rent_leftdays}}天</div>
+                        <div class="right" v-if="item.rent_leftdays || item.rent_leftdays === 0">剩余 {{ item.rent_leftdays }}天
+                        </div>
                         <!-- <div v-if="item.rent_status != '空置'" class="right">
                         欠费{{ item.rent_arrears }}元
                       </div> -->
@@ -176,12 +147,12 @@ export default {
       applicationUrl: "lpark",
       tableInfo: null,
       filterColumn: [
-        {
-          key: "park_name",
-        },
-        {
-          key: "tonnage",
-        },
+        // {
+        //   key: "park_name",
+        // },
+        // {
+        //   key: "tonnage",
+        // },
 
         {
           key: "rent_type",
@@ -299,12 +270,12 @@ export default {
 /* .custom-form  */
 .custom-card /deep/ .el-progress-bar__outer {
   background-color: rgba(33, 33, 33, 0.2) !important;
-  height: 20px !important;
+  height: 16px !important;
 }
 
 .custom-card /deep/ .el-progress-bar__innerText {
-  color: black;
-  font-weight: 700;
+  font-weight: bold;
+  font-size: 10px;
 }
 
 .c-border {
@@ -313,6 +284,7 @@ export default {
   width: 100%;
   height: 9px;
   box-sizing: border-box;
+  margin-bottom: 16px;
 }
 
 .ll-bottom-content /deep/ thead th {
@@ -333,18 +305,23 @@ export default {
   border-radius: 11px;
   background-color: rgb(99, 129, 234);
   width: 100%;
-  padding: 10px 25px;
-  height: 175px;
-  margin-bottom: 20px;
+  padding: 12px 18px;
+  height: 100px;
+  margin-top: 12px;
 
   &.isGray {
-    color: black !important;
-    background: #33212121 !important;
+    color: #212121 !important;
+    background: #e3e6f2 !important;
 
     .height-row.top {
       .left {
         span {
-          color: black !important;
+          color: #212121 !important;
+        }
+      }
+      .middle {
+        span {
+          color: #212121 !important;
         }
       }
 
@@ -381,34 +358,58 @@ export default {
 .block-content {
   .bottom-content {
     box-sizing: border-box;
-    padding-top: 20px;
+    padding-top: 4px;
+    color: #212121;
 
-    .height-row {
-      &.top {
-        display: flex;
-        position: relative;
+    .height-row.top {
+      display: flex;
+
+      .left {
+        width: 33px;
+      }
+
+      .middle {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        width: calc(100% - 68px);
+      }
+    }
+
+    .height-row.middle {
+      display: flex;
+
+      .left {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        width: calc(100% - 60px);
       }
     }
   }
 }
 
 .custom-title {
-  position: relative;
-  background: linear-gradient(
-    103.21deg,
-    rgba(222, 228, 249, 1) 7.85%,
-    rgba(222, 228, 249, 0) 81.76%
-  );
-}
-
-.custom-title::before {
-  content: "";
-  display: inline-block;
-  position: absolute;
+  width: 229px;
   height: 30px;
-  width: 10px;
-  line-height: 20px;
-  background-color: rgba(75, 75, 232, 1);
+  display: flex;
+  align-items: center;
+  line-height: 30px;
+  // border-radius: 4px;
+  background: linear-gradient(103.21deg, rgba(222, 228, 249, 1) 7.85%, rgba(222, 228, 249, 0) 81.76%);
+  border-left: 4px solid rgba(75, 75, 232, 1);
+  font-weight: bold;
+  color: #324274;
+
+  &:not(.first-item) {
+    margin-top: 16px;
+  }
 }
 
 .hasBorder {
@@ -557,8 +558,7 @@ export default {
       font-weight: 800;
     }
 
-    .right-button {
-    }
+    .right-button {}
   }
 }
 
@@ -638,6 +638,7 @@ export default {
   //   justify-content: space-between;
 
   .left {
+
     //   margin-right: 50px;
     .top-title {
       color: rgb(50, 66, 116);

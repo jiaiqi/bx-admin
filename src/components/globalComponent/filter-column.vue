@@ -1,86 +1,44 @@
 <template>
-  <div
-    style="padding-bottom: 17px; box-sizing: border-box"
-    class="handle-row flex-between"
-  >
+  <div style="padding-bottom: 17px; box-sizing: border-box" class="handle-row flex-between">
     <div class="left">
       <div class="common-filter">
         <el-form :inline="true" v-if="canMount" :model="formLabelAlign">
           <el-form-item :key="item.key" v-for="item in domFilterItem">
-            <el-input
-              size="mini"
-              :placeholder="`请输入${item.label}`"
-              v-if="
-                item.col_type == 'String' && formLabelAlign[`${item.columns}`]
-              "
-              v-model="formLabelAlign[`${item.columns}`].value"
-            ></el-input>
-            <el-input
-              size="mini"
-              type="number"
-              :placeholder="`请输入${item.label}`"
-              v-if="
-                item.col_type == 'Float' && formLabelAlign[`${item.columns}`]
-              "
-              v-model="formLabelAlign[`${item.columns}`].value"
-            ></el-input>
-            <el-select
-              v-if="
-                item.option_data_type == 'local' &&
-                formLabelAlign[`${item.columns}`]
-              "
-              size="mini"
-              :multiple="true"
-              style="width: 145px; margin-right: 15px"
-              v-model="formLabelAlign[`${item.columns}`].value"
-              :placeholder="`请选择${item.label}`"
-              :clearable="true"
-            >
-              <el-option
-                v-for="listItem in item.option_list_v2"
-                :key="listItem.value"
-                :label="listItem.label"
-                :value="listItem.value"
-              >
+            <el-input size="mini" :placeholder="`请输入${item.label}`" v-if="
+              item.col_type == 'String' && formLabelAlign[`${item.columns}`]
+            " v-model="formLabelAlign[`${item.columns}`].value"></el-input>
+            <el-input size="mini" type="number" :placeholder="`请输入${item.label}`" v-if="
+              item.col_type == 'Float' && formLabelAlign[`${item.columns}`]
+            " v-model="formLabelAlign[`${item.columns}`].value"></el-input>
+            <el-select v-if="
+              item.option_data_type == 'local' &&
+              formLabelAlign[`${item.columns}`]
+            " size="mini" :multiple="true" style="width: 145px;" v-model="formLabelAlign[`${item.columns}`].value"
+              :placeholder="`请选择${item.label}`" :clearable="true">
+              <el-option v-for="listItem in item.option_list_v2" v-if="resListItem(listItem, item)"
+                :key="listItem.value" :label="listItem.label" :value="listItem.value">
               </el-option>
             </el-select>
-            <el-select
-              v-if="
-                item.option_data_type == 'remote' &&
-                storeData[`${item.columns}`] &&
-                !item.option_list_v2.is_tree &&
-                formLabelAlign[`${item.columns}`]
-              "
-              size="mini"
-              :multiple="true"
-              :clearable="true"
-              style="width: 145px; margin-right: 15px"
-              v-model="formLabelAlign[`${item.columns}`].value"
-              :placeholder="`请选择${item.label}`"
-            >
-              <el-option
-                v-for="listItem in storeData[`${item.columns}`].remoteArray"
-                :key="listItem.value"
-                :label="item.label"
-                :value="item.value"
-              >
+            <el-select v-if="
+              item.option_data_type == 'remote' &&
+              storeData[`${item.columns}`] &&
+              !item.option_list_v2.is_tree &&
+              formLabelAlign[`${item.columns}`]
+            " size="mini" :multiple="true" :clearable="true" style="width: 145px; margin-right: 15px"
+              v-model="formLabelAlign[`${item.columns}`].value" :placeholder="`请选择${item.label}`">
+              <el-option v-for="listItem in storeData[`${item.columns}`].remoteArray" :key="listItem.value"
+                :label="item.label" :value="item.value">
               </el-option>
             </el-select>
 
-            <el-cascader
-              v-if="
-                item.option_data_type == 'remote' &&
-                storeData[`${item.columns}`] &&
-                item.option_list_v2.is_tree &&
-                formLabelAlign[`${item.columns}`]
-              "
-              :clearable="true"
-              size="mini"
-              style="width: 145px; margin-right: 15px"
-              v-model="formLabelAlign[`${item.columns}`].value"
-              :placeholder="`请选择${item.label}`"
-              :options="storeData[`${item.columns}`].remoteArray"
-            ></el-cascader>
+            <el-cascader v-if="
+              item.option_data_type == 'remote' &&
+              storeData[`${item.columns}`] &&
+              item.option_list_v2.is_tree &&
+              formLabelAlign[`${item.columns}`]
+            " :clearable="true" size="mini" style="width: 145px; margin-right: 15px"
+              v-model="formLabelAlign[`${item.columns}`].value" :placeholder="`请选择${item.label}`"
+              :options="storeData[`${item.columns}`].remoteArray"></el-cascader>
           </el-form-item>
         </el-form>
       </div>
@@ -141,9 +99,21 @@ export default {
   },
 
   methods: {
+    resListItem(k, o) {
+      if (this.$route.path === '/storeStatic') {
+        if (o.label === '租赁类型') {
+          if (k.label === '冷库' || k.label === '干库') {
+            return true
+          } else {
+            return false
+          }
+        }
+      }
+      return true
+    },
     makeOptions() {
       if (this.domFilterItem.length > 0) {
-    
+
         for (let i = 0; i < this.domFilterItem.length; i++) {
           let item = this.domFilterItem[i];
 
@@ -233,7 +203,7 @@ export default {
         serviceName: this.mainTable.mainTableInfo.select.serviceName,
         colNames: ["*"],
         condition: [
-         
+
         ],
         relation_condition: {},
         order: [],
@@ -241,8 +211,8 @@ export default {
         query_source: "list_page",
       };
 
-    
-     
+
+
       for (let key in this.formLabelAlign) {
         let formItem = this.formLabelAlign[key].otherInfo.formItem;
         let value = this.formLabelAlign[key].value;
@@ -267,7 +237,7 @@ export default {
         }
       }
       this.$axios.post(this.mainTable.mainTableInfo.select.url, serviceParams).then((res) => {
-      
+
         this.$emit("search", res.data.data);
       });
     },
@@ -280,7 +250,7 @@ export default {
         filterColumn,
         columnArray,
         (filterItem, dataItem) => {
-          console.log( dataItem.columns,"-- dataItem.columns-- dataItem.columns")
+          console.log(dataItem.columns, "-- dataItem.columns-- dataItem.columns")
           if (filterItem.key == dataItem.columns) {
             return true;
           } else {
@@ -311,6 +281,7 @@ export default {
 </script>
 
 <style scoped>
+
 </style>
 
 

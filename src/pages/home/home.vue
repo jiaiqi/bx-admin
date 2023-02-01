@@ -2,7 +2,7 @@
   <div class="ll-content">
     <div class="parent-content">
       <div class="ll-card-block">
-        <el-card shadow="always">
+        <el-card shadow="always" style="border-radius: 10px">
           <div class="card-row">
             <el-row gutter="24">
               <el-col :span="6">
@@ -78,7 +78,7 @@
       </div>
       <div class="ll-bottom-content">
         <div class="left">
-          <el-card shadow="always">
+          <el-card shadow="always" style="border-radius: 10px">
             <div style="position: relative" class="map-container">
               <div style="position: relative" class="title">
                 <span class="left-title">车辆管理</span>
@@ -142,8 +142,8 @@
             style="display: flex; justify-content: "
             class="echarts-container"
           >
-            <div class="zx echarts percent">
-              <el-card class="height-percent" shadow="always">
+            <div class="zx echarts percent" style="margin-right:20px">
+              <el-card class="height-percent" shadow="always" style="border-radius: 10px">
                 <div
                   style="
                     position: relative;
@@ -187,7 +187,7 @@
             </div>
 
             <div class="zx echarts">
-              <el-card class="height-percent" shadow="always">
+              <el-card class="height-percent" shadow="always" style="border-radius: 10px">
                 <div
                   style="
                     position: relative;
@@ -249,7 +249,7 @@
         </div>
 
         <div class="right">
-          <el-card shadow="always" class="height-percent">
+          <el-card shadow="always" style="border-radius: 10px" class="height-percent">
             <div class="rank-table-parent">
               <div class="title-row">
                 <span class="left-title">物流路线排名</span>
@@ -731,8 +731,8 @@ export default {
           mapWd: "last_lat",
           callBack: {
             render(item, index, data) {
-              console.log(item, "===item=www=item==");
-              let headImg = `${_this.service_api.imageUrl}${item.driver_image}`;
+              console.log(_this.service_api, "===item=www=item==");
+              let headImg = `${_this.service_api.imageFileNo}${item.driver_image}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
               let poinImage;
               let className = "";
               let name = "";
@@ -1121,7 +1121,7 @@ export default {
 
     .echarts-container {
       flex: 1;
-      padding-top: 15px;
+      padding-top: 20px;
       display: flex;
       justify-content: space-between;
 
