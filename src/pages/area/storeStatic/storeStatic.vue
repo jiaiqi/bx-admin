@@ -198,7 +198,6 @@ export default {
       this.initCard();
     },
     async initCard() {
-      // console.log("llllll啊哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈")
       let condition = {
         serviceName: this.tableInfo.mainTableInfo.select.serviceName,
         colNames: ["*"],

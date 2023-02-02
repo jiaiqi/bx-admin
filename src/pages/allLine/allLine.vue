@@ -119,7 +119,7 @@ export default {
         callBack: {
           render: (item, index, data) => {
             console.log(item, "===item==item==");
-            let headImg = `${this.service_api.imageUrl}${item.driver_image}`;
+            let headImg = `${this.service_api.imageFileNo}${item.driver_image}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
             let poinImage;
             let className = "";
             let name = "";

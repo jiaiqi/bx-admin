@@ -1852,14 +1852,14 @@ function init_util() {
   }
 
   Vue.prototype.filterTableInfo = function (obj) {
-
     obj.appName = obj.gridButton[0].application;
     // 0/mer/select/srvsys_service_columnex_v2_select?colsel_v2=srvbu_store_type_select
     let tableName = `srv${obj.main_table.substring(2)}`;
     let selectServiceName = `${tableName}_select`;
+    selectServiceName = obj.service_name
     let mainTableInfo = {
       select: {
-        url: `/${obj.appName}/select/srv${obj.main_table.substring(2)}_select?${selectServiceName}`,
+        url: `/${obj.appName}/select/${selectServiceName}?${selectServiceName}`,
         serviceName: selectServiceName,
         tableName: tableName
       },
