@@ -95,6 +95,9 @@ import test from '@/pages/test/test'
 
 import video from '@/pages/video/index'
 
+import templateConfig from '@/pages/template/config'
+import erConfig from '@/pages/template/er-config'
+
 // const excelEditView = ()=>import("@/components/common/luckysheet.vue")
 // pages
 Vue.use(Router);
@@ -364,7 +367,16 @@ routes.push( {
 
   },
 
-  
+  {
+    path: '/template-config',
+    name: 'template-config',
+    component: templateConfig
+  },
+  {
+    path: '/er-config',
+    name: 'er-config',
+    component: erConfig
+  },
 
   // storeMonitor
 

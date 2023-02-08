@@ -30,6 +30,26 @@ function init_util() {
     "report": "/vpages/index.html#/reportList"
   }
 
+  Vue.prototype.getImagePath = (no, notThumb) => {
+    if (no && typeof no === 'string') {
+      if ((no.indexOf('http://') !== -1 || no.indexOf('https://') !== -1)) {
+        return no
+      }
+      if (no.indexOf('data:image') !== -1 && no.indexOf('base64') !== -1) {
+        return no
+      }
+      if (no.indexOf('&bx_auth_ticket') !== -1) {
+        no = no.split('&bx_auth_ticket')[0]
+      }
+      let url = `${serviceApi.imageFileNo}${no}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`
+      // if (notThumb === false) {
+      //   url += `&thumbnailType=fwsu_100`
+      // }
+      return url
+    } else {
+      return ''
+    }
+  }
 
   Vue.prototype.download = function (filePath, name) {
 
