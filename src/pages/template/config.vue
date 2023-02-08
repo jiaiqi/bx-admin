@@ -14,7 +14,9 @@
         :use-css-transforms="true">
         <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
           class="gridItem">
-          <page-item v-for="comItem in comItemList" v-if="item.type ===comItem.com_type" :key="comItem.component_no" :comItem="comItem">
+          <span class="remove" @click="removeItem(item.i)">x</span>
+          <page-item v-for="comItem in comItemList" v-if="item.type === comItem.com_type" :key="comItem.component_no"
+            :comItem="comItem">
           </page-item>
         </grid-item>
       </grid-layout>
@@ -194,6 +196,10 @@ export default {
         }
       }
     },
+    removeItem: function (val) {
+      const index = this.layout.map(item => item.i).indexOf(val);
+      this.layout.splice(index, 1);
+    },
     dragDefFn(e) {
       e.preventDefault()
     },
@@ -229,5 +235,19 @@ export default {
     // border-radius: 10px;
     overflow: hidden;
   }
+}
+
+.remove {
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
+  line-height: 24px;
+  text-align: center;
+  z-index: 1;
 }
 </style>

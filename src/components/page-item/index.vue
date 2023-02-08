@@ -7,6 +7,9 @@
 </template>
 
 <script>
+import {
+  formatStyleData
+} from '@/common/common.js'
 import videoCard from './video-card'
 import currentInfo from './current-info'
 import slideList from './slide-list'
@@ -24,6 +27,13 @@ export default {
   },
   mounted() {
     // console.log(this.comItem)
+  },
+  methods: {    
+    stylefn(style) {
+      if (style) {
+        return formatStyleData(style)
+      }
+    },
   }
 }
 </script>

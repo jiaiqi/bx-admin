@@ -1,15 +1,15 @@
 <template>
 	<div class="video-card box">
-		<div :gutter="computGutter" :class="computClass" v-for="(row ,i) in videoList">
-			<div :span="computSpan" v-for="(item, index) in row"
+		<el-row :gutter="computGutter" :class="computClass" v-for="(row ,i) in videoList">
+			<el-col :span="computSpan" v-for="(col, index) in row"
 				v-if="(index + 1) <= Number(comItem.video_card_json.card_layout_json.cols_num)">
-				<div class="video-item" @click="toVideoPlayer(item)">
-					<img class="video-bg" :src="item.url || defPic">
+				<div class="video-item" @click="toVideoPlayer(col)">
+					<img class="video-bg" :src="col.url || defPic">
 					<!-- <img class="play-btn" v-if="item.showPlayImg" src="../../static/video-play-btn.png"> -->
 				</div>
-				<div class="video-title">{{ item[comItem.video_card_json.col_label] }}</div>
-			</div>
-		</div>
+				<div class="video-title">{{ col[comItem.video_card_json.col_label] }}</div>
+			</el-col>
+		</el-row>
 	</div>
 </template>
 
@@ -34,7 +34,7 @@ export default {
 			return this.comItem.video_card_json.card_layout_json.style_json_diy.margin || 20
 		},
 		computSpan() {
-			return 12 / Number(this.comItem.video_card_json.card_layout_json.cols_num) || 6
+			return 24 / Number(this.comItem.video_card_json.card_layout_json.cols_num) || 12
 		},
 		computClass() {
 			if (this.comItem.video_card_json.video_label_option === '下方') {
