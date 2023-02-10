@@ -2,12 +2,12 @@
 	<div class="video-card box">
 		<el-row :gutter="computGutter" :class="computClass" v-for="(row ,i) in videoList">
 			<el-col :span="computSpan" v-for="(col, index) in row"
-				v-if="(index + 1) <= Number(comItem.video_card_json.card_layout_json.cols_num)">
+				v-if="(index + 1) <= Number(pageItem.video_card_json.card_layout_json.cols_num)">
 				<div class="video-item" @click="toVideoPlayer(col)">
 					<img class="video-bg" :src="col.url || defPic">
-					<!-- <img class="play-btn" v-if="item.showPlayImg" src="../../static/video-play-btn.png"> -->
+					<img class="play-btn" v-if="item.showPlayImg" src="@/assets/img/video-play-btn.png">
 				</div>
-				<div class="video-title">{{ col[comItem.video_card_json.col_label] }}</div>
+				<div class="video-title">{{ col[pageItem.video_card_json.col_label] }}</div>
 			</el-col>
 		</el-row>
 	</div>
@@ -17,7 +17,7 @@
 export default {
 	name: 'video-card',
 	props: {
-		comItem: {
+		pageItem: {
 			type: Object
 		}
 	},
@@ -25,19 +25,19 @@ export default {
 		return {
 			accessToken: '',
 			videoList: [],
-			defPic: this.getImagePath(this.comItem.video_card_json.preview_default),
+			defPic: this.getImagePath(this.pageItem.video_card_json.preview_default),
 			showLoading: true
 		};
 	},
 	computed: {
 		computGutter() {
-			return this.comItem.video_card_json.card_layout_json.style_json_diy.margin || 20
+			return this.pageItem.video_card_json.card_layout_json.style_json_diy.margin || 20
 		},
 		computSpan() {
-			return 24 / Number(this.comItem.video_card_json.card_layout_json.cols_num) || 12
+			return 24 / Number(this.pageItem.video_card_json.card_layout_json.cols_num) || 12
 		},
 		computClass() {
-			if (this.comItem.video_card_json.video_label_option === '下方') {
+			if (this.pageItem.video_card_json.video_label_option === '下方') {
 				return 'row-layout big'
 			} else {
 				return 'row-layout small'
@@ -46,8 +46,8 @@ export default {
 	},
 	mounted() {
 		let params = {}
-		if (this.comItem.srv_req_json) {
-			params = this.comItem.srv_req_json
+		if (this.pageItem.srv_req_json) {
+			params = this.pageItem.srv_req_json
 		}
 		this.getVideoList(params)
 	},
@@ -66,12 +66,12 @@ export default {
 				let resData = res.data.data
 				const leng = resData.length
 				let rowsNum = 0
-				if (this.comItem.video_card_json.card_layout_json.rows_max) {
-					rowsNum = Number(this.comItem.video_card_json.card_layout_json.rows_max)
+				if (this.pageItem.video_card_json.card_layout_json.rows_max) {
+					rowsNum = Number(this.pageItem.video_card_json.card_layout_json.rows_max)
 				}
 				let colsNum = 0
-				if (this.comItem.video_card_json.card_layout_json.cols_num) {
-					colsNum = Number(this.comItem.video_card_json.card_layout_json.cols_num)
+				if (this.pageItem.video_card_json.card_layout_json.cols_num) {
+					colsNum = Number(this.pageItem.video_card_json.card_layout_json.cols_num)
 				}
 
 				for (let i = 0; i < rowsNum; i++) {
@@ -196,10 +196,9 @@ export default {
 		},
 		toVideoPlayer(o) {
 			if (!o.url) return
-
-			uni.navigateTo({
-				url: `/views/public/video/video?deviceSerial=${o.dev_sn}&channelNo=${o.channel}&verify_code=${o.verify_code}`
-			})
+			// uni.navigateTo({
+			// 	url: `/views/public/video/video?deviceSerial=${o.dev_sn}&channelNo=${o.channel}&verify_code=${o.verify_code}`
+			// })
 		}
 	}
 }

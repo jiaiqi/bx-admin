@@ -1,5 +1,5 @@
 <template>
-  <div>swiper</div>
+  <div>map</div>
 </template>
 
 <script>
