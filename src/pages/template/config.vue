@@ -8,14 +8,14 @@
         unselectable="on">
         <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%;">
         <span>{{ pageItem.com_type_name }}</span>
-        <span>{{ pageItem.com_type_no }}</span>
+        <span>{{ pageItem.com_type }}</span>
       </div>
     </div>
     <div class="cushome-right">
       <el-button size="mini" type="primary" @click="saveFn">保存</el-button>
     </div>
     <div class="cushome-content" id="content">
-      <div class="custom-design" id="custom-design">
+      <div class="custom-design" id="custom-design" :style="stylefn(styleJson)">
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="12" :row-height="30" :is-draggable="true"
           :is-resizable="true" :is-mirrored="false" :vertical-compact="true" :margin="[20, 20]"
           :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
@@ -24,7 +24,7 @@
             @moved="movedEvent" class="gridItem">
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
             <page-item :pageItem="item.data"></page-item>
-            <!-- <div>{{ item.data.com_type }}</div> -->
+            <div>{{ item?.data?.com_type }}</div>
           </grid-item>
         </grid-layout>
       </div>
@@ -42,6 +42,9 @@
 <script>
 import { GridLayout, GridItem } from 'vue-grid-layout'
 import PageItem from '@/components/page-item/page-item'
+import {
+  formatStyleData
+} from '@/common/common.js'
 
 let mouseXY = { "x": null, "y": null }
 let DragPos = { "x": null, "y": null, "w": 1, "h": 1, "i": null }
@@ -54,8 +57,27 @@ export default {
   },
   data() {
     return {
+      styleJson: null,
       pageInfo: [],
       comList: [],
+      json: [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 2,
+          "i": 0,
+          "com_no": 'xxxxxxxx'
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 2,
+          "i": 1,
+          "com_no": 'xxxxxxxx'
+        },
+      ],
       options: [
         {
           value: "1",
@@ -148,6 +170,11 @@ export default {
     };
   },
   methods: {
+    stylefn(style) {
+      // if (style) {
+      //   return formatStyleData(style)
+      // }
+    },
     saveFn() {
       console.log(this.layout)
     },
@@ -175,6 +202,7 @@ export default {
           }
         })
         this.pageInfo = data.component_json_data
+        this.styleJson = data.page_style_json_data
 
         this.pageInfo.forEach((item, index) => {
           let obj = { "x": 0, "y": 0, "w": 12, "h": 2 }
@@ -436,6 +464,9 @@ export default {
       const res = await this.$axios.post(url, req)
       if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length > 0) {
         this.comList = res.data.data
+        this.comList.forEach((item,i) => {
+          this.comList[i]['com_type'] = item.com_type_no
+        })
       }
     },
     removeItem: function (val) {
@@ -493,14 +524,15 @@ export default {
         this.$refs.gridlayout.dragEvent('dragend', 'drop', DragPos.x, DragPos.y, 1, 1);
         this.layout = this.layout.filter(obj => obj.i !== 'drop');
         // UNCOMMENT below if you want to add a grid-item
-        this.layout.push({
+        let obj = {
           x: DragPos.x,
           y: DragPos.y,
           w: 1,
           h: 1,
-          i: DragPos.i,
-          type: o.com_type
-        });
+          i: DragPos.i
+        }
+        obj.data = o
+        this.layout.push(obj);
         this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 1, 1);
         try {
           this.$refs.gridlayout.$children[this.layout.length].$refs.item.style.display = "block";
@@ -570,6 +602,9 @@ export default {
     .custom-design {
       width: 100%;
       height: 100%;
+      // background-image: url('~@/assets/img/1234.png');
+      // background-size: cover;
+      // background-repeat: no-repeat;
 
       .grid-container {
         height: 100%;
