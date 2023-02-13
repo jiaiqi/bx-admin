@@ -15,16 +15,20 @@
       <el-button size="mini" type="primary" @click="saveFn">保存</el-button>
     </div>
     <div class="cushome-content" id="content">
-      <div class="custom-design" id="custom-design" :style="stylefn(styleJson)">
+      <div class="custom-design" id="custom-design">
+        <!-- <div class="custom-design" id="custom-design" :style="stylefn(styleJson)"> -->
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="12" :row-height="30" :is-draggable="true"
           :is-resizable="true" :is-mirrored="false" :vertical-compact="true" :margin="[20, 20]"
           :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="bjStyles"></div>
-          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
-            @moved="movedEvent" class="gridItem">
+          <grid-item v-for="(item, index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i"
+            :key="item.i" @moved="movedEvent" class="gridItem" :style="stylefn(layoutJson.style_json)">
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
-            <page-item :pageItem="item.data"></page-item>
-            <div>{{ item?.data?.com_type }}</div>
+            <div v-if="item.isLeftBarItem">{{ item.data.com_type }}</div>
+            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
+            <div v-else>
+              <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
+            </div>
           </grid-item>
         </grid-layout>
       </div>
@@ -57,27 +61,11 @@ export default {
   },
   data() {
     return {
+      pageInfo: null,
       styleJson: null,
-      pageInfo: [],
+      layoutJson: null,
+      comJson: [],
       comList: [],
-      json: [
-        {
-          "x": 0,
-          "y": 0,
-          "w": 12,
-          "h": 2,
-          "i": 0,
-          "com_no": 'xxxxxxxx'
-        },
-        {
-          "x": 0,
-          "y": 0,
-          "w": 12,
-          "h": 2,
-          "i": 1,
-          "com_no": 'xxxxxxxx'
-        },
-      ],
       options: [
         {
           value: "1",
@@ -171,9 +159,9 @@ export default {
   },
   methods: {
     stylefn(style) {
-      // if (style) {
-      //   return formatStyleData(style)
-      // }
+      if (style) {
+        return formatStyleData(style)
+      }
     },
     saveFn() {
       console.log(this.layout)
@@ -201,13 +189,19 @@ export default {
             }
           }
         })
-        this.pageInfo = data.component_json_data
+        this.comJson = data.component_json_data
         this.styleJson = data.page_style_json_data
 
-        this.pageInfo.forEach((item, index) => {
-          let obj = { "x": 0, "y": 0, "w": 12, "h": 2 }
-          obj.i = index
-          obj.data = item
+        this.layoutJson = data.layout_json_data
+        this.layoutJson.parts_json.forEach((item, index) => {
+          let obj = {}
+          obj.x = item.pos_x
+          obj.y = item.pos_y
+          obj.w = item.row_span
+          obj.h = item.col_span
+          obj.i = item.seq
+          obj.layout_no = item.layout_no
+          obj.data = this.comJson
           this.layout.push(obj)
         })
       }
@@ -464,7 +458,7 @@ export default {
       const res = await this.$axios.post(url, req)
       if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length > 0) {
         this.comList = res.data.data
-        this.comList.forEach((item,i) => {
+        this.comList.forEach((item, i) => {
           this.comList[i]['com_type'] = item.com_type_no
         })
       }
@@ -532,6 +526,8 @@ export default {
           i: DragPos.i
         }
         obj.data = o
+        obj.isLeftBarItem = true
+        console.log(obj.data)
         this.layout.push(obj);
         this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 1, 1);
         try {
@@ -696,54 +692,7 @@ export default {
   }
 }
 </style>
-<style lang="scss">
-.popover-content {
-  padding-left: 12px;
-  padding-right: 12px;
-  color: #304265;
-
-  p {
-    margin: 0;
-    height: 22px;
-    font-size: 14px;
-    line-height: 1.5;
-    font-weight: 400;
-  }
-}
-
-.el-popover__title {
-  min-height: auto;
-  padding-top: 18px;
-  padding-bottom: 18px;
-  padding-left: 12px;
-  height: 22px;
-  line-height: 22px;
-  font-size: 14px;
-  font-weight: 600;
-  border-bottom: none;
-}
-
-.el-collapse-item__wrap {
-  border-bottom: 0 !important;
-}
-
-.el-collapse-item__header {
-  border-bottom: 0 !important;
-}
-
-.el-collapse {
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-}
-
-.el-collapse-item__content {
-  padding-bottom: 0 !important;
-}
-
-.el-collapse-item__header {
-  font-size: 14px;
-}
-
+<style lang="scss" scoped>
 .custom-design .vue-grid-layout {
   min-height: calc(100% - 200px);
   padding-bottom: 200px;
@@ -772,7 +721,8 @@ export default {
 }
 
 .gridItem {
-  background-color: #fff;
+  border: 1px solid #fff;
+  // background-color: rgba(255,255,255,1);
   overflow: hidden;
 }
 

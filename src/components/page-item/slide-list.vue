@@ -1,13 +1,13 @@
 <template>
-  <div></div>
+	<div>{{ pageItem.com_type }}</div>
 </template>
 
 <script>
-	export default {
-		props: {
-			pageItem: {
-				type: Object
-			}
-		},
-	}
+export default {
+	props: {
+		pageItem: {
+			type: Object
+		}
+	},
+}
 </script>
