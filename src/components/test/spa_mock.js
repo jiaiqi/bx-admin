@@ -1,7 +1,7 @@
 // !!! mock !!!!
 if (!top.pathConfig) {
   window.sessionStorage.setItem("childPagination", true);
-  top.pathConfig = {}
+  top.pathConfig = {};
   // top.pathConfig.application = "vxpact";
   // top.pathConfig.application = "person";
   // top.pathConfig.application = "vxfinance";
@@ -76,16 +76,17 @@ if (!top.pathConfig) {
       path_name: null,
       remark: null,
       reserve_col1: "continet_005",
-      reserve_col2: "153"
+      reserve_col2: "153",
       // reserve_col1: null,
-      // reserve_col2: null 
-    }
+      // reserve_col2: null
+    },
+  };
+  if (window.location.host.indexOf("localhost") !== -1) {
+    sessionStorage.setItem(
+      "bx_auth_ticket",
+      "xabxdzkj-23be47b6-cf78-463f-8cd4-50d36fbfbd77"
+    );
   }
-
-  sessionStorage.setItem("bx_auth_ticket", "xabxdzkj-23be47b6-cf78-463f-8cd4-50d36fbfbd77");
 }
 
-
-export default function dummy() {
-
-}
+export default function dummy() {}
