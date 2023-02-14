@@ -12,7 +12,8 @@
 
 <script>
   // noinspection ES6UnusedImports, needed by ueditor.all.js
-  import jQuery from 'jQuery';
+  // import jQuery from 'jQuery';
+  import jQuery from 'jquery';
   export default {
     props: {
       field: {
