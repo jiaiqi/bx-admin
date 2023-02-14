@@ -12,7 +12,9 @@
       </div>
     </div>
     <div class="cushome-right">
-      <el-button size="mini" type="primary" @click="saveFn">保存</el-button>
+      <el-input size="small" v-model="pageName" placeholder="请输入页面名称"></el-input>
+      <el-input size="small" v-model="pageTitle" placeholder="请输入页面标题" style="margin-top:10px"></el-input>
+      <el-button size="mini" type="primary" style="float:right;margin-top:10px" @click="saveFn">保存</el-button>
     </div>
     <div class="cushome-content" id="content">
       <div class="custom-design" id="custom-design">
@@ -22,13 +24,18 @@
           :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="bjStyles"></div>
           <grid-item v-for="(item, index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i"
-            :key="item.i" @moved="movedEvent" class="gridItem" :style="stylefn(layoutJson.style_json)">
+            :key="item.i" @moved="movedEvent" class="gridItem"
+            :style="layoutJson ? stylefn(layoutJson.style_json) : ''">
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
-            <div v-if="item.isLeftBarItem">{{ item.data.com_type }}</div>
-            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
-            <div v-else>
-              <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
+            <div v-if="item.isLeftBarItem" class="com-item">
+              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
+              <span>{{ item.data.com_type_name }}</span>
+              <span>{{ item.data.com_type }}</span>
             </div>
+            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
+            <!-- <div v-else>
+              <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
+            </div> -->
           </grid-item>
         </grid-layout>
       </div>
@@ -51,7 +58,7 @@ import {
 } from '@/common/common.js'
 
 let mouseXY = { "x": null, "y": null }
-let DragPos = { "x": null, "y": null, "w": 1, "h": 1, "i": null }
+let DragPos = { "x": null, "y": null, "w": 2, "h": 3, "i": null }
 
 export default {
   components: {
@@ -61,6 +68,8 @@ export default {
   },
   data() {
     return {
+      pageName: '',
+      pageTitle: '',
       pageInfo: null,
       styleJson: null,
       layoutJson: null,
@@ -163,8 +172,93 @@ export default {
         return formatStyleData(style)
       }
     },
-    saveFn() {
-      console.log(this.layout)
+    async saveFn() {
+      if (this.layout.length === 0) {
+        this.$message.error('请添加内容后保存！')
+        return
+      }
+
+      // 容器布局
+      let layoutObj = {
+        serviceName: 'srvpage_cfg_layout_add',
+        data: [{
+          "layout_party": "页面"
+        }]
+      }
+      const layoutNo = await this.addService(layoutObj)
+
+      layoutObj = {
+        serviceName: 'srvpage_cfg_layout_add',
+        data: []
+      }
+      this.layout.forEach((item, i) => {
+        layoutObj.data.push({
+          "layout_party": "页面",
+          parent_no: layoutNo.layout_no,
+          seq: i + 1,
+          pos_x: item.x,
+          pos_y: item.y,
+          col_span: item.w,
+          row_span: item.h
+        })
+      })
+      this.addService(layoutObj)
+
+      // 页面和组件
+      let pageObj = {
+        serviceName: 'srvpage_cfg_page_add',
+        data: [{
+          page_name: this.pageName || '可视化配置',
+          page_title: this.pageTitle || '可视化配置页',
+          layout_no: layoutNo.layout_no
+        }]
+      }
+      await this.addService(pageObj)
+      const pageNo = await this.addService(pageObj)
+      // 组件
+      pageObj = {
+        serviceName: 'srvpage_cfg_page_component_add',
+        data: []
+      }
+      this.layout.forEach((item, i) => {
+        pageObj.data.push({
+          "com_name": item.data.com_type_name,
+          "com_preview": item.data.example,
+          // "show_label": "是",
+          // "display": "是",
+          "page_layout_no": layoutNo.layout_no,
+          "com_type": item.data.com_type,
+          // "child_count": 0,
+          "page_no": pageNo.page_no
+        })
+      })
+      this.addService(pageObj)
+    },
+    addService(o) {
+      return new Promise((resolve, reject) => {
+        let params = [
+          {
+            serviceName: o.serviceName,
+            srvApp: 'config',
+            condition: [],
+            data: o.data
+          }
+        ]
+        this.operate(params).then(response => {
+          if (response.body.state === 'SUCCESS') {
+            resolve(response.body.response[0].response.effect_data[0])
+            // this.$message.info(response.body.resultCode);
+          } else {
+            // this.$message.error(response.body.resultMessage);
+          }
+        })
+      })
+    },
+    getLayoutNo(data) {
+      return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).layout_no
+    },
+    getPageNo(data) {
+      return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).page_no
     },
     async initPage(no) {
       const url = `/config/select/srvpage_cfg_page_guest_select`
@@ -189,10 +283,13 @@ export default {
             }
           }
         })
+        this.pageName = data.page_name || ''
+        this.pageTitle = data.page_title || ''
         this.comJson = data.component_json_data
         this.styleJson = data.page_style_json_data
 
         this.layoutJson = data.layout_json_data
+        console.log(this.layoutJson)
         this.layoutJson.parts_json.forEach((item, index) => {
           let obj = {}
           obj.x = item.pos_x
@@ -204,6 +301,7 @@ export default {
           obj.data = this.comJson
           this.layout.push(obj)
         })
+        console.log(this.layout)
       }
     },
     // 对应Vue生命周期的created
@@ -224,7 +322,7 @@ export default {
     },
     // 更新事件（布局更新或栅格元素的位置重新计算）
     layoutUpdatedEvent(newLayout) {
-      console.log("Updated layout: ", newLayout)
+      // console.log("Updated layout: ", newLayout)
     },
     // 移动时的事件
     moveEvent(i, newX, newY) {
@@ -481,8 +579,8 @@ export default {
         this.layout.push({
           x: (this.layout.length * 2) % (this.colNum || 12),
           y: this.layout.length + (this.colNum || 12), // puts it at the bottom
-          w: 1,
-          h: 1,
+          w: 2,
+          h: 3,
           i: 'drop',
         });
       }
@@ -496,7 +594,7 @@ export default {
         el.dragging = { "top": mouseXY.y - parentRect.top, "left": mouseXY.x - parentRect.left };
         let new_pos = el.calcXY(mouseXY.y - parentRect.top, mouseXY.x - parentRect.left);
         if (mouseInGrid === true) {
-          this.$refs.gridlayout.dragEvent('dragstart', 'drop', new_pos.x, new_pos.y, 1, 1);
+          this.$refs.gridlayout.dragEvent('dragstart', 'drop', new_pos.x, new_pos.y, 3, 2);
           DragPos.i = String(index);
           DragPos.x = this.layout[index].x;
           DragPos.y = this.layout[index].y;
@@ -521,13 +619,12 @@ export default {
         let obj = {
           x: DragPos.x,
           y: DragPos.y,
-          w: 1,
-          h: 1,
+          w: 2,
+          h: 3,
           i: DragPos.i
         }
         obj.data = o
         obj.isLeftBarItem = true
-        console.log(obj.data)
         this.layout.push(obj);
         this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 1, 1);
         try {
