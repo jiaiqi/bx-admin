@@ -30,8 +30,10 @@
     </el-dialog>
 
     <el-dialog title="编辑" width="90%" :close-on-click-modal="1==2"  :visible="activeForm == 'update'" @close="onCloseEvent()" append-to-body>
-      <simple-update name="update" :appNo="customSrvApp" :init-load="initLoad" ref="update-form" v-if="activeForm == 'update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null">
-      </simple-update>
+      <update name="list-update" ref="update-form" v-if="activeForm == 'update' " :pk="pk" :pkCol="pkCol" :service="service"   :defaultValues="defaultValues"  :parentPageType="'list'" @action-complete="activeForm = null">
+      </update>
+      <!-- <simple-update name="update" :appNo="customSrvApp" :init-load="initLoad" ref="update-form" v-if="activeForm == 'update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null">
+      </simple-update> -->
     </el-dialog>
 
     <el-dialog title="详情" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'detail'" @close="activeForm = 'xx'" append-to-body >
@@ -87,11 +89,12 @@
 
 <script>
 import ExecutorMixin from "../mixin/executor-minx";
-import Executor from "./executor.vue";
+import Executor from "./executor.vue"; 
 import SimpleAdd from "./simple-add.vue";
 import add from "./add.vue";
 import SimpleDetail from "./simple-detail.vue";
 import SimpleUpdate from "./simple-update.vue";
+import update from "./update.vue";
 import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
 import EditGrid from "./edit-grid.vue";
@@ -105,7 +108,8 @@ export default {
     SimpleDetail,
     SimpleAdd,
     Executor,
-    add
+    add,
+    update
   },
   mixins: [ExecutorMixin],
 
@@ -124,6 +128,24 @@ export default {
        }
 
        return app
+     },
+     pk:function(){
+        
+       let cond = this.defaultConditions
+       let pk = ''
+       if(this.defaultConditions.length >0){
+          pk = this.defaultConditions[0].value
+       }
+       return pk
+     },
+     pkCol:function(){
+        
+       let cond = this.defaultConditions
+       let pk = ''
+       if(this.defaultConditions.length >0){
+          pk = this.defaultConditions[0].colName
+       }
+       return pk
      }
   },
   data() {
