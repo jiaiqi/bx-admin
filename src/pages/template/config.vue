@@ -4,17 +4,18 @@
       <div>head</div>
     </div>
     <div class="cushome-sidebar">
-      <div v-for="pageItem in comList" @drag="drag" @dragend="dragend(pageItem)" class="com-item" draggable="true"
-        unselectable="on">
+      <div v-for="pageItem in comList" @drag="drag(pageItem)" @dragend="dragend(pageItem)" class="com-item"
+        draggable="true" unselectable="on">
         <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%;">
         <span>{{ pageItem.com_type_name }}</span>
         <span>{{ pageItem.com_type }}</span>
       </div>
     </div>
     <div class="cushome-right">
-      <el-input size="small" v-model="pageName" placeholder="请输入页面名称"></el-input>
-      <el-input size="small" v-model="pageTitle" placeholder="请输入页面标题" style="margin-top:10px"></el-input>
+      <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
+      <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top:10px"></el-input>
       <el-button size="mini" type="primary" style="float:right;margin-top:10px" @click="saveFn">保存</el-button>
+      <el-button size="mini" style="float:right;margin:10px 10px 0 0" @click="clearFn">清空画布</el-button>
     </div>
     <div class="cushome-content" id="content">
       <div class="custom-design" id="custom-design">
@@ -27,12 +28,12 @@
             :key="item.i" @moved="movedEvent" @resized="resizedEvent" class="gridItem"
             :style="layoutJson ? stylefn(layoutJson.style_json) : ''">
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
-            <div v-if="item.isLeftBarItem" class="com-item">
+            <div v-if="item.isLeftBarItem" class="com-item" @click.stop="changeDesign(item.i)">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
               <span>{{ item.data.com_type_name }}</span>
               <span>{{ item.data.com_type }}</span>
             </div>
-            <div v-else class="com-item">
+            <div v-else class="com-item" @click.stop="changeDesign(item.i)">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
               <span>{{ item.data.com_name }}</span>
               <span>{{ item.data.com_type }}</span>
@@ -63,7 +64,7 @@ import {
 } from '@/common/common.js'
 
 let mouseXY = { "x": null, "y": null }
-let DragPos = { "x": null, "y": null, "w": 2, "h": 3, "i": null }
+let DragPos = { "x": null, "y": null, "w": 1, "h": 1, "i": null }
 
 export default {
   components: {
@@ -178,6 +179,9 @@ export default {
         return formatStyleData(style)
       }
     },
+    clearFn() {
+      this.layout = []
+    },
     async saveFn() {
       if (this.layout.length === 0) {
         this.$message.error('请添加内容后保存！')
@@ -204,8 +208,8 @@ export default {
           seq: i + 1,
           pos_x: item.x,
           pos_y: item.y,
-          col_span: item.w,
-          row_span: item.h
+          col_span: item.h,
+          row_span: item.w
         })
       })
       this.addService(layoutObj)
@@ -232,7 +236,8 @@ export default {
           "com_preview": item.data.example,
           "page_layout_no": layoutNo.layout_no,
           "com_type": item.data.com_type,
-          "page_no": pageNo.page_no
+          "page_no": pageNo.page_no,
+          "com_seq": i + 1
         })
       })
       this.addService(pageObj)
@@ -301,15 +306,16 @@ export default {
 
         this.layoutJson = data.layout_json_data
         this.layoutJson.parts_json.forEach((item, index) => {
-          let obj = {}
-          obj.x = item.pos_x
-          obj.y = item.pos_y
-          obj.w = item.row_span
-          obj.h = item.col_span
-          obj.i = item.seq
-          obj.layout_no = item.layout_no
-          obj.data = this.comJson[index]
-          obj.isLeftBarItem = false
+          let obj = {
+            x: item.pos_x,
+            y: item.pos_y,
+            w: item.row_span,
+            h: item.col_span,
+            i: item.seq - 1,  // index
+            layout_no: item.layout_no,
+            data: this.comJson[index],
+            isLeftBarItem: false
+          }
           this.layout.push(obj)
         })
       }
@@ -351,7 +357,6 @@ export default {
         }
       })
       console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
-      console.log(this.layout);
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
@@ -587,13 +592,12 @@ export default {
     removeItem: function (val) {
       const index = this.layout.map(item => item.i).indexOf(val);
       this.layout.splice(index, 1);
-      console.log('删除后layout',this.layout)
     },
     dragDefFn(e) {
       e.preventDefault()
     },
 
-    drag: function (e) {
+    drag: function (o) {
       let parentRect = document.getElementById('content').getBoundingClientRect();
       let mouseInGrid = false;
       if (((mouseXY.x > parentRect.left) && (mouseXY.x < parentRect.right)) && ((mouseXY.y > parentRect.top) && (mouseXY.y < parentRect.bottom))) {
@@ -606,6 +610,7 @@ export default {
           w: 2,
           h: 3,
           i: 'drop',
+          data: o
         });
       }
       let index = this.layout.findIndex(item => item.i === 'drop');
@@ -624,7 +629,7 @@ export default {
           DragPos.y = this.layout[index].y;
         }
         if (mouseInGrid === false) {
-          this.$refs.gridlayout.dragEvent('dragend', 'drop', new_pos.x, new_pos.y, 1, 1);
+          this.$refs.gridlayout.dragEvent('dragend', 'drop', new_pos.x, new_pos.y, 3, 2);
           this.layout = this.layout.filter(obj => obj.i !== 'drop');
         }
       }
@@ -637,7 +642,7 @@ export default {
       }
       if (mouseInGrid === true) {
         // alert(`Dropped element props:\n${JSON.stringify(DragPos, ['x', 'y', 'w', 'h'], 2)}`);
-        this.$refs.gridlayout.dragEvent('dragend', 'drop', DragPos.x, DragPos.y, 1, 1);
+        this.$refs.gridlayout.dragEvent('dragend', 'drop', DragPos.x, DragPos.y, 2, 3);
         this.layout = this.layout.filter(obj => obj.i !== 'drop');
         // UNCOMMENT below if you want to add a grid-item
         let obj = {
@@ -645,12 +650,12 @@ export default {
           y: DragPos.y,
           w: 2,
           h: 3,
-          i: DragPos.i
+          i: DragPos.i,
+          data: o,
+          isLeftBarItem: true
         }
-        obj.data = o
-        obj.isLeftBarItem = true
         this.layout.push(obj);
-        this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 1, 1);
+        this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 2, 3);
         try {
           this.$refs.gridlayout.$children[this.layout.length].$refs.item.style.display = "block";
         } catch {
