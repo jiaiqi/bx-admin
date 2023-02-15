@@ -3,7 +3,7 @@
 
 
 
-let $ = require("jQuery");
+let $ = require("jquery");
 
 let MapPlus = {};
 
