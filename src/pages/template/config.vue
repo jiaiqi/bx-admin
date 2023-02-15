@@ -4,15 +4,18 @@
       <div>head</div>
     </div>
     <div class="cushome-sidebar">
-      <div v-for="pageItem in comList" @drag="drag" @dragend="dragend(pageItem)" class="com-item" draggable="true"
-        unselectable="on">
+      <div v-for="pageItem in comList" @drag="drag(pageItem)" @dragend="dragend(pageItem)" class="com-item"
+        draggable="true" unselectable="on">
         <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%;">
         <span>{{ pageItem.com_type_name }}</span>
         <span>{{ pageItem.com_type }}</span>
       </div>
     </div>
     <div class="cushome-right">
-      <el-button size="mini" type="primary" @click="saveFn">保存</el-button>
+      <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
+      <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top:10px"></el-input>
+      <el-button size="mini" type="primary" style="float:right;margin-top:10px" @click="saveFn">保存</el-button>
+      <el-button size="mini" style="float:right;margin:10px 10px 0 0" @click="clearFn">清空画布</el-button>
     </div>
     <div class="cushome-content" id="content">
       <div class="custom-design" id="custom-design">
@@ -22,13 +25,23 @@
           :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="bjStyles"></div>
           <grid-item v-for="(item, index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i"
-            :key="item.i" @moved="movedEvent" class="gridItem" :style="stylefn(layoutJson.style_json)">
+            :key="item.i" @moved="movedEvent" @resized="resizedEvent" class="gridItem"
+            :style="layoutJson ? stylefn(layoutJson.style_json) : ''">
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
-            <div v-if="item.isLeftBarItem">{{ item.data.com_type }}</div>
-            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
-            <div v-else>
-              <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
+            <div v-if="item.isLeftBarItem" class="com-item" @click.stop="changeDesign(item.i)">
+              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
+              <span>{{ item.data.com_type_name }}</span>
+              <span>{{ item.data.com_type }}</span>
             </div>
+            <div v-else class="com-item" @click.stop="changeDesign(item.i)">
+              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
+              <span>{{ item.data.com_name }}</span>
+              <span>{{ item.data.com_type }}</span>
+            </div>
+            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
+            <!-- <div v-else>
+              <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
+            </div> -->
           </grid-item>
         </grid-layout>
       </div>
@@ -61,6 +74,8 @@ export default {
   },
   data() {
     return {
+      pageName: '',
+      pageTitle: '',
       pageInfo: null,
       styleJson: null,
       layoutJson: null,
@@ -138,13 +153,14 @@ export default {
     };
   },
   created() {
+    this.getComList()
+
     if (this.$route.query.pageNo) {
       const pageNo = this.$route.query.pageNo
       this.initPage(pageNo)
     }
   },
   mounted() {
-    this.getComList()
     document.addEventListener("dragover", function (e) {
       mouseXY.x = e.clientX;
       mouseXY.y = e.clientY;
@@ -163,8 +179,94 @@ export default {
         return formatStyleData(style)
       }
     },
-    saveFn() {
-      console.log(this.layout)
+    clearFn() {
+      this.layout = []
+    },
+    async saveFn() {
+      if (this.layout.length === 0) {
+        this.$message.error('请添加内容后保存！')
+        return
+      }
+
+      // 容器布局
+      let layoutObj = {
+        serviceName: 'srvpage_cfg_layout_add',
+        data: [{
+          "layout_party": "页面"
+        }]
+      }
+      const layoutNo = await this.addService(layoutObj)
+
+      layoutObj = {
+        serviceName: 'srvpage_cfg_layout_add',
+        data: []
+      }
+      this.layout.forEach((item, i) => {
+        layoutObj.data.push({
+          "layout_party": "页面",
+          parent_no: layoutNo.layout_no,
+          seq: i + 1,
+          pos_x: item.x,
+          pos_y: item.y,
+          col_span: item.h,
+          row_span: item.w
+        })
+      })
+      this.addService(layoutObj)
+
+      // 页面和组件
+      let pageObj = {
+        serviceName: 'srvpage_cfg_page_add',
+        data: [{
+          page_name: this.pageName || '可视化配置',
+          page_title: this.pageTitle || '可视化配置页',
+          layout_no: layoutNo.layout_no
+        }]
+      }
+      const pageNo = await this.addService(pageObj)
+
+      // 组件
+      pageObj = {
+        serviceName: 'srvpage_cfg_page_component_add',
+        data: []
+      }
+      this.layout.forEach((item, i) => {
+        pageObj.data.push({
+          "com_name": item.data.com_type_name,
+          "com_preview": item.data.example,
+          "page_layout_no": layoutNo.layout_no,
+          "com_type": item.data.com_type,
+          "page_no": pageNo.page_no,
+          "com_seq": i + 1
+        })
+      })
+      this.addService(pageObj)
+    },
+    addService(o) {
+      return new Promise((resolve, reject) => {
+        let params = [
+          {
+            serviceName: o.serviceName,
+            srvApp: 'config',
+            condition: [],
+            data: o.data
+          }
+        ]
+        this.operate(params).then(response => {
+          if (response.body.state === 'SUCCESS') {
+            resolve(response.body.response[0].response.effect_data[0])
+            // this.$message.info(response.body.resultCode);
+          } else {
+            // this.$message.error(response.body.resultMessage);
+          }
+        })
+      })
+    },
+    getLayoutNo(data) {
+      return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).layout_no
+    },
+    getPageNo(data) {
+      return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).page_no
     },
     async initPage(no) {
       const url = `/config/select/srvpage_cfg_page_guest_select`
@@ -189,19 +291,31 @@ export default {
             }
           }
         })
+        this.pageName = data.page_name || ''
+        this.pageTitle = data.page_title || ''
         this.comJson = data.component_json_data
         this.styleJson = data.page_style_json_data
 
+        this.comJson.forEach((com, i) => {
+          this.comList.forEach(list => {
+            if (list.com_type === com.com_type) {
+              this.comJson[i].example = list.example
+            }
+          })
+        })
+
         this.layoutJson = data.layout_json_data
         this.layoutJson.parts_json.forEach((item, index) => {
-          let obj = {}
-          obj.x = item.pos_x
-          obj.y = item.pos_y
-          obj.w = item.row_span
-          obj.h = item.col_span
-          obj.i = item.seq
-          obj.layout_no = item.layout_no
-          obj.data = this.comJson
+          let obj = {
+            x: item.pos_x,
+            y: item.pos_y,
+            w: item.row_span,
+            h: item.col_span,
+            i: item.seq - 1,  // index
+            layout_no: item.layout_no,
+            data: this.comJson[index],
+            isLeftBarItem: false
+          }
           this.layout.push(obj)
         })
       }
@@ -224,7 +338,7 @@ export default {
     },
     // 更新事件（布局更新或栅格元素的位置重新计算）
     layoutUpdatedEvent(newLayout) {
-      console.log("Updated layout: ", newLayout)
+      // console.log("Updated layout: ", newLayout)
     },
     // 移动时的事件
     moveEvent(i, newX, newY) {
@@ -236,11 +350,23 @@ export default {
     },
     // 移动后的事件
     movedEvent(i, newX, newY) {
+      this.layout.forEach(item => {
+        if (item.i === i) {
+          item.x = newX
+          item.y = newY
+        }
+      })
       console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
-      // console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
+      this.layout.forEach(item => {
+        if (item.i === i) {
+          item.h = newH
+          item.w = newW
+        }
+      })
+      console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
     },
     //点击容器某一个组件
     changeDesign(idx) {
@@ -471,7 +597,7 @@ export default {
       e.preventDefault()
     },
 
-    drag: function (e) {
+    drag: function (o) {
       let parentRect = document.getElementById('content').getBoundingClientRect();
       let mouseInGrid = false;
       if (((mouseXY.x > parentRect.left) && (mouseXY.x < parentRect.right)) && ((mouseXY.y > parentRect.top) && (mouseXY.y < parentRect.bottom))) {
@@ -481,9 +607,10 @@ export default {
         this.layout.push({
           x: (this.layout.length * 2) % (this.colNum || 12),
           y: this.layout.length + (this.colNum || 12), // puts it at the bottom
-          w: 1,
-          h: 1,
+          w: 2,
+          h: 3,
           i: 'drop',
+          data: o
         });
       }
       let index = this.layout.findIndex(item => item.i === 'drop');
@@ -496,13 +623,13 @@ export default {
         el.dragging = { "top": mouseXY.y - parentRect.top, "left": mouseXY.x - parentRect.left };
         let new_pos = el.calcXY(mouseXY.y - parentRect.top, mouseXY.x - parentRect.left);
         if (mouseInGrid === true) {
-          this.$refs.gridlayout.dragEvent('dragstart', 'drop', new_pos.x, new_pos.y, 1, 1);
+          this.$refs.gridlayout.dragEvent('dragstart', 'drop', new_pos.x, new_pos.y, 3, 2);
           DragPos.i = String(index);
           DragPos.x = this.layout[index].x;
           DragPos.y = this.layout[index].y;
         }
         if (mouseInGrid === false) {
-          this.$refs.gridlayout.dragEvent('dragend', 'drop', new_pos.x, new_pos.y, 1, 1);
+          this.$refs.gridlayout.dragEvent('dragend', 'drop', new_pos.x, new_pos.y, 3, 2);
           this.layout = this.layout.filter(obj => obj.i !== 'drop');
         }
       }
@@ -515,21 +642,20 @@ export default {
       }
       if (mouseInGrid === true) {
         // alert(`Dropped element props:\n${JSON.stringify(DragPos, ['x', 'y', 'w', 'h'], 2)}`);
-        this.$refs.gridlayout.dragEvent('dragend', 'drop', DragPos.x, DragPos.y, 1, 1);
+        this.$refs.gridlayout.dragEvent('dragend', 'drop', DragPos.x, DragPos.y, 2, 3);
         this.layout = this.layout.filter(obj => obj.i !== 'drop');
         // UNCOMMENT below if you want to add a grid-item
         let obj = {
           x: DragPos.x,
           y: DragPos.y,
-          w: 1,
-          h: 1,
-          i: DragPos.i
+          w: 2,
+          h: 3,
+          i: DragPos.i,
+          data: o,
+          isLeftBarItem: true
         }
-        obj.data = o
-        obj.isLeftBarItem = true
-        console.log(obj.data)
         this.layout.push(obj);
-        this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 1, 1);
+        this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 2, 3);
         try {
           this.$refs.gridlayout.$children[this.layout.length].$refs.item.style.display = "block";
         } catch {
