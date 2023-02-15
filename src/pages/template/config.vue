@@ -24,12 +24,17 @@
           :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="bjStyles"></div>
           <grid-item v-for="(item, index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i"
-            :key="item.i" @moved="movedEvent" class="gridItem"
+            :key="item.i" @moved="movedEvent" @resized="resizedEvent" class="gridItem"
             :style="layoutJson ? stylefn(layoutJson.style_json) : ''">
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
             <div v-if="item.isLeftBarItem" class="com-item">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
               <span>{{ item.data.com_type_name }}</span>
+              <span>{{ item.data.com_type }}</span>
+            </div>
+            <div v-else class="com-item">
+              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
+              <span>{{ item.data.com_name }}</span>
               <span>{{ item.data.com_type }}</span>
             </div>
             <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
@@ -147,13 +152,14 @@ export default {
     };
   },
   created() {
+    this.getComList()
+
     if (this.$route.query.pageNo) {
       const pageNo = this.$route.query.pageNo
       this.initPage(pageNo)
     }
   },
   mounted() {
-    this.getComList()
     document.addEventListener("dragover", function (e) {
       mouseXY.x = e.clientX;
       mouseXY.y = e.clientY;
@@ -213,8 +219,8 @@ export default {
           layout_no: layoutNo.layout_no
         }]
       }
-      await this.addService(pageObj)
       const pageNo = await this.addService(pageObj)
+
       // 组件
       pageObj = {
         serviceName: 'srvpage_cfg_page_component_add',
@@ -224,11 +230,8 @@ export default {
         pageObj.data.push({
           "com_name": item.data.com_type_name,
           "com_preview": item.data.example,
-          // "show_label": "是",
-          // "display": "是",
           "page_layout_no": layoutNo.layout_no,
           "com_type": item.data.com_type,
-          // "child_count": 0,
           "page_no": pageNo.page_no
         })
       })
@@ -288,8 +291,15 @@ export default {
         this.comJson = data.component_json_data
         this.styleJson = data.page_style_json_data
 
+        this.comJson.forEach((com, i) => {
+          this.comList.forEach(list => {
+            if (list.com_type === com.com_type) {
+              this.comJson[i].example = list.example
+            }
+          })
+        })
+
         this.layoutJson = data.layout_json_data
-        console.log(this.layoutJson)
         this.layoutJson.parts_json.forEach((item, index) => {
           let obj = {}
           obj.x = item.pos_x
@@ -298,10 +308,10 @@ export default {
           obj.h = item.col_span
           obj.i = item.seq
           obj.layout_no = item.layout_no
-          obj.data = this.comJson
+          obj.data = this.comJson[index]
+          obj.isLeftBarItem = false
           this.layout.push(obj)
         })
-        console.log(this.layout)
       }
     },
     // 对应Vue生命周期的created
@@ -334,11 +344,24 @@ export default {
     },
     // 移动后的事件
     movedEvent(i, newX, newY) {
+      this.layout.forEach(item => {
+        if (item.i === i) {
+          item.x = newX
+          item.y = newY
+        }
+      })
       console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
+      console.log(this.layout);
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
-      // console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
+      this.layout.forEach(item => {
+        if (item.i === i) {
+          item.h = newH
+          item.w = newW
+        }
+      })
+      console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
     },
     //点击容器某一个组件
     changeDesign(idx) {
@@ -564,6 +587,7 @@ export default {
     removeItem: function (val) {
       const index = this.layout.map(item => item.i).indexOf(val);
       this.layout.splice(index, 1);
+      console.log('删除后layout',this.layout)
     },
     dragDefFn(e) {
       e.preventDefault()
