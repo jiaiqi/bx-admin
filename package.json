@@ -41,7 +41,7 @@
     "vue-resource": "^1.5.1",
     "vue-router": "^3.0.3",
     "vue2-ace-editor": "0.0.13",
-    "vuedraggable": "^2.24.3",
+    "vuedraggable": "^2.23.2",
     "vuex": "^3.0.1",
     "xlsx": "^0.16.4",
     "xmlhttprequest": "^1.8.0"
