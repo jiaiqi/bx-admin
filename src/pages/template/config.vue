@@ -38,10 +38,6 @@
               <span>{{ item.data.com_name }}</span>
               <span>{{ item.data.com_type }}</span>
             </div>
-            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
-            <!-- <div v-else>
-                                                                    <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
-                                                                  </div> -->
           </grid-item>
         </grid-layout>
       </div>
@@ -80,6 +76,7 @@ export default {
       pageTitle: '可视化配置页',
       styleJson: null,
       parentLayoutNo: '',
+      layoutObj: null,
       strLayout: '',
       layoutJson: null,
       comJson: [],
@@ -215,7 +212,7 @@ export default {
             layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '')
           }]
         }
-        const layoutNo = await this.saveService('add', addObj)
+        const layoutNo = await this.saveService('add', addObj, null, true)
 
         // 子容器
         addObj.data = []
@@ -223,8 +220,8 @@ export default {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutNo.layout_no,
-            layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + (i + 1),
-            seq: i + 1,
+            layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + i,
+            seq: i,
             pos_x: item.x,
             pos_y: item.y,
             col_span: item.h,
@@ -242,7 +239,7 @@ export default {
             layout_no: layoutNo.layout_no
           }]
         }
-        const pageNo = await this.saveService('add', addObj)
+        const pageNo = await this.saveService('add', addObj, null, true)
 
         // 组件
         addObj = {
@@ -256,8 +253,8 @@ export default {
             "page_layout_no": layoutNo.layout_no,
             "com_type": item.data.com_type,
             "page_no": pageNo.page_no,
-            "com_seq": i + 1,
-            "layout_seq": i + 1,
+            "com_seq": i,
+            "layout_seq": i,
           })
         })
         this.saveService('add', addObj)
@@ -268,17 +265,14 @@ export default {
 
         // 删除的子容器id数组
         let arrLayoutDel = []
-        let arrLayoutUpdate = []
         // add子容器入参
         let addLayout = {
           serviceName: 'srvpage_cfg_layout_add',
           data: []
         }
         // update子容器入参
-        let updateLayout = {
-          serviceName: 'srvpage_cfg_layout_update',
-          data: []
-        }
+        let arrUpdateLayout = []
+        let objUpdateLayout = {}
         // delete子容器入参
         let deleteLayout = {
           serviceName: 'srvpage_cfg_layout_delete',
@@ -308,35 +302,38 @@ export default {
         })
 
         this.layout.forEach((item, i) => {
-          if (!item.id) { // 新增
+          if (!item.id) { // 新增容器
             addLayout.data.push({
               layout_party: "组件",
               parent_no: this.parentLayoutNo,
-              layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + (i + 1),
-              seq: i + 1,
+              layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + i,
+              seq: i,
               pos_x: item.x,
               pos_y: item.y,
               col_span: item.h,
               row_span: item.w
-            })
-
-            addCom.data.push({
-              "com_name": item.data.com_type_name,
-              "com_preview": item.data.example,
-              "page_layout_no": item.layout_no,
-              "com_type": item.data.com_type,
-              "page_no": this.pgNo,
-              "com_seq": i + 1,
-              "layout_seq": i + 1,
             })
           } else { // 更新
-            updateLayout.data.push({
-              pos_x: item.x,
-              pos_y: item.y,
-              col_span: item.h,
-              row_span: item.w
-            })
-            arrLayoutUpdate.push(item.id)
+            objUpdateLayout = {
+              "serviceName": "srvpage_cfg_layout_update",
+              "srvApp": 'config',
+              "condition": [
+                {
+                  "colName": "id",
+                  "ruleType": "eq",
+                  "value": item.id
+                }
+              ],
+              "data": [
+                {
+                  pos_x: item.x,
+                  pos_y: item.y,
+                  col_span: item.h,
+                  row_span: item.w
+                }
+              ]
+            }
+            arrUpdateLayout.push(objUpdateLayout)
           }
         })
 
@@ -345,11 +342,25 @@ export default {
           await this.saveService('delete', deleteLayout, arrLayoutDel.join())
         }
         if (addLayout.data.length > 0) {
-          await this.saveService('add', addLayout)
+          this.layoutObj = await this.saveService('add', addLayout, null, true)
         }
-        if (updateLayout.data.length > 0) {
-          await this.saveService('update', updateLayout, arrLayoutUpdate.join())
+        if (arrUpdateLayout.length > 0) {
+          await this.saveService('update', arrUpdateLayout)
         }
+
+        this.layout.forEach((item, i) => {
+          if (!item.id) { // 新增组件
+            addCom.data.push({
+              "com_name": item.data.com_type_name,
+              "com_preview": item.data.example,
+              "page_layout_no": this.layoutObj.layout_no,
+              "com_type": item.data.com_type,
+              "page_no": this.pgNo,
+              "com_seq": i,
+              "layout_seq": i,
+            })
+          }
+        })
 
         // 组件
         if (arrComDel.length > 0) {
@@ -358,9 +369,12 @@ export default {
         if (addCom.data.length > 0) {
           await this.saveService('add', addCom)
         }
+
+        this.layout = []
+        this.initPage()
       }
     },
-    saveService(type, o, id) {
+    saveService(type, o, id, isTrue) {
       return new Promise((resolve, reject) => {
         let params = []
         switch (type) {
@@ -375,14 +389,7 @@ export default {
             ]
             break
           case 'update':
-            params = [
-              {
-                serviceName: o.serviceName,
-                srvApp: 'config',
-                condition: [{ colName: "id", ruleType: "in", value: id }],
-                data: o.data
-              }
-            ]
+            params = o
             break
           case 'delete':
             params = [
@@ -397,7 +404,11 @@ export default {
 
         this.operate(params).then(response => {
           if (response.body.state === 'SUCCESS') {
-            resolve(response.body.response[0].response.effect_data[0])
+            if (isTrue) {
+              resolve(response.body.response[0].response.effect_data[0])
+            } else {
+              resolve(response.body.response[0].response)
+            }
             // this.$message.info(response.body.resultCode);
           } else {
             // this.$message.error(response.body.resultMessage);
@@ -744,13 +755,15 @@ export default {
     removeItem: function (val) {
       const index = this.layout.map(item => item.i).indexOf(val);
       this.layout.splice(index, 1);
+      this.layout.forEach((item, i) => {
+        item.i = i
+      })
     },
     dragDefFn(e) {
       e.preventDefault()
     },
 
     drag: function (o) {
-      console.log(o)
       let parentRect = document.getElementById('content').getBoundingClientRect();
       let mouseInGrid = false;
       if (((mouseXY.x > parentRect.left) && (mouseXY.x < parentRect.right)) && ((mouseXY.y > parentRect.top) && (mouseXY.y < parentRect.bottom))) {
@@ -786,7 +799,6 @@ export default {
           this.layout = this.layout.filter(obj => obj.i !== 'drop');
         }
       }
-      console.log(this.layout)
     },
     dragend: function (o) {
       let parentRect = document.getElementById('content').getBoundingClientRect();
@@ -816,6 +828,13 @@ export default {
         }
       }
     },
+    randomNum(n) {
+      var res = "";
+      for (var i = 0; i < n; i++) {
+        res += Math.floor(Math.random() * 10);
+      }
+      return res;
+    }
   },
   // beforeRouteLeave(to, from, next) {
   //   const answer = window.confirm("当前页面数据未保存，确定要离开？");
