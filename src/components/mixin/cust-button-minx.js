@@ -57,7 +57,7 @@ export default {
      * @param {*} operateData 
      */
 
-    customizeOperate(butinfo, operateData) {
+    customizeOperate(butinfo, operateData, header) {
 
 
       var application = butinfo.application;
@@ -81,7 +81,7 @@ export default {
       } else if (operate_type.endsWith("跳转")) {
         this.customize_forward(butinfo, operateData);
       } else if (operate_type.endsWith("弹出")) {
-        this.customize_popup(butinfo, operateData);
+        this.customize_popup(butinfo, operateData, header);
       } else {
         alert("暂未实现");
       }
@@ -568,10 +568,11 @@ export default {
      * @param {*} item 
      * @param {*} operateData 
      */
-    customize_popup(item, operateData) {
+    customize_popup(item, operateData, header) {
 
       operateData = this.pre_data_handle(item, operateData);
       var service = item["operate_service"];
+      var _service = item.service
       var new_conditions = [];
       var new_data = {};
       var page_type = "";
@@ -599,6 +600,7 @@ export default {
 
       var params={};
       params["service"]=service;
+      params["_service"]=_service;
       params["condition"]=new_conditions;
       params["data"]=new_data;
       params["btninfo"]=item;
@@ -637,7 +639,7 @@ export default {
       } else if ("编辑列表弹出" == operate_type) {
 
         params.formType= "editgrid";
-        this.popupDialog(params);
+        this.popupDialog(params, header);
       } else if ("树列表弹出" == operate_type) {
 
         params.formType= "treegrid";

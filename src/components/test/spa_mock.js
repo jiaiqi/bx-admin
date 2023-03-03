@@ -15,7 +15,8 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "auth";
   // top.pathConfig.application = "vxpatent";
   // top.pathConfig.application = "vxasset";
-  top.pathConfig.application = "lpark";
+  top.pathConfig.application = "lgs";
+  // top.pathConfig.application = "lpark";
   // top.pathConfig.application = "demo";
   // top.pathConfig.application = "retail";
   // top.pathConfig.application = "vxhr";
@@ -84,7 +85,7 @@ if (!top.pathConfig) {
   if (window.location.host.indexOf("localhost") !== -1) {
     sessionStorage.setItem(
       "bx_auth_ticket",
-      "xabxdzkj-2c507e51-06c2-4507-8867-93d40e3e4654"
+      "xabxdzkj-c340100c-7544-49b0-b619-a5b133307296"
     );
   }
 }

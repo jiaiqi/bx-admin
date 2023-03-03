@@ -585,7 +585,7 @@ export default {
 }
 
 .el-date-editor {
-  width: 100%;
+  width: 100% !important;
   max-width: initial !important;
 }
 

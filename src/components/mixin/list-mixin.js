@@ -5,6 +5,7 @@ import {GridInfo} from "../model/GridInfo";
 import {wrapButton, wrapHeader,getButtonPara} from "../common/wrapper_util";
 import {getUnitData} from "../../util/UnitUtil";
 import * as DataUtil from "../../util/DataUtil";
+
 export function MissRequiredConditionError() {
 }
 
@@ -227,6 +228,12 @@ export default {
         }
     },
     gridDataRun:function(){
+      // 前端处理表格数据，选择填充单元格
+      let frontTableData = this.$store.getters.getFrontTableData()
+      if (frontTableData && frontTableData.selectFillGrid) {
+        this.gridData = frontTableData.selectFillGrid
+      } 
+      
         // 重新构造 gridData 为了过滤内存表删除操作
         let self = this
         let data = self.gridData
@@ -805,7 +812,7 @@ export default {
         });
     },
     
-    gridButtonClick(button) {
+    gridButtonClick(button, header) {
       //　列表头部按钮
       //console.log("gridButtonClick",this,this.$parent)
        this.$emit("extend-change",button)
@@ -998,7 +1005,7 @@ export default {
             // this.customize_add(button, this.multipleSelection);
         }else{
             button.listservice = this.service;
-            this.customizeOperate(button, this.multipleSelection);
+            this.customizeOperate(button, this.multipleSelection, header);
           }
         }
       }else if("batch_approve" == type){
@@ -2202,6 +2209,21 @@ export default {
           header.srvcol.option_list_v2.service_label) ||
         "详情";
       this.addTabByUrl(this.getLinkUrl(row, header), tabTitle);
+    },
+
+    handleEdit(index, row) {
+      let frontTableData = this.$store.getters.getFrontTableData()
+      if (frontTableData && frontTableData.selectFillGrid) {
+        frontTableData.selectFillGrid.forEach(item => {
+          if (item.id === row.id) {
+            item = row
+          }
+        })
+        this.$store.commit("setFrontTableData", {
+          table: 'selectFillGrid',
+          data: frontTableData.selectFillGrid
+        })
+      }
     },
 
     onInlineListLoaded(row, inlineList) {
