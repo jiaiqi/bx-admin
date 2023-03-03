@@ -37,9 +37,6 @@ export default {
     _service: {
       type: String
     },
-    tableHeaderData: {
-      type: Array
-    },
     buttonInfo: {},
   },
 
@@ -53,14 +50,13 @@ export default {
     };
   },
   created: function () {
-    console.log(this.tableHeaderData)
     this.getData();
   },
   methods: {
     getData() {
       let serviceObj = null
 
-      this.loadColsV2(this.service_name, "selectlist", 'lgs').then(response => {
+      this.loadColsV2(this.service_name, "selectlist", this.moreConfig.app_name).then(response => {
         const resData = response.body.data
         const srv_cols = resData.srv_cols
 
@@ -84,7 +80,7 @@ export default {
         })
 
         this.select(
-          'srvop_goods_info_select',
+          serviceObj.serviceName,
         ).then(response => {
           let list = response.body.data;
 

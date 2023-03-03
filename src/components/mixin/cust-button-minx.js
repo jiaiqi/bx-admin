@@ -57,7 +57,7 @@ export default {
      * @param {*} operateData 
      */
 
-    customizeOperate(butinfo, operateData, header) {
+    customizeOperate(butinfo, operateData) {
 
 
       var application = butinfo.application;
@@ -81,7 +81,7 @@ export default {
       } else if (operate_type.endsWith("跳转")) {
         this.customize_forward(butinfo, operateData);
       } else if (operate_type.endsWith("弹出")) {
-        this.customize_popup(butinfo, operateData, header);
+        this.customize_popup(butinfo, operateData);
       } else {
         alert("暂未实现");
       }
@@ -568,7 +568,7 @@ export default {
      * @param {*} item 
      * @param {*} operateData 
      */
-    customize_popup(item, operateData, header) {
+    customize_popup(item, operateData) {
 
       operateData = this.pre_data_handle(item, operateData);
       var service = item["operate_service"];
@@ -639,7 +639,7 @@ export default {
       } else if ("编辑列表弹出" == operate_type) {
 
         params.formType= "editgrid";
-        this.popupDialog(params, header);
+        this.popupDialog(params);
       } else if ("树列表弹出" == operate_type) {
 
         params.formType= "treegrid";

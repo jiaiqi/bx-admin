@@ -989,7 +989,7 @@ function init_util() {
     return func(datas)
 
   }
-  Vue.prototype.popupDialog = function (params, tableHeaderData) {
+  Vue.prototype.popupDialog = function (params) {
 
     var btninfo = params["btninfo"]
 
@@ -1015,7 +1015,6 @@ function init_util() {
     let dialog = this.dialog;
     dialog.service = params.service;
     dialog._service = params._service;
-    dialog.tableHeaderData = tableHeaderData;
     dialog.defaultCondition = params.defaultCondition;
     dialog.childForeignkey = params.childForeignkey;
     dialog.listMainFormDatas = params.listMainFormDatas;

@@ -28,7 +28,7 @@
             :circle="item._moreConfig.style !== '' && item._moreConfig.style === 'circle'" v-show="item.evalVisible()"
             :disabled="item.evalDisable()"
             v-if="(!readOnly && existsGridButton && item.permission && getDispExps(item)) || !item.permission && item.hasOwnProperty('always_show') && item.always_show === true"
-            @click="gridButtonClick(item, gridHeader)">
+            @click="gridButtonClick(item)">
             {{ item.button_name }}
           </el-button>
 

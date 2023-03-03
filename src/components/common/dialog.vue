@@ -63,7 +63,7 @@
 
     <el-dialog title="编辑列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'editgrid'" @close="activeForm = 'xx'" append-to-body >
 
-      <edit-grid name="editgrid" ref="editgrid" v-if="activeForm == 'editgrid'" @closeDialog="closeDialog" :_service="_service" :service="service" :tableHeaderData="tableHeaderData" :buttonInfo="buttonInfo">
+      <edit-grid name="editgrid" ref="editgrid" v-if="activeForm == 'editgrid'" @closeDialog="closeDialog" :_service="_service" :service="service" :buttonInfo="buttonInfo">
       </edit-grid>
     </el-dialog>
 

@@ -1005,7 +1005,7 @@ export default {
             // this.customize_add(button, this.multipleSelection);
         }else{
             button.listservice = this.service;
-            this.customizeOperate(button, this.multipleSelection, header);
+            this.customizeOperate(button, this.multipleSelection);
           }
         }
       }else if("batch_approve" == type){
