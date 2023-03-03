@@ -15,7 +15,7 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "auth";
   // top.pathConfig.application = "vxpatent";
   // top.pathConfig.application = "vxasset";
-  top.pathConfig.application = "lpark";
+  // top.pathConfig.application = "lpark";
   // top.pathConfig.application = "demo";
   // top.pathConfig.application = "retail";
   // top.pathConfig.application = "vxhr";
@@ -31,7 +31,7 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "corp";
   // top.pathConfig.application = "sso";
   // top.pathConfig.application = "fyzhmd";
-  // top.pathConfig.application = "config";
+  top.pathConfig.application = "config";
   // top.pathConfig.application = "factory";
   top.user = {
     create_time: "2019-08-11 22:30:15",
@@ -84,7 +84,7 @@ if (!top.pathConfig) {
   if (window.location.host.indexOf("localhost") !== -1) {
     sessionStorage.setItem(
       "bx_auth_ticket",
-      "xabxdzkj-ef276892-5945-4f48-80a7-e498a33497dc"
+      "xabxdzkj-775a3bd6-8388-4e4b-b4d4-06b9391c6d9f"
     );
   }
 }

@@ -38,7 +38,7 @@ module.exports = {
         test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),
         threshold: 10240,
         minRatio: 0.8
-      })
+      }),
     ]
 
   },

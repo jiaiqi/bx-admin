@@ -10,6 +10,7 @@
     "build-lib4app": "bili --format cjs --name index --plugin vue --vue.css false"
   },
   "dependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.20.7",
     "@vue/babel-plugin-jsx": "^1.1.1",
     "axios": "^1.2.0",
     "bootstrap": "^4.2.2",
@@ -21,7 +22,7 @@
     "ezuikit-js": "^0.7.0",
     "file-saver": "^2.0.2",
     "jQuery": "^1.7.4",
-    "jquery": "^3.6.1",
+    "jquery": "^3.6.3",
     "js-cookie": "^3.0.1",
     "jsdom": "^12.1.0",
     "less": "^3.8.1",
