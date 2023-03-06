@@ -50,15 +50,20 @@
                :close-on-click-modal="1==2" :visible="activeForm == 'treegrid'" @close="activeForm = 'xx'"
                append-to-body
     >
-      <treegrid name="treegrid" ref="treegrid"
+      <treegrid name="treegrid" ref="treegrid" 
                 v-if="activeForm == 'treegrid'" :service="service" :default-condition="defaultConditions"
       >
       </treegrid>
     </el-dialog>
 
+    <el-dialog title="选择填充列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'select_fill_grid'" @close="activeForm = 'xx'" append-to-body >
+      <select-fill-grid v-if="activeForm == 'select_fill_grid'" @closeDialog="closeDialog" :service="service" :buttonInfo="buttonInfo">
+      </select-fill-grid>
+    </el-dialog>
+
     <el-dialog title="编辑列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'editgrid'" @close="activeForm = 'xx'" append-to-body >
 
-      <edit-grid name="editgrid" ref="editgrid" v-if="activeForm == 'editgrid'" :service="service">
+      <edit-grid name="editgrid" ref="editgrid" v-if="activeForm == 'editgrid'" @closeDialog="closeDialog" :_service="_service" :service="service" :buttonInfo="buttonInfo">
       </edit-grid>
     </el-dialog>
 
@@ -98,9 +103,11 @@ import update from "./update.vue";
 import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
 import EditGrid from "./edit-grid.vue";
+import SelectFillGrid from "./select-fill-grid.vue";
 
 export default {
   components: {
+    SelectFillGrid,
     EditGrid,
     Treegrid,
     List,
@@ -167,6 +174,9 @@ export default {
   },
 
   methods: {
+    closeDialog() {
+      this.activeForm = 'xx';
+    },
     onFormLoaded(operate_type) {
       var me = this;
       let form = this.$refs["list-update-form"];

@@ -14,15 +14,15 @@
     <div class="cushome-right">
       <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
       <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top:10px"></el-input>
-      <el-button size="mini" type="primary" style="float:right;margin-top:10px" @click="saveFn">保存</el-button>
+      <el-button size="mini" type="primary" style="float:right;margin-top:10px" @click="clickSave">保存</el-button>
       <el-button size="mini" style="float:right;margin:10px 10px 0 0" @click="clearFn">清空画布</el-button>
     </div>
     <div class="cushome-content" id="content">
       <div class="custom-design" id="custom-design">
         <!-- <div class="custom-design" id="custom-design" :style="stylefn(styleJson)"> -->
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="12" :row-height="30" :is-draggable="true"
-          :is-resizable="true" :is-mirrored="false" :vertical-compact="true" :margin="[20, 20]"
-          :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
+          :is-resizable="true" :is-mirrored="false" :vertical-compact="true" :margin="[20, 20]" :use-css-transforms="true"
+          @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="bjStyles"></div>
           <grid-item v-for="(item, index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i"
             :key="item.i" @moved="movedEvent" @resized="resizedEvent" class="gridItem"
@@ -38,10 +38,6 @@
               <span>{{ item.data.com_name }}</span>
               <span>{{ item.data.com_type }}</span>
             </div>
-            <!-- <page-item v-if="item.isLeftBarItem" :pageItem="item.data"></page-item> -->
-            <!-- <div v-else>
-              <page-item v-for="data in item.data" v-if="index + 1 === data.layout_seq" :pageItem="data"></page-item>
-            </div> -->
           </grid-item>
         </grid-layout>
       </div>
@@ -74,10 +70,14 @@ export default {
   },
   data() {
     return {
-      pageName: '',
-      pageTitle: '',
-      pageInfo: null,
+      pgNo: '',
+      pageId: '',
+      pageName: '可视化配置',
+      pageTitle: '可视化配置页',
       styleJson: null,
+      parentLayoutNo: '',
+      layoutObj: null,
+      strLayout: '',
       layoutJson: null,
       comJson: [],
       comList: [],
@@ -156,8 +156,8 @@ export default {
     this.getComList()
 
     if (this.$route.query.pageNo) {
-      const pageNo = this.$route.query.pageNo
-      this.initPage(pageNo)
+      this.pgNo = this.$route.query.pageNo
+      this.initPage()
     }
   },
   mounted() {
@@ -182,79 +182,233 @@ export default {
     clearFn() {
       this.layout = []
     },
-    async saveFn() {
+    clickSave() {
       if (this.layout.length === 0) {
-        this.$message.error('请添加内容后保存！')
+        this.$message.error('画布为空！')
         return
       }
 
-      // 容器布局
-      let layoutObj = {
-        serviceName: 'srvpage_cfg_layout_add',
-        data: [{
-          "layout_party": "页面"
-        }]
-      }
-      const layoutNo = await this.addService(layoutObj)
-
-      layoutObj = {
-        serviceName: 'srvpage_cfg_layout_add',
-        data: []
-      }
-      this.layout.forEach((item, i) => {
-        layoutObj.data.push({
-          "layout_party": "页面",
-          parent_no: layoutNo.layout_no,
-          seq: i + 1,
-          pos_x: item.x,
-          pos_y: item.y,
-          col_span: item.h,
-          row_span: item.w
-        })
+      this.$confirm("是否确认保存", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       })
-      this.addService(layoutObj)
-
-      // 页面和组件
-      let pageObj = {
-        serviceName: 'srvpage_cfg_page_add',
-        data: [{
-          page_name: this.pageName || '可视化配置',
-          page_title: this.pageTitle || '可视化配置页',
-          layout_no: layoutNo.layout_no
-        }]
-      }
-      const pageNo = await this.addService(pageObj)
-
-      // 组件
-      pageObj = {
-        serviceName: 'srvpage_cfg_page_component_add',
-        data: []
-      }
-      this.layout.forEach((item, i) => {
-        pageObj.data.push({
-          "com_name": item.data.com_type_name,
-          "com_preview": item.data.example,
-          "page_layout_no": layoutNo.layout_no,
-          "com_type": item.data.com_type,
-          "page_no": pageNo.page_no,
-          "com_seq": i + 1
+        .then(() => {
+          this.saveFn()
         })
-      })
-      this.addService(pageObj)
+        .catch(() => {
+          // 已取消
+        })
     },
-    addService(o) {
-      return new Promise((resolve, reject) => {
-        let params = [
-          {
-            serviceName: o.serviceName,
-            srvApp: 'config',
-            condition: [],
-            data: o.data
+    async saveFn() {
+      let addObj = {}
+      // 新增保存
+      if (!this.pgNo) {
+        // 布局容器
+        addObj = {
+          serviceName: 'srvpage_cfg_layout_add',
+          data: [{
+            layout_party: "页面",
+            layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '')
+          }]
+        }
+        const layoutNo = await this.saveService('add', addObj, null, true)
+
+        // 子容器
+        addObj.data = []
+        this.layout.forEach((item, i) => {
+          addObj.data.push({
+            layout_party: "组件",
+            parent_no: layoutNo.layout_no,
+            layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + i,
+            seq: i,
+            pos_x: item.x,
+            pos_y: item.y,
+            col_span: item.h,
+            row_span: item.w
+          })
+        })
+        await this.saveService('add', addObj)
+
+        // 页面
+        addObj = {
+          serviceName: 'srvpage_cfg_page_add',
+          data: [{
+            page_name: this.pageName,
+            page_title: this.pageTitle,
+            layout_no: layoutNo.layout_no
+          }]
+        }
+        const pageNo = await this.saveService('add', addObj, null, true)
+
+        // 组件
+        addObj = {
+          serviceName: 'srvpage_cfg_page_component_add',
+          data: []
+        }
+        this.layout.forEach((item, i) => {
+          addObj.data.push({
+            "com_name": item.data.com_type_name,
+            "com_preview": item.data.example,
+            "page_layout_no": layoutNo.layout_no,
+            "com_type": item.data.com_type,
+            "page_no": pageNo.page_no,
+            "com_seq": i,
+            "layout_seq": i,
+          })
+        })
+        this.saveService('add', addObj)
+      } else {
+        // 编辑保存
+        // 子容器
+        const parseLayout = JSON.parse(this.strLayout)
+
+        // 删除的子容器id数组
+        let arrLayoutDel = []
+        // add子容器入参
+        let addLayout = {
+          serviceName: 'srvpage_cfg_layout_add',
+          data: []
+        }
+        // update子容器入参
+        let arrUpdateLayout = []
+        let objUpdateLayout = {}
+        // delete子容器入参
+        let deleteLayout = {
+          serviceName: 'srvpage_cfg_layout_delete',
+        }
+
+        let arrComDel = []
+        let addCom = {
+          serviceName: 'srvpage_cfg_page_component_add',
+          data: []
+        }
+        let deleteCom = {
+          serviceName: 'srvpage_cfg_page_component_delete',
+        }
+
+        parseLayout.forEach(oldItem => {
+          let flag = true
+          this.layout.forEach((item, i) => {
+            if (oldItem.id === item.id) {
+              flag = false
+            }
+          })
+
+          if (flag) { // 删除
+            arrLayoutDel.push(oldItem.id)
+            arrComDel.push(oldItem.data.id)
           }
-        ]
+        })
+
+        this.layout.forEach((item, i) => {
+          if (!item.id) { // 新增容器
+            addLayout.data.push({
+              layout_party: "组件",
+              parent_no: this.parentLayoutNo,
+              layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + i,
+              seq: i,
+              pos_x: item.x,
+              pos_y: item.y,
+              col_span: item.h,
+              row_span: item.w
+            })
+          } else { // 更新
+            objUpdateLayout = {
+              "serviceName": "srvpage_cfg_layout_update",
+              "srvApp": 'config',
+              "condition": [
+                {
+                  "colName": "id",
+                  "ruleType": "eq",
+                  "value": item.id
+                }
+              ],
+              "data": [
+                {
+                  pos_x: item.x,
+                  pos_y: item.y,
+                  col_span: item.h,
+                  row_span: item.w
+                }
+              ]
+            }
+            arrUpdateLayout.push(objUpdateLayout)
+          }
+        })
+
+        // 子容器
+        if (arrLayoutDel.length > 0) {
+          await this.saveService('delete', deleteLayout, arrLayoutDel.join())
+        }
+        if (addLayout.data.length > 0) {
+          this.layoutObj = await this.saveService('add', addLayout, null, true)
+        }
+        if (arrUpdateLayout.length > 0) {
+          await this.saveService('update', arrUpdateLayout)
+        }
+
+        this.layout.forEach((item, i) => {
+          if (!item.id) { // 新增组件
+            addCom.data.push({
+              "com_name": item.data.com_type_name,
+              "com_preview": item.data.example,
+              "page_layout_no": this.layoutObj.layout_no,
+              "com_type": item.data.com_type,
+              "page_no": this.pgNo,
+              "com_seq": i,
+              "layout_seq": i,
+            })
+          }
+        })
+
+        // 组件
+        if (arrComDel.length > 0) {
+          await this.saveService('delete', deleteCom, arrComDel.join())
+        }
+        if (addCom.data.length > 0) {
+          await this.saveService('add', addCom)
+        }
+
+        this.layout = []
+        this.initPage()
+      }
+    },
+    saveService(type, o, id, isTrue) {
+      return new Promise((resolve, reject) => {
+        let params = []
+        switch (type) {
+          case 'add':
+            params = [
+              {
+                serviceName: o.serviceName,
+                srvApp: 'config',
+                condition: [],
+                data: o.data
+              }
+            ]
+            break
+          case 'update':
+            params = o
+            break
+          case 'delete':
+            params = [
+              {
+                serviceName: o.serviceName,
+                srvApp: 'config',
+                condition: [{ colName: "id", ruleType: "in", value: id }]
+              }
+            ]
+            break
+        }
+
         this.operate(params).then(response => {
           if (response.body.state === 'SUCCESS') {
-            resolve(response.body.response[0].response.effect_data[0])
+            if (isTrue) {
+              resolve(response.body.response[0].response.effect_data[0])
+            } else {
+              resolve(response.body.response[0].response)
+            }
             // this.$message.info(response.body.resultCode);
           } else {
             // this.$message.error(response.body.resultMessage);
@@ -268,7 +422,7 @@ export default {
     getPageNo(data) {
       return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).page_no
     },
-    async initPage(no) {
+    async initPage() {
       const url = `/config/select/srvpage_cfg_page_guest_select`
       const req = {
         "serviceName": "srvpage_cfg_page_guest_select",
@@ -276,7 +430,7 @@ export default {
         "condition": [{
           colName: 'page_no',
           ruleType: 'eq',
-          value: no
+          value: this.pgNo
         }],
       }
       const res = await this.$axios.post(url, req)
@@ -291,11 +445,14 @@ export default {
             }
           }
         })
-        this.pageName = data.page_name || ''
-        this.pageTitle = data.page_title || ''
+
+        this.pageId = data.id
+        this.pageName = data.page_name
+        this.pageTitle = data.page_title
         this.comJson = data.component_json_data
         this.styleJson = data.page_style_json_data
 
+        if (!this.comJson) return
         this.comJson.forEach((com, i) => {
           this.comList.forEach(list => {
             if (list.com_type === com.com_type) {
@@ -304,6 +461,7 @@ export default {
           })
         })
 
+        this.parentLayoutNo = data.layout_no
         this.layoutJson = data.layout_json_data
         this.layoutJson.parts_json.forEach((item, index) => {
           let obj = {
@@ -311,13 +469,18 @@ export default {
             y: item.pos_y,
             w: item.row_span,
             h: item.col_span,
-            i: item.seq - 1,  // index
+            i: index,  // item.seq - 1
             layout_no: item.layout_no,
             data: this.comJson[index],
-            isLeftBarItem: false
+            isLeftBarItem: false,
+            id: item.id
           }
           this.layout.push(obj)
         })
+
+        this.strLayout = JSON.stringify(this.layout)
+      } else {
+        this.$message.info('无数据！')
       }
     },
     // 对应Vue生命周期的created
@@ -592,6 +755,9 @@ export default {
     removeItem: function (val) {
       const index = this.layout.map(item => item.i).indexOf(val);
       this.layout.splice(index, 1);
+      this.layout.forEach((item, i) => {
+        item.i = i
+      })
     },
     dragDefFn(e) {
       e.preventDefault()
@@ -662,15 +828,22 @@ export default {
         }
       }
     },
-  },
-  beforeRouteLeave(to, from, next) {
-    const answer = window.confirm("当前页面数据未保存，确定要离开？");
-    if (answer) {
-      next();
-    } else {
-      next(false);
+    randomNum(n) {
+      var res = "";
+      for (var i = 0; i < n; i++) {
+        res += Math.floor(Math.random() * 10);
+      }
+      return res;
     }
   },
+  // beforeRouteLeave(to, from, next) {
+  //   const answer = window.confirm("当前页面数据未保存，确定要离开？");
+  //   if (answer) {
+  //     next();
+  //   } else {
+  //     next(false);
+  //   }
+  // },
 };
 </script>
 

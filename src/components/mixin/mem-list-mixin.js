@@ -353,6 +353,17 @@ export default {
       deleteRows.forEach(item => {
         let target = _.find(this.gridData, i => item.id && (i.id == item.id));
         if (target) {
+
+          // 从vuex里同步删除数据
+          let frontTableData = this.$store.getters.getFrontTableData()
+          if (frontTableData && frontTableData.selectFillGrid) {
+            const result = frontTableData.selectFillGrid.filter(item => item.id !== target.id)
+            this.$store.commit("setFrontTableData", {
+              table: 'selectFillGrid',
+              data: result
+            })
+          }
+
           this.updateDirtyFlags(target, "delete");
           // this.gridData = this.gridData.filter((item) => item._dirtyFlags && item._dirtyFlags !== 'delete')
         } else {

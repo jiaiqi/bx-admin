@@ -1014,6 +1014,7 @@ function init_util() {
     // conf and show dialog
     let dialog = this.dialog;
     dialog.service = params.service;
+    dialog._service = params._service;
     dialog.defaultCondition = params.defaultCondition;
     dialog.childForeignkey = params.childForeignkey;
     dialog.listMainFormDatas = params.listMainFormDatas;
