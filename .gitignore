@@ -20,5 +20,5 @@ yarn-error.log*
 *.sln
 *.sw?
 
-/src/components/test/spa_mock.js
+/src/components/test/spa_mock
 
