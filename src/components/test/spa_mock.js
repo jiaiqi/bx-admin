@@ -15,6 +15,9 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "auth";
   // top.pathConfig.application = "vxpatent";
   // top.pathConfig.application = "vxasset";
+
+  top.pathConfig.application = "lgs";
+
   // top.pathConfig.application = "lpark";
   // top.pathConfig.application = "demo";
   // top.pathConfig.application = "retail";
@@ -31,7 +34,7 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "corp";
   // top.pathConfig.application = "sso";
   // top.pathConfig.application = "fyzhmd";
-  top.pathConfig.application = "config";
+  // top.pathConfig.application = "config";
   // top.pathConfig.application = "factory";
   top.user = {
     create_time: "2019-08-11 22:30:15",
