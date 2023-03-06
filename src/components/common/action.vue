@@ -1,7 +1,11 @@
 <template>
   <div style="display: inline-block" v-show="this.info.visible" class="bx_action">
-    <el-button v-if="info" :size="info._moreConfig.size" :type="info._moreConfig.type" :icon="info._moreConfig.icon" :round="info._moreConfig.style !== '' &&  info._moreConfig.style === 'round'" :plain="info._moreConfig.style !== '' && info._moreConfig.style === 'plain'" :circle="info._moreConfig.style !== '' && info._moreConfig.style === 'circle'" :loading="is_draft && freeze" @click="onClicked()">{{ info.label}}
-      <span v-show="is_draft">{{is_draft && realTime ? '(' +realTime +'s)' : ''}}</span>
+    <el-button v-if="info" :size="info._moreConfig.size" :type="info._moreConfig.type" :icon="info._moreConfig.icon"
+      :round="info._moreConfig.style !== '' && info._moreConfig.style === 'round'"
+      :plain="info._moreConfig.style !== '' && info._moreConfig.style === 'plain'"
+      :circle="info._moreConfig.style !== '' && info._moreConfig.style === 'circle'" :loading="is_draft && freeze"
+      @click="onClicked()">{{ info.label }}
+      <span v-show="is_draft">{{ is_draft && realTime ? '(' + realTime + 's)' : '' }}</span>
     </el-button>
     <!-- <el-button v-if="info" 
       :size="info._moreConfig.size" 
@@ -15,7 +19,8 @@
       >{{ info.label}}
     </el-button> -->
 
-    <executor v-if="info && info.executor" ref="executor" v-bind.sync="info.executor" :defaultValues="info.defaultValues" @executor-complete="$emit('executor-complete', $event)">
+    <executor v-if="info && info.executor" ref="executor" v-bind.sync="info.executor" :defaultValues="info.defaultValues"
+      @executor-complete="$emit('executor-complete', $event)">
     </executor>
 
   </div>
@@ -38,13 +43,13 @@ export default {
     },
     isDraft: {
       type: String,
-      default: function() {
+      default: function () {
         return "norm";
       }
     },
     draftDataKey: {
       type: Object,
-      default: function() {
+      default: function () {
         return {
           colName: "id",
           value: null
@@ -63,12 +68,12 @@ export default {
       remainingTimes: 0
     };
   },
-  updated: function() {
+  updated: function () {
     // if(this.isDraft.auto_save){
     //   this.actionTimer(this.isDraft.timer,this.isDraft)
     // }
   },
-  mounted: function() {
+  mounted: function () {
     if (
       this.isDraft !== undefined &&
       this.isDraft !== null &&
@@ -82,14 +87,14 @@ export default {
       this.actionTimer(this.isDraft.timer, this.isDraft);
     }
   },
-  destroyed: function() {
+  destroyed: function () {
     if (this.is_draft) {
       this.clearTimer(this.isDraft.auto_save, this.isDraft, "off");
     }
   },
   methods: {
-    onClicked: function() {
-      
+    onClicked: function () {
+
       let self = this;
       let loading = null;
       let origin = Promise.resolve(true);
@@ -169,7 +174,7 @@ export default {
         .then(_ => {
           self.$emit("action-complete", self.info.name);
         })
-        .catch(() => {})
+        .catch(() => { })
         .finally(() => {
           if (loading) {
             loading.close();
@@ -188,7 +193,7 @@ export default {
       self.clearTimer();
 
       if (this.is_draft && this.isDraft.auto_save && this.isDraft.isDraft) {
-        this.timer = setInterval(function() {
+        this.timer = setInterval(function () {
           if (
             self.remainingTimes < 3 &&
             !self.freeze &&
@@ -259,7 +264,7 @@ export default {
   },
   watch: {
     isDraft: {
-      handler: function(val, oldval) {
+      handler: function (val, oldval) {
         if (this.is_draft && val.auto_save) {
           this.actionTimer(val.timer, val);
         } else {
@@ -269,7 +274,7 @@ export default {
       deep: true //对象内部的属性监听，也叫深度监听
     },
     realTime: {
-      handler: function(val, oldval) {
+      handler: function (val, oldval) {
         if (val <= 3) {
           this.$emit("form-is-loaded", {
             loaded: true,
@@ -286,6 +291,5 @@ export default {
 .bx_action {
   margin-left: 3px;
   margin-right: 3px;
-}
-</style>
+}</style>
 
