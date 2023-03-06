@@ -134,14 +134,14 @@
                         v-for="(tag, tIndex) in getFkJson(scope.row, item)" :key="tIndex">{{ tag || '' }}</el-tag>
                     </div>
 
-                    <div v-else-if="item.srvcol.updatable">
+                    <!-- <div v-else-if="item.srvcol.updatable">
                       <el-input-number size="small"
                         v-if="item.col_type === 'Integer' || 'int' || 'Float' || 'money'"
                         v-model="scope.row[item.column]" @change="handleEdit(scope.$index, scope.row)" :min="0"
                         label=""></el-input-number>
                       <el-input size="small" v-else-if="item.col_type === 'String'"
                         v-model="scope.row[item.column]" @change="handleEdit(scope.$index, scope.row)"></el-input>
-                    </div>
+                    </div> -->
 
                     <span v-else>{{ formatValue(scope.row, item) }}</span>
 

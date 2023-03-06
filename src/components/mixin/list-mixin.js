@@ -229,10 +229,10 @@ export default {
     },
     gridDataRun:function(){
       // 前端处理表格数据，选择填充单元格
-      let frontTableData = this.$store.getters.getFrontTableData()
-      if (frontTableData && frontTableData.selectFillGrid) {
-        this.gridData = frontTableData.selectFillGrid
-      } 
+      // let frontTableData = this.$store.getters.getFrontTableData()
+      // if (frontTableData && frontTableData.selectFillGrid) {
+      //   this.gridData = frontTableData.selectFillGrid
+      // } 
       
         // 重新构造 gridData 为了过滤内存表删除操作
         let self = this
@@ -812,7 +812,7 @@ export default {
         });
     },
     
-    gridButtonClick(button, header) {
+    gridButtonClick(button) {
       //　列表头部按钮
       //console.log("gridButtonClick",this,this.$parent)
        this.$emit("extend-change",button)
@@ -2214,10 +2214,8 @@ export default {
     handleEdit(index, row) {
       let frontTableData = this.$store.getters.getFrontTableData()
       if (frontTableData && frontTableData.selectFillGrid) {
-        frontTableData.selectFillGrid.forEach(item => {
-          if (item.id === row.id) {
-            item = row
-          }
+        frontTableData.selectFillGrid = frontTableData.selectFillGrid.map(item => {
+          return item.id === row.id ? row : item
         })
         this.$store.commit("setFrontTableData", {
           table: 'selectFillGrid',

@@ -36,6 +36,7 @@ if (!top.pathConfig) {
   // top.pathConfig.application = "fyzhmd";
   // top.pathConfig.application = "config";
   // top.pathConfig.application = "factory";
+  top.pathConfig.application = "lgs";
   top.user = {
     create_time: "2019-08-11 22:30:15",
     create_user: "admin",
@@ -87,7 +88,7 @@ if (!top.pathConfig) {
   if (window.location.host.indexOf("localhost") !== -1) {
     sessionStorage.setItem(
       "bx_auth_ticket",
-      "xabxdzkj-775a3bd6-8388-4e4b-b4d4-06b9391c6d9f"
+      "xabxdzkj-4dd30080-0e31-4a50-b71d-f45acab37a03"
     );
   }
 }
