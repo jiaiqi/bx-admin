@@ -990,7 +990,6 @@ function init_util() {
 
   }
   Vue.prototype.popupDialog = function (params) {
-
     var btninfo = params["btninfo"]
 
     if (params.formType.startsWith("simple-")) {
@@ -1015,6 +1014,7 @@ function init_util() {
     let dialog = this.dialog;
     dialog.service = params.service;
     dialog._service = params._service;
+    dialog.gridData = this.gridData;
     dialog.defaultCondition = params.defaultCondition;
     dialog.childForeignkey = params.childForeignkey;
     dialog.listMainFormDatas = params.listMainFormDatas;

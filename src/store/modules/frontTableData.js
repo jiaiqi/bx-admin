@@ -15,8 +15,12 @@ const getters = {
 
 // mutations
 const mutations = {
-  setFrontTableData(state, {table, data}) {
-    Vue.set(state.tables, table, data)
+  setFrontTableData(state, {service, data, params}) {
+    state.tables = {
+      service,
+      data,
+      params
+    }
   },
 }
 

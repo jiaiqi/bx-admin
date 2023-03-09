@@ -56,15 +56,15 @@
       </treegrid>
     </el-dialog>
 
-    <el-dialog title="选择填充列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'select_fill_grid'" @close="activeForm = 'xx'" append-to-body >
-      <select-fill-grid v-if="activeForm == 'select_fill_grid'" @closeDialog="closeDialog" :service="service" :buttonInfo="buttonInfo">
-      </select-fill-grid>
-    </el-dialog>
-
     <el-dialog title="编辑列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'editgrid'" @close="activeForm = 'xx'" append-to-body >
 
-      <edit-grid name="editgrid" ref="editgrid" v-if="activeForm == 'editgrid'" @closeDialog="closeDialog" :_service="_service" :service="service" :buttonInfo="buttonInfo">
+      <edit-grid name="editgrid" ref="editgrid" v-if="activeForm == 'editgrid'" :service="service" :buttonInfo="buttonInfo">
       </edit-grid>
+    </el-dialog>
+
+    <el-dialog title="选择填充列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'select_fill_grid'" @close="activeForm = 'xx'" append-to-body >
+      <select-fill-grid v-if="activeForm == 'select_fill_grid'" @closeDialog="closeDialog" :gridData="gridData" :_service="_service" :buttonInfo="buttonInfo">
+      </select-fill-grid>
     </el-dialog>
 
     <!--列表加form操作-->

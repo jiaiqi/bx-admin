@@ -353,17 +353,6 @@ export default {
       deleteRows.forEach(item => {
         let target = _.find(this.gridData, i => item.id && (i.id == item.id));
         if (target) {
-
-          // 从vuex里同步删除数据
-          let frontTableData = this.$store.getters.getFrontTableData()
-          if (frontTableData && frontTableData.selectFillGrid) {
-            const result = frontTableData.selectFillGrid.filter(item => item.id !== target.id)
-            this.$store.commit("setFrontTableData", {
-              table: 'selectFillGrid',
-              data: result
-            })
-          }
-
           this.updateDirtyFlags(target, "delete");
           // this.gridData = this.gridData.filter((item) => item._dirtyFlags && item._dirtyFlags !== 'delete')
         } else {
@@ -374,6 +363,27 @@ export default {
           }
         }
       });
+      
+      // 从vuex里同步删除数据
+      let resArr = []
+      let frontTableData = this.$store.getters.getFrontTableData()      
+      if (frontTableData && frontTableData.data.length>0) {
+        const from = frontTableData.params.from
+        const to = frontTableData.params.to
+        const data = frontTableData.data  
+        const service = frontTableData.service
+
+        if (this.service === service) {
+          resArr = data.filter(x => !deleteRows.some(y => (y[to] ? y[to]:y[from]) === (x[to] ? x[to]:x[from])))
+          this.gridData = this.gridData.filter(x => !deleteRows.some(y => (y[to] ? y[to]:y[from]) === (x[to] ? x[to]:x[from])))
+
+          this.$store.commit("setFrontTableData", {
+            data: resArr,
+            service: frontTableData.service,
+            params: frontTableData.params
+          })
+        }      
+      }
     },
 
     syncRow2Fields: function (targetRow) {
