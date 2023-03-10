@@ -97,6 +97,7 @@ import video from '@/pages/video/index'
 
 import templateConfig from '@/pages/template/config'
 import erConfig from '@/pages/template/er-config'
+import printPage from '@/pages/template/print-page'
 
 // const excelEditView = ()=>import("@/components/common/luckysheet.vue")
 // pages
@@ -376,6 +377,10 @@ routes.push( {
     path: '/er-config',
     name: 'er-config',
     component: erConfig
+  },
+  {
+    path: '/print-page',
+    component: printPage
   },
 
   // storeMonitor
