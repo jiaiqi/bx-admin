@@ -219,6 +219,55 @@ export default {
     }
   },
 
+  watch: {
+    '$store.state.frontTableData': {
+      deep: true,
+      handler(newVal) {
+        const service = newVal.tables.service
+        if (this.service === service) {
+          const from = newVal.tables.params.from
+          const to = newVal.tables.params.to
+          const data = newVal.tables.data
+          const cols = newVal.tables.params.cols
+          
+          if (data.length == 0) {            
+            this.gridData = []
+            return
+          }
+          if (this.gridData.length == 0) {
+            data.forEach(item => {
+              item[to] = item[from]
+              this.gridData.push(item)
+            })
+            return
+          }
+
+          // 从当前list中删除内存中没有的数据
+          this.gridData = this.gridData.filter(x => data.findIndex(y => y[from] === x[to]) !== -1);
+          
+          // 内存中有list的数据，重新赋值；没有的为新增数据，添加到list中
+          data.forEach(item => {
+            let sameVal = false
+            
+            this.gridData.forEach(grid => {
+              if (item[from] === grid[to]) {
+                cols.forEach(col => {
+                  grid[col] = item[col]
+                  sameVal = true
+                })
+              }
+            })
+            
+            if (!sameVal) {
+              item[to] = item[from]
+              this.gridData.push(item)
+            }
+          })
+        }
+      }
+    },
+  },
+
   computed: {
     draftRun:function(){
         if(this.activeTabName === 'draft' || ((this.listType === 'updatechildlist' || this.listType === 'addchildlist'|| this.listType === 'detaillist') && this.pageIsDraft === 'draft')){
@@ -228,11 +277,6 @@ export default {
         }
     },
     gridDataRun:function(){
-      // 前端处理表格数据，选择填充单元格
-      // let frontTableData = this.$store.getters.getFrontTableData()
-      // if (frontTableData && frontTableData.selectFillGrid) {
-      //   this.gridData = frontTableData.selectFillGrid
-      // } 
       
         // 重新构造 gridData 为了过滤内存表删除操作
         let self = this

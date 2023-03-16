@@ -82,6 +82,8 @@ export default {
         this.customize_forward(butinfo, operateData);
       } else if (operate_type.endsWith("弹出")) {
         this.customize_popup(butinfo, operateData);
+      } else if (operate_type === '选择填充表格') {
+        this.customize_popup(butinfo, operateData);
       } else {
         alert("暂未实现");
       }
@@ -639,6 +641,9 @@ export default {
       } else if ("编辑列表弹出" == operate_type) {
 
         params.formType= "editgrid";
+        this.popupDialog(params);
+      } else if ("选择填充表格" == operate_type) {
+        params.formType= "select_fill_grid";
         this.popupDialog(params);
       } else if ("树列表弹出" == operate_type) {
 
