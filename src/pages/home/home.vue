@@ -284,7 +284,6 @@ let $ = require("jquery");
 
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/popover";
-import { async } from "q";
 import commonMixin from "@/components/mixin/global-page-mixin";
 $(function () {
   $('[data-toggle="tooltip"]').tooltip();

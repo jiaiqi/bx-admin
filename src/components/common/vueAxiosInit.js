@@ -2,7 +2,7 @@ import axios from "axios";
 // http://192.168.0.241:8080/lgs/select/srvwuliu_driver_select?srvwuliu_driver_select
 
 import Vue from "vue";
-import jscookie from 'js-cookie'; //引入cookie操作依赖
+// import jscookie from 'js-cookie'; //引入cookie操作依赖
 
 export default function () {
     // https://login.100xsys.cn:1443/

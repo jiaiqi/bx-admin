@@ -1,40 +1,113 @@
 <template>
-  <div class="customhome-container" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
+  <div
+    class="customhome-container"
+    @dragenter="dragDefFn($event)"
+    @dragover="dragDefFn($event)"
+  >
     <div class="customhome-header">
       <div>head</div>
     </div>
     <div class="cushome-sidebar">
-      <div v-for="pageItem in comList" @drag="drag(pageItem)" @dragend="dragend(pageItem)" class="com-item"
-        draggable="true" unselectable="on">
-        <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%;">
+      <div
+        v-for="(pageItem,index) in comList"
+        :key="index"
+        @drag="drag(pageItem)"
+        @dragend="dragend(pageItem)"
+        class="com-item"
+        draggable="true"
+        unselectable="on"
+      >
+        <img
+          :src="getImagePath(pageItem.example)"
+          alt=""
+          style="display: inline-block; width: 100%;"
+        />
         <span>{{ pageItem.com_type_name }}</span>
         <span>{{ pageItem.com_type }}</span>
       </div>
     </div>
     <div class="cushome-right">
-      <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
-      <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top:10px"></el-input>
-      <el-button size="mini" type="primary" style="float:right;margin-top:10px" @click="clickSave">保存</el-button>
-      <el-button size="mini" style="float:right;margin:10px 10px 0 0" @click="clearFn">清空画布</el-button>
+      <el-input
+        size="small"
+        v-model="pageName"
+        clearable
+        placeholder="请输入页面名称"
+      ></el-input>
+      <el-input
+        size="small"
+        v-model="pageTitle"
+        clearable
+        placeholder="请输入页面标题"
+        style="margin-top:10px"
+      ></el-input>
+      <el-button
+        size="mini"
+        type="primary"
+        style="float:right;margin-top:10px"
+        @click="clickSave"
+        >保存</el-button
+      >
+      <el-button
+        size="mini"
+        style="float:right;margin:10px 10px 0 0"
+        @click="clearFn"
+        >清空画布</el-button
+      >
     </div>
     <div class="cushome-content" id="content">
       <div class="custom-design" id="custom-design">
         <!-- <div class="custom-design" id="custom-design" :style="stylefn(styleJson)"> -->
-        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="12" :row-height="30" :is-draggable="true"
-          :is-resizable="true" :is-mirrored="false" :vertical-compact="true" :margin="[20, 20]" :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent">
-          <div class="grid-container" id="grid-container" :style="bjStyles"></div>
-          <grid-item v-for="(item, index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i"
-            :key="item.i" @moved="movedEvent" @resized="resizedEvent" class="gridItem"
-            :style="layoutJson ? stylefn(layoutJson.style_json) : ''">
+        <grid-layout
+          ref="gridlayout"
+          :layout.sync="layout"
+          :col-num="40"
+          :row-height="20"
+          :is-draggable="true"
+          :is-resizable="true"
+          :is-mirrored="false"
+          :vertical-compact="true"
+          :margin="[0, 0]"
+          :use-css-transforms="true"
+          @layout-updated="layoutUpdatedEvent"
+        >
+          <div
+            class="grid-container"
+            id="grid-container"
+            :style="bjStyles"
+          ></div>
+          <grid-item
+            v-for="(item, index) in layout"
+            :x="item.x"
+            :y="item.y"
+            :w="item.w"
+            :h="item.h"
+            :i="item.i"
+            :key="item.i"
+            @moved="movedEvent"
+            @resized="resizedEvent"
+            class="gridItem"
+            :style="layoutJson ? stylefn(layoutJson.style_json) : ''"
+          >
             <span class="remove" @click.stop="removeItem(item.i)">x</span>
-            <div v-if="item.isLeftBarItem" class="com-item" @click.stop="changeDesign(item.i)">
-              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
+            <div
+              v-if="item.isLeftBarItem"
+              class="com-item"
+              @click.stop="changeDesign(item.i)"
+            >
+              <img
+                :src="getImagePath(item.data.example)"
+                alt=""
+                style="display: inline-block; width: 100%;"
+              />
               <span>{{ item.data.com_type_name }}</span>
               <span>{{ item.data.com_type }}</span>
             </div>
             <div v-else class="com-item" @click.stop="changeDesign(item.i)">
-              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%;">
+              <img
+                :src="getImagePath(item.data.example)"
+                alt=""
+                style="display: inline-block; width: 100%;"
+              />
               <span>{{ item.data.com_name }}</span>
               <span>{{ item.data.com_type }}</span>
             </div>
@@ -53,14 +126,12 @@
 </template>
 
 <script>
-import { GridLayout, GridItem } from 'vue-grid-layout'
-import PageItem from '@/components/page-item/page-item'
-import {
-  formatStyleData
-} from '@/common/common.js'
+import { GridLayout, GridItem } from "vue-grid-layout";
+import PageItem from "@/components/page-item/page-item";
+import { formatStyleData } from "@/common/common.js";
 
-let mouseXY = { "x": null, "y": null }
-let DragPos = { "x": null, "y": null, "w": 1, "h": 1, "i": null }
+let mouseXY = { x: null, y: null };
+let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 
 export default {
   components: {
@@ -70,14 +141,15 @@ export default {
   },
   data() {
     return {
-      pgNo: '',
-      pageId: '',
-      pageName: '可视化配置',
-      pageTitle: '可视化配置页',
+      colNum:12,
+      pgNo: "",
+      pageId: "",
+      pageName: "可视化配置",
+      pageTitle: "可视化配置页",
       styleJson: null,
-      parentLayoutNo: '',
+      parentLayoutNo: "",
       layoutObj: null,
-      strLayout: '',
+      strLayout: "",
       layoutJson: null,
       comJson: [],
       comList: [],
@@ -153,18 +225,23 @@ export default {
     };
   },
   created() {
-    this.getComList()
+    this.getComList();
 
     if (this.$route.query.pageNo) {
-      this.pgNo = this.$route.query.pageNo
-      this.initPage()
+      this.pgNo = this.$route.query.pageNo;
+      this.initPage();
     }
   },
   mounted() {
-    document.addEventListener("dragover", function (e) {
-      mouseXY.x = e.clientX;
-      mouseXY.y = e.clientY;
-    }, false);
+
+    document.addEventListener(
+      "dragover",
+      function(e) {
+        mouseXY.x = e.clientX;
+        mouseXY.y = e.clientY;
+      },
+      false
+    );
 
     this.initDesign();
     this.moveMousemove();
@@ -172,20 +249,28 @@ export default {
     window.onclick = () => {
       this.curDesign = "";
     };
+    // window.onresize = () => {
+    //   this.initColNum();
+    // };
   },
   methods: {
+       initColNum() {
+      let containerWidth = document.getElementById("grid-container")
+        .offsetWidth;
+      this.colNum = containerWidth / 20;
+    },
     stylefn(style) {
       if (style) {
-        return formatStyleData(style)
+        return formatStyleData(style);
       }
     },
     clearFn() {
-      this.layout = []
+      this.layout = [];
     },
     clickSave() {
       if (this.layout.length === 0) {
-        this.$message.error('画布为空！')
-        return
+        this.$message.error("画布为空！");
+        return;
       }
 
       this.$confirm("是否确认保存", "提示", {
@@ -194,293 +279,321 @@ export default {
         type: "warning",
       })
         .then(() => {
-          this.saveFn()
+          this.saveFn();
         })
         .catch(() => {
           // 已取消
-        })
+        });
     },
     async saveFn() {
-      let addObj = {}
+      let addObj = {};
       // 新增保存
       if (!this.pgNo) {
         // 布局容器
         addObj = {
-          serviceName: 'srvpage_cfg_layout_add',
-          data: [{
-            layout_party: "页面",
-            layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '')
-          }]
-        }
-        const layoutNo = await this.saveService('add', addObj, null, true)
+          serviceName: "srvpage_cfg_layout_add",
+          data: [
+            {
+              layout_party: "页面",
+              layout_name:
+                this.pageName +
+                this.formatDateTime(new Date()).replace(/[\s-:]/g, ""),
+            },
+          ],
+        };
+        const layoutNo = await this.saveService("add", addObj, null, true);
 
         // 子容器
-        addObj.data = []
+        addObj.data = [];
         this.layout.forEach((item, i) => {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutNo.layout_no,
-            layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + i,
+            layout_name:
+              this.pageName +
+              this.formatDateTime(new Date()).replace(/[\s-:]/g, "") +
+              "-" +
+              i,
             seq: i,
             pos_x: item.x,
             pos_y: item.y,
             col_span: item.h,
-            row_span: item.w
-          })
-        })
-        await this.saveService('add', addObj)
+            row_span: item.w,
+          });
+        });
+        await this.saveService("add", addObj);
 
         // 页面
         addObj = {
-          serviceName: 'srvpage_cfg_page_add',
-          data: [{
-            page_name: this.pageName,
-            page_title: this.pageTitle,
-            layout_no: layoutNo.layout_no
-          }]
-        }
-        const pageNo = await this.saveService('add', addObj, null, true)
+          serviceName: "srvpage_cfg_page_add",
+          data: [
+            {
+              page_name: this.pageName,
+              page_title: this.pageTitle,
+              layout_no: layoutNo.layout_no,
+            },
+          ],
+        };
+        const pageNo = await this.saveService("add", addObj, null, true);
 
         // 组件
         addObj = {
-          serviceName: 'srvpage_cfg_page_component_add',
-          data: []
-        }
+          serviceName: "srvpage_cfg_page_component_add",
+          data: [],
+        };
         this.layout.forEach((item, i) => {
           addObj.data.push({
-            "com_name": item.data.com_type_name,
-            "com_preview": item.data.example,
-            "page_layout_no": layoutNo.layout_no,
-            "com_type": item.data.com_type,
-            "page_no": pageNo.page_no,
-            "com_seq": i,
-            "layout_seq": i,
-          })
-        })
-        this.saveService('add', addObj)
+            com_name: item.data.com_type_name,
+            com_preview: item.data.example,
+            page_layout_no: layoutNo.layout_no,
+            com_type: item.data.com_type,
+            page_no: pageNo.page_no,
+            com_seq: i,
+            layout_seq: i,
+          });
+        });
+        this.saveService("add", addObj);
       } else {
         // 编辑保存
         // 子容器
-        const parseLayout = JSON.parse(this.strLayout)
+        const parseLayout = JSON.parse(this.strLayout);
 
         // 删除的子容器id数组
-        let arrLayoutDel = []
+        let arrLayoutDel = [];
         // add子容器入参
         let addLayout = {
-          serviceName: 'srvpage_cfg_layout_add',
-          data: []
-        }
+          serviceName: "srvpage_cfg_layout_add",
+          data: [],
+        };
         // update子容器入参
-        let arrUpdateLayout = []
-        let objUpdateLayout = {}
+        let arrUpdateLayout = [];
+        let objUpdateLayout = {};
         // delete子容器入参
         let deleteLayout = {
-          serviceName: 'srvpage_cfg_layout_delete',
-        }
+          serviceName: "srvpage_cfg_layout_delete",
+        };
 
-        let arrComDel = []
+        let arrComDel = [];
         let addCom = {
-          serviceName: 'srvpage_cfg_page_component_add',
-          data: []
-        }
+          serviceName: "srvpage_cfg_page_component_add",
+          data: [],
+        };
         let deleteCom = {
-          serviceName: 'srvpage_cfg_page_component_delete',
-        }
+          serviceName: "srvpage_cfg_page_component_delete",
+        };
 
-        parseLayout.forEach(oldItem => {
-          let flag = true
+        parseLayout.forEach((oldItem) => {
+          let flag = true;
           this.layout.forEach((item, i) => {
             if (oldItem.id === item.id) {
-              flag = false
+              flag = false;
             }
-          })
+          });
 
-          if (flag) { // 删除
-            arrLayoutDel.push(oldItem.id)
-            arrComDel.push(oldItem.data.id)
+          if (flag) {
+            // 删除
+            arrLayoutDel.push(oldItem.id);
+            arrComDel.push(oldItem.data.id);
           }
-        })
+        });
 
         this.layout.forEach((item, i) => {
-          if (!item.id) { // 新增容器
+          if (!item.id) {
+            // 新增容器
             addLayout.data.push({
               layout_party: "组件",
               parent_no: this.parentLayoutNo,
-              layout_name: this.pageName + this.formatDateTime(new Date()).replace(/[\s-:]/g, '') + '-' + i,
+              layout_name:
+                this.pageName +
+                this.formatDateTime(new Date()).replace(/[\s-:]/g, "") +
+                "-" +
+                i,
               seq: i,
               pos_x: item.x,
               pos_y: item.y,
               col_span: item.h,
-              row_span: item.w
-            })
-          } else { // 更新
+              row_span: item.w,
+            });
+          } else {
+            // 更新
             objUpdateLayout = {
-              "serviceName": "srvpage_cfg_layout_update",
-              "srvApp": 'config',
-              "condition": [
+              serviceName: "srvpage_cfg_layout_update",
+              srvApp: "config",
+              condition: [
                 {
-                  "colName": "id",
-                  "ruleType": "eq",
-                  "value": item.id
-                }
+                  colName: "id",
+                  ruleType: "eq",
+                  value: item.id,
+                },
               ],
-              "data": [
+              data: [
                 {
                   pos_x: item.x,
                   pos_y: item.y,
                   col_span: item.h,
-                  row_span: item.w
-                }
-              ]
-            }
-            arrUpdateLayout.push(objUpdateLayout)
+                  row_span: item.w,
+                },
+              ],
+            };
+            arrUpdateLayout.push(objUpdateLayout);
           }
-        })
+        });
 
         // 子容器
         if (arrLayoutDel.length > 0) {
-          await this.saveService('delete', deleteLayout, arrLayoutDel.join())
+          await this.saveService("delete", deleteLayout, arrLayoutDel.join());
         }
         if (addLayout.data.length > 0) {
-          this.layoutObj = await this.saveService('add', addLayout, null, true)
+          this.layoutObj = await this.saveService("add", addLayout, null, true);
         }
         if (arrUpdateLayout.length > 0) {
-          await this.saveService('update', arrUpdateLayout)
+          await this.saveService("update", arrUpdateLayout);
         }
 
         this.layout.forEach((item, i) => {
-          if (!item.id) { // 新增组件
+          if (!item.id) {
+            // 新增组件
             addCom.data.push({
-              "com_name": item.data.com_type_name,
-              "com_preview": item.data.example,
-              "page_layout_no": this.layoutObj.layout_no,
-              "com_type": item.data.com_type,
-              "page_no": this.pgNo,
-              "com_seq": i,
-              "layout_seq": i,
-            })
+              com_name: item.data.com_type_name,
+              com_preview: item.data.example,
+              page_layout_no: this.layoutObj.layout_no,
+              com_type: item.data.com_type,
+              page_no: this.pgNo,
+              com_seq: i,
+              layout_seq: i,
+            });
           }
-        })
+        });
 
         // 组件
         if (arrComDel.length > 0) {
-          await this.saveService('delete', deleteCom, arrComDel.join())
+          await this.saveService("delete", deleteCom, arrComDel.join());
         }
         if (addCom.data.length > 0) {
-          await this.saveService('add', addCom)
+          await this.saveService("add", addCom);
         }
 
-        this.layout = []
-        this.initPage()
+        this.layout = [];
+        this.initPage();
       }
     },
     saveService(type, o, id, isTrue) {
       return new Promise((resolve, reject) => {
-        let params = []
+        let params = [];
         switch (type) {
-          case 'add':
+          case "add":
             params = [
               {
                 serviceName: o.serviceName,
-                srvApp: 'config',
+                srvApp: "config",
                 condition: [],
-                data: o.data
-              }
-            ]
-            break
-          case 'update':
-            params = o
-            break
-          case 'delete':
+                data: o.data,
+              },
+            ];
+            break;
+          case "update":
+            params = o;
+            break;
+          case "delete":
             params = [
               {
                 serviceName: o.serviceName,
-                srvApp: 'config',
-                condition: [{ colName: "id", ruleType: "in", value: id }]
-              }
-            ]
-            break
+                srvApp: "config",
+                condition: [{ colName: "id", ruleType: "in", value: id }],
+              },
+            ];
+            break;
         }
 
-        this.operate(params).then(response => {
-          if (response.body.state === 'SUCCESS') {
+        this.operate(params).then((response) => {
+          if (response.body.state === "SUCCESS") {
             if (isTrue) {
-              resolve(response.body.response[0].response.effect_data[0])
+              resolve(response.body.response[0].response.effect_data[0]);
             } else {
-              resolve(response.body.response[0].response)
+              resolve(response.body.response[0].response);
             }
             // this.$message.info(response.body.resultCode);
           } else {
             // this.$message.error(response.body.resultMessage);
           }
-        })
-      })
+        });
+      });
     },
     getLayoutNo(data) {
-      return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).layout_no
+      return data.reduce((p, v) =>
+        Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
+      ).layout_no;
     },
     getPageNo(data) {
-      return data.reduce((p, v) => Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p).page_no
+      return data.reduce((p, v) =>
+        Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
+      ).page_no;
     },
     async initPage() {
-      const url = `/config/select/srvpage_cfg_page_guest_select`
+      const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
-        "serviceName": "srvpage_cfg_page_guest_select",
-        "colNames": ["*"],
-        "condition": [{
-          colName: 'page_no',
-          ruleType: 'eq',
-          value: this.pgNo
-        }],
-      }
-      const res = await this.$axios.post(url, req)
-      if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        let data = res.data.data[0]
-        Object.keys(data).forEach(key => {
+        serviceName: "srvpage_cfg_page_guest_select",
+        colNames: ["*"],
+        condition: [
+          {
+            colName: "page_no",
+            ruleType: "eq",
+            value: this.pgNo,
+          },
+        ],
+      };
+      const res = await this.$axios.post(url, req);
+      if (
+        res.data.state === "SUCCESS" &&
+        Array.isArray(res.data.data) &&
+        res.data.data.length > 0
+      ) {
+        let data = res.data.data[0];
+        Object.keys(data).forEach((key) => {
           if (key && key.indexOf("_json") !== -1) {
             try {
-              data[`${key}_data`] = JSON.parse(data[key])
+              data[`${key}_data`] = JSON.parse(data[key]);
             } catch (e) {
               //TODO handle the exception
             }
           }
-        })
+        });
 
-        this.pageId = data.id
-        this.pageName = data.page_name
-        this.pageTitle = data.page_title
-        this.comJson = data.component_json_data
-        this.styleJson = data.page_style_json_data
+        this.pageId = data.id;
+        this.pageName = data.page_name;
+        this.pageTitle = data.page_title;
+        this.comJson = data.component_json_data;
+        this.styleJson = data.page_style_json_data;
 
-        if (!this.comJson) return
+        if (!this.comJson) return;
         this.comJson.forEach((com, i) => {
-          this.comList.forEach(list => {
+          this.comList.forEach((list) => {
             if (list.com_type === com.com_type) {
-              this.comJson[i].example = list.example
+              this.comJson[i].example = list.example;
             }
-          })
-        })
+          });
+        });
 
-        this.parentLayoutNo = data.layout_no
-        this.layoutJson = data.layout_json_data
+        this.parentLayoutNo = data.layout_no;
+        this.layoutJson = data.layout_json_data;
         this.layoutJson.parts_json.forEach((item, index) => {
           let obj = {
             x: item.pos_x,
             y: item.pos_y,
             w: item.row_span,
             h: item.col_span,
-            i: index,  // item.seq - 1
+            i: index, // item.seq - 1
             layout_no: item.layout_no,
             data: this.comJson[index],
             isLeftBarItem: false,
-            id: item.id
-          }
-          this.layout.push(obj)
-        })
+            id: item.id,
+          };
+          this.layout.push(obj);
+        });
 
-        this.strLayout = JSON.stringify(this.layout)
+        this.strLayout = JSON.stringify(this.layout);
       } else {
-        this.$message.info('无数据！')
+        this.$message.info("无数据！");
       }
     },
     // 对应Vue生命周期的created
@@ -513,23 +626,34 @@ export default {
     },
     // 移动后的事件
     movedEvent(i, newX, newY) {
-      this.layout.forEach(item => {
+      this.layout.forEach((item) => {
         if (item.i === i) {
-          item.x = newX
-          item.y = newY
+          item.x = newX;
+          item.y = newY;
         }
-      })
+      });
       console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
-      this.layout.forEach(item => {
+      this.layout.forEach((item) => {
         if (item.i === i) {
-          item.h = newH
-          item.w = newW
+          item.h = newH;
+          item.w = newW;
         }
-      })
-      console.log("RESIZED i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
+      });
+      console.log(
+        "RESIZED i=" +
+          i +
+          ", H=" +
+          newH +
+          ", W=" +
+          newW +
+          ", H(px)=" +
+          newHPx +
+          ", W(px)=" +
+          newWPx
+      );
     },
     //点击容器某一个组件
     changeDesign(idx) {
@@ -566,11 +690,7 @@ export default {
     //自定义布局容器是否有当前数据
     haveData() {
       let flag = false;
-      for (
-        let i = 0, len = this.designData.layoutCon.length;
-        i < len;
-        i++
-      ) {
+      for (let i = 0, len = this.designData.layoutCon.length; i < len; i++) {
         if (this.designData.layoutCon[i].i == this.moveData.id) {
           flag = true;
         }
@@ -579,11 +699,7 @@ export default {
     },
     //删除哪一条数据
     filterData(id) {
-      for (
-        let i = 0, len = this.designData.layoutCon.length;
-        i < len;
-        i++
-      ) {
+      for (let i = 0, len = this.designData.layoutCon.length; i < len; i++) {
         if (this.designData.layoutCon[i].i == id) {
           return i;
         }
@@ -605,17 +721,22 @@ export default {
     },
     //自定义容器初始化
     initDesign() {
-      let domstyleWidth = document.getElementById("grid-container").offsetWidth - 20 * 10,
+      let domstyleWidth =
+          document.getElementById("grid-container").offsetWidth - 20 * 10,
         domstyleHeight = 50,
         // domstyleHeight = document.getElementById("grid-container").offsetHeight / 20,
         domContainer = document.getElementById("custom-design"),
         resWidth = domstyleWidth / 12,
         everyWidth = ((resWidth / domstyleWidth) * 100).toFixed(2);
       this.bjStyles = {
-        right: "20px",
-        background: "linear-gradient(rgba(241, 243, 242, 1) 20px, transparent 0px) 0% 0%," +
-          "linear-gradient(to right, rgba(241, 243, 242, 1) 20px, transparent 0px) rgba(223, 232, 228, 1)",
-        "background-size": `${everyWidth}% ${domstyleHeight}px`,
+        // right: "20px",
+        background: `linear-gradient(to right, transparent 19px,#ccc 1px),linear-gradient(to bottom, transparent 19px,#ccc 1px)`,
+        "background-size": `20px 20px`,
+
+        // background:
+        //   "linear-gradient(rgba(241, 243, 242, 1) 20px, transparent 0px) 0% 0%," +
+        //   "linear-gradient(to right, rgba(241, 243, 242, 1) 20px, transparent 0px) rgba(223, 232, 228, 1)",
+        // "background-size": `${everyWidth}% ${domstyleHeight}px`,
       };
       this.rowheight = domstyleHeight - 10;
       this.designLeft = domContainer.offsetLeft + 250;
@@ -648,12 +769,17 @@ export default {
             this.addClass(this.moveData.id, "have");
           } else {
             let X = this.mouseLeft - this.designLeft,
-              domstyleWidth = (document.getElementById("grid-container").offsetWidth - 12 * 10) / 12,
+              domstyleWidth =
+                (document.getElementById("grid-container").offsetWidth -
+                  12 * 10) /
+                12,
               xlang = Math.floor(X / domstyleWidth / 2);
             if (xlang > 6) {
               xlang = 6;
             }
-            this.designData.layoutCon[this.filterData(this.moveData.id)].x = xlang;
+            this.designData.layoutCon[
+              this.filterData(this.moveData.id)
+            ].x = xlang;
           }
         }
       };
@@ -708,7 +834,7 @@ export default {
         for (let y = 0; y < edgeY; y++) {
           gridMap[x][y] = 0;
         }
-      };
+      }
       layout.map((item) => {
         for (let x = item.x; x < item.x + item.w; x++) {
           for (let y = item.y; y < item.y + item.h; y++) {
@@ -733,83 +859,130 @@ export default {
             }
           }
         }
-      };
+      }
       newItem.x = 0;
       newItem.y = edgeY + 1;
       layout.push(newItem);
     },
     async getComList() {
-      const url = `/config/select/srvpage_cfg_com_cus_type_select`
+      const url = `/config/select/srvpage_cfg_com_cus_type_select`;
       const req = {
-        "serviceName": "srvpage_cfg_com_cus_type_select",
-        "colNames": ["*"]
-      }
-      const res = await this.$axios.post(url, req)
-      if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        this.comList = res.data.data
+        serviceName: "srvpage_cfg_com_cus_type_select",
+        colNames: ["*"],
+      };
+      const res = await this.$axios.post(url, req);
+      if (
+        res.data.state === "SUCCESS" &&
+        Array.isArray(res.data.data) &&
+        res.data.data.length > 0
+      ) {
+        this.comList = res.data.data;
         this.comList.forEach((item, i) => {
-          this.comList[i]['com_type'] = item.com_type_no
-        })
+          this.comList[i]["com_type"] = item.com_type_no;
+        });
       }
     },
-    removeItem: function (val) {
-      const index = this.layout.map(item => item.i).indexOf(val);
+    removeItem: function(val) {
+      const index = this.layout.map((item) => item.i).indexOf(val);
       this.layout.splice(index, 1);
       this.layout.forEach((item, i) => {
-        item.i = i
-      })
+        item.i = i;
+      });
     },
     dragDefFn(e) {
-      e.preventDefault()
+      e.preventDefault();
     },
 
-    drag: function (o) {
-      let parentRect = document.getElementById('content').getBoundingClientRect();
+    drag: function(o) {
+      let parentRect = document
+        .getElementById("content")
+        .getBoundingClientRect();
       let mouseInGrid = false;
-      if (((mouseXY.x > parentRect.left) && (mouseXY.x < parentRect.right)) && ((mouseXY.y > parentRect.top) && (mouseXY.y < parentRect.bottom))) {
+      if (
+        mouseXY.x > parentRect.left &&
+        mouseXY.x < parentRect.right &&
+        (mouseXY.y > parentRect.top && mouseXY.y < parentRect.bottom)
+      ) {
         mouseInGrid = true;
       }
-      if (mouseInGrid === true && (this.layout.findIndex(item => item.i === 'drop')) === -1) {
+      if (
+        mouseInGrid === true &&
+        this.layout.findIndex((item) => item.i === "drop") === -1
+      ) {
         this.layout.push({
           x: (this.layout.length * 2) % (this.colNum || 12),
           y: this.layout.length + (this.colNum || 12), // puts it at the bottom
           w: 2,
           h: 3,
-          i: 'drop',
-          data: o
+          i: "drop",
+          data: o,
         });
       }
-      let index = this.layout.findIndex(item => item.i === 'drop');
+      let index = this.layout.findIndex((item) => item.i === "drop");
       if (index !== -1) {
         try {
-          this.$refs.gridlayout.$children[this.layout.length].$refs.item.style.display = "none";
-        } catch {
-        }
+          this.$refs.gridlayout.$children[
+            this.layout.length
+          ].$refs.item.style.display = "none";
+        } catch {}
         let el = this.$refs.gridlayout.$children[index];
-        el.dragging = { "top": mouseXY.y - parentRect.top, "left": mouseXY.x - parentRect.left };
-        let new_pos = el.calcXY(mouseXY.y - parentRect.top, mouseXY.x - parentRect.left);
+        el.dragging = {
+          top: mouseXY.y - parentRect.top,
+          left: mouseXY.x - parentRect.left,
+        };
+        let new_pos = el.calcXY(
+          mouseXY.y - parentRect.top,
+          mouseXY.x - parentRect.left
+        );
         if (mouseInGrid === true) {
-          this.$refs.gridlayout.dragEvent('dragstart', 'drop', new_pos.x, new_pos.y, 3, 2);
+          this.$refs.gridlayout.dragEvent(
+            "dragstart",
+            "drop",
+            new_pos.x,
+            new_pos.y,
+            3,
+            2
+          );
           DragPos.i = String(index);
           DragPos.x = this.layout[index].x;
           DragPos.y = this.layout[index].y;
         }
         if (mouseInGrid === false) {
-          this.$refs.gridlayout.dragEvent('dragend', 'drop', new_pos.x, new_pos.y, 3, 2);
-          this.layout = this.layout.filter(obj => obj.i !== 'drop');
+          this.$refs.gridlayout.dragEvent(
+            "dragend",
+            "drop",
+            new_pos.x,
+            new_pos.y,
+            3,
+            2
+          );
+          this.layout = this.layout.filter((obj) => obj.i !== "drop");
         }
       }
     },
-    dragend: function (o) {
-      let parentRect = document.getElementById('content').getBoundingClientRect();
+    dragend: function(o) {
+      let parentRect = document
+        .getElementById("content")
+        .getBoundingClientRect();
       let mouseInGrid = false;
-      if (((mouseXY.x > parentRect.left) && (mouseXY.x < parentRect.right)) && ((mouseXY.y > parentRect.top) && (mouseXY.y < parentRect.bottom))) {
+      if (
+        mouseXY.x > parentRect.left &&
+        mouseXY.x < parentRect.right &&
+        (mouseXY.y > parentRect.top && mouseXY.y < parentRect.bottom)
+      ) {
         mouseInGrid = true;
       }
       if (mouseInGrid === true) {
         // alert(`Dropped element props:\n${JSON.stringify(DragPos, ['x', 'y', 'w', 'h'], 2)}`);
-        this.$refs.gridlayout.dragEvent('dragend', 'drop', DragPos.x, DragPos.y, 2, 3);
-        this.layout = this.layout.filter(obj => obj.i !== 'drop');
+        this.$refs.gridlayout.dragEvent(
+          "dragend",
+          "drop",
+          DragPos.x,
+          DragPos.y,
+          2,
+          3
+        );
+        this.layout = this.layout.filter((obj) => obj.i !== "drop");
         // UNCOMMENT below if you want to add a grid-item
         let obj = {
           x: DragPos.x,
@@ -818,14 +991,22 @@ export default {
           h: 3,
           i: DragPos.i,
           data: o,
-          isLeftBarItem: true
-        }
+          isLeftBarItem: true,
+        };
         this.layout.push(obj);
-        this.$refs.gridlayout.dragEvent('dragend', DragPos.i, DragPos.x, DragPos.y, 2, 3);
+        this.$refs.gridlayout.dragEvent(
+          "dragend",
+          DragPos.i,
+          DragPos.x,
+          DragPos.y,
+          2,
+          3
+        );
         try {
-          this.$refs.gridlayout.$children[this.layout.length].$refs.item.style.display = "block";
-        } catch {
-        }
+          this.$refs.gridlayout.$children[
+            this.layout.length
+          ].$refs.item.style.display = "block";
+        } catch {}
       }
     },
     randomNum(n) {
@@ -834,7 +1015,7 @@ export default {
         res += Math.floor(Math.random() * 10);
       }
       return res;
-    }
+    },
   },
   // beforeRouteLeave(to, from, next) {
   //   const answer = window.confirm("当前页面数据未保存，确定要离开？");
@@ -895,8 +1076,10 @@ export default {
     overflow: auto;
 
     .custom-design {
-      width: 100%;
+      // width: 100%;
       height: 100%;
+      width: 800px;
+      margin: 0 auto;
       // background-image: url('~@/assets/img/1234.png');
       // background-size: cover;
       // background-repeat: no-repeat;
@@ -1002,7 +1185,7 @@ export default {
   background: #197f54;
 }
 
-.vue-grid-item>.vue-resizable-handle {
+.vue-grid-item > .vue-resizable-handle {
   position: absolute;
   width: 0;
   height: 0;
