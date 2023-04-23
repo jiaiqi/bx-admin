@@ -186,6 +186,23 @@ export default {
     },
   },
   methods: {
+    setInitVal() {
+      if (
+        this.options.length > 0 &&
+        !this.field.model &&
+        this.field.info &&
+        this.field.info.srvCol &&
+        this.field.info.srvCol.init_expr === "$firstRowData"
+      ) {
+        let fieldInfo = this.field.info;
+        let loader = fieldInfo.dispLoader;
+        this.field.model = this.options[0];
+        this.selected = loader.showAsPair !== true
+              ?  this.options[0][fieldInfo.dispCol]
+              : `${ this.options[0][fieldInfo.dispCol]}/${ this.options[0][fieldInfo.valueCol]}`;
+
+      }
+    },
     onPickerSelected (selected) {
       this.field.model = selected
       this.selected = selected;
@@ -268,6 +285,7 @@ export default {
             });
             this.options = options.map(item => item);
             // cb(options)
+            this.setInitVal()
           } else {
             // cb([]);
             return [];
@@ -353,7 +371,7 @@ export default {
 
     loadOptions (queryString, cb) {
       let self = this;
-
+  
       let fieldInfo = this.field.info;
       let loader = fieldInfo.dispLoader;
       if (loader.enableFunc) {
@@ -834,9 +852,9 @@ export default {
       });
     }
 
-    if (this.subType === "select") {
-      this.getOptions("");
-    }
+    // if (this.subType === "select") {
+      // this.getOptions("");
+    // }
     if (this.field.model) {
       // console.log("modal--2", this.field.model)
       let value = this.field.model[ this.field.info.valueCol ];
@@ -856,9 +874,9 @@ export default {
         }
       }
     }
-    if (this.subType === "select") {
-      this.getOptions("");
-    }
+    // if (this.subType === "select") {
+      this.getOptions(true);
+    // }
 
     // if(this.field.type === "User"){
     //   this.appNo = "sso"

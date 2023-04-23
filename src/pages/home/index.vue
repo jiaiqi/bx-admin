@@ -247,7 +247,6 @@ let $ = require("jquery");
 
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/popover";
-import { async } from "q";
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip();

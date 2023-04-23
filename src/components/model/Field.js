@@ -388,7 +388,7 @@ export class Field {
   
 
   hasInitValueExpr() {
-    return !!this.info.initValueExpr;
+    return !!this.info.initValueExpr&&this.info.initValueExpr!=='$firstRowData';
   }
 
   putValidateError(rule, errMsg) {

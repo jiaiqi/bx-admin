@@ -518,6 +518,18 @@ export default {
         } else {
           this.setSrvVal(value);
         }
+      } else if (
+        this.options.length > 0 &&
+        !this.field.model &&
+        this.field.info &&
+        this.field.info.srvCol &&
+        this.field.info.srvCol.init_expr === "$firstRowData"
+      ) {
+        // 默认选中首行数据
+        this.field.model = this.options[0];
+        this.selected = [this.field.model[this.field.info.valueCol]]
+        this.$emit("field-value-changed", this.field.info.name, this.field);
+        
       }
     });
   },
