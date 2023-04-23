@@ -32,7 +32,21 @@
       </template>
 
     </div> -->
-
+    <el-row :gutter="20" v-if="statsData.length > 0" style="border: 1px solid #f2f2f2;
+    padding: 5px;margin:0;">
+      <div class="stata-data-layout">
+          <div  v-for="(sum,index) in statsData" :key="index" class="text-center stata-data-item">
+            <div class="grid-content bg-purple" style="font-size:1.1rem;color:#409eff;">
+              {{sum.label}}
+              <el-tooltip popper-class="retail-poper" effect="dark" v-if="sum.tip" :content="sum.tip" placement="right">
+                <i class="el-icon-question" style="color:#525252"></i>
+              </el-tooltip>
+            </div>
+            <div class="grid-content bg-purple">{{sum.unit ? sum.unit : ''}}{{sum.value}}{{sum.suffix? sum.suffix : ''}}</div>
+          </div>
+      </div>
+      
+    </el-row>
     <div>
       <template>
         <treegrid ref="list"
@@ -53,6 +67,7 @@
               :inplace-edit="inplaceEdit"
               :default-inplace-edit-mode="defaultInplaceEditMode"
               :default-dirty-flags="defaultDirtyFlags"
+              @stats-data-load="statsLoaded"
               @grid-data-changed="$emit('grid-data-changed', $event)"
               @v2-loaded-isDraft="v2LoadedIsDraft($event)"
         >
@@ -102,7 +117,9 @@
         tabsBuild:false,
         isDefault:null,
         relationCondition:{},
-        onInputValue:false  // 是否有查询条件
+        onInputValue:false,  // 是否有查询条件,
+        moreConfig:null,
+        statsData:[]
       }
     },
 
@@ -199,7 +216,12 @@
 
 
     methods: {
-      
+      statsLoaded(e){
+        // console.log('statsLoaded',e)
+         let stataList = this.$refs.list.buildStatsData(e)
+        //  console.log('statsLoaded',stataList)
+         this.statsData = stataList
+      },
       onFilterChange(e){
         this.onInputValue = e
         if(e){

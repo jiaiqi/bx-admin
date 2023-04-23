@@ -17,7 +17,13 @@
         @submitted2mem="onAdd2MemSubmitted">
       </add>
     </div>
-
+    <!-- <el-row v-if="groupByLayoutRun.length > 0" type="flex" class="row-bg-group-layout" justify="left">
+         <el-col :xs="8" :sm="6" :md="4" :lg="3" :xl="1" v-for="(item,index) in groupByLayoutRun" :key="index">
+           <div class="grid-content bg-purple group-by-layout">
+             {{item.aliasName}}:{{item.value}}{{item.unit}}
+           </div>
+           </el-col>
+    </el-row> -->
     <el-row v-show="!hideButtons" type="flex" class="row-bg" justify="end">
       <div class="table-head-btns">
         <template v-for="(item, index) in sortedGridButtons">

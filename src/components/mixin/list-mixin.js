@@ -269,6 +269,20 @@ export default {
   },
 
   computed: {
+        groupByLayoutRun:function(){
+            let req = this.moreConfig && this.moreConfig.hasOwnProperty("groupByLayout") ? this.moreConfig.groupByLayout : false
+            let groupConfig = req.group || []
+            
+            let reqData = this.groupByLayoutData
+            for(let cfg of groupConfig){
+                for(let val in reqData){
+                    if(val == cfg.aliasName || val == cfg.colName){
+                        cfg["value"] = reqData[val]
+                    }
+                }
+            }
+            return groupConfig
+        },
     draftRun:function(){
         if(this.activeTabName === 'draft' || ((this.listType === 'updatechildlist' || this.listType === 'addchildlist'|| this.listType === 'detaillist') && this.pageIsDraft === 'draft')){
           return true
@@ -1627,6 +1641,17 @@ export default {
               }else{
                 this.gridData = response.body.data;
                 let page = response.body.page
+
+
+                // self.statsData = response.body.stats_data? response.body.stats_data:[]
+                if(response.body.hasOwnProperty('stats_data')){
+
+                  self.statsData = response.body.stats_data
+                  
+                  self.buildStatsData()  // 格式化金额数字格式
+                  
+                  self.$emit('stats-data-load',self.statsData)
+                }
                 if(!page){
                   page = { total:response.body.data.length }
                 }
@@ -2446,6 +2471,18 @@ export default {
           break
       }
       return result
+    },
+    buildStatsData(statsData){
+       let datas = statsData || []
+       let heads = this.gridData
+       for(let data of datas){
+        if(data.col_type == 'Money'){
+          // this.$set(data,'value',DataUtil.formatMoney(''+ data.value))
+          // console.log(data.value,DataUtil.formatMoney(''+ data.value))
+          data.value = DataUtil.formatMoney(''+ data.value)
+        }
+      }
+       return datas
     }
   },
 
