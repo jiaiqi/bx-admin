@@ -245,11 +245,12 @@
       @close="activeForm = 'xx'">
       <add name="list-add" ref="add-form" v-if="activeForm == 'add'" :service="getAddService"
         :submit2-db="storageType == 'db'" :defaultCondition='defaultCondition' :form-model-decorator="formModelDecorator"
-        :defaultValues="listMainFormDatas" :haveDraft="isDraft" :pageIsDraft="activeTabName"
+         :haveDraft="isDraft" :pageIsDraft="activeTabName"
         :childForeignkey="childForeignkey" :parentPageType="listType" :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)" @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted">
       </add>
+      <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
     <el-dialog title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'duplicate'"
       @close="activeForm = 'xx'">

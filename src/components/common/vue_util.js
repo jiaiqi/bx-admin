@@ -1014,7 +1014,7 @@ function init_util() {
     let dialog = this.dialog;
     dialog.service = params.service;
     dialog._service = params._service;
-    dialog.gridData = this.gridData;
+    // dialog.gridData = this.gridData;
     dialog.defaultCondition = params.defaultCondition;
     dialog.childForeignkey = params.childForeignkey;
     dialog.listMainFormDatas = params.listMainFormDatas;
