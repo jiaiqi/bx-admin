@@ -1036,8 +1036,8 @@ function init_util() {
 
       dialog.buttonInfo = params.otherParams.buttonInfo;
     }
-    if(params.hasOwnProperty('initSelectedDatas')){
-      dialog['initSelectedDatas'] = params.initSelectedDatas
+    if(params.hasOwnProperty('batchInitConfig')){
+      dialog['batchInitConfig'] = params.batchInitConfig
     }
     dialog.activeForm = params.formType;
   }

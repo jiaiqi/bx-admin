@@ -68,7 +68,7 @@
     </el-dialog>
 
     <el-dialog title="批量选择操作" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'batch-edit-grid'" @close="activeForm = 'xx'" append-to-body >
-      <batchEditGrid v-if="activeForm == 'batch-edit-grid'" @closeDialog="closeDialog" :initSelectedDatas="initSelectedDatas"  :buttonInfo="buttonInfo">
+      <batchEditGrid v-if="activeForm == 'batch-edit-grid' && batchInitConfig" @closeDialog="closeDialog" :initSelectedDatas="batchInitConfig.initSelectedDatas"  :buttonInfo="buttonInfo">
       </batchEditGrid>
     </el-dialog>
 
@@ -174,7 +174,7 @@ export default {
       childForeignkey:null,
       defaultCondition:null,
       listMainFormDatas:null,
-      initSelectedDatas:[]
+      batchInitConfig:null
     };
   },
 
