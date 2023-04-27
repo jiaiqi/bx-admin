@@ -68,8 +68,8 @@
     </el-dialog>
 
     <el-dialog title="批量选择操作" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'batch-edit-grid'" @close="activeForm = 'xx'" append-to-body >
-      <select-fill-grid v-if="activeForm == 'select_fill_grid'" @closeDialog="closeDialog" :gridData="gridData" :_service="_service" :buttonInfo="buttonInfo">
-      </select-fill-grid>
+      <batchEditGrid v-if="activeForm == 'batch-edit-grid'" @closeDialog="closeDialog" :gridData="gridData" :_service="_service" :buttonInfo="buttonInfo">
+      </batchEditGrid>
     </el-dialog>
 
     <!--列表加form操作-->

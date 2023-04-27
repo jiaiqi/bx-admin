@@ -1,5 +1,6 @@
 <template>
   <div>
+    批量处理
     <el-table ref="selectFillTable" :data="tableData" border class="tb-edit" style="width: 100%"
       @selection-change="handleSelectionChange" highlight-current-row>
       <el-table-column type="selection" label="全选" header-align="left" v-if="tableData && tableData.length > 0">
