@@ -27,3 +27,7 @@ package-lock.json
 vue.config.js
 
 
+package.json
+yarn.lock
+package-lock.json
+src/components/test/spa_mock.js
