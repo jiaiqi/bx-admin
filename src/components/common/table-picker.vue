@@ -12,7 +12,7 @@
           clearable
           @remove-tag="removeTag"
           @clear="clearSelect"
-          @focus="visible = true"
+          @focus="visible = true;onSearch()"
         >
           <el-option
             v-for="item in allData"

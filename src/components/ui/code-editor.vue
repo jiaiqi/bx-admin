@@ -9,10 +9,12 @@
 </template>
 
 <script>
+  import editor from 'vue2-ace-editor'
   export default {
       name: "CodeEditor",
       components: {
-        editor: () =>  import(/* webpackChunkName: "ace" */'vue2-ace-editor'),
+        editor
+        // : () =>  import(/* webpackChunkName: "ace" */'vue2-ace-editor'),
       },
 
       props: {
