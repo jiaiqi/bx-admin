@@ -987,33 +987,41 @@ export default {
         }
 
       } else if ("batchadd" == type) {
-
-        var select_optionlist = ""
-        var child_column_name = this.childforeignkey.column_name;
-        var map_table_name = "";
-        for (var item of this.srv_cols) {
-          let columns = item.columns;
-
-          let option_list_v2 = item.option_list_v2;
-          if (option_list_v2 != undefined && option_list_v2 != null && option_list_v2 != '') {
-            if (columns != child_column_name) {
-              select_optionlist = option_list_v2;
-              map_table_name = item.table_name;
-            }
-
-          }
+        console.log('batchadd',button)
+        if(button.hasOwnProperty('btn_cfg_json')){
+           this.buildBatchConfig(button)
+        }else{
+           console.error(button)
         }
-        if (select_optionlist != '') {
 
-          var mapcondition = {};
-          mapcondition.map_table = map_table_name;
-          mapcondition.input_col_name = child_column_name;
-          mapcondition.input_col_value = this.childforeignvalue;
-          mapcondition.addservice = exeservice;
-          var service = select_optionlist.serviceName;
-          var condition = [];
-          this.addListpoup(service, condition, mapcondition);
-        }
+
+        /**旧版老代码 */
+        // var select_optionlist = ""
+        // var child_column_name = this.childforeignkey.column_name;
+        // var map_table_name = "";
+        // for (var item of this.srv_cols) {
+        //   let columns = item.columns;
+
+        //   let option_list_v2 = item.option_list_v2;
+        //   if (option_list_v2 != undefined && option_list_v2 != null && option_list_v2 != '') {
+        //     if (columns != child_column_name) {
+        //       select_optionlist = option_list_v2;
+        //       map_table_name = item.table_name;
+        //     }
+
+        //   }
+        // }
+        // if (select_optionlist != '') {
+
+        //   var mapcondition = {};
+        //   mapcondition.map_table = map_table_name;
+        //   mapcondition.input_col_name = child_column_name;
+        //   mapcondition.input_col_value = this.childforeignvalue;
+        //   mapcondition.addservice = exeservice;
+        //   var service = select_optionlist.serviceName;
+        //   var condition = [];
+        //   this.addListpoup(service, condition, mapcondition);
+        // }
 
         //批量添加
 

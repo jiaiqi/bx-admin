@@ -2,7 +2,7 @@ export default {
   
     methods: {
       buildConditions: function (pageIsDraft) {
-        return this.buildConditionsFromConf(this,null);
+        return this.buildConditionsFromConf(this,null); 
       },
   
       buildConditionsFromConf: function (conf, item) {
