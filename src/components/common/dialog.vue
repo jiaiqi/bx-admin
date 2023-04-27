@@ -109,6 +109,8 @@ import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
 import EditGrid from "./edit-grid.vue";
 import SelectFillGrid from "./select-fill-grid.vue";
+import batchEditGrid from "./batch-edit-grid.vue";
+
 
 export default {
   components: {
@@ -121,7 +123,8 @@ export default {
     SimpleAdd,
     Executor,
     add,
-    update
+    update,
+    batchEditGrid
   },
   mixins: [ExecutorMixin],
 

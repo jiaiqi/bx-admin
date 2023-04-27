@@ -88,7 +88,7 @@ if (!top.pathConfig) {
   if (window.location.host.indexOf("localhost") !== -1) {
     sessionStorage.setItem(
       "bx_auth_ticket",
-      "xabxdzkj-aab9fdf1-6692-419a-ae2d-17142f55868f"
+      "xabxdzkj-8300eb73-0844-43e0-80d4-328b89e5de5f"
     );
   }
 }
