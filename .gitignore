@@ -26,5 +26,12 @@ yarn-error.log*
 
 
 
+<<<<<<< HEAD
 /package.json
 /package-lock.json
+=======
+package.json
+yarn.lock
+package-lock.json
+src/components/test/spa_mock.js
+>>>>>>> 42fd5eb194e3e65cbaba395461bcae1c4b82d50c

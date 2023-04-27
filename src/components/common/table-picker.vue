@@ -12,7 +12,7 @@
           clearable
           @remove-tag="removeTag"
           @clear="clearSelect"
-          @focus="visible = true"
+          @focus="visible = true;onSearch()"
         >
           <el-option
             v-for="item in allData"
@@ -451,7 +451,7 @@ export default {
         }
       }
 
-      let fmtConditions = this.fmt.condition;
+      let fmtConditions = this.fmt.condition||this.fmt.conditions;
       if (Array.isArray(fmtConditions) && fmtConditions.length > 0) {
         for (var condition of fmtConditions) {
           let obj = {

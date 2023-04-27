@@ -107,7 +107,7 @@ export default {
           field.info.dispLoader.conditions.length > 0
         ) {
           const hascondDependField = field.info.dispLoader.conditions.find(
-            (item) => item.value && item.value.indexOf("data") !== -1
+            (item) => item.value&&typeof item.value==='string' && item.value.indexOf("data") !== -1
           );
 
           if (hascondDependField) {

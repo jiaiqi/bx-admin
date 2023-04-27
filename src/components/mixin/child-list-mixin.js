@@ -81,7 +81,9 @@ export default {
     hiddRefColFieldInForm: function (form) {
       let refCol = this.foreignKey.column_name;
       let refColField = form.fields[refCol];
-      refColField.info.visible = false;
+      if(refColField&&refColField.info){
+        refColField.info.visible = false;
+      }
     }
   }
 
