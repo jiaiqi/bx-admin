@@ -59,9 +59,15 @@ export default {
 
     customizeOperate(butinfo, operateData) {
 
-
+      let type = butinfo.button_type
       var application = butinfo.application;
       var operate_type = butinfo.operate_type;
+      if(type == 'batchadd'){
+        this.customize_popup(butinfo, operateData);
+        return 
+      }else{
+
+      }
       if (operate_type == "操作") {
         this.customize_operate(butinfo, operateData);
       } else if (operate_type == "流程申请") {
@@ -637,7 +643,7 @@ export default {
         otherParams["buttonInfo"]=item;
         params["otherParams"]=otherParams;
         this.popupDialog(params);
-
+ 
       } else if ("编辑列表弹出" == operate_type) {
 
         params.formType= "editgrid";
