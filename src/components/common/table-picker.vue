@@ -451,7 +451,7 @@ export default {
         }
       }
 
-      let fmtConditions = this.fmt.condition;
+      let fmtConditions = this.fmt.condition||this.fmt.conditions;
       if (Array.isArray(fmtConditions) && fmtConditions.length > 0) {
         for (var condition of fmtConditions) {
           let obj = {
