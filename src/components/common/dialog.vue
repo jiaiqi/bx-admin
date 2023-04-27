@@ -67,6 +67,11 @@
       </select-fill-grid>
     </el-dialog>
 
+    <el-dialog title="批量选择操作" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'batch-edit-grid'" @close="activeForm = 'xx'" append-to-body >
+      <batchEditGrid v-if="activeForm == 'batch-edit-grid'" @closeDialog="closeDialog" :gridData="gridData" :_service="_service" :buttonInfo="buttonInfo">
+      </batchEditGrid>
+    </el-dialog>
+
     <!--列表加form操作-->
     <el-dialog title="列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'list_update'" @close="activeForm = 'xx'" append-to-body >
 
@@ -104,6 +109,8 @@ import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
 import EditGrid from "./edit-grid.vue";
 import SelectFillGrid from "./select-fill-grid.vue";
+import batchEditGrid from "./batch-edit-grid.vue";
+
 
 export default {
   components: {
@@ -116,7 +123,8 @@ export default {
     SimpleAdd,
     Executor,
     add,
-    update
+    update,
+    batchEditGrid
   },
   mixins: [ExecutorMixin],
 
