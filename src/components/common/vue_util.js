@@ -1036,6 +1036,9 @@ function init_util() {
 
       dialog.buttonInfo = params.otherParams.buttonInfo;
     }
+    if(params.hasOwnProperty('initSelectedDatas')){
+      dialog['initSelectedDatas'] = params.initSelectedDatas
+    }
     dialog.activeForm = params.formType;
   }
 

@@ -33,27 +33,46 @@ export default {
   },
 
   props: {
-    gridData: {
-      type: Array
+    buttonInfo: {
+      type: Object,
+      default(){
+        return null
+      }
     },
-    _service: {
-      type: String
-    },
-    buttonInfo: {},
+    initSelectedDatas:{
+      type: Array,
+      default(){
+        return []
+      }
+    }
   },
 
   data() {
     return {
-      service_name: this._service,
-      tableHeadr: [],
-      tableData: [],
-      addCols: [],
-      moreConfig: JSON.parse(this.buttonInfo.more_config),
-      serviceObj: null,
+      /** 基本数据*/
+      typeDatas:[], // 分类列表
+      optionalDatas:[], // 可选列表
+      selectedDatas:[], // 已选列表
+      optionalListCondition:[],
+      selectedCondition:[]
     };
   },
   created: function () {
-    this.getData();
+    // this.getData();
+  },
+  computed:{
+    configBuild(){
+      let config = this.buttonInfo || null
+      try { 
+          config = this.buttonInfo.btn_cfg_json
+          config = JSON.parse(config)
+          return config
+      }
+      catch(err) {
+          console.error('没有可用的配置 或 配置错误',err)
+          return null
+      }
+    }
   },
   methods: {
     getData() {

@@ -12,7 +12,6 @@ export default {
         popupBatchDialog(item, operateData){
             operateData = this.pre_data_handle(item, operateData);
             var service = item["operate_service"];
-            var _service = item.service
             var new_conditions = [];
             var new_data = {};
             var page_type = "";
@@ -40,9 +39,8 @@ export default {
 
             var params={};
             params["service"]=service;
-            params["_service"]=_service;
             params["condition"]=new_conditions;
-            params["data"]=new_data;
+            params["initSelectedDatas"]=operateData;
             params["btninfo"]=item;
 
             params["childForeignkey"]=this.childForeignkey;
