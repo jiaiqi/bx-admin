@@ -6,10 +6,14 @@ import {wrapButton, wrapHeader,getButtonPara} from "../common/wrapper_util";
 import {getUnitData} from "../../util/UnitUtil";
 import * as DataUtil from "../../util/DataUtil";
 
+import batchAddMixin from "./batch-add-mixin";
 export function MissRequiredConditionError() {
 }
 
 export default {
+  mixins: [
+    batchAddMixin
+  ],
   data() {
     return {
       tabsConfig: [{
