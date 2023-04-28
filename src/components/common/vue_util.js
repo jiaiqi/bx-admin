@@ -669,8 +669,8 @@ function init_util() {
   };
 
   /**查询*/
-  Vue.prototype.treeSelect = function (service_name, condition) {
-    var url = this.getServiceUrl("select", service_name);
+  Vue.prototype.treeSelect = function (service_name, condition,app) {
+    var url = this.getServiceUrl("select", service_name,app);
     var params = {
       "serviceName": service_name,
       "treeData": true,
