@@ -1,36 +1,67 @@
 <template>
-  <div>
-     
+  <div class="inline-edit-list">
+    <!-- 111 -->
+    <!-- <el-input-number
+      v-model="num"
+      @change="onChange"
+      :min="1"
+      :max="10"
+      label="描述文字"
+    ></el-input-number> -->
+    <!-- <raw-field-editor
+      :field="fieldData"
+      :defaultValues="data"
+      @field-value-changed="onChange"
+      @blur="onBlur"
+    >
+    </raw-field-editor> -->
   </div>
 </template>
 
 <script>
-//  行内编辑列表
+import { FieldInfo } from "@/components/model/FieldInfo";
+import { Field } from "@/components/model/Field";
+// import RawFieldEditor from "../common/raw-field-editor.vue"; // 表单元件
+
 export default {
-  name: "inline-edit-list",
-  props: {
-    service: {
-      type: String,
-      default: "",
-    },
-    appName: {
-      type: String,
-      default: "",
-    },
+  components: {
+    // RawFieldEditor,
   },
-  computed: {
-    serviceName() {
-      return this.service || this.$route?.params?.serviceName;
+  props: {
+    data: {
+      type: Object,
+      default: () => {
+        return {};
+      },
     },
-    srvApp() {
-      return this.appName || this.$route?.query?.menuapp;
+    field: {
+      type: Object,
     },
   },
   data() {
     return {
-        v2Data:null,
-        loadState:'more'
+      fieldData: null,
     };
+  },
+  methods: {
+    onChange(e) {
+      console.log("value change:", e);
+    },
+    onBlur(e) {
+      console.log("on blur:", e);
+    },
+    buildField() {
+      let fi = new FieldInfo(this.field, "update");
+      let field = new Field(fi, null);
+      field.key = this.field.column;
+      field.setSrvVal(this.data[field.key]);
+      this.fieldData = field;
+    },
+  },
+  mounted() {
+    if (this.field?.column) {
+      this.buildField();
+    }
   },
 };
 </script>
