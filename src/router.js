@@ -99,6 +99,7 @@ import templateConfig from '@/pages/template/config'
 import erConfig from '@/pages/template/er-config'
 import printPage from '@/pages/template/print-page'
 
+import inlineEditList from '@/components/common/inline-edit-list.vue'
 // const excelEditView = ()=>import("@/components/common/luckysheet.vue")
 // pages
 Vue.use(Router);
@@ -382,7 +383,10 @@ routes.push( {
     path: '/print-page',
     component: printPage
   },
-
+  {
+    path: '/inline-edit-list/:serviceName',
+    component: inlineEditList
+  },
   // storeMonitor
 
   

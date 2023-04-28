@@ -54,7 +54,7 @@
           :data_list="gridData" @card-loaded="cardLoadinit" @card-row-button="rowButtonClick"></simple-card>
 
       </div>
-
+      <inline-edit-list v-if="onInlineEditing===true"></inline-edit-list>
       <div v-else>
 
         <el-row type="flex" class="row-bg" justify="center">
@@ -399,7 +399,8 @@ import batchApprove from "../ui/batch-approve.vue"; // 流程审批
 import pdf from "vue-pdf";
 import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 
-
+import inlineEditListMixin from '../mixin/inline-edit-list-mixin' //行内编辑列表相关逻辑
+import inlineEditList from './inline-edit-list.vue';
 
 export default {
   name: "list",
@@ -417,7 +418,8 @@ export default {
     update: () => import("../common/update.vue"),
     Add: () => import("../common/add.vue"),
     batchApprove,
-    srvAuthLogin
+    srvAuthLogin,
+    inlineEditList
   },
   props: {
     childForeignkey: Object,
@@ -429,7 +431,8 @@ export default {
     CustButtonMinx,
     MemListMixin,
     FieldRedundantMixin,
-    ListMixin
+    ListMixin,
+    inlineEditListMixin
   ],
   data() {
     return {
