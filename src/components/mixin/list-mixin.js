@@ -2114,6 +2114,10 @@ export default {
           this.gridButton = respData.gridButton.map(button => wrapButton(button,"grid"));
           this.rowButton = respData.rowButton.map(button => wrapButton(button,"row"));
 
+          if(respData.cfg_json){
+            this.handleCfgJson(respData.cfg_json)
+          }
+
           if(respData.more_config && respData.more_config.length >0 && respData.more_config !== undefined){
             // service more config 配置 selection 是否为可选择列表，默认为 false
             let moreConfig = JSON.parse(respData.more_config)

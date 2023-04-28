@@ -54,7 +54,6 @@
           :data_list="gridData" @card-loaded="cardLoadinit" @card-row-button="rowButtonClick"></simple-card>
 
       </div>
-      <inline-edit-list v-if="onInlineEditing===true"></inline-edit-list>
       <div v-else>
 
         <el-row type="flex" class="row-bg" justify="center">
@@ -76,7 +75,10 @@
               :min-width="item.list_min_width + 'px'" :filters="item.filters" :column-key="item.column"
               :sortable="item.sortable && !isMem() ? 'custom' : false">
               <template slot-scope="scope">
-                <div v-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
+                <div v-if="onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
+                   <inline-edit-list :field="inlineEditCols[item.column]" :data="scope.row"></inline-edit-list>
+                </div>
+                <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
                   <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
                           @field-value-changed="onCellValueChanged(scope.row, item.column)"
                           @blur="onCellBlur(scope.row, item.column)">
