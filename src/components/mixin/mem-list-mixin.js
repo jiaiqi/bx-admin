@@ -677,6 +677,7 @@ export default {
           if (response && response.body) {
             let data = response.body.data;
             this.addSrvCols = data.srv_cols;
+            console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
           }
           return !this.updateService || this.updateSrvCols.length > 0
             ? Promise.resolve(false)

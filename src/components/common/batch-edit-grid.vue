@@ -40,9 +40,9 @@ export default {
       }
     },
     initSelectedDatas:{
-      type: Array,
+      type: [Array,Object],
       default(){
-        return []
+        return null
       }
     }
   },
