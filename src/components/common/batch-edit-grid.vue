@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div >
     <!-- 批量处理 -->
     <div>
       查询
     </div>
     <div>
-      <el-row :gutter="10">
+      <el-row :gutter="10" v-loading="layoutLoading">
         <el-col :span="4">
           <div class="tree-container flex-1 radius "> 
             <div
@@ -38,40 +38,59 @@
           
         
         </el-col>
-      <el-col :span="20" class="table-list-row">
-        <template>
-          <el-table
-          ref="multipleTable"
-            size="mini"
-            v-loading="listLoading"
-            @selection-change="handleSelectionChange"
-            :data="optionalDatas"
-            border
-            height="360"
-            style="width: 100%">
-            <el-table-column
-              type="selection"
-              width="55">
-            </el-table-column>
-            <el-table-column
-              :prop="head.columns"
-              :label="head.label"
-              v-for="(head,hi) in listHeader">
-            </el-table-column>
-            
-            <!-- width="180" -->
-            <el-table-column
-            fixed="right"
-              prop="amount3"
-              sortable
-              label="数量">
-            </el-table-column>
-          </el-table>
-        </template>
-        <el-row type="flex" class="row-bg" justify="center">
-</el-row>
-        
-      </el-col>
+        <el-col :span="20" class="table-list-row">
+          <template>
+            <el-table
+            ref="multipleTable"
+              size="mini"
+              v-loading="listLoading"
+              @selection-change="handleSelectionChange"
+              :data="optionalDatas"
+              border
+              current-row-key="id"
+              row-key="id"
+              height="360"
+              style="width: 100%">
+              <el-table-column
+                type="selection"
+                width="55">
+              </el-table-column>
+              <el-table-column
+                :prop="head.columns"
+                :label="head.label"
+                v-for="(head,hi) in listHeader">
+              </el-table-column>
+              
+              <!-- width="180" -->
+              <el-table-column
+              fixed="right"
+                :prop="countColNameStr"
+                sortable
+                width="150"
+                label="数量">
+                <template slot-scope="scope">
+                  <el-input-number size="mini" v-model="scope.row[countColNameStr]" 
+                  @change="rowColumnsHandleChange($event,scope.row)" 
+                  :min="0" 
+                  :max="9999" 
+                  :step="1" 
+                  :step-strictly="true" 
+                  label="数量"></el-input-number>
+                </template>
+                
+              </el-table-column>
+            </el-table>
+          </template>
+          <el-row type="flex" class="row-bg" justify="center">
+            <el-pagination
+            background
+            @current-change="pageCurrentChange"
+            :current-page.sync="page.pageNo"
+            layout="prev, pager, next"
+            :total="page.total">
+          </el-pagination>
+          </el-row>
+        </el-col>
     </el-row>
     </div>
     <div class="radius footer">
@@ -79,16 +98,28 @@
         <el-col :span="6">
           <div>
             <el-popover
+               popper-class="batch-selected-layout"
               placement="top-start"
+              style="background: aliceblue;"
               width="68%"
-              :title="'已选择'"
+              :title="''"
               trigger="click">
-              <el-table
+              <el-row :gutter="10" v-loading="layoutLoading" justify="space-between">
+                  <el-col :span="4" style="text-align: left;line-height: 40px;">
+                    已选择:{{ checkedCount }}
+                </el-col>
+                <el-col :span="20" class="padding" style="text-align: right;">
+                  
+                    <el-button @click="clearSelectionChange('selection','multipleTable')">批量删除</el-button>
+                    <el-button  @click="clearSelectionChange('all','multipleTable')">清空</el-button>
+                </el-col>
+                <el-col :span="24">
+                  <el-table
                 ref="selectedTable"
                   size="mini"
                   v-loading="listLoading"
-                  @selection-change="handleSelectionChange"
-                  :data="optionalDatas"
+                  @selection-change="selectionChange"
+                  :data="selectedDatasRun"
                   border
                   height="300"
                   style="width: 100%">
@@ -104,13 +135,27 @@
                   
                   <!-- width="180" -->
                   <el-table-column
-                  fixed="right"
-                    prop="amount3"
-                    sortable
-                    label="数量">
-                  </el-table-column>
+                    fixed="right"
+                      :prop="countColNameStr"
+                      sortable
+                      width="150"
+                      label="数量">
+                      <template slot-scope="scope">
+                        <el-input-number size="mini" v-model="scope.row[countColNameStr]" 
+                        @change="selectionRowColumnsHandleChange($event,scope.row)" 
+                        :min="0" 
+                        :max="9999" 
+                        :step="1" 
+                        :step-strictly="true" 
+                        label="数量"></el-input-number>
+                      </template>
+                      
+                    </el-table-column>
                 </el-table>
-              <el-badge :value="0" :max="999" class="item" slot="reference">
+                </el-col>
+              </el-row>
+              
+              <el-badge :value="checkedCount" :max="999" class="item" slot="reference">
                 <el-button icon="el-icon-s-order" class="text-blue"><span >已选</span></el-button>
               </el-badge>
             </el-popover>
@@ -119,6 +164,9 @@
         </el-col>
         <el-col :span="18">
           <el-row type="flex" class="row-bg" justify="end">
+            <el-button >取消</el-button>
+            <el-button  >清空</el-button>
+
             <el-button  type="primary">确认</el-button>
           </el-row>
         </el-col>
@@ -155,8 +203,9 @@ export default {
   data() {
     return {
       /** 基本数据*/
+      layoutLoading:false,  //数据加载中
       optionalV2:null,
-      typeDatas:[], // 分类列表
+      typeDatas:null, // 分类列表
       optionalDatas:[], // 可选列表
       selectedDatas:[], // 已选列表
       selectedCondition:[],
@@ -174,6 +223,43 @@ export default {
     this.getListConfig();
   },
   computed:{
+    selectedDatasRun(){
+       let mList = this.bxDeepClone(this.selectedDatas)
+       return mList
+    },
+    checkedCount(){
+       let list = this.bxDeepClone(this.selectedDatas)
+       let count = 0
+       if(list.length > 0){
+          count = list.reduce((conut, obj) => (conut += obj[this.countColNameStr]), 0)
+       }
+      
+       return count
+    },
+    checkedIds(){
+      let selectedDatas = this.bxDeepClone(this.selectedDatas)
+       let ids = selectedDatas.map(item => item.id)
+       return ids
+    },
+    optionalDatasRun(){
+       let optionalDatas = this.bxDeepClone(this.optionalDatas)
+      //  let multipleSelection = this.bxDeepClone(this.multipleSelection)
+      //  let list = []
+      //  for(let mItem of multipleSelection){
+      //     for(let oItem of optionalDatas){
+      //        if(mItem.id == oItem.id && oItem[this.countColNameStr] == 0){
+      //          oItem[this.countColNameStr] = 1
+      //        }
+      //     }
+      //  }
+      //  list = optionalDatas.map(item => item)
+       return list
+    },
+    countColNameStr(){
+      let v2ColName = this.configBuild.batch_select_add_count_col || ''
+       let str = `_${v2ColName}`
+       return str
+    },
     optionalListCondition(){
          let checkAll = this.checkAll
          let condition = []
@@ -302,24 +388,169 @@ export default {
          res['serviceName'] = options.batchAddOptionsV2.serviceName
          res['srvApp'] = options.batchAddOptionsV2.srv_app
          res['condition'] = condition
+        //  res['page'] = this.page
        }
        return res
     }
   },
   mounted(){
-    if(this.buildTreeReq.hasOwnProperty('serviceName')){
+    if(this.buildTreeReq.hasOwnProperty('serviceName') && !this.typeDatas){
       this.getTreeData()
     }
 
-    if(this.buildOptionalReq.hasOwnProperty('serviceName')){
+    if(this.buildOptionalReq.hasOwnProperty('serviceName') && !this.optionalV2){
       this.getListV2Data()
     }
      
   },
   methods: {
-    handleSelectionChange(val) {
-        this.multipleSelection = val;
+    pageCurrentChange(page){
+       console.log(page)
+       this.$set(this.page,'pageNo',page)
+       this.$nextTick(()=>{
+          this.getData()
+       })
+       
+    },
+    toggleSelection(rows) {
+      // 设置备选表格选中
+        let optionalIds = this.optionalDatas.map(item => item.id)
+        let rowsIds = rows.map(item => item.id) // 当前用户选中的ids
+        let ids = this.selectedDatas.filter(item => item.id && optionalIds.indexOf(item.id) !== -1); //当前已选列表中已选的id
+        ids = ids.map(item => item.id)
+        let clearIds = this.selectedDatas.filter(item => item.id && optionalIds.indexOf(item.id) !== -1 && rowsIds.indexOf(item.id) == -1)
+        clearIds = clearIds.map(item => item.id)
+        console.log(rowsIds,optionalIds,ids,clearIds)
+        let list = this.bxDeepClone(rows)
+        this.selectedDatas = this.selectedDatas.filter(item => clearIds.indexOf(item.id) == -1)
+        this.$nextTick(()=>{
+          if(rows.length > 0){
+            for(let row of list){
+              if(optionalIds.indexOf(row.id) !== -1){
+                if(ids.indexOf(row.id) == -1 && row[this.countColNameStr] !== 0){
+                  // 数量不为0,已选择没有的 进行 加选
+                  this.selectedDatas.push(row)
+                }else{
+                  if(row[this.countColNameStr] == 0){
+                    // 数量是0的减选
+                    this.selectedDatas = this.selectedDatas.filter(item => item.id !== row.id)
+                  }else{
+                    this.$nextTick(()=>{
+                      // 数量改变的更新到已选
+                      for(let item of this.selectedDatas){
+                        if(item.id == row.id){
+                          let val = row[this.countColNameStr]
+                          // item[this.countColNameStr] = val
+                          this.$set(item,this.countColNameStr,val)
+                        }
+                      }
+                    })
+                  }
+                  
+                }
+              }
+              
+            }
+          }else{
+            // 取消选择任何数据
+            this.selectedDatas = this.selectedDatas.filter(item=> optionalIds.indexOf(item.id) == -1)
+          }
+        })
+        
+       
+        
+        // if (rows) {
+        //   rows.forEach(row => {
+        //     for(let item of this.optionalDatas){
+        //       if(item.id == row.id ){
+        //         if(item[this.countColNameStr] == 0){
+        //           item[this.countColNameStr] = 1
+        //         }
+        //         this.$refs.multipleTable.toggleRowSelection(row);
+        //       }
+        //     }
+            
+        //   });
+        // } else {
+        //   this.$refs.multipleTable.clearSelection();
+        // }
       },
+    rowColumnsHandleChange(val,row){
+      this.$nextTick(()=>{
+        if(row && row[this.countColNameStr] > 0){
+          this.$refs.multipleTable.toggleRowSelection(row,true);
+        }else if(row){
+          this.$refs.multipleTable.toggleRowSelection(row,false);
+        }
+      })
+      
+      
+      // this.$set(row,this.countColNameStr,val)
+      console.log(val,row)
+    },
+    selectionRowColumnsHandleChange(val,row){
+      this.$nextTick(()=>{
+        
+        if(row){
+          for(let item of this.optionalDatas){
+            if(item.id == row.id){
+              item[this.countColNameStr] = val
+            }
+          }
+          // this.$refs.multipleTable.toggleRowSelection(row,true);
+        }
+      })
+      
+      
+      // this.$set(row,this.countColNameStr,val)
+      console.log(val,row)
+    },
+    selectionChange(val){
+       console.log(val)
+    },
+    clearSelectionChange(type,ref){
+       if(type == 'all'){
+          this.$refs[ref].clearSelection()
+          this.selectedDatas = [].map(item => item)
+       }else{
+         let list = this.$refs.selectedTable.selection
+         console.log(list)
+         if(list && list.length > 0){
+          let ids = list.map(item => item.id)
+          this.selectedDatas = this.selectedDatas.filter(item => ids.indexOf(item.id) == -1)
+          for(let row of this.optionalDatas){
+            if(ids.indexOf(row.id) !== -1){
+              this.$refs.multipleTable.toggleRowSelection(row,false);
+            }
+            
+          }
+         }
+         
+       }
+       
+    },
+    handleSelectionChange(val) {
+      this.layoutLoading = true
+      let list = this.bxDeepClone(val)
+      let ids = list.map(item => item.id)
+      for(let index  in this.optionalDatas){
+          let item = this.optionalDatas[index]
+        if(ids.indexOf(item.id) !== -1){
+          if(item[this.countColNameStr] == 0){
+              this.$set(item,this.countColNameStr,1)
+          }
+        }else{
+          this.$set(item,this.countColNameStr,0)
+        }
+      }
+      // 列表中获取初始化 数量的数据到已选择
+      list = this.optionalDatas.filter(item => ids.indexOf(item.id) !== -1)
+       this.multipleSelection = list.map(item => item);
+       this.$nextTick(()=>{
+        // 页面更新后
+        this.layoutLoading = false
+       })
+    },
     getListConfig(){
       let serviceName = 'srvpage_cfg_page_select';
       let pageNo = ''
@@ -344,7 +575,10 @@ export default {
         //加载树结构数据
         let req = this.buildTreeReq
       this.treeSelect(req.serviceName, req.condition,req.srvApp).then((response) => {
-        this.typeDatas = response.body.data;
+        
+        if(response.body.data){
+          this.typeDatas = response.body.data;
+        }
         if (this.typeDatas.length > 0) {
           // this.currentData = this.treeData[0];
           this.treeLoading = false
@@ -357,13 +591,39 @@ export default {
       let listDatas = []
       let req = this.buildOptionalReq
         this.select(
-          req.serviceName,req.condition, null, null, null, null, req.srvApp
+          req.serviceName,req.condition, this.page, null, null, null, req.srvApp
         ).then(response => {
             let data = response.body.data
             if(data){
               listDatas = data
-              this.optionalDatas = listDatas.map(item => item)
+              listDatas = listDatas.map(item => {
+                item[`_${this.configBuild.batch_select_add_count_col}`] = 0
+                return item
+              })
+              if(listDatas && listDatas.length > 0){
+                this.optionalDatas = this.bxDeepClone(listDatas).map(item => item)
+
+                for(let row of this.optionalDatas){
+                  if(this.checkedIds.indexOf(row.id) !== -1){
+                     let item = this.selectedDatas.filter(item => item.id == row.id)
+                     let val = item[0][this.countColNameStr]
+                     this.$nextTick(()=>{
+                        this.$set(row,this.countColNameStr,val)
+                        
+                        this.$refs.multipleTable.toggleRowSelection(row,true);
+                     })
+                    
+                  }
+                }
+              }
             }
+            console.log('response.body.page',response.body.page)
+            let page = response.body.page
+            if(page){
+              this.page = page
+              // this.$set(this,'page',response.body.page)
+            }
+            
 
             this.listLoading = false
         })
@@ -414,6 +674,7 @@ export default {
         
         this.treeLoading = true
         this.currentData = data;
+         this.page.pageNo = 1
         // this.listCondition = this.buildListCondition();
           this.refreshTable();
       }
@@ -433,8 +694,9 @@ export default {
       this.checkAll = true
       this.treeLoading = true
       // this.loadTableData(1)
+      this.page.pageNo = 1
       this.refreshTable();
-    },
+    }
   },
   watch:{
     "buildTreeReq":{
@@ -464,6 +726,39 @@ export default {
         }
         //  this.$refs.list.loadTableData()
       }
+    },
+    "optionalDatasRun":{
+      deep:true,
+      handler:function(newVal,oldVal){
+        if(newVal){
+          console.log('修改数据后')
+          //  this.changeCountToOptionalDatas(newVal)
+          //  this.toggleSelection(list)
+        }
+        //  this.$refs.list.loadTableData()
+      }
+    },
+    "optionalDatas":{
+      deep:true,
+      handler:function(newVal,oldVal){
+        if(newVal){
+          console.log('数据更新了 optionalDatas')
+          let list = newVal.filter(item => item[this.countColNameStr] > 0)
+          //  this.toggleSelection(list)
+        }
+        //  this.$refs.list.loadTableData()
+      }
+    },
+    "multipleSelection":{
+      deep:true,
+      handler:function(newVal,oldVal){
+        if(newVal){
+          console.log('数据更新了 multipleSelection')
+          // let list = newVal.filter(item => item[this.countColNameStr] > 0)
+           this.toggleSelection(newVal)
+        }
+        //  this.$refs.list.loadTableData()
+      }
     }
   }
 };
@@ -482,5 +777,7 @@ export default {
 .text-blue{
   color: rgb(15, 106, 243);
 }
-
+.batch-selected-layout{
+  background: aliceblue;
+}
 </style>
