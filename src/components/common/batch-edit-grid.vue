@@ -2,7 +2,21 @@
   <div >
     <!-- 批量处理 -->
     <div>
-      查询
+      <el-row :gutter="10" v-loading="layoutLoading">
+        <!-- <el-col :span="4">
+          {{`  `}}
+        </el-col> -->
+        <el-col :span="20" :offset="4">
+            
+          <filterTabs 
+          ref="filterTabs" 
+          v-if="optionalV2&& tabs.length > 0" 
+          :tabs="tabs" 
+          :srv="buildOptionalReq.serviceName" 
+          :cols="optionalV2.srv_cols" 
+          @on-change="getTableDatas"></filterTabs>
+        </el-col>
+      </el-row>
     </div>
     <div>
       <el-row :gutter="10" v-loading="layoutLoading">
@@ -10,7 +24,7 @@
           <div class="tree-container flex-1 radius "> 
             <div
               class="text-700 text-center p-10 cursor-pointer radius-bottom"
-              @click="clearCondition" :class="this.checkAll ? 'text-blue':''"
+              @click="clearCondition" :class="this.checkAll ? 'text-blue':''" style="padding: 10px;"
             >
               全部分类
             </div>
@@ -31,7 +45,9 @@
               style="overflow-y: scroll;height:330px"
             >
               <span class="custom-tree-node" slot-scope="{ node, data }">
-                <span>{{ node.label }}</span>
+                <span>{{ node.label }} 
+                  <!-- <el-badge :value="typeSelectedCount(node)" class="item"> </el-badge> -->
+                </span>
               </span>
             </el-tree>
           </div>
@@ -101,19 +117,19 @@
                popper-class="batch-selected-layout"
               placement="top-start"
               style="background: aliceblue;"
-              width="68%"
+              width="680"
               :title="''"
               trigger="click">
-              <el-row :gutter="10" v-loading="layoutLoading" justify="space-between">
+              <el-row :gutter="10" v-loading="layoutLoading" justify="space-between" >
                   <el-col :span="4" style="text-align: left;line-height: 40px;">
                     已选择:{{ checkedCount }}
                 </el-col>
                 <el-col :span="20" class="padding" style="text-align: right;">
                   
-                    <el-button @click="clearSelectionChange('selection','multipleTable')">批量删除</el-button>
-                    <el-button  @click="clearSelectionChange('all','multipleTable')">清空</el-button>
+                    <el-button @click="clearSelectionChange('selection','multipleTable')" :disabled="selectedDatasChecked.length == 0">批量删除</el-button>
+                    <el-button  @click="clearSelectionChange('all','multipleTable')" :disabled="selectedDatasRun.length == 0">清空</el-button>
                 </el-col>
-                <el-col :span="24">
+                <el-col :span="24" style="margin-top: 10px;">
                   <el-table
                 ref="selectedTable"
                   size="mini"
@@ -164,10 +180,10 @@
         </el-col>
         <el-col :span="18">
           <el-row type="flex" class="row-bg" justify="end">
-            <el-button >取消</el-button>
-            <el-button  >清空</el-button>
+            <el-button @click="cancelOperation">取消</el-button>
+            <el-button  @click="clearSelectionChange('all','multipleTable')" :disabled="selectedDatasRun.length == 0">清空</el-button>
 
-            <el-button  type="primary">确认</el-button>
+            <el-button  type="primary" @click="saveOperation">确认</el-button>
           </el-row>
         </el-col>
     </el-row>
@@ -178,11 +194,11 @@
 
 
 <script>
-import ChildList from "@/components/common/child-list";
+  import filterTabs from "./filter-tabs"
 export default {
   name:"batch-edit-grid",
   components: {
-    ChildList
+    filterTabs
   },
 
   props: {
@@ -208,7 +224,10 @@ export default {
       typeDatas:null, // 分类列表
       optionalDatas:[], // 可选列表
       selectedDatas:[], // 已选列表
-      selectedCondition:[],
+      optionalRelationCondition:{
+        "relation": "AND",
+        "data": []
+      },   // 过滤条件  
       pageConfig:null,  // page_no 获取到的 配置
       treeLoading:false,  //分类 加载状态
       currentData:null,   // 选中树形节点
@@ -217,12 +236,35 @@ export default {
       page:{rownumber:10,pageNo:1},  // 右侧列表分页
       multipleSelection:[],   // 多选数据
       listLoading:false,    // 列表加载
+      tabs:[],          // 列表查询标签
+      selectedDatasChecked:[],    // 已选列表用户勾选的数据
     };
   },
   created: function () {
     this.getListConfig();
   },
   computed:{
+    selectedCondition(){
+         let insetSelectedList = this.bxDeepClone(this.initSelectedDatas.initSelectedDatas)
+         let keys = insetSelectedList.map(item => item[this.batchAddOptionsV2.batchAddColName])
+         let conds = []
+         if(keys && keys.length >0 ){
+          conds = [{
+            colName:this.batchAddOptionsV2.batchAddOptionsV2.refed_col,
+            ruleType:'in',
+            value:keys.join(',')
+          }]
+         }
+         return conds
+    }, // 已选数据的请求condition
+    dependFields(){
+       let config = []
+       let addCols = this.bxDeepClone(this.initSelectedDatas.addCols) 
+       if(addCols && addCols.length > 0){
+          addCols = addCols.filter(item => item.hasOwnProperty('redundant') && item.redundant.dependField == this.initSelectedDatas.addKeyCol.columns)
+       }
+       return addCols
+    },
     selectedDatasRun(){
        let mList = this.bxDeepClone(this.selectedDatas)
        return mList
@@ -253,7 +295,7 @@ export default {
       //     }
       //  }
       //  list = optionalDatas.map(item => item)
-       return list
+       return optionalDatas
     },
     countColNameStr(){
       let v2ColName = this.configBuild.batch_select_add_count_col || ''
@@ -372,6 +414,7 @@ export default {
        if(options && options.hasOwnProperty('option_list_v2')){
         res['batchAddColName'] = options.columns
         res['batchAddOptionsV2'] = options.option_list_v2
+        res['addChildRenSrv'] = options.service_name
        }
        return res
     },
@@ -388,7 +431,6 @@ export default {
          res['serviceName'] = options.batchAddOptionsV2.serviceName
          res['srvApp'] = options.batchAddOptionsV2.srv_app
          res['condition'] = condition
-        //  res['page'] = this.page
        }
        return res
     }
@@ -397,13 +439,82 @@ export default {
     if(this.buildTreeReq.hasOwnProperty('serviceName') && !this.typeDatas){
       this.getTreeData()
     }
-
+    
     if(this.buildOptionalReq.hasOwnProperty('serviceName') && !this.optionalV2){
-      this.getListV2Data()
+      // 加载初始化数据
+      if(this.initSelectedDatas && this.initSelectedDatas.hasOwnProperty('initSelectedDatas') && this.initSelectedDatas.initSelectedDatas.length >0){
+          this.initSelectedDatasBuild()
+      }
+      setTimeout(()=>{
+        this.$nextTick(()=>{
+          this.getListV2Data()
+        })
+        
+      },50)
+      
     }
      
   },
   methods: {
+    typeSelectedCount(item){
+      // 动态计算分类计数
+         let list = this.bxDeepClone(this.selectedDatas)
+         list = list.filter(item => item[this.configBuild.listFilterCol].indexOf(this.configBuild.listFilterForTreeCol) !== -1)
+         let count = 0
+         if(list && list.length > 0){
+          count = list.reduce((conut, obj) => (conut += obj[this.countColNameStr]), 0)
+         }
+         console.log(count)
+         return count
+    },
+    initSelectedDatasBuild(){
+       let initList = this.bxDeepClone(this.initSelectedDatas.initSelectedDatas)
+       let req = this.bxDeepClone(this.buildOptionalReq)
+       req['condition'] = this.selectedCondition
+       this.select(
+          req.serviceName,req.condition, null, null, null, null, req.srvApp,null,null,null
+        ).then(response => {
+            let data = response.body.data
+            console.log(data)
+            if(data && data.length > 0){
+              this.selectedDatas = data.map(item =>{
+                for(let iItem of initList){
+                    if(iItem[this.batchAddOptionsV2.batchAddColName]==item[this.batchAddOptionsV2.batchAddOptionsV2.refed_col]){
+                      item[this.countColNameStr] = iItem[this.configBuild.batch_select_add_count_col]
+                    }
+                }
+                return item
+                // item[this.countColNameStr]
+              })
+            }
+        })
+
+    },
+    cancelOperation(){
+       console.log('取消操作')
+    },
+    saveOperation(){
+      console.log('保存操作',this.selectedDatasRun)
+      let self  = this
+      let list = this.bxDeepClone(this.selectedDatasRun)
+      list.forEach(item =>{
+         item[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
+         delete item[this.countColNameStr]
+      })
+      let cols = []
+      cols[0] = this.configBuild.batch_select_add_count_col
+      this.$store.commit("setFrontTableData", {
+        service: this.buttonInfo.service,
+        data: list,
+        params: {
+          from: this.batchAddOptionsV2.batchAddOptionsV2.refed_col,
+          to: this.batchAddOptionsV2['batchAddColName'],
+          cols: cols
+        }
+      })
+
+      this.$emit('closeDialog')
+    },
     pageCurrentChange(page){
        console.log(page)
        this.$set(this.page,'pageNo',page)
@@ -420,7 +531,7 @@ export default {
         ids = ids.map(item => item.id)
         let clearIds = this.selectedDatas.filter(item => item.id && optionalIds.indexOf(item.id) !== -1 && rowsIds.indexOf(item.id) == -1)
         clearIds = clearIds.map(item => item.id)
-        console.log(rowsIds,optionalIds,ids,clearIds)
+        // console.log(rowsIds,optionalIds,ids,clearIds)
         let list = this.bxDeepClone(rows)
         this.selectedDatas = this.selectedDatas.filter(item => clearIds.indexOf(item.id) == -1)
         this.$nextTick(()=>{
@@ -456,24 +567,6 @@ export default {
             this.selectedDatas = this.selectedDatas.filter(item=> optionalIds.indexOf(item.id) == -1)
           }
         })
-        
-       
-        
-        // if (rows) {
-        //   rows.forEach(row => {
-        //     for(let item of this.optionalDatas){
-        //       if(item.id == row.id ){
-        //         if(item[this.countColNameStr] == 0){
-        //           item[this.countColNameStr] = 1
-        //         }
-        //         this.$refs.multipleTable.toggleRowSelection(row);
-        //       }
-        //     }
-            
-        //   });
-        // } else {
-        //   this.$refs.multipleTable.clearSelection();
-        // }
       },
     rowColumnsHandleChange(val,row){
       this.$nextTick(()=>{
@@ -483,10 +576,6 @@ export default {
           this.$refs.multipleTable.toggleRowSelection(row,false);
         }
       })
-      
-      
-      // this.$set(row,this.countColNameStr,val)
-      console.log(val,row)
     },
     selectionRowColumnsHandleChange(val,row){
       this.$nextTick(()=>{
@@ -497,36 +586,46 @@ export default {
               item[this.countColNameStr] = val
             }
           }
-          // this.$refs.multipleTable.toggleRowSelection(row,true);
         }
       })
-      
-      
-      // this.$set(row,this.countColNameStr,val)
-      console.log(val,row)
     },
     selectionChange(val){
        console.log(val)
+       this.selectedDatasChecked = val.map(item => item)
     },
     clearSelectionChange(type,ref){
-       if(type == 'all'){
-          this.$refs[ref].clearSelection()
-          this.selectedDatas = [].map(item => item)
-       }else{
-         let list = this.$refs.selectedTable.selection
-         console.log(list)
-         if(list && list.length > 0){
-          let ids = list.map(item => item.id)
-          this.selectedDatas = this.selectedDatas.filter(item => ids.indexOf(item.id) == -1)
-          for(let row of this.optionalDatas){
-            if(ids.indexOf(row.id) !== -1){
-              this.$refs.multipleTable.toggleRowSelection(row,false);
+      this.$confirm('您确定要移除内容, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if(type == 'all'){
+              this.$refs[ref].clearSelection()
+              this.selectedDatas = [].map(item => item)
+          }else{
+            let list = this.$refs.selectedTable.selection
+            console.log(list)
+            if(list && list.length > 0){
+              let ids = list.map(item => item.id)
+              this.selectedDatas = this.selectedDatas.filter(item => ids.indexOf(item.id) == -1)
+              for(let row of this.optionalDatas){
+                if(ids.indexOf(row.id) !== -1){
+                  this.$refs.multipleTable.toggleRowSelection(row,false);
+                }
+              }
             }
-            
           }
-         }
-         
-       }
+          this.$message({
+            type: 'success',
+            message: '移除成功!'
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消'
+          });          
+        });
+       
        
     },
     handleSelectionChange(val) {
@@ -591,7 +690,7 @@ export default {
       let listDatas = []
       let req = this.buildOptionalReq
         this.select(
-          req.serviceName,req.condition, this.page, null, null, null, req.srvApp
+          req.serviceName,req.condition, this.page, null, null, null, req.srvApp,null,null,this.optionalRelationCondition
         ).then(response => {
             let data = response.body.data
             if(data){
@@ -600,7 +699,7 @@ export default {
                 item[`_${this.configBuild.batch_select_add_count_col}`] = 0
                 return item
               })
-              if(listDatas && listDatas.length > 0){
+              if(listDatas){
                 this.optionalDatas = this.bxDeepClone(listDatas).map(item => item)
 
                 for(let row of this.optionalDatas){
@@ -632,12 +731,19 @@ export default {
     },
     getListV2Data() {
       let req = this.buildOptionalReq
+      
       this.loadColsV2(req.serviceName, "selectlist", req.srvApp).then(response => {
         const resData = response.body.data
         const srv_cols = resData.srv_cols
         this.$set(this,'optionalV2',resData)
+        if(resData.hasOwnProperty('tabs') && resData.tabs.length > 0){
+           this.buildSections(resData.tabs)
+        }
         console.log('getListV2Data',resData)
-        this.getData()
+        this.$nextTick(()=>{
+          this.getData()
+        })
+        
       });
     },
     handleEdit(index, row) {
@@ -696,7 +802,105 @@ export default {
       // this.loadTableData(1)
       this.page.pageNo = 1
       this.refreshTable();
-    }
+    },
+    getTableDatas(){
+        let self = this
+        if(self.$refs.hasOwnProperty('filterTabs')){
+          let tabsConds = self.$refs.filterTabs.buildConditions()
+          this.$set(this,'optionalRelationCondition',tabsConds)
+        }
+      },
+    onFilterChange(e){
+      },
+    buildSections: function (tabs) {
+        // generate tab.condition, order, depend_sections from json string to js object/array
+        console.log("buildSections",tabs)
+        let self = this
+        let tab = {}
+        let tabsData = []
+        tabs.forEach((t)=>{
+          tab = {
+              service:null,
+              table_name:null,
+              orders:null,
+              conditions:null,
+              seq:null,
+              parent:null,
+              label:null,
+              list_tab_no:null,
+              more_config:null,
+              inputType:null
+            }
+            let mc = JSON.parse(t.more_config)
+            tab.more_config = mc
+            tab.service = t.service
+            tab.table_name = t.table_name
+            tab.conditions = t.conditions
+            tab.orders = t.orders
+            tab.default = mc.default
+            tab.seq = t.seq
+            tab.label = t.label
+            tab.list_tab_no = t.list_tab_no
+            tab._data = t
+            tab._options = []
+            tab._type = mc.type || null
+            tab.option_list = mc.option_list || null
+            tab._colName = mc.colName || null
+            tab.inputType = mc.inputType || null
+            tab.showAllTag = mc.showAllTag || false
+            tab.default = mc.default || '',
+            tab.placeholder = mc.placeholder || '请输入...'
+            tab.remoteMethod=""
+
+            if(tab._colName){
+              tab._colName = tab._colName.split(',')
+              let cols = tab._colName
+              let srvCols = self.optionalV2.srv_cols
+              tab['_colSrvData'] = []
+              // console.log("tab",tab)
+              for(let c=0;c<cols.length;c++){
+                  for(let cs = 0;cs<srvCols.length;cs++){
+                    if(cols[c] === srvCols[cs].columns){
+                      tab._colSrvData.push(srvCols[cs])
+                    }
+                  }
+              }
+              
+            }
+            if(tab.inputType == 'fk'){
+             let cond=[
+              {"colName": tab.option_list.key_disp_col,
+            "ruleType": "[like]",
+            "value": ''}
+          ]
+          let options =[]
+              self.select(tab.option_list.serviceName, cond, null, null, null, null,null, null, null, null,false).then((res) =>{
+              let resData = res.data.data
+                for(let i =0;i<resData.length;i++){
+                    let item = resData[i]
+                    let opt = {
+                            value:item[tab.option_list.refed_col],
+                            label:item[tab.option_list.key_disp_col]
+                    }
+                     options.push(opt)
+                    
+                }
+
+                // self.formModel[e.list_tab_no]['options'] = options
+                tab["_options"] = options
+                tab["page"] = res.data.page
+                // return options
+                console.log("options",options)
+                //  resolve(options)
+             })
+            }
+            tabsData.push(tab)
+        })
+        if(!self.tabsBuild){
+          self.tabs = tabsData
+          self.tabsBuild = true
+        }
+      }
   },
   watch:{
     "buildTreeReq":{
@@ -731,7 +935,7 @@ export default {
       deep:true,
       handler:function(newVal,oldVal){
         if(newVal){
-          console.log('修改数据后')
+          // console.log('修改数据后')
           //  this.changeCountToOptionalDatas(newVal)
           //  this.toggleSelection(list)
         }
@@ -742,8 +946,8 @@ export default {
       deep:true,
       handler:function(newVal,oldVal){
         if(newVal){
-          console.log('数据更新了 optionalDatas')
-          let list = newVal.filter(item => item[this.countColNameStr] > 0)
+          // console.log('数据更新了 optionalDatas')
+          // let list = newVal.filter(item => item[this.countColNameStr] > 0)
           //  this.toggleSelection(list)
         }
         //  this.$refs.list.loadTableData()
@@ -759,7 +963,23 @@ export default {
         }
         //  this.$refs.list.loadTableData()
       }
+    },
+    "optionalRelationCondition":{
+      deep:true,
+      handler:function(newVal,oldVal){
+        if(newVal){
+          console.log('数据更新了 multipleSelection')
+          // let list = newVal.filter(item => item[this.countColNameStr] > 0)
+           if(oldVal && JSON.stringify(oldVal) !== JSON.stringify(newVal)){
+              this.page.pageNo = 1 // 重置分页
+             this.getData()
+           }
+           
+        }
+        //  this.$refs.list.loadTableData()
+      }
     }
+    
   }
 };
 </script>
@@ -778,6 +998,6 @@ export default {
   color: rgb(15, 106, 243);
 }
 .batch-selected-layout{
-  background: aliceblue;
+  background: aliceblue !important;
 }
 </style>

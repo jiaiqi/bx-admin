@@ -227,6 +227,7 @@ export default {
     '$store.state.frontTableData': {
       deep: true,
       handler(newVal) {
+        console.log(newVal)
         const service = newVal.tables.service
         if (this.service === service) {
           const from = newVal.tables.params.from

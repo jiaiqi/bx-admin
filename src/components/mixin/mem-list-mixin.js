@@ -418,7 +418,7 @@ export default {
     },
 
     onUndoSubmitted: function (row) {
-      if (!row._dirtyFlags) {
+      if (!row._dirtyFlags) { 
         return;
       }
 

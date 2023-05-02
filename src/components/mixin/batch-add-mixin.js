@@ -30,7 +30,8 @@ export default {
             params["condition"]=[];
             params["batchInitConfig"]= {
                 addKeyCol:addKeyCol,
-                initSelectedDatas:operateData
+                initSelectedDatas:operateData,
+                addCols:this.addSrvCols
             };
             params["btninfo"]=item;
 
