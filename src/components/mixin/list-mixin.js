@@ -878,6 +878,7 @@ export default {
     gridButtonClick(button) {
       //　列表头部按钮
       //console.log("gridButtonClick",this,this.$parent)
+      console.log("gridButtonClick",button)
        this.$emit("extend-change",button)
       let self = this
       var type = button.button_type;
@@ -1036,8 +1037,8 @@ export default {
           this.header_view_model = "normal";
           this.gridHeader = this.noramlHeaders;
         }
-
-        this.onInplaceEditClicked();
+        this.onBatchUpdateClick()
+        // this.onInplaceEditClicked();
       } else if ("saveall" == type) {
         this.onSaveAllClicked();
       } else if ("apply" == type) {

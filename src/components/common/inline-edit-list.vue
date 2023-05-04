@@ -1,13 +1,28 @@
 <template>
   <div class="inline-edit-list">
     <!-- 111 -->
-    <!-- <el-input-number
-      v-model="num"
+    <el-input
+      v-model.number="value"
+      placeholder=""
+      v-if="editorType === 'digit'"
+      type="number"
       @change="onChange"
-      :min="1"
-      :max="10"
-      label="描述文字"
-    ></el-input-number> -->
+      clearable
+    ></el-input>
+
+    <el-input-number
+      v-model.number="value"
+      @change="onChange"
+      :step="step"
+      :precision="precision"
+      v-else-if="editorType === 'number' || editorType === 'digit'"
+    ></el-input-number>
+    <el-input
+      v-model="value"
+      @change="onChange"
+      placeholder=""
+      v-else-if="editorType === 'string'"
+    ></el-input>
     <!-- <raw-field-editor
       :field="fieldData"
       :defaultValues="data"
@@ -41,11 +56,49 @@ export default {
   data() {
     return {
       fieldData: null,
+      value: null,
+      oldValue: null,
     };
+  },
+  computed: {
+    precision() {
+      return this.editorType == "digit" ? 2 : 0;
+    },
+    step() {
+      return this.editorType == "digit" ? 0.1 : 1;
+    },
+    editorType() {
+      let type = "";
+      const colType = this.field.col_type || "String";
+      switch (colType) {
+        case "Money":
+          type = "digit";
+          break;
+        case "Money":
+        case "Integer":
+          type = "number";
+          break;
+        default:
+          type = "string";
+          break;
+      }
+      return type;
+    },
+  },
+  created() {
+    if (this.data && this.field?.columns) {
+      this.value = this.data[this.field.columns];
+      this.oldValue = this.data[this.field.columns];
+    }
   },
   methods: {
     onChange(e) {
-      console.log("value change:", e);
+      this.$emit("on-change", {
+        newValue: this.editorType === "digit" ? Number(e) : e,
+        oldValue: this.oldValue,
+        column: this.field.columns,
+        id: this.data.id,
+      });
     },
     onBlur(e) {
       console.log("on blur:", e);
@@ -66,4 +119,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.inline-edit-list {
+  text-align: center;
+}
+
+::v-deep .inline-edit-list input::-webkit-outer-spin-button,
+::v-deep .inline-edit-list input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+}
+</style>

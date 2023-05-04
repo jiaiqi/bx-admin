@@ -35,7 +35,7 @@
             :disabled="item.evalDisable()"
             v-if="(!readOnly && existsGridButton && item.permission && getDispExps(item)) || !item.permission && item.hasOwnProperty('always_show') && item.always_show === true"
             @click="gridButtonClick(item)">
-            {{ item.button_name }}
+            {{getButtonName(item)}}
           </el-button>
 
         </template>
@@ -76,7 +76,7 @@
               :sortable="item.sortable && !isMem() ? 'custom' : false">
               <template slot-scope="scope">
                 <div v-if="onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
-                   <inline-edit-list :field="inlineEditCols[item.column]" :data="scope.row"></inline-edit-list>
+                   <inline-edit-list :field="inlineEditCols[item.column]" :data="scope.row" @on-change="onInlineChange"></inline-edit-list>
                 </div>
                 <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
                   <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
