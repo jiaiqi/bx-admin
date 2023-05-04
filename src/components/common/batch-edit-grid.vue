@@ -45,14 +45,15 @@
               ref="tree"
               style="overflow-y: scroll;height:330px"
             >
-              <span class="custom-tree-node" slot-scope="{ node, data }">
-                <span>{{ node.label }}{{ node.count }} 
-                  <el-badge v-if="node.hasOwnProperty('count') && node.count" :value="node.count" class="item"> </el-badge>
+              <!-- <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span>{{ node.label }}{{ data.count }}
+                  <el-badge v-if="data.hasOwnProperty('count') && data.count" :value="data.count" class="item"> </el-badge>
                 </span>
-              </span>
+              </span> -->
             </el-tree>
           </div>
           
+          <!-- :render-content="renderNode" -->
         
         </el-col>
         <el-col :span="20" class="table-list-row">
@@ -468,28 +469,34 @@ export default {
   },
   methods: {
     renderNode(h, { node, data, store }){
-       console.log(node, data, store)
+      // 构造节点显示信息
+      //  console.log(node, data, store)
        let list = this.bxDeepClone(this.selectedDatas)
        let count = 0
        if(list && list.length > 0){
-        list = list.filter(item => item[this.configBuild.listFilterCol].indexOf(node[this.configBuild.listFilterForTreeCol]) !== -1)
-        count = list.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
+        list = list.filter(item => item[this.configBuild.listFilterCol].indexOf(data[this.configBuild.listFilterForTreeCol]) !== -1)
+        count = list.reduce((conut, obj) => (conut += obj[this.countColNameStr]), 0)
+        
+      //  console.log(data.path_name,count)
        }
        data['count'] = count
-       return (
-        <span class="custom-tree-node" slot-scope="{ node, data }">
-                <span>{ node.label }
-                  <el-badge v-if="data.hasOwnProperty('count') && data.count"  class="item">{count}</el-badge>
+       let style = "background: #F56C6C;color: rgb(255, 255, 255);border-radius: 10px;padding: 0 5px;font-size: 10px;margin-left:4px;"
+       if(count){
+        return (
+          <span class="custom-tree-node"><span>{ node.label }
+                   <span  style={style} class="badge-text" >{count}</span>
                 </span>
           </span>
-          // <span class="custom-tree-node">
-          //   <span>{node.label}</span>
-          //   <span> :value="{node.count}"
-          //     <el-button size="mini" type="text" on-click={ () => this.append(data) }>Append</el-button>
-          //     <el-button size="mini" type="text" on-click={ () => this.remove(node, data) }>Delete</el-button>
-          //   </span>
-          // </span>
           );
+       }else{
+        return (
+          <span class="custom-tree-node">
+                <span>{ node.label }
+                </span>
+          </span>
+          );
+       }
+       
     },
     treeIterator(tree,list, func) {
       let self = this
@@ -500,12 +507,18 @@ export default {
            
            if(list && list.length > 0){
               let filterList = list.filter(item => item[self.configBuild.listFilterCol].indexOf(node[self.configBuild.listFilterForTreeCol]) !== -1)
-              count = filterList.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
+              
+              if(filterList && filterList.length > 0){
+                // console.log('filterList',filterList,node.path_name)
+                count = filterList.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
+              }
+              
               
             }
             if(count){
+              node['count'] = count
               this.$set(node,'count',count)
-              console.log(node[self.configBuild.listFilterForTreeCol],count)
+              // console.log(self.configBuild.listFilterForTreeCol,node[self.configBuild.listFilterForTreeCol],count)
               node['count'] = count
             }
             
@@ -1076,5 +1089,9 @@ export default {
 }
 .batch-selected-layout{
   background: aliceblue !important;
+}
+.badge-text{
+  background-color: rgb(240, 55, 55);
+  color: #fff !important;
 }
 </style>
