@@ -411,8 +411,6 @@ export class FieldInfo {
         this.colspan = this.setLayoutColSize(0.25);
       } else if(this.editor == "DateRange"){
         this.colspan = this.setLayoutColSize(0.5);
-      } else if (this.editor == 'finder') {
-        this.colspan = this.setLayoutColSize(0.5);
       } else {
         // 根据colspan设置响应式布局
         this.colspan = this.setLayoutColSize(col_span);
