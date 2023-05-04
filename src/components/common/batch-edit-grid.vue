@@ -38,6 +38,7 @@
               :expand-on-click-node="1 == 2"
               highlight-current
               node-key="id"
+              :render-content="renderNode"
               :empty-text="'暂无数据'"
               v-loading="treeLoading"
               @node-click="handleNodeClick"
@@ -45,8 +46,8 @@
               style="overflow-y: scroll;height:330px"
             >
               <span class="custom-tree-node" slot-scope="{ node, data }">
-                <span>{{ node.label }} 
-                  <!-- <el-badge :value="typeSelectedCount(node)" class="item"> </el-badge> -->
+                <span>{{ node.label }}{{ node.count }} 
+                  <el-badge v-if="node.hasOwnProperty('count') && node.count" :value="node.count" class="item"> </el-badge>
                 </span>
               </span>
             </el-tree>
@@ -244,6 +245,16 @@ export default {
     this.getListConfig();
   },
   computed:{
+    treeDataRun(){
+      let self = this
+       let selectedDatas = this.bxDeepClone(this.selectedDatas)
+       let treeDataRun = this.bxDeepClone(this.typeDatas)
+       console.log('treeDataRun,selectedDatas',selectedDatas)
+       self.treeIterator(treeDataRun, (node) => {
+          console.log(node.typeDatas)
+      })
+       return selectedDatas
+    },
     selectedCondition(){
          let insetSelectedList = this.bxDeepClone(this.initSelectedDatas.initSelectedDatas)
          let keys = insetSelectedList.map(item => item[this.batchAddOptionsV2.batchAddColName])
@@ -456,6 +467,63 @@ export default {
      
   },
   methods: {
+    renderNode(h, { node, data, store }){
+       console.log(node, data, store)
+       let list = this.bxDeepClone(this.selectedDatas)
+       let count = 0
+       if(list && list.length > 0){
+        list = list.filter(item => item[this.configBuild.listFilterCol].indexOf(node[this.configBuild.listFilterForTreeCol]) !== -1)
+        count = list.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
+       }
+       data['count'] = count
+       return (
+        <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span>{ node.label }
+                  <el-badge v-if="data.hasOwnProperty('count') && data.count"  class="item">{count}</el-badge>
+                </span>
+          </span>
+          // <span class="custom-tree-node">
+          //   <span>{node.label}</span>
+          //   <span> :value="{node.count}"
+          //     <el-button size="mini" type="text" on-click={ () => this.append(data) }>Append</el-button>
+          //     <el-button size="mini" type="text" on-click={ () => this.remove(node, data) }>Delete</el-button>
+          //   </span>
+          // </span>
+          );
+    },
+    treeIterator(tree,list, func) {
+      let self = this
+      if(tree && tree.length > 0){
+        tree.forEach((node) => {
+          let count = 0
+           node['count'] = node.count || 0
+           
+           if(list && list.length > 0){
+              let filterList = list.filter(item => item[self.configBuild.listFilterCol].indexOf(node[self.configBuild.listFilterForTreeCol]) !== -1)
+              count = filterList.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
+              
+            }
+            if(count){
+              this.$set(node,'count',count)
+              console.log(node[self.configBuild.listFilterForTreeCol],count)
+              node['count'] = count
+            }
+            
+            // func(node)
+            node.children && node.children.length >0 && this.treeIterator(node.children,list, func)
+        })
+      }
+        
+    },
+    buildTypeDatasCount(type,list){
+      let self = this
+       let selectedDatas = list
+       let treeDataRun = type
+       console.log('treeDataRun,selectedDatas',selectedDatas)
+       self.treeIterator(treeDataRun,list, (node) => {
+          console.log(node.path_name)
+      })
+    },
     typeSelectedCount(item){
       // 动态计算分类计数
          let list = this.bxDeepClone(this.selectedDatas)
@@ -977,6 +1045,15 @@ export default {
            
         }
         //  this.$refs.list.loadTableData()
+      }
+    },
+    "selectedDatas":{
+      deep:true,
+      handler:function(newVal,oldVal){
+        if(newVal){
+          console.log('数据更新了 selectedDatas',newVal)
+          this.buildTypeDatasCount(this.typeDatas,newVal)
+        }
       }
     }
     

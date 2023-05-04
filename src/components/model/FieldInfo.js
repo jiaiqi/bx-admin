@@ -87,6 +87,7 @@ export class FieldInfo {
     this.xIf = srvCol.x_if;
     this.upstream = srvCol.upstream; // 处理上游字段
     this.redundant = srvCol.redundant;   // redundant 配置
+    this.mainSubRedundant = srvCol.main_sub_red;   // 主子表冗余 配置
 
     this.visible = "true";
     this.bodyVisible = true;

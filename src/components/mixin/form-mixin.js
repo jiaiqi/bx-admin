@@ -716,8 +716,8 @@ export default {
           }
         }
         this.handleValidation(fieldName);
-        
-        this.handleFieldFkRedundant && this.handleFieldFkRedundant(field, this.fields);
+        this.handleFieldFkRedundant(field, this.fields)
+        // this.handleFieldFkRedundant && this.handleFieldFkRedundant(field, this.fields);
         for(let f of self.colValChangeRequestCols){
           if(f === fieldName){
             self.getColValRequests()
