@@ -9,6 +9,7 @@ export default {
   methods: {
 
     handleRedundantOnFormModelChange: function (newVal, oldVal, fields, formModelFunc) {
+      let self = this
       if (!this.isLoaded()) {
         return;
       }
@@ -50,6 +51,18 @@ export default {
           if (!(diffFields.size == 1 && diffFields.has(fieldName))) {
             let vm = this
             this.handleRedundantViaJs(field, formModelFunc, vm)
+          }
+        }
+        if(fieldInfo.mainSubRedundant){
+          let mainData = self.parentAddMainFormDatas
+          let subMainRedundant = fieldInfo.mainSubRedundant
+          
+          if(mainData && subMainRedundant.trigger=="always"){
+              if(mainData.hasOwnProperty(subMainRedundant.quoteCol)){
+                 let ret = mainData[subMainRedundant.quoteCol]
+                 field.setSrvVal(ret)
+              }
+              console.log(fieldName,':',mainData,subMainRedundant.quoteCol,mainData.hasOwnProperty(subMainRedundant.quoteCol))
           }
         }
       }
