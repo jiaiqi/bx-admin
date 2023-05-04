@@ -1298,8 +1298,10 @@ export default {
     },
 
     onAddFormActionComplete(action) {
+      console.log('onAddFormActionComplete',action)
       if (action == "submit") {
         this.activeForm = null;
+        this.loadTableData(true)
       }
     },
 
