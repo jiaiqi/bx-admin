@@ -75,7 +75,7 @@
               :min-width="item.list_min_width + 'px'" :filters="item.filters" :column-key="item.column"
               :sortable="item.sortable && !isMem() ? 'custom' : false">
               <template slot-scope="scope">
-                <div v-if="onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
+                <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
                    <inline-edit-list :field="inlineEditCols[item.column]" :data="scope.row" @on-change="onInlineChange"></inline-edit-list>
                 </div>
                 <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">

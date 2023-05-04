@@ -9,6 +9,11 @@ export default {
     };
   },
   computed: {
+    canInlineEdit() {
+      return (
+        this.cfgJson?.list_edit_srv && this.cfgJson.options === "列表列编辑"
+      );
+    },
     submitButton() {
       if (
         Array.isArray(this.updateV2.formButton) &&
@@ -98,12 +103,14 @@ export default {
       }
     },
     onBatchUpdateClick() {
-      if (this.onInlineEditing === false) {
-        this.onInlineEditing = true;
-      } else {
-        this.saveData().then(() => {
-          this.onInlineEditing = false;
-        });
+      if (this.canInlineEdit) {
+        if (this.onInlineEditing === false) {
+          this.onInlineEditing = true;
+        } else {
+          this.saveData().then(() => {
+            this.onInlineEditing = false;
+          });
+        }
       }
     },
     async getColV2() {
@@ -133,7 +140,10 @@ export default {
       console.log(e);
       if (e && typeof e === "string") {
         this.cfgJson = JSON.parse(e);
-        if (this.cfgJson?.list_edit_srv) {
+        if (
+          this.cfgJson?.list_edit_srv &&
+          this.cfgJson.options === "列表列编辑"
+        ) {
           this.getColV2();
         }
       }
