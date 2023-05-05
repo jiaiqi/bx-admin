@@ -75,7 +75,6 @@ export default {
         case "Float":
           type = "digit";
           break;
-        case "Money":
         case "Integer":
           type = "number";
           break;

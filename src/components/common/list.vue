@@ -72,7 +72,7 @@
               :filter-method="item.filters ? filterHandler : null" :prop="item.column" :align="item.align"
               :fixed="item.rowFixed ? true : null"
               :show-overflow-tooltip="getListShowFileList(item) === true ? false : true" :label="item.label"
-              :min-width="item.list_min_width + 'px'" :filters="item.filters" :column-key="item.column"
+              :min-width="getColumnMinWidth(item)?getColumnMinWidth(item):item.list_min_width + 'px'" :filters="item.filters" :column-key="item.column"
               :sortable="item.sortable && !isMem() ? 'custom' : false">
               <template slot-scope="scope">
                 <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">

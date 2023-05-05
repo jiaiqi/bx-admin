@@ -101,7 +101,8 @@ export default {
         this.inlineEditCols &&
         this.inlineEditCols[item.column]
       ) {
-        return 180;
+        const minWidth = item.col_type==='Integer'?220:120
+        return item.list_min_width || minWidth;
       }
     },
     onBatchUpdateClick() {
