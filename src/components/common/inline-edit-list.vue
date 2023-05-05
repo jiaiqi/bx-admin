@@ -92,6 +92,11 @@ export default {
     }
   },
   methods: {
+    showValid({result,message,name}){
+      if(result===false){
+         this.value = this.oldValue
+      }
+    },
     onChange(e) {
       this.$emit("on-change", {
         newValue: this.editorType === "digit" ? Number(e) : e,

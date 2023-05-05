@@ -1,3 +1,7 @@
+import momentLib from "moment";
+import { FieldInfo } from "../model/FieldInfo";
+import { Field } from "../model/Field";
+
 export default {
   created() {},
   data() {
@@ -7,9 +11,23 @@ export default {
       updateV2: null,
       inlineEditCols: null,
       newGridData: [],
+      allFields: {},
     };
   },
   computed: {
+    formRules: function () {
+      let rulesMap = {};
+      if (this.allFields && Object.keys(this.allFields).length > 0) {
+        Object.keys(this.allFields).forEach((key) => {
+          let field = this.allFields[key];
+          if (field.info.rules) {
+            rulesMap[field.info.name] = field.info.rules;
+          }
+        });
+      }
+
+      return rulesMap;
+    },
     canInlineEdit() {
       return (
         this.cfgJson?.list_edit_srv && this.cfgJson.options === "列表列编辑"
@@ -27,6 +45,129 @@ export default {
     },
   },
   methods: {
+    /**
+     *
+     * @param rule
+     * @param field
+     * @returns {boolean} true for validate ok,
+     */
+    evalFieldRule(rule, field, fieldName, srvValFormModel, fieldSrvVal) {
+      if (rule.name === "isValidValue") {
+        if (field.finderSelected && !fieldSrvVal) {
+          return {
+            value: "false",
+            type: "confirm",
+          };
+        } else {
+          return {
+            value: "true",
+            type: "confirm",
+          };
+        }
+      }
+      if (rule.hasOwnProperty("pattern")) {
+        let text = fieldSrvVal;
+        if (!text) {
+          return true;
+        }
+        var regex = RegExp(rule.pattern, "g");
+        let test = regex.test(text);
+        return test;
+      } else if (rule.hasOwnProperty("required")) {
+        // console.log("eval Field Rule",fieldSrvVal)
+        return (
+          fieldSrvVal !== null &&
+          fieldSrvVal !== undefined &&
+          fieldSrvVal !== ""
+        );
+      } else if (rule.hasOwnProperty("js_validate")) {
+        if (this.allFields[fieldName].evalXIf()) {
+          //如果显示当前字段
+          var data = srvValFormModel;
+          let result = null;
+          if (rule.js_validate) {
+            let js_validate = rule.js_validate;
+            result = eval("(" + js_validate + ")(data,approval)");
+            if (typeof result === "object") {
+              if (
+                result.hasOwnProperty("type") &&
+                result.hasOwnProperty("value")
+              ) {
+                if (result.type === "validate") {
+                  //警告 校验不通过将不能提交表单
+                  if (
+                    typeof result.value === "string" &&
+                    result.value !== "true"
+                  ) {
+                    rule.message = result.value;
+                    return false;
+                  } else if (result.value === true || result.value === "true") {
+                    return true;
+                  }
+                } else if (result.type === "confirm") {
+                  //提示 不影响表单提交
+                  // TODO 增加提示文字
+                  if (
+                    typeof result.value === "string" &&
+                    result.value !== "true"
+                  ) {
+                    rule.message = result.value;
+                  }
+                  return result;
+                }
+              }
+            } else {
+              // 按旧版本validate特性规则处理
+              if (result === true) {
+                return result;
+              } else if (typeof result === "string") {
+                rule.message = result;
+                return false;
+              }
+            }
+          } else {
+            return true;
+          }
+        }
+      } else if (rule.hasOwnProperty("max")) {
+        if (field.info.isNumeric()) {
+          let number = Number.parseFloat(fieldSrvVal);
+          return number <= rule.max;
+        } else {
+          let text = fieldSrvVal;
+          return !text || text.length <= rule.max;
+        }
+      } else {
+        // TODO: handle min
+        return true;
+      }
+    },
+    handleValidation(fieldName, row, rowIndex, newValue) {
+      // 字段校验
+      let fieldRules = this.formRules;
+      let isValid = true;
+      if (
+        Array.isArray(fieldRules[fieldName]) &&
+        fieldRules[fieldName].length > 0
+      ) {
+        fieldRules[fieldName].forEach((rule) => {
+          const field = this.allFields[fieldName]
+          const state = this.evalFieldRule(rule, field,fieldName, row, newValue);
+          if (state == false) {
+            isValid = false;
+            console.log("put Validate Error else:", rule.name, rule.message);
+            this.$refs?.[`inlineEditor${fieldName}`][rowIndex]?.showValid({
+              result: false,
+              ...rule,
+            });
+            this.$message.error(rule.message);
+          }
+        });
+        console.log(fieldRules[fieldName]);
+      }
+      return isValid;
+      // handle form level validators
+    },
     getButtonName(item) {
       let res = item.button_name;
       if (this.onInlineEditing === true && item.button_type === "batchupdate") {
@@ -83,15 +224,74 @@ export default {
         this.loadTableData();
       }
     },
+    handleRedundantOnInlineFieldChange(column, rowData, vm) {
+      let srv_cols = this.updateV2?.srv_cols;
+      let fieldInfo = null;
+      if (Array.isArray(srv_cols) && srv_cols.length > 0) {
+        fieldInfo = srv_cols.find((item) => column && item.columns === column);
+      }
+      if (!fieldInfo?.redundant || !fieldInfo?.redundant?.func) {
+        return;
+      }
+
+      let func = fieldInfo.redundant.func;
+
+      if (func) {
+        let row = rowData;
+        let moment = momentLib;
+        let ret = eval("var zz=" + func + "(row, vm); zz");
+        if (ret === "Invalid date") {
+          return;
+        }
+
+        let update = false;
+        if (fieldInfo.redundant.trigger == "isnull" && field.isEmpty()) {
+          update = true;
+        } else if (
+          !fieldInfo.redundant.trigger ||
+          fieldInfo.redundant.trigger == "always"
+        ) {
+          update = true;
+        }
+
+        if (update) {
+          // console.log("计算字段",row,field.info.label,ret,field,func)
+          return ret;
+        }
+      }
+    },
     onInlineChange(e) {
       // TODO 表内计算
-      this.newGridData = this.gridData.map((item) => {
-        let obj = JSON.parse(JSON.stringify(item))
-        if (e.id && e.id === item.id) {
+      this.newGridData = this.gridData.map((item, index) => {
+        let obj = JSON.parse(JSON.stringify(item));
+        if (e.id && e.id === item.id && e.newValue !== e.oldValue) {
+          console.log(e.newValue);
+          let result = this.handleValidation(e.column, item, index, e.newValue);
+          if (result == false) {
+            return;
+          }
           obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
           this.$set(item, e.column, e.newValue);
+          item[e.column] = e.newValue;
         }
         return obj;
+      });
+      // 处理 计算 ---未验证
+      this.gridData = this.gridData.map((item, index) => {
+        let obj = JSON.parse(JSON.stringify(item));
+        Object.keys(item).forEach((key) => {
+          item[key] =
+            this.handleRedundantOnInlineFieldChange(key, item, this) ||
+            obj[key];
+          if (item[key] !== obj[key]) {
+            obj[key] = {
+              newValue: item[key],
+              oldValue: obj[key],
+            };
+            this.$set(this.newGridData, index, obj);
+          }
+        });
+        return item;
       });
     },
     getColumnMinWidth(item) {
@@ -101,7 +301,7 @@ export default {
         this.inlineEditCols &&
         this.inlineEditCols[item.column]
       ) {
-        const minWidth = item.col_type==='Integer'?220:120
+        const minWidth = item.col_type === "Integer" ? 220 : 120;
         return item.list_min_width || minWidth;
       }
     },
@@ -137,6 +337,22 @@ export default {
             return res;
           }, {});
         }
+      }
+      let listData = respData.srv_cols;
+
+      for (var i = 0; i < listData.length; i++) {
+        let srvCol = listData[i];
+        let fi = new FieldInfo(srvCol, this.formType);
+        let f = new Field(fi, this);
+        f.vif = srvCol.in_update !== 0;
+        // hack
+        if (fi.name == "id") {
+          fi.visible = false;
+        }
+        if (fi.editor == "multiselect") {
+          f.model = [];
+        }
+        this.$set(this.allFields, fi.name, f);
       }
     },
     handleCfgJson(e) {
