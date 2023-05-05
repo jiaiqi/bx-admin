@@ -12,7 +12,10 @@
           clearable
           @remove-tag="removeTag"
           @clear="clearSelect"
-          @focus="visible = true;onSearch()"
+          @focus="
+            visible = true;
+            onSearch();
+          "
         >
           <el-option
             v-for="item in allData"
@@ -451,7 +454,20 @@ export default {
         }
       }
 
-      let fmtConditions = this.fmt.condition||this.fmt.conditions;
+      let fmtConditions = this.fmt.condition || this.fmt.conditions;
+      let defaultValues = this.defaultValues;
+      if (!defaultValues) {
+        let allFields = this.field?.form?.allFields;
+
+        if (allFields && Object.keys(allFields).length > 0) {
+          defaultValues = {};
+          Object.keys(allFields).forEach((key) => {
+            if (allFields[key].getSrvVal) {
+              defaultValues[key] = allFields[key].getSrvVal();
+            }
+          });
+        }
+      }
       if (Array.isArray(fmtConditions) && fmtConditions.length > 0) {
         for (var condition of fmtConditions) {
           let obj = {
@@ -470,10 +486,10 @@ export default {
               }
             } else if (condition.value["value_type"] == "rowData") {
               if (
-                this.defaultValues &&
-                this.defaultValues[condition.value["value_key"]]
+                defaultValues &&
+                defaultValues[condition.value["value_key"]]
               ) {
-                obj.value = this.defaultValues[condition.value["value_key"]];
+                obj.value = defaultValues[condition.value["value_key"]];
               } else {
                 obj.value = null;
               }
@@ -529,7 +545,7 @@ export default {
       if (loader && loader.orders) {
         queryJson.order = loader.orders;
       }
-      
+
       return this.selectList(queryJson).then((response) => {
         if (response && response.data && response.data.data) {
           let options = [];
@@ -562,7 +578,7 @@ export default {
         }
       });
     },
-    getColAlign: function(colType) {
+    getColAlign: function (colType) {
       if (
         colType === "Money" ||
         colType === "int" ||

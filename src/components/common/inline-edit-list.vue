@@ -72,6 +72,7 @@ export default {
       const colType = this.field.col_type || "String";
       switch (colType) {
         case "Money":
+        case "Float":
           type = "digit";
           break;
         case "Money":

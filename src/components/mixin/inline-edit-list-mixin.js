@@ -1,4 +1,5 @@
 export default {
+  created() {},
   data() {
     return {
       onInlineEditing: false,
@@ -83,13 +84,14 @@ export default {
       }
     },
     onInlineChange(e) {
-      console.log(e);
       // TODO 表内计算
       this.newGridData = this.gridData.map((item) => {
+        let obj = JSON.parse(JSON.stringify(item))
         if (e.id && e.id === item.id) {
-          item[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
+          obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
+          this.$set(item, e.column, e.newValue);
         }
-        return item;
+        return obj;
       });
     },
     getColumnMinWidth(item) {
@@ -145,6 +147,10 @@ export default {
           this.cfgJson.options === "列表列编辑"
         ) {
           this.getColV2();
+          if (this.listType === "addchildlist") {
+            // 添加表单 子表 默认可编辑
+            this.onInlineEditing = true;
+          }
         }
       }
     },
