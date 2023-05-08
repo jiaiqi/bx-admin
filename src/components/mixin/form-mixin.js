@@ -228,6 +228,10 @@ export default {
 
       for (let key in this.fields) {
         model[ key ] = this.fields[ key ].model;
+        if(Object.prototype.toString.call(model[ key ])){
+          model[ key ]  = this.fields[ key ].getSrvVal()
+          // 透传子表表单的主表model 
+        }
       }
 
       return model;
@@ -346,6 +350,8 @@ export default {
     },
     getFormDatas () {
       return this.formModel
+      // return  this.bxDeepClone(this.srvValFormModel()) 
+      
     },
     getParentFormModel () {
       return this.parentAddMainFormDatas
@@ -362,6 +368,7 @@ export default {
       let model = {};
 
       for (let key in this.fields) {
+        console.log(this.fields[ key ].getSrvVal())
         model[ key ] = this.fields[ key ].getSrvVal() !== undefined && this.fields[ key ].getSrvVal() !== null ? this.fields[ key ].getSrvVal() : null;
 
       }
