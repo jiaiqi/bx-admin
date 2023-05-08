@@ -368,7 +368,7 @@ export default {
       let model = {};
 
       for (let key in this.fields) {
-        console.log(this.fields[ key ].getSrvVal())
+        // console.log(this.fields[ key ].getSrvVal())
         model[ key ] = this.fields[ key ].getSrvVal() !== undefined && this.fields[ key ].getSrvVal() !== null ? this.fields[ key ].getSrvVal() : null;
 
       }
