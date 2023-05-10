@@ -31,7 +31,7 @@
         clearable
         @select="handleSelect"
         @blur="handleBlur"
-        style="width: 220px;"
+        style="min-width: 220px;"
       >
         <el-button
           slot="append"
