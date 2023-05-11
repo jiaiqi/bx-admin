@@ -2482,7 +2482,11 @@ export default {
           }
           break;
         case 'fkjsons':
-          result = val?JSON.parse(val):[]
+          try {
+            result = val?JSON.parse(val):[]
+          } catch (error) {
+            
+          }
           if(Array.isArray(result)&&result.length>0){
             result = result.map(item=>item[dispCol]||item[valueCol])
           }

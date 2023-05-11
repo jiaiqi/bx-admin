@@ -3,7 +3,7 @@
   <div>
     <div v-if="subType !== 'select'">
       <a
-        v-if="field.info.linkUrlFunc && !field.info.editable"
+        v-if="field.info.linkUrlFunc && !field.info.editable&&!isFks"
         v-show="field.getSrvVal()"
         style="white-space: normal; color: dodgerblue; cursor: pointer"
         @click="onLinkClicked()"
@@ -16,6 +16,7 @@
         :finder-selected="field.model"
         :defaultValues="defaultValues"
         :mainformDatas="mainformDatas"
+        :disabled="!field.info.editable"
         @on-selected="onPickerSelected"
         v-else-if="isFks"
       ></table-picker>

@@ -267,6 +267,13 @@ export class Field {
         
         return noVal;
       }
+    }else if(fieldType === "fkjsons" && value){
+      const fmt = this.info.fmt
+      if(fmt && fmt.disp_col){
+        const arr= JSON.parse(value)
+        return arr.map(item=>item[fmt.disp_col]||'')
+      }
+      return value
     }
     else {
          

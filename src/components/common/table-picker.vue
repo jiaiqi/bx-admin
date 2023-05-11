@@ -4,6 +4,7 @@
       <div slot="reference">
         <el-select
           style="width: 100%"
+          :disabled="disabled"
           v-model="selected"
           :value-key="valueCol"
           popper-class="popper-class"
@@ -113,6 +114,9 @@ export default {
     mainformDatas: {
       type: Object,
     },
+    disabled:{
+      type:Boolean
+    }
   },
   // mixins: [
   //   ListMixin
