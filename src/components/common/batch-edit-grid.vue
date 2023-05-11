@@ -736,6 +736,8 @@ export default {
       let pageNo = ''
       if(this.configBuild && this.configBuild.hasOwnProperty('page_no')){
         pageNo = this.configBuild.page_no
+        pageNo = this.configBuild.batch_select_add_page_no
+
       }
       let condition = [{
         colName: "page_no",
