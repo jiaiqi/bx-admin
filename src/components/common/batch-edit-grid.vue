@@ -736,6 +736,9 @@ export default {
       let pageNo = ''
       if(this.configBuild && this.configBuild.hasOwnProperty('page_no')){
         pageNo = this.configBuild.page_no
+
+      }
+      if(this.configBuild && this.configBuild.hasOwnProperty('batch_select_add_page_no')){
         pageNo = this.configBuild.batch_select_add_page_no
 
       }
