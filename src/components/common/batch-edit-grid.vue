@@ -215,6 +215,12 @@ export default {
       default(){
         return null
       }
+    },
+    mainData:{
+      type: [Array,Object],
+      default(){
+        return null
+      }
     }
   },
 
@@ -325,6 +331,52 @@ export default {
             value:currentData[this.configBuild.listFilterForTreeCol]
           }]
          }
+         if(this.mainData && this.initSelectedDatas && this.initSelectedDatas.addKeyCol && this.initSelectedDatas.addKeyCol.option_list_v2){
+          let mainData = this.bxDeepClone(this.mainData);
+          let optionsList = this.initSelectedDatas.addKeyCol.option_list_v2
+          let conds = this.bxDeepClone(optionsList.conditions)
+          if(conds && conds.length > 0){
+             for(let cond of conds){
+              let obj = {
+                colName:'',
+                ruleType:'',
+                value:''
+              }
+              obj['colName'] = cond.colName
+              obj['ruleType'] = cond.ruleType
+              if (cond.value && cond.value.indexOf('data.') !== -1) {
+                // 配置 data.xx 表达式处理
+                let key = cond.value.split('data.')
+                key = key.length > 1 ? key[1] : ''
+                if(mainData.hasOwnProperty(key)){
+                    cond.value = mainData[key] || '';
+                }
+                
+                
+                console.log('data.',key)
+              }else if(cond && cond.value &&   cond.value.indexOf("'") !== -1 && cond.value.indexOf("'") !== -1){
+                // 配置"'常量'" 值情况处理
+                let key = cond.value
+                var sreg = new RegExp("\\'","g"); // 加'g'，正则删除字符串里所有的"a"
+                key = key.replace(sreg,"");
+                console.log('--srvReq',key)
+                cond.value = key || ""
+                
+              }
+              obj['value'] = cond.value
+              if(obj['value']){
+                condition.push(this.bxDeepClone(obj))
+              }
+              console.log('obj',obj)
+             
+             }
+          }
+
+         }else{
+           console.log('没有condition',this.initSelectedDatas.addKeyCol)
+         }
+         
+
 
          return condition
 
