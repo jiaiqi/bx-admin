@@ -132,6 +132,32 @@ export default {
 
 
   computed: {
+    isVerifyMobile:function(){
+       let phoneSubKey = 'verifyMobile' 
+       let smsCodeSubKey = 'verifySmsCode' 
+       let list = this.fields || null
+       let isVerify = false
+       let phoneColName = ''
+       let smsCodeColName = ''
+       if(list){
+        console.log('isVerifyMobile',list)
+        for(let key in list){
+            let feild = list[key]
+            if(feild && feild.info.subType && feild.info.subType == 'verifyMobile'){
+              phoneColName = feild.info.name
+            }
+            if(feild && feild.info.subType && feild.info.subType == 'verifySmsCode'){
+              smsCodeColName = feild.info.name
+            }
+        }
+       }
+       
+       if(phoneColName && smsCodeColName){
+        return {phoneColName,smsCodeColName}
+       }else{
+        return false
+       }
+    },
     loaderService: function () {
       if (this.loaderServiceProp) {
         return this.loaderServiceProp;

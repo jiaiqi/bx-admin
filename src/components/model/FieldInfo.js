@@ -69,6 +69,7 @@ export class FieldInfo {
       this._finderAuto = true
     }
 
+    this.subType = srvCol.subtype;   // 子类型
     // only for add form, set too srvval
     this.initValueExpr = srvCol.init_expr;
     // internal use: 以只读文本方式显示，例如detail页面中的字段
@@ -88,7 +89,6 @@ export class FieldInfo {
     this.upstream = srvCol.upstream; // 处理上游字段
     this.redundant = srvCol.redundant;   // redundant 配置
     this.mainSubRedundant = srvCol.main_sub_red;   // 主子表冗余 配置
-
     this.visible = "true";
     this.bodyVisible = true;
     this.editable = srvCol.col_updatable_expr || (srvCol.updatable !== 0 && srvCol.updatable !== "0")
@@ -284,6 +284,8 @@ export class FieldInfo {
       this.editor = 'snote'
     }else if(this.type === 'Extend'){
       this.editor = 'extend'
+    }else if(this.type === 'String' && this.subType == 'verifySmsCode'){
+      this.editor = 'verifySmsCode'
     }else{
       this.editor = null;
     }
@@ -460,7 +462,7 @@ export class FieldInfo {
       ngPattern: 'pattern',
       ngMaxLength: 'max',
     }
-
+    
     // convert validator to map
     srvCol.validators.split(";").filter(part => !!part).forEach(part => {
       // 多个校验 时 "js_validate=" 必须配置在最后一项
@@ -532,7 +534,14 @@ export class FieldInfo {
       })
 
     }
-
+    let subType = this.subType
+    if(subType && (subType == 'verifyMobile' || subType =='verifySmsCode')){
+      // 验证码验证字段 强制必填
+      let rule = {name: 'required', trigger: 'change'};
+      rule['required'] = true;
+      rule['message'] = `${this.label}为必填`;
+      map.set('required', rule)
+    }
     // convert to rules list
     this.rules = Array.from(map.values());
   }

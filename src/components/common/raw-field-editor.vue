@@ -139,7 +139,9 @@
               <dynamicSubTemp ref="dynSub" :config="field.info.moreConfig" :field="field" :form="field.form"></dynamicSubTemp>
             </div>
             <!-- default -->
-
+            <div v-else-if="field.info.editor == 'verifySmsCode'">
+              <verifyMobile ref="verifyMobile"  @change="$emit('field-value-changed', field.info.name, field)" :field="field"></verifyMobile>
+            </div>
             <el-input v-else v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable show-word-limit :maxlength="field.info.getMaxLength()" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
               <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
               <template slot="prepend" v-if="
@@ -153,6 +155,7 @@
           <div v-else-if="field.info.editor == 'extend'">
             <dynamicSubTemp ref="dynSub" :config="field.info.moreConfig" :field="field" :form="field.form"></dynamicSubTemp>
           </div>
+          
           <template v-else>
             <!--只读编辑器-->
             <a v-if="field.info.linkUrlFunc" v-show="field.getSrvVal()" style="white-space: normal; color: dodgerblue; cursor: pointer;" @click="onLinkClicked()">
@@ -240,6 +243,7 @@ import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
+import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 
 export default {
   components: {
@@ -258,7 +262,8 @@ export default {
     ueditor: UEditor,
     QrCode,
     multiFinder,
-    dynamicSubTemp
+    dynamicSubTemp,
+    verifyMobile
   },
 
   props: {
