@@ -54,6 +54,7 @@ export default {
           }
         }
         if(fieldInfo.mainSubRedundant){
+          // 主子表冗余
           let mainData = self.parentAddMainFormDatas
           let subMainRedundant = fieldInfo.mainSubRedundant
           
