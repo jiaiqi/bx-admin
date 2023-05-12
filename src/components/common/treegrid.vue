@@ -248,7 +248,7 @@
                   @submitted2mem="onAdd2MemSubmitted"
       >
 
-      </simple-add> -->
+      </simple-add> :defaultValues="listMainFormDatas"-->
       <add
         name="list-add"
         ref="add-form"
@@ -257,7 +257,7 @@
         :submit2-db="storageType == 'db'"
         :defaultCondition="defaultCondition"
         :form-model-decorator="formModelDecorator"
-        :defaultValues="listMainFormDatas"
+        
         :haveDraft="isDraft"
         :pageIsDraft="activeTabName"
         :childForeignkey="childForeignkey"
@@ -361,6 +361,8 @@
       @close="activeForm = 'xx'"
       append-to-body
     >
+    
+    <!-- :defaultValues="listMainFormDatas" -->
       <add
         name="list-add-child"
         ref="add-child-form"
@@ -369,7 +371,6 @@
         :submit2-db="!isMem()"
         :defaultCondition="defaultCondition"
         :form-model-decorator="formModelDecorator"
-        :defaultValues="listMainFormDatas"
         :haveDraft="isDraft"
         :pageIsDraft="activeTabName"
         :childForeignkey="childForeignkey"
