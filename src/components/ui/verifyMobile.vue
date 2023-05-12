@@ -41,7 +41,7 @@ var timerSetInterval = null
             return isVerifyMobile
         },
         phone(){
-            let defaultValues = this.field.form.defaultValues || false
+            let defaultValues = this.field.form.formModel || false
             let isVerifyMobile = this.isVerifyMobile
             let phone = ''
             if(isVerifyMobile && defaultValues){
