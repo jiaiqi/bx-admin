@@ -13,7 +13,7 @@
       v-model="value"
       type="date"
       size="mini"
-      format="YY-MM-DD"
+      format="yyyy-MM-DD"
       v-if="editorType === 'Date'"
       @change="onChange"
       placeholder="选择日期"
@@ -130,6 +130,17 @@ export default {
       field.setSrvVal(this.data[field.key]);
       this.fieldData = field;
     },
+  },
+  watch: {
+    data: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        if(newValue&&newValue[this.field.columns]!==this.value){
+          this.value = this.data[this.field.columns]
+        }
+      }
+    }
   },
   mounted() {
     if (this.field?.column) {
