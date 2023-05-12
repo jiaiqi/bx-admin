@@ -24,7 +24,25 @@
            </div>
            </el-col>
     </el-row> -->
-    <el-row v-show="!hideButtons" type="flex" class="row-bg" justify="end">
+    <el-row v-show="!hideButtons" type="flex" class="row-bg" justify="space-between">
+      <div class="table-head-btns">
+          <!-- <el-button type="primary" size="small"  v-if="(defaultDirtyFlags == 'add' || listType ==  'addchildlist') && batchAddButton && batchAddButton.hasOwnProperty('batchAdd') && batchAddButton.batchAdd.isDisp && selection" @click.stop="onMemBatchUpdateActive">
+            批量操作
+          </el-button> -->
+          <el-popover 
+            placement="right"
+            popper-class="table-popover"
+            width="800"
+            v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')"
+            trigger="click">
+            <div v-html="moreConfig.table_explain.desc">{{moreConfig.table_explain.desc}}</div>
+            <div slot="reference" style="color:#525252;padding:2px 10px;">列表字段说明<i  class="el-icon-question"></i></div>
+          </el-popover>
+          
+        </div>
+      
+      
+      
       <div class="table-head-btns">
         <template v-for="(item, index) in sortedGridButtons">
           <el-button :key="index" :size="item._moreConfig.size"
@@ -730,6 +748,16 @@ export default {
   -webkit-line-clamp: 1;
   line-clamp: 1;
   -webkit-box-orient: vertical;
+}
+.el-popper[x-placement^=right] .popper__arrow::after {
+    bottom: -6px;
+    left: 1px;
+    border-right-color: #3c3c3c;
+    border-left-width: 0;
+}
+.table-popover.el-popover {
+    background: rgba(64,64,64,.9411764705882353);
+    color: #fff;
 }
 </style>
 

@@ -1,5 +1,14 @@
 <template>
   <div>
+    <el-alert
+      v-if="moreConfig && moreConfig.hasOwnProperty('pagePrompt')"
+      :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title:''"
+      :closable='false'
+      :type="moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type:'warning'">
+      <slot>
+        <div v-html="moreConfig.pagePrompt.description">{{moreConfig.pagePrompt.description}}</div>
+      </slot>
+    </el-alert>
     <filterTabs ref="filterTabs" v-if="tabs.length > 0 && cols.length > 0" :tabs="tabs" :srv="getService()" :cols="cols" @on-input-value="onFilterChange" @on-change="getTableDatas"></filterTabs>
     <!-- <el-row  v-if="tabs.length > 0">
       <el-col :span="24" style="text-align:center">
@@ -62,6 +71,8 @@
               :list-type="listType()"
               :storage-type="storageType"
               :service="getService()"
+              
+              @more-config-loaded="moreConfigLoaded"
               :default-condition="getDefaultConditions"
               :relationCondition="relationCondition"
               :inplace-edit="inplaceEdit"
@@ -228,6 +239,10 @@
           let tabsConds = this.$refs.filterTabs.buildConditions()
           this.relationCondition = tabsConds
         }
+      },
+      moreConfigLoaded(e){
+        // console.log('moreConfigLoaded',e)
+         this.moreConfig = e
       },
       onReset(){
         this.$refs.filterTabs.onReset()
