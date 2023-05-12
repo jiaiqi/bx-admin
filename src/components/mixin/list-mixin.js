@@ -2124,6 +2124,7 @@ export default {
             // service more config 配置 selection 是否为可选择列表，默认为 false
             let moreConfig = JSON.parse(respData.more_config)
             this.moreConfig = moreConfig
+            this.$emit('more-config-loaded',moreConfig)
             if(this.moreConfig.hasOwnProperty("selection")){
                this.selection = this.moreConfig.selection    // moreConfig 配置有限批量操作 检查
             }else{

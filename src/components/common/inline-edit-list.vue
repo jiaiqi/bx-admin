@@ -1,26 +1,37 @@
 <template>
   <div class="inline-edit-list">
     <!-- 111 -->
-    <el-input
+    <!-- <el-input
       v-model.number="value"
       placeholder=""
       v-if="editorType === 'digit'"
       type="number"
       @change="onChange"
       clearable
-    ></el-input>
-
+    ></el-input> -->
+    <el-date-picker
+      v-model="value"
+      type="date"
+      size="mini"
+      format="YY-MM-DD"
+      v-if="editorType === 'Date'"
+      @change="onChange"
+      placeholder="选择日期"
+    >
+    </el-date-picker>
     <el-input-number
       v-model.number="value"
       @change="onChange"
       :step="step"
       :precision="precision"
+      size="mini"
       v-else-if="editorType === 'number' || editorType === 'digit'"
     ></el-input-number>
     <el-input
       v-model="value"
       @change="onChange"
       placeholder=""
+      size="mini"
       v-else-if="editorType === 'string'"
     ></el-input>
     <!-- <raw-field-editor
@@ -69,17 +80,21 @@ export default {
     },
     editorType() {
       let type = "";
-      const colType = this.field.col_type || "String";
+      const colType = this.field.col_type || "string";
       switch (colType) {
         case "Money":
         case "Float":
           type = "digit";
           break;
         case "Integer":
+          case "int":
           type = "number";
           break;
-        default:
+        case "String":
           type = "string";
+          break;
+        default:
+          type = colType;
           break;
       }
       return type;
@@ -92,9 +107,9 @@ export default {
     }
   },
   methods: {
-    showValid({result,message,name}){
-      if(result===false){
-         this.value = this.oldValue
+    showValid({ result, message, name }) {
+      if (result === false) {
+        this.value = this.oldValue;
       }
     },
     onChange(e) {
