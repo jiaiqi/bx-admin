@@ -71,7 +71,10 @@
               :list-type="listType()"
               :storage-type="storageType"
               :service="getService()"
+<<<<<<< HEAD
               
+=======
+>>>>>>> add7bc5b92fb29238097a04c912672744c1ea035
               @more-config-loaded="moreConfigLoaded"
               :default-condition="getDefaultConditions"
               :relationCondition="relationCondition"
@@ -240,6 +243,10 @@
           this.relationCondition = tabsConds
         }
       },
+<<<<<<< HEAD
+=======
+    
+>>>>>>> add7bc5b92fb29238097a04c912672744c1ea035
       moreConfigLoaded(e){
         // console.log('moreConfigLoaded',e)
          this.moreConfig = e
@@ -685,6 +692,25 @@
 
   }
 </script>
+<style lang="less" scoped>
+
+  .stata-data-layout{
+    width:100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+    .stata-data-item{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        div{
+          padding:0.5rem;
+          white-space:nowrap;
+        }
+    }
+  }
+</style>
 
 <style lang="less" scoped>
 
