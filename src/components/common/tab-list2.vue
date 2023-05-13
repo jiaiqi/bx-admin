@@ -686,5 +686,23 @@
   }
 </script>
 
+<style lang="less" scoped>
 
+  .stata-data-layout{
+    width:100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+    .stata-data-item{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        div{
+          padding:0.5rem;
+          white-space:nowrap;
+        }
+    }
+  }
+</style>
 
