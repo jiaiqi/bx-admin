@@ -71,10 +71,6 @@
               :list-type="listType()"
               :storage-type="storageType"
               :service="getService()"
-<<<<<<< HEAD
-              
-=======
->>>>>>> add7bc5b92fb29238097a04c912672744c1ea035
               @more-config-loaded="moreConfigLoaded"
               :default-condition="getDefaultConditions"
               :relationCondition="relationCondition"
@@ -243,10 +239,6 @@
           this.relationCondition = tabsConds
         }
       },
-<<<<<<< HEAD
-=======
-    
->>>>>>> add7bc5b92fb29238097a04c912672744c1ea035
       moreConfigLoaded(e){
         // console.log('moreConfigLoaded',e)
          this.moreConfig = e
