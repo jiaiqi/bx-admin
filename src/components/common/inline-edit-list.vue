@@ -1,5 +1,6 @@
 <template>
   <div class="inline-edit-list">
+    <span class="text-red" v-if="isRequired">*</span>
     <!-- 111 -->
     <!-- <el-input
       v-model.number="value"
@@ -72,6 +73,9 @@ export default {
     };
   },
   computed: {
+    isRequired(){
+      return this.field.validators&&this.field.validators.indexOf('required')>-1;
+    },
     precision() {
       return this.editorType == "digit" ? 2 : 0;
     },
@@ -87,7 +91,7 @@ export default {
           type = "digit";
           break;
         case "Integer":
-          case "int":
+        case "int":
           type = "number";
           break;
         case "String":
@@ -158,5 +162,10 @@ export default {
 ::v-deep .inline-edit-list input::-webkit-outer-spin-button,
 ::v-deep .inline-edit-list input::-webkit-inner-spin-button {
   -webkit-appearance: none !important;
+}
+
+.text-red{
+  color:#ff0000;
+  margin-right: 8px;
 }
 </style>

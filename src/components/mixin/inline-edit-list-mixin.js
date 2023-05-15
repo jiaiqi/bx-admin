@@ -3,7 +3,6 @@ import { FieldInfo } from "../model/FieldInfo";
 import { Field } from "../model/Field";
 
 export default {
-  created() {},
   data() {
     return {
       onInlineEditing: false,
@@ -265,7 +264,6 @@ export default {
       this.newGridData = this.gridData.map((item, index) => {
         let obj = JSON.parse(JSON.stringify(item));
         if (e.id && e.id === item.id && e.newValue !== e.oldValue) {
-          console.log(e.newValue);
           let result = this.handleValidation(e.column, item, index, e.newValue);
           if (result == false) {
             return;
