@@ -14,7 +14,7 @@
       v-model="value"
       type="date"
       size="mini"
-      format="yyyy-MM-DD"
+      format="yyyy-MM-dd"
       v-if="editorType === 'Date'"
       @change="onChange"
       placeholder="选择日期"
@@ -73,8 +73,10 @@ export default {
     };
   },
   computed: {
-    isRequired(){
-      return this.field.validators&&this.field.validators.indexOf('required')>-1;
+    isRequired() {
+      return (
+        this.field.validators && this.field.validators.indexOf("required") > -1
+      );
     },
     precision() {
       return this.editorType == "digit" ? 2 : 0;
@@ -117,8 +119,20 @@ export default {
       }
     },
     onChange(e) {
+      let val = e;
+      switch (this.editorType) {
+        case "Date":
+          val = e.Format("yyyy-MM-dd");
+          break;
+        case "digit":
+        case "number":
+          val = Number(e);
+          break;
+        default:
+          break;
+      }
       this.$emit("on-change", {
-        newValue: this.editorType === "digit" ? Number(e) : e,
+        newValue: val,
         oldValue: this.oldValue,
         column: this.field.columns,
         id: this.data.id,
@@ -140,11 +154,11 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
-        if(newValue&&newValue[this.field.columns]!==this.value){
-          this.value = this.data[this.field.columns]
+        if (newValue && newValue[this.field.columns] !== this.value) {
+          this.value = this.data[this.field.columns];
         }
-      }
-    }
+      },
+    },
   },
   mounted() {
     if (this.field?.column) {
@@ -164,8 +178,8 @@ export default {
   -webkit-appearance: none !important;
 }
 
-.text-red{
-  color:#ff0000;
+.text-red {
+  color: #ff0000;
   margin-right: 8px;
 }
 </style>
