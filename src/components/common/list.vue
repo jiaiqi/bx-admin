@@ -94,7 +94,7 @@
               :sortable="item.sortable && !isMem() ? 'custom' : false">
               <template slot-scope="scope">
                 <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
-                   <inline-edit-list :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange"></inline-edit-list>
+                   <inline-edit-list :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange($event,scope.$index)"></inline-edit-list>
                 </div>
                 <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
                   <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"

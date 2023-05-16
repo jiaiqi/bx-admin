@@ -150,8 +150,14 @@ export default {
         fieldRules[fieldName].length > 0
       ) {
         fieldRules[fieldName].forEach((rule) => {
-          const field = this.allFields[fieldName]
-          const state = this.evalFieldRule(rule, field,fieldName, row, newValue);
+          const field = this.allFields[fieldName];
+          const state = this.evalFieldRule(
+            rule,
+            field,
+            fieldName,
+            row,
+            newValue
+          );
           if (state == false) {
             isValid = false;
             console.log("put Validate Error else:", rule.name, rule.message);
@@ -230,11 +236,11 @@ export default {
         fieldInfo = srv_cols.find((item) => column && item.columns === column);
       }
       if (!fieldInfo?.redundant || !fieldInfo?.redundant?.func) {
-        return;
+        return false;
       }
 
       let func = fieldInfo.redundant.func;
-
+      debugger
       if (func) {
         let row = rowData;
         let moment = momentLib;
@@ -259,37 +265,51 @@ export default {
         }
       }
     },
-    onInlineChange(e) {
+    onInlineChange(e,rowIndex) {
       // TODO 表内计算
+      console.log(e,rowIndex);
       this.newGridData = this.gridData.map((item, index) => {
-        let obj = JSON.parse(JSON.stringify(item));
-        if (e.id && e.id === item.id && e.newValue !== e.oldValue) {
-          let result = this.handleValidation(e.column, item, index, e.newValue);
-          if (result == false) {
-            return;
+        let obj = {}
+        for (const key in item) {
+          if (key&&key.indexOf("_") !== 0) {
+            obj[key] = item[key];
           }
-          obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
-          this.$set(item, e.column, e.newValue);
-          item[e.column] = e.newValue;
+        }
+        if (rowIndex===index && e.newValue !== e.oldValue) {
+          let result = this.handleValidation(e.column, item, index, e.newValue);
+          if (result !== false) {
+            obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
+            this.$set(item, e.column, e.newValue);
+            item[e.column] = e.newValue;
+          }
         }
         return obj;
       });
+
       // 处理 计算 ---未验证
-      this.gridData = this.gridData.map((item, index) => {
-        let obj = JSON.parse(JSON.stringify(item));
+      this.newGridData = this.gridData.map((item, index) => {
+        let obj = {}
+        for (const key in item) {
+          if (key&&key.indexOf("_") !== 0) {
+            obj[key] = item[key];
+          }
+        }
         Object.keys(item).forEach((key) => {
-          item[key] =
-            this.handleRedundantOnInlineFieldChange(key, item, this) ||
-            obj[key];
-          if (item[key] !== obj[key]) {
-            obj[key] = {
-              newValue: item[key],
-              oldValue: obj[key],
-            };
-            this.$set(this.newGridData, index, obj);
+          if (key && key.indexOf("_") !== 0) {
+            item[key] =
+              this.handleRedundantOnInlineFieldChange(key, item, this) ||
+              obj[key];
+            if (item[key] !== obj[key]) {
+              obj[key] = {
+                newValue: item[key],
+                oldValue: obj[key],
+              };
+              this.$set(item,key, item[key]);
+              // this.$set(this.newGridData, index, obj);
+            }
           }
         });
-        return item;
+        return obj;
       });
     },
     getColumnMinWidth(item) {
