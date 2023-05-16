@@ -14,7 +14,7 @@
       v-model="value"
       type="date"
       size="mini"
-      format="yyyy-MM-dd"
+      format="yyyy 年 MM 月 dd 日"
       v-if="editorType === 'Date'"
       @change="onChange"
       placeholder="选择日期"
