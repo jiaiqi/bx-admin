@@ -386,6 +386,10 @@ export default {
       let sorted = this.rowButton.slice();
       sorted.sort((a, b) => a.seq - b.seq)
 
+      if(Array.isArray(this.gridData) && this.gridData.length>0){
+        // 至少某一行要能显示出来 才返回这个按钮
+        sorted = sorted.filter(btn=>this.gridData.some(item=>this.getDispExps(btn,item)))
+      }
 
 
       sorted = getButtonPara(sorted)  // 封装按钮分组数据
@@ -408,6 +412,7 @@ export default {
           
         })
       }
+      
       return sorted
     },
 
