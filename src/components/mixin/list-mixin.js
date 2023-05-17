@@ -234,19 +234,31 @@ export default {
           const to = newVal.tables.params.to
           const data = newVal.tables.data
           const cols = newVal.tables.params.cols
-          
-          if (data.length == 0) {            
+          debugger
+          let addCols = []
+          if(Array.isArray(this.addSrvCols)&&this.addSrvCols.length>0){
+            addCols = this.addSrvCols.filter(item=>item.in_add!==0||item.in_update!==0).map(item=>item.columns)
+          }
+          if (data.length == 0) {
             this.gridData = []
             return
           }
           if (this.gridData.length == 0) {
             data.forEach(item => {
-              item[to] = item[from]
-              this.gridData.push(item)
+              let obj = {}
+              for (const index in addCols) {
+                const key = addCols[index]
+                if (item[key]) {
+                  obj[key] = item[key]
+                }else{
+                  obj[key] = null
+                }
+              }
+              obj[to] = item[from]
+              this.gridData.push(obj)
             })
             return
           }
-
           // 从当前list中删除内存中没有的数据
           this.gridData = this.gridData.filter(x => data.findIndex(y => y[from] === x[to]) !== -1);
           
@@ -264,8 +276,18 @@ export default {
             })
             
             if (!sameVal) {
-              item[to] = item[from]
-              this.gridData.push(item)
+              let obj = {}
+              for (const index in addCols) {
+                const key = addCols[index]
+                if (item[key]) {
+                  obj[key] = item[key]
+                }else{
+                  obj[key] = null
+                }
+              }
+              obj[to] = item[from]
+              // item[to] = item[from]
+              this.gridData.push(obj)
             }
           })
         }

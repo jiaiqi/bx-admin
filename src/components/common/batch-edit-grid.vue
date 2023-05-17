@@ -629,28 +629,15 @@ export default {
     saveOperation(){
       console.log('保存操作',this.selectedDatasRun)
       let list = this.bxDeepClone(this.selectedDatasRun)
-      let arr = []
       list.forEach(item =>{
          item[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
-         let obj = {}
-         let allFields = this.initSelectedDatas.addCols
-         allFields.forEach(field=>{
-          if(field.columns!=='id' && item[field.columns]){
-            obj[field.columns] = item[field.columns]
-          }else{
-            obj[field.columns] = null
-          }
-         })
-         obj[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
-         obj[this.batchAddOptionsV2.batchAddColName] = item[this.batchAddOptionsV2.batchAddOptionsV2.refed_col]
-         arr.push(obj)
          delete item[this.countColNameStr]
       })
       let cols = []
       cols[0] = this.configBuild.batch_select_add_count_col
       this.$store.commit("setFrontTableData", {
         service: this.buttonInfo.service,
-        data: arr,
+        data: list,
         params: {
           from: this.batchAddOptionsV2.batchAddOptionsV2.refed_col,
           to: this.batchAddOptionsV2['batchAddColName'],
