@@ -699,6 +699,9 @@ export default {
     setSrvVal (srvVal) {
       if (srvVal == null || srvVal == undefined) {
         this.selected = null;
+        if(this.field.model === srvVal){
+          return
+        }
         this.emitFieldValueChange();
         return;
       }
