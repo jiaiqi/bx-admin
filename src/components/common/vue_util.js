@@ -366,14 +366,14 @@ function init_util() {
    * @param use_type
    * @returns {*}
    */
-  Vue.prototype.loadColsV2 = function (service_name, use_type, app) {
+  Vue.prototype.loadColsV2 = function (service_name, use_type, mainSrv,app) {
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
     let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type);
     if (cacheP) {
       return cacheP
     }
 
-    let loadedP = this.doLoadColsV2(service_name, use_type, app)
+    let loadedP = this.doLoadColsV2(service_name, use_type,mainSrv, app)
     this.$store && this.$store.commit('addSrvCols', {
       service: fullServiceName,
       useType: use_type,
@@ -393,7 +393,7 @@ function init_util() {
   }
 
 
-  function getV2RequestData(service_name, use_type) {
+  function getV2RequestData(service_name, use_type,mainSrv) {
     let requestData = {
       serviceName: 'srvsys_service_columnex_v2_select',
       colNames: ['*'],
@@ -416,6 +416,14 @@ function init_util() {
         }
       ]
     };
+    if(mainSrv){
+      // 如果传递了 页面 service 则 发送 新参数  /**2023-05-18**/
+      requestData['condition'].push({
+        colName: 'main_srv',
+        value: mainSrv,
+        ruleType: 'eq'
+      })
+    }
     let url = decodeURIComponent(window.location.href)
     let params = parseUrlParams(url)
     if (params && params.v2Params) {
@@ -432,8 +440,8 @@ function init_util() {
     return requestData
   }
 
-  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app) {
-    var data = getV2RequestData(service_name, use_type);
+  Vue.prototype.doLoadColsV2 = function (service_name, use_type,mainSrv, app) {
+    var data = getV2RequestData(service_name, use_type,mainSrv);
 
     var url = this.getServiceUrl("select", "srvsys_service_columnex_v2_select", app);
     url = url + "?colsel_v2=" + service_name;
