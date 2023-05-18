@@ -240,6 +240,7 @@ export class FieldInfo {
       // 利用date elmentUi date 默认 format 设置 日期控件格式
       if(this.moreConfig && this.moreConfig.hasOwnProperty("format")){
         // this.format = this.moreConfig.format
+        // srv col more_congfig : {"format":"yyyy-MM"}
         this.format = 'yyyy-MM-dd HH:mm'
       }
       
