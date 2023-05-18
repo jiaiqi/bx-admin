@@ -358,7 +358,7 @@ export default {
 
       // 子表的数据
       let childDataList = []
-      if (this.$refs.childrenList) {
+      if (this.$refs.childrenList) { 
         this.$refs.childrenList.forEach(childList => {
           let updateQueries = childList.buildRunQuries();
           if (updateQueries.length > 0) {
@@ -380,6 +380,7 @@ export default {
      * @param form
      */
     onAddFormLoaded: function (form) {
+      // 子表加载 v2
       this.$emit("form-loaded", this)
       // console.log("onAddFormLoaded")
       // if itself is submit2mem, no childlist

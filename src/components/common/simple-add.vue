@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import FieldEditor from "./field-editor.vue";
+import FieldEditor from "./field-editor.vue"; 
 import FormMixin from "../mixin/form-mixin";
 import FieldRedundantMixin from "../mixin/field-redundant-mixin";
 import FormValidateMixin from "../mixin/form-validate-mixin";
