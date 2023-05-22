@@ -253,7 +253,7 @@ export default {
           // 表单字段默认折叠配置初始化
           this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
         }else{
-          this.sectionsCollapse['$'] = true
+          this.sectionsCollapse['$'] = false
         }
         
       }
@@ -308,7 +308,7 @@ export default {
   methods: {
     onSectionsCollapseChange(key){
       let self = this
-      if(key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1){
+      if(key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 && key !== '$'){
         console.log('0',key,self.sectionsCollapse[key],self.sectionsCollapse)
         self.$set(self.sectionsCollapse,key,!this.sectionsCollapse[key])
         this.$forceUpdate()
