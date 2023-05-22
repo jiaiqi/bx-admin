@@ -249,12 +249,16 @@ export default {
         // if(this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1){
            
         // }
-        if(key !== '$'){
-          // 表单字段默认折叠配置初始化
-          this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
-        }else{
-          this.sectionsCollapse['$'] = false
+        if(!this.sectionsCollapse.hasOwnProperty(key)){
+          // 没有初始化值得时候 进行
+          if(key !== '$'){
+            // 表单字段默认折叠配置初始化
+            this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
+          }else{
+            this.sectionsCollapse['$'] = false
+          }
         }
+        
         
       }
       // console.log(sectionsOfFormItems)
@@ -568,7 +572,7 @@ export default {
       let self = this
       let useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
       let srvColsP = srvCols ? Promise.resolve({ body: { data: { srv_cols: srvCols } } }) :
-        this.loadColsV2(this.service_name, useType,this.service, app);
+        this.loadColsV2(this.service_name, useType, app,this.service);
       return srvColsP.then((response) => {
         let data = response.body.data;
         this.mainTable = data.main_table;

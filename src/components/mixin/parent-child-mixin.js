@@ -267,7 +267,7 @@ export default {
     loadChildrenList() {
       // console.log("loadChildrenList")
       let self = this
-      return self.loadColsV2(self.selectServiceName, "detail",this.service)
+      return self.loadColsV2(self.selectServiceName, "detail",null,this.service)
         .then(response => {
           let childrenServices = response.body.data["child_service"];
           
