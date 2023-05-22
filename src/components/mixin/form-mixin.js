@@ -251,7 +251,7 @@ export default {
         // }
         if(key !== '$'){
           // 表单字段默认折叠配置初始化
-          this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') == -1
+          this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
         }else{
           this.sectionsCollapse['$'] = true
         }

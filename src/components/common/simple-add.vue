@@ -22,9 +22,9 @@
             <div class="el-form-item" v-if="!!section" style="margin-bottom:0;">
               <span class="section-title" @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
               
-                <template v-if="section !== '$'">
-                  <i class="el-icon-arrow-right" v-show="!sectionsCollapse[section]"></i>
-                  <i class="el-icon-arrow-down" v-show="sectionsCollapse[section]"></i>
+                <template v-if="section !== '$' && cfgJsonOptionsType.indexOf('分组默认折叠') !== -1">
+                  <i class="el-icon-arrow-right" v-show="sectionsCollapse[section]"></i>
+                  <i class="el-icon-arrow-down" v-show="!sectionsCollapse[section]"></i>
                 </template>
               </span>
              
