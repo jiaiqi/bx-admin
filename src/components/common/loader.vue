@@ -55,7 +55,7 @@
           return
         }
 
-        query.colNames = this.colNames;
+        query.colNames = this.colNames; 
         query.hisVer = this.isHistory;   // 是否加载历史版本
         // 处理草稿标记
 

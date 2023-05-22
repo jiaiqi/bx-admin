@@ -40,7 +40,7 @@
           let validItems = (conf.itemsFunc)(rtDataCtx)
             .filter(item => item._dirtyFlags !== "delete");
           let evalItems = validItems
-            .map(item => this.buildValuesFromConf(conf, item))
+            .map(item => this.buildValuesFromConf(conf, item)) 
             .map(item => {
               if (conf.dependKeys) {
                 conf.dependKeys.forEach(depend => delete item[depend.add_col]);
