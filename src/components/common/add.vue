@@ -425,7 +425,7 @@ export default {
 
     },
     getMainFormData () {
-      return this.mainFormDatas
+      return this.mainFormDatas 
     }
   },
   watch: {

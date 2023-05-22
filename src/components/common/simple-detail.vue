@@ -23,13 +23,20 @@
       >
         <el-row v-for="(formItems, section) in sections" :key="section">
           <div class="el-col el-col-24 el-col-xl-24">
-            <div class="el-form-item" v-if="!!section">
-              <span class="section-title">{{ formatSection(section) }}</span>
+            <div class="el-form-item" v-if="!!section"  style="margin-bottom:0;">
+              <!-- <span class="section-title">{{ formatSection(section) }}</span> -->
+              <span class="section-title"  @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
+              
+              <template v-if="section !== '$' && formItems.length > 0">
+                <i class="el-icon-arrow-right" v-show="!sectionsCollapse[section]"></i>
+                <i class="el-icon-arrow-down" v-show="sectionsCollapse[section]"></i>
+              </template>
+            </span>
             </div>
           </div>
           <slot :name="section + '-begin'"></slot>
 
-          <div v-for="formItem in formItems">
+          <div v-for="(formItem,fIndex) in formItems"  v-show="!getSectionShow(section)"  :key="fIndex">
             <field-editor
               :field="formItem.field"
               :content-fields="formItem.contentFields"

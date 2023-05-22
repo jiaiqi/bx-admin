@@ -19,13 +19,20 @@
         <el-row v-for="(formItems, section) in sections" :key="section">
 
           <div class="el-col el-col-24 el-col-xl-24">
-            <div class="el-form-item" v-if="!!section">
-              <span class="section-title">{{formatSection(section)}}</span>
+            <div class="el-form-item" v-if="!!section" style="margin-bottom:0;">
+              <span class="section-title" @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
+              
+                <template v-if="section !== '$'">
+                  <i class="el-icon-arrow-right" v-show="!sectionsCollapse[section]"></i>
+                  <i class="el-icon-arrow-down" v-show="sectionsCollapse[section]"></i>
+                </template>
+              </span>
+             
             </div>
           </div>
           <slot :name="section + '-begin'"></slot>
 
-          <div v-for="formItem in formItems">
+          <div v-for="(formItem,fIndex) in formItems" :key="fIndex" v-show="!getSectionShow(section)">
             <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas' :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues' v-if="formItem.field.info.visible" v-show="formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name">
             <!-- <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas||parentAddMainFormDatas' :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues||srvValFormModel()' v-show="formItem.field.info.visible && formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name"> -->
 
@@ -159,7 +166,7 @@ export default {
         };
       }
 
-      if (this.submit2Db) {
+      if (this.submit2Db) { 
         let executor = new ExecutorInfo();
         submitAction.executor = executor;
 
@@ -247,7 +254,7 @@ export default {
     }
   },
 
-  mounted: function() {
+  mounted: function() { 
     let self = this;
     this.createFields(srvCol => srvCol.in_add != 0)
       .then(response => {

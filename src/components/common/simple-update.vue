@@ -24,22 +24,30 @@
       >
         <el-row v-for="(formItems, section) in sections" :key="section">
           <div class="el-col el-col-24 el-col-xl-24">
-            <div class="el-form-item" v-if="!!section">
-              <span class="section-title">{{formatSection(section)}}</span>
+            <div class="el-form-item" v-if="!!section"  style="margin-bottom:0;">
+              <!-- <span class="section-title">{{formatSection(section)}}</span> -->
+              <span class="section-title"  @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
+              
+              <template v-if="section !== '$'">
+                <i class="el-icon-arrow-right" v-show="!sectionsCollapse[section]"></i>
+                <i class="el-icon-arrow-down" v-show="sectionsCollapse[section]"></i>
+              </template>
+            </span>
             </div>
           </div>
           <slot :name="section + '-begin'"></slot>
 
-          <div v-for="formItem in formItems">
+          <div v-for="(formItem,fIndex) in formItems"   :key="fIndex" v-show="!getSectionShow(section)">
             <field-editor :field="formItem.field"
-                          :content-fields="formItem.contentFields"
-                          :key="formItem.field.info.name"
-                          :form-model="formModel"
-                          :defaultValues="defaultValues"
-                          :mainformDatas="parentAddMainFormDatas"
-                          :form-has-invalid-error="hasInvalidField()"
-                          @field-value-changed="onFieldValueChanged($event)"
-                          @field-history-popup="onFieldHistoryPopup"
+              
+              :content-fields="formItem.contentFields"
+              :key="formItem.field.info.name"
+              :form-model="formModel"
+              :defaultValues="defaultValues"
+              :mainformDatas="parentAddMainFormDatas"
+              :form-has-invalid-error="hasInvalidField()"
+              @field-value-changed="onFieldValueChanged($event)"
+              @field-history-popup="onFieldHistoryPopup"
             >
             <div slot="field-child-prepend" class="padding-bottom">
               <slot :name="formItem.field.info.name + '-child-prepend'"></slot>

@@ -126,12 +126,20 @@ export default {
       isHistoryUse: false,
       colValChangeRequestCols:[],
       moreConfig:null,
-      initValToCols:[]  //请求赋值col
+      initValToCols:[],  //请求赋值col
+      cfgJson:null,
+      sectionsCollapse:{}
     }
   },
 
 
   computed: {
+    cfgJsonOptionsType(){
+       let json = this.cfgJson
+       let options = json && json.hasOwnProperty('options') && json.options ? json.options : ""
+       options = options.split(',')
+       return options
+    },
     isVerifyMobile:function(){
        let phoneSubKey = 'verifyMobile' 
        let smsCodeSubKey = 'verifySmsCode' 
@@ -238,6 +246,16 @@ export default {
           }
         })
         sectionsOfFormItems[ key ] = formItems;
+        // if(this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1){
+           
+        // }
+        if(key !== '$'){
+          // 表单字段默认折叠配置初始化
+          this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') == -1
+        }else{
+          this.sectionsCollapse['$'] = true
+        }
+        
       }
       // console.log(sectionsOfFormItems)
       return sectionsOfFormItems;
@@ -288,6 +306,19 @@ export default {
 
 
   methods: {
+    onSectionsCollapseChange(key){
+      let self = this
+      if(key){
+        console.log('0',key,self.sectionsCollapse[key],self.sectionsCollapse)
+        self.$set(self.sectionsCollapse,key,!this.sectionsCollapse[key])
+        this.$forceUpdate()
+      } 
+            console.log('1',key,self.sectionsCollapse[key],self.sectionsCollapse)
+      
+    },
+    getSectionShow(key){
+       return this.sectionsCollapse[key]
+    },
     initColValRequest(){
       let self = this
       let conditionCol  = self.colValChangeRequestCols
@@ -593,6 +624,11 @@ export default {
         if (this.buildDependentFields) {
           this.buildDependentFields(this.fields);
         }
+
+
+        if(data.hasOwnProperty('cfg_no') && data.cfg_no && data.cfg_json){
+           this.cfgJson = JSON.parse(data.cfg_json)
+        }
         return response.body;
       });
     },
@@ -736,7 +772,7 @@ export default {
         }
         /**
          * 处理起止日期值分离同步
-         */
+         */ 
         let DateRangeEndCol = field.info._DateRangeEndColName
         if (field.info.editor === "DateRange" && DateRangeEndCol !== null) {
           if (field.hasOwnProperty('_DateRangeModel') && field._DateRangeModel !== null) {
@@ -944,4 +980,12 @@ export default {
     }
 
   },
+  watch:{
+    "sectionsCollapse":{
+      deep:true,
+      handler:function(n,o){
+        console.log('sectionsCollapse change ',n)
+      }
+    }
+  }
 };

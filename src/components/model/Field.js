@@ -67,7 +67,7 @@ export class Field {
     // cache value for upstream fmoreConfigield.model
     // if field has upstream field, add it as an condition
 
-    if (this.info.upstream) {
+    if (this.info.upstream) { 
       let field = this;
       let upstreamCondition = {
         colName: this.info.upstream.refCol,
