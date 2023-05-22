@@ -7,7 +7,7 @@
         <el-radio v-for="(item,index) in formConfig.importType.options" :key="index" :label="item.value">{{item.label}}</el-radio>
       </el-radio-group>
     </el-row>
-    <el-row v-show="importType === 'update'">
+    <!-- <el-row v-show="importType === 'update'">
       显示字段：
       <el-checkbox-group 
         v-model="viewColsValue"
@@ -22,7 +22,7 @@
       :min="1">
       <el-checkbox checked v-for="(item,index) in updateCols" :label="item.columns" :key="index">{{item.label}}</el-checkbox>
     </el-checkbox-group>
-    </el-row>
+    </el-row> -->
     <el-row style="border:1px solid darkgray; padding: 5px; ">
 
 
@@ -105,10 +105,12 @@ export default {
           options:[{
             label:"新增",
             value:"add"
-          },{
-            label:"更新",
-            value:"update"
-          }]
+          },
+          // {
+          //   label:"更新",
+          //   value:"update"
+          // }
+        ]
         }
       },
       b:Boolean

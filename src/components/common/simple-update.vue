@@ -271,6 +271,7 @@
             let rawRow = (this.$refs.loader.lastValidResp ? this.$refs.loader.lastValidResp[0] : {});
             let noPerm4Sensi = this.allFields[colName] && this.allFields[colName].noPerm4Sensi;
             let isDiff = (rawRow[colName] != value.value);
+            console.log(colName,rawRow[colName],value.value)
             return isDiff && !noPerm4Sensi;
           } catch (e) { 
             return true;

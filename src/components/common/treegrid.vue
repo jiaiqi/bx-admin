@@ -934,6 +934,7 @@ export default {
         })
         .then((_) => {
           this.listLoaded = true;
+          this.initLoad = true;
           this.$emit("list-loaded", this);
         });
 
@@ -1309,6 +1310,7 @@ export default {
     onUpdateFormActionComplete(action) {
       if (action == "submit") {
         this.activeForm = null;
+        this.loadTableData(true)
       }
     },
 

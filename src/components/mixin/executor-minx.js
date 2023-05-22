@@ -94,7 +94,9 @@ export default {
           if (confItem.enableFunc) {
             let func = confItem.enableFunc;
             let defaultData = this.defaultValues
-            if (!(func)(value, item)) {
+            let changeValue = !(func)(value, item)
+            console.log('change Value:',changeValue,value.value)
+            if (changeValue) {
               
               continue;
             }
