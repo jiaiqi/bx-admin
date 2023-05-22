@@ -58,7 +58,19 @@ export default {
      */
 
     customizeOperate(butinfo, operateData) {
-
+      if (butinfo.btn_cfg_json) {
+        butinfo.btn_cfg = butinfo.btn_cfg_json
+        try {
+          butinfo.btn_cfg = JSON.parse(butinfo.btn_cfg_json)
+        } catch (e) {
+          //TODO handle the exception
+        }
+        if (butinfo?.btn_cfg?.sys_func==='支付') {
+          butinfo.more_config = 'showDetailQR'
+              this.customizeurlFoward(butinfo, operateData)
+              return
+        }
+      }
       let type = butinfo.button_type
       var application = butinfo.application;
       var operate_type = butinfo.operate_type;
@@ -500,6 +512,19 @@ export default {
     customizeurlFoward(item, operateData) {
       var mainDetailData = this.listMainFormDatas || null
       var address = "";
+      if(item?.more_config?.includes('showDetailQR')){
+        if (Array.isArray(operateData) && operateData.length > 0) {
+          const row = operateData[0]
+          const detailUrl =
+          `https://login.100xsys.cn:1443/h5/views/custom/form/form?serviceName=${this.service}&id=${row.id}&type=detail&idCol=id&srvApp=${this.resolveDefaultSrvApp()}`;
+          const detailUrlImage =  `${this.serviceApi().qrcode}?content=${encodeURIComponent(detailUrl)}&width=300`
+          const h = this.$createElement;
+          this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, '扫码打开小程序后进继续操作', {
+            dangerouslyUseHTMLString: true
+          });
+        }
+        return
+      }
       var back_url = this.url_pre_data_handle(item, operateData,mainDetailData);
       if (back_url != '') {
         address = back_url;

@@ -1117,7 +1117,7 @@ export default {
       let button = operate_item;
       var type = operate_item.button_type;
       console.log(type)
-
+      debugger
       var exeservice = operate_item.service_name;
       var tab_title = operate_item.service_view_name;
       // this.clickedRow = row
