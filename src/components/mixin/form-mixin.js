@@ -308,12 +308,12 @@ export default {
   methods: {
     onSectionsCollapseChange(key){
       let self = this
-      if(key){
+      if(key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1){
         console.log('0',key,self.sectionsCollapse[key],self.sectionsCollapse)
         self.$set(self.sectionsCollapse,key,!this.sectionsCollapse[key])
         this.$forceUpdate()
+        console.log('1',key,self.sectionsCollapse[key],self.sectionsCollapse)
       } 
-            console.log('1',key,self.sectionsCollapse[key],self.sectionsCollapse)
       
     },
     getSectionShow(key){
