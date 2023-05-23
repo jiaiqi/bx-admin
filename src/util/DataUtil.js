@@ -14,7 +14,8 @@ export function formatDate(jsDate, type,format) {
   } else if ("year" === type) {
     return moment(jsDate).format("YYYY");
   } else if ("month" === type) {
-    return moment(jsDate).format("YYYY-MM" + "-01");
+    // return moment(jsDate).format("YYYY-MM" + "-01");
+    return moment(jsDate).format("YYYY-MM");
   } else if ("time" === type) {
     return jsDate;
   } else {
