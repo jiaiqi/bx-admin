@@ -285,6 +285,7 @@
           return loader.conditions && loader.conditions.length > 0
         };
         loader.colNames = Object.values(this.fields).map(item => item.info.name);
+        // loader.colNames = ["*"];
         loader.conditions = this.buildConditions();
       },
       /**
