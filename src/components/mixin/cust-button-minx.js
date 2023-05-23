@@ -519,7 +519,7 @@ export default {
           `https://login.100xsys.cn:1443/h5/views/custom/form/form?serviceName=${this.service}&id=${row.id}&type=detail&idCol=id&srvApp=${this.resolveDefaultSrvApp()}`;
           const detailUrlImage =  `${this.serviceApi().qrcode}?content=${encodeURIComponent(detailUrl)}&width=300`
           const h = this.$createElement;
-          this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, '扫码打开小程序后进继续操作', {
+          this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, '请打开微信扫码进行操作', {
             dangerouslyUseHTMLString: true
           });
         }
