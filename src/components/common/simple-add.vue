@@ -56,7 +56,12 @@
     </loader>
     <!-- <slot name="child"></slot> -->
     <!-- <slot name="child"></slot> -->
-    <el-row>
+    <el-row v-if="cfgJson&&cfgJson.agreement_json&&cfgJson.agreement_json.agreement_no">
+      <el-col :span="24" style="text-align: center;padding:6px;padding-bottom:20px;">
+        <agreement-box :agreementJson="cfgJson.agreement_json" :agreementChecked.sync="agreementChecked"></agreement-box>
+      </el-col>
+    </el-row>
+    <el-row :class="{disabled:cfgJson&&cfgJson.agreement_json&&cfgJson.agreement_json.agreement_no&&!agreementChecked}">
       <el-col :span="24" style="text-align: center;padding:6px;padding-bottom:20px;">
         <action v-for="item in actions" :info="item" :key="item.name" :ref="item.name" :isDraft="pageIsDraft" v-show="(item.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
         </action>
@@ -76,13 +81,15 @@ import { ExecutorInfo } from "../model/ExecutorInfo";
 import Vue from "vue";
 import Loader from "./loader.vue";
 import CustButtonMinx from "../mixin/cust-button-minx";
+import agreementBox from './agreement-box.vue';
 
 export default {
   name: "simple-add",
   components: {
     Loader,
     "field-editor": FieldEditor,
-    Action
+    Action,
+    agreementBox
   },
   mixins: [FormMixin, CustButtonMinx, FieldRedundantMixin, FormValidateMixin],
   props: {
@@ -117,7 +124,8 @@ export default {
   data() {
     return {
       service_name: this.service || this.$route.params.service_name,
-      referenced_column_name: null
+      referenced_column_name: null,
+      agreementChecked:false
     };
   },
   watch: {
@@ -343,5 +351,9 @@ export default {
 .el-form-item__content {
   line-height: initial;
   line-height: unset;
+}
+.disabled{
+  pointer-events: none;
+  filter: grayscale(1);
 }
 </style>
