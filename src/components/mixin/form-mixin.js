@@ -257,10 +257,15 @@ export default {
           }else{
             this.sectionsCollapse['$'] = false
           }
+          let sectionsKeys = Object.keys(this.sectionsCollapse)
+          if(sectionsKeys.length > 0){
+            this.sectionsCollapse[sectionsKeys[0]] = false
+          }
         }
         
         
       }
+      
       // console.log(sectionsOfFormItems)
       return sectionsOfFormItems;
     },
