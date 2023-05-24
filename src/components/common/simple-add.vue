@@ -353,7 +353,12 @@ export default {
   line-height: unset;
 }
 .disabled{
-  pointer-events: none;
+  cursor: not-allowed;
   filter: grayscale(1);
+  opacity: 0.5;
+  
 }
+.disabled .bx_action{
+  pointer-events: none;
+  }
 </style>
