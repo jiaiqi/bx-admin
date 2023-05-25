@@ -188,6 +188,8 @@ export default {
   },
   methods: {
     setInitVal() {
+      
+      let fieldInfo = this.field.info;
       if (
         this.options.length > 0 &&
         !this.field.model &&
@@ -195,13 +197,14 @@ export default {
         this.field.info.srvCol &&
         this.field.info.srvCol.init_expr === "$firstRowData"
       ) {
-        let fieldInfo = this.field.info;
         let loader = fieldInfo.dispLoader;
         this.field.model = this.options[0];
         this.selected = loader.showAsPair !== true
               ?  this.options[0][fieldInfo.dispCol]
               : `${ this.options[0][fieldInfo.dispCol]}/${ this.options[0][fieldInfo.valueCol]}`;
 
+      }else if(this.field.model){
+        this.selected = this.field.model[fieldInfo.dispCol]
       }
     },
     onPickerSelected (selected) {
@@ -649,7 +652,7 @@ export default {
       return ret;
     },
 
-    handleSelect (item) {
+    handleSelect (item) { 
       console.log("handleSelect", item);
       this.field.model = item;
 
@@ -868,11 +871,12 @@ export default {
         // console.log("modal--12", this.field.model, this.selected, _.isObject(this.field.model))
         let fieldInfo = this.field.info;
         let loader = fieldInfo.dispLoader;
+        this.options = [this.field.model]
         if (this.subType === "select") {
           this.selected = this.field.model[ fieldInfo.valueCol ];
         } else {
           this.selected =
-            loader.showAsPair !== false
+            loader.showAsPair !== false  
               ? this.field.model[ fieldInfo.dispCol ] : `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]
               }`;
         }

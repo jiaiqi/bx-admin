@@ -45,7 +45,7 @@ export class Field {
     this.modelOld = null;
     this.vif = true;
     this.moreInfo = null
-
+    
     if (this.info.editor == 'multiselect') {
       // multiselect need default value as []
       this.model = this.model || []
@@ -93,6 +93,18 @@ export class Field {
     this.promptMsg = {};
     // array item is object, keys: value, remark
     this.historyData = [];
+
+    this.autocompleteInput = false
+    if(this.info.editor == null && this.info.redundant){
+      let dependField = this.info.redundant.dependField
+      let field = this
+      this.autocompleteInput = true
+      this.autocompleteFunc =  (_) => {
+        let dependField = field.form.fields[this.info.redundant.dependField]
+        return  (dependField.info.srvCol && dependField.info.srvCol.option_list_v2) || [];
+      }
+      // let dependFieldOptionsListV2 = field.form.fields
+    }
   }
   getSrvVal() {
     // 获取字段值

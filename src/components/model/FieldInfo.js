@@ -287,6 +287,9 @@ export class FieldInfo {
       this.editor = 'extend'
     }else if(this.type === 'String' && this.subType == 'verifySmsCode'){
       this.editor = 'verifySmsCode'
+    }else if(this.type === 'String' && this.redundant){
+      this.editor = null;
+      // this.autocomplete = 
     }else{
       this.editor = null;
     }
@@ -331,25 +334,27 @@ export class FieldInfo {
 
     this.dispLoader = {
       service: optionListV2.serviceName || optionListV2.service,
-      conditions: optionListV2.conditions,
-      relation_conditions: optionListV2.relation_conditions,
-      orders: optionListV2.orders,
-      showAsPair: optionListV2.show_as_pair,
-      imgUrlExpr: optionListV2.img_url_expr,
+      conditions: optionListV2.conditions || [],
+      relation_conditions: optionListV2.relation_conditions || null,
+      orders: optionListV2.orders || null,
+      showAsPair: optionListV2.show_as_pair || null,
+      imgUrlExpr: optionListV2.img_url_expr || null,
       dedup: optionListV2.dedup,
-      srvApp:optionListV2.srv_app,
-      parentCol:optionListV2.parent_col,
+      srvApp:optionListV2.srv_app || null,
+      parentCol:optionListV2.parent_col || null,
       refedCol:optionListV2.refed_col,
+      dispCol:optionListV2.key_disp_col || optionListV2.disp_col,
     };
+    
+    this.allowInput = optionListV2.allow_input || null;
+    this.parentCol = optionListV2.parent_col || null;
+    this.valueCol = optionListV2.refed_col || optionListV2.primary_col;
+    this.dispCol = optionListV2.key_disp_col || optionListV2.disp_col;
     if(this.editor === "userlist"){
       this.dispLoader.service = 'srvsso_user_select'
       optionListV2.key_disp_col = 'user_disp'
     }
 
-    this.allowInput = optionListV2.allow_input;
-    this.parentCol = optionListV2.parent_col;
-    this.valueCol = optionListV2.refed_col || optionListV2.primary_col;
-    this.dispCol = optionListV2.key_disp_col || optionListV2.disp_col;
 
     if (optionListV2.is_tree) {
       this.editor = "tree-finder";
