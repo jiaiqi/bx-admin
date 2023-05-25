@@ -162,6 +162,14 @@ export default {
           }
         }
       }
+    },
+    "field.model": {
+      deep: true,
+      immediate: true,
+      handler: function (newval, olval) {
+        console.log('field.model',this.field.info.name,newval)
+        this.setInitVal()
+      }
     }
   },
   computed: {
@@ -203,8 +211,8 @@ export default {
               ?  this.options[0][fieldInfo.dispCol]
               : `${ this.options[0][fieldInfo.dispCol]}/${ this.options[0][fieldInfo.valueCol]}`;
 
-      }else if(this.field.model){
-        this.selected = this.field.model[fieldInfo.dispCol]
+      }else if(this.field.model && this.finderSelected){
+        this.selected = this.finderSelected
       }
     },
     onPickerSelected (selected) {
