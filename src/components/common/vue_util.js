@@ -756,7 +756,7 @@ function init_util() {
   }
 
   /**操作*/
-  Vue.prototype.addTab = function (type, urlParams, tab_title, srv, button) {
+  Vue.prototype.addTab = function (type, urlParams, tab_title, srv, button,app) {
     if (tab_title == undefined || tab_title == null || tab_title == "") {
       tab_title = "新标页签";
     }
@@ -775,6 +775,7 @@ function init_util() {
       let params = JSON.parse(urlParams)
       url = common_page_path[type] + '/' + srvName + '?operate_params=' + urlParams;
     }
+    url = `${url}&srvApp=${app}`
     let more_config = ''
     if (button && button.more_config) {
       more_config = button.more_config

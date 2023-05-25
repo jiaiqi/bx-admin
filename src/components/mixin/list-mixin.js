@@ -1073,8 +1073,8 @@ export default {
       } else if ("saveall" == type) {
         this.onSaveAllClicked();
       } else if ("apply" == type) {
-        var urlParams = "/" + exeservice + "?time=" + (new Date()).getTime();
-        this.addTab("start-proc", urlParams, tab_title,null,button);
+        var urlParams = `/${exeservice}?time=${(new Date()).getTime()}`;
+        this.addTab("start-proc", urlParams, tab_title,null,button,button.application);
       } else if ("export" == type) {
         this.onExportClicked();
         // this.activeForm = "export"   // 显示导出配置
