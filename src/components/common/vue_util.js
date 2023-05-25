@@ -761,11 +761,21 @@ function init_util() {
       tab_title = "新标页签";
     }
     let srvName = srv || null
+    let url = common_page_path[type] + urlParams;
     var versionNo = this.getVersionNo();
     if (versionNo != "" && ("procdetail" == type || "start-proc" == type)) {
       type = type + "_" + versionNo;
+        if(app){
+          if(url.indexOf('?') !== -1){
+            url = `${url}&srvApp=${app}&time=${(new Date()).getTime()}`
+          }else{
+            url = `${url}?srvApp=${app}&time=${(new Date()).getTime()}`
+          }
+        
+      }
     }
-    let url = common_page_path[type] + urlParams;
+    
+    
     if (type === 'explain') {
       // 自定义 字段说明页面的参数
       url = common_page_path[type] + '?data=' + urlParams;
@@ -775,7 +785,7 @@ function init_util() {
       let params = JSON.parse(urlParams)
       url = common_page_path[type] + '/' + srvName + '?operate_params=' + urlParams;
     }
-    url = `${url}&srvApp=${app}`
+   
     let more_config = ''
     if (button && button.more_config) {
       more_config = button.more_config
