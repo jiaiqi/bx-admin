@@ -180,7 +180,7 @@ export default {
         serviceName: loader.service,
         colNames: ["*"],
         condition: conditions,
-        relation_condition: relation_condition
+        relation_condition: relation_condition 
       };
       return this.$http.post(url, params).then(response => {
         if (response && response.data && response.data.data) {

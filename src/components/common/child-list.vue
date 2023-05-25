@@ -74,6 +74,7 @@
       :merge-col="mergeCol"
       :listMainFormDatas="mainFormDatas"
       :main-data="mainData"
+      :mem-initdatas-add="initDatas"
       :$srvApp="$srvApp"
       @child-loaded="childDataLoadedRun($event)"
       @list-loaded="onListLoaded"

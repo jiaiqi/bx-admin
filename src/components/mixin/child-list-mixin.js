@@ -1,6 +1,89 @@
 export default {
-  methods: {
+  data(){
+     return {
+      initDatas:[]
+     }
+  },
+  computed:{
+    initDataModelType(){
+       let type = 'add'
+       if(this.listType !== 'addchildlist' && this.listType !== 'updatechildlist'){
 
+       }
+
+       return type
+    },
+    initDataMap(){
+       let map = {}
+       if(this.childListConfig.hasOwnProperty('data_source_cfg')){
+        let  config = this.childListConfig.data_source_cfg
+        if(config.mapping){
+          map = config.mapping
+        }
+       }else{
+        map = {}
+       }
+       return map
+    },
+    initDataSelectReq(){
+      // 配置的主子表需要填充的默认值请求 data_source_cfg
+      let config = null
+      let req = {
+       "serviceName": "",
+       "colNames": [
+         "*"
+       ],
+       "condition": []
+     }
+      if(this.childListConfig.hasOwnProperty('data_source_cfg')){
+       config = this.childListConfig.data_source_cfg
+       req.serviceName = config.select_srv
+       req.srvApp = config.app
+       if(config.condition){
+         for(let cond of config.condition){
+            req.condition.push({
+             "colName": cond.colName,
+             "ruleType": cond.ruleType,
+             "value": this.mainFormDatas[cond.value_main_col]
+           })
+         }
+       }
+      }else{
+        req = null
+      }
+      
+      return req
+   }
+  }
+  ,
+  mounted(){
+    this.getInitSelectDatas()
+    
+  },
+  methods: {
+    getInitSelectDatas(){
+      if(this.initDataSelectReq){
+        let req = this.initDataSelectReq
+        this.selectList(req,req.srvApp).then(response => {
+          if (response && response.data && response.data.data) {
+              let options = response.data.data;
+              this.initDatas = options.map(item => {
+                let initData = {}
+                if(Object.keys(this.initDataMap).length > 0){
+                  for(let key in this.initDataMap){
+                    initData[key] = item[this.initDataMap[key]]
+                  }
+                }
+                
+                return initData
+              })
+              console.log(options)
+            
+          }
+        })
+      }
+      
+    },
 
     onListLoaded: function (innerList) { 
       let refCol = this.foreignKey.column_name;

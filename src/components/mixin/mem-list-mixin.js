@@ -17,7 +17,12 @@ export default {
       type: String,
       default: "db"
     },
-
+    memInitdatasAdd:{
+      type: Array,
+      default(){
+        return []
+      }
+    },
     // true for support inplac edit
     inplaceEdit: {
       type: Boolean,
@@ -678,6 +683,17 @@ export default {
             let data = response.body.data;
             this.addSrvCols = data.srv_cols;
             console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
+
+            let initAddDatas = this.memInitdatasAdd
+            if(initAddDatas && initAddDatas.length > 0){
+              // 内存子表 init add Datas 加载默认添加数据
+               for(let row of initAddDatas){
+                row._dirtyFlags = "add";
+                row._guid = this.guid();
+                this.gridData.push(row);
+               }
+            }
+            
           }
           return !this.updateService || this.updateSrvCols.length > 0
             ? Promise.resolve(false)

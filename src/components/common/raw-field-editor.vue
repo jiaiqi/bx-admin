@@ -142,7 +142,7 @@
               <div v-else-if="field.info.editor == 'verifySmsCode'">
                 <verifyMobile ref="verifyMobile"  @change="$emit('field-value-changed', field.info.name, field)" :field="field"></verifyMobile>
               </div>
-              <div v-else-if="field.info.editor == null && field.info.type == 'String' && field.autocompleteInput">
+              <div v-else-if="field.info.editor == null && field.info.type == 'String' && field.info.subType == 'autocomplete' && field.autocompleteInput">
                  <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
                 <autocompleteInput ref="autocompleteInput"  @change="changeDependField" :field="field"></autocompleteInput>
               </div>
