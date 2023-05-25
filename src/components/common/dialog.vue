@@ -1,8 +1,12 @@
 <template>
   <div>
     <el-dialog title="添加" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'add'" @close="activeForm = 'xx'" append-to-body>
-      <simple-add name="add" ref="add-form" v-if="activeForm == 'add'" :service="service" :default-conditions="defaultConditions" :mainformDatas='listMainFormDatas' :default-condition="defaultCondition"  :childForeignkey='childForeignkey'  :default-values="defaultValues" @action-complete="onActionComplete($event)">
-      </simple-add> 
+      <!-- <simple-add name="add" ref="add-form" v-if="activeForm == 'add'" :service="service" :default-conditions="defaultConditions" :mainformDatas='listMainFormDatas' :default-condition="defaultCondition"  :childForeignkey='childForeignkey'  :default-values="defaultValues" @action-complete="onActionComplete($event)">
+      </simple-add>  -->
+       <add name="list-duplicatedeep" ref="duplicatedeep-form" v-if="activeForm == 'add'"
+        :service="service" :default-conditions="defaultConditions" :pageIsDraft="activeTabName" :defaultValues="defaultValues"
+        @action-complete="onActionComplete($event)">
+      </add>
      
       <!-- <add name="list-duplicatedeep" ref="duplicatedeep-form"
            v-if="activeForm == 'add'" :service="service"
