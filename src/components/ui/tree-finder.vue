@@ -275,7 +275,6 @@ export default {
         }
         return item;
       });
-      debugger;
       return options;
     },
     loadOptions() {

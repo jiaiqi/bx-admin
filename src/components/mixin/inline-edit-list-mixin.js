@@ -240,7 +240,7 @@ export default {
       }
 
       let func = fieldInfo.redundant.func;
-      debugger
+      
       if (func) {
         let row = rowData;
         let moment = momentLib;
