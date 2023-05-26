@@ -279,8 +279,11 @@ export default {
           let result = this.handleValidation(e.column, item, index, e.newValue);
           if (result !== false) {
             obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
-            this.$set(item, e.column, e.newValue);
             item[e.column] = e.newValue;
+            this.$set(item, e.column, e.newValue);
+          }else{
+            obj[e.column] = { newValue: e.oldValue, oldValue: e.oldValue };
+            this.$set(item, e.column, e.oldValue);
           }
         }
         return obj;
