@@ -765,6 +765,7 @@ function init_util() {
     var versionNo = this.getVersionNo();
     if (versionNo != "" && ("procdetail" == type || "start-proc" == type)) {
       type = type + "_" + versionNo;
+      url = common_page_path[type] + urlParams
         if(app){
           if(url.indexOf('?') !== -1){
             url = `${url}&srvApp=${app}&time=${(new Date()).getTime()}`

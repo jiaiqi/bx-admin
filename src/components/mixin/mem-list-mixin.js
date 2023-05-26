@@ -677,24 +677,18 @@ export default {
         ? Promise.resolve(false)
         : this.loadColsV2(this.addService, "add");
 
+        
       return addServiceP
         .then(response => {
           if (response && response.body) {
             let data = response.body.data;
             this.addSrvCols = data.srv_cols;
-            console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
+            // console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
 
-            let initAddDatas = this.memInitdatasAdd
-            if(initAddDatas && initAddDatas.length > 0){
-              // 内存子表 init add Datas 加载默认添加数据
-               for(let row of initAddDatas){
-                row._dirtyFlags = "add";
-                row._guid = this.guid();
-                this.gridData.push(row);
-               }
-            }
+            
             
           }
+          
           return !this.updateService || this.updateSrvCols.length > 0
             ? Promise.resolve(false)
             : this.loadColsV2(this.updateService, "update");
@@ -715,10 +709,10 @@ export default {
         this.loadAddUpdateSrvCols()
           .then(_ => {
             
-
+            
             // clear old data
             this.inplaceEditData.splice(0, this.inplaceEditData.length)
-
+            
             this.gridData.forEach(row => {
               if (!row._dirtyFlags) {
                 // 如果没有 dirtyFlags，设置默认的flags
@@ -983,6 +977,7 @@ export default {
     buildExecutors4Edit(listDataFunc) {
       return this.loadAddUpdateSrvCols().then(_ => {
         let executors = [];
+        
         executors.push(this.buildAddExecutor(listDataFunc));
         executors.push(this.buildUpdateExecutor(listDataFunc));
         executors.push(this.buildDeleteExecutor(listDataFunc));
@@ -1082,8 +1077,9 @@ export default {
 
   },
 
-
+  
   mounted: function () {
+    
     this.$watch(function () {
         return this.gridData;
       },
@@ -1099,5 +1095,37 @@ export default {
         deep: true
       });
 
+  },
+  watch:{
+      "memInitdatasAdd":{
+        deep: true,
+        handler (val, oldVal) {
+
+          let initAddDatas = val
+          if(initAddDatas && initAddDatas.length > 0){
+            // 内存子表 init add Datas 加载默认添加数据
+              for(let row of initAddDatas){
+              row._dirtyFlags = "add";
+              row._guid = this.guid();
+                let guids = this.gridData.filter(item =>{
+                  let guid = item.guid
+                  if(guid){
+                    return guid
+                  }
+                })
+                if(guids.indexOf(row._guid) == -1){
+                  this.gridData.push(row);
+                }
+                
+              }
+          }
+  
+        }
+      }
+
+
+    
   }
+
+  
 };

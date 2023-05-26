@@ -1897,10 +1897,16 @@ export default {
               });
               var response = response.body["data"];
               var proc_instance_no = response[0]["proc_instance_no"];
-              this.$router.push({
+              let route = {
                 name: "procdetail_v2",
                 params: { proc_instance_no: proc_instance_no }
-              });
+              }
+              if(this.$route.query.hasOwnProperty('srvApp')){
+                route['query'] = {
+                  srvApp:this.$route.query.srvApp
+                }
+              }
+              this.$router.push(route);
               window.location.reload();
             } else {
               this.$message({
@@ -1945,10 +1951,16 @@ export default {
             var response = response.body["data"];
             var proc_instance_no = response[0]["proc_instance_no"];
             this.proc_instance_no = proc_instance_no;
-            this.$router.push({
-              name: "procdetail_v2",
-              params: { proc_instance_no: proc_instance_no }
-            });
+            let route = {
+                name: "procdetail_v2",
+                params: { proc_instance_no: proc_instance_no }
+              }
+              if(this.$route.query.hasOwnProperty('srvApp')){
+                route['query'] = {
+                  srvApp:this.$route.query.srvApp
+                }
+              }
+              this.$router.push(route);
             if (timerSave) {
             } else {
               setTimeout(() => {
