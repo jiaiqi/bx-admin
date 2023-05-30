@@ -500,11 +500,11 @@ export class FieldInfo {
             break;
           }
           case  'min': {
-            rule.message = `${this.label}必须小于`;
+            rule.message = `${this.label}不能小于${val}`;
             break;
           }
           case  'max': {
-            rule.message = `${this.label}必须大于`;
+            rule.message = `${this.label}不能大于${val}`;
             break;
           }
           case  'js_validate': {

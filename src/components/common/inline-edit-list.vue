@@ -1,15 +1,6 @@
 <template>
   <div class="inline-edit-list">
     <span class="text-red" v-if="isRequired">*</span>
-    <!-- 111 -->
-    <!-- <el-input
-      v-model.number="value"
-      placeholder=""
-      v-if="editorType === 'digit'"
-      type="number"
-      @change="onChange"
-      clearable
-    ></el-input> -->
     <el-date-picker
       v-model="value"
       type="date"
@@ -35,13 +26,6 @@
       size="mini"
       v-else-if="editorType === 'string'"
     ></el-input>
-    <!-- <raw-field-editor
-      :field="fieldData"
-      :defaultValues="data"
-      @field-value-changed="onChange"
-      @blur="onBlur"
-    >
-    </raw-field-editor> -->
   </div>
 </template>
 
@@ -150,6 +134,9 @@ export default {
     },
   },
   watch: {
+    value(newValue){
+      
+    },
     data: {
       immediate: true,
       deep: true,

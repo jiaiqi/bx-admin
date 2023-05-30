@@ -136,6 +136,14 @@ export default {
           let text = fieldSrvVal;
           return !text || text.length <= rule.max;
         }
+      }else if (rule.hasOwnProperty("min")) {
+        if (field.info.isNumeric()) {
+          let number = Number.parseFloat(fieldSrvVal);
+          return number >= rule.min;
+        } else {
+          let text = fieldSrvVal;
+          return !text || text.length >= rule.min;
+        }
       } else {
         // TODO: handle min
         return true;
