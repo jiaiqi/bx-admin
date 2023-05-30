@@ -17,6 +17,8 @@
       :step="step"
       :precision="precision"
       size="mini"
+      :min="min"
+      :max="max"
       v-else-if="editorType === 'number' || editorType === 'digit'"
     ></el-input-number>
     <el-input
@@ -57,6 +59,13 @@ export default {
     };
   },
   computed: {
+    min(){
+      return this.fieldData?.info?.rules?.find(item=>item.name==='min')?.min
+    },
+    
+    max(){
+      return this.fieldData?.info?.rules?.find(item=>item.name==='max')?.max
+    },
     isRequired() {
       return (
         this.field.validators && this.field.validators.indexOf("required") > -1
@@ -97,9 +106,9 @@ export default {
     }
   },
   methods: {
-    showValid({ result, message, name }) {
+    showValid({ result, message, name, value }) {
       if (result === false) {
-        this.value = this.oldValue;
+        this.$set(this, "value", value);
       }
     },
     onChange(e) {
@@ -115,12 +124,13 @@ export default {
         default:
           break;
       }
-      this.$emit("on-change", {
-        newValue: val,
-        oldValue: this.oldValue,
-        column: this.field.columns,
-        id: this.data.id,
-      });
+      this.value = val;
+      // this.$emit("on-change", {
+      //   newValue: val,
+      //   oldValue: this.value,
+      //   column: this.field.columns,
+      //   id: this.data.id,
+      // });
     },
     onBlur(e) {
       console.log("on blur:", e);
@@ -134,22 +144,32 @@ export default {
     },
   },
   watch: {
-    value(newValue){
-
+    value(newValue, oldValue) {
+      this.oldValue = oldValue;
+      // this.onChange(newValue);
+      this.$emit("on-change", {
+        newValue: newValue,
+        oldValue: oldValue,
+        column: this.field.columns,
+        id: this.data.id,
+      });
     },
     data: {
       immediate: true,
       deep: true,
-      handler(newValue, oldValue) {
-        if (newValue && newValue[this.field.columns] !== this.value) {
-          this.value = this.data[this.field.columns];
-          this.onChange(this.data[this.field.columns])
+      handler(newValue) {
+        if (
+          newValue &&
+          typeof newValue === "object" &&
+          newValue.hasOwnProperty(this.field.columns)
+        ) {
+          this.value = newValue[this.field.columns];
         }
       },
     },
   },
   mounted() {
-    if (this.field?.column) {
+    if (this.field?.columns) {
       this.buildField();
     }
   },

@@ -169,10 +169,7 @@ export default {
           if (state == false) {
             isValid = false;
             console.log("put Validate Error else:", rule.name, rule.message);
-            this.$refs?.[`inlineEditor${fieldName}`][rowIndex]?.showValid({
-              result: false,
-              ...rule,
-            });
+          
             this.$message.error(rule.message);
           }
         });
@@ -290,8 +287,13 @@ export default {
             item[e.column] = e.newValue;
             this.$set(item, e.column, e.newValue);
           }else{
+            item[e.column] = e.oldValue;
             obj[e.column] = { newValue: e.oldValue, oldValue: e.oldValue };
             this.$set(item, e.column, e.oldValue);
+            this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
+              result: false,
+              value:e.oldValue
+            });
           }
         }
         return obj;
