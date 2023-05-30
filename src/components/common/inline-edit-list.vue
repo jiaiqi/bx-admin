@@ -135,7 +135,7 @@ export default {
   },
   watch: {
     value(newValue){
-      
+
     },
     data: {
       immediate: true,
@@ -143,6 +143,7 @@ export default {
       handler(newValue, oldValue) {
         if (newValue && newValue[this.field.columns] !== this.value) {
           this.value = this.data[this.field.columns];
+          this.onChange(this.data[this.field.columns])
         }
       },
     },

@@ -234,7 +234,6 @@ export default {
           const to = newVal.tables.params.to
           const data = newVal.tables.data
           const cols = newVal.tables.params.cols
-          debugger
           let addCols = []
           if(Array.isArray(this.addSrvCols)&&this.addSrvCols.length>0){
             addCols = this.addSrvCols.filter(item=>item.in_add!==0||item.in_update!==0).map(item=>item.columns)
