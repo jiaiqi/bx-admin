@@ -271,7 +271,6 @@ export default {
     },
     onInlineChange(e, rowIndex) {
       // TODO 表内计算
-      console.log(e, rowIndex);
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
@@ -352,7 +351,6 @@ export default {
         "update"
       );
       const respData = response.body.data;
-      console.log(respData);
       this.updateV2 = respData;
       if (this.cfgJson?.list_edit_cols) {
         let inlineEditCols = respData.srv_cols.filter(
@@ -386,7 +384,7 @@ export default {
       }
     },
     handleCfgJson(e) {
-      console.log(e);
+      // console.log('行内编辑配置',e);
       if (e && typeof e === "string") {
         this.cfgJson = JSON.parse(e);
         if (
