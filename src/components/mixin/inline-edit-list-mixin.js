@@ -136,7 +136,7 @@ export default {
           let text = fieldSrvVal;
           return !text || text.length <= rule.max;
         }
-      }else if (rule.hasOwnProperty("min")) {
+      } else if (rule.hasOwnProperty("min")) {
         if (field.info.isNumeric()) {
           let number = Number.parseFloat(fieldSrvVal);
           return number >= rule.min;
@@ -169,7 +169,6 @@ export default {
           if (state == false) {
             isValid = false;
             console.log("put Validate Error else:", rule.name, rule.message);
-          
             this.$message.error(rule.message);
           }
         });
@@ -245,7 +244,7 @@ export default {
       }
 
       let func = fieldInfo.redundant.func;
-      
+
       if (func) {
         let row = rowData;
         let moment = momentLib;
@@ -270,29 +269,29 @@ export default {
         }
       }
     },
-    onInlineChange(e,rowIndex) {
+    onInlineChange(e, rowIndex) {
       // TODO 表内计算
-      console.log(e,rowIndex);
+      console.log(e, rowIndex);
       this.newGridData = this.gridData.map((item, index) => {
-        let obj = {}
+        let obj = {};
         for (const key in item) {
-          if (key&&key.indexOf("_") !== 0) {
+          if (key && key.indexOf("_") !== 0) {
             obj[key] = item[key];
           }
         }
-        if (rowIndex===index && e.newValue !== e.oldValue) {
+        if (rowIndex === index && e.newValue !== e.oldValue) {
           let result = this.handleValidation(e.column, item, index, e.newValue);
           if (result !== false) {
             obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
             item[e.column] = e.newValue;
             this.$set(item, e.column, e.newValue);
-          }else{
+          } else {
             item[e.column] = e.oldValue;
             obj[e.column] = { newValue: e.oldValue, oldValue: e.oldValue };
             this.$set(item, e.column, e.oldValue);
             this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
               result: false,
-              value:e.oldValue
+              value: e.oldValue,
             });
           }
         }
@@ -301,9 +300,9 @@ export default {
 
       // 处理 计算 ---未验证
       this.newGridData = this.gridData.map((item, index) => {
-        let obj = {}
+        let obj = {};
         for (const key in item) {
-          if (key&&key.indexOf("_") !== 0) {
+          if (key && key.indexOf("_") !== 0) {
             obj[key] = item[key];
           }
         }
@@ -317,7 +316,7 @@ export default {
                 newValue: item[key],
                 oldValue: obj[key],
               };
-              this.$set(item,key, item[key]);
+              this.$set(item, key, item[key]);
               // this.$set(this.newGridData, index, obj);
             }
           }

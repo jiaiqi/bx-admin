@@ -59,12 +59,14 @@ export default {
     };
   },
   computed: {
-    min(){
-      return this.fieldData?.info?.rules?.find(item=>item.name==='min')?.min
+    min() {
+      return this.fieldData?.info?.rules?.find((item) => item.name === "min")
+        ?.min;
     },
-    
-    max(){
-      return this.fieldData?.info?.rules?.find(item=>item.name==='max')?.max
+
+    max() {
+      return this.fieldData?.info?.rules?.find((item) => item.name === "max")
+        ?.max;
     },
     isRequired() {
       return (
@@ -145,14 +147,15 @@ export default {
   },
   watch: {
     value(newValue, oldValue) {
-      this.oldValue = oldValue;
-      // this.onChange(newValue);
-      this.$emit("on-change", {
-        newValue: newValue,
-        oldValue: oldValue,
-        column: this.field.columns,
-        id: this.data.id,
-      });
+      if (newValue !== oldValue&&newValue!==undefined) {
+        this.oldValue = oldValue;
+        this.$emit("on-change", {
+          newValue: newValue,
+          oldValue: oldValue,
+          column: this.field.columns,
+          id: this.data.id,
+        });
+      }
     },
     data: {
       immediate: true,

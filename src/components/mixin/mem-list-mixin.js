@@ -1114,7 +1114,7 @@ export default {
                   }
                 })
                 if(guids.indexOf(row._guid) == -1){
-                  this.gridData.push(row);
+                  this.gridData.push(JSON.parse(JSON.stringify(row)));
                 }
                 
               }
