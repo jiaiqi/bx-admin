@@ -54,8 +54,8 @@ export default {
   data() {
     return {
       fieldData: null,
-      value: null,
-      oldValue: null,
+      value: undefined,
+      oldValue: undefined,
     };
   },
   computed: {
@@ -147,8 +147,11 @@ export default {
   },
   watch: {
     value(newValue, oldValue) {
-      if (newValue !== oldValue&&newValue!==undefined&&newValue!==null) {
+      if (newValue !== oldValue && newValue !== undefined) {
         this.oldValue = oldValue;
+        // if (this.oldValue === undefined) {
+        //   this.oldValue = newValue;
+        // }
         this.$emit("on-change", {
           newValue: newValue,
           oldValue: oldValue,

@@ -133,7 +133,7 @@ export default {
           let number = Number.parseFloat(fieldSrvVal);
           return number <= rule.max;
         } else {
-          let text = fieldSrvVal;
+          let text = fieldSrvVal +'';
           return !text || text.length <= rule.max;
         }
       } else if (rule.hasOwnProperty("min")) {
@@ -141,7 +141,7 @@ export default {
           let number = Number.parseFloat(fieldSrvVal);
           return number >= rule.min;
         } else {
-          let text = fieldSrvVal;
+          let text = fieldSrvVal+'';
           return !text || text.length >= rule.min;
         }
       } else {
