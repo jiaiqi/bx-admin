@@ -253,6 +253,9 @@ export default {
                   obj[key] = null
                 }
               }
+              obj['_guid']=this.guid()  // 数据增加 唯一id
+              obj['_dirtyFlags']='add'
+              
               obj[to] = item[from]
               this.gridData.push(obj)
             })
