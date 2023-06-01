@@ -42,7 +42,7 @@
         let refedCol = this.field.info.redundant.refedCol
         let req = {
             "serviceName": optionsV2.serviceName,
-            "srvApp":optionsV2.srvApp || null,
+            "srvApp":optionsV2.srv_app || null,
             "colNames": [
                 "*"
             ],

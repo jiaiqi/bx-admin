@@ -253,6 +253,9 @@ export default {
                   obj[key] = null
                 }
               }
+              obj['_guid']=this.guid()  // 数据增加 唯一id
+              obj['_dirtyFlags']='add'
+              
               obj[to] = item[from]
               this.gridData.push(obj)
             })
@@ -1176,7 +1179,7 @@ export default {
         this.addTab("detail", urlParams, tab_title, null, button);
         //debugger
       } else if ("procdetail" == type) {
-        var urlParams = "/" + row["proc_instance_no"];
+        var urlParams = "/" + row["proc_instance_no"]+"?srvApp=" + this.resolveDefaultSrvApp();
         this.addTab("procdetail", urlParams, tab_title, null, button);
       } else if ("addchild" == type) {
         this.onAddChildClicked(row);
