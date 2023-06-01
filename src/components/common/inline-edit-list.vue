@@ -147,7 +147,7 @@ export default {
   },
   watch: {
     value(newValue, oldValue) {
-      if (newValue !== oldValue&&newValue!==undefined) {
+      if (newValue !== oldValue&&newValue!==undefined&&newValue!==null) {
         this.oldValue = oldValue;
         this.$emit("on-change", {
           newValue: newValue,

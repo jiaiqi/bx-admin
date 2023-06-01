@@ -288,9 +288,19 @@ export default {
             item[e.column] = e.oldValue;
             obj[e.column] = { newValue: e.oldValue, oldValue: e.oldValue };
             this.$set(item, e.column, e.oldValue);
+            let value = null;
+            let result = this.handleValidation(
+              e.column,
+              item,
+              index,
+              e.oldValue
+            );
+            if (result !== false) {
+              value = e.oldValue;
+            }
             this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
               result: false,
-              value: e.oldValue,
+              value,
             });
           }
         }
