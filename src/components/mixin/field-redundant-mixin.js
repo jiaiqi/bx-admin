@@ -89,7 +89,12 @@ export default {
         let row = formModelFunc();
         console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm); zz");
+        
         if (ret === 'Invalid date') {
+          return
+        }
+
+        if(typeof ret ==='function'){
           return
         }
 
