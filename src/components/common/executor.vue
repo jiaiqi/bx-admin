@@ -114,8 +114,8 @@
       },
 
       run(e,kval,isDraft) {
-        let self = this
-        let queries = self.buildQuery(this);
+        // let this = this
+        let queries = this.buildQuery(this);
         /**
            * 保存草稿独有属性 draft
            */

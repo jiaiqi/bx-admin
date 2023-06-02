@@ -89,7 +89,6 @@ export default {
         let row = formModelFunc();
         console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm); zz");
-        
         if (ret === 'Invalid date') {
           return
         }
@@ -105,11 +104,11 @@ export default {
           update = true
         }
 
-        if (update && field.getSrvVal() !== ret) {
-          
-          // console.log("计算字段",row,field.info.label,ret,field,func)
-          field.setSrvVal(ret);
-        }
+          if (update && field.getSrvVal() !== ret) {
+            
+            // console.log("计算字段",row,field.info.label,ret,field,func)
+            field.setSrvVal(ret);
+          }
 
       }
     },

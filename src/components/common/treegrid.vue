@@ -250,6 +250,7 @@
 
       </simple-add> :defaultValues="listMainFormDatas"-->
       <add
+      :mainService="mainService"
         name="list-add"
         ref="add-form"
         v-if="activeForm == 'add'"
@@ -292,6 +293,7 @@
       >
       </simple-add>
       <add
+      :mainService="mainService"
         name="list-duplicatedeep"
         ref="duplicatedeep-form"
         v-if="activeForm == 'duplicatedeep'"
@@ -320,6 +322,7 @@
       append-to-body
     >
       <update
+      :mainService="mainService"
         name="list-update"
         ref="update-form"
         v-if="activeForm == 'update'"

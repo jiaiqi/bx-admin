@@ -1,6 +1,7 @@
 <template>
   <div>
     <treegrid
+    :mainService="mainService"
       ref="list"
       v-if="isTree && storageType === 'db'"
       :name="name"
@@ -56,6 +57,7 @@
       :key="service"
       v-else
       :name="name"
+      :mainService="mainService"
       :pageIsDraft="pageIsDraft"
       :showPagination="childListConfig.showPagination && showPagination"
       :list-type="listType"
@@ -223,6 +225,10 @@ export default {
       default: function () {
         return {}
       }
+    },
+    mainService:{
+      type: String,
+      default: '',
     }
   },
   computed: {

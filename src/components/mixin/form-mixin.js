@@ -81,7 +81,11 @@ export default {
       default () {
         return false
       }
-    }
+    },
+    mainService: {
+      type: String,
+      default: "",
+    },
   },
 
   data () {
@@ -577,7 +581,7 @@ export default {
       let self = this
       let useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
       let srvColsP = srvCols ? Promise.resolve({ body: { data: { srv_cols: srvCols } } }) :
-        this.loadColsV2(this.service_name, useType, app,this.service);
+        this.loadColsV2(this.service_name, useType, app,this.mainService);
       return srvColsP.then((response) => {
         let data = response.body.data;
         this.mainTable = data.main_table;

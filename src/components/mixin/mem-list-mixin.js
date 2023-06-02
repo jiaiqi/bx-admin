@@ -37,7 +37,12 @@ export default {
     defaultDirtyFlags: {
       type: String,
       default: "pristine",
-    }
+    },
+    mainService: {
+      type: String,
+      default: "",
+    },
+    
   },
 
   data() {
