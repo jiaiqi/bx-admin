@@ -22,8 +22,6 @@ export default {
             }
             let addCols = this.addSrvCols || []
             let addKeyCol = addCols.filter(item => item.columns == config.batch_select_add_fk_col) || []
-
-
             addKeyCol = addKeyCol.length > 0 ? addKeyCol[0] : null
             var params={};
             params["service"]=service;

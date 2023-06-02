@@ -115,7 +115,7 @@
 
       run(e,kval,isDraft) {
         let self = this
-        let queries = this.buildQuery(this);
+        let queries = self.buildQuery(this);
         /**
            * 保存草稿独有属性 draft
            */
@@ -198,6 +198,8 @@
                 this.$emit("executor-complete", response);
                 return response;
              
+              }else{
+                return response;
               }
             }
           });

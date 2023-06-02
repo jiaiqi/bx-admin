@@ -625,12 +625,26 @@ export default {
     },
     cancelOperation(){
        console.log('取消操作')
+       this.$emit('closeDialog')
     },
     saveOperation(){
       console.log('保存操作',this.selectedDatasRun)
       let list = this.bxDeepClone(this.selectedDatasRun)
       list.forEach(item =>{
-         item[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
+        if(this.dependFields && this.dependFields.length > 0){
+           // 根据主键字段冗余其他字段
+          for(let dependField of this.dependFields){
+            let redundant = dependField.redundant
+            if(item.hasOwnProperty(redundant.refedCol)){
+              item[dependField.columns] = item[redundant.refedCol]
+
+
+              // console.log(dependField.columns,redundant.refedCol,dependField)
+            }
+          }
+        }
+        // console.log(item)
+        item[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
          delete item[this.countColNameStr]
       })
       let cols = []

@@ -87,6 +87,7 @@ export default {
         if (func) {
         let moment = momentLib;
         let row = formModelFunc();
+        console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm); zz");
         if (ret === 'Invalid date') {
           return
