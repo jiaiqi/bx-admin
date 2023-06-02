@@ -6,6 +6,7 @@
       </div>
       <div class="text item">
         <simple-update
+          :mainService="mainService"
            :approvalFormMode="approvalFormMode" 
            :haveDraft="haveDraft"
            :parentPageType="parentPageType"
@@ -353,6 +354,10 @@ export default {
     parentPageType:{
       type: String,
       default: '',
+    },
+    mainService: {
+      type: String,
+      default: "",
     }
   },
 

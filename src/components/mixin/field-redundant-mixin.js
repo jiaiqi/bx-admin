@@ -85,26 +85,30 @@ export default {
       let func = fieldInfo.redundant.func
 
         if (func) {
-        let moment = momentLib;
-        let row = formModelFunc();
-        console.log('handleRedundantViaJs row',row,func)
-        let ret = eval("var zz=" + func + "(row, vm); zz");
-        if (ret === 'Invalid date') {
-          return
-        }
+          let moment = momentLib;
+          let row = formModelFunc();
+          // console.log('handleRedundantViaJs row',row,func)
+          let ret = eval("var zz=" + func + "(row, vm); zz");
 
-        let update = false
-        if (fieldInfo.redundant.trigger == 'isnull' && field.isEmpty()) {
-          update = true
-        } else if (!fieldInfo.redundant.trigger || fieldInfo.redundant.trigger == 'always') {
-          update = true
-        }
+          // let str = 'return ' + '`' + func + '`'; // 根据配置的模版字符串解析内容
+          // let fun = new Function('row', str);
+          // let ret = fun(row,vm)
+          if (ret === 'Invalid date') {
+            return
+          }
 
-        if (update && field.getSrvVal() !== ret) {
-          
-          // console.log("计算字段",row,field.info.label,ret,field,func)
-          field.setSrvVal(ret);
-        }
+          let update = false
+          if (fieldInfo.redundant.trigger == 'isnull' && field.isEmpty()) {
+            update = true
+          } else if (!fieldInfo.redundant.trigger || fieldInfo.redundant.trigger == 'always') {
+            update = true
+          }
+
+          if (update && field.getSrvVal() !== ret) {
+            
+            // console.log("计算字段",row,field.info.label,ret,field,func)
+            field.setSrvVal(ret);
+          }
 
       }
     },

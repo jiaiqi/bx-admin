@@ -6,6 +6,7 @@
       </div>
       <div class="text item">
         <simple-add
+          :mainService="mainService"
          :approvalFormMode="approvalFormMode" 
           ref="basicForm"
           :service="service"
@@ -282,7 +283,10 @@ export default {
     defaultConditions: {
       type: Array
     },
-
+    mainService: {
+      type: String,
+      default: "",
+    },
     // for update/add, it is form fields default value
     defaultValues: {
       type: Object
