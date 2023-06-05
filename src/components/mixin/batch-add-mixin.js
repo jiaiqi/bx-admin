@@ -10,7 +10,8 @@ export default {
             this.popupBatchDialog(button, this.gridDataRun);
         },
         popupBatchDialog(item, operateData){
-            var service = item["operate_service"];
+            let self = this
+            let service = item["operate_service"];
             let config = null
             try { 
                 config = item.btn_cfg_json
@@ -23,7 +24,7 @@ export default {
             let addCols = this.addSrvCols || []
             let addKeyCol = addCols.filter(item => item.columns == config.batch_select_add_fk_col) || []
             addKeyCol = addKeyCol.length > 0 ? addKeyCol[0] : null
-            var params={};
+            let params={};
             params["service"]=service;
             params["condition"]=[];
             params["batchInitConfig"]= {
@@ -37,6 +38,7 @@ export default {
             params["defaultCondition"]=this.defaultCondition;
             params["listMainFormDatas"]= this.listMainFormDatas;
             params['formType'] = 'batch-edit-grid'
+            // params = self.bxDeepClone(params)
             this.popupDialog(params);
         }
         
