@@ -275,7 +275,9 @@ export default {
             }
             
           })
-          keys = keys.filter(item => item)
+          console.log('keys',keys)
+          keys = keys.filter(item => item !== undefined)
+          console.log('keys1',keys)
          }
          let conds = []
          console.log('selectedCondition',keys,conds)
@@ -549,12 +551,13 @@ export default {
   methods: {
     renderNode(h, { node, data, store }){
       // 构造节点显示信息
-      //  console.log(node, data, store)
+      let self = this
+       console.log(node, data, store)
        let list = this.bxDeepClone(this.selectedDatas)
        let count = 0
        if(list && list.length > 0){
-        list = list.filter(item => item[this.configBuild.listFilterCol].indexOf(data[this.configBuild.listFilterForTreeCol]) !== -1)
-        count = list.reduce((conut, obj) => (conut += obj[this.countColNameStr]), 0)
+        list = list.filter(item => item[self.configBuild.listFilterCol].indexOf(data[self.configBuild.listFilterForTreeCol]) !== -1)
+        count = list.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
         
       //  console.log(data.path_name,count)
        }
@@ -634,7 +637,7 @@ export default {
         initList =this.initSelectedDatas.initSelectedDatas
         req = this.buildOptionalReq
         console.log("initList",initList,req)
-        if(this.selectedCondition){
+        if(this.selectedCondition && this.selectedCondition.length > 0){
           // req['condition'] = this.selectedCondition
           this.select(
               req.serviceName,this.selectedCondition, null, null, null, null, req.srvApp,null,null,null

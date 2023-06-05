@@ -49,7 +49,7 @@ export default {
          }
        }
       }else{
-        req = null
+        req = null 
       }
       
       return req
@@ -168,6 +168,19 @@ export default {
         refColField.info.visible = false;
       }
     }
-  }
+  },
+  watch: {
+    'initDataSelectReq': {
+      deep: true,
+      handler(newVal) {
+        console.log(newVal)
+        let dataSourceCfg = this.childListConfig.data_source_cfg
+        if(dataSourceCfg && dataSourceCfg.is_reset_data == '是'){
+            
+          this.getInitSelectDatas()
+        }
+      }
+    },
+  },
 
 };
