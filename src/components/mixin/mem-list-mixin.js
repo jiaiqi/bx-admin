@@ -1106,21 +1106,32 @@ export default {
         deep: true,
         handler (val, oldVal) {
 
-          let initAddDatas = val
+          let initAddDatas = val.map(item => item)
           if(initAddDatas && initAddDatas.length > 0){
             // 内存子表 init add Datas 加载默认添加数据
+            
+            this.gridData = [].map((item) => item)
               for(let row of initAddDatas){
-              row._dirtyFlags = "add";
-              row._guid = this.guid();
-                let guids = this.gridData.filter(item =>{
-                  let guid = item.guid
-                  if(guid){
-                    return guid
-                  }
-                })
-                if(guids.indexOf(row._guid) == -1){
-                  this.gridData.push(JSON.parse(JSON.stringify(row)));
-                }
+                  row._dirtyFlags = "add";
+                  row._guid = this.guid();
+                    let guids = this.gridData.filter(item =>{
+                      let guid = item.guid
+                      if(guid){
+                        return guid
+                      }
+                    })
+
+                    console.log('memInitdatasAdd',row)
+                    if(guids.indexOf(row._guid) == -1){
+                      this.gridData.push(JSON.parse(JSON.stringify(row)));
+                      if(oldVal.length !== 0 && JSON.stringify(val) !== JSON.stringify(oldVal)){
+                        // this.$message({
+                        //   message: `${this.childForeignkey.section_name}数据已加载！`,
+                        //   type: "warning",
+                        // });
+                      }
+                      
+                    }
                 
               }
           }

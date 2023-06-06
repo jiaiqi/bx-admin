@@ -257,16 +257,31 @@ export default {
        let selectedDatas = this.bxDeepClone(this.selectedDatas)
        let treeDataRun = this.bxDeepClone(this.typeDatas)
        console.log('treeDataRun,selectedDatas',selectedDatas)
-       self.treeIterator(treeDataRun, (node) => {
+       self.treeIterator(treeDataRun,[], (node) => {
           console.log(node.typeDatas)
       })
        return selectedDatas
     },
     selectedCondition(){
-         let insetSelectedList = this.bxDeepClone(this.initSelectedDatas.initSelectedDatas)
-         let keys = insetSelectedList.map(item => item[this.batchAddOptionsV2.batchAddColName])
+
+         let addColName = this.batchAddOptionsV2.batchAddColName || null
+         let insetSelectedList = this.initSelectedDatas.initSelectedDatas
+         console.log(addColName,insetSelectedList)
+         let keys = []
+         if(this.batchAddOptionsV2 && addColName && insetSelectedList && insetSelectedList.length > 0 && keys.length == 0){
+          keys = insetSelectedList.map(item =>{ 
+            if(item.hasOwnProperty(addColName) && item[addColName]){
+              return item[addColName]
+            }
+            
+          })
+          console.log('keys',keys)
+          keys = keys.filter(item => item !== undefined)
+          console.log('keys1',keys)
+         }
          let conds = []
-         if(keys && keys.length >0 ){
+         console.log('selectedCondition',keys,conds)
+         if(keys && keys.length >0 && conds.length == 0 && Array.isArray(keys)){
           conds = [{
             colName:this.batchAddOptionsV2.batchAddOptionsV2.refed_col,
             ruleType:'in',
@@ -296,9 +311,21 @@ export default {
       
        return count
     },
+    checkedIdColumn(){
+       let str = ''
+       if(this.batchAddOptionsV2 && this.batchAddOptionsV2.batchAddOptionsV2 && this.batchAddOptionsV2.batchAddOptionsV2.refed_col){
+        str = this.batchAddOptionsV2.batchAddOptionsV2.refed_col
+       }else{
+        str = 'id'
+       }
+
+       return str
+    },
     checkedIds(){
       let selectedDatas = this.bxDeepClone(this.selectedDatas)
-       let ids = selectedDatas.map(item => item.id)
+       let ids = selectedDatas.map(item => {
+        return  item[this.checkedIdColumn]
+      })
        return ids
     },
     optionalDatasRun(){
@@ -491,6 +518,7 @@ export default {
 
        }
        let condition = this.bxDeepClone(this.optionalListCondition)
+       console.log('optionalListCondition',condition,this.optionalListCondition)
        if(options && options.hasOwnProperty('batchAddOptionsV2')){
          res['serviceName'] = options.batchAddOptionsV2.serviceName
          res['srvApp'] = options.batchAddOptionsV2.srv_app
@@ -506,14 +534,15 @@ export default {
     
     if(this.buildOptionalReq.hasOwnProperty('serviceName') && !this.optionalV2){
       // 加载初始化数据
-      if(this.initSelectedDatas && this.initSelectedDatas.hasOwnProperty('initSelectedDatas') && this.initSelectedDatas.initSelectedDatas.length >0){
+      console.log('initSelectedDatas',this.initSelectedDatas)
+      let initData = this.initSelectedDatas
+      if(initData && initData.hasOwnProperty('initSelectedDatas') && initData.initSelectedDatas.length >0){
           this.initSelectedDatasBuild()
       }
       setTimeout(()=>{
         this.$nextTick(()=>{
           this.getListV2Data()
         })
-        
       },50)
       
     }
@@ -522,12 +551,13 @@ export default {
   methods: {
     renderNode(h, { node, data, store }){
       // 构造节点显示信息
-      //  console.log(node, data, store)
+      let self = this
+       console.log(node, data, store)
        let list = this.bxDeepClone(this.selectedDatas)
        let count = 0
        if(list && list.length > 0){
-        list = list.filter(item => item[this.configBuild.listFilterCol].indexOf(data[this.configBuild.listFilterForTreeCol]) !== -1)
-        count = list.reduce((conut, obj) => (conut += obj[this.countColNameStr]), 0)
+        list = list.filter(item => item[self.configBuild.listFilterCol].indexOf(data[self.configBuild.listFilterForTreeCol]) !== -1)
+        count = list.reduce((conut, obj) => (conut += obj[self.countColNameStr]), 0)
         
       //  console.log(data.path_name,count)
        }
@@ -601,26 +631,36 @@ export default {
          return count
     },
     initSelectedDatasBuild(){
-       let initList = this.bxDeepClone(this.initSelectedDatas.initSelectedDatas)
-       let req = this.bxDeepClone(this.buildOptionalReq)
-       req['condition'] = this.selectedCondition
-       this.select(
-          req.serviceName,req.condition, null, null, null, null, req.srvApp,null,null,null
-        ).then(response => {
-            let data = response.body.data
-            console.log(data)
-            if(data && data.length > 0){
-              this.selectedDatas = data.map(item =>{
-                for(let iItem of initList){
-                    if(iItem[this.batchAddOptionsV2.batchAddColName]==item[this.batchAddOptionsV2.batchAddOptionsV2.refed_col]){
-                      item[this.countColNameStr] = iItem[this.configBuild.batch_select_add_count_col]
+      let initList = []
+      let req ={}
+      if(this.initSelectedDatas && this.initSelectedDatas.initSelectedDatas){
+        initList =this.initSelectedDatas.initSelectedDatas
+        req = this.buildOptionalReq
+        console.log("initList",initList,req)
+        if(this.selectedCondition && this.selectedCondition.length > 0){
+          // req['condition'] = this.selectedCondition
+          this.select(
+              req.serviceName,this.selectedCondition, null, null, null, null, req.srvApp,null,null,null
+            ).then(response => {
+                let data = response.body.data
+                console.log(data)
+                if(data && data.length > 0){
+                  this.selectedDatas = data.map(item =>{
+                    console.log('initList',initList)
+                    for(let iItem of initList){
+                        if(iItem[this.batchAddOptionsV2.batchAddColName]==item[this.batchAddOptionsV2.batchAddOptionsV2.refed_col]){
+                          item[this.countColNameStr] = iItem[this.configBuild.batch_select_add_count_col]
+                        }
                     }
+                    return item
+                    // item[this.countColNameStr]
+                  })
                 }
-                return item
-                // item[this.countColNameStr]
-              })
-            }
-        })
+            })
+        }
+      }
+       
+       
 
     },
     cancelOperation(){
@@ -854,8 +894,8 @@ export default {
                 this.optionalDatas = this.bxDeepClone(listDatas).map(item => item)
 
                 for(let row of this.optionalDatas){
-                  if(this.checkedIds.indexOf(row.id) !== -1){
-                     let item = this.selectedDatas.filter(item => item.id == row.id)
+                  if(this.checkedIds.indexOf(row[this.checkedIdColumn]) !== -1){
+                     let item = this.selectedDatas.filter(item => item[this.checkedIdColumn] == row[this.checkedIdColumn])
                      let val = item[0][this.countColNameStr]
                      this.$nextTick(()=>{
                         this.$set(row,this.countColNameStr,val)
