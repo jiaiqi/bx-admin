@@ -506,24 +506,62 @@ export default {
       
 
     },
+    renderStr(str, obj = {}) {
+      if (typeof obj === 'object' && str && typeof str === 'string') {
+        str = str.replace(/\$\{(.*?)\}/g, (match, key) => {
+          key = key.trim()
+          let result = obj[key]
+
+          let arr = key.split('.')
+          if (arr.length > 1) {
+            result = obj
+            arr.forEach(item => {
+              try {
+                result = result[item];
+                if (result === 0) {
+                  result = '0'
+                }
+              } catch (e) {
+                //TODO handle the exception
+              }
+            })
+          }
+          return result
+        })
+      }
+      return str
+    },
     /**
      * url跳转打开tab页签
      */
     customizeurlFoward(item, operateData) {
       var mainDetailData = this.listMainFormDatas || null
       var address = "";
-      if(item?.more_config?.includes('showDetailQR')){
-        if (Array.isArray(operateData) && operateData.length > 0) {
-          const row = operateData[0]
+      if (item?.btn_cfg?.jump_json){
+        const button = item
+        let row = operateData[0]
+        let jump_json = item?.btn_cfg?.jump_json
+        let url = `/views/custom/index/index?page_no=${jump_json?.dest_page_no}`
+        if (jump_json?.tmpl_page_json?.file_path) {
+          url = jump_json?.tmpl_page_json?.file_path + '?page_no=' + jump_json?.dest_page_no
+        }
+        if (Array.isArray(jump_json?.cols_map_json?.cols_map_detail_json) && jump_json?.cols_map_json
+          ?.cols_map_detail_json.length > 0) {
+          jump_json?.cols_map_json?.cols_map_detail_json.forEach(item => {
+            url += `&${item.col_to}=${this.renderStr(item.col_from,{button,row})}`
+          })
+        }
+        if (item?.btn_cfg?.options && item?.btn_cfg?.options.indexOf('展示二维码') !== -1 && jump_json) {
           const detailUrl =
-          `https://login.100xsys.cn:1443/h5/views/custom/form/form?serviceName=${this.service}&id=${row.id}&type=detail&idCol=id&srvApp=${this.resolveDefaultSrvApp()}`;
+            `https://login.100xsys.cn:1443/h5/?target_nav_url=${encodeURIComponent(url)}`;
+      
           const detailUrlImage =  `${this.serviceApi().qrcode}?content=${encodeURIComponent(detailUrl)}&width=300`
-          const h = this.$createElement;
-          this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, '请打开微信扫码进行操作', {
+
+          this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, item?.btn_cfg?.qrcode_tips || '请打开微信扫码进行操作', {
             dangerouslyUseHTMLString: true
           });
+          return
         }
-        return
       }
       var back_url = this.url_pre_data_handle(item, operateData,mainDetailData);
       if (back_url != '') {
