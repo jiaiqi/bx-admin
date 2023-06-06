@@ -75,6 +75,7 @@
           :key="contentField.info.name"
           v-if="ignoreVif||contentField.evalXIf()"
           :span="getInnerFieldColspan(contentField)"
+          style="display: flex;"
         >
 
           <!-- 
@@ -91,11 +92,13 @@
             v-show="contentField.info.readonly ? contentField.info.srvCol.in_detail == 1 : contentField.info.bodyVisible"
             @field-value-changed="$emit('field-value-changed', $event)"
             @field-history-popup="$emit('field-history-popup', $event)"
+            style="flex: 1;"
           >
           </raw-field-editor>
-
+          <template v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson">
+            <shortcutAdd v-if="contentField.fieldActionOptionsJson" :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
+          </template>
         </el-col>
-
       </el-row>
     </el-form-item>
     <slot name="field-child-append"></slot>
@@ -105,12 +108,13 @@
 
 <script>
 import RawFieldEditor from "./raw-field-editor.vue";
+import shortcutAdd from "./field-shortcut-add.vue";
 
 export default {
   name: "field-editor",
 
   components: {
-    RawFieldEditor,
+    shortcutAdd,RawFieldEditor
   },
 
   props: {

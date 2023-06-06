@@ -105,6 +105,16 @@ export class Field {
       }
       // let dependFieldOptionsListV2 = field.form.fields
     }
+
+    this.fieldActionOptionsJson = null
+    if(this.info.srvCol.col_cfg_json){
+      
+      try {
+        this.fieldActionOptionsJson = JSON.parse(this.info.srvCol.col_cfg_json)
+      } catch (error) {
+        console.error(`字段${this.info.label}col_cfg_json配置错误,无效的json字符串`)
+      }
+    }
   }
   getSrvVal() {
     // 获取字段值
