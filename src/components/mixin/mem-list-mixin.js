@@ -1107,10 +1107,10 @@ export default {
         handler (val, oldVal) {
 
           let initAddDatas = val.map(item => item)
-          if(initAddDatas && initAddDatas.length > 0){
+          if(Array.isArray(initAddDatas)){
             // 内存子表 init add Datas 加载默认添加数据
             
-            this.gridData = [].map((item) => item)
+            this.gridData = [].map((item) => item) 
               for(let row of initAddDatas){
                   row._dirtyFlags = "add";
                   row._guid = this.guid();
