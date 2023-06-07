@@ -537,7 +537,8 @@ export default {
     customizeurlFoward(item, operateData) {
       var mainDetailData = this.listMainFormDatas || null
       var address = "";
-      if (item?.btn_cfg?.jump_json){
+      // 处理展示二维码按钮配置
+      if (item?.btn_cfg?.options && item?.btn_cfg?.options.indexOf('展示二维码') !== -1 && item?.btn_cfg?.jump_json){
         const button = item
         let row = operateData[0]
         let jump_json = item?.btn_cfg?.jump_json
@@ -551,17 +552,15 @@ export default {
             url += `&${item.col_to}=${this.renderStr(item.col_from,{button,row})}`
           })
         }
-        if (item?.btn_cfg?.options && item?.btn_cfg?.options.indexOf('展示二维码') !== -1 && jump_json) {
-          const detailUrl =
-            `https://login.100xsys.cn:1443/h5/?target_nav_url=${encodeURIComponent(url)}`;
-      
-          const detailUrlImage =  `${this.serviceApi().qrcode}?content=${encodeURIComponent(detailUrl)}&width=300`
+        const detailUrl =
+          `https://login.100xsys.cn:1443/h5/?target_nav_url=${encodeURIComponent(url)}`;
+    
+        const detailUrlImage =  `${this.serviceApi().qrcode}?content=${encodeURIComponent(detailUrl)}&width=300`
 
-          this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, item?.btn_cfg?.qrcode_tips || '请打开微信扫码进行操作', {
-            dangerouslyUseHTMLString: true
-          });
-          return
-        }
+        this.$alert(`<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`, item?.btn_cfg?.qrcode_tips || '请打开微信扫码进行操作', {
+          dangerouslyUseHTMLString: true
+        });
+        return
       }
       var back_url = this.url_pre_data_handle(item, operateData,mainDetailData);
       if (back_url != '') {
