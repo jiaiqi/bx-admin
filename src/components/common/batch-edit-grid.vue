@@ -221,7 +221,7 @@ export default {
       default(){
         return null
       }
-    }
+    },
   },
 
   data() {
@@ -252,6 +252,23 @@ export default {
     this.getListConfig();
   },
   computed:{
+    
+    redundantFields(){
+       // 表内计算字段
+       let cols = []
+       let addCols = this.initSelectedDatas.addCols
+       if(addCols && Array.isArray(addCols)){
+        cols = addCols.filter(item => {
+          // console.log('redundantFields',item)
+          if(item && item.redundant && item.redundant.func){
+            return item
+          }
+        })
+       }
+       
+       return cols
+
+    },
     treeDataRun(){
       let self = this
        let selectedDatas = this.bxDeepClone(this.selectedDatas)
@@ -552,7 +569,7 @@ export default {
     renderNode(h, { node, data, store }){
       // 构造节点显示信息
       let self = this
-       console.log(node, data, store)
+      //  console.log(node, data, store)
        let list = this.bxDeepClone(this.selectedDatas)
        let count = 0
        if(list && list.length > 0){
@@ -683,12 +700,31 @@ export default {
             }
           }
         }
+
+        if(this.redundantFields && this.redundantFields.length > 0){
+           // 根据主键字段冗余其他字段
+          for(let redundantField of this.redundantFields){
+            let redundantFun = redundantField.redundant.func
+            let row = item
+            // console.log('redundantFun ViaJs row',item,redundantFun)
+            let ret = eval("var zz=" + redundantFun + "(row); zz");
+            // if (ret === 'Invalid date') {
+            //   return
+            // }
+            item[redundantField.columns] = ret
+          }
+        }
         // console.log(item)
-        item[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
+        if(this.configBuild.batch_select_add_count_col){
+          item[this.configBuild.batch_select_add_count_col] = item[this.countColNameStr]
+        }
+        
          delete item[this.countColNameStr]
       })
       let cols = []
       cols[0] = this.configBuild.batch_select_add_count_col
+
+      console.log('batch list data:',list)
       this.$store.commit("setFrontTableData", {
         service: this.buttonInfo.service,
         data: list,
