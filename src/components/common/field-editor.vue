@@ -95,7 +95,7 @@
             style="flex: 1;"
           >
           </raw-field-editor>
-          <template v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson">
+          <template v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson.hasOwnProperty('col_btn_json')">
             <shortcutAdd v-if="contentField.fieldActionOptionsJson" :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
           </template>
         </el-col>
