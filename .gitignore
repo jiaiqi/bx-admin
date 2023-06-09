@@ -31,3 +31,5 @@ src/components/test/spa_mock.js
 /package.json
 /src/components/test/spa_mock.js
 /vue.config.js
+/deploy.config.js
+/dist.zip
