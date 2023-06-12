@@ -315,21 +315,40 @@ export default {
             obj[key] = item[key];
           }
         }
-        Object.keys(item).forEach((key) => {
-          if (key && key.indexOf("_") !== 0) {
-            item[key] =
-              this.handleRedundantOnInlineFieldChange(key, item, this) ||
-              obj[key];
-            if (item[key] !== obj[key]) {
-              obj[key] = {
-                newValue: item[key],
-                oldValue: obj[key],
-              };
-              this.$set(item, key, item[key]);
-              // this.$set(this.newGridData, index, obj);
+        const srv_cols = this.updateV2?.srv_cols;
+        if(Array.isArray(srv_cols)&&srv_cols.length>0){
+          srv_cols.forEach(col=>{
+            const key = col?.columns
+            if (key && key.indexOf("_") !== 0) {
+              item[key] =
+                this.handleRedundantOnInlineFieldChange(key, item, this) ||
+                obj[key];
+              if (item[key] !== obj[key]) {
+                obj[key] = {
+                  newValue: item[key],
+                  oldValue: obj[key],
+                };
+                this.$set(item, key, item[key]);
+                // this.$set(this.newGridData, index, obj);
+              }
             }
-          }
-        });
+          })
+        }
+        // Object.keys(item).forEach((key) => {
+        //   if (key && key.indexOf("_") !== 0) {
+        //     item[key] =
+        //       this.handleRedundantOnInlineFieldChange(key, item, this) ||
+        //       obj[key];
+        //     if (item[key] !== obj[key]) {
+        //       obj[key] = {
+        //         newValue: item[key],
+        //         oldValue: obj[key],
+        //       };
+        //       this.$set(item, key, item[key]);
+        //       // this.$set(this.newGridData, index, obj);
+        //     }
+        //   }
+        // });
         return obj;
       });
     },
