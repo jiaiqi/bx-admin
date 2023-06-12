@@ -13,6 +13,11 @@ export default {
       allFields: {},
     };
   },
+  mounted () {
+    if(this.listType==='updatechildlist'){
+      this.onInlineEditing = true
+    }
+  },
   computed: {
     formRules: function () {
       let rulesMap = {};
