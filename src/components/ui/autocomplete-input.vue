@@ -13,6 +13,7 @@
       :trigger-on-focus="false"
       :fetch-suggestions="querySearch"
       placeholder="请输入内容"
+      value-key="label"
       @select="handleSelect"
     ></el-autocomplete>
 </template>
@@ -36,6 +37,10 @@
          let type = 'string'
 
          return type
+      },
+      optionsV2List(){
+        let optionsV2 = this.field.autocompleteFunc()
+        return optionsV2
       },
       optionsReq() {
         let optionsV2 = this.field.autocompleteFunc()
@@ -96,7 +101,8 @@
                         results = options.map(item =>{
                             let result = {
                                 option:item,
-                                value:item[valColumn] + ''
+                                value:item[valColumn] + '',
+                                label:item[this.optionsV2List['refed_col']] + '/' + item[this.optionsV2List['key_disp_col']]
                             }
                             console.log(this.field.info.name,this.field.info.label,item[valColumn])
                             return result
