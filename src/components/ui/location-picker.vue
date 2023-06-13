@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-popover placement="right" width="400" trigger="focus">
+    <el-popover placement="right" width="400" trigger="click">
       <iframe
         id="mapPage"
         width="375px"
