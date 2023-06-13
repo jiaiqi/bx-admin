@@ -253,7 +253,7 @@
         } else {
           submitAction.invokeFunc = _ => {
             let model = this.srvValFormModel()
-            if(model.id === null && this.defaultValues.hasOwnProperty('_guid')){
+            if((!model.id && model.id != 0) && this.defaultValues.hasOwnProperty('_guid')){
               model['_guid'] = this.defaultValues["_guid"]
             }
             
