@@ -10,6 +10,14 @@
       >
         {{ field.getDispVal4Read() }}
       </a>
+      <location-picker v-else-if="isLocation"
+        :field="field"
+        :disabled="!field.info.editable"
+        :mainformDatas="mainformDatas"
+        :defaultValues="defaultValues"
+        :current-selected="field.model"
+        @on-selected="onPickerSelected"
+      ></location-picker>
       <table-picker
         v-bind="$props"
         :selectedGridData="multiSelected"
@@ -100,10 +108,12 @@
 
 <script>
 import tablePicker from '../common/table-picker.vue';
+import locationPicker from './location-picker.vue';
 export default {
   components: {
     List: () => import("../common/list.vue"),
-    tablePicker: tablePicker
+    tablePicker,
+    locationPicker
     //  () => import("../common/table-picker.vue")
   },
   model: {
@@ -113,7 +123,7 @@ export default {
   props: {
     field: Object,
     defaultConditions: Array,
-    finderSelected: String,
+    finderSelected: [String,Object],
     defaultValues: Object,
     childForeignkey: Object,
     mainformDatas: Object
@@ -192,6 +202,9 @@ export default {
     },
     isFks () {
       return this.field && this.field.info && [ 'fks', 'fkjson', 'fkjsons' ].includes(this.field.info.type)
+    },
+    isLocation(){
+      return this.field.info?.type==='bxsys_obj_type_gps'
     },
   },
   methods: {
