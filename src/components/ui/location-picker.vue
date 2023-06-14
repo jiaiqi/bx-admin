@@ -1,17 +1,37 @@
 <template>
   <div>
-    <el-popover placement="right" width="400" trigger="click">
-      <iframe
-        id="mapPage"
-        width="375px"
-        height="667px"
-        frameborder="0"
-        src="https://mapapi.qq.com/web/mapComponents/locationPicker/v/index.html?search=1&type=1&key=G3VBZ-CKMKB-4CFUZ-JZLSE-676K6-J4FWP&referer=bx-data-v"
-      >
-      </iframe>
+    <el-popover
+      v-model="visible"
+      ref="popover"
+      placement="right"
+      width="400"
+      :disabled="disabled"
+      @show="show"
+      @hide="hide"
+    >
+      <div>
+        <iframe
+          id="mapPage"
+          width="375px"
+          height="667px"
+          frameborder="0"
+          src="https://mapapi.qq.com/web/mapComponents/locationPicker/v/index.html?search=1&type=1&key=G3VBZ-CKMKB-4CFUZ-JZLSE-676K6-J4FWP&referer=bx-data-v"
+        >
+        </iframe>
+        <div class="header">
+          <el-button
+            type="primary"
+            @click="confirm"
+            :disabled="curSelect === null"
+            >确定</el-button
+          >
+        </div>
+      </div>
       <el-input
         :value="valueDisp"
         slot="reference"
+        :disabled="disabled"
+        @click="visible = true"
         suffix-icon="el-icon-location"
       ></el-input>
       <!-- <div slot="reference" style="display: flex; align-items: center">
@@ -71,12 +91,34 @@ export default {
   },
   data() {
     return {
+      visible: false,
       value: "",
       mapKey: "G3VBZ-CKMKB-4CFUZ-JZLSE-676K6-J4FWP",
       mapReferer: "bx-data-v",
+      curSelect: null,
     };
   },
   methods: {
+    show() {
+      window.addEventListener("message", this.listenMessage, false);
+    },
+    hide() {
+      window.removeEventListener("message", this.listenMessage);
+    },
+    confirm() {
+      if (this.curSelect) {
+        const loc = this.curSelect;
+        this.saveLocation({
+          address: loc.poiaddress,
+          name: loc.poiname,
+          latitude: loc.latlng.lat,
+          longitude: loc.latlng.lng,
+          cityname: loc.cityname,
+        });
+        this.visible = false;
+        this.curSelect = null;
+      }
+    },
     async getLocationFromSys() {
       const serviceName = this.optionV2?.serviceName;
       if (!serviceName) {
@@ -146,6 +188,15 @@ export default {
         this.$emit("on-selected", resData);
       }
     },
+    listenMessage(event) {
+      // 接收位置信息，用户选择确认位置点后选点组件会触发该事件，回传用户的位置信息
+      var loc = event.data;
+      if (loc && loc.module == "locationPicker") {
+        //防止其他应用也会向该页面post信息，需判断module是否为'locationPicker'
+        console.log("location", loc);
+        this.curSelect = loc;
+      }
+    },
   },
   mounted() {
     const self = this;
@@ -156,30 +207,19 @@ export default {
     ) {
       this.value = this.currentSelected[this.optionV2.refed_col];
     }
-    window.addEventListener(
-      "message",
-      function (event) {
-        // 接收位置信息，用户选择确认位置点后选点组件会触发该事件，回传用户的位置信息
-        var loc = event.data;
-        if (loc && loc.module == "locationPicker") {
-          //防止其他应用也会向该页面post信息，需判断module是否为'locationPicker'
-          console.log("location", loc);
-          self.saveLocation({
-            address: loc.poiaddress,
-            name: loc.poiname,
-            latitude: loc.latlng.lat,
-            longitude: loc.latlng.lng,
-            cityname: loc.cityname,
-          });
-        }
-      },
-      false
-    );
   },
-  beforeDestroy() {
-    window.removeEventListener("message");
-  },
+  beforeDestroy() {},
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.header {
+  display: flex;
+  justify-content: center;
+  .disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.7);
+    pointer-events: none;
+  }
+}
+</style>
