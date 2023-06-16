@@ -302,10 +302,7 @@ export default {
           } else {
             formButtons = formButtons.filter(item => {
               if (item.hasOwnProperty("more_config")) {
-                let btnCfg =
-                  item.more_config && item.more_config !== null
-                    ? JSON.parse(item.more_config)
-                    : false;
+                let btnCfg = item.more_config && typeof item.more_config === 'string' ? JSON.parse(item.more_config) : false;
                 if (
                   btnCfg &&
                   btnCfg.hasOwnProperty("is_draft") &&
