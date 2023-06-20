@@ -1,39 +1,17 @@
 <template>
   <div>
-    <el-popover
-      v-model="visible"
-      ref="popover"
-      placement="right"
-      width="400"
-      :disabled="disabled"
-      @show="show"
-      @hide="hide"
-    >
+    <el-popover v-model="visible" ref="popover" placement="right" width="400" :disabled="disabled" @show="show"
+      @hide="hide">
       <div>
-        <iframe
-          id="mapPage"
-          width="375px"
-          height="667px"
-          frameborder="0"
-          src="https://mapapi.qq.com/web/mapComponents/locationPicker/v/index.html?search=1&type=1&key=G3VBZ-CKMKB-4CFUZ-JZLSE-676K6-J4FWP&referer=bx-data-v"
-        >
+        <iframe id="mapPage" width="375px" height="667px" frameborder="0"
+          src="https://mapapi.qq.com/web/mapComponents/locationPicker/v/index.html?search=1&type=1&key=G3VBZ-CKMKB-4CFUZ-JZLSE-676K6-J4FWP&referer=bx-data-v">
         </iframe>
         <div class="header">
-          <el-button
-            type="primary"
-            @click="confirm"
-            :disabled="curSelect === null"
-            >确定</el-button
-          >
+          <el-button type="primary" @click="confirm" :disabled="curSelect === null">确定</el-button>
         </div>
       </div>
-      <el-input
-        :value="valueDisp"
-        slot="reference"
-        :disabled="disabled"
-        @click="visible = true"
-        suffix-icon="el-icon-location"
-      ></el-input>
+      <el-input :value="valueDisp" slot="reference" :disabled="disabled" @click="visible = true"
+        suffix-icon="el-icon-location"></el-input>
       <!-- <div slot="reference" style="display: flex; align-items: center">
         <div style="flex: 1">
           <el-input :value="valueDisp"  suffix-icon="el-icon-location"></el-input>
@@ -144,6 +122,8 @@ export default {
       const res = await this.$http.post(url, req);
       if (res?.data?.state === "SUCCESS" && res.data.data.length > 0) {
         return res.data.data[0];
+      } else if (res?.data?.state === 'FAILURE' && res.data.resultMessage) {
+        $message.error(res.data.resultMessage);
       }
     },
     async saveLocation(e = {}) {
@@ -186,6 +166,8 @@ export default {
       if (resData) {
         this.value = resData[this.optionV2.refed_col];
         this.$emit("on-selected", resData);
+      } else if (res?.data?.state === 'FAILURE' && res.data.resultMessage) {
+        $message.error(res.data.resultMessage);
       }
     },
     listenMessage(event) {
@@ -208,7 +190,7 @@ export default {
       this.value = this.currentSelected[this.optionV2.refed_col];
     }
   },
-  beforeDestroy() {},
+  beforeDestroy() { },
 };
 </script>
 
@@ -216,6 +198,7 @@ export default {
 .header {
   display: flex;
   justify-content: center;
+
   .disabled {
     cursor: not-allowed;
     filter: grayscale(0.7);
