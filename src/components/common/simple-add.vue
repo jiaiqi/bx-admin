@@ -63,9 +63,17 @@
     </el-row>
     <el-row :class="{disabled:cfgJson&&cfgJson.agreement_json&&cfgJson.agreement_json.agreement_no&&!agreementChecked}">
       <el-col :span="24" style="text-align: center;padding:6px;padding-bottom:20px;">
-        <action v-for="item in actions" :info="item" :key="item.name" :ref="item.name" :isDraft="pageIsDraft" v-show="(item.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
-        </action>
-      </el-col>
+          <template v-for="item in actions" >
+           <template v-if="Array.isArray(item)">
+            <action v-for="item1 in item" :info="item1" :key="item1.name" :ref="item1.name" :isDraft="pageIsDraft" v-show="(item1.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
+          </action>
+           </template>
+           <action v-else :info="item" :key="item.name" :ref="item.name" :isDraft="pageIsDraft" v-show="(item.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
+          </action>
+          </template>
+          <!-- <action v-for="item in actions" :info="item" :key="item.name" :ref="item.name" :isDraft="pageIsDraft" v-show="(item.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
+        </action> -->
+        </el-col>
     </el-row>
   </div>
 </template>
@@ -158,7 +166,18 @@ export default {
     },
     addSubmitAction: function(e) {
       let submitAction = new ActionInfo(e, "form");
-      Vue.set(this.actions, "submit", submitAction);
+      if (this.actions['submit']) {
+        let submitActions = []
+        if (Array.isArray(this.actions['submit'])) {
+          submitActions = [...this.actions['submit']]
+        } else {
+          submitActions.push(this.actions['submit'])
+        }
+        submitActions.push(submitAction)
+        Vue.set(this.actions, "submit", submitActions);
+      } else {
+        Vue.set(this.actions, "submit", submitAction);
+      }
 
       submitAction.name = "submit";
       submitAction.label = "提交";
