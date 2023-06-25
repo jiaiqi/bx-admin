@@ -149,15 +149,13 @@ export default {
     value(newValue, oldValue) {
       if (newValue !== oldValue && newValue !== undefined) {
         this.oldValue = oldValue;
-        // if (this.oldValue === undefined) {
-        //   this.oldValue = newValue;
-        // }
-        this.$emit("on-change", {
+        const obj = {
           newValue: newValue,
           oldValue: oldValue,
           column: this.field.columns,
           id: this.data.id,
-        });
+        }
+        this.$emit("on-change", obj);
       }
     },
     data: {

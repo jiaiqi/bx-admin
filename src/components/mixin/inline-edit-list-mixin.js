@@ -254,6 +254,7 @@ export default {
         let row = rowData;
         let moment = momentLib;
         let ret = eval("var zz=" + func + "(row, vm); zz");
+        console.log('evalFun:',ret,column,fieldInfo,rowData);
         if (ret === "Invalid date") {
           return;
         }
@@ -275,7 +276,7 @@ export default {
       }
     },
     onInlineChange(e, rowIndex) {
-      // TODO 表内计算
+      // 校验
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
@@ -312,7 +313,7 @@ export default {
         return obj;
       });
 
-      // 处理 计算 ---未验证
+      // 处理 计算
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
@@ -333,29 +334,26 @@ export default {
                   newValue: item[key],
                   oldValue: obj[key],
                 };
-                this.$set(item, key, item[key]);
-                // this.$set(this.newGridData, index, obj);
+                // this.$set(item, key, item[key]);
               }
             }
           })
         }
-        // Object.keys(item).forEach((key) => {
-        //   if (key && key.indexOf("_") !== 0) {
-        //     item[key] =
-        //       this.handleRedundantOnInlineFieldChange(key, item, this) ||
-        //       obj[key];
-        //     if (item[key] !== obj[key]) {
-        //       obj[key] = {
-        //         newValue: item[key],
-        //         oldValue: obj[key],
-        //       };
-        //       this.$set(item, key, item[key]);
-        //       // this.$set(this.newGridData, index, obj);
-        //     }
-        //   }
-        // });
         return obj;
       });
+
+      this.gridData = this.newGridData.map(item=>{
+        const obj = {}
+        for (const key in item) {
+          if (key && key.indexOf("_") !== 0) {
+            obj[key] = item[key];
+            if(item[key] && typeof item[key]==='object' && item[key]['newValue']){
+              obj[key] = item[key]['newValue'];
+            }
+          }
+        }
+        return obj
+      })
     },
     getColumnMinWidth(item) {
       if (
