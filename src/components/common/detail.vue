@@ -2,12 +2,10 @@
   <div>
     
     <el-card class="box-card">
-        <div>
-          <el-steps :active="1" finish-status="success" align-center>
-          <el-step title="已完成"></el-step>
-          <el-step title="进行中"></el-step>
-          <el-step title="步骤 3"></el-step>
-        </el-steps>
+        <div v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0">
+          <el-steps align-center>
+            <el-step :title="step.step_name" :status="step.status" v-for="(step,index) in detailChartDatas" :key="index"></el-step>
+          </el-steps>
         </div>
           <div v-if="!hasVisibleChildListTab()" v-show="detailshow">
                 <div slot="header" class="clearfix" v-show="is_view_title">
@@ -374,13 +372,16 @@ export default {
               type: "error",
             });
         }else{
-           console.error('this.service_name2',response.body)
+           console.error('this.service_name2',response.body,response.response)
           detailData = response.body;
           this.detailData = response.body;
           this.mainFormDatas = response.body;
           this.id=this.detailData.id;
-          if(response.response.hasOwnProperty('chart_dat') && Array.isArray(response.response.chart_dat)){
-            this.detailChartDatas = response.response.chart_dat.map(item => item)
+          if(response.response.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
+            this.detailChartDatas = response.response.chart_data.map(item => {
+              item['status'] = item['state'] == '1' ? 'success' : 'wait'; //success
+              return  item
+            })
             console.log('response.body222',response)
           }
         }
