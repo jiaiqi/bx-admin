@@ -1,11 +1,18 @@
 <template>
   <div>
-
+    
     <el-card class="box-card">
+        <div>
+          <el-steps :active="1" finish-status="success" align-center>
+          <el-step title="已完成"></el-step>
+          <el-step title="进行中"></el-step>
+          <el-step title="步骤 3"></el-step>
+        </el-steps>
+        </div>
           <div v-if="!hasVisibleChildListTab()" v-show="detailshow">
                 <div slot="header" class="clearfix" v-show="is_view_title">
                   <span>{{tab_view_name}}</span>
-                </div>
+                </div> 
                 <div class="text item" v-if="initLoad">
 
                       <simple-detail :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
@@ -14,7 +21,6 @@
                           <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
                             <template v-for="(item, index) in childListRun.form.prepend">
                               <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="'form_prepend_' + (index)">
-
                                 <simple-detail :isHistory="isHistory" v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail>
                                 <child-list  :mainService='service_name'  v-else :isTree="item.table_type==='树形表'" :isProc="item.table_type==='流程表'"  :name="item.service_name" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
                                 </child-list>
@@ -235,7 +241,9 @@ export default {
       initLoad: false,
       mainFormDatas: null,
       isHistory: false,
-      srvAuthLogin:false
+      srvAuthLogin:false,
+      detailChartDatas:[]
+
     };
   },
   methods: {
@@ -351,7 +359,8 @@ export default {
         condition,
         this.$route.query.isdraft,
         this.isHistory,
-        srvAuthKey && this.$route.query.hasOwnProperty(srvAuthKey)  ? true : false
+        srvAuthKey && this.$route.query.hasOwnProperty(srvAuthKey)  ? true : false,
+        'detail_page'
       ).then(response => {
         
           // console.log('srvAuthKey',srvAuthKey,response.body)
@@ -370,6 +379,10 @@ export default {
           this.detailData = response.body;
           this.mainFormDatas = response.body;
           this.id=this.detailData.id;
+          if(response.response.hasOwnProperty('chart_dat') && Array.isArray(response.response.chart_dat)){
+            this.detailChartDatas = response.response.chart_dat.map(item => item)
+            console.log('response.body222',response)
+          }
         }
       });
       for (var item of childList) {
