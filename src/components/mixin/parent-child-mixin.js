@@ -340,10 +340,16 @@ export default {
     onChildListLoaded(childList) {
       let basicForm = this.getBasicForm();
       let submitAction = basicForm.actions.submit;
-      if (!submitAction || !submitAction.executor) {
-        return
+      let executor = null 
+      if(Array.isArray(submitAction)){
+        executor = basicForm.$refs.submit[0].$refs.executor;
+      }else{
+        if (!submitAction || !submitAction.executor) {
+          return
+        }
+        executor = basicForm.$refs.submit[0].$refs.executor;
       }
-      let executor = basicForm.$refs.submit[0].$refs.executor;
+      // let executor = basicForm.$refs.submit[0].$refs.executor;
       let executorDraft = null 
       if(basicForm.$refs.hasOwnProperty('save_draft')){
         executorDraft = basicForm.$refs.save_draft[0].$refs.executor;
@@ -380,10 +386,16 @@ export default {
     onChildInlineListLoaded(inlineList, childList) {
       let basicForm = this.getBasicForm();
       let submitAction = basicForm.actions.submit;
-      if (!submitAction || !submitAction.executor) {
-        return
+      let executor = null 
+      if(Array.isArray(submitAction)){
+        executor = basicForm.$refs.submit[0].$refs.executor;
+      }else{
+        if (!submitAction || !submitAction.executor) {
+          return
+        }
+        executor = basicForm.$refs.submit[0].$refs.executor;
       }
-      let executor = basicForm.$refs.submit[0].$refs.executor;
+      
 
       if (executor && childList.isMem()) {
         let fk = childList.foreignKey
