@@ -341,45 +341,119 @@ export default {
       let basicForm = this.getBasicForm();
       let submitAction = basicForm.actions.submit;
       let executor = null 
+      let submitName = `submit`
       if(Array.isArray(submitAction)){
-        executor = basicForm.$refs.submit[0].$refs.executor;
+        for(let submitIndex in submitAction){
+          submitName = `${submitName}`
+          let action = basicForm.$refs[submitName + submitIndex]
+          if(action && Array.isArray(action)){
+            executor = action[0].$refs.executor;
+          }else if(action){
+            executor = action.$refs.executor;
+          }
+          
+        }
+        // 此代码已经弃用！ 由 buildRunQuries 代替
+        if (executor && childList.isMem()) {
+          childList.buildExecutors4Edit()
+            .then(subexecutors => {
+              let fk = childList.foreignKey
+              let dependKey = {
+                type: "column",
+                add_col: fk.column_name,
+                depend_key: fk.referenced_column_name,
+              };
+
+              subexecutors.forEach(subexecutor => {
+                subexecutor.dependKeys = [dependKey];
+                subexecutor.fk = fk;
+                executor.children.unshift(subexecutor);
+                if(executorDraft){
+                  executorDraft.children.unshift(subexecutor);
+                }
+                
+              })
+            })
+        }
+        // executor = basicForm.$refs.submit[0].$refs.executor;  // 旧代码，以上代码根据 submit actions 修改为数组后 新增逻辑分支
       }else{
         if (!submitAction || !submitAction.executor) {
           return
         }
         executor = basicForm.$refs.submit[0].$refs.executor;
+        if (executor && childList.isMem()) {
+          childList.buildExecutors4Edit()
+            .then(subexecutors => {
+              let fk = childList.foreignKey
+              let dependKey = {
+                type: "column",
+                add_col: fk.column_name,
+                depend_key: fk.referenced_column_name,
+              };
+        
+              subexecutors.forEach(subexecutor => {
+                subexecutor.dependKeys = [dependKey];
+                subexecutor.fk = fk;
+                executor.children.unshift(subexecutor);
+                if(executorDraft){
+                  executorDraft.children.unshift(subexecutor);
+                }
+                
+              })
+            })
+        }
       }
       // let executor = basicForm.$refs.submit[0].$refs.executor;
       let executorDraft = null 
       if(basicForm.$refs.hasOwnProperty('save_draft')){
         executorDraft = basicForm.$refs.save_draft[0].$refs.executor;
-
+        if (executor && childList.isMem()) {
+          childList.buildExecutors4Edit()
+            .then(subexecutors => {
+              let fk = childList.foreignKey
+              let dependKey = {
+                type: "column",
+                add_col: fk.column_name,
+                depend_key: fk.referenced_column_name,
+              };
+        
+              subexecutors.forEach(subexecutor => {
+                subexecutor.dependKeys = [dependKey];
+                subexecutor.fk = fk;
+                executor.children.unshift(subexecutor);
+                if(executorDraft){
+                  executorDraft.children.unshift(subexecutor);
+                }
+                
+              })
+            })
+        }
       }
       
 
+// 此代码已经弃用！ 由 buildRunQuries 代替
+// if (executor && childList.isMem()) {
+//   childList.buildExecutors4Edit()
+//     .then(subexecutors => {
+//       let fk = childList.foreignKey
+//       let dependKey = {
+//         type: "column",
+//         add_col: fk.column_name,
+//         depend_key: fk.referenced_column_name,
+//       };
 
-      // 此代码已经弃用！ 由 buildRunQuries 代替
-      if (executor && childList.isMem()) {
-        childList.buildExecutors4Edit()
-          .then(subexecutors => {
-            let fk = childList.foreignKey
-            let dependKey = {
-              type: "column",
-              add_col: fk.column_name,
-              depend_key: fk.referenced_column_name,
-            };
-
-            subexecutors.forEach(subexecutor => {
-              subexecutor.dependKeys = [dependKey];
-              subexecutor.fk = fk;
-              executor.children.unshift(subexecutor);
-              if(executorDraft){
-                executorDraft.children.unshift(subexecutor);
-              }
-              
-            })
-          })
-      }
+//       subexecutors.forEach(subexecutor => {
+//         subexecutor.dependKeys = [dependKey];
+//         subexecutor.fk = fk;
+//         executor.children.unshift(subexecutor);
+//         if(executorDraft){
+//           executorDraft.children.unshift(subexecutor);
+//         }
+        
+//       })
+//     })
+// }
+      
       
     },
 

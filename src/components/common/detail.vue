@@ -379,7 +379,7 @@ export default {
           this.id=this.detailData.id;
           if(response.response.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
             this.detailChartDatas = response.response.chart_data.map(item => {
-              item['status'] = item['state'] == '1' ? 'success' : 'wait'; //success
+              item['status'] = item['state'] == '1' ? 'success' :  item['state'] == '0' ? 'process' : 'wait'; //success
               return  item
             })
             console.log('response.body222',response)

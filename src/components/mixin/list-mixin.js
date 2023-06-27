@@ -227,7 +227,7 @@ export default {
     '$store.state.frontTableData': {
       deep: true,
       handler(newVal) {
-        console.log(newVal)
+        console.log('$store.state.frontTableData',newVal)
         const service = newVal.tables.service
         if (this.service === service) {
           const from = newVal.tables.params.from
@@ -257,6 +257,7 @@ export default {
               obj['_dirtyFlags']='add'
               
               obj[to] = item[from]
+              console.log('add',obj)
               this.gridData.push(obj)
             })
             return
