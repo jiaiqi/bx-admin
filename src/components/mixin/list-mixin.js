@@ -2100,7 +2100,7 @@ export default {
       }
       
       //加载serviceCols
-      await this.loadColsV2(this.service_name, use_type)
+      await this.loadColsV2(this.service_name, use_type,null,this.mainService)
         .then(response => {
           let respData = response.body.data;
           let card_cfg_list = respData.card_cfg;

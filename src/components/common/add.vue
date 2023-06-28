@@ -56,7 +56,7 @@
                   list-type="addchildlist"
                   :service="item.service_name"
                   :foreign-key="item.foreign_key"
-                  
+                  :mainService="service"
                   :default-condition="item.defaultCondition"
                   :is-tree="!!item.parent_no_col"
                   :default-inplace-edit-mode="false"
@@ -87,6 +87,7 @@
               >
                 <child-list
                 
+                :mainService="service"
                   :pageIsDraft="pageIsDraft"
                   :key="index"
                   :childListConfig="item"
@@ -131,6 +132,7 @@
               >
                 <child-list
                   
+                :mainService="service"
                   :pageIsDraft="pageIsDraft"
                   :key="index"
                   ref="childrenList"
@@ -173,6 +175,7 @@
                 :name="col + '_append_' + (index)"
               >
                 <child-list
+                  :mainService="service"
                  :pageIsDraft="pageIsDraft"
                   :key="index"
                   ref="childrenList"
