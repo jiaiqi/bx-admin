@@ -56,7 +56,7 @@
             return;
           }
         }
-
+        console.log('loader',loader)
         let dispCol = fieldInfo.dispCol;
         queryString = queryString.trim()
         let queryJson = {
@@ -64,7 +64,7 @@
           queryMethod: 'select',
           colNames: ['*'],
           condition: [
-            {colName: dispCol, value: queryString, ruleType: 'like'}
+            {colName: dispCol, value: queryString, ruleType: '[like]'}
           ],
           page: {
             pageNo: 1,
@@ -77,11 +77,20 @@
               if(item.user_no === 'admin'){
                 console.log(item)
               }
-              return {
+
+              let obj = {
                 value: 'user--'+`${item.user_no}--${item.user_disp}`,
                 // value: `${item.user_no}`,
                 label: item.user_disp,
-              };
+              }
+              if(loader.service !== 'srvsso_user_select'){
+                obj = {
+                  value: 'user--'+`${item[loader.refedCol]}--${item[loader.dispCol]}`,
+                  // value: `${item.user_no}`,
+                  label: item[loader.dispCol],
+                }
+              }
+              return obj;
             })
           }
         })

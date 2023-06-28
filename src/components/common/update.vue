@@ -447,11 +447,12 @@ export default {
 
 
     gotPk: function () {
+      let self = this
       let pk = null;
-      if(this.pk){
-        pk = this.pk
-      }else if(this.$route && this.$route.params && this.$route.params.id){
-        pk = this.$route.params.id
+      if(self.pk){
+        pk = self.pk
+      }else if(self.$route && self.$route.params && self.$route.params.id){
+        pk = self.$route.params.id
       }
       return pk
     },

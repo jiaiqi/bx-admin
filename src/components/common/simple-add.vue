@@ -65,8 +65,8 @@
       <el-col :span="24" style="text-align: center;padding:6px;padding-bottom:20px;">
           <template v-for="item in actions" >
            <template v-if="Array.isArray(item)">
-            <action v-for="item1 in item" :info="item1" :key="item1.name" :ref="item1.name" :isDraft="pageIsDraft" v-show="(item1.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
-          </action>
+              <action v-for="(item1,sIndex) in item" :info="item1" :key="item1 + sIndex" :ref="item1.name + sIndex" :isDraft="pageIsDraft" v-show="(item1.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
+            </action>
            </template>
            <action v-else :info="item" :key="item.name" :ref="item.name" :isDraft="pageIsDraft" v-show="(item.visibleFunc)()" :draftDataKey="draftDataKey" @is-data-key="resDataKey($event)" @form-is-loaded="onIsLoaded($event)" @action-complete="$emit('action-complete', $event);" @executor-complete="$emit('executor-complete', $event)">
           </action>

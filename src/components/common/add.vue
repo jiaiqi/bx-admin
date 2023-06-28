@@ -50,12 +50,13 @@
                   :mainFormDatas="mainFormDatas"
                   :name="item.service_name"
                   storage-type="mem"
+                  :readOnly="item.foreign_key.child_table_readonly == '是'"
                   :def-data-para="defDataPara"
                   :inplace-edit="true"
                   list-type="addchildlist"
                   :service="item.service_name"
                   :foreign-key="item.foreign_key"
-                  
+                  :mainService="service"
                   :default-condition="item.defaultCondition"
                   :is-tree="!!item.parent_no_col"
                   :default-inplace-edit-mode="false"
@@ -86,6 +87,7 @@
               >
                 <child-list
                 
+                :mainService="service"
                   :pageIsDraft="pageIsDraft"
                   :key="index"
                   :childListConfig="item"
@@ -96,6 +98,7 @@
                   :def-data-para="defDataPara"
                   :inplace-edit="true"
                   list-type="addchildlist"
+                  :readOnly="item.foreign_key.child_table_readonly == '是'"
                   :service="item.service_name"
                   :foreign-key="item.foreign_key"
                   :default-condition="item.defaultCondition"
@@ -129,6 +132,7 @@
               >
                 <child-list
                   
+                :mainService="service"
                   :pageIsDraft="pageIsDraft"
                   :key="index"
                   ref="childrenList"
@@ -140,6 +144,7 @@
                   :inplace-edit="true"
                   list-type="addchildlist"
                   :service="item.service_name"
+                  :readOnly="item.foreign_key.child_table_readonly == '是'"
                   :foreign-key="item.foreign_key"
                   :default-condition="item.defaultCondition"
                   :is-tree="!!item.parent_no_col"
@@ -170,6 +175,7 @@
                 :name="col + '_append_' + (index)"
               >
                 <child-list
+                  :mainService="service"
                  :pageIsDraft="pageIsDraft"
                   :key="index"
                   ref="childrenList"
@@ -177,6 +183,7 @@
                   :mainFormDatas="mainFormDatas"
                   :name="item.service_name"
                   storage-type="mem"
+                  :readOnly="item.foreign_key.child_table_readonly == '是'"
                   :def-data-para="defDataPara"
                   :inplace-edit="true"
                   list-type="addchildlist"

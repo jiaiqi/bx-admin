@@ -227,7 +227,7 @@ export default {
     '$store.state.frontTableData': {
       deep: true,
       handler(newVal) {
-        console.log(newVal)
+        console.log('$store.state.frontTableData',newVal)
         const service = newVal.tables.service
         if (this.service === service) {
           const from = newVal.tables.params.from
@@ -257,6 +257,7 @@ export default {
               obj['_dirtyFlags']='add'
               
               obj[to] = item[from]
+              console.log('add',obj)
               this.gridData.push(obj)
             })
             return
@@ -2099,7 +2100,7 @@ export default {
       }
       
       //加载serviceCols
-      await this.loadColsV2(this.service_name, use_type)
+      await this.loadColsV2(this.service_name, use_type,null,this.mainService)
         .then(response => {
           let respData = response.body.data;
           let card_cfg_list = respData.card_cfg;

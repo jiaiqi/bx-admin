@@ -690,7 +690,7 @@ function init_util() {
   };
 
 
-  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth) {
+  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth,pageType) {
     var url = this.getServiceUrl("select", service_name);
     var params = {
       "serviceName": service_name,
@@ -699,6 +699,10 @@ function init_util() {
       "draft": draft === 'true' ? true : false,
       "hisVer": isHisVer || false
     };
+    if(pageType){
+      params['query_source'] = pageType
+      console.log('on page TYPe',pageType)
+    }
 
     url = url + "?" + service_name;
     let defaultApp = this.resolveDefaultSrvApp()
@@ -712,7 +716,9 @@ function init_util() {
       })
         .then(response => {
           if (response.body.data && response.body.data.length > 0) {
+            response.response = Vue.prototype.bxDeepClone(response.body);
             response.body = response.body.data[0];
+            
           }
           return response;
         });
@@ -726,6 +732,8 @@ function init_util() {
       })
         .then(response => {
           if (response.body.data && response.body.data.length > 0) {
+            
+            response.response = Vue.prototype.bxDeepClone(response.body);
             response.body = response.body.data[0];
           }
           return response;

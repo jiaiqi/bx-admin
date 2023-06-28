@@ -351,7 +351,7 @@ export class FieldInfo {
     this.valueCol = optionListV2.refed_col || optionListV2.primary_col;
     this.dispCol = optionListV2.key_disp_col || optionListV2.disp_col;
     if(this.editor === "userlist"){
-      this.dispLoader.service = 'srvsso_user_select'
+      // this.dispLoader.service = 'srvsso_user_select'
       optionListV2.key_disp_col = 'user_disp'
     }
 
@@ -380,20 +380,15 @@ export class FieldInfo {
       }
 
     } else if (this.type === 'UserList') {
+
+
       // srvCol.option_list_v2 = {
-      //   serviceName: 'srvsys_user_list_related_select',
+      //   serviceName: 'srvsso_user_select',
       //   srv_app: "sso",
       //   refed_col: 'userlist unsupported',
-      //   key_disp_col: 'disp',
+      //   key_disp_col: 'user_disp',
       //   show_as_pair: false,
       // }
-      srvCol.option_list_v2 = {
-        serviceName: 'srvsso_user_select',
-        srv_app: "sso",
-        refed_col: 'userlist unsupported',
-        key_disp_col: 'user_disp',
-        show_as_pair: false,
-      }
     } else if (this.type === 'Dict' || this.type === 'bxsys_dict') {
       let ext = {
         serviceName: 'srvsys_dict_select',

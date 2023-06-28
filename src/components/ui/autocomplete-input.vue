@@ -104,6 +104,11 @@
                                 value:item[valColumn] + '',
                                 label:item[this.optionsV2List['refed_col']] + '/' + item[this.optionsV2List['key_disp_col']]
                             }
+                            if(valColumn == this.optionsV2List['key_disp_col']){
+                               result.label = item[this.optionsV2List['key_disp_col']]
+                            }else{
+                              result.label = `${item[this.optionsV2List['key_disp_col']]}(${item[this.optionsV2List['refed_col']]}/${item[this.optionsV2List['key_disp_col']]})`
+                            }
                             console.log(this.field.info.name,this.field.info.label,item[valColumn])
                             return result
                         })
