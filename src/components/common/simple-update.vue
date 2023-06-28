@@ -73,7 +73,12 @@
       </loader>
     </el-row>
     <!-- <slot name="child-body" v-bind:mainForm="formModel"></slot> -->
-    <el-row>
+    <el-row v-if="cfgJson&&cfgJson.agreement_json&&cfgJson.agreement_json.agreement_no">
+      <el-col :span="24" style="text-align: center;padding:6px;padding-bottom:20px;">
+        <agreement-box :agreementJson="cfgJson.agreement_json" :agreementChecked.sync="agreementChecked"></agreement-box>
+      </el-col>
+    </el-row>
+    <el-row :class="{disabled:cfgJson&&cfgJson.agreement_json&&cfgJson.agreement_json.agreement_no&&!agreementChecked}">
       <el-col :span="24"
               style="text-align: center;padding:6px;padding-bottom:20px;">
         <action v-for="item in actions" :info="item" :key="item.name"
@@ -126,6 +131,7 @@
   import CustButtonMinx from "../mixin/cust-button-minx";
   import {FieldInfo} from "../model/FieldInfo";
   import {Field} from "../model/Field";
+  import agreementBox from './agreement-box.vue';
 
 
   export default {
@@ -133,7 +139,8 @@
     components: {
       FieldEditor,
       action: Action,
-      loader: Loader
+      loader: Loader,
+      agreementBox
     },
     mixins: [FormMixin, CustButtonMinx, FieldRedundantMixin, FormValidateMixin],
     props: {
@@ -195,6 +202,7 @@
          * 敏感字段名称数组
          */
         encryptedCols: null,
+        agreementChecked:false
       }
     },
     methods: {
@@ -487,6 +495,14 @@
     line-height: initial;
     line-height: unset;
   }
-
+  .disabled{
+  cursor: not-allowed;
+  filter: grayscale(1);
+  opacity: 0.5;
+  
+}
+.disabled .bx_action{
+  pointer-events: none;
+  }
 
 </style>
