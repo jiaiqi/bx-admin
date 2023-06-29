@@ -285,7 +285,11 @@ export default {
           }
         }
         if (rowIndex === index && e.newValue !== e.oldValue) {
-          let result = this.handleValidation(e.column, item, index, e.newValue);
+          let result = true;
+          if(e.oldValue !== undefined){
+            // 不是刚添加的数据
+            result = this.handleValidation(e.column, item, index, e.newValue);
+          }
           if (result !== false) {
             obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
             item[e.column] = e.newValue;
