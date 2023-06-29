@@ -280,7 +280,7 @@ export default {
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
-          if (key && key.indexOf("_") !== 0) {
+          if (key && key.indexOf("_") !== 0 || ['_guid','_dirtyFlags'].includes(key)) {
             obj[key] = item[key];
           }
         }
@@ -321,7 +321,7 @@ export default {
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
-          if (key && key.indexOf("_") !== 0) {
+          if (key && key.indexOf("_") !== 0 || ['_guid','_dirtyFlags'].includes(key)) {
             obj[key] = item[key];
           }
         }
@@ -349,12 +349,12 @@ export default {
       this.gridData = this.newGridData.map(item=>{
         const obj = {}
         for (const key in item) {
-          if (key && key.indexOf("_") !== 0) {
+          // if (key && key.indexOf("_") !== 0) {
             obj[key] = item[key];
             if(item[key] && typeof item[key]==='object' && item[key]['newValue']){
               obj[key] = item[key]['newValue'];
             }
-          }
+          // }
         }
         return obj
       })

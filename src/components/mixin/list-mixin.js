@@ -264,7 +264,6 @@ export default {
           }
           // 从当前list中删除内存中没有的数据
           this.gridData = this.gridData.filter(x => data.findIndex(y => y[from] === x[to]) !== -1);
-          
           // 内存中有list的数据，重新赋值；没有的为新增数据，添加到list中
           data.forEach(item => {
             let sameVal = false
