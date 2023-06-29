@@ -101,6 +101,9 @@ import printPage from '@/pages/template/print-page'
 
 import inlineEditList from '@/components/common/inline-edit-list.vue'
 // const excelEditView = ()=>import("@/components/common/luckysheet.vue")
+import waybill from '@/pages/waybill.vue'
+
+
 // pages
 Vue.use(Router);
 Vue.use(VueResource);
@@ -270,6 +273,8 @@ let routes=[
     name: 'viewpdf',
     component: resolve => require(['@/components/common/view-pdf'],resolve) ,
   },
+
+
   {
     path: '/treelevel/:service_name',
     name: 'treelevel',
@@ -312,8 +317,12 @@ let routes=[
     path:'/video',
     name:'video',
     component: video
+  },
+  { // 摄像头视频播放页
+    path:'/waybill/:type',
+    name:'waybill',
+    component: waybill
   }
- 
 
 ];
 
