@@ -247,7 +247,7 @@ export default {
               let obj = {}
               for (const index in addCols) {
                 const key = addCols[index]
-                if (item[key]) {
+                if (item[key]!==undefined) {
                   obj[key] = item[key]
                 }else{
                   obj[key] = null
@@ -281,13 +281,18 @@ export default {
               let obj = {}
               for (const index in addCols) {
                 const key = addCols[index]
-                if (item[key]) {
+                if (item[key]!==undefined) {
                   obj[key] = item[key]
                 }else{
                   obj[key] = null
                 }
               }
               obj[to] = item[from]
+              
+              if(!obj['id']&&!obj['_dirtyFlags']){
+                obj['_guid']=this.guid()  // 数据增加 唯一id
+                obj['_dirtyFlags']='add'
+              }
               // item[to] = item[from]
               this.gridData.push(obj)
             }
