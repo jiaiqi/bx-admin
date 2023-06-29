@@ -63,10 +63,8 @@ export default {
   methods: {
     clickText() {
       if (!this.isRead) {
-        uni.showToast({
-          title: "请先阅读并同意协议",
-          icon: "none",
-        });
+        this.$message.error("请先阅读并同意协议");
+        this.showAgreementDialog()
       }
     },
     changeChecked(e) {
