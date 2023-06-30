@@ -116,6 +116,7 @@
                     }
                     cb(results);
             });
+            this.$emit('change', this.field);
             // 调用 callback 返回建议列表的数据
             
         },

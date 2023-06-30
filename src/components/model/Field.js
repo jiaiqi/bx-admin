@@ -101,7 +101,12 @@ export class Field {
       this.autocompleteInput = true
       this.autocompleteFunc =  (_) => {
         let dependField = field.form.fields[this.info.redundant.dependField]
-        return  (dependField.info.srvCol && dependField.info.srvCol.option_list_v2) || [];
+        if(dependField){
+          return  (dependField.info.srvCol && dependField.info.srvCol.option_list_v2) || [];
+        }else{
+          return []
+        }
+        
       }
       // let dependFieldOptionsListV2 = field.form.fields
     }

@@ -195,7 +195,7 @@ import formList from "@/components/common/form-list.vue";
                             len['message'] = `${len['message']} 最大长度${len['max']}个字符`
 
                             rules[f.info.name].push(len)
-                        }else{
+                        }else if(rule.name == 'required'){
                             rules[f.info.name].push(required)
                         }
                     }
