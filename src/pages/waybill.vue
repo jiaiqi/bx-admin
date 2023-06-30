@@ -1,13 +1,13 @@
 <template>
-    <div class="ll-content  bg-white">
+    <div class="waybill-content  bg-white">
         <el-form ref="ruleForm" v-if="fieldModels" :rules="formRules" :inline="false" label-position="right" label-width="8rem" :model="fieldModels"  class="demo-form-inline" size="mini">
             <el-row :gutter="5" >
                 <template v-for="(formItem,fIndex) in sections">
                     <el-col :span="fieldSpan.hasOwnProperty(formItem.field.info.name) ? fieldSpan[formItem.field.info.name]  : 8" :key="formItem.field.info.name"  v-if="formItem.field.info.readonly ? formItem.field.info.srvCol.in_detail == 1 : formItem.field.info.bodyVisible  && modelFieldKeys.indexOf(formItem.field.info.name) !== -1 && formItem.field.info.name !== 'child_data_list'">
-                        <el-form-item :label="`${formItem.field.info.label}`" :prop="formItem.field.info.name" >
+                        <el-form-item :label="`${formItem.field.info.label}`" :prop="formItem.field.info.name">
                             <!-- (${formItem.field.info.name}) -->
                             <raw-field-editor
-                                ref="inner"
+                                :ref="formItem.field.info.name"
                                 :field="formItem.field"
                                 v-show="formItem.field.info.readonly ? formItem.field.info.srvCol.in_detail == 1 : formItem.field.info.bodyVisible"
                                 @field-value-changed="fieldValueChanged"
@@ -20,7 +20,7 @@
                     <el-col v-if="children.hasOwnProperty(`field-${formItem.field.info.name}`)" :span="24">
                         <el-form-item :label="children[`field-${formItem.field.info.name}`].service_view_name" prop="child_data_list" :key="'child_data_list'">
                             <!-- (${formItem.field.info.name}) -->
-                            <formList :type="type" v-model="fieldModels.child_data_list" :foreignKey="children[`field-${formItem.field.info.name}`].foreign_key" :showSummary="true" :summaryColumns="['goods_name','packages','weight','volume']" :initListColumns="['goods_name','packages','weight','volume']" :serviceName="children[`field-${formItem.field.info.name}`].service_name" :useType="`${type}childlist`" :mainService="serviceName" :mainModel="fieldModels" @change="childModelsChange($event,`field-${formItem.field.info.name}`)"></formList>
+                            <formList :type="type" v-model="fieldModels.child_data_list" :foreignKey="children[`field-${formItem.field.info.name}`].foreign_key" :showSummary="true" :summaryColumns="['goods_name','packages','weight','volume','unit_price']" :initListColumns="['goods_name','packages','weight','volume','unit_price','pricing_type']" :serviceName="children[`field-${formItem.field.info.name}`].service_name" :useType="`${type}childlist`" :mainService="serviceName" :mainModel="fieldModels" @change="childModelsChange($event,`field-${formItem.field.info.name}`)"></formList>
                         </el-form-item>
                     </el-col>
                 </template>
@@ -90,40 +90,68 @@ import formList from "@/components/common/form-list.vue";
             "bill_pay_party": 8,
             "pay_method": 8
         },
-        tableData: [{
-          id: '12987122',
-          name: '王小虎',
-          amount1: '234',
-          amount2: '3.2',
-          amount3: 10
-        }, {
-          id: '12987123',
-          name: '王小虎',
-          amount1: '165',
-          amount2: '4.43',
-          amount3: 12
-        }, {
-          id: '12987124',
-          name: '王小虎',
-          amount1: '324',
-          amount2: '1.9',
-          amount3: 9
-        }, {
-          id: '12987125',
-          name: '王小虎',
-          amount1: '621',
-          amount2: '2.2',
-          amount3: 17
-        }, {
-          id: '12987126',
-          name: '王小虎',
-          amount1: '539',
-          amount2: '4.1',
-          amount3: 15
-        }]
+
       };
     },
     computed:{
+        dependFields(){
+            // 所有冗余字段
+            let dependFields = {}
+            let fields = this.fields
+            if(Array.isArray(fields)){
+                for(let field of this.fields){
+                    
+                    // {"refedCol":"depart_type","dependField":"cdr_no","trigger":"always"}
+                    if(field.info.hasOwnProperty('redundant') && field.info.redundant && field.info.redundant.hasOwnProperty('dependField')){
+                        let redundant = field.info.redundant
+                        let dependField = redundant.dependField
+                        let obj = {
+                            refedCol:redundant.refedCol,
+                            columns:field.info.name,
+                            trigger:redundant.trigger
+                        }
+                        if(dependFields.hasOwnProperty(dependField) &&  Array.isArray(dependFields[dependField])){
+                            if(field.info.redundant.refedCol){
+                                
+                                dependFields[dependField].push(obj)
+                            }
+                            
+                        }else{
+                            dependFields[dependField] = []
+                            dependFields[dependField].push(obj)
+                        }
+
+                    }
+                }
+            }
+            
+
+            return dependFields
+        },
+        triggerMethods(){
+            // 所有计算字段
+            let funs = {}
+            let fields = this.fields
+            if(Array.isArray(fields)){
+                for(let field of this.fields){
+                    
+                    if(field.info.hasOwnProperty('redundant') && field.info.redundant && field.info.redundant.hasOwnProperty('func')){
+                        let redundant = field.info.redundant
+                        let colName = field.info.name
+                        let obj = {
+                            func:redundant.func,
+                            columns:field.info.name,
+                            trigger:redundant.trigger
+                        }
+                        funs[colName] = obj
+
+                    }
+                }
+            }
+            
+
+            return funs
+        },
         children(){
             let childs = this.childsV2
             let children = {}
@@ -344,9 +372,14 @@ import formList from "@/components/common/form-list.vue";
              self.$set(this.fieldModels,'child_data_list',[childreq])
              console.log('children change childModelsChange():',childreq)
             //  this.fieldModels['child_data_list'].push(childreq)
+            // self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
+            //     console.log(errmsg)
+            // })
             self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
-                        console.log(errmsg)
-                    })
+                console.log(errmsg)
+            })
+            self.$refs['ruleForm'].clearValidate('child_data_list')
+            
         },
         submitForm(){
             let self = this
@@ -410,11 +443,64 @@ import formList from "@/components/common/form-list.vue";
             }else{
                 this.$set(this.fieldModels,name,field.model)
             }
+            this.$nextTick(()=>{
+                this.fieldsChangeTrigger(field)
+            })
+            
             
             console.log(name,'change',field.model)
         },
-        onFieldValueChanged(field){
-            console.log(field)
+        fieldsChangeTrigger(field){
+            let self = this
+            let changeColName = field.info.name
+            let model = field.model
+            let triggerMethods = this.triggerMethods
+            let dependFields = this.dependFields
+            
+            let refs = self.$refs
+            if(dependFields.hasOwnProperty(changeColName)){
+                let fieldsTriggers = dependFields[changeColName]
+                if(Array.isArray(fieldsTriggers)){
+                    for(let trigger of fieldsTriggers){
+                        let triggerColName = trigger.columns
+                    // {"refedCol":"depart_type","dependField":"cdr_no","trigger":"always"}
+                        if(field.model && field.model[trigger.refedCol]){
+
+                            for(let i in this.fields){
+                                if(this.fields[i].info.name == triggerColName){
+                                    this.$set(this.fields[i],'model',field.model[trigger.refedCol])
+                                    this.$set(this.fieldModels,triggerColName,field.model[trigger.refedCol])
+
+                                    // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
+                                }
+                            }
+                           
+                        }else if((field.model == null || field.model == '' || field.model == undefined)){
+                            for(let i in this.fields){
+                                if(this.fields[i].info.name == triggerColName){
+                                    this.$set(this.fields[i],'model',field.model)
+                                    // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
+                                    this.$set(this.fieldModels,triggerColName,field.model)
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            if(Object.keys(triggerMethods).length > 0){
+                let data = this.fieldModels
+                for(let i in this.fields){
+                    if(triggerMethods.hasOwnProperty(this.fields[i].info.name)){
+                        let value = eval("var zz=" + triggerMethods[this.fields[i].info.name].func + "(data); zz");
+                            console.log(triggerMethods[this.fields[i].info.name].columns,value)
+                        value = value == null ? '' : value
+                        this.$set(this.fields[i],'model',value)
+                        // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
+                        this.$set(this.fieldModels,this.fields[i].info.name,value)
+                    }
+                }
+            }
         },
         getParentFormModel:function(){
                 return this.fieldModels
@@ -467,12 +553,15 @@ import formList from "@/components/common/form-list.vue";
 
                 let fi = new FieldInfo(item, this.type);
                 let f = new Field(fi, self);
+
                 if(item.col_span == '1'){
                     f['colspan'] = 24
                 }else{
                     f['colspan'] = 8
                 }
-
+                if(fi.initValueExpr){
+                    f.model = this.initDefaultValue(fi.initValueExpr)
+                }
                 self.$set(this.fieldModels,item.columns,f.model)
                 self.$set(this.fieldModels,item.columns,f.model)
                 return f
@@ -480,6 +569,16 @@ import formList from "@/components/common/form-list.vue";
             this.fields = modelFields.map(item => item)
             
             console.log(colTypes)
+        },
+        initDefaultValue(e){
+            let init = e
+            let value = null
+            if(e && e.indexOf("'") == 0){
+                value = init.replace(/^\'|\'$/g,'')
+            }else if(init.indexOf('new Date') !== -1){
+                value =  new Date(eval(init)).toLocaleDateString()
+            }
+            return value
         }
     },
   
@@ -519,7 +618,8 @@ import formList from "@/components/common/form-list.vue";
 //     background-color: aqua;
 //   }
  
-  .ll-content {
+  .waybill-content {
+    padding: 20px;
     .padding{
         padding: 20px;
     }
@@ -535,6 +635,52 @@ import formList from "@/components/common/form-list.vue";
             line-height: 14px!important;
         }
     }
-  }
+    .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+        margin-bottom: 16px!important;
+    }
+    .el-form-item--mini .el-form-item__content {
+        line-height: 22px;
+    }
+   
+    .el-radio-group {
+        display: inline-block;
+        line-height: 1;
+        vertical-align: middle;
+        font-size: 0;
+        height: 28px;
+        .el-radio {
+            color: #606266;
+            font-weight: 500;
+            line-height: 1;
+            cursor: pointer;
+            white-space: nowrap;
+            outline: 0;
+            margin-right: 6px;
+            margin-bottom:0;
+            line-height: 28px;
+            .el-radio__label {
+                font-size: 14px;
+                padding-left: 0px;
+            }
+        }
+    }
+    .el-input__inner {
+        border-radius: 1px;
+        color: #0629b6;
+        font-weight: bold!important;
+    }
+    .el-form-item__label {
+        text-align: right;
+        float: left;
+        font-size: 14px;
+        color: #08315a!important;
+        font-weight: bold;
+        line-height: 40px;
+        padding: 0 6px 0 0;
+        box-sizing: border-box;
+        margin-bottom: 0;
+    }
+    
+}
   </style>
   

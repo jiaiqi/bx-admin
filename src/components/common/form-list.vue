@@ -1,30 +1,57 @@
 <template>
-    <el-table
-      :data="modelDatas"
-      :show-summary="showSummary"
-      border
-      style="width: 100%">
-        <!-- <el-form  ref="formList" label-width="100px" class="demo-dynamic"> -->
-            <el-table-column
-                :prop="header.columns"
-                :label="header.label"
-                header-align="center"
-                v-for="(header,hIndex) in headers" :key="hIndex"
-                v-show="hIndex !== modelDatas.length - 1"
-                >
-                <template slot-scope="scope" v-if="Object.prototype.toString.call(scope.row[header.columns]) === '[object Object]'">
-                    <!-- scope.row -->
+    
+    <el-form  ref="formList" size="mini" class="form-list">
+        <el-table
+        :data="modelDatas"
+        class="form-list-table"
+        :show-summary="showSummary"
+        :header-cell-style="{'padding':'2px'}"
+                    :cell-style="{'padding':'2px'}"
+        border
+        style="width: 100%">
+                <el-table-column
+                    :prop="header.columns"
+                    :label="header.label"
+                    header-align="center"
+                    :width="hIndex == 0 ? '400px' : 'auto'"
+                    size='mini'
+                    v-for="(header,hIndex) in headers" :key="hIndex"
+                    >
+                    <template slot-scope="scope" v-if="Object.prototype.toString.call(scope.row[header.columns]) === '[object Object]'">
+                        <!-- scope.row -->
 
-                    <el-form-item style="margin-bottom: 2px">
-                        <el-input v-model="scope.row[header.columns]['value']" clearable @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"  :placeholder="`请输入${scope.row[header.columns].label}`"></el-input>
-                    </el-form-item>
-                </template>
-                <!-- <template slot-scope="scope" v-else>
-                        {{scope.row[header.columns]}}
-                </template> -->
-            </el-table-column>
-        <!-- </el-form> --> 
-    </el-table>
+                        <el-form-item  style="margin-bottom: 2px" :rules="scope.row[header.columns].formItemRules"> 
+                            <el-input v-if="['String','Integer','Float','Money'].indexOf(scope.row[header.columns].type) !== -1" :type="['Integer','Float'].indexOf(scope.row[header.columns].type) !== -1  ? 'number' : 'text'" v-model="scope.row[header.columns]['value']" clearable @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"  :placeholder="`请输入${scope.row[header.columns].label}`"></el-input>
+                            <el-select
+                                v-if="['Enum'].indexOf(scope.row[header.columns].type) !== -1"
+                                @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"
+                                v-model="scope.row[header.columns]['value']"
+                                clearable
+                                placeholder="请选择">
+                                <el-option
+                                v-for="item in scope.row[header.columns].options"
+                                :key="item.value"
+                                :label="item.label"
+                                
+                                :value="item.value">
+                                </el-option>
+                            </el-select>
+                        
+                        </el-form-item>
+
+
+                    </template>
+                    <!-- <template slot-scope="scope" v-else>
+                            {{scope.row[header.columns]}}
+                            case 'Integer':
+                                                type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                                break;
+                                            case 'Float':
+                    </template> -->
+                </el-table-column>
+        </el-table>
+        
+    </el-form> 
   </template>
 
   <script>
@@ -311,6 +338,22 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                                             }
                                         }
                                     }
+                                    let type = {type: 'number', message: `${info.label}必须为数字值`}
+                                    switch (info.type) {
+                                        case 'Integer':
+                                            type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            break;
+                                        case 'Float':
+                                            type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            break;
+                                        default:
+                                            type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            break;
+                                    }
+                                    if(info.type == 'Enum' && info.srvCol && info.srvCol.option_list_v2 && info.srvCol.option_list_v2.options){
+                                        info['options'] = info.srvCol.option_list_v2.options.map(item => item)
+                                    }
+                                    info['formItemRules'].push(type)
                                     models[key] = self.bxDeepClone(info) 
                                 }
                                 this.dataModels.push(models)
@@ -331,3 +374,31 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
         }
     }
   </script>
+  <style scoped lang="less">
+  .form-list{
+    .el-select el-select--mini{
+        margin-left: 0px!important;
+    }
+    .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+        margin-bottom: 0px!important;
+    }
+    .el-form-item--mini .el-form-item__content {
+        line-height: 22px;
+    }
+    .form-list-table{
+        .el-table th > .cell {
+            padding: 3px 4px!important;
+            line-height: 18px!important;
+        }
+        .el-table th > .cell {
+            color: #536785;
+            padding-left: 2px;
+            padding-right: 2px;
+            padding:0;
+            white-space: nowrap!important;
+        }
+    }
+    
+  }
+  
+</style>
