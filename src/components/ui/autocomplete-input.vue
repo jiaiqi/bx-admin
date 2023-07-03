@@ -72,7 +72,17 @@
     methods: {
         handleSelect(item) {
             console.log(item);
-            let dependField = this.field.form.fields[this.field.info.redundant.dependField]
+            let dependField
+            if(this.field.form.fields && Array.isArray(this.field.form.fields)){
+              for(let f of this.field.form.fields){
+                if(f.info.name == this.field.info.redundant.dependField){
+                  dependField = f
+                }
+              }
+            }else{
+              dependField = this.field.form.fields[this.field.info.redundant.dependField]
+            }
+            
             let dependType = dependField.info.editor
             switch (dependType) {
                 case 'finder':

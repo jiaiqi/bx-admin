@@ -144,8 +144,43 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                             "depend_key": this.foreignKey.referenced_column_name//"wb_no"
                         }
                     ]
-                    request.data = models.map(items =>{
+                    request.data = models.filter(items =>{
                         let obj = {}
+                        
+                        for(let key in items){
+                            obj[key] = items[key].value
+                        }
+                        let  valid = false
+                        let type = obj.pricing_type
+                        switch (type) {
+                            case '件数':
+                                if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.packages){
+                                    valid = true
+                                }
+                                break;
+                            case '重量':
+                                if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.weight){
+                                    valid = true
+                                }
+                                
+                                break;
+                            case '体积':
+                                if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.volume){
+                                    valid = true
+                                }
+                                
+                                break;
+                        
+                            default:
+                                break;
+                        }
+                        if(valid){
+                            return items
+                        }
+                    })
+                    request.data = request.data.map(items =>{
+                        let obj = {}
+                        
                         for(let key in items){
                             obj[key] = items[key].value
                         }
@@ -153,7 +188,14 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                     })
                     request.data = request.data.filter(item => {
                         let values = Object.values(item)
-                        values = values.filter(item => item !== undefined && item !== null && item !== '')
+                        values = values.filter(item => {
+                            // let  valid = false
+                            // let type = item.
+                            if(item !== undefined && item !== null && item !== ''){
+                                return true
+                            }
+                            
+                        })
                         if(values.length > 0){
                             return item
                         }

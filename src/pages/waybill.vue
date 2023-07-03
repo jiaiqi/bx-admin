@@ -3,8 +3,8 @@
         <el-form ref="ruleForm" v-if="fieldModels" :rules="formRules" :inline="false" label-position="right" label-width="8rem" :model="fieldModels"  class="demo-form-inline" size="mini">
             <el-row :gutter="5" >
                 <template v-for="(formItem,fIndex) in sections">
-                    <el-col :span="fieldSpan.hasOwnProperty(formItem.field.info.name) ? fieldSpan[formItem.field.info.name]  : 8" :key="formItem.field.info.name"  v-if="formItem.field.info.readonly ? formItem.field.info.srvCol.in_detail == 1 : formItem.field.info.bodyVisible  && modelFieldKeys.indexOf(formItem.field.info.name) !== -1 && formItem.field.info.name !== 'child_data_list'">
-                        <el-form-item :label="`${formItem.field.info.label}`" :prop="formItem.field.info.name">
+                    <el-col v-show="formItem.field['_show']" :span="fieldSpan.hasOwnProperty(formItem.field.info.name) ? fieldSpan[formItem.field.info.name]  : 8" :key="formItem.field.info.name"  v-if="formItem.field.info.readonly ? formItem.field.info.srvCol.in_detail == 1 : formItem.field.info.bodyVisible  && modelFieldKeys.indexOf(formItem.field.info.name) !== -1 && formItem.field.info.name !== 'child_data_list'">
+                        <el-form-item :style="{width:fullSpanColNames.indexOf(formItem.field.info.name) !== -1 ?'33%' : '100%'}" :label="`${formItem.field.info.label}`" :prop="formItem.field.info.name">
                             <!-- (${formItem.field.info.name}) -->
                             <raw-field-editor
                                 :ref="formItem.field.info.name"
@@ -61,6 +61,7 @@ import formList from "@/components/common/form-list.vue";
   
     data() {
       return {
+          fullSpanColNames:['delivery_date'],
           type:'add',// add  // update
           serviceName:"",
           srvApp:"",
@@ -70,7 +71,7 @@ import formList from "@/components/common/form-list.vue";
           initData:null,
           fieldModels:null,
           fieldSpan:{
-            "delivery_date": 8,
+            "delivery_date": 24,
             "rcv_addr_no": 8,
             "delivery_addr_no": 8,
             "remark": 24,
@@ -375,6 +376,44 @@ import formList from "@/components/common/form-list.vue";
             // self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
             //     console.log(errmsg)
             // })
+            // 标准运费计算并赋值
+
+            let datas = childreq.data
+            let sumVal = 0
+            for(let obj of datas){
+                let type = obj.pricing_type
+                switch (type) {
+                    case '件数':
+                        if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.packages){
+                            sumVal = sumVal + (obj.packages * obj.unit_price);
+                        }
+                        break;
+                    case '重量':
+                        if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.weight){
+                            sumVal = sumVal + (obj.weight * obj.unit_price);
+                        }
+                        
+                        break;
+                    case '体积':
+                        if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.volume){
+                            sumVal = sumVal + (obj.volume * obj.unit_price);
+                        }
+                        
+                        break;
+                
+                    default:
+                        break;
+                }
+            }
+            for(let i in this.fields){
+                if(this.fields[i].info.name == 'waybill_amount_list'){
+                    this.$set(this.fields[i],'model',sumVal)
+                    this.$set(this.fieldModels,'waybill_amount_list',sumVal)
+                    this.fieldsChangeTrigger(this.fields[i])
+                    // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
+                }
+            }
+            sumVal
             self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
                 console.log(errmsg)
             })
@@ -536,7 +575,7 @@ import formList from "@/components/common/form-list.vue";
         initFields(){
             let self = this
             let fields = this.v2.srv_cols
-            let modelFields = fields.filter(item => item[`in_${this.type}`] == 1)
+            let modelFields = fields.filter(item => item[`in_${this.type}`] == 1 || item[`in_${this.type}`] == 2)
             let colTypes = modelFields.map(item => item.col_type)
             colTypes = [...new Set(colTypes)]
             self.fieldModels = {}
@@ -566,7 +605,11 @@ import formList from "@/components/common/form-list.vue";
                 self.$set(this.fieldModels,item.columns,f.model)
                 return f
             })
-            this.fields = modelFields.map(item => item)
+            this.fields = modelFields.map(item => {
+                
+                item['_show'] = item.info.srvCol[`in_${this.type}`] == 1
+                return item
+            })
             
             console.log(colTypes)
         },

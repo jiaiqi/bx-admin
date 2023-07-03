@@ -100,7 +100,15 @@ export class Field {
       let field = this
       this.autocompleteInput = true
       this.autocompleteFunc =  (_) => {
+        
         let dependField = field.form.fields[this.info.redundant.dependField]
+        if(Array.isArray(field.form.fields)){
+           for(let f of field.form.fields){
+             if(f.info.name == this.info.redundant.dependField){
+              dependField = f
+             }
+           }
+        }
         if(dependField){
           return  (dependField.info.srvCol && dependField.info.srvCol.option_list_v2) || [];
         }else{
