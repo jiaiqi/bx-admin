@@ -354,8 +354,14 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                                         info['options'] = info.srvCol.option_list_v2.options.map(item => item)
                                     }
                                     info['formItemRules'].push(type)
+                                    if(info.initValueExpr && info.initValueExpr.indexOf("'") !== -1){
+                                        info.value = info.initValueExpr.replaceAll("'","")
+                                    }
+
+                                     
                                     models[key] = self.bxDeepClone(info) 
                                 }
+
                                 this.dataModels.push(models)
                             }
                         }
