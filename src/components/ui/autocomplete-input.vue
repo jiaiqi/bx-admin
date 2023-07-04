@@ -66,12 +66,21 @@
       }
     },
     data() {
-      return {}
+      return {
+        selected:null
+      }
     },
 
     methods: {
+      // onChange(e){
+      //    console.log('change',e)
+      //    if(!e){
+      //      this.handleSelect()
+      //    }
+      // },
         handleSelect(item) {
             console.log(item);
+            this.selected = item
             let dependField
             if(this.field.form.fields && Array.isArray(this.field.form.fields)){
               for(let f of this.field.form.fields){
@@ -86,11 +95,20 @@
             let dependType = dependField.info.editor
             switch (dependType) {
                 case 'finder':
-                    dependField.model = item.option
-                    dependField.finderSelected = item.value
-                    this.$set(dependField,'model',item.option)
-                    // this.$emit('field-value-changed', dependField.info.name, dependField)
-                    this.$emit('change', dependField);
+                    if(item){
+                      dependField.model = item.option
+                      dependField.finderSelected = item.value
+                      this.$set(dependField,'model',item.option)
+                      // this.$emit('field-value-changed', dependField.info.name, dependField)
+                      this.$emit('change', dependField);
+                    }else{
+                      dependField.model = item
+                      dependField.finderSelected = item
+                      this.$set(dependField,'model',item)
+                      // this.$emit('field-value-changed', dependField.info.name, dependField)
+                      this.$emit('change', dependField);
+                    }
+                    
                     break;
             
                 default:
@@ -136,6 +154,17 @@
     },
 
     mounted: function () {
+    },
+    watch:{
+      "modelValue":{
+        deep:true,
+        handler:function(nval,oval){
+           console.log(nval)
+           if(!nval){
+            this.handleSelect()
+          }
+        }
+      }
     }
   }
 </script>
