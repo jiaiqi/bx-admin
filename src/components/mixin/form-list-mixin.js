@@ -26,7 +26,31 @@ export default {
         return {}
     },
     fieldValueChange(colName,value,row){
-        console.log(colName,value,row)
+        console.log('form list item change',colName,value,row)
+        let type = row.row[colName].type
+        switch (type) {
+          case "Integer"://Money Float
+                if(row.row[colName].value < 0){
+                  row.row[colName].value = null
+                }
+            break;
+          case "Money"://Money Float
+              if(row.row[colName].value < 0){
+                row.row[colName].value = null
+              }
+            
+            break;
+          case "Float"://Money Float
+            
+          if(row.row[colName].value < 0){
+            row.row[colName].value = null
+          }
+            break;
+        
+          default:
+            break;
+        }
+        
     },
     getSummaries(param) {
         const { columns, data } = param;

@@ -20,8 +20,10 @@
                     <template slot-scope="scope" v-if="Object.prototype.toString.call(scope.row[header.columns]) === '[object Object]'">
                         <!-- scope.row -->
 
-                        <el-form-item  style="margin-bottom: 2px" :rules="scope.row[header.columns].formItemRules"> 
-                            <el-input v-if="['String','Integer','Float','Money'].indexOf(scope.row[header.columns].type) !== -1" :type="['Integer','Float'].indexOf(scope.row[header.columns].type) !== -1  ? 'number' : 'text'" v-model="scope.row[header.columns]['value']" clearable @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"  :placeholder="`请输入${scope.row[header.columns].label}`"></el-input>
+                        <el-form-item  style="margin-bottom: 2px" :rules="scope.row[header.columns].formItemRules" :prop="header.columns + '-' +  scope.row.rowIndex"> 
+                            <el-input v-if="['Integer','Float','Money'].indexOf(scope.row[header.columns].type) !== -1" :type="['Integer','Float'].indexOf(scope.row[header.columns].type) !== -1  ? 'number' : 'text'" v-model.number="scope.row[header.columns]['value']" clearable @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)" :min="0"  :placeholder="`请输入${scope.row[header.columns].label}`"></el-input>
+
+                            <el-input v-if="['String'].indexOf(scope.row[header.columns].type) !== -1" :type="['Integer','Float'].indexOf(scope.row[header.columns].type) !== -1  ? 'number' : 'text'" v-model="scope.row[header.columns]['value']" clearable @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"  :placeholder="`请输入${scope.row[header.columns].label}`"></el-input>
                             <el-select
                                 v-if="['Enum'].indexOf(scope.row[header.columns].type) !== -1"
                                 @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"
@@ -154,24 +156,28 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                         let type = obj.pricing_type
                         switch (type) {
                             case '件数':
-                                if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.packages){
+                            // obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== ''
+                                if(obj.goods_name &&  obj.packages){
                                     valid = true
                                 }
                                 break;
                             case '重量':
-                                if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.weight){
+                                if(obj.goods_name  && obj.weight){
                                     valid = true
                                 }
                                 
                                 break;
                             case '体积':
-                                if(obj.goods_name && obj.unit_price !== null && obj.unit_price !== undefined && obj.unit_price !== '' && obj.volume){
+                                if(obj.goods_name &&  obj.volume){
                                     valid = true
                                 }
                                 
                                 break;
                         
                             default:
+                                if(obj.goods_name &&  obj.pricing_type){
+                                    valid = true
+                                }
                                 break;
                         }
                         if(valid){
@@ -283,6 +289,7 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                 }
             ],
             dataModels:[],
+            oldDataModels:[],
             v2:null,
             addService:'',
             updateService:"",
@@ -299,6 +306,10 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
          }
       },
       methods:{
+            reset(){
+                this.dataModels = this.oldDataModels.map(item =>  this.bxDeepClone(item))
+                 // this.oldDataModels
+            },
             getModelDatas(){
                 return this.modelDatas
             },
@@ -383,13 +394,15 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                                     let type = {type: 'number', message: `${info.label}必须为数字值`}
                                     switch (info.type) {
                                         case 'Integer':
-                                            type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            type = {type: 'number',message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            info['formItemRules'].push({min:0, message: `${info.label}最小值0`,trigger: 'change'})
                                             break;
                                         case 'Float':
                                             type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            info['formItemRules'].push({min:0, message: `${info.label}最小值0`,trigger: 'change'})
                                             break;
                                         default:
-                                            type = {type: 'number', message: `${info.label}必须为数字值`,trigger: 'change'}
+                                            type = {type: 'string', message: `${info.label}格式不正确`,trigger: 'change'}
                                             break;
                                     }
                                     if(info.type == 'Enum' && info.srvCol && info.srvCol.option_list_v2 && info.srvCol.option_list_v2.options){
@@ -403,8 +416,9 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
                                      
                                     models[key] = self.bxDeepClone(info) 
                                 }
-
+                                models['rowIndex'] = i
                                 this.dataModels.push(models)
+                                this.oldDataModels.push(this.bxDeepClone(models))
                             }
                         }
                     }

@@ -19,8 +19,8 @@
                     </el-col>
                     <el-col v-if="children.hasOwnProperty(`field-${formItem.field.info.name}`)" :span="24">
                         <el-form-item :label="children[`field-${formItem.field.info.name}`].service_view_name" prop="child_data_list" :key="'child_data_list'">
-                            <!-- (${formItem.field.info.name}) -->
-                            <formList :type="type" v-model="fieldModels.child_data_list" :foreignKey="children[`field-${formItem.field.info.name}`].foreign_key" :showSummary="true" :summaryColumns="['goods_name','packages','weight','volume','unit_price']" :initListColumns="['goods_name','packages','weight','volume','unit_price','pricing_type']" :serviceName="children[`field-${formItem.field.info.name}`].service_name" :useType="`${type}childlist`" :mainService="serviceName" :mainModel="fieldModels" @change="childModelsChange($event,`field-${formItem.field.info.name}`)"></formList>
+                            <!-- (${formItem.field.info.name}) --> 
+                            <formList ref="formList" :type="type" v-model="fieldModels.child_data_list" :foreignKey="children[`field-${formItem.field.info.name}`].foreign_key" :showSummary="true" :summaryColumns="['goods_name','packages','weight','volume','unit_price']" :initListColumns="['goods_name','packages','weight','volume','unit_price','pricing_type']" :serviceName="children[`field-${formItem.field.info.name}`].service_name" :useType="`${type}childlist`" :mainService="serviceName" :mainModel="fieldModels" @change="childModelsChange($event,`field-${formItem.field.info.name}`)"></formList>
                         </el-form-item>
                     </el-col>
                 </template>
@@ -35,6 +35,7 @@
             </el-col>
             <el-col :span="12">
 
+                <!-- <el-button type="primary" size="small" @click="resetForm" >重置</el-button> -->
                 <el-button type="primary" size="small" @click="onSubmit" >保存运单</el-button>
             </el-col>
         </el-row>
@@ -61,7 +62,7 @@ import formList from "@/components/common/form-list.vue";
   
     data() {
       return {
-          fullSpanColNames:['delivery_date'],
+          fullSpanColNames:['delivery_date','rcv_line_site_no'],
           type:'add',// add  // update
           serviceName:"",
           srvApp:"",
@@ -70,6 +71,7 @@ import formList from "@/components/common/form-list.vue";
           fields:null,
           initData:null,
           fieldModels:null,
+          oldFieldModels:null,
           fieldSpan:{
             "delivery_date": 24,
             "rcv_addr_no": 8,
@@ -80,7 +82,7 @@ import formList from "@/components/common/form-list.vue";
             "carrier_car_no": 8,
             "depart_type": 8,
             "delivery_line_site_no": 8,
-            "rcv_line_site_no": 8,
+            "rcv_line_site_no": 16,
             "waybill_amount_list": 8,
             "waybill_amount_adjust": 8,
             "waybill_total_expense": 8,
@@ -211,17 +213,17 @@ import formList from "@/components/common/form-list.vue";
                 console.log('child_data_list',value)
                 if(Array.isArray(value) && value.length !== 0 &&  Array.isArray(value[0].data)){
                     if (value[0].data.length === 0) {
-                         callback(new Error('未填写货物信息'));
+                         callback(new Error('至少填写一条货物信息，计价类型对应数量为必填信息。'));
                     } else if(value[0].data.length > 0){
                         // if (this.ruleForm.checkPass !== '') {
                         //     this.$refs.ruleForm.validateField('checkPass');
                         // }
                         callback();
                     }else{
-                        callback(new Error('未填写货物信息')); 
+                        callback(new Error('至少填写一条货物信息，计价类型对应数量为必填信息。')); 
                     }
                 }else{
-                    callback(new Error('未填写信息'));
+                    callback(new Error('至少填写一条货物信息，计价类型对应数量为必填信息。'));
                 }
                 
             };
@@ -420,6 +422,40 @@ import formList from "@/components/common/form-list.vue";
             self.$refs['ruleForm'].clearValidate('child_data_list')
             
         },
+        resetForm(){
+            let self = this
+            for(let field of this.fields){
+                let name = field.info.name
+                
+                let value = this.oldFieldModels[name]
+                if(field.info.editor == 'finder' && field.info.dispLoader && field.info.dispLoader.refedCol){
+                    let valueColumn = field.info.dispLoader.refedCol
+                    if(Object.prototype.toString.call(field.model) === '[object Object]'){
+                        value = field.model[valueColumn]
+                    }
+                    this.$set(field,'model',value)
+                    this.$set(this.fieldModels,name,value)
+                }else{
+                    this.$set(field,'model',value)
+                    this.$set(this.fieldModels,name,value)
+                }
+                
+            }
+
+            let childs = this.$refs.formList
+            if(Array.isArray(childs)){
+                for(let child of childs){
+                    if(child.hasOwnProperty('reset')){
+                        child.reset()
+                    }
+                }
+            }
+
+            setTimeout(()=>{
+                self.$refs['ruleForm'].resetFields()
+            },100)
+            
+        },
         submitForm(){
             let self = this
             self.$confirm("确认提交?", "提示", {
@@ -439,6 +475,7 @@ import formList from "@/components/common/form-list.vue";
                                         message: response.data.resultMessage || "提交成功！",
                                         type: "success"
                                     });
+                                    self.resetForm()
                                 }else{
                                     self.$message.error(response.data.resultMessage || "提交失败！");
                                 }
@@ -579,6 +616,8 @@ import formList from "@/components/common/form-list.vue";
             let colTypes = modelFields.map(item => item.col_type)
             colTypes = [...new Set(colTypes)]
             self.fieldModels = {}
+            self.oldFieldModels = {}
+            
             modelFields = modelFields.map((item) => {
                 // let obj = {
                 //     label:item.label,
@@ -602,7 +641,7 @@ import formList from "@/components/common/form-list.vue";
                     f.model = this.initDefaultValue(fi.initValueExpr)
                 }
                 self.$set(this.fieldModels,item.columns,f.model)
-                self.$set(this.fieldModels,item.columns,f.model)
+                self.$set(this.oldFieldModels,item.columns,f.model)
                 return f
             })
             this.fields = modelFields.map(item => {
@@ -674,7 +713,7 @@ import formList from "@/components/common/form-list.vue";
         }
         .el-input__count {
             bottom: 2px!important;
-            font-size: 10px;
+            font-size: 10px!important;
             line-height: 14px!important;
         }
     }
@@ -682,7 +721,7 @@ import formList from "@/components/common/form-list.vue";
         margin-bottom: 16px!important;
     }
     .el-form-item--mini .el-form-item__content {
-        line-height: 22px;
+        line-height: 22px!important;
     }
    
     .el-radio-group {
@@ -700,10 +739,10 @@ import formList from "@/components/common/form-list.vue";
             outline: 0;
             margin-right: 6px;
             margin-bottom:0;
-            line-height: 28px;
+            line-height: 28px!important;
             .el-radio__label {
                 font-size: 14px;
-                padding-left: 0px;
+                padding-left: 0px!important;
             }
         }
     }
@@ -721,7 +760,7 @@ import formList from "@/components/common/form-list.vue";
         line-height: 40px;
         padding: 0 6px 0 0;
         box-sizing: border-box;
-        margin-bottom: 0;
+        margin-bottom: 0!important;
     }
     
 }
