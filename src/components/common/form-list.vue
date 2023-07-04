@@ -26,7 +26,7 @@
                                 v-if="['Enum'].indexOf(scope.row[header.columns].type) !== -1"
                                 @change="fieldValueChange(header.columns,scope.row[header.columns]['value'],scope)"
                                 v-model="scope.row[header.columns]['value']"
-                                clearable
+                                
                                 placeholder="请选择">
                                 <el-option
                                 v-for="item in scope.row[header.columns].options"

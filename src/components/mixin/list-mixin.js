@@ -87,7 +87,9 @@ export default {
       }],
       approvaList:[],
       orderColumn:"phone",
-      srvAuthLogin:false
+      srvAuthLogin:false,
+      sumRowData:null
+
     };
   },
 
@@ -1788,6 +1790,13 @@ export default {
                   }
 
                 });
+
+                // 表格尾部合计行数据   sum_row_data
+
+                if(response.body.hasOwnProperty('sum_row_data') && response.body.sum_row_data){
+                   this.sumRowData = this.bxDeepClone(response.body.sum_row_data)
+                }
+
 
                 if (response.body["page"]) {
                   this.gridPage.currentPage = response.body["page"]["pageNo"];
