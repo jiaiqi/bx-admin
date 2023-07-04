@@ -483,10 +483,10 @@ export default {
     },
     getColumnsShow(row){
        if(row.hasOwnProperty('_data_type') && row['_data_type' ]== 'sumRow'){
-        console.log(row,false)
+        // console.log(row,false)
         return false
        }else{
-        console.log(row,true)
+        // console.log(row,true)
         return true
        }
     },
