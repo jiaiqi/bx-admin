@@ -474,7 +474,7 @@ export default {
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
     
       // 尾行合计 配置 需要跨列，进行动态处理。
-      if(column.hasOwnProperty('property') && column.property == this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
+      if(column.hasOwnProperty('property') && column.property == this.sumConfig &&  this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
          console.log({ row, column, rowIndex, columnIndex })
           return [1, this.sumConfig.sum_text_col_span];
       }else{
