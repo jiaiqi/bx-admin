@@ -250,6 +250,8 @@ import formList from "@/components/common/form-list.vue";
             }
             if(this.type == 'add'){
                 req['data'] = [data]
+
+
             }
             req['srvApp'] = this.srvApp
             return [req]
@@ -371,9 +373,19 @@ import formList from "@/components/common/form-list.vue";
         childModelsChange(childreq){
             let self = this
             self.fieldModels['child_data_list'] = []
-             self.fieldModels['child_data_list'] = [childreq].map(item => item)
-             self.$set(this.fieldModels,'child_data_list',[childreq])
-             console.log('children change childModelsChange():',childreq)
+            let req = this.bxDeepClone(childreq)
+            if(Array.isArray(req.data) && req.data.length > 0){
+                for(let item of req.data){
+                    for(let key in item){
+                        if(item[key] == ''){
+                            delete item[key]
+                        }
+                    }
+                }
+            }
+             self.fieldModels['child_data_list'] = [req].map(item => item)
+             self.$set(this.fieldModels,'child_data_list',[req])
+             console.log('children change childModelsChange():',req)
             //  this.fieldModels['child_data_list'].push(childreq)
             // self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
             //     console.log(errmsg)
@@ -406,6 +418,7 @@ import formList from "@/components/common/form-list.vue";
                     default:
                         break;
                 }
+                
             }
             for(let i in this.fields){
                 if(this.fields[i].info.name == 'waybill_amount_list'){
@@ -415,7 +428,6 @@ import formList from "@/components/common/form-list.vue";
                     // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
                 }
             }
-            sumVal
             self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
                 console.log(errmsg)
             })
