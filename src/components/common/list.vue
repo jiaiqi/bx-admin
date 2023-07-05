@@ -78,11 +78,14 @@
           <el-table ref="bx-table-layout" :data="gridDataRun" stripe border style="width: 100%"
             :row-class-name="tableRowClassName" row-key="id" highlight-current-row
             @selection-change="handleSelectionChange" @filter-change="filterChange" @sort-change="handleSortChange"
+            
+            :span-method="arraySpanMethod"
             @row-dblclick="onRowDbClicked">
 
             <el-table-column type="selection" label="全选" header-align="left" width="50px" v-if="selection && !readOnly">
             </el-table-column>
-
+            <!-- :show-summary="sumRowData ? true : false"
+            :summary-method="getSummaries" -->
             <!-- v-if="(item.show && (!item.evalVisible || item.evalVisible()))" ---↓-->
             <el-table-column v-for="(item, index) in gridHeader" :key="index" header-align="left"
               v-if="getGridHeaderDispExps(item, listMainFormDatas)"
@@ -180,7 +183,7 @@
 
             <el-table-column label="操作" header-align="left" width="240" fixed="right"
               v-if="!readOnly && listType != 'selectlist' && !hideButtons && sortedRowButtons.length > 0">
-              <template slot-scope="scope">
+              <template slot-scope="scope" v-if="getColumnsShow(scope.row)">
                 <!-- <el-button v-for="(button, index) in sortedRowButtons"
                             :key="index"
                             @click="rowButtonClick(button,scope.row)"

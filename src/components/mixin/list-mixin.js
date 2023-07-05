@@ -87,7 +87,9 @@ export default {
       }],
       approvaList:[],
       orderColumn:"phone",
-      srvAuthLogin:false
+      srvAuthLogin:false,
+      sumRowData:null,
+      sumConfig:null
     };
   },
 
@@ -394,6 +396,9 @@ export default {
             
             
           }
+          if(this.sumRowData){
+            data.push(this.sumRowData)
+          }
           return data
         }else{
           return []
@@ -466,6 +471,26 @@ export default {
   },
 
   methods: {
+    arraySpanMethod({ row, column, rowIndex, columnIndex }) {
+    
+      // 尾行合计 配置 需要跨列，进行动态处理。
+      if(column.hasOwnProperty('property') && this.sumConfig && column.property ==   this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
+        //  console.log({ row, column, rowIndex, columnIndex })
+          // return [1,1]
+          return [1, this.sumConfig.sum_text_col_span];
+      }else{
+          return [1,1]
+      }
+    },
+    getColumnsShow(row){
+       if(row.hasOwnProperty('_data_type') && row['_data_type' ]== 'sumRow'){
+        // console.log(row,false)
+        return false
+       }else{
+        // console.log(row,true)
+        return true
+       }
+    },
     getButtonOptSrv(btn,row,type){
          let self = this
          let serviceName=""
@@ -1789,6 +1814,17 @@ export default {
 
                 });
 
+                // 表格尾部合计行数据   sum_row_data
+
+                if(response.body.hasOwnProperty('sum_row_data') && response.body.sum_row_data){
+                   this.sumRowData = this.bxDeepClone(response.body.sum_row_data)
+                   this.sumRowData["_data_type"] = 'sumRow'
+                   if(this.sumConfig && this.sumConfig.sum_text_col && this.sumConfig.sum_text){
+                    this.sumRowData[this.sumConfig.sum_text_col] = this.sumConfig.sum_text
+                   }
+                }
+
+
                 if (response.body["page"]) {
                   this.gridPage.currentPage = response.body["page"]["pageNo"];
                   this.gridPage.total = response.body["page"]["total"];
@@ -2112,6 +2148,21 @@ export default {
           if(respData.hasOwnProperty('order_columns') && respData.order_columns){
             this.orderColumn = respData.order_columns
           }
+          // 列表的顺序
+          if(respData.hasOwnProperty('cfg_json') && respData.cfg_json ){
+            let config = null
+            try {
+              config = JSON.parse(respData.cfg_json)
+              if(config.hasOwnProperty('sum_row_json')){
+                config = config.sum_row_json
+                this.sumConfig = config
+              }
+            } catch (error) {
+              new Error('cfg_json' + error)
+            }
+           
+          }
+          
           // draft_support为true时表示上次操作有保存为草稿
           if(respData.hasOwnProperty('draft_support')){
             // 获取草稿标记

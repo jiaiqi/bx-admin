@@ -66,21 +66,49 @@
       }
     },
     data() {
-      return {}
+      return {
+        selected:null
+      }
     },
 
     methods: {
+      // onChange(e){
+      //    console.log('change',e)
+      //    if(!e){
+      //      this.handleSelect()
+      //    }
+      // },
         handleSelect(item) {
             console.log(item);
-            let dependField = this.field.form.fields[this.field.info.redundant.dependField]
+            this.selected = item
+            let dependField
+            if(this.field.form.fields && Array.isArray(this.field.form.fields)){
+              for(let f of this.field.form.fields){
+                if(f.info.name == this.field.info.redundant.dependField){
+                  dependField = f
+                }
+              }
+            }else{
+              dependField = this.field.form.fields[this.field.info.redundant.dependField]
+            }
+            
             let dependType = dependField.info.editor
             switch (dependType) {
                 case 'finder':
-                    dependField.model = item.option
-                    dependField.finderSelected = item.value
-                    this.$set(dependField,'model',item.option)
-                    // this.$emit('field-value-changed', dependField.info.name, dependField)
-                    this.$emit('change', dependField);
+                    if(item){
+                      dependField.model = item.option
+                      dependField.finderSelected = item.value
+                      this.$set(dependField,'model',item.option)
+                      // this.$emit('field-value-changed', dependField.info.name, dependField)
+                      this.$emit('change', dependField);
+                    }else{
+                      dependField.model = item
+                      dependField.finderSelected = item
+                      this.$set(dependField,'model',item)
+                      // this.$emit('field-value-changed', dependField.info.name, dependField)
+                      this.$emit('change', dependField);
+                    }
+                    
                     break;
             
                 default:
@@ -116,6 +144,7 @@
                     }
                     cb(results);
             });
+            this.$emit('change', this.field);
             // 调用 callback 返回建议列表的数据
             
         },
@@ -125,6 +154,17 @@
     },
 
     mounted: function () {
+    },
+    watch:{
+      "modelValue":{
+        deep:true,
+        handler:function(nval,oval){
+           console.log(nval)
+           if(!nval){
+            this.handleSelect()
+          }
+        }
+      }
     }
   }
 </script>

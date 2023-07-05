@@ -10,7 +10,8 @@
           <div v-if="ifUseRawFieldEditor()">
               <bx-input-number v-if="field.info.editor === 'input-number'" controls-position="right" v-model="field.model" :disabled="getDisabled" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
               </bx-input-number>
-              <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" style="min-height:80px;">
+              <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" >
+                <!-- style="height:80px;" -->
               </el-input>
               <el-switch v-else-if="field.info.editor === 'switch'" v-model="field.model" active-color="#13ce66" inactive-color="#777777">
               </el-switch>

@@ -603,7 +603,7 @@ export default {
               this.$emit('on-input-value',true)
               this.$emit('on-change',true)
               for(let i =0;i<keys.length;i++){
-                  console.log("更新了",val[keys[i]].value, oldVal[keys[i]].value)
+                //   console.log("更新了",val[keys[i]].value, oldVal[keys[i]].value)
                   if(val[keys[i]] && oldVal[keys[i]] &&  val[keys[i]].hasOwnProperty('value') && oldVal[keys[i]].hasOwnProperty('value') && val[keys[i]].value !== oldVal[keys[i]].value){
                      newNum++
                      this.$emit('on-input-value',true)
