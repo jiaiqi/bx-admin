@@ -28,13 +28,15 @@
             </el-row>
         </el-form>
        
-        <el-row type="flex" :gutter="5" class="row-bg padding bg-white box-border" justify="center">
-            <el-col :span="12">
+        <el-row type="flex" :gutter="5" class="row-bg padding bg-white box-border" justify="center" >
+            <!-- <el-col :span="12"> -->
                 <!-- // 其他功能 -->
                 <!-- <el-button  size="small">收货历史</el-button> -->
-            </el-col>
-            <el-col :span="12">
+            <!-- </el-col> -->
+            <el-col :span="24" style="text-align: center;">
 
+                <!-- <el-button type="primary" size="small" @click="printing" >测试打印</el-button> -->
+                <el-button type="primary" size="small" @click="onSubmit(true)" >保存并打印</el-button>
                 <!-- <el-button type="primary" size="small" @click="resetForm" >重置</el-button> -->
                 <el-button type="primary" size="small" @click="onSubmit" >保存运单</el-button>
             </el-col>
@@ -93,7 +95,9 @@ import formList from "@/components/common/form-list.vue";
             "bill_pay_party": 8,
             "pay_method": 8
         },
-
+        printData:null,
+        printer:null,
+        printertag:null
       };
     },
     computed:{
@@ -468,6 +472,40 @@ import formList from "@/components/common/form-list.vue";
             },100)
             
         },
+        onSubmitPrint(){
+            let self = this
+            self.$confirm("确认提交并打印?", "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "info"
+            }).then(()=>{
+                let queries = self.submitRequest
+                self.operate(queries)
+                .then((response) => {
+                    if (response && response.data) {
+                        if (response.data.state == 'SUCCESS') {
+
+                            // only for local refresh of treegrid
+                            self.printData =  response.data.response[0].response.effect_data[0]
+
+                            self.$message({
+                                message: response.data.resultMessage || "提交成功！",
+                                type: "success"
+                            });
+                            self.resetForm()
+                            self.printing()
+                        }else{
+                            self.$message.error(response.data.resultMessage || "提交失败！");
+                        }
+                    }
+                });
+            }).catch(() => {
+                self.$message({
+                    type: "info",
+                    message: "已取消删除"
+                });
+            });
+        },
         submitForm(){
             let self = this
             self.$confirm("确认提交?", "提示", {
@@ -500,7 +538,7 @@ import formList from "@/components/common/form-list.vue";
                         });
                     });
         },
-        onSubmit(){
+        onSubmit(print){
             let self = this
             self.$refs['ruleForm'].validateField('child_data_list',(errmsg)=>{
                 console.log(errmsg)
@@ -508,8 +546,12 @@ import formList from "@/components/common/form-list.vue";
             self.$refs['ruleForm'].validate((valid,object) => {
                 console.log(valid,object)
                 if (valid) {
+                    if(print){
+                        self.onSubmitPrint()
+                    }else{
+                        self.submitForm()
+                    }
                     
-                    self.submitForm()
                     console.log('form models:',this.fieldModels)
                 } else {
                     // console.log('error submit!!');
@@ -604,6 +646,7 @@ import formList from "@/components/common/form-list.vue";
                     this.v2 = res.data.data
                     this.loadChildsV2()
                     this.initFields()
+                    this.getPrintSn()
                 }
             })
         },
@@ -631,16 +674,6 @@ import formList from "@/components/common/form-list.vue";
             self.oldFieldModels = {}
             
             modelFields = modelFields.map((item) => {
-                // let obj = {
-                //     label:item.label,
-                //     column:item.columns,
-                //     initValue:item.init_expr,
-                //     srvColType:item.col_type,
-                //     value:null,
-                //     srvCol:this.bxDeepClone(item) 
-                // }
-                // obj = new FieldInfo(item, this.type);
-
                 let fi = new FieldInfo(item, this.type);
                 let f = new Field(fi, self);
 
@@ -673,6 +706,260 @@ import formList from "@/components/common/form-list.vue";
                 value =  new Date(eval(init)).toLocaleDateString()
             }
             return value
+        },
+        printing(){
+            let self = this
+            let data = this.printData
+            let sn = this.printer ? this.printer.sn : ''
+            let bqsn = this.printertag ? this.printertag.sn : ''
+            if(!bqsn){
+                self.$message.error("无可用的标签打印机");    
+            }
+            if(!sn){
+                self.$message.error("无可用的小票打印机");    
+            }
+            if(!data){
+                data = {
+                "wb_no": "WB230705140015",
+                "delivery_date": "2023-07-05",
+                "cdr_no": null,
+                "carrier_car_no": null,
+                "depart_type": null,
+                "ln_no": null,
+                "ln_name": null,
+                "delivery_line_site_no": null,
+                "delivery_line_site_name": null,
+                "rcv_line_site_no": null,
+                "rcv_line_site_name": null,
+                "rcv_addr_no": "AD2306160004",
+                "rcv_region_name_path": "/陕西省/西安市/莲湖区/桃园路街道/",
+                "rcv_city": "西安市",
+                "rcv_org": "正运冷链",
+                "rcv_name": "正运冷链",
+                "rcv_phone": "15399455167",
+                "rcv_addr_detail": "金汇冷鲜",
+                "delivery_addr_no": "AD2211040001",
+                "delivery_region_name_path": "/陕西省/延安市/宝塔区/",
+                "delivery_city": "延安市",
+                "delivery_org": "延安中学",
+                "delivery_name": "张三",
+                "delivery_phone": "18629296085",
+                "delivery_addr_detail": "陕西省延安市宝塔区xx路xx号xx花园",
+                "from_park_no": null,
+                "from_park_name": null,
+                "delivery_lat": 34.571049,
+                "delivery_lon": 105.693638,
+                "remark": null,
+                "goods_desc": null,
+                "trans_goods_item_count": 0,
+                "carrier_car_accept_result": null,
+                "carrier_no": "CR2302270003",
+                "carrier_name": "正运物流",
+                "kpi_index": null,
+                "waybill_amount_list": 0,
+                "waybill_amount_adjust": null,
+                "waybill_total_expense": 0,
+                "agency_fund": null,
+                "advance_payment": null,
+                "waybill_amount_to_pay": 0,
+                "bill_pay_party": "到付",
+                "waybill_amount_to_pay_arrived": 0,
+                "pay_method": null,
+                "pay_status": "待支付",
+                "pricing_basis": "件数",
+                "create_party": "承运方",
+                "trade_type": "下单",
+                "bill_status": "已揽收",
+                "create_time": "2023-07-05 14:39:03",
+                "modify_time": "2023-07-05 14:39:03",
+                "create_user_disp": "王永宏/wangyh",
+                "create_user": "wangyh",
+                "id": 658,
+                "arrival_time_actual": null,
+                "gps_sn": null,
+                "modify_user_disp": "王永宏/wangyh",
+                "modify_user": "wangyh",
+                "carrier_phone": "18292486366",
+                "depart_time_actual": null,
+                "tem_hum_sn": null,
+                "flow_step_no": "wl_to_departure",
+                "flow_tmpl_no": null,
+                "rcv_lat": null,
+                "rcv_lon": null,
+                "rcv_sms_verify_code": null,
+                "trans_goods_weight_t": 0,
+                "trans_goods_volume": 0,
+                "distance": 0,
+                "carrier_get_date": null,
+                "store_ship_no": null,
+                "pay_amount": 0,
+                "del_flag": "否"
+            }
+            }
+            let printReq = [
+                    {
+                        "serviceName": "srvwuliu_waybill_print",
+                        "condition": [],
+                        "data": [
+                            {
+                                "wb_no": data.wb_no,
+                                "carrier_get_date":data.carrier_get_date,
+                                "goods_desc": data.goods_desc,
+                                "trans_goods_item_count": data.trans_goods_item_count,
+                                "trans_goods_weight_t":data.trans_goods_weight_t,
+                                "delivery_name": data.delivery_name,
+                                "delivery_phone": data.delivery_phone,
+                                "delivery_addr_detail": data.delivery_addr_detail,
+                                "rcv_name": data.rcv_name,
+                                "rcv_phone": data.rcv_phone,
+                                "rcv_addr_detail":data.rcv_addr_detail,
+                                "carrier_name": data.carrier_name,
+                                "carrier_phone": data.carrier_phone,
+                                "print_sn": sn,
+                                "print_sn_bq": bqsn,
+                                "create_user_disp": data.create_user_disp,
+                                "waybill_amount_to_pay":data.waybill_amount_to_pay
+                            }
+                        ]
+                    }
+                ]
+                self.operate(printReq).then((response) => {
+                    if (response.data.state == 'SUCCESS') {
+                        self.$message({
+                            message: response.data.resultMessage || "打印成功！",
+                            type: "success"
+                        });
+                        self.printData = null
+                    }else{
+                        self.$message.error(response.data.resultMessage || "打印失败！");
+                    }
+                })
+                
+            console.log(data)
+
+            // {"serviceName":"srviot_print_dev_select","queryMethod":"select","distinct":false,"colNames":["*"],"condition":[{"colName":"dev_type","ruleType":"eq","value":"芯烨云标签"}],"page":{"pageNo":1,"rownumber":20},"relation_condition":{"relation":"OR","data":[{"relation":"AND","data":[{"colName":"sn","value":"","ruleType":"[like]"}]},{"relation":"AND","data":[{"colName":"name","value":"","ruleType":"[like]"}]}]}}
+        },
+        getPrintSn(){
+            let  bqreq = {
+                "serviceName": "srviot_print_dev_select",
+                "queryMethod": "select",
+                "distinct": false,
+                "colNames": [
+                    "*"
+                ],
+                "condition": [
+                    {
+                    "colName": "dev_type",
+                    "ruleType": "eq",
+                    "value": "芯烨云标签"
+                    },
+                    {
+                    "colName": "bind_state",
+                    "ruleType": "eq",
+                    "value": "已绑定"
+                    }
+                ],
+                "page": {
+                    "pageNo": 1,
+                    "rownumber": 20
+                },
+                "relation_condition": {
+                    "relation": "OR",
+                    "data": [
+                        {
+                            "relation": "AND",
+                            "data": [
+                            {
+                                "colName": "sn",
+                                "value": "",
+                                "ruleType": "[like]"
+                            }
+                            ]
+                        },
+                        {
+                            "relation": "AND",
+                            "data": [
+                            {
+                                "colName": "name",
+                                "value": "",
+                                "ruleType": "[like]"
+                            }
+                            ]
+                        }
+                        ]
+                    }
+            }
+            let req = {
+                "serviceName": "srviot_print_dev_select",
+                "queryMethod": "select",
+                "distinct": false,
+                "colNames": [
+                    "*"
+                ],
+                "condition": [
+                    {
+                    "colName": "dev_type",
+                    "ruleType": "eq",
+                    "value": "芯烨云小票"
+                    },
+                    {
+                    "colName": "bind_state",
+                    "ruleType": "eq",
+                    "value": "已绑定"
+                    }
+                    
+                ],
+                "page": {
+                    "pageNo": 1,
+                    "rownumber": 20
+                },
+                "relation_condition": {
+                    "relation": "OR",
+                    "data": [
+                    {
+                        "relation": "AND",
+                        "data": [
+                        {
+                            "colName": "sn",
+                            "value": "",
+                            "ruleType": "[like]"
+                        }
+                        ]
+                    },
+                    {
+                        "relation": "AND",
+                        "data": [
+                        {
+                            "colName": "name",
+                            "value": "",
+                            "ruleType": "[like]"
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }
+
+            this.select('srviot_print_dev_select',req.conditon,null, null, null, null, 'liot', null, req.colNames, req.relation_condition).then((response) => {
+                // console.log(response.data,response.data.state)
+                    if (response.data.state == 'SUCCESS') {
+                        this.printer = response.data.data
+                        if(Array.isArray(this.printer) && this.printer.length > 0){
+                            this.printer = this.bxDeepClone(this.printer[0]) 
+                        }
+        
+                    }
+            }) //= function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth)
+            this.select('srviot_print_dev_select',bqreq.conditon,null, null, null, null, 'liot', null, bqreq.colNames, bqreq.relation_condition).then((response) => {
+                // console.log(response.data,response.data.state)
+                    if (response.data.state == 'SUCCESS') {
+                        this.printertag = response.data.data
+                        if(Array.isArray(this.printertag) && this.printertag.length > 0){
+                            this.printertag = this.bxDeepClone(this.printertag[0]) 
+                        }
+        
+                    }
+            })
         }
     },
   

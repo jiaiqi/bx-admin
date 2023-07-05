@@ -477,9 +477,16 @@ export default {
       if(column.hasOwnProperty('property') && this.sumConfig && column.property ==   this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
         //  console.log({ row, column, rowIndex, columnIndex })
           // return [1,1]
-          return [1, this.sumConfig.sum_text_col_span];
+          return {
+            rowspan: 1,
+            colspan: this.sumConfig.sum_text_col_span
+          }
+          // [1, this.sumConfig.sum_text_col_span];
       }else{
-          return [1,1]
+          return {
+            rowspan: 1,
+            colspan: 1
+          }
       }
     },
     getColumnsShow(row){
@@ -683,6 +690,9 @@ export default {
 
         }
         // return str;
+        if(key_col == 'waybill_amount_to_pay'){
+          console.log(key_col,row[key_col],str)
+        }
         ops =  str;
       } else {
         let resultValue = ''
