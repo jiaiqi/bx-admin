@@ -680,7 +680,7 @@ export default {
     loadAddUpdateSrvCols() {
       let addServiceP = !this.addService || this.addSrvCols.length > 0
         ? Promise.resolve(false)
-        : this.loadColsV2(this.addService, "add");
+        : this.loadColsV2(this.addService, "add",null,this.mainService);
 
         
       return addServiceP
@@ -696,7 +696,7 @@ export default {
           
           return !this.updateService || this.updateSrvCols.length > 0
             ? Promise.resolve(false)
-            : this.loadColsV2(this.updateService, "update");
+            : this.loadColsV2(this.updateService, "update",null,this.mainService);
         })
         .then(response => {
           if (response && response.body) {

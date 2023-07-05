@@ -384,7 +384,7 @@ export default {
     async getColV2() {
       const response = await this.loadColsV2(
         this.cfgJson?.list_edit_srv,
-        "update"
+        "update",null,this.mainService
       );
       const respData = response.body.data;
       this.updateV2 = respData;
