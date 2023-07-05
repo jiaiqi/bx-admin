@@ -29,11 +29,22 @@
         </el-form>
        
         <el-row type="flex" :gutter="5" class="row-bg padding bg-white box-border" justify="center" >
-            <!-- <el-col :span="12"> -->
+            <el-col :span="12"  style="text-align: center;">
                 <!-- // 其他功能 -->
                 <!-- <el-button  size="small">收货历史</el-button> -->
-            <!-- </el-col> -->
-            <el-col :span="24" style="text-align: center;">
+                <el-form  ref="numberValidateForm" label-width="100px" size="mini" style="width:40%;margin: 0 auto;">
+                    <el-form-item
+                        label="货签份数"
+                        :rules="[
+                        { min: 1, message: '货签份数最少1'},
+                        { type: 'number', message: '货签份数必须为数字值'}
+                        ]"
+                    >
+                        <el-input type="age" v-model.number="pages" autocomplete="off"></el-input>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+            <el-col :span="12" style="text-align: left;">
 
                 <!-- <el-button type="primary" size="small" @click="printing" >测试打印</el-button> -->
                 <el-button type="primary" size="small" @click="onSubmit(true)" >保存并打印</el-button>
@@ -97,7 +108,8 @@ import formList from "@/components/common/form-list.vue";
         },
         printData:null,
         printer:null,
-        printertag:null
+        printertag:null,
+        pages:1
       };
     },
     computed:{
@@ -479,6 +491,13 @@ import formList from "@/components/common/form-list.vue";
                 cancelButtonText: "取消",
                 type: "info"
             }).then(()=>{
+                if(isNaN(Number(this.pages)) && Number(this.pages) < 1){
+                    self.$message.error("请输入有效的货签份数");
+                    return 
+                }else if(!isNaN(Number(this.pages)) && Number(this.pages) < 1){
+                    self.$message.error("请输入有效的货签份数");
+                    return 
+                }
                 let queries = self.submitRequest
                 self.operate(queries)
                 .then((response) => {
@@ -719,82 +738,91 @@ import formList from "@/components/common/form-list.vue";
                 self.$message.error("无可用的小票打印机");    
             }
             if(!data){
-                data = {
-                "wb_no": "WB230705140015",
-                "delivery_date": "2023-07-05",
-                "cdr_no": null,
-                "carrier_car_no": null,
-                "depart_type": null,
-                "ln_no": null,
-                "ln_name": null,
-                "delivery_line_site_no": null,
-                "delivery_line_site_name": null,
-                "rcv_line_site_no": null,
-                "rcv_line_site_name": null,
-                "rcv_addr_no": "AD2306160004",
-                "rcv_region_name_path": "/陕西省/西安市/莲湖区/桃园路街道/",
-                "rcv_city": "西安市",
-                "rcv_org": "正运冷链",
-                "rcv_name": "正运冷链",
-                "rcv_phone": "15399455167",
-                "rcv_addr_detail": "金汇冷鲜",
-                "delivery_addr_no": "AD2211040001",
-                "delivery_region_name_path": "/陕西省/延安市/宝塔区/",
-                "delivery_city": "延安市",
-                "delivery_org": "延安中学",
-                "delivery_name": "张三",
-                "delivery_phone": "18629296085",
-                "delivery_addr_detail": "陕西省延安市宝塔区xx路xx号xx花园",
-                "from_park_no": null,
-                "from_park_name": null,
-                "delivery_lat": 34.571049,
-                "delivery_lon": 105.693638,
-                "remark": null,
-                "goods_desc": null,
-                "trans_goods_item_count": 0,
-                "carrier_car_accept_result": null,
-                "carrier_no": "CR2302270003",
-                "carrier_name": "正运物流",
-                "kpi_index": null,
-                "waybill_amount_list": 0,
-                "waybill_amount_adjust": null,
-                "waybill_total_expense": 0,
-                "agency_fund": null,
-                "advance_payment": null,
-                "waybill_amount_to_pay": 0,
-                "bill_pay_party": "到付",
-                "waybill_amount_to_pay_arrived": 0,
-                "pay_method": null,
-                "pay_status": "待支付",
-                "pricing_basis": "件数",
-                "create_party": "承运方",
-                "trade_type": "下单",
-                "bill_status": "已揽收",
-                "create_time": "2023-07-05 14:39:03",
-                "modify_time": "2023-07-05 14:39:03",
-                "create_user_disp": "王永宏/wangyh",
-                "create_user": "wangyh",
-                "id": 658,
-                "arrival_time_actual": null,
-                "gps_sn": null,
-                "modify_user_disp": "王永宏/wangyh",
-                "modify_user": "wangyh",
-                "carrier_phone": "18292486366",
-                "depart_time_actual": null,
-                "tem_hum_sn": null,
-                "flow_step_no": "wl_to_departure",
-                "flow_tmpl_no": null,
-                "rcv_lat": null,
-                "rcv_lon": null,
-                "rcv_sms_verify_code": null,
-                "trans_goods_weight_t": 0,
-                "trans_goods_volume": 0,
-                "distance": 0,
-                "carrier_get_date": null,
-                "store_ship_no": null,
-                "pay_amount": 0,
-                "del_flag": "否"
-            }
+                return 
+                    data = {
+                    "wb_no": "WB230705140015",
+                    "delivery_date": "2023-07-05",
+                    "cdr_no": null,
+                    "carrier_car_no": null,
+                    "depart_type": null,
+                    "ln_no": null,
+                    "ln_name": null,
+                    "delivery_line_site_no": null,
+                    "delivery_line_site_name": null,
+                    "rcv_line_site_no": null,
+                    "rcv_line_site_name": null,
+                    "rcv_addr_no": "AD2306160004",
+                    "rcv_region_name_path": "/陕西省/西安市/莲湖区/桃园路街道/",
+                    "rcv_city": "西安市",
+                    "rcv_org": "正运冷链",
+                    "rcv_name": "正运冷链",
+                    "rcv_phone": "15399455167",
+                    "rcv_addr_detail": "金汇冷鲜",
+                    "delivery_addr_no": "AD2211040001",
+                    "delivery_region_name_path": "/陕西省/延安市/宝塔区/",
+                    "delivery_city": "延安市",
+                    "delivery_org": "延安中学",
+                    "delivery_name": "张三",
+                    "delivery_phone": "18629296085",
+                    "delivery_addr_detail": "陕西省延安市宝塔区xx路xx号xx花园",
+                    "from_park_no": null,
+                    "from_park_name": null,
+                    "delivery_lat": 34.571049,
+                    "delivery_lon": 105.693638,
+                    "remark": null,
+                    "goods_desc": null,
+                    "trans_goods_item_count": 0,
+                    "carrier_car_accept_result": null,
+                    "carrier_no": "CR2302270003",
+                    "carrier_name": "正运物流",
+                    "kpi_index": null,
+                    "waybill_amount_list": 0,
+                    "waybill_amount_adjust": null,
+                    "waybill_total_expense": 0,
+                    "agency_fund": null,
+                    "advance_payment": null,
+                    "waybill_amount_to_pay": 0,
+                    "bill_pay_party": "到付",
+                    "waybill_amount_to_pay_arrived": 0,
+                    "pay_method": null,
+                    "pay_status": "待支付",
+                    "pricing_basis": "件数",
+                    "create_party": "承运方",
+                    "trade_type": "下单",
+                    "bill_status": "已揽收",
+                    "create_time": "2023-07-05 14:39:03",
+                    "modify_time": "2023-07-05 14:39:03",
+                    "create_user_disp": "王永宏/wangyh",
+                    "create_user": "wangyh",
+                    "id": 658,
+                    "arrival_time_actual": null,
+                    "gps_sn": null,
+                    "modify_user_disp": "王永宏/wangyh",
+                    "modify_user": "wangyh",
+                    "carrier_phone": "18292486366",
+                    "depart_time_actual": null,
+                    "tem_hum_sn": null,
+                    "flow_step_no": "wl_to_departure",
+                    "flow_tmpl_no": null,
+                    "rcv_lat": null,
+                    "rcv_lon": null,
+                    "rcv_sms_verify_code": null,
+                    "trans_goods_weight_t": 0,
+                    "trans_goods_volume": 0,
+                    "distance": 0,
+                    "carrier_get_date": null,
+                    "store_ship_no": null,
+                    "pay_amount": 0,
+                    "del_flag": "否"
+                }
+            }else{
+                if(isNaN(Number(this.pages)) && Number(this.pages) < 1){
+                    self.$message.error("请输入有效的货签份数");
+                    return 
+                }else if(!isNaN(Number(this.pages)) && Number(this.pages) < 1){
+                    self.$message.error("请输入有效的货签份数");
+                    return 
+                }
             }
             let printReq = [
                     {
@@ -818,7 +846,8 @@ import formList from "@/components/common/form-list.vue";
                                 "print_sn": sn,
                                 "print_sn_bq": bqsn,
                                 "create_user_disp": data.create_user_disp,
-                                "waybill_amount_to_pay":data.waybill_amount_to_pay
+                                "waybill_amount_to_pay":data.waybill_amount_to_pay,
+                                "goods_label_count":this.pages,
                             }
                         ]
                     }
