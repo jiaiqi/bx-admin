@@ -136,6 +136,7 @@ export default {
       options: [],
       childForeign: null,
       multiSelected: [],
+      hasInit:false,//已经设置过初始值
     };
   },
   watch: {
@@ -212,6 +213,7 @@ export default {
       
       let fieldInfo = this.field.info;
       if (
+        this.hasInit===false&&
         this.options.length > 0 &&
         !this.field.model &&
         this.field.info &&
@@ -223,6 +225,7 @@ export default {
         this.selected = loader.showAsPair !== true
               ?  this.options[0][fieldInfo.dispCol]
               : `${ this.options[0][fieldInfo.dispCol]}/${ this.options[0][fieldInfo.valueCol]}`;
+              this.hasInit = true
 
       }else if(this.field.model && this.finderSelected){
         this.selected = this.finderSelected

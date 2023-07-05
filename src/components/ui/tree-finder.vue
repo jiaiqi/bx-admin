@@ -37,7 +37,8 @@ export default {
       selected: [],
       // 树形结构数据
       options: [],
-      visibleChange: false
+      visibleChange: false,
+      hasInit:false,//已经设置过初始值
     };
   },
 
@@ -518,6 +519,7 @@ export default {
           this.setSrvVal(value);
         }
       } else if (
+        this.hasInit===false&&
         this.options.length > 0 &&
         !this.field.model &&
         this.field.info &&
@@ -528,7 +530,7 @@ export default {
         this.field.model = this.options[0];
         this.selected = [this.field.model[this.field.info.valueCol]]
         this.$emit("field-value-changed", this.field.info.name, this.field);
-        
+        this.hasInit = true
       }
     });
   },
