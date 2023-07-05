@@ -2,7 +2,7 @@
   <div>
     
     <el-card class="box-card">
-        <div v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0">
+        <div v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0" class="detail-steps">
           <el-steps align-center>
             <el-step :title="step.step_name" :status="step.status" v-for="(step,index) in detailChartDatas" :key="index"></el-step>
           </el-steps>
@@ -450,6 +450,18 @@ export default {
   }
 };
 </script>
+<style lang="less">
+.detail-steps{
+  .el-step__head.is-process {
+      color: #e96a02;
+      border-color: #e96a02;
+  }
+  .el-step__title.is-process {
+    
+      color: #e96a02;
+  }
+}
+</style>
 
 
 

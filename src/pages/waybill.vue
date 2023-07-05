@@ -38,7 +38,7 @@
                 <!-- <el-button type="primary" size="small" @click="printing" >测试打印</el-button> -->
                 <el-button type="primary" size="small" @click="onSubmit(true)" >保存并打印</el-button>
                 <!-- <el-button type="primary" size="small" @click="resetForm" >重置</el-button> -->
-                <el-button type="primary" size="small" @click="onSubmit" >保存运单</el-button>
+                <el-button type="primary" size="small" @click="onSubmit(false)" >保存运单</el-button>
             </el-col>
         </el-row>
     </div>
