@@ -472,22 +472,26 @@ export default {
 
   methods: {
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
-    
-      // 尾行合计 配置 需要跨列，进行动态处理。
-      if(column.hasOwnProperty('property') && this.sumConfig && column.property ==   this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
-        //  console.log({ row, column, rowIndex, columnIndex })
-          // return [1,1]
-          return {
-            rowspan: 1,
-            colspan: this.sumConfig.sum_text_col_span
-          }
-          // [1, this.sumConfig.sum_text_col_span];
-      }else{
-          return {
-            rowspan: 1,
-            colspan: 1
-          }
+      if(row.hasOwnProperty('_data_type') && row['_data_type'] == 'sumRow'){
+        let colspan = this.sumConfig.sum_text_col_span
+        // 尾行合计 配置 需要跨列，进行动态处理。
+        if(column.hasOwnProperty('property') && this.sumConfig && column.property ==   this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
+          //  console.log({ row, column, rowIndex, columnIndex })
+            // return [1,1]
+
+            return {
+              rowspan: 1,
+              colspan: colspan
+            }
+            // [1, this.sumConfig.sum_text_col_span];
+        }else if(columnIndex < colspan){
+            return {
+              rowspan: 0,
+              colspan: 0
+            }
+        }
       }
+      
     },
     getColumnsShow(row){
        if(row.hasOwnProperty('_data_type') && row['_data_type' ]== 'sumRow'){
@@ -738,7 +742,9 @@ export default {
       // let more
       // if(header)
       if(key_col == 'waybill_amount_to_pay'){
-        // console.log(key_col,row[key_col],ops,str)
+        console.log('--',key_col,row[key_col],ops,str)
+      }else{
+        console.log(key_col,row[key_col],ops,str)
       }
       return ops
 
