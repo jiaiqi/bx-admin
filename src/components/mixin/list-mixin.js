@@ -690,9 +690,7 @@ export default {
 
         }
         // return str;
-        if(key_col == 'waybill_amount_to_pay'){
-          console.log(key_col,row[key_col],str)
-        }
+        
         ops =  str;
       } else {
         let resultValue = ''
@@ -739,6 +737,9 @@ export default {
       
       // let more
       // if(header)
+      if(key_col == 'waybill_amount_to_pay'){
+        // console.log(key_col,row[key_col],ops,str)
+      }
       return ops
 
     },
