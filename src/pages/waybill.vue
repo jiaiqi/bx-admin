@@ -854,6 +854,13 @@ import formList from "@/components/common/form-list.vue";
                                 "create_user_disp": data.create_user_disp,
                                 "waybill_amount_to_pay":data.waybill_amount_to_pay,
                                 "goods_label_count":this.pages,
+                                // 下面是之前没有提交的字段 0706 16:24
+                                waybill_total_expense:data.waybill_total_expense,
+                                agency_fund:data.agency_fund,
+                                advance_payment:data.advance_payment,
+                                pay_amount:data.pay_amount,
+                                bill_pay_party:data.bill_pay_party,
+                                waybill_amount_to_pay_arrived:data.waybill_amount_to_pay_arrive
                             }
                         ]
                     }
