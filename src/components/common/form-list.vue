@@ -14,6 +14,7 @@
                     :label="header.label"
                     header-align="center"
                     :width="hIndex == 0 ? '400px' : 'auto'"
+                    min-width="150px"
                     size='mini'
                     v-for="(header,hIndex) in headers" :key="hIndex"
                     >
