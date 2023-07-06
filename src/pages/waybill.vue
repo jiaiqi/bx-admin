@@ -58,6 +58,8 @@
   <script>
 
   import _ from "lodash";
+  import momentLib from "moment";
+
   import "@/assets/common.scss";
   let $ = require("jquery");
   
@@ -831,7 +833,7 @@ import formList from "@/components/common/form-list.vue";
                         "data": [
                             {
                                 "wb_no": data.wb_no,
-                                "carrier_get_date":data.carrier_get_date,
+                                "carrier_get_date":data.carrier_get_date || momentLib().format("YYYY-MM-DD"),
                                 "goods_desc": data.goods_desc,
                                 "trans_goods_item_count": data.trans_goods_item_count,
                                 "trans_goods_weight_t":data.trans_goods_weight_t,
