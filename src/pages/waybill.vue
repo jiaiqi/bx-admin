@@ -969,7 +969,7 @@ import formList from "@/components/common/form-list.vue";
                 }
             }
 
-            this.select('srviot_print_dev_select',req.conditon,null, null, null, null, 'liot', null, req.colNames, req.relation_condition).then((response) => {
+            this.select('srviot_print_dev_select',req.condition,null, null, null, null, 'liot', null, req.colNames, req.relation_condition).then((response) => {
                 // console.log(response.data,response.data.state)
                     if (response.data.state == 'SUCCESS') {
                         this.printer = response.data.data
@@ -979,7 +979,7 @@ import formList from "@/components/common/form-list.vue";
         
                     }
             }) //= function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth)
-            this.select('srviot_print_dev_select',bqreq.conditon,null, null, null, null, 'liot', null, bqreq.colNames, bqreq.relation_condition).then((response) => {
+            this.select('srviot_print_dev_select',bqreq.condition,null, null, null, null, 'liot', null, bqreq.colNames, bqreq.relation_condition).then((response) => {
                 // console.log(response.data,response.data.state)
                     if (response.data.state == 'SUCCESS') {
                         this.printertag = response.data.data

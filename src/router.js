@@ -318,7 +318,7 @@ let routes=[
     name:'video',
     component: video
   },
-  { // 摄像头视频播放页
+  { // 运单打印
     path:'/waybill/:type',
     name:'waybill',
     component: waybill
