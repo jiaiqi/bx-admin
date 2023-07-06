@@ -643,12 +643,16 @@ import formList from "@/components/common/form-list.vue";
                 let data = this.fieldModels
                 for(let i in this.fields){
                     if(triggerMethods.hasOwnProperty(this.fields[i].info.name)){
-                        let value = eval("var zz=" + triggerMethods[this.fields[i].info.name].func + "(data); zz");
+                        try {
+                            let value = eval("var zz=" + triggerMethods[this.fields[i].info.name].func + "(data); zz");
                             console.log(triggerMethods[this.fields[i].info.name].columns,value)
-                        value = value == null ? '' : value
-                        this.$set(this.fields[i],'model',value)
-                        // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
-                        this.$set(this.fieldModels,this.fields[i].info.name,value)
+                            value = value == null ? '' : value
+                            this.$set(this.fields[i],'model',value)
+                            // self.$refs[triggerColName][0].setSrvVal(field.model[trigger.refedCol])
+                            this.$set(this.fieldModels,this.fields[i].info.name,value)
+                        } catch (error) {
+                            console.error(error)
+                        }
                     }
                 }
             }
