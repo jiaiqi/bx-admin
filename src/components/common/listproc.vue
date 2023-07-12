@@ -9,7 +9,7 @@
 
 
       <el-tab-pane :label="ccNum" name="cc" v-if="showCcTab">
-        <!-- pages_attribute -->
+        <!-- pages_attribute 少送标签-->
           <list  ref="cc" list-type="cc" name="cc" :service="service_name" @gridData-change="setTip" @list-loaded="timerRefresh"> </list>
       </el-tab-pane>
       
