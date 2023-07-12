@@ -1651,7 +1651,8 @@ export default {
           this.listType == "myall" ||
           this.listType == "processed"||
           this.listType == "all"||
-          this.listType == "userall"
+          this.listType == "userall"||
+          this.listType == "cc"
         ) {
           //加载表格数据
           return this.selectproc(
@@ -2144,7 +2145,8 @@ export default {
         this.listType == "myall" ||
         this.listType == "processed" ||
         this.listType == "all"||
-        this.listType == "userall"
+        this.listType == "userall"||
+        this.listType == "cc"
         
       ) {
         use_type = "proclist";
