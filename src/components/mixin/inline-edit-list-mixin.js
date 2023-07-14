@@ -13,9 +13,9 @@ export default {
       allFields: {},
     };
   },
-  mounted () {
-    if(this.listType==='updatechildlist'){
-      this.onInlineEditing = true
+  mounted() {
+    if (this.listType === "updatechildlist") {
+      this.onInlineEditing = true;
     }
   },
   computed: {
@@ -138,7 +138,7 @@ export default {
           let number = Number.parseFloat(fieldSrvVal);
           return number <= rule.max;
         } else {
-          let text = fieldSrvVal +'';
+          let text = fieldSrvVal + "";
           return !text || text.length <= rule.max;
         }
       } else if (rule.hasOwnProperty("min")) {
@@ -146,7 +146,7 @@ export default {
           let number = Number.parseFloat(fieldSrvVal);
           return number >= rule.min;
         } else {
-          let text = fieldSrvVal+'';
+          let text = fieldSrvVal + "";
           return !text || text.length >= rule.min;
         }
       } else {
@@ -254,7 +254,7 @@ export default {
         let row = rowData;
         let moment = momentLib;
         let ret = eval("var zz=" + func + "(row, vm); zz");
-        console.log('evalFun:',ret,column,fieldInfo,rowData);
+        console.log("evalFun:", ret, column, fieldInfo, rowData);
         if (ret === "Invalid date") {
           return;
         }
@@ -280,13 +280,16 @@ export default {
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
-          if (key && key.indexOf("_") !== 0 || ['_guid','_dirtyFlags'].includes(key)) {
+          if (
+            (key && key.indexOf("_") !== 0) ||
+            ["_guid", "_dirtyFlags"].includes(key)
+          ) {
             obj[key] = item[key];
           }
         }
         if (rowIndex === index && e.newValue !== e.oldValue) {
           let result = true;
-          if(e.oldValue !== undefined){
+          if (e.oldValue !== undefined) {
             // 不是刚添加的数据
             result = this.handleValidation(e.column, item, index, e.newValue);
           }
@@ -321,14 +324,17 @@ export default {
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
-          if (key && key.indexOf("_") !== 0 || ['_guid','_dirtyFlags'].includes(key)) {
+          if (
+            (key && key.indexOf("_") !== 0) ||
+            ["_guid", "_dirtyFlags"].includes(key)
+          ) {
             obj[key] = item[key];
           }
         }
         const srv_cols = this.updateV2?.srv_cols;
-        if(Array.isArray(srv_cols)&&srv_cols.length>0){
-          srv_cols.forEach(col=>{
-            const key = col?.columns
+        if (Array.isArray(srv_cols) && srv_cols.length > 0) {
+          srv_cols.forEach((col) => {
+            const key = col?.columns;
             if (key && key.indexOf("_") !== 0) {
               item[key] =
                 this.handleRedundantOnInlineFieldChange(key, item, this) ||
@@ -341,23 +347,27 @@ export default {
                 // this.$set(item, key, item[key]);
               }
             }
-          })
+          });
         }
         return obj;
       });
 
-      this.gridData = this.newGridData.map(item=>{
-        const obj = {}
+      this.gridData = this.newGridData.map((item, index) => {
+        const obj = { ...this.gridData[index] };
         for (const key in item) {
           // if (key && key.indexOf("_") !== 0) {
-            obj[key] = item[key];
-            if(item[key] && typeof item[key]==='object' && item[key]['newValue']){
-              obj[key] = item[key]['newValue'];
-            }
+          obj[key] = item[key] || null;
+          if (
+            item[key] &&
+            typeof item[key] === "object" &&
+            item[key]["newValue"]
+          ) {
+            obj[key] = item[key]["newValue"];
+          }
           // }
         }
-        return obj
-      })
+        return obj;
+      });
     },
     getColumnMinWidth(item) {
       if (
@@ -384,7 +394,9 @@ export default {
     async getColV2() {
       const response = await this.loadColsV2(
         this.cfgJson?.list_edit_srv,
-        "update",null,this.mainService
+        "update",
+        null,
+        this.mainService
       );
       const respData = response.body.data;
       this.updateV2 = respData;
