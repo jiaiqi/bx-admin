@@ -7,6 +7,13 @@
         <list  ref="wait" list-type="wait" name="wait" :service="service_name" @gridData-change="setTip" @list-loaded="timerRefresh"> </list>
       </el-tab-pane>
 
+
+      <el-tab-pane :label="ccNum" name="cc" v-if="showCcTab">
+        <!-- pages_attribute 少送标签-->
+          <list  ref="cc" list-type="cc" name="cc" :service="service_name" @gridData-change="setTip" @list-loaded="timerRefresh"> </list>
+      </el-tab-pane>
+      
+
       <el-tab-pane :label="myallNum" name="myall">
 
         <list  ref="myall" list-type="myall" name="myall" :service="service_name" @gridData-change="setTip" @list-loaded="timerRefresh"> </list>
@@ -49,7 +56,8 @@ export default {
       mineNum: "",
       myallNum: "",
       waitNum: "",
-      allNum: ""
+      allNum: "",
+      ccNum:''
     };
   },
   props:{
@@ -57,6 +65,22 @@ export default {
       type:String,
       default:''
     },
+  },
+  computed:{
+     showCcTab(){
+       let config = sessionStorage.getItem('pages_attribute')
+       let is = false
+       try {
+        config = JSON.parse(config)
+        if(config.hasOwnProperty('show_cc_tab') !== -1 && config['show_cc_tab'] == '是'){
+            is = true
+        }
+       } catch (error) {
+        
+       }
+
+       return is
+     }
   },
   mounted() {
     if(this.service){
@@ -104,7 +128,15 @@ export default {
     
         
           //this.myallNum = gridData.page.total;
-        }
+        }else if (listProcType == "cc") {
+            this.ccNum = "抄送给我(" + gridData.page.total + ")";
+            if( gridData.page.total>0){
+                  this.ccNum = " 抄送给我(" + gridData.page.total + ")";
+            }
+
+
+            //this.myallNum = gridData.page.total;
+            }
       }
       
     }
