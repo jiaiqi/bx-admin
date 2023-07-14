@@ -52,11 +52,11 @@
           let data = this.buildValuesFromConf(conf)
           query.data = data ? [data] : []
         }
-        if (query.serviceName.endsWith("add") || query.serviceName.endsWith("update")) {
+        if (query?.serviceName?.endsWith("add") || query.serviceName?.endsWith("update")) {
           if (!query.data || query.data.length == 0) {
             return null;
           }
-        } else if (query.serviceName.endsWith("delete") || query.serviceName.endsWith("update")) {
+        } else if (query?.serviceName?.endsWith("delete") || query?.serviceName?.endsWith("update")) {
           if (!query.condition || query.condition.length == 0) {
             return null;
           }
@@ -115,7 +115,13 @@
 
       run(e,kval,isDraft) {
         // let this = this
-        let queries = this.buildQuery(this);
+        let queries = []
+        try {
+          queries = this.buildQuery(this);
+        } catch (error) {
+          console.log(error);
+          debugger
+        }
         /**
            * 保存草稿独有属性 draft
            */

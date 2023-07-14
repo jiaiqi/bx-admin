@@ -34,7 +34,8 @@ export default {
     },
     canInlineEdit() {
       return (
-        this.cfgJson?.list_edit_srv && this.cfgJson.options?.includes("列表列编辑")  
+        this.cfgJson?.list_edit_srv &&
+        this.cfgJson.options?.includes("列表列编辑")
       );
     },
     submitButton() {
@@ -81,7 +82,6 @@ export default {
         // console.log("eval Field Rule",fieldSrvVal)
         return (
           fieldSrvVal !== null &&
-          fieldSrvVal !== undefined &&
           fieldSrvVal !== ""
         );
       } else if (rule.hasOwnProperty("js_validate")) {
@@ -299,8 +299,8 @@ export default {
             this.$set(item, e.column, e.newValue);
           } else {
             item[e.column] = e.oldValue;
-            obj[e.column] = { newValue: e.oldValue, oldValue: e.oldValue };
-            this.$set(item, e.column, e.oldValue);
+            obj[e.column] = { newValue: e.oldValue, oldValue:undefined };
+            this.$set(item, e.column,undefined);
             let value = null;
             let result = this.handleValidation(
               e.column,
@@ -310,6 +310,9 @@ export default {
             );
             if (result !== false) {
               value = e.oldValue;
+            } else {
+              item[e.column] = undefined;
+              this.$set(item, e.column, undefined);
             }
             this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
               result: false,
@@ -437,7 +440,7 @@ export default {
         this.cfgJson = JSON.parse(e);
         if (
           this.cfgJson?.list_edit_srv &&
-          this.cfgJson.options?.includes('列表列编辑')
+          this.cfgJson.options?.includes("列表列编辑")
         ) {
           this.getColV2();
           if (this.listType === "addchildlist") {
