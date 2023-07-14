@@ -91,7 +91,7 @@ export default {
           let result = null;
           if (rule.js_validate) {
             let js_validate = rule.js_validate;
-            result = eval("(" + js_validate + ")(data,approval)");
+            result = eval("(" + js_validate + ")(data)");
             if (typeof result === "object") {
               if (
                 result.hasOwnProperty("type") &&

@@ -103,6 +103,8 @@ import inlineEditList from '@/components/common/inline-edit-list.vue'
 // const excelEditView = ()=>import("@/components/common/luckysheet.vue")
 import waybill from '@/pages/waybill.vue'
 
+import inForm from '@/pages/inform.vue'
+
 
 // pages
 Vue.use(Router);
@@ -395,6 +397,10 @@ routes.push( {
   {
     path: '/inline-edit-list/:serviceName',
     component: inlineEditList
+  },
+  {
+    path: '/inform',
+    component: inForm
   },
   // storeMonitor
 
