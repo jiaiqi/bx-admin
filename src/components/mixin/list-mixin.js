@@ -543,14 +543,14 @@ export default {
             let isNext = true
             for(let i in this.gridDataRun){
                 if(Number(i) > rowIndex && isNext && (this.gridDataRun[i][colName] +'') == (iValue+'')){
-                  console.log('rowIndex',colName,iValue,this.gridDataRun[i][colName]+'',allRows)
+                  // console.log('rowIndex',colName,iValue,this.gridDataRun[i][colName]+'',allRows)
                   allRows = (allRows + 1)
                 }else if(Number(i) > rowIndex){
                   isNext = false
                   
                 }
                 
-                console.log(i,rowIndex,Number(i) > rowIndex,allRows,(iValue+''),(this.gridDataRun[i][colName] +'') == (iValue+''))
+                // console.log(i,rowIndex,Number(i) > rowIndex,allRows,(iValue+''),(this.gridDataRun[i][colName] +'') == (iValue+''))
             }
             rowspan = allRows
             colspan = 1
