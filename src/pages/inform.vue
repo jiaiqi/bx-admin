@@ -5,6 +5,7 @@
         </div>
         <div class="content" v-html="content.context"></div>
         <div class="attachment">
+            <div>附件：</div>
             <div class="attachment-item" v-for="item in attachmentList">
                 <a :href="serviceApi().downloadFile + item.fileurl">{{ item.src_name }}</a>
             </div>
@@ -138,7 +139,7 @@ export default {
         padding: 46px 79px;
     }
     .attachment{
-        padding: 20px 75px;
+        padding:  0 75px 20px ;
     }
 }
 </style>
