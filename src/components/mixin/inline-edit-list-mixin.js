@@ -34,7 +34,7 @@ export default {
     },
     canInlineEdit() {
       return (
-        this.cfgJson?.list_edit_srv && this.cfgJson.options === "列表列编辑"
+        this.cfgJson?.list_edit_srv && this.cfgJson.options?.includes("列表列编辑")  
       );
     },
     submitButton() {
@@ -437,7 +437,7 @@ export default {
         this.cfgJson = JSON.parse(e);
         if (
           this.cfgJson?.list_edit_srv &&
-          this.cfgJson.options === "列表列编辑"
+          this.cfgJson.options?.includes('列表列编辑')
         ) {
           this.getColV2();
           if (this.listType === "addchildlist") {
