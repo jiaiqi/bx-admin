@@ -305,20 +305,29 @@ export default {
   },
 
   computed: {
-        groupByLayoutRun:function(){
-            let req = this.moreConfig && this.moreConfig.hasOwnProperty("groupByLayout") ? this.moreConfig.groupByLayout : false
-            let groupConfig = req.group || []
-            
-            let reqData = this.groupByLayoutData
-            for(let cfg of groupConfig){
-                for(let val in reqData){
-                    if(val == cfg.aliasName || val == cfg.colName){
-                        cfg["value"] = reqData[val]
-                    }
+    listCellsTextDispWarp(){
+        let config = false
+        if(this.cfgJson && this.cfgJson.hasOwnProperty('list_style_json') && this.cfgJson.list_style_json && this.cfgJson.list_style_json.hasOwnProperty('list_cells_text_disp')){
+          config = this.cfgJson.list_style_json.list_cells_text_disp == '自动换行'
+        }
+
+        return config
+    },
+
+    groupByLayoutRun:function(){
+        let req = this.moreConfig && this.moreConfig.hasOwnProperty("groupByLayout") ? this.moreConfig.groupByLayout : false
+        let groupConfig = req.group || []
+        
+        let reqData = this.groupByLayoutData
+        for(let cfg of groupConfig){
+            for(let val in reqData){
+                if(val == cfg.aliasName || val == cfg.colName){
+                    cfg["value"] = reqData[val]
                 }
             }
-            return groupConfig
-        },
+        }
+        return groupConfig
+    },
     draftRun:function(){
         if(this.activeTabName === 'draft' || ((this.listType === 'updatechildlist' || this.listType === 'addchildlist'|| this.listType === 'detaillist') && this.pageIsDraft === 'draft')){
           return true
@@ -471,6 +480,18 @@ export default {
   },
 
   methods: {
+    cellStyle(){
+       let style={}
+       if(this.listCellsTextDispWarp){
+          //  style = {
+          //   'overflow': 'auto',
+          //   'text-overflow': 'ellipsis',
+          //   '-webkit-line-clamp': 'initial',
+          //     'line-clamp': 'initial'
+          //  }
+       }
+       return style
+    },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
       if(row.hasOwnProperty('_data_type') && row['_data_type'] == 'sumRow'){
         let colspan = this.sumConfig.sum_text_col_span
@@ -490,6 +511,63 @@ export default {
               colspan: 0
             }
         }
+      }else{
+        
+        let rowspan = 1
+        let colspan = 1
+        let rowSpanCols = []
+        let colName = column.property
+        if(this.cfgJson && this.cfgJson.hasOwnProperty('list_style_json') && this.cfgJson.list_style_json && this.cfgJson.list_style_json.hasOwnProperty('list_auto_row_span_cols') && this.cfgJson.list_style_json.list_auto_row_span_cols){
+          rowSpanCols = this.cfgJson.list_style_json.list_auto_row_span_cols.split(',')
+        }
+        let iValue = this.gridDataRun[rowIndex][colName]+''  // 值
+        if(rowSpanCols && rowSpanCols.indexOf(colName) !== -1){
+          let lastValue = ''
+          let firstValue = ''
+          if(rowIndex !== 0 && rowIndex < this.gridDataRun.length - 1){
+            firstValue = this.gridDataRun[rowIndex-1][colName] + '' // 前一行
+            lastValue = this.gridDataRun[rowIndex+1][colName] + '' // 前一行
+          }else if(rowIndex == 0){
+            // 当前是第一行数据
+            firstValue = undefined // 前一行
+            lastValue = this.gridDataRun[rowIndex+1][colName]+'' // 前一行
+          }else if(rowIndex == this.gridDataRun.length - 1){
+            // 当前是最后一行
+            firstValue = this.gridDataRun[rowIndex-1][colName]+'' // 前一行
+            lastValue = undefined // 前一行
+          }
+          
+
+          if(firstValue !== iValue){
+            let allRows = 1
+            let isNext = true
+            for(let i in this.gridDataRun){
+                if(Number(i) > rowIndex && isNext && (this.gridDataRun[i][colName] +'') == (iValue+'')){
+                  console.log('rowIndex',colName,iValue,this.gridDataRun[i][colName]+'',allRows)
+                  allRows = (allRows + 1)
+                }else if(Number(i) > rowIndex){
+                  isNext = false
+                  
+                }
+                
+                console.log(i,rowIndex,Number(i) > rowIndex,allRows,(iValue+''),(this.gridDataRun[i][colName] +'') == (iValue+''))
+            }
+            rowspan = allRows
+            colspan = 1
+          }else if(firstValue == iValue){
+            rowspan = 0
+            colspan = 0
+          }
+          
+          
+          // console.log('span Method:',rowIndex,colName,iValue,'跨行：',rowspan)
+          return {
+            rowspan: rowspan,
+            colspan: colspan
+          }
+        }
+        
+
       }
       
     },

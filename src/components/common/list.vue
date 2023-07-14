@@ -87,14 +87,21 @@
             <!-- :show-summary="sumRowData ? true : false"
             :summary-method="getSummaries" -->
             <!-- v-if="(item.show && (!item.evalVisible || item.evalVisible()))" ---↓-->
-            <el-table-column v-for="(item, index) in gridHeader" :key="index" header-align="left"
+            <el-table-column v-for="(item, index) in gridHeader" 
+              :key="index" header-align="center"
               v-if="getGridHeaderDispExps(item, listMainFormDatas)"
               :width="item.width ? item.width : getListShowFileList(item) ? item.list_min_width ? item.list_min_width : 180 : ''"
-              :filter-method="item.filters ? filterHandler : null" :prop="item.column" :align="item.align"
+              :filter-method="item.filters ? filterHandler : null" :prop="item.column" 
+              :align="item.align"
               :fixed="item.rowFixed ? true : null"
-              :show-overflow-tooltip="getListShowFileList(item) === true ? false : true" :label="item.label"
-              :min-width="getColumnMinWidth(item)?getColumnMinWidth(item):item.list_min_width + 'px'" :filters="item.filters" :column-key="item.column"
-              :sortable="item.sortable && !isMem() ? 'custom' : false">
+              :show-overflow-tooltip="getListShowFileList(item) === true ? false : !listCellsTextDispWarp" 
+              :label="item.label"
+              :min-width="getColumnMinWidth(item)?getColumnMinWidth(item):item.list_min_width + 'px'" 
+              :filters="item.filters" 
+              :column-key="item.column"
+              :sortable="item.sortable && !isMem() ? 'custom' : false"
+              :cell-style="cellStyle"
+              >
               <template slot-scope="scope">
                 <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
                    <inline-edit-list :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange($event,scope.$index)"></inline-edit-list>
@@ -151,9 +158,9 @@
                     <pre>{{ formatValue(scope.row, item) }}</pre>
 
                   </div>
-                  <div v-else>
+                  <template v-else>
                     <a v-if="item.linkUrlFunc" v-show="scope.row[item.column]"
-                      style="white-space: normal; color: dodgerblue; cursor: pointer;"
+                      style="white-space: nowrap; color: dodgerblue; cursor: pointer;"
                       @click="onLinkClicked(scope.row, item)">
                       {{ formatValue(scope.row, item) }}
                     </a>
@@ -174,7 +181,7 @@
 
                     <span v-else>{{ formatValue(scope.row, item) }}</span>
 
-                  </div>
+                  </template>
 
                 </template>
               </template>
