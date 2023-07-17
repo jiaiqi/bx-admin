@@ -5,7 +5,7 @@
       @change="onChange" placeholder="选择日期">
     </el-date-picker>
     <el-input-number v-model.number="value" @change="onChange" @blur="onBlur" :step="step" :precision="precision"
-      size="mini" :min="min" :max="max" v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
+      size="mini" :min="min" :max="max" :maxlength="maxlength" v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
     <el-input v-model="value" @change="onChange" @blur="onBlur" placeholder="" size="mini"
       v-else-if="editorType === 'string'"></el-input>
   </div>
@@ -37,7 +37,8 @@ export default {
       value: undefined,
       oldValue: undefined,
       isChange: false,
-      isError: false
+      isError: false,
+      customPrecision: null
     };
   },
   computed: {
@@ -54,18 +55,50 @@ export default {
         this.field.validators && this.field.validators.indexOf("required") > -1
       );
     },
+    maxlength(){
+      let maxlength = 99999 
+      if (this.field.col_type?.includes('decimal')) {
+        const str = this.field.col_type;
+        const regex = /decimal\((\d+),(\d+)\)/;
+        const match = str.match(regex)
+        maxlength = match[1]
+      }
+      return maxlength
+    },
     precision() {
-      return this.editorType == "digit" ? 2 : 0;
+      let precision =  this.editorType == "digit" ? 2 : 0;
+      if (this.field.col_type?.includes('decimal')) {
+        const str = this.field.col_type;
+        const regex = /decimal\((\d+),(\d+)\)/;
+        const match = str.match(regex)
+        precision = match[2]*1
+      }
+      return precision
     },
     step() {
-      return this.editorType == "digit" ? 0.1 : 1;
+      let step =  this.editorType == "digit" ? 0.1 : 1;
+      if (this.field.col_type?.includes('decimal')) {
+        const str = this.field.col_type;
+        const regex = /decimal\((\d+),(\d+)\)/;
+        const match = str.match(regex)
+        step = 1 / 10**match[2]
+      }
+      return step
     },
     editorType() {
       let type = "";
-      const colType = this.field.col_type || "string";
+      let colType = this.field.col_type || "string";
+      if (this.field.col_type?.includes('decimal')) {
+        colType = 'decimal'
+        // const str = this.field.col_type;
+        // const regex = /decimal\((\d+),(\d+)\)/;
+        // const match = str.match(regex)
+
+      }
       switch (colType) {
         case "Money":
         case "Float":
+        case "decimal":
           type = "digit";
           break;
         case "Integer":
