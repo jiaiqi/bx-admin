@@ -1,11 +1,11 @@
 <template>
-  <div class="inline-edit-list">
+  <div class="inline-edit-list el-form-item" :class="{ 'is-error': isError }">
     <span class="text-red" v-if="isRequired">*</span>
     <el-date-picker v-model="value" type="date" size="mini" format="yyyy 年 MM 月 dd 日" v-if="editorType === 'Date'"
       @change="onChange" placeholder="选择日期">
     </el-date-picker>
-    <el-input-number v-model.number="value" @change="onChange" @blur="onBlur" :step="step" :precision="precision" size="mini" :min="min"
-      :max="max" v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
+    <el-input-number v-model.number="value" @change="onChange" @blur="onBlur" :step="step" :precision="precision"
+      size="mini" :min="min" :max="max" v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
     <el-input v-model="value" @change="onChange" @blur="onBlur" placeholder="" size="mini"
       v-else-if="editorType === 'string'"></el-input>
   </div>
@@ -36,7 +36,8 @@ export default {
       fieldData: null,
       value: undefined,
       oldValue: undefined,
-      isChange: false
+      isChange: false,
+      isError: false
     };
   },
   computed: {
@@ -44,7 +45,6 @@ export default {
       return this.fieldData?.info?.rules?.find((item) => item.name === "min")
         ?.min;
     },
-
     max() {
       return this.fieldData?.info?.rules?.find((item) => item.name === "max")
         ?.max;
@@ -91,6 +91,7 @@ export default {
   methods: {
     showValid({ result, message, name, value }) {
       if (result === false) {
+        this.isError = true
         // this.value = value
         // this.$set(this, "value", value);
       }
@@ -126,6 +127,7 @@ export default {
         id: this.data.id,
         isChange: true
       }
+      this.isError = false
       this.$emit("on-change", obj);
     },
     buildField() {
@@ -147,6 +149,7 @@ export default {
           id: this.data.id,
           isChange: this.isChange
         }
+        this.isError = false
         this.$emit("on-change", obj);
       }
     },

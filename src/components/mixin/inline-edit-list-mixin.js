@@ -319,10 +319,9 @@ export default {
             //   item[e.column] = undefined;
             //   this.$set(item, e.column, undefined);
             // }
-            // this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
-            //   result: false,
-            //   value,
-            // });
+            this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
+              result: false,
+            });
           }
         }
         return obj;
