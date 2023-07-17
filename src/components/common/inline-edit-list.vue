@@ -1,33 +1,13 @@
 <template>
   <div class="inline-edit-list">
     <span class="text-red" v-if="isRequired">*</span>
-    <el-date-picker
-      v-model="value"
-      type="date"
-      size="mini"
-      format="yyyy 年 MM 月 dd 日"
-      v-if="editorType === 'Date'"
-      @change="onChange"
-      placeholder="选择日期"
-    >
+    <el-date-picker v-model="value" type="date" size="mini" format="yyyy 年 MM 月 dd 日" v-if="editorType === 'Date'"
+      @change="onChange" placeholder="选择日期">
     </el-date-picker>
-    <el-input-number
-      v-model.number="value"
-      @change="onChange"
-      :step="step"
-      :precision="precision"
-      size="mini"
-      :min="min"
-      :max="max"
-      v-else-if="editorType === 'number' || editorType === 'digit'"
-    ></el-input-number>
-    <el-input
-      v-model="value"
-      @change="onChange"
-      placeholder=""
-      size="mini"
-      v-else-if="editorType === 'string'"
-    ></el-input>
+    <el-input-number v-model.number="value" @change="onChange" @blur="onBlur" :step="step" :precision="precision" size="mini" :min="min"
+      :max="max" v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
+    <el-input v-model="value" @change="onChange" @blur="onBlur" placeholder="" size="mini"
+      v-else-if="editorType === 'string'"></el-input>
   </div>
 </template>
 
@@ -56,6 +36,7 @@ export default {
       fieldData: null,
       value: undefined,
       oldValue: undefined,
+      isChange: false
     };
   },
   computed: {
@@ -110,7 +91,8 @@ export default {
   methods: {
     showValid({ result, message, name, value }) {
       if (result === false) {
-        this.$set(this, "value", value);
+        // this.value = value
+        // this.$set(this, "value", value);
       }
     },
     onChange(e) {
@@ -127,6 +109,7 @@ export default {
           break;
       }
       this.value = val;
+      this.isChange = true
       // this.$emit("on-change", {
       //   newValue: val,
       //   oldValue: this.value,
@@ -136,6 +119,14 @@ export default {
     },
     onBlur(e) {
       console.log("on blur:", e);
+      const obj = {
+        newValue: this.value,
+        oldValue: this.oldValue,
+        column: this.field.columns,
+        id: this.data.id,
+        isChange: true
+      }
+      this.$emit("on-change", obj);
     },
     buildField() {
       let fi = new FieldInfo(this.field, "update");
@@ -154,6 +145,7 @@ export default {
           oldValue: oldValue,
           column: this.field.columns,
           id: this.data.id,
+          isChange: this.isChange
         }
         this.$emit("on-change", obj);
       }

@@ -88,6 +88,7 @@ export default {
         if (this.allFields[fieldName].evalXIf()) {
           //如果显示当前字段
           var data = srvValFormModel;
+          data[fieldName] = fieldSrvVal
           let result = null;
           if (rule.js_validate) {
             let js_validate = rule.js_validate;
@@ -277,6 +278,7 @@ export default {
     },
     onInlineChange(e, rowIndex) {
       // 校验
+      let isValid = true
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
         for (const key in item) {
@@ -287,10 +289,11 @@ export default {
             obj[key] = item[key];
           }
         }
-        if (rowIndex === index && e.newValue !== e.oldValue) {
+        if (rowIndex === index && (e.newValue !== e.oldValue||e.isChange===true)) {
           let result = true;
-          if (e.oldValue !== undefined) {
-            // 不是刚添加的数据
+          if (e.isChange===true) {
+          // if (e.oldValue !== undefined || e.isChange===true) {
+            // 不是刚添加的数据 手动修改触发
             result = this.handleValidation(e.column, item, index, e.newValue);
           }
           if (result !== false) {
@@ -298,31 +301,35 @@ export default {
             item[e.column] = e.newValue;
             this.$set(item, e.column, e.newValue);
           } else {
-            item[e.column] = e.oldValue;
-            obj[e.column] = { newValue: e.oldValue, oldValue:undefined };
-            this.$set(item, e.column,undefined);
-            let value = null;
-            let result = this.handleValidation(
-              e.column,
-              item,
-              index,
-              e.oldValue
-            );
-            if (result !== false) {
-              value = e.oldValue;
-            } else {
-              item[e.column] = undefined;
-              this.$set(item, e.column, undefined);
-            }
-            this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
-              result: false,
-              value,
-            });
+            isValid = false
+            // item[e.column] = e.oldValue;
+            // obj[e.column] = { newValue: e.oldValue, oldValue:undefined };
+            // this.$set(item, e.column,undefined);
+            // let value = null;
+            // let result = this.handleValidation(
+            //   e.column,
+            //   item,
+            //   index,
+            //   e.oldValue
+            // );
+            // if (result !== false) {
+            //   value = e.oldValue;
+            //   this.$set(item, e.column, value);
+            // } else {
+            //   item[e.column] = undefined;
+            //   this.$set(item, e.column, undefined);
+            // }
+            // this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
+            //   result: false,
+            //   value,
+            // });
           }
         }
         return obj;
       });
-
+      if(isValid===false){
+        return
+      }
       // 处理 计算
       this.newGridData = this.gridData.map((item, index) => {
         let obj = {};
@@ -356,7 +363,8 @@ export default {
       });
 
       this.gridData = this.newGridData.map((item, index) => {
-        const obj = { ...this.gridData[index] };
+        const obj = { };
+        // const obj = { ...this.gridData[index] };
         for (const key in item) {
           // if (key && key.indexOf("_") !== 0) {
           obj[key] = item[key] || null;
