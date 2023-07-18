@@ -90,6 +90,29 @@ export default {
         // console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm); zz");
         // console.log('计算结果',fieldInfo.label,ret)
+        // 有返回calc_rule的话 使用calc_rule的逻辑来计算
+        const calc_rule = fieldInfo.redundant.calc_rule
+        if (
+          calc_rule?.type === "求和" &&
+          calc_rule?.constraint_name &&
+          calc_rule?.child_col
+        ) {
+          if (row?._children && row._children[calc_rule.constraint_name]) {
+            ret = row._children[calc_rule.constraint_name].reduce(
+              (acc, cur) => {
+                const val = Number(cur[calc_rule.child_col]);
+                if (!isNaN(val)) {
+                  acc = (acc * 1000 + val * 1000) / 1000;
+                }
+                return acc;
+              },
+              0
+            );
+          } else {
+            ret = 0;
+          }
+        }
+
         if (ret === 'Invalid date') {
           return
         }
