@@ -658,7 +658,7 @@ function init_util() {
   };
 
   /**查询*/
-  Vue.prototype.selectproc = function (service_name, condition, page, order, proc_type, pageType) {
+  Vue.prototype.selectproc = function (service_name, condition, page, order, proc_type, pageType,vpage_no) {
     //var url = this.service_api.select;
 
     var url = this.getServiceUrl("select", service_name);
@@ -668,7 +668,8 @@ function init_util() {
       "colNames": ['*'],
       "condition": condition,
       "page": page,
-      "order": order
+      "order": order,
+      "vpage_no":vpage_no
     };
     if (pageType && pageType === 'list_page') {
       params['query_source'] = "list_page"

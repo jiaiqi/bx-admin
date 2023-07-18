@@ -927,25 +927,28 @@ export default {
       }
       let isShow = []
       if(btns.length > 0){
-        for(let item of btns){
+        for (let item of btns) {
           if (item["_rowDisp"]) {
             if (item["_rowDisp"][index] === 1) {
               isShow.push(item);
             }
+          } else {
+            try {
+              var disp_exps = item.disp_exps;
+              if (
+                disp_exps != undefined &&
+                disp_exps != "" &&
+                disp_exps != null
+              ) {
+                result = eval(disp_exps);
+                if (result !== false) {
+                  isShow.push(item);
+                }
+              } else if (item.permission) {
+                isShow.push(item);
+              }
+            } catch (err) {}
           }
-          // try {
-          //   var disp_exps = item.disp_exps;
-          //   if (disp_exps != undefined && disp_exps != "" && disp_exps != null) {
-          //     result = eval(disp_exps);
-          //     if(result !== false){
-          //       isShow.push(item)
-          //     }
-          //   }else if(item.permission){
-          //     isShow.push(item)
-          //   }
-          // } catch (err) {
-           
-          // }
         }
 
         if(isShow.length !== 0){
@@ -1762,7 +1765,8 @@ export default {
             this.showPagination? page : null,
             this.order,
             this.listType,
-            "list_page"
+            "list_page",
+            this.vpageNo
           ).then(response => {
             // console.log("responseresponse",response)
             var listData = response.body.data;

@@ -127,7 +127,7 @@
             v-if="getDispExps(button, scope.row) && button.permission"
             v-show="
               button.button_type === '_btn_group' ||
-                isRowButtonVisible(button, scope.row)
+                isRowButtonVisible(button, scope.row, scope.$index)
             "
           >
             <el-button
@@ -159,7 +159,7 @@
               v-else-if="
                 button.button_type === '_btn_group' &&
                   button.buttons.length > 0 &&
-                  getButtonDispExps(button.buttons, scope.row)
+                  getButtonDispExps(button.buttons, scope.row, scope.$index)
               "
             >
               <el-button :type="button.type" :size="button.size" plain>
@@ -191,7 +191,7 @@
                     "
                     :disabled="subtns.evalDisable()"
                     v-show="
-                      isRowButtonVisible(subtns, scope.row) &&
+                      isRowButtonVisible(subtns, scope.row,scope.$index) &&
                         (getDispExps(subtns, scope.row) && subtns.permission) &&
                         getButtonOptSrv(subtns, scope.row, 'isShow')
                     "
@@ -884,6 +884,8 @@ export default {
         .then((response) => {
           let respData = response.body.data;
           let listData = response.body.data["srv_cols"];
+          this.vpageNo = respData.vpage_no
+
           // this.gridButton = response.body.data["gridButton"];
           // this.rowButton = response.body.data["rowButton"];
 
@@ -1001,7 +1003,7 @@ export default {
       }
 
       //加载表格数据
-      this.select(this.service_name, cond, page, this.order).then(
+      this.select(this.service_name, cond, page, this.order,null,null,null,null,null,null,null,null,null,this.vpageNo).then(
         (response) => {
           // rename for element stupid bug of using children as bulitin
           response.body.data &&
