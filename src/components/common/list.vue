@@ -206,8 +206,8 @@
                     {{ getButtonName(button, scope.row) }}
                   </el-button> -->
                 <span v-for="(button, index) in sortedRowButtons" :key="index" style="margin-right:10px"
-                  v-if="getDispExps(button, scope.row) && button.permission"
-                  v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row)">
+                  v-if="getDispExps(button, scope.row, scope.$index) && button.permission"
+                  v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row, scope.$index)">
                   <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
                     :type="button._moreConfig.type" :icon="button._moreConfig.icon"
                     :round="button._moreConfig.style !== '' && button._moreConfig.style === 'round'"
@@ -218,7 +218,7 @@
                     {{ getButtonName(button, scope.row) }}
                   </el-button>
                   <el-dropdown
-                    v-else-if="button.button_type === '_btn_group' && button.buttons.length > 0 && getButtonDispExps(button.buttons, scope.row)">
+                    v-else-if="button.button_type === '_btn_group' && button.buttons.length > 0 && getButtonDispExps(button.buttons, scope.row, scope.$index)">
                     <el-button :type="button.type" :size="button.size" plain>
                       {{ button.button_name }}
                       <i class="el-icon-arrow-down el-icon--right"></i>
@@ -232,7 +232,7 @@
                           :plain="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'plain'"
                           :circle="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'circle'"
                           :disabled="subtns.evalDisable()"
-                          v-show="isRowButtonVisible(subtns, scope.row) && (getDispExps(subtns, scope.row) && subtns.permission) && getButtonOptSrv(subtns, scope.row, 'isShow')">{{
+                          v-show="isRowButtonVisible(subtns, scope.row, scope.$index) && (getDispExps(subtns, scope.row) && subtns.permission) && getButtonOptSrv(subtns, scope.row, 'isShow')">{{
                             subtns.button_name }}</el-button>
                       </el-dropdown-item>
                     </el-dropdown-menu>

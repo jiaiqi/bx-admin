@@ -89,7 +89,8 @@ export default {
       orderColumn:"phone",
       srvAuthLogin:false,
       sumRowData:null,
-      sumConfig:null
+      sumConfig:null,
+      vpageNo:null
     };
   },
 
@@ -424,9 +425,22 @@ export default {
       }
       return sorted
     },
-
     sortedRowButtons() {
       let sorted = this.rowButton.slice();
+      if(Array.isArray(this.gridData) && this.gridData.length>0){
+        this.gridData.forEach((item,index) => {
+          if(item?._buttons?.length===sorted.length){
+            sorted = sorted.map((btn,bIndex)=>{
+              if(btn['_rowDisp']){
+                btn['_rowDisp'][index] = item._buttons[bIndex]
+              }else{
+                btn['_rowDisp'] = {[index]:item._buttons[bIndex]}
+              }
+              return btn 
+            })
+          }
+        });
+      }
       sorted.sort((a, b) => a.seq - b.seq)
 
       if(Array.isArray(this.gridData) && this.gridData.length>0){
@@ -877,7 +891,7 @@ export default {
       }
 
     },
-    getDispExps(item, data) {
+    getDispExps(item, data,rowIndex) {
       var result = true;
       let mainData = null
       if(this.listMainFormDatas){
@@ -898,11 +912,14 @@ export default {
        
       }
 
-      
+      // 使用后端返回的参数控制按钮显示隐藏
+      if(Array.isArray(item?._rowDisp)&&[0,1].includes(item._rowDisp[rowIndex])){
+        result = item._rowDisp[rowIndex]
+      }
 
       return result;
     },
-    getButtonDispExps(btns,data){
+    getButtonDispExps(btns,data,index){
       var result = true;
       let mainData = null
       if(this.listMainFormDatas){
@@ -911,6 +928,12 @@ export default {
       let isShow = []
       if(btns.length > 0){
         for(let item of btns){
+          if(item['_rowDisp']){
+            if(item['_rowDisp'][index]===1){
+              isShow.push(item)
+            }
+            return
+          }
           try {
             var disp_exps = item.disp_exps;
             if (disp_exps != undefined && disp_exps != "" && disp_exps != null) {
@@ -1805,7 +1828,8 @@ export default {
               relationCondition,
               this.draftRun,
               "list_page",
-              srvAuth
+              srvAuth,
+              this.vpageNo
             ).then(response => {
 
               if(response.body.resultCode == '0111'){
@@ -2240,6 +2264,7 @@ export default {
       await this.loadColsV2(this.service_name, use_type,null,this.mainService)
         .then(response => {
           let respData = response.body.data;
+          this.vpageNo = respData.vpage_no
           let card_cfg_list = respData.card_cfg;
           // 列表的顺序
           if(respData.hasOwnProperty('order_columns') && respData.order_columns){
@@ -2612,7 +2637,10 @@ export default {
       this.activeForm = 'xx'
       this.loadTableData();
     },
-    isRowButtonVisible(button, row) {
+    isRowButtonVisible(button, row, index) {
+      if(button['_rowDisp']){
+        return button['_rowDisp'][index]===1
+      }
       if(button.button_type !== "_btn_group"){
         let notDeleteOnStandby = !('standby' === row._dirtyFlags && ('delete' === button.button_type))
         let noUpdateDetail4InplaceEdit = !(this.isInplaceEdit() && (button.button_type === 'update' || button.button_type === 'detail' ))

@@ -538,9 +538,9 @@ function init_util() {
   };
 
   /**查询列表*/
-  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth) {
+  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo) {
     var url = this.getServiceUrl("select", service_name, app);
-    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth)
+    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo)
   }
 
   /***
@@ -593,7 +593,7 @@ function init_util() {
   }
 
   /**查询*/
-  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth) {
+  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo) {
     var query = {
       "serviceName": service_name,
       "colNames": columns || ['*'],
@@ -601,7 +601,8 @@ function init_util() {
       "relation_condition": relationCondition || {},
       "page": page,
       "order": order,
-      "draft": draft
+      "draft": draft,
+      "vpage_no":vpageNo
     };
     if (pageType && pageType === 'list_page') {
       query['query_source'] = "list_page"
