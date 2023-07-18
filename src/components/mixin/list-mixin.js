@@ -928,25 +928,24 @@ export default {
       let isShow = []
       if(btns.length > 0){
         for(let item of btns){
-          if(item['_rowDisp']){
-            if(item['_rowDisp'][index]===1){
-              isShow.push(item)
+          if (item["_rowDisp"]) {
+            if (item["_rowDisp"][index] === 1) {
+              isShow.push(item);
             }
-            return
           }
-          try {
-            var disp_exps = item.disp_exps;
-            if (disp_exps != undefined && disp_exps != "" && disp_exps != null) {
-              result = eval(disp_exps);
-              if(result !== false){
-                isShow.push(item)
-              }
-            }else if(item.permission){
-              isShow.push(item)
-            }
-          } catch (err) {
+          // try {
+          //   var disp_exps = item.disp_exps;
+          //   if (disp_exps != undefined && disp_exps != "" && disp_exps != null) {
+          //     result = eval(disp_exps);
+          //     if(result !== false){
+          //       isShow.push(item)
+          //     }
+          //   }else if(item.permission){
+          //     isShow.push(item)
+          //   }
+          // } catch (err) {
            
-          }
+          // }
         }
 
         if(isShow.length !== 0){
@@ -2638,9 +2637,9 @@ export default {
       this.loadTableData();
     },
     isRowButtonVisible(button, row, index) {
-      if(button['_rowDisp']){
-        return button['_rowDisp'][index]===1
-      }
+      // if(button['_rowDisp']){
+      //   return button['_rowDisp'][index]===1
+      // }
       if(button.button_type !== "_btn_group"){
         let notDeleteOnStandby = !('standby' === row._dirtyFlags && ('delete' === button.button_type))
         let noUpdateDetail4InplaceEdit = !(this.isInplaceEdit() && (button.button_type === 'update' || button.button_type === 'detail' ))
