@@ -368,7 +368,7 @@ function init_util() {
    */
   Vue.prototype.loadColsV2 = function (service_name, use_type,app, mainSrv) {
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
-    let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type);
+    let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type, mainSrv);
     if (cacheP) {
       return cacheP
     }
@@ -378,6 +378,7 @@ function init_util() {
       service: fullServiceName,
       useType: use_type,
       response: loadedP,
+      mainSrv
     })
     // this.doLoadColsV2(service_name, use_type).then((res)=>{
     //   console.log("doLoadColsV2")

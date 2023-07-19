@@ -5,8 +5,11 @@ const state = {
 
 // getters
 const getters = {
-  getSrvCols: (state) => (service, useType) => {
+  getSrvCols: (state) => (service, useType, mainSrv) => {
     let key = service + "@" + useType
+    if(mainSrv){
+      key += `@${mainSrv}`
+    }
     return state.cache[key]
   },
 
@@ -14,8 +17,11 @@ const getters = {
 
 // mutations
 const mutations = {
-  addSrvCols(state, {service, useType, response}) {
+  addSrvCols(state, {service, useType, response, mainSrv}) {
     let key = service + "@" + useType
+    if(mainSrv){
+      key += `@${mainSrv}`
+    }
     state.cache[key] = response
   },
 }
