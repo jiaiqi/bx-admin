@@ -13,7 +13,7 @@
       </el-alert>
     </template>
     <el-row>
-      <slot name="form-child-prepend"></slot>
+      <slot name="field-form-prepend"></slot>
       <el-form :model="formModel" ref="elform" :inline="false" label-position="right" label-width="10rem" v-if="formLoaded">
 
         <el-row v-for="(formItems, section) in sections" :key="section">

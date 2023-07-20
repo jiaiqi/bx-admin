@@ -1344,7 +1344,7 @@ function init_util() {
         child['showPagination'] = window.sessionStorage.getItem('childPagination') || true
         // Vue.set(child,'showPagination',true)
         let config = child.foreign_key.more_config
-        if (config && config.indexOf('field') !== -1) {
+        if (config && (config.indexOf('field') !== -1 || config.indexOf('form') !== -1)) {
           config = JSON.parse(config)
           child["_childMoreConfig"] = config
           if (config.hasOwnProperty("showPagination")) {
@@ -1368,7 +1368,7 @@ function init_util() {
 
               } else if (config.type === 'form') {
                 // 依附在表单的 子表
-                if (config.position && config.positon === 'prepend') {
+                if (config.position && config.position === 'prepend') {
                   list.form.prepend.push(child)
                 } else {
                   list.form.append.push(child)
