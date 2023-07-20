@@ -11,6 +11,7 @@ export default {
       inlineEditCols: null,
       newGridData: [],
       allFields: {},
+      oldGridData: [],
     };
   },
   mounted() {
@@ -80,15 +81,12 @@ export default {
         return test;
       } else if (rule.hasOwnProperty("required")) {
         // console.log("eval Field Rule",fieldSrvVal)
-        return (
-          fieldSrvVal !== null &&
-          fieldSrvVal !== ""
-        );
+        return fieldSrvVal !== null && fieldSrvVal !== "";
       } else if (rule.hasOwnProperty("js_validate")) {
         if (this.allFields[fieldName].evalXIf()) {
           //如果显示当前字段
           var data = srvValFormModel;
-          data[fieldName] = fieldSrvVal
+          data[fieldName] = fieldSrvVal;
           let result = null;
           if (rule.js_validate) {
             let js_validate = rule.js_validate;
@@ -193,17 +191,16 @@ export default {
     async saveData() {
       const req = [];
       if (
-        Array.isArray(this.newGridData) &&
-        this.newGridData.length > 0 &&
+        Array.isArray(this.oldGridData) &&
+        this.oldGridData.length > 0 &&
         this.cfgJson?.list_edit_srv
       ) {
-        this.newGridData.forEach((item) => {
+        this.oldGridData.forEach((item, index) => {
           const obj = {};
+          const newItem = this.gridData[index];
           Object.keys(item).forEach((key) => {
-            if (item[key] !== null && typeof item[key] === "object") {
-              if (item[key]["newValue"] !== item[key]["oldValue"]) {
-                obj[key] = item[key]["newValue"];
-              }
+            if (item[key] !== newItem[key]) {
+              obj[key] = newItem[key];
             }
           });
           if (Object.keys(obj).length > 0) {
@@ -214,14 +211,14 @@ export default {
             });
           }
         });
-        this.gridData = this.gridData.map((item) => {
-          Object.keys(item).forEach((key) => {
-            if (item[key] !== null && typeof item[key] === "object") {
-              item[key] = item[key]["newValue"];
-            }
-          });
-          return item;
-        });
+        // this.gridData = this.gridData.map((item) => {
+        //   Object.keys(item).forEach((key) => {
+        //     if (item[key] !== null && typeof item[key] === "object") {
+        //       item[key] = item[key]["newValue"];
+        //     }
+        //   });
+        //   return item;
+        // });
       }
       if (req.length > 0 && this.submitButton?.application) {
         const url = this.getServiceUrl(
@@ -278,106 +275,216 @@ export default {
     },
     onInlineChange(e, rowIndex) {
       // 校验
-      let isValid = true
-      this.newGridData = this.gridData.map((item, index) => {
-        let obj = {};
-        for (const key in item) {
-          if (
-            (key && key.indexOf("_") !== 0) ||
-            ["_guid", "_dirtyFlags"].includes(key)
-          ) {
-            obj[key] = item[key];
-          }
+      let isValid = true;
+      this.oldGridData = this.gridData.map((item, index) => {
+        let obj = null;
+        if(this.oldGridData[index]){
+          obj = this.oldGridData[index]
+        }else{
+          obj = {}
         }
-        if (rowIndex === index && (e.newValue !== e.oldValue||e.isChange===true)) {
+        // for (const key in item) {
+        //   if (
+        //     (key && key.indexOf("_") !== 0) ||
+        //     ["_guid", "_dirtyFlags"].includes(key)
+        //   ) {
+        //     obj[key] = undefined;
+        //   }
+        // }
+        if (
+          rowIndex === index &&
+          (e.newValue !== e.oldValue || e.isChange === true)
+        ){
+          obj[e.column] = e.originValue
+        }
+        return obj;
+      });
+
+      this.gridData.forEach((item, index) => {
+        if (
+          rowIndex === index &&
+          (e.newValue !== e.oldValue || e.isChange === true)
+        ) {
           let result = true;
-          if (e.isChange===true) {
-          // if (e.oldValue !== undefined || e.isChange===true) {
+          if (e.isChange === true) {
+            // if (e.oldValue !== undefined || e.isChange===true) {
             // 不是刚添加的数据 手动修改触发
             result = this.handleValidation(e.column, item, index, e.newValue);
           }
           if (result !== false) {
-            obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
             item[e.column] = e.newValue;
+            if ("originValue" in e) {
+              this.oldGridData[index][e.column] = e.originValue;
+            }
+            // this.oldGridData[index][e.column] = e.oldValue
             this.$set(item, e.column, e.newValue);
           } else {
-            isValid = false
-            // item[e.column] = e.oldValue;
-            // obj[e.column] = { newValue: e.oldValue, oldValue:undefined };
-            // this.$set(item, e.column,undefined);
-            // let value = null;
-            // let result = this.handleValidation(
-            //   e.column,
-            //   item,
-            //   index,
-            //   e.oldValue
-            // );
-            // if (result !== false) {
-            //   value = e.oldValue;
-            //   this.$set(item, e.column, value);
-            // } else {
-            //   item[e.column] = undefined;
-            //   this.$set(item, e.column, undefined);
-            // }
+            isValid = false;
             this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
               result: false,
             });
           }
         }
-        return obj;
       });
-      if(isValid===false){
-        return
+
+      // this.newGridData = this.gridData.map((item, index) => {
+      //   let obj = {};
+      //   for (const key in item) {
+      //     if (
+      //       (key && key.indexOf("_") !== 0) ||
+      //       ["_guid", "_dirtyFlags"].includes(key)
+      //     ) {
+      //       obj[key] = item[key];
+      //     }
+      //   }
+      //   if (rowIndex === index && (e.newValue !== e.oldValue||e.isChange===true)) {
+      //     let result = true;
+      //     if (e.isChange===true) {
+      //     // if (e.oldValue !== undefined || e.isChange===true) {
+      //       // 不是刚添加的数据 手动修改触发
+      //       result = this.handleValidation(e.column, item, index, e.newValue);
+      //     }
+      //     if (result !== false) {
+      //       obj[e.column] = { newValue: e.newValue, oldValue: e.oldValue };
+      //       item[e.column] = e.newValue;
+      //       this.$set(item, e.column, e.newValue);
+      //     } else {
+      //       isValid = false
+      //       // item[e.column] = e.oldValue;
+      //       // obj[e.column] = { newValue: e.oldValue, oldValue:undefined };
+      //       // this.$set(item, e.column,undefined);
+      //       // let value = null;
+      //       // let result = this.handleValidation(
+      //       //   e.column,
+      //       //   item,
+      //       //   index,
+      //       //   e.oldValue
+      //       // );
+      //       // if (result !== false) {
+      //       //   value = e.oldValue;
+      //       //   this.$set(item, e.column, value);
+      //       // } else {
+      //       //   item[e.column] = undefined;
+      //       //   this.$set(item, e.column, undefined);
+      //       // }
+      //       this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
+      //         result: false,
+      //       });
+      //     }
+      //   }
+      //   return obj;
+      // });
+      if (isValid === false) {
+        return;
       }
       // 处理 计算
-      this.newGridData = this.gridData.map((item, index) => {
-        let obj = {};
-        for (const key in item) {
-          if (
-            (key && key.indexOf("_") !== 0) ||
-            ["_guid", "_dirtyFlags"].includes(key)
-          ) {
-            obj[key] = item[key];
-          }
-        }
+      for (let index = 0; index < this.gridData.length; index++) {
+        const obj = JSON.parse(JSON.stringify(this.gridData[index]));
+        let item = this.gridData[index];
+
         const srv_cols = this.updateV2?.srv_cols;
+
         if (Array.isArray(srv_cols) && srv_cols.length > 0) {
           srv_cols.forEach((col) => {
             const key = col?.columns;
             if (key && key.indexOf("_") !== 0) {
               item[key] =
                 this.handleRedundantOnInlineFieldChange(key, item, this) ||
-                obj[key];
+                item[key];
               if (item[key] !== obj[key]) {
-                obj[key] = {
-                  newValue: item[key],
-                  oldValue: obj[key],
-                };
-                // this.$set(item, key, item[key]);
+                this.$set(item, key, item[key]);
+
+                // this.$set(this.newGridData, index, obj);
               }
+              // if (item[key] !== obj[key]?.newValue) {
+              //   obj[key] = {
+              //     newValue: item[key],
+              //     oldValue: obj[key]?.oldValue,
+              //   };
+              //   this.$set(item, key, item[key]);
+              //   this.$set( this.newGridData, index, obj);
+              // }
             }
           });
         }
-        return obj;
-      });
+      }
+      // for (let index = 0; index < this.newGridData.length; index++) {
+      //   const obj = JSON.parse(JSON.stringify(this.newGridData[index]));
+      //   let item = this.gridData[index]
+      //   for (const key in obj) {
+      //     if (
+      //       (key && key.indexOf("_") !== 0) ||
+      //       ["_guid", "_dirtyFlags"].includes(key)
+      //     ) {
+      //       item[key] = obj[key]?.newValue;
+      //     }
+      //   }
+      //   const srv_cols = this.updateV2?.srv_cols;
+      //   if (Array.isArray(srv_cols) && srv_cols.length > 0) {
+      //     srv_cols.forEach((col) => {
+      //       const key = col?.columns;
+      //       if (key && key.indexOf("_") !== 0) {
+      //         item[key] = this.handleRedundantOnInlineFieldChange(key, item, this) || item[key];
+      //         if (item[key] !== obj[key]?.newValue) {
+      //           obj[key] = {
+      //             newValue: item[key],
+      //             oldValue: obj[key]?.oldValue,
+      //           };
+      //           this.$set(item, key, item[key]);
+      //           this.$set( this.newGridData, index, obj);
+      //         }
+      //       }
+      //     });
+      //   }
+      // }
+      // this.newGridData = this.gridData.map((item, index) => {
+      //   let obj = {
+      //     ...JSON.parse(JSON.stringify(this.newGridData[index]))
+      //   };
+      //   // for (const key in item) {
+      //   //   if (
+      //   //     (key && key.indexOf("_") !== 0) ||
+      //   //     ["_guid", "_dirtyFlags"].includes(key)
+      //   //   ) {
+      //   //     obj[key] = item[key];
+      //   //   }
+      //   // }
+      //   const srv_cols = this.updateV2?.srv_cols;
+      //   if (Array.isArray(srv_cols) && srv_cols.length > 0) {
+      //     srv_cols.forEach((col) => {
+      //       const key = col?.columns;
+      //       if (key && key.indexOf("_") !== 0) {
+      //         item[key] = this.handleRedundantOnInlineFieldChange(key, item, this) || item[key];
+      //         if (item[key] !== obj[key]?.newValue) {
+      //           obj[key] = {
+      //             newValue: item[key],
+      //             oldValue: obj[key]?.oldValue,
+      //           };
+      //           // this.$set(item, key, item[key]);
+      //         }
+      //       }
+      //     });
+      //   }
+      //   return obj;
+      // });
 
-      this.gridData = this.newGridData.map((item, index) => {
-        const obj = { };
-        // const obj = { ...this.gridData[index] };
-        for (const key in item) {
-          // if (key && key.indexOf("_") !== 0) {
-          obj[key] = item[key] || null;
-          if (
-            item[key] &&
-            typeof item[key] === "object" &&
-            item[key]["newValue"]
-          ) {
-            obj[key] = item[key]["newValue"];
-          }
-          // }
-        }
-        return obj;
-      });
+      // this.gridData = this.newGridData.map((item, index) => {
+      //   const obj = { };
+      //   // const obj = { ...this.gridData[index] };
+      //   for (const key in item) {
+      //     // if (key && key.indexOf("_") !== 0) {
+      //     obj[key] = item[key] || null;
+      //     if (
+      //       item[key] &&
+      //       typeof item[key] === "object" &&
+      //       item[key]["newValue"]
+      //     ) {
+      //       obj[key] = item[key]["newValue"];
+      //     }
+      //     // }
+      //   }
+      //   return obj;
+      // });
     },
     getColumnMinWidth(item) {
       if (

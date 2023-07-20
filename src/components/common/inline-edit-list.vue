@@ -36,6 +36,7 @@ export default {
       fieldData: null,
       value: undefined,
       oldValue: undefined,
+      originValue:undefined,
       isChange: false,
       isError: false,
       customPrecision: null
@@ -119,6 +120,9 @@ export default {
     if (this.data && this.field?.columns) {
       this.value = this.data[this.field.columns];
       this.oldValue = this.data[this.field.columns];
+      if(this.originValue===undefined){
+        this.originValue = this.data[this.field.columns];
+      }
     }
   },
   methods: {
@@ -156,6 +160,7 @@ export default {
       const obj = {
         newValue: this.value,
         oldValue: this.oldValue,
+        originValue:this.originValue,
         column: this.field.columns,
         id: this.data.id,
         isChange: true
@@ -178,6 +183,7 @@ export default {
         const obj = {
           newValue: newValue,
           oldValue: oldValue,
+          originValue:this.originValue,
           column: this.field.columns,
           id: this.data.id,
           isChange: this.isChange
