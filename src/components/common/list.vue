@@ -261,7 +261,7 @@
       </div>
 
       <!-- <el-row type="flex" class="row-bg" justify="center" v-if="!isMem()" -->
-      <el-row type="flex" class="row-bg" justify="center" v-if="showPagination"
+      <el-row type="flex" class="row-bg" justify="center" v-if="showPagination&&setShowPagination"
         v-show="!hidePagination && gridPage.total > 0">
 
         <el-pagination @current-change="handleCurrentChange" @size-change="handleSizeChange"

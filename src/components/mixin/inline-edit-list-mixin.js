@@ -20,6 +20,36 @@ export default {
     }
   },
   computed: {
+    setPageSize() {
+      let pageSize = this.pageSize;
+      if (this.cfgJson?.list_paging_json) {
+        if (
+          this.listType === "detaillist" &&
+          this.childForeignkey?.foreign_key_type === "主子表"
+        ) {
+          pageSize = this.cfgJson?.list_paging_json?.list_paging_sublist_rownum;
+        } else {
+          pageSize = this.cfgJson?.list_paging_json?.list_paging_list_rownum;
+        }
+      }
+      return pageSize;
+    },
+    setShowPagination() {
+      let showPagination = this.showPagination;
+      if (this.cfgJson?.list_paging_json) {
+        if (
+          this.listType === "detaillist" &&
+          this.childForeignkey?.foreign_key_type === "主子表"
+        ) {
+          showPagination =
+            this.cfgJson?.list_paging_json?.list_paging_sublist_enable !== "否";
+        } else {
+          showPagination =
+            this.cfgJson?.list_paging_json?.list_paging_list_enable !== "否";
+        }
+      }
+      return showPagination;
+    },
     formRules: function () {
       let rulesMap = {};
       if (this.allFields && Object.keys(this.allFields).length > 0) {
@@ -278,10 +308,10 @@ export default {
       let isValid = true;
       this.oldGridData = this.gridData.map((item, index) => {
         let obj = null;
-        if(this.oldGridData[index]){
-          obj = this.oldGridData[index]
-        }else{
-          obj = {}
+        if (this.oldGridData[index]) {
+          obj = this.oldGridData[index];
+        } else {
+          obj = {};
         }
         // for (const key in item) {
         //   if (
@@ -294,8 +324,8 @@ export default {
         if (
           rowIndex === index &&
           (e.newValue !== e.oldValue || e.isChange === true)
-        ){
-          obj[e.column] = e.originValue
+        ) {
+          obj[e.column] = e.originValue;
         }
         return obj;
       });

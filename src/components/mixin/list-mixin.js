@@ -1740,7 +1740,7 @@ export default {
 
         this.buildQueryConditions()
 
-        let pageSize = this.pageSize || this.gridPage.pageSize;
+        let pageSize = this.setPageSize || this.pageSize || this.gridPage.pageSize;
         var page = (this.isMem() || (this.gridPage && pageSize < 0))
           ? null
           : {
