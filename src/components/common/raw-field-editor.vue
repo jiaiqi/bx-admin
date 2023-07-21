@@ -1,6 +1,6 @@
 /* */
 <template>
-  <div class="raw_field_editor" @blur="onBlur">
+  <div class="raw_field_editor" @blur="onBlur" :style="customInputVar">
 
     <el-row>
       <el-col :span="field.hasHistoryData() || field.getUniqueCheck() ? 22 : 24">
@@ -304,11 +304,35 @@ export default {
     };
   },
   computed: {
+    cfgJson(){
+      let cfgJson = this.field.info.srvCol?.col_cfg_json
+      if(cfgJson){
+        try {
+          cfgJson = JSON.parse(cfgJson)
+        } catch (error) {
+          
+        }
+      }
+      return cfgJson
+    },
+    customInputVar() {
+      if (this.cfgJson?.col_style_df_json) {
+        const colStyle = this.cfgJson.col_style_df_json
+        const keys = Reflect.ownKeys(colStyle)
+        let str = ``
+        if (keys.length > 0) {
+          keys.forEach(key => {
+            str += `;--custom-input-${key}:${colStyle[key]}`
+          })
+        }
+        return str
+      }
+    },
     getDisabled: function() {
       return !this.field.evalEditable();
     }
   },
-
+  
   created: function() {
    
     this.field.editor = this;
@@ -615,6 +639,23 @@ export default {
 
 .raw_field_editor {
   position: relative;
+  ::v-deep .el-input__inner{
+    /* 配置的字段样式 */
+    color: var(--custom-input-color)!important;
+    font: var(--custom-input-font)!important;
+    overflow: var(--custom-input-overflow)!important;
+    font-size: var(--custom-input-font_size)!important;
+    white-space: var(--custom-input-white_space)!important;
+    text-align: var(--custom-input-text_align)!important;
+    text-overflow:var(--custom-input-text_overflow)!important;
+    border-radius:var(--custom-input-border_radius)!important;
+    border:var(--custom-input-border)!important;
+    padding:var(--custom-input-padding)!important;
+    height:var(--custom-input-height)!important;
+    margin:var(--custom-input-margin)!important;
+    font-weight:var(--custom-input-font_weight)!important;
+    line-height:var(--custom-input-line_height)!important;
+  }
 }
 
 .el-button {
