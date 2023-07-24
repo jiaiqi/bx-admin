@@ -330,7 +330,7 @@ export default {
         return obj;
       });
 
-      this.gridData.forEach((item, index) => {
+      this.gridData = this.gridData.map((item, index) => {
         if (
           rowIndex === index &&
           (e.newValue !== e.oldValue || e.isChange === true)
@@ -355,6 +355,7 @@ export default {
             });
           }
         }
+        return item
       });
 
       // this.newGridData = this.gridData.map((item, index) => {
