@@ -639,22 +639,22 @@ export default {
 
 .raw_field_editor {
   position: relative;
-  ::v-deep .el-input__inner{
+  ::v-deep input{
     /* 配置的字段样式 */
     color: var(--custom-input-color)!important;
-    font: var(--custom-input-font)!important;
-    overflow: var(--custom-input-overflow)!important;
+    /* font: var(--custom-input-font)!important; */
+    /* overflow: var(--custom-input-overflow)!important; */
     font-size: var(--custom-input-font_size)!important;
-    white-space: var(--custom-input-white_space)!important;
+    /* white-space: var(--custom-input-white_space)!important; */
     text-align: var(--custom-input-text_align)!important;
-    text-overflow:var(--custom-input-text_overflow)!important;
-    border-radius:var(--custom-input-border_radius)!important;
-    border:var(--custom-input-border)!important;
-    padding:var(--custom-input-padding)!important;
-    height:var(--custom-input-height)!important;
+    /* text-overflow:var(--custom-input-text_overflow)!important; */
+    /* border-radius:var(--custom-input-border_radius)!important; */
+    /* border:var(--custom-input-border,1px solid #DCDFE6)!important; */
+    padding:var(--custom-input-padding,0 15px)!important;
+    /* height:var(--custom-input-height,40px)!important; */
     margin:var(--custom-input-margin)!important;
     font-weight:var(--custom-input-font_weight)!important;
-    line-height:var(--custom-input-line_height)!important;
+    /* line-height:var(--custom-input-line_height,40px)!important; */
   }
 }
 

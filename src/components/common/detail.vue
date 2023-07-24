@@ -343,7 +343,13 @@ export default {
         if (v2Data.hasOwnProperty("his_version")) {
           this.isHistory = v2Data.his_version;
         }
-        if (temp.endsWith("查询")) {
+        if(response.body.data['cfg_json']&&response.body.data['cfg_json'].indexOf('page_title')>-1){
+          // 使用配置的标题
+          const cfg_json = JSON.parse(response.body.data.cfg_json)
+          if(cfg_json?.page_title){
+            this.tab_view_name = cfg_json?.page_title
+          }
+        }else if (temp.endsWith("查询")) {
           this.tab_view_name = temp.substr(0, temp.length - 2) + "详情";
         } else {
           this.tab_view_name = response.body.data["service_view_name"] + "详情";
