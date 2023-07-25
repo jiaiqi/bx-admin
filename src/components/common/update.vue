@@ -36,7 +36,7 @@
                 :title="
                   item.foreign_key.section_name || item.foreign_key.table_name
                 "
-                v-show="showChildList(item)"
+                v-show="showChildList(item,defaultValues)"
                 :key="index"
                 :name="'form_prepend_' + (index)"
               >
@@ -55,7 +55,7 @@
                   :inplace-edit="true"
                   list-type="updatechildlist"
                   :read-only="item.foreign_key.child_table_readonly=='是'"
-                  :mainFormDatas="mainFormDatas?mainFormDatas:formModel"
+                  :mainFormDatas="mainFormDatas || defaultValues"
                   :default-inplace-edit-mode="false"
                   :merge-col="false"
                   @update-form-loaded="$emit('update-form-loaded', $event)"
@@ -75,7 +75,7 @@
                 :title="
                   item.foreign_key.section_name || item.foreign_key.table_name
                 "
-                v-show="showChildList(item)"
+                v-show="showChildList(item,defaultValues)"
                 :key="index"
                 :name="'form_append_' + (index)"
               >
@@ -94,7 +94,7 @@
                   :is-tree="!!item.parent_no_col"
                   :inplace-edit="true"
                   list-type="updatechildlist"
-                  :mainFormDatas="mainFormDatas?mainFormDatas:formModel"
+                  :mainFormDatas="mainFormDatas || defaultValues"
                   :default-inplace-edit-mode="false"
                   :merge-col="false"
                   @update-form-loaded="$emit('update-form-loaded', $event)"
@@ -115,7 +115,7 @@
                 :title="
                   item.foreign_key.section_name || item.foreign_key.table_name
                 "
-                v-show="showChildList(item)"
+                v-show="showChildList(item,defaultValues)"
                 :key="index"
                 :name="col + '_prepend_' + (index)"
               >
@@ -133,7 +133,7 @@
                   :is-tree="!!item.parent_no_col"
                   :inplace-edit="true"
                   list-type="updatechildlist"
-                  :mainFormDatas="mainFormDatas?mainFormDatas:formModel"
+                  :mainFormDatas="mainFormDatas || defaultValues"
                   :read-only="item.foreign_key.child_table_readonly=='是'"
                   :default-inplace-edit-mode="false"
                   :merge-col="false"
@@ -154,7 +154,7 @@
                 :title="
                   item.foreign_key.section_name || item.foreign_key.table_name
                 "
-                v-show="showChildList(item)"
+                v-show="showChildList(item,defaultValues)"
                 :key="index"
                 :name="col + '_append_' + (index)"
               >
@@ -172,7 +172,7 @@
                   :is-tree="!!item.parent_no_col"
                   :inplace-edit="true"
                   list-type="updatechildlist"
-                  :mainFormDatas="mainFormDatas?mainFormDatas:formModel"
+                  :mainFormDatas="mainFormDatas || defaultValues"
                   :read-only="item.foreign_key.child_table_readonly=='是'"
                   :default-inplace-edit-mode="false"
                   :merge-col="false"
@@ -365,7 +365,7 @@ export default {
     return {
       service_name: this.service || this.$route.params.service_name,
       activeName: 0,
-      mainFormDatas: {},
+      mainFormDatas: null,
     };
   },
 

@@ -99,7 +99,7 @@ export default {
                   // for expr 
                   showExpr = showExpr.replace("{{", "").replace("}}", "");
                   
-                  let mainData = self.mainFormDatas  || mainFromData
+                  let mainData = self.mainFormDatas 
                   
                   try {
                     isShow = eval(showExpr);
