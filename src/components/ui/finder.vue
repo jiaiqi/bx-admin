@@ -905,9 +905,19 @@ export default {
               }`;
         }
       }
+      // this.getOptions(true);
     }
+
+    if (
+        this.field.info &&
+        this.field.info.srvCol &&
+        this.field.info.srvCol.init_expr === "$firstRowData"
+      ){
+        // 默认选中第一行 需要加载数据
+        this.getOptions(true);
+      }
     // if (this.subType === "select") {
-      this.getOptions(true);
+      
     // }
 
     // if(this.field.type === "User"){
