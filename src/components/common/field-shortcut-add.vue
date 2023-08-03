@@ -1,6 +1,6 @@
 /* */
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-  <div style="display: flex; align-items: center">
+  <div style="display: flex; align-items: center;margin-left: 10px;">
     <el-button
       type="primary"
       size="small"
