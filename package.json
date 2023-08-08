@@ -1,0 +1,58 @@
+{
+  "name": "l-pc-front",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vue-cli-service serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "deploy:dev": "deploy-cli-service deploy --mode dev"
+  },
+  "dependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@popperjs/core": "^2.11.7",
+    "@vue/babel-preset-app": "^5.0.8",
+    "axios": "^1.3.4",
+    "bootstrap": "^4.2.1",
+    "core-js": "^3.8.3",
+    "echarts": "4.2.1",
+    "element-ui": "2.8.2",
+    "ezuikit-js": "^7.6.3",
+    "file-saver": "^2.0.5",
+    "jquery": "^3.6.4",
+    "jsdom": "^21.1.1",
+    "less": "^4.1.3",
+    "less-loader": "6.0.0",
+    "location": "^0.0.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "navigator": "^1.0.1",
+    "popper.js": "^1.16.1",
+    "regenerator-runtime": "^0.13.11",
+    "sass-loader": "7.3.1",
+    "v-viewer": "^1.6.4",
+    "vue": "2",
+    "vue-fragment": "^1.6.0",
+    "vue-grid-layout": "^2.4.0",
+    "vue-pdf": "^4.3.0",
+    "vue-resource": "^1.5.3",
+    "vue-router": "3.0.3",
+    "vuex": "3",
+    "xlsx": "^0.17.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.12.16",
+    "@vue/cli-plugin-babel": "3.12.1",
+    "@vue/cli-service": "3.12.1",
+    "compression-webpack-plugin": "^6.0.3",
+    "sass": "^1.60.0",
+    "vue-template-compiler": "2.6.14",
+    "vue2-ace-editor": "0.0.15"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
