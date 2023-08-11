@@ -16,28 +16,31 @@ export default {
   ],
   data() {
     return {
-      tabsConfig: [{
-        key:"norm",
-        label:"正常",
-        len:0
-      },{
-        key:"draft",
-        label:"草稿",
-        len:0
-      }],
-      initLoad:false,
-      activeTabName:"norm",
-      activeRowButton:null,
-      rowButtonActiveServiceName:"",
-      isDraft:false,
+      tabsConfig: [
+        {
+          key: "norm",
+          label: "正常",
+          len: 0,
+        },
+        {
+          key: "draft",
+          label: "草稿",
+          len: 0,
+        },
+      ],
+      initLoad: false,
+      activeTabName: "norm",
+      activeRowButton: null,
+      rowButtonActiveServiceName: "",
+      isDraft: false,
       visible: true,
       isMarker: true,
-      service_name: this.service,//||this.$route.params.service_name,
+      service_name: this.service, //||this.$route.params.service_name,
       addService: null,
       importService: null,
       updateService: null,
       deleteService: null,
-      card_no: this.card,//||this.$route.params.card_no,
+      card_no: this.card, //||this.$route.params.card_no,
       card_cfg: null,
       cardInstance: null,
       init_card_data: false,
@@ -46,13 +49,13 @@ export default {
       gridHeader: [],
       groupHeaders: [],
       noramlHeaders: [],
-      header_view_model: 'group',
+      header_view_model: "group",
       groupHeaderCols: {},
       selection: true,
       gridData: [],
       defGridData: [],
       gridButton: [],
-      actionGridButton:null,
+      actionGridButton: null,
       rowButton: [],
       multipleSelection: [],
       condition: [],
@@ -65,13 +68,20 @@ export default {
       custCondition: [],
       gridPage: {
         pageSizes: [],
-        pageSize: this.listType.indexOf('list') !== -1 && this.listType != 'list' && this.listType != 'treelist'? 5:10,
+        pageSize:
+          this.listType.indexOf("list") !== -1 &&
+          this.listType != "list" &&
+          this.listType != "treelist" &&
+          this.childForeignkey?.show_ui_model !== "tabs"
+            ? 5
+            : 10,
+        // pageSize: this.listType.indexOf('list') !== -1 && this.listType != 'list' && this.listType != 'treelist'? 5:10,
         currentPage: 1,
-        total: 0
+        total: 0,
       },
-      moreConfig:null,
+      moreConfig: null,
       activeForm: null,
-      activeData:null,
+      activeData: null,
       clickedRow: {},
       ifFlexTableHeader: false,
       inlineLists: [],
@@ -80,17 +90,20 @@ export default {
       scroll: 0,
       activeRow4PopupMemList: null,
       activePopupMemList: null,
-      _encrypt_cols:[],
-      approvalOptions:[{  // 列表审批默认选项
-        disp:"通过",
-        value:"pass"
-      }],
-      approvaList:[],
-      orderColumn:"phone",
-      srvAuthLogin:false,
-      sumRowData:null,
-      sumConfig:null,
-      vpageNo:null
+      _encrypt_cols: [],
+      approvalOptions: [
+        {
+          // 列表审批默认选项
+          disp: "通过",
+          value: "pass",
+        },
+      ],
+      approvaList: [],
+      orderColumn: "phone",
+      srvAuthLogin: false,
+      sumRowData: null,
+      sumConfig: null,
+      vpageNo: null,
     };
   },
 
