@@ -597,7 +597,7 @@ export default {
               pageNo: 1, // 展开下级不参与分页，默认加载 300条数据。
               rownumber: 300,
             },
-            this.order
+            this.order,null,null,null,null,null,null,null,null,null,this.vpageNo
           ).then((response) => {
             this.buildData(response.body.data, false);
             childData = response.body.data;

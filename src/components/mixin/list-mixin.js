@@ -938,6 +938,9 @@ export default {
       if(this.listMainFormDatas){
         mainData = this.listMainFormDatas
       }
+      if(data?.card_parts_name==='状态-设置'){
+        debugger
+      }
       let isShow = []
       if(btns.length > 0){
         for (let item of btns) {
