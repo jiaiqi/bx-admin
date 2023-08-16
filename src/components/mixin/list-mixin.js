@@ -2765,7 +2765,7 @@ export default {
     if (this.isListTopComp() && this.$route && this.$route.query) {
    // if (this.$route && this.$route.query) {
       var operate_params = this.getOperateParams();
-      if (operate_params != "" && operate_params != null ) {
+      if (operate_params != "" && operate_params != null && this.listType.indexOf('childlist') === -1) {
         var operate_Object = JSON.parse(operate_params);
         // this.service_name = operate_Object["serviceName"] ;
         if(typeof operate_Object ==='object'){
