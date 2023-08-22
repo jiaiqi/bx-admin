@@ -2769,8 +2769,7 @@ export default {
         var operate_Object = JSON.parse(operate_params);
         // this.service_name = operate_Object["serviceName"] ;
         if(typeof operate_Object ==='object'){
-          this.service_name = operate_Object["serviceName"] ? operate_Object["serviceName"] : this.service ? this.service : this.service_name;
-          this.$route.params.service_name
+          this.service_name = operate_Object?.serviceName|| this.service || this.service_name || this.$route.params.service_name
           if (
             operate_Object["condition"] != undefined &&
             operate_Object["condition"] != null
