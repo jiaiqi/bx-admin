@@ -114,4 +114,10 @@ body{
 .el-textarea.is-disabled .el-textarea__inner {
   color: #303133 !important;
 }
+.customDialogClass{
+  .el-dialog__body {
+      padding: 10px 20px!important;
+  }
+}
+
 </style>

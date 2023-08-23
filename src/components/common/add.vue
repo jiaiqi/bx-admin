@@ -1,9 +1,7 @@
 <template>
   <div>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <!-- <span>{{label}}</span>  -->
-      </div>
+    <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
+     
       <div class="text item">
         <simple-add
           :mainService="mainService"
