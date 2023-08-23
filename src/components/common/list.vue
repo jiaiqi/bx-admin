@@ -271,7 +271,7 @@
 
       </el-row>
     </div>
-    <el-dialog title="添加" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'add'"
+    <el-dialog class="customDialogClass" title="添加" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'add'"
       @close="activeForm = 'xx'">
       <add name="list-add" :mainService="mainService" ref="add-form" v-if="activeForm == 'add'" :service="getAddService"
         :submit2-db="storageType == 'db'" :defaultCondition='defaultCondition' :form-model-decorator="formModelDecorator"
@@ -282,7 +282,7 @@
       </add>
       <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
-    <el-dialog title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'duplicate'"
+    <el-dialog class="customDialogClass" title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'duplicate'"
       @close="activeForm = 'xx'">
       <simple-add name="list-duplicate" ref="duplicate-form" :pageName="'list-duplicate'" v-if="activeForm == 'duplicate'"
         :service="getAddService" :default-conditions="getDefaultCondition4Duplicate" :submit2-db="storageType == 'db'"
@@ -292,7 +292,7 @@
       </simple-add>
     </el-dialog>
 
-    <el-dialog title="深度复制" width="90%" :close-on-click-modal="1 == 2" append-to-body
+    <el-dialog class="customDialogClass" title="深度复制" width="90%" :close-on-click-modal="1 == 2" append-to-body
       :visible="activeForm == 'duplicatedeep'" @close="activeForm = 'xx'">
       <add name="list-duplicatedeep" ref="duplicatedeep-form" v-if="activeForm == 'duplicatedeep'"
         :service="getAddService" :default-conditions="getDefaultCondition4DuplicateDeep" :submit2-db="storageType == 'db'"
@@ -303,7 +303,7 @@
       </add>
     </el-dialog>
 
-    <el-dialog title="编辑" width="90%" :visible="activeForm == 'update'" :close-on-click-modal="1 == 2" append-to-body
+    <el-dialog class="customDialogClass" title="编辑" width="90%" :visible="activeForm == 'update'" :close-on-click-modal="1 == 2" append-to-body
       @close="activeForm = 'xx'">
 
       <update name="list-update"  :mainService="mainService"  ref="update-form" v-if="activeForm == 'update'" :service="getUpdateService"
@@ -326,21 +326,21 @@
       </simple-update> -->
     </el-dialog>
 
-    <el-dialog title="导入" width="90%" :visible="activeForm == 'import'" append-to-body @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body @close="activeForm = 'xx'">
       <import-dialog :service="addService" :sign-service-name="addService" v-if="activeForm == 'import'"
         :button="actionGridButton" @close="onImportDialogClosed">
       </import-dialog>
     </el-dialog>
-    <el-dialog title="自定义导入" width="90%" :visible="activeForm == 'customizeImport'" append-to-body
+    <el-dialog class="customDialogClass" title="自定义导入" width="90%" :visible="activeForm == 'customizeImport'" append-to-body
       @close="activeForm = 'xx'">
       <import-dialog :service="importService" :sign-service-name="addService" :importPageType="'customize'"
         v-if="activeForm == 'customizeImport'" :button="actionGridButton" @close="onImportDialogClosed">
       </import-dialog>
     </el-dialog>
-    <el-dialog title="导出" width="90%" :visible="activeForm == 'export'" append-to-body @close="onExportDialogClosed">
+    <el-dialog class="customDialogClass" title="导出" width="90%" :visible="activeForm == 'export'" append-to-body @close="onExportDialogClosed">
       <exportLayout :columns="gridHeader" :type="'exprot'" @on-export-clicked="onExportClicked($event)"></exportLayout>
     </el-dialog>
-    <el-dialog title="管理子表" width="90%" :visible="activeForm == 'manageChildList'" append-to-body
+    <el-dialog class="customDialogClass" title="管理子表" width="90%" :visible="activeForm == 'manageChildList'" append-to-body
       @close="activeForm = 'xx'">
       <popup-mem-list list-type="detaillist" name="inlinelist" v-if="activeForm == 'manageChildList'" ref="inlineList"
         :service="props4ActivePopupMemList.inline_list_select_service" :foreign-key="props4ActivePopupMemList.foreign_key"
@@ -348,7 +348,7 @@
         @list-loaded="onPopupMemListLoaded" @close-pop="activeForm = 'xx'">
       </popup-mem-list>
     </el-dialog>
-    <el-dialog ref="batchApprove" title="审批" width="90%" :visible="activeForm == 'batchApprove'" append-to-body
+    <el-dialog class="customDialogClass" ref="batchApprove" title="审批" width="90%" :visible="activeForm == 'batchApprove'" append-to-body
       @close="activeForm = 'xx'">
       <batchApprove @action-success="actionSuccess()" :approvaList="approvaList" :approvalOptions="approvalOptions">测试
       </batchApprove>
@@ -366,7 +366,7 @@
       <img style="height:1rem;width:1rem;" :class="'image-' + src.id" @error="onerror" @load="onerror(src.url)"
         :src="src.url" v-for="(src, index) in imagesListRun" :key="index">
     </viewer>
-    <el-dialog custom-class="preview-dialog"
+    <el-dialog class="customDialogClass" custom-class="preview-dialog"
       :title="currentType === 'pdf' ? '第' + currentPage + '页/共' + pageCount + '页' : '预览'"
       :visible.sync="centerDialogVisible" width="50%" lock-scroll center>
 
@@ -397,7 +397,7 @@
 
       <!-- <el-image v-else  :src="currentUrl" lazy></el-image> -->
     </el-dialog>
-    <el-dialog title="二级密码验证" :show-close="false" width="40%" :close-on-click-modal="1 == 2" append-to-body
+    <el-dialog class="customDialogClass" title="二级密码验证" :show-close="false" width="40%" :close-on-click-modal="1 == 2" append-to-body
       :visible="activeForm == 'srv-auth-login'" @close="activeForm = 'xx'">
 
       <srvAuthLogin :serviceName="service" @srv-auth-success="srvAuthSuccess"></srvAuthLogin>
