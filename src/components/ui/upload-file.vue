@@ -50,6 +50,7 @@
                :on-remove="handleRemove"
                :on-success="handleSuccess"
                :on-change="fileChange"
+               :on-error="onErrorChange"
                :data="uploadParamsRun"
                :auto-upload="true"
                :file-list="fileLists"
@@ -62,6 +63,7 @@
       <el-button size="small" type="primary">点击上传</el-button>
       <!-- <el-button style="margin-left: 10px;" size="small" type="success" @click="requestUploadFile">上传到服务器</el-button> -->
       <div slot="tip" class="el-upload__tip">{{fileDesc}}</div>
+      <div slot="tip" class="el-upload__tip error" v-if="fileError" style="color:red;">{{fileError}}</div>
     </el-upload>
     <el-dialog
       custom-class="preview-dialog"
@@ -200,6 +202,7 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
         pageCount: 0,
         scale: 100, //放大系数
         currentUrlLike:'',
+        fileError:''
       }
     },
     created: function () {
@@ -256,6 +259,7 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
                     resolve(res.data)
                     return res.data
                   },  (err) => {
+                    console.error(res.message)
                     reject(err)
                   })
             })
@@ -460,15 +464,16 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
           this.$message.error('不能上传重复文件');
           return false
         }
-        
+        this.$set(this,'fileError','')
         
       },
+      
       fileChange(file, fileList){
         console.log("fileChange:::",file,fileList)
         if(fileList.length > 0){
           this.notUploaded = fileList.filter( item => !item.hasOwnProperty('file_no'))
         }
-		this.fileLists = fileList
+		    this.fileLists = fileList
       },
       async beforeRemove(file, fileList) {
         let self = this
@@ -494,9 +499,28 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
           }
         }
       },
+      onErrorChange(e){
+        if(e && e.status == 500 && e.message){
+          console.log(e.message)
 
+          try {
+              let res = JSON.parse(e.message)
+              console.log(res)
+                if(res.message){
+                  this.$set(this,'fileError',res.message)
+                }
+              
+          } catch (error) {
+            
+          }
+          
+        }
+        
+      },
       handleSuccess(response, file, fileList) {
         let self = this
+        
+        console.log('上传成功',response)
         if (response.state === undefined) {
           this.$message.info('上传成功！')
           self.uploadParams.file_no = response.file_no
