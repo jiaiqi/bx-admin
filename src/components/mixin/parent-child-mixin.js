@@ -85,43 +85,44 @@ export default {
           list = self.buildChildListConfig(self.childrenList)
         }
       }
-      for(let f in list){
-        let item = list[f]
-        for(let child in item){
-          let mainData = self.mainFormDatas
-          let data = self.mainFormDatas
-          let childs = item[child]
-          if(childs.length > 0){
-            for(let i = 0;i<childs.length;i++){
-                let showExpr = childs[i].foreign_key.show_child_list_expr
-                let isShow = childs[i].foreign_key.show_ui_child_table == '是' ? true : false
-                if (showExpr !== null && showExpr.startsWith("{{") && showExpr.endsWith("}}")) {
-                  // for expr 
-                  showExpr = showExpr.replace("{{", "").replace("}}", "");
+      // for(let f in list){
+      //   let item = list[f]
+      //   for(let child in item){
+      //     let mainData = self.mainFormDatas 
+      //     let data = self.mainFormDatas 
+      //     let childs = item[child]
+      //     if(childs.length > 0){
+      //       for(let i = 0;i<childs.length;i++){
+      //           let showExpr = childs[i].foreign_key.show_child_list_expr
+      //           let isShow = childs[i].foreign_key.show_ui_child_table == '是' ? true : false
+      //           if (showExpr !== null && showExpr.startsWith("{{") && showExpr.endsWith("}}")) {
+      //             // for expr 
+      //             showExpr = showExpr.replace("{{", "").replace("}}", "");
                   
-                  let mainData = self.mainFormDatas 
+      //             let mainData = self.mainFormDatas
                   
-                  try {
-                    isShow = eval(showExpr);
-                  } catch (e) {
-                  }
-                }else if(showExpr){
+      //             try {
+      //               isShow = eval(showExpr);
+      //             } catch (e) {
+      //               debugger
+      //             }
+      //           }else if(showExpr){
     
-                  try {
-                    console.log("showChildList",eval(showExpr),showExpr)
-                    isShow = eval(showExpr);
-                  } catch (e) {
-                  }
+      //             try {
+      //               console.log("showChildList",eval(showExpr),showExpr)
+      //               isShow = eval(showExpr);
+      //             } catch (e) {
+      //             }
                     
-                }
+      //           }
 
-                if(!isShow){
-                  childs.splice(i,1)  
-                }
-            }
-          }
-        }
-      }
+      //           if(!isShow){
+      //             childs.splice(i,1)  
+      //           }
+      //       }
+      //     }
+      //   }
+      // }
       return list
     },
     fieldChildKeys:function(){
