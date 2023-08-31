@@ -1,4 +1,4 @@
-<template >
+<template>
   <div :class="`${color} ll-small-button-tag`">
     {{ text }}
   </div>
@@ -9,8 +9,10 @@ import _ from "lodash";
 import Vue from "vue";
 
 export default {
-  data: {
-    class: "",
+  data() {
+    return {
+      class: "",
+    };
   },
 
   props: {
@@ -31,7 +33,7 @@ export default {
   box-sizing: border-box;
   padding: 2px 6px;
   border-radius: 7px;
-  font-size:12px;
+  font-size: 12px;
 }
 .orange {
   background: #feebe5;

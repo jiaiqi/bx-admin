@@ -235,7 +235,7 @@
       onFilterChange(e){
         this.onInputValue = e
         if(e){
-          let tabsConds = this.$refs.filterTabs.buildConditions()
+          let tabsConds = this.$refs.filterTabs?.buildConditions()
           this.relationCondition = tabsConds
         }
       },
@@ -253,7 +253,7 @@
       },
       getTableDatas(){
         let self = this
-        let tabsConds = this.$refs.filterTabs.buildConditions()
+        let tabsConds = this.$refs?.filterTabs?.buildConditions()
         // this.$set('relationCondition',tabsConds)
         this.relationCondition = tabsConds
         setTimeout(function(){
