@@ -85,6 +85,8 @@ export default {
           list = self.buildChildListConfig(self.childrenList)
         }
       }
+      // jiaqi-20230831注释 此处不处理子表显示隐藏 避免子表由主表某个字段的值控制显示隐藏 而主表的那个字段的值是由子表计数得到的时 子表数据还没查回来 主表那个字段值是0所以下面逻辑会导致这个子表不在子表的数组里，导致子表永远不会显示出来
+     
       // for(let f in list){
       //   let item = list[f]
       //   for(let child in item){
