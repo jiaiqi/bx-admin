@@ -15,8 +15,8 @@
                 <i  :key="index" v-if="item.button_type=='addchild'" @click="rowButtonClick('','')" class="el-icon-document-add"></i>
            </template>
 
-          <el-tree class="filter-tree" :data="treeData" :props="defaultProps" default-expand-all :filter-node-method="filterNode" :expand-on-click-node='1==2' highlight-current node-key="id" @node-click="handleNodeClick" ref="tree">
-
+          <el-tree style="max-height: 100vh;overflow-y: auto;" class="filter-tree" :data="treeData" :props="defaultProps"  :filter-node-method="filterNode" :expand-on-click-node='1==2' highlight-current node-key="id" @node-click="handleNodeClick" ref="tree">
+            <!-- default-expand-all -->
             <span class="custom-tree-node" slot-scope="{ node, data }">
               <span>{{ node.label }}</span>
               <span>

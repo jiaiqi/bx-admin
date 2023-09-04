@@ -7,9 +7,10 @@ import {getUnitData} from "../../util/UnitUtil";
 import * as DataUtil from "../../util/DataUtil";
 
 import batchAddMixin from "./batch-add-mixin";
+import { Loading } from 'element-ui';
 export function MissRequiredConditionError() {
 }
-
+let polling  = null
 export default {
   mixins: [
     batchAddMixin
@@ -505,8 +506,32 @@ export default {
       // if(type === '')
     // }
   },
-
+  beforeDestroy(){
+     console.log('列表销毁')
+     clearInterval(polling)
+  },
   methods: {
+    setPolling(){
+      let self = this
+       let time = 0
+       if(this.cfgJson && this.cfgJson.list_refresh_cfg){
+         let config = this.cfgJson.list_refresh_cfg
+         if(config.type.indexOf('data') !== -1){
+            
+            time = config.cycle
+            console.log('我是定时执行');//我是定时执行
+            polling = setInterval(function () {
+              // Loading.service({ fullscreen: true });
+              self.$message({
+                message: '数据更新成功.',
+                type: 'success'
+              });
+              self.refresh()  
+              
+            },time * 1000);
+         }
+       }
+    },
     cellStyle(){
        let style={}
        if(this.listCellsTextDispWarp){
@@ -2415,6 +2440,8 @@ export default {
               .forEach(button => (button.show = false));
             this.rowButton.forEach(button => (button.show = false));
           }
+
+          this.setPolling()  // 调用轮询逻辑
         })
         .then(_ => {
           this.listLoaded = true;
@@ -2802,5 +2829,6 @@ export default {
     this.uid = this._uid;
     window.list = window.list || {};
     window.list[this.service_name] = this;
+
   },
 };
