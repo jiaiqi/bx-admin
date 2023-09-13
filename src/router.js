@@ -402,6 +402,10 @@ routes.push( {
     path: '/inform',
     component: inForm
   },
+  {
+    path:'/platform',
+    component:()=>import('@/pages/platform/index.vue')
+  }
   // storeMonitor
 
   
