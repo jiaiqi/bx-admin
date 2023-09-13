@@ -13,7 +13,7 @@
             {{ item.count || "-" }}
             <!-- <el-statistic :value="item.count"> </el-statistic> -->
           </div>
-          <div class="unit">家</div>
+          <div class="unit">{{ item.unit || "家" }}</div>
         </div>
       </div>
       <div class="list-box">
@@ -55,6 +55,17 @@
                       {{ scope.row[column.columns] }}
                     </span>
                   </div>
+                </template>
+              </el-table-column>
+              <el-table-column width="120" label="操作">
+                <template slot-scope="scope">
+                  <el-button
+                    size="mini"
+                    type="info"
+                    v-if="curDetailBtn"
+                    @click="toDetail(scope.row)"
+                    >详情</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
@@ -187,11 +198,34 @@ export default {
     currentPage() {
       return this.currentTab?.page || {};
     },
+    curDetailBtn() {
+      return this.currentTab.rowButton?.find((item) => item.button_type == "detail");
+    },
   },
   mounted() {
     this.getAllCount();
   },
   methods: {
+    toDetail(row) {
+      if (this.curDetailBtn) {
+        const url = `/vpages/index.html#/detail/${this.currentTab.service}/${row.id}?srvApp=${this.currentTab.app}`;
+        var exeservice = this.curDetailBtn?.operate_service || this.curDetailBtn.service_name;
+        var tab_title = this.curDetailBtn.service_view_name;
+        var urlParams =
+          "/" + exeservice + "/" + row.id + "?srvApp=" + this.currentTab.app; //跳转
+        var disp_col = this.curDetailBtn?._disp_col;
+        var disp_value = row[disp_col]; //详情页面上的标签
+        tab_title = tab_title.replace("查询", "");
+        if (disp_value != null && disp_value != undefined && disp_value != "") {
+          tab_title = disp_value + "(" + tab_title + "详情)";
+        } else {
+          tab_title = tab_title + "详情";
+        }
+        this.addTab("detail", urlParams, tab_title, null, this.curDetailBtn);
+      }
+
+      // this.addTabByUrl(url,`${this.currentTab}`)
+    },
     changePage(num) {
       const item = this.tabs[this.currentTabIndex];
       item.page.pageNo = num;
@@ -281,7 +315,6 @@ export default {
         if (item.service) {
           const res = await this.getTableData(item, i);
           if (res?.data) {
-            debugger;
             this.$set(item, "data", res.data);
             this.$set(item, "page", res.page);
           }
