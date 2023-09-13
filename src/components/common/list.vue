@@ -324,7 +324,7 @@
                      @form-loaded="onUpdateFormLoaded($refs['update-form'])"
                      @submitted2mem="onUpdate2MemSubmitted">
       </simple-update> -->
-    </el-dialog>
+    </el-dialog> 
 
     <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body @close="activeForm = 'xx'">
       <import-dialog :service="addService" :sign-service-name="addService" v-if="activeForm == 'import'"
