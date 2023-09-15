@@ -4,7 +4,7 @@
       <div class="ll-card-block">
         <el-card shadow="always" style="border-radius: 10px">
           <div class="card-row">
-            <el-row gutter="24">
+            <el-row :gutter="24">
               <el-col :span="6">
                 <div class="ll-custom-card">
                   <div class="left">
@@ -77,8 +77,11 @@
         </el-card>
       </div>
       <div class="ll-bottom-content">
-        <div class="left">
-          <el-card shadow="always" style="border-radius: 10px">
+        <div class="left" style="">
+          <el-card
+            shadow="always"
+            style="border-radius: 10px; height: calc(100% - 273px)"
+          >
             <div style="position: relative" class="map-container">
               <div style="position: relative" class="title">
                 <span class="left-title">车辆管理</span>
@@ -87,7 +90,7 @@
                   <span class="blue flex-center">{{ val.time }}</span>
                 </div>
 
-                <div
+                <!-- <div
                   @click="
                     $router.push({
                       path: 'allLine',
@@ -111,7 +114,7 @@
                     "
                     src="./static/moreIcon.png"
                   />
-                </div>
+                </div> -->
               </div>
 
               <div
@@ -120,7 +123,6 @@
                   right: 10px;
                   bottom: 0px;
                   z-index: 85;
-                  width: 300px;
                 "
                 class="ll-map-legend"
               >
@@ -142,8 +144,12 @@
             style="display: flex; justify-content: "
             class="echarts-container"
           >
-            <div class="zx echarts percent" style="margin-right:20px">
-              <el-card class="height-percent" shadow="always" style="border-radius: 10px">
+            <div class="zx echarts percent" style="margin-right: 20px">
+              <el-card
+                class="height-percent"
+                shadow="always"
+                style="border-radius: 10px"
+              >
                 <div
                   style="
                     position: relative;
@@ -187,7 +193,11 @@
             </div>
 
             <div class="zx echarts">
-              <el-card class="height-percent" shadow="always" style="border-radius: 10px">
+              <el-card
+                class="height-percent"
+                shadow="always"
+                style="border-radius: 10px"
+              >
                 <div
                   style="
                     position: relative;
@@ -208,16 +218,16 @@
                     </div>
 
                     <div>
-                      <el-date-picker
+                      <!-- <el-date-picker
                         size="mini"
                         style="width: 166px"
                         type="date"
                         placeholder="选择日期"
                         v-model="selectDate"
                       >
-                      </el-date-picker>
+                      </el-date-picker> -->
                     </div>
-                    <div
+                    <!-- <div
                       style="
                         display: flex;
                         align-items: center;
@@ -235,7 +245,7 @@
                         "
                         src="./static/moreIcon.png"
                       />
-                    </div>
+                    </div> -->
                   </div>
                   <div
                     ref="twoEcharts"
@@ -249,11 +259,15 @@
         </div>
 
         <div class="right">
-          <el-card shadow="always" style="border-radius: 10px" class="height-percent">
+          <el-card
+            shadow="always"
+            style="border-radius: 10px"
+            class="height-percent"
+          >
             <div class="rank-table-parent">
               <div class="title-row">
                 <span class="left-title">物流路线排名</span>
-                <div class="ll-more">更多：</div>
+                <!-- <div class="ll-more">更多：</div> -->
               </div>
 
               <div class="rank-table">
@@ -266,6 +280,11 @@
                     :label="item.label"
                     :width="item.width"
                   >
+                    <template slot-scope="scope">
+                      <span slot="content">
+                        {{ scope.row[item.prop] }}<br />
+                      </span>
+                    </template>
                   </el-table-column>
                 </el-table>
               </div>
@@ -577,7 +596,9 @@ export default {
                 return false;
               }
             });
-            return `${findItem.name}  ${findItem.perncent.toFixed(2)}% ${findItem.value}次`;
+            return `${findItem.name}  ${findItem.perncent.toFixed(2)}% ${
+              findItem.value
+            }次`;
           },
         },
         title: {
@@ -731,7 +752,9 @@ export default {
           callBack: {
             render(item, index, data) {
               console.log(_this.service_api, "===item=www=item==");
-              let headImg = `${_this.service_api.imageFileNo}${item.driver_image}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+              let headImg = `${_this.service_api.imageFileNo}${
+                item.driver_image
+              }&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
               let poinImage;
               let className = "";
               let name = "";
@@ -769,7 +792,7 @@ export default {
                   mouseover: ({ cover }) => {
                     $(cover.dom).popover("toggle");
                   },
-                   mouseout: ({ cover }) => {
+                  mouseout: ({ cover }) => {
                     $(cover.dom).popover("toggle");
                   },
                 },
@@ -797,9 +820,7 @@ export default {
                                     ${item.car_no}
                               </div>
 
-                               <div class="ll-map-row">
-                                   未完成订单数${item.order_count_in_transit}
-                              </div>
+                              
 
                            </div>
              </div>
@@ -880,16 +901,17 @@ export default {
     this.tableHeaders = [
       {
         label: "first",
-        formatter: (one, two, thee) => {
+        formatter: (row, column) => {
           let tail;
-          if (one.index > 2) {
+          if (row.index > 2) {
             tail = "last";
           } else {
-            tail = one.index;
+            tail = row.index;
           }
+          debugger
           return (
             <div class={`ll-circle color${tail}`}>
-              <span>{one.index + 1}</span>
+              <span>{row.index + 1}</span>
             </div>
           );
         },
@@ -900,13 +922,13 @@ export default {
       {
         label: "地区",
         prop: "ln_name",
-        width: "80",
+        width: "180",
         formatter,
       },
       {
         label: "路线",
         prop: "ln_name",
-        width: "80",
+        width: "180",
         formatter,
       },
       {
@@ -922,8 +944,6 @@ export default {
         formatter,
       },
     ];
-
-    console.log(this.tableHeaders, "==tableHeaders==");
   },
 
   mounted: async function () {
@@ -991,11 +1011,14 @@ export default {
   display: flex;
   justify-content: space-between;
 }
-
+.map-container {
+  height: 100%;
+}
 #map-box {
   //  width:978px;
   width: 100%;
-  height: 307px;
+  // height: 307px;
+  height: 100%;
 }
 
 .ll-circle {
@@ -1032,7 +1055,8 @@ export default {
   color: rgba(193, 198, 213, 1);
   font-size: 14px;
   text-align: right;
-  font-family: PingFangSC-regular;
+  // font-family: PingFangSC-regular;
+  display: none;
 }
 
 .flex-center {
@@ -1083,7 +1107,8 @@ export default {
     display: flex;
     flex-direction: column;
     padding-right: 20px;
-    flex: 1;
+    // flex: 1;
+    width: 70%;
 
     .map-container {
       // background: red;
@@ -1127,15 +1152,16 @@ export default {
       .echarts {
         box-sizing: border-box;
 
-        width: 594px;
+        min-width: 594px;
         height: 253px;
+        flex: 1;
       }
     }
   }
 
   .right {
     height: 100%;
-    // flex: 1;
+    flex: 1;
   }
 }
 
@@ -1184,5 +1210,7 @@ export default {
     box-sizing: border-box;
     padding-bottom: 20px;
   }
+}
+.ll-block {
 }
 </style>

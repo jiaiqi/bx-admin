@@ -8,7 +8,7 @@ export default function () {
     // https://login.100xsys.cn:1443/
     const instance = axios.create({
         baseURL: `${window.backendIpAddr}/lgs/`,
-        timeout: 1000,
+        timeout: 1000 * 20,
         withCredentials: true,
         // headers: {'X-Custom-Header': 'foobar'}
     });
@@ -113,7 +113,7 @@ export default function () {
     })
     const instanceYq = axios.create({
         baseURL: `${window.backendIpAddr}/lpark`,
-        timeout: 1000,
+        timeout: 1000 * 20,
         withCredentials: true,
         // headers: {'X-Custom-Header': 'foobar'}
     });
@@ -218,7 +218,7 @@ export default function () {
 
     const instance3 = axios.create({
         baseURL: `${window.backendIpAddr}`,
-        timeout: 1000,
+        timeout: 1000 * 20,
         withCredentials: true,
         // headers: {'X-Custom-Header': 'foobar'}
     });
