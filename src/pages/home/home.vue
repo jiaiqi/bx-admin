@@ -280,11 +280,12 @@
                     :label="item.label"
                     :width="item.width"
                   >
-                    <template slot-scope="scope">
-                      <span slot="content">
+                    <!-- <template slot-scope="scope">
+
+                      <span slot="content" >
                         {{ scope.row[item.prop] }}<br />
                       </span>
-                    </template>
+                    </template> -->
                   </el-table-column>
                 </el-table>
               </div>
@@ -908,7 +909,6 @@ export default {
           } else {
             tail = row.index;
           }
-          debugger
           return (
             <div class={`ll-circle color${tail}`}>
               <span>{row.index + 1}</span>
@@ -1003,6 +1003,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.ll-content{
+  width: 100vw;
+}
 .height-percent {
   height: 100% !important;
 }
@@ -1109,7 +1112,7 @@ export default {
     padding-right: 20px;
     // flex: 1;
     width: 70%;
-
+    overflow: hidden;
     .map-container {
       // background: red;
       display: flex;
@@ -1148,13 +1151,14 @@ export default {
       padding-top: 20px;
       display: flex;
       justify-content: space-between;
-
+      overflow: hidden;
       .echarts {
         box-sizing: border-box;
 
-        min-width: 594px;
+        // min-width: 594px;
         height: 253px;
         flex: 1;
+        width: 100%;
       }
     }
   }
