@@ -12,6 +12,7 @@
            :parentPageType="parentPageType"
           ref="basicForm"
           :loaderServiceProp="selectSrvName"
+          :initOrigin="initOrigin"
           :service="service"
           :pageIsDraft="pageIsDraft"
           :default-conditions="defaultConditions"
@@ -293,6 +294,10 @@ export default {
   },
   mixins: [ ParentChildMixin, ],
   props: {
+    initOrigin:{
+      type:String,
+      default:'none'
+    },
     childrenLists:{
       type:Array
     },

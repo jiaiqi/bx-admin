@@ -325,6 +325,7 @@
       :mainService="mainService"
         name="list-update"
         ref="update-form"
+        :initOrigin="'dialog'"
         v-if="activeForm == 'update'"
         :service="getUpdateService"
         :pk="getClickedRowPk('update')"

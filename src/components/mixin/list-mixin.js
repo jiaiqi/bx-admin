@@ -317,9 +317,32 @@ export default {
         }
       }
     },
+    '$store.getters.tableButtonsPopup': {
+      deep: true,
+      handler(newVal,oldVal) {
+        console.log('$store.state.tableButtonsPopup ::::::',newVal,oldVal)
+        // let activeModel = null 
+        // if(newVal && newVal[this.service] == this.serviceName  && !activeModel){
+        //   activeModel = newVal[this.service]
+        //   console.log('$store.state.tableButtonsPopup',activeModel)
+        // }
+        
+      }
+    }
   },
 
   computed: {
+    tableButtonsPopupRun() {
+          let val = this.$store.getters.getTableButtonsPopup
+          let obj = null 
+          console.log('按钮状态更新了：',val)
+          if(val && val.hasOwnProperty(this.service)){
+            obj = val[this.service]
+          }
+          
+          return obj;　　//需要监听的数据
+      
+    },
     listCellsTextDispWarp(){
         let config = false
         if(this.cfgJson && this.cfgJson.hasOwnProperty('list_style_json') && this.cfgJson.list_style_json && this.cfgJson.list_style_json.hasOwnProperty('list_cells_text_disp')){
@@ -1407,6 +1430,8 @@ export default {
       }else if ("customize" == type) {
 
         if(button.hasOwnProperty('version') && button.version == 'v2'){
+
+
           this.customButtonV2(button,row)
         }else{
           let data = [row];
@@ -1421,6 +1446,19 @@ export default {
             this.customizeOperate(operate_item, data);
           }
         }
+
+        let pageKey = {
+          service:operate_item.service,
+           buttonsKey:`${operate_item["operate_service"]}-${operate_item.id}`,
+           buttonType:operate_item.operate_type,
+           buttonMode:operate_item.servcie_type,
+           submitState:false
+       }
+       console.log(operate_item)
+       this.$store.commit("setTableButtonsPopup", {
+         ...pageKey
+       })
+       // 初始化弹出表单状态
         
       }else if("batch_approve" == type){
         // 流程批量审批
@@ -2328,6 +2366,9 @@ export default {
             }
            
           }
+
+          
+    
           
           // draft_support为true时表示上次操作有保存为草稿
           if(respData.hasOwnProperty('draft_support')){
@@ -2553,7 +2594,7 @@ export default {
         (header.srvcol &&
           header.srvcol.option_list_v2 &&
           header.srvcol.option_list_v2.service_label) ||
-        "详情";
+          row[header.column] + "详情";
       this.addTabByUrl(this.getLinkUrl(row, header), tabTitle);
     },
 

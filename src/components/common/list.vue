@@ -189,7 +189,7 @@
             </el-table-column>
 
             <el-table-column label="操作" header-align="left" width="240" fixed="right"
-              v-if="!readOnly && listType != 'selectlist' && !hideButtons && sortedRowButtons.length > 0">
+              v-if="!readOnly && listType != 'selectlist' && !hideButtons && sortedRowButtons.length > 0" style="box-sizing: border-box;">
               <template slot-scope="scope" v-if="getColumnsShow(scope.row)">
                 <!-- <el-button v-for="(button, index) in sortedRowButtons"
                             :key="index"
@@ -205,40 +205,43 @@
                             v-show="isRowButtonVisible(button, scope.row)">
                     {{ getButtonName(button, scope.row) }}
                   </el-button> -->
-                <span v-for="(button, index) in sortedRowButtons" :key="index" style="margin-right:10px"
-                  v-if="getDispExps(button, scope.row, scope.$index) && button.permission"
-                  v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row, scope.$index)">
-                  <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
-                    :type="button._moreConfig.type" :icon="button._moreConfig.icon"
-                    :round="button._moreConfig.style !== '' && button._moreConfig.style === 'round'"
-                    :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
-                    :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
-                    :disabled="button.evalDisable()"
-                    v-if="button.button_type !== '_btn_group' && getButtonOptSrv(button, scope.row, 'isShow')">
-                    {{ getButtonName(button, scope.row) }}
-                  </el-button>
-                  <el-dropdown
-                    v-else-if="button.button_type === '_btn_group' && button.buttons.length > 0 && getButtonDispExps(button.buttons, scope.row, scope.$index)">
-                    <el-button :type="button.type" :size="button.size" plain>
-                      {{ button.button_name }}
-                      <i class="el-icon-arrow-down el-icon--right"></i>
-                    </el-button>
+                  <div style="margin-bottom: -5px;">
+                    <div v-for="(button, index) in sortedRowButtons" :key="index" style="margin-right:5px;margin-bottom:5px;display:inline-block;"
+                        v-if="getDispExps(button, scope.row, scope.$index) && button.permission"
+                        v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row, scope.$index)">
+                        <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
+                          :type="button._moreConfig.type" :icon="button._moreConfig.icon"
+                          :round="button._moreConfig.style !== '' && button._moreConfig.style === 'round'"
+                          :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
+                          :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
+                          :disabled="button.evalDisable()"
+                          v-if="button.button_type !== '_btn_group' && getButtonOptSrv(button, scope.row, 'isShow')">
+                          {{ getButtonName(button, scope.row) }}
+                        </el-button>
+                        <el-dropdown
+                          v-else-if="button.button_type === '_btn_group' && button.buttons.length > 0 && getButtonDispExps(button.buttons, scope.row, scope.$index)">
+                          <el-button :type="button.type" :size="button.size" plain>
+                            {{ button.button_name }}
+                            <i class="el-icon-arrow-down el-icon--right"></i>
+                          </el-button>
 
-                    <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="(subtns, i) in button.buttons" :key="i">
-                        <el-button @click="rowButtonClick(subtns, scope.row)" :size="subtns._moreConfig.size"
-                          :type="subtns._moreConfig.type" :icon="subtns._moreConfig.icon"
-                          :round="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'round'"
-                          :plain="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'plain'"
-                          :circle="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'circle'"
-                          :disabled="subtns.evalDisable()"
-                          v-show="isRowButtonVisible(subtns, scope.row, scope.$index) && (getDispExps(subtns, scope.row) && subtns.permission) && getButtonOptSrv(subtns, scope.row, 'isShow')">{{
-                            subtns.button_name }}</el-button>
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
+                          <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item v-for="(subtns, i) in button.buttons" :key="i">
+                              <el-button @click="rowButtonClick(subtns, scope.row)" :size="subtns._moreConfig.size"
+                                :type="subtns._moreConfig.type" :icon="subtns._moreConfig.icon"
+                                :round="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'round'"
+                                :plain="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'plain'"
+                                :circle="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'circle'"
+                                :disabled="subtns.evalDisable()"
+                                v-show="isRowButtonVisible(subtns, scope.row, scope.$index) && (getDispExps(subtns, scope.row) && subtns.permission) && getButtonOptSrv(subtns, scope.row, 'isShow')">{{
+                                  subtns.button_name }}</el-button>
+                            </el-dropdown-item>
+                          </el-dropdown-menu>
 
-                  </el-dropdown>
-                </span>
+                        </el-dropdown>
+                      </div>
+                  </div>
+               
                 <!-- <el-badge  class="table-row-badge" 
                       v-if="isMem() && isDirtyRow(scope.row)"
                       :value="getDirtyRowTagText(scope.row)"
@@ -306,7 +309,7 @@
     <el-dialog class="customDialogClass" title="编辑" width="90%" :visible="activeForm == 'update'" :close-on-click-modal="1 == 2" append-to-body
       @close="activeForm = 'xx'">
 
-      <update name="list-update"  :mainService="mainService"  ref="update-form" v-if="activeForm == 'update'" :service="getUpdateService"
+      <update name="list-update"  :mainService="mainService"  ref="update-form" v-if="activeForm == 'update'" :initOrigin="'dialog'" :service="getUpdateService"
         :pk="getClickedRowPk('update')" :pageIsDraft="activeTabName" :initLoad="initLoad"
         :defaultValues="clickedRow['update']" :submit2-db="storageType == 'db'" :parentPageType="listType"
         :haveDraft="isDraft" :parentMainFormDatas="listMainFormDatas"
