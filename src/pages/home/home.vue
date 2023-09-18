@@ -586,7 +586,8 @@ export default {
         legend: {
           data: legends,
           icon: "circle",
-          x: "400",
+          // x: "400",
+          x:"right",
           y: "center",
           orient: "align",
           formatter(...array) {
@@ -604,7 +605,8 @@ export default {
         },
         title: {
           text: allSum,
-          left: "22%",
+          left:'18%',
+          // left: "center",
           top: "48%",
           textStyle: {
             color: "rgba(50, 66, 116, 1)",
@@ -614,7 +616,9 @@ export default {
         },
         graphic: {
           type: "text",
-          left: "24%",
+          // left: "center",
+          left:'18%',
+
           top: "35%",
           style: {
             text: "总运次",
@@ -628,7 +632,8 @@ export default {
           {
             name: "运动情况",
             type: "pie",
-            radius: ["70%", "88%"],
+            radius: ['70%', '88%'],
+            // center:'center',
             center: ["28%", "50%"],
             avoidLabelOverlap: false,
             label: {
