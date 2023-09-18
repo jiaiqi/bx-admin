@@ -587,7 +587,7 @@ export default {
           data: legends,
           icon: "circle",
           // x: "400",
-          x:"right",
+          x: "right",
           y: "center",
           orient: "align",
           formatter(...array) {
@@ -605,7 +605,7 @@ export default {
         },
         title: {
           text: allSum,
-          left:'18%',
+          left: "18%",
           // left: "center",
           top: "48%",
           textStyle: {
@@ -616,8 +616,7 @@ export default {
         },
         graphic: {
           type: "text",
-          // left: "center",
-          left:'18%',
+          left: "20%",
 
           top: "35%",
           style: {
@@ -632,7 +631,7 @@ export default {
           {
             name: "运动情况",
             type: "pie",
-            radius: ['70%', '88%'],
+            radius: ["70%", "88%"],
             // center:'center',
             center: ["28%", "50%"],
             avoidLabelOverlap: false,
@@ -718,11 +717,20 @@ export default {
       let conditions = {
         serviceName: "srvwuliu_car_select",
         colNames: ["*"],
-        condition: [],
-        relation_condition: {},
+        condition: [
+          {
+            colName: "last_lon",
+            ruleType: "ne",
+            value: "null",
+          },
+          {
+            colName: "last_lat",
+            ruleType: "ne",
+            value: "null",
+          },
+        ],
         // "page": { "pageNo": 1, "rownumber": 10 },
         order: [],
-        draft: false,
         query_source: "list_page",
       };
       // console.log(this, "===this.$http2==this.$http2==")
@@ -759,7 +767,7 @@ export default {
             render(item, index, data) {
               console.log(_this.service_api, "===item=www=item==");
               let headImg = `${_this.service_api.imageFileNo}${
-                item.driver_image
+                item.car_image
               }&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
               let poinImage;
               let className = "";
@@ -820,7 +828,10 @@ export default {
                            <div class="ll-map-right">
                               <div class="ll-map-row">
                                  <div>${item.driver_name}</div>
-                                 <div style="color:white" class="ll-map-jd ${className}">${item.order_rcv_status}</div>
+                                 <div style="color:white" class="ll-map-jd ${className}">${
+                  item.trans_status
+                  //  item.order_rcv_status
+                }</div>
                               </div>
                               <div class="ll-map-row">
                                     ${item.car_no}
@@ -939,13 +950,13 @@ export default {
       {
         label: "运次",
         prop: "depart_count",
-        width: "100",
+        // width: "100",
         formatter,
       },
       {
         label: "货运量（t）",
         prop: "trans_goods_weight_t",
-        width: "120",
+        // width: "120",
         formatter,
       },
     ];
@@ -1008,7 +1019,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.ll-content{
+.ll-content {
   width: 100vw;
 }
 .height-percent {
@@ -1115,8 +1126,8 @@ export default {
     display: flex;
     flex-direction: column;
     padding-right: 20px;
-    // flex: 1;
-    width: 70%;
+    flex: 1;
+    // width: 70%;
     overflow: hidden;
     .map-container {
       // background: red;
@@ -1127,7 +1138,7 @@ export default {
         box-sizing: border-box;
         padding-bottom: 16px;
         display: flex;
-
+        flex-wrap: wrap;
         .left-title {
           color: black;
           font-weight: 800;
@@ -1170,7 +1181,8 @@ export default {
 
   .right {
     height: 100%;
-    flex: 1;
+    // flex: 1;
+    min-width: 30%;
   }
 }
 
