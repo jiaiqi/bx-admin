@@ -175,7 +175,7 @@ export default {
           name: "金融",
           unit: "家",
           app: "fin",
-          service: "srvfin_service_provider_select",
+          service: "srvfin_service_provider_all_select",
           columns: [],
           data: [],
           page: {
