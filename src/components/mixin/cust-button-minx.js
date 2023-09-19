@@ -640,6 +640,8 @@ export default {
      */
     customize_popup(item, operateData) {
 
+      
+      
       operateData = this.pre_data_handle(item, operateData);
       var service = item["operate_service"];
       var _service = item.service
@@ -704,6 +706,7 @@ export default {
         params.formType= "simple-update";
         otherParams["buttonInfo"]=item;
         params["otherParams"]=otherParams;
+        otherParams['initOrigin'] = 'dialog'
         this.popupDialog(params);
  
       } else if ("编辑列表弹出" == operate_type) {

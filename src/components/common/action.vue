@@ -148,6 +148,8 @@ export default {
               self.isDraft
             );
           } else if (self.info.invokeFunc) {
+
+
             // return self.$refs.executor.run(self.info,self.draftDataKey,self.isDraft);
             // return Promise.resolve(self.info.invokeFunc());
             return Promise.resolve(self.info.invokeFunc());
@@ -164,6 +166,31 @@ export default {
               self.$message.error(response.data.resultMessage || "提交失败！");
               throw "submit err";
             }
+          }
+          
+          if(response && response.data && response.data.state == "SUCCESS"){
+            console.log('提交成功',self.info)
+            if(self.info.nav2Location && self.info.nav2Location.name == "list" && self.info.nav2Location.params){
+               let srv = self.info.nav2Location.params.service_name
+               let tableButtonsPopup = this.$store.getters.getTableButtonsPopup()
+               if(srv && tableButtonsPopup.hasOwnProperty(srv)){
+                let activeMode = tableButtonsPopup[srv]
+                activeMode['submitState'] = true
+                this.$store.commit("setTableButtonsPopup", {
+                  ...activeMode
+                })
+               }
+            }
+            // let pageKey = {
+            //     service:operate_item.service,
+            //     buttonsKey:`${operate_item["operate_service"]}-${operate_item.id}`,
+            //     buttonType:operate_item.operate_type,
+            //     buttonMode:operate_item.servcie_type,
+            //     submitState:false
+            // }
+            // this.$store.commit("setTableButtonsPopup", {
+            //   ...pageKey
+            // })
           }
         })
         .then(value => {

@@ -36,14 +36,22 @@
       <el-tab-pane label="按照结构数据对比导出" name="compareExport">
         <el-row :gutter="10">
           <el-col :span="12">
-            <el-card class="box-card" shadow="never">
-              <div slot="header" class="clearfix">
+            <el-card class="box-card" shadow="never" :body-style="{'padding-top':'10px','padding-bottom':'10px'}">
+              <div slot="header" class="clearfix" style="display: flex;">
                 <span>源数据——{{ source_current_link }} </span>
                 <el-checkbox v-model="syscoreData">SYSCORE数据</el-checkbox>
                 <el-checkbox v-model="bizData">业务数据</el-checkbox>
-                <el-button icon="el-icon-download" @click="exportddl('source_form')" size="small" style="float: right" type="primary">导出升级脚本</el-button>
+
+
+                <el-button type="primary" icon="el-icon-refresh" @click="testConnect('source_form')">点击连接当前应用数据源</el-button>
+                <!-- <el-button icon="el-icon-download" @click="exportddl('source_form')" size="small" style="float: right" type="primary">导出升级脚本</el-button> -->
               </div>
-              <el-button type="primary" icon="el-icon-refresh" @click="testConnect('source_form')">点击连接当前应用数据源</el-button>
+              <div style="display:flex;">
+                <el-input  v-model="iniputUseAcc" :placeholder="'请输入用户名导出'">
+                  </el-input>
+    <el-button  slot="append" icon="el-icon-download" @click="exportddl('source_form')" size="small" style="float: right" type="primary">导出升级脚本</el-button>
+              </div>
+  
             </el-card>
           </el-col>
 
@@ -164,6 +172,7 @@ export default {
   props: {},
   data() {
     return {
+      iniputUseAcc:'',
       service: "",
       uuid: "",
       table_options: [],
