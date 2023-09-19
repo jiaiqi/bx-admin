@@ -294,6 +294,10 @@ export default {
         dataMap["syscore"] = this.syscoreData;
         dataMap["bizdata"] = this.bizData;
         dataMap["target_source_name"] = this.target_source_name;
+        if(this.iniputUseAcc){
+          dataMap["userAccount"] = this.iniputUseAcc;
+        }
+        
 
         listData.push(dataMap);
 
