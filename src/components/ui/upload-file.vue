@@ -174,6 +174,11 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
           set:function(v){
               this.uploadParams[v.key] = v.value
           }
+        },
+        noneFileType:function(){
+          let filterType = this.field.info.moreConfig &&  this.field.info.moreConfig !== null && this.field.info.moreConfig.fileType ? this.field.info.moreConfig.fileType : ''
+          filterType = filterType.split(',')
+          return filterType
         }
     },
     data() {
@@ -459,6 +464,17 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
               this.$message.error('只能上传' + this.fileType + '文件!');
               return false
             }
+          }
+
+          if(Array.isArray(this.noneFileType) && this.noneFileType.length > 0){
+            let currentFileType = file.name.split('.')
+            currentFileType = currentFileType[currentFileType.length - 1]
+            
+            if (!this.noneFileType.includes(currentFileType)) {
+              this.$message.error(`只能上传${this.noneFileType.join('/')}格式文件!`);
+              return false
+            }
+
           }
         }else{
           this.$message.error('不能上传重复文件');
