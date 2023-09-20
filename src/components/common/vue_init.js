@@ -32,8 +32,8 @@ function init() {
       // back_server_port: "4678",
 
       
-      // back_server_ip: "192.168.0.155",    // 240 139.129.128.155:5021
-      // back_server_port: "8888",
+      back_server_ip: "192.168.0.155",    // 240 139.129.128.155:5021
+      back_server_port: "8888",
       // back_server_ip: "192.168.0.111",    // 240 139.129.128.155:5021   零售   http://192.168.0.155:8106
       // back_server_port: "8080",
       // back_server_ip: "192.168.0.192",  // 199
@@ -60,9 +60,9 @@ function init() {
       // back_server_protocol: "https",
       // back_server_ip: "wx.100xsys.cn",
       // back_server_ip: "srvms.100xsys.cn",    // 100xsys
-      back_server_ip:"192.168.0.111",  // 公路研究院
+      // back_server_ip:"192.168.0.111",  // 公路研究院
       // back_server_port: "443",
-      back_server_port: "180",
+      // back_server_port: "180",
       // back_server_port: "",
     };
     backendIpAddr =

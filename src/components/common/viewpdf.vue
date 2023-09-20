@@ -137,6 +137,7 @@ export default {
       // })
       // this.src = src
       this.src = pdf.createLoadingTask({ url: encodeURI(pdfsrc), CMapReaderFactory })
+      console.log('view-pdf:',this.src)
     }
   }
 };
