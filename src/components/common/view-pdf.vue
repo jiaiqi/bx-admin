@@ -34,18 +34,18 @@ export default {
           // debugger
           // 返回的文件流，转换成blob对象
           // var blob = new Blob([ xhr.response ], { type: xhr.response.type });
-          var blob = new Blob([ xhr.response ], { type:  'application/pdf' });
-           let file =  new File([blob], name)
+          var blob = new Blob([ xhr.response ], { type:  'application/pdf;charset-UTF-8;' });
+           let file =  new File([xhr.response ], name)
           // 转换成blob类型的url
           // var blobUrl = URL.createObjectURL(blob);
-          // var blobUrl = URL.createObjectURL(file);
+          var fileUrl = URL.createObjectURL(file);
           // blob = new Blob([ file ], { type: xhr.response.type });
           var blobUrl = URL.createObjectURL(blob);
 
           document.getElementById('pdf-viewer').src = blobUrl
           
-
-          console.log('name:',file)
+          document.getElementById('pdf-viewer').title = name
+          console.log('name:',file,'url',fileUrl)
         }
       };
       xhr.send(JSON.stringify(paramData));
