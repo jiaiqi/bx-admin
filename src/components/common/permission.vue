@@ -13,15 +13,16 @@
         <el-tabs v-model="activeName">
 
           <el-tab-pane label="应用菜单" name="app_menu">
-
-            <label for="role_no" class="el-form-item__label">选择设置应用:</label>
+            
+            <div>
+            <label for="role_no" class="el-form-item__label" style="float: none;">选择设置应用:</label>
             <el-select @change="menuAppchange" v-model="selectMenuApp" filterable allow-create default-first-option placeholder="请选择设置应用">
               <el-option v-for="item in apps" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
 
             <el-button v-if="readonly=='1'" type="primary" @click="submitAppMenuData()">设置权限</el-button>
-
+            </div>
             <el-row>
               <el-col :span="10">
 
@@ -79,14 +80,16 @@
           </el-tab-pane>
 
           <el-tab-pane label="应用接口" name="app_srv">
-
-            <label for="role_no" class="el-form-item__label">选择设置应用:</label>
+            <div>
+              <label for="role_no" class="el-form-item__label" style="float: none;">选择设置应用:</label>
             <el-select @change="srvAppchange" v-model="selectSrvApp" filterable allow-create default-first-option placeholder="请选择设置应用">
               <el-option v-for="item in apps" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
 
             <el-button v-if="readonly=='1'" type="primary" @click="submitAppSrvData()">设置权限</el-button>
+            </div>
+           
 
             <el-row>
               <el-col :span="10">
