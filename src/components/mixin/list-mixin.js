@@ -974,7 +974,7 @@ export default {
       }
 
       // 使用后端返回的参数控制按钮显示隐藏
-      if(typeof rowIndex==='number' && [0,1].includes(item._rowDisp[rowIndex])){
+      if(item._rowDisp && typeof rowIndex==='number' && [0,1].includes(item._rowDisp[rowIndex])){
         result = item._rowDisp[rowIndex]
       }
 
