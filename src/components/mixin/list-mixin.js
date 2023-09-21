@@ -545,10 +545,10 @@ export default {
             console.log('我是定时执行');//我是定时执行
             polling = setInterval(function () {
               // Loading.service({ fullscreen: true });
-              self.$message({
-                message: '数据更新成功.',
-                type: 'success'
-              });
+              // self.$message({
+              //   message: '数据更新成功.',
+              //   type: 'success'
+              // });
               self.refresh()  
               
             },time * 1000);
@@ -1909,7 +1909,7 @@ export default {
               null,
               relationCondition,
               this.draftRun,
-              "list_page",
+              "list_page", 
               srvAuth,
               this.vpageNo
             ).then(response => {
