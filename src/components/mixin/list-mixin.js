@@ -482,7 +482,7 @@ export default {
 
       if(Array.isArray(this.gridData) && this.gridData.length>0){
         // 至少某一行要能显示出来 才返回这个按钮
-        sorted = sorted.filter(btn=>this.gridData.some(item=>this.getDispExps(btn,item)))
+        sorted = sorted.filter(btn=>this.gridData.some((item,index)=>this.getDispExps(btn,item,index)))
       }
 
 
@@ -974,7 +974,7 @@ export default {
       }
 
       // 使用后端返回的参数控制按钮显示隐藏
-      if(Array.isArray(item?._rowDisp)&&[0,1].includes(item._rowDisp[rowIndex])){
+      if(typeof rowIndex==='number' && [0,1].includes(item._rowDisp[rowIndex])){
         result = item._rowDisp[rowIndex]
       }
 
