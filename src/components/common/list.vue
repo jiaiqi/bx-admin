@@ -103,8 +103,8 @@
               :cell-style="cellStyle"
               >
               <template slot-scope="scope">
-                <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&inlineEditCols[item.column]">
-                   <inline-edit-list :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange($event,scope.$index)"></inline-edit-list>
+                <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&item.column&&inlineEditCols[item.column]">
+                   <inline-edit-list :key="item.column" :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange($event,scope.$index)"></inline-edit-list>
                 </div>
                 <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
                   <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
