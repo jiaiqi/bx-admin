@@ -481,7 +481,7 @@ export default {
     buildConditions: function () {
       let operateParams = this.getOperateParams();
       /**
-       * 2023/09/18
+       * 2023/09/18 wyh
        * 表单页面增加 参数 ：initOrigin 缺省值  'none' 
        * 列表公共编辑弹窗 / 自定义'更新弹出' ：initOrigin 默认值：'dialog'
        * 表单页面 initOrigin 值 等于 'dialog' 时不适用url参数

@@ -67,6 +67,7 @@
     </el-dialog>
 
     <el-dialog title="选择填充列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'select_fill_grid'" @close="activeForm = 'xx'" append-to-body >
+       <!-- 已弃用 -->
       <select-fill-grid v-if="activeForm == 'select_fill_grid'" @closeDialog="closeDialog" :gridData="gridData" :_service="_service" :buttonInfo="buttonInfo">
       </select-fill-grid>
     </el-dialog>

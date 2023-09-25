@@ -714,6 +714,8 @@ export default {
         params.formType= "editgrid";
         this.popupDialog(params);
       } else if ("选择填充表格" == operate_type) {
+
+        // 曹鹏开发 批量添加 已弃用
         params.formType= "select_fill_grid";
         this.popupDialog(params);
       } else if ("树列表弹出" == operate_type) {
