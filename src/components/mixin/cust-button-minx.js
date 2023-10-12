@@ -600,9 +600,16 @@ export default {
         window.open(address, '_blank');
       }else{
         let _tab_title= item.service_view_name;
-        if(_tab_title==null||_tab_title==""||_tab_title==undefined){
-          _tab_title=item.button_name;
+
+        if(!_tab_title&&this.service_view_name){
+
+          _tab_title = `${item.button_name}(${this.service_view_name})`
         }
+
+        // if(_tab_title==null||_tab_title==""||_tab_title==undefined){
+        //   _tab_title=item.button_name;
+        // }
+
         this.forwardAddTab(address, _tab_title,item);
       }
 

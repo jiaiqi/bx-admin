@@ -105,6 +105,7 @@ export default {
       sumRowData: null,
       sumConfig: null,
       vpageNo: null,
+      service_view_name:null,
     };
   },
 
@@ -2346,6 +2347,7 @@ export default {
       await this.loadColsV2(this.service_name, use_type,null,this.mainService)
         .then(response => {
           let respData = response.body.data;
+          this.service_view_name = respData?.service_view_name
           this.vpageNo = respData.vpage_no
           let card_cfg_list = respData.card_cfg;
           // 列表的顺序
