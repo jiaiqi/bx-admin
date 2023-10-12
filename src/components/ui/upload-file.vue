@@ -177,7 +177,10 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
         },
         noneFileType:function(){
           let filterType = this.field.info.moreConfig &&  this.field.info.moreConfig !== null && this.field.info.moreConfig.fileType ? this.field.info.moreConfig.fileType : ''
-          filterType = filterType.split(',')
+          if(filterType){
+            
+            filterType = filterType.split(',')
+          }
           return filterType
         }
     },
@@ -452,7 +455,7 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
             this.$message.error('文件大小不能超过' + this.fileSize + 'kb');
             return false
           }
-          if (this.fileType != '') {//默认支持所有类型上传
+          if (this.fileType) {//默认支持所有类型上传
             let flag = false
             for (let i in this.fileType.split('/')) {
               if (file.name.split('.')[1] === this.fileType.split('/')[i]) {
@@ -466,7 +469,7 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
             }
           }
 
-          if(Array.isArray(this.noneFileType) && this.noneFileType.length > 0){
+          if(this.noneFileType && Array.isArray(this.noneFileType) && this.noneFileType.length > 0){
             let currentFileType = file.name.split('.')
             currentFileType = currentFileType[currentFileType.length - 1]
             

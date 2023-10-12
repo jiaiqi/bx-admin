@@ -8,7 +8,7 @@ import * as DataUtil from "../../util/DataUtil";
 
 import batchAddMixin from "./batch-add-mixin";
 import { Loading } from 'element-ui';
-export function MissRequiredConditionError() {
+export function MissRequiredConditionError() { 
 }
 let polling  = null
 export default {

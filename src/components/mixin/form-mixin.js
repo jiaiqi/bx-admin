@@ -1,7 +1,7 @@
 import { FieldInfo } from '../model/FieldInfo'
 import { Field } from '../model/Field'
 import Vue from 'vue'
-import { ActionInfo } from "../model/ActionInfo";
+import { ActionInfo } from "../model/ActionInfo"; 
 import { formatDate } from "../../util/DataUtil";
 
 export default {
@@ -481,17 +481,17 @@ export default {
     buildConditions: function () {
       let operateParams = this.getOperateParams();
       /**
-       * 2023/09/18
+       * 2023/09/18 wyh
        * 表单页面增加 参数 ：initOrigin 缺省值  'none' 
        * 列表公共编辑弹窗 / 自定义'更新弹出' ：initOrigin 默认值：'dialog'
        * 表单页面 initOrigin 值 等于 'dialog' 时不适用url参数
        * 
        * 解决 从fk字段超链接详情 子表 卡片单元弹出修改使用了 超链接url的外键 conditions 造成 该条件 错误修改了多少数据。 
        */
-      if (operateParams && this.parentPageType !== 'detaillist' && this.parentPageType !== 'treelist' && ['dialog','none'].includes(this.initOrigin)) {
+      if (operateParams && this.parentPageType !== 'detaillist'  && !['dialog'].includes(this.initOrigin)) {
 
         /**
-         * 排除 指定为 dialog  表单使用 url参数输入  && ['dialog','none'].includes(this.initOrigin)
+         * 排除 指定为 dialog  表单使用 url参数输入  && !['dialog'].includes(this.initOrigin)
          */
         let params = JSON.parse(operateParams);
         if (params.condition && params.condition.length > 0) {
