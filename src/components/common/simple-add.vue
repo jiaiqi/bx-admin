@@ -33,7 +33,7 @@
           <slot :name="section + '-begin'"></slot>
 
           <div v-for="(formItem,fIndex) in formItems" :key="fIndex" v-show="!getSectionShow(section)">
-            <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas' :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues' v-if="formItem.field.info.visible" v-show="formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name">
+            <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas' :parentAddMainFormDatas="parentAddMainFormDatas" :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues' v-if="formItem.field.info.visible" v-show="formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name">
             <!-- <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas||parentAddMainFormDatas' :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues||srvValFormModel()' v-show="formItem.field.info.visible && formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name"> -->
 
               <div slot="field-child-prepend" class="padding-bottom">
@@ -127,6 +127,9 @@ export default {
     },
     childrenLists: {
       type: Array
+    },
+    parentAddMainFormDatas:{
+      type: Object
     }
   },
   data() {
