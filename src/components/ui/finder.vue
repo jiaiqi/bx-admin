@@ -3,14 +3,15 @@
   <div>
     <div v-if="subType !== 'select'">
       <a
-        v-if="field.info.linkUrlFunc && !field.info.editable&&!isFks"
+        v-if="field.info.linkUrlFunc && !field.info.editable && !isFks"
         v-show="field.getSrvVal()"
         style="white-space: normal; color: dodgerblue; cursor: pointer"
         @click="onLinkClicked()"
       >
         {{ field.getDispVal4Read() }}
       </a>
-      <location-picker v-else-if="isLocation"
+      <location-picker
+        v-else-if="isLocation"
         :field="field"
         :disabled="!field.info.editable"
         :mainformDatas="mainformDatas"
@@ -40,7 +41,7 @@
         clearable
         @select="handleSelect"
         @blur="handleBlur"
-        style="min-width: 220px;"
+        style="min-width: 220px"
       >
         <el-button
           slot="append"
@@ -107,28 +108,28 @@
 </template>
 
 <script>
-import tablePicker from '../common/table-picker.vue';
-import locationPicker from './location-picker.vue';
+import tablePicker from "../common/table-picker.vue";
+import locationPicker from "./location-picker.vue";
 export default {
   components: {
     List: () => import("../common/list.vue"),
     tablePicker,
-    locationPicker
+    locationPicker,
     //  () => import("../common/table-picker.vue")
   },
   model: {
     prop: "finderSelected",
-    event: "change"
+    event: "change",
   },
   props: {
     field: Object,
     defaultConditions: Array,
-    finderSelected: [String,Object],
+    finderSelected: [String, Object],
     defaultValues: Object,
     childForeignkey: Object,
-    mainformDatas: Object
+    mainformDatas: Object,
   },
-  data () {
+  data() {
     return {
       selected: null,
       popup: false,
@@ -136,11 +137,26 @@ export default {
       options: [],
       childForeign: null,
       multiSelected: [],
-      hasInit:false,//已经设置过初始值
+      hasInit: false, //已经设置过初始值
     };
   },
   watch: {
-    selected (newVal) {
+    "field.form.formModel": {
+      deep: true,
+      immediate: true,
+      handler(newValue, oldValue) {
+        if (typeof newValue === "object") {
+          if (this.field?.info?.upstream?.field) {
+            const field = this.field?.info?.upstream?.field;
+            if (newValue[field]) {
+              // 上游字段值改变后 主动触发el-autocomplate查询数据的方法
+              this.$refs?.autocomplete?.getData();
+            }
+          }
+        }
+      },
+    },
+    selected(newVal) {
       this.$emit("change", newVal);
       this.$emit("blur", this.field);
       this.emitFieldValueChange();
@@ -153,11 +169,11 @@ export default {
         if (newval) {
           for (const key in newval) {
             if (key == "referenced_column_name") {
-              this.childForeign = newval[ key ];
+              this.childForeign = newval[key];
             }
           }
         }
-      }
+      },
     },
     defaultValues: {
       deep: true,
@@ -169,19 +185,19 @@ export default {
             this.field.info.name == this.childForeign
           ) {
             // this.selected=newval[key]
-            this.handleSelect(newval[ key ]);
+            this.handleSelect(newval[key]);
           }
         }
-      }
+      },
     },
     "field.model": {
       deep: true,
       immediate: true,
       handler: function (newval, olval) {
-        console.log('field.model',this.field.info.name,newval)
-        this.setInitVal()
-      }
-    }
+        console.log("field.model", this.field.info.name, newval);
+        this.setInitVal();
+      },
+    },
   },
   computed: {
     optionsRun: function () {
@@ -201,19 +217,22 @@ export default {
           : true;
       return showAutocomplete;
     },
-    isFks () {
-      return this.field && this.field.info && [ 'fks', 'fkjson', 'fkjsons' ].includes(this.field.info.type)
+    isFks() {
+      return (
+        this.field &&
+        this.field.info &&
+        ["fks", "fkjson", "fkjsons"].includes(this.field.info.type)
+      );
     },
-    isLocation(){
-      return this.field.info?.type==='bxsys_obj_type_gps'
+    isLocation() {
+      return this.field.info?.type === "bxsys_obj_type_gps";
     },
   },
   methods: {
     setInitVal() {
-      
       let fieldInfo = this.field.info;
       if (
-        this.hasInit===false&&
+        this.hasInit === false &&
         this.options.length > 0 &&
         !this.field.model &&
         this.field.info &&
@@ -222,20 +241,22 @@ export default {
       ) {
         let loader = fieldInfo.dispLoader;
         this.field.model = this.options[0];
-        this.selected = loader.showAsPair !== true
-              ?  this.options[0][fieldInfo.dispCol]
-              : `${ this.options[0][fieldInfo.dispCol]}/${ this.options[0][fieldInfo.valueCol]}`;
-              this.hasInit = true
-
-      }else if(this.field.model && this.finderSelected){
-        this.selected = this.finderSelected
+        this.selected =
+          loader.showAsPair !== true
+            ? this.options[0][fieldInfo.dispCol]
+            : `${this.options[0][fieldInfo.dispCol]}/${
+                this.options[0][fieldInfo.valueCol]
+              }`;
+        this.hasInit = true;
+      } else if (this.field.model && this.finderSelected) {
+        this.selected = this.finderSelected;
       }
     },
-    onPickerSelected (selected) {
-      this.field.model = selected
+    onPickerSelected(selected) {
+      this.field.model = selected;
       this.selected = selected;
     },
-    getOptions (queryString) {
+    getOptions(queryString) {
       let self = this;
       let fieldInfo = this.field.info;
       let loader = fieldInfo.dispLoader;
@@ -252,16 +273,16 @@ export default {
           queryMethod: "select",
           distinct: !!loader.distinct,
           // * is here to support redundant or img url expr etc...
-          colNames: [ "*" ],
+          colNames: ["*"],
           condition: [],
           page: {
             pageNo: 1,
-            rownumber: 20
-          }
+            rownumber: 20,
+          },
         };
         if (loader) {
           if (loader.conditions) {
-            this.buildConditions(loader).forEach(c =>
+            this.buildConditions(loader).forEach((c) =>
               queryJson.condition.push(c)
             );
             queryJson.condition = this.pruneConditions(queryJson.condition);
@@ -290,7 +311,7 @@ export default {
           // cb([]);
           return;
         }
-        return this.selectList(queryJson, app).then(response => {
+        return this.selectList(queryJson, app).then((response) => {
           if (response && response.data && response.data.data) {
             let options = response.data.data;
             if (loader.dedup) {
@@ -298,22 +319,28 @@ export default {
             }
 
             options.forEach((item) => {
-              item[ "label" ] = loader.showAsPair !== true ? item[ fieldInfo.dispCol ] : `${item[ fieldInfo.dispCol ]}/${item[ fieldInfo.valueCol ]}`;
-              item[ "value" ] = item[ fieldInfo.valueCol ];
+              item["label"] =
+                loader.showAsPair !== true
+                  ? item[fieldInfo.dispCol]
+                  : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
+              item["value"] = item[fieldInfo.valueCol];
               item.labelFunc = (item) => {
-                return loader.showAsPair !== true ? item[ fieldInfo.dispCol ] : `${item[ fieldInfo.dispCol ]}/${item[ fieldInfo.valueCol ]}`;
+                return loader.showAsPair !== true
+                  ? item[fieldInfo.dispCol]
+                  : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
               };
             });
 
             options.forEach((item) => {
               item.labelFunc = (data) => {
                 return loader.showAsPair !== true
-                  ? data[ fieldInfo.dispCol ] : `${data[ fieldInfo.dispCol ]}/${data[ fieldInfo.valueCol ]}`;
+                  ? data[fieldInfo.dispCol]
+                  : `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`;
               };
             });
-            this.options = options.map(item => item);
+            this.options = options.map((item) => item);
             // cb(options)
-            this.setInitVal()
+            this.setInitVal();
           } else {
             // cb([]);
             return [];
@@ -321,15 +348,16 @@ export default {
         });
       }
     },
-    getLinkUrl () {
-      let data = this.field && this.field.form && this.field.form.srvValFormModel();
+    getLinkUrl() {
+      let data =
+        this.field && this.field.form && this.field.form.srvValFormModel();
       if (this.field.info.linkUrlFunc) {
         let url = this.field.info.linkUrlFunc(data, this);
         return url;
       }
     },
 
-    onLinkClicked () {
+    onLinkClicked() {
       let tabTitle =
         (this.field.info.srvCol &&
           this.field.info.srvCol.option_list_v2 &&
@@ -352,17 +380,17 @@ export default {
           paramArr = paramStr.split("&");
         }
         let result = false;
-        paramArr.forEach(item => {
+        paramArr.forEach((item) => {
           if (item.indexOf("openlayer=") !== -1) {
-            result = item.split("openlayer=")[ 1 ];
+            result = item.split("openlayer=")[1];
           }
         });
         if (result == "true") {
           // debugger
           top.layer.open({
             type: 2,
-            area: [ "70%", "60%" ],
-            content: this.getLinkUrl() //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+            area: ["70%", "60%"],
+            content: this.getLinkUrl(), //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
           });
         } else {
           this.addTabByUrl(this.getLinkUrl(), tabTitle);
@@ -373,14 +401,14 @@ export default {
       }
     },
 
-    popupDefaultConditions () {
+    popupDefaultConditions() {
       let conditions = this.defaultConditions || [];
       let fieldInfo = this.field.info;
       let loader = fieldInfo.dispLoader;
       return conditions.concat(this.buildConditions(loader));
     },
 
-    dedupOptions (options) {
+    dedupOptions(options) {
       let loader = this.field.info.dispLoader;
       if (!loader.dedup) {
         return;
@@ -391,15 +419,15 @@ export default {
         let gridData = form.srvValFormModel()._gridData;
         if (gridData && gridData.length) {
           let key_col = this.field.info.srvCol.columns;
-          let existVals = gridData.map(item => item[ key_col ]);
-          _.remove(options, option => _.includes(existVals, option[ key_col ]));
+          let existVals = gridData.map((item) => item[key_col]);
+          _.remove(options, (option) => _.includes(existVals, option[key_col]));
         }
       }
     },
 
-    loadOptions (queryString, cb) {
+    loadOptions(queryString, cb) {
       let self = this;
-  
+
       let fieldInfo = this.field.info;
       let loader = fieldInfo.dispLoader;
       if (loader.enableFunc) {
@@ -414,12 +442,12 @@ export default {
         queryMethod: "select",
         distinct: !!loader.distinct,
         // * is here to support redundant or img url expr etc...
-        colNames: [ "*" ],
+        colNames: ["*"],
         condition: [],
         page: {
           pageNo: 1,
-          rownumber: 20
-        }
+          rownumber: 20,
+        },
       };
 
       // if (queryString) {
@@ -432,7 +460,7 @@ export default {
 
       if (loader) {
         if (loader.conditions) {
-          this.buildConditions(loader).forEach(c =>
+          this.buildConditions(loader).forEach((c) =>
             queryJson.condition.push(c)
           );
           queryJson.condition = this.pruneConditions(queryJson.condition);
@@ -461,26 +489,26 @@ export default {
         cb([]);
         return;
       }
-      return this.selectList(queryJson, app).then(response => {
+      return this.selectList(queryJson, app).then((response) => {
         if (response && response.data && response.data.data) {
           let options = response.data.data;
           if (loader.dedup) {
             this.dedupOptions(options);
           }
 
-          options.forEach(item => {
-            item.labelFunc = data => {
+          options.forEach((item) => {
+            item.labelFunc = (data) => {
               return loader.showAsPair == true
-                ? `${data[ fieldInfo.dispCol ]}/${data[ fieldInfo.valueCol ]}`
-                : data[ fieldInfo.dispCol ];
+                ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
+                : data[fieldInfo.dispCol];
             };
           });
 
-          options.forEach(option => {
+          options.forEach((option) => {
             if (loader.imgUrlExpr) {
-              option.imgUrlFunc = data => {
+              option.imgUrlFunc = (data) => {
                 return (
-                  this.serviceApi().downloadFileNo + data[ loader.imgUrlExpr ]
+                  this.serviceApi().downloadFileNo + data[loader.imgUrlExpr]
                 );
               };
             }
@@ -494,20 +522,20 @@ export default {
         }
       });
     },
-    buildRelationConditionInfo (dispLoader, queryString) {
+    buildRelationConditionInfo(dispLoader, queryString) {
       let self = this;
       let relaTemp = {
         relation: "AND",
-        data: []
+        data: [],
       };
       let condition = [];
       let dataTemp = {
         relation: "AND",
-        data: []
+        data: [],
       };
       let relation_condition = {};
       if (dispLoader.conditions) {
-        this.buildConditions(dispLoader).forEach(c => condition.push(c));
+        this.buildConditions(dispLoader).forEach((c) => condition.push(c));
         condition = this.pruneConditions(condition);
 
         if (condition.length > 0) {
@@ -516,7 +544,7 @@ export default {
           let dataItem = {
             colName: "",
             value: "",
-            ruleType: ""
+            ruleType: "",
           };
           // dataTemp.data = condition
           // relaTemp.data.push(self.bxDeepClone(dataTemp))
@@ -538,7 +566,7 @@ export default {
           let dataItem = {
             colName: "",
             value: "",
-            ruleType: ""
+            ruleType: "",
           };
           dataItem.ruleType = "[like]";
           dataItem.colName = this.field.info.valueCol;
@@ -559,7 +587,7 @@ export default {
         let dataItem = {
           colName: "",
           value: "",
-          ruleType: ""
+          ruleType: "",
         };
         dataItem.ruleType = "[like]";
         dataItem.colName = this.field.info.valueCol;
@@ -575,10 +603,10 @@ export default {
       }
       return relaTemp;
     },
-    buildRelationCondition (dispLoader) {
+    buildRelationCondition(dispLoader) {
       let self = this;
 
-      function evalCustomizer (value, key, obj, stack) {
+      function evalCustomizer(value, key, obj, stack) {
         if (key === "value" && !obj.literal) {
           try {
             return self.evalExprOrFunc(
@@ -597,16 +625,16 @@ export default {
         evalCustomizer
       );
 
-      function pruneCustomizer (value, key, obj, stack) {
+      function pruneCustomizer(value, key, obj, stack) {
         if (
           key === "data" &&
           _.isArray(value) &&
           !_.isEmpty(value) &&
-          value[ 0 ].hasOwnProperty("colName")
+          value[0].hasOwnProperty("colName")
         ) {
           return _.filter(
             value,
-            leafCondition =>
+            (leafCondition) =>
               leafCondition.value !== "" &&
               leafCondition.value !== null &&
               leafCondition.value !== undefined
@@ -621,7 +649,7 @@ export default {
     buildConditions: function (dispLoader) {
       let ret = [];
       for (let i in dispLoader.conditions) {
-        let cond = dispLoader.conditions[ i ];
+        let cond = dispLoader.conditions[i];
         let condition = {};
 
         try {
@@ -676,7 +704,7 @@ export default {
       return ret;
     },
 
-    handleSelect (item) { 
+    handleSelect(item) {
       console.log("handleSelect", item);
       this.field.model = item;
 
@@ -684,9 +712,9 @@ export default {
       let loader = fieldInfo.dispLoader;
       if (this.subType == "select") {
         let selectItem = this.options.filter(
-          opt => opt[ fieldInfo.valueCol ] == item
+          (opt) => opt[fieldInfo.valueCol] == item
         );
-        this.field.model = selectItem[ 0 ] || "";
+        this.field.model = selectItem[0] || "";
         // this.emitFieldValueChange();
       } else {
         if (item === null) {
@@ -694,23 +722,24 @@ export default {
         } else {
           this.selected =
             loader.showAsPair !== true
-              ? item[ fieldInfo.dispCol ] : `${item[ fieldInfo.dispCol ]}/${item[ fieldInfo.valueCol ]}`;
+              ? item[fieldInfo.dispCol]
+              : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
         }
       }
       this.emitFieldValueChange();
     },
 
-    emitFieldValueChange () {
+    emitFieldValueChange() {
       this.$emit("field-value-changed", this.field.info.name, this.field);
     },
 
-    handleBlur () {
+    handleBlur() {
       try {
         if (this.field.getSrvVal()) {
           if (
             this.selected != this.field.getDispVal() &&
             this.selected !=
-            `${this.field.getDispVal()}/${this.field.getSrvVal()}`
+              `${this.field.getDispVal()}/${this.field.getSrvVal()}`
           ) {
             this.field.reset();
           }
@@ -723,11 +752,11 @@ export default {
       }
     },
 
-    setSrvVal (srvVal) {
+    setSrvVal(srvVal) {
       if (srvVal == null || srvVal == undefined) {
         this.selected = null;
-        if(this.field.model === srvVal){
-          return
+        if (this.field.model === srvVal) {
+          return;
         }
         this.emitFieldValueChange();
         return;
@@ -738,41 +767,53 @@ export default {
       let queryJson = {
         serviceName: loader.service,
         queryMethod: "select",
-        colNames: [ "*" ],
+        colNames: ["*"],
         condition: [
-          { colName: fieldInfo.valueCol, value: srvVal, ruleType: "eq" }
-        ]
+          { colName: fieldInfo.valueCol, value: srvVal, ruleType: "eq" },
+        ],
       };
 
-      if ([ 'fkjsons', 'fkjson','fks' ].includes(fieldInfo.type)) {
-        let json = null
+      if (["fkjsons", "fkjson", "fks"].includes(fieldInfo.type)) {
+        let json = null;
         if (srvVal) {
           try {
-            json = JSON.parse(srvVal)
+            json = JSON.parse(srvVal);
           } catch (error) {
-            console.log(error)
+            console.log(error);
           }
         }
-        let valCol = fieldInfo.fmt && fieldInfo.fmt.primary_col
-        if( valCol && json ){
-           if (fieldInfo.type === 'fkjson') {
-            queryJson.condition = [ {
-              colName: fieldInfo.valueCol, value: json[ valCol ], ruleType: "eq"
-            } ]
-          }else if(fieldInfo.type === 'fkjsons'){
-            queryJson.condition = [ {
-              colName: fieldInfo.valueCol, value: json.map(item=>item[valCol]).toString(), ruleType: "in"
-            } ]
-          }else if(fieldInfo.type === 'fks'){
-            queryJson.condition = [ {
-              colName: fieldInfo.valueCol, value: srvVal, ruleType: "in"
-            } ]
+        let valCol = fieldInfo.fmt && fieldInfo.fmt.primary_col;
+        if (valCol && json) {
+          if (fieldInfo.type === "fkjson") {
+            queryJson.condition = [
+              {
+                colName: fieldInfo.valueCol,
+                value: json[valCol],
+                ruleType: "eq",
+              },
+            ];
+          } else if (fieldInfo.type === "fkjsons") {
+            queryJson.condition = [
+              {
+                colName: fieldInfo.valueCol,
+                value: json.map((item) => item[valCol]).toString(),
+                ruleType: "in",
+              },
+            ];
+          } else if (fieldInfo.type === "fks") {
+            queryJson.condition = [
+              {
+                colName: fieldInfo.valueCol,
+                value: srvVal,
+                ruleType: "in",
+              },
+            ];
           }
         }
       }
       if (loader) {
         if (loader.conditions) {
-          this.buildConditions(loader).forEach(c =>
+          this.buildConditions(loader).forEach((c) =>
             queryJson.condition.push(c)
           );
           queryJson.condition = this.pruneConditions(queryJson.condition);
@@ -786,18 +827,18 @@ export default {
         cb([]);
         return;
       }
-      return this.selectList(queryJson, app).then(response => {
+      return this.selectList(queryJson, app).then((response) => {
         if (
           response &&
           response.data &&
           response.data.data &&
           response.data.data.length > 0
         ) {
-          if([ 'fkjsons', 'fkjson','fks' ].includes(fieldInfo.type)){
-            this.multiSelected = response.data.data
-            return
+          if (["fkjsons", "fkjson", "fks"].includes(fieldInfo.type)) {
+            this.multiSelected = response.data.data;
+            return;
           }
-          let item = response.data.data[ 0 ];
+          let item = response.data.data[0];
           this.field.model = item;
           if (_.isObject(this.field.model)) {
             // 对象 fk值 设置 默认selected 显示值
@@ -805,12 +846,14 @@ export default {
             let fieldInfo = this.field.info;
             let loader = fieldInfo.dispLoader;
             if (this.subType === "select") {
-              this.selected = this.field.model[ fieldInfo.valueCol ];
+              this.selected = this.field.model[fieldInfo.valueCol];
             } else {
               this.selected =
                 loader.showAsPair !== true
-                  ? this.field.model[ fieldInfo.dispCol ] : `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]
-                  }`;
+                  ? this.field.model[fieldInfo.dispCol]
+                  : `${this.field.model[fieldInfo.dispCol]}/${
+                      this.field.model[fieldInfo.valueCol]
+                    }`;
             }
             // this.selected = (loader.showAsPair !== false ? `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]}` : this.field.model[ fieldInfo.dispCol ])
           }
@@ -821,9 +864,9 @@ export default {
     },
 
     // 目前不支持一个colname 多个condition，如果这种case且有一个ruletype = eq， 留下eq
-    pruneConditions (conditions) {
+    pruneConditions(conditions) {
       let map = [];
-      conditions.forEach(condition => {
+      conditions.forEach((condition) => {
         if (map.hasOwnProperty(condition.colName)) {
           // keep ruletype == eq  增加支持 ruletype = in 20200526
           if (condition.ruleType === "eq" || condition.ruleType === "in") {
@@ -845,7 +888,7 @@ export default {
      * @param row
      * @param event
      */
-    onRowSelected (row, event) {
+    onRowSelected(row, event) {
       let item = row;
       this.field.model = item;
 
@@ -855,11 +898,12 @@ export default {
       let loader = fieldInfo.dispLoader;
       this.selected =
         loader.showAsPair !== true
-          ? item[ fieldInfo.dispCol ] : `${item[ fieldInfo.dispCol ]}/${item[ fieldInfo.valueCol ]}`;
+          ? item[fieldInfo.dispCol]
+          : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
       this.popup = false;
     },
 
-    onPopupClicked () {
+    onPopupClicked() {
       if (!this.field.info.editable) {
         return;
       }
@@ -868,10 +912,10 @@ export default {
 
       // hide suggestions
       this.$refs.autocomplete.activated = false;
-    }
+    },
   },
 
-  created: function () { },
+  created: function () {},
 
   mounted: function () {
     let vm = this;
@@ -879,52 +923,53 @@ export default {
       this.$refs.autocomplete.$refs.input.$on("clear", function () {
         vm.selected = null;
         vm.handleSelect(null);
-        setTimeout(_ => vm.$refs.autocomplete.getData(""), 500);
+        setTimeout((_) => vm.$refs.autocomplete.getData(""), 500);
       });
     }
 
     // if (this.subType === "select") {
-      // this.getOptions("");
+    // this.getOptions("");
     // }
     if (this.field.model) {
       // console.log("modal--2", this.field.model)
-      let value = this.field.model[ this.field.info.valueCol ];
+      let value = this.field.model[this.field.info.valueCol];
       if (value == undefined || value == null) {
         this.setSrvVal(this.field.model);
       } else {
         // console.log("modal--12", this.field.model, this.selected, _.isObject(this.field.model))
         let fieldInfo = this.field.info;
         let loader = fieldInfo.dispLoader;
-        this.options = [this.field.model]
+        this.options = [this.field.model];
         if (this.subType === "select") {
-          this.selected = this.field.model[ fieldInfo.valueCol ];
+          this.selected = this.field.model[fieldInfo.valueCol];
         } else {
           this.selected =
-            loader.showAsPair !== false  
-              ? this.field.model[ fieldInfo.dispCol ] : `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]
-              }`;
+            loader.showAsPair !== false
+              ? this.field.model[fieldInfo.dispCol]
+              : `${this.field.model[fieldInfo.dispCol]}/${
+                  this.field.model[fieldInfo.valueCol]
+                }`;
         }
       }
       // this.getOptions(true);
     }
 
     if (
-        this.field.info &&
-        this.field.info.srvCol &&
-        this.field.info.srvCol.init_expr === "$firstRowData"
-      ){
-        // 默认选中第一行 需要加载数据
-        this.getOptions(true);
-      }
+      this.field.info &&
+      this.field.info.srvCol &&
+      this.field.info.srvCol.init_expr === "$firstRowData"
+    ) {
+      // 默认选中第一行 需要加载数据
+      this.getOptions(true);
+    }
     // if (this.subType === "select") {
-      
+
     // }
 
     // if(this.field.type === "User"){
     //   this.appNo = "sso"
     // }
-  }
+  },
 };
 </script>
-<style lang="less" >
-</style>
+<style lang="less"></style>
