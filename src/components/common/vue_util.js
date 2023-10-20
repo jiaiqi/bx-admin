@@ -539,9 +539,10 @@ function init_util() {
   };
 
   /**查询列表*/
-  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo) {
+  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType) {
     var url = this.getServiceUrl("select", service_name, app);
-    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo)
+     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
+    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType || 'list')
   }
 
   /***
@@ -594,7 +595,7 @@ function init_util() {
   }
 
   /**查询*/
-  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo) {
+  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo,use_type) {
     var query = {
       "serviceName": service_name,
       "colNames": columns || ['*'],
@@ -603,8 +604,10 @@ function init_util() {
       "page": page,
       "order": order,
       "draft": draft,
-      "vpage_no":vpageNo
+      "vpage_no":vpageNo,
+      use_type:use_type     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
+    
     if (pageType && pageType === 'list_page') {
       query['query_source'] = "list_page"
     }
@@ -670,7 +673,8 @@ function init_util() {
       "condition": condition,
       "page": page,
       "order": order,
-      "vpage_no":vpage_no
+      "vpage_no":vpage_no,
+      "use_type":"proclist",     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
     if (pageType && pageType === 'list_page') {
       params['query_source'] = "list_page"
@@ -686,7 +690,8 @@ function init_util() {
       "serviceName": service_name,
       "treeData": true,
       "colNames": ['*'],
-      "condition": condition
+      "condition": condition,
+      "use_type":'treelist',      //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
     url = url + "?" + service_name;
     return this.$http.post(url, params);

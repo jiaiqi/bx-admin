@@ -598,7 +598,7 @@ export default {
               pageNo: 1, // 展开下级不参与分页，默认加载 300条数据。
               rownumber: 300,
             },
-            this.order,null,null,null,null,null,null,null,null,null,this.vpageNo
+            this.order,null,null,null,null,null,null,null,null,null,this.vpageNo,'treelist'
           ).then((response) => {
             this.buildData(response.body.data, false);
             childData = response.body.data;
@@ -1004,7 +1004,7 @@ export default {
       }
 
       //加载表格数据
-      this.select(this.service_name, cond, page, this.order,null,null,null,null,null,null,null,null,null,this.vpageNo).then(
+      this.select(this.service_name, cond, page, this.order,null,null,null,null,null,null,null,null,null,this.vpageNo,'treelist').then(
         (response) => {
           // rename for element stupid bug of using children as bulitin
           response.body.data &&
