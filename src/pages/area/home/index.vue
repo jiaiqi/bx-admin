@@ -325,7 +325,7 @@ export default {
   methods: {
     toPages(service, tabTitle, srvApp = "lprak") {
       this.addTabByUrl(
-        `/vpages/index.html/#/list/${service}?srvApp=${srvApp}`,
+        `/vpages/#/list/${service}?srvApp=${srvApp}`,
         tabTitle
       );
     },
