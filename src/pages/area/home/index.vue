@@ -88,12 +88,12 @@
             <div class="ll-custom-card">
               <div class="title-row hasBorder">
                 我的工作
-                <more
+                <!-- <more
                   :isAbsolute="true"
                   @click.native="
                     toPages('srvpark_task_submission_select', '我的工作')
                   "
-                ></more>
+                ></more> -->
               </div>
             </div>
             <div style="padding-top: 10px">
