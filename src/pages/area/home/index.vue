@@ -126,7 +126,7 @@
                     <div
                       class="flex-column image-block"
                       @click="
-                        toPages('srvpark_staff_salary_summary_select', '工资条')
+                        toPages('srvpark_staff_salary_detail_select', '工资条')
                       "
                     >
                       <img :src="require('@/assets/staff/yhxx1.png')" />
@@ -323,7 +323,7 @@ export default {
   },
 
   methods: {
-    toPages(service, tabTitle, srvApp = "lprak") {
+    toPages(service, tabTitle, srvApp = "lpark") {
       this.addTabByUrl(
         `/vpages/#/list/${service}?srvApp=${srvApp}`,
         tabTitle
@@ -497,7 +497,7 @@ export default {
         (this.todoObj.mine_pro_cnt_n * 100) /
         (this.todoObj.todo_cnt_n + this.todoObj.mine_pro_cnt_n);
       if (!this.todoObj.todo_cnt_n && !this.todoObj.mine_pro_cnt_n) {
-        percent = 100;
+        percent = 0;
       }
       let arrayData = [
         { value: this.todoObj.todo_cnt_n, name: "今日已处理" },
