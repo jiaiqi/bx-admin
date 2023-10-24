@@ -1,211 +1,226 @@
 <template>
   <div class="ll-content">
     <div class="parent-content">
-      <div class="ll-card-block">
-        <el-card style="height: 306px" shadow="always">
-          <el-row class="height-percent" gutter="24">
-            <el-col class="height-percent" :span="11">
-              <div class="height-percent flex-column">
-                <div style="width: 100%" class="title-row">我的工作</div>
-                <div style="flex: 1; width: 100%" class="bottom-container flex">
-                  <div style="flex:1; height: 100%" class="left">
-                    <div
-                      ref="twoEcharts"
-                      style="height: 100%; position: relative; flex: 1"
-                      class="content zx echarts"
-                    ></div>
-                  </div>
+      <div class="ll-card-block" style="display: flex">
+        <el-card style="height: 306px; flex: 1.5" shadow="always">
+          <el-col class="height-percent" :span="24">
+            <div class="height-percent flex-column">
+              <div style="width: 100%" class="title-row">我的工作</div>
+              <div style="flex: 1; width: 100%" class="bottom-container flex">
+                <div style="flex: 1; height: 100%" class="left">
+                  <div
+                    ref="twoEcharts"
+                    style="height: 100%; position: relative; flex: 1"
+                    class="content zx echarts"
+                  ></div>
+                </div>
 
-                  <div style="width:160px" class="right height-percent flex-column">
+                <div
+                  style="width: 160px"
+                  class="right height-percent flex-column"
+                >
+                  <div
+                    style="
+                      color: white;
+                      font-weight: 800;
+                      height: 37px;
+                      border-radius: 3px;
+                    "
+                    class="deepBlueB flex-center-percent"
+                  >
+                    历史积累
+                  </div>
+                  <div
+                    style="background: rgba(241, 242, 247, 70); flex: 1"
+                    class="bottom flex-column-percent"
+                  >
                     <div
                       style="
-                        color: white;
+                        border-bottom: 1px solid white;
+                        width: 100%;
                         font-weight: 800;
-                        height: 37px;
-                        border-radius: 3px;
+                        flex: 1;
                       "
-                      class="deepBlueB flex-center-percent"
+                      class="block flex-column"
                     >
-                      历史积累
+                      <div class="flex-center">
+                        {{ todoObj.mine_apply_cnt || "0" }}
+                      </div>
+                      <div class="flex-center">处理中</div>
+                    </div>
+
+                    <div
+                      style="
+                        border-bottom: 1px solid white;
+                        width: 100%;
+                        font-weight: 800;
+                        flex: 1;
+                      "
+                      class="block deepBlueC flex-column-percent"
+                    >
+                      <div class="flex-center">
+                        {{ todoObj.mine_pro_cnt || "0" }}
+                      </div>
+                      <div class="flex-center">已处理</div>
                     </div>
                     <div
-                      style="background: rgba(241, 242, 247, 70); flex: 1"
-                      class="bottom flex-column-percent"
+                      style="
+                        border-bottom: 1px solid white;
+                        width: 100%;
+                        font-weight: 800;
+                        flex: 1;
+                      "
+                      class="block orangeC flex-column-percent"
                     >
-                      <div
-                        style="
-                          border-bottom: 1px solid white;
-                          width: 100%;
-                          font-weight: 800;
-                          flex: 1;
-                        "
-                        class="block flex-column"
-                      >
-                        <div class="flex-center">34</div>
-                        <div class="flex-center">处理中</div>
+                      <div class="flex-center">
+                        {{ todoObj.todo_cnt || "0" }}
                       </div>
-
-                      <div
-                        style="
-                          border-bottom: 1px solid white;
-                          width: 100%;
-                          font-weight: 800;
-                          flex: 1;
-                        "
-                        class="block deepBlueC flex-column-percent"
-                      >
-                        <div class="flex-center">34</div>
-                        <div class="flex-center">处理中</div>
-                      </div>
-                      <div
-                        style="
-                          border-bottom: 1px solid white;
-                          width: 100%;
-                          font-weight: 800;
-                          flex: 1;
-                        "
-                        class="block orangeC flex-column-percent"
-                      >
-                        <div class="flex-center">34</div>
-                        <div class="flex-center">处理中</div>
-                      </div>
+                      <div class="flex-center">待处理</div>
                     </div>
                   </div>
                 </div>
               </div>
-            </el-col>
-
-            <el-col :span="8">
-              <div class="ll-custom-card">
-                <div class="title-row hasBorder">
-                  我的工作
-                  <more :isAbsolute="true"></more>
+            </div>
+          </el-col>
+        </el-card>
+        <el-card style="height: 306px; flex: 1" shadow="always">
+          <el-col :span="24">
+            <div class="ll-custom-card">
+              <div class="title-row hasBorder">
+                我的工作
+                <more
+                  :isAbsolute="true"
+                  @click.native="
+                    toPages('srvpark_task_submission_select', '我的工作')
+                  "
+                ></more>
+              </div>
+            </div>
+            <div style="padding-top: 10px">
+              <div class="flex-between gg-row" v-for="item in myWorks">
+                <div class="left flex">
+                  <img src="../../../assets/staff/grayMessage2.png" />
+                  <div class="middle">{{ item.task_name }}</div>
+                  <!-- <small-button-tag
+                      color="orange"
+                      text="未读"
+                    ></small-button-tag> -->
+                </div>
+                <div class="right deepGrayC">
+                  {{ item.create_time.slice(0, 10) }}
                 </div>
               </div>
-              <div style="padding-top: 10px">
-                <div class="flex-between gg-row">
-                  <div class="left flex">
-                    <img src="../../../assets/staff/grayMessage2.png" />
-                    <div class="middle">显示公告信息</div>
-                    <small-button-tag
-                      color="orange"
-                      text="未读"
-                    ></small-button-tag>
-                  </div>
-                  <div class="right deepGrayC">2011-01-02</div>
-                </div>
-                <div class="flex-between gg-row">
-                  <div class="left flex">
-                    <img src="../../../assets/staff/grayMessage2.png" />
-                    <div class="middle">显示公告信息</div>
-                    <small-button-tag
-                      color="orange"
-                      text="未读"
-                    ></small-button-tag>
-                  </div>
-                  <div class="right deepGrayC">2011-01-02</div>
-                </div>
-                <div class="flex-between gg-row">
-                  <div class="left flex">
-                    <img src="../../../assets/staff/grayMessage2.png" />
-                    <div class="middle">显示公告信息</div>
-                    <small-button-tag
-                      color="orange"
-                      text="未读"
-                    ></small-button-tag>
-                  </div>
-                  <div class="right deepGrayC">2011-01-02</div>
-                </div>
-
-                <div class="flex-between gg-row">
-                  <div class="left flex">
-                    <img src="../../../assets/staff/grayMessage2.png" />
-                    <div class="middle">显示公告信息</div>
-                    <small-button-tag
-                      color="orange"
-                      text="未读"
-                    ></small-button-tag>
-                  </div>
-                  <div class="right deepGrayC">2011-01-02</div>
-                </div>
-                <div class="flex-between gg-row">
-                  <div class="left flex">
-                    <img src="../../../assets/staff/grayMessage2.png" />
-                    <div class="middle">显示公告信息</div>
-                    <small-button-tag
-                      color="orange"
-                      text="未读"
-                    ></small-button-tag>
-                  </div>
-                  <div class="right deepGrayC">2011-01-02</div>
-                </div>
+            </div>
+          </el-col>
+        </el-card>
+        <el-card style="height: 306px; flex: 1" shadow="always">
+          <el-col :span="24">
+            <div class="ll-custom-card">
+              <div class="title-row hasBorder">
+                常用功能
+                <!-- <more :isAbsolute="true"></more> -->
               </div>
-            </el-col>
+              <div style="padding-top: 15px">
+                <el-row :gutter="24">
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages('srvpark_staff_salary_summary_select', '工资条')
+                      "
+                    >
+                      <img :src="require('@/assets/staff/yhxx1.png')" />
+                      <div>工资条</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages(
+                          'srvpark_staff_perform_individual_record_select',
+                          '个人绩效'
+                        )
+                      "
+                    >
+                      <img :src="require('@/assets/staff/swsb1.png')" />
+                      <div>个人绩效</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages(
+                          'srvpark_receivables_payment_select',
+                          '收款管理'
+                        )
+                      "
+                    >
+                      <img :src="require('@/assets/staff/zzsq1.png')" />
+                      <div>收款管理</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages('srvpark_payables_payment_select', '付款管理')
+                      "
+                    >
+                      <img :src="require('@/assets/staff/wdht1.png')" />
+                      <div>付款管理</div>
+                    </div>
+                  </el-col>
+                </el-row>
 
-            <el-col :span="5">
-              <div class="ll-custom-card">
-                <div class="title-row hasBorder">
-                  常用功能
-                  <more :isAbsolute="true"></more>
-                </div>
-                <div style="padding-top: 15px">
-                  <el-row gutter="24">
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/yhxx1.png')" />
-                        <div>用户信息</div>
-                      </div>
-                    </el-col>
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/swsb1.png')" />
-                        <div>个人绩效</div>
-                      </div>
-                    </el-col>
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/zzsq1.png')" />
-                        <div>收款管理</div>
-                      </div>
-                    </el-col>
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/wdht1.png')" />
-                        <div>付款管理</div>
-                      </div>
-                    </el-col>
-                  </el-row>
-
-                  <el-row style="padding-top: 10px" gutter="24">
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/oa1.png')" />
-                        <div>费用报销</div>
-                      </div>
-                    </el-col>
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/zcgl1.png')" />
-                        <div>自助开票</div>
-                      </div>
-                    </el-col>
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/zcgl1.png')" />
-                        <div>学习计划</div>
-                      </div>
-                    </el-col>
-                    <el-col :span="6">
-                      <div class="flex-column image-block">
-                        <img :src="require('@/assets/staff/swsb1.png')" />
-                        <div>预算审核</div>
-                      </div>
-                    </el-col>
-                  </el-row>
-                </div>
+                <el-row style="padding-top: 10px" gutter="24">
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="toPages('srvpark_expense_select', '费用报销')"
+                    >
+                      <img :src="require('@/assets/staff/oa1.png')" />
+                      <div>费用报销</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages('srvpark_invoice_apply_select', '自助开票')
+                      "
+                    >
+                      <img :src="require('@/assets/staff/zcgl1.png')" />
+                      <div>自助开票</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages('srvpark_staff_study_plan_select', '学习计划')
+                      "
+                    >
+                      <img :src="require('@/assets/staff/zcgl1.png')" />
+                      <div>学习计划</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="6">
+                    <div
+                      class="flex-column image-block"
+                      @click="
+                        toPages('srvpark_receivables_budget_select', '预算审核')
+                      "
+                    >
+                      <img :src="require('@/assets/staff/swsb1.png')" />
+                      <div>预算审核</div>
+                    </div>
+                  </el-col>
+                </el-row>
               </div>
-            </el-col>
-          </el-row>
+            </div>
+          </el-col>
         </el-card>
       </div>
       <div class="ll-bottom-content">
@@ -213,12 +228,16 @@
           <div class="rank-table-parent">
             <div class="title-row">
               <span class="left-title">待办任务</span>
-              <more :isAbsolute="true"></more>
-
+              <more
+                :isAbsolute="true"
+                @click.native="
+                  toPages('srvsso_process_todo_select', '待办任务', 'sso')
+                "
+              ></more>
             </div>
 
             <div class="rank-table">
-              <el-table   ref="tables" :data="tableData" >
+              <el-table ref="tables" :data="tableData">
                 <el-table-column
                   :formatter="item.formatter"
                   :key="item.key"
@@ -259,7 +278,9 @@ export default {
 
   data() {
     return {
-      testHa: <div>21321</div>,
+      myWorks: [],
+      todoObj: {},
+      todo2: [],
       tableHeaders: [],
       myCharts1: null,
       myCharts2: null,
@@ -302,6 +323,54 @@ export default {
   },
 
   methods: {
+    toPages(service, tabTitle, srvApp = "lprak") {
+      this.addTabByUrl(
+        `/vpages/index.html/#/list/${service}?srvApp=${srvApp}`,
+        tabTitle
+      );
+    },
+    async getTodo() {
+      // 待办事项 srvprocess_todo_cnt_select
+      const url = `${window.backendIpAddr}/lpark/select/srvprocess_todo_cnt_select`;
+      const req = {
+        serviceName: "srvprocess_todo_cnt_select",
+        colNames: ["*"],
+        page: { pageNo: 1, rownumber: 10 },
+      };
+      const res = await this.$http.post(url, req);
+      if (res?.data?.data?.length) {
+        this.todoObj = res.data.data[0];
+      }
+      return this.todoObj;
+    },
+    getTodo2() {
+      // 待办事项 srvsso_process_todo_select
+      const url = `${window.backendIpAddr}/sso/select/srvsso_process_todo_select`;
+      const req = {
+        serviceName: "srvsso_process_todo_select",
+        colNames: ["*"],
+        page: { pageNo: 1, rownumber: 10 },
+      };
+      this.$http.post(url, req).then((res) => {
+        if (res?.data?.data?.length) {
+          this.tableData = res.data.data;
+        }
+      });
+    },
+    getMyWorks() {
+      // 查询我的工作列表 srvpark_task_submission_select
+      const url = `${window.backendIpAddr}/lpark/select/srvpark_task_submission_select`;
+      const req = {
+        serviceName: "srvpark_task_submission_select",
+        colNames: ["*"],
+        page: { pageNo: 1, rownumber: 10 },
+      };
+      this.$http.post(url, req).then((res) => {
+        if (res?.data?.data?.length) {
+          this.myWorks = res.data.data;
+        }
+      });
+    },
     initEchats() {
       console.log();
       this.myCharts1 = this.$echarts.init(this.$refs.oneEcharts);
@@ -424,9 +493,18 @@ export default {
     initEchats2() {
       console.log(this.$refs, "==this.$refs===");
       this.myCharts2 = this.$echarts.init(this.$refs.twoEcharts);
+      let percent =
+        (this.todoObj.mine_pro_cnt_n * 100) /
+        (this.todoObj.todo_cnt_n + this.todoObj.mine_pro_cnt_n);
+      if (!this.todoObj.todo_cnt_n && !this.todoObj.mine_pro_cnt_n) {
+        percent = 100;
+      }
       let arrayData = [
-        { value: 80, name: "今日已处理", perncent: "50" },
-        { value: 20, name: "今日待处理", perncent: "20" },
+        { value: this.todoObj.todo_cnt_n, name: "今日已处理" },
+        {
+          value: this.todoObj.mine_pro_cnt_n,
+          name: "今日待处理",
+        },
       ];
       var options = {
         tooltip: {
@@ -436,7 +514,7 @@ export default {
         color: ["rgba(77, 95, 204, 100)", "#F77A50"],
         legend: {
           data: ["今日已处理", "今日待处理"],
-        //   icon: "circle",
+          //   icon: "circle",
           x: "23%",
           y: "90%",
           orient: "align",
@@ -448,12 +526,12 @@ export default {
                 return false;
               }
             });
-            return `${findItem.name}2`;
+            return `${findItem.name}${findItem.value}`;
           },
         },
         title: {
-          text: "20%",
-          left: "33%",
+          text: `${percent}%`,
+          left: "30%",
           top: "38%",
           textStyle: {
             color: "rgba(50, 66, 116, 1)",
@@ -475,7 +553,7 @@ export default {
         // },
         series: [
           {
-            name: "运动情况",
+            name: "",
             type: "pie",
             radius: ["75%", "65%"],
             center: ["38%", "46%"],
@@ -542,54 +620,50 @@ export default {
   },
 
   created: function () {
-    console.log("云死");
+    this.getMyWorks();
+    // this.getTodo();
+    this.getTodo2();
     window.h = this.$createElement;
-    let a = <div></div>;
+    // let a = <div></div>;
 
-    let formatter = (data) => {
-      let h = this.$createElement;
-      return (
-        <el-tooltip
-          class="item"
-          effect="light"
-          content={data.one}
-          placement="left-start"
-        >
-          <div>{data.one}</div>;
-        </el-tooltip>
-      );
-    };
+    // let formatter = (data) => {
+    //   let h = this.$createElement;
+    //   return (
+    //     <el-tooltip
+    //       class="item"
+    //       effect="light"
+    //       content={data.title}
+    //       placement="left-start"
+    //     >
+    //       <div>{data.title}</div>;
+    //     </el-tooltip>
+    //   );
+    // };
 
     this.tableHeaders = [
-     
       {
         label: "业务名称",
-        props: "one",
+        prop: "proc_name",
         width: "180",
-        formatter,
       },
       {
         label: "摘要",
-        prop: "one",
+        prop: "title",
         width: "320",
-        formatter,
       },
       {
         label: "流程状态",
-        prop: "one",
+        prop: "proc_status",
         width: "160",
-        formatter,
       },
       {
         label: "申请人",
-        prop: "one",
+        prop: "create_user",
         width: "160",
-        formatter,
       },
       {
         label: "申请时间",
-        prop: "one",
-        formatter,
+        prop: "create_time",
       },
     ];
 
@@ -606,24 +680,22 @@ export default {
 
       // element.style.cssText = 'height: 100px !important';
     });
-
-    this.initEchats2();
+    this.getTodo().then(() => {
+      this.initEchats2();
+    });
   },
 };
 </script>
 
 <style scoped>
-  .ll-bottom-content  /deep/ thead th {
-    background-color: rgba(239, 242, 252, 1);
-color: rgba(16, 16, 16, 1);
+.ll-bottom-content /deep/ thead th {
+  background-color: rgba(239, 242, 252, 1);
+  color: rgba(16, 16, 16, 1);
+}
 
-
-}  
-
-
- .ll-bottom-content  /deep/  tbody .cell {
-    padding: 8px;
-    line-height: 30px;
+.ll-bottom-content /deep/ tbody .cell {
+  padding: 8px;
+  line-height: 30px;
 }
 </style>
 
@@ -636,6 +708,7 @@ color: rgba(16, 16, 16, 1);
   font-size: 14px;
   font-weight: 900;
   font-family: SourceHanSansSC-regular;
+  cursor: pointer;
   img {
     margin-bottom: 7px;
     width: 40px;
@@ -691,6 +764,10 @@ color: rgba(16, 16, 16, 1);
 
 .height-percent {
   height: 100% !important;
+  width: 100%;
+  .el-card {
+    flex: 1;
+  }
 }
 
 .echart-title-row {
@@ -756,12 +833,11 @@ color: rgba(16, 16, 16, 1);
   height: 100%;
 
   .title-row {
-   
     color: rgba(50, 66, 116, 1);
     font-size: 16px;
     text-align: left;
     font-family: SourceHanSansSC-bold;
-    
+
     margin-bottom: 20px;
     .left-title {
       font-weight: 800;
@@ -773,9 +849,6 @@ color: rgba(16, 16, 16, 1);
 .height-percent {
   height: 100%;
 }
-
-
-
 
 .ll-bottom-content {
   height: 100%;
@@ -878,6 +951,12 @@ color: rgba(16, 16, 16, 1);
   .ll-card-block {
     box-sizing: border-box;
     padding-bottom: 20px;
+    .el-card {
+      margin-right: 20px;
+      &:last-child {
+        margin-right: 0;
+      }
+    }
   }
 }
 </style>

@@ -409,6 +409,10 @@ routes.push( {
   {
     path:'/platform',
     component:()=>import('@/pages/platform/index.vue')
+  },
+  {
+    path:'/booking',
+    component:()=>import('@/pages/xx/booking.vue')
   }
   // storeMonitor
 
