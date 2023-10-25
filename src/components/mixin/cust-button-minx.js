@@ -468,7 +468,7 @@ export default {
     /**
      * 直接请求地址
      */
-    addressRequest(item, operateData) {
+   async addressRequest(item, operateData) {
 
 
       var address = "";
@@ -493,9 +493,27 @@ export default {
             }
             index++;
           }
+          address = urls.join("/");
+        }else if(item.more_config){
+          // 2023.10.25 jiaqi 通过请求获取跳转url
+          try {
+            const moreConfig = JSON.parse(item.more_config)
+            if(moreConfig?.urlFromReq){
+              const url = `${window.backendIpAddr}${moreConfig?.urlFromReq?.url}`
+              const req = moreConfig?.urlFromReq?.data
+              if(url&&req&&moreConfig?.urlFromReq?.method){
+                const res = await this.$http[moreConfig?.urlFromReq?.method](url,req)
+                if(res?.data?.data?.length){
+                  const resData = res.data.data[0]
+                  address = resData[moreConfig?.urlFromReq?.field]
+                }
+              }
+            }
+          } catch (error) {
+            
+          }
         }
 
-        address = urls.join("/");
 
       }
       if("新TAB"==item.operate_mode){
@@ -534,7 +552,7 @@ export default {
     /**
      * url跳转打开tab页签
      */
-    customizeurlFoward(item, operateData) {
+    async customizeurlFoward(item, operateData) {
       var mainDetailData = this.listMainFormDatas || null
       var address = "";
       // 处理展示二维码按钮配置
@@ -583,9 +601,27 @@ export default {
             }
             index++;
           }
+          address = urls.join("/");
+        }else if(item.more_config){
+          // 2023.10.25 jiaqi 通过请求获取跳转url
+          try {
+            const moreConfig = JSON.parse(item.more_config)
+            if(moreConfig?.urlFromReq){
+              const url = `${window.backendIpAddr}${moreConfig?.urlFromReq?.url}`
+              const req = moreConfig?.urlFromReq?.data
+              if(url&&req&&moreConfig?.urlFromReq?.method){
+                const res = await this.$http[moreConfig?.urlFromReq?.method](url,req)
+                if(res?.data?.data?.length){
+                  const resData = res.data.data[0]
+                  address = resData[moreConfig?.urlFromReq?.field]
+                }
+              }
+            }
+          } catch (error) {
+            
+          }
         }
 
-        address = urls.join("/");
 
       }
 
