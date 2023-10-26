@@ -609,8 +609,6 @@ export default {
             if (moreConfig?.urlFromReq) {
               const url = `${window.backendIpAddr}${moreConfig?.urlFromReq?.url}`;
               const req = moreConfig?.urlFromReq?.data;
-              debugger
-
               if (moreConfig?.urlFromReq?.type === "redirect") {
                 let rUrl = url;
                 if (
