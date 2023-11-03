@@ -137,9 +137,16 @@ export default {
       gridHeader: [],
       gridData: [],
       allData: [],
+      isCheckedFirstPage:false,//已经将第一页数据默认选中
     };
   },
   computed: {
+    checkedFirstPage(){
+      return this.field?.info?.moreConfig?.checkedFirstPage
+    },
+    isAdd(){
+      return this.field?.info?.srvCol?.service_name?.includes('_add')
+    },
     fieldType() {
       let fieldInfo = this.field.info;
       if (fieldInfo && fieldInfo.type) {
@@ -575,6 +582,13 @@ export default {
             item.value = item[this.valueCol];
             return item;
           });
+          if(this.isMulti&&this.isAdd&&this.checkedFirstPage&&!this.isCheckedFirstPage&&this.allData?.length){
+            // 默认选中第一页数据填充到表单
+            this.allData.forEach(item=>{
+              this.clickRow(item)
+            })
+            this.isCheckedFirstPage = true
+          }
           this.initTableSelection();
           if (response.body.page) {
             this.page.total = response.body.page.total;
