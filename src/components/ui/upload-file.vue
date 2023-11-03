@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="padding-bottom:30px;">
     <template v-if="isEdit === false">
       <div v-for="(file, index) in moreFileRun" :key="index">
         
@@ -473,7 +473,7 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
             let currentFileType = file.name.split('.')
             currentFileType = currentFileType[currentFileType.length - 1]
             
-            if (!this.noneFileType.includes(currentFileType)) {
+            if (currentFileType &&  !this.noneFileType.includes(currentFileType)) {
               this.$message.error(`只能上传${this.noneFileType.join('/')}格式文件!`);
               return false
             }
