@@ -99,9 +99,9 @@ export default {
     };
   },
   computed: {
-    defaultCheckedAll() {
+    checkedAll() {
       // 默认选中所有数据 不带分页
-      return this.field?.info?.moreConfig?.defaultCheckedAll
+      return this.field?.info?.moreConfig?.checkedAll
     },
     checkedFirstPage() {
       // 默认选中带分页查询的第一页数据
@@ -520,7 +520,7 @@ export default {
         queryJson.order = loader.orders;
       }
 
-      if(this.defaultCheckedAll&&!this.isCheckedFirstPage){
+      if(this.checkedAll&&!this.isCheckedFirstPage){
         // 默认选中所有数据 不分页 
         delete queryJson.page
       }
@@ -551,7 +551,7 @@ export default {
             return item;
           });
           if (this.isMulti && this.isAdd) {
-            if ((this.checkedFirstPage||this.defaultCheckedAll) && !this.isCheckedFirstPage && this.allData?.length) {
+            if ((this.checkedFirstPage||this.checkedAll) && !this.isCheckedFirstPage && this.allData?.length) {
               // 默认选中查到的所有数据
               this.allData.forEach(item => {
                 this.clickRow(item)
