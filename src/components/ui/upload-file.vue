@@ -538,7 +538,7 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
       },
       handleSuccess(response, file, fileList) {
         let self = this
-        
+        this.$forceUpdate()
         console.log('上传成功',response)
         if (response.state === undefined) {
           this.$message.info('上传成功！')

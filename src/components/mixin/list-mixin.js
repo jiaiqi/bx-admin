@@ -789,11 +789,13 @@ export default {
 
     formatValue(row, header) {
       let key_col = header.column;
-      let value = row[key_col];
+      let value = row.hasOwnProperty(key_col) ? row[key_col] : null;
+      // 西高子表显示 数据没有的列 数字显示无效值问题。
+      // let value = row[key_col] ;
       // console.log("formatValue",row, key_col)
       let self = this
       let ops = ''
-      if (this.header_view_model == 'group' && this.groupHeaderCols[key_col]) {
+      if (this.header_view_model == 'group' && this.groupHeaderCols[key_col] ) {
         var str = "";
         var gheaders = this.groupHeaderCols[key_col];
         if (gheaders.length == 1) {

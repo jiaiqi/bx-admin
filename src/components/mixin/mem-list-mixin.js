@@ -1121,7 +1121,7 @@ export default {
                       }
                     })
 
-                    console.log('memInitdatasAdd',row)
+                    // console.log('memInitdatasAdd',row)
                     if(guids.indexOf(row._guid) == -1){
                       this.gridData.push(JSON.parse(JSON.stringify(row)));
                       if(oldVal.length !== 0 && JSON.stringify(val) !== JSON.stringify(oldVal)){

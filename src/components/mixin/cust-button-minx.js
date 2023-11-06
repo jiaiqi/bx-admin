@@ -1148,34 +1148,35 @@ export default {
               type: "info",
             })
             .then(() => {
-              this.operate(bxRequests).then((response) => {
-                var state = response.body.state;
+              console.log(bxRequests)
+              // this.operate(bxRequests).then((response) => {
+              //   var state = response.body.state;
 
-                if ("SUCCESS" == state) {
-                  var resultMessage = "操作成功!";
+              //   if ("SUCCESS" == state) {
+              //     var resultMessage = "操作成功!";
 
-                  if (
-                    resultMessage != "" &&
-                    resultMessage != null &&
-                    resultMessage != undefined
-                  ) {
-                    resultMessage = response.body.resultMessage;
-                  }
+              //     if (
+              //       resultMessage != "" &&
+              //       resultMessage != null &&
+              //       resultMessage != undefined
+              //     ) {
+              //       resultMessage = response.body.resultMessage;
+              //     }
 
-                  this.$message({
-                    type: "success",
-                    message: resultMessage,
-                  });
+              //     this.$message({
+              //       type: "success",
+              //       message: resultMessage,
+              //     });
 
-                  this.suffix_actions(item);
-                  //me.loadTableData();
-                } else {
-                  this.$message({
-                    type: "error",
-                    message: response.body.resultMessage,
-                  });
-                }
-              });
+              //     this.suffix_actions(item);
+              //     //me.loadTableData();
+              //   } else {
+              //     this.$message({
+              //       type: "error",
+              //       message: response.body.resultMessage,
+              //     });
+              //   }
+              // });
             })
             .catch(() => {
               this.$message({

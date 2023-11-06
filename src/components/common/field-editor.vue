@@ -184,7 +184,9 @@ export default {
       return !flexEditors.has(editor);
     },
   },
-
+  mounted(){
+    this.$forceUpdate()
+  },
   methods: {
     handleClose() {
       let self = this;
