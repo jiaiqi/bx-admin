@@ -103,7 +103,23 @@
               :cell-style="cellStyle"
               >
               <template slot-scope="scope">
-                <div v-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&item.column&&inlineEditCols[item.column]">
+                <div v-if="['progress', 'rate'].includes(item.srvcol.subtype)">
+                    <el-rate
+                      :value="scope.row[item.column]"
+                      show-score
+                      :disabled="true"
+                      text-color="#ff9900"
+                      style="width: 100%;"
+                      v-if="item.srvcol.subtype === 'rate'"
+                    >
+                    </el-rate>
+                    <el-progress
+                      :percentage="scope.row[item.column] || 0"
+                      style="width: 100%"
+                      v-else-if="item.srvcol.subtype === 'progress'"
+                    ></el-progress>
+                </div>
+                <div v-else-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&item.column&&inlineEditCols[item.column]">
                    <inline-edit-list :key="item.column" :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange($event,scope.$index)"></inline-edit-list>
                 </div>
                 <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
