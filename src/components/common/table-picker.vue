@@ -2,79 +2,37 @@
   <div>
     <el-popover trigger="click" v-model="visible">
       <div slot="reference">
-        <el-select
-          style="width: 100%"
-          :disabled="disabled"
-          v-model="selected"
-          :value-key="valueCol"
-          popper-class="popper-class"
-          placeholder="请选择"
-          :multiple="isMulti"
-          clearable
-          @remove-tag="removeTag"
-          @clear="clearSelect"
-          @focus="
+        <el-select style="width: 100%" :disabled="disabled" v-model="selected" :value-key="valueCol"
+          popper-class="popper-class" placeholder="请选择" :multiple="isMulti" clearable @remove-tag="removeTag"
+          @clear="clearSelect" @focus="
             visible = true;
-            onSearch();
-          "
-        >
-          <el-option
-            v-for="item in allData"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          >
+          onSearch();
+          ">
+          <el-option v-for="item in allData" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </div>
       <div class="picker-view">
         <div class="top-bar">
-          <el-input
-            placeholder="输入查询条件"
-            suffix-icon="el-icon-search"
-            v-model="inputVal"
-            clearable
-            @keyup.enter.native="onSearch"
-          >
+          <el-input placeholder="输入查询条件" suffix-icon="el-icon-search" v-model="inputVal" clearable
+            @keyup.enter.native="onSearch">
           </el-input>
-          <el-button type="primary" icon="el-icon-search" @click="onSearch"
-            >搜索</el-button
-          >
+          <el-button type="primary" icon="el-icon-search" @click="onSearch">搜索</el-button>
         </div>
-        <el-table
-          ref="multipleTable"
-          :data="gridData"
-          :highlight-current-row="!isMulti"
-          @row-click="clickRow"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table ref="multipleTable" :data="gridData" :highlight-current-row="!isMulti" @row-click="clickRow"
+          @selection-change="handleSelectionChange">
           <el-table-column width="50" v-if="isMulti">
             <template slot-scope="scope">
-              <el-checkbox
-                :value="scope.row.checked"
-                @change="changeSelected(scope.$index, scope.row)"
-              ></el-checkbox>
+              <el-checkbox :value="scope.row.checked" @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
             </template>
           </el-table-column>
-          <el-table-column
-            width="150"
-            :label="item.label"
-            v-for="item in setGridHeader"
-            :key="item.column"
-            v-if="item.srvcol && item.srvcol.in_list == 1"
-            :prop="item.column"
-          ></el-table-column>
+          <el-table-column width="150" :label="item.label" v-for="item in setGridHeader" :key="item.column"
+            v-if="item.srvcol && item.srvcol.in_list == 1" :prop="item.column"></el-table-column>
         </el-table>
         <div class="bottom-bar">
           <div></div>
-          <el-pagination
-            background
-            layout="prev, pager, next"
-            :total="page.total"
-            :current-page="page.pageNo"
-            :page-size="page.rownumber"
-            @current-change="changePage"
-          >
+          <el-pagination background layout="prev, pager, next" :total="page.total" :current-page="page.pageNo"
+            :page-size="page.rownumber" @current-change="changePage">
           </el-pagination>
 
           <!-- <el-button
@@ -114,8 +72,8 @@ export default {
     mainformDatas: {
       type: Object,
     },
-    disabled:{
-      type:Boolean
+    disabled: {
+      type: Boolean
     }
   },
   // mixins: [
@@ -137,14 +95,19 @@ export default {
       gridHeader: [],
       gridData: [],
       allData: [],
-      isCheckedFirstPage:false,//已经将第一页数据默认选中
+      isCheckedFirstPage: false,//已经将第一页数据默认选中
     };
   },
   computed: {
-    checkedFirstPage(){
+    defaultCheckedAll() {
+      // 默认选中所有数据 不带分页
+      return this.field?.info?.moreConfig?.defaultCheckedAll
+    },
+    checkedFirstPage() {
+      // 默认选中带分页查询的第一页数据
       return this.field?.info?.moreConfig?.checkedFirstPage
     },
-    isAdd(){
+    isAdd() {
       return this.field?.info?.srvCol?.service_name?.includes('_add')
     },
     fieldType() {
@@ -375,8 +338,8 @@ export default {
           header.srvcol = serviceCol;
           let more_config =
             serviceCol["more_config"] !== null &&
-            serviceCol["more_config"] !== undefined &&
-            serviceCol["more_config"] !== ""
+              serviceCol["more_config"] !== undefined &&
+              serviceCol["more_config"] !== ""
               ? JSON.parse(serviceCol["more_config"])
               : null;
           let colType = serviceCol["col_type"];
@@ -389,15 +352,15 @@ export default {
           header["list_min_width"] = serviceCol["list_min_width"];
           header["show_option_icon"] =
             serviceCol["more_config"] &&
-            JSON.parse(serviceCol["more_config"]).option_icon &&
-            JSON.parse(serviceCol["more_config"]).option_icon !== null
+              JSON.parse(serviceCol["more_config"]).option_icon &&
+              JSON.parse(serviceCol["more_config"]).option_icon !== null
               ? JSON.parse(serviceCol["more_config"]).option_icon
               : false;
           header["align"] = this.getColAlign(colType);
           header["format"] =
             serviceCol["more_config"] &&
-            JSON.parse(serviceCol["more_config"]).format &&
-            JSON.parse(serviceCol["more_config"]).format !== null
+              JSON.parse(serviceCol["more_config"]).format &&
+              JSON.parse(serviceCol["more_config"]).format !== null
               ? JSON.parse(serviceCol["more_config"]).format
               : null;
           header["more_config"] =
@@ -557,6 +520,11 @@ export default {
         queryJson.order = loader.orders;
       }
 
+      if(this.defaultCheckedAll&&!this.isCheckedFirstPage){
+        // 默认选中所有数据 不分页 
+        delete queryJson.page
+      }
+
       return this.selectList(queryJson).then((response) => {
         if (response && response.data && response.data.data) {
           let options = [];
@@ -582,12 +550,14 @@ export default {
             item.value = item[this.valueCol];
             return item;
           });
-          if(this.isMulti&&this.isAdd&&this.checkedFirstPage&&!this.isCheckedFirstPage&&this.allData?.length){
-            // 默认选中第一页数据填充到表单
-            this.allData.forEach(item=>{
-              this.clickRow(item)
-            })
-            this.isCheckedFirstPage = true
+          if (this.isMulti && this.isAdd) {
+            if ((this.checkedFirstPage||this.defaultCheckedAll) && !this.isCheckedFirstPage && this.allData?.length) {
+              // 默认选中查到的所有数据
+              this.allData.forEach(item => {
+                this.clickRow(item)
+              })
+              this.isCheckedFirstPage = true
+            }
           }
           this.initTableSelection();
           if (response.body.page) {
@@ -625,24 +595,29 @@ export default {
 .popper-class {
   display: none;
 }
+
 .bottom-bar,
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
+
   .el-input {
     flex: 1;
     margin-right: 10px;
   }
 }
+
 .bottom-bar {
   justify-content: center;
 }
+
 .el-table th {
   padding: 0 4px !important;
 }
-.el-table th > .cell {
+
+.el-table th>.cell {
   padding: 8px;
 }
 </style>
