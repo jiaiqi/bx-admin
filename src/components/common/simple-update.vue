@@ -37,7 +37,7 @@
           </div>
           <slot :name="section + '-begin'"></slot>
 
-          <div v-for="(formItem,fIndex) in formItems"   :key="fIndex" v-show="!getSectionShow(section)">
+          <span v-for="(formItem,fIndex) in formItems"   :key="fIndex" v-show="!getSectionShow(section)">
             <field-editor :field="formItem.field"
               
               :content-fields="formItem.contentFields"
@@ -57,7 +57,7 @@
             </div>
             </field-editor>
             <slot :name="formItem.field.info.name + '-append'"></slot>
-          </div>
+          </span>
 
 
         </el-row>
