@@ -103,7 +103,7 @@
               :cell-style="cellStyle"
               >
               <template slot-scope="scope">
-                <div v-if="['progress', 'rate'].includes(item.srvcol.subtype)">
+                <div v-if="item.srvcol && item.srvcol.subtype && ['progress', 'rate'].includes(item.srvcol.subtype)">
                     <el-rate
                       :value="scope.row[item.column]"
                       show-score
