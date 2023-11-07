@@ -478,6 +478,15 @@ export default {
                   this.mainformDatas[condition.value["value_key"]] || null;
               }
             }
+          }else if(condition.value?.includes('data.')){
+            try {
+              let key = condition.value.split('data.')[1]
+            if(key){
+              obj.value = defaultValues[key]
+            }
+            } catch (error) {
+              
+            }
           }
           queryJson.condition.push(obj);
         }
