@@ -75,9 +75,9 @@
           :key="contentField.info.name"
           v-if="ignoreVif||contentField.evalXIf()"
           :span="getInnerFieldColspan(contentField)"
-          style="display: flex;"
+         
         >
-
+        <!-- style="display: flex;" -->
           <!-- 
           @field-value-changed="$emit('field-value-changed', $event)"
           v-show="contentField.info.bodyVisible && contentField.info.srvCol.in_detail == 1"  label设置隐藏 in_detail == 2 ， 显示lebel 不显示 field-editor-->
@@ -184,7 +184,9 @@ export default {
       return !flexEditors.has(editor);
     },
   },
-
+  mounted(){
+    this.$forceUpdate()
+  },
   methods: {
     handleClose() {
       let self = this;
