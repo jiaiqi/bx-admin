@@ -709,6 +709,13 @@ export default {
      * @param {*} operateData
      */
     customize_popup(item, operateData) {
+      if(item.more_config && typeof item.more_config === 'string'){
+        try {
+          item['moreConfig'] = JSON.parse(item.more_config)
+        } catch (error) {
+          console.log(error)
+        }
+      }
       operateData = this.pre_data_handle(item, operateData);
       var service = item["operate_service"];
       var _service = item.service;
@@ -741,6 +748,8 @@ export default {
       params["childForeignkey"] = this.childForeignkey;
       params["defaultCondition"] = this.defaultCondition;
       params["listMainFormDatas"] = this.listMainFormDatas;
+
+      
 
       if ("列表弹出" == operate_type) {
         params.formType = "list";

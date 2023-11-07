@@ -1134,10 +1134,9 @@ export default {
       var tab_title = button.service_view_name;
       var operate_type = button.operate_type;
       var moreConfig = null
-
       if(button.more_config && typeof button.more_config === 'string'){
         try {
-          moreConfig = JSON.parse(moreConfig)
+          moreConfig = JSON.parse(button.more_config)
           
         } catch (error) {
           console.log(error)

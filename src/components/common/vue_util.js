@@ -1076,6 +1076,9 @@ function init_util() {
       dialog['batchInitConfig'] = params.batchInitConfig
     }
     dialog.activeForm = params.formType;
+    if(btninfo?.moreConfig?.customComponentName){
+      dialog.activeForm = btninfo?.moreConfig?.customComponentName
+    }
   }
 
 

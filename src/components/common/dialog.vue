@@ -1,5 +1,8 @@
 <template>
   <div>
+    <el-dialog title="添加" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'booking'" @close="activeForm = 'xx'" append-to-body>
+      <booking-page></booking-page>
+    </el-dialog>
     <el-dialog title="添加" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'add'" @close="activeForm = 'xx'" append-to-body>
       <!-- <simple-add name="add" ref="add-form" v-if="activeForm == 'add'" :service="service" :default-conditions="defaultConditions" :mainformDatas='listMainFormDatas' :default-condition="defaultCondition"  :childForeignkey='childForeignkey'  :default-values="defaultValues" @action-complete="onActionComplete($event)">
       </simple-add>  -->
@@ -115,7 +118,7 @@ import Treegrid from "./treegrid.vue";
 import EditGrid from "./edit-grid.vue";
 import SelectFillGrid from "./select-fill-grid.vue";
 import batchEditGrid from "./batch-edit-grid.vue";
-
+import bookingPage from "../../pages/xx/booking.vue"; //西乡预约页面
 
 export default {
   components: {
@@ -129,7 +132,8 @@ export default {
     Executor,
     add,
     update,
-    batchEditGrid
+    batchEditGrid,
+    bookingPage
   },
   mixins: [ExecutorMixin],
 
