@@ -130,12 +130,10 @@ export default {
         this.$emit('refresh', 'submit')
       } else {
         this.$emit('cancel')
-
       }
-
-      Object.keys(this.form).keys(key => {
-        this.form[key] = null
-      })
+      Object.keys(this.form).forEach(key => {
+        this.$set(this.form, key, null)
+      });
       this.dates = []
       this.times = []
     },
