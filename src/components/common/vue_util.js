@@ -1025,7 +1025,7 @@ function init_util() {
     return func(datas)
 
   }
-  Vue.prototype.popupDialog = function (params) {
+  Vue.prototype.popupDialog = function (params,callback) {
     var btninfo = params["btninfo"]
 
     if (params.formType.startsWith("simple-")) {
@@ -1079,6 +1079,8 @@ function init_util() {
     if(btninfo?.moreConfig?.customComponentName){
       dialog.activeForm = btninfo?.moreConfig?.customComponentName
     }
+    // 调用弹窗的地方传进来的回调函数，如果有传，则弹窗操作完成后调用此函数触发回调，通知组件操作完成
+    dialog.callback = callback
   }
 
 

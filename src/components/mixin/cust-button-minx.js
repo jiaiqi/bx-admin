@@ -52,7 +52,7 @@ export default {
      * @param {*} operateData
      */
 
-    customizeOperate(butinfo, operateData) {
+    customizeOperate(butinfo, operateData,callback) {
       if (butinfo.btn_cfg_json) {
         butinfo.btn_cfg = butinfo.btn_cfg_json;
         try {
@@ -93,7 +93,7 @@ export default {
       } else if (operate_type.endsWith("跳转")) {
         this.customize_forward(butinfo, operateData);
       } else if (operate_type.endsWith("弹出")) {
-        this.customize_popup(butinfo, operateData);
+        this.customize_popup(butinfo, operateData,callback);
       } else if (operate_type === "选择填充表格") {
         this.customize_popup(butinfo, operateData);
       } else {
@@ -708,7 +708,7 @@ export default {
      * @param {*} item
      * @param {*} operateData
      */
-    customize_popup(item, operateData) {
+    customize_popup(item, operateData,callback) {
       if(item.more_config && typeof item.more_config === 'string'){
         try {
           item['moreConfig'] = JSON.parse(item.more_config)
@@ -761,7 +761,7 @@ export default {
       } else if ("增加弹出" == operate_type) {
         // params.formType= "simple-add";
         params.formType = "add";
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else if ("更新弹出" == operate_type) {
         var otherParams = {};
         otherParams["load_old_data"] = load_old_data;

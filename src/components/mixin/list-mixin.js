@@ -1323,7 +1323,10 @@ export default {
           } else  if(button.operate_type == "增加弹出"){
 
             console.log("customize button",button)
-            this.customizeOperate(button, this.multipleSelection);
+            this.customizeOperate(button, this.multipleSelection,(e)=>{
+              // dialog操作完成之后的回调 刷新列表
+              this.loadTableData();
+            });
             // this.customize_add(button, this.multipleSelection);
         }else{
             button.listservice = this.service;

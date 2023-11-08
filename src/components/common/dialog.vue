@@ -139,6 +139,7 @@ export default {
 
   props: {
     initLoad:true,
+    callback:Function,
     buttonInfo:{}
   },
   computed:{
@@ -240,7 +241,12 @@ export default {
       }
       //console.log("onActionComplete",e)
       if(e==='save_draft'||e==='submit'){
+        if(this.callback&&typeof this.callback==='function'){
+          // 调用弹窗的地方传进来的回调函数，如果有传，则弹窗操作完成后调用此函数触发回调，通知组件操作完成
+          this.callback(e)
+        }else{
          window.location.reload()
+        }
       }
     }
   }
