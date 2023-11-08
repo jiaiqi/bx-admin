@@ -33,7 +33,7 @@
     ></el-slider>
     <el-progress
       :percentage="currentValue||0"
-      style="width: 100%"
+      style="width: 100%;overflow: hidden;"
       v-else-if="subType === 'progress'"
     ></el-progress>
   </div>
@@ -313,5 +313,9 @@ export default {
 .el-progress-bar {
   margin-right: -40px;
   padding-right: 40px;
+  min-width: 100px;
+}
+.el-progress__text{
+  width: 40px;
 }
 </style>
