@@ -159,8 +159,13 @@ export default {
       ];
       this.$http.post(url, req).then(res => {
         if (res?.data?.state === 'SUCCESS') {
-          this.$message.success('操作成功')
-          this.cancel(true)
+          this.$alert('操作成功', '提示', {
+            confirmButtonText: '确定',
+            callback: action => {
+              this.cancel(true)
+            }
+          });
+          // this.$message.success('操作成功')
         } else {
           this.$message(res.data.resultMessage)
         }
