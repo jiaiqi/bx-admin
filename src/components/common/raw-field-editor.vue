@@ -163,10 +163,12 @@
           
           <template v-else>
             <!--只读编辑器-->
-            <a v-if="field.info.linkUrlFunc" v-show="field.getSrvVal()" style="white-space: normal; color: dodgerblue; cursor: pointer;" @click="onLinkClicked()">
+            <bx-input-number v-if="field.info.editor === 'input-number'&&['progress','rate'].includes(field.info.subType)" controls-position="right" v-model="field.model" :disabled="true" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
+              </bx-input-number>
+            <a v-else-if="field.info.linkUrlFunc" v-show="field.getSrvVal()" style="white-space: normal; color: dodgerblue; cursor: pointer;" @click="onLinkClicked()">
               {{ field.getDispVal4Read() }}
             </a>
-
+            
             <el-input v-else readonly :type="field.info.editor === 'Password' ? 'password' : 'text'" v-show="field.info.bodyVisible" :disabled="getDisabled" :value="field.getDispVal4Read()">
               <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
               <template slot="prepend" v-if="
