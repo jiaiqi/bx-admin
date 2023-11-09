@@ -13,7 +13,7 @@
         <el-row style="width: 100%;">
           <el-col :xs="12" :sm="8" :md="6" :lg="6" :xl="4">
             <el-form-item required label="选择场所">
-              <el-select v-model="form.placement" placeholder="请选择场所" @change="placeChange">
+              <el-select v-model="form.rsvo_no" placeholder="请选择场所" @change="placeChange">
                 <el-option :label="item.label" :value="item.value" v-for="item in placement"
                   :key="item.value"></el-option>
               </el-select>
@@ -36,7 +36,7 @@
           </el-col>
         </el-row>
         <!-- <el-form-item required label="选择场所" style="margin-right: 40px;width: 50%;">
-          <el-select v-model="form.placement" placeholder="请选择场所" @change="placeChange">
+          <el-select v-model="form.rsvo_no" placeholder="请选择场所" @change="placeChange">
             <el-option :label="item.label" :value="item.value" v-for="item in placement" :key="item.value"></el-option>
           </el-select>
         </el-form-item> -->
@@ -56,8 +56,8 @@
       </el-form>
     </div>
 
-    <div class="sub-title" v-if="form.placement">预约日期</div>
-    <el-calendar @input="dateChange" v-if="form.placement">
+    <div class="sub-title" v-if="form.rsvo_no">预约日期</div>
+    <el-calendar @input="dateChange" v-if="form.rsvo_no">
       <!-- 这里使用的是 2.5 slot 语法，对于新项目请使用 2.6 slot 语法-->
       <template slot="dateCell" slot-scope="{ date, data }">
         <div class="item" :class="[
@@ -85,7 +85,7 @@
     <div style="text-align: center">
       <el-button size="mini" @click="cancel">取消</el-button>
       <el-button type="primary" size="mini" @click="submit"
-        :disabled="!form.placement || !form.number || !form.date || !form.time || !form.contacts || !form.mobilephone">确认</el-button>
+        :disabled="!form.rsvo_no || !form.number || !form.date || !form.time || !form.contacts || !form.mobilephone">确认</el-button>
     </div>
   </div>
 </template>
@@ -93,6 +93,9 @@
 <script>
 import moment from "moment";
 export default {
+  props: {
+    defaultValues: Object
+  },
   computed: {
     timesMap() {
       return this.times.reduce((res, cur) => {
@@ -145,7 +148,7 @@ export default {
           condition: [],
           data: [
             {
-              rsvo_no: this.form.placement,//预约对象
+              rsvo_no: this.form.rsvo_no,//预约对象
               rsvr_date: this.form.date,
               start_time: this.form.time,
               count: this.form.number,
@@ -242,7 +245,7 @@ export default {
           {
             colName: "rsvo_no",
             ruleType: "eq",
-            value: this.form.placement,
+            value: this.form.rsvo_no,
           },
         ],
         page: { pageNo: 1, rownumber: 100 },
@@ -270,7 +273,7 @@ export default {
           {
             colName: "rsvo_no",
             ruleType: "eq",
-            value: this.form.placement,
+            value: this.form.rsvo_no,
           },
           {
             colName: "datey",
@@ -288,6 +291,16 @@ export default {
     },
   },
   created() {
+    if(this.defaultValues&&Object.keys(this.defaultValues).length){
+      Object.keys(this.defaultValues).forEach(key=>{
+        if(this.defaultValues[key]){
+          this.form[key] = this.defaultValues[key]
+          if(key==='rsvo_no'){
+            this.fetchDate()
+          }
+        }
+      })
+    }
     this.fetchPlace();
   },
 };
