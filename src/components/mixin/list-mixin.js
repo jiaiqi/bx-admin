@@ -1997,7 +1997,7 @@ export default {
                         break;
                       }
                     }
-                  }
+                  } 
 
                   // load child list data for inline list
                   if (this.inlineLists) {
