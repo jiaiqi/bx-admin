@@ -66,7 +66,10 @@
             disabled: disabledDate(data.day),
           },
         ]">
-          {{ data.day.split("-").slice(1).join("-") }}
+          <div>
+            <span class="date">{{ data.day.split("-").slice(1).join("-") }}</span>
+            <div v-if=" datesMap[data.day]">{{ datesMap[data.day].cntr }}/{{ datesMap[data.day].cnt_can }}</div>
+          </div>
           <span class="bottom"></span>
           <!-- {{ data.isSelected ? "✔️" : "" }} -->
         </div>
@@ -350,15 +353,18 @@ export default {
 }
 
 ::v-deep .el-calendar-table .el-calendar-day {
-  height: 44px;
+  height:50px;
   text-align: center;
   padding: 0;
 
   .item {
-    height: 44px;
+    min-height: 50px;
     width: 100%;
-    line-height: 44px;
-
+    // line-height: 44px;
+    
+    .date{
+      font-size: 16px;
+    }
     &.is-selected {
       background-color: #eef5ff;
       position: relative;
