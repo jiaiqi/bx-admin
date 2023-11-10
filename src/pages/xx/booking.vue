@@ -67,8 +67,8 @@
           },
         ]">
           <div>
-            <span class="date">{{ data.day.split("-").slice(1).join("-") }}</span>
-            <div v-if=" datesMap[data.day]">{{ datesMap[data.day].cntr }}/{{ datesMap[data.day].cnt_can }}</div>
+            <span class="date">{{ data.day.split("-").slice(2).join("-") }}</span>
+           <span v-if=" datesMap[data.day]"> ({{ datesMap[data.day].cntr }}/{{ datesMap[data.day].cnt_can }})</span>
           </div>
           <span class="bottom"></span>
           <!-- {{ data.isSelected ? "✔️" : "" }} -->
@@ -360,10 +360,13 @@ export default {
   .item {
     min-height: 50px;
     width: 100%;
-    // line-height: 44px;
+    line-height: 44px;
+    // text-align: left;
+    // padding-left: 5px;
     
     .date{
-      font-size: 16px;
+      font-size: 18px;
+      // font-weight: bold;
     }
     &.is-selected {
       background-color: #eef5ff;
