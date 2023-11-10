@@ -277,6 +277,7 @@ export default {
       for (let fieldName in fields) {
         let field = fields[fieldName];
         if (field.info && field.info.isFinder()) {
+          // 如果是外键字段时 追加外键字段显示字段。
           srvvalRow["_" + fieldName + "_disp"] = field.getDispVal();
         }
       }
@@ -335,7 +336,7 @@ export default {
         return;
       }
 
-      
+      console.log('onUpdate2MemSubmitted',srvvalRow, fields)
       this.addFinderDispCol(fields, srvvalRow);
       let target = null
       if(srvvalRow.hasOwnProperty("_guid") && srvvalRow._guid !== null){
