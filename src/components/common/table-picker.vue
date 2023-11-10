@@ -19,14 +19,16 @@
           </el-input>
           <el-button type="primary" icon="el-icon-search" @click="onSearch">搜索</el-button>
         </div>
-        <el-table ref="multipleTable" :data="gridData" :highlight-current-row="!isMulti" @row-click="clickRow"
-          @selection-change="handleSelectionChange">
-          <el-table-column width="50" v-if="isMulti">
+        <el-table ref="multipleTable" :data="gridData" row-key="id" lazy :load="loadChild"
+          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :highlight-current-row="!isMulti"
+          @row-click="clickRow" @selection-change="handleSelectionChange">
+          <el-table-column width="120" v-if="isMulti">
             <template slot-scope="scope">
-              <el-checkbox :value="scope.row.checked" @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
+              <el-checkbox :value="selected.includes(scope.row[valueCol])" @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
+              <!-- <el-checkbox :value="scope.row.checked" @change="changeSelected(scope.$index, scope.row)"></el-checkbox> -->
             </template>
           </el-table-column>
-          <el-table-column width="150" :label="item.label" v-for="item in setGridHeader" :key="item.column"
+          <el-table-column :label="item.label" v-for="item in setGridHeader" :key="item.column"
             v-if="item.srvcol && item.srvcol.in_list == 1" :prop="item.column"></el-table-column>
         </el-table>
         <div class="bottom-bar">
@@ -34,17 +36,6 @@
           <el-pagination background layout="prev, pager, next" :total="page.total" :current-page="page.pageNo"
             :page-size="page.rownumber" @current-change="changePage">
           </el-pagination>
-
-          <!-- <el-button
-            size="mini"
-            type="primary"
-            @click="confirmSelect"
-            v-if="tableSelected && tableSelected.length > 0"
-            >确认</el-button
-          >
-          <el-button size="mini" @click="visible = false" v-else
-            >取消</el-button
-          > -->
         </div>
       </div>
     </el-popover>
@@ -96,9 +87,13 @@ export default {
       gridData: [],
       allData: [],
       isCheckedFirstPage: false,//已经将第一页数据默认选中
+      listV2: null,
     };
   },
   computed: {
+    service() {
+      return this.field.info?.fmt?.service
+    },
     checkedAll() {
       // 默认选中所有数据 不带分页
       return this.field?.info?.moreConfig?.checkedAll
@@ -151,10 +146,18 @@ export default {
   },
   created() {
     this.initSelected();
-
-    this.buildGridHeader();
+    this.getListV2().then(() => {
+      this.buildGridHeader();
+    })
   },
   methods: {
+    async getListV2() {
+      const res = await this.loadColsV2(this.service, "selectlist", this.$srvApp || this.resolveDefaultSrvApp())
+      if (res?.data?.state === 'SUCCESS') {
+        this.listV2 = res.data.data
+      }
+      return res
+    },
     initSelected() {
       let obj = {};
       if (["fkjson", "fkjsons"].includes(this.fieldType)) {
@@ -246,13 +249,6 @@ export default {
       this.changePage(1);
     },
 
-    confirmSelect() {
-      // this.visible = false
-      // this.selected = _.uniq([ ...this.selected, ...this.tableSelected ]);
-      // this.tableSelected = []
-      // this.$refs.multipleTable.clearSelection();
-      this.setFieldVal();
-    },
     clearSelect() {
       this.initTableSelection();
       this.setFieldVal();
@@ -285,21 +281,30 @@ export default {
     clickRow(row) {
       if (this.isMulti) {
         // 多选模式
-        this.gridData = this.gridData.map((item) => {
-          if (item[this.valueCol] === row[this.valueCol]) {
-            item.checked = !item.checked;
-            if (item.checked) {
-              this.selected.push(item[this.valueCol]);
-              this.selected = _.uniq(this.selected);
-            } else {
-              this.selected = this.selected.filter(
-                (e) => e !== item[this.valueCol]
-              );
-            }
-          }
-          return item;
-        });
-        // this.$refs.multipleTable.toggleRowSelection(row);
+        if (this.selected.indexOf(row[this.valueCol]) > -1) {
+          this.$set(row, 'chcecked', false)
+          this.selected = this.selected.filter(item => item !== row[this.valueCol]);
+        } else {
+          this.$set(row, 'chcecked', true)
+          this.selected.push(row[this.valueCol]);
+        }
+        // this.$refs.multipleTable.toggleRowSelection(row)
+
+        // this.gridData = this.gridData.map((item) => {
+        //   if (item[this.valueCol] === row[this.valueCol]) {
+        //     item.checked = !item.checked;
+        //     if (item.checked) {
+        //       this.selected.push(item[this.valueCol]);
+        //       this.selected = _.uniq(this.selected);
+        //     } else {
+        //       this.selected = this.selected.filter(
+        //         (e) => e !== item[this.valueCol]
+        //       );
+        //     }
+        //   }
+        //   return item;
+        // });
+
       } else {
         // 单选模式
         this.selected = row[this.valueCol];
@@ -314,9 +319,7 @@ export default {
     },
 
     handleSelectionChange(val) {
-      // this.selected = _.uniq([ ...this.selected, ...this.tableSelected ]);
-      // this.tableSelected = val.map(item => item[ this.valueCol ])
-      this.confirmSelect();
+      this.setFieldVal();
     },
     async buildGridHeader() {
       if (this.fmt && this.fmt.service) {
@@ -404,7 +407,49 @@ export default {
         this.loadOptions();
       }
     },
-
+    loadChild(tree, treeNode, resolve) {
+      if (tree[this.listV2.no_col]) {
+        let queryJson = {
+          serviceName: this.service,
+          colNames: ["*"],
+          condition: [{
+            colName: this.listV2.parent_no_col,
+            ruleType: "eq",
+            value: tree[this.listV2.no_col]
+          }],
+          page: {
+            pageNo: 1,
+            rownumber: 999,
+          },
+        }; this.selectList(queryJson).then(res => {
+          if (res?.data?.state === 'SUCCESS') {
+            res.data.data = res.data.data.map(item => {
+              item.hasChildren = item.is_leaf === '否'
+              if(this.selected.includes(item[this.listV2.no_col])){
+                item.checked = true
+              }
+              return item
+            })
+            let allData = _.uniqBy(
+              [
+                ...res.data.data,
+                ...this.gridData,
+                ...this.allData,
+                ..._.cloneDeep(this.selectedGridData),
+              ],
+              this.valueCol
+            );
+            this.allData = _.cloneDeep(allData).map((item) => {
+              item.label = item[this.labelCol];
+              item.value = item[this.valueCol];
+              return item;
+            });
+            // this.$set(tree,'children',_.cloneDeep(res.data.data))
+            resolve(res.data.data)
+          }
+        })
+      }
+    },
     loadOptions(query = {}) {
       let fieldInfo = this.field.info;
       let loader = fieldInfo.fmt;
@@ -417,6 +462,10 @@ export default {
           rownumber: this.page.rownumber,
         },
       };
+      if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
+        queryJson.colNames = this.setGridHeader.map((item) => item.column);
+        queryJson.colNames.push(this.listV2.no_col, this.listV2.parent_no_col, 'is_leaf', 'path', 'id')
+      }
       if (this.fmt && this.fmt.seq_col) {
         if (this.fmt.order_type) {
           queryJson.order = [
@@ -478,14 +527,14 @@ export default {
                   this.mainformDatas[condition.value["value_key"]] || null;
               }
             }
-          }else if(condition.value?.includes('data.')){
+          } else if (condition.value?.includes('data.')) {
             try {
               let key = condition.value.split('data.')[1]
-            if(key){
-              obj.value = defaultValues[key]
-            }
+              if (key) {
+                obj.value = defaultValues[key]
+              }
             } catch (error) {
-              
+
             }
           }
           queryJson.condition.push(obj);
@@ -524,25 +573,27 @@ export default {
       if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
         queryJson.colNames = this.setGridHeader.map((item) => item.column);
       }
+      if (this.listV2?.is_tree === true) {
+        queryJson.colNames.push(this.listV2.no_col, this.listV2.parent_no_col, 'is_leaf', 'path', 'id')
+        queryJson.use_type = "treelist";
+        queryJson.rdt = 'ttd';
+        delete queryJson.page
+      }
 
       if (loader && loader.orders) {
         queryJson.order = loader.orders;
       }
 
-      if(this.checkedAll&&!this.isCheckedFirstPage){
+      if (this.checkedAll && !this.isCheckedFirstPage) {
         // 默认选中所有数据 不分页 
         delete queryJson.page
       }
 
       return this.selectList(queryJson).then((response) => {
         if (response && response.data && response.data.data) {
-          let options = [];
-          if (this.page.pageNo !== 1) {
-            options = [...this.gridData, ...response.data.data];
-          } else {
-            options = response.data.data;
-          }
+
           this.gridData = _.cloneDeep(response.data.data).map((item) => {
+            item.hasChildren = item.is_leaf === '否'
             item.checked = false;
             return item;
           });
@@ -560,7 +611,7 @@ export default {
             return item;
           });
           if (this.isMulti && this.isAdd) {
-            if ((this.checkedFirstPage||this.checkedAll) && !this.isCheckedFirstPage && this.allData?.length) {
+            if (!this.listV2.is_tree && (this.checkedFirstPage || this.checkedAll) && !this.isCheckedFirstPage && this.allData?.length) {
               // 默认选中查到的所有数据
               this.allData.forEach(item => {
                 this.clickRow(item)
@@ -570,7 +621,11 @@ export default {
           }
           this.initTableSelection();
           if (response.body.page) {
-            this.page.total = response.body.page.total;
+            if (this.listV2?.is_tree === true) {
+              this.page.total = response.data.data.length
+            } else {
+              this.page.total = response.body.page.total;
+            }
           }
         }
       });
@@ -628,5 +683,9 @@ export default {
 
 .el-table th>.cell {
   padding: 8px;
+}
+
+.el-table td .cell {
+  display: flex;
 }
 </style>
