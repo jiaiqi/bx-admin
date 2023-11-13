@@ -1020,6 +1020,7 @@ export default {
          
           this.gridData = response.body.data;
           if (response.body.page) {
+            this.gridPage.pageSize = response.body["page"]["pageSize"];
             this.gridPage.currentPage = response.body["page"]["pageNo"];
             this.gridPage.total = response.body["page"]["total"];
           }
