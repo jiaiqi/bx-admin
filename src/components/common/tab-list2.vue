@@ -64,6 +64,7 @@
                   :storage-type="storageType"
                   :service="getService()"
                   :default-condition="getDefaultConditions"
+                  :relationCondition="relationCondition"
         >
         </treegrid> 
         <list ref="list"

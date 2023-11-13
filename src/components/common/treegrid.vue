@@ -469,6 +469,7 @@ export default {
         return [];
       },
     },
+    relationCondition:Object,
     childForeignkey: Object,
   },
   data() {
@@ -1005,7 +1006,8 @@ export default {
       }
 
       //加载表格数据
-      this.select(this.service_name, cond, page, this.order,null,null,null,null,null,null,null,null,null,this.vpageNo,'treelist').then(
+      let rdt = this.childForeignkey?.constraint_name?'ttd':null //是子表 使用ttd特性 2023年11月13日jiaqi
+      this.select(this.service_name, cond, page, this.order,null,null,null,null,null,this.relationCondition||null,null,null,null,this.vpageNo,'treelist',rdt).then(
         (response) => {
           // rename for element stupid bug of using children as bulitin
           response.body.data &&

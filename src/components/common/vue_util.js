@@ -539,10 +539,11 @@ function init_util() {
   };
 
   /**查询列表*/
-  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType) {
+  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType,rdt) {
     var url = this.getServiceUrl("select", service_name, app);
      //2023.10.20增加use_type参数 解决行按钮权限丢失问题
-    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType || 'list')
+     //2023年11月13日增加rdt参数 目前值只有ttd 代表后端查找符合条件的数据的最顶层节点返回回来
+    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType || 'list',rdt)
   }
 
   /***
@@ -595,7 +596,7 @@ function init_util() {
   }
 
   /**查询*/
-  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo,use_type) {
+  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo,use_type,rdt) {
     var query = {
       "serviceName": service_name,
       "colNames": columns || ['*'],
@@ -608,8 +609,14 @@ function init_util() {
       use_type:use_type     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
     if(use_type==='treelist'){
-     // 2023年11月13日11点35分增加，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据，不使用parentCol为null作为条件
-     query["rdt"] = "ttd";
+     // 2023年11月13日增加，top tree data特性，后端返回符合条件的数据的最顶层节点数据，不使用parentCol为null作为条件
+    //  query["rdt"] = "ttd";
+     if(rdt){
+      query["rdt"] = rdt;
+      if(query.page?.rownumber){
+        query.page.rownumber = 9999
+      }
+     }
     }
     if (pageType && pageType === 'list_page') {
       query['query_source'] = "list_page"

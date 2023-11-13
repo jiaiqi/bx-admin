@@ -168,13 +168,13 @@ export default {
 
         if (loader.parentCol) {
           // 2023年11月13日11点35分注释，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据，不使用parentCol为null作为条件
-          // conditions = [
-          //   ...conditions,
-          //   {
-          //     colName: loader.parentCol,
-          //     ruleType: "isnull"
-          //   }
-          // ];
+          conditions = [
+            ...conditions,
+            {
+              colName: loader.parentCol,
+              ruleType: "isnull"
+            }
+          ];
         }
       }
 
@@ -183,8 +183,11 @@ export default {
         colNames: ["*"],
         condition: conditions,
         relation_condition: relation_condition ,
-        rdt: "ttd",//2023年11月13日11点35分 修改，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据
-        page: 1,
+        rdt: "ttd",//2023年11月13日 修改，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据,
+        page: {
+          pageNo:1,
+          pageSize:2000,
+        },
       };
       return this.$http.post(url, params).then(response => {
         if (response && response.data && response.data.data) {
