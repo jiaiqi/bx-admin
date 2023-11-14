@@ -995,14 +995,13 @@ export default {
 
       //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
       if (this.searchFormCondition.length == 0) {
-        // 2023年11月13日11点35分注释，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据，不使用parentCol为null作为条件
-        // if (!cond.find((item) => item.colName === this.parentCol)) {
-        //   var initCondition = {
-        //     colName: this.parentCol,
-        //     ruleType: "isnull",
-        //   };
-        //   cond.push(initCondition);
-        // }
+        if (!cond.find((item) => item.colName === this.parentCol)) {
+          var initCondition = {
+            colName: this.parentCol,
+            ruleType: "isnull",
+          };
+          cond.push(initCondition);
+        }
       }
 
       //加载表格数据
