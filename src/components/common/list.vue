@@ -26,22 +26,18 @@
     </el-row> -->
     <el-row v-show="!hideButtons" type="flex" class="row-bg" justify="space-between">
 
-      
-      
-        <div class="table-head-btns">
+
+
+      <div class="table-head-btns">
         <!-- <el-button type="primary" size="small"  v-if="(defaultDirtyFlags == 'add' || listType ==  'addchildlist') && batchAddButton && batchAddButton.hasOwnProperty('batchAdd') && batchAddButton.batchAdd.isDisp && selection" @click.stop="onMemBatchUpdateActive">
           批量操作
         </el-button> -->
-        <el-popover 
-          placement="right"
-          popper-class="table-popover"
-          width="800"
-          v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')"
-          trigger="click">
+        <el-popover placement="right" popper-class="table-popover" width="800"
+          v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')" trigger="click">
           <div v-html="moreConfig.table_explain.desc">{{moreConfig.table_explain.desc}}</div>
-          <div slot="reference" style="color:#525252;padding:2px 10px;">列表字段说明<i  class="el-icon-question"></i></div>
+          <div slot="reference" style="color:#525252;padding:2px 10px;">列表字段说明<i class="el-icon-question"></i></div>
         </el-popover>
-        
+
       </div>
       <div class="table-head-btns">
         <template v-for="(item, index) in sortedGridButtons">
@@ -53,7 +49,7 @@
             :disabled="item.evalDisable()"
             v-if="(!readOnly && existsGridButton && item.permission && getDispExps(item)) || !item.permission && item.hasOwnProperty('always_show') && item.always_show === true"
             @click="gridButtonClick(item)">
-            {{getButtonName(item)}}
+            {{ getButtonName(item) }}
           </el-button>
 
         </template>
@@ -78,49 +74,36 @@
           <el-table ref="bx-table-layout" :data="gridDataRun" stripe border style="width: 100%"
             :row-class-name="tableRowClassName" row-key="id" highlight-current-row
             @selection-change="handleSelectionChange" @filter-change="filterChange" @sort-change="handleSortChange"
-            
-            :span-method="arraySpanMethod"
-            @row-dblclick="onRowDbClicked">
+            :span-method="arraySpanMethod" @row-dblclick="onRowDbClicked">
 
             <el-table-column type="selection" label="全选" header-align="left" width="50px" v-if="selection && !readOnly">
             </el-table-column>
             <!-- :show-summary="sumRowData ? true : false"
             :summary-method="getSummaries" -->
             <!-- v-if="(item.show && (!item.evalVisible || item.evalVisible()))" ---↓-->
-            <el-table-column v-for="(item, index) in gridHeader" 
-              :key="index" header-align="center"
+            <el-table-column v-for="(item, index) in gridHeader" :key="index" header-align="center"
               v-if="getGridHeaderDispExps(item, listMainFormDatas)"
               :width="item.width ? item.width : getListShowFileList(item) ? item.list_min_width ? item.list_min_width : 180 : ''"
-              :filter-method="item.filters ? filterHandler : null" :prop="item.column" 
-              :align="item.align"
+              :filter-method="item.filters ? filterHandler : null" :prop="item.column" :align="item.align"
               :fixed="item.rowFixed ? true : null"
-              :show-overflow-tooltip="getListShowFileList(item) === true ? false : !listCellsTextDispWarp" 
+              :show-overflow-tooltip="getListShowFileList(item) === true ? false : !listCellsTextDispWarp"
               :label="item.label"
-              :min-width="getColumnMinWidth(item)?getColumnMinWidth(item):item.list_min_width + 'px'" 
-              :filters="item.filters" 
-              :column-key="item.column"
-              :sortable="item.sortable && !isMem() ? 'custom' : false"
-              :cell-style="cellStyle"
-              >
+              :min-width="getColumnMinWidth(item) ? getColumnMinWidth(item) : item.list_min_width + 'px'"
+              :filters="item.filters" :column-key="item.column" :sortable="item.sortable && !isMem() ? 'custom' : false"
+              :cell-style="cellStyle">
               <template slot-scope="scope">
                 <div v-if="item.srvcol && item.srvcol.subtype && ['progress', 'rate'].includes(item.srvcol.subtype)">
-                    <el-rate
-                      :value="scope.row[item.column]"
-                      show-score
-                      :disabled="true"
-                      text-color="#ff9900"
-                      style="width: 100%;"
-                      v-if="item.srvcol.subtype === 'rate'"
-                    >
-                    </el-rate>
-                    <el-progress
-                      :percentage="scope.row[item.column] || 0"
-                      style="width: 100%"
-                      v-else-if="item.srvcol.subtype === 'progress'"
-                    ></el-progress>
+                  <el-rate :value="scope.row[item.column]" show-score :disabled="true" text-color="#ff9900"
+                    style="width: 100%;" v-if="item.srvcol.subtype === 'rate'">
+                  </el-rate>
+                  <el-progress :percentage="scope.row[item.column] || 0" style="width: 100%"
+                    v-else-if="item.srvcol.subtype === 'progress'"></el-progress>
                 </div>
-                <div v-else-if="canInlineEdit&&onInlineEditing&&inlineEditCols&&item.column&&inlineEditCols[item.column]">
-                   <inline-edit-list :key="item.column" :field="inlineEditCols[item.column]" :ref="'inlineEditor'+item.column" :data="scope.row" @on-change="onInlineChange($event,scope.$index)"></inline-edit-list>
+                <div
+                  v-else-if="canInlineEdit && onInlineEditing && inlineEditCols && item.column && inlineEditCols[item.column]">
+                  <inline-edit-list :key="item.column" :field="inlineEditCols[item.column]"
+                    :ref="'inlineEditor' + item.column" :data="scope.row"
+                    @on-change="onInlineChange($event, scope.$index)"></inline-edit-list>
                 </div>
                 <div v-else-if="isInplaceEdit() && findEditField(scope.row, item.column)" class="is-InplaceEdit">
                   <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
@@ -131,6 +114,9 @@
                 </div>
                 <div v-else-if="item.col_type === 'progress'">
                   <el-progress :text-inside="true" :stroke-width="18" :percentage="scope.row[item.column]"></el-progress>
+                </div>
+                <div v-else-if="formatValue(scope.row, item)&&['Note','RichText'].includes(item.col_type)" v-html="formatValue(scope.row, item)"
+                  style="max-height:10vh;overflow:hidden;" @dblclick="openHtml(formatValue(scope.row, item))">
                 </div>
                 <!-- Enum | Dict 根据配置显示图标 -->
                 <div
@@ -205,7 +191,8 @@
             </el-table-column>
 
             <el-table-column label="操作" header-align="left" width="240" fixed="right"
-              v-if="!readOnly && listType != 'selectlist' && !hideButtons && sortedRowButtons.length > 0" style="box-sizing: border-box;">
+              v-if="!readOnly && listType != 'selectlist' && !hideButtons && sortedRowButtons.length > 0"
+              style="box-sizing: border-box;">
               <template slot-scope="scope" v-if="getColumnsShow(scope.row)">
                 <!-- <el-button v-for="(button, index) in sortedRowButtons"
                             :key="index"
@@ -221,43 +208,44 @@
                             v-show="isRowButtonVisible(button, scope.row)">
                     {{ getButtonName(button, scope.row) }}
                   </el-button> -->
-                  <div style="margin-bottom: -5px;">
-                    <div v-for="(button, index) in sortedRowButtons" :key="index" style="margin-right:5px;margin-bottom:5px;display:inline-block;"
-                        v-if="getDispExps(button, scope.row, scope.$index) && button.permission"
-                        v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row, scope.$index)">
-                        <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
-                          :type="button._moreConfig.type" :icon="button._moreConfig.icon"
-                          :round="button._moreConfig.style !== '' && button._moreConfig.style === 'round'"
-                          :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
-                          :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
-                          :disabled="button.evalDisable()"
-                          v-if="button.button_type !== '_btn_group' && getButtonOptSrv(button, scope.row, 'isShow')">
-                          {{ getButtonName(button, scope.row) }}
-                        </el-button>
-                        <el-dropdown
-                          v-else-if="button.button_type === '_btn_group' && button.buttons.length > 0 && getButtonDispExps(button.buttons, scope.row, scope.$index)">
-                          <el-button :type="button.type" :size="button.size" plain>
-                            {{ button.button_name }}
-                            <i class="el-icon-arrow-down el-icon--right"></i>
-                          </el-button>
+                <div style="margin-bottom: -5px;">
+                  <div v-for="(button, index) in sortedRowButtons" :key="index"
+                    style="margin-right:5px;margin-bottom:5px;display:inline-block;"
+                    v-if="getDispExps(button, scope.row, scope.$index) && button.permission"
+                    v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row, scope.$index)">
+                    <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
+                      :type="button._moreConfig.type" :icon="button._moreConfig.icon"
+                      :round="button._moreConfig.style !== '' && button._moreConfig.style === 'round'"
+                      :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
+                      :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
+                      :disabled="button.evalDisable()"
+                      v-if="button.button_type !== '_btn_group' && getButtonOptSrv(button, scope.row, 'isShow')">
+                      {{ getButtonName(button, scope.row) }}
+                    </el-button>
+                    <el-dropdown
+                      v-else-if="button.button_type === '_btn_group' && button.buttons.length > 0 && getButtonDispExps(button.buttons, scope.row, scope.$index)">
+                      <el-button :type="button.type" :size="button.size" plain>
+                        {{ button.button_name }}
+                        <i class="el-icon-arrow-down el-icon--right"></i>
+                      </el-button>
 
-                          <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item v-for="(subtns, i) in button.buttons" :key="i">
-                              <el-button @click="rowButtonClick(subtns, scope.row)" :size="subtns._moreConfig.size"
-                                :type="subtns._moreConfig.type" :icon="subtns._moreConfig.icon"
-                                :round="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'round'"
-                                :plain="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'plain'"
-                                :circle="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'circle'"
-                                :disabled="subtns.evalDisable()"
-                                v-show="isRowButtonVisible(subtns, scope.row, scope.$index) && (getDispExps(subtns, scope.row) && subtns.permission) && getButtonOptSrv(subtns, scope.row, 'isShow')">{{
-                                  subtns.button_name }}</el-button>
-                            </el-dropdown-item>
-                          </el-dropdown-menu>
+                      <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item v-for="(subtns, i) in button.buttons" :key="i">
+                          <el-button @click="rowButtonClick(subtns, scope.row)" :size="subtns._moreConfig.size"
+                            :type="subtns._moreConfig.type" :icon="subtns._moreConfig.icon"
+                            :round="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'round'"
+                            :plain="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'plain'"
+                            :circle="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'circle'"
+                            :disabled="subtns.evalDisable()"
+                            v-show="isRowButtonVisible(subtns, scope.row, scope.$index) && (getDispExps(subtns, scope.row) && subtns.permission) && getButtonOptSrv(subtns, scope.row, 'isShow')">{{
+                              subtns.button_name }}</el-button>
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
 
-                        </el-dropdown>
-                      </div>
+                    </el-dropdown>
                   </div>
-               
+                </div>
+
                 <!-- <el-badge  class="table-row-badge" 
                       v-if="isMem() && isDirtyRow(scope.row)"
                       :value="getDirtyRowTagText(scope.row)"
@@ -280,7 +268,7 @@
       </div>
 
       <!-- <el-row type="flex" class="row-bg" justify="center" v-if="!isMem()" -->
-      <el-row type="flex" class="row-bg" justify="center" v-if="showPagination&&setShowPagination"
+      <el-row type="flex" class="row-bg" justify="center" v-if="showPagination && setShowPagination"
         v-show="!hidePagination && gridPage.total > 0">
 
         <el-pagination @current-change="handleCurrentChange" @size-change="handleSizeChange"
@@ -290,19 +278,18 @@
 
       </el-row>
     </div>
-    <el-dialog class="customDialogClass" title="添加" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'add'"
-      @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="添加" width="90%" :close-on-click-modal="1 == 2" append-to-body
+      :visible="activeForm == 'add'" @close="activeForm = 'xx'">
       <add name="list-add" :mainService="mainService" ref="add-form" v-if="activeForm == 'add'" :service="getAddService"
         :submit2-db="storageType == 'db'" :defaultCondition='defaultCondition' :form-model-decorator="formModelDecorator"
-         :haveDraft="isDraft" :pageIsDraft="activeTabName"
-        :childForeignkey="childForeignkey" :parentPageType="listType" :parentMainFormDatas="listMainFormDatas"
-        @action-complete="onAddFormActionComplete($event)" @form-loaded="onAddFormLoaded"
-        @submitted2mem="onAdd2MemSubmitted">
+        :haveDraft="isDraft" :pageIsDraft="activeTabName" :childForeignkey="childForeignkey" :parentPageType="listType"
+        :parentMainFormDatas="listMainFormDatas" @action-complete="onAddFormActionComplete($event)"
+        @form-loaded="onAddFormLoaded" @submitted2mem="onAdd2MemSubmitted">
       </add>
       <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
-    <el-dialog class="customDialogClass" title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'duplicate'"
-      @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body
+      :visible="activeForm == 'duplicate'" @close="activeForm = 'xx'">
       <simple-add name="list-duplicate" ref="duplicate-form" :pageName="'list-duplicate'" v-if="activeForm == 'duplicate'"
         :service="getAddService" :default-conditions="getDefaultCondition4Duplicate" :submit2-db="storageType == 'db'"
         :parentPageType="listType" :defaultValues="activeData" :parentMainFormDatas="listMainFormDatas"
@@ -322,13 +309,13 @@
       </add>
     </el-dialog>
 
-    <el-dialog class="customDialogClass" title="编辑" width="90%" :visible="activeForm == 'update'" :close-on-click-modal="1 == 2" append-to-body
-      @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="编辑" width="90%" :visible="activeForm == 'update'"
+      :close-on-click-modal="1 == 2" append-to-body @close="activeForm = 'xx'">
 
-      <update name="list-update"  :mainService="mainService"  ref="update-form" v-if="activeForm == 'update'" :initOrigin="'dialog'" :service="getUpdateService"
-        :pk="getClickedRowPk('update')" :pageIsDraft="activeTabName" :initLoad="initLoad"
-        :defaultValues="clickedRow['update']" :submit2-db="storageType == 'db'" :parentPageType="listType"
-        :haveDraft="isDraft" :parentMainFormDatas="listMainFormDatas"
+      <update name="list-update" :mainService="mainService" ref="update-form" v-if="activeForm == 'update'"
+        :initOrigin="'dialog'" :service="getUpdateService" :pk="getClickedRowPk('update')" :pageIsDraft="activeTabName"
+        :initLoad="initLoad" :defaultValues="clickedRow['update']" :submit2-db="storageType == 'db'"
+        :parentPageType="listType" :haveDraft="isDraft" :parentMainFormDatas="listMainFormDatas"
         :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null"
         @action-complete="onUpdateFormActionComplete($event)" @form-loaded="onUpdateFormLoaded($refs['update-form'])"
         @submitted2mem="onUpdate2MemSubmitted">
@@ -343,32 +330,34 @@
                      @form-loaded="onUpdateFormLoaded($refs['update-form'])"
                      @submitted2mem="onUpdate2MemSubmitted">
       </simple-update> -->
-    </el-dialog> 
+    </el-dialog>
 
-    <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body
+      @close="activeForm = 'xx'">
       <import-dialog :service="addService" :sign-service-name="addService" v-if="activeForm == 'import'"
         :button="actionGridButton" @close="onImportDialogClosed">
       </import-dialog>
     </el-dialog>
-    <el-dialog class="customDialogClass" title="自定义导入" width="90%" :visible="activeForm == 'customizeImport'" append-to-body
-      @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="自定义导入" width="90%" :visible="activeForm == 'customizeImport'"
+      append-to-body @close="activeForm = 'xx'">
       <import-dialog :service="importService" :sign-service-name="addService" :importPageType="'customize'"
         v-if="activeForm == 'customizeImport'" :button="actionGridButton" @close="onImportDialogClosed">
       </import-dialog>
     </el-dialog>
-    <el-dialog class="customDialogClass" title="导出" width="90%" :visible="activeForm == 'export'" append-to-body @close="onExportDialogClosed">
+    <el-dialog class="customDialogClass" title="导出" width="90%" :visible="activeForm == 'export'" append-to-body
+      @close="onExportDialogClosed">
       <exportLayout :columns="gridHeader" :type="'exprot'" @on-export-clicked="onExportClicked($event)"></exportLayout>
     </el-dialog>
-    <el-dialog class="customDialogClass" title="管理子表" width="90%" :visible="activeForm == 'manageChildList'" append-to-body
-      @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="管理子表" width="90%" :visible="activeForm == 'manageChildList'"
+      append-to-body @close="activeForm = 'xx'">
       <popup-mem-list list-type="detaillist" name="inlinelist" v-if="activeForm == 'manageChildList'" ref="inlineList"
         :service="props4ActivePopupMemList.inline_list_select_service" :foreign-key="props4ActivePopupMemList.foreign_key"
         :read-only="false" :search-form="false" :is-tree="false" :inplace-edit="true" :should-load-from-db="false"
         @list-loaded="onPopupMemListLoaded" @close-pop="activeForm = 'xx'">
       </popup-mem-list>
     </el-dialog>
-    <el-dialog class="customDialogClass" ref="batchApprove" title="审批" width="90%" :visible="activeForm == 'batchApprove'" append-to-body
-      @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" ref="batchApprove" title="审批" width="90%" :visible="activeForm == 'batchApprove'"
+      append-to-body @close="activeForm = 'xx'">
       <batchApprove @action-success="actionSuccess()" :approvaList="approvaList" :approvalOptions="approvalOptions">测试
       </batchApprove>
     </el-dialog>
@@ -416,8 +405,8 @@
 
       <!-- <el-image v-else  :src="currentUrl" lazy></el-image> -->
     </el-dialog>
-    <el-dialog class="customDialogClass" title="二级密码验证" :show-close="false" width="40%" :close-on-click-modal="1 == 2" append-to-body
-      :visible="activeForm == 'srv-auth-login'" @close="activeForm = 'xx'">
+    <el-dialog class="customDialogClass" title="二级密码验证" :show-close="false" width="40%" :close-on-click-modal="1 == 2"
+      append-to-body :visible="activeForm == 'srv-auth-login'" @close="activeForm = 'xx'">
 
       <srvAuthLogin :serviceName="service" @srv-auth-success="srvAuthSuccess"></srvAuthLogin>
     </el-dialog>
@@ -535,6 +524,25 @@ export default {
   },
 
   methods: {
+    openHtml(val) {
+      const h = this.$createElement;
+      this.$msgbox({
+        title: '详情',
+        // center:true,
+        customClass: "message-box",
+        message: h('p', {
+          domProps: {
+            innerHTML: val
+          },
+          style: {
+            width: '100%'
+          }
+        }),
+        showCancelButton: false,
+        confirmButtonText: '确定',
+    
+      })
+    },
     srvAuthSuccess(e) {
       console.log(e)
       this.activeForm = 'xx'
@@ -688,7 +696,16 @@ export default {
   }
 };
 </script>
-
+<style>
+.message-box {
+  width: max(40vw, 500px) !important;
+}
+.message-box .el-message-box__content {
+  min-height: max(300px,30vh);
+  max-height: 50vh;
+  overflow-y: auto !important;
+}
+</style>
 <style lang="less">
 #app {
   >div {
@@ -780,14 +797,15 @@ export default {
 }
 
 .el-popper[x-placement^=right] .popper__arrow::after {
-    bottom: -6px;
-    left: 1px;
-    border-right-color: #3c3c3c;
-    border-left-width: 0;
+  bottom: -6px;
+  left: 1px;
+  border-right-color: #3c3c3c;
+  border-left-width: 0;
 }
+
 .table-popover.el-popover {
-    background: rgba(64,64,64,.9411764705882353);
-    color: #fff;
+  background: rgba(64, 64, 64, .9411764705882353);
+  color: #fff;
 }
 </style>
 

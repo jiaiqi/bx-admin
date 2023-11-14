@@ -103,7 +103,9 @@
         :sortable="item.sortable && !isMem() ? 'custom' : false"
       >
         <template slot-scope="scope">
-          <span>{{ formatValue(scope.row, item) }}</span>
+          <p v-if="formatValue(scope.row, item)&&['Note','RichText'].includes(item.col_type)" v-html="formatValue(scope.row, item)"
+                  style="max-height:10vh;overflow:hidden;" @dblclick="openHtml(formatValue(scope.row, item))"></p>
+          <span v-else>{{ formatValue(scope.row, item) }}</span>
         </template>
       </el-table-column>
 
@@ -498,6 +500,24 @@ export default {
     };
   },
   methods: {
+    openHtml(val){
+      const h = this.$createElement;
+      this.$msgbox({
+        title: '详情',
+        customClass: "message-box",
+        message: h('p', {
+          domProps: {
+            innerHTML: val
+          },
+          style: {
+            width: '100%'
+          }
+        }),
+        showCancelButton: false,
+        confirmButtonText: '确定',
+    
+      })
+    },
     toggleIconShow(record) {
       if (record.is_leaf == "是") {
         return false;
