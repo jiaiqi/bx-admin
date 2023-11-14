@@ -415,7 +415,17 @@ routes.push( {
     component:()=>import('@/pages/xx/booking.vue')
   }
   // storeMonitor
-
+  //大屏拖拽页面
+, {
+    path:'/grid-editor',
+    component:()=>import('@/pages/datav/grid-layout/index.vue')
+  }, 
+  // 预览页面
+  {
+    path:'/gridview',
+    name:'gridview',
+    component:()=>import('@/pages/datav/grid-layout/index.vue')
+  }
   
 
 ]
