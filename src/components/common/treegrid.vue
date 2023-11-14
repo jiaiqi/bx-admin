@@ -905,6 +905,7 @@ export default {
       await this.loadColsV2(this.service_name, this.listType)
         .then((response) => {
           let respData = response.body.data;
+          this.service_view_name = respData?.service_view_name
           let listData = response.body.data["srv_cols"];
           this.vpageNo = respData.vpage_no
 
