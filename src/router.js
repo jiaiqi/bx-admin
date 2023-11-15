@@ -434,6 +434,11 @@ routes.push( {
     //子路由
     children:[
       {
+        path:'editor/:no',
+        //也不使用懒加载，先在文件头部提前引入
+        component:()=> import('@/pages/datav/layer-layout/index.vue')
+      },
+      {
         path:'editor',
         //也不使用懒加载，先在文件头部提前引入
         component:()=> import('@/pages/datav/layer-layout/index.vue')
