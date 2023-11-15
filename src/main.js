@@ -16,6 +16,9 @@ import bxPlugin from './plugin/bx-plugin.js'
 import Fragment from 'vue-fragment'
 Vue.use(Fragment.Plugin)
 
+// import drag from '@/util/drag'; 
+// Vue.use(drag);
+
 import Viewer from 'v-viewer';
 import 'viewerjs/dist/viewer.css';
 import echarts from 'echarts';
