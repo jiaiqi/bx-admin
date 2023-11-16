@@ -24,7 +24,8 @@
           @row-click="clickRow" @selection-change="handleSelectionChange">
           <el-table-column width="120" v-if="isMulti">
             <template slot-scope="scope">
-              <el-checkbox :value="selected.includes(scope.row[valueCol])" @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
+              <el-checkbox :value="selected.includes(scope.row[valueCol])"
+                @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
               <!-- <el-checkbox :value="scope.row.checked" @change="changeSelected(scope.$index, scope.row)"></el-checkbox> -->
             </template>
           </el-table-column>
@@ -421,11 +422,12 @@ export default {
             pageNo: 1,
             rownumber: 999,
           },
-        }; this.selectList(queryJson).then(res => {
+        };
+        this.selectList(queryJson).then(res => {
           if (res?.data?.state === 'SUCCESS') {
             res.data.data = res.data.data.map(item => {
               item.hasChildren = item.is_leaf === '否'
-              if(this.selected.includes(item[this.listV2.no_col])){
+              if (this.selected.includes(item[this.listV2.no_col])) {
                 item.checked = true
               }
               return item
@@ -576,6 +578,11 @@ export default {
       if (this.listV2?.is_tree === true) {
         queryJson.colNames.push(this.listV2.no_col, this.listV2.parent_no_col, 'is_leaf', 'path', 'id')
         queryJson.use_type = "treelist";
+        // queryJson.condition.push({
+        //   colName: this.listV2.parent_no_col,
+        //   ruleType: "isnull",
+        //   value: null,
+        // });
         queryJson.rdt = 'ttd';
         delete queryJson.page
       }
