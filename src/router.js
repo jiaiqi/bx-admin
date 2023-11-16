@@ -425,6 +425,30 @@ routes.push( {
     path:'/gridview',
     name:'gridview',
     component:()=>import('@/pages/datav/grid-layout/index.vue')
+  },
+  // 图层布局
+  {
+    path: '/layer',
+    name: 'layerview',
+    component: () => import('@/pages/datav/layer-layout/index.vue'),
+    //子路由
+    children:[
+      {
+        path:'editor/:no',
+        //也不使用懒加载，先在文件头部提前引入
+        component:()=> import('@/pages/datav/layer-layout/index.vue')
+      },
+      {
+        path:'editor',
+        //也不使用懒加载，先在文件头部提前引入
+        component:()=> import('@/pages/datav/layer-layout/index.vue')
+      },
+      {
+        path:'view/:no',
+        //@是定位 src 文件夹
+        component:()=> import('@/pages/datav/layer-layout/index.vue')
+      },
+    ]
   }
   
 
