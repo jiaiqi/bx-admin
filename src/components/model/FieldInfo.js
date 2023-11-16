@@ -341,13 +341,13 @@ export class FieldInfo {
       imgUrlExpr: optionListV2.img_url_expr || null,
       dedup: optionListV2.dedup,
       srvApp:optionListV2.srv_app || null,
-      parentCol:optionListV2.parent_col || null,
+      parentCol:optionListV2.parent_col || optionListV2.parent_no_col || null,
       refedCol:optionListV2.refed_col,
       dispCol:optionListV2.key_disp_col || optionListV2.disp_col,
     };
     
     this.allowInput = optionListV2.allow_input || null;
-    this.parentCol = optionListV2.parent_col || null;
+    this.parentCol = optionListV2.parent_col || optionListV2.parent_no_col || null;
     this.valueCol = optionListV2.refed_col || optionListV2.primary_col;
     this.dispCol = optionListV2.key_disp_col || optionListV2.disp_col;
     if(this.editor === "userlist"){

@@ -168,13 +168,13 @@ export default {
 
         if (loader.parentCol) {
           // 2023年11月13日11点35分注释，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据，不使用parentCol为null作为条件
-          conditions = [
-            ...conditions,
-            {
-              colName: loader.parentCol,
-              ruleType: "isnull"
-            }
-          ];
+          // conditions = [
+          //   ...conditions,
+          //   {
+          //     colName: loader.parentCol,
+          //     ruleType: "isnull"
+          //   }
+          // ];
         }
       }
 
@@ -289,7 +289,6 @@ export default {
       let conditions = [];
       let loader = fieldInfo.dispLoader;
       conditions = this.buildConditions(loader);
-
       if (loader.parentCol) {
         let curVal = this.field.getSrvVal();
         return this.treeLazySelect(loader, null, null, curVal);
