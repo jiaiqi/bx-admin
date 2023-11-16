@@ -1,6 +1,7 @@
 <template>
   <div>
-    <el-popover trigger="click" v-model="visible">
+    <el-popover trigger="click" v-model="visible"
+      :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }">
       <div slot="reference">
         <el-select style="width: 100%" :disabled="disabled" v-model="selected" :value-key="valueCol"
           popper-class="popper-class" placeholder="请选择" :multiple="isMulti" clearable @remove-tag="removeTag"
@@ -19,7 +20,7 @@
           </el-input>
           <el-button type="primary" icon="el-icon-search" @click="onSearch">搜索</el-button>
         </div>
-        <el-table ref="multipleTable" :data="gridData" row-key="id" lazy :load="loadChild"
+        <el-table class="el-table" ref="multipleTable" :data="gridData" row-key="id" lazy :load="loadChild"
           :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :highlight-current-row="!isMulti"
           @row-click="clickRow" @selection-change="handleSelectionChange">
           <el-table-column width="120" v-if="isMulti">
@@ -694,5 +695,12 @@ export default {
 
 .el-table td .cell {
   display: flex;
+}
+
+.picker-view {
+  .el-table {
+    max-height: 500px;
+    overflow-y: auto;
+  }
 }
 </style>
