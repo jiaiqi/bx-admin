@@ -278,17 +278,29 @@ export default {
     },
     changeSelected(index, row) {
       this.clickRow(row);
+      
       // this.selected = this.allData.filter(item => item[ this.valueCol ] === row[ this.valueCol ])
     },
     clickRow(row) {
       if (this.isMulti) {
         // 多选模式
+        let parent_no_col = this.listV2?.parent_no_col
+        let rowChildren = []
+        if(parent_no_col){
+          rowChildren = this.allData.filter(item => item[ parent_no_col ] === row[ this.valueCol ]).map(item=>item[this.valueCol])
+        }
         if (this.selected.indexOf(row[this.valueCol]) > -1) {
           this.$set(row, 'chcecked', false)
           this.selected = this.selected.filter(item => item !== row[this.valueCol]);
+          if(rowChildren?.length){
+            this.selected = this.selected.filter(item => rowChildren.indexOf(item) === -1);
+          }
         } else {
           this.$set(row, 'chcecked', true)
           this.selected.push(row[this.valueCol]);
+          if(rowChildren?.length){
+            this.selected = this.selected.concat(rowChildren)
+          }
         }
         // this.$refs.multipleTable.toggleRowSelection(row)
 
