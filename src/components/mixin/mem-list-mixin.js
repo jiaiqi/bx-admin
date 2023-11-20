@@ -350,7 +350,13 @@ export default {
       }
       target = target || _.find(this.gridData, item => item._guid == srvvalRow._guid);
 
-      _.assign(target, srvvalRow);
+      // _.assign(target, srvvalRow); //202.11.20更改 不用之前的_.assign方法，改为手动遍历对象的key来合并对象，合并时使用vue的$set方法，使得页面数据更新
+      if(Object.keys(srvvalRow).length){
+        Object.keys(srvvalRow).forEach(key => {
+          this.$set(target,key,srvvalRow[key])
+        });
+      }
+
       this.syncRow2Fields(target);
       
       this.updateDirtyFlags(target, "update");
