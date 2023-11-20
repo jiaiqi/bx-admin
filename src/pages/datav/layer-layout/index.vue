@@ -5,7 +5,7 @@
     element-loading-spinner="el-icon-loading">
         <!-- @dragend="dragend" @dragover="onDragOver" v-on:dragend="onDragStop" -->
         <div  style="height:100%;"  class="layer-layout" >
-            <div  class="layer-layout-left" >
+            <div  class="layer-layout-left" v-if="editType !== 'select'">
                 <div v-for="(item,index) in comList" :key="index" draggable="true"
         unselectable="on" v-on:dragend="unchoose($event,item)" >
                     <el-card :key="index" :body-style="{ padding: '0px' }">
@@ -33,7 +33,7 @@
                 
                 
             </div>
-            <div   class="layer-layout-view" :class="inDragView ? 'on-drag-view' : ''">
+            <div   class="layer-layout-view" :class="inDragView ? 'on-drag-view' : editType == 'select' ? 'view-full' : ''" >
                
                 <uiDrag :list="viewComList"
 
@@ -46,7 +46,7 @@
                         @layer-updated="layerUpdate"
                 ></uiDrag>
             </div>
-            <div  class="layer-layout-right" >
+            <div  class="layer-layout-right"  v-if="editType !== 'select'">
                 <el-tabs v-model="rightActiveTab" type="card" @tab-click="tabHandleClick">
                     <el-tab-pane label="页面信息" name="page">
                         <div class="grid-content bg-purple">
@@ -192,7 +192,7 @@
   },
 
   mounted: function () {
-      this.loading = true
+    //   this.loading = true
       let isPage = this.$route.params
       if(isPage && isPage.hasOwnProperty('no')){
          this.pageNo = isPage.no
@@ -477,7 +477,10 @@
             max-width:calc(100vw - 25rem);
             overflow-x:auto;
             
-
+            &.view-full{
+                width:100vw;
+                max-width:100vw;
+            }
         }
         .layer-layout-right{
             // 右侧功能

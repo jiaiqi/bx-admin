@@ -125,7 +125,7 @@ export default {
           },
           reviewPage(){
             // const url = `/config/select/srvpage_cfg_page_guest_select`;
-            this.loading = true
+            // this.loading = true
             const condition = [
                 {
                   colName: "page_no",
@@ -185,6 +185,7 @@ export default {
                 return obj
                 
             })
+            this.loading = false
             this.$set(this,'loadComList',loadComList)
         },
           submitForm(formName='pageForm') {
