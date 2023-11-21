@@ -189,61 +189,72 @@ export default {
             this.$set(this,'loadComList',loadComList)
         },
           submitForm(formName='pageForm') {
-            this.$refs[formName].validate((valid) => {
-              if (valid) {
-                this.$confirm('确认保存?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                  }).then(() => {
-                    this.loading = true
-                    this.layoutPageAdd().then(plRes=>{
-                        console.log('001',plRes)
-                        
-                        if(plRes){
-                            this.pageLayoutNo = plRes
-                            this.layoutComAdd(this.pageLayoutNo).then(clRes => {
-                                if(clRes){
-                                    
-                                }
-
-                            })
-                            this.pageAdd(this.pageLayoutNo).then(paddRes => {
-                                if(paddRes){
-                                    this.pageNo = paddRes
-                                    this.pageComAdd(this.pageNo).then(caddRes => {
-                                        if(caddRes){
-                                            
-                                            this.loading = false
-                                        }else{
-                                            this.$message({
-                                                type: 'info',
-                                                message: '保存信息出错'
-                                              }); 
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                        
-
-                    })
-                    this.loading = false
-                    // this.$message({
-                    //   type: 'success',
-                    //   message: '保存成功!'
-                    // });
-                  }).catch(() => {
-                    this.$message({
-                      type: 'info',
-                      message: '已取消'
-                    });          
+            switch (this.editType) {
+              case 'update':
+                
+                break;
+              case 'add':
+                  this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                      this.$confirm('确认保存?', '提示', {
+                          confirmButtonText: '确定',
+                          cancelButtonText: '取消',
+                          type: 'warning'
+                        }).then(() => {
+                          this.loading = true
+                          this.layoutPageAdd().then(plRes=>{
+                              console.log('001',plRes)
+                              
+                              if(plRes){
+                                  this.pageLayoutNo = plRes
+                                  this.layoutComAdd(this.pageLayoutNo).then(clRes => {
+                                      if(clRes){
+                                          
+                                      }
+      
+                                  })
+                                  this.pageAdd(this.pageLayoutNo).then(paddRes => {
+                                      if(paddRes){
+                                          this.pageNo = paddRes
+                                          this.pageComAdd(this.pageNo).then(caddRes => {
+                                              if(caddRes){
+                                                  
+                                                  this.loading = false
+                                              }else{
+                                                  this.$message({
+                                                      type: 'info',
+                                                      message: '保存信息出错'
+                                                    }); 
+                                              }
+                                          })
+                                      }
+                                  })
+                              }
+                              
+      
+                          })
+                          this.loading = false
+                          // this.$message({
+                          //   type: 'success',
+                          //   message: '保存成功!'
+                          // });
+                        }).catch(() => {
+                          this.$message({
+                            type: 'info',
+                            message: '已取消'
+                          });          
+                        });
+                    } else {
+                      console.log('error submit!!');
+                      return false;
+                    }
                   });
-              } else {
-                console.log('error submit!!');
-                return false;
-              }
-            });
+                break;
+            
+              default:
+                break;
+            }
+           
           },
           resetForm(formName='pageForm') {
             this.$refs[formName].resetFields();

@@ -56,6 +56,11 @@
       :ref="pageItem.com_type"
       :pageItem="pageItem"
     ></page-widget>
+    <card-group
+      v-if="pageItem.com_type === 'cardGroup'"
+      :ref="pageItem.com_type"
+      :pageItem="pageItem"
+    ></card-group>
   </div>
 </template>
 
@@ -71,6 +76,7 @@ import basicChart from "./chart-basic.vue";
 import pageItemChart from "./chart/page-item-chart.vue";
 import mixList from "./mix-list/list.vue";
 import pageWidget from "./widget.vue";
+import cardGroup from "./card-group/card-group.vue";
 export default {
   components: {
     videoCard,
@@ -83,6 +89,7 @@ export default {
     pageItemChart,
     mixList,
     pageWidget,
+    cardGroup
   },
   props: {
     pageItem: {

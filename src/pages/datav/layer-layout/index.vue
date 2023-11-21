@@ -91,7 +91,9 @@
                     <el-tab-pane :label="active.com_type_name" name="active" v-if="active">
                         <div class="grid-content bg-purple">
                             
-                            <div>{{JSON.stringify(active)}}</div>
+                            <!-- <div>{{JSON.stringify(active)}}</div> -->
+                            <div v-if="active">{{active.com_name}}</div>
+                            
                             <!-- <div v-if="active">
                                 <el-button @click="onUp">置顶</el-button>
                                 <el-button @click="onDown">置底</el-button>
