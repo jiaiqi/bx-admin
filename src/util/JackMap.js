@@ -1,13 +1,9 @@
 
-
-
-
-
 let $ = require("jquery");
 
 let MapPlus = {};
 
-
+if(window.BMapGL){
 MapPlus.Map = class Map extends BMapGL.Map {
   constructor(dom) {
     super(dom);
@@ -491,13 +487,15 @@ MapPlus.cutLine = function (data) {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+}
 export default MapPlus;
-
-
-
-
-
-
-
-
-
