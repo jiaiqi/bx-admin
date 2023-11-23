@@ -16,6 +16,9 @@
             @dragstop="onDragstop($event,item)"
             @resizestop="onResizestop($event,item)">
             <div class="grid-item-tool-layout tool-top-layout" v-if="active && item['_id'] == active['_id']">
+                <div class="grid-item-tool-layout-item grid-item-tool-layout-item-title" style="">
+                    {{item.com_name}}
+                </div>
                 <div class="grid-item-tool-layout-item" style="">
                     <i class="el-icon-close" @click="deleteItem(item)"></i>
                 </div>
@@ -180,18 +183,20 @@ export default {
     onDragstop(e,item){
         //拖放结束
         console.log('onDragstop',e,item)
-        item.gridData.x = e.left
-        item.gridData.y = e.top
+        this.$set(item.gridData,'x',e.left)
+        this.$set(item.gridData,'y',e.top)
+        // item.gridData.x = e.left
+        // item.gridData.y = e.top
         this.$emit("updated",item)
         
     },
     onResizestop(e,item){
         //缩放结束
         console.log('onResizestop',e,item)
-        item.gridData.x = e.left
-        item.gridData.y = e.top
-        item.gridData.w = e.width
-        item.gridData.h = e.height
+        this.$set(item.gridData,'x',e.left)
+        this.$set(item.gridData,'y',e.top)
+        this.$set(item.gridData,'w',e.width)
+        this.$set(item.gridData,'h',e.height)
         this.$emit("updated",item)
     },
     mousedown(e){
@@ -247,6 +252,10 @@ export default {
             &:hover{
                 color: #ffffffbd;
                 background-color: #267df9a3;
+            }
+            &.grid-item-tool-layout-item-title{
+                min-width:2rem;
+                width:auto;
             }
         }
         &.tool-top-layout{
