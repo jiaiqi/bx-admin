@@ -39,7 +39,7 @@
       </div>
     </div>
     <div class="time-table" v-loading="loading">
-
+        
       <el-calendar ref="calendar" class="">
         <template v-slot:dateCell="{ date, data }">
           <div class="custom-date-cell" :class="[setClass(date, data)]" @click="toList(date)">
@@ -103,7 +103,7 @@
     </el-dialog>
     <el-dialog :visible="activeForm === 'list'" title="课程详情" width="1300px" @close="activeForm = ''">
       <list-com ref="list" :service="service" :key="service" :showPagination="true" list-type="list"
-         :defaultCondition="defaultCondition" :$srvApp="$srvApp" v-if="activeForm">
+        :defaultCondition="defaultCondition" :$srvApp="$srvApp" v-if="activeForm">
       </list-com>
     </el-dialog>
   </div>
@@ -139,7 +139,8 @@ export default {
         theme: '', //课程主题
         course_name: ''//课程名称
       },
-      defaultCondition: []
+      defaultCondition: [],
+      listLoaded: false,//列表加载完成
     };
   },
   methods: {
@@ -274,6 +275,7 @@ export default {
     },
     async loadData(condition, currentDate) {
       this.loading = true
+      this.listLoaded = false
       const url = `${window.backendIpAddr}/ledu/select/srvledu_calendar_select`;
       const req = {
         serviceName: "srvledu_calendar_select",
@@ -298,6 +300,7 @@ export default {
         req.condition = req.condition.concat(condition)
       }
       const res = await this.$http.post(url, req);
+      this.listLoaded = true
       this.loading = false
       console.log(res);
       if (res?.data?.state === 'SUCCESS') {
@@ -457,7 +460,8 @@ td.current .el-calendar-day {
     display: flex;
     justify-content: flex-end;
   }
-  .el-select{
+
+  .el-select {
     width: 100%;
   }
 }

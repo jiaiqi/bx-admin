@@ -23,6 +23,10 @@
       <div class="list-box-title">学生列表</div>
       <div class="list-box-main">
         <!-- <template v-for="a in 20"> -->
+        <div class="is-empty" v-if="listLoaded && list.length == 0">
+          <div><i class="el-icon-tickets"></i></div>
+          <div class="text">暂无数据</div>
+        </div>
         <div class="list-box-item" v-for="item in list" :key="item.id">
           <div class="top">
             <div class="avatar">
@@ -78,6 +82,8 @@ export default {
       indexList: [],
       class_record_no: "", //上课记录编号
       studentsMap: {},
+      listLoaded: false,//列表加载完成
+
     };
   },
   methods: {
@@ -259,8 +265,10 @@ export default {
       setTimeout(() => {
         loading.close();
       }, 2000);
+      this.listLoaded = false
       this.$http.post(url, req).then((res) => {
         loading.close();
+        this.listLoaded = true
 
         console.log(res);
         if (res?.data?.state === "SUCCESS") {
@@ -309,10 +317,26 @@ export default {
       flex-wrap: wrap;
       // display: grid;
       // width: 1700px;
-      widows: 100%;
+      width: 100%;
       overflow-x: auto;
+
       // grid-template-columns: 25% 25% 25% 25%;
       // grid-template-rows: 33.33% 33.33% 33.33%;
+      .is-empty {
+        width: 100%;
+
+        height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        font-size: 40px;
+        text-align: center;
+        color: #d2d8e6;
+        .text{
+          font-size: 16px;
+        }
+      }
     }
 
     &-item {
