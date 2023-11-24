@@ -410,9 +410,21 @@ routes.push( {
     path:'/platform',
     component:()=>import('@/pages/platform/index.vue')
   },
+  // 西乡劳动项目
   {
     path:'/booking',
     component:()=>import('@/pages/xx/booking.vue')
+  },
+  {//西乡 课表
+    path:'/timetable',
+    component:()=>import('@/pages/xx/timetable.vue')
+  },
+  {//西乡 评价列表
+    path:'/evaluate',
+    component:()=>import('@/pages/xx/evaluateList.vue')
+  }, {//西乡 评价列表
+    path:'/evaluate/:class_record_no',
+    component:()=>import('@/pages/xx/evaluateList.vue')
   }
   // storeMonitor
   //大屏拖拽页面
