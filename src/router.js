@@ -410,9 +410,14 @@ routes.push( {
     path:'/platform',
     component:()=>import('@/pages/platform/index.vue')
   },
+  // 西乡劳动项目
   {
     path:'/booking',
     component:()=>import('@/pages/xx/booking.vue')
+  },
+  {
+    path:'/timetable',
+    component:()=>import('@/pages/xx/timetable.vue')
   }
   // storeMonitor
   //大屏拖拽页面
