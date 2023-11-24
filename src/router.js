@@ -452,7 +452,7 @@ routes.push( {
   },
   // 学生档案
   {
-    path:'/studentfiles',
+    path:'/studentfiles/:serviceName/:id',
     name:'studentfiles',
     component:()=>import('@/pages/studentfiles/studentfiles.vue')
   },
