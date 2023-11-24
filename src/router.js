@@ -454,7 +454,13 @@ routes.push( {
         component:()=> import('@/pages/datav/layer-layout/index.vue')
       },
     ]
-  }
+  },
+  // 学生档案
+  {
+    path:'/studentfiles',
+    name:'studentfiles',
+    component:()=>import('@/pages/studentfiles/studentfiles.vue')
+  },
   
 
 ]

@@ -91,7 +91,9 @@
                     <el-tab-pane :label="active.com_type_name" name="active" v-if="active">
                         <div class="grid-content bg-purple">
                             
-                            <div>{{JSON.stringify(active)}}</div>
+                            <!-- <div>{{JSON.stringify(active)}}</div> -->
+                            <div v-if="active">{{active.com_name}}</div>
+                            
                             <!-- <div v-if="active">
                                 <el-button @click="onUp">置顶</el-button>
                                 <el-button @click="onDown">置底</el-button>
@@ -367,6 +369,7 @@
                     w:w,
                     h:h,
                     z:oldList.length + 1,
+                    _dataSource:'store'
                 }
                 newItem['gridData'] = this.bxDeepClone(grid)
                 newItem['_id'] = this.guid()
@@ -413,17 +416,30 @@
         },
         updatedItem(e){
             console.log(e)
+            // 本地更新 用户操作修改的数据
             if(e &&  !this.updateGridItem){
-                this.list2 = this.list2.map(i => {
-                    if(e && i && i['_id'] == e['_id']){
-                        i = this.bxDeepClone(e)
-                    }
-                        
-                    return i
-                })
+                if(e.gridData['_dataSource'] == 'db'){
+                    // 如果是已持久化存储数据修改
+                    this.loadComList = this.loadComList.map(i => {
+                        if(e && i && i['_id'] == e['_id']){
+                            i = this.bxDeepClone(e)
+                        }
+                            
+                        return i
+                    })
+                }else{
+                    
+                    // 如果是本地内存存储数据修改
+                    this.list2 = this.list2.map(i => {
+                        if(e && i && i['_id'] == e['_id']){
+                            i = this.bxDeepClone(e)
+                        }
+                            
+                        return i
+                    })
+                }
+                
             }
-            
-
         },
         clonesActive(){
             this.$set(this,'active',null)
