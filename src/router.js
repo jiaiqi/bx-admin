@@ -422,6 +422,9 @@ routes.push( {
   {//西乡 评价列表
     path:'/evaluate',
     component:()=>import('@/pages/xx/evaluateList.vue')
+  }, {//西乡 评价列表
+    path:'/evaluate/:class_record_no',
+    component:()=>import('@/pages/xx/evaluateList.vue')
   }
   // storeMonitor
   //大屏拖拽页面
