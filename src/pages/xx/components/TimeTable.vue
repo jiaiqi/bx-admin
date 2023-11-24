@@ -457,5 +457,8 @@ td.current .el-calendar-day {
     display: flex;
     justify-content: flex-end;
   }
+  .el-select{
+    width: 100%;
+  }
 }
 </style>
