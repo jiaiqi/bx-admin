@@ -1,9 +1,9 @@
 <template>
     <div id="pdf-layout">
         <el-button size="mini" type="success" @click="exportPDF">导出pdf</el-button>
-        <div class="pdf-review">
-            <table>
-                <tr>
+        <div>
+            <table  class="pdf-review">
+                <tr class="pdf-details">
                 <!-- 
                 可以使用th标签来表示表头中的内容，
                     它的用法和td一样，不同的是它会有一些默认效果
@@ -13,27 +13,27 @@
                     <th v-for="(hand,h) in hander">{{hand}}</th>
                 </tr>
 
-                <tr v-for="(item,index) in test">
+                <tr  class="pdf-details" v-for="(item,index) in test">
                     <td >{{index+1}}</td>
                     <td v-for="(hand,h) in hander">{{item[hand]}}</td>
                 </tr>
-                <tr v-for="(item,index) in test">
+                <tr  class="pdf-details" v-for="(item,index) in test">
                     <td >{{index+1}}</td>
                     <td v-for="(hand,h) in hander">{{item[hand]}}</td>
                 </tr>
-                <tr v-for="(item,index) in test">
+                <tr  class="pdf-details" v-for="(item,index) in test">
                     <td >{{index+1}}</td>
                     <td v-for="(hand,h) in hander">{{item[hand]}}</td>
                 </tr>
-                <tr v-for="(item,index) in test">
+                <tr  class="pdf-details" v-for="(item,index) in test">
                     <td >{{index+1}}</td>
                     <td v-for="(hand,h) in hander">{{item[hand]}}</td>
                 </tr>
-                <tr v-for="(item,index) in test">
+                <tr  class="pdf-details" v-for="(item,index) in test">
                     <td >{{index+1}}</td>
                     <td v-for="(hand,h) in hander">{{item[hand]}}</td>
                 </tr>
-                <tr v-for="(item,index) in test">
+                <tr  class="pdf-details" v-for="(item,index) in test">
                     <td >{{index+1}}</td>
                     <td v-for="(hand,h) in hander">{{item[hand]}}</td>
                 </tr>
@@ -418,7 +418,7 @@ import htmlPdf from './pdf.js';
             pdf.save('my-pdf-document.pdf')
 
             // var TypeName = '生成的PDF';
-            // const lableList = document.getElementsByClassName('pdf-review');   // 注意这一句
+            // const lableList = document.getElementsByClassName('pdf-details');   // 注意这一句
             // htmlPdf(TypeName, document.querySelector('#pdf-layout'), lableList);
   
         }
