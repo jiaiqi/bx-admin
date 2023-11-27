@@ -1,4 +1,4 @@
-export const useBuildOption = (type, pageItem, cellData) => {
+export const useBuildOption = (type, pageItem, cellData=[]) => {
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
@@ -234,7 +234,7 @@ export const useBuildOption = (type, pageItem, cellData) => {
         ecOptions["series"].push(series);
         if (chartJson?.series_value === "单列多行分组") {
           const nOption = buildMultiColSeries(pageItem,cellData);
-          ecOptions["series"] = nOption.series;
+          ecOptions["series"] = nOption?.series||[];
           if (nOption.series.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全

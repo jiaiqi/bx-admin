@@ -1,156 +1,47 @@
 <template>
-  <div
-    class="customhome-container"
-    @dragenter="dragDefFn($event)"
-    @dragover="dragDefFn($event)"
-  >
+  <div class="customhome-container" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
     <div class="page-header">
       <div class="left"></div>
       <div class="right" @click="openFullscreen">
-        <span
-          class="iconfont icon-tuichuquanping"
-          v-if="isFullScreen"
-          title="退出全屏"
-        ></span>
+        <span class="iconfont icon-tuichuquanping" v-if="isFullScreen" title="退出全屏"></span>
         <span class="iconfont icon-quanping" v-else title="全屏"></span>
       </div>
     </div>
     <div class="cushome-sidebar" v-if="!isDataview">
-      <div
-        v-for="pageItem in comList"
-        :key="pageItem.id"
-        @drag="drag(pageItem)"
-        @dragend="dragend(pageItem)"
-        class="com-item margin"
-        draggable="true"
-        unselectable="on"
-      >
-        <img
-          :src="getImagePath(pageItem.example)"
-          alt=""
-          style="display: inline-block; width: 100%"
-        />
+      <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
+        class="com-item margin" draggable="true" unselectable="on">
+        <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%" />
         <span>{{ pageItem.com_type_name }}</span>
         <span>{{ pageItem.com_type }}</span>
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
-      <el-input
-        size="small"
-        v-model="pageName"
-        clearable
-        placeholder="请输入页面名称"
-      ></el-input>
-      <el-input
-        size="small"
-        v-model="pageTitle"
-        clearable
-        placeholder="请输入页面标题"
-        style="margin-top: 10px"
-      ></el-input>
-      <el-button
-        size="mini"
-        type="primary"
-        style="float: right; margin-top: 10px"
-        @click="clickSave"
-        >保存</el-button
-      >
-      <el-button
-        size="mini"
-        type="primary"
-        style="float: right; margin: 10px 10px 0 0"
-        @click="toPreview"
-        >预览</el-button
-      >
-      <el-button
-        size="mini"
-        style="float: right; margin: 10px 10px 0 0"
-        @click="clearFn"
-        >清空画布</el-button
-      >
+      <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
+      <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
+      <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
+      <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
+      <el-button size="mini" style="float: right; margin: 10px 10px 0 0" @click="clearFn">清空画布</el-button>
     </div>
-    <div
-      class="cushome-content"
-      id="content"
-      :style="[]"
-      :class="{ 'data-view-mode': isDataview }"
-    >
-      <div
-        class="custom-design"
-        id="custom-design"
-        :style="[bjStyles, stylefn(styleJson)]"
-      >
+    <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
+      <div class="custom-design" id="custom-design" :style="[bjStyles, stylefn(styleJson)]">
         <!-- <div class="custom-design" id="custom-design" :style="stylefn(styleJson)"> -->
-        <grid-layout
-          ref="gridlayout"
-          :layout.sync="layout"
-          :col-num="colNum"
+        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum"
           :breakpoints="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
-          :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
-          :row-height="1"
-          :preventCollision="true"
-          :responsive="true"
-          :is-draggable="!isDataview"
-          :is-resizable="!isDataview"
-          :is-mirrored="false"
-          :vertical-compact="false"
-          :margin="[0, 0]"
-          :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent"
-        >
-          <div
-            class="grid-container"
-            id="grid-container"
-            :style="bjStyles"
-          ></div>
-          <grid-item
-            v-for="item in layout"
-            :x="item.x"
-            :y="item.y"
-            :w="item.w"
-            :h="item.h"
-            :i="item.i"
-            :key="item.i"
-            @moved="movedEvent"
-            @resized="resizedEvent"
-            class="gridItem"
-          >
-            <span
-              class="remove"
-              @click.stop="removeItem(item.i)"
-              v-if="!isDataview"
-              ><i class="el-icon-close"></i
-            ></span>
-            <div
-              v-if="item.isLeftBarItem"
-              class="com-item dashed"
-              @click.stop.prevent.capture="changeDesign(item.i)"
-            >
-              <img
-                :src="getImagePath(item.data.example)"
-                alt=""
-                style="display: inline-block; width: 100%"
-              />
+          :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }" :row-height="1" :preventCollision="true"
+          :responsive="true" :is-draggable="!isDataview" :is-resizable="!isDataview" :is-mirrored="false"
+          :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
+          <div class="grid-container" id="grid-container" :style="bjStyles"></div>
+          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+            @moved="movedEvent" @resized="resizedEvent" class="gridItem">
+            <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
+            <div v-if="item.isLeftBarItem" class="com-item dashed" @click.stop.prevent.capture="changeDesign(item.i)">
+              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
             </div>
             <div class="com-item dashed" v-else-if="isDataview">
-              <page-item
-                ref="pageItem"
-                :page-item="item.data"
-                :layout="item"
-                @click.stop=""
-              ></page-item>
+              <page-item ref="pageItem" :page-item="item.data" :layout="item" @click.stop=""></page-item>
             </div>
-            <div
-              class="com-item dashed"
-              v-else
-              @click.stop.prevent.capture="changeDesign(item.i)"
-            >
-              <page-item
-                ref="pageItem"
-                :page-item="item.data"
-                :layout="item"
-                @click.stop=""
-              ></page-item>
+            <div class="com-item dashed" v-else @click.stop.prevent.capture="changeDesign(item.i)">
+              <page-item ref="pageItem" :page-item="item.data" :layout="item" @click.stop=""></page-item>
             </div>
           </grid-item>
         </grid-layout>
@@ -176,7 +67,7 @@ let mouseXY = { x: null, y: null };
 let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 
 export default {
-  name:"pageEditor",
+  name: "pageEditor",
   components: {
     GridLayout,
     GridItem,
@@ -225,8 +116,8 @@ export default {
   created() {
     this.getComList();
 
-    if (this.$route.query.pageNo) {
-      this.pgNo = this.$route.query.pageNo;
+    if (this.$route.query.pageNo || this.$route.params?.no) {
+      this.pgNo = this.$route.query.pageNo || this.$route.params?.no;
       this.initPage();
     }
   },
@@ -247,13 +138,15 @@ export default {
     window.onclick = () => {
       this.curDesign = "";
     };
-    if (this.$route?.name === "dataview") {
-      window.onresize = () => {
-        this.resize();
-      };
-      setTimeout(() => {
-        this.resize();
-      }, 500);
+    if (!process?.env?.NODE_ENV === 'development') {
+      if (this.isDataview) {
+        window.onresize = () => {
+          this.resize();
+        };
+        setTimeout(() => {
+          this.resize();
+        }, 500);
+      }
     }
     setTimeout(() => {
       if (this.needLogin) {
@@ -798,7 +691,7 @@ export default {
     //自定义容器初始化
     initDesign() {
       let domstyleWidth =
-          document.getElementById("custom-design").offsetWidth - 20 * 10,
+        document.getElementById("custom-design").offsetWidth - 20 * 10,
         domstyleHeight = 50,
         domContainer = document.getElementById("custom-design"),
         resWidth = domstyleWidth / 12,
@@ -1004,7 +897,7 @@ export default {
           this.$refs.gridlayout.$children[
             this.layout.length
           ].$refs.item.style.display = "none";
-        } catch {}
+        } catch { }
         let el = this.$refs.gridlayout.$children[index];
         el.dragging = {
           top: mouseXY.y - parentRect.top,
@@ -1096,7 +989,7 @@ export default {
           this.$refs.gridlayout.$children[
             this.layout.length
           ].$refs.item.style.display = "block";
-        } catch {}
+        } catch { }
       }
     },
     randomNum(n) {
@@ -1182,12 +1075,14 @@ export default {
 
   .right {
     color: #fff;
+
     .iconfont {
       font-size: 40px;
       cursor: pointer;
     }
   }
 }
+
 .com-item {
   min-height: 90px;
   cursor: move;
@@ -1195,9 +1090,11 @@ export default {
   display: grid;
   font-size: 14px;
   border: 1px solid #000;
+
   &.margin {
     margin: 20px;
   }
+
   &.dashed {
     width: 100%;
     height: 100%;
@@ -1254,18 +1151,22 @@ export default {
     overflow: auto;
     padding: 20px;
     background: #f1f3f2;
+
     &.data-view-mode {
       padding: 0;
       left: 0;
       right: 0;
       background-color: transparent;
+
       .com-item {
         cursor: inherit;
       }
+
       .com-item.dashed {
         border: none;
       }
     }
+
     .custom-design {
       height: 100%;
       // width: 800px;
@@ -1327,7 +1228,7 @@ export default {
   background: #197f54;
 }
 
-.vue-grid-item > .vue-resizable-handle {
+.vue-grid-item>.vue-resizable-handle {
   position: absolute;
   width: 0;
   height: 0;

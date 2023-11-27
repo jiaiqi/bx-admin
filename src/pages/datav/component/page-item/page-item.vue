@@ -46,11 +46,16 @@
       :pageItem="pageItem"
       :index="layout.i"
     ></page-item-chart>
-    <mix-list
+    <List
       v-if="pageItem.com_type === 'list'"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
-    ></mix-list>
+    ></List>
+    <!-- <mix-list
+      v-if="pageItem.com_type === 'list'"
+      :ref="pageItem.com_type"
+      :pageItem="pageItem"
+    ></mix-list> -->
     <page-widget
       v-if="pageItem.com_type === '控件'"
       :ref="pageItem.com_type"
@@ -75,6 +80,7 @@ import mapCard from "./map-card.vue";
 import basicChart from "./chart-basic.vue";
 import pageItemChart from "./chart/page-item-chart.vue";
 import mixList from "./mix-list/list.vue";
+import List from './list/list.vue'
 import pageWidget from "./widget.vue";
 import cardGroup from "./card-group/card-group.vue";
 export default {
@@ -88,6 +94,7 @@ export default {
     basicChart,
     pageItemChart,
     mixList,
+    List,
     pageWidget,
     cardGroup
   },
