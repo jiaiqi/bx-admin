@@ -39,7 +39,7 @@
       </div>
     </div>
     <div class="time-table" v-loading="loading">
-        
+
       <el-calendar ref="calendar" class="">
         <template v-slot:dateCell="{ date, data }">
           <div class="custom-date-cell" :class="[setClass(date, data)]" @click="toList(date)">
@@ -205,6 +205,10 @@ export default {
       date = dayjs(date).format("YYYY-MM-DD");
       if (data?.type === 'current-month') {
         this.currentMonth = dayjs(date).format("YYYY年MM月");
+        if (this.currentDate && dayjs(this.currentDate).format('YYYY年MM月') !== this.currentMonth) {
+          this.currentDate = new Date(date);
+          this.loadData(null,date)
+        }
       }
       const result = this.dateMap[date];
       if (!result) {
@@ -268,7 +272,7 @@ export default {
         date = dayjs(this.currentDate).add(1, 'month').format("YYYY-MM-DD");
       } else if (value === 'prev-month') {
         date = dayjs(this.currentDate).subtract(1, 'month').format("YYYY-MM-DD");
-      }else{
+      } else {
         // today
         date = dayjs().format("YYYY-MM-DD");
       }
