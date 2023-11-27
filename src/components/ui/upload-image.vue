@@ -58,7 +58,7 @@
       return {
         fileLists: [],
         fileDesc: this.field.info.moreConfig &&  this.field.info.moreConfig !== null && this.field.info.moreConfig.fileMaxSize ?  '请上传jpg/png/svg格式的图片,大小不超过' + this.field.info.moreConfig.fileMaxSize +'MB' : '请上传jpg/png/svg格式的图片,大小不超过2Mb',
-        fileType: 'jpg/png/svg',
+        fileType: 'jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff',
         fileSize: this.field.info.moreConfig &&  this.field.info.moreConfig !== null && this.field.info.moreConfig.fileMaxSize ? this.field.info.moreConfig.fileMaxSize * 1024 : 2 * 1024,
         imageDialog: false,
         imageDialogUrl: '',
