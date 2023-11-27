@@ -435,8 +435,24 @@ routes.push( {
   // 预览页面
   {
     path:'/gridview',
-    name:'gridview',
-    component:()=>import('@/pages/datav/grid-layout/index.vue')
+    component:()=>import('@/pages/datav/grid-layout/index.vue'),
+    children:[
+      {
+        path:'editor',
+        name:'gridEditor',
+        component:()=>import('@/pages/datav/grid-layout/index.vue')
+      },
+      {
+        path:'editor/:no',
+        name:'gridEditor',
+        component:()=>import('@/pages/datav/grid-layout/index.vue')
+      },
+      {
+        path:'view/:no',
+        name:'gridview',
+        component:()=>import('@/pages/datav/grid-layout/index.vue')
+      }
+    ]
   },
   // 图层布局
   {
