@@ -268,6 +268,9 @@ export default {
         date = dayjs(this.currentDate).add(1, 'month').format("YYYY-MM-DD");
       } else if (value === 'prev-month') {
         date = dayjs(this.currentDate).subtract(1, 'month').format("YYYY-MM-DD");
+      }else{
+        // today
+        date = dayjs().format("YYYY-MM-DD");
       }
       this.currentDate = date
       this.$refs.calendar.selectDate(value);
