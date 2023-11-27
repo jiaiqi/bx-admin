@@ -291,6 +291,7 @@ var chartBot=null;
                             // console.error('this.service_name2',response.body,response.response)
                             let detailData = response.body;
                             this.$set(this,'detailData',response.body)
+                            document.title = `${detailData.student_no}-${detailData.student_name}-${new Date().toLocaleDateString()}`;
                             // this.detailData = response.body;
                             // 保存详情数据
                             
@@ -533,6 +534,7 @@ var chartBot=null;
             });
         },
         exportImg(myChart,id) {
+            // echart 接口获取 图标的图片base64
             const src = (myChart).getDataURL({
                 type:'png',
                 pixelRatio: 2,
@@ -540,18 +542,14 @@ var chartBot=null;
             });
             const a = document.createElement('a');
             console.log(src)
-            
-            // a.href = src;
-            // a.download = 'chart-img';
-            // a.click();
             return src
             
         },
         print(){
-
+            // 吊起浏览器打印
             this.$set(this,'radarBotImg',this.exportImg(chartBot,'radarBotImg'))
             this.$set(this,'radarTopImg',this.exportImg(chartTop,'radarTopImg'))
-            // this.exportImg(chartBot,'radarTopImg')
+            // 图表转canvas 保存图片
             this.$nextTick(() => {
                 setTimeout(" window.print()",200);
                 // window.print()
