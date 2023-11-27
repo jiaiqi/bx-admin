@@ -1,5 +1,5 @@
 <template>
-    <el-main style="border: 1px solid #eee;width:100%;">
+    <el-main style="border: 1px solid #eee;width:100%;" class="print-layout">
         <el-row v-if="v2Data && detailData">
             <el-col :span="24">
                 <div style="width:100%;" class="padding-s" :style="`background-image: url(${bgImgUrl});background-size: contain;`">
@@ -61,7 +61,7 @@
                         style="width: 80px; height: 80px"
                         :src="item.index_icon"
                         :fit="'fit'"></el-image>
-                        <div style="border-radius: 10px 10px 10px 0;background:red;color:#fff;padding:2px 4px;font-size:12px;position: absolute;top: -4px;right: -10px;">{{item.index_cnt ? 'X': ''}}{{item.index_cnt}}</div>
+                        <div style="border-radius: 10px 10px 10px 0;background-color:red;color:#fff;padding:2px 4px;font-size:12px;position: absolute;top: -4px;right: -10px;">{{item.index_cnt ? 'X': ''}}{{item.index_cnt}}</div>
                         <div style="color:#000;line-height:1.5rem;font-size:0.8rem;color:#000;">{{item.index_name}}</div>
                     </div>
                 </div>
@@ -85,7 +85,9 @@
                                     </span>
                                 </div>
                                 <div  class="text item">
-                                    <div class="radarTop" style="width: 100%; height: 300px"></div>
+                                    <div v-if="!radarTopImg" class="radarTop" style="width: 100%; height: 300px"></div>
+                                    
+                                    <img v-if="radarTopImg" class="radarTopImg" style="width: 100%; height: 300px" :src="radarTopImg"></img>
                                 </div>
                             </el-card>
                         </el-col >
@@ -100,7 +102,8 @@
                                     </span>
                                 </div>
                                 <div  class="text item">
-                                    <div class="radarBot" style="width: 100%; height: 300px"></div>
+                                    <div v-if="!radarBotImg" class="radarBot" style="width: 100%; height: 300px"></div>
+                                    <img v-if="radarBotImg" class="radarBotImg" style="width: 100%; height: 300px" :src="radarBotImg"></img>
                                 </div>
                             </el-card>
                         </el-col >
@@ -172,6 +175,8 @@ import { onMounted, ref, watch } from "vue";
 
 var chartTop=null;
 var chartBot=null;
+
+
   export default {
     components: {
         Add: () => import("../../components/common/add.vue")
@@ -184,7 +189,8 @@ var chartBot=null;
     data() {
       return {
         getAddService:'srvledu_semester_comment_add',
-
+        radarTopImg:'',
+        radarBotImg:'',
         activeForm:null,
         bgImgUrl:bgimg,
         srvApp:null,
@@ -231,9 +237,9 @@ var chartBot=null;
             this.srvApp = this.$route.query.srvApp
             
         }
+        this.radarBotImg = ''
+                        this.radarTopImg = ''
         this.$nextTick(() => {
-                
-            
             this.initData()
         })
         
@@ -285,6 +291,7 @@ var chartBot=null;
                             // console.error('this.service_name2',response.body,response.response)
                             let detailData = response.body;
                             this.$set(this,'detailData',response.body)
+                            document.title = `${detailData.student_no}-${detailData.student_name}-${new Date().toLocaleDateString()}`;
                             // this.detailData = response.body;
                             // 保存详情数据
                             
@@ -398,6 +405,7 @@ var chartBot=null;
                 }
             });
         },
+        
         buildChart(data){
             // 基于准备好的dom，初始化echarts实例
             let loadAllData = data
@@ -523,12 +531,31 @@ var chartBot=null;
                 // 让我们的图表调用 resize这个方法
                 chartTop.resize();
                 chartBot.resize();
-
-                
             });
         },
+        exportImg(myChart,id) {
+            // echart 接口获取 图标的图片base64
+            const src = (myChart).getDataURL({
+                type:'png',
+                pixelRatio: 2,
+                backgroundColor: '#fff',
+            });
+            const a = document.createElement('a');
+            console.log(src)
+            return src
+            
+        },
         print(){
-            window.print()
+            // 吊起浏览器打印
+            this.$set(this,'radarBotImg',this.exportImg(chartBot,'radarBotImg'))
+            this.$set(this,'radarTopImg',this.exportImg(chartTop,'radarTopImg'))
+            // 图表转canvas 保存图片
+            this.$nextTick(() => {
+                setTimeout(" window.print()",200);
+                // window.print()
+               
+            })
+            
             setTimeout("window.location.reload()",1000);
         },
         add(){
@@ -560,7 +587,13 @@ var chartBot=null;
   <style lang="css">
 @media print {
     .print{
+
         display:none !important;
+    }
+    .print-layout{
+        -webkit-print-color-adjust: exact;
+print-color-adjust: exact;
+        width:100vw !important;
     }
 }
   </style>

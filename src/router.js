@@ -481,12 +481,19 @@ routes.push( {
       },
     ]
   },
-  // 学生档案
+  // 学生档案  西乡特有页面
   {
     path:'/studentfiles/:serviceName/:id',
     name:'studentfiles',
     component:()=>import('@/pages/studentfiles/studentfiles.vue')
   },
+  // 学生档案  西乡特有页面
+  {
+    path:'/pdfReview/:serviceName/:id',
+    name:'pdfReview',
+    component:()=>import('@/pages/studentfiles/pdfReview.vue')
+  },
+  
   
 
 ]
