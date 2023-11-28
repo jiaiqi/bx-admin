@@ -37,7 +37,7 @@
                     :style="`${col == 'score' ? 'text-align:center;':'text-align:left;'}`"
                     v-for="(col,c) in childHanderColName" 
                     :key="c" >
-                       {{col == 'type_name' ? caps[childDataTitles.indexOf(item[col])] + '、' : ''}} {{item[col]}}
+                       {{col == 'type_name' ? `${caps[childDataTitles.indexOf(item[col])]}、${item[col]}` : item[col]}}
                     </td>
                     <td  style="font-weight:bold;" >{{``}}</td>
                 </tr>
