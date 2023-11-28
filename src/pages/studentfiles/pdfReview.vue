@@ -16,7 +16,7 @@
                     <td  style="width:8rem;">评估记录编号</td>
                     <td >{{detailData.estimate_no}}</td>
                     <td style="width:6rem;">{{`${detailData.object_type}名称`}}</td>
-                    <td colspan="3"> {{detailData.practice_name}} </td>
+                    <td colspan="3" style="min-width:10rem;"> {{detailData.practice_name}} </td>
                 </tr>
                 <tr  class="pdf-details" >
                     <td  style="width:8rem;">检查人</td>
