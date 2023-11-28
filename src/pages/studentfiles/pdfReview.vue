@@ -34,12 +34,12 @@
                     <td v-if="item && (col !=='type_name' || (col =='type_name' &&  getColspan(item,index).index == 0))" 
                     :rowspan="col =='type_name' ?  getColspan(item,index).rowspan : 1"  
                     :colspan="col && col =='estimate_name' ? 3 : 1" 
-                    :style="`${col == 'score' ? 'text-align:center;':'text-align:left;'}`"
+                    :style="`${col == 'score' ? 'text-align:center;width:4rem;':'text-align:left;'}`"
                     v-for="(col,c) in childHanderColName" 
                     :key="c" >
                        {{col == 'type_name' ? `${caps[childDataTitles.indexOf(item[col])]}、${item[col]}` : item[col]}}
                     </td>
-                    <td  style="font-weight:bold;" >{{``}}</td>
+                    <td  style="font-weight:bold;width:4rem;" >{{``}}</td>
                 </tr>
              </table>
         </div>
