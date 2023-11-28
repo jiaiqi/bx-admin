@@ -202,13 +202,12 @@ export default {
                 (item) => this.selected.indexOf(item[this.valueCol]) !== -1
               )
               .map((item) => {
-                // if (this.labelCol !== "label") {
-                //   delete item.label;
-                // }
-                // if (this.valueCol !== "value") {
-                //   delete item.value;
-                // }
                 delete item.checked;
+                Object.keys(item).forEach((key) => {
+                  if (!this.fmt?.cols?.includes(key)) {
+                    delete item[key];
+                  }
+                });
                 return item;
               });
             val = JSON.stringify(val);
