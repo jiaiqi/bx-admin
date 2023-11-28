@@ -14,7 +14,7 @@
                 </tr>
                 <tr  class="pdf-details" >
                     <td  style="width:8rem;">评估记录编号</td>
-                    <td >{{detailData.estimate_no}}</td>
+                    <td style="width:30%;">{{detailData.estimate_no}}</td>
                     <td style="width:6rem;">{{`${detailData.object_type}名称`}}</td>
                     <td colspan="3" style="min-width:10rem;"> {{detailData.practice_name}} </td>
                 </tr>
