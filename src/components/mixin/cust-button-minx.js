@@ -52,7 +52,7 @@ export default {
      * @param {*} operateData
      */
 
-    customizeOperate(butinfo, operateData,callback) {
+    customizeOperate(butinfo, operateData, callback) {
       if (butinfo.btn_cfg_json) {
         butinfo.btn_cfg = butinfo.btn_cfg_json;
         try {
@@ -93,7 +93,7 @@ export default {
       } else if (operate_type.endsWith("跳转")) {
         this.customize_forward(butinfo, operateData);
       } else if (operate_type.endsWith("弹出")) {
-        this.customize_popup(butinfo, operateData,callback);
+        this.customize_popup(butinfo, operateData, callback);
       } else if (operate_type === "选择填充表格") {
         this.customize_popup(butinfo, operateData);
       } else {
@@ -557,17 +557,22 @@ export default {
           jump_json?.cols_map_json?.cols_map_detail_json.length > 0
         ) {
           jump_json?.cols_map_json?.cols_map_detail_json.forEach((item) => {
-            url += `&${item.col_to}=${this.renderStr(item.col_from, {
-              button,
-              row,
-            })}`;
+            if (item.from_type === "当前数据") {
+              url += `&${item.col_to}=${row[item.col_from]}`;
+            } else {
+              url += `&${item.col_to}=${this.renderStr(item.col_from, {
+                button,
+                row,
+                data: row,
+              })}`;
+            }
           });
         }
-        let detailUrl = `${top.pathConfig.gateway}/h5/?target_nav_url=${encodeURIComponent(
-          url
-        )}`;
-        if(url?.includes('http')){
-          detailUrl = url
+        let detailUrl = `${
+          top.pathConfig.gateway
+        }/h5/?target_nav_url=${encodeURIComponent(url)}`;
+        if (url?.includes("http")) {
+          detailUrl = url;
         }
 
         const detailUrlImage = `${
@@ -631,10 +636,12 @@ export default {
                     }
                   });
                 }
-                if(!rUrl?.includes('bx_auth_ticket')){
-                  rUrl+=`&bx_auth_ticket=${sessionStorage.getItem('bx_auth_ticket')}`
+                if (!rUrl?.includes("bx_auth_ticket")) {
+                  rUrl += `&bx_auth_ticket=${sessionStorage.getItem(
+                    "bx_auth_ticket"
+                  )}`;
                 }
-                window.open(rUrl)
+                window.open(rUrl);
               } else if (url && req && moreConfig?.urlFromReq?.method) {
                 const res = await this.$http[moreConfig?.urlFromReq?.method](
                   url,
@@ -711,12 +718,12 @@ export default {
      * @param {*} item
      * @param {*} operateData
      */
-    customize_popup(item, operateData,callback) {
-      if(item.more_config && typeof item.more_config === 'string'){
+    customize_popup(item, operateData, callback) {
+      if (item.more_config && typeof item.more_config === "string") {
         try {
-          item['moreConfig'] = JSON.parse(item.more_config)
+          item["moreConfig"] = JSON.parse(item.more_config);
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
       }
       operateData = this.pre_data_handle(item, operateData);
@@ -752,8 +759,6 @@ export default {
       params["defaultCondition"] = this.defaultCondition;
       params["listMainFormDatas"] = this.listMainFormDatas;
 
-      
-
       if ("列表弹出" == operate_type) {
         params.formType = "list";
 
@@ -764,7 +769,7 @@ export default {
       } else if ("增加弹出" == operate_type) {
         // params.formType= "simple-add";
         params.formType = "add";
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else if ("更新弹出" == operate_type) {
         var otherParams = {};
         otherParams["load_old_data"] = load_old_data;
@@ -1160,7 +1165,7 @@ export default {
               type: "info",
             })
             .then(() => {
-              console.log(bxRequests)
+              console.log(bxRequests);
               // this.operate(bxRequests).then((response) => {
               //   var state = response.body.state;
 
