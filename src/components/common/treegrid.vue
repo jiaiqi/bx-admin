@@ -1027,6 +1027,9 @@ export default {
 
       //加载表格数据
       let rdt = this.childForeignkey?.constraint_name?'ttd':null //是子表 使用ttd特性 2023年11月13日jiaqi
+      if(this.$route?.query?.topTreeData==='true'){
+        rdt = 'ttd'
+      }
       this.select(this.service_name, cond, page, this.order,null,null,null,null,null,this.relationCondition||null,null,null,null,this.vpageNo,'treelist',rdt).then(
         (response) => {
           // rename for element stupid bug of using children as bulitin

@@ -563,9 +563,12 @@ export default {
             })}`;
           });
         }
-        const detailUrl = `https://login.100xsys.cn:1443/h5/?target_nav_url=${encodeURIComponent(
+        let detailUrl = `${top.pathConfig.gateway}/h5/?target_nav_url=${encodeURIComponent(
           url
         )}`;
+        if(url?.includes('http')){
+          detailUrl = url
+        }
 
         const detailUrlImage = `${
           this.serviceApi().qrcode

@@ -20,8 +20,6 @@
             <el-button type="primary" @click="search">查询</el-button>
           </el-col>
         </el-row>
-
-
       </el-form>
     </div>
     <div class="header">
@@ -224,7 +222,7 @@ export default {
             lesson.forEach(l => {
               if (l?.length) {
                 l.forEach(ll => {
-                  lessons.push(ll.label)
+                  lessons.push(ll.lesson_name)
                 })
               }
             })
