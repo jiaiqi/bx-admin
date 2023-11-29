@@ -569,9 +569,17 @@ export default {
           });
         }
         let detailUrl = `${
-          top.pathConfig.gateway
+          window.location.origin
         }/h5/?target_nav_url=${encodeURIComponent(url)}`;
-        if (url?.includes("http")) {
+        if (url?.indexOf("webview://") === 0) {
+          url = url.replace("webview://", "");
+          url = `/views/public/webview/webview?src=${encodeURIComponent(url)}`;
+          detailUrl = `${
+            window.location.origin
+          }/h5/#/views/public/webview/webview?target_nav_url=${encodeURIComponent(
+            url
+          )}`;
+        } else if (url?.includes("http")) {
           detailUrl = url;
         }
 
