@@ -1,44 +1,49 @@
 <template>
-    <div id="pdf-layout">
-        <el-button size="mini" type="success" @click="exportPDF">导出pdf</el-button>
-        <div>
-            <table  class="pdf-review">
+    <div>
+        <div style="padding:10px 10%;" v-if="showAction">
+            <el-button type="primary" icon="el-icon-download" @click="exportPDF">立即下载PDF</el-button>
+        </div>
+        
+         <div style="padding:10px 10%;"  id="pdf-layout">
+            <table  class="pdf-review" v-if="detailData && v2Data">
                 <tr class="pdf-details">
-                <!-- 
-                可以使用th标签来表示表头中的内容，
-                    它的用法和td一样，不同的是它会有一些默认效果
-                -->
-                    <th >序号</th>
-
-                    <th v-for="(hand,h) in hander">{{hand}}</th>
+                    <th  colspan="6" style="font-weight:bold;text-align:center;font-size:1.5rem;">{{`${detailData.object_type == '基地' ? '实践基地' : '学校'}督导检查评估表`}}</th>
                 </tr>
-
-                <tr  class="pdf-details" v-for="(item,index) in test">
-                    <td >{{index+1}}</td>
-                    <td v-for="(hand,h) in hander">{{item[hand]}}</td>
+                <tr  class="pdf-details" >
+                    <td colspan="6" style="font-weight:bold;">基本信息：</td>
                 </tr>
-                <tr  class="pdf-details" v-for="(item,index) in test">
-                    <td >{{index+1}}</td>
-                    <td v-for="(hand,h) in hander">{{item[hand]}}</td>
+                <tr  class="pdf-details" >
+                    <td  style="width:8rem;">评估记录编号</td>
+                    <td style="width:30%;">{{detailData.estimate_no}}</td>
+                    <td style="width:6rem;">{{`${detailData.object_type}名称`}}</td>
+                    <td colspan="3" style="min-width:10rem;"> {{detailData.practice_name}} </td>
                 </tr>
-                <tr  class="pdf-details" v-for="(item,index) in test">
-                    <td >{{index+1}}</td>
-                    <td v-for="(hand,h) in hander">{{item[hand]}}</td>
+                <tr  class="pdf-details" >
+                    <td  style="width:8rem;">检查人</td>
+                    <td >{{detailData.examiner_name}}</td>
+                    <td colspan="4"></td>
                 </tr>
-                <tr  class="pdf-details" v-for="(item,index) in test">
-                    <td >{{index+1}}</td>
-                    <td v-for="(hand,h) in hander">{{item[hand]}}</td>
+                <tr  class="pdf-details" >
+                    <td colspan="6" style="font-weight:bold;">评选细则明细：</td>
                 </tr>
-                <tr  class="pdf-details" v-for="(item,index) in test">
-                    <td >{{index+1}}</td>
-                    <td v-for="(hand,h) in hander">{{item[hand]}}</td>
+                <tr  class="pdf-details" >
+                    <td :colspan="chander.columns=='estimate_name' ? 3 : 1" style="text-align:center;" v-for="(chander,i) in childListHander" v-if="childHanderColName.includes(chander.columns)">{{chander.label}}</td>
+                    <td  style="text-align:center;" >{{`得分`}}</td>
                 </tr>
-                <tr  class="pdf-details" v-for="(item,index) in test">
-                    <td >{{index+1}}</td>
-                    <td v-for="(hand,h) in hander">{{item[hand]}}</td>
+                <tr  class="pdf-details" v-for="(item,index) in childDataList" :key="index"  v-if="childDataList">
+                    <td v-if="item && (col !=='type_name' || (col =='type_name' &&  getColspan(item,index).index == 0))" 
+                    :rowspan="col =='type_name' ?  getColspan(item,index).rowspan : 1"  
+                    :colspan="col && col =='estimate_name' ? 3 : 1" 
+                    :style="`${col == 'score' ? 'text-align:center;width:4rem;':'text-align:left;'}`"
+                    v-for="(col,c) in childHanderColName" 
+                    :key="c" >
+                       {{col == 'type_name' ? `${caps[childDataTitles.indexOf(item[col])]}、${item[col]}` : item[col]}}
+                    </td>
+                    <td  style="font-weight:bold;width:4rem;" >{{``}}</td>
                 </tr>
              </table>
         </div>
+        
     </div>
   </template>
    
@@ -56,380 +61,307 @@ import htmlPdf from './pdf.js';
                 handers = Object.keys(data[0])
             }
             return handers
+        },
+        listCondition(){
+             let condition = [{
+                colName:'estimate_no',
+                ruleType:'eq',
+                value:''
+             }]
+             if(this.detailData && this.detailData.estimate_no){
+                condition[0].value = this.detailData.estimate_no
+             }
+             return condition
+        },
+        childListHander(){
+             let cols = this.listV2Data ? this.listV2Data.srv_cols : []
+             if(Array.isArray(cols) && cols.length > 0){
+                cols = cols.filter( item => item['in_list'] == 1)
+             }
+             return cols
+        },
+        childDataList(){
+             let list = this.childService ? this.childService[0] : null
+             if(list && list.hasOwnProperty('_load_data')){
+                list = list['_load_data']
+             }
+             return list
+        },
+        childDataTitles(){
+             let list = this.childDataList ? this.bxDeepClone(this.childDataList) : []
+             let titles = []
+             if(Array.isArray(list) && list.length > 0){
+                for(let item of list){
+                    if(titles.indexOf(item.type_name) == -1){
+                        titles.push(item.type_name)
+                    }
+                }
+             }
+             return titles
+        },
+        documentTitle(){
+            let title = `${this.detailData && this.detailData.object_type == '基地' ? '实践基地' : '学校'}督导检查评估表`
+            return title
         }
     },
     data(){
         return {
-            test:[
-    {
-        "del_flag": "否",
-        "practice_no": "JD202311170003",
-        "create_time": "2023-11-24 16:24:33",
-        "modify_user_disp": null,
-        "practice_name": "首阳山研学基地",
-        "object_type": "基地",
-        "modify_user": null,
-        "create_user_disp": "武浩/wuhao",
-        "modify_time": "2023-11-24 16:24:33",
-        "practice_file": null,
-        "examiner": "STF231121110023",
-        "school_name": null,
-        "estimate_no": "EST2311240003",
-        "result": null,
-        "_buttons": [
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": null,
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待下载",
-        "id": 19,
-        "examiner_name": "武浩9",
-        "create_user": "wuhao",
-        "school_no": null,
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-24 14:28:27",
-        "modify_user_disp": null,
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": null,
-        "create_user_disp": "武浩/wuhao",
-        "modify_time": "2023-11-24 14:28:27",
-        "practice_file": null,
-        "examiner": "STF231124140024",
-        "school_name": "镇中心测试学校",
-        "estimate_no": "EST2311240002",
-        "result": null,
-        "_buttons": [
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": null,
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待下载",
-        "id": 18,
-        "examiner_name": "贺局",
-        "create_user": "wuhao",
-        "school_no": "SH0129",
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-24 09:23:57",
-        "modify_user_disp": "罗强/231026SUJU",
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": "231026SUJU",
-        "create_user_disp": "罗强/231026SUJU",
-        "modify_time": "2023-11-24 09:24:20",
-        "practice_file": null,
-        "examiner": "STF231121110023",
-        "school_name": "镇中心测试学校",
-        "estimate_no": "EST2311240001",
-        "result": null,
-        "_buttons": [
-            1,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": "SR202310290001",
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待评估",
-        "id": 17,
-        "examiner_name": "武浩",
-        "create_user": "231026SUJU",
-        "school_no": "SH0129",
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-23 09:51:44",
-        "modify_user_disp": "刘老师/liuxj",
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": "liuxj",
-        "create_user_disp": "刘老师/liuxj",
-        "modify_time": "2023-11-23 09:51:59",
-        "practice_file": null,
-        "examiner": "STF231121110023",
-        "school_name": "镇中心测试学校",
-        "estimate_no": "EST2311230001",
-        "result": null,
-        "_buttons": [
-            1,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": "SR202310290001",
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待评估",
-        "id": 16,
-        "examiner_name": "武浩",
-        "create_user": "liuxj",
-        "school_no": "SH0129",
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": "JD202311170003",
-        "create_time": "2023-11-20 16:55:58",
-        "modify_user_disp": "贺老师7/231113MBW7",
-        "practice_name": "首阳山研学基地",
-        "object_type": "基地",
-        "modify_user": "231113MBW7",
-        "create_user_disp": "贺老师7/231113MBW7",
-        "modify_time": "2023-11-20 16:56:25",
-        "practice_file": null,
-        "examiner": "STF231025140010",
-        "school_name": null,
-        "estimate_no": "EST2311200011",
-        "result": "不合格",
-        "_buttons": [
-            1,
-            0,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": "SR202310290001",
-        "estimate_explain": null,
-        "total_score": 44,
-        "estimate_state": "已完成",
-        "id": 15,
-        "examiner_name": "贺瑶婷",
-        "create_user": "231113MBW7",
-        "school_no": null,
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-20 16:55:13",
-        "modify_user_disp": "贺老师7/231113MBW7",
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": "231113MBW7",
-        "create_user_disp": "贺老师7/231113MBW7",
-        "modify_time": "2023-11-20 16:55:44",
-        "practice_file": null,
-        "examiner": "STF231025140010",
-        "school_name": "西乡县第四中学",
-        "estimate_no": "EST2311200010",
-        "result": "合格",
-        "_buttons": [
-            1,
-            0,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": "SR202310290001",
-        "estimate_explain": null,
-        "total_score": 88,
-        "estimate_state": "已完成",
-        "id": 14,
-        "examiner_name": "贺瑶婷",
-        "create_user": "231113MBW7",
-        "school_no": "SH0094",
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-20 16:49:36",
-        "modify_user_disp": "刘老师/liuxj",
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": "liuxj",
-        "create_user_disp": "刘老师/liuxj",
-        "modify_time": "2023-11-20 16:55:01",
-        "practice_file": null,
-        "examiner": "STF231031160015",
-        "school_name": "镇中心测试学校",
-        "estimate_no": "EST2311200008",
-        "result": null,
-        "_buttons": [
-            1,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": "SR202310290001",
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待评估",
-        "id": 12,
-        "examiner_name": "刘锋",
-        "create_user": "liuxj",
-        "school_no": "SH0129",
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": "JD202311170002",
-        "create_time": "2023-11-20 16:50:00",
-        "modify_user_disp": "刘老师/liuxj",
-        "practice_name": "终南山测试1",
-        "object_type": "基地",
-        "modify_user": "liuxj",
-        "create_user_disp": "刘老师/liuxj",
-        "modify_time": "2023-11-20 16:54:20",
-        "practice_file": "20231120165229970100",
-        "examiner": "STF231031160015",
-        "school_name": null,
-        "estimate_no": "EST2311200009",
-        "result": "不合格",
-        "_buttons": [
-            1,
-            0,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": "SR202310290001",
-        "estimate_explain": null,
-        "total_score": 40,
-        "estimate_state": "已完成",
-        "id": 13,
-        "examiner_name": "刘锋",
-        "create_user": "liuxj",
-        "school_no": null,
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-20 16:38:21",
-        "modify_user_disp": null,
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": null,
-        "create_user_disp": "刘老师/liuxj",
-        "modify_time": "2023-11-20 16:38:21",
-        "practice_file": null,
-        "examiner": "STF231107140019",
-        "school_name": "镇中心测试学校",
-        "estimate_no": "EST2311200007",
-        "result": null,
-        "_buttons": [
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": null,
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待下载",
-        "id": 11,
-        "examiner_name": "文浩",
-        "create_user": "liuxj",
-        "school_no": "SH0129",
-        "object": null
-    },
-    {
-        "del_flag": "否",
-        "practice_no": null,
-        "create_time": "2023-11-20 16:00:46",
-        "modify_user_disp": null,
-        "practice_name": null,
-        "object_type": "学校",
-        "modify_user": null,
-        "create_user_disp": "刘峰/liuf",
-        "modify_time": "2023-11-20 16:00:46",
-        "practice_file": null,
-        "examiner": "STF231107150020",
-        "school_name": "镇中心测试学校",
-        "estimate_no": "EST2311200006",
-        "result": null,
-        "_buttons": [
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1
-        ],
-        "tmpl_src_no": null,
-        "estimate_explain": null,
-        "total_score": null,
-        "estimate_state": "待下载",
-        "id": 10,
-        "examiner_name": "定位",
-        "create_user": "liuf",
-        "school_no": "SH0129",
-        "object": null
-    }
-]
+            showAction:true,
+            test:[],
+            caps:['一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五'],
+            childHanderColName:['type_name','estimate_name','score'],
+            childService:'srvledu_estimate_record_item_select',
+            srvApp:null,
+            id:null,
+            serviceName:'',
+            v2Data:null,
+            initLoadModel:null,
+            v2Cols:null,
+            v2ChildService:null,
+            detailData:null,
+            listV2Data:null,
+            
         }
     },
+    mounted(){
+        if(this.$route.params ){
+            if(this.$route.params.id){
+                this.$set(this,'id',this.$route.params.id)
+            }
+            if(this.$route.params.serviceName){
+                this.$set(this,'serviceName',this.$route.params.serviceName)
+            }
+            
+        }
+        if(this.$route.query){
+            if(this.$route.query.srvApp){
+                this.$set(this,'srvApp',this.$route.query.srvApp)
+            }
+        }
+        this.$nextTick(() => {
+            if(this.id && this.serviceName && this.srvApp){
+                this.initData()
+            }
+            
+        })
+    },
     methods: {
+        getColspan(e,i){
+            let key = e.estimate_no
+            let rowspan = 1
+            let index = 0
+            let datas =this.childDataList?  this.bxDeepClone(this.childDataList) : []
+            let list  = []
+            if(Array.isArray(datas) && datas.length > 0){
+                list  = datas.filter(item => item['type_name'] == e.type_name)
+                let keys = list.map(item => item.estimate_no)
+                if(Array.isArray(keys) && keys.length > 1){
+                    index = keys.indexOf(key)
+                }
+                rowspan= list.length
+                // console.log(colspan,list)
+                // console.log(i,key,{rowspan,index},keys)
+            }
+            
+            return {rowspan,index}
+        },
+        async initData() {
+            var condition = [];
+            var me = this;
+            let childList = null
+            if (this.$route.params ) {
+                // 判断路由参数
+                // condition = this.custCondition;
+                if (this.$route.params && this.$route.params.serviceName != "") {
+                    // 服务是否存在
+                    this.serviceName = this.$route.params.serviceName;
+                }
+                if (this.$route.params && this.$route.params.id != "") {
+                    // id是否存在
+                    this.id = this.$route.params.id
+                    condition = [{ colName: "id", value: this.id, ruleType: "eq" }];
+                }
+                if(this.serviceName && this.id){
+                    // 服务和id都存在 查询数据
+                    await this.selectOne(
+                        this.serviceName,
+                        condition,
+                        null,
+                        null,
+                        null,
+                        'list',
+                        this.srvApp
+                    ).then(response => {
+                        
+                        // console.log('srvAuthKey',srvAuthKey,response.body)
+                        if(response.body.resultCode == '0111'){
+                        
+                            console.error('this.service_name',response.body)
+                            console.log('response.body',response.body)
+                            this.srvAuthLogin = true
+                            this.$message({
+                                message: response.data.resultMessage,
+                                type: "error",
+                            });
+                        }else{
+                            // console.error('this.service_name2',response.body,response.response)
+                            let detailData = response.body;
+                            this.$set(this,'detailData',response.body)
+                            document.title = this.documentTitle;
+                            // this.detailData = response.body;
+                            // 保存详情数据
+                            
+                        }
+                    });
+                    if(!this.v2Data){
+                        await this.loadColsV2(this.serviceName, "detail",this.srvApp,this.serviceName).then(response => {
+                            // 查询v2
+                            this.v2Data = response.body.data;
+                            this.v2Cols = response.body.data["srv_cols"];
+                            childList = response.body.data["child_service"];
+                            // 查询明细v2
+                            this.getListV2(this.childService,'list')
+
+                            if(Array.isArray(childList) && childList.length > 0){
+                                this.childService = []
+                                for (let item of childList) {
+                                    // 子表元数据封装
+                                    item.show = true;
+                                    let foreign_key = item.foreign_key;
+                                    if (item.srv_cols) {
+                                    // intra-app fk
+                                        let referenced_column_name = foreign_key.referenced_column_name;
+                                        item.defaultCondition = [
+                                            {
+                                            colName: foreign_key.column_name,
+                                            ruleType: "eq",
+                                            value: this.detailData[referenced_column_name]
+                                            }
+                                        ];
+                                    } else {
+                                        // inter-app fk
+                                        let referenced_column_name = foreign_key.refed_service_column;
+                                        item.defaultCondition = [
+                                            {
+                                            colName: foreign_key.ref_service_column,
+                                            ruleType: "eq",
+                                            value: this.detailData[referenced_column_name]
+                                            }
+                                        ];
+                                    }
+
+                                    this.childService.push(item);
+                                
+                                }
+                                this.childSrvLoaded = true
+                                for(let item of this.childService){
+                                    this.getListData(item)
+                                }
+                            }
+                            
+                            
+                        });
+                    }else{
+                        for(let item of this.childService){
+                                    this.getListData(item)
+                                }
+                    }
+                    
+
+                }
+
+            }
+
+            
+        },
+        async getListV2(srv,type){
+
+            await this.loadColsV2(srv, type,this.srvApp,srv).then(response => {
+                    // 查询v2
+                    this.listV2Data = response.body.data;
+                    
+                    
+                    
+                });
+        },
+        async getListData(child){
+            // 子表数据查询
+            let srv = child.service_name
+            let app = child.srv_app
+            let condition = child.defaultCondition
+            
+            await this.select(
+                srv,
+                condition,
+                {
+                "pageNo": 1,
+                "rownumber": 999
+                }, [],
+                null,
+                null,
+                app
+            ).then(response => {
+                
+                // console.log('srvAuthKey',srvAuthKey,response.body)
+                if(response.body.resultCode == '0111'){
+                
+                    
+                }else{
+                    let data = response.body.data;
+                    if(response.body.state == 'SUCCESS' && Array.isArray(data) && data.length > 0){
+                        this.$set(child,'_load_data',data)
+                        if(srv == 'srvledu_semester_evaluate_task_select'){
+                            // 如果是劳动评价，处理雷达图
+                            
+                            this.$nextTick(() => {
+                
+                                // this.buildChart(data)
+                               
+                            })
+                        }
+                    }
+                    
+                    
+                }
+            });
+        },
         async exportPDF() {
         // 获取要导出的Vue组件
-            const vueComponent = document.querySelector('.pdf-review')
-            // 使用html2canvas将Vue组件渲染为图片
-            const canvas = await html2canvas(vueComponent)
-            // 创建新的jsPDF文档
-            const pdf = new jsPDF('p', 'mm', 'a4')
-            // 将渲染的图片添加到PDF文档中
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298)
-            // 下载PDF文件
-            pdf.save('my-pdf-document.pdf')
-
-            // var TypeName = '生成的PDF';
-            // const lableList = document.getElementsByClassName('pdf-details');   // 注意这一句
-            // htmlPdf(TypeName, document.querySelector('#pdf-layout'), lableList);
+            // const vueComponent = document.querySelector('.pdf-review')
+            // // 使用html2canvas将Vue组件渲染为图片
+            // const canvas = await html2canvas(vueComponent)
+            // // 创建新的jsPDF文档
+            // const pdf = new jsPDF('p', 'mm', 'a4')
+            // // 将渲染的图片添加到PDF文档中
+            // pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298)
+            // // 下载PDF文件
+            // pdf.save('my-pdf-document.pdf')
+            var TypeName = `${this.documentTitle}${this.detailData.estimate_no}(${new Date().toLocaleDateString()})`;
+                const lableList = document.getElementsByClassName('pdf-details');   // 注意这一句
+                htmlPdf(TypeName, document.querySelector('#pdf-layout'), lableList).then(res => {
+                    if(res){
+                        this.$message({
+                            type: 'success',
+                            message: '已开始下载pdf，请在浏览器下载记录查看下载结果!'
+                        });
+                    }
+                });
+            
   
         }
     }
   }
   </script>
     <style lang="css">
+    #pdf-layout{
+        padding:1rem;
+    }
     .pdf-review{
-        width: 1080px; 
+        width: 100%; 
         height:auto;
-        min-height:100vh;
+        
+        padding: 0 10%;
+        /* min-height:100vh; */
         /* background-color:#eeeeee; */
         margin:0 auto;
     }
@@ -442,11 +374,11 @@ import htmlPdf from './pdf.js';
         /* width: 300px; */
         /*居中*/
         max-width:100%;
-        margin: 0 auto;
         /*边框*/
         /* border: 1px solid black; */
-
         border-collapse: collapse;
+border-spacing: 0;
+border-width: 1px;
         /*设置背景颜色*/
         /* background-color: #bfa; */
       }
@@ -460,8 +392,9 @@ import htmlPdf from './pdf.js';
         overflow-wrap: anywhere;
         /* overflow-wrap: */
         border: 1px solid black;
-        padding:12px 6px ;
+        padding:6px 6px ;
         color:#000;
+        border-width: 1px;
       }
 
       tr:hover {
