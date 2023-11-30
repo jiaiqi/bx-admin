@@ -592,6 +592,25 @@ export default {
           item?.btn_cfg?.qrcode_tips || "请打开微信扫码进行操作",
           {
             dangerouslyUseHTMLString: true,
+            center: true,
+            // showCancelButton:true,
+            // distinguishCancelAndClose:true,
+            confirmButtonText: "保存二维码",
+            callback: (action) => {
+              if (action === "confirm") {
+                // 保存二维码
+                fetch(detailUrlImage)
+                  .then((response) => response.blob())
+                  .then((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "二维码.jpg";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  });
+              }
+            },
           }
         );
         return;
