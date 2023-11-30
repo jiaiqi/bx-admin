@@ -1,6 +1,6 @@
 <template>
-  <Chart ref="chartRef" class="uni-ec-canvas" :chart-option="option" :canvasId="canvasId" :chartType="chartType" :colors="colors" v-if="option"
-    @click-chart="clickChart"></Chart>
+  <Chart ref="chartRef" class="uni-ec-canvas" :page-item="pageItem" :chart-option="option" :canvasId="canvasId"
+    :chartType="chartType" :colors="colors" v-if="option" @click-chart="clickChart"></Chart>
 </template>
 
 <script setup>
@@ -19,13 +19,14 @@ const props = defineProps({
   },
 });
 const { pageItem } = props;
+
 let timer = null;
 const emit = defineEmits(["clickChart"]);
 const clickChart = () => {
   emit("clickChart");
 };
 const colors = ref(null);
-if(pageItem?.legend_color_seq){
+if (pageItem?.legend_color_seq) {
   colors.value = pageItem.legend_color_seq.split(",");
 }
 
@@ -36,15 +37,14 @@ onMounted(() => {
     autoRefreshData();
   }
 });
-const ecRun = computed(() => {
-  return option.value;
+
+const chartConfig = computed(() => {
+  return pageItem?.chart_json;
 });
 const showLoading = ref(true);
 const chartType = computed(() => {
-  let type =
-    pageItem?.com_type == "chart" ? pageItem?.chart_json?.chart_type : "";
   let chartType = "";
-  switch (type) {
+  switch (chartConfig.value?.chart_type) {
     case "折线图":
       chartType = "line";
       break;
@@ -59,6 +59,9 @@ const chartType = computed(() => {
       break;
     case "组合图":
       chartType = "lineBar";
+      break;
+    case "地图":
+      chartType = "map";
       break;
     default:
       break;

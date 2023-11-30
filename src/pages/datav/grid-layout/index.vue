@@ -627,13 +627,13 @@ export default {
     },
     toComponentDetail(item) {
       if (!this.isDataview && item?.data?.id) {
-        this.$confirm(`是否打开组件【${item.data.com_name}}】详情？`, "提示", {
+        this.$confirm(`是否打开组件【${item.data.com_name}】详情？`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
         }).then((action) => {
           if (action === "confirm") {
-            window.open(`/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`);
+            window.open(`/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`);
           }
         });
       }

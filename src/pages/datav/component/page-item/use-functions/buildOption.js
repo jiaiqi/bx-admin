@@ -1,4 +1,4 @@
-export const useBuildOption = (type, pageItem, cellData=[]) => {
+export const useBuildOption = (type, pageItem, cellData = []) => {
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
@@ -20,13 +20,12 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
     },
     legend: {
       data: [],
-      itemStyle:{
-        color:pageItem?.style_json?.color || "#848EAC"
+      itemStyle: {
+        color: pageItem?.style_json?.color || "#848EAC",
       },
-      textStyle:{
-        color:pageItem?.style_json?.color || "#848EAC"
-
-      }
+      textStyle: {
+        color: pageItem?.style_json?.color || "#848EAC",
+      },
     }, //展示的折线图标题
     xAxis: {
       type: "category", // 还有其他的type，可以去官网喵两眼哦
@@ -128,7 +127,9 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
   let seriesValueCols = chartJson?.series_value_cols || "";
   seriesValueCols = seriesValueCols.split(",");
 
-  const mapJson = pageItem.cols_map_json?.cols_map_json || pageItem?.page_com_cols_map_json?.cols_map_json;
+  const mapJson =
+    pageItem.cols_map_json?.cols_map_json ||
+    pageItem?.page_com_cols_map_json?.cols_map_json;
   let arr = [];
   seriesValueCols.forEach((item) => {
     for (let k in mapJson) {
@@ -231,9 +232,9 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
           series["type"] = type;
         }
         ecOptions["series"].push(series);
-        if (chartJson?.series_value === "单列多行分组"&&cellData?.length) {
-          const nOption = buildMultiColSeries(pageItem,cellData);
-          ecOptions["series"] = nOption?.series||[];
+        if (chartJson?.series_value === "单列多行分组" && cellData?.length) {
+          const nOption = buildMultiColSeries(pageItem, cellData);
+          ecOptions["series"] = nOption?.series || [];
           if (nOption?.series?.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全
@@ -246,7 +247,7 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
               containLabel: true,
             };
           }
-          ecOptions.legend.data = nOption?.legend||[];
+          ecOptions.legend.data = nOption?.legend || [];
 
           const val =
             Math.abs(nOption.max - nOption.min) / nOption.legend.length;
@@ -266,7 +267,9 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
           // }]
         }
       }
-      ecOptions["xAxis"]["data"] = [...new Set(ecOptions["xAxis"]["data"]||[])];
+      ecOptions["xAxis"]["data"] = [
+        ...new Set(ecOptions["xAxis"]["data"] || []),
+      ];
       break;
     case "pie":
       for (let sIndex in seriesName) {
@@ -414,14 +417,21 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
       // option['xAxis']['data'].push('')
       // option['xAxis']['data'] = [...new Set(option['xAxis']['data'])]
       break;
+    case "map":
+      ecOptions.series = [
+        {
+          type: "map",
+          map: "mapName",
+        },
+      ];
+      break;
     default:
       break;
   }
   return ecOptions;
 };
 
-
-const buildMultiColSeries = (pageItem,cellData=[]) => {
+const buildMultiColSeries = (pageItem, cellData = []) => {
   let chartJson = pageItem?.chart_json || {};
   let datas = cellData;
   let seriesName = chartJson?.series_name_cfg || "";
@@ -490,4 +500,92 @@ const buildMultiColSeries = (pageItem,cellData=[]) => {
       max: sortData[sortData.length - 1][chartJson.series_value_cols],
     };
   }
+};
+/**
+ * 生成图表默认配置
+ * @param {*} chartType 图表类型
+ * @param {*} chartJson 图表配置
+ */
+export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
+  const option = {
+    color: ["#007AFF", "#66E1DF", "#34C758", "#FFCB01", "#FF9502"],
+    tooltip: {},
+    legend: {
+      itemStyle: {
+        color: "#E8E8E8",
+      },
+      textStyle: {
+        color: "#E8E8E8",
+      },
+    },
+    series: [],
+  };
+  switch (chartType) {
+    case "line":
+    case "bar":
+      option.series = [
+        {
+          name: "销量",
+          type: chartType || "bar",
+          data: [5, 20, 36, 10, 10, 20],
+        },
+      ];
+      option.xAxis = {
+        data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"],
+        axisLine: {
+          lineStyle: {
+            color: "#E8E8E8",
+          },
+        },
+        axisLabel: {
+          textStyle: {
+            fontWeight: 400,
+            fontSize: 10,
+            color: "#E8E8E8",
+          },
+        },
+      };
+      option.yAxis = {
+        axisLabel: {
+          textStyle: {
+            fontWeight: 400,
+            fontSize: 10,
+            color: "#E8E8E8",
+          },
+          formatter: "{value}",
+        },
+        axisLine: {
+          show: true,
+          lineStyle: {
+            color: "#E8E8E8",
+          },
+        },
+        splitLine: {
+          //修改背景线条样式
+          show: false, //是否展示
+          lineStyle: {
+            color: "#E8E8E8", //线条颜色
+            type: "dashed", //线条样式，默认是实现，dashed是虚线
+          },
+        },
+      };
+      option.legend.data = ["销量"];
+      break;
+    case "pie":
+      break;
+    case "map":
+      if (chartJson?.map_base_geojson && eCharts) {
+        eCharts.registerMap("mapName", chartJson?.map_base_geojson);
+      }
+      option.coordinateSystem = "bmap";
+      option.series = [
+        {
+          name: "西乡地图",
+          type: "map",
+          map: "mapName",
+        },
+      ];
+      break;
+  }
+  return option;
 };
