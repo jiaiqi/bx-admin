@@ -10,7 +10,6 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
     sort_axis_col: "sort1",
   };
   let ecOptions = {
-    color: ["#9E87FF", "#73DDFF", "#F56948", "#fe9a8b", "#86a8ff"],
     grid: {
       // 这里可以防止Y轴显示不全
       top: "15%",
@@ -232,10 +231,10 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
           series["type"] = type;
         }
         ecOptions["series"].push(series);
-        if (chartJson?.series_value === "单列多行分组") {
+        if (chartJson?.series_value === "单列多行分组"&&cellData?.length) {
           const nOption = buildMultiColSeries(pageItem,cellData);
           ecOptions["series"] = nOption?.series||[];
-          if (nOption.series.length > 5) {
+          if (nOption?.series?.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全
               top: "35%",
@@ -247,7 +246,7 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
               containLabel: true,
             };
           }
-          ecOptions.legend.data = nOption.legend;
+          ecOptions.legend.data = nOption?.legend||[];
 
           const val =
             Math.abs(nOption.max - nOption.min) / nOption.legend.length;
@@ -267,7 +266,7 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
           // }]
         }
       }
-      ecOptions["xAxis"]["data"] = [...new Set(ecOptions["xAxis"]["data"])];
+      ecOptions["xAxis"]["data"] = [...new Set(ecOptions["xAxis"]["data"]||[])];
       break;
     case "pie":
       for (let sIndex in seriesName) {
@@ -422,7 +421,7 @@ export const useBuildOption = (type, pageItem, cellData=[]) => {
 };
 
 
-const buildMultiColSeries = (pageItem,cellData) => {
+const buildMultiColSeries = (pageItem,cellData=[]) => {
   let chartJson = pageItem?.chart_json || {};
   let datas = cellData;
   let seriesName = chartJson?.series_name_cfg || "";

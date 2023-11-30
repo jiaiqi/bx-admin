@@ -32,7 +32,7 @@
           :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="bjStyles"></div>
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
-            @moved="movedEvent" @resized="resizedEvent" class="gridItem">
+            @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
             <div v-if="item.isLeftBarItem" class="com-item dashed" @click.stop.prevent.capture="changeDesign(item.i)">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
@@ -156,6 +156,7 @@ export default {
   },
   computed: {
     isDataview() {
+      // 预览模式
       return this.$route?.name === "gridview";
     },
     showFullScreen() {
@@ -623,6 +624,19 @@ export default {
         }
         this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
       });
+    },
+    toComponentDetail(item) {
+      if (!this.isDataview && item?.data?.id) {
+        this.$confirm(`是否打开组件【${item.data.com_name}}】详情？`, "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then((action) => {
+          if (action === "confirm") {
+            window.open(`/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`);
+          }
+        });
+      }
     },
     //点击容器某一个组件
     changeDesign(idx) {
@@ -1149,7 +1163,7 @@ export default {
     right: 240px;
     left: 240px;
     overflow: auto;
-    padding: 20px;
+    padding: 40px;
     background: #f1f3f2;
 
     &.data-view-mode {

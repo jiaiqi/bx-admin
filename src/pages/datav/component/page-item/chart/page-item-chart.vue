@@ -1,12 +1,6 @@
 <template>
-  <Chart
-    ref="chartRef"
-    class="uni-ec-canvas"
-    :chart-option="option"
-    :canvasId="canvasId"
-    v-if="option"
-    @click-chart="clickChart"
-  ></Chart>
+  <Chart ref="chartRef" class="uni-ec-canvas" :chart-option="option" :canvasId="canvasId" :chartType="chartType" :colors="colors" v-if="option"
+    @click-chart="clickChart"></Chart>
 </template>
 
 <script setup>
@@ -30,6 +24,10 @@ const emit = defineEmits(["clickChart"]);
 const clickChart = () => {
   emit("clickChart");
 };
+const colors = ref(null);
+if(pageItem?.legend_color_seq){
+  colors.value = pageItem.legend_color_seq.split(",");
+}
 
 onMounted(() => {
   onSrvReq();
@@ -38,7 +36,6 @@ onMounted(() => {
     autoRefreshData();
   }
 });
-const option = ref({});
 const ecRun = computed(() => {
   return option.value;
 });
@@ -68,6 +65,8 @@ const chartType = computed(() => {
   }
   return chartType;
 });
+const option = ref({});
+
 
 const cellData = ref([]);
 const autoRefreshData = () => {
