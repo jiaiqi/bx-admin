@@ -384,11 +384,12 @@ var chartPie=null;
         return str
      },
      allValue(){
+        // 动态根据 分类统计数据 计算 完成率
         let value = 0
         if(this.childServiceLoadDatas && this.childServiceLoadDatas['srvledu_semester_evaluate_task_select']){
             value = this.childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester && item.semester == `${this.semester}`).reduce((total, num) => total + num.index_score, 0) / this.childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester == `${this.semester}`).length;
         }
-        this.$set(this,'allValuestr',value)
+        this.$set(this,'allValuestr',value)  // 赋值
         return value
     }
   },
@@ -442,13 +443,12 @@ var chartPie=null;
                         'detail_page',
                         this.srvApp
                     ).then(response => {
+                        // 主表查询结果
                         
-                        // console.log('srvAuthKey',srvAuthKey,response.body)
                         if(response.body.resultCode == '0111'){
                         
                             console.error('this.service_name',response.body)
                             console.log('response.body',response.body)
-                            this.srvAuthLogin = true
                             this.$message({
                                 message: response.data.resultMessage,
                                 type: "error",
@@ -457,7 +457,7 @@ var chartPie=null;
                             // console.error('this.service_name2',response.body,response.response)
                             let detailData = response.body;
                             this.$set(this,'detailData',response.body)
-                            let title = `${detailData.student_no}-${detailData.student_name}-${new Date().toLocaleDateString()}`;
+                            let title = `${detailData.student_no}-${detailData.student_name}-${new Date().toLocaleDateString()}`; // 设置页面标题
                             this.title = title
                             document.title = title
                             // this.detailData = response.body;
@@ -513,7 +513,7 @@ var chartPie=null;
                                 }
                                 this.childSrvLoaded = true
                                 for(let item of this.childService){
-                                    // this.getListData(item)
+                                    // this.getListData(item)  // 去掉根据 v2 子表服务查询
                                 }
                             }
                             
@@ -521,7 +521,7 @@ var chartPie=null;
                         });
                     }else{
                         for(let item of this.childService){
-                                    // this.getListData(item)
+                                    // this.getListData(item)// 去掉根据 v2 子表服务查询
                                 }
                     }
                     
@@ -587,7 +587,7 @@ var chartPie=null;
             });
         },
         async getTaskCountListData(s){
-            // 单独查询 4、完成劳动任务统计
+            // 单独查询 4、完成劳动任务统计  // 查询所有子模块数据 通用，除了基本信息
             let self = this
             let srv = s || 'srvledu_semester_evaluate_task_type_select'
             let app = 'ledu'
@@ -619,22 +619,14 @@ var chartPie=null;
                 
                 // console.log('srvAuthKey',srvAuthKey,response.body)
                 if(response.body.resultCode == '0111'){
-                
-                    
                 }else{
                     let data = response.body.data;
                     if(response.body.state == 'SUCCESS' && Array.isArray(data) && data.length > 0){
-                        
-        
-                        self.$set(self.childServiceLoadDatas,srv,data);
+                        self.$set(self.childServiceLoadDatas,srv,data); // 保存各模块内容查询数据
                          self.$nextTick(() => {
                                 if(this.childServiceLoadDatas && self.childServiceLoadDatas['srvledu_semester_evaluate_task_state_select'] && self.childServiceLoadDatas['srvledu_semester_evaluate_task_type_select']){
                                     // 如果是饼图业务加载饼图
-                                   
-                                
                                     self.buildPieChart()
-                                        
-                                
                                 }
                                 if(srv == 'srvledu_semester_evaluate_task_select'){
                                     // 如果是劳动评价，处理雷达图
@@ -914,7 +906,7 @@ var chartPie=null;
                         //     this.initData()
                         // })
                         if(this.radarPieImg && this.radarTopImg){
-                            // setTimeout("window.location.reload()",1000);
+                            setTimeout("window.location.reload()",1000);
                         }
                        
                     }
