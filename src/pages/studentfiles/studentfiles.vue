@@ -1,151 +1,293 @@
 <template>
-    <el-main style="border: 1px solid #eee;width:100%;" class="print-layout">
-        <el-row v-if="v2Data && detailData">
+    <el-main style="border: 1px solid #eee;width:100%;">
+        <el-row v-if="v2Data && detailData" class="print">
             <el-col :span="24">
-                <div style="width:100%;" class="padding-s" :style="`background-image: url(${bgImgUrl});background-size: contain;`">
-                    <el-row>
-                        <el-col :span="24">
-                            <div class="grid-content bg-purple-dark" style="line-height:3rem;">
-                                <span class="font-weight-bold" style="font-size: 22px;margin-right:10px;">{{detailData.student_name}}</span>
-                                <el-tag style="border-radius:10px;height:22px;line-height:20px;">
-                                    <svg style="margin-bottom:6px;" color="#409EFF"  width="14px" height="14px" xmlns="http://www.w3.org/2000/svg" name="zi_graduationcap" viewBox="0 0 2000 2000"><path fill="#409EFF" d="M1745 940l-769 239q-76 23-152 0l-565-174q-28 39-33 110 22 11 33.5 30.5t11.5 45q0 25.5-13 46.5t-32 32l45 346q0 11-6 18t-17 7H113q-11 0-16.5-7t-5.5-18l45-346q-20-11-32.5-32T91 1190.5q0-25.5 12.5-46.5t32.5-32q5-82 36-135L55 940q-31-8-42.5-36t0-56Q24 820 55 811l769-239q76-22 152 0l769 239q31 9 42.5 37t0 56q-11.5 28-42.5 36zm-741 326h-3q-101 28-202 0l-424-132-37 236q0 48 76 90t205 66q129 24 281 24t281-24q129-24 205-66t76-90l-37-236-421 132zm-804 327l3-156q0-5-4-9t-9-4h-13q-5 0-9 3.5t-4 9.5l-3 156q0 5 4 9t9 4h13q5 0 9-4t4-9z"/></svg>
-                                    
-                                    {{detailData.sch_year}}年
-                                </el-tag>
-                            </div>
-                        </el-col>
-                    </el-row>
+                <div style="width:100%;" class="padding-s" :style="``">
+                    <!-- background-image: url(${bgImgUrl});background-size: contain; -->
                     <el-row type="flex" class="row-bg" justify="space-between">
-                        <el-col :span="12">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;">
-                                性别：<span class="font-weight-bold">{{detailData.sex}}</span>
-                            </span>
-                            <span class="grid-content bg-purple-dark">
-                                学号：
-                                <span>{{detailData.student_no}}</span>
-                            </span>
-                        </el-col>
-                        <el-col :span="12" style="justify-content: end;display: flex;" class="print">
-                            <el-button size="mini">导出</el-button>
+                        
+                        <el-col :span="24" style="justify-content: end;display: flex;" >
+                            <!-- <el-button size="mini">导出</el-button> -->
                             <el-button size="mini" @click="add()">评语</el-button>
                             <el-button type="primary" size="mini" @click="print()">打印</el-button>
                         </el-col>
                     </el-row>
+                   
                 </div>
             </el-col>
         </el-row>
-
-        <el-card class="box-card" style="border:0;" shadow="never" v-if="v2Data && detailData">
-            <div slot="header" class="clearfix" style="">
-                <span style="border-left:3px solid #409EFF;padding-left:5px;">基本信息</span>
-            </div>
-            <div  class="text item ">
-                <span class="grid-content bg-purple-dark" style="margin-right:2rem;">
-                    就读学校：<span class="">{{detailData.school_name}}</span>
-                </span>
-                <span class="grid-content bg-purple-dark" style="margin-right:2rem;">
-                    所在班级：<span class="">{{detailData.class_name}}</span>
-                </span>
-               
-            </div>
-        </el-card>
-        <template v-if="childService && Array.isArray(childService) && childService.length > 0 " v-for="(child,index) in childService">
-            <el-card class="box-card" style="border:0;" shadow="never" v-if="child.service_name == 'srvledu_semester_evaluate_labor_task_select'">
-                 <!-- 荣誉墙效果 -->
-                <div slot="header" class="clearfix" style="">
-                    <span style="border-left:3px solid #409EFF;padding-left:5px;">{{child.service_view_name}}</span>
-                </div>
-                <div  class="text item " style="display:flex;flex-wrap: wrap;" v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
-                    <div :style="`text-align:center;background:#e8f3fd;border-radius: 10px;position: relative;margin-right:20px;margin-bottom:16px;box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);padding:8px;`" v-for="(item,index) in child['_load_data']">
-                        <el-image
-                        style="width: 80px; height: 80px"
-                        :src="item.index_icon"
-                        :fit="'fit'"></el-image>
-                        <div style="border-radius: 10px 10px 10px 0;background-color:red;color:#fff;padding:2px 4px;font-size:12px;position: absolute;top: -4px;right: -10px;">{{item.index_cnt ? 'X': ''}}{{item.index_cnt}}</div>
-                        <div style="color:#000;line-height:1.5rem;font-size:0.8rem;color:#000;">{{item.index_name}}</div>
+        <div class="print-layout" style="max-width:1080px;margin:0 auto;"  id="print-layout">
+            <el-row v-if="v2Data && detailData" class="box-card parint-details">
+                <el-col :span="24">
+                    <div style="width:100%;" class="padding-s" :style="``">
+                        
+                        <el-row type="flex" class="row-bg" justify="center">
+                            <el-col :span="24">
+                                <div class="grid-content bg-purple-dark center" style="line-height:8rem;font-size: 2.5rem;text-align:center;">
+                                    {{`学生劳动素质档案` || `学生劳动素质档案`}}
+                                </div>
+                                <div class="grid-content bg-purple-dark center" style="line-height:2rem;font-size: 1.5rem;text-align:center;">
+                                    {{`${detailData.sch_year}学年` || `2023-2024学年`}}
+                                </div>
+                                <div class="grid-content bg-purple-dark center" style="line-height:2rem;font-size: 1.5rem;text-align:center;">
+                                    {{semester || `上学期`}}
+                                </div>
+                            </el-col>
+                        </el-row>
+                        
                     </div>
-                </div>
-            </el-card>
-            <el-card class="box-card" style="border:0;" shadow="never" v-if="child.service_name == 'srvledu_semester_evaluate_task_select'">
-                <!-- 劳动评价指标 -->
+                </el-col>
+            </el-row>
+
+            <el-card class="box-card parint-details" style="border:0;" shadow="never" v-if="v2Data && detailData">
                 <div slot="header" class="clearfix" style="">
-                    <span style="border-left:3px solid #409EFF;padding-left:5px;">{{child.service_view_name}}</span>
-                    <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
+                    <span  style="border-left:3px solid #409EFF;padding-left:5px;font-weight:bold;">基本信息</span>
                 </div>
                 <div  class="text item ">
-                    <el-row :gutter="10" class="text item " v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
-                        <el-col :span="12" :style="`padding:8px;`" >
-                            <el-card class="box-card-evaluate" shadow="never">
-                                <div slot="header" class="clearfix font-weight-bold" style="background:#f7f7f7;">
-                                    <span style="padding-right:20px">{{`${detailData.sch_year}上学期`}}</span>
-                                    <span style="border-left: 1px solid #ddd;padding-left:20px">{{`综合评分`}}
-                                        <span style="color:red;min-width:2rem;font-size:1.4rem;">
-                                            {{child['_load_data'].filter(item => item.semester_str == `${detailData.sch_year}上学期`).reduce((total, num) => total + num.index_score, 0) / child['_load_data'].filter(item => item.semester_str == `${detailData.sch_year}上学期`).length}}
-                                        </span>
-                                    </span>
-                                </div>
-                                <div  class="text item">
-                                    <div v-if="!radarTopImg" class="radarTop" style="width: 100%; height: 300px"></div>
-                                    
-                                    <img v-if="radarTopImg" class="radarTopImg" style="width: 100%; height: 300px" :src="radarTopImg"></img>
-                                </div>
-                            </el-card>
-                        </el-col >
-                        <el-col :span="12" :style="`padding:8px;`">
-                            <el-card class="box-card-evaluate" shadow="never">
-                                <div slot="header" class="clearfix font-weight-bold" style="background:#f7f7f7;">
-                                    <span style="padding-right:20px">{{`${detailData.sch_year}下学期`}}</span>
-                                    <span style="border-left: 1px solid #ddd;padding-left:20px">{{`综合评分`}}
-                                        <span style="color:red;min-width:2rem;font-size:1.4rem;">
-                                            {{child['_load_data'].filter(item => item.semester_str == `${detailData.sch_year}下学期`).reduce((total, num) => total + num.index_score, 0)/child['_load_data'].filter(item => item.semester_str == `${detailData.sch_year}下学期`).length}}
-                                        </span>
-                                    </span>
-                                </div>
-                                <div  class="text item">
-                                    <div v-if="!radarBotImg" class="radarBot" style="width: 100%; height: 300px"></div>
-                                    <img v-if="radarBotImg" class="radarBotImg" style="width: 100%; height: 300px" :src="radarBotImg"></img>
-                                </div>
-                            </el-card>
+                    <el-row >
+                        <el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px; line-height:1.8rem;">
+                                学生姓名：<span class="font-weight-bold">{{detailData.student_name}}</span>
+                            </span>
+                        </el-col>
+                        <el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                                性别：<span class="font-weight-bold">{{detailData.sex}}</span>
+                            </span>
+                        </el-col><el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                                学号：<span class="font-weight-bold">{{detailData.student_no}}</span>
+                            </span>
+                        </el-col><el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                                就读学校：<span class="font-weight-bold">{{detailData.school_name}}</span>
+                            </span>
+                        </el-col><el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                                年级：<span class="font-weight-bold">{{detailData.grade_str}}</span>
+                            </span>
+                        </el-col><el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                                班级：<span class="font-weight-bold">{{detailData.class_seq_str}}</span>
+                            </span>
+                        </el-col><el-col :span="8">
+                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                                报告生产日期：<span class="font-weight-bold">{{nowDateStr}}</span>
+                            </span>
+                        </el-col>
+                    </el-row>
+                
+                </div>
+            </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never">
+                    <!-- 荣誉墙效果 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`荣誉墙`}}</span>
+                    </div>
+                    <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']) && childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].length > 0">
+                        <el-col :span="6" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']" class="font-weight-bold">
+                            <!-- <el-image
+                            style="width: 48px; height: 48px"
+                            :src="item.index_icon"
+                            :fit="'fit'"></el-image> -->
+                            
+                            <div style="color:#000;line-height:1.5rem;min-width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{item.index_name}}</div>
+                            <div style="padding:8px;text-align:left">
+                                <div style="color:#007bff;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1rem;min-width:3rem;" >{{item.index_cnt}}</span></div>
+                            </div>
                         </el-col >
                     </el-row>
-                </div>
-            </el-card>
-            <el-card class="box-card" style="border:0;" shadow="never" v-if="child.service_name == 'srvledu_semester_evaluate_course_select'">
-                <!-- 课程评价 -->
-                <div slot="header" class="clearfix" style="">
-                    <span style="border-left:3px solid #409EFF;padding-left:5px;">{{child.service_view_name}}</span>
-                </div>
-                <el-row :gutter="20" class="text item " v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
-                    <el-col :span="4" :style="`padding:8px;display: flex;align-items: center;text-align:center;background:#f7f7f7;border-radius: 10px;position: relative;margin-right:2%;margin-bottom:16px;box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);`" v-for="(item,index) in child['_load_data']">
-                        <el-image
-                        style="width: 48px; height: 48px"
-                        :src="item.index_icon"
-                        :fit="'fit'"></el-image>
-                        <div style="padding:8px;text-align:left">
-                            <div style="color:#000;line-height:1.5rem;font-size:0.8rem;    white-space: nowrap;">{{item.index_name}}</div>
-                            <div style="color:#000;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1.4rem;min-width:3rem;" class="font-weight-bold">{{item.index_cnt}}</span>次</div>
+                    <!-- <div  class="text item " style="display:flex;flex-wrap: wrap;" v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
+                        <div :style="`text-align:center;background:#e8f3fd;border-radius: 10px;position: relative;margin-right:20px;margin-bottom:16px;box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);padding:8px;`" v-for="(item,index) in child['_load_data']">
+                        
+                            <div style="color:#000;line-height:1.5rem;font-size:0.8rem;color:#000;">{{item.index_name}}</div>
+                            <div style="">{{item.index_cnt ? 'X': ''}}{{item.index_cnt}}</div>
+                            
                         </div>
-                    </el-col >
-                </el-row>
-            </el-card>
-            <el-card class="box-card" style="border:0;" shadow="never" v-if="child.service_name == 'srvledu_semester_comment_select'">
-                <!-- 老师评语 -->
-                <div slot="header" class="clearfix" style="">
-                    <span style="border-left:3px solid #409EFF;padding-left:5px;">{{child.service_view_name}}</span>
-                </div>
-                <el-row :gutter="20" class="text item " :style="`padding:8px;background:#f7f7f7;border-radius: 10px;`" v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
-                    <el-col :span="24" :style="`padding:8px;`" v-for="(item,index) in child['_load_data']">
-                        <div style="padding:8px;text-align:left">
-                            <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}</div>
-                            <div style="color:#000;line-height:1.5rem; font-size:0.9rem;"class="font-weight-bold">{{item.evaluate_comment}}
-                                <!-- <span style="font-size:1.4rem;min-width:3rem;" class="font-weight-bold"></span>次 -->
+                    </div> -->
+                </el-card>
+                
+                <el-card class="box-card parint-details" style="border:0;" shadow="never">
+                    <!-- 课程评价统计 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`课程评价统计`}}</span>
+                    </div>
+                    <!-- <el-row :gutter="20" class="text item " v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
+                        <el-col :span="4" :style="`padding:8px;display: flex;align-items: center;text-align:center;background:#f7f7f7;border-radius: 10px;position: relative;margin-right:2%;margin-bottom:16px;box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);`" v-for="(item,index) in child['_load_data']">
+                            <el-image
+                            style="width: 48px; height: 48px"
+                            :src="item.index_icon"
+                            :fit="'fit'"></el-image>
+                            <div style="padding:8px;text-align:left">
+                                <div style="color:#000;line-height:1.5rem;font-size:0.8rem;    white-space: nowrap;">{{item.index_name}}</div>
+                                <div style="color:#000;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1.4rem;min-width:3rem;" class="font-weight-bold">{{item.index_cnt}}</span>次</div>
                             </div>
-                        </div>
-                    </el-col >
-                </el-row>
-            </el-card>
-            
-        </template>
+                        </el-col >
+                    </el-row> -->
+                    <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_course_select']) && childServiceLoadDatas['srvledu_semester_evaluate_course_select'].length > 0">
+                        <el-col :span="6" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_course_select']" class="font-weight-bold">
+                            <div style="color:#000;line-height:1.5rem;min-width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{item.index_name}}</div>
+                            <div style="padding:8px;text-align:left">
+                                <div style="color:#007bff;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1rem;min-width:3rem;" >{{item.index_cnt}}</span></div>
+                            </div>
+                        </el-col >
+                    </el-row>
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never">
+                    <!-- 劳动任务完成统计 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`完成劳动任务统计`}}</span>
+                        <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
+                    </div>
+                    <div  class="text item ">
+                        <el-row :gutter="10" class="text item " v-if="childServiceLoadDatas" style="border:1px solid #eee;border-radius:10px;display: flex;align-items: center;">
+                            <el-col :span="12" :style="`padding:8px;border:0px solid #eee;`" >
+                                <el-card class="box-card-evaluate" shadow="never" :style="`border:0px solid #eee;`" >
+                                    <!-- 饼图 -->
+                                    <div  class="text item">
+                                        <div v-if="!radarPieImg" class="radarPie" style="width: 100%; height: 300px"></div>
+                                        
+                                        <img v-if="radarPieImg" class="radarPieImg" style="width: 100%; height:auto;" :src="radarPieImg"></img>
+                                    </div>
+                                </el-card>
+                            </el-col >
+                            <el-col :span="12" :style="`padding:8px;height:100%;`" >
+                                <el-card class="" shadow="never" :style="`border:0px solid #eee;`">
+                                    <el-row :gutter="20" class="text item " style="padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']) && childServiceLoadDatas['srvledu_semester_evaluate_task_state_select'].length > 0">
+                                        <el-col :span="24" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:1px solid #eee;justify-content: center;`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']" class="font-weight-bold">
+                                            <div style="color:#000;line-height:1.5rem;width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{`${item.task_state}总数量`}}</div>
+                                            <div style="padding:8px;text-align:left;width:8rem;">
+                                                <div :style="`color:${item.task_state == '未完成' ? 'red' :  '#007bff'};line-height:1.5rem;white-space: nowrap;text-align:right;`">
+                                                    <span style="font-size:1rem;min-width:3rem;" >{{item.task_cnt}}</span>
+                                                </div>
+                                            </div>
+                                        </el-col >
+                                    </el-row>
+                                </el-card>
+                            </el-col >
+                        </el-row>
+                    </div>
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_task_select'])">
+                    <!-- 劳动评价指标 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`劳动评价指标统计`}}</span>
+                        <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
+                    </div>
+                    <div  class="text item ">
+                        <el-row :gutter="10" class="text item " v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_task_select']) && childServiceLoadDatas['srvledu_semester_evaluate_task_select'].length > 0">
+                            <el-col :span="24" :style="`padding:8px;`" >
+                                <el-card class="box-card-evaluate" shadow="never">
+                                    <div slot="header" class="clearfix font-weight-bold" style="background:#f7f7f7;">
+                                        <!-- <span style="padding-right:20px">{{`${detailData.sch_year}上学期`}}</span> -->
+                                        <span style="border-left: 0px solid #ddd;padding-left:20px">{{`综合评分`}}
+                                            <span style="color:#ff5500;min-width:2rem;font-size:1.4rem;">
+                                                {{childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester == `${semester}`).reduce((total, num) => total + num.index_score, 0) / childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester == `${semester}`).length}}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div  class="text item">
+                                        <div v-if="!radarTopImg" class="radarTop" style="width: 100%; height: 300px"></div>
+                                        
+                                        <img v-if="radarTopImg" class="radarTopImg" style="width: 100%; height: auto;" :src="radarTopImg"></img>
+                                    </div>
+                                </el-card>
+                            </el-col >
+                            <!-- <el-col :span="12" :style="`padding:8px;`">
+                                <el-card class="box-card-evaluate" shadow="never">
+                                    <div slot="header" class="clearfix font-weight-bold" style="background:#f7f7f7;">
+                                        <span style="padding-right:20px">{{`${detailData.sch_year}下学期`}}</span>
+                                        <span style="border-left: 1px solid #ddd;padding-left:20px">{{`综合评分`}}
+                                            <span style="color:red;min-width:2rem;font-size:1.4rem;">
+                                                {{child['_load_data'].filter(item => item.semester_str == `${detailData.sch_year}下学期`).reduce((total, num) => total + num.index_score, 0)/child['_load_data'].filter(item => item.semester_str == `${detailData.sch_year}下学期`).length}}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div  class="text item">
+                                        <div v-if="!radarBotImg" class="radarBot" style="width: 100%; height: 300px"></div>
+                                        <img v-if="radarBotImg" class="radarBotImg" style="width: 100%; height: 300px" :src="radarBotImg"></img>
+                                    </div>
+                                </el-card>
+                            </el-col > -->
+                        </el-row>
+                    </div>
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never" >
+                    <!-- 老师评语 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`老师评语`}}</span>
+                    </div>
+                    <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;min-height:150px`" >
+                        <el-col :span="24" :style="`padding:8px;`" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_comment_select']) && childServiceLoadDatas['srvledu_semester_comment_select'].length > 0" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_comment_select']">
+                            <div style="padding:8px;text-align:left">
+                                <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}</div>
+                                <div style="color:#000;line-height:1.5rem; font-size:0.9rem;"class="font-weight-bold">{{item.evaluate_comment}}
+                                    <!-- <span style="font-size:1.4rem;min-width:3rem;" class="font-weight-bold"></span>次 -->
+                                </div>
+                            </div>
+                        </el-col >
+                    </el-row>
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never" >
+                    <!-- 总结评分 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`总结评分`}}</span>
+                    </div>
+                    <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;min-height:60px`" >
+                        <el-col :span="24" :style="`padding:8px;`" >
+                            <div style="padding:8px;text-align:left;display:flex;align-items:center;">
+                                <div style="color:#ff5500;font-size:3rem;">
+                                    {{allValue}}
+                                </div>
+                                <div style="padding-left:10px;">
+                                    <div>
+                                        评分
+                                    </div>
+                                    <div >
+                                        <el-rate
+                                        v-model="allValuestr"
+                                        disabled
+                                        text-color="#ff9900">
+                                        </el-rate>
+                                    </div>
+                                </div>
+                                
+                                <!-- <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}</div>
+                                <div style="color:#000;line-height:1.5rem; font-size:0.9rem;"class="font-weight-bold">{{item.evaluate_comment}}
+                                    <span style="font-size:1.4rem;min-width:3rem;" class="font-weight-bold"></span>次
+                                </div> -->
+                            </div>
+                        </el-col >
+                    </el-row>
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never" v-if="true">
+                    <!-- 报告总结 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`报告总结`}}</span>
+                    </div>
+                    <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;`" >
+                        <el-col :span="24" :style="`padding:8px;`" >
+                            <div style="padding:8px;text-align:left;min-height:150px;">
+                                
+                            </div>
+                        </el-col >
+                    </el-row>
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never" v-if="true">
+                    <!-- 成长建议 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`成长建议`}}</span>
+                    </div>
+                    <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;`" >
+                        <el-col :span="24" :style="`padding:8px;`" >
+                            <div style="padding:8px;text-align:left;min-height:150px;">
+                                
+                            </div>
+                        </el-col >
+                    </el-row>
+                </el-card>
+        </div>
+       
         <el-dialog class="customDialogClass" title="添加" width="90%" :close-on-click-modal="1 == 2" append-to-body
         :visible="activeForm == 'add'" @close="activeForm = 'xx'">
         <add name="list-add" :mainService="serviceName" ref="add-form" v-if="activeForm == 'add'" :service="getAddService"
@@ -172,9 +314,11 @@
   import bgimg from './titlebg.jpg';
   import * as echarts from "echarts";
 import { onMounted, ref, watch } from "vue";
-
+   
+import htmlPdf from './pdf.js';
 var chartTop=null;
 var chartBot=null;
+var chartPie=null;
 
 
   export default {
@@ -188,9 +332,13 @@ var chartBot=null;
   
     data() {
       return {
+        title:'学生成长档案',
+        allValuestr:0,
+        semester:'',
         getAddService:'srvledu_semester_comment_add',
         radarTopImg:'',
         radarBotImg:'',
+        radarPieImg:'',
         activeForm:null,
         bgImgUrl:bgimg,
         srvApp:null,
@@ -204,6 +352,10 @@ var chartBot=null;
         childService:null,
         chartTags:['上学期','下学期'],
         childSrvLoaded:false,
+        taskTypeSum:null,
+        taskTypeState:null,
+        childServiceNames:['srvledu_semester_evaluate_task_type_select','srvledu_semester_evaluate_task_state_select','srvledu_semester_evaluate_task_select','srvledu_semester_comment_select','srvledu_semester_evaluate_course_select','srvledu_semester_evaluate_labor_task_select'],
+        childServiceLoadDatas:{},
         option:{
             // title: {
             //   text: "ECharts 入门示例",
@@ -227,18 +379,32 @@ var chartBot=null;
       };
     },
   computed:{
-     
+     nowDateStr(){
+        let str = new Date().toLocaleDateString()
+        return str
+     },
+     allValue(){
+        let value = 0
+        if(this.childServiceLoadDatas && this.childServiceLoadDatas['srvledu_semester_evaluate_task_select']){
+            value = this.childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester && item.semester == `${this.semester}`).reduce((total, num) => total + num.index_score, 0) / this.childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester == `${this.semester}`).length;
+        }
+        this.$set(this,'allValuestr',value)
+        return value
+    }
   },
   created: function () {
   },
 
   mounted: function () {
-        if(this.$route.query && this.$route.query.srvApp){
-            this.srvApp = this.$route.query.srvApp
+        if(this.$route.query){
+            this.srvApp = this.$route.query.srvApp || ''
+            this.semester = this.$route.query.semester || ''
             
         }
-        this.radarBotImg = ''
-                        this.radarTopImg = ''
+        
+        this.$set(this,'radarTopImg','')
+        this.$set(this,'radarBotImg','')
+        this.$set(this,'radarPieImg','')
         this.$nextTick(() => {
             this.initData()
         })
@@ -291,19 +457,29 @@ var chartBot=null;
                             // console.error('this.service_name2',response.body,response.response)
                             let detailData = response.body;
                             this.$set(this,'detailData',response.body)
-                            document.title = `${detailData.student_no}-${detailData.student_name}-${new Date().toLocaleDateString()}`;
+                            let title = `${detailData.student_no}-${detailData.student_name}-${new Date().toLocaleDateString()}`;
+                            this.title = title
+                            document.title = title
                             // this.detailData = response.body;
                             // 保存详情数据
+                            if(Array.isArray(this.childServiceNames) && this.childServiceNames.length > 0){
+                                // 静态需要查询的 服务数据队列
+                                for(let cSrv of this.childServiceNames){
+                                    this.getTaskCountListData(cSrv)
+                                    
+                                }
+                            }
                             
                         }
                     });
+                    
+                    
                     if(!this.v2Data){
                         await this.loadColsV2(this.serviceName, "detail",this.srvApp,this.serviceName).then(response => {
                             // 查询v2
                             this.v2Data = response.body.data;
                             this.v2Cols = response.body.data["srv_cols"];
                             childList = response.body.data["child_service"];
-                            
                             if(Array.isArray(childList) && childList.length > 0){
                                 this.childService = []
                                 for (let item of childList) {
@@ -337,7 +513,7 @@ var chartBot=null;
                                 }
                                 this.childSrvLoaded = true
                                 for(let item of this.childService){
-                                    this.getListData(item)
+                                    // this.getListData(item)
                                 }
                             }
                             
@@ -345,7 +521,7 @@ var chartBot=null;
                         });
                     }else{
                         for(let item of this.childService){
-                                    this.getListData(item)
+                                    // this.getListData(item)
                                 }
                     }
                     
@@ -368,6 +544,10 @@ var chartBot=null;
                 colName:'student_no',
                 ruleType:"eq",
                 value:this.detailData.student_no
+            },{
+                colName:'semester',
+                ruleType:"eq",
+                value:this.semester
             }]
             
             await this.select(
@@ -390,6 +570,7 @@ var chartBot=null;
                     let data = response.body.data;
                     if(response.body.state == 'SUCCESS' && Array.isArray(data) && data.length > 0){
                         this.$set(child,'_load_data',data)
+                        this.$set(this.childServiceLoadDatas,srv,data)
                         if(srv == 'srvledu_semester_evaluate_task_select'){
                             // 如果是劳动评价，处理雷达图
                             
@@ -405,24 +586,167 @@ var chartBot=null;
                 }
             });
         },
+        async getTaskCountListData(s){
+            // 单独查询 4、完成劳动任务统计
+            let self = this
+            let srv = s || 'srvledu_semester_evaluate_task_type_select'
+            let app = 'ledu'
+            let condition = [{
+                colName:'sch_year',
+                ruleType:"eq",
+                value:this.detailData.sch_year
+            },{
+                colName:'student_no',
+                ruleType:"eq",
+                value:this.detailData.student_no
+            },{
+                colName:'semester',
+                ruleType:"eq",
+                value:this.semester
+            }]
+            
+            await this.select(
+                srv,
+                condition,
+                {
+                "pageNo": 1,
+                "rownumber": 999
+                }, [],
+                null,
+                null,
+                app
+            ).then(response => {
+                
+                // console.log('srvAuthKey',srvAuthKey,response.body)
+                if(response.body.resultCode == '0111'){
+                
+                    
+                }else{
+                    let data = response.body.data;
+                    if(response.body.state == 'SUCCESS' && Array.isArray(data) && data.length > 0){
+                        
         
+                        self.$set(self.childServiceLoadDatas,srv,data);
+                         self.$nextTick(() => {
+                                if(this.childServiceLoadDatas && self.childServiceLoadDatas['srvledu_semester_evaluate_task_state_select'] && self.childServiceLoadDatas['srvledu_semester_evaluate_task_type_select']){
+                                    // 如果是饼图业务加载饼图
+                                   
+                                
+                                    self.buildPieChart()
+                                        
+                                
+                                }
+                                if(srv == 'srvledu_semester_evaluate_task_select'){
+                                    // 如果是劳动评价，处理雷达图
+                                    this.buildChart(data)
+                                }
+                               
+                         })
+                    }
+                    
+                    
+                }
+            });
+        },
+        buildPieChart(initData){
+            // 单独加载 完成劳动任务统计的 饼图
+            initData = this.childServiceLoadDatas['srvledu_semester_evaluate_task_type_select'] || []
+            let data = initData.map(item => {
+                let obj = {
+                    name:item.task_type,
+                    value:item.task_cnt
+                }
+                return obj
+            })
+            let completionRate = 0.0
+            if(this.childServiceLoadDatas && this.childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']){
+                let list = this.childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']
+                let isCompletion = 0
+                let allNum = 0
+
+                if(Array.isArray(list)){
+                    for(let item of list){
+                        if(item.task_state == '已完成'){
+                            isCompletion = item.task_cnt
+                        }
+                        allNum += item.task_cnt
+                    }
+                }
+                completionRate = isCompletion/allNum
+                console.log(completionRate.toFixed(2),isCompletion,allNum)
+            }
+            let options =  { 
+                title : {
+                    show:true,//显示策略，默认值true,可选为：true（显示） | false（隐藏）
+                    text: `${completionRate.toFixed(2)}%`,//主标题文本，'\n'指定换行
+                    subtext: '完成率',//副标题文本，'\n'指定换行
+                    x:'50%',//水平安放位置，默认为'left'，可选为：'center' | 'left' | 'right' | {number}（x坐标，单位px）
+                    y: '45%',//垂直安放位置，默认为top，可选为：'top' | 'bottom' | 'center' | {number}（y坐标，单位px）
+                    textAlign: 'center',//水平对齐方式，默认根据x设置自动调整，可选为： left' | 'right' | 'center
+                    backgroundColor: 'rgba(0,0,0,0)',//标题背景颜色，默认'rgba(0,0,0,0)'透明
+                    borderColor: '#ccc',//标题边框颜色,默认'#ccc'
+                    borderWidth: 0,//标题边框线宽，单位px，默认为0（无边框）
+                    padding: 5,//标题内边距，单位px，默认各方向内边距为5，接受数组分别设定上右下左边距
+                    itemGap: 5,//主副标题纵向间隔，单位px，默认为10
+                    textStyle: {//主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+                        "fontSize": 24,
+                        "color": "#007bff"
+                    },
+                    subtextStyle: {//副标题文本样式{"color": "#aaa"}
+                        "fontSize": 16,
+                        "color": "#333"
+                    },
+                    zlevel: 0,//一级层叠控制。默认0,每一个不同的zlevel将产生一个独立的canvas，相同zlevel的组件或图标将在同一个canvas上渲染。zlevel越高越靠顶层，canvas对象增多会消耗更多的内存和性能，并不建议设置过多的zlevel，大部分情况可以通过二级层叠控制z实现层叠控制。
+                    z: 6,//二级层叠控制，默认6,同一个canvas（相同zlevel）上z越高约靠顶层。
+                },
+                tooltip:{
+                    formatter: "{b} : {c} ({d}%)" // 鼠标悬停tip 显示内容格式
+                },
+                toolbox: { 
+                    // feature: { saveAsImage: {}, },
+                    
+                }, 
+                color: ['#007bff', '#14d0db', '#28a745', '#ef6567', '#f9c956', '#75bedc'],
+                // 饼图颜色序列
+                series: [ 
+                    { 
+                        type: 'pie', 
+                        data: this.bxDeepClone(data), 
+                        radius: ['50%', '70%'], // 环形内外径
+                        itemStyle: {
+                            normal:{
+                                label:{
+                                    show:true,
+                                    formatter: "{b} :\n  {c}({d}%)",
+                                    // 项目label 内容格式化
+                                }
+                            }
+                        }
+                    }, 
+                ], 
+            }; 
+            
+            console.log(options,document,document.querySelector(".radarPie"))
+            chartPie = echarts.init(document.querySelector(".radarPie"));
+            console.log(options,chartPie)
+            chartPie.setOption(options);
+            // 当我们浏览器缩放的时候，图表也等比例缩放
+            window.addEventListener("resize", function () {
+                // 让我们的图表调用 resize这个方法
+                chartPie.resize();
+            });
+        },
         buildChart(data){
             // 基于准备好的dom，初始化echarts实例
             let loadAllData = data
             let tags = this.chartTags
             chartTop = echarts.init(document.querySelector(".radarTop"));
-                                chartBot = echarts.init(document.querySelector(".radarBot"));
+                                // chartBot = echarts.init(document.querySelector(".radarBot"));
             console.log(chartTop,chartBot,loadAllData)
-            // myChart = echarts.init(document.getElementById(props.index));
-            // setChartOption(props.chartOption, myChart);
-            // setTimeout(() => {
-            // myChart.resize();
-                
-            // }, 500);
-            let topMaxData = loadAllData.filter(item => item.semester_str == `${this.detailData.sch_year}上学期`)
-            let topData = loadAllData.filter(item => item.semester_str == `${this.detailData.sch_year}上学期`)
-            let botMaxData = loadAllData.filter(item => item.semester_str == `${this.detailData.sch_year}下学期`)
-            let botData = loadAllData.filter(item => item.semester_str == `${this.detailData.sch_year}下学期`)
+            let topMaxData = loadAllData.filter(item => item.semester == `${this.semester}`)
+            let topData = loadAllData.filter(item => item.semester == `${this.semester}`)
+            // let botMaxData = loadAllData.filter(item => item.semester_str == `${this.detailData.sch_year}下学期`)
+            // let botData = loadAllData.filter(item => item.semester_str == `${this.detailData.sch_year}下学期`)
             topMaxData = topData.map(item => {
                 let obj = {
                     name:item.index_name,
@@ -431,15 +755,15 @@ var chartBot=null;
                 return obj
             })
             topData=topData.map(item => item.index_score ? item.index_score : 0 )
-            botMaxData = botData.map(item => {
-                let obj = {
-                    name:item.index_name,
-                    max:5,
-                }
-                return obj
-            })
-            botData=botData.map(item => item.index_score ? item.index_score : 0 )
-            console.log(topData,botData)
+            // botMaxData = botData.map(item => {
+            //     let obj = {
+            //         name:item.index_name,
+            //         max:5,
+            //     }
+            //     return obj
+            // })
+            // botData=botData.map(item => item.index_score ? item.index_score : 0 )
+            // console.log(topData,botData)
 
             var option = {
                 // backgroundColor: "#161627",
@@ -520,17 +844,17 @@ var chartBot=null;
             let topOption = this.bxDeepClone(option)
             topOption.radar.indicator = topMaxData
             topOption.series[0].data = [topData]
-            let  botOption = this.bxDeepClone(option)
-            botOption.radar.indicator = botMaxData
-            botOption.series[0].data = [botData]
+            // let  botOption = this.bxDeepClone(option)
+            // botOption.radar.indicator = botMaxData
+            // botOption.series[0].data = [botData]
             
             chartTop.setOption(topOption);
-            chartBot.setOption(botOption);
+            // chartBot.setOption(botOption);
             // 当我们浏览器缩放的时候，图表也等比例缩放
             window.addEventListener("resize", function () {
                 // 让我们的图表调用 resize这个方法
                 chartTop.resize();
-                chartBot.resize();
+                // chartBot.resize();
             });
         },
         exportImg(myChart,id) {
@@ -547,16 +871,56 @@ var chartBot=null;
         },
         print(){
             // 吊起浏览器打印
-            this.$set(this,'radarBotImg',this.exportImg(chartBot,'radarBotImg'))
+            // this.$set(this,'radarBotImg',this.exportImg(chartBot,'radarBotImg'))
             this.$set(this,'radarTopImg',this.exportImg(chartTop,'radarTopImg'))
+            this.$set(this,'radarPieImg',this.exportImg(chartPie,'radarPieImg'))
             // 图表转canvas 保存图片
             this.$nextTick(() => {
-                setTimeout(" window.print()",200);
-                // window.print()
+                // setTimeout(" window.print()",200);
+                
+
+                
                
             })
+            this.exportPDF()
             
-            setTimeout("window.location.reload()",1000);
+            
+        },
+        async exportPDF() {
+        // 获取要导出的Vue组件
+            // const vueComponent = document.querySelector('.pdf-review')
+            // // 使用html2canvas将Vue组件渲染为图片
+            // const canvas = await html2canvas(vueComponent)
+            // // 创建新的jsPDF文档
+            // const pdf = new jsPDF('p', 'mm', 'a4')
+            // // 将渲染的图片添加到PDF文档中
+            // pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298)
+            // // 下载PDF文件
+            // pdf.save('my-pdf-document.pdf')
+                var TypeName = this.title;
+                const lableList = document.getElementsByClassName('parint-details');   // 注意这一句
+                console.log(lableList)
+                htmlPdf(TypeName, document.querySelector('#print-layout'), lableList).then(res => {
+                    if(res){
+                        // 导出PDF提示
+                        this.$message({
+                            type: 'success',
+                            message: '已开始下载pdf，请在浏览器下载记录查看下载结果!'
+                        });
+                        // this.$set(this,'radarTopImg','')
+                        // this.$set(this,'radarBotImg','')
+                        // this.$set(this,'radarPieImg','')
+                        // this.$nextTick(() => {
+                        //     this.initData()
+                        // })
+                        if(this.radarPieImg && this.radarTopImg){
+                            // setTimeout("window.location.reload()",1000);
+                        }
+                       
+                    }
+                });
+            
+  
         },
         add(){
             // this.getAddService = this.v2Data 
@@ -592,7 +956,7 @@ var chartBot=null;
     }
     .print-layout{
         -webkit-print-color-adjust: exact;
-print-color-adjust: exact;
+        print-color-adjust: exact;
         width:100vw !important;
     }
 }
@@ -607,6 +971,11 @@ print-color-adjust: exact;
         background:#f7f7f7 !important;
     }
   }
+  .box-card > .el-card__header {
+    padding: 10px 10px;
+    border-bottom:0;
+    background: #e9f5ff !important;
+}
   
 
   </style>
