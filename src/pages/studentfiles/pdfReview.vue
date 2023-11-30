@@ -63,6 +63,7 @@ import htmlPdf from './pdf.js';
             return handers
         },
         listCondition(){
+             
              let condition = [{
                 colName:'estimate_no',
                 ruleType:'eq',
@@ -74,6 +75,7 @@ import htmlPdf from './pdf.js';
              return condition
         },
         childListHander(){
+            // 子表表头
              let cols = this.listV2Data ? this.listV2Data.srv_cols : []
              if(Array.isArray(cols) && cols.length > 0){
                 cols = cols.filter( item => item['in_list'] == 1)
@@ -81,6 +83,7 @@ import htmlPdf from './pdf.js';
              return cols
         },
         childDataList(){
+            // 子表数据
              let list = this.childService ? this.childService[0] : null
              if(list && list.hasOwnProperty('_load_data')){
                 list = list['_load_data']
@@ -88,6 +91,7 @@ import htmlPdf from './pdf.js';
              return list
         },
         childDataTitles(){
+            // 序号合并行的 标题
              let list = this.childDataList ? this.bxDeepClone(this.childDataList) : []
              let titles = []
              if(Array.isArray(list) && list.length > 0){
@@ -147,6 +151,7 @@ import htmlPdf from './pdf.js';
     },
     methods: {
         getColspan(e,i){
+            // 计算 标题合并行 输出 相同数量和 所在行数，
             let key = e.estimate_no
             let rowspan = 1
             let index = 0
@@ -166,6 +171,7 @@ import htmlPdf from './pdf.js';
             return {rowspan,index}
         },
         async initData() {
+            // 加载基础数据
             var condition = [];
             var me = this;
             let childList = null
@@ -340,6 +346,7 @@ import htmlPdf from './pdf.js';
                 const lableList = document.getElementsByClassName('pdf-details');   // 注意这一句
                 htmlPdf(TypeName, document.querySelector('#pdf-layout'), lableList).then(res => {
                     if(res){
+                        // 导出PDF提示
                         this.$message({
                             type: 'success',
                             message: '已开始下载pdf，请在浏览器下载记录查看下载结果!'
