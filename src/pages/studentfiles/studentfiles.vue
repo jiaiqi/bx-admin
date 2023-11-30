@@ -1,12 +1,12 @@
 <template>
-    <el-main style="border: 1px solid #eee;width:100%;">
-        <el-row v-if="v2Data && detailData" class="print">
+    <el-main style="border: 1px solid #eee;width:100%;" id="print-layout">
+        <el-row  class=" parint-details" style="position: absolute;right: 10%;z-index:999;">
             <el-col :span="24">
                 <div style="width:100%;" class="padding-s" :style="``">
                     <!-- background-image: url(${bgImgUrl});background-size: contain; -->
                     <el-row type="flex" class="row-bg" justify="space-between">
                         
-                        <el-col :span="24" style="justify-content: end;display: flex;" >
+                        <el-col :span="24" style="justify-content: end;display: flex;"  v-if="showAction">
                             <!-- <el-button size="mini">导出</el-button> -->
                             <el-button size="mini" @click="add()">评语</el-button>
                             <el-button type="primary" size="mini" @click="print()">打印</el-button>
@@ -16,20 +16,20 @@
                 </div>
             </el-col>
         </el-row>
-        <div class="print-layout" style="max-width:1080px;margin:0 auto;"  id="print-layout">
-            <el-row v-if="v2Data && detailData" class="box-card parint-details">
+        <div  style="margin:0 auto;" >
+            <el-row v-if="v2Data && detailData" class="box-card parint-details" style="padding:0 10px;">
                 <el-col :span="24">
-                    <div style="width:100%;" class="padding-s" :style="``">
+                    <div style="width:100%;" class="padding-s" :style="`font-family:'宋体';`">
                         
                         <el-row type="flex" class="row-bg" justify="center">
                             <el-col :span="24">
-                                <div class="grid-content bg-purple-dark center" style="line-height:8rem;font-size: 2.5rem;text-align:center;">
+                                <div class="grid-content bg-purple-dark center" style="line-height:6rem;font-size: 2.5rem;text-align:center;">
                                     {{`学生劳动素质档案` || `学生劳动素质档案`}}
                                 </div>
-                                <div class="grid-content bg-purple-dark center" style="line-height:2rem;font-size: 1.5rem;text-align:center;">
+                                <div class="grid-content bg-purple-dark center" style="line-height:1.5rem;font-size: 1rem;text-align:center;">
                                     {{`${detailData.sch_year}学年` || `2023-2024学年`}}
                                 </div>
-                                <div class="grid-content bg-purple-dark center" style="line-height:2rem;font-size: 1.5rem;text-align:center;">
+                                <div class="grid-content bg-purple-dark center" style="line-height:2rem;font-size: 1rem;text-align:center;">
                                     {{semester || `上学期`}}
                                 </div>
                             </el-col>
@@ -46,32 +46,32 @@
                 <div  class="text item ">
                     <el-row >
                         <el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px; line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px;">
                                 学生姓名：<span class="font-weight-bold">{{detailData.student_name}}</span>
                             </span>
                         </el-col>
                         <el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
                                 性别：<span class="font-weight-bold">{{detailData.sex}}</span>
                             </span>
                         </el-col><el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
                                 学号：<span class="font-weight-bold">{{detailData.student_no}}</span>
                             </span>
                         </el-col><el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
                                 就读学校：<span class="font-weight-bold">{{detailData.school_name}}</span>
                             </span>
                         </el-col><el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
                                 年级：<span class="font-weight-bold">{{detailData.grade_str}}</span>
                             </span>
                         </el-col><el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
                                 班级：<span class="font-weight-bold">{{detailData.class_seq_str}}</span>
                             </span>
                         </el-col><el-col :span="8">
-                            <span class="grid-content bg-purple-dark" style="margin-right:10px;line-height:1.8rem;">
+                            <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
                                 报告生产日期：<span class="font-weight-bold">{{nowDateStr}}</span>
                             </span>
                         </el-col>
@@ -140,12 +140,12 @@
                         <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
                     </div>
                     <div  class="text item ">
-                        <el-row :gutter="10" class="text item " v-if="childServiceLoadDatas" style="border:1px solid #eee;border-radius:10px;display: flex;align-items: center;">
-                            <el-col :span="12" :style="`padding:8px;border:0px solid #eee;`" >
+                        <el-row :gutter="10" class="text item " v-if="childServiceLoadDatas" style="margin:0; border:1px solid #eee;border-radius:10px;display: flex;align-items: center;">
+                            <el-col :span="12" :style="`border:0px solid #eee;`" >
                                 <el-card class="box-card-evaluate" shadow="never" :style="`border:0px solid #eee;`" >
                                     <!-- 饼图 -->
                                     <div  class="text item">
-                                        <div v-if="!radarPieImg" class="radarPie" style="width: 100%; height: 300px"></div>
+                                        <div v-if="!radarPieImg" class="radarPie" style="width: 100%; height: 220px"></div>
                                         
                                         <img v-if="radarPieImg" class="radarPieImg" style="width: 100%; height:auto;" :src="radarPieImg"></img>
                                     </div>
@@ -176,7 +176,7 @@
                     </div>
                     <div  class="text item ">
                         <el-row :gutter="10" class="text item " v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_task_select']) && childServiceLoadDatas['srvledu_semester_evaluate_task_select'].length > 0">
-                            <el-col :span="24" :style="`padding:8px;`" >
+                            <el-col :span="24" :style="``" >
                                 <el-card class="box-card-evaluate" shadow="never">
                                     <div slot="header" class="clearfix font-weight-bold" style="background:#f7f7f7;">
                                         <!-- <span style="padding-right:20px">{{`${detailData.sch_year}上学期`}}</span> -->
@@ -332,6 +332,7 @@ var chartPie=null;
   
     data() {
       return {
+        showAction:true,
         title:'学生成长档案',
         allValuestr:0,
         semester:'',
@@ -417,6 +418,12 @@ var chartPie=null;
   
     methods: {
         async initData() {
+            this.showAction = true
+            let divs = document.querySelector('.divRemove')
+            if(divs){
+                divs.remove()
+            }
+                               
             var condition = [];
             var me = this;
             let childList = null
@@ -678,14 +685,14 @@ var chartPie=null;
                     backgroundColor: 'rgba(0,0,0,0)',//标题背景颜色，默认'rgba(0,0,0,0)'透明
                     borderColor: '#ccc',//标题边框颜色,默认'#ccc'
                     borderWidth: 0,//标题边框线宽，单位px，默认为0（无边框）
-                    padding: 5,//标题内边距，单位px，默认各方向内边距为5，接受数组分别设定上右下左边距
+                    padding: 0,//标题内边距，单位px，默认各方向内边距为5，接受数组分别设定上右下左边距
                     itemGap: 5,//主副标题纵向间隔，单位px，默认为10
                     textStyle: {//主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
-                        "fontSize": 24,
+                        "fontSize": 18,
                         "color": "#007bff"
                     },
                     subtextStyle: {//副标题文本样式{"color": "#aaa"}
-                        "fontSize": 16,
+                        "fontSize": 12,
                         "color": "#333"
                     },
                     zlevel: 0,//一级层叠控制。默认0,每一个不同的zlevel将产生一个独立的canvas，相同zlevel的组件或图标将在同一个canvas上渲染。zlevel越高越靠顶层，canvas对象增多会消耗更多的内存和性能，并不建议设置过多的zlevel，大部分情况可以通过二级层叠控制z实现层叠控制。
@@ -704,7 +711,7 @@ var chartPie=null;
                     { 
                         type: 'pie', 
                         data: this.bxDeepClone(data), 
-                        radius: ['50%', '70%'], // 环形内外径
+                        radius: ['40%', '55%'], // 环形内外径
                         itemStyle: {
                             normal:{
                                 label:{
@@ -866,17 +873,13 @@ var chartPie=null;
             // this.$set(this,'radarBotImg',this.exportImg(chartBot,'radarBotImg'))
             this.$set(this,'radarTopImg',this.exportImg(chartTop,'radarTopImg'))
             this.$set(this,'radarPieImg',this.exportImg(chartPie,'radarPieImg'))
+            this.$set(this,'showAction',false)
             // 图表转canvas 保存图片
             this.$nextTick(() => {
                 // setTimeout(" window.print()",200);
                 
-
-                
-               
+                this.exportPDF()
             })
-            this.exportPDF()
-            
-            
         },
         async exportPDF() {
         // 获取要导出的Vue组件
@@ -905,8 +908,15 @@ var chartPie=null;
                         // this.$nextTick(() => {
                         //     this.initData()
                         // })
+                        
                         if(this.radarPieImg && this.radarTopImg){
-                            setTimeout("window.location.reload()",1000);
+                            this.radarPieImg = ''
+                            this.radarTopImg = ''
+                            
+                            this.$nextTick(() => {
+                                
+                                this.initData()
+                            })
                         }
                        
                     }
@@ -959,8 +969,11 @@ var chartPie=null;
   }
   .box-card-evaluate{
     >.el-card__header{
-        padding:10px 10px;
+        padding:0;
         background:#f7f7f7 !important;
+    }
+    >.el-card__body{
+        padding:0 !important;
     }
   }
   .box-card > .el-card__header {
@@ -968,7 +981,13 @@ var chartPie=null;
     border-bottom:0;
     background: #e9f5ff !important;
 }
-  
+  .student-info{
+    line-height:2.6rem !important;
+    >span{
+        line-height:2.6rem !important;
+    }
+    
+  }
 
   </style>
   
