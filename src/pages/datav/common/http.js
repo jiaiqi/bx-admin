@@ -3,8 +3,9 @@ import { Message } from "element-ui"; // 引入elementUI的Message组件
 let bx_auth_ticket = "";
 // let baseURL = window.backendIpAddr || `http://192.168.0.157:8104`;
 // let baseURL = window.backendIpAddr || `https://srvms.100xsys.cn`;
-let baseURL = window.backendIpAddr || `https://wx.100xsys.cn`;
-const devTicket = 'xabxdzkj-b43a7557-f925-4a2b-a307-9ca0bf369f73'
+let baseURL = window.backendIpAddr || `https://xxld.100xsys.cn`;
+// let baseURL = window.backendIpAddr || `https://wx.100xsys.cn`;
+const devTicket = 'xabxdzkj-f23315f5-ef5b-4647-94df-49ed0f865c20'
 console.log( process.env.NODE_ENV);
 if (top?.pathConfig?.gateway) {
   baseURL = top?.pathConfig?.gateway;
@@ -72,8 +73,8 @@ $axios.interceptors.response.use(
         //   type: "error",
         // });
         if (response.data.resultCode == "0011") {
-          sessionStorage.clear()
-          localStorage.clear()
+          // sessionStorage.clear()
+          // localStorage.clear()
           if (getRootWindow()?.layer) {
             var login_page = "/main/login.html";
             try {

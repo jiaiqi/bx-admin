@@ -53,6 +53,8 @@ const chartType = computed(() => {
       break;
     case "饼图":
       chartType = "pie";
+    case "环图":
+      chartType = "ring";
       break;
     case "雷达图":
       chartType = "radar";

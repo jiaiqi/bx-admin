@@ -272,13 +272,14 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
       ];
       break;
     case "pie":
+    case "ring":
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
           name: seriesName[sIndex], // 名称
           type: "pie", // 类型 饼图
           //   color: color,
-          radius: ["45%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
+          // radius: ["45%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
           center: ["35%", "50%"], // 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
           // roseType: "area", // 是否展示成南丁格尔图，通过半径区分数据大小
           itemStyle: {
@@ -297,6 +298,9 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
           },
           data: [],
         };
+        if(type==='ring'){
+          series.radius = ['50%', '55%'];
+        }
         for (let data of datas) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
@@ -404,18 +408,6 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
           },
         ],
       };
-      // for (let sIndex in seriesName) {
-      // 	let dataColName = seriesValueCols[sIndex]
-      // 	let series = {
-      // 		name: seriesName[sIndex],
-      // 		data: [],
-      // 		type: this.chartType,
-      // 	}
-      // 	option['legend']['data'].push(seriesName[sIndex])
-      // 	option['series'].push(series)
-      // }
-      // option['xAxis']['data'].push('')
-      // option['xAxis']['data'] = [...new Set(option['xAxis']['data'])]
       break;
     case "map":
       ecOptions.series = [
@@ -573,6 +565,182 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       break;
     case "pie":
       break;
+    case "ring":
+      option.legend = {
+        show: false,
+      };
+      console.log(chartJson);
+      var scale = 1;
+      var scaleData = [
+        {
+          name: "工程建设",
+          value: 10,
+        },
+        {
+          name: "产权交易",
+          value: 10,
+        },
+        {
+          name: "土地交易",
+          value: 10,
+        },
+        {
+          name: "其他交易",
+          value: 10,
+        },
+        {
+          name: "土地交易",
+          value: 10,
+        },
+        {
+          name: "其他交易",
+          value: 10,
+        },
+      ];
+      var total = scaleData.reduce((pre, cur) => {
+        return pre + cur.value;
+      }, 0);
+      var rich = {
+        total: {
+          color: "#ffc72b",
+          fontSize: 40 * scale,
+          align: "center",
+        },
+        white: {
+          color: "#ddd",
+          align: "center",
+          padding: [3, 0],
+        },
+      };
+      // let title = `{total|${total}\r\n${
+      //   chartJson?.ring_sum_label || "总考生数"
+      // }`;
+      const title = chartJson?.ring_sum_label || "总考生数";
+      option.title = {
+        text: title,
+        left: "center",
+        top: "35%",
+        padding: [24, 0],
+        textStyle: {
+          color: "#fff",
+          fontSize: 18 * scale,
+          align: "center",
+        },
+      };
+
+      // option.legend = {
+      //   selectedMode: false,
+      //   formatter: function (name) {
+      //     var total = 0;
+      //     scaleData.forEach(function (value, index, array) {
+      //       total += value.value;
+      //     });
+      //     return "{total|" + total + "}";
+      //   },
+      //   data: [scaleData[0].name],
+      //   // data: ['高等教育学'],
+      //   // itemGap: 50,
+      //   left: "center",
+      //   top: "center",
+      //   icon: "none",
+      //   align: "center",
+      //   textStyle: {
+      //     color: "#fff",
+      //     fontSize: 16 * scale,
+      //     rich: {
+      //       total: {
+      //         color: "#ffc72b",
+      //         fontSize: 40 * scale,
+      //         align: "center",
+      //       },
+      //     },
+      //   },
+      // };
+
+      var placeHolderStyle = {
+        normal: {
+          label: {
+            show: false,
+          },
+          labelLine: {
+            show: false,
+          },
+          color: "rgba(0, 0, 0, 0)",
+          borderColor: "rgba(0, 0, 0, 0)",
+          borderWidth: 0,
+        },
+      };
+      var data = [];
+      var color = [
+        "#00ffff",
+        "#00cfff",
+        "#006ced",
+        "#ffe000",
+        "#ffa800",
+        "#ff5b00",
+        "#ff3000",
+      ];
+      for (var i = 0; i < scaleData.length; i++) {
+        data.push(
+          {
+            value: scaleData[i].value,
+            name: scaleData[i].name,
+            itemStyle: {
+              normal: {
+                borderWidth: 5,
+                shadowBlur: 20,
+                borderColor: color[i],
+                shadowColor: color[i],
+              },
+            },
+          },
+          {
+            value: 2,
+            name: "",
+            itemStyle: placeHolderStyle,
+          }
+        );
+      }
+      option.series = [
+        {
+          name: "",
+          type: "pie",
+          clockWise: false,
+          radius: ['50%', '55%'],
+          hoverAnimation: false,
+          itemStyle: {
+            normal: {
+              label: {
+                show: true,
+                position: "outside",
+                color: "#ddd",
+                formatter: function (params) {
+                  var percent = 0;
+                  var total = 0;
+                  for (var i = 0; i < scaleData.length; i++) {
+                    total += scaleData[i].value;
+                  }
+                  percent = ((params.value / total) * 100).toFixed(0);
+                  if (params.name !== "") {
+                    return params.name + "\n{white|" + "占比" + percent + "%}";
+                  } else {
+                    return "";
+                  }
+                },
+                rich: rich,
+              },
+              labelLine: {
+                length: 30,
+                length2: 100,
+                show: true,
+                color: "#00ffff",
+              },
+            },
+          },
+          data: data,
+        },
+      ];
+      break;
     case "map":
       if (chartJson?.map_base_geojson && eCharts) {
         eCharts.registerMap("mapName", chartJson?.map_base_geojson);
@@ -588,4 +756,123 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       break;
   }
   return option;
+};
+
+export const setCustomLayerMapOption = (data) => {
+  let itemArr = [];
+  if (data && Array.isArray(data)) {
+    data = JSON.parse(JSON.stringify(data));
+    let datas = data.map((d, i) => {
+      if (item.chart_settings?.appName) {
+        d.appName = item.chart_settings?.appName;
+      }
+      if (d.lon_width && d.lat_height) {
+        d.chart_width =
+          (parseFloat(d.lon_width) *
+            parseFloat(self.contentData.dashboard_width)) /
+          parseFloat(gis_info_cfg.width_lon);
+        d.chart_height =
+          (parseFloat(d.lat_height) *
+            parseFloat(self.contentData.dashboard_height)) /
+          parseFloat(gis_info_cfg.height_lat);
+        d.chart_left = 0;
+        d.chart_top = 0;
+      }
+      d.use_flag = item.use_flag;
+      if (d.use_flag === "否") {
+      }
+      d.z_order = item.z_order;
+      d.objType = item.chart_settings.type;
+      d.targetParams = item.chart_settings.targetParams;
+      d.targetUrl = item.chart_settings.targetUrl;
+      d.chart_type = item.chart_type;
+      d.showTitle = item.chart_settings.showTitle;
+      d.titleCol = item.chart_settings.titleCol;
+      d.titleColor = item.chart_settings.titleColor;
+      d.idCol = item.chart_settings.idCol;
+      if (!d.rotation_angle) {
+        d.rotation_angle = 0;
+      }
+      if (d.idCol && d[d.idCol]) {
+        d.id = d[d.idCol];
+      }
+      if (
+        item.chart_settings.imgUrl &&
+        item.chart_settings.imgUrl.indexOf("&bx_auth_ticket") === -1 &&
+        item.chart_settings.imgUrl.indexOf(top.pathConfig.gateway) === -1
+      ) {
+        d.imgUrl =
+          top.pathConfig.gateway +
+          item.chart_settings.imgUrl +
+          "&bx_auth_ticket=" +
+          sessionStorage.getItem("bx_auth_ticket");
+      } else if (
+        item.chart_settings.imgUrl &&
+        item.chart_settings.imgUrl.indexOf("&bx_auth_ticket") !== -1 &&
+        item.chart_settings.imgUrl.indexOf(top.pathConfig.gateway) !== -1
+      ) {
+        let params = item.chart_settings.imgUrl.split("&bx_auth_ticket");
+        params = params.length > 1 ? params[1] : "";
+        if (params) {
+          params = params.split("&");
+          params = params.length > 0 ? params[0] : "";
+          if (params) {
+            item.chart_settings.imgUrl = item.chart_settings.imgUrl.replace(
+              params,
+              sessionStorage.getItem("bx_auth_ticket")
+            );
+          }
+        }
+        d.imgUrl =
+          item.chart_settings.imgUrl +
+          "&bx_auth_ticket=" +
+          sessionStorage.getItem("bx_auth_ticket");
+      }
+      d.linkUrl = item.chart_settings.linkUrl;
+      d.chart_request_payload = item.chart_request_payload;
+      if (item.chart_settings.type === "tower") {
+        d.chart_top = Math.abs(
+          ((parseFloat(d.lat) -
+            -d.lat_height / 2 -
+            (parseFloat(gis_info_cfg.center_lat) +
+              parseFloat(gis_info_cfg.height_lat) / 2)) /
+            parseFloat(gis_info_cfg.height_lat)) *
+            parseFloat(self.contentData.dashboard_height)
+        );
+        d.chart_left = Math.abs(
+          ((parseFloat(d.lon) -
+            parseFloat(d.lon_width) / 2 -
+            (parseFloat(gis_info_cfg.center_lon) -
+              gis_info_cfg.width_lon / 2)) /
+            parseFloat(gis_info_cfg.width_lon)) *
+            parseFloat(self.contentData.dashboard_width)
+        );
+      }
+      if (item.chart_settings.type === "camera") {
+        d.chart_width = item.chart_width;
+        d.chart_height = item.chart_height;
+        d.chart_top = Math.abs(
+          ((parseFloat(d.lat) -
+            (parseFloat(gis_info_cfg.center_lat) +
+              parseFloat(gis_info_cfg.height_lat) / 2)) /
+            parseFloat(gis_info_cfg.height_lat)) *
+            parseFloat(self.contentData.dashboard_height)
+        );
+        d.chart_left = Math.abs(
+          ((parseFloat(d.lon) -
+            (parseFloat(gis_info_cfg.center_lon) -
+              parseFloat(gis_info_cfg.width_lon) / 2)) /
+            parseFloat(gis_info_cfg.width_lon)) *
+            parseFloat(self.contentData.dashboard_width)
+        );
+      }
+      return d;
+    });
+    if (self.chartConfig[index] && self.chartConfig[index].chart_no) {
+      self.chartConfig.splice(index, 1);
+    }
+
+    self.chartConfig = self.deepClone(self.chartConfig.concat(data));
+    self.chartConfigOld = self.deepClone(self.chartConfig);
+  }
 };
