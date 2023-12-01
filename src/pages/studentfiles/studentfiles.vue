@@ -1,22 +1,23 @@
 <template>
-    <el-main style="border: 1px solid #eee;width:100%;" id="print-layout">
-        <el-row  class=" parint-details" style="position: absolute;right: 10%;z-index:999;">
-            <el-col :span="24">
-                <div style="width:100%;" class="padding-s" :style="``">
-                    <!-- background-image: url(${bgImgUrl});background-size: contain; -->
-                    <el-row type="flex" class="row-bg" justify="space-between">
-                        
-                        <el-col :span="24" style="justify-content: end;display: flex;"  v-if="showAction">
-                            <!-- <el-button size="mini">导出</el-button> -->
-                            <el-button size="mini" @click="add()">评语</el-button>
-                            <el-button type="primary" size="mini" @click="print()">打印</el-button>
-                        </el-col>
-                    </el-row>
-                   
-                </div>
-            </el-col>
-        </el-row>
-        <div  style="margin:0 auto;" >
+    <el-main style="border: 1px solid #eee;width:100%;">
+        
+        <div  style="margin:0 auto;margin-top:2rem;min-width:1080px;"  id="print-layout">
+            <el-row  class="" style="position: absolute;right: 10%;z-index:999;">
+                <el-col :span="24">
+                    <div style="width:100%;" class="padding-s" :style="``">
+                        <!-- background-image: url(${bgImgUrl});background-size: contain; -->
+                        <el-row type="flex" class="row-bg" justify="space-between">
+                            
+                            <el-col :span="24" style="justify-content: end;display: flex;"  v-if="showAction">
+                                <!-- <el-button size="mini">导出</el-button> -->
+                                <el-button size="mini" @click="add()">评语</el-button>
+                                <el-button type="primary" size="mini" @click="print()">打印</el-button>
+                            </el-col>
+                        </el-row>
+                    
+                    </div>
+                </el-col>
+            </el-row>
             <el-row v-if="v2Data && detailData" class="box-card parint-details" style="padding:0 10px;">
                 <el-col :span="24">
                     <div style="width:100%;" class="padding-s" :style="`font-family:'宋体';`">
@@ -85,7 +86,7 @@
                         <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`荣誉墙`}}</span>
                     </div>
                     <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']) && childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].length > 0">
-                        <el-col :span="6" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']" class="font-weight-bold">
+                        <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']" class="font-weight-bold">
                             <!-- <el-image
                             style="width: 48px; height: 48px"
                             :src="item.index_icon"
@@ -125,7 +126,7 @@
                         </el-col >
                     </el-row> -->
                     <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_course_select']) && childServiceLoadDatas['srvledu_semester_evaluate_course_select'].length > 0">
-                        <el-col :span="6" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_course_select']" class="font-weight-bold">
+                        <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_course_select']" class="font-weight-bold">
                             <div style="color:#000;line-height:1.5rem;min-width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{item.index_name}}</div>
                             <div style="padding:8px;text-align:left">
                                 <div style="color:#007bff;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1rem;min-width:3rem;" >{{item.index_cnt}}</span></div>
@@ -218,9 +219,9 @@
                         <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`老师评语`}}</span>
                     </div>
                     <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;min-height:150px`" >
-                        <el-col :span="24" :style="`padding:8px;`" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_comment_select']) && childServiceLoadDatas['srvledu_semester_comment_select'].length > 0" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_comment_select']">
-                            <div style="padding:8px;text-align:left">
-                                <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}</div>
+                        <el-col :span="24" :style="`padding:8px;`" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_comment_semester_select']) && childServiceLoadDatas['srvledu_semester_comment_semester_select'].length > 0" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_comment_semester_select']">
+                            <div style="text-align:left">
+                                <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}<span style="padding-left:20px;">({{item.create_user_disp}})</span></div>
                                 <div style="color:#000;line-height:1.5rem; font-size:0.9rem;"class="font-weight-bold">{{item.evaluate_comment}}
                                     <!-- <span style="font-size:1.4rem;min-width:3rem;" class="font-weight-bold"></span>次 -->
                                 </div>
@@ -355,7 +356,7 @@ var chartPie=null;
         childSrvLoaded:false,
         taskTypeSum:null,
         taskTypeState:null,
-        childServiceNames:['srvledu_semester_evaluate_task_type_select','srvledu_semester_evaluate_task_state_select','srvledu_semester_evaluate_task_select','srvledu_semester_comment_select','srvledu_semester_evaluate_course_select','srvledu_semester_evaluate_labor_task_select'],
+        childServiceNames:['srvledu_semester_evaluate_task_type_select','srvledu_semester_evaluate_task_state_select','srvledu_semester_evaluate_task_select','srvledu_semester_comment_semester_select','srvledu_semester_evaluate_course_select','srvledu_semester_evaluate_labor_task_select'],
         childServiceLoadDatas:{},
         option:{
             // title: {
@@ -672,7 +673,7 @@ var chartPie=null;
                     }
                 }
                 completionRate = isCompletion/allNum
-                console.log(completionRate.toFixed(2),isCompletion,allNum)
+                // console.log(completionRate.toFixed(2),isCompletion,allNum)
             }
             let options =  { 
                 title : {
@@ -725,9 +726,9 @@ var chartPie=null;
                 ], 
             }; 
             
-            console.log(options,document,document.querySelector(".radarPie"))
+            // console.log(options,document,document.querySelector(".radarPie"))
             chartPie = echarts.init(document.querySelector(".radarPie"));
-            console.log(options,chartPie)
+            // console.log(options,chartPie)
             chartPie.setOption(options);
             // 当我们浏览器缩放的时候，图表也等比例缩放
             window.addEventListener("resize", function () {
@@ -987,6 +988,9 @@ var chartPie=null;
         line-height:2.6rem !important;
     }
     
+  }
+  .parint-details{
+    display:block;
   }
 
   </style>
