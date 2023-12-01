@@ -298,8 +298,8 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
           },
           data: [],
         };
-        if(type==='ring'){
-          series.radius = ['50%', '55%'];
+        if (type === "ring") {
+          series.radius = ["50%", "55%"];
         }
         for (let data of datas) {
           // option['xAxis']['data'].push(data[sortAxisCol])
@@ -410,12 +410,80 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
       };
       break;
     case "map":
+      delete ecOptions.xAxis;
+      delete ecOptions.yAxis;
       ecOptions.series = [
-        {
-          type: "map",
-          map: "mapName",
-        },
+        // {
+        //   type: "map",
+        //   map: "mapName",
+        // },
       ];
+      console.log(pageItem);
+      let datas = [];
+      if (cellData?.length) {
+        const mapJson = pageItem?.chart_json?.map_json;
+        if (mapJson?.col_label && mapJson?.col_lon && mapJson.col_lat) {
+          for (let i = 0; i < cellData.length; i++) {
+            datas.push({
+              name: cellData[i][mapJson.col_label],
+              value: [
+                cellData[i][mapJson.col_lat],
+                cellData[i][mapJson.col_lon],
+              ],
+            });
+          }
+        }
+      }
+      ecOptions.tooltip = {
+        trigger: "item",
+        formatter: function (params) {
+          if (typeof params.value[2] == "undefined") {
+            return params.name ;
+            // return params.name + " : " + params.value;
+          } else {
+            return params.name + " : " + params.value[2];
+          }
+        },
+      };
+      if (datas?.length) {
+        let serie = {
+          name: "",
+          type: "scatter",
+          coordinateSystem: "geo",
+          data: datas,
+          symbol: "circle",
+          // symbol: 'pin',
+          symbolSize: [30, 30],
+          itemStyle: {
+            normal: {
+              color: "#c83f24", //标志颜色
+            },
+          },
+          label: {
+            show: true,
+            formatter: function (params) {
+              return `${params.name}`;
+            },
+            textStyle: {
+              color: "#fff",
+              borderColor: "transparent",
+            },
+            // normal: {
+            //   show: true, //显示标签
+            //   textStyle: { color: "#c71585" }, //省份标签字体颜色
+            // },
+            emphasis: {
+              //对应的鼠标悬浮效果
+              show: true, //关闭文字 （这东西有问题得关）
+              // textStyle: { color: "#800080" },
+              label: {
+                formatter: "{b}: {@number}",
+              },
+            },
+          },
+        };
+        ecOptions.series.push(serie);
+      }
       break;
     default:
       break;
@@ -706,7 +774,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           name: "",
           type: "pie",
           clockWise: false,
-          radius: ['50%', '55%'],
+          radius: ["50%", "55%"],
           hoverAnimation: false,
           itemStyle: {
             normal: {
@@ -745,12 +813,88 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       if (chartJson?.map_base_geojson && eCharts) {
         eCharts.registerMap("mapName", chartJson?.map_base_geojson);
       }
-      option.coordinateSystem = "bmap";
+      option.legend = {
+        show: false,
+      };
+      option.tooltip = {
+        trigger: "item",
+        formatter: function (params) {
+          if (typeof params.value[2] == "undefined") {
+            return params.name + " : " + params.value;
+          } else {
+            return params.name + " : " + params.value[2];
+          }
+        },
+      };
+      option.geo = {
+        map: "mapName",
+        roam: true,
+        label: {
+          normal: {
+            show: false,
+          },
+          emphasis: {
+            show: false,
+          },
+        },
+        itemStyle: {
+          normal: {
+            areaColor: "#1180c7",
+          },
+          emphasis: {
+            areaColor: "#1180c7",
+          },
+        },
+      };
+
       option.series = [
         {
-          name: "西乡地图",
-          type: "map",
-          map: "mapName",
+          name: "",
+          type: "scatter",
+          coordinateSystem: "geo",
+          // data: [[107.764813, 32.983997, 9, "西乡县第三中学"]],
+          data: [
+            // {
+            //   name: "西乡县第三中学",
+            //   number: 111,
+            //   value: [107.764813, 32.983997, 100],
+            // },
+            // {
+            //   name: "西乡县第一中学",
+            //   number: 222,
+            //   value: [107.763369, 32.993076, 30],
+            // },
+          ],
+          emphasis: {
+            //对应的鼠标悬浮效果
+            show: true, //关闭文字 （这东西有问题得关）
+            // textStyle: { color: "#800080" },
+            label: {
+              formatter: "{b}: {@number}",
+            },
+          },
+          label: {
+            show: true,
+            formatter: function (params) {
+              return `${params.name}`;
+            },
+            textStyle: {
+              color: "#fff",
+              borderColor: "transparent",
+            },
+            // normal: {
+            //   show: true, //显示标签
+            //   textStyle: { color: "#c71585" }, //省份标签字体颜色
+            // },
+            emphasis: {
+              //对应的鼠标悬浮效果
+              show: true, //关闭文字 （这东西有问题得关）
+              // textStyle: { color: "#800080" },
+              label: {
+                formatter: "{b}: {@number}",
+              },
+            },
+          },
         },
       ];
       break;

@@ -31,12 +31,16 @@ let myChart = null;
 
 const setChartOption = (chart) => {
   // 指定图表的配置项和数据
+  const defaultOption = setDefaultChartOption(chartType, pageItem?.chart_json, echarts)//生成图表默认配置
   const option = {
-    ...setDefaultChartOption(chartType, pageItem?.chart_json,echarts),//生成图表默认配置
+    ...defaultOption,
     ...props.chartOption,
   };
+  if(props.chartType==='map'){
+    debugger
+  }
   // 使用刚指定的配置项和数据显示图表。
-  chart.setOption(option);
+  myChart.setOption(option);
   chartOption.value = option;
 };
 
@@ -47,6 +51,9 @@ onMounted(() => {
   setTimeout(() => {
     myChart.resize();
   }, 100);
+  watch(() => props.chartOption, () => {
+    setChartOption(myChart);
+  })
 });
 
 watch(
