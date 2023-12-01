@@ -19,26 +19,28 @@ export default {
         return {
             id: "",
             content: "",
+            serviceName:'',
+            srvApp:''
             attachmentList: [],
         };
     },
     methods: {
         getContent() {
-            const url = `/xsyx/select/srvyxjdsb_apply_notice_select`;
+            const url = `/${this.srvApp}/select/${this.serviceName}`;
             const req = {
-                serviceName: "srvyxjdsb_apply_notice_select",
+                serviceName: this.serviceName,
                 colNames: ["*"],
                 condition: [{ colName: "id", ruleType: "eq", value: this.id }],
                 page: { pageNo: 1, rownumber: 1 },
             };
             this.select(
-                "srvyxjdsb_apply_notice_select",
+                this.serviceName,
                 req.condition,
                 null,
                 null,
                 null,
                 null,
-                "xsyx",
+                this.srvApp,
                 null,
                 req.colNames,
                 null
@@ -85,6 +87,8 @@ export default {
     },
     created() {
         this.id = this.$route.query.id;
+        this.srvApp = this.$route.query.srvApp || 'xsyx';
+        this.serviceName = this.$route.query.serviceName || 'srvyxjdsb_apply_notice_select';
         if (this.id) {
             this.getContent();
         }
