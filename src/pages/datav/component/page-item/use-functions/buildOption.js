@@ -438,7 +438,7 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
         trigger: "item",
         formatter: function (params) {
           if (typeof params.value[2] == "undefined") {
-            return params.name ;
+            return params.name;
             // return params.name + " : " + params.value;
           } else {
             return params.name + " : " + params.value[2];
@@ -829,6 +829,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       option.geo = {
         map: "mapName",
         roam: true,
+        // top:'3%',
         label: {
           normal: {
             show: false,
@@ -837,6 +838,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
             show: false,
           },
         },
+
         itemStyle: {
           normal: {
             areaColor: "#1180c7",
@@ -844,58 +846,9 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           emphasis: {
             areaColor: "#1180c7",
           },
-        },
+        }
       };
-
       option.series = [
-        {
-          name: "",
-          type: "scatter",
-          coordinateSystem: "geo",
-          // data: [[107.764813, 32.983997, 9, "西乡县第三中学"]],
-          data: [
-            // {
-            //   name: "西乡县第三中学",
-            //   number: 111,
-            //   value: [107.764813, 32.983997, 100],
-            // },
-            // {
-            //   name: "西乡县第一中学",
-            //   number: 222,
-            //   value: [107.763369, 32.993076, 30],
-            // },
-          ],
-          emphasis: {
-            //对应的鼠标悬浮效果
-            show: true, //关闭文字 （这东西有问题得关）
-            // textStyle: { color: "#800080" },
-            label: {
-              formatter: "{b}: {@number}",
-            },
-          },
-          label: {
-            show: true,
-            formatter: function (params) {
-              return `${params.name}`;
-            },
-            textStyle: {
-              color: "#fff",
-              borderColor: "transparent",
-            },
-            // normal: {
-            //   show: true, //显示标签
-            //   textStyle: { color: "#c71585" }, //省份标签字体颜色
-            // },
-            emphasis: {
-              //对应的鼠标悬浮效果
-              show: true, //关闭文字 （这东西有问题得关）
-              // textStyle: { color: "#800080" },
-              label: {
-                formatter: "{b}: {@number}",
-              },
-            },
-          },
-        },
       ];
       break;
   }

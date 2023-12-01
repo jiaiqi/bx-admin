@@ -1,7 +1,8 @@
 <script setup>
 import { setDefaultChartOption } from "../../page-item/use-functions/buildOption.js"
 import * as echarts from "echarts";
-import 'echarts/extension/bmap/bmap';
+// import 'echarts/extension/bmap/bmap';
+// import "echarts-gl";
 import { onMounted, ref, watch } from "vue";
 const props = defineProps({
   pageItem: {
