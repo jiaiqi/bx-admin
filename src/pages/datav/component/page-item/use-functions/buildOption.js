@@ -1,4 +1,4 @@
-export const useBuildOption = (type, pageItem, cellData = []) => {
+export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
@@ -419,9 +419,9 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
         // },
       ];
       console.log(pageItem);
+      const mapJson = pageItem?.chart_json?.map_json;
       let datas = [];
       if (cellData?.length) {
-        const mapJson = pageItem?.chart_json?.map_json;
         if (mapJson?.col_label && mapJson?.col_lon && mapJson.col_lat) {
           for (let i = 0; i < cellData.length; i++) {
             datas.push({
@@ -446,6 +446,14 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
         },
       };
       if (datas?.length) {
+        let iconSize = 5;
+        if (mapJson?.icon_scale) {
+          let iconScale = mapJson?.icon_scale || 1;
+          console.log(layout);
+          if (layout?.w) {
+            iconSize = (layout?.w * iconScale) / 100;
+          }
+        }
         let serie = {
           name: "",
           type: "scatter",
@@ -453,7 +461,7 @@ export const useBuildOption = (type, pageItem, cellData = []) => {
           data: datas,
           symbol: "circle",
           // symbol: 'pin',
-          symbolSize: [30, 30],
+          symbolSize: iconSize,
           itemStyle: {
             normal: {
               color: "#c83f24", //标志颜色
@@ -846,10 +854,9 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           emphasis: {
             areaColor: "#1180c7",
           },
-        }
+        },
       };
-      option.series = [
-      ];
+      option.series = [];
       break;
   }
   return option;
