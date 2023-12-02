@@ -45,6 +45,7 @@
       :ref="pageItem.com_type"
       :pageItem="pageItem"
       :index="layout.i"
+      :layout="layout"
     ></page-item-chart>
     <List
       v-if="pageItem.com_type === 'list'"
