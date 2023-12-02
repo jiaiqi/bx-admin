@@ -128,6 +128,7 @@ export default {
     defaultValues: Object,
     childForeignkey: Object,
     mainformDatas: Object,
+    formModel: Object,
   },
   data() {
     return {

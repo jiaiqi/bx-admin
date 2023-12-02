@@ -67,7 +67,10 @@ export default {
     },
     disabled: {
       type: Boolean
-    }
+    },
+    formModel: {
+      type: Object,
+    },
   },
   // mixins: [
   //   ListMixin
@@ -94,7 +97,10 @@ export default {
   },
   computed: {
     service() {
-      return this.field.info?.fmt?.service
+      return this.optionListV2?.serviceName ||  this.field.info?.fmt?.service
+    },
+    optionListV2() {
+      return this.field?.info?.srvCol?.option_list_v2
     },
     checkedAll() {
       // 默认选中所有数据 不带分页
@@ -449,6 +455,19 @@ export default {
             rownumber: 999,
           },
         };
+
+        if (this.optionListV2?.child_condition) {
+          let rc = JSON.stringify(this.optionListV2.child_condition);
+          rc = JSON.parse(this.renderStr(rc, { data: this.formModel,top:top }));
+          queryJson.condition = rc
+        }
+
+        if (this.optionListV2?.child_relation_condition) {
+          let rc = JSON.stringify(this.optionListV2.child_relation_condition);
+          rc = JSON.parse(this.renderStr(rc, { data: this.formModel,top:top }));
+          queryJson.relation_condition = rc
+        }
+
         this.selectList(queryJson).then(res => {
           if (res?.data?.state === 'SUCCESS') {
             res.data.data = res.data.data.map(item => {
@@ -486,7 +505,7 @@ export default {
       let fieldInfo = this.field.info;
       let loader = fieldInfo.fmt;
       let queryJson = {
-        serviceName: loader.service,
+        serviceName: this.service,
         colNames: ["*"],
         condition: [],
         page: {
@@ -572,7 +591,7 @@ export default {
           queryJson.condition.push(obj);
         }
       }
-
+      let fmtRelationCondition = this.fmt.relation_condition
       if (this.inputVal) {
         let relation_condition = {
           relation: "OR",

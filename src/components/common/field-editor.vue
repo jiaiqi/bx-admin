@@ -89,6 +89,7 @@
             :defaultCondition='defaultCondition'
             :mainformDatas='mainformDatas||parentAddMainFormDatas'
             :defaultValues='defaultValues'
+            :form-model="formModel"
             v-show="contentField.info.readonly ? contentField.info.srvCol.in_detail == 1 : contentField.info.bodyVisible"
             @field-value-changed="$emit('field-value-changed', $event)"
             @field-history-popup="$emit('field-history-popup', $event)"
@@ -158,7 +159,10 @@ export default {
     },
     defaultValues:{
       type:Object,
-    }
+    },
+    formModel: {
+      type: Object,
+    },
   },
 
   data() {
