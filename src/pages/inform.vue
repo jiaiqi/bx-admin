@@ -20,7 +20,7 @@ export default {
             id: "",
             content: "",
             serviceName:'',
-            srvApp:''
+            srvApp:'',
             attachmentList: [],
         };
     },
