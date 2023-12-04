@@ -20,7 +20,7 @@
       <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
       <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
       <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
-      <el-button size="mini" style="float: right; margin: 10px 10px 0 0" @click="clearFn">清空画布</el-button>
+      <!-- <el-button size="mini" style="float: right; margin: 10px 10px 0 0" @click="clearFn">清空画布</el-button> -->
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
       <div class="custom-design" id="custom-design" :style="[bjStyles, stylefn(styleJson)]">
@@ -1125,6 +1125,10 @@ export default {
     //   height: 100%;
     //   border: 1px dashed #666;
     // }
+  }
+  img{
+    height: 100%;
+    overflow: hidden;
   }
 }
 

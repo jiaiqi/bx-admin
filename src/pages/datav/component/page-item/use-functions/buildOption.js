@@ -1,4 +1,11 @@
 export const useBuildOption = (type, pageItem, cellData = [], layout) => {
+  // if (
+  //   pageItem?.srv_req_type === "模拟数据" &&
+  //   pageItem?.mock_srv_data_json?.length
+  // ) {
+  //   // 使用模拟数据
+  //   cellData = pageItem.mock_srv_data_json;
+  // }
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
@@ -131,14 +138,16 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     pageItem.cols_map_json?.cols_map_json ||
     pageItem?.page_com_cols_map_json?.cols_map_json;
   let arr = [];
-  seriesValueCols.forEach((item) => {
-    for (let k in mapJson) {
-      if (k === item) {
-        arr.push(mapJson[k]);
+  if (mapJson) {
+    seriesValueCols.forEach((item) => {
+      for (let k in mapJson) {
+        if (k === item) {
+          arr.push(mapJson[k]);
+        }
       }
-    }
-  });
-  seriesValueCols = arr;
+    });
+    seriesValueCols = arr;
+  }
 
   let sortAxisCol = chartJson?.sort_axis_col || "";
   let lineVal1 = chartJson?.refer_line1 || "none";
@@ -187,15 +196,17 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         if (seriesName.length <= 2) {
           series.yAxisIndex = sIndex;
         }
-
+        const mapJson = pageItem.cols_map_json?.cols_map_json || pageItem?.page_com_cols_map_json?.cols_map_json;
         // 处理x轴变量映射
-        for (let k in mapJson) {
-          if (k === sortAxisCol) {
-            sortAxisCol = mapJson[k];
+        if (mapJson) {
+          for (let k in mapJson) {
+            if (k === sortAxisCol) {
+              sortAxisCol = mapJson[k];
+            }
           }
         }
 
-        for (let data of datas) {
+        for (let data of cellData) {
           if (chartJson.more_option && chartJson.more_option === "x轴反序") {
             series["data"].unshift(data[dataColName]);
             ecOptions["xAxis"]["data"].unshift(data[sortAxisCol]);
@@ -233,7 +244,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         ecOptions["series"].push(series);
         if (chartJson?.series_value === "单列多行分组" && cellData?.length) {
-          const nOption = buildMultiColSeries(pageItem, cellData);
+          const nOption = buildMultiColSeries(pageItem, cellData, type);
           ecOptions["series"] = nOption?.series || [];
           if (nOption?.series?.length > 5) {
             ecOptions.grid = {
@@ -270,6 +281,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       ecOptions["xAxis"]["data"] = [
         ...new Set(ecOptions["xAxis"]["data"] || []),
       ];
+      if (chartJson?.chart_type === "条形图") {
+        let xAxis = JSON.parse(JSON.stringify(ecOptions.yAxis));
+        ecOptions.yAxis = JSON.parse(JSON.stringify(ecOptions.xAxis));
+        ecOptions.xAxis = xAxis;
+      }
       break;
     case "pie":
     case "ring":
@@ -499,13 +515,14 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   return ecOptions;
 };
 
-const buildMultiColSeries = (pageItem, cellData = []) => {
+const buildMultiColSeries = (pageItem, cellData = [], type) => {
   let chartJson = pageItem?.chart_json || {};
   let datas = cellData;
   let seriesName = chartJson?.series_name_cfg || "";
 
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
+  
   if (seriesName && Array.isArray(datas) && datas.length > 0) {
     let seriesNames = datas.reduce((pre, cur) => {
       if (!pre.includes(cur[seriesName])) {
@@ -516,7 +533,7 @@ const buildMultiColSeries = (pageItem, cellData = []) => {
     let series = seriesNames.map((name) => {
       let obj = {
         name: name,
-        type: "line",
+        type: type || "line",
         data: datas
           .filter((e) => e[seriesName] === name)
           .map((item) => item[chartJson.series_value_cols]),
@@ -638,6 +655,11 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         },
       };
       option.legend.data = ["销量"];
+      if (chartJson?.chart_type === "条形图") {
+        let xAxis = JSON.parse(JSON.stringify(option.yAxis));
+        option.yAxis = JSON.parse(JSON.stringify(option.xAxis));
+        option.xAxis = xAxis;
+      }
       break;
     case "pie":
       break;

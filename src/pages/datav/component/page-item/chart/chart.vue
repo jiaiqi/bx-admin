@@ -37,6 +37,9 @@ const setChartOption = (chart) => {
     ...defaultOption,
     ...props.chartOption,
   };
+  if(props.colors?.length){
+    option.color = props.colors
+  }
   if(props.chartType==='map'){
   }
   // 使用刚指定的配置项和数据显示图表。

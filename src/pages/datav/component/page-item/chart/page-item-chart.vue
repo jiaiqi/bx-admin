@@ -23,22 +23,16 @@ const { pageItem } = props;
 
 let timer = null;
 const emit = defineEmits(["clickChart"]);
+
+const option = ref({});
+
 const clickChart = () => {
   emit("clickChart");
 };
 const colors = ref(null);
-if (pageItem?.legend_color_seq) {
-  colors.value = pageItem.legend_color_seq.split(",");
+if (pageItem?.chart_json?.legend_color_seq) {
+  colors.value = pageItem.chart_json.legend_color_seq.split(",");
 }
-
-onMounted(() => {
-  onSrvReq();
-  if (pageItem?.srv_req_json?.cycle_req_timer) {
-    // 定时刷新
-    autoRefreshData();
-  }
-});
-
 const chartConfig = computed(() => {
   return pageItem?.chart_json;
 });
@@ -50,6 +44,7 @@ const chartType = computed(() => {
       chartType = "line";
       break;
     case "柱状图":
+    case "条形图":
       chartType = "bar";
       break;
     case "饼图":
@@ -71,7 +66,23 @@ const chartType = computed(() => {
   }
   return chartType;
 });
-const option = ref({});
+
+
+onMounted(() => {
+  if (pageItem?.srv_req_type === '模拟数据' && pageItem?.mock_srv_data_json?.length) {
+    // 使用模拟数据
+    const cellData = pageItem.mock_srv_data_json;
+    option.value = useBuildOption(chartType.value, pageItem, cellData, props.layout);
+  } else {
+    onSrvReq();
+    if (pageItem?.srv_req_json?.cycle_req_timer) {
+      // 定时刷新
+      autoRefreshData();
+    }
+  }
+
+});
+
 
 
 const cellData = ref([]);

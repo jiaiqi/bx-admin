@@ -366,7 +366,8 @@
           return maximum
         },
         gridStyle: function() {
-          let style = {}
+          let style = {
+          }
           let config = this.cardLayout || {
             "rows_max": 1,
             "cols_num": 1
@@ -607,8 +608,10 @@
               }
             }
           }
-          let bgImg = cellLayoutJson && cellLayoutJson.background_image ? cellLayoutJson.background_image : ''
-  
+          let bgImg = cellLayoutJson?.background_image  || ''
+          if(styleJson&&styleJson.background_image){
+            bgImg = styleJson.background_image
+          }
           if (bgImg) {
             // 单元背景图 补偿样式。
             style['background-image'] = `url(${this.getImagePath(bgImg)})`;
