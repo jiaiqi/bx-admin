@@ -161,7 +161,7 @@ export default {
       this.loadData(condition)
     },
     onAddFormActionComplete() {
-      this.dialogVisible = false
+      this.activeForm = null
       this.loadData()
     },
     toList(date) {

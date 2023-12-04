@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="statistic-box">
+    <div class="statistic-box" v-if="stasticData.length">
       <div class="statistic-item" v-for="item in stasticData">
         <div class="label">{{ item.label }}</div>
         <div class="value">{{ item.value || '0' }}

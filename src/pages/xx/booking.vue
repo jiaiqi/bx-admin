@@ -81,8 +81,9 @@
         :class="{ 'is-selected': item.start_time && item.start_time === form.time, disabled: !showTime(item.start_time) }"
         v-for="item in times" @click="form.time = item.start_time">
         <div class="time">{{ item.start_time }}-{{ item.end_time }}</div>
-        <div class="opening">剩余：{{ item.div_count || '0' }}</div>
-        <div class="booked">已预约：{{ item.cnty || '0' }}</div>
+        <div class="opening">总计：{{ item.div_count || '0' }}</div>
+        <div class="booked">已约：{{ item.cnty || '0' }}</div>
+
       </div>
     </div>
     <div style="text-align: center">

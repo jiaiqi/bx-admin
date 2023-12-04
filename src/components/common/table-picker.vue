@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-popover trigger="click" v-model="visible"
+    <el-popover trigger="click" v-model="visible" ref="show_popover"
       :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }">
       <div slot="reference">
         <el-select style="width: 100%" :disabled="disabled" v-model="selected" :value-key="valueCol"
@@ -67,7 +67,10 @@ export default {
     },
     disabled: {
       type: Boolean
-    }
+    },
+    formModel: {
+      type: Object,
+    },
   },
   // mixins: [
   //   ListMixin
@@ -94,7 +97,10 @@ export default {
   },
   computed: {
     service() {
-      return this.field.info?.fmt?.service
+      return this.optionListV2?.serviceName ||  this.field.info?.fmt?.service
+    },
+    optionListV2() {
+      return this.field?.info?.srvCol?.option_list_v2
     },
     checkedAll() {
       // 默认选中所有数据 不带分页
@@ -151,6 +157,20 @@ export default {
     this.getListV2().then(() => {
       this.buildGridHeader();
     })
+  },
+  watch: {
+    gridData: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        // //模拟触发元素被点击：
+        // this.$refs?.show_popover?.dispatchEvent(new MouseEvent('click'));
+        //重新计算弹框的位置：
+        this.$nextTick(() => {
+          this.$refs.show_popover.updatePopper();
+        });
+      }
+    }
   },
   methods: {
     async getListV2() {
@@ -277,7 +297,7 @@ export default {
     },
     changeSelected(index, row) {
       this.clickRow(row);
-      
+
       // this.selected = this.allData.filter(item => item[ this.valueCol ] === row[ this.valueCol ])
     },
     clickRow(row) {
@@ -285,19 +305,19 @@ export default {
         // 多选模式
         let parent_no_col = this.listV2?.parent_no_col
         let rowChildren = []
-        if(parent_no_col){
-          rowChildren = this.allData.filter(item => item[ parent_no_col ] === row[ this.valueCol ]).map(item=>item[this.valueCol])
+        if (parent_no_col) {
+          rowChildren = this.allData.filter(item => item[parent_no_col] === row[this.valueCol]).map(item => item[this.valueCol])
         }
         if (this.selected.indexOf(row[this.valueCol]) > -1) {
           this.$set(row, 'chcecked', false)
           this.selected = this.selected.filter(item => item !== row[this.valueCol]);
-          if(rowChildren?.length){
+          if (rowChildren?.length) {
             this.selected = this.selected.filter(item => rowChildren.indexOf(item) === -1);
           }
         } else {
           this.$set(row, 'chcecked', true)
           this.selected.push(row[this.valueCol]);
-          if(rowChildren?.length){
+          if (rowChildren?.length) {
             this.selected = this.selected.concat(rowChildren)
           }
         }
@@ -435,6 +455,19 @@ export default {
             rownumber: 999,
           },
         };
+
+        if (this.optionListV2?.child_condition) {
+          let rc = JSON.stringify(this.optionListV2.child_condition);
+          rc = JSON.parse(this.renderStr(rc, { data: this.formModel,top:top }));
+          queryJson.condition = rc
+        }
+
+        if (this.optionListV2?.child_relation_condition) {
+          let rc = JSON.stringify(this.optionListV2.child_relation_condition);
+          rc = JSON.parse(this.renderStr(rc, { data: this.formModel,top:top }));
+          queryJson.relation_condition = rc
+        }
+
         this.selectList(queryJson).then(res => {
           if (res?.data?.state === 'SUCCESS') {
             res.data.data = res.data.data.map(item => {
@@ -459,6 +492,10 @@ export default {
               return item;
             });
             // this.$set(tree,'children',_.cloneDeep(res.data.data))
+            //重新计算弹框的位置：
+            this.$nextTick(() => {
+              this.$refs?.show_popover?.updatePopper();
+            });
             resolve(res.data.data)
           }
         })
@@ -468,7 +505,7 @@ export default {
       let fieldInfo = this.field.info;
       let loader = fieldInfo.fmt;
       let queryJson = {
-        serviceName: loader.service,
+        serviceName: this.service,
         colNames: ["*"],
         condition: [],
         page: {
@@ -554,7 +591,7 @@ export default {
           queryJson.condition.push(obj);
         }
       }
-
+      let fmtRelationCondition = this.fmt.relation_condition
       if (this.inputVal) {
         let relation_condition = {
           relation: "OR",

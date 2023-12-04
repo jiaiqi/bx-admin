@@ -94,7 +94,7 @@
               </upload-image>
 
               <finder v-else-if="field.info.editor === 'finder'" :field="field" v-model="field.finderSelected" 
-              :defaultCondition='defaultCondition' :defaultValues='defaultValues' :childForeignkey='childForeignkey' :mainformDatas='mainformDatas' 
+              :defaultCondition='defaultCondition' :defaultValues='defaultValues' :childForeignkey='childForeignkey' :mainformDatas='mainformDatas' :form-model="formModel"
               :$srv-app="
                   field.info.srvCol.option_list_v2 &&
                     field.info.srvCol.option_list_v2.srv_app
@@ -288,7 +288,10 @@ export default {
     },
     defaultValues: {
       type: Object
-    }
+    },
+    formModel: {
+      type: Object
+    },
   },
   watch: {},
 

@@ -10,6 +10,7 @@ import { $select } from "../../../common/http.js";
 import { useBuildOption } from "../use-functions/buildOption";
 const props = defineProps({
   pageItem: Object,
+  layout: Object,
   index: [String, Number],
   canvasId: {
     type: String,
@@ -90,12 +91,13 @@ const onSrvReq = async () => {
     }
     console.log(pageItem);
 
-    option.value = useBuildOption(chartType.value, pageItem, res.data);
+    option.value = useBuildOption(chartType.value, pageItem, res.data, props.layout);
   }
 };
 
 const chartRef = ref(null);
 const onResize = () => {
+  option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
   chartRef?.value?.onResize();
 };
 defineExpose({
