@@ -25,7 +25,7 @@
           {{ col.label }}
         </div>
       </div>
-      <div class="table-row" v-for="item in tableData" :class="{ stripe: stripe }">
+      <div class="table-row" v-for="item in tableData" :class="{ stripe: striped }">
         <div class="table-column" v-for="col in tableColumn">
           {{ formatValue(item, col) }}
         </div>

@@ -321,11 +321,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           itemStyle: {
             normal: {
               label: {
-                position: "outer",
+                position: "outside",
                 alignTo: "labelLine",
                 show: false,
                 formatter: "{b} : {c} ({d}%)",
-                bleedMargin: 5,
+                bleedMargin: 3,
               },
               labelLine: {
                 show: false,
@@ -335,7 +335,16 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
         };
         if (type === "ring") {
-          series.radius = ["50%", "55%"];
+          series.radius = ["42%", "50%"];
+          series.labelLine = {
+            normal: {
+              labelLine: {
+                length: 30,
+                length2: 30,
+                show: true,
+              },
+            }
+        }
         }
         for (let data of datas) {
           // option['xAxis']['data'].push(data[sortAxisCol])
@@ -991,7 +1000,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           name: "",
           type: "pie",
           clockWise: false,
-          radius: ["50%", "55%"],
+          radius: ["50%", "52%"],
           hoverAnimation: false,
           itemStyle: {
             normal: {
@@ -1016,7 +1025,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
               },
               labelLine: {
                 length: 30,
-                length2: 100,
+                length2: 30,
                 show: true,
                 color: "#00ffff",
               },
