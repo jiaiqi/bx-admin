@@ -211,7 +211,16 @@ export default {
       let res = row[col.columns]
 
       return res
-    }
+    },
+    onClickBlock(e){
+      console.log(e)
+    },
+    onRowButtonClick(e){
+      console.log(e)
+    },
+    onClickCell(e){
+      console.log(e)
+    },
   },
   mounted() {
     if (this.pageItem?.srv_req_json) {
