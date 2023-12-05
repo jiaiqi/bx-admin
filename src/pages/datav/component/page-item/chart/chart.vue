@@ -1,7 +1,7 @@
 <script setup>
 import { setDefaultChartOption } from "../../page-item/use-functions/buildOption.js"
 import * as echarts from "echarts";
-import 'echarts-wordcloud';
+import 'echarts-wordcloud'; // echarts-wordcloud@1.1.3
 // import 'echarts/extension/bmap/bmap';
 // import "echarts-gl";
 import { onMounted, ref, watch } from "vue";
