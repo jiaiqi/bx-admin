@@ -30,8 +30,9 @@
               <!-- <el-checkbox :value="scope.row.checked" @change="changeSelected(scope.$index, scope.row)"></el-checkbox> -->
             </template>
           </el-table-column>
-          <el-table-column :label="item.label" v-for="item in setGridHeader" :key="item.column"
-            v-if="item.srvcol && item.srvcol.in_list == 1" :prop="item.column"></el-table-column>
+          <el-table-column :min-width="flexColumnWidth(item.label, item.column)" :label="item.label"
+            v-for="item in setGridHeader" :key="item.column" v-if="item.srvcol && item.srvcol.in_list == 1"
+            :prop="item.column"></el-table-column>
         </el-table>
         <div class="bottom-bar">
           <div></div>
@@ -78,7 +79,6 @@ export default {
   data() {
     return {
       inputVal: "",
-
       tableSelected: [],
       selected: [],
       visible: false,
@@ -97,7 +97,7 @@ export default {
   },
   computed: {
     service() {
-      return this.optionListV2?.serviceName ||  this.field.info?.fmt?.service
+      return this.optionListV2?.serviceName || this.field.info?.fmt?.service
     },
     optionListV2() {
       return this.field?.info?.srvCol?.option_list_v2
@@ -173,6 +173,52 @@ export default {
     }
   },
   methods: {
+    /**
+ * el-table-column 自适应列宽
+ * @param prop_label: 表名
+ * @param table_data: 表格数据
+ */
+    flexColumnWidth(label, prop) {
+      const arr = this.gridData.map(x => x[prop])
+      let max = 25
+      if (arr.length > 0) {
+        arr.push(label)
+        max += this.getMaxLength(arr)
+      }
+      if (max > 250) {
+        max = 250
+      }
+      return max
+    },
+    /**计算列内容最大宽度
+    * 遍历列的所有内容，获取最宽一列的宽度
+    * @param arr
+    */
+    getMaxLength(arr) {
+      return arr.reduce((acc, item) => {
+        if (item) {
+          const calcLen = this.getTextWidth(item)
+          if (acc < calcLen) {
+            acc = calcLen
+          }
+        }
+        return acc
+      }, 0)
+    },
+    /**
+    * 使用span标签包裹内容，然后计算span的宽度 width： px
+    * @param valArr
+    */
+    getTextWidth(str) {
+      let width = 0
+      const html = document.createElement('span')
+      html.innerText = str
+      html.className = 'getTextWidth'
+      document.querySelector('body').appendChild(html)
+      width = document.querySelector('.getTextWidth').offsetWidth
+      document.querySelector('.getTextWidth').remove()
+      return width
+    },
     async getListV2() {
       const res = await this.loadColsV2(this.service, "selectlist", this.$srvApp || this.resolveDefaultSrvApp())
       if (res?.data?.state === 'SUCCESS') {
@@ -458,13 +504,13 @@ export default {
 
         if (this.optionListV2?.child_condition) {
           let rc = JSON.stringify(this.optionListV2.child_condition);
-          rc = JSON.parse(this.renderStr(rc, { data: this.formModel,top:top }));
+          rc = JSON.parse(this.renderStr(rc, { data: this.formModel, top: top }));
           queryJson.condition = rc
         }
 
         if (this.optionListV2?.child_relation_condition) {
           let rc = JSON.stringify(this.optionListV2.child_relation_condition);
-          rc = JSON.parse(this.renderStr(rc, { data: this.formModel,top:top }));
+          rc = JSON.parse(this.renderStr(rc, { data: this.formModel, top: top }));
           queryJson.relation_condition = rc
         }
 
