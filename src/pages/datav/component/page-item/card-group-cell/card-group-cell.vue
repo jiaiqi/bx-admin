@@ -483,8 +483,11 @@
           }
           this.$emit('on-row-button-click', e)
         },
-        onClickCell(){
-
+        onClickCell(item, cellLayoutJson){
+          this.$emit('on-click-cell', {
+            data: item,
+            cellsLayout: cellLayoutJson
+          })
         },
         // onClickCell: throttle(function(item, cellLayoutJson) {
         //   if (this.readOnly) {
