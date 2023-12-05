@@ -33,9 +33,9 @@
               :border-radius="buildColStyleJson(item.style_json || null)['border-radius']"
               :src="getImagePath(getPartModelData(item,comColMap,cellItemData),150)" class="demo-layout bx-text-cell"
               :style="[buildColStyleJson(item.style_json || null)]" mode="aspectFill" img-mode="aspectFill"></el-image>
-            <u-rate :disabled="true" v-else-if="item.parts_type == 'rate'" :count="5"
-              :current="getPartModelData(item,comColMap,cellItemData)||0"></u-rate>
-            <!-- <u-line-progress :show-percent="false" :style="[buildColStyleJson(item.style_json || null)]" v-else-if="item.parts_type == 'progress'" :count="5" active-color="#2979ff" :percent="getPartModelData(item,comColMap,cellItemData)||0"></u-line-progress> -->
+            <el-rate :disabled="true" v-else-if="item.parts_type == 'rate'" :count="5"
+              :value="getPartModelData(item,comColMap,cellItemData)||0"></el-rate>
+            <el-progress :show-percent="false" :style="[buildColStyleJson(item.style_json || null)]" v-else-if="item.parts_type == 'progress'" :count="5" active-color="#2979ff" :percentage="getPartModelData(item,comColMap,cellItemData)||0"></el-progress>
             <i v-else-if="item.parts_type == 'icon' && partsShow(item,comColMap,cellItemData)"
               :class="item.parts_text" :style="[buildColStyleJson(item.style_json || null)]"
               @click.stop="onClickSubBlock(cellItemData,item,cellLayoutJson)"></i>
@@ -66,9 +66,9 @@
                   :width="buildColStyleJson(subCol.style_json || null).width || '100%'"
                   :src="getImagePath(getPartModelData(subCol,comColMap,cellItemData),150)"
                   class="demo-layout bx-text-cell" :style="[buildColStyleJson(subCol.style_json || null)]"></el-image>
-                <u-rate :disabled="true" v-else-if="subCol.parts_type == 'rate'" :count="5"
-                  :current="getPartModelData(subCol,comColMap,cellItemData)||0"></u-rate>
-                <!-- <u-line-progress :show-percent="false" :style="[buildColStyleJson(subCol.style_json || null)]" v-else-if="subCol.parts_type == 'progress'" :count="5" active-color="#2979ff" :percent="getPartModelData(subCol,comColMap,cellItemData)||0"></u-line-progress> -->
+                <el-rate :disabled="true" v-else-if="subCol.parts_type == 'rate'" :count="5"
+                  :value="getPartModelData(subCol,comColMap,cellItemData)||0"></el-rate>
+                <el-progress :show-percent="false" :style="[buildColStyleJson(subCol.style_json || null)]" v-else-if="subCol.parts_type == 'progress'" :count="5" active-color="#2979ff" :percentage="getPartModelData(subCol,comColMap,cellItemData)||0"></el-progress>
                 <i v-else-if="subCol.parts_type == 'icon' && partsShow(subCol,comColMap,cellItemData)"
                   :class="subCol.parts_text" @click.stop="onClickSubBlock(cellItemData,subCol,cellLayoutJson,item)"
                   :style="[buildColStyleJson(subCol.style_json || null)]">
@@ -81,7 +81,7 @@
                   v-else-if="(subCol.parts_type == 'row' || subCol.parts_type == 'block') && partsShow(subCol,comColMap,cellItemData) && subCol.hasOwnProperty('sub_card_parts_json') && subCol.sub_card_parts_json.length > 0"
                   @click.stop="onClickSubBlock(cellItemData,subCol,cellLayoutJson,item)"
                   :style="[buildColStyleJson(subCol.style_json || null)]">
-                  <div v-for="(ssubCol,ssubindex) in subCol.sub_card_parts_json" :key="ssubindex">
+                  <template v-for="(ssubCol,ssubindex) in subCol.sub_card_parts_json">
                     <div v-if="ssubCol.parts_type == 'string' && partsShow(ssubCol,comColMap,cellItemData)"
                       :class="'bx-cell-'+ssubCol.parts_type"
                       @click.stop="onClickSubBlock(cellItemData,ssubCol,cellLayoutJson,subCol)"
@@ -103,9 +103,10 @@
                       :src="getImagePath(getPartModelData(ssubCol,comColMap,cellItemData),150)"
                       class="demo-layout bx-text-cell" :style="[buildColStyleJson(ssubCol.style_json || null)]">
                     </el-image>
-                    <u-rate :disabled="true" v-else-if="ssubCol.parts_type == 'rate'" :count="5"
-                      :current="getPartModelData(ssubCol,comColMap,cellItemData)||0"></u-rate>
-                    <!-- <u-line-progress :show-percent="false"  :style="[buildColStyleJson(ssubCol.style_json || null)]" v-else-if="ssubCol.parts_type == 'progress'" :count="5" active-color="#2979ff" :percent="getPartModelData(ssubCol,comColMap,cellItemData)||0"></u-line-progress> -->
+                    <el-rate :disabled="true" v-else-if="ssubCol.parts_type == 'rate'" :count="5"
+                      :value="getPartModelData(ssubCol,comColMap,cellItemData)||0"></el-rate>
+                    <el-progress :show-percent="false"  :style="[buildColStyleJson(ssubCol.style_json || null)]" v-else-if="ssubCol.parts_type == 'progress'" :count="5" active-color="#2979ff" :percentage="getPartModelData(ssubCol,comColMap,cellItemData)||0"></el-progress>
+                   
                     <u-parse v-else-if="ssubCol.parts_type == '富文本' && partsShow(ssubCol,comColMap,cellItemData)"
                       :style="[buildColStyleJson(ssubCol.style_json || null)]"
                       :html="getPartModelData(ssubCol,comColMap,cellItemData)" @click="false"></u-parse>
@@ -139,9 +140,9 @@
                           :src="getImagePath(getPartModelData(sssubCol,comColMap,cellItemData),150)"
                           class="demo-layout bx-text-cell" :style="[buildColStyleJson(sssubCol.style_json || null)]">
                         </el-image>
-                        <u-rate :disabled="true" v-else-if="sssubCol.parts_type == 'rate'" :count="5"
-                          :current="getPartModelData(sssubCol,comColMap,cellItemData)||0"></u-rate>
-                        <!-- <u-line-progress :show-percent="false"   :style="[buildColStyleJson(sssubCol.style_json || null)]" v-else-if="sssubCol.parts_type == 'progress'" :count="5" active-color="#2979ff" :percent="getPartModelData(sssubCol,comColMap,cellItemData)||0"></u-line-progress> -->
+                        <el-rate :disabled="true" v-else-if="sssubCol.parts_type == 'rate'" :count="5"
+                          :value="getPartModelData(sssubCol,comColMap,cellItemData)||0"></el-rate>
+                        <el-progress :show-percent="false"   :style="[buildColStyleJson(sssubCol.style_json || null)]" v-else-if="sssubCol.parts_type == 'progress'" :count="5" active-color="#2979ff" :percentage="getPartModelData(sssubCol,comColMap,cellItemData)||0"></el-progress>
                         <i v-else-if="sssubCol.parts_type == 'icon' && partsShow(sssubCol,comColMap,cellItemData)"
                           :class="sssubCol.parts_text" :style="[buildColStyleJson(sssubCol.style_json || null)]"
                           @click.stop="onClickSubBlock(cellItemData,sssubCol,cellLayoutJson,ssubCol)"></i>
@@ -178,9 +179,9 @@
                               :src="getImagePath(getPartModelData(sssubCol4,comColMap,cellItemData),150)"
                               class="demo-layout bx-text-cell" :style="[buildColStyleJson(sssubCol4.style_json || null)]" lazy>
                             </el-image>
-                            <u-rate :disabled="true" v-else-if="sssubCol4.parts_type == 'rate'" :count="5"
-                              :current="getPartModelData(sssubCol4,comColMap,cellItemData)||0"></u-rate>
-                            <!-- <u-line-progress :show-percent="false"  :style="[buildColStyleJson(sssubCol4.style_json || null)]" v-else-if="sssubCol4.parts_type == 'progress'" :count="5" active-color="#2979ff" :percent="getPartModelData(sssubCol4,comColMap,cellItemData)||0"></u-line-progress> -->
+                            <el-rate :disabled="true" v-else-if="sssubCol4.parts_type == 'rate'" :count="5"
+                              :value="getPartModelData(sssubCol4,comColMap,cellItemData)||0"></el-rate>
+                            <el-progress :show-percent="false"  :style="[buildColStyleJson(sssubCol4.style_json || null)]" v-else-if="sssubCol4.parts_type == 'progress'" :count="5" active-color="#2979ff" :percentage="getPartModelData(sssubCol4,comColMap,cellItemData)||0"></el-progress>
                             <i
                               v-else-if="sssubCol4.parts_type == 'icon' && partsShow(sssubCol4,comColMap,cellItemData)"
                               :class="sssubCol4.parts_text" :style="[buildColStyleJson(sssubCol4.style_json || null)]"
@@ -194,7 +195,7 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </template>
                 </div>
               </div>
             </div>
