@@ -33,7 +33,11 @@ export default {
                     { required: true, message: '请输入页面标题', trigger: 'blur' },
                     { min: 1, max: 50, message: '长度在 3 到 5 个字符', trigger: 'blur' }
                 ]
-              }
+              },
+              
+              // 移植参数相关
+              pageParams:null,
+              pageParamsModel:null,
         }
     },
     computed:{
@@ -46,6 +50,21 @@ export default {
            mergeList = newList.concat(loadComList)
            return mergeList
         },
+        
+              // 移植参数相关
+        urlSearchParams(){
+          // url 参数
+          let query = null
+          if(this.$route.query){
+            query = this.$route.query
+          }
+
+          return query
+        },
+        pageInfo(){  // 页面配置
+          let obj = this.loadPageMode
+          return obj
+        }
     },
     methods: {
         // 方法
@@ -164,8 +183,31 @@ export default {
                         this.$set(this.pageModel,'page_name',oldPageData['page_name'])
                         this.$set(this.pageModel,'page_title',oldPageData['page_title'])
                         this.buildLoadComList()
+
+                        this.getPageInitQueryOptions()  // 页面参数
                         
                     }
+                    if(!pageInfo['interface_json_data']){
+                      pageInfo['interface_json_data'] = JSON.parse( pageInfo['interface_json'])
+                      pageInfo.interface_json_data.forEach(item => {
+                        const val = this.urlSearchParams[item.para]
+                        if (item.default_val && [null, undefined, 'null', 'undefined'].includes(val)) {
+                          this.$set(this.urlSearchParams, item.para, item.default_val)
+                        }
+                      })
+                    }
+                   
+                    return this.initPageParams().then((r) => {
+                      if (r) {
+                        return new Promise(function(resolve, reject) {
+                          resolve(true)
+                        })
+                      } else {
+                        return new Promise(function(resolve, reject) {
+                          resolve(false)
+                        })
+                      }
+                    })
               })
           },
           buildLoadComList(){
@@ -696,6 +738,138 @@ export default {
                 
                     
             })
+          },
+          
+          // 根据配置的接口查询页面全局参数
+    async getPageInitQueryOptions() {
+      // 页面请求
+      if (this.pageInfo.cols_map_json_data && this.pageInfo.srv_req_json_data) {
+        const urlSearchParams = this.urlSearchParams || {}
+        const params = {
+          ...urlSearchParams
+        }
+        const req = JSON.parse(this.renderStr(JSON.stringify(this.pageInfo.srv_req_json_data), params));
+        const url = `/${req.mapp||window.sessionStorage.getItem('activeApp')}/select/${req.serviceName}`
+        const res = await this.$http.post(url, req)
+        if (res?.data?.data?.length) {
+          const data = res?.data?.data[0]
+          const keys = Object.keys(this.pageInfo.cols_map_json_data)
+          if (keys.length > 0) {
+            keys.forEach(key => {
+              this.$set(this.queryOptions, key, data[this.pageInfo.cols_map_json_data[key]])
+            })
+          }
+          return data
+        }
+      } else {
+        return
+      }
+
+    },
+          getInitParams() {
+            // 页面前端运行固定参数
+            const loginUserInfo = window.sessionStorage.getItem('current_login_user')
+            const basicParamsModel = {
+              '_isBindMobile': loginUserInfo?.mobile, // 登录用户
+              '_isAnonymLogin': loginUserInfo?.login_state === 'anon_login', // 匿名,未登录用户
+              '_isVerified': loginUserInfo && loginUserInfo?.login_state !== 'anon_login' && loginUserInfo.mobile &&
+                loginUserInfo.hasOwnProperty('otherTenantInfos') && loginUserInfo.otherTenantInfos.length > 0, // 被认证，认证用户
+            }
+            if (this.urlSearchParams && Object.keys(this.urlSearchParams).length > 0) {
+              Object.keys(this.urlSearchParams).forEach(key => {
+                basicParamsModel[key] = {
+                  value: this.urlSearchParams[key]
+                }
+              })
+            }
+            return basicParamsModel
+          },
+          async initPageParams() {
+            // 初始化页面参数 
+            let self = this
+            let getInit = self.getInitParams()
+            return await new Promise(function(resolve, reject) {
+              //异步操做
+              // 小程序 为   let paraJson = self.pageInfo?.interface_json_data || self.pageInfo?.para_json  PC端没有 interface_json_data
+              let paraJson = self.pageInfo?.interface_json || self.pageInfo?.para_json
+              let paraJsonV2 = self.pageInfo?.para_with_map_json_data || null
+              console.log('new Promise( paraJson', paraJson)
+              self.pageParams = {}
+              if ((!self.urlSearchParams || Object.keys(self.urlSearchParams).length === 0) && paraJson && paraJson
+                .length > 0) {
+                paraJson.forEach(item => {
+                  item.value = item.default_val || ''
+                })
+              } else if (Array.isArray(paraJson) && paraJson && paraJson.length > 0) {
+                console.log('-- page paraJson  init SUCCESS --')
+                console.log(paraJson, self.urlSearchParams)
+                for (let param of paraJson) {
+                  let keyName = param.para_name || param.para
+                  let urlParamsKeys = self.urlSearchParams ? Object.keys(self.urlSearchParams) : [];
+                  if (urlParamsKeys.indexOf(keyName) !== -1) {
+                    param.value = self.urlSearchParams[keyName]
+                  } else {
+                    param.value = param.default_val
+                  }
+                  // for (let key in self.urlSearchParams) {
+                  // 	if (key == param.para_name && self.urlSearchParams[key]) {
+                  // 		param.value = self.urlSearchParams[key]
+                  // 	}else{
+                  // 		param.value = param.default_val
+                  // 	}
+                  // }
+      
+                  self.$set(self.pageParams, keyName, param)
+                }
+                self.$set(self, 'pageParamsModel', self.deepClone(self.pageParams))
+              }
+              if (paraJsonV2 && paraJsonV2.length > 0) {
+                console.log('-- page paraJson V2  init SUCCESS --')
+                let Model = {}
+                for (let param of paraJsonV2) {
+                  for (let key in self.urlSearchParams) {
+                    if (key == param.para && self.urlSearchParams[key]) {
+                      param['value'] = self.urlSearchParams[key]
+                    } else {
+                      param['value'] = param.default_val || ''
+                    }
+                  }
+                  Model[param.para] = param
+                  self.$set(self.pageParams, param.para, param)
+                }
+      
+                self.$set(self, 'pageParamsModel', self.deepClone(Model))
+              }
+              self.$set(self, 'pageParamsModel', {
+                ...self.pageParamsModel,
+                ...getInit
+              })
+              // if(self.urlSearchParams){
+      
+              // 	console.log('-- page urlSearchParams init SUCCESS --')
+              // 	for(let key in self.urlSearchParams){
+              // 		self.$set(self.pageParams,key,{value:self.urlSearchParams[key]})
+              // 	}
+              // }
+              resolve(true)
+            });
+      
+          },
+          setPageParams(key, val) {
+            let self = this
+            // this.pageParams[key] = val
+            if (self.pageParamsModel && key) {
+              for (let p in self.pageParamsModel) {
+                if (p == key && self.pageParamsModel[key]) {
+                  console.log('--', val)
+                  let item = self.deepClone(self.pageParamsModel[key])
+                  item.value = val
+                  self.$set(self.pageParamsModel, key, item)
+                }
+              }
+      
+            }
+      
           }
 
         
