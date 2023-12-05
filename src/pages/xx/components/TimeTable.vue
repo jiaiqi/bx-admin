@@ -205,10 +205,10 @@ export default {
         this.currentMonth = dayjs(date).format("YYYY年MM月");
         if (this.currentDate && dayjs(this.currentDate).format('YYYY年MM月') !== this.currentMonth) {
           this.currentDate = new Date(date);
-          this.loadData(null,date)
+          this.loadData(null, date)
         }
       }
-      const result = this.dateMap[date];
+      const result = this.dateMap[date] || {};
       if (!result) {
         return false
       }
@@ -233,13 +233,13 @@ export default {
       }
       if (result._lessons?.length) {
         result._lessons_text = `课节(${result._lessons.join(",")})`
+        if (result._time_slot) {
+          result._time_slot += `,${result._lessons_text}`
+        } else {
+          result._time_slot = result._lessons_text
+        }
       }
-      if (result._time_slot) {
-        result._time_slot += `,${result._lessons_text}`
-      } else {
-        result._time_slot = result._lessons_text
-      }
-      return result
+      return result || {}
     },
     setClass(date, data) {
       // date:日期对象
