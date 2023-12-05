@@ -885,15 +885,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         {
           name: "其他交易",
           value: 10,
-        },
-        {
-          name: "土地交易",
-          value: 10,
-        },
-        {
-          name: "其他交易",
-          value: 10,
-        },
+        }
       ];
       var total = scaleData.reduce((pre, cur) => {
         return pre + cur.value;
@@ -986,19 +978,19 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
             value: scaleData[i].value,
             name: scaleData[i].name,
             itemStyle: {
-              normal: {
-                borderWidth: 5,
-                shadowBlur: 20,
-                borderColor: color[i],
-                shadowColor: color[i],
-              },
+              // normal: {
+              //   borderWidth: 0,
+              //   shadowBlur: 20,
+              //   borderColor: color[i],
+              //   shadowColor: color[i],
+              // },
             },
           },
-          {
-            value: 2,
-            name: "",
-            itemStyle: placeHolderStyle,
-          }
+          // {
+          //   value: 2,
+          //   name: "",
+          //   itemStyle: placeHolderStyle,
+          // }
         );
       }
       option.series = [
@@ -1007,7 +999,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           type: "pie",
           clockWise: false,
           // radius: ["50%", "52%"],
-          radius: chartType === "ring" ? ["50%", "52%"] : null,
+          radius: chartType === "ring" ? ["50%", "52%"] : '50%',
           hoverAnimation: false,
           itemStyle: {
             normal: {
