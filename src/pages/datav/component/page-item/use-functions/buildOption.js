@@ -179,7 +179,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
           // color: this.color,
           // type: type,
-          markLine: {
+        
+        };
+        if(lineVal1&&lineVal2&&lineVal1!=='none'&&lineVal2!=='none'){
+          series.markLine =  {
             symbol: "none",
             label: {
               show: true,
@@ -205,8 +208,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               color: "#FF7A42",
               type: "solid",
             },
-          },
-        };
+          }
+        }
 
         if (seriesName.length <= 2) {
           series.yAxisIndex = sIndex;
@@ -498,18 +501,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         { value: "26", name: "小米" },
         { value: "25", name: "美图" },
         { value: "24", name: "ONEPLUS" },
-        { value: "23", name: "魅族" },
-        { value: "22", name: "红手指" },
-        { value: "21", name: "SAMSUNG" },
-        { value: "20", name: "金立" },
-        { value: "16", name: "BLACKBERRY" },
-        { value: "15", name: "诺基亚" },
-        { value: "14", name: "锤子" },
-        { value: "13", name: "大疆" },
-        { value: "12", name: "361" },
-        { value: "11", name: "摩托罗拉" },
-        { value: "10", name: "联想" },
-        { value: "9", name: "玩家国度" },
+        { value: "23", name: "魅族" }
       ];
       if (
         cellData?.length &&

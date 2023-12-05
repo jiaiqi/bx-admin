@@ -31,7 +31,7 @@
               :height="buildColStyleJson(item.style_json || null).height || 'auto'"
               :width="buildColStyleJson(item.style_json || null).width || '100%'"
               :border-radius="buildColStyleJson(item.style_json || null)['border-radius']"
-              :image="getImagePath(getPartModelData(item,comColMap,cellItemData),150)" class="demo-layout bx-text-cell"
+              :src="getImagePath(getPartModelData(item,comColMap,cellItemData),150)" class="demo-layout bx-text-cell"
               :style="[buildColStyleJson(item.style_json || null)]" mode="aspectFill" img-mode="aspectFill"></el-image>
             <u-rate :disabled="true" v-else-if="item.parts_type == 'rate'" :count="5"
               :current="getPartModelData(item,comColMap,cellItemData)||0"></u-rate>
@@ -64,7 +64,7 @@
                   :loading-img="getImagePath(subCol.parts_img)"
                   :height="buildColStyleJson(subCol.style_json || null).height || 'auto'"
                   :width="buildColStyleJson(subCol.style_json || null).width || '100%'"
-                  :image="getImagePath(getPartModelData(subCol,comColMap,cellItemData),150)"
+                  :src="getImagePath(getPartModelData(subCol,comColMap,cellItemData),150)"
                   class="demo-layout bx-text-cell" :style="[buildColStyleJson(subCol.style_json || null)]"></el-image>
                 <u-rate :disabled="true" v-else-if="subCol.parts_type == 'rate'" :count="5"
                   :current="getPartModelData(subCol,comColMap,cellItemData)||0"></u-rate>
@@ -100,7 +100,7 @@
                       :loading-img="getImagePath(ssubCol.parts_img)"
                       :height="buildColStyleJson(ssubCol.style_json || null).height || 'auto'"
                       :width="buildColStyleJson(ssubCol.style_json || null).width || '100%'"
-                      :image="getImagePath(getPartModelData(ssubCol,comColMap,cellItemData),150)"
+                      :src="getImagePath(getPartModelData(ssubCol,comColMap,cellItemData),150)"
                       class="demo-layout bx-text-cell" :style="[buildColStyleJson(ssubCol.style_json || null)]">
                     </el-image>
                     <u-rate :disabled="true" v-else-if="ssubCol.parts_type == 'rate'" :count="5"
@@ -136,7 +136,7 @@
                           :loading-img="getImagePath(sssubCol.parts_img)"
                           :height="buildColStyleJson(sssubCol.style_json || null).height || 'auto'"
                           :width="buildColStyleJson(sssubCol.style_json || null).width || '100%'"
-                          :image="getImagePath(getPartModelData(sssubCol,comColMap,cellItemData),150)"
+                          :src="getImagePath(getPartModelData(sssubCol,comColMap,cellItemData),150)"
                           class="demo-layout bx-text-cell" :style="[buildColStyleJson(sssubCol.style_json || null)]">
                         </el-image>
                         <u-rate :disabled="true" v-else-if="sssubCol.parts_type == 'rate'" :count="5"
@@ -175,7 +175,7 @@
                               :loading-img="getImagePath(sssubCol4.parts_img)"
                               :height="buildColStyleJson(sssubCol4.style_json || null).height || 'auto'"
                               :width="buildColStyleJson(sssubCol4.style_json || null).width || '100%'"
-                              :image="getImagePath(getPartModelData(sssubCol4,comColMap,cellItemData),150)"
+                              :src="getImagePath(getPartModelData(sssubCol4,comColMap,cellItemData),150)"
                               class="demo-layout bx-text-cell" :style="[buildColStyleJson(sssubCol4.style_json || null)]" lazy>
                             </el-image>
                             <u-rate :disabled="true" v-else-if="sssubCol4.parts_type == 'rate'" :count="5"
