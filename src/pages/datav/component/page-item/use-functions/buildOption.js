@@ -179,10 +179,14 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
           // color: this.color,
           // type: type,
-        
         };
-        if(lineVal1&&lineVal2&&lineVal1!=='none'&&lineVal2!=='none'){
-          series.markLine =  {
+        if (
+          lineVal1 &&
+          lineVal2 &&
+          lineVal1 !== "none" &&
+          lineVal2 !== "none"
+        ) {
+          series.markLine = {
             symbol: "none",
             label: {
               show: true,
@@ -208,7 +212,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               color: "#FF7A42",
               type: "solid",
             },
-          }
+          };
         }
 
         if (seriesName.length <= 2) {
@@ -335,7 +339,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
         };
         if (type === "ring") {
-          series.radius = ["42%", "50%"];
+          series.radius = ["50%", "52%"];
           series.labelLine = {
             normal: {
               labelLine: {
@@ -343,10 +347,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 length2: 30,
                 show: true,
               },
-            }
+            },
+          };
         }
-        }
-        for (let data of datas) {
+        for (let data of cellData) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
             value: data[dataColName],
@@ -366,7 +370,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       ecOptions["legend"]["x"] = "65%";
       ecOptions["legend"]["align"] = "left";
 
-      ecOptions["text"] = "总数";
       let pieDatas = ecOptions["series"][0]["data"];
       ecOptions["legend"]["formatter"] = function (name) {
         let v;
@@ -377,28 +380,30 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         return `${name}(${v})`;
       };
-      ecOptions["title"] = {
-        // 主标题样式
-        textAlign: "center", //整体水平对齐（包括text和subtext）
-        textStyle: {
-          color: "#666",
-          fontSize: 12,
-          align: "center",
-        },
-        itemGap: 10,
-        text: "总数",
-        subtext: pieDatas.reduce(function (prev, cur) {
-          return cur.value + prev;
-        }, 0),
-        // 副标题样式
-        subtextStyle: {
-          color: "#0055ff",
-          fontSize: 18,
-          align: "center", //文字水平对齐方式（left/right）
-        },
-        left: "33.3%",
-        top: "40%",
-      };
+      if (chartType == "ring") {
+        ecOptions["title"] = {
+          // 主标题样式
+          textAlign: "center", //整体水平对齐（包括text和subtext）
+          textStyle: {
+            color: "#666",
+            fontSize: 12,
+            align: "center",
+          },
+          itemGap: 10,
+          text: "总数",
+          subtext: pieDatas.reduce(function (prev, cur) {
+            return cur.value + prev;
+          }, 0),
+          // 副标题样式
+          subtextStyle: {
+            color: "#0055ff",
+            fontSize: 18,
+            align: "center", //文字水平对齐方式（left/right）
+          },
+          left: "33.3%",
+          top: "40%",
+        };
+      }
       delete ecOptions.xAxis;
       delete ecOptions.yAxis;
       break;
@@ -510,7 +515,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         { value: "26", name: "小米" },
         { value: "25", name: "美图" },
         { value: "24", name: "ONEPLUS" },
-        { value: "23", name: "魅族" }
+        { value: "23", name: "魅族" },
       ];
       if (
         cellData?.length &&
@@ -858,7 +863,6 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       }
       break;
     case "pie":
-      break;
     case "ring":
       option.legend = {
         show: false,
@@ -909,18 +913,20 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       // let title = `{total|${total}\r\n${
       //   chartJson?.ring_sum_label || "总考生数"
       // }`;
-      const title = chartJson?.ring_sum_label || "总考生数";
-      option.title = {
-        text: title,
-        left: "center",
-        top: "35%",
-        padding: [24, 0],
-        textStyle: {
-          color: "#fff",
-          fontSize: 18 * scale,
-          align: "center",
-        },
-      };
+      if (chartType === "ring") {
+        const title = chartJson?.ring_sum_label || "总考生数";
+        option.title = {
+          text: title,
+          left: "center",
+          top: "35%",
+          padding: [24, 0],
+          textStyle: {
+            color: "#fff",
+            fontSize: 18 * scale,
+            align: "center",
+          },
+        };
+      }
 
       // option.legend = {
       //   selectedMode: false,
@@ -1000,7 +1006,8 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           name: "",
           type: "pie",
           clockWise: false,
-          radius: ["50%", "52%"],
+          // radius: ["50%", "52%"],
+          radius: chartType === "ring" ? ["50%", "52%"] : null,
           hoverAnimation: false,
           itemStyle: {
             normal: {

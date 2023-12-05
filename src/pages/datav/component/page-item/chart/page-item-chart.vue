@@ -49,6 +49,7 @@ const chartType = computed(() => {
       break;
     case "饼图":
       chartType = "pie";
+      break;
     case "环图":
       chartType = "ring";
       break;
