@@ -61,6 +61,12 @@ const chartType = computed(() => {
     case "地图":
       chartType = "map";
       break;
+    case "雷达图":
+      chartType = "radar";
+      break;
+    case "词云图":
+      chartType = "wordcloud";
+      break;
     default:
       break;
   }
@@ -71,8 +77,8 @@ const chartType = computed(() => {
 onMounted(() => {
   if (pageItem?.srv_req_type === '模拟数据' && pageItem?.mock_srv_data_json?.length) {
     // 使用模拟数据
-    const cellData = pageItem.mock_srv_data_json;
-    option.value = useBuildOption(chartType.value, pageItem, cellData, props.layout);
+    cellData.value = pageItem.mock_srv_data_json;
+    option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
   } else {
     onSrvReq();
     if (pageItem?.srv_req_json?.cycle_req_timer) {
@@ -108,7 +114,7 @@ const onSrvReq = async () => {
 
 const chartRef = ref(null);
 const onResize = () => {
-  option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
+  // option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
   chartRef?.value?.onResize();
 };
 defineExpose({

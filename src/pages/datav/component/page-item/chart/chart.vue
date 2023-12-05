@@ -1,6 +1,7 @@
 <script setup>
 import { setDefaultChartOption } from "../../page-item/use-functions/buildOption.js"
 import * as echarts from "echarts";
+import 'echarts-wordcloud';
 // import 'echarts/extension/bmap/bmap';
 // import "echarts-gl";
 import { onMounted, ref, watch } from "vue";
@@ -30,17 +31,15 @@ const chartOption = ref(null);
 
 let myChart = null;
 
-const setChartOption = (chart) => {
+const setChartOption = () => {
   // 指定图表的配置项和数据
   const defaultOption = setDefaultChartOption(chartType, pageItem?.chart_json, echarts)//生成图表默认配置
   const option = {
     ...defaultOption,
     ...props.chartOption,
   };
-  if(props.colors?.length){
+  if (props.colors?.length) {
     option.color = props.colors
-  }
-  if(props.chartType==='map'){
   }
   // 使用刚指定的配置项和数据显示图表。
   myChart.setOption(option);
@@ -50,12 +49,12 @@ const setChartOption = (chart) => {
 onMounted(() => {
   // 基于准备好的dom，初始化echarts实例
   myChart = echarts.init(document.getElementById(props.canvasId));
-  setChartOption(myChart);
+  setChartOption();
   setTimeout(() => {
     myChart.resize();
   }, 100);
   watch(() => props.chartOption, () => {
-    setChartOption(myChart);
+    setChartOption();
   })
 });
 
@@ -63,13 +62,16 @@ watch(
   () => props.chartOption,
   () => {
     if (props.chartOption) {
-      setChartOption(props.chartOption, myChart);
+      setChartOption();
     }
   }
 );
 
 const onResize = () => {
   myChart.resize();
+  setTimeout(() => {
+    setChartOption();
+  }, 100);
 };
 
 defineExpose({
