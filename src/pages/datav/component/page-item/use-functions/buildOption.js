@@ -13,7 +13,7 @@ let __colors = [
   "#82B6F7",
 ];
 export const useBuildOption = (type, pageItem, cellData = [], layout) => {
-  const colors = [...__colors];
+  let colors = [...__colors];
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
