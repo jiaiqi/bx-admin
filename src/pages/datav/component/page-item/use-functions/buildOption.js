@@ -565,15 +565,17 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
             left: "center",
             top: "center",
-            width: "100%",
-            height: "100%",
-            right: null,
-            bottom: null,
+            width: "90%",
+            height: "90%",
+            left: "center",
+            top: "center",
+            right: 'center',
+            bottom: 'center',
 
             // Text size range which the value in data will be mapped to.
             // Default to have minimum 12px and maximum 60px size.
 
-            sizeRange: [14, 50],
+            sizeRange: [12, 40],
 
             // Text rotation range and step in degree. Text will be rotated randomly in range [-90, 90] by rotationStep 45
 
@@ -582,7 +584,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
             // size of the grid in pixels for marking the availability of the canvas
             // the larger the grid size, the bigger the gap between words.
-
             gridSize: 25,
 
             // set to true to allow word being draw partly outside of the canvas.
