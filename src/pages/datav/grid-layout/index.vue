@@ -1,12 +1,12 @@
 <template>
   <div class="customhome-container" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
-    <div class="page-header">
+    <!-- <div class="page-header">
       <div class="left"></div>
-      <div class="right" @click="openFullscreen">
-        <span class="iconfont icon-tuichuquanping" v-if="isFullScreen" title="退出全屏"></span>
-        <span class="iconfont icon-quanping" v-else title="全屏"></span>
+      <div class="right" @click="openFullscreen" v-if="showFullScreen">
+        <span class="iconfont el-icon-rank" v-if="isFullScreen" title="退出全屏"></span>
+        <span class="iconfont el-icon-full-screen" v-else title="全屏"></span>
       </div>
-    </div>
+    </div> -->
     <div class="cushome-sidebar" v-if="!isDataview">
       <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
         class="com-item margin" draggable="true" unselectable="on">
@@ -1083,7 +1083,7 @@ export default {
   position: relative;
   display: flex;
   justify-content: space-between;
-  padding-top: 20px;
+  padding-top: 30px;
   padding-right: 40px;
   z-index: 99;
 
@@ -1091,7 +1091,7 @@ export default {
     color: #fff;
 
     .iconfont {
-      font-size: 40px;
+      font-size: 30px;
       cursor: pointer;
     }
   }

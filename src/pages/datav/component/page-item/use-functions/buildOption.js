@@ -286,14 +286,16 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
           const val =
             Math.abs(nOption.max - nOption.min) / nOption.legend.length;
-
           ecOptions.yAxis[0].min = (
             pageItem.min ||
             nOption.min - val ||
             0
           ).toFixed(2);
+          if(ecOptions.yAxis[0].min<0){
+            ecOptions.yAxis[0].min = 0
+          }
 
-          ecOptions.yAxis[0].max = (pageItem.max || nOption.max + val).toFixed(
+          ecOptions.yAxis[0].max = ((pageItem.max || nOption.max) + val).toFixed(
             2
           );
 
@@ -1054,7 +1056,10 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       option.geo = {
         map: "mapName",
         roam: true,
-        // top:'3%',
+        top:"0",
+        // left:'0%',
+        // right:'0%',
+        bottom:'0',
         label: {
           normal: {
             show: false,
@@ -1063,7 +1068,6 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
             show: false,
           },
         },
-
         itemStyle: {
           normal: {
             areaColor: "#1180c7",

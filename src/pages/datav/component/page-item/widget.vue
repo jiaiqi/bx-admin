@@ -4,16 +4,16 @@
       pageItem.widget_json.init_val || ""
     }}</span>
   </div>
-  <date-time
-    v-else-if="widgetType === '时间日期'"
-    :show-seconds="showSeconds"
-    :parts-set="timeWidgetJson['parts-set']"
-    :color="widgetColor"
-  ></date-time>
+  <date-time v-else-if="widgetType === '时间日期'" :show-seconds="showSeconds" :parts-set="timeWidgetJson['parts-set']"
+    :color="widgetColor"></date-time>
+  <div class="full-screen" @click="openFullscreen" v-else-if="widgetType === 'fullscreen'" :style="[textWidgetJson]">
+    <span class="el-icon-rank" v-if="isFullScreen" title="退出全屏" style="transform: rotate(45deg);"></span>
+    <span class="el-icon-full-screen" v-else title="全屏"></span>
+  </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { formatStyleData } from "@/common/common.js";
 import dateTime from "../widgets/date-time.vue";
 const props = defineProps({
@@ -40,11 +40,84 @@ const showSeconds = computed(() => {
 });
 
 const widgetType = computed(() => {
-  return props.pageItem?.widget_json?.widget_type;
+  let type = props.pageItem?.widget_json?.widget_type;
+  if (type === '系统按钮') {
+    type = props.pageItem?.widget_json?.button_cfg_json?.sys_button_type
+  }
+  return type
 });
+
 const widgetColor = computed(() => {
   return props.pageItem?.widget_json?.col_text_pub_style_json?.color;
 });
+
+const isFullScreen = ref(false)
+function openFullscreen() {
+  isFullScreen.value = !isFullScreen.value;
+  toggleFullScreen();
+}
+function requestFullScreen(element) {
+  //进入全屏状态 判断各种浏览器，找到正确的方法
+  if (!element) {
+    element = document.body;
+  }
+  var requestMethod =
+    element.requestFullScreen || //W3C
+    element.webkitRequestFullScreen || //Chrome等
+    element.mozRequestFullScreen || //FireFox
+    element.msRequestFullScreen; //IE11
+  if (requestMethod) {
+    requestMethod.call(element);
+  } else if (typeof window.ActiveXObject !== "undefined") {
+    //for Internet Explorer
+    var wscript = new ActiveXObject("WScript.Shell");
+    if (wscript !== null) {
+      wscript.SendKeys("{F11}");
+    }
+  }
+}
+function toggleFullScreen() {
+  //切换全屏状态
+  if (!document.fullscreenElement) {
+    requestFullScreen();
+    // document.documentElement.requestFullscreen();
+  } else {
+    exitFullScreen();
+    // if (document.exitFullscreen) {
+    //   document.exitFullscreen();
+    // }
+  }
+}
+function exitFullScreen() {
+  // 退出全屏状态 判断各种浏览器，找到正确的方法
+  var exitMethod =
+    document.exitFullscreen || //W3C
+    document.mozCancelFullScreen || //FireFox
+    document.webkitExitFullscreen || //Chrome等
+    document.webkitExitFullscreen; //IE11
+  if (exitMethod && document.fullscreenElement) {
+    exitMethod.call(document);
+  } else if (typeof window.ActiveXObject !== "undefined") {
+    //for Internet Explorer
+    var wscript = new ActiveXObject("WScript.Shell");
+    if (wscript !== null) {
+      wscript.SendKeys("{F11}");
+    }
+  }
+}
+
+window.onresize = () => {
+  if (!document.fullscreenElement) {
+    isFullScreen.value = false
+  } else {
+    isFullScreen.value = true
+  }
+};
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.full-screen {
+  cursor: pointer;
+  font-size: 30px;
+}
+</style>
