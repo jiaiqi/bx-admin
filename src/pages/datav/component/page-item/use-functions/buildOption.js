@@ -1,23 +1,19 @@
-let colors = [
+let __colors = [
   "#007AFF",
   "#66E1DF",
   "#34C758",
   "#FFCB01",
   "#FF9502",
-  "#007AFF",
-  "#66E1DF",
-  "#34C758",
-  "#FFCB01",
-  "#FF9502",
+  "#FF3A30",
+  "#A8071A",
+  "#EB2F96",
+  "#AF52DE",
+  "#5756D7",
+  "#D0DEEE",
+  "#82B6F7",
 ];
 export const useBuildOption = (type, pageItem, cellData = [], layout) => {
-  // if (
-  //   pageItem?.srv_req_type === "模拟数据" &&
-  //   pageItem?.mock_srv_data_json?.length
-  // ) {
-  //   // 使用模拟数据
-  //   cellData = pageItem.mock_srv_data_json;
-  // }
+  const colors = [...__colors];
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
@@ -318,7 +314,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
-          name: seriesName[sIndex], // 名称
+          name: "", // 名称
           type: "pie", // 类型 饼图
           //   color: color,
           // radius: ["45%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
@@ -421,7 +417,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           left: "center",
           top: "30%",
           padding: [24, 0],
-          subtext:title, 
+          subtext: title,
           subtextStyle: {
             color: "#fff",
             fontSize: 14,
@@ -824,6 +820,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
  * @param {*} chartJson 图表配置
  */
 export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
+  const colors = [...__colors];
   const option = {
     color: colors,
     tooltip: {},
