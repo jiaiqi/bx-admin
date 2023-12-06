@@ -107,7 +107,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       },
     ],
     tooltip: {
-      trigger: "item", // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
+      trigger: "axis", // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
     }, //点击折点 展示的样式
     series: [], //y轴展示的数据
   };
@@ -295,9 +295,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             (pageItem.max || nOption.max) + val
           ).toFixed(2);
 
-          // option.yAxis = [{
-
-          // }]
+          ecOptions.tooltip.trigger = "axis";
         }
       }
       ecOptions["xAxis"]["data"] = [
@@ -356,7 +354,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             name: "",
             type: "pie",
             clockWise: false,
-            radius: ["50%", "60%"],
+            radius: ["50%", "55%"],
             hoverAnimation: false,
             itemStyle: {
               normal: {
@@ -382,8 +380,30 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           let dataItem = {
             value: data[dataColName],
             name: data[chartJson?.series_name_cfg || sortAxisCol],
+            itemStyle: {
+              normal: {
+                borderWidth: 5,
+              },
+            },
           };
           series["data"].push(dataItem);
+          // series["data"].push({
+          //   value: 5,
+          //   name: "",
+          //   itemStyle: {
+          //     normal: {
+          //       label: {
+          //         show: false,
+          //       },
+          //       labelLine: {
+          //         show: false,
+          //       },
+          //       color: "rgba(0, 0, 0, 0)",
+          //       borderColor: "rgba(0, 0, 0, 0)",
+          //       borderWidth: 0,
+          //     },
+          //   },
+          // });
           let legendItem = {
             name: data[chartJson?.series_name_cfg || sortAxisCol],
             icon: "circle",
@@ -772,7 +792,9 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         // tooltip: {
         //   trigger: 'item' // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
         // }, //点击折点 展示的样式
-        markLine: {
+      };
+      if (lineVal1 && lineVal2 && lineVal1 !== "none" && lineVal2 !== "none") {
+        obj.markLine = {
           symbol: "none",
           label: {
             show: true,
@@ -792,9 +814,11 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
             color: "#FF7A42",
             type: "solid",
           },
-        },
-      };
-
+        };
+      }
+      if(chartJson?.more_option?.indexOf("stack")){
+        obj.stack = "总量";
+      }
       if (
         chartJson.more_option &&
         chartJson.more_option.indexOf("x轴反序") > -1
