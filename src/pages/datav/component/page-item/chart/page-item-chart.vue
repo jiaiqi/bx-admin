@@ -78,6 +78,7 @@ const chartType = computed(() => {
 onMounted(() => {
   if (pageItem?.srv_req_type === '模拟数据' && pageItem?.mock_srv_data_json?.length) {
     // 使用模拟数据
+  
     cellData.value = pageItem.mock_srv_data_json;
     option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
   } else {

@@ -291,13 +291,13 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             nOption.min - val ||
             0
           ).toFixed(2);
-          if(ecOptions.yAxis[0].min<0){
-            ecOptions.yAxis[0].min = 0
+          if (ecOptions.yAxis[0].min < 0) {
+            ecOptions.yAxis[0].min = 0;
           }
 
-          ecOptions.yAxis[0].max = ((pageItem.max || nOption.max) + val).toFixed(
-            2
-          );
+          ecOptions.yAxis[0].max = (
+            (pageItem.max || nOption.max) + val
+          ).toFixed(2);
 
           // option.yAxis = [{
 
@@ -322,51 +322,81 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           type: "pie", // 类型 饼图
           //   color: color,
           // radius: ["45%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
-          center: ["35%", "50%"], // 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
+          center: ["50%", "50%"], // 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
           // roseType: "area", // 是否展示成南丁格尔图，通过半径区分数据大小
           itemStyle: {
             normal: {
               label: {
                 position: "outside",
                 alignTo: "labelLine",
-                show: false,
-                formatter: "{b} : {c} ({d}%)",
-                bleedMargin: 3,
+                show: true,
+                formatter: `{b} : {c}${chartJson?.y1_unit || ""}`,
+                // bleedMargin: 3,
               },
               labelLine: {
-                show: false,
+                show: true,
+                length: 10,
+                length2: 15,
               },
             },
           },
           data: [],
         };
         if (type === "ring") {
-          series.radius = ["50%", "52%"];
-          series.labelLine = {
-            normal: {
-              labelLine: {
-                length: 30,
-                length2: 30,
-                show: true,
+          var rich = {
+            total: {
+              color: "#ffc72b",
+              fontSize: 40 * 1,
+              align: "center",
+            },
+            white: {
+              color: "#ddd",
+              align: "center",
+              padding: [3, 0],
+            },
+          };
+
+          series = {
+            name: "",
+            type: "pie",
+            clockWise: false,
+            radius: ["50%", "60%"],
+            hoverAnimation: false,
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "outside",
+                  color: "#ddd",
+                  formatter: `{b} : {c}${chartJson?.y1_unit || ""}`,
+                  rich: rich,
+                },
+                labelLine: {
+                  length: 10,
+                  length2: 20,
+                  show: true,
+                },
               },
             },
+            data: [],
           };
         }
         for (let data of cellData) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
             value: data[dataColName],
-            name: data[sortAxisCol],
+            name: data[chartJson?.series_name_cfg || sortAxisCol],
           };
           series["data"].push(dataItem);
           let legendItem = {
-            name: data[sortAxisCol],
+            name: data[chartJson?.series_name_cfg || sortAxisCol],
             icon: "circle",
           };
           ecOptions["legend"]["data"].push(legendItem);
         }
         ecOptions["series"].push(series);
       }
+      console.log(ecOptions);
       ecOptions["legend"]["orient"] = "vertical";
       ecOptions["legend"]["y"] = "center";
       ecOptions["legend"]["x"] = "65%";
@@ -382,28 +412,26 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         return `${name}(${v})`;
       };
-      if (chartType == "ring") {
-        ecOptions["title"] = {
-          // 主标题样式
-          textAlign: "center", //整体水平对齐（包括text和subtext）
-          textStyle: {
-            color: "#666",
-            fontSize: 12,
-            align: "center",
-          },
-          itemGap: 10,
-          text: "总数",
-          subtext: pieDatas.reduce(function (prev, cur) {
+      if (type === "ring") {
+        const title = chartJson?.ring_sum_label || "总数";
+        ecOptions.title = {
+          text: pieDatas.reduce(function (prev, cur) {
             return cur.value + prev;
           }, 0),
-          // 副标题样式
+          left: "center",
+          top: "30%",
+          padding: [24, 0],
+          subtext:title, 
           subtextStyle: {
-            color: "#0055ff",
-            fontSize: 18,
+            color: "#fff",
+            fontSize: 14,
             align: "center", //文字水平对齐方式（left/right）
           },
-          left: "33.3%",
-          top: "40%",
+          textStyle: {
+            color: "#ffc97a",
+            fontSize: 18,
+            align: "center",
+          },
         };
       }
       delete ecOptions.xAxis;
@@ -569,8 +597,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             height: "90%",
             left: "center",
             top: "center",
-            right: 'center',
-            bottom: 'center',
+            right: "center",
+            bottom: "center",
 
             // Text size range which the value in data will be mapped to.
             // Default to have minimum 12px and maximum 60px size.
@@ -888,7 +916,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         {
           name: "其他交易",
           value: 10,
-        }
+        },
       ];
       var total = scaleData.reduce((pre, cur) => {
         return pre + cur.value;
@@ -988,7 +1016,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
               //   shadowColor: color[i],
               // },
             },
-          },
+          }
           // {
           //   value: 2,
           //   name: "",
@@ -1002,7 +1030,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           type: "pie",
           clockWise: false,
           // radius: ["50%", "52%"],
-          radius: chartType === "ring" ? ["50%", "52%"] : '50%',
+          radius: chartType === "ring" ? ["50%", "52%"] : "50%",
           hoverAnimation: false,
           itemStyle: {
             normal: {
@@ -1057,10 +1085,10 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       option.geo = {
         map: "mapName",
         roam: true,
-        top:"0",
+        top: "0",
         // left:'0%',
         // right:'0%',
-        bottom:'0',
+        bottom: "0",
         label: {
           normal: {
             show: false,
