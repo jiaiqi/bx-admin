@@ -138,7 +138,7 @@ export default {
     window.onclick = () => {
       this.curDesign = "";
     };
-    if (!process?.env?.NODE_ENV === 'development') {
+    if (!process?.env?.NODE_ENV === "development") {
       if (this.isDataview) {
         window.onresize = () => {
           this.resize();
@@ -180,6 +180,15 @@ export default {
         // w: containerWidth / 4,
         // h: containerWidth / 8,
       };
+    },
+  },
+  watch: {
+    layout: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        console.log(newValue);
+      },
     },
   },
   methods: {
@@ -260,6 +269,7 @@ export default {
       let addObj = {};
       // 新增保存
       if (!this.pgNo) {
+        // 新增页面及其布局
         // 布局容器
         addObj = {
           serviceName: "srvpage_cfg_layout_add",
@@ -271,14 +281,13 @@ export default {
             },
           ],
         };
-        const layoutNo = await this.saveService("add", addObj, null, true);
-
+        const layoutInfo = await this.saveService("add", addObj, null, true);
         // 子容器
         addObj.data = [];
         this.layout.forEach((item, i) => {
           addObj.data.push({
             layout_party: "组件",
-            parent_no: layoutNo.layout_no,
+            parent_no: layoutInfo.layout_no,
             layout_name:
               this.pageName +
               dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss") +
@@ -300,12 +309,11 @@ export default {
             {
               page_name: this.pageName,
               page_title: this.pageTitle,
-              layout_no: layoutNo.layout_no,
+              layout_no: layoutInfo.layout_no,
             },
           ],
         };
         const pageNo = await this.saveService("add", addObj, null, true);
-
         // 组件
         addObj = {
           serviceName: "srvpage_cfg_page_component_add",
@@ -315,7 +323,7 @@ export default {
           addObj.data.push({
             com_name: item.data.com_type_name,
             com_preview: item.data.example,
-            page_layout_no: layoutNo.layout_no,
+            page_layout_no: layoutInfo.layout_no,
             com_type: item.data.com_type,
             page_no: pageNo.page_no,
             com_seq: i + 1,
@@ -327,7 +335,6 @@ export default {
         // 编辑保存
         // 子容器
         const parseLayout = JSON.parse(this.strLayout || "[]");
-
         // 删除的子容器id数组
         let arrLayoutDel = [];
         // add子容器入参
@@ -337,7 +344,6 @@ export default {
         };
         // update子容器入参
         let arrUpdateLayout = [];
-        let objUpdateLayout = {};
         // delete子容器入参
         let deleteLayout = {
           serviceName: "srvpage_cfg_layout_delete",
@@ -351,24 +357,60 @@ export default {
         let deleteCom = {
           serviceName: "srvpage_cfg_page_component_delete",
         };
+        // 更新、删除布局容器
+        // if (Array.isArray(parseLayout) && parseLayout.length) {
+        //   parseLayout.forEach((oldItem) => {
+        //     let isDel = true;
+        //     this.layout.forEach((item, i) => {
+        //       if (oldItem.id === item.id) {
+        //         isDel = false;
+        //         if (
+        //           oldItem.x !== item.x ||
+        //           oldItem.y !== item.y ||
+        //           oldItem.h !== item.h ||
+        //           oldItem.w !== item.w
+        //         ) {
+        //           // x y h w 有任意一个发生变化，则更新
+        //           const data = {};
+        //           // x y h w 在服务端对应的字段
+        //           const keyMap = {
+        //             x: "pos_x",
+        //             y: "pos_y",
+        //             h: "col_span",
+        //             w: "row_span",
+        //           };
+        //           Object.keys(keyMap).forEach((key) => {
+        //             if (oldItem[key] !== item[key]) {
+        //               data[keyMap[key]] = item[key];
+        //             }
+        //           });
+        //           arrUpdateLayout.push({
+        //             serviceName: "srvpage_cfg_layout_update",
+        //             srvApp: "config",
+        //             condition: [
+        //               {
+        //                 colName: "id",
+        //                 ruleType: "eq",
+        //                 value: item.id,
+        //               },
+        //             ],
+        //             data: [data],
+        //           });
+        //         }
+        //       }
+        //     });
+        //     if (isDel) {
+        //       // 删除
+        //       arrLayoutDel.push(oldItem.id);
+        //       arrComDel.push(oldItem.data.id);
+        //     }
+        //   });
+        // }
+        // for (let i = 0; i < this.layout.length; i++) {
+        //   const item = this.layout[i];
 
-        if (Array.isArray(parseLayout) && parseLayout.length > 0) {
-          parseLayout.forEach((oldItem) => {
-            let flag = true;
-            this.layout.forEach((item, i) => {
-              if (oldItem.id === item.id) {
-                flag = false;
-              }
-            });
-
-            if (flag) {
-              // 删除
-              arrLayoutDel.push(oldItem.id);
-              arrComDel.push(oldItem.data.id);
-            }
-          });
-        }
-
+          
+        // }
         this.layout.forEach((item, i) => {
           if (!item.id) {
             // 新增容器
@@ -386,36 +428,15 @@ export default {
               col_span: item.h,
               row_span: item.w,
             });
-          } else {
-            // 更新
-            objUpdateLayout = {
-              serviceName: "srvpage_cfg_layout_update",
-              srvApp: "config",
-              condition: [
-                {
-                  colName: "id",
-                  ruleType: "eq",
-                  value: item.id,
-                },
-              ],
-              data: [
-                {
-                  pos_x: item.x,
-                  pos_y: item.y,
-                  col_span: item.h,
-                  row_span: item.w,
-                },
-              ],
-            };
-            arrUpdateLayout.push(objUpdateLayout);
           }
         });
-
+        debugger
         // 子容器
         if (arrLayoutDel.length > 0) {
           await this.saveService("delete", deleteLayout, arrLayoutDel.join());
         }
         if (addLayout.data.length > 0) {
+          // 新增子容器
           this.layoutObj = await this.saveService("add", addLayout, null, true);
         }
         if (arrUpdateLayout.length > 0) {
@@ -449,47 +470,43 @@ export default {
         this.initPage();
       }
     },
-    saveService(type, o, id, isTrue) {
-      return new Promise((resolve, reject) => {
-        let params = [];
-        switch (type) {
-          case "add":
-            params = [
-              {
-                serviceName: o.serviceName,
-                srvApp: "config",
-                condition: [],
-                data: o.data,
-              },
-            ];
-            break;
-          case "update":
-            params = o;
-            break;
-          case "delete":
-            params = [
-              {
-                serviceName: o.serviceName,
-                srvApp: "config",
-                condition: [{ colName: "id", ruleType: "in", value: id }],
-              },
-            ];
-            break;
-        }
+    async saveService(type, o, id, isTrue) {
+      let params = [];
+      switch (type) {
+        case "add":
+          params = [
+            {
+              serviceName: o.serviceName,
+              srvApp: "config",
+              condition: [],
+              data: o.data,
+            },
+          ];
+          break;
+        case "update":
+          params = o;
+          break;
+        case "delete":
+          params = [
+            {
+              serviceName: o.serviceName,
+              srvApp: "config",
+              condition: [{ colName: "id", ruleType: "in", value: id }],
+            },
+          ];
+          break;
+      }
 
-        this.operate(params).then((response) => {
-          if (response.data.state === "SUCCESS") {
-            if (isTrue) {
-              resolve(response.data.response[0].response.effect_data[0]);
-            } else {
-              resolve(response.data.response[0].response);
-            }
-            // this.$message.info(response.body.resultCode);
-          } else {
-            // this.$message.error(response.body.resultMessage);
-          }
-        });
-      });
+      const response = await this.operate(params)
+      if (response.data.state === "SUCCESS") {
+        if (isTrue) {
+          return response.data.response[0].response.effect_data[0];
+        } else {
+          return response.data.response[0].response;
+        }
+      } else {
+        this.$message.error(response.body.resultMessage);
+      }
     },
     getLayoutNo(data) {
       return data.reduce((p, v) =>
@@ -596,6 +613,13 @@ export default {
     // 更新事件（布局更新或栅格元素的位置重新计算）
     layoutUpdatedEvent(newLayout) {
       // console.log("Updated layout: ", newLayout)
+      // this.layout = newLayout;
+      // this.layout.forEach((item) => {
+      //   if (item.i === i) {
+      //     item.x = newX;
+      //     item.y = newY;
+      //   }
+      // });
     },
     // 移动时的事件
     moveEvent(i, newX, newY) {
@@ -607,23 +631,23 @@ export default {
     },
     // 移动后的事件
     movedEvent(i, newX, newY) {
-      this.layout.forEach((item) => {
-        if (item.i === i) {
-          item.x = newX;
-          item.y = newY;
-        }
-      });
-      console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
+      // this.layout.forEach((item) => {
+      //   if (item.i === i) {
+      //     item.x = newX;
+      //     item.y = newY;
+      //   }
+      // });
+      // console.log("MOVED i=" + i + ", X=" + newX + ", Y=" + newY);
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
-      this.layout.forEach((item, index) => {
-        if (item.i === i) {
-          item.h = newH;
-          item.w = newW;
-        }
-        this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
-      });
+      // this.layout.forEach((item, index) => {
+      //   if (item.i === i) {
+      //     item.h = newH;
+      //     item.w = newW;
+      //   }
+      //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
+      // });
     },
     toComponentDetail(item) {
       if (!this.isDataview && item?.data?.id) {
@@ -633,7 +657,9 @@ export default {
           type: "warning",
         }).then((action) => {
           if (action === "confirm") {
-            window.open(`/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`);
+            window.open(
+              `/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
+            );
           }
         });
       }
@@ -985,6 +1011,7 @@ export default {
           w: this.initWH.w,
           h: this.initWH.h,
           i: DragPos.i,
+          __uuid:this.getUuid(),
           data: o,
           isLeftBarItem: true,
         };
@@ -1126,7 +1153,8 @@ export default {
     //   border: 1px dashed #666;
     // }
   }
-  img{
+
+  img {
     height: 100%;
     overflow: hidden;
   }
