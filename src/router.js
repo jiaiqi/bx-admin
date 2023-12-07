@@ -493,7 +493,30 @@ routes.push( {
     name:'pdfReview',
     component:()=>import('@/pages/studentfiles/pdfReview.vue')
   },
-  
+  // 思维导图demo
+  {
+    path: '/mind',
+    name: 'mind',
+    component: () => import('@/pages/mind/index.vue'),
+    //子路由
+    children:[
+      {
+        path:'editor',
+        //新增
+        component:()=> import('@/pages/mind/index.vue')
+      },
+      {
+        path:'editor/:no',
+        //修改
+        component:()=> import('@/pages/mind/index.vue')
+      },
+      {
+        path:'view/:no',
+        //只读
+        component:()=> import('@/pages/mind/index.vue')
+      },
+    ]
+  },
   
 
 ]
