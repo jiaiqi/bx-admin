@@ -1,23 +1,19 @@
-let colors = [
+let __colors = [
   "#007AFF",
   "#66E1DF",
   "#34C758",
   "#FFCB01",
   "#FF9502",
-  "#007AFF",
-  "#66E1DF",
-  "#34C758",
-  "#FFCB01",
-  "#FF9502",
+  "#FF3A30",
+  "#A8071A",
+  "#EB2F96",
+  "#AF52DE",
+  "#5756D7",
+  "#D0DEEE",
+  "#82B6F7",
 ];
 export const useBuildOption = (type, pageItem, cellData = [], layout) => {
-  // if (
-  //   pageItem?.srv_req_type === "模拟数据" &&
-  //   pageItem?.mock_srv_data_json?.length
-  // ) {
-  //   // 使用模拟数据
-  //   cellData = pageItem.mock_srv_data_json;
-  // }
+  let colors = [...__colors];
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
@@ -111,7 +107,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       },
     ],
     tooltip: {
-      trigger: "item", // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
+      trigger: "axis", // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
     }, //点击折点 展示的样式
     series: [], //y轴展示的数据
   };
@@ -286,20 +282,20 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
           const val =
             Math.abs(nOption.max - nOption.min) / nOption.legend.length;
-
           ecOptions.yAxis[0].min = (
             pageItem.min ||
             nOption.min - val ||
             0
           ).toFixed(2);
+          if (ecOptions.yAxis[0].min < 0) {
+            ecOptions.yAxis[0].min = 0;
+          }
 
-          ecOptions.yAxis[0].max = (pageItem.max || nOption.max + val).toFixed(
-            2
-          );
+          ecOptions.yAxis[0].max = (
+            (pageItem.max || nOption.max) + val
+          ).toFixed(2);
 
-          // option.yAxis = [{
-
-          // }]
+          ecOptions.tooltip.trigger = "axis";
         }
       }
       ecOptions["xAxis"]["data"] = [
@@ -316,55 +312,107 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
-          name: seriesName[sIndex], // 名称
+          name: "", // 名称
           type: "pie", // 类型 饼图
           //   color: color,
           // radius: ["45%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
-          center: ["35%", "50%"], // 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
+          center: ["50%", "50%"], // 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
           // roseType: "area", // 是否展示成南丁格尔图，通过半径区分数据大小
           itemStyle: {
             normal: {
               label: {
                 position: "outside",
                 alignTo: "labelLine",
-                show: false,
-                formatter: "{b} : {c} ({d}%)",
-                bleedMargin: 3,
+                show: true,
+                formatter: `{b} : {c}${chartJson?.y1_unit || ""}`,
+                // bleedMargin: 3,
               },
               labelLine: {
-                show: false,
+                show: true,
+                length: 10,
+                length2: 15,
               },
             },
           },
           data: [],
         };
         if (type === "ring") {
-          series.radius = ["50%", "52%"];
-          series.labelLine = {
-            normal: {
-              labelLine: {
-                length: 30,
-                length2: 30,
-                show: true,
+          var rich = {
+            total: {
+              color: "#ffc72b",
+              fontSize: 40 * 1,
+              align: "center",
+            },
+            white: {
+              color: "#ddd",
+              align: "center",
+              padding: [3, 0],
+            },
+          };
+
+          series = {
+            name: "",
+            type: "pie",
+            clockWise: false,
+            radius: ["50%", "55%"],
+            hoverAnimation: false,
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  position: "outside",
+                  color: "#ddd",
+                  formatter: `{b} : {c}${chartJson?.y1_unit || ""}`,
+                  rich: rich,
+                },
+                labelLine: {
+                  length: 10,
+                  length2: 20,
+                  show: true,
+                },
               },
             },
+            data: [],
           };
         }
         for (let data of cellData) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
             value: data[dataColName],
-            name: data[sortAxisCol],
+            name: data[chartJson?.series_name_cfg || sortAxisCol],
+            itemStyle: {
+              normal: {
+                borderWidth: 5,
+              },
+            },
           };
           series["data"].push(dataItem);
+          // series["data"].push({
+          //   value: 5,
+          //   name: "",
+          //   itemStyle: {
+          //     normal: {
+          //       label: {
+          //         show: false,
+          //       },
+          //       labelLine: {
+          //         show: false,
+          //       },
+          //       color: "rgba(0, 0, 0, 0)",
+          //       borderColor: "rgba(0, 0, 0, 0)",
+          //       borderWidth: 0,
+          //     },
+          //   },
+          // });
           let legendItem = {
-            name: data[sortAxisCol],
+            name: data[chartJson?.series_name_cfg || sortAxisCol],
             icon: "circle",
           };
           ecOptions["legend"]["data"].push(legendItem);
         }
         ecOptions["series"].push(series);
       }
+      console.log(ecOptions);
       ecOptions["legend"]["orient"] = "vertical";
       ecOptions["legend"]["y"] = "center";
       ecOptions["legend"]["x"] = "65%";
@@ -380,28 +428,26 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         return `${name}(${v})`;
       };
-      if (chartType == "ring") {
-        ecOptions["title"] = {
-          // 主标题样式
-          textAlign: "center", //整体水平对齐（包括text和subtext）
-          textStyle: {
-            color: "#666",
-            fontSize: 12,
-            align: "center",
-          },
-          itemGap: 10,
-          text: "总数",
-          subtext: pieDatas.reduce(function (prev, cur) {
+      if (type === "ring") {
+        const title = chartJson?.ring_sum_label || "总数";
+        ecOptions.title = {
+          text: pieDatas.reduce(function (prev, cur) {
             return cur.value + prev;
           }, 0),
-          // 副标题样式
+          left: "center",
+          top: "30%",
+          padding: [24, 0],
+          subtext: title,
           subtextStyle: {
-            color: "#0055ff",
-            fontSize: 18,
+            color: "#fff",
+            fontSize: 14,
             align: "center", //文字水平对齐方式（left/right）
           },
-          left: "33.3%",
-          top: "40%",
+          textStyle: {
+            color: "#ffc97a",
+            fontSize: 18,
+            align: "center",
+          },
         };
       }
       delete ecOptions.xAxis;
@@ -563,15 +609,17 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
             left: "center",
             top: "center",
-            width: "100%",
-            height: "100%",
-            right: null,
-            bottom: null,
+            width: "90%",
+            height: "90%",
+            left: "center",
+            top: "center",
+            right: "center",
+            bottom: "center",
 
             // Text size range which the value in data will be mapped to.
             // Default to have minimum 12px and maximum 60px size.
 
-            sizeRange: [14, 50],
+            sizeRange: [12, 40],
 
             // Text rotation range and step in degree. Text will be rotated randomly in range [-90, 90] by rotationStep 45
 
@@ -580,7 +628,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
             // size of the grid in pixels for marking the availability of the canvas
             // the larger the grid size, the bigger the gap between words.
-
             gridSize: 25,
 
             // set to true to allow word being draw partly outside of the canvas.
@@ -745,7 +792,9 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         // tooltip: {
         //   trigger: 'item' // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
         // }, //点击折点 展示的样式
-        markLine: {
+      };
+      if (lineVal1 && lineVal2 && lineVal1 !== "none" && lineVal2 !== "none") {
+        obj.markLine = {
           symbol: "none",
           label: {
             show: true,
@@ -765,9 +814,11 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
             color: "#FF7A42",
             type: "solid",
           },
-        },
-      };
-
+        };
+      }
+      if(chartJson?.more_option?.indexOf("stack")){
+        obj.stack = "总量";
+      }
       if (
         chartJson.more_option &&
         chartJson.more_option.indexOf("x轴反序") > -1
@@ -793,6 +844,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
  * @param {*} chartJson 图表配置
  */
 export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
+  const colors = [...__colors];
   const option = {
     color: colors,
     tooltip: {},
@@ -885,7 +937,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         {
           name: "其他交易",
           value: 10,
-        }
+        },
       ];
       var total = scaleData.reduce((pre, cur) => {
         return pre + cur.value;
@@ -985,7 +1037,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
               //   shadowColor: color[i],
               // },
             },
-          },
+          }
           // {
           //   value: 2,
           //   name: "",
@@ -999,7 +1051,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           type: "pie",
           clockWise: false,
           // radius: ["50%", "52%"],
-          radius: chartType === "ring" ? ["50%", "52%"] : '50%',
+          radius: chartType === "ring" ? ["50%", "52%"] : "50%",
           hoverAnimation: false,
           itemStyle: {
             normal: {
@@ -1054,7 +1106,10 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       option.geo = {
         map: "mapName",
         roam: true,
-        // top:'3%',
+        top: "0",
+        // left:'0%',
+        // right:'0%',
+        bottom: "0",
         label: {
           normal: {
             show: false,
@@ -1063,7 +1118,6 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
             show: false,
           },
         },
-
         itemStyle: {
           normal: {
             areaColor: "#1180c7",

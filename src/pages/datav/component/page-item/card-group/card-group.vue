@@ -175,7 +175,7 @@
           if (datasfromType === '模拟数据') {
             let mock_srv_data_json = this.pageItem?.mock_srv_data_json || []
             this.cellData = mock_srv_data_json.map(item => item)
-          } else if (req) {
+          } else if (req.serviceName) {
             const condition = req.condition
             // let res = await this.select('select', req.serviceName, req, req.mapp)
             let res = await this.select(
@@ -188,7 +188,7 @@
                 req.mapp
               )
             if (res.data.state !== 'FAILURE' && res.data.data.length > 0) {
-              this.cellData = res.data.map(item => item)
+              this.cellData = res.data.data
             }else{
                 console.log(res)
             }

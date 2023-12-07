@@ -69,6 +69,7 @@ const chartType = computed(() => {
       chartType = "wordcloud";
       break;
     default:
+      chartType = "line";
       break;
   }
   return chartType;
