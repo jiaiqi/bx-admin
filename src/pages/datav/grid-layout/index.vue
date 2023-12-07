@@ -585,6 +585,7 @@ export default {
           this.layout.push(obj);
         });
         this.strLayout = JSON.stringify(this.layout);
+        this.$set(this,'loadPageMata',data)  // 保存页面元数据
         this.initPageParams()  // 页面参数初始化
       } else {
         this.$message.info("无数据！");
