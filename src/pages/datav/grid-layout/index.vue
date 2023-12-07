@@ -38,10 +38,10 @@
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
             </div>
             <div class="com-item dashed" v-else-if="isDataview">
-              <page-item ref="pageItem" :page-item="item.data" :layout="item" @click.stop=""></page-item>
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""></page-item>
             </div>
             <div class="com-item dashed" v-else @click.stop.prevent.capture="changeDesign(item.i)">
-              <page-item ref="pageItem" :page-item="item.data" :layout="item" @click.stop=""></page-item>
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""></page-item>
             </div>
           </grid-item>
         </grid-layout>
@@ -66,8 +66,14 @@ import { $axios } from "../common/http.js";
 let mouseXY = { x: null, y: null };
 let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 
+
+
+// 页面参数
+import pageParams from '../common/params/page-params-mixin.js'
+
 export default {
   name: "pageEditor",
+  mixins:[pageParams],
   components: {
     GridLayout,
     GridItem,
@@ -573,6 +579,7 @@ export default {
           this.layout.push(obj);
         });
         this.strLayout = JSON.stringify(this.layout);
+        this.initPageParams()  // 页面参数初始化
       } else {
         this.$message.info("无数据！");
       }
