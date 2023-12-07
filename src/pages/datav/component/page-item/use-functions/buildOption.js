@@ -30,10 +30,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   let ecOptions = {
     grid: {
       // 这里可以防止Y轴显示不全
-      top: "15%",
-      left: "8%",
-      right: "8%",
-      bottom: "8%",
+      top: 25,
+      left: 10,
+      right: 10,
+      bottom: 0,
       containLabel: true,
     },
     legend: {

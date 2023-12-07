@@ -43,6 +43,7 @@
     <page-item-chart
       v-if="pageItem.com_type === 'chart'"
       :ref="pageItem.com_type"
+      :pageParamsModel="pageParamsModel"
       :pageItem="pageItem"
       :index="layout.i"
       :layout="layout"

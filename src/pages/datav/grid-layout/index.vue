@@ -353,59 +353,55 @@ export default {
           serviceName: "srvpage_cfg_page_component_delete",
         };
         // 更新、删除布局容器
-        // if (Array.isArray(parseLayout) && parseLayout.length) {
-        //   parseLayout.forEach((oldItem) => {
-        //     let isDel = true;
-        //     this.layout.forEach((item, i) => {
-        //       if (oldItem.id === item.id) {
-        //         isDel = false;
-        //         if (
-        //           oldItem.x !== item.x ||
-        //           oldItem.y !== item.y ||
-        //           oldItem.h !== item.h ||
-        //           oldItem.w !== item.w
-        //         ) {
-        //           // x y h w 有任意一个发生变化，则更新
-        //           const data = {};
-        //           // x y h w 在服务端对应的字段
-        //           const keyMap = {
-        //             x: "pos_x",
-        //             y: "pos_y",
-        //             h: "col_span",
-        //             w: "row_span",
-        //           };
-        //           Object.keys(keyMap).forEach((key) => {
-        //             if (oldItem[key] !== item[key]) {
-        //               data[keyMap[key]] = item[key];
-        //             }
-        //           });
-        //           arrUpdateLayout.push({
-        //             serviceName: "srvpage_cfg_layout_update",
-        //             srvApp: "config",
-        //             condition: [
-        //               {
-        //                 colName: "id",
-        //                 ruleType: "eq",
-        //                 value: item.id,
-        //               },
-        //             ],
-        //             data: [data],
-        //           });
-        //         }
-        //       }
-        //     });
-        //     if (isDel) {
-        //       // 删除
-        //       arrLayoutDel.push(oldItem.id);
-        //       arrComDel.push(oldItem.data.id);
-        //     }
-        //   });
-        // }
-        // for (let i = 0; i < this.layout.length; i++) {
-        //   const item = this.layout[i];
-
-
-        // }
+        if (Array.isArray(parseLayout) && parseLayout.length) {
+          parseLayout.forEach((oldItem) => {
+            let isDel = true;
+            this.layout.forEach((item, i) => {
+              if (oldItem.id === item.id) {
+                isDel = false;
+                if (
+                  oldItem.x !== item.x ||
+                  oldItem.y !== item.y ||
+                  oldItem.h !== item.h ||
+                  oldItem.w !== item.w
+                ) {
+                  // x y h w 有任意一个发生变化，则更新
+                  const data = {};
+                  // x y h w 在服务端对应的字段
+                  const keyMap = {
+                    x: "pos_x",
+                    y: "pos_y",
+                    h: "col_span",
+                    w: "row_span",
+                  };
+                  Object.keys(keyMap).forEach((key) => {
+                    if (oldItem[key] !== item[key]) {
+                      data[keyMap[key]] = item[key];
+                    }
+                  });
+                  arrUpdateLayout.push({
+                    serviceName: "srvpage_cfg_layout_update",
+                    srvApp: "config",
+                    condition: [
+                      {
+                        colName: "id",
+                        ruleType: "eq",
+                        value: item.id,
+                      },
+                    ],
+                    data: [data],
+                  });
+                }
+              }
+            });
+            if (isDel) {
+              // 删除
+              arrLayoutDel.push(oldItem.id);
+              arrComDel.push(oldItem.data.id);
+            }
+          });
+        }
+     
         this.layout.forEach((item, i) => {
           if (!item.id) {
             // 新增容器
@@ -425,7 +421,6 @@ export default {
             });
           }
         });
-        debugger
         // 子容器
         if (arrLayoutDel.length > 0) {
           await this.saveService("delete", deleteLayout, arrLayoutDel.join());
@@ -567,7 +562,7 @@ export default {
           (a, b) => a.seq - b.seq
         );
         this.layoutJson.parts_json.forEach((item, index) => {
-          // const data = this.comJson.find(e=>);
+          // const data = this.comJson.find(e=>e.layout_seq===item.seq);
           const data = this.comJson[index];
           let obj = {
             x: item.pos_x,
@@ -638,13 +633,9 @@ export default {
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
-      // this.layout.forEach((item, index) => {
-      //   if (item.i === i) {
-      //     item.h = newH;
-      //     item.w = newW;
-      //   }
-      //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
-      // });
+      this.layout.forEach((item, index) => {
+        this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
+      });
     },
     toComponentDetail(item) {
       if (!this.isDataview && item?.data?.id) {
