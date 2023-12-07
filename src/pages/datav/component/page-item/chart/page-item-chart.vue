@@ -97,7 +97,7 @@ const colsMapDetailJson = computed(() => {
 
 watch(pageParamsModel, (newVal, oldVal) => {
   console.log(pageItem, "pageParamsModel:", newVal);
-  // paramsLinkage()
+  paramsLinkage()
 }, { immediate: true, deep: true })
 
 
@@ -141,7 +141,7 @@ const onSrvReq = async (req = null) => {
 function buildRequestParams(e) {
   console.log('请求参数====>', e)
   let condition = deepClone(e.condition)
-  let mapsJonss = colsMapDetailJson || []
+  let mapsJonss = colsMapDetailJson.value || []
 
   if (Array.isArray(condition)) {
     for (let cond of condition) {
@@ -214,11 +214,13 @@ function buildRequestParams(e) {
 function paramsLinkage() {
   let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
   const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson
-  console.log('图表请求', req, req.serviceName)
-  if (Array.isArray(colsMapDetailJson)) {
-    for (let p of colsMapDetailJson) {
+  console.log('图表请求', req, req?.serviceName)
+  if (Array.isArray(colsMapDetailJson.value)) {
+    for (let p of colsMapDetailJson.value) {
       if (p.from_type === '页面' && p.trigger_time === '联动') {
-        onSrvReq(req);
+        if(req?.serviceName){
+          onSrvReq(req);
+        }
       }
     }
   }
