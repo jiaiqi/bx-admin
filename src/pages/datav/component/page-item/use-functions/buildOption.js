@@ -269,12 +269,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           if (nOption?.series?.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全
-              top: "35%",
-              // top: '15%',
-              left: "5%",
-              // right: '30%',
-              right: "8%",
-              bottom: "8%",
+              top:45,
+              left: 10,
+              right: 10,
+              bottom: 0,
               containLabel: true,
             };
           }
