@@ -7,7 +7,8 @@
         <div v-for="(cellLayoutJson,i) in cellsLayout" :key="i" class="bx-card-cell"
           :class="{checked:pageItem&&pageItem._refedCol && currentRadio===cellItemData[pageItem._refedCol]}"
           :style="[cellLayoutJson.style_json ? buildColStyleJson(cellLayoutJson.style_json,null,cellLayoutJson) : buildColStyleJson(null,null,cellLayoutJson)]"
-          @click="onClickCell(cellItemData,cellLayoutJson)">
+          style="cursor: pointer;" v-on:click="onClickCell(cellItemData,cellLayoutJson)">
+          <!-- @click.stop="onClickCell(cellItemData,cellLayoutJson)"  -->
           <!-- <div class="radio-box" v-if="pageItem&&pageItem.selectedType==='fkSelector'">
             <radio color="#007AFF" :class="currentRadio===cellItemData[pageItem._refedCol]?'checked blue':'blue'"
               :checked="currentRadio===cellItemData[pageItem._refedCol]?true:false"
@@ -264,9 +265,14 @@
           updateDatakey: 'id',
           updateDataVal: "",
           updateTitle: "",
+          activeMode:null
         }
       },
       props: {
+        
+        pageParamsModel:{
+          type: Object,
+        },
         readOnly: {
           type: Boolean,
           default () {
@@ -484,10 +490,9 @@
           this.$emit('on-row-button-click', e)
         },
         onClickCell(item, cellLayoutJson){
-          this.$emit('on-click-cell', {
-            data: item,
-            cellsLayout: cellLayoutJson
-          })
+          console.log('bx-card-cell')
+          // 设置选中数据
+          this.$set(this,'activeMode',item)
         },
         // onClickCell: throttle(function(item, cellLayoutJson) {
         //   if (this.readOnly) {
@@ -508,8 +513,20 @@
         //   })
   
         // }, 200, true),
-        onClickSubBlock(){
-
+        onClickSubBlock(itemData, subCol, cellLayoutJson, parentCol, originCol){
+          console.log('onClickSubBlock')
+          if ((!subCol?.sys_fun || subCol?.sys_fun === '无') && !subCol?.jump_json) {
+            // 如果沒有配置系統功能 也没配置跳转 将事件传递到父部件
+            if (parentCol) {
+              return this.onClickSubBlock(itemData, parentCol, cellLayoutJson, null, subCol)
+            }
+            // 没有父部件配置 点击事件传到卡片单元
+            return this.onClickCell(itemData, cellLayoutJson)
+          } else if (subCol?.jump_json) {
+            // 执行自定义跳转
+            // this.jumpAction(subCol?.jump_json, itemData)
+            console.log('自定义跳转')
+          }
         },
         // onClickSubBlock: throttle(function(itemData, subCol, cellLayoutJson, parentCol, originCol) {
         //   if (this.readOnly) {

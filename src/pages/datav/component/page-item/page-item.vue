@@ -49,6 +49,8 @@
     ></page-item-chart>
     <List
       v-if="pageItem.com_type === 'list'"
+      :pageParamsModel="pageParamsModel"
+      @setPageParams="setPageParams"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
     ></List>
@@ -84,7 +86,12 @@ import mixList from "./mix-list/list.vue";
 import List from './list/list.vue'
 import pageWidget from "./widget.vue";
 import cardGroup from "./card-group/card-group.vue";
+
+// 页面组件级 参数交互处理
+import pageItemParams from '../../common/params/page-item-params-mixin.js'
+
 export default {
+  mixins:[pageItemParams],
   components: {
     videoCard,
     currentInfo,

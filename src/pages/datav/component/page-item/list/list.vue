@@ -12,10 +12,10 @@
 
     <!-- 卡片列表 -->
     <div class="bx-card-list" v-if="listType == '卡片'">
-      <cardGroupCell :queryOptions="queryOptions" v-if="pageItem && listType == '卡片'"
+      <cardGroupCell :pageParamsModel="pageParamsModel" :queryOptions="queryOptions" v-if="pageItem && listType == '卡片'"
         ref="cardGroupCell" :pageItem="pageItem" :cellsLayout="[cardUnitJson]" :cellData="tableData"
         :comColMap="comColMapJson" :cardLayout="layoutJson" :rowButtons="listV2RowButtons" @on-click-cell="onClickCell"
-        @on-click-block="onClickBlock" @on-row-button-click="onRowButtonClick" @on-click-icon="onClickBlock">
+        @on-click-block="onClickBlock" @on-row-button-click="onRowButtonClick" @on-click-icon="onClickBlock" @setPageParams="setPageParams">
       </cardGroupCell>
     </div>
     <!-- 表格 -->
@@ -54,6 +54,9 @@ export default {
       type: Boolean,
       default: false,
     },
+    pageParamsModel:{
+      type: Object,
+    }
   },
   data() {
     return {
@@ -135,8 +138,29 @@ export default {
       }
       return buttons
     },
+    colsMapDetailJson(){
+      // 组件参数 的map array  接口返回数据格式 无法确定接口时啥样子，小程序 逻辑使用com_para_with_map_json 但没值，改用有值的 page_com_cols_map_json
+      let pageComColsMapJson = this.pageItem.page_com_cols_map_json || null
+      let colsMapDetailJson = null
+      if(pageComColsMapJson){
+        // 识别、处理组件到页面参数联动
+          if(pageComColsMapJson.cols_map_detail_json && Array.isArray(pageComColsMapJson.cols_map_detail_json)){
+            colsMapDetailJson = pageComColsMapJson.cols_map_detail_json
+            console.log('colsMapDetailJson',colsMapDetailJson)
+          }
+
+      }
+      return colsMapDetailJson
+
+    },
   },
   methods: {
+    // 透传参数
+    setPageParams(key,val){
+      // 接受透传参数
+      this.$emit('setPageParams', key,val)
+    },
+    
     async getListData(req) {
       const url = `/${req.mapp}/select/${req.serviceName}`;
       const res = await $http.post(url, req);
@@ -221,16 +245,119 @@ export default {
     onClickCell(e){
       console.log(e)
     },
+    buildRequestParams(e){
+      console.log('请求参数====>',e)
+      let condition = this.bxDeepClone(e.condition) 
+      let mapsJonss = this.colsMapDetailJson || []
+      
+      if(Array.isArray(condition)){
+        for(let cond of condition){
+          console.log('buildRequestParams',cond.colName, cond.value)
+          if(cond.value && cond.value.startsWith("${") && cond.value.endsWith("}")){
+            console.log('2',cond.value)
+            let par =  cond.value.replace("${", "");
+            
+            par = par.replace("}", "");
+            let params = this.bxDeepClone(this.pageParamsModel);
+            if(params && Object.keys(params).length > 0){
+
+              for(let key in params){
+                console.log('key',key,par)
+                if(key === par){
+                  let mapsCol = mapsJonss.filter(item => item.col_to === par || item.col_from === par)
+                  if(Array.isArray(mapsCol) && mapsCol.length > 0){
+                      let value = ''
+                      let model = null
+                      for(let col of mapsCol){
+                         switch (col.from_type) {
+                          case '页面':
+                            model = this.pageParamsModel
+                            switch (col.to_type) {
+                              case '组件':
+                                console.log('组件',key,this.pageParamsModel)
+                                cond.value = this.pageParamsModel[key].value
+                                // this.$set(cond,'value',this.pageParamsModel[key].value)
+                                break;
+                              case '页面':
+                                
+                                break;
+                            
+                              default:
+                                break;
+                            }
+                            break;
+                          case '组件':
+                            switch (col.to_type) {
+                              case '组件':
+                                
+                                break;
+                              case '页面':
+                                
+                                break;
+                            
+                              default:
+                                break;
+                            }
+                            break;
+                         
+                          default:
+                            break;
+                         }
+                      }
+                  }
+                  console.log('请求参数',e)
+                  //  this.$set(cond,'value',)
+                }
+              }
+            }
+           
+          }
+        }
+      }
+      e.condition = this.bxDeepClone(condition) 
+      // console.log(e.serviceName,condition)
+      return e
+    },
+    paramsLinkage(){
+        let itemReqJson = this.pageItem.srv_req_json ? this.bxDeepClone(this.pageItem.srv_req_json) : null;
+
+          const req =  itemReqJson ? this.buildRequestParams(itemReqJson) : itemReqJson
+          console.log('列表请求',req,req.serviceName)
+          let mapsJonss = this.colsMapDetailJson || []
+          if(Array.isArray(mapsJonss)){
+            for(let p of mapsJonss){
+              if(p.from_type === '页面' && p.trigger_time === '联动'){
+                this.getListData(req);
+              }
+            }
+          }
+          
+    }
   },
   mounted() {
     if (this.pageItem?.srv_req_json) {
-      const req = this.pageItem.srv_req_json;
+      let itemReqJson = this.pageItem.srv_req_json ? this.bxDeepClone(this.pageItem.srv_req_json) : null;
+      const req =  itemReqJson ? this.buildRequestParams(itemReqJson) : itemReqJson
+      console.log('列表请求',req)
+      
       this.getListData(req);
       this.getV2Data(req).then(_ => {
         this.getStatisticData(req)
       });
     }
   },
+  watch:{
+    "pageParamsModel": {
+        deep: true,
+        immediate: true,
+        handler: function(newVal, oldVal) {
+          // console.log('componentParamsModelsRun',this.deepClone(newVal).current_value,this.deepClone(oldVal).current_value)
+          // 选中数据更新后 进行参数更新输出逻辑
+          // let pageParams = this.colsMapDetailJson
+           this.paramsLinkage()
+        }
+      },
+  }
 
 }
 
