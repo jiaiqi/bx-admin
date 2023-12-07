@@ -246,7 +246,7 @@ export default {
       console.log(e)
     },
     buildRequestParams(e){
-      console.log('请求参数====>',e)
+      // console.log('请求参数====>',e)
       let condition = this.bxDeepClone(e.condition) 
       let mapsJonss = this.colsMapDetailJson || []
       
@@ -254,7 +254,7 @@ export default {
         for(let cond of condition){
           console.log('buildRequestParams',cond.colName, cond.value)
           if(cond.value && cond.value.startsWith("${") && cond.value.endsWith("}")){
-            console.log('2',cond.value)
+            // console.log('2',cond.value)
             let par =  cond.value.replace("${", "");
             
             par = par.replace("}", "");
@@ -262,7 +262,7 @@ export default {
             if(params && Object.keys(params).length > 0){
 
               for(let key in params){
-                console.log('key',key,par)
+                // console.log('key',key,par)
                 if(key === par){
                   let mapsCol = mapsJonss.filter(item => item.col_to === par || item.col_from === par)
                   if(Array.isArray(mapsCol) && mapsCol.length > 0){
@@ -274,7 +274,7 @@ export default {
                             model = this.pageParamsModel
                             switch (col.to_type) {
                               case '组件':
-                                console.log('组件',key,this.pageParamsModel)
+                                // console.log('组件',key,this.pageParamsModel)
                                 cond.value = this.pageParamsModel[key].value
                                 // this.$set(cond,'value',this.pageParamsModel[key].value)
                                 break;
@@ -305,8 +305,6 @@ export default {
                          }
                       }
                   }
-                  console.log('请求参数',e)
-                  //  this.$set(cond,'value',)
                 }
               }
             }
@@ -322,7 +320,7 @@ export default {
         let itemReqJson = this.pageItem.srv_req_json ? this.bxDeepClone(this.pageItem.srv_req_json) : null;
 
           const req =  itemReqJson ? this.buildRequestParams(itemReqJson) : itemReqJson
-          console.log('列表请求',req,req.serviceName)
+          // console.log('列表请求',req,req.serviceName)
           let mapsJonss = this.colsMapDetailJson || []
           if(Array.isArray(mapsJonss)){
             for(let p of mapsJonss){
