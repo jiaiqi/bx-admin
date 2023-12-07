@@ -187,9 +187,11 @@ export default {
                         this.getPageInitQueryOptions()  // 页面参数
                         
                     }
-                    if(!pageInfo['interface_json_data']){
-                      pageInfo['interface_json_data'] = JSON.parse( pageInfo['interface_json'])
-                      pageInfo.interface_json_data.forEach(item => {
+                    if(!this.pageInfo['interface_json_data']){
+                      // 页面初始化参数 json
+                      console.log('页面初始化参数interface_json_data')
+                      this.pageInfo['interface_json_data'] = JSON.parse( this.pageInfo['interface_json'])
+                      this.pageInfo.interface_json_data.forEach(item => {
                         const val = this.urlSearchParams[item.para]
                         if (item.default_val && [null, undefined, 'null', 'undefined'].includes(val)) {
                           this.$set(this.urlSearchParams, item.para, item.default_val)
@@ -790,16 +792,28 @@ export default {
             let getInit = self.getInitParams()
             return await new Promise(function(resolve, reject) {
               //异步操做
-              // 小程序 为   let paraJson = self.pageInfo?.interface_json_data || self.pageInfo?.para_json  PC端没有 interface_json_data
-              let paraJson = self.pageInfo?.interface_json || self.pageInfo?.para_json
+              let paraJson = self.pageInfo?.interface_json_data || self.pageInfo?.para_json
               let paraJsonV2 = self.pageInfo?.para_with_map_json_data || null
               console.log('new Promise( paraJson', paraJson)
               self.pageParams = {}
-              if ((!self.urlSearchParams || Object.keys(self.urlSearchParams).length === 0) && paraJson && paraJson
+              if ((!self.urlSearchParams || Object.keys(self.urlSearchParams).length === 0) &&  Array.isArray(paraJson) && paraJson
                 .length > 0) {
-                paraJson.forEach(item => {
+                  paraJson.forEach(item => {
                   item.value = item.default_val || ''
                 })
+                for (let param of paraJson) {
+                  let keyName = param.para_name || param.para
+                  let urlParamsKeys = self.urlSearchParams ? Object.keys(self.urlSearchParams) : [];
+                  if (urlParamsKeys.indexOf(keyName) !== -1) {
+                    param.value = self.urlSearchParams[keyName]
+                  } else {
+                    param.value = param.default_val
+                  }
+      
+                  self.$set(self.pageParams, keyName, param)
+                }
+                self.$set(self, 'pageParamsModel', self.bxDeepClone(self.pageParams))
+
               } else if (Array.isArray(paraJson) && paraJson && paraJson.length > 0) {
                 console.log('-- page paraJson  init SUCCESS --')
                 console.log(paraJson, self.urlSearchParams)
@@ -856,13 +870,14 @@ export default {
       
           },
           setPageParams(key, val) {
+            // 组件输入页面的参数
             let self = this
             // this.pageParams[key] = val
             if (self.pageParamsModel && key) {
               for (let p in self.pageParamsModel) {
                 if (p == key && self.pageParamsModel[key]) {
                   console.log('--', val)
-                  let item = self.deepClone(self.pageParamsModel[key])
+                  let item = self.bxDeepClone(self.pageParamsModel[key])
                   item.value = val
                   self.$set(self.pageParamsModel, key, item)
                 }
