@@ -1,12 +1,5 @@
 <template>
   <div class="customhome-container" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
-    <!-- <div class="page-header">
-      <div class="left"></div>
-      <div class="right" @click="openFullscreen" v-if="showFullScreen">
-        <span class="iconfont el-icon-rank" v-if="isFullScreen" title="退出全屏"></span>
-        <span class="iconfont el-icon-full-screen" v-else title="全屏"></span>
-      </div>
-    </div> -->
     <div class="cushome-sidebar" v-if="!isDataview">
       <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
         class="com-item margin" draggable="true" unselectable="on">
@@ -20,17 +13,15 @@
       <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
       <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
       <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
-      <!-- <el-button size="mini" style="float: right; margin: 10px 10px 0 0" @click="clearFn">清空画布</el-button> -->
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
-      <div class="custom-design" id="custom-design" :style="[bjStyles, stylefn(styleJson)]">
-        <!-- <div class="custom-design" id="custom-design" :style="stylefn(styleJson)"> -->
+      <div class="custom-design" id="custom-design" :style="[stylefn(styleJson)]">
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum"
           :breakpoints="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
           :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }" :row-height="1" :preventCollision="true"
           :responsive="true" :is-draggable="!isDataview" :is-resizable="!isDataview" :is-mirrored="false"
           :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
-          <div class="grid-container" id="grid-container" :style="bjStyles"></div>
+          <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
@@ -139,6 +130,7 @@ export default {
       this.curDesign = "";
     };
     if (!process?.env?.NODE_ENV === "development") {
+      // 开发模式不监听窗口变化
       if (this.isDataview) {
         window.onresize = () => {
           this.resize();
@@ -238,9 +230,6 @@ export default {
         let res = formatStyleData(style);
         return res;
       }
-    },
-    clearFn() {
-      this.layout = [];
     },
     // 跳转到预览页面
     toPreview() {
@@ -409,7 +398,7 @@ export default {
         // for (let i = 0; i < this.layout.length; i++) {
         //   const item = this.layout[i];
 
-          
+
         // }
         this.layout.forEach((item, i) => {
           if (!item.id) {
@@ -736,14 +725,21 @@ export default {
         domContainer = document.getElementById("custom-design"),
         resWidth = domstyleWidth / 12,
         everyWidth = ((resWidth / domstyleWidth) * 100).toFixed(2);
-      // this.bjStyles = {
-      //   // right: "20px",
-      //   background: `linear-gradient(to right, transparent 19px,#ccc 1px),linear-gradient(to bottom, transparent 19px,#ccc 1px)`,
-      //   "background-size": `20px 20px`,
-      //   borderLeft: "1px solid #ccc",
-      //   borderRight: "1px solid #ccc",
-      //   borderTop: "1px solid #ccc",
-      // };
+      if (!this.isDataview) {
+        this.bjStyles = {
+          // right: "20px",
+          // background: `linear-gradient(to right, transparent 1px,#eee 1px),linear-gradient(to bottom, transparent 1px,#eee 1px)`,
+          // "background-size": `20px 20px`,
+          // borderLeft: "1px solid #fefefe",
+          // borderRight: "1px solid #fefefe",
+          // borderTop: "1px solid #fefefe",
+          background: `linear-gradient(to right, transparent 19px,rgba(255,255,255,0.1) 1px),linear-gradient(to bottom, transparent 19px,rgba(255,255,255,0.1) 1px`,
+          "background-size": `20px 20px`,
+          // 画一个网格线每个格子是1*1的背景
+          // background: `linear-gradient(to right, transparent 19px,#fefefe 1px),linear-gradient(to bottom, transparent 19px,#fefefe 1px)`,
+          // "background-size": `20px 20px`,
+        };
+      }
       this.rowheight = domstyleHeight - 10;
       this.designLeft = domContainer.offsetLeft + 250;
       this.designTop = domContainer.offsetTop + 70;
@@ -1011,7 +1007,7 @@ export default {
           w: this.initWH.w,
           h: this.initWH.h,
           i: DragPos.i,
-          __uuid:this.getUuid(),
+          __uuid: this.getUuid(),
           data: o,
           isLeftBarItem: true,
         };
