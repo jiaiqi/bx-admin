@@ -302,11 +302,6 @@ let routes=[
       compName:'wxmsg'
     }
   },
-  { // 摄像头视频播放页
-    path:'/video',
-    name:'video',
-    component: video
-  },
   { // 运单打印
     path:'/waybill/:type',
     name:'waybill',
