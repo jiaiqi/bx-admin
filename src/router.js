@@ -77,23 +77,6 @@ import PersonalUpdate from '@/vxhr/personal-update'
 import test_field from '@/components/test/test_field'
 
 import Index from '@/pages/index'
-import Home from '@/pages/home/home'
-
-import Line from '@/pages/line'
-
-import AllLine from '@/pages/allLine/allLine'
-
-import staffHome from '@/pages/area/home'
-
-import storeStatic from '@/pages/area/storeStatic/storeStatic'
-
-import storeMonitor from '@/pages/area/storeMonitor/storeMonitor'
-
-import business from '@/pages/business'
-
-import test from '@/pages/test/test'
-
-import video from '@/pages/video/index'
 
 import templateConfig from '@/pages/template/config'
 import erConfig from '@/pages/template/er-config'
@@ -341,48 +324,7 @@ routes.push( {
   },
   children:[
     
-    {
-    path: '/home',
-    name: 'home',
-    component: Home,
-  },
-  {
-    path: '/line',
-    name: 'line',
-    component: Line,
-  },
-  {
-    path: '/allline',
-    name: 'allLine',
-    component: AllLine,
-  },
-  // storeStatic
-  {
-    path: '/staffHome',
-    name: 'staffHome',
-    component: staffHome,
-  },
-  {
-    path: '/storeStatic',
-    name: 'storeStatic',
-    component: storeStatic,
-  },
-  {
-    path: '/storeMonitor',
-    name: 'storeMonitor',
-    component: storeMonitor,
-  },
-  {
-    path:'/business',
-    name:'business',
-    component: business
-  },
-  {
-    path:'/test',
-    name:'test',
-    component: test
-
-  },
+  
 
   {
     path: '/template-config',

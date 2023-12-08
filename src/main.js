@@ -108,7 +108,6 @@ Vue.component("recursionTree", {
 
 
 
-import MapPlus from './util/JackMap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import $ from 'jquery'
 // window.$=$;
@@ -118,8 +117,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // console.log("呵呵===")
 // import 'bootstrap';
 
-
-window.MapPlus = MapPlus;
 Vue.config.productionTip = false
 Vue.use(Viewer);
 Viewer.setDefaults({
