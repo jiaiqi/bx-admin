@@ -2296,6 +2296,8 @@ function init_util() {
     }
     return str
   }
+
+  Vue.prototype.deepClone = Vue.prototype.bxDeepClone
 }
 
 export default init_util;

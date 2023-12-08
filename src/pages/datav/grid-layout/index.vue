@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
-      <property-pane @save="clickSave" @preview="toPreview" @refresh="initPage"></property-pane>
+      <property-pane :pageConfg="pageConfg" @save="clickSave" @preview="toPreview" @refresh="initPage"></property-pane>
       <!-- <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
       <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
       <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
@@ -1176,21 +1176,21 @@ export default {
   }
 
   .cushome-right {
-    width: 240px;
+    width: 340px;
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     background: #fff;
     overflow: auto;
-    padding: 20px;
+    // padding: 20px;
   }
 
   .cushome-content {
     position: fixed;
     top: 0;
     bottom: 0;
-    right: 240px;
+    right: 340px;
     left: 240px;
     overflow: auto;
     padding: 40px;

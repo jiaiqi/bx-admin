@@ -1,5 +1,5 @@
 <template>
-  <Chart ref="chartRef" class="uni-ec-canvas" :page-item="pageItem" :chart-option="option" :canvasId="canvasId"
+  <Chart ref="chartRef" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.1)" class="uni-ec-canvas" :page-item="pageItem" :chart-option="option" :canvasId="canvasId"
     :chartType="chartType" :colors="colors" v-if="option" @click-chart="clickChart"></Chart>
 </template>
 
@@ -28,12 +28,13 @@ function deepClone(obj) {
   }
   return newObj;
 }
-const { pageItem, pageParamsModel } = props;
+const { pageItem } = props;
 
 let timer = null;
 const emit = defineEmits(["clickChart"]);
 
 const option = ref({});
+const loading = ref(false);
 
 const clickChart = () => {
   emit("clickChart");
@@ -95,7 +96,23 @@ const colsMapDetailJson = computed(() => {
   return colsMapDetailJson
 })
 
-watch(pageParamsModel, (newVal, oldVal) => {
+const onSrvReq = async (req = null) => {
+  req = req || pageItem?.srv_req_json;
+  if (req) {
+    loading.value = true
+    let res = await $select(req, req.mapp);
+    loading.value = false
+    console.log(res);
+    if (res.ok && res.data.length > 0) {
+      cellData.value = res.data;
+    }
+    console.log(pageItem);
+
+    option.value = useBuildOption(chartType.value, pageItem, res.data, props.layout);
+  }
+};
+
+watch(props.pageParamsModel, (newVal, oldVal) => {
   console.log(pageItem, "pageParamsModel:", newVal);
   paramsLinkage()
 }, { immediate: true, deep: true })
@@ -107,7 +124,8 @@ onMounted(() => {
     cellData.value = pageItem.mock_srv_data_json;
     option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
   } else {
-    onSrvReq();
+    paramsLinkage()
+    // onSrvReq();
     if (pageItem?.srv_req_json?.cycle_req_timer) {
       // 定时刷新
       autoRefreshData();
@@ -125,19 +143,7 @@ const autoRefreshData = () => {
     onSrvReq();
   }, interval * 1000);
 };
-const onSrvReq = async (req = null) => {
-  req = req || pageItem?.srv_req_json;
-  if (req) {
-    let res = await $select(req, req.mapp);
-    console.log(res);
-    if (res.ok && res.data.length > 0) {
-      cellData.value = res.data;
-    }
-    console.log(pageItem);
 
-    option.value = useBuildOption(chartType.value, pageItem, res.data, props.layout);
-  }
-};
 function buildRequestParams(e) {
   console.log('请求参数====>', e)
   let condition = deepClone(e.condition)
@@ -145,15 +151,15 @@ function buildRequestParams(e) {
 
   if (Array.isArray(condition)) {
     for (let cond of condition) {
+      debugger
       console.log('buildRequestParams', cond.colName, cond.value)
       if (cond.value && cond.value.startsWith("${") && cond.value.endsWith("}")) {
         console.log('2', cond.value)
         let par = cond.value.replace("${", "");
 
         par = par.replace("}", "");
-        let params = deepClone(pageParamsModel);
+        let params = deepClone(props.pageParamsModel);
         if (params && Object.keys(params).length > 0) {
-
           for (let key in params) {
             console.log('key', key, par)
             if (key === par) {
@@ -164,11 +170,10 @@ function buildRequestParams(e) {
                 for (let col of mapsCol) {
                   switch (col.from_type) {
                     case '页面':
-                      model = pageParamsModel
+                      model = params
                       switch (col.to_type) {
                         case '组件':
-                          console.log('组件', key, pageParamsModel)
-                          cond.value = pageParamsModel[key].value
+                          cond.value = params[key].value
                           // $set(cond,'value',pageParamsModel[key].value)
                           break;
                         case '页面':
@@ -207,6 +212,13 @@ function buildRequestParams(e) {
       }
     }
   }
+  condition = condition.filter(item => {
+    if(item.ruleType==='eq'&&(item.value===null||item.value===undefined)){
+      return false
+    }else{
+      return true
+    }
+  })
   e.condition = deepClone(condition)
   // console.log(e.serviceName,condition)
   return e
@@ -236,4 +248,8 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+::v-deep .el-loading-mask{
+  background-color: rgba($color: #000000, $alpha: 0.1);
+}
+</style>

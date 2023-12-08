@@ -446,7 +446,7 @@ routes.push( {
       {
         //可视化编辑页面(update)
         path:'editor/:no',
-        name:'gridEditor',
+        name:'gridEditor2',
         component:()=>import('@/pages/datav/grid-layout/index.vue')
       },
       {
