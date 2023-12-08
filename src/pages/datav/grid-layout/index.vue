@@ -9,10 +9,11 @@
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
-      <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
+      <property-pane @save="clickSave" @preview="toPreview" @refresh="initPage"></property-pane>
+      <!-- <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
       <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
       <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
-      <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
+      <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button> -->
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
       <div class="custom-design" id="custom-design" :style="[stylefn(styleJson)]">
@@ -52,6 +53,7 @@
 import dayjs from "dayjs";
 import { GridLayout, GridItem } from "vue-grid-layout";
 import PageItem from "../component/page-item/page-item.vue";
+import propertyPane from "./property-pane.vue";
 import { formatStyleData } from "../common/index.js";
 import { $axios } from "../common/http.js";
 let mouseXY = { x: null, y: null };
@@ -69,6 +71,7 @@ export default {
     GridLayout,
     GridItem,
     PageItem,
+    propertyPane
   },
   data() {
     return {
@@ -239,7 +242,7 @@ export default {
     },
     // 跳转到预览页面
     toPreview() {
-      window.open(window.location.hash.replace("grid-editor", "gridview"));
+      window.open(window.location.hash.replace("/editor/", "/view/"));
       // window.open(window.location.hash.replace("#", "#/preview"));
     },
     clickSave() {
