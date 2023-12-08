@@ -1,6 +1,7 @@
 <template>
-  <Chart ref="chartRef" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.1)" class="uni-ec-canvas" :page-item="pageItem" :chart-option="option" :canvasId="canvasId"
-    :chartType="chartType" :colors="colors" v-if="option" @click-chart="clickChart"></Chart>
+  <Chart ref="chartRef" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.1)" class="uni-ec-canvas"
+    :page-item="pageItem" :chart-option="option" :canvasId="canvasId" :chartType="chartType" :colors="colors"
+    v-if="option" @click-chart="clickChart"></Chart>
 </template>
 
 <script setup>
@@ -124,7 +125,9 @@ onMounted(() => {
     cellData.value = pageItem.mock_srv_data_json;
     option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
   } else {
-    paramsLinkage()
+    let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
+    const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson
+    onSrvReq(req);
     // onSrvReq();
     if (pageItem?.srv_req_json?.cycle_req_timer) {
       // 定时刷新
@@ -148,10 +151,9 @@ function buildRequestParams(e) {
   console.log('请求参数====>', e)
   let condition = deepClone(e.condition)
   let mapsJonss = colsMapDetailJson.value || []
-
+  debugger
   if (Array.isArray(condition)) {
     for (let cond of condition) {
-      debugger
       console.log('buildRequestParams', cond.colName, cond.value)
       if (cond.value && cond.value.startsWith("${") && cond.value.endsWith("}")) {
         console.log('2', cond.value)
@@ -212,9 +214,9 @@ function buildRequestParams(e) {
       }
     }
     condition = condition.filter(item => {
-      if(item.ruleType==='eq'&&(item.value===null||item.value===undefined)){
+      if (item.ruleType === 'eq' && (item.value === null || item.value === undefined)) {
         return false
-      }else{
+      } else {
         return true
       }
     })
@@ -231,7 +233,7 @@ function paramsLinkage() {
   if (Array.isArray(colsMapDetailJson.value)) {
     for (let p of colsMapDetailJson.value) {
       if (p.from_type === '页面' && p.trigger_time === '联动') {
-        if(req?.serviceName){
+        if (req?.serviceName) {
           onSrvReq(req);
         }
       }
@@ -250,7 +252,7 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-loading-mask{
+::v-deep .el-loading-mask {
   background-color: rgba($color: #000000, $alpha: 0.1);
 }
 </style>
