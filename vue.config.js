@@ -21,6 +21,7 @@ function getProdExternals() {
 }
 
 module.exports = {
+  transpileDependencies: ['simple-mind-map'], // 思维导图
   publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
   // lintOnSave: false,//在线excel添加
   configureWebpack: { 
