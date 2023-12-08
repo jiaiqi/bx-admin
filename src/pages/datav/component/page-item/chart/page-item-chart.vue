@@ -143,7 +143,9 @@ const cellData = ref([]);
 const autoRefreshData = () => {
   const interval = pageItem?.srv_req_json?.cycle_req_timer;
   timer = setInterval(() => {
-    onSrvReq();
+    let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
+    const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson
+    onSrvReq(req);
   }, interval * 1000);
 };
 
@@ -151,7 +153,6 @@ function buildRequestParams(e) {
   console.log('请求参数====>', e)
   let condition = deepClone(e.condition)
   let mapsJonss = colsMapDetailJson.value || []
-  debugger
   if (Array.isArray(condition)) {
     for (let cond of condition) {
       console.log('buildRequestParams', cond.colName, cond.value)

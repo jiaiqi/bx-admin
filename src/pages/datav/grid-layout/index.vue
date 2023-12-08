@@ -2,18 +2,20 @@
   <div class="customhome-container" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
     <div class="cushome-sidebar" v-if="!isDataview">
       <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
-        class="com-item margin" draggable="true" unselectable="on">
+        class="com-item margin component" draggable="true" unselectable="on">
         <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%" />
         <span>{{ pageItem.com_type_name }}</span>
         <span>{{ pageItem.com_type }}</span>
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
-      <property-pane :pageConfg="pageConfg" @save="clickSave" @preview="toPreview" @refresh="initPage"></property-pane>
-      <!-- <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
-      <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
-      <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
-      <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button> -->
+      <property-pane :pageConfg="pageConfg" :currentItem="currentItem" @save="clickSave" @preview="toPreview" @refresh="initPage" v-if="isDev"></property-pane>
+      <template v-else>
+          <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
+          <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
+          <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
+          <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
+      </template>
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
       <div class="custom-design" id="custom-design" :style="[stylefn(styleJson)]">
@@ -32,8 +34,8 @@
             <div class="com-item dashed" v-else-if="isDataview">
               <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""></page-item>
             </div>
-            <div class="com-item dashed" v-else @click.stop.prevent.capture="changeDesign(item.i)">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""></page-item>
+            <div class="com-item dashed" :class="{ 'active': item.i === curDesign}" v-else @click.stop.prevent.capture="changeDesign(item.i)">
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item"></page-item>
             </div>
           </grid-item>
         </grid-layout>
@@ -135,9 +137,12 @@ export default {
     this.moveMousemove();
     this.moveMouseup();
     this.initColNum();
-    window.onclick = () => {
+    document.getElementById('custom-design').onclick = (e) => {
       this.curDesign = "";
     };
+    // window.onclick = () => {
+    //   this.curDesign = "";
+    // };
     if (!process?.env?.NODE_ENV === "development") {
       // 开发模式不监听窗口变化
       if (this.isDataview) {
@@ -156,6 +161,9 @@ export default {
     }, 3000);
   },
   computed: {
+    isDev(){
+      return process?.env?.NODE_ENV === "development";
+    },
     isDataview() {
       // 预览模式
       return this.$route?.name === "gridview";
@@ -181,6 +189,9 @@ export default {
         // w: containerWidth / 4,
         // h: containerWidth / 8,
       };
+    },
+    currentItem() {
+      return this.layout.find((item) => item.i === this.curDesign);
     },
   },
   watch: {
@@ -657,6 +668,7 @@ export default {
     },
     //点击容器某一个组件
     changeDesign(idx) {
+      console.log(idx);
       if (this.curDesign == idx) {
         return;
       }
@@ -1128,19 +1140,26 @@ export default {
   text-align: center;
   display: grid;
   font-size: 14px;
-  border: 1px solid #000;
-
+  border: 1px solid transparent;
+  &.component{
+    border-color: #000;
+  }
   &.margin {
     margin: 20px;
   }
-
+  &:hover{
+    border: 1px dashed #666;
+  }
   &.dashed {
+    position: relative;
     width: 100%;
     height: 100%;
     min-height: 30px;
-    border: 1px dashed #666;
-    // border: none;
-    position: relative;
+    // width: 100%;
+    // height: 100%;
+    // min-height: 30px;
+    // border: 1px dashed #666;
+    // position: relative;
     // &::after{
     //   position: absolute;
     //   content: '';
@@ -1150,6 +1169,19 @@ export default {
     //   height: 100%;
     //   border: 1px dashed #666;
     // }
+  }
+  &.active{
+    // border: 1px solid #409eff;
+    &::after{
+      position: absolute;
+      content: '';
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      border: 2px solid #409eff;
+      border-radius: 5px;
+    }
   }
 
   img {

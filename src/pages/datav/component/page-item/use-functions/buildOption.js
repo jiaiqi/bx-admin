@@ -143,22 +143,23 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   seriesName = seriesName.split(",");
 
   let seriesValueCols = chartJson?.series_value_cols || "";
+
   seriesValueCols = seriesValueCols.split(",");
 
-  const mapJson =
-    pageItem.cols_map_json?.cols_map_json ||
-    pageItem?.page_com_cols_map_json?.cols_map_json;
-  let arr = [];
-  if (mapJson) {
-    seriesValueCols.forEach((item) => {
-      for (let k in mapJson) {
-        if (k === item) {
-          arr.push(mapJson[k]);
-        }
-      }
-    });
-    seriesValueCols = arr;
-  }
+  // const mapJson =
+  //   pageItem.cols_map_json?.cols_map_json ||
+  //   pageItem?.page_com_cols_map_json?.cols_map_json;
+  // let arr = [];
+  // if (mapJson) {
+  //   seriesValueCols.forEach((item) => {
+  //     for (let k in mapJson) {
+  //       if (k === item) {
+  //         arr.push(mapJson[k]);
+  //       }
+  //     }
+  //   });
+  //   seriesValueCols = arr;
+  // }
 
   let sortAxisCol = chartJson?.sort_axis_col || "";
   let lineVal1 = chartJson?.refer_line1 || "none";
