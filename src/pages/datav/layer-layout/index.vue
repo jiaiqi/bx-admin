@@ -162,7 +162,7 @@
         dragView:null,
         onDragView:false,
         onDragData:null,
-        updateGridItem:false,
+        updateGridItem:false
       };
     },
   computed:{

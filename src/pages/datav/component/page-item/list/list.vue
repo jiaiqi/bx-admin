@@ -246,7 +246,7 @@ export default {
       console.log(e)
     },
     buildRequestParams(e){
-      // console.log('请求参数====>',e)
+      // 处理请求中变量 根据参数关系 获取动态值
       let condition = this.bxDeepClone(e.condition) 
       let mapsJonss = this.colsMapDetailJson || []
       
@@ -254,7 +254,7 @@ export default {
         for(let cond of condition){
           console.log('buildRequestParams',cond.colName, cond.value)
           if(cond.value && cond.value.startsWith("${") && cond.value.endsWith("}")){
-            // console.log('2',cond.value)
+            // 根据${} 格式转移变量名称
             let par =  cond.value.replace("${", "");
             
             par = par.replace("}", "");
@@ -266,30 +266,18 @@ export default {
                 if(key === par){
                   let mapsCol = mapsJonss.filter(item => item.col_to === par || item.col_from === par)
                   if(Array.isArray(mapsCol) && mapsCol.length > 0){
+                    // 遍历组件参数 映射 
                       let value = ''
                       let model = null
                       for(let col of mapsCol){
                          switch (col.from_type) {
                           case '页面':
+                            // 来源为页面
                             model = this.pageParamsModel
                             switch (col.to_type) {
                               case '组件':
-                                // console.log('组件',key,this.pageParamsModel)
+                                // 目标为组件的参数，设置动态获取的值
                                 cond.value = this.pageParamsModel[key].value
-                                // this.$set(cond,'value',this.pageParamsModel[key].value)
-                                break;
-                              case '页面':
-                                
-                                break;
-                            
-                              default:
-                                break;
-                            }
-                            break;
-                          case '组件':
-                            switch (col.to_type) {
-                              case '组件':
-                                
                                 break;
                               case '页面':
                                 
@@ -318,13 +306,14 @@ export default {
     },
     paramsLinkage(){
         let itemReqJson = this.pageItem.srv_req_json ? this.bxDeepClone(this.pageItem.srv_req_json) : null;
-
+          // 组件请求
           const req =  itemReqJson ? this.buildRequestParams(itemReqJson) : itemReqJson
           // console.log('列表请求',req,req.serviceName)
           let mapsJonss = this.colsMapDetailJson || []
           if(Array.isArray(mapsJonss)){
             for(let p of mapsJonss){
               if(p.from_type === '页面' && p.trigger_time === '联动'){
+                // 设置了与页面联动参数值时
                 this.getListData(req);
               }
             }
@@ -349,9 +338,7 @@ export default {
         deep: true,
         immediate: true,
         handler: function(newVal, oldVal) {
-          // console.log('componentParamsModelsRun',this.deepClone(newVal).current_value,this.deepClone(oldVal).current_value)
-          // 选中数据更新后 进行参数更新输出逻辑
-          // let pageParams = this.colsMapDetailJson
+          // 页面参数更新后调用
            this.paramsLinkage()
         }
       },
