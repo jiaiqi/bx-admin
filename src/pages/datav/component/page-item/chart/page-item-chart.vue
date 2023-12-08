@@ -211,14 +211,15 @@ function buildRequestParams(e) {
 
       }
     }
+    condition = condition.filter(item => {
+      if(item.ruleType==='eq'&&(item.value===null||item.value===undefined)){
+        return false
+      }else{
+        return true
+      }
+    })
   }
-  condition = condition.filter(item => {
-    if(item.ruleType==='eq'&&(item.value===null||item.value===undefined)){
-      return false
-    }else{
-      return true
-    }
-  })
+
   e.condition = deepClone(condition)
   // console.log(e.serviceName,condition)
   return e
