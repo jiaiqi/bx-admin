@@ -113,8 +113,7 @@ const onSrvReq = async (req = null) => {
   }
 };
 
-watch(props.pageParamsModel, (newVal, oldVal) => {
-  console.log(pageItem, "pageParamsModel:", newVal);
+watch(() => props.pageParamsModel, (newVal, oldVal) => {
   paramsLinkage()
 }, { immediate: true, deep: true })
 

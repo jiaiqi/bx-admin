@@ -9,12 +9,14 @@
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
-      <property-pane :pageConfg="pageConfg" :currentItem="currentItem" @save="clickSave" @preview="toPreview" @refresh="initPage" v-if="showPane"></property-pane>
+      <property-pane :pageConfg="pageConfg" :appNo="appNo" :currentItem="currentItem" :layout="layout" @save="clickSave"
+        @preview="toPreview" @refresh="initPage" v-if="showPane"></property-pane>
       <template v-else>
-          <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
-          <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
-          <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
-          <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
+        <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
+        <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
+        <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
+        <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0"
+          @click="toPreview">预览</el-button>
       </template>
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
@@ -28,14 +30,18 @@
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
-            <div v-if="item.isLeftBarItem" class="com-item dashed" @click.stop.prevent.capture="changeDesign(item.i)">
+            <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
+              @click.stop.prevent.capture="changeDesign(item.i)">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
             </div>
             <div class="com-item dashed" v-else-if="isDataview">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""></page-item>
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+                :page-item="item.data" :layout="item" @click.stop=""></page-item>
             </div>
-            <div class="com-item dashed" :class="{ 'active': item.i === curDesign}" v-else @click.stop.prevent.capture="changeDesign(item.i)">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item"></page-item>
+            <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
+              @click.stop.prevent.capture="changeDesign(item.i)">
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+                :page-item="item.data" :layout="item"></page-item>
             </div>
           </grid-item>
         </grid-layout>
@@ -68,7 +74,7 @@ import pageParams from '../common/params/page-params-mixin.js'
 
 export default {
   name: "pageEditor",
-  mixins:[pageParams],
+  mixins: [pageParams],
   components: {
     GridLayout,
     GridItem,
@@ -83,6 +89,7 @@ export default {
       colNum: 40,
       pgNo: "",
       pageId: "",
+      appNo: "",//应用编号
       pageName: "可视化配置",
       pageTitle: "可视化配置页",
       styleJson: null,
@@ -117,7 +124,9 @@ export default {
   },
   created() {
     this.getComList();
-
+    if (this.$route.query.appNo) {
+      this.appNo = this.$route.query.appNo;
+    }
     if (this.$route.query.pageNo || this.$route.params?.no) {
       this.pgNo = this.$route.query.pageNo || this.$route.params?.no;
       this.initPage();
@@ -161,7 +170,7 @@ export default {
     }, 3000);
   },
   computed: {
-    showPane(){
+    showPane() {
       return true
       return process?.env?.NODE_ENV === "development";
     },
@@ -277,9 +286,16 @@ export default {
     },
     async saveFn() {
       let addObj = {};
+      const layout = this.layout.map(item => {
+        return {
+          ...item,
+          timestamp: Number((new Date().getTime() + '').slice(-9))
+        }
+      })
       // 新增保存
       if (!this.pgNo) {
         // 新增页面及其布局
+
         // 布局容器
         addObj = {
           serviceName: "srvpage_cfg_layout_add",
@@ -294,7 +310,7 @@ export default {
         const layoutInfo = await this.saveService("add", addObj, null, true);
         // 子容器
         addObj.data = [];
-        this.layout.forEach((item, i) => {
+        layout.forEach((item, i) => {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutInfo.layout_no,
@@ -303,7 +319,7 @@ export default {
               dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss") +
               "-" +
               i,
-            seq: i + 1,
+            seq: item.timestamp || i + 1,
             pos_x: item.x,
             pos_y: item.y,
             col_span: item.h,
@@ -329,15 +345,15 @@ export default {
           serviceName: "srvpage_cfg_page_component_add",
           data: [],
         };
-        this.layout.forEach((item, i) => {
+        layout.forEach((item, i) => {
           addObj.data.push({
             com_name: item.data.com_type_name,
             com_preview: item.data.example,
             page_layout_no: layoutInfo.layout_no,
             com_type: item.data.com_type,
             page_no: pageNo.page_no,
-            com_seq: i + 1,
-            layout_seq: i + 1,
+            com_seq: (i + 1) * 100,
+            layout_seq: item.timestamp || i + 1,
           });
         });
         this.saveService("add", addObj);
@@ -371,7 +387,7 @@ export default {
         if (Array.isArray(parseLayout) && parseLayout.length) {
           parseLayout.forEach((oldItem) => {
             let isDel = true;
-            this.layout.forEach((item, i) => {
+            layout.forEach((item, i) => {
               if (oldItem.id === item.id) {
                 isDel = false;
                 if (
@@ -416,8 +432,8 @@ export default {
             }
           });
         }
-     
-        this.layout.forEach((item, i) => {
+
+        layout.forEach((item, i) => {
           if (!item.id) {
             // 新增容器
             addLayout.data.push({
@@ -448,7 +464,7 @@ export default {
           await this.saveService("update", arrUpdateLayout);
         }
 
-        this.layout.forEach((item, i) => {
+        layout.forEach((item, i) => {
           if (!item.id) {
             // 新增组件
             addCom.data.push({
@@ -457,8 +473,8 @@ export default {
               page_layout_no: this.layoutObj.layout_no,
               com_type: item.data.com_type,
               page_no: this.pgNo,
-              com_seq: i + 1,
-              layout_seq: i + 1,
+              com_seq: (i + 1) * 100,
+              layout_seq: item.timestamp || i + 1,
             });
           }
         });
@@ -523,7 +539,10 @@ export default {
         Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
       ).page_no;
     },
-    async initPage() {
+    async initPage(data) {
+      if (data?.page_no) {
+        this.pgNo = data.page_no
+      }
       this.layout = []
       const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
@@ -596,7 +615,7 @@ export default {
           this.layout.push(obj);
         });
         this.strLayout = JSON.stringify(this.layout);
-        this.$set(this,'loadPageMata',data)  // 保存页面元数据
+        this.$set(this, 'loadPageMata', data)  // 保存页面元数据
         this.initPageParams()  // 页面参数初始化
       } else {
         this.$message.info("无数据！");
@@ -1143,15 +1162,19 @@ export default {
   display: grid;
   font-size: 14px;
   border: 1px solid transparent;
-  &.component{
+
+  &.component {
     border-color: #000;
   }
+
   &.margin {
     margin: 20px;
   }
-  &:hover{
+
+  &:hover {
     border: 1px dashed #666;
   }
+
   &.dashed {
     position: relative;
     width: 100%;
@@ -1172,9 +1195,11 @@ export default {
     //   border: 1px dashed #666;
     // }
   }
-  &.active{
+
+  &.active {
+
     // border: 1px solid #409eff;
-    &::after{
+    &::after {
       position: absolute;
       content: '';
       left: 0;
@@ -1255,7 +1280,7 @@ export default {
       overflow-y: hidden;
       // transform: scale(0.8);
       margin: 0 auto;
-      // background: #fff;
+      background: #040711;
 
       .grid-container {
         height: 100%;

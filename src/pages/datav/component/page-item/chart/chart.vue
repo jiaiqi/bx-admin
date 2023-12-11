@@ -58,14 +58,14 @@ onMounted(() => {
   })
 });
 
-watch(
-  () => props.chartOption,
-  () => {
-    if (props.chartOption) {
-      setChartOption();
-    }
-  }
-);
+// watch(
+//   () => props.chartOption,
+//   () => {
+//     if (props.chartOption) {
+//       setChartOption();
+//     }
+//   }
+// );
 
 const onResize = () => {
   myChart.resize();

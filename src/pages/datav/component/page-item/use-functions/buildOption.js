@@ -13,6 +13,7 @@ let __colors = [
   "#82B6F7",
 ];
 export const useBuildOption = (type, pageItem, cellData = [], layout) => {
+
   let colors = [...__colors];
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
@@ -213,7 +214,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
 
         if (seriesName.length <= 2) {
-          series.yAxisIndex = sIndex;
+          // series.yAxisIndex = sIndex;
         }
         const mapJson =
           pageItem.cols_map_json?.cols_map_json ||
