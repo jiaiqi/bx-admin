@@ -323,7 +323,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 position: "outside",
                 alignTo: "labelLine",
                 show: true,
-                formatter: `{b} : {c}${chartJson?.y1_unit || ""}`,
+                formatter: `{b} \r\n {c}${chartJson?.y1_unit || ""}`,
                 // bleedMargin: 3,
               },
               labelLine: {
@@ -361,7 +361,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                   show: true,
                   position: "outside",
                   color: "#ddd",
-                  formatter: `{b} : {c}${chartJson?.y1_unit || ""}`,
+                  formatter: `{b}\r\n {c}${chartJson?.y1_unit || ""}`,
                   rich: rich,
                 },
                 labelLine: {
@@ -606,14 +606,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             // Folllowing left/top/width/height/right/bottom are used for positioning the word cloud
             // Default to be put in the center and has 75% x 80% size.
 
-            left: "center",
-            top: "center",
-            width: "90%",
-            height: "90%",
-            left: "center",
-            top: "center",
-            right: "center",
-            bottom: "center",
+            width: "100%",
+            height: "100%",
+            left: "0",
+            top: "0",
+            right: "0",
+            bottom: "0",
 
             // Text size range which the value in data will be mapped to.
             // Default to have minimum 12px and maximum 60px size.
@@ -627,7 +625,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
             // size of the grid in pixels for marking the availability of the canvas
             // the larger the grid size, the bigger the gap between words.
-            gridSize: 25,
+            gridSize: 20,
 
             // set to true to allow word being draw partly outside of the canvas.
             // Allow word bigger than the size of the canvas to be drawn
@@ -640,21 +638,24 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             // Global text style
             textStyle: {
               normal: {
-                color: function (e) {
-                  let color1 =
-                    "rgb(" +
-                    [
-                      Math.round(Math.random() * 200 + 55),
-                      Math.round(Math.random() * 200 + 55),
-                      Math.round(Math.random() * 200 + 55),
-                    ].join(",") +
-                    ")";
-                  //   let random = Math.random()*10/colors.length
-                  // let color2 = colors[parseInt( random )];
-                  // console.log(color1, color2,parseInt( random),colors,e);
-
-                  return color1;
-                },
+                color: v => (
+                  `${__colors[v.dataIndex]}`
+                )
+                // color: function (e) {
+                //   let color1 =
+                //     "rgb(" +
+                //     [
+                //       Math.round(Math.random() * 200 + 55),
+                //       Math.round(Math.random() * 200 + 55),
+                //       Math.round(Math.random() * 200 + 55),
+                //     ].join(",") +
+                //     ")";
+                //     let random = Math.random()*colors.length
+                //   // let color2 = colors[parseInt( random )];
+                //   // console.log(color1, color2,parseInt( random),colors,e);
+                //     return __colors[parseInt(random)]
+                //   return color1;
+                // },
               },
               emphasis: {
                 shadowBlur: 10,

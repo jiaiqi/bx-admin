@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
-      <property-pane :pageConfg="pageConfg" :currentItem="currentItem" @save="clickSave" @preview="toPreview" @refresh="initPage" v-if="isDev"></property-pane>
+      <property-pane :pageConfg="pageConfg" :currentItem="currentItem" @save="clickSave" @preview="toPreview" @refresh="initPage" v-if="showPane"></property-pane>
       <template v-else>
           <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
           <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
@@ -161,7 +161,8 @@ export default {
     }, 3000);
   },
   computed: {
-    isDev(){
+    showPane(){
+      return true
       return process?.env?.NODE_ENV === "development";
     },
     isDataview() {
@@ -523,6 +524,7 @@ export default {
       ).page_no;
     },
     async initPage() {
+      this.layout = []
       const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
         serviceName: "srvpage_cfg_page_guest_select",
