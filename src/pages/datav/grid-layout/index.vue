@@ -83,7 +83,7 @@ export default {
   },
   data() {
     return {
-      contentData:{},
+      contentData: {},
       isFullScreen: false,
       pageConfg: {},
       containerWidth: 800,
@@ -154,16 +154,15 @@ export default {
     //   this.curDesign = "";
     // };
     // if (!process?.env?.NODE_ENV === "development") {
-      // 开发模式不监听窗口变化
-      if (this.isDataview) {
-        window.onresize = () => {
-          this.resize();
-          console.log('resize');
-        };
-        setTimeout(() => {
-          this.resize();
-        }, 500);
-      }
+    // 开发模式不监听窗口变化
+    if (this.isDataview) {
+      window.onresize = () => {
+        this.resize();
+      };
+      setTimeout(() => {
+        this.resize();
+      }, 500);
+    }
     // }
     setTimeout(() => {
       if (this.needLogin) {
@@ -211,13 +210,17 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
-        console.log(newValue);
+        // console.log(newValue);
       },
     },
   },
   methods: {
     resize() {
       // 自适应缩放
+      if (!this.isDataview) {
+        // 编辑状态不缩放
+        return
+      }
       let element = document.getElementById("custom-design");
       let resizeFull = () => {
         const windowWidth = window.innerWidth;
@@ -235,7 +238,6 @@ export default {
         if (window.screen.height / dashboard_height < 1) {
           ratioY = (ratioY * window.screen.height) / dashboard_height;
         }
-        console.log('on-resize:',ratioX,ratioY);
         document.body.style = `width:${contentData.width};height:${contentData.height};overflow-y:hidden;transform:scale(${ratioX}, ${ratioY});transform-origin: left top; background-size: 100% 100%;`;
       };
       let resizeFullBak = () => {
@@ -582,11 +584,13 @@ export default {
         this.comJson = page_row_json_data.component_json || [];
         this.styleJson = page_row_json_data.page_style_json;
         this.contentData = {
-          width:this.styleJson.width,
-          height:this.styleJson.height,
+          width: this.styleJson.width,
+          height: this.styleJson.height,
         }
-        delete this.styleJson.width;
-        delete this.styleJson.height;
+        if (this.isDataview) {
+          delete this.styleJson.width;
+          delete this.styleJson.height;
+        }
         this.pageConfg = data;
         if (!this.comJson) return;
         this.comJson.forEach((com, i) => {
@@ -599,7 +603,6 @@ export default {
         this.parentLayoutNo = data.layout_no;
 
         this.layoutJson = data.layout_json_data;
-        console.log(data.layout_json_data);
         this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
         this.layoutJson.parts_json = this.layoutJson.parts_json.sort(
           (a, b) => a.seq - b.seq

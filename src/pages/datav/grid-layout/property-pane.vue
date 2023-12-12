@@ -67,6 +67,11 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.componentLoading = true;
         this.layoutLoading = true;
+        setTimeout(() => {
+        this.componentLoading = false;
+        this.layoutLoading = false;
+          
+        }, 3000);
       }
     },
   },
