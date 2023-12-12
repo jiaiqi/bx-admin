@@ -14,10 +14,13 @@ export default {
         return {
             // 移植参数相关
             // myMindMap:null,
+            
+        loading:false,
+        loadtext:'加载中',
             num:0, // 节点数量
             centerDialogVisible:false, // 显示搜索框
             defaultScale:1,
-            showEditorUi:['footer'],  // 显示的ui  'side','hand','footer'
+            showEditorUi:['footer','hand'],  // 显示的ui  'side','hand','footer'
             sideTools:[
                 {
                     icon:'el-icon-notebook-2',
@@ -459,9 +462,15 @@ export default {
         },
         onDataChange(data){
 
-            // 数据加载
+            // 脑图节点数据加载
+            console.log('data_change',data,this.mindMapModel.getData())
             this.num = 0
             this.walk(data)
+
+            if(!this.mindConfig.rootNodeNo){
+                // 新增根节点 当前脑图还没有节点时
+                this.noneRootNoActiveRootNode()
+            }
         },
         walk(data) {
             // 遍历
@@ -471,7 +480,53 @@ export default {
                 this.walk(item)
               })
             }
-          }
+        },
+        updateNodeByActive(isActive,nodes){
+            // 设置节点激活状态
+            let ns = nodes || this.activeNodes
+            if(Array.isArray(ns) && ns.length > 0){
+                for(let n of ns){
+                    n.updateNodeByActive(isActive)
+                }
+                
+            }
+            
+        },
+        setLoading(stats,text){
+            this.$set(this,'loading',stats)
+            this.$set(this,'loadtext',text)
+        },
+        noneRootNoActiveRootNode(){
+            let self = this
+            // 如果没有远程根节点时，激活根节点
+            let mindMap = this.mindMapModel
+            
+            let rootUid = mindMap.getData()
+            console.log(rootUid.data.uid,mindMap.node)
+            this.loading = true
+            this.setLoading(true,'保存根节点中...')
+            self.submitChange('add').then(res => {
+                // 新增根节点
+                console.log(res)
+                if(res && res.no){
+                    // 新增成功 保存和更新 根节点编号数据
+                    self.$set(self.mindConfig,'rootNodeNo',res.no)
+                    self.$set(self.mindConfig.mainMind,'top_node_no',res.no)
+                    this.setLoading(false,'')
+                    self.submitChange().then( mres => {
+                        // 回填修改脑图根节点编号
+                        console.log(mres)
+                        self.initPage().then(res => {
+                            console.log('init Page',res)
+                            if(res){
+                                self.initMind(self.dataTemp)
+                                
+                            }
+                        })  // 加载数据
+                    })
+                }
+            })
+        }
           
 
 

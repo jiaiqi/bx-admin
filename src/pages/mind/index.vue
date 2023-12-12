@@ -19,7 +19,9 @@
             id="mindMapContainer">
         </div>
         <div class="tool-layout">
-            <div class="hander-layout" v-if="showEditorUi.includes('hand')"></div>
+            <div class="hander-layout shadow" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind">
+                {{mindConfig.mainMind.mind_name}}
+            </div>
             <div class="side-layout " v-if="showEditorUi.includes('side')">
                 <div class="side-toolbar border border-radius  shadow ">
                     <div v-for="(sTool,index) in sideTools" :key="index" class="side-toolbar-item" :class="`${activeSideTool == sTool.value ? 'active' : ''}`" @click="onSideToolBar(sTool)">
@@ -172,7 +174,8 @@
 
 import MindMap from "simple-mind-map";
 import { ref, onMounted, shallowRef } from 'vue'
-import utilsMixin from './utils/util-mixin.js'
+import utilsMixin from './utils/util-mixin.js'  // 逻辑交互
+import loadMixin from './utils/load-mixin.js'  // 数据交互
 
 import RichText from 'simple-mind-map/src/plugins/RichText.js'  // 节点富文本编辑
 import Export from 'simple-mind-map/src/plugins/Export.js'  // 导出插件
@@ -181,7 +184,7 @@ import Drag from 'simple-mind-map/src/plugins/Drag.js' //拖拽模块
 import Search from 'simple-mind-map/src/plugins/Search.js' // 搜索模块
 MindMap.usePlugin(Export)
 MindMap.usePlugin(ExportPDF)
-MindMap.usePlugin(RichText)
+// MindMap.usePlugin(RichText)
 MindMap.usePlugin(Drag)
 MindMap.usePlugin(Search)
 let mindMap = null
@@ -220,7 +223,7 @@ let copyData = null
 
   export default {
     name:'mindIndex',
-    mixins:[utilsMixin],
+    mixins:[utilsMixin,loadMixin],
     components: {},
     computed:{
         
@@ -229,50 +232,7 @@ let copyData = null
     data() {
       return {
         mindMapModel:null,
-        loading:false,
-        loadtext:'加载中',
-        dataTemp:{
-            data:{
-                // 节点文本
-                text: '根节点',
-                // 图片
-                image: '',
-                imageTitle: '图片名称',
-                imageSize: {
-                    width: 1152,
-                    height: 1152
-                },
-                // 图标
-                icon: ['priority_1'],
-                // 标签
-                tag: ['标签1', '标签2'],
-                // 链接
-                hyperlink: 'http://lxqnsys.com/',
-                hyperlinkTitle: '理想青年实验室',
-                // 备注内容
-                note: '理想青年实验室\n一个有意思的角落',
-                // 概要
-                // generalization: {
-                //     text: '概要的内容'
-                // },
-                // 节点是否展开
-                expand: true,
-            },
-            "children": [
-                {
-                "data": {
-                    "text": "二级节点"
-                },
-                "children": []
-                },
-                {
-                "data": {
-                    "text": "二级节点"
-                },
-                "children": []
-                }
-            ]
-        }
+        
       };
     },
   computed:{
@@ -285,7 +245,15 @@ let copyData = null
 
   mounted: function () {
     this.loading = false
-    this.initMind(this.dataTemp)
+    
+
+    this.initPage().then(res => {
+        console.log('init Page',res)
+        if(res){
+            this.initMind(this.dataTemp)
+            
+        }
+    })  // 加载数据
   },
   
     
@@ -330,7 +298,7 @@ let copyData = null
             });
             // const data = mindMap.getData(true)
             // 动态开启富文本编辑
-            mindMap.addPlugin(RichText)
+            // mindMap.addPlugin(RichText)
             // 动态关闭富文本编辑
             // mindMap.removePlugin(RichText)
             this.mindMapModel = mindMap
@@ -435,9 +403,10 @@ let copyData = null
                 enableFreeDrag: true
             })
 
-            this.onDataChange(mindMap.getData())
+            // this.onDataChange(mindMap.getData())
                 
-                
+            
+            
         }
         
     },
@@ -465,7 +434,8 @@ let copyData = null
   $border:#F2F6FC;
   $white:#FFFFFF;
   $Transparent:Transparent;
-
+  $padding:10px;
+  $borderRadius:6px;
 
   #mindMapContainer {
     width:100vw;
@@ -487,10 +457,11 @@ let copyData = null
         }
         .hander-layout{
             top:10px;
-
+            background:$white;
+            padding:$padding;
         }
         .side-layout{
-            border-radius:6px;
+            border-radius:$borderRadius;
             right:0;
             display:flex;
             align-items:center;
