@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, defineEmits } from "vue";
 import { formatStyleData } from "@/common/common.js";
 import dateTime from "../widgets/date-time.vue";
 const props = defineProps({
@@ -105,13 +105,14 @@ function exitFullScreen() {
     }
   }
 }
-
+const emit = defineEmits(['resize'])
 window.onresize = () => {
   if (!document.fullscreenElement) {
     isFullScreen.value = false
   } else {
     isFullScreen.value = true
   }
+  emit('resize')
 };
 </script>
 

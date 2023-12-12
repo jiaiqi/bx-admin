@@ -36,7 +36,7 @@
             </div>
             <div class="com-item dashed" v-else-if="isDataview">
               <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                :page-item="item.data" :layout="item" @click.stop=""></page-item>
+                :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
             </div>
             <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
               @click.stop.prevent.capture="changeDesign(item.i)">
@@ -83,6 +83,7 @@ export default {
   },
   data() {
     return {
+      contentData:{},
       isFullScreen: false,
       pageConfg: {},
       containerWidth: 800,
@@ -152,17 +153,18 @@ export default {
     // window.onclick = () => {
     //   this.curDesign = "";
     // };
-    if (!process?.env?.NODE_ENV === "development") {
+    // if (!process?.env?.NODE_ENV === "development") {
       // 开发模式不监听窗口变化
       if (this.isDataview) {
         window.onresize = () => {
           this.resize();
+          console.log('resize');
         };
         setTimeout(() => {
           this.resize();
         }, 500);
       }
-    }
+    // }
     setTimeout(() => {
       if (this.needLogin) {
         // location.href = '/main/login.html'
@@ -224,30 +226,30 @@ export default {
           return resizeFullBak();
         let ratioX = windowWidth / window.screen.width;
         let ratioY = windowheight / window.screen.height;
-        let contentData = this.styleJson;
-
-        let dashboard_width = Number(contentData.width);
-        let dashboard_height = Number(contentData.height);
+        let contentData = this.contentData;
+        let dashboard_width = parseFloat(contentData.width);
+        let dashboard_height = parseFloat(contentData.height);
         if (window.screen.width / dashboard_width < 1) {
-          ratioX = (ratioX * window.screen.width) / width;
+          ratioX = (ratioX * window.screen.width) / dashboard_width;
         }
         if (window.screen.height / dashboard_height < 1) {
           ratioY = (ratioY * window.screen.height) / dashboard_height;
         }
-        document.body.style = `width:${this.styleJson.width};height:${this.styleJson.height};overflow-y:hidden;transform:scale(${ratioX}, ${ratioY});transform-origin: left top; background-size: 100% 100%;`;
+        console.log('on-resize:',ratioX,ratioY);
+        document.body.style = `width:${contentData.width};height:${contentData.height};overflow-y:hidden;transform:scale(${ratioX}, ${ratioY});transform-origin: left top; background-size: 100% 100%;`;
       };
       let resizeFullBak = () => {
         let ratioX = windowWidth / document.body.innerWidth;
         let ratioY = windowheight / document.body.innerHeight;
-        let dashboard_width = Number(contentData.width);
-        let dashboard_height = Number(contentData.height);
+        let dashboard_width = parseFloat(contentData.width);
+        let dashboard_height = parseFloat(contentData.height);
         if (window.screen.width / dashboard_width < 1) {
           ratiox = (ratio * window.screen.width) / dashboard_width;
         }
         if (window.screen.height / dashboard_height < 1) {
           ratiox = (ratio * window.screen.height) / dashboard_height;
         }
-        document.body.style = `width:${this.styleJson.width};height:${this.styleJson.height};transform: scale(${ratioX},${ratioY});transform-origin: left top;background-size: 100%  ${ratioY}`;
+        document.body.style = `width:${contentData.width};height:${contentData.height};transform: scale(${ratioX},${ratioY});transform-origin: left top;background-size: 100%  ${ratioY}`;
       };
       resizeFull();
     },
@@ -579,6 +581,12 @@ export default {
         this.pageTitle = page_row_json_data.page_title;
         this.comJson = page_row_json_data.component_json || [];
         this.styleJson = page_row_json_data.page_style_json;
+        this.contentData = {
+          width:this.styleJson.width,
+          height:this.styleJson.height,
+        }
+        delete this.styleJson.width;
+        delete this.styleJson.height;
         this.pageConfg = data;
         if (!this.comJson) return;
         this.comJson.forEach((com, i) => {
@@ -1218,8 +1226,8 @@ export default {
 }
 
 .customhome-container {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: #f1f3f2;
   user-select: none;
 
@@ -1271,12 +1279,12 @@ export default {
     }
 
     .custom-design {
-      height: 100%;
       // width: 800px;
-      // width: 100%;
+      width: 100%;
+      height: 100%;
       // min-width: 800px;
-      width: 1920px;
-      height: 1080px;
+      // width: 100vw;
+      // height: 100vh;
       overflow-y: hidden;
       // transform: scale(0.8);
       margin: 0 auto;

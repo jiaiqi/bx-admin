@@ -64,6 +64,7 @@
       v-if="pageItem.com_type === '控件'"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
+      @resize="$emit('resize')"
     ></page-widget>
     <card-group
       v-if="pageItem.com_type === 'cardGroup'"
