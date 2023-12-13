@@ -219,10 +219,6 @@ export default {
     },
   },
   methods: {
-    changeWidth(w) {
-      console.log(w);
-      this.rightWidth = w
-    },
     resize() {
       // 自适应缩放
       if (!this.isDataview) {
