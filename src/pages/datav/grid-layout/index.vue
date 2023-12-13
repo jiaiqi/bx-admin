@@ -1,5 +1,6 @@
 <template>
-  <div class="customhome-container" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
+  <div class="customhome-container" :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)"
+    @dragover="dragDefFn($event)">
     <div class="cushome-sidebar" v-if="!isDataview">
       <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
         class="com-item margin component" draggable="true" unselectable="on">
@@ -9,6 +10,7 @@
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
+      <div class="left-line" id="left-line"></div>
       <property-pane :pageConfg="pageConfg" :appNo="appNo" :currentItem="currentItem" :layout="layout" @save="clickSave"
         @preview="toPreview" @refresh="initPage" v-if="showPane"></property-pane>
       <template v-else>
@@ -68,7 +70,6 @@ let mouseXY = { x: null, y: null };
 let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 
 
-
 // 页面参数
 import pageParams from '../common/params/page-params-mixin.js'
 
@@ -83,6 +84,9 @@ export default {
   },
   data() {
     return {
+      rightWidth: 340,
+      rightX:0,
+      isDown:false,
       contentData: {},
       isFullScreen: false,
       pageConfg: {},
@@ -215,6 +219,10 @@ export default {
     },
   },
   methods: {
+    changeWidth(w) {
+      console.log(w);
+      this.rightWidth = w
+    },
     resize() {
       // 自适应缩放
       if (!this.isDataview) {
@@ -793,7 +801,18 @@ export default {
     },
     //鼠标移动
     moveMousemove() {
+      document.getElementById("left-line").onmousedown=(e)=>{
+        this.isDown = true
+      }
+      document.getElementById("left-line").onmouseup=(e)=>{
+        this.isDown = false
+      }
       window.onmousemove = (ev) => {
+        if (this.isDown == true) {
+          //获取x和y
+          this.rightWidth = window.innerWidth - ev.clientX;
+        }
+
         if (!this.mouseFalg) {
           return;
         }
@@ -1247,20 +1266,34 @@ export default {
 
   .cushome-right {
     width: 340px;
+    width: var(--right-width);
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     background: #fff;
     overflow: auto;
+
     // padding: 20px;
+    .left-line {
+      position: fixed;
+      width: 5px;
+      height: 100vh;
+      top: 0;
+      right: calc(var(--right-width) - 5px);
+      z-index: 9999;
+      cursor:col-resize;
+      &:hover {
+        background-color: #ccc;
+      }
+    }
   }
 
   .cushome-content {
     position: fixed;
     top: 0;
     bottom: 0;
-    right: 340px;
+    right: var(--right-width);
     left: 240px;
     overflow: auto;
     padding: 40px;
