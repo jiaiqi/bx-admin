@@ -85,7 +85,6 @@ export default {
   data() {
     return {
       rightWidth: 340,
-      rightX:0,
       isDown:false,
       contentData: {},
       isFullScreen: false,

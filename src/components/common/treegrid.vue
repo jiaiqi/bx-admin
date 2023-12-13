@@ -497,6 +497,7 @@ export default {
         currentPage: 1,
         total: 0,
       },
+      unfoldDataMap:{}
     };
   },
   methods: {
@@ -560,6 +561,7 @@ export default {
             arr.indexOf(value[this.parentCol]) > -1 &&
             !value["_level_node"]
           ) {
+            this.$set(this.unfoldDataMap,value.id+'',false)
             removeByValue(me.gridData, value);
           }
         });
@@ -639,6 +641,14 @@ export default {
             i++;
           }
         }
+        if(rowData._children && rowData._children.length > 0){
+          rowData._children.forEach(item=>{
+            if(this.unfoldDataMap[item.id]===true){
+                // 展开的
+                this.toggle(item)
+              }
+          })
+        }
 
         // let index = me.gridData.indexOf(rowData);
         // let pre = me.gridData.slice(0, index + 1);
@@ -647,6 +657,7 @@ export default {
         // me.gridData = concatChildren.concat(last);
       }
       rowData._expanded = !rowData._expanded;
+      this.$set(this.unfoldDataMap,rowData.id+'',rowData._expanded)
     },
     getChildFlowId(data, emptyArr) {
       // 获取子级的flowId
@@ -1041,7 +1052,16 @@ export default {
            
           this.buildData(response.body.data, true);
          
-          this.gridData = response.body.data;
+          this.gridData = response.body.data
+          if(this.gridData.length>0){
+            this.gridData.forEach(item=>{
+              if(this.unfoldDataMap[item.id]===true){
+                // 展开的
+                this.toggle(item)
+              }
+              // return item
+            });
+          }
           if (response.body.page) {
             this.gridPage.pageSize = response.body["page"]["rownumber"]>100?100:response.body["page"]["rownumber"];
             this.gridPage.currentPage = response.body["page"]["pageNo"];
@@ -1406,6 +1426,10 @@ export default {
 .tree-grid {
   ::v-deep .el-table__empty-block {
     width: 100% !important;
+  }
+  .button{
+    cursor: pointer;
+    margin-right: 5px;
   }
 }
 </style>
