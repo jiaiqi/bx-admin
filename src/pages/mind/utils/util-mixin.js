@@ -580,7 +580,7 @@ export default {
                         self.initPage().then(res => {
                             console.log('init Page',res)
                             if(res){
-                                self.initMind(self.dataTemp)
+                                // self.initMind(self.dataTemp)
                                 
                             }
                         })  // 加载数据

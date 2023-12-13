@@ -107,7 +107,7 @@
                     <el-button icon="el-icon-full-screen" @click="viewFit" title="适应画布显示">
                         <!-- 适配画布显示 -->
                     </el-button>
-                    <div style="min-width:16rem;background:#fff;padding:0 10px;">
+                    <!-- <div style="min-width:16rem;background:#fff;padding:0 10px;">
                         <el-slider
                         :min="10"
                         :max="200"
@@ -116,9 +116,10 @@
                         @change="viewSetScale"
                         show-input>
                         </el-slider>
-                    </div>
-                    
-                    <el-button  type="primary" @click="getAllData()">获取数据</el-button>
+                    </div> -->
+                    <el-button  type="primary" @click="exportFile('pdf')">导出</el-button>
+
+                    <!-- <el-button  type="primary" @click="getAllData()">获取数据</el-button> -->
                 </div>
                 
                 <!-- <el-button  type="primary" @click="exportFile('pdf')">导出</el-button>
@@ -294,7 +295,7 @@ let copyData = null
                 enableFreeDrag: true,
                 data: d,
                 mousewheelAction: 'move', // move zoom
-                initRootNodePosition: ['center', 'center'],
+                // initRootNodePosition: ['center', 'center'],
             });
             // const data = mindMap.getData(true)
             // 动态开启富文本编辑
@@ -422,7 +423,7 @@ let copyData = null
 
             // this.onDataChange(mindMap.getData())
                 
-            
+            // this.viewFit()
             
         }
         
