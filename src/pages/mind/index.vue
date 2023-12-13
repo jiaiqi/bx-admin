@@ -133,7 +133,7 @@
                 <div class="contextMenuItem" @click="insertChildNode">插入下级节点</div>
                 <div class="contextMenuItem" @click="insertNode">插入同级节点</div>
                 <div class="contextMenuItem" @click="copy">复制</div>
-                <div class="contextMenuItem" @click="cut">剪切</div>
+                <!-- <div class="contextMenuItem" @click="cut">剪切</div> -->
                 <div class="contextMenuItem" @click="paste">粘贴</div>
             </template>
             <template v-if="rightMousedown.type === 'svg'">
@@ -249,7 +249,7 @@ let copyData = null
 
     this.initPage().then(res => {
         console.log('init Page',res)
-        if(res){
+        if(res && !this.mindMapModel){
             this.initMind(this.dataTemp)
             
         }
@@ -305,7 +305,7 @@ let copyData = null
             
             this.defaultTheme = this.mindMapModel.getTheme()
             mindMap.on('data_change',  this.onDataChange)
-            // mindMap.on('view_data_change', updateMiniMp)
+            // mindMap.on('view_data_change', this.nodeDragging)
             // mindMap.on('node_tree_render_end', updateMiniMp)
 
 
@@ -362,7 +362,7 @@ let copyData = null
             // 监听事件
             mindMap.on('node_click', this.onNode) // 点击节点
             mindMap.on('draw_click', this.hide)
-            mindMap.on('expand_btn_click', this.hide)
+            mindMap.on('expand_btn_click', this.expandBtnClick)
             mindMap.on('rich_text_selection_change', (hasRange, rect, formatInfo) => {
                 // 内容文字选中触发
                 // hasRange（是否存在选区）
@@ -380,11 +380,14 @@ let copyData = null
                 }
                 this.showToolbar.show = hasRange
             })
+            mindMap.on('hide_text_edit',this.hideTextEdit)  // 节点修改框关闭
+            
 
-            mindMap.on('node_active', (...args) => {
-                console.log('node_active',...args)
+            mindMap.on('node_active', (node,activeNodeList) => {
+                // 节点激活
+                console.log('node_active',node,activeNodeList)
                 // let activeNodes = args[1]
-                this.activeNodes = args[1]
+                this.activeNodes = activeNodeList
                 if (this.activeNodes.length > 0) {
                     let firstNode = this.activeNodes[0]
                     this.currentIconList = firstNode.getData('icon') || []
@@ -392,16 +395,30 @@ let copyData = null
                     this.currentIconList = []
                 }
             })
-
+            mindMap.on('node_dragging',this.nodeDragging) // 节点拖拽
+            mindMap.on('node_mousedown',this.nodeMousedown) // 节点鼠标按下
+            mindMap.on('node_mouseup',this.nodeMouseup) // 节点鼠标松开
+            
+            mindMap.on('node_dragend', (uids ) => {
+                // 拖拽结束
+                console.log('node_dragend',uids)
+                let type =  uids.overlapNodeUid ? 'overlapNodeUid' : uids.prevNodeUid ? 'prevNodeUid' : 'nextNodeUid'
+                let uid = uids.overlapNodeUid ? uids.overlapNodeUid : uids.prevNodeUid ? uids.prevNodeUid : uids.nextNodeUid
+                if(uid){
+                    this.findNodeByUid(uid,type)
+                }
+                
+            })
+            
 
             
             this.defaultLayout = mindMap.getLayout()  // 回显 layout
             this.defaultScale = mindMap.view.getTransformData().state.scale * 100
 
             console.log(mindMap.getLayout(),mindMap.view.getTransformData())
-            mindMap.updateConfig({
-                enableFreeDrag: true
-            })
+            // mindMap.updateConfig({
+            //     enableFreeDrag: true
+            // })
 
             // this.onDataChange(mindMap.getData())
                 
