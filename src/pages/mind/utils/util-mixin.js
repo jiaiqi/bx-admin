@@ -9,14 +9,17 @@ import timeline from '../images/timeline.png'  // tuli
 import timeline2 from '../images/timeline2.png'  // tuli
 import fishbone from '../images/fishbone.png'  // tuli
 import verticalTimeline from '../images/verticalTimeline.png'  // tuli
+
+import { createUid } from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
             // 移植参数相关
             // myMindMap:null,
             
-        loading:false,
-        loadtext:'加载中',
+            loading:false,
+            loadtext:'加载中',
+            mouseActiveNode:null,  // 鼠标按下节点
             num:0, // 节点数量
             centerDialogVisible:false, // 显示搜索框
             defaultScale:1,
@@ -322,14 +325,39 @@ export default {
           },
           copy(){
             this.rightMousedown.copyData = this.mindMapModel.renderer.copyNode()
+            this.hide()
         },
         cut(){
             this.mindMapModel.execCommand('CUT_NODE', _copyData => {
                 this.rightMousedown.copyData = _copyData
             })
+            this.hide()
         },
         paste(){
+            let self = this
             this.mindMapModel.execCommand('PASTE_NODE', this.rightMousedown.copyData)
+            let parentNode = this.activeNodes[0]
+            let pNo = ''
+            if(parentNode){
+                pNo = parentNode.nodeData.data.no
+                // 复制并新建节点
+                let nData = this.rightMousedown.copyData[0].data
+                if(pNo){
+                    nData = self.getRemoteData(nData,pNo)
+                }
+                self.submitChange('add',nData).then(res => {
+                    console.log(res)
+                    if(res && res.no){
+                        // 新增成功 
+                        self.initPage().then(res => {
+                            console.log('init Page',res)
+                        })  // 加载数据
+                    }
+                })
+                console.log(this.activeNodes,this.rightMousedown.copyData)
+
+            }
+            this.hide()
         },
         toggleBold(){
             let mindMap = this.mindMapModel
@@ -368,7 +396,7 @@ export default {
         },
         clearNode(){
             let self = this
-            console.log('clear node ',this,activeNode)
+            // console.log('clear node ',this,activeNode)
             // self.$set(self,'activeNode',null)
         },
          setIcon(type, name){
@@ -468,7 +496,7 @@ export default {
             this.walk(data)
 
             if(!this.mindConfig.rootNodeNo){
-                // 新增根节点 当前脑图还没有节点时
+                // 新增根节点 当前脑图还没有根节点时
                 this.noneRootNoActiveRootNode()
             }
         },
@@ -479,6 +507,40 @@ export default {
               data.children.forEach(item => {
                 this.walk(item)
               })
+            }
+        },
+        hideTextEdit(textEditNode,activeNodeList){
+            console.log('hideTextEdit',textEditNode,activeNodeList)
+            if(Array.isArray(activeNodeList) && activeNodeList.length == 1){
+                let newNodeData = activeNodeList[0]
+                let nNodeData = newNodeData.nodeData // 新节点数据
+                let pNodeData = null
+                let pNo = null  // 父编号
+                if(newNodeData.parent){
+                    // 如果存在父节点
+                    pNodeData = newNodeData.parent.nodeData.data
+                    pNo = pNodeData.no
+                }
+                let nData = this.getRemoteData(nNodeData.data,pNo)   // 新节点数据
+                if(nNodeData.data.no){
+                    // 如果存在 no 为修改
+                    // console.log('修改',nData)
+                    this.onNodeUpdate(nData)
+                }else{
+                    this.submitChange('add',nData).then( ar => {
+                        console.log(ar)
+                        this.initPage().then(res => {
+                            console.log('init Page',res)
+                            if(res){
+                                // this.initMind(this.dataTemp)
+                                
+                            }
+                        })  // 加载数据
+                    })
+                    console.log('新增节点',nNodeData,nData)
+                }
+                
+                
             }
         },
         updateNodeByActive(isActive,nodes){
@@ -500,7 +562,6 @@ export default {
             let self = this
             // 如果没有远程根节点时，激活根节点
             let mindMap = this.mindMapModel
-            
             let rootUid = mindMap.getData()
             console.log(rootUid.data.uid,mindMap.node)
             this.loading = true
@@ -519,19 +580,153 @@ export default {
                         self.initPage().then(res => {
                             console.log('init Page',res)
                             if(res){
-                                self.initMind(self.dataTemp)
+                                // self.initMind(self.dataTemp)
                                 
                             }
                         })  // 加载数据
                     })
                 }
             })
-        }
+        },
+        // 更新脑图数据：
+        setMindData(data){
+            let mindMap = this.mindMapModel
+            if(mindMap){
+                // 存在mind 实例 则执行
+                mindMap.setData(data)
+            }else{
+                // 没有实例时创建实例
+                this.initMind(this.dataTemp)
+            }
+            
+          },
+          expandBtnClick(node){
+            // 展开收起回调
+                this.hide()  // 隐藏右键菜单
+                let nData = this.getRemoteData(node.nodeData.data)   // 新节点数据
+                console.log(node.nodeData,nData)
+                this.onNodeUpdate(nData)  // 进入动态修改节点信息逻辑
+          },
+          findNodeByUid(uid,type){
+            // 通过uid获取节点实例
+            let self = this
+            let mindMap = self.mindMapModel
+            let node = mindMap.renderer.findNodeByUid(uid)
+            let nodeData = null
+            if(node){
+                nodeData = node.nodeData
+            }
+            // console.log(type,nodeData)
+            // let nodeData = node.nodeData
+            this.nodeDragend(nodeData,type)
+          },
+          nodeDragging(node,e){
+            // 节点拖拽
+            console.log(node,e)
+          },
+          nodeDragend(nodeData,type){
+            // 节点拖动结束 修改逻辑
+            // 修改 父节点
+            let activeNode = this.mouseActiveNode
+            let nData = null
+            if(activeNode){
+                nData = activeNode.nodeData.data
+                let req = this.bxDeepClone(this.nodeUpdateRequest)
+                // 修改 父节点
+                req['condition'] = [{
+                    colName:'no',
+                    ruleType:'eq',
+                    value:nData.no
+                }]
+                req['data'] = [{
+                    'parent_no':nodeData.data.no
+                }]
+                switch (type) {
+                    // overlapNodeUid ? 'overlapNodeUid' : uids.prevNodeUid ? 'prevNodeUid' : 'nextNodeUid'
+                    case 'overlapNodeUid':
+                        // 节点上
+                        
+                        
+                        this.submitChange('update',req).then( r => {
+                            console.log(r)
+                            if(r){
+                                // 修改成功刷新mind
+                                this.initPage().then(res => {
+                                    console.log('init Page',res)
+                                    if(res){
+                                        // this.initMind(this.dataTemp)
+                                        
+                                    }
+                                })  // 加载数据
+                            }
+                            
+                        })
+                        break;
+                    case 'prevNodeUid':
+                        if(nodeData.data.parent_no !== nData.parent_no){
+                            // 父节点编号不同时 修改
+                            req['data'] = [{
+                                'parent_no':nodeData.data.parent_no
+                            }]
+                            this.submitChange('update',req).then( r => {
+                                console.log(r)
+                                if(r){
+                                    // 修改成功刷新mind
+                                    this.initPage().then(res => {
+                                        console.log('init Page',res)
+                                        if(res){
+                                            // this.initMind(this.dataTemp)
+                                            
+                                        }
+                                    })  // 加载数据
+                                }
+                                
+                            })
+                        }
+                        // 节点后
+                        break;
+                    case 'nextNodeUid':
+                        if(nodeData.data.parent_no !== nData.parent_no){
+                            // 父节点编号不同时 修改
+                            req['data'] = [{
+                                'parent_no':nodeData.data.parent_no
+                            }]
+                            this.submitChange('update',req).then( r => {
+                                console.log(r)
+                                if(r){
+                                    // 修改成功刷新mind
+                                    this.initPage().then(res => {
+                                        console.log('init Page',res)
+                                        if(res){
+                                            // this.initMind(this.dataTemp)
+                                            
+                                        }
+                                    })  // 加载数据
+                                }
+                                
+                            })
+                        }
+                        // 节点前
+                        break;
+                
+                    default:
+                        break;
+                }
+            }
+            
+            console.log(nodeData,type,nData)
+          },
+          nodeMousedown(node,e){
+           // 节点鼠标按下
+            this.$set(this,'mouseActiveNode',node)
+            console.log('nodeMousedown',node,e)
+          }, 
+          nodeMouseup(node,e){
+             // 节点鼠标松开
+             this.$set(this,'mouseActiveNode',null)
+            console.log('nodeMouseup',node,e)
+          },
           
-
-
-
-
     }
 
 };

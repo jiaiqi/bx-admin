@@ -3,6 +3,7 @@ export default {
     data() {
         return {
             mindConfig:{},
+            loadMindDatas:{},
             dataTemp:{
                 data:{
                     // 节点文本
@@ -97,13 +98,22 @@ export default {
             }
             if(this.mindConfig.rootNodeNo){
                 req['colNames'] = ['*']
-                req['condition'] = [{
-                    colName:'no',
-                    ruleType:'eq',
-                    value:this.mindConfig.rootNodeNo
-                }]
-                req['treeData'] = true
-                req["use_type"]='treelist'
+                req['condition'] = [
+                    // 根节点编号查询
+                    // {
+                    //     colName:'no',
+                    //     ruleType:'eq',
+                    //     value:this.mindConfig.rootNodeNo
+                    // }
+                    // 根节点编号查询 path
+                    {
+                        colName:'path',
+                        ruleType:'[like]',
+                        value:this.mindConfig.rootNodeNo
+                    }
+                ]
+                // req['treeData'] = true
+                // req["use_type"]='treelist'
             }
             if(serviceName){
                 // 深度复制
@@ -187,14 +197,134 @@ export default {
         },
     },
     methods: {
+        onNodeUpdate(nNode){
+            // 检测节点信息修改
+            console.log(nNode)
+            let req = this.bxDeepClone(this.nodeUpdateRequest) // 修改请求 
+            let no = nNode.no || ''
+            let old = null
+            let data = {}
+            if(no){
+                req['condition'] = [{
+                    colName:'no',
+                    ruleType:'eq',
+                    value:no
+                }] // 构造修改条件
+                old = this.mindConfig.oldNodes.filter(item => item.no == no)
+                if(Array.isArray(old) && old.length == 1){
+                    // 存在原始数据
+                    old = old[0]
+                    // 节点原始数据
+                    for(let key in nNode){
+                        // 对比原始数据 修改了那些
+                        if(nNode[key] !== old[key]){
+                            data[key] = nNode[key]
+                        }
+                    }
+                    console.log(data,req)
+                    if(Object.keys(data).length > 0){
+                        // 存在有效data 时 提交修改请求
+                        req['data'] = [data]
+                        this.submitChange('update',req).then( r => {
+                            console.log(r)
+                            if(r){
+                                // 修改成功刷新mind
+                                this.initPage().then(res => {
+                                    console.log('init Page',res)
+                                    if(res){
+                                        // this.initMind(this.dataTemp)
+                                        
+                                    }
+                                })  // 加载数据
+                            }
+                            
+                        })
+                    }
+                }
+                
+            }
+        },
         remoteToMindNodes(){
-            let datas = this.mindConfig.oldNodes
-            console.log(datas)
+            this.buildMindData() // 远程数据 转 mind 数据
+        },
+        buildMindData(no){
+            let rootNodeNo = this.mindConfig.rootNodeNo
+            let datas = this.bxDeepClone(this.mindConfig.oldNodes)   // 脑图已保存的节点原始数据
+            let root = {
+                data:null,
+                children:[]
+            }
+            let rootData = datas.filter(item => item.no == rootNodeNo)[0]
+            root['data'] = this.getMindNodeData(rootData).data
+            root['children'] = this.getMindNodeData(rootData).children
+            // obj.data = 
+            console.log('build Mind Data',rootData,root)
+            this.$set(this,'dataTemp',this.bxDeepClone(root) )  // UI数据
+            this.$set(this,'loadMindDatas',this.bxDeepClone(root) ) // 初始数据
+            this.setMindData(this.bxDeepClone(root)) // 动态更新数据
         },
         getMindNodeData(item){
-            //获取 mind 数据 item 远程行数据
+            //获取 mind 数据 item 远程行数据  远程行数据转换为 组件数据
+            
+            let datas = this.bxDeepClone(this.mindConfig.oldNodes)   // 脑图已保存的节点原始数据
+            let obj = {}
+            let maps = this.remoteColMaps // 映射
+            if(item && maps){
+                let data = {}
+                let children = datas.filter(c => c.parent_no == item.no)
+                for(let key in item){
+                    if(key == 'no' ){
+                        // id
+                        data['no'] = item[key]
+                    }
+                    if(key == maps.col_seq && maps.col_seq){
+                        // 排序字段
+                        data['seq'] = item[key]
+                    }
+                    if(key == maps.col_title && maps.col_title){
+                        // 文字内容
+                        data['text'] = item[key]
+                    }
+                    if(key == maps.col_fold && maps.col_fold){
+                        // 展开状态
+                        data['expand'] = item[key] === '是' ? true : false
+                    }
+                    if(key == maps.col_image && maps.col_image){
+                        data['image'] = item[key]
+                    }
+                    if(key == maps.col_parent_no && maps.col_parent_no){
+                        data['parent_no'] = item[key]
+                    }
+                    
+                    
+                    if(key == 'children'){
+                        let children = this.bxDeepClone(item[key])
+                        if(Array.isArray(children) && children.length > 0){
+                            
+                            for(let c of children){
+                                children.push(this.getMindNodeData(c))
+                            }
+                        }
+                    }
+                    
+                    // console.log(key,item,obj)
+                }
+                obj['data'] = this.bxDeepClone(data)
+                if(children.length > 0){
+                    obj['children'] = []
+                    for(let child of children){
+                        let mc = this.getMindNodeData(child)
+                        obj['children'].push(this.bxDeepClone(mc))
+                    }
+                }else{
+                    obj['children'] = []
+                }
+                
+            }
+            console.log('getMindNodeData',obj)
+            return obj
         },
-        getRemoteData(node){
+        getRemoteData(node,pNo){
             // 获取远程数据 node mind 数据
             let data = {}
             let maps = this.remoteColMaps
@@ -207,9 +337,19 @@ export default {
                     if(key == 'expand' && maps.col_fold){
                         data[maps.col_fold] = node[key] === true ? '是' : '否'
                     }
+                    if(key == 'no'){
+                        data['no'] = node[key]
+                    }
+                    if(key == 'parent_no'){
+                        data['parent_no'] = node[key]
+                    }
                     
-                    console.log(key,node)
+                    // console.log(key,node)
                 }
+                if(pNo){
+                    data['parent_no'] = pNo
+                }
+                
             }
             data = this.bxDeepClone(data)
             return data
@@ -313,6 +453,7 @@ export default {
                             self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                             self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
                             self.submitChange('select').then(r => {
+                               
                                 console.log('select nodes',r)
                                 if(Array.isArray(r)){
                                     self.$set(self.mindConfig,'oldNodes',r)
@@ -352,7 +493,7 @@ export default {
              let children = list.filter(item => item[this.query.pNo] == no)
              return children
           },
-          submitChange(type){
+          submitChange(type,data){
             let url = ''
             let reqType = ''
             let req = null
@@ -362,12 +503,21 @@ export default {
                     // 节点新增
                     req = this.bxDeepClone(this.nodeAddRequest)
                     reqType = 'operate'
+                    if(data){
+                        if(data.no){
+                            delete data.no
+                        }
+                        req[0]['data'] = [data]
+                    }
                     break;
                 case 'update':
                     // 节点修改
                     req = this.bxDeepClone(this.nodeUpdateRequest)
-                    break;
                     reqType = 'operate'
+                    if(data){
+                        req = [data]
+                    }
+                    break;
                 
                 case 'delete':
                     // 节点删除
@@ -396,7 +546,7 @@ export default {
                 }
                 url =  this.getServiceUrl(reqType, serviceName, this.nodeSrvApp);
             }
-            if((type == 'add' && req[0].data.length > 0 ) || ((!type || type == 'update' || type == 'delete') && Array.isArray(req[0].condition) && req[0].condition.length > 0 && req[0].data.length > 0) || (type == 'select' && req.condition)){
+            if((type == 'add' && req[0].data.length > 0  && Object.keys(req[0].data[0]).length > 0) || ((!type || type == 'update' || type == 'delete') && Array.isArray(req[0].condition) && req[0].condition.length > 0 && req[0].data.length > 0) || (type == 'select' && req.condition)){
                 // 判断 请求结构是否基本完整
                 return  this.$http.post(url, req).then(res => {
                     let page = res.data
@@ -413,6 +563,12 @@ export default {
                             if(page.state == 'SUCCESS'){
                                 // 根据新增请求 返回的数据结构 返回有效数据
                                 result = page.data
+                            }
+                        }
+                        if(type == 'update'){
+                            if(page.state == 'SUCCESS'){
+                                // 根据修改请求 返回的数据结构 返回有效数据
+                                result = page.response[0].response.effect_data[0]
                             }
                         }
                         resolve(result)  // 完成 promise
