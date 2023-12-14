@@ -295,7 +295,7 @@ export default {
                     if(key == maps.col_parent_no && maps.col_parent_no){
                         data['parent_no'] = item[key]
                     }
-                    
+                    data['seq'] = item['seq']
                     
                     if(key == 'children'){
                         let children = this.bxDeepClone(item[key])
@@ -321,7 +321,7 @@ export default {
                 }
                 
             }
-            console.log('getMindNodeData',obj)
+            // console.log('getMindNodeData',obj)
             return obj
         },
         getRemoteData(node,pNo){
@@ -431,7 +431,7 @@ export default {
                     colName:'mind_no',
                     ruleType:'eq',
                     value:this.query.no
-                }],
+                }]
               }
               // treeData 3000条， 普通查询500条
             const url = this.getServiceUrl("select", serviceName, app);
@@ -515,7 +515,7 @@ export default {
                     req = this.bxDeepClone(this.nodeUpdateRequest)
                     reqType = 'operate'
                     if(data){
-                        req = [data]
+                        req = [].concat(data)
                     }
                     break;
                 
@@ -527,6 +527,10 @@ export default {
                 case 'select':
                     // 节点删除
                     req = this.bxDeepClone(this.nodeSelectRequest)
+                    req['order'] = [{
+                        "colName": "seq",
+                        "orderType": "asc"
+                    }]
                     reqType = 'select'
                     break;
             
@@ -571,7 +575,14 @@ export default {
                                 result = page.response[0].response.effect_data[0]
                             }
                         }
-                        resolve(result)  // 完成 promise
+                        if(page.state == 'FAILURE' && page.resultCode == '9999'){
+                            this.setMode('readonly')
+                            this.setLoading(true,'无权限')
+                            resolve(false)  // 完成 promise
+                        }else{
+                            resolve(result)  // 完成 promise
+                        }
+                        
                     })
     
                   

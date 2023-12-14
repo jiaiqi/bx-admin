@@ -292,7 +292,7 @@ let copyData = null
             // 转载初始化数据
             mindMap = new MindMap({
                 el: document.getElementById('mindMapContainer'),
-                enableFreeDrag: true,
+                // enableFreeDrag: true,
                 data: d,
                 mousewheelAction: 'move', // move zoom
                 // initRootNodePosition: ['center', 'center'],
