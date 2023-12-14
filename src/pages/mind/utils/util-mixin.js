@@ -809,6 +809,34 @@ export default {
             }
             
           },
+          setNodeTool(e){
+            console.log(e)
+            let mindMap = this.mindMapModel
+            let self = this
+            if(e && e.hasOwnProperty('execCommand')){
+
+                switch (e.execCommand) {
+                    case 'setStyle':
+                        // 样式设置
+                        for(let node of this.activeNodes){
+                            // 多个选择节点 逐一处理
+                            if(e.style.color){
+                                // 文字样式
+                                node.setStyle('color',e.style.color)
+                            }
+                            if(e.style.fontWeight){
+                                node.setStyle('fontWeight',e.style.fontWeight)
+                            }
+                            self.updateNodeStyle(node.nodeData.data.no,e.style)  // 进入节点样式保存逻辑
+                            console.log('setNodeTool',node.nodeData.data.no,e.style)
+                        }
+                        break;
+                
+                    default:
+                        break;
+                }
+            }
+          }
           
     }
 

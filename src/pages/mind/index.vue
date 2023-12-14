@@ -19,8 +19,12 @@
             id="mindMapContainer">
         </div>
         <div class="tool-layout">
-            <div class="hander-layout shadow" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind">
-                {{mindConfig.mainMind.mind_name}}
+            <div class="hander-layout" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind">
+                <div>
+                    {{mindConfig.mainMind.mind_name}}
+                </div>
+                
+                <topToolBar :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
             </div>
             <div class="side-layout " v-if="showEditorUi.includes('side')">
                 <div class="side-toolbar border border-radius  shadow ">
@@ -183,6 +187,10 @@ import Export from 'simple-mind-map/src/plugins/Export.js'  // 导出插件
 import ExportPDF from 'simple-mind-map/src/plugins/ExportPDF.js' // 导出pdf
 import Drag from 'simple-mind-map/src/plugins/Drag.js' //拖拽模块
 import Search from 'simple-mind-map/src/plugins/Search.js' // 搜索模块
+
+import topToolBar from './component/toptoolbar.vue' // 顶部工具架
+
+
 MindMap.usePlugin(Export)
 MindMap.usePlugin(ExportPDF)
 // MindMap.usePlugin(RichText)
@@ -225,7 +233,7 @@ let copyData = null
   export default {
     name:'mindIndex',
     mixins:[utilsMixin,loadMixin],
-    components: {},
+    components: {topToolBar},
     computed:{
         
     },
@@ -474,9 +482,17 @@ let copyData = null
             position: fixed;
         }
         .hander-layout{
-            top:10px;
-            background:$white;
+            width:100%;
+            top:0;
+            background:$Transparent;
             padding:$padding;
+            display:flex;
+            justify-content:space-between;
+            &>div{
+                
+                background:$white;
+                border-radius:$borderRadius;
+            }
         }
         .side-layout{
             border-radius:$borderRadius;
