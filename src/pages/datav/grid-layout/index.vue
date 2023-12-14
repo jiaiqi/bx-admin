@@ -85,7 +85,7 @@ export default {
   data() {
     return {
       rightWidth: 340,
-      isDown:false,
+      isDown: false,
       contentData: {},
       isFullScreen: false,
       pageConfg: {},
@@ -159,9 +159,12 @@ export default {
     // if (!process?.env?.NODE_ENV === "development") {
     // 开发模式不监听窗口变化
     if (this.isDataview) {
-      window.onresize = () => {
+      window.addEventListener('resize',()=>{
         this.resize();
-      };
+      })
+      // window.onresize = () => {
+      //   this.resize();
+      // };
       setTimeout(() => {
         this.resize();
       }, 500);
@@ -682,9 +685,9 @@ export default {
     },
     // 调整大小后的事件
     resizedEvent(i, newH, newW, newHPx, newWPx) {
-      this.layout.forEach((item, index) => {
-        this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
-      });
+      // this.layout.forEach((item, index) => {
+      //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
+      // });
     },
     toComponentDetail(item) {
       if (!this.isDataview && item?.data?.id) {
@@ -796,10 +799,10 @@ export default {
     },
     //鼠标移动
     moveMousemove() {
-      document.getElementById("left-line").onmousedown=(e)=>{
+      document.getElementById("left-line").onmousedown = (e) => {
         this.isDown = true
       }
-      document.getElementById("left-line").onmouseup=(e)=>{
+      document.getElementById("left-line").onmouseup = (e) => {
         this.isDown = false
       }
       window.onmousemove = (ev) => {
@@ -1271,15 +1274,32 @@ export default {
 
     // padding: 20px;
     .left-line {
+      // border-right: 2px solid transparent;
       position: fixed;
       width: 5px;
       height: 100vh;
       top: 0;
       right: calc(var(--right-width) - 5px);
       z-index: 9999;
-      cursor:col-resize;
+      cursor: col-resize;
+
+      &::after {
+        content: '';
+        width: 4px;
+        height: 0px;
+        background: transparent;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transition: all 0.5s ease-in-out;
+      }
+
       &:hover {
-        background-color: #ccc;
+        &::after {
+          top: calc(50% - 50px);
+          height: 100px;
+          background: #ccc;
+        }
       }
     }
   }

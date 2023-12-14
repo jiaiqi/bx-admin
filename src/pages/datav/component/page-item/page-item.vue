@@ -121,8 +121,8 @@ export default {
   },
   methods: {
     onResize(i) {
-      console.log(this.$refs);
-      this.$refs[this.pageItem.com_type].onResize?.();
+      // console.log(this.$refs);
+      // this.$refs[this.pageItem.com_type].onResize?.();
     },
     stylefn(style) {
       if (style) {

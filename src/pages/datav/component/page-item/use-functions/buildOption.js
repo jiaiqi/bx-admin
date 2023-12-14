@@ -1,3 +1,5 @@
+import * as echarts from "echarts";
+
 let __colors = [
   "#007AFF",
   "#66E1DF",
@@ -28,6 +30,22 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     colors = chartJson?.legend_color_seq.split(",");
   }
   let ecOptions = {
+    // 初始动画延迟
+    // animationDelay: function (idx) {
+    //   // 越往后的数据延迟越大
+    //   return idx * 100;
+    // },
+    animationDuration: 1000,// 初始动画的时长
+    // animationDuration: function (idx) {
+    //   // 越往后的数据时长越大
+    //   return idx * 1000;
+    // },
+    // 更新动画时长
+    // animationDurationUpdate: function (idx) {
+    //   // 越往后的数据时长越大
+    //   return idx * 1000;
+    // },
+    color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
       top: 25,
@@ -111,6 +129,13 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     }, //点击折点 展示的样式
     series: [], //y轴展示的数据
   };
+  //生成图表默认配置
+  let defaultOptions = setDefaultChartOption(
+    type,
+    pageItem?.chart_json,
+    echarts
+  );
+  ecOptions = { ...defaultOptions, ...ecOptions };
 
   if (
     chartJson?.more_option &&
@@ -270,7 +295,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           if (nOption?.series?.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全
-              top:45,
+              top: 45,
               left: 10,
               right: 10,
               bottom: 0,
@@ -576,20 +601,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         });
       }
       ecOptions = {
-        // tooltip: {
-        //   show: true,
-        //   // borderColor: "#fe9a8bb3",
-        //   borderWidth: 1,
-        //   padding: [10, 15, 10, 15],
-        //   confine: true,
-        //   backgroundColor: "rgba(255, 255, 255, .9)",
-        //   textStyle: {
-        //     color: "hotpink",
-        //     lineHeight: 22,
-        //   },
-        //   extraCssText:
-        //     "box-shadow: 0 4px 20px -4px rgba(199, 206, 215, .7);border-radius: 4px;",
-        // },
         series: [
           {
             type: "wordCloud",
@@ -638,35 +649,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             // Global text style
             textStyle: {
               normal: {
-                color: v => (
-                  `${__colors[v.dataIndex]}`
-                )
-                // color: function (e) {
-                //   let color1 =
-                //     "rgb(" +
-                //     [
-                //       Math.round(Math.random() * 200 + 55),
-                //       Math.round(Math.random() * 200 + 55),
-                //       Math.round(Math.random() * 200 + 55),
-                //     ].join(",") +
-                //     ")";
-                //     let random = Math.random()*colors.length
-                //   // let color2 = colors[parseInt( random )];
-                //   // console.log(color1, color2,parseInt( random),colors,e);
-                //     return __colors[parseInt(random)]
-                //   return color1;
-                // },
+                color: (v) => `${__colors[v.dataIndex]}`,
               },
               emphasis: {
                 shadowBlur: 10,
                 shadowColor: "#2ac",
               },
-              // fontFamily: "PingFangSC-Semibold",
-              // fontWeight: 600,
-              // color: function (params) {
-              //   debugger
-              //   return colors[parseInt(Math.random() * 10)];
-              // },
             },
             emphasis: {
               focus: "none",
@@ -816,7 +804,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
           },
         };
       }
-      if(chartJson?.more_option?.indexOf("stack")){
+      if (chartJson?.more_option?.indexOf("stack")) {
         obj.stack = "总量";
       }
       if (
@@ -972,48 +960,6 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         };
       }
 
-      // option.legend = {
-      //   selectedMode: false,
-      //   formatter: function (name) {
-      //     var total = 0;
-      //     scaleData.forEach(function (value, index, array) {
-      //       total += value.value;
-      //     });
-      //     return "{total|" + total + "}";
-      //   },
-      //   data: [scaleData[0].name],
-      //   // data: ['高等教育学'],
-      //   // itemGap: 50,
-      //   left: "center",
-      //   top: "center",
-      //   icon: "none",
-      //   align: "center",
-      //   textStyle: {
-      //     color: "#fff",
-      //     fontSize: 16 * scale,
-      //     rich: {
-      //       total: {
-      //         color: "#ffc72b",
-      //         fontSize: 40 * scale,
-      //         align: "center",
-      //       },
-      //     },
-      //   },
-      // };
-
-      var placeHolderStyle = {
-        normal: {
-          label: {
-            show: false,
-          },
-          labelLine: {
-            show: false,
-          },
-          color: "rgba(0, 0, 0, 0)",
-          borderColor: "rgba(0, 0, 0, 0)",
-          borderWidth: 0,
-        },
-      };
       var data = [];
       var color = [
         "#00ffff",
@@ -1038,11 +984,6 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
               // },
             },
           }
-          // {
-          //   value: 2,
-          //   name: "",
-          //   itemStyle: placeHolderStyle,
-          // }
         );
       }
       option.series = [
@@ -1103,6 +1044,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           }
         },
       };
+      
       option.geo = {
         map: "mapName",
         roam: true,

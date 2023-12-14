@@ -1,87 +1,78 @@
 <script setup>
-import { setDefaultChartOption } from "../../page-item/use-functions/buildOption.js"
 import * as echarts from "echarts";
 import 'echarts-wordcloud'; // echarts-wordcloud@1.1.3
-// import 'echarts/extension/bmap/bmap';
-// import "echarts-gl";
-import { onMounted, ref, watch } from "vue";
+
+import { onMounted, onUnmounted, ref, watch } from "vue";
 const props = defineProps({
-  pageItem: {
+  options: {
     type: Object,
   },
-  chartType: {
+  width: {
     type: String,
+    default: '100%',
   },
-  colors: Array,
-  chartOption: {
-    type: Object,
-  },
-  index: {
-    type: [Number, String],
-  },
-  canvasId: {
+  height: {
     type: String,
-    default: () => {
-      return "ec-canvas" + new Date().getTime();
-    },
+    default: '100%',
   },
 });
-const { pageItem, chartType } = props
-const chartOption = ref(null);
+const domRef = ref(null)
 
-let myChart = null;
+let chartObj = null;
+let objResizeObserver;
+onMounted(() => {
+  if (!domRef.value) return
+  init()
+  if (props.options) {
+    drawOption()
+  }
 
-const setChartOption = () => {
-  // 指定图表的配置项和数据
-  const defaultOption = setDefaultChartOption(chartType, pageItem?.chart_json, echarts)//生成图表默认配置
-  const option = {
-    ...defaultOption,
-    ...props.chartOption,
+   objResizeObserver = new ResizeObserver(function (entries) {
+    const entry = entries[0];
+    if(entry?.target===domRef.value){
+      chartObj?.resize()
+    }
+  });
+
+  // 观察元素尺寸变化
+  objResizeObserver.observe(domRef.value);
+
+  setTimeout(() => {
+    chartObj && chartObj.resize()
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (chartObj) {
+    chartObj.dispose()
+    chartObj = null
+  }
+  // 取消监听
+  domRef.value&&objResizeObserver.unobserve(domRef.value);
+})
+
+// 监听配置变化
+watch(() => props.options, () => drawOption())
+
+// 初始化
+const init = () => {
+  chartObj = echarts.init(domRef.value)
+}
+
+//加载图表配置
+const drawOption = () => {
+  if (!chartObj) return
+  const options = {
+    ...props.options,
   };
   if (props.colors?.length) {
-    option.color = props.colors
+    options.color = props.colors
   }
-  // 使用刚指定的配置项和数据显示图表。
-  myChart.setOption(option);
-  chartOption.value = option;
-};
-
-onMounted(() => {
-  // 基于准备好的dom，初始化echarts实例
-  myChart = echarts.init(document.getElementById(props.canvasId));
-  setChartOption();
-  setTimeout(() => {
-    myChart.resize();
-  }, 100);
-  watch(() => props.chartOption, () => {
-    setChartOption();
-  })
-});
-
-// watch(
-//   () => props.chartOption,
-//   () => {
-//     if (props.chartOption) {
-//       setChartOption();
-//     }
-//   }
-// );
-
-const onResize = () => {
-  myChart.resize();
-  setTimeout(() => {
-    setChartOption();
-  }, 100);
-};
-
-defineExpose({
-  onResize,
-});
+  chartObj.setOption(options)
+}
 </script>
 
 <template>
   <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
-  <div :id="canvasId" style="width: 100%; height: 100%"></div>
+  <div ref="domRef" class="echarts-item" :style="{ width, height }" />
 </template>
-
-<style lang="scss" scoped></style>

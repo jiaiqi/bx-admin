@@ -1,6 +1,6 @@
 <template>
   <Chart ref="chartRef" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.1)" class="uni-ec-canvas"
-    :page-item="pageItem" :chart-option="option" :canvasId="canvasId" :chartType="chartType" :colors="colors"
+    :page-item="pageItem" :options="option" :canvasId="canvasId" :chartType="chartType"
     v-if="option" @click-chart="clickChart"></Chart>
 </template>
 
@@ -34,16 +34,12 @@ const { pageItem } = props;
 let timer = null;
 const emit = defineEmits(["clickChart"]);
 
-const option = ref({});
+const option = ref(null);
 const loading = ref(false);
 
 const clickChart = () => {
   emit("clickChart");
 };
-const colors = ref(null);
-if (pageItem?.chart_json?.legend_color_seq) {
-  colors.value = pageItem.chart_json.legend_color_seq.split(",");
-}
 const chartConfig = computed(() => {
   return pageItem?.chart_json;
 });
@@ -244,7 +240,7 @@ function paramsLinkage() {
 
 const chartRef = ref(null);
 const onResize = () => {
-  chartRef?.value?.onResize();
+  // chartRef?.value?.onResize();
 };
 defineExpose({
   onResize,
