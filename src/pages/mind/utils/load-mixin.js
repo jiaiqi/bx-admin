@@ -2,6 +2,8 @@ import {walk} from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
+            searchValue:'',
+            treeData:[],
             mindConfig:{},
             loadMindDatas:{},
             dataTemp:{
@@ -429,7 +431,7 @@ export default {
                     // })
               })
         },
-        async initPage(){
+        async initPage(isAll){
             // 根据脑图编号查询脑图实例
             // this.getV2()
             let self = this
@@ -448,7 +450,7 @@ export default {
               }
               // treeData 3000条， 普通查询500条
             const url = this.getServiceUrl("select", serviceName, app);
-            if(self.mindConfig && self.mindConfig.oldMind){
+            if(self.mindConfig && self.mindConfig.oldMind && !isAll){
                 // 只加载节点数据
                 return new Promise(function(resolve, reject) {
                     self.submitChange('select').then(r => {
@@ -481,6 +483,8 @@ export default {
          
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
+                                self.$set(self,'defaultTheme', 'classic4')  // 主题
+                                self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
                                 self.submitChange('select').then(r => {
                                    
                                     console.log('select nodes',r)
@@ -666,6 +670,7 @@ export default {
                 }
              }
           }
+
        
           
 

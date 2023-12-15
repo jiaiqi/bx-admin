@@ -16,7 +16,16 @@ export default {
         return {
             // 移植参数相关
             // myMindMap:null,
-            
+            treeDefaultProps:{
+                children: 'children',
+                label: function(data,node){
+                    console.log(data,node)
+                    return node.data.data.text
+                }
+              },
+              showTree:false,
+              showSearch:false,
+              showEdit:false,
             loading:false,
             loadtext:'加载中',
             mouseActiveNode:null,  // 鼠标按下节点
@@ -255,6 +264,15 @@ export default {
             let currentTheme = theme || 'classic'
             this.mindMapModel.setTheme(currentTheme)
             this.defaultTheme = this.mindMapModel.getTheme()
+            
+            // this.$set(this.mindConfig.mainMind,'mind_style',currentTheme)
+            // let req = this.bxDeepClone(this.mindUpdateRequest)
+            // this.submitChange('update',req).then(r => {
+            //     this.initPage().then(res => {
+            //         // 重新加载
+            //     })
+            //     console.log(r)
+            // })
         },
         // 注册并使用新主题
         defineTheme(){
@@ -447,6 +465,14 @@ export default {
             let mindMap = this.mindMapModel
             this.$set(this,'defaultLayout',layout)
             mindMap.setLayout(layout)
+            this.$set(this.mindConfig.mainMind,'mind_style',layout)
+            let req = this.bxDeepClone(this.mindUpdateRequest)
+            this.submitChange('update',req).then(r => {
+                this.initPage(true).then(res => {
+                    // 重新加载
+                })
+                console.log(r)
+            })
           },
           updateConfig(type){
             let mindMap = this.mindMapModel
@@ -499,6 +525,8 @@ export default {
                 // 新增根节点 当前脑图还没有根节点时
                 this.noneRootNoActiveRootNode()
             }
+            let mindMap = this.mindMapModel
+            this.$set(this,'treeData',[mindMap.getData()])
         },
         walk(data) {
             // 遍历
@@ -810,6 +838,7 @@ export default {
             
           },
           setNodeTool(e){
+            // 修改节点样式
             console.log(e)
             let mindMap = this.mindMapModel
             let self = this
@@ -836,7 +865,79 @@ export default {
                         break;
                 }
             }
+          },
+          setMindConfig(e){
+            // 工具架按钮交互
+            console.log('setMindConfig',e)
+            let mindMap = this.mindMapModel
+            let self = this
+            if(e && e.hasOwnProperty('execCommand')){
+
+                switch (e.execCommand) {
+                    case 'setTheme':
+                        // 设置主题
+                        if(e.config.theme){
+                            this.setTheme(e.config.theme)
+                        }
+                        break;
+                    case 'setLayout':
+                        // 修改结构
+                        if(e.config.layout){
+                            this.setDefaultLayout(e.config.layout)
+                        }
+                        break;
+                    case 'showTree':
+                        // 显示大纲
+                        this.$set(this,'showTree',e.config.leftLayout)
+                        break;
+                    
+                    case 'showSearch':
+                        // 显示搜索
+                        this.$set(this,'showSearch',e.config.showSearch)
+                        break;
+                    
+                    case 'showEditTitle':
+                        // 显示修改标题
+                        this.$set(this,'showEdit',e.config.editTitle)
+                        break;
+                        
+                
+                    default:
+                        break;
+                }
+            }
+          },
+          treeNodeClick(e){
+            // 点击树形大纲节点
+            console.log(e)
+            this.search(e.data.text)
+          },
+          search(e){
+            // 搜索节点
+            let mindMap = this.mindMapModel
+            let searchText = e || this.searchValue
+            mindMap.search.search(searchText, () => {
+                this.$refs.searchInputRef.focus()
+            })
+          },
+          updateMind(){
+            // 修改标题
+            let req = this.bxDeepClone(this.mindUpdateRequest)
+            console.log(req)
+            if(req){
+                this.submitChange('update',req).then(r => {
+                    this.$set(this,'showEdit',false)
+                    this.initPage(true).then(res => {
+                        // 重新加载
+                    })
+                    console.log(r)
+                })
+            }else{
+                this.$set(this,'showEdit',false) 
+            }
+            
           }
+          
           
     }
 
