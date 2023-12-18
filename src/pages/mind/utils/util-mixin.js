@@ -10,7 +10,7 @@ import timeline2 from '../images/timeline2.png'  // tuli
 import fishbone from '../images/fishbone.png'  // tuli
 import verticalTimeline from '../images/verticalTimeline.png'  // tuli
 
-import { createUid } from 'simple-mind-map/src/utils'
+import { getNodeIndex } from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
@@ -550,11 +550,20 @@ export default {
                     pNo = pNodeData.no
                 }
                 let nData = this.getRemoteData(nNodeData.data,pNo)   // 新节点数据
+                let nodes = this.mindConfig.oldNodes.filter(item => item['parent_no'] == pNo)
+                if(!nData.hasOwnProperty('seq')){
+                    // 没有排序字段时，默认同级最后一个
+                    nData['seq'] = nodes.length
+                }
+                // console.log(nData,nodes.length)
                 if(nNodeData.data.no){
                     // 如果存在 no 为修改
                     // console.log('修改',nData)
                     this.onNodeUpdate(nData)
                 }else{
+                    // 新节点按照同级索引进行排序
+                    nData['seq'] = newNodeData.getIndexInBrothers() // 新节点索引
+                    
                     this.submitChange('add',nData).then( ar => {
                         console.log(ar)
                         this.initPage().then(res => {
@@ -565,7 +574,7 @@ export default {
                             }
                         })  // 加载数据
                     })
-                    console.log('新增节点',nNodeData,nData)
+                    console.log('新增节点',nNodeData,nData,)
                 }
                 
                 
