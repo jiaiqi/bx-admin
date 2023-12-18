@@ -10,13 +10,22 @@ import timeline2 from '../images/timeline2.png'  // tuli
 import fishbone from '../images/fishbone.png'  // tuli
 import verticalTimeline from '../images/verticalTimeline.png'  // tuli
 
-import { createUid } from 'simple-mind-map/src/utils'
+import { getNodeIndex } from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
             // 移植参数相关
             // myMindMap:null,
-            
+            treeDefaultProps:{
+                children: 'children',
+                label: function(data,node){
+                    console.log(data,node)
+                    return node.data.data.text
+                }
+              },
+              showTree:false,
+              showSearch:false,
+              showEdit:false,
             loading:false,
             loadtext:'加载中',
             mouseActiveNode:null,  // 鼠标按下节点
@@ -255,6 +264,15 @@ export default {
             let currentTheme = theme || 'classic'
             this.mindMapModel.setTheme(currentTheme)
             this.defaultTheme = this.mindMapModel.getTheme()
+            
+            // this.$set(this.mindConfig.mainMind,'mind_style',currentTheme)
+            // let req = this.bxDeepClone(this.mindUpdateRequest)
+            // this.submitChange('update',req).then(r => {
+            //     this.initPage().then(res => {
+            //         // 重新加载
+            //     })
+            //     console.log(r)
+            // })
         },
         // 注册并使用新主题
         defineTheme(){
@@ -447,6 +465,14 @@ export default {
             let mindMap = this.mindMapModel
             this.$set(this,'defaultLayout',layout)
             mindMap.setLayout(layout)
+            this.$set(this.mindConfig.mainMind,'mind_style',layout)
+            let req = this.bxDeepClone(this.mindUpdateRequest)
+            this.submitChange('update',req).then(r => {
+                this.initPage(true).then(res => {
+                    // 重新加载
+                })
+                console.log(r)
+            })
           },
           updateConfig(type){
             let mindMap = this.mindMapModel
@@ -499,6 +525,8 @@ export default {
                 // 新增根节点 当前脑图还没有根节点时
                 this.noneRootNoActiveRootNode()
             }
+            let mindMap = this.mindMapModel
+            this.$set(this,'treeData',[mindMap.getData()])
         },
         walk(data) {
             // 遍历
@@ -522,11 +550,20 @@ export default {
                     pNo = pNodeData.no
                 }
                 let nData = this.getRemoteData(nNodeData.data,pNo)   // 新节点数据
+                let nodes = this.mindConfig.oldNodes.filter(item => item['parent_no'] == pNo)
+                if(!nData.hasOwnProperty('seq')){
+                    // 没有排序字段时，默认同级最后一个
+                    nData['seq'] = nodes.length
+                }
+                // console.log(nData,nodes.length)
                 if(nNodeData.data.no){
                     // 如果存在 no 为修改
                     // console.log('修改',nData)
                     this.onNodeUpdate(nData)
                 }else{
+                    // 新节点按照同级索引进行排序
+                    nData['seq'] = newNodeData.getIndexInBrothers() // 新节点索引
+                    
                     this.submitChange('add',nData).then( ar => {
                         console.log(ar)
                         this.initPage().then(res => {
@@ -537,7 +574,7 @@ export default {
                             }
                         })  // 加载数据
                     })
-                    console.log('新增节点',nNodeData,nData)
+                    console.log('新增节点',nNodeData,nData,)
                 }
                 
                 
@@ -630,24 +667,59 @@ export default {
             let activeNode = this.mouseActiveNode
             let nData = null
             if(activeNode){
-                nData = activeNode.nodeData.data
-                let req = this.bxDeepClone(this.nodeUpdateRequest)
-                // 修改 父节点
-                req['condition'] = [{
-                    colName:'no',
-                    ruleType:'eq',
-                    value:nData.no
-                }]
-                req['data'] = [{
-                    'parent_no':nodeData.data.no
-                }]
+                nData = activeNode.nodeData.data // 拖动的节点
+                let reqs = []  // 修改请求
+                let pNo = nodeData.data.parent_no  // 放置节点父编号
+                let isTogether = (pNo == nData.parent_no)  // 是否同级
+                let brotherNodes = this.mindConfig.oldNodes.filter( item => item.parent_no == pNo && item.no !== nData.no)
+                if(!isTogether){
+                    // 如果不是同级拖放
+                    switch (type) {
+                        case 'overlapNodeUid':
+                            // 如果不是同级 放置在节点上
+                            brotherNodes = this.mindConfig.oldNodes.filter( item => item.parent_no == nodeData.data.no && item.no !== nData.no)
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                let nos = brotherNodes.map(item => item.no) // 放置 no 序列
+                // console.log(brotherNodes,nos,nodeData.data.no,type)
+                let onIndex = nos.length // 放置序列的末尾 index
+                for(let index in nos){
+                    if(nos[index] == nodeData.data.no){
+                        // 拖放位置 下标
+                        onIndex = index
+                    }
+                }
                 switch (type) {
                     // overlapNodeUid ? 'overlapNodeUid' : uids.prevNodeUid ? 'prevNodeUid' : 'nextNodeUid'
                     case 'overlapNodeUid':
-                        // 节点上
-                        
-                        
-                        this.submitChange('update',req).then( r => {
+                        // 节点上 时处理所有子元素
+                        nos.splice(onIndex, 0, nData.no); // 插入新元素编号
+                        console.log(nos,onIndex,nData.no,type,nodeData.data.no,isTogether)
+                        for(let n in nos){
+                            
+                            let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
+                            seqReq['condition'] = [{
+                                colName:'no',
+                                ruleType:'eq',
+                                value:nos[n]
+                            }]
+                            seqReq['data'] = [{
+                                'seq':n
+                            }]
+                            if(nos[n] == nData.no){
+                                // 如果拖动的节点 修改父节点
+                                seqReq['data'][0]['parent_no'] = nodeData.data.no
+                            }
+                            let oldNode = brotherNodes.filter(item => item.no == nos[n])
+                            if((Array.isArray(oldNode) && oldNode.length == 1 && oldNode[0].seq != n ) || oldNode.length == 0){
+                                // 如果排序与原始值不同 
+                                reqs.push(this.bxDeepClone(seqReq))
+                            }
+                        }
+                        this.submitChange('update',reqs).then( r => {
                             console.log(r)
                             if(r){
                                 // 修改成功刷新mind
@@ -663,12 +735,31 @@ export default {
                         })
                         break;
                     case 'prevNodeUid':
-                        if(nodeData.data.parent_no !== nData.parent_no){
-                            // 父节点编号不同时 修改
-                            req['data'] = [{
-                                'parent_no':nodeData.data.parent_no
+                        nos.splice(Number(onIndex) + 1, 0, nData.no);
+                        
+                        console.log(type,Number(onIndex) + 1,nData.no,nodeData.data.no,nos,isTogether)
+                        
+                        for(let n in nos){
+                            let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
+                            seqReq['condition'] = [{
+                                colName:'no',
+                                ruleType:'eq',
+                                value:nos[n]
                             }]
-                            this.submitChange('update',req).then( r => {
+                            seqReq['data'] = [{
+                                'seq':n
+                            }]
+                            if(nos[n] == nData.no && nodeData.data.parent_no !== nData.parent_no){
+                                // 如果时拖动的节点 修改父节点
+                                seqReq['data'][0]['parent_no'] = nodeData.data.parent_no
+                            }
+                            let oldNode = brotherNodes.filter(item => item.no == nos[n])
+                            if((Array.isArray(oldNode) && oldNode.length == 1 && oldNode[0].seq != n ) || oldNode.length == 0){
+                                reqs.push(this.bxDeepClone(seqReq))
+                            }
+                        }
+                        if(reqs.length > 0){
+                            this.submitChange('update',reqs).then( r => {
                                 console.log(r)
                                 if(r){
                                     // 修改成功刷新mind
@@ -682,16 +773,35 @@ export default {
                                 }
                                 
                             })
+                            
                         }
                         // 节点后
                         break;
                     case 'nextNodeUid':
-                        if(nodeData.data.parent_no !== nData.parent_no){
-                            // 父节点编号不同时 修改
-                            req['data'] = [{
-                                'parent_no':nodeData.data.parent_no
+                        nos.splice(onIndex , 0, nData.no);
+                        console.log(nos,onIndex,nData.no,type,nodeData.data.no,isTogether)
+                        for(let n in nos){
+                            let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
+                            seqReq['condition'] = [{
+                                colName:'no',
+                                ruleType:'eq',
+                                value:nos[n]
                             }]
-                            this.submitChange('update',req).then( r => {
+                            seqReq['data'] = [{
+                                'seq':n
+                            }]
+                            if(nos[n] == nData.no && nodeData.data.parent_no !== nData.parent_no){
+                                // 如果时拖动的节点 修改父节点
+                                seqReq['data'][0]['parent_no'] = nodeData.data.parent_no
+                            }
+                            let oldNode = brotherNodes.filter(item => item.no == nos[n])
+                            if((Array.isArray(oldNode) && oldNode.length == 1 && oldNode[0].seq != n ) || oldNode.length == 0){
+                                reqs.push(this.bxDeepClone(seqReq))
+                            }
+                            reqs.push(this.bxDeepClone(seqReq))
+                        }
+                        if(reqs.length > 0){
+                            this.submitChange('update',reqs).then( r => {
                                 console.log(r)
                                 if(r){
                                     // 修改成功刷新mind
@@ -705,6 +815,7 @@ export default {
                                 }
                                 
                             })
+                            
                         }
                         // 节点前
                         break;
@@ -714,7 +825,7 @@ export default {
                 }
             }
             
-            console.log(nodeData,type,nData)
+            console.log('推拽结束',nodeData,type,nData)
           },
           nodeMousedown(node,e){
            // 节点鼠标按下
@@ -726,6 +837,116 @@ export default {
              this.$set(this,'mouseActiveNode',null)
             console.log('nodeMouseup',node,e)
           },
+          // 设置脑图模式
+          setMode(mode){
+            let mindMap = this.mindMapModel
+            if(mindMap){
+                // 存在mind 实例 则执行
+                mindMap.setMode(mode)
+            }
+            
+          },
+          setNodeTool(e){
+            // 修改节点样式
+            console.log(e)
+            let mindMap = this.mindMapModel
+            let self = this
+            if(e && e.hasOwnProperty('execCommand')){
+
+                switch (e.execCommand) {
+                    case 'setStyle':
+                        // 样式设置
+                        for(let node of this.activeNodes){
+                            // 多个选择节点 逐一处理
+                            if(e.style.color){
+                                // 文字样式
+                                node.setStyle('color',e.style.color)
+                            }
+                            if(e.style.fontWeight){
+                                node.setStyle('fontWeight',e.style.fontWeight)
+                            }
+                            self.updateNodeStyle(node.nodeData.data.no,e.style)  // 进入节点样式保存逻辑
+                            console.log('setNodeTool',node.nodeData.data.no,e.style)
+                        }
+                        break;
+                
+                    default:
+                        break;
+                }
+            }
+          },
+          setMindConfig(e){
+            // 工具架按钮交互
+            console.log('setMindConfig',e)
+            let mindMap = this.mindMapModel
+            let self = this
+            if(e && e.hasOwnProperty('execCommand')){
+
+                switch (e.execCommand) {
+                    case 'setTheme':
+                        // 设置主题
+                        if(e.config.theme){
+                            this.setTheme(e.config.theme)
+                        }
+                        break;
+                    case 'setLayout':
+                        // 修改结构
+                        if(e.config.layout){
+                            this.setDefaultLayout(e.config.layout)
+                        }
+                        break;
+                    case 'showTree':
+                        // 显示大纲
+                        this.$set(this,'showTree',e.config.leftLayout)
+                        break;
+                    
+                    case 'showSearch':
+                        // 显示搜索
+                        this.$set(this,'showSearch',e.config.showSearch)
+                        break;
+                    
+                    case 'showEditTitle':
+                        // 显示修改标题
+                        this.$set(this,'showEdit',e.config.editTitle)
+                        break;
+                        
+                
+                    default:
+                        break;
+                }
+            }
+          },
+          treeNodeClick(e){
+            // 点击树形大纲节点
+            console.log(e)
+            this.search(e.data.text)
+          },
+          search(e){
+            // 搜索节点
+            let mindMap = this.mindMapModel
+            let searchText = e || this.searchValue
+            mindMap.search.search(searchText, () => {
+                this.$refs.searchInputRef.focus()
+            })
+          },
+          updateMind(){
+            // 修改标题
+            let req = this.bxDeepClone(this.mindUpdateRequest)
+            console.log(req)
+            if(req){
+                this.submitChange('update',req).then(r => {
+                    this.$set(this,'showEdit',false)
+                    this.initPage(true).then(res => {
+                        // 重新加载
+                    })
+                    console.log(r)
+                })
+            }else{
+                this.$set(this,'showEdit',false) 
+            }
+            
+          }
+          
           
     }
 

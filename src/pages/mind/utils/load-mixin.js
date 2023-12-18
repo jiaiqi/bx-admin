@@ -2,6 +2,8 @@ import {walk} from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
+            searchValue:'',
+            treeData:[],
             mindConfig:{},
             loadMindDatas:{},
             dataTemp:{
@@ -295,8 +297,21 @@ export default {
                     if(key == maps.col_parent_no && maps.col_parent_no){
                         data['parent_no'] = item[key]
                     }
+                    if(key == maps.col_seq && maps.col_seq){
+                        data['seq'] = item[key]
+                    }else{
+                        data['seq'] = item['seq']
+                    }
                     
-                    
+                    // 样式
+                    if(key == maps.col_style && maps.col_style){
+                        let style = item[key]
+                        if(style){
+                            style = JSON.parse(style)
+                            Object.assign(data,style)
+                        }
+                    }
+                    // 子节点
                     if(key == 'children'){
                         let children = this.bxDeepClone(item[key])
                         if(Array.isArray(children) && children.length > 0){
@@ -321,7 +336,7 @@ export default {
                 }
                 
             }
-            console.log('getMindNodeData',obj)
+            // console.log('getMindNodeData',obj)
             return obj
         },
         getRemoteData(node,pNo){
@@ -416,7 +431,7 @@ export default {
                     // })
               })
         },
-        async initPage(){
+        async initPage(isAll){
             // 根据脑图编号查询脑图实例
             // this.getV2()
             let self = this
@@ -431,47 +446,67 @@ export default {
                     colName:'mind_no',
                     ruleType:'eq',
                     value:this.query.no
-                }],
+                }]
               }
               // treeData 3000条， 普通查询500条
             const url = this.getServiceUrl("select", serviceName, app);
-            return  this.$http.post(url, req).then(res => {
-                let page = res.data
-                console.log(page)
-
+            if(self.mindConfig && self.mindConfig.oldMind && !isAll){
+                // 只加载节点数据
                 return new Promise(function(resolve, reject) {
-                        if (page.state === "SUCCESS" && Array.isArray(page.data) && page.data.length == 1) {
-                            let mind = page.data[0]
-                            console.log(mind,page.data)
-                            if(mind && mind.mindbiz_json){
-                             // 是否有配置业务 有序列化json
-                                 mind.mindbiz_json = JSON.parse(mind.mindbiz_json)
-                                 self.$set(self.mindConfig,'mindbizJson',mind.mindbiz_json)
-                            }
-                            self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
-     
-                            self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
-                            self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
-                            self.submitChange('select').then(r => {
-                               
-                                console.log('select nodes',r)
-                                if(Array.isArray(r)){
-                                    self.$set(self.mindConfig,'oldNodes',r)
-                                    self.remoteToMindNodes()
-                                }
-                                
-                                resolve(true)
-                            })
-                            
-                         }else{
-                            resolve(false)
-                         }
+                    self.submitChange('select').then(r => {
+                           
+                        console.log('select nodes',r)
+                        if(Array.isArray(r)){
+                            self.$set(self.mindConfig,'oldNodes',r)
+                            self.remoteToMindNodes()
+                        }
+                        
+                        resolve(true)
+                    })
                 })
-
-              
-            }).catch(err=>{
-                console.log(err)
-            })
+            }else{
+                // 加载图表
+                return  this.$http.post(url, req).then(res => {
+                    let page = res.data
+                    console.log(page)
+    
+                    return new Promise(function(resolve, reject) {
+                            if (page.state === "SUCCESS" && Array.isArray(page.data) && page.data.length == 1) {
+                                let mind = page.data[0]
+                                console.log(mind,page.data)
+                                if(mind && mind.mindbiz_json){
+                                 // 是否有配置业务 有序列化json
+                                     mind.mindbiz_json = JSON.parse(mind.mindbiz_json)
+                                     self.$set(self.mindConfig,'mindbizJson',mind.mindbiz_json)
+                                }
+                                self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
+         
+                                self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
+                                self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
+                                self.$set(self,'defaultTheme', 'classic4')  // 主题
+                                self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
+                                self.submitChange('select').then(r => {
+                                   
+                                    console.log('select nodes',r)
+                                    if(Array.isArray(r)){
+                                        self.$set(self.mindConfig,'oldNodes',r)
+                                        self.remoteToMindNodes()
+                                    }
+                                    
+                                    resolve(true)
+                                })
+                                
+                             }else{
+                                resolve(false)
+                             }
+                    })
+    
+                  
+                }).catch(err=>{
+                    console.log(err)
+                })
+            }
+            
           },
           buildMindDatas(list){
             let treeData = []
@@ -515,7 +550,7 @@ export default {
                     req = this.bxDeepClone(this.nodeUpdateRequest)
                     reqType = 'operate'
                     if(data){
-                        req = [data]
+                        req = [].concat(data)
                     }
                     break;
                 
@@ -527,6 +562,10 @@ export default {
                 case 'select':
                     // 节点删除
                     req = this.bxDeepClone(this.nodeSelectRequest)
+                    req['order'] = [{
+                        "colName": "seq",
+                        "orderType": "asc"
+                    }]
                     reqType = 'select'
                     break;
             
@@ -571,7 +610,14 @@ export default {
                                 result = page.response[0].response.effect_data[0]
                             }
                         }
-                        resolve(result)  // 完成 promise
+                        if(page.state == 'FAILURE' && page.resultCode == '9999'){
+                            this.setMode('readonly')
+                            this.setLoading(true,'无权限')
+                            resolve(false)  // 完成 promise
+                        }else{
+                            resolve(result)  // 完成 promise
+                        }
+                        
                     })
     
                   
@@ -585,7 +631,46 @@ export default {
                 })
             }
             console.log(url,req)
+          },
+          updateNodeStyle(no,newStyle){
+            console.log('updateNodeStyle',no,newStyle)
+            let self = this
+             let oldNode = this.mindConfig.oldNodes.filter(item => item.no == no)  
+             // 节点原始数据
+             if(Array.isArray(oldNode) && oldNode.length == 1){
+                let updateReq = this.bxDeepClone(this.nodeUpdateRequest)
+                updateReq['condition'] = [{
+                    colName:'no',
+                    ruleType:'eq',
+                    value:no
+                }]
+                oldNode = oldNode[0]
+                let oldStyle = oldNode[this.remoteColMaps.col_style]
+                if(newStyle && no){
+                    // 如果有新样式
+                    oldStyle = oldStyle ? JSON.parse(oldStyle) : {}
+                    for(let key in newStyle){
+                        oldStyle[key] = newStyle[key]
+                    }
+                    updateReq['data'] = [{}]
+                    updateReq['data'][0][this.remoteColMaps.col_style] = JSON.stringify(oldStyle)
+                    console.log('updateNodeStyle',updateReq)
+                    self.submitChange('update',updateReq).then(r=>{
+                        if(r){
+                            // 修改成功刷新mind
+                            this.initPage().then(res => {
+                                console.log('init Page',res)
+                                if(res){
+                                    // this.initMind(this.dataTemp)
+                                    
+                                }
+                            })  // 加载数据
+                        }
+                    })
+                }
+             }
           }
+
        
           
 

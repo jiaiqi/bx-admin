@@ -19,8 +19,39 @@
             id="mindMapContainer">
         </div>
         <div class="tool-layout">
-            <div class="hander-layout shadow" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind">
-                {{mindConfig.mainMind.mind_name}}
+            <div class="hander-layout" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind">
+                <div class="mind-tools shadow">
+                    <div class="mind-title">
+                        <span v-if="!showEdit">{{mindConfig.mainMind.mind_name}}</span>
+                        
+                        <div class="search-layout" v-if="showEdit">
+                            <el-input
+                            style="width:8rem;"
+                            ref="searchInputRef"
+                            placeholder="请输入内容搜索"
+                            v-model="mindConfig.mainMind.mind_name"
+                            clearable>
+                            </el-input>
+                            <el-button type="primary" size="small" @click="updateMind()">确定</el-button>
+                        </div>
+                    </div>
+                    
+                    <mindtoolbar :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
+                    <div class="search-layout" v-if="showSearch">
+                        <el-input
+                        style="width:8rem;"
+                        v-if="showSearch"
+                        ref="searchInputRef"
+                        placeholder="请输入内容搜索"
+                        v-model="searchValue"
+                        clearable>
+                        </el-input>
+                        <el-button type="primary" size="small" @click="search()">搜索</el-button>
+                    </div>
+
+                </div>
+                
+                <topToolBar class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
             </div>
             <div class="side-layout " v-if="showEditorUi.includes('side')">
                 <div class="side-toolbar border border-radius  shadow ">
@@ -93,6 +124,11 @@
                 
                 
             </div>
+            
+            <div class="left-layout" v-if="showTree">
+                
+                <el-tree v-if="showTree" style="max-height:100%;overflow-y:auto;overflow-x:auto;"  :data="treeData" :props="treeDefaultProps" default-expand-all @node-click="treeNodeClick"></el-tree>
+            </div>
             <div class="footer-layout" v-if="showEditorUi.includes('footer')">
                 <div>
                     <div style="min-width:6rem;background:#fff;padding:6px;text-align:center;">
@@ -100,10 +136,10 @@
                     </div>
                 </div>
                 <div>
-                   
-                    <el-button icon=" el-icon-search" @click="showSearch" title="搜索节点">
-                        <!-- 搜索 -->
-                    </el-button>
+                   <!-- 搜索 -->
+                    <!-- <el-button icon=" el-icon-search" @click="showSearch" title="搜索节点">
+                        
+                    </el-button> -->
                     <el-button icon="el-icon-full-screen" @click="viewFit" title="适应画布显示">
                         <!-- 适配画布显示 -->
                     </el-button>
@@ -183,6 +219,11 @@ import Export from 'simple-mind-map/src/plugins/Export.js'  // 导出插件
 import ExportPDF from 'simple-mind-map/src/plugins/ExportPDF.js' // 导出pdf
 import Drag from 'simple-mind-map/src/plugins/Drag.js' //拖拽模块
 import Search from 'simple-mind-map/src/plugins/Search.js' // 搜索模块
+
+import topToolBar from './component/toptoolbar.vue' // 顶部工具架
+import mindtoolbar from './component/mindtoolbar.vue' // 顶部工具架
+
+
 MindMap.usePlugin(Export)
 MindMap.usePlugin(ExportPDF)
 // MindMap.usePlugin(RichText)
@@ -225,7 +266,7 @@ let copyData = null
   export default {
     name:'mindIndex',
     mixins:[utilsMixin,loadMixin],
-    components: {},
+    components: {topToolBar,mindtoolbar},
     computed:{
         
     },
@@ -292,7 +333,9 @@ let copyData = null
             // 转载初始化数据
             mindMap = new MindMap({
                 el: document.getElementById('mindMapContainer'),
-                enableFreeDrag: true,
+                // enableFreeDrag: true,
+                theme:this.defaultTheme,
+                layout:this.defaultLayout,
                 data: d,
                 mousewheelAction: 'move', // move zoom
                 // initRootNodePosition: ['center', 'center'],
@@ -376,9 +419,9 @@ let copyData = null
                     this.showToolbar.top = rect.top - 40 + 'px'
                     this.showToolbar.currentFormatInfo = {
                         ...(formatInfo || {})
-                    }
+                    } 
                     console.log(this.showToolbar.currentFormatInfo)
-                }
+                } 
                 this.showToolbar.show = hasRange
             })
             mindMap.on('hide_text_edit',this.hideTextEdit)  // 节点修改框关闭
@@ -470,13 +513,43 @@ let copyData = null
   }
   .tool-layout{
         position: fixed;
-        .hander-layout,.side-layout,.footer-layout{
+        .hander-layout,.side-layout,.footer-layout,.left-layout{
             position: fixed;
         }
-        .hander-layout{
-            top:10px;
+        .left-layout{
             background:$white;
+            padding:6px;
+            left:0;
+            top:100px;
+            min-width:10rem;
+            height:calc(100% - 160px);
+            overflow-y:auto;
+            overflow:hidden;
+            min-height:30%;
+        }
+        .hander-layout{
+            width:100%;
+            top:0;
+            background:$Transparent;
             padding:$padding;
+            display:flex;
+            justify-content:space-between;
+            &>div{
+                
+                background:$white;
+                border-radius:$borderRadius;
+            }
+            .mind-tools{
+                display:flex;
+                align-items:center;
+                padding:0 6px;
+                .mind-title{
+                    padding:6px;
+                }
+            }
+            .search-layout{
+                display:flex;
+            }
         }
         .side-layout{
             border-radius:$borderRadius;
