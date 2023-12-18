@@ -2,7 +2,9 @@ import {walk} from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
+            v2:null,
             searchValue:'',
+            
             treeData:[],
             mindConfig:{},
             loadMindDatas:{},
@@ -52,6 +54,11 @@ export default {
     },
     
     computed: {
+        imgReqModel(){
+            let model = this.bxDeepClone(this.imageMode)
+            model['app_no'] = this.query.app
+            return model
+        },
         themeListDefault(){
             let list = 'themeList'
             return list
@@ -199,6 +206,7 @@ export default {
         },
     },
     methods: {
+        
         onNodeUpdate(nNode){
             // 检测节点信息修改
             console.log(nNode)
@@ -292,7 +300,18 @@ export default {
                         data['expand'] = item[key] === '是' ? true : false
                     }
                     if(key == maps.col_image && maps.col_image){
-                        data['image'] = item[key]
+                        // data['image'] = this.getImagePath(item[key]) 
+                    }else if(key == 'image'){
+                        let img = item[key]
+                        if(img){
+                            if(img.indexOf('{') !== -1){
+                                img = JSON.parse(img)
+                                data['image'] = this.getImagePath(img['no']) 
+                                data['imageSize'] = img['size'] 
+                                data['imageSize']['custom'] = false
+                            }
+                        }
+                        // data['image'] = this.getImagePath(item[key]) 
                     }
                     if(key == maps.col_parent_no && maps.col_parent_no){
                         data['parent_no'] = item[key]
@@ -302,6 +321,8 @@ export default {
                     }else{
                         data['seq'] = item['seq']
                     }
+                    
+
                     
                     // 样式
                     if(key == maps.col_style && maps.col_style){
@@ -358,6 +379,10 @@ export default {
                     if(key == 'parent_no'){
                         data['parent_no'] = node[key]
                     }
+                    // if(key == 'image'){
+                    //     data['image'] = this.getImagePath(node[key]) 
+                    // }
+                    
                     
                     // console.log(key,node)
                 }
@@ -412,9 +437,9 @@ export default {
             this.$http.post(url, req).then(res => {
                     let page = res.data
                     console.log(page)
-                    if (page.state === "SUCCESS" && Array.isArray(page.data) && page.data.length == 1) {
+                    if (page.state === "SUCCESS" && page.data) {
                         
-                        
+                        this.$set(this,'v2',page.data)
                     }
                     
                    
@@ -433,7 +458,7 @@ export default {
         },
         async initPage(isAll){
             // 根据脑图编号查询脑图实例
-            // this.getV2()
+            this.getV2()
             let self = this
             let serviceName = this.query.serviceName
             let app = this.query.app
@@ -660,6 +685,44 @@ export default {
                             // 修改成功刷新mind
                             this.initPage().then(res => {
                                 console.log('init Page',res)
+                                if(res){
+                                    // this.initMind(this.dataTemp)
+                                    
+                                }
+                            })  // 加载数据
+                        }
+                    })
+                }
+             }
+          },
+          updateNodeImage(no,fileNo){
+            console.log('updatefileNo',no,fileNo)
+            let self = this
+             let oldNode = this.mindConfig.oldNodes.filter(item => item.no == no)  
+             // 节点原始数据
+             if(Array.isArray(oldNode) && oldNode.length == 1){
+                let updateReq = this.bxDeepClone(this.nodeUpdateRequest)
+                updateReq['condition'] = [{
+                    colName:'no',
+                    ruleType:'eq',
+                    value:no
+                }]
+                oldNode = oldNode[0]
+                let oldImage = oldNode[this.remoteColMaps.col_image]
+                if(fileNo && no){
+                    // 如果有新样式
+                    
+                    updateReq['data'] = [{
+
+                    }]
+                    fileNo = JSON.stringify(fileNo)
+                    updateReq['data'][0][this.remoteColMaps.col_image || 'image'] = fileNo
+                    console.log('updateNodeImage',updateReq)
+                    self.submitChange('update',updateReq).then(r=>{
+                        if(r){
+                            // 修改成功刷新mind
+                            this.initPage().then(res => {
+                                console.log('save image',res)
                                 if(res){
                                     // this.initMind(this.dataTemp)
                                     

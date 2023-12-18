@@ -157,6 +157,33 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
                         </div>
+                        <div class="tool-bar "  v-if="tool.key == 'setImage'">
+                   
+                            <el-tooltip class="item" effect="dark" :content="tool.name" placement="bottom">
+                                <el-button class="tool-bar" v-if="tool.key === 'setImage'" :title="tool.name" :disabled="Array.isArray(activeNodes) && activeNodes.length ==0" size="mini">
+                                    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
+                                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                    <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                                    </svg> -->
+                                    <el-upload
+                                    :disabled="Array.isArray(activeNodes) && activeNodes.length ==0"
+                                    class="avatar-uploader"
+                                    :headers="getHeaders()"
+                                    :action="uploadFile"
+                                    :show-file-list="false"
+                                    :data="imgReqModel"
+                                    :on-success="handleAvatarSuccess"
+                                    :before-upload="beforeAvatarUpload">
+                                    <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                </el-button>
+                            </el-tooltip>
+                            <div>
+                                
+                            </div>
+                        </div>
+                        
                     </template>
                 </div>
             </div>
@@ -166,6 +193,7 @@
 </template>
 <script>
 import {walk} from 'simple-mind-map/src/utils'
+import {loadImage} from 'simple-mind-map/src/utils'
 export default {
     name:'top-tool-bar',
     props:{
@@ -369,13 +397,35 @@ export default {
                             value: 'circle'
                         }
                         ],
+                    }]
+                },{
+                name:'节点内容',
+                tools:[{
+                    name:'插入图片',
+                    key:'setImage',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        ],
                 }]
-            }]
+                }]
             }
         }
     },
     data() {
         return {
+            fileType: 'jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff',
+            imageMode:{
+                serviceName: 'srv_bxfile_service',
+                interfaceName: 'add',
+                app_no: 'config',
+                table_name: 'bxtools_mind_map_node',
+                thumbnailType: 'fwsu_100',
+                columns: 'image',
+            },
+            uploadFile: this.serviceApi().uploadFile,
             // tools:[{
             //     name:'文字样式',
             //     tools:[{
@@ -572,11 +622,24 @@ export default {
            nodeStyle:{
                 color:''
            },
+           imageUrl:'',
+           fileSize: 20 * 1024,
+           imageSize:null
            
         }
     },
     
     computed: {
+        imgReqModel(){
+            let model = this.bxDeepClone(this.imageMode)
+            model['app_no'] =  this.resolveDefaultSrvApp()
+            return model
+        },
+        imageAction(){
+            let url = ''
+
+            return url
+        },
         toolsBuild(){
             let tools = this.bxDeepClone(this.tools)
             let nodeData = this.activeNodes.length > 0 ? this.activeNodes[0] : null
@@ -624,6 +687,12 @@ export default {
         }
     },
     methods: {
+        getHeaders() {
+            let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
+            return {
+              bx_auth_ticket: bx_auth_ticket
+            };
+          },
         onClick(e){
             console.log(e)
             this.$emit('set-node-tool',e)
@@ -699,6 +768,67 @@ export default {
             }
             obj['style']['fillColor'] = e
             this.$emit('set-node-tool',obj)
+        },
+        setImage(e){
+            
+            console.log(e)
+            let obj = {
+                execCommand:'setImage',
+                style:{}
+            }
+            obj['style']['imageNo'] = e
+            if(e){
+                this.$emit('set-node-tool',obj)
+            }
+            
+
+        },
+        handleAvatarSuccess(res, file) {
+            let self = this
+            console.log('handleAvatarSuccess',res)
+            if(res.file_no){
+                self.imageUrl = res.file_no;
+                 self.setImage({
+                    no:res.file_no,
+                    size:this.imageSize
+                })
+            }
+           
+        },
+        beforeAvatarUpload(file) {
+            // console.log('file',file,getImageSize(file))
+            
+            let flag = false
+            loadImage(file).then((i)=>{
+                console.log('getImageSize',i)
+                this.$set(this,'imageSize',i.size)
+                if (file.size / 1024 > this.fileSize) {
+                    this.$message.error('文件大小不能超过' + this.fileSize + 'kb');
+                    return false
+                }
+                for (let i in this.fileType.split('/')) {
+                    if (file.name.split('.')[1] === this.fileType.split('/')[i]) {
+                        flag = true
+                        break
+                    }
+                }
+                if (!flag) {
+                    this.$message.error('只能上传' + this.fileType + '文件!');
+                    return false
+                }
+            })
+           
+            
+            // const isJPG = file.type === 'image/jpeg';
+            // const isLt2M = file.size / 1024 / 1024 < 2;
+
+            // if (!isJPG) {
+            // this.$message.error('上传头像图片只能是 JPG 格式!');
+            // }
+            // if (!isLt2M) {
+            // this.$message.error('上传头像图片大小不能超过 2MB!');
+            // }
+            // return isJPG && isLt2M;
         }
        
           

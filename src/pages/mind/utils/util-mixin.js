@@ -274,6 +274,34 @@ export default {
             //     console.log(r)
             // })
         },
+        setImageNo(fileno){
+            // 动态设置主题
+            console.log('utils set image no ',fileno)
+            
+            
+            let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
+            if(Array.isArray(this.activeNodes) ){
+                console.log()
+                for(let node of this.bxDeepClone(this.activeNodes)){
+                    let nodeData = node.getData()
+                    console.log(nodeData)
+                }
+            }
+            seqReq['condition'] = [{
+                colName:'no',
+                ruleType:'eq',
+                value:nos[n]
+            }]
+            seqReq['data'] = [{
+                'seq':n
+            }]
+            // this.submitChange('update',req).then(r => {
+            //     this.initPage().then(res => {
+            //         // 重新加载
+            //     })
+            //     console.log(r)
+            // })
+        },
         // 注册并使用新主题
         defineTheme(){
             MindMap.defineTheme('redSpirit', {
@@ -848,7 +876,7 @@ export default {
           },
           setNodeTool(e){
             // 修改节点样式
-            console.log(e)
+            console.log('setNodeTool',e)
             let mindMap = this.mindMapModel
             let self = this
             if(e && e.hasOwnProperty('execCommand')){
@@ -866,6 +894,33 @@ export default {
                                 node.setStyle('fontWeight',e.style.fontWeight)
                             }
                             self.updateNodeStyle(node.nodeData.data.no,e.style)  // 进入节点样式保存逻辑
+                            console.log('setNodeTool',node.nodeData.data.no,e.style)
+                        }
+                        break;
+                    case 'setImage':
+                        // 样式设置
+                        for(let node of this.activeNodes){
+                            // 多个选择节点 逐一处理
+                            if(e.style.color){
+                                // 文字样式
+                                node.setStyle('color',e.style.color)
+                            }
+                            if(e.style.fontWeight){
+                                node.setStyle('fontWeight',e.style.fontWeight)
+                            }
+                            self.updateNodeImage(node.nodeData.data.no,e.style.imageNo)  // 进入节点样式保存逻辑
+                            console.log('setNodeTool',node.nodeData.data.no,e.style)
+                        }
+                        break;
+                    case 'setImage':
+                        // 样式设置
+                        for(let node of this.activeNodes){
+                            // 多个选择节点 逐一处理
+                            
+                            if(e.style.imageNo){
+                                // node.setStyle('fontWeight',e.style.fontWeight)
+                            }
+                            self.updateNodeImage(node.nodeData.data.no,e.style.imageNo)  // 进入节点样式保存逻辑
                             console.log('setNodeTool',node.nodeData.data.no,e.style)
                         }
                         break;
@@ -908,6 +963,13 @@ export default {
                     case 'showEditTitle':
                         // 显示修改标题
                         this.$set(this,'showEdit',e.config.editTitle)
+                        break;
+                    
+                    case 'setImage':
+                        // 插入图片
+                        if(e.config.imageNo){
+                           
+                        }
                         break;
                         
                 
