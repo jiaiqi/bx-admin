@@ -1,4 +1,6 @@
 import * as echarts from "echarts";
+import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
+import "echarts-gl"; //echarts-gl@1.1.2
 
 let __colors = [
   "#007AFF",
@@ -14,6 +16,11 @@ let __colors = [
   "#D0DEEE",
   "#82B6F7",
 ];
+// 初始化 必须传入dom节点 建议使用vue的ref获取
+export const initChart = (domRef) => {
+  return echarts.init(domRef);
+};
+
 export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   let colors = [...__colors];
   let chartJson = pageItem?.chart_json || {
@@ -35,7 +42,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     //   // 越往后的数据延迟越大
     //   return idx * 100;
     // },
-    animationDuration: 1000,// 初始动画的时长
+    animationDuration: 1000, // 初始动画的时长
     // animationDuration: function (idx) {
     //   // 越往后的数据时长越大
     //   return idx * 1000;
@@ -686,6 +693,23 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           }
         }
       }
+      // ecOptions.geo3D= {
+      //   map: "mapName", //注册地图的名字
+      //   roam: true, //开启鼠标缩放和平移漫游。默认不开启
+      //   itemStyle: {
+      //     color: "#0057c7", // 背景
+      //     opacity: 1, //透明度
+      //     borderWidth: .1, // 边框宽度
+      //     borderColor: "#eee", // 边框颜色
+      //     fontSize: .1, //
+      //   },
+      //   viewControl: {
+      //     distance: 120,
+      //     alpha: 50, // 上下旋转的角度
+      //     beta: 0, // 左右旋转的角度
+      //   },
+     
+      // }
       ecOptions.tooltip = {
         trigger: "item",
         formatter: function (params) {
@@ -708,8 +732,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         let serie = {
           name: "",
+          // type: "scatter3D",
           type: "scatter",
           coordinateSystem: "geo",
+          // coordinateSystem: "geo3D",
+          // type: 'bar3D',
           data: datas,
           symbol: "circle",
           // symbol: 'pin',
@@ -727,6 +754,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             textStyle: {
               color: "#fff",
               borderColor: "transparent",
+              backgroundColor: "transparent",
             },
             // normal: {
             //   show: true, //显示标签
@@ -805,7 +833,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         };
       }
       if (chartJson?.more_option?.indexOf("stack")) {
-        obj.stack = "总量";
+        obj.stack = "stack";
       }
       if (
         chartJson.more_option &&
@@ -942,11 +970,8 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           padding: [3, 0],
         },
       };
-      // let title = `{total|${total}\r\n${
-      //   chartJson?.ring_sum_label || "总考生数"
-      // }`;
       if (chartType === "ring") {
-        const title = chartJson?.ring_sum_label || "总考生数";
+        const title = chartJson?.ring_sum_label || "总数";
         option.title = {
           text: title,
           left: "center",
@@ -961,30 +986,19 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       }
 
       var data = [];
-      var color = [
-        "#00ffff",
-        "#00cfff",
-        "#006ced",
-        "#ffe000",
-        "#ffa800",
-        "#ff5b00",
-        "#ff3000",
-      ];
       for (var i = 0; i < scaleData.length; i++) {
-        data.push(
-          {
-            value: scaleData[i].value,
-            name: scaleData[i].name,
-            itemStyle: {
-              // normal: {
-              //   borderWidth: 0,
-              //   shadowBlur: 20,
-              //   borderColor: color[i],
-              //   shadowColor: color[i],
-              // },
-            },
-          }
-        );
+        data.push({
+          value: scaleData[i].value,
+          name: scaleData[i].name,
+          itemStyle: {
+            // normal: {
+            //   borderWidth: 0,
+            //   shadowBlur: 20,
+            //   borderColor: color[i],
+            //   shadowColor: color[i],
+            // },
+          },
+        });
       }
       option.series = [
         {
@@ -1044,7 +1058,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           }
         },
       };
-      
+
       option.geo = {
         map: "mapName",
         roam: true,
@@ -1073,123 +1087,4 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       break;
   }
   return option;
-};
-
-export const setCustomLayerMapOption = (data) => {
-  let itemArr = [];
-  if (data && Array.isArray(data)) {
-    data = JSON.parse(JSON.stringify(data));
-    let datas = data.map((d, i) => {
-      if (item.chart_settings?.appName) {
-        d.appName = item.chart_settings?.appName;
-      }
-      if (d.lon_width && d.lat_height) {
-        d.chart_width =
-          (parseFloat(d.lon_width) *
-            parseFloat(self.contentData.dashboard_width)) /
-          parseFloat(gis_info_cfg.width_lon);
-        d.chart_height =
-          (parseFloat(d.lat_height) *
-            parseFloat(self.contentData.dashboard_height)) /
-          parseFloat(gis_info_cfg.height_lat);
-        d.chart_left = 0;
-        d.chart_top = 0;
-      }
-      d.use_flag = item.use_flag;
-      if (d.use_flag === "否") {
-      }
-      d.z_order = item.z_order;
-      d.objType = item.chart_settings.type;
-      d.targetParams = item.chart_settings.targetParams;
-      d.targetUrl = item.chart_settings.targetUrl;
-      d.chart_type = item.chart_type;
-      d.showTitle = item.chart_settings.showTitle;
-      d.titleCol = item.chart_settings.titleCol;
-      d.titleColor = item.chart_settings.titleColor;
-      d.idCol = item.chart_settings.idCol;
-      if (!d.rotation_angle) {
-        d.rotation_angle = 0;
-      }
-      if (d.idCol && d[d.idCol]) {
-        d.id = d[d.idCol];
-      }
-      if (
-        item.chart_settings.imgUrl &&
-        item.chart_settings.imgUrl.indexOf("&bx_auth_ticket") === -1 &&
-        item.chart_settings.imgUrl.indexOf(top.pathConfig.gateway) === -1
-      ) {
-        d.imgUrl =
-          top.pathConfig.gateway +
-          item.chart_settings.imgUrl +
-          "&bx_auth_ticket=" +
-          sessionStorage.getItem("bx_auth_ticket");
-      } else if (
-        item.chart_settings.imgUrl &&
-        item.chart_settings.imgUrl.indexOf("&bx_auth_ticket") !== -1 &&
-        item.chart_settings.imgUrl.indexOf(top.pathConfig.gateway) !== -1
-      ) {
-        let params = item.chart_settings.imgUrl.split("&bx_auth_ticket");
-        params = params.length > 1 ? params[1] : "";
-        if (params) {
-          params = params.split("&");
-          params = params.length > 0 ? params[0] : "";
-          if (params) {
-            item.chart_settings.imgUrl = item.chart_settings.imgUrl.replace(
-              params,
-              sessionStorage.getItem("bx_auth_ticket")
-            );
-          }
-        }
-        d.imgUrl =
-          item.chart_settings.imgUrl +
-          "&bx_auth_ticket=" +
-          sessionStorage.getItem("bx_auth_ticket");
-      }
-      d.linkUrl = item.chart_settings.linkUrl;
-      d.chart_request_payload = item.chart_request_payload;
-      if (item.chart_settings.type === "tower") {
-        d.chart_top = Math.abs(
-          ((parseFloat(d.lat) -
-            -d.lat_height / 2 -
-            (parseFloat(gis_info_cfg.center_lat) +
-              parseFloat(gis_info_cfg.height_lat) / 2)) /
-            parseFloat(gis_info_cfg.height_lat)) *
-            parseFloat(self.contentData.dashboard_height)
-        );
-        d.chart_left = Math.abs(
-          ((parseFloat(d.lon) -
-            parseFloat(d.lon_width) / 2 -
-            (parseFloat(gis_info_cfg.center_lon) -
-              gis_info_cfg.width_lon / 2)) /
-            parseFloat(gis_info_cfg.width_lon)) *
-            parseFloat(self.contentData.dashboard_width)
-        );
-      }
-      if (item.chart_settings.type === "camera") {
-        d.chart_width = item.chart_width;
-        d.chart_height = item.chart_height;
-        d.chart_top = Math.abs(
-          ((parseFloat(d.lat) -
-            (parseFloat(gis_info_cfg.center_lat) +
-              parseFloat(gis_info_cfg.height_lat) / 2)) /
-            parseFloat(gis_info_cfg.height_lat)) *
-            parseFloat(self.contentData.dashboard_height)
-        );
-        d.chart_left = Math.abs(
-          ((parseFloat(d.lon) -
-            (parseFloat(gis_info_cfg.center_lon) -
-              parseFloat(gis_info_cfg.width_lon) / 2)) /
-            parseFloat(gis_info_cfg.width_lon)) *
-            parseFloat(self.contentData.dashboard_width)
-        );
-      }
-      return d;
-    });
-    if (self.chartConfig[index] && self.chartConfig[index].chart_no) {
-      self.chartConfig.splice(index, 1);
-    }
-
-    self.chartConfig = self.deepClone(self.chartConfig.concat(data));
-    self.chartConfigOld = self.deepClone(self.chartConfig);
-  }
 };

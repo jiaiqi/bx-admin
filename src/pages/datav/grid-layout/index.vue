@@ -156,20 +156,20 @@ export default {
     // window.onclick = () => {
     //   this.curDesign = "";
     // };
-    // if (!process?.env?.NODE_ENV === "development") {
-    // 开发模式不监听窗口变化
-    if (this.isDataview) {
-      window.addEventListener('resize',()=>{
-        this.resize();
-      })
-      // window.onresize = () => {
-      //   this.resize();
-      // };
-      setTimeout(() => {
-        this.resize();
-      }, 500);
+    if (!process?.env?.NODE_ENV === "development") {
+      // 开发模式不监听窗口变化
+      if (this.isDataview) {
+        window.addEventListener('resize', () => {
+          this.resize();
+        })
+        // window.onresize = () => {
+        //   this.resize();
+        // };
+        setTimeout(() => {
+          this.resize();
+        }, 500);
+      }
     }
-    // }
     setTimeout(() => {
       if (this.needLogin) {
         // location.href = '/main/login.html'

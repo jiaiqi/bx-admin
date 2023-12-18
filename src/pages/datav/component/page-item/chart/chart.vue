@@ -1,7 +1,5 @@
 <script setup>
-import * as echarts from "echarts";
-import 'echarts-wordcloud'; // echarts-wordcloud@1.1.3
-
+import { initChart } from '../use-functions/buildOption'
 import { onMounted, onUnmounted, ref, watch } from "vue";
 const props = defineProps({
   options: {
@@ -22,14 +20,17 @@ let chartObj = null;
 let objResizeObserver;
 onMounted(() => {
   if (!domRef.value) return
-  init()
+
+  // 初始化
+  chartObj = initChart(domRef.value)
+
   if (props.options) {
     drawOption()
   }
 
-   objResizeObserver = new ResizeObserver(function (entries) {
+  objResizeObserver = new ResizeObserver(function (entries) {
     const entry = entries[0];
-    if(entry?.target===domRef.value){
+    if (entry?.target === domRef.value) {
       chartObj?.resize()
     }
   });
@@ -48,16 +49,12 @@ onUnmounted(() => {
     chartObj = null
   }
   // 取消监听
-  domRef.value&&objResizeObserver.unobserve(domRef.value);
+  domRef.value && objResizeObserver.unobserve(domRef.value);
 })
 
 // 监听配置变化
 watch(() => props.options, () => drawOption())
 
-// 初始化
-const init = () => {
-  chartObj = echarts.init(domRef.value)
-}
 
 //加载图表配置
 const drawOption = () => {
