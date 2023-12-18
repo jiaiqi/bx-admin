@@ -9,6 +9,9 @@
         :key="item.id">
         <div class="img" :style="setBg(item)">
           <img :src="getQrcode(item)" alt="" class="qrcode">
+          <div class="note">
+            {{ item.note || '' }}
+          </div>
         </div>
         <div style="text-align: center;margin-top: 12px;margin-bottom: 0" class="check-box">
           <el-checkbox :label="item.index_no">{{ item.index_name }}</el-checkbox>
@@ -26,6 +29,7 @@
         :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index">
         <img :src="getImagePath(item.picture)" alt="" class="bg">
         <img :src="getQrcode(item)" alt="" class="qrcode">
+        <div class="note">{{ item.note || '' }}</div>
       </div>
     </div>
   </div>
@@ -48,7 +52,8 @@ export default {
             pre.push({
               index_no: cur.index_no,
               index_name: cur.index_name,
-              picture: cur.picture
+              picture: cur.picture,
+              note: cur.note
             })
           }
         }
@@ -127,14 +132,29 @@ export default {
     margin: 0;
     padding: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+
+  .note {
+    z-index: 2;
+    display: inline-block;
+    margin-top: 10px;
+    // position: absolute;
+    // top: calc(50%);
+    // left: 0;
+    width: 100%;
+    text-align: center;
+    height: 20px;
+    font-size: 14px;
   }
 
   .qrcode {
     width: 140px;
     height: 140px;
   }
+
 }
 
 .list-box {
@@ -166,6 +186,16 @@ export default {
       position: absolute;
       top: calc(50% - 70px);
       left: calc(50% - 70px);
+    }
+
+    .note {
+      z-index: 2;
+      display: inline-block;
+      position: absolute;
+      font-size: 12px;
+      top: calc(50% + 70px);
+      width: 100%;
+      text-align: center;
     }
   }
 }
