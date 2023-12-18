@@ -362,6 +362,9 @@ routes.push( {
   }, {//西乡 评价列表
     path:'/evaluate/:class_record_no',
     component:()=>import('@/pages/xx/evaluateList.vue')
+  }, {//西乡 荣誉墙
+    path:'/qrcodeprint',
+    component:()=>import('@/pages/xx/qrcodePrint.vue')
   }
   // storeMonitor
   //大屏拖拽页面
