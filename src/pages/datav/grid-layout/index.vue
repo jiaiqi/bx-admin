@@ -147,29 +147,23 @@ export default {
     );
 
     this.initDesign();
+
     this.moveMousemove();
     this.moveMouseup();
     this.initColNum();
+
     document.getElementById('custom-design').onclick = (e) => {
       this.curDesign = "";
     };
-    // window.onclick = () => {
-    //   this.curDesign = "";
-    // };
     if (!process?.env?.NODE_ENV === "development") {
       // 开发模式不监听窗口变化
       if (this.isDataview) {
         window.addEventListener('resize', () => {
           this.resize();
         })
-        // window.onresize = () => {
-        //   this.resize();
-        // };
-        setTimeout(() => {
-          this.resize();
-        }, 500);
       }
     }
+
     setTimeout(() => {
       if (this.needLogin) {
         // location.href = '/main/login.html'
@@ -264,6 +258,8 @@ export default {
     initColNum() {
       let containerWidth = document.getElementById("custom-design").offsetWidth;
       this.colNum = containerWidth;
+
+
     },
     stylefn(style) {
       if (style) {
@@ -274,7 +270,6 @@ export default {
     // 跳转到预览页面
     toPreview() {
       window.open(window.location.hash.replace("/editor/", "/view/"));
-      // window.open(window.location.hash.replace("#", "#/preview"));
     },
     clickSave() {
       if (this.layout.length === 0) {
@@ -304,7 +299,6 @@ export default {
       })
       // 新增保存
       if (!this.pgNo) {
-        // 新增页面及其布局
 
         // 布局容器
         addObj = {
@@ -796,6 +790,12 @@ export default {
       this.designLeft = domContainer.offsetLeft + 250;
       this.designTop = domContainer.offsetTop + 70;
       // this.containerWidth = document.getElementById("content").offsetWidth;
+      this.$nextTick(() => {
+        // this.resize();
+      })
+      setTimeout(() => {
+        this.resize();
+      }, 1000);
     },
     //鼠标移动
     moveMousemove() {

@@ -28,7 +28,7 @@ const widgetJson = computed(() => {
 //文本
 const textWidgetJson = computed(() => {
   if (widgetJson.value?.col_text_pub_style_json) {
-    return formatStyleData(widgetJson.col_text_pub_style_json);
+    return formatStyleData(widgetJson.value.col_text_pub_style_json);
   }
 });
 
@@ -40,7 +40,7 @@ const buttonWidgetJson = computed(() => {
 });
 
 const navTo = ()=>{
-  
+
 }
 
 // 时间日期

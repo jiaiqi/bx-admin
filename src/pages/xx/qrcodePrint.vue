@@ -25,11 +25,12 @@
       </div>
     </el-checkbox-group>
     <div class="list-box">
-      <div class="list-item" v-for="(item, index) in printList"
-        :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index">
-        <img :src="getImagePath(item.picture)" alt="" class="bg">
-        <img :src="getQrcode(item)" alt="" class="qrcode">
-        <div class="note">{{ item.note || '' }}</div>
+      <div class="list-item-box" v-for="(item, index) in printList">
+        <div class="list-item" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index">
+          <img :src="getImagePath(item.picture)" alt="" class="bg">
+          <img :src="getQrcode(item)" alt="" class="qrcode">
+          <div class="note">{{ item.note || '' }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -158,20 +159,42 @@ export default {
 }
 
 .list-box {
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   padding: 0;
+  width: 100vh;
+  height: 100vw;
+
+  .list-item-box {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    width: calc(100vw / 6) !important;
+    height: 50vh !important;
+  }
+
+  // transform: rotate(90deg);
+  // overflow: auto;
 
   .list-item {
     padding: 0;
     margin: 0;
     border: none;
-    height: 105mm;
-    width: 49.5mm;
+    // height: 105mm;
+    // width: 49.5mm;
     position: relative;
     justify-content: center;
-    align-tracks: center;
+    align-items: center;
+    width: calc(100vw / 6) !important;
+    height: 50vh !important;
+    // width: calc(100vh / 6)!important;
+    // height: 50vw!important;
+    // height: 105mm;
+    // width: 49.5mm;
+    // transform: rotate(90deg);
 
+    // height: calc(100vw / 6)!important;
+    // width: 50vh!important;
     .bg {
       position: absolute;
       width: 100%;
@@ -203,20 +226,17 @@ export default {
 @media print {
   @page {
     margin: 0; // 可以控制打印布局（四周边距）
+    padding: 0;
+    // width: 297mm;
+    // height: 210mm;
   }
 
   .list-box {
     display: flex;
+    // transform: rotate(90deg);
   }
 
-  .el-checkbox-group,
-  .list-item {
-    padding: 0;
-    margin: 0;
-    // display: none;
-    height: 105mm;
-    width: 49.5mm;
-  }
+
 
   .on-print {
     display: inline-block;
