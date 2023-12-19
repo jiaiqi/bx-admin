@@ -150,7 +150,7 @@
                       </el-form-item>
                     </el-col>
                     <el-col :span="24" v-if="opinion==null?true:(opinion.biz_form!==false)">
-                      <el-form-item label="附件" prop="remark">
+                      <el-form-item label="附件" prop="remark" v-if="step_item._record_data&&step_item._record_data.length">
                         <a v-for="(file, index) in step_item._record_data
                             ._fileList" :key="index + '_file'" :href="serviceApi().downloadFile + file.fileurl">
                           {{ file.src_name }}</a>
