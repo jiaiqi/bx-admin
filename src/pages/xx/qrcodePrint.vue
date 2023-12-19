@@ -25,12 +25,11 @@
       </div>
     </el-checkbox-group>
     <div class="list-box">
-      <div class="list-item-box" v-for="(item, index) in printList">
-        <div class="list-item" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index">
-          <img :src="getImagePath(item.picture)" alt="" class="bg">
-          <img :src="getQrcode(item)" alt="" class="qrcode">
-          <div class="note">{{ item.note || '' }}</div>
-        </div>
+      <div class="list-item" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index"
+        v-for="(item, index) in printList">
+        <img :src="getImagePath(item.picture)" alt="" class="bg">
+        <img :src="getQrcode(item)" alt="" class="qrcode">
+        <div class="note">{{ item.note || '' }}</div>
       </div>
     </div>
   </div>
@@ -162,19 +161,17 @@ export default {
   display: flex;
   flex-wrap: wrap;
   padding: 0;
-  width: 100vh;
-  height: 100vw;
-
-  .list-item-box {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0;
-    width: calc(100vw / 6) !important;
-    height: 50vh !important;
-  }
-
+  // width: 100vh;
+  // height: 100vw;
   // transform: rotate(90deg);
   // overflow: auto;
+  // display: grid;
+  // /*  声明列的宽度  */
+  // grid-template-columns: repeat(4);
+  // /*  声明行间距和列间距  */
+  // grid-gap: 1mm;
+  // /*  声明行的高度  */
+  // grid-template-rows: repeat(3);
 
   .list-item {
     padding: 0;
@@ -185,8 +182,21 @@ export default {
     position: relative;
     justify-content: center;
     align-items: center;
-    width: calc(100vw / 6) !important;
-    height: 50vh !important;
+
+    // width: calc(100vw / 6) !important;
+    // height: 50vh !important;
+    width: calc((100vw /4) - 3mm/4) !important;
+    height: calc((100vh / 3)  - 2mm/3) !important;
+    margin-right: 1mm;
+    margin-bottom: 1mm;
+    &:nth-child(4n){
+      margin-right: 0;
+    }
+    &:nth-child(9),&:nth-child(10),&:nth-child(11),&:nth-child(12){
+      margin-bottom: 0;
+    }
+    //   height: 105mm;
+    // width: 49.5mm;
     // width: calc(100vh / 6)!important;
     // height: 50vw!important;
     // height: 105mm;
