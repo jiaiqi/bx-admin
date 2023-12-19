@@ -1,24 +1,24 @@
 <template>
   <div class="list-wrap print-layout">
     <div class="header">
-      <div style="font-weight: bold;">荣誉标签列表</div>
-      <el-button size="mini" @click="toPrint" v-if="printList.length">打印</el-button>
+      <div style="font-weight: bold">荣誉标签列表</div>
+      <el-button size="mini" @click="toPrint" v-if="_printList.length">打印</el-button>
     </div>
     <el-checkbox-group v-model="checkList" class="checkbox-group">
       <div class="list-item" v-for="item in list" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }"
         :key="item.id">
         <div class="img" :style="setBg(item)">
-          <img :src="getQrcode(item)" alt="" class="qrcode">
+          <img :src="getQrcode(item)" alt="" class="qrcode" />
           <div class="note">
-            {{ item.note || '' }}
+            {{ item.note || "" }}
           </div>
         </div>
-        <div style="text-align: center;margin-top: 12px;margin-bottom: 0" class="check-box">
-          <el-checkbox :label="item.index_no">{{ item.index_name }}</el-checkbox>
-          <div style="margin-top: 10px;" v-if="checkList && checkList.includes(item.index_no)">
-            <span style="font-size: 12px;">
-              打印数量：
-            </span>
+        <div style="text-align: center; margin-top: 12px; margin-bottom: 0" class="check-box">
+          <el-checkbox :label="item.index_no">{{
+            item.index_name
+          }}</el-checkbox>
+          <div style="margin-top: 10px" v-if="checkList && checkList.includes(item.index_no)">
+            <span style="font-size: 12px"> 打印数量： </span>
             <el-input-number size="mini" v-model="checkListNumber[item.index_no]"></el-input-number>
           </div>
         </div>
@@ -27,9 +27,9 @@
     <div class="list-box">
       <div class="list-item" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index"
         v-for="(item, index) in printList">
-        <img :src="getImagePath(item.picture)" alt="" class="bg">
-        <img :src="getQrcode(item)" alt="" class="qrcode">
-        <div class="note">{{ item.note || '' }}</div>
+        <img :src="getImagePath(item.picture)" alt="" class="bg" />
+        <img :src="item.qrcodeUrl" alt="" class="qrcode" />
+        <div class="note">{{ item.note || "" }}</div>
       </div>
     </div>
   </div>
@@ -41,36 +41,91 @@ export default {
     return {
       list: [],
       checkList: [],
-      checkListNumber: {}
-    }
+      printList: [],
+      checkListNumber: {},
+    };
   },
   computed: {
-    printList() {
-      return this.list.filter(item => this.checkList?.includes(item.index_no)).reduce((pre, cur) => {
-        if (this.checkListNumber[cur.index_no]) {
-          for (let index = 0; index < this.checkListNumber[cur.index_no]; index++) {
-            pre.push({
-              index_no: cur.index_no,
-              index_name: cur.index_name,
-              picture: cur.picture,
-              note: cur.note
-            })
+    _printList() {
+      return this.list
+        .filter((item) => this.checkList?.includes(item.index_no))
+        .reduce((pre, cur) => {
+          if (this.checkListNumber[cur.index_no]) {
+            for (
+              let index = 0;
+              index < this.checkListNumber[cur.index_no];
+              index++
+            ) {
+              pre.push({
+                index_no: cur.index_no,
+                index_name: cur.index_name,
+                picture: cur.picture,
+                note: cur.note,
+                school_no: cur.school_no,
+              });
+            }
           }
-        }
-        return pre
-      }, [])
-    }
+          return pre;
+        }, []);
+    },
   },
   methods: {
-    toPrint() {
-      window.print()
+    async toPrint() {
+      const list = await this.addchild()
+      if (Array.isArray(list) && list.length) {
+        this.printList = list.map(item => {
+          const data = this.list.find(e => e.index_no === item.index_no)
+          const str = encodeURIComponent(`a:${item.index_no};b:${item.index_no_child};c:${item.school_no};`)
+          // str.split(';').reduce((pre, cur) => {
+          //   let arr = cur.split(':')
+          //   pre[arr[0]] = arr[1]
+          //   return pre
+          // }, {})
+          return {
+            // index_no: item.index_no,
+            // index_no_child: item.index_no_child,
+            index_name: data?.index_name,
+            picture: data?.picture,
+            note: data?.note,
+            // school_no: item.school_no,
+            qrcodeUrl: `${this.serviceApi().qrcode}?content=${str}&width=140`
+          }
+        })
+      }
+      setTimeout(() => {
+        window.print();
+      }, 1000);
     },
     getQrcode(item) {
-      return `${this.serviceApi().qrcode
-        }?content=${encodeURIComponent(item.index_no)}&width=140`
+      return `${this.serviceApi().qrcode}?content=${encodeURIComponent(
+        JSON.stringify({
+          a: item.index_no,
+          b: item.index_no_child
+        })
+      )}&width=140`;
     },
     setBg(item) {
       return "background-image: url(" + this.getImagePath(item.picture) + ")";
+    },
+    async addchild() {
+      const url = `${window.backendIpAddr}/ledu/add/srvledu_evaluate_index_child_label_add`;
+      const req = [
+        {
+          serviceName: "srvledu_evaluate_index_child_label_add",
+          condition: [],
+          data: this._printList.map(item => {
+            return {
+              school_no: item.school_no,
+              index_no: item.index_no,
+            }
+          })
+
+        },
+      ];
+      const res = await this.$http.post(url, req)
+      if (res?.data?.state === 'SUCCESS') {
+        return res.data?.response?.[0]?.response.effect_data
+      }
     },
     getList() {
       const url = `${window.backendIpAddr}/ledu/select/srvledu_evaluate_index_label_select`;
@@ -82,16 +137,16 @@ export default {
         use_type: "list",
         query_source: "list_page",
       };
-      this.$http.post(url, req).then(res => {
-        if (res?.data?.state === 'SUCCESS') {
-          this.list = res.data.data
+      this.$http.post(url, req).then((res) => {
+        if (res?.data?.state === "SUCCESS") {
+          this.list = res.data.data;
           if (res.data.data.length) {
-            res.data.data.forEach(item => {
-              this.$set(this.checkListNumber, item.index_no, 1)
+            res.data.data.forEach((item) => {
+              this.$set(this.checkListNumber, item.index_no, 1);
             });
           }
         }
-      })
+      });
     },
   },
   created() {
@@ -141,9 +196,6 @@ export default {
     z-index: 2;
     display: inline-block;
     margin-top: 10px;
-    // position: absolute;
-    // top: calc(50%);
-    // left: 0;
     width: 100%;
     text-align: center;
     height: 20px;
@@ -154,24 +206,12 @@ export default {
     width: 140px;
     height: 140px;
   }
-
 }
 
 .list-box {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   padding: 0;
-  // width: 100vh;
-  // height: 100vw;
-  // transform: rotate(90deg);
-  // overflow: auto;
-  // display: grid;
-  // /*  声明列的宽度  */
-  // grid-template-columns: repeat(4);
-  // /*  声明行间距和列间距  */
-  // grid-gap: 1mm;
-  // /*  声明行的高度  */
-  // grid-template-rows: repeat(3);
 
   .list-item {
     padding: 0;
@@ -182,29 +222,22 @@ export default {
     position: relative;
     justify-content: center;
     align-items: center;
-
-    // width: calc(100vw / 6) !important;
-    // height: 50vh !important;
-    width: calc((100vw /4) - 3mm/4) !important;
-    height: calc((100vh / 3)  - 2mm/3) !important;
+    width: calc((100vw / 4) - 3mm / 4) !important;
+    height: calc((100vh / 3) - 2mm / 3) !important;
     margin-right: 1mm;
     margin-bottom: 1mm;
-    &:nth-child(4n){
+
+    &:nth-child(4n) {
       margin-right: 0;
     }
-    &:nth-child(9),&:nth-child(10),&:nth-child(11),&:nth-child(12){
+
+    &:nth-child(9),
+    &:nth-child(10),
+    &:nth-child(11),
+    &:nth-child(12) {
       margin-bottom: 0;
     }
-    //   height: 105mm;
-    // width: 49.5mm;
-    // width: calc(100vh / 6)!important;
-    // height: 50vw!important;
-    // height: 105mm;
-    // width: 49.5mm;
-    // transform: rotate(90deg);
 
-    // height: calc(100vw / 6)!important;
-    // width: 50vh!important;
     .bg {
       position: absolute;
       width: 100%;
@@ -245,8 +278,6 @@ export default {
     display: flex;
     // transform: rotate(90deg);
   }
-
-
 
   .on-print {
     display: inline-block;
