@@ -253,6 +253,7 @@ export default {
     },
     
     computed: {
+        
         toolsBuild(){
             let tools = this.bxDeepClone(this.tools)
             let mindConfig = this.mindConfig ? this.mindConfig : null
