@@ -1,6 +1,6 @@
 import * as echarts from "echarts";
 import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
-import "echarts-gl"; //echarts-gl@1.1.2
+// import "echarts-gl"; //echarts-gl@1.1.2
 
 let __colors = [
   "#007AFF",
