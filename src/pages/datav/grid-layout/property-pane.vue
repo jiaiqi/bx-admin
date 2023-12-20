@@ -13,15 +13,20 @@
       </el-tab-pane>
       <el-tab-pane label="组件" name="组件" v-if="componentId || (!componentId && pageId && currentItem)"
         v-loading="componentLoading">
-        <simple-update name="list-update" :service="componentService" :navAfterSubmit="false" :pk="componentId" pkCol="id"
-          @action-complete="onComponentUpdate" @form-loaded="componentLoading = false" v-if="componentId">
+        <simple-update ref="compFormUpdate" name="list-update" :service="componentService" :navAfterSubmit="false"
+          :pk="componentId" pkCol="id" @action-complete="onComponentUpdate"
+          @form-loaded="componentLoading = false, componentLoaded = true" v-if="componentId">
         </simple-update>
-        <simple-add ref="duplicate-form" :pageName="'list-duplicate'" :service="componentService"
+        <simple-add ref="compForm" :pageName="'list-duplicate'" :service="componentService"
           :defaultValues="addCompDefaultValues" @executor-complete="onComponentUpdate($event, 'add')"
           @form-loaded="componentLoading = false" :navAfterSubmit="false" @submitted2mem="" v-else-if="showAddComponent">
         </simple-add>
       </el-tab-pane>
-
+      <el-tab-pane label="组件配置" name="组件配置" v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk">
+        <simple-update name="list-update" :service="compServiceCfg.service" :navAfterSubmit="false"
+          :pk="compServiceCfg.pk" :pkCol="compServiceCfg.pkCol" @action-complete="onComponentUpdate">
+        </simple-update>
+      </el-tab-pane>
       <el-tab-pane label="布局" name="布局">
         <div style="padding: 20px;">
           <el-switch v-model="screentype" active-text="移动端" inactive-text="PC端" active-value="mobile" inactive-value="PC">
@@ -81,12 +86,71 @@ export default {
     },
   },
   computed: {
+    compFormModel() {
+      return this.$refs?.compFormUpdate?.formModel
+    },
+    compServiceCfg() {
+      if (this.componentLoaded) {
+        const obj = {
+          service: '',
+          col: "",
+          pkCol: '',
+          pk: ''
+        }
+        switch (this.compType) {
+          case 'chart':
+            obj.service = 'srvpage_cfg_com_chart_update'
+            obj.pkCol = 'chart_no'
+            break;
+          case 'swiper':
+            obj.service = 'srvpage_cfg_figure_swiper_update'
+            obj.pkCol = 'swiper_no'
+            break;
+          case 'list'://列表
+            obj.service = 'srvpage_cfg_com_list_update'
+            obj.pkCol = 'list_no'
+            break;
+          case 'grid': //宫格
+            obj.service = 'srvpage_cfg_com_grid_update'
+            obj.pkCol = 'grid_no'
+            break
+          case 'cardGroup': //卡片组
+            obj.service = 'srvpage_cfg_card_group_update'
+            obj.col = 'card_group_no'
+            obj.pkCol = 'cardg_no'
+            break
+          case 'map': //地图
+            obj.service = 'srvpage_cfg_com_map_update'
+            obj.pkCol = 'map_no'
+            break
+          case 'tabs': //
+            obj.service = 'srvpage_cfg_com_tabs_update'
+            obj.pkCol = 'tabs_no'
+            break
+          case '控件': //
+            obj.service = 'srvpage_cfg_meta_col_widget_update'
+            obj.pkCol = 'widget_no'
+            break
+          default:
+            break;
+        }
+        obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol]
+        return obj
+      }
+
+    },
     screentype: {
       get() {
         return this.screeType
       },
       set(val) {
         this.$emit('screentype', val)
+      }
+    },
+    // 组件类型
+    compType: {
+      get() {
+        return this.currentItem?.data?.com_type
       }
     },
     showAddComponent() {
@@ -149,6 +213,7 @@ export default {
       componentLoading: false,
       layoutLoading: false,
       activeTab: "页面",
+      componentLoaded: false,
     };
   },
   methods: {

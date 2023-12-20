@@ -61,11 +61,11 @@
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
-            <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
+            <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
               @click.stop.prevent.capture="changeDesign(item.i)">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
-            </div> -->
-            <div class="com-item dashed" v-if="isDataview">
+            </div>
+            <div class="com-item dashed" v-else-if="isDataview">
               <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
                 :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
             </div>
