@@ -23,9 +23,13 @@
       </el-tab-pane>
 
       <el-tab-pane label="布局" name="布局">
+        <div style="padding: 20px;">
+          <el-switch v-model="screentype" active-text="移动端" inactive-text="PC端" active-value="mobile" inactive-value="PC">
+          </el-switch>
+        </div>
         <div style="
             padding: 20px;
-            height: 100%;
+            height: calc(100% - 80px);
             display: flex;
             justify-content: center;
             align-items: flex-end;
@@ -56,6 +60,7 @@ export default {
     },
     layout: Array,
     appNo: String,
+    screeType: String
   },
   watch: {
     componentId(newValue, oldValue) {
@@ -68,14 +73,22 @@ export default {
         this.componentLoading = true;
         this.layoutLoading = true;
         setTimeout(() => {
-        this.componentLoading = false;
-        this.layoutLoading = false;
-          
+          this.componentLoading = false;
+          this.layoutLoading = false;
+
         }, 3000);
       }
     },
   },
   computed: {
+    screentype: {
+      get() {
+        return this.screeType
+      },
+      set(val) {
+        this.$emit('screentype', val)
+      }
+    },
     showAddComponent() {
       return (
         this.currentItem?.data && this.currentItem.i && !this.componentId && this.pageId
@@ -143,7 +156,7 @@ export default {
       if (componentData?.id) {
         // 组件创建成功后创建对应布局
         const item = this.currentItem;
-        let  layout_name = componentData.com_name||componentData.com_label||"组件";
+        let layout_name = componentData.com_name || componentData.com_label || "组件";
         layout_name += `_${item?.data?.com_type_name}_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`
         const addObj = {
           serviceName: "srvpage_cfg_layout_add",

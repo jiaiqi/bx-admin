@@ -1,76 +1,23 @@
 <template>
-  <div
-    class="page-item"
-    v-if="pageItem && pageItem.com_type"
-    :style="stylefn(pageItem.style_json)"
-  >
-    <video-card
-      v-if="pageItem.com_type === 'videoCard'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></video-card>
-    <current-info
-      v-if="pageItem.com_type === 'currentInfo'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></current-info>
-    <slide-list
-      v-if="pageItem.com_type === 'swiper'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></slide-list>
-    <user-list
-      v-if="pageItem.com_type === 'userList'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></user-list>
-    <notice-bar
-      v-if="pageItem.com_type === 'noticeBar'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></notice-bar>
-    <map-card
-      v-if="pageItem.com_type === 'map'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></map-card>
-    <!-- <basic-chart
-      v-if="pageItem.com_type === 'chart'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-      :index="layout.i"
-    ></basic-chart> -->
-    <page-item-chart
-      v-if="pageItem.com_type === 'chart'"
-      :ref="pageItem.com_type"
-      :pageParamsModel="pageParamsModel"
-      :pageItem="pageItem"
-      :index="layout.i"
-      :layout="layout"
-    ></page-item-chart>
-    <List
-      v-if="pageItem.com_type === 'list'"
-      :pageParamsModel="pageParamsModel"
-      @setPageParams="setPageParams"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></List>
+  <div class="page-item" v-if="pageItem && pageItem.com_type" :style="stylefn(pageItem.style_json)">
+    <video-card v-if="pageItem.com_type === 'videoCard'" :ref="pageItem.com_type" :pageItem="pageItem"></video-card>
+    <current-info v-if="pageItem.com_type === 'currentInfo'" :ref="pageItem.com_type" :pageItem="pageItem"></current-info>
+    <slide-list v-if="pageItem.com_type === 'swiper'" :ref="pageItem.com_type" :pageItem="pageItem"></slide-list>
+    <user-list v-if="pageItem.com_type === 'userList'" :ref="pageItem.com_type" :pageItem="pageItem"></user-list>
+    <notice-bar v-if="pageItem.com_type === 'noticeBar'" :ref="pageItem.com_type" :pageItem="pageItem"></notice-bar>
+    <map-card v-if="pageItem.com_type === 'map'" :ref="pageItem.com_type" :pageItem="pageItem"></map-card>
+    <page-item-chart v-if="pageItem.com_type === 'chart'" :ref="pageItem.com_type" :pageParamsModel="pageParamsModel"
+      :pageItem="pageItem" :index="layout.i" :layout="layout"></page-item-chart>
+    <List v-if="pageItem.com_type === 'list'" :pageParamsModel="pageParamsModel" @setPageParams="setPageParams"
+      :ref="pageItem.com_type" :pageItem="pageItem"></List>
     <!-- <mix-list
       v-if="pageItem.com_type === 'list'"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
     ></mix-list> -->
-    <page-widget
-      v-if="pageItem.com_type === '控件'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-      @resize="$emit('resize')"
-    ></page-widget>
-    <card-group
-      v-if="pageItem.com_type === 'cardGroup'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
-    ></card-group>
+    <page-widget v-if="pageItem.com_type === '控件'" :ref="pageItem.com_type" :pageItem="pageItem"
+      @resize="$emit('resize')"></page-widget>
+    <card-group v-if="pageItem.com_type === 'cardGroup'" :ref="pageItem.com_type" :pageItem="pageItem"></card-group>
   </div>
 </template>
 
@@ -93,7 +40,7 @@ import cardGroup from "./card-group/card-group.vue";
 import pageItemParams from '../../common/params/page-item-params-mixin.js'
 
 export default {
-  mixins:[pageItemParams],
+  mixins: [pageItemParams],
   components: {
     videoCard,
     currentInfo,

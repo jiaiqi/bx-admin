@@ -1,14 +1,14 @@
 <template>
   <Chart ref="chartRef" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.1)" class="uni-ec-canvas"
-    :page-item="pageItem" :options="option" :canvasId="canvasId" :chartType="chartType"
-    v-if="option" @click-chart="clickChart"></Chart>
+    :page-item="pageItem" :options="option" :canvasId="canvasId" :chartType="chartType" v-if="option"
+    @click-chart="clickChart"></Chart>
 </template>
 
 <script setup>
 import { computed, watch, onMounted, ref } from "vue";
 import Chart from "./chart.vue";
 import { $select } from "../../../common/http.js";
-import { useBuildOption } from "../use-functions/buildOption";
+import { useBuildOption, setDefaultChartOption } from "../use-functions/buildOption";
 const props = defineProps({
   pageItem: Object,
   pageParamsModel: Object,
@@ -119,6 +119,8 @@ onMounted(() => {
     // 使用模拟数据
     cellData.value = pageItem.mock_srv_data_json;
     option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
+  } else if (!pageItem?.srv_req_type&&!cellData.value?.length) {
+    option.value = setDefaultChartOption(chartType.value, pageItem, [], props.layout);
   } else {
     let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
     const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson

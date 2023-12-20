@@ -11,8 +11,9 @@
     </div>
     <div class="cushome-right" v-if="!isDataview">
       <div class="left-line" id="left-line"></div>
-      <property-pane :pageConfg="pageConfg" :appNo="appNo" :currentItem="currentItem" :layout="layout" @save="clickSave"
-        @preview="toPreview" @refresh="initPage" v-if="showPane"></property-pane>
+      <property-pane :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType" :currentItem="currentItem"
+        :layout="layout" @save="clickSave" @preview="toPreview" @refresh="initPage" @screentype="screenType = $event"
+        v-if="showPane"></property-pane>
       <template v-else>
         <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
         <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
@@ -22,7 +23,8 @@
       </template>
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
-      <div class="custom-design" id="custom-design" :style="[stylefn(styleJson)]">
+  
+      <div class="custom-design" id="custom-design" :style="[stylefn(styleJson)]" v-if="screenType === 'PC'">
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum"
           :breakpoints="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
           :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }" :row-height="1" :preventCollision="true"
@@ -47,6 +49,36 @@
             </div>
           </grid-item>
         </grid-layout>
+      </div>
+      <div class="custom-design" id="custom-design" v-else-if="screenType === 'mobile'"
+        style="width: 375px;height: 667px;margin-top: 5vh;overflow-y:auto;overflow-x: hidden;">
+        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum"
+          :breakpoints="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
+          :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }" :row-height="1" :preventCollision="true"
+          :responsive="true" :is-draggable="!isDataview" :is-resizable="!isDataview" :is-mirrored="false"
+          :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
+          <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
+          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+            @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
+            <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
+            <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
+              @click.stop.prevent.capture="changeDesign(item.i)">
+              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
+            </div> -->
+            <div class="com-item dashed" v-if="isDataview">
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+                :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
+            </div>
+            <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
+              @click.stop.prevent.capture="changeDesign(item.i)">
+              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+                :page-item="item.data" :layout="item"></page-item>
+            </div>
+          </grid-item>
+        </grid-layout>
+      </div>
+      <div v-if="screenType === 'mobile'&&pgNo" style="text-align: center;margin-top: 50px;">
+        <el-button @click="previewMobile">预览</el-button>
       </div>
     </div>
 
@@ -84,6 +116,7 @@ export default {
   },
   data() {
     return {
+      screenType: "PC",
       rightWidth: 340,
       isDown: false,
       contentData: {},
@@ -96,7 +129,7 @@ export default {
       appNo: "",//应用编号
       pageName: "可视化配置",
       pageTitle: "可视化配置页",
-      styleJson: null,
+      // styleJson: null,
       parentLayoutNo: "",
       layoutObj: null,
       strLayout: "",
@@ -137,6 +170,9 @@ export default {
     }
   },
   mounted() {
+    if (this.$route.query.screenType) {
+      this.screenType = this.$route.query.screenType
+    }
     document.addEventListener(
       "dragover",
       function (e) {
@@ -171,6 +207,20 @@ export default {
     }, 3000);
   },
   computed: {
+    styleJson() {
+      let json = this.pageConfg?.page_row_json_data?.page_style_json
+      if (!json) {
+        json = {
+          width: this.screenType == 'PC' ? '1920px' : '375px',
+          height: this.screenType == 'PC' ? '1080px' : '667px',
+        }
+      }
+      if (this.isDataview && (json?.width || json?.height)) {
+        delete json.width
+        delete json.height
+      }
+      return json
+    },
     showPane() {
       return true
       return process?.env?.NODE_ENV === "development";
@@ -215,6 +265,9 @@ export default {
     },
   },
   methods: {
+    previewMobile(){
+      window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`)
+    },
     resize() {
       // 自适应缩放
       if (!this.isDataview) {
@@ -258,8 +311,6 @@ export default {
     initColNum() {
       let containerWidth = document.getElementById("custom-design").offsetWidth;
       this.colNum = containerWidth;
-
-
     },
     stylefn(style) {
       if (style) {
@@ -582,16 +633,23 @@ export default {
         this.pageName = page_row_json_data.page_name;
         this.pageTitle = page_row_json_data.page_title;
         this.comJson = page_row_json_data.component_json || [];
-        this.styleJson = page_row_json_data.page_style_json;
-        this.contentData = {
-          width: this.styleJson.width,
-          height: this.styleJson.height,
-        }
-        if (this.isDataview) {
-          delete this.styleJson.width;
-          delete this.styleJson.height;
-        }
         this.pageConfg = data;
+
+        // this.styleJson = page_row_json_data.page_style_json;
+        // if (!this.styleJson) {
+        //   this.styleJson = {
+        //     width: this.screenType == 'PC' ? '1920px' : '375px',
+        //     height: this.screenType == 'PC' ? '1080px' : '667px',
+        //   }
+        // }
+        this.contentData = {
+          width: this.styleJson?.width,
+          height: this.styleJson?.height,
+        }
+        // if (this.isDataview) {
+        //   delete this.styleJson.width;
+        //   delete this.styleJson.height;
+        // }
         if (!this.comJson) return;
         this.comJson.forEach((com, i) => {
           this.comList.forEach((list) => {

@@ -708,7 +708,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       //     alpha: 50, // 上下旋转的角度
       //     beta: 0, // 左右旋转的角度
       //   },
-     
+
       // }
       ecOptions.tooltip = {
         trigger: "item",
@@ -854,6 +854,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
     };
   }
 };
+
 /**
  * 生成图表默认配置
  * @param {*} chartType 图表类型
@@ -874,6 +875,9 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
     },
     series: [],
   };
+  const datas = [0,1,2,3,4,5].map(item=>{
+    return Math.random()*100
+  })
   switch (chartType) {
     case "line":
     case "bar":
@@ -881,7 +885,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         {
           name: "销量",
           type: chartType || "bar",
-          data: [5, 20, 36, 10, 10, 20],
+          data: datas,
         },
       ];
       option.xAxis = {
