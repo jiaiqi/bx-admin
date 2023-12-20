@@ -75,7 +75,7 @@ export default {
       if (Array.isArray(list) && list.length) {
         this.printList = list.map(item => {
           const data = this.list.find(e => e.index_no === item.index_no)
-          const str = encodeURIComponent(`a:${item.index_no};b:${item.index_no_child};c:${item.school_no};`)
+          const str = encodeURIComponent(`a:${item.index_no};b:${item.index_no_child};c:${item.school_no};d:${data.index_name};`)
           // str.split(';').reduce((pre, cur) => {
           //   let arr = cur.split(':')
           //   pre[arr[0]] = arr[1]
