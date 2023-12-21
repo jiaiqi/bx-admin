@@ -237,15 +237,17 @@
                     <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;min-height:60px`" >
                         <el-col :span="24" :style="`padding:8px;`" >
                             <div style="padding:8px;text-align:left;display:flex;align-items:center;">
-                                <div style="color:#ff5500;font-size:3rem;">
+                                <!-- <div style="color:#ff5500;font-size:3rem;">
                                     {{allValue}}
-                                </div>
+                                </div> -->
                                 <div style="padding-left:10px;">
-                                    <div>
+                                    <!-- <div>
                                         评分
-                                    </div>
+                                    </div> -->
                                     <div >
                                         <el-rate
+                                        style="height:40px;font-size:30px;"
+                                        :max="5"
                                         v-model="allValuestr"
                                         disabled
                                         text-color="#ff9900">
@@ -991,6 +993,9 @@ var chartPie=null;
   }
   .parint-details{
     display:block;
+    .el-rate__icon{
+        font-size:40px;
+    }
   }
 
   </style>
