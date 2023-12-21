@@ -2,20 +2,21 @@
   <div class="customhome-container" :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)"
     @dragover="dragDefFn($event)">
     <div class="cushome-sidebar" v-if="!isDataview">
-      <!-- <component-pane @set-list="comList2 = $event"></component-pane>
+      <component-pane @set-list="comList2 = $event"></component-pane>
       <div class="component-list">
         <div v-for="item in comList2" :key="item.id" class="com-item margin component">
+          <!-- <img :src="getImagePath(item.example)" alt="" style="display: inline-block; width: 100%" /> -->
           <img src="" alt="" class="example" @drag="drag(item)" @dragend="dragend(item)" draggable="true"
             unselectable="on">
           <div class="label">{{ item.comp_label }}</div>
         </div>
-      </div> -->
-      <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
+      </div>
+      <!-- <div v-for="pageItem in comList" :key="pageItem.id" @drag="drag(pageItem)" @dragend="dragend(pageItem)"
         class="com-item margin component" draggable="true" unselectable="on">
         <img :src="getImagePath(pageItem.example)" alt="" style="display: inline-block; width: 100%" />
         <span>{{ pageItem.com_type_name }}</span>
         <span>{{ pageItem.com_type }}</span>
-      </div>
+      </div> -->
     </div>
     <div class="cushome-right" v-if="!isDataview">
       <div class="left-line" id="left-line"></div>
@@ -42,11 +43,11 @@
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
-            <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
+            <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
               @click.stop.prevent.capture="changeDesign(item.i)">
               <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
-            </div>
-            <div class="com-item dashed" v-else-if="isDataview">
+            </div> -->
+            <div class="com-item dashed" v-if="isDataview">
               <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
                 :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
             </div>
@@ -1321,7 +1322,7 @@ export default {
   user-select: none;
 
   .cushome-sidebar {
-    width: 240px;
+    width: 340px;
     position: fixed;
     top: 0;
     left: 0;
@@ -1329,44 +1330,44 @@ export default {
     background: #fff;
     overflow: auto;
     box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.08);
-    // display: flex;
+    display: flex;
 
-    // .component-list {
-    //   // display: flex;
-    //   // flex-direction: column;
-    //   // flex:1;
-    //   overflow-x: hidden;
-    //   overflow-y: auto;
+    .component-list {
+      // display: flex;
+      // flex-direction: column;
+      // flex:1;
+      overflow-x: hidden;
+      overflow-y: auto;
 
-    //   .com-item {
-    //     display: inline-flex;
-    //     flex-direction: column;
-    //     width: calc(100% - 10px);
-    //     // width: calc(50% - 20px);
-    //     margin: 5px;
-    //     height: 130px;
-    //     background-color: #f1f3f2;
-    //     border-radius: 8px;
-    //     border: none;
-    //     padding: 5px;
-    //     overflow: hidden;
-    //     cursor: unset;
-    //     .example {
-    //       flex: 1;
-    //       background-color: #ccc;
-    //       border-radius: 5px;
-    //       cursor: move;
-    //     }
+      .com-item {
+        display: inline-flex;
+        flex-direction: column;
+        width: calc(100% - 10px);
+        // width: calc(50% - 20px);
+        margin: 5px;
+        height: 130px;
+        background-color: #f1f3f2;
+        border-radius: 8px;
+        border: none;
+        padding: 5px;
+        overflow: hidden;
+        cursor: unset;
+        .example {
+          flex: 1;
+          background-color: #ccc;
+          border-radius: 5px;
+          cursor: move;
+        }
 
-    //     .label {
-    //       width: calc(100% - 0px);
-    //       overflow: hidden;
-    //       text-overflow: ellipsis;
-    //       white-space: nowrap;
-    //       margin-top: 5px;
-    //     }
-    //   }
-    // }
+        .label {
+          width: calc(100% - 0px);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          margin-top: 5px;
+        }
+      }
+    }
   }
 
   .cushome-right {
@@ -1416,7 +1417,7 @@ export default {
     top: 0;
     bottom: 0;
     right: var(--right-width);
-    left: 240px;
+    left: 340px;
     overflow: auto;
     padding: 40px;
     background: #f1f3f2;
