@@ -390,6 +390,18 @@ routes.push( {
         component:()=>import('@/pages/datav/grid-layout/index.vue')
       },
       {
+        //可视化编辑页面 新布局
+        path:'editor-next',
+        name:'gridEditor3',
+        component:()=>import('@/pages/datav/grid-layout/index2.vue')
+      },
+      {
+        //可视化编辑页面(update) 新布局
+        path:'editor-next/:no',
+        name:'gridEditor4',
+        component:()=>import('@/pages/datav/grid-layout/index2.vue')
+      },
+      {
         // 预览页面
         path:'view/:no',
         name:'gridview',
