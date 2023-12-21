@@ -372,6 +372,18 @@ routes.push( {
     path:'/grid-editor',
     component:()=>import('@/pages/datav/grid-layout/index.vue')
   }, 
+  {
+    //可视化编辑页面 新布局
+    path:'/editornext',
+    name:'gridEditor3',
+    component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+  },
+  {
+    //可视化编辑页面(update) 新布局
+    path:'/editornext/:no',
+    name:'gridEditor4',
+    component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+  },
   // 网格布局
   {
     path:'/gridview',
@@ -388,18 +400,6 @@ routes.push( {
         path:'editor/:no',
         name:'gridEditor2',
         component:()=>import('@/pages/datav/grid-layout/index.vue')
-      },
-      {
-        //可视化编辑页面 新布局
-        path:'editor-next',
-        name:'gridEditor3',
-        component:()=>import('@/pages/datav/grid-layout/index2.vue')
-      },
-      {
-        //可视化编辑页面(update) 新布局
-        path:'editor-next/:no',
-        name:'gridEditor4',
-        component:()=>import('@/pages/datav/grid-layout/index2.vue')
       },
       {
         // 预览页面
