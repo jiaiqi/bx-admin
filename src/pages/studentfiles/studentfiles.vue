@@ -247,7 +247,7 @@
                                     <div >
                                         <el-rate
                                         style="height:40px;font-size:30px;"
-                                        :max="10"
+                                        :max="5"
                                         v-model="allValuestr"
                                         disabled
                                         text-color="#ff9900">
