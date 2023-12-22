@@ -2,9 +2,10 @@
   <div class="customhome-container" :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)"
     @dragover="dragDefFn($event)">
     <div class="cushome-sidebar" v-if="!isDataview">
-      <component-pane @set-list="comList = $event"></component-pane>
+      <component-pane @set-list="comList2 = $event"></component-pane>
       <div class="component-list">
-        <div v-for="item in comList" :key="item.id" class="com-item margin component">
+        <div v-for="item in comList2" :key="item.id" class="com-item margin component">
+          <!-- <img :src="getImagePath(item.example)" alt="" style="display: inline-block; width: 100%" /> -->
           <img src="" alt="" class="example" @drag="drag(item)" @dragend="dragend(item)" draggable="true"
             unselectable="on">
           <div class="label">{{ item.comp_label }}</div>
@@ -13,9 +14,9 @@
     </div>
     <div class="cushome-right" v-if="!isDataview">
       <div class="left-line" id="left-line"></div>
-      <property-pane :use-layout="useLayout" :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType"
-        :currentItem="currentItem" :layout="layout" @save="clickSave" @preview="toPreview" @refresh="initPage"
-        @screentype="screenType = $event" v-if="showPane"></property-pane>
+      <property-pane :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType" :currentItem="currentItem"
+        :layout="layout" @save="clickSave" @preview="toPreview" @refresh="initPage" @screentype="screenType = $event"
+        v-if="showPane"></property-pane>
       <template v-else>
         <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
         <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
@@ -25,12 +26,13 @@
       </template>
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
-      <div class="custom-design" id="custom-design" ref="customDesign" :style="[stylefn(styleJson)]"
-        v-if="screenType === 'PC'">
-        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
-          :preventCollision="true" :responsive="false" :is-draggable="!isDataview" :is-resizable="!isDataview"
-          :is-mirrored="false" :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent">
+
+      <div class="custom-design" id="custom-design" :style="[stylefn(styleJson)]" v-if="screenType === 'PC'">
+        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum"
+          :breakpoints="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
+          :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }" :row-height="1" :preventCollision="true"
+          :responsive="true" :is-draggable="!isDataview" :is-resizable="!isDataview" :is-mirrored="false"
+          :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
@@ -47,12 +49,13 @@
           </grid-item>
         </grid-layout>
       </div>
-      <div class="custom-design" id="custom-design" ref="customDesign" v-else-if="screenType === 'mobile'"
+      <div class="custom-design" id="custom-design" v-else-if="screenType === 'mobile'"
         style="width: 375px;height: 667px;margin-top: 5vh;overflow-y:auto;overflow-x: hidden;">
-        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
-          :preventCollision="true" :responsive="false" :is-draggable="!isDataview" :is-resizable="!isDataview"
-          :is-mirrored="false" :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent">
+        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum"
+          :breakpoints="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }"
+          :cols="{ lg: 1920, md: 1200, sm: 996, xs: 768, xxs: 480 }" :row-height="1" :preventCollision="true"
+          :responsive="true" :is-draggable="!isDataview" :is-resizable="!isDataview" :is-mirrored="false"
+          :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent">
           <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
@@ -121,8 +124,7 @@ export default {
       isFullScreen: false,
       pageConfg: {},
       containerWidth: 800,
-      colNum: 100,
-      rowHeight: 10.8,
+      colNum: 40,
       pgNo: "",
       pageId: "",
       appNo: "",//应用编号
@@ -135,6 +137,7 @@ export default {
       layoutJson: null,
       comJson: [],
       comList: [],
+      comList2:[],
       designData: { layoutCon: [], layoutData: [] }, //容器内容
       bjStyles: {}, //栅格样式
       curDesign: "", //点击容器组件样式
@@ -159,12 +162,12 @@ export default {
     };
   },
   created() {
+    this.getComList();
     if (this.$route.query.appNo) {
       this.appNo = this.$route.query.appNo;
     }
     if (this.$route.query.pageNo || this.$route.params?.no) {
       this.pgNo = this.$route.query.pageNo || this.$route.params?.no;
-      debugger
       this.initPage();
     }
   },
@@ -220,9 +223,6 @@ export default {
       }
       return json
     },
-    useLayout() {
-      return this.pageConfg?.page_options?.includes('布局容器') || false
-    },
     showPane() {
       return true
       return process?.env?.NODE_ENV === "development";
@@ -245,18 +245,13 @@ export default {
       );
     },
     initWH() {
-      const ele = this.$refs.customDesign
-      if (ele && ele instanceof HTMLElement) {
-        const eleHeight = ele.offsetHeight
-        const eleWidth = ele.offsetWidth
-        return {
-          w: 10,
-          h: parseFloat((5 * eleWidth / eleHeight).toFixed(6)),
-          // w: containerWidth / 4,
-          // h: containerWidth / 8,
-        };
-      }
-
+      let containerWidth = this.containerWidth || 800;
+      return {
+        w: 100,
+        h: 80,
+        // w: containerWidth / 4,
+        // h: containerWidth / 8,
+      };
     },
     currentItem() {
       return this.layout.find((item) => item.i === this.curDesign);
@@ -316,14 +311,8 @@ export default {
       resizeFull();
     },
     initColNum() {
-      const ele = this.$refs.customDesign
-      if (ele && ele instanceof HTMLElement) {
-        const eleHeight = ele.offsetHeight
-        this.rowHeight = parseFloat((eleHeight / 100).toFixed(6)) //行高设置为页面高度的1/100
-      }
       let containerWidth = document.getElementById("custom-design").offsetWidth;
-
-      // this.colNum = containerWidth;
+      this.colNum = containerWidth;
     },
     stylefn(style) {
       if (style) {
@@ -611,8 +600,6 @@ export default {
       if (data?.page_no) {
         this.pgNo = data.page_no
       }
-      debugger
-
       this.layout = []
       const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
@@ -666,59 +653,39 @@ export default {
         //   delete this.styleJson.height;
         // }
         if (!this.comJson) return;
-        // this.comJson.forEach((com, i) => {
-        //   this.comList.forEach((list) => {
-        //     if (list.com_type === com.com_type) {
-        //       this.comJson[i].example = list.example;
-        //     }
-        //   });
-        // });
-        if (this.useLayout) {
-          // 使用布局容器
-          this.parentLayoutNo = data.layout_no;
-          this.layoutJson = data.layout_json_data;
-          this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
-          this.layoutJson.parts_json = this.layoutJson.parts_json.sort(
-            (a, b) => a.seq - b.seq
-          );
-          this.layoutJson.parts_json.forEach((item, index) => {
-            // const data = this.comJson.find(e=>e.layout_seq===item.seq);
-            const data = this.comJson[index];
-            let obj = {
-              x: item.pos_x,
-              y: item.pos_y,
-              w: item.row_span,
-              h: item.col_span,
-              i: item.id || new Date().getTime(), // item.seq - 1
-              // i: index, // item.seq - 1
-              layout_no: item.layout_no,
-              data,
-              isLeftBarItem: false,
-              id: item.id,
-            };
-
-            this.layout.push(obj);
+        this.comJson.forEach((com, i) => {
+          this.comList.forEach((list) => {
+            if (list.com_type === com.com_type) {
+              this.comJson[i].example = list.example;
+            }
           });
-          this.strLayout = JSON.stringify(this.layout);
-        } else {
-          // 直接将坐标、宽高存在组件上
-          this.comJson.forEach((item, index) => {
-            const obj = {
-              x: item.layout_x,
-              y: item.layout_y,
-              w: item.layout_height,
-              h: item.layout_width,
-              i: item.id || new Date().getTime(), // item.seq - 1
-              // i: index, // item.seq - 1
-              // layout_no: item.layout_no,
-              data: { ...item },
-              isLeftBarItem: false,
-              id: item.id,
-            };
-            this.layout.push(obj)
-          })
-        }
+        });
+        this.parentLayoutNo = data.layout_no;
 
+        this.layoutJson = data.layout_json_data;
+        this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
+        this.layoutJson.parts_json = this.layoutJson.parts_json.sort(
+          (a, b) => a.seq - b.seq
+        );
+        this.layoutJson.parts_json.forEach((item, index) => {
+          // const data = this.comJson.find(e=>e.layout_seq===item.seq);
+          const data = this.comJson[index];
+          let obj = {
+            x: item.pos_x,
+            y: item.pos_y,
+            w: item.row_span,
+            h: item.col_span,
+            i: item.id || new Date().getTime(), // item.seq - 1
+            // i: index, // item.seq - 1
+            layout_no: item.layout_no,
+            data,
+            isLeftBarItem: false,
+            id: item.id,
+          };
+
+          this.layout.push(obj);
+        });
+        this.strLayout = JSON.stringify(this.layout);
         this.$set(this, 'loadPageMata', data)  // 保存页面元数据
         this.initPageParams()  // 页面参数初始化
       } else {
@@ -1021,6 +988,25 @@ export default {
       newItem.x = 0;
       newItem.y = edgeY + 1;
       layout.push(newItem);
+    },
+    async getComList() {
+      const url = `/config/select/srvpage_cfg_com_cus_type_select`;
+      const req = {
+        serviceName: "srvpage_cfg_com_cus_type_select",
+        colNames: ["*"],
+      };
+      const res = await $axios.post(url, req);
+      if (
+        res.data.state === "SUCCESS" &&
+        Array.isArray(res.data.data) &&
+        res.data.data.length > 0
+      ) {
+        this.comList = res.data.data;
+        this.comList.forEach((item, i) => {
+          item.timestamp = new Date().getTime() + i;
+          this.comList[i]["com_type"] = item.com_type_no;
+        });
+      }
     },
     removeItem: function (val) {
       const index = this.layout.map((item) => item.i).indexOf(val);
@@ -1356,7 +1342,6 @@ export default {
         padding: 5px;
         overflow: hidden;
         cursor: unset;
-
         .example {
           flex: 1;
           background-color: #ccc;

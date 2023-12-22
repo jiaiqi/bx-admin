@@ -27,7 +27,7 @@
           :pk="compServiceCfg.pk" :pkCol="compServiceCfg.pkCol" @action-complete="onComponentUpdate">
         </simple-update>
       </el-tab-pane>
-      <el-tab-pane label="布局" name="布局">
+      <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px;">
           <el-switch v-model="screentype" active-text="移动端" inactive-text="PC端" active-value="mobile" inactive-value="PC">
           </el-switch>
@@ -65,7 +65,8 @@ export default {
     },
     layout: Array,
     appNo: String,
-    screeType: String
+    screeType: String,
+    useLayout: Boolean,//使用布局容器，默认不使用
   },
   watch: {
     componentId(newValue, oldValue) {
@@ -80,7 +81,6 @@ export default {
         setTimeout(() => {
           this.componentLoading = false;
           this.layoutLoading = false;
-
         }, 3000);
       }
     },
@@ -244,8 +244,48 @@ export default {
         return await this.httpOperate("add", addObj);
       }
     },
+    /**
+     * 
+     * @param {object} pageData 
+     */
+    async createComponents(pageData) {
+      // 新建页面 不使用布局容器 直接创建组件 并且填充组件的坐标及宽高
+      const layout = this.layout.map((item) => {
+        return {
+          ...item,
+          // 时间戳
+          timestamp: Number((new Date().getTime() + '').slice(-9)),
+        };
+      });
+      if (pageData?.id) {
+        //创建子组件
+        if (layout?.length === 0) {
+          // 页面上没有组件 直接通知父组件刷新页面
+          return true
+        }
+        let addObj = {
+          serviceName: "srvpage_cfg_page_component_add",
+          srvApp: "config",
+          data: [],
+        };
+        layout.forEach((item, i) => {
+          addObj.data.push({
+            com_name: item.data.com_type_name,
+            com_preview: item.data.example,
+            com_type: item.data.com_type,
+            page_no: pageData.page_no,
+            com_seq: (i + 1) * 100,
+            layout_x: item.x,
+            layout_y: item.y,
+            layout_width: item.w,
+            layout_height: item.h,
+          });
+        });
+        return await this.httpOperate("add", addObj);
+      }
+    },
     async addPage(pageData) {
-      // 新建页面
+      // 使用布局容器方式新建页面
       if (pageData?.id) {
         const layout = this.layout.map((item) => {
           return {
@@ -254,6 +294,10 @@ export default {
             timestamp: Number((new Date().getTime() + '').slice(-9)),
           };
         });
+        if (layout?.length === 0) {
+          // 页面上没有组件 直接通知父组件刷新页面
+          return true
+        }
         const pageName = pageData.page_name || pageData.page_title;
         // 创建页面容器
         let addObj = {
@@ -269,7 +313,6 @@ export default {
           ],
         };
         const layoutInfo = await this.httpOperate("add", addObj, null, true);
-
         // 创建子容器
         addObj.data = [];
         layout.forEach((item, i) => {
@@ -370,16 +413,20 @@ export default {
     toPreview() {
       this.$emit("preview");
     },
-    onPageUpdate(event, type) {
+    async onPageUpdate(event, type) {
       if (type === "add" && event?.data?.state === "SUCCESS") {
         const response = event?.data?.response?.[0]?.response?.effect_data;
         if (Array.isArray(response) && response.length > 0) {
           const resData = response[0];
-          this.addPage(resData).then((res) => {
-            if (res) {
-              this.$emit("refresh", resData);
-            }
-          });
+          const res = null
+          if (this.useLayout) {
+            res = await this.addPage(resData)
+          } else {
+            res = await this.createComponents(resData)
+          }
+          if (res) {
+            this.$emit("refresh", resData);
+          }
           return;
         }
       }
