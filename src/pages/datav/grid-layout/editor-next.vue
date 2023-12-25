@@ -250,7 +250,7 @@ export default {
         const eleHeight = ele.offsetHeight
         const eleWidth = ele.offsetWidth
         return {
-          w: 10,
+          w: this.screenType === 'mobile' ? 100 : 10,
           h: parseFloat((5 * eleWidth / eleHeight).toFixed(6)),
           // w: containerWidth / 4,
           // h: containerWidth / 8,
@@ -658,8 +658,8 @@ export default {
         //   }
         // }
         this.contentData = {
-          width: this.styleJson?.width,
-          height: this.styleJson?.height,
+          width: this.styleJson?.width || (this.screenType === 'mobile' ? '375px' : '1920px'),
+          height: this.styleJson?.height || (this.screenType === 'mobile' ? '667px' : '1080px'),
         }
         // if (this.isDataview) {
         //   delete this.styleJson.width;
@@ -673,11 +673,11 @@ export default {
         //     }
         //   });
         // });
+        this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
         if (this.useLayout) {
           // 使用布局容器
           this.parentLayoutNo = data.layout_no;
           this.layoutJson = data.layout_json_data;
-          this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
           this.layoutJson.parts_json = this.layoutJson.parts_json.sort(
             (a, b) => a.seq - b.seq
           );

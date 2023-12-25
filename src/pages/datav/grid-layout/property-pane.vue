@@ -4,7 +4,7 @@
       <el-tab-pane label="页面" name="页面">
         <div class="tab-content">
           <simple-update name="list-update" :defaultValues="pageConfg" :navAfterSubmit="false" :service="pageService"
-            :pk="pageId" pkCol="id" @action-complete="onPageUpdate" @form-loaded="pageLoading = false" v-if="pageId">
+            :pk="pageId" pkCol="id" @executor-complete="onPageUpdate" @form-loaded="pageLoading = false" v-if="pageId">
           </simple-update>
           <simple-add :service="pageService" :navAfterSubmit="false" @executor-complete="onPageUpdate($event, 'add')"
             @form-loaded="pageLoading = false" @submitted2mem="" v-else>
@@ -245,7 +245,7 @@ export default {
       }
     },
     /**
-     * 
+     * 新建页面 不使用布局容器 直接创建组件 并且填充组件的坐标及宽高
      * @param {object} pageData 
      */
     async createComponents(pageData) {
@@ -270,7 +270,7 @@ export default {
         };
         layout.forEach((item, i) => {
           addObj.data.push({
-            com_name: item.data.com_type_name,
+            com_name: item.data.chart_name,
             com_preview: item.data.example,
             com_type: item.data.com_type,
             page_no: pageData.page_no,
@@ -383,6 +383,7 @@ export default {
           ];
           break;
         case "update":
+        case 'batch_add':
           params = o;
           break;
         case "delete":
@@ -398,6 +399,9 @@ export default {
 
       const response = await this.operate(params);
       if (response.data.state === "SUCCESS") {
+        if(type==='batch_add'){
+          return response.data.response
+        }
         if (returnData) {
           return response.data.response[0].response.effect_data[0];
         } else {
@@ -414,23 +418,105 @@ export default {
       this.$emit("preview");
     },
     async onPageUpdate(event, type) {
-      if (type === "add" && event?.data?.state === "SUCCESS") {
+      if (event?.data?.state === "SUCCESS") {
         const response = event?.data?.response?.[0]?.response?.effect_data;
         if (Array.isArray(response) && response.length > 0) {
           const resData = response[0];
-          const res = null
-          if (this.useLayout) {
-            res = await this.addPage(resData)
+          if (type === "add") {
+            const res = null
+            if (this.useLayout) {
+              res = await this.addPage(resData)
+            } else {
+              res = await this.insertComponents(resData, this.layout)
+            }
+            if (res) {
+              this.$emit("refresh", resData);
+            }
+            return;
           } else {
-            res = await this.createComponents(resData)
+            //更新页面属性，同时创建新增的组件
+            const list = this.layout.filter(item => item.isLeftBarItem === true)
+            if (list?.length) {
+              await this.insertComponents(resData, list)
+            }
           }
-          if (res) {
-            this.$emit("refresh", resData);
-          }
-          return;
         }
       }
       this.$emit("refresh", "page", event);
+    },
+    // 更新页面属性时同时创建新增的组件，以及对应的组件配置
+    async insertComponents(pageData, layout) {
+      if (pageData?.id) {
+        //创建子组件
+        if (layout?.length === 0) {
+          // 页面上没有组件 直接通知父组件刷新页面
+          return true
+        }
+
+        let addCompArr = []
+        layout.forEach((item, i) => {
+          const ignoreField = ['com_type','comp_label','create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
+          const data = { ...item.data }
+          ignoreField.forEach(key => {
+            if (data[key]) {
+              delete data[key]
+            }
+          })
+          Object.keys(data).forEach(key=>{
+            if(data[key] === ''|| data[key] === null){
+              delete data[key]
+            }
+          })
+          const compObj = {
+            serviceName: "",
+            srvApp: "config",
+            data: [data],
+          }
+          switch (item.data.com_type) {
+            case 'chart':
+              compObj.serviceName = 'srvpage_cfg_com_chart_add'
+              break;
+            case 'list':
+              compObj.serviceName = 'srvpage_cfg_com_list_add'
+              break;
+          }
+          addCompArr.push(compObj)
+
+        });
+        const compRes = await this.httpOperate("batch_add", addCompArr);
+
+        let addObj = {
+          serviceName: "srvpage_cfg_page_component_add",
+          srvApp: "config",
+          data: [],
+        };
+        console.log(compRes);
+
+        layout.forEach((item, index) => {
+          const comp = compRes[index]?.response?.effect_data?.[0]
+          const data = {
+            com_name: item.data.chart_name,
+            com_preview: item.data.example,
+            com_type: item.data.com_type,
+            page_no: pageData.page_no,
+            com_seq: (index + 1) * 100,
+            layout_x: item.x,
+            layout_y: item.y,
+            layout_width: item.w,
+            layout_height: item.h,
+          }
+          switch (item.data.com_type) {
+            case 'chart':
+              data.chart_no = comp?.chart_no
+              break;
+            case 'list':
+              data.list_no = comp?.list_no
+              break;
+          }
+          addObj.data.push(data);
+        })
+        return await this.httpOperate("add", addObj);
+      }
     },
     onComponentUpdate(event, type) {
       console.log("onComponentUpdate", event);

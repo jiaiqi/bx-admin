@@ -146,7 +146,7 @@ export default {
       layoutJson: null,
       comJson: [],
       comList: [],
-      comList2:[],
+      comList2: [],
       designData: { layoutCon: [], layoutData: [] }, //容器内容
       bjStyles: {}, //栅格样式
       curDesign: "", //点击容器组件样式
@@ -654,8 +654,8 @@ export default {
         //   }
         // }
         this.contentData = {
-          width: this.styleJson?.width,
-          height: this.styleJson?.height,
+          width: this.styleJson?.width || (this.screenType === 'mobile' ? '375px' : '1920px'),
+          height: this.styleJson?.height || (this.screenType === 'mobile' ? '667px' : '1080px'),
         }
         // if (this.isDataview) {
         //   delete this.styleJson.width;

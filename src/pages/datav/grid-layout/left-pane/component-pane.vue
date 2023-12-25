@@ -91,13 +91,18 @@ export default {
       const req = {
         serviceName: item.service,
         colNames: ["*"],
-        condition: [],
+        condition: [{
+          colName:'sys_option',
+          ruleType:'like',
+          value:'模板'
+        }],
         page: { pageNo: 1, rownumber: 10 },
         use_type: "list",
         query_source: "list_page",
       };
       if (subType?.value) {
         req.condition = [
+          ...req.condition,
           {
             colName: item.cond_col,
             ruleType: "eq",
