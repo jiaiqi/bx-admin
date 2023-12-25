@@ -816,6 +816,8 @@ export default {
           if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'datetime' && header.format && value !== '' && value !== null){
             // 根据日期的格式配置 格式化日期值
             resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
+          }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'date' && value !== '' && value !== null){
+            resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format||'')
           }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'month' && header.format && value !== '' && value !== null){
             resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
           }else if(header.col_type=='Money' && value !== null &&  value !== 'null' && value !== '******'){
@@ -873,6 +875,8 @@ export default {
         if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'datetime' && header.format && value !== '' && value !== null){
           // 根据日期的格式配置 格式化日期值
           resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
+        }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'date' && value !== '' && value !== null){
+          resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format||'')
         }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'month' && header.format && value !== '' && value !== null){
           resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
         }else if(header.col_type=='Money' && value !== null &&  value !== 'null'&& value !== '******'){
