@@ -64,6 +64,7 @@ export default {
       type: Object,
     },
     layout: Array,
+    strLayout: String,
     appNo: String,
     screeType: String,
     useLayout: Boolean,//使用布局容器，默认不使用
@@ -399,7 +400,7 @@ export default {
 
       const response = await this.operate(params);
       if (response.data.state === "SUCCESS") {
-        if(type==='batch_add'){
+        if (type === 'batch_add') {
           return response.data.response
         }
         if (returnData) {
@@ -434,6 +435,17 @@ export default {
             }
             return;
           } else {
+            // 保存页面属性后删除在页面上移除的组件
+            if (this.strLayout) {
+              let oldLayout = JSON.parse(this.strLayout)
+              let deleteIds = oldLayout.filter(item => item?.id && !this.layout.find(e => e.id === item.id)).map(item => item.id)
+              if (deleteIds?.length) {
+                const deleteObj = {
+                  serviceName: "srvpage_cfg_page_component_delete"
+                }
+                await this.httpOperate("delete", deleteObj, deleteIds.toString())
+              };
+            }
             //更新页面属性，同时创建新增的组件
             const list = this.layout.filter(item => item.isLeftBarItem === true)
             if (list?.length) {
@@ -444,6 +456,7 @@ export default {
       }
       this.$emit("refresh", "page", event);
     },
+
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
       if (pageData?.id) {
@@ -452,18 +465,17 @@ export default {
           // 页面上没有组件 直接通知父组件刷新页面
           return true
         }
-
         let addCompArr = []
         layout.forEach((item, i) => {
-          const ignoreField = ['com_type','comp_label','create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
+          const ignoreField = ['chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
           const data = { ...item.data }
           ignoreField.forEach(key => {
             if (data[key]) {
               delete data[key]
             }
           })
-          Object.keys(data).forEach(key=>{
-            if(data[key] === ''|| data[key] === null){
+          Object.keys(data).forEach(key => {
+            if (data[key] === '' || data[key] === null) {
               delete data[key]
             }
           })
@@ -479,9 +491,11 @@ export default {
             case 'list':
               compObj.serviceName = 'srvpage_cfg_com_list_add'
               break;
+            case 'cardGroup':
+              compObj.serviceName = 'srvpage_cfg_card_group_add'
+              break;
           }
           addCompArr.push(compObj)
-
         });
         const compRes = await this.httpOperate("batch_add", addCompArr);
 
@@ -511,6 +525,8 @@ export default {
               break;
             case 'list':
               data.list_no = comp?.list_no
+            case 'cardGroup':
+              data.card_group_no = comp?.cardg_no
               break;
           }
           addObj.data.push(data);

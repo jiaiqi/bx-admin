@@ -77,10 +77,11 @@ export default {
     },
     tapComponent(item, index) {
       this.activeIndex = index;
+      this.activeSubIndex = 0;
       if (!item.children?.length) {
         this.getList(item);
       } else {
-        this.getList(item, item.children[0]);
+        this.getList(item);
       }
     },
     async getList(item, subType) {

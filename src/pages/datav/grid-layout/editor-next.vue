@@ -14,15 +14,8 @@
     <div class="cushome-right" v-if="!isDataview">
       <div class="left-line" id="left-line"></div>
       <property-pane :use-layout="useLayout" :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType"
-        :currentItem="currentItem" :layout="layout" @save="clickSave" @preview="toPreview" @refresh="initPage"
-        @screentype="screenType = $event" v-if="showPane"></property-pane>
-      <template v-else>
-        <el-input size="small" v-model="pageName" clearable placeholder="请输入页面名称"></el-input>
-        <el-input size="small" v-model="pageTitle" clearable placeholder="请输入页面标题" style="margin-top: 10px"></el-input>
-        <el-button size="mini" type="primary" style="float: right; margin-top: 10px" @click="clickSave">保存</el-button>
-        <el-button size="mini" type="primary" style="float: right; margin: 10px 10px 0 0"
-          @click="toPreview">预览</el-button>
-      </template>
+        :currentItem="currentItem" :layout="layout" :str-layout="strLayout" @save="clickSave" @preview="toPreview" @refresh="initPage"
+        @screentype="screenType = $event"></property-pane>
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
       <div class="custom-design" id="custom-design" ref="customDesign" :style="[stylefn(styleJson)]"
@@ -223,13 +216,9 @@ export default {
     useLayout() {
       return this.pageConfg?.page_options?.includes('布局容器') || false
     },
-    showPane() {
-      return true
-      return process?.env?.NODE_ENV === "development";
-    },
     isDataview() {
       // 预览模式
-      return this.$route?.name === "gridview";
+      return this.$route?.name === "gridview"||this.$route?.name === "gridViewDetail";
     },
     showFullScreen() {
       return (
@@ -699,7 +688,6 @@ export default {
 
             this.layout.push(obj);
           });
-          this.strLayout = JSON.stringify(this.layout);
         } else {
           // 直接将坐标、宽高存在组件上
           this.comJson.forEach((item, index) => {
@@ -718,7 +706,7 @@ export default {
             this.layout.push(obj)
           })
         }
-
+        this.strLayout = JSON.stringify(this.layout);
         this.$set(this, 'loadPageMata', data)  // 保存页面元数据
         this.initPageParams()  // 页面参数初始化
       } else {
@@ -1148,6 +1136,19 @@ export default {
           data: o,
           isLeftBarItem: true,
         };
+        switch (o.com_type) {
+          case 'chart':
+            if(obj.data.row_json){
+              obj.data.chart_json = JSON.parse(obj.data.row_json)
+            }
+            break;
+            case 'cardGroup':
+            if(obj.data.row_json){
+              const cfg = JSON.parse(obj.data.row_json)
+              obj.data.card_group_json = cfg
+            }
+            break;
+        }
         this.layout.push(obj);
         this.$refs.gridlayout.dragEvent(
           "dragend",

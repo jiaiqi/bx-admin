@@ -124,13 +124,13 @@ export default {
       service: "srvpage_cfg_figure_swiper_select",
       nameCol:'swiper_name',
     },
-    {
-      value: "videoCard",
-      label: "视频卡片",
-      icon: "Video",
-      service: "srvpage_cfg_com_video_card_select",
-      nameCol:'video_card_name',
-    },
+    // {
+    //   value: "videoCard",
+    //   label: "视频卡片",
+    //   icon: "Video",
+    //   service: "srvpage_cfg_com_video_card_select",
+    //   nameCol:'video_card_name',
+    // },
     // {
     //   value: "richTextCard",
     //   label: "图文卡片",

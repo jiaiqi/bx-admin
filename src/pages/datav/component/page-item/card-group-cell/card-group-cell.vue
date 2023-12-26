@@ -35,8 +35,8 @@
               :src="getImagePath(getPartModelData(item,comColMap,cellItemData),150)" class="demo-layout bx-text-cell"
               :style="[buildColStyleJson(item.style_json || null)]" mode="aspectFill" img-mode="aspectFill"></el-image>
             <el-rate :disabled="true" v-else-if="item.parts_type == 'rate'" :count="5"
-              :value="getPartModelData(item,comColMap,cellItemData)||0"></el-rate>
-            <el-progress :show-text="false"  :style="[buildColStyleJson(item.style_json || null)]" v-else-if="item.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(item.style_json || null)['background-color']||''" :color="buildColStyleJson(item.style_json || null).color||'#2979ff'" :percentage="getPartModelData(item,comColMap,cellItemData)||0"></el-progress>
+              :value="Number(getPartModelData(item,comColMap,cellItemData))||0"></el-rate>
+            <el-progress :show-text="false"  :style="[buildColStyleJson(item.style_json || null)]" v-else-if="item.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(item.style_json || null)['background-color']||''" :color="buildColStyleJson(item.style_json || null).color||'#2979ff'" :percentage="Number(getPartModelData(item,comColMap,cellItemData))||0"></el-progress>
             <i v-else-if="item.parts_type == 'icon' && partsShow(item,comColMap,cellItemData)"
               :class="item.parts_text" :style="[buildColStyleJson(item.style_json || null)]"
               @click.stop="onClickSubBlock(cellItemData,item,cellLayoutJson)"></i>
@@ -68,8 +68,8 @@
                   :src="getImagePath(getPartModelData(subCol,comColMap,cellItemData),150)"
                   class="demo-layout bx-text-cell" :style="[buildColStyleJson(subCol.style_json || null)]"></el-image>
                 <el-rate :disabled="true" v-else-if="subCol.parts_type == 'rate'" :count="5"
-                  :value="getPartModelData(subCol,comColMap,cellItemData)||0"></el-rate>
-                <el-progress :show-text="false"  :style="[buildColStyleJson(subCol.style_json || null)]" v-else-if="subCol.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(subCol.style_json || null)['background-color']||''"  :color="buildColStyleJson(subCol.style_json || null).color||'#2979ff'" :percentage="getPartModelData(subCol,comColMap,cellItemData)||0"></el-progress>
+                  :value="Number(getPartModelData(subCol,comColMap,cellItemData))||0"></el-rate>
+                <el-progress :show-text="false"  :style="[buildColStyleJson(subCol.style_json || null)]" v-else-if="subCol.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(subCol.style_json || null)['background-color']||''"  :color="buildColStyleJson(subCol.style_json || null).color||'#2979ff'" :percentage="Number(getPartModelData(subCol,comColMap,cellItemData))||0"></el-progress>
                 <i v-else-if="subCol.parts_type == 'icon' && partsShow(subCol,comColMap,cellItemData)"
                   :class="subCol.parts_text" @click.stop="onClickSubBlock(cellItemData,subCol,cellLayoutJson,item)"
                   :style="[buildColStyleJson(subCol.style_json || null)]">
@@ -105,8 +105,8 @@
                       class="demo-layout bx-text-cell" :style="[buildColStyleJson(ssubCol.style_json || null)]">
                     </el-image>
                     <el-rate :disabled="true" v-else-if="ssubCol.parts_type == 'rate'" :count="5"
-                      :value="getPartModelData(ssubCol,comColMap,cellItemData)||0"></el-rate>
-                    <el-progress :show-text="false"   :style="[buildColStyleJson(ssubCol.style_json || null)]" v-else-if="ssubCol.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(ssubCol.style_json || null)['background-color']||''"   :color="buildColStyleJson(ssubCol.style_json || null).color||'#2979ff'" :percentage="getPartModelData(ssubCol,comColMap,cellItemData)||0"></el-progress>
+                      :value="Number(getPartModelData(ssubCol,comColMap,cellItemData))||0"></el-rate>
+                    <el-progress :show-text="false"   :style="[buildColStyleJson(ssubCol.style_json || null)]" v-else-if="ssubCol.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(ssubCol.style_json || null)['background-color']||''"   :color="buildColStyleJson(ssubCol.style_json || null).color||'#2979ff'" :percentage="Number(getPartModelData(ssubCol,comColMap,cellItemData))||0"></el-progress>
                    
                     <u-parse v-else-if="ssubCol.parts_type == '富文本' && partsShow(ssubCol,comColMap,cellItemData)"
                       :style="[buildColStyleJson(ssubCol.style_json || null)]"
@@ -142,8 +142,8 @@
                           class="demo-layout bx-text-cell" :style="[buildColStyleJson(sssubCol.style_json || null)]">
                         </el-image>
                         <el-rate :disabled="true" v-else-if="sssubCol.parts_type == 'rate'" :count="5"
-                          :value="getPartModelData(sssubCol,comColMap,cellItemData)||0"></el-rate>
-                        <el-progress :show-text="false"  :style="[buildColStyleJson(sssubCol.style_json || null)]" v-else-if="sssubCol.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(sssubCol.style_json || null)['background-color']||''"   :color="buildColStyleJson(sssubCol.style_json || null)||'#2979ff'" :percentage="getPartModelData(sssubCol,comColMap,cellItemData)||0"></el-progress>
+                          :value="Number(getPartModelData(sssubCol,comColMap,cellItemData))||0"></el-rate>
+                        <el-progress :show-text="false"  :style="[buildColStyleJson(sssubCol.style_json || null)]" v-else-if="sssubCol.parts_type == 'progress'" :count="5" :define-back-color="buildColStyleJson(sssubCol.style_json || null)['background-color']||''"   :color="buildColStyleJson(sssubCol.style_json || null).color||'#2979ff'" :percentage="Number(getPartModelData(sssubCol,comColMap,cellItemData))||0"></el-progress>
                         <i v-else-if="sssubCol.parts_type == 'icon' && partsShow(sssubCol,comColMap,cellItemData)"
                           :class="sssubCol.parts_text" :style="[buildColStyleJson(sssubCol.style_json || null)]"
                           @click.stop="onClickSubBlock(cellItemData,sssubCol,cellLayoutJson,ssubCol)"></i>
@@ -181,8 +181,8 @@
                               class="demo-layout bx-text-cell" :style="[buildColStyleJson(sssubCol4.style_json || null)]" lazy>
                             </el-image>
                             <el-rate :disabled="true" v-else-if="sssubCol4.parts_type == 'rate'" :count="5"
-                              :value="getPartModelData(sssubCol4,comColMap,cellItemData)||0"></el-rate>
-                            <el-progress :show-text="false"   :style="[buildColStyleJson(sssubCol4.style_json || null)]" v-else-if="sssubCol4.parts_type == 'progress'" :count="5"  :define-back-color="buildColStyleJson(sssubCol4.style_json || null)['background-color']||''"  :color="buildColStyleJson(sssubCol4.style_json || null).color||'#2979ff'" :percentage="getPartModelData(sssubCol4,comColMap,cellItemData)||0"></el-progress>
+                              :value="Number(getPartModelData(sssubCol4,comColMap,cellItemData))||0"></el-rate>
+                            <el-progress :show-text="false"   :style="[buildColStyleJson(sssubCol4.style_json || null)]" v-else-if="sssubCol4.parts_type == 'progress'" :count="5"  :define-back-color="buildColStyleJson(sssubCol4.style_json || null)['background-color']||''"  :color="buildColStyleJson(sssubCol4.style_json || null).color||'#2979ff'" :percentage="Number(getPartModelData(sssubCol4,comColMap,cellItemData))||0"></el-progress>
                             <i
                               v-else-if="sssubCol4.parts_type == 'icon' && partsShow(sssubCol4,comColMap,cellItemData)"
                               :class="sssubCol4.parts_text" :style="[buildColStyleJson(sssubCol4.style_json || null)]"
@@ -612,7 +612,7 @@
           this.$emit('on-click-icon', cellLayoutJson)
         },
   
-        buildColStyleJson(styleJson, cssArr, cellLayoutJson) {
+        buildColStyleJson(styleJson, cssArr, cellLayoutJson,column) {
           let style = {}
           if (styleJson) {
             for (let key in styleJson) {
@@ -647,6 +647,9 @@
           }
           if (!style['overflow']) style['overflow'] = 'hidden'
           // console.log('styleJson',name,style)
+          if(column){
+            return style[column]||''
+          }
           return style
         },
         getPartModelData(item, map, itemData) {
