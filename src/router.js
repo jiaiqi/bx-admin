@@ -373,16 +373,29 @@ routes.push( {
     component:()=>import('@/pages/datav/grid-layout/index.vue')
   }, 
   {
-    //可视化编辑页面 新布局
-    path:'/editornext',
-    name:'gridEditor3',
-    component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
-  },
-  {
-    //可视化编辑页面(update) 新布局
-    path:'/editornext/:no',
-    name:'gridEditor4',
-    component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+    // 网格布局 - 新
+    path:'/lowcode-grid',
+    component:()=>import('@/pages/datav/grid-layout/editor-next.vue'),
+    children:[
+      {
+        //可视化编辑页面 新布局 
+        path:'editor',
+        name:"gridEditorAdd",
+        component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+      },
+      {
+        //可视化编辑页面(update) 新布局
+        path:'editor/:no',
+        name:"gridEditorUpdate",
+        component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+      },
+      {
+        //可视化编辑页面(update) 新布局
+        path:'view/:no',
+        name:'gridViewDetail',
+        component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+      }
+    ]
   },
   // 网格布局
   {
