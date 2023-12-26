@@ -84,6 +84,11 @@
                     <!-- 荣誉墙效果 -->
                     <div slot="header" class="clearfix" style="">
                         <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`荣誉墙`}}</span>
+                        <!-- <span style="border-left: 0px solid #ddd;padding-left:20px">{{`综合分值`}}
+                            <span style="color:#ff5500;min-width:2rem;font-size:1.4rem;">
+                                {{childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].filter(item => item.semester == `${semester}`).reduce((total, num) => total + num.mun, 0) / childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].filter(item => item.semester == `${semester}`).length}}
+                            </span>
+                        </span> -->
                     </div>
                     <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']) && childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].length > 0">
                         <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']" class="font-weight-bold">
@@ -379,7 +384,7 @@ var chartPie=null;
                     data: [5, 20, 36, 10, 10, 20],
                 }
             ]
-        }
+        },
       };
     },
   computed:{
@@ -479,7 +484,6 @@ var chartPie=null;
                                     
                                 }
                             }
-                            
                         }
                     });
                     

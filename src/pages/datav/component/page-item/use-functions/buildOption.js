@@ -340,6 +340,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       break;
     case "pie":
     case "ring":
+
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
@@ -459,6 +460,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         return `${name}(${v})`;
       };
+      ecOptions.legend.show = false
       if (type === "ring") {
         const title = chartJson?.ring_sum_label || "总数";
         ecOptions.title = {

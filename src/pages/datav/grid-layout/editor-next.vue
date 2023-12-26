@@ -5,8 +5,8 @@
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
         <div v-for="item in comList" :key="item.id" class="com-item margin component">
-          <img src="" alt="" class="example" @drag="drag(item)" @dragend="dragend(item)" draggable="true"
-            unselectable="on">
+          <img :src="getImagePath(item.preview)" alt="" class="example" @drag="drag(item)" @dragend="dragend(item)"
+            draggable="true" unselectable="on">
           <div class="label">{{ item.comp_label }}</div>
         </div>
       </div>
@@ -14,8 +14,8 @@
     <div class="cushome-right" v-if="!isDataview">
       <div class="left-line" id="left-line"></div>
       <property-pane :use-layout="useLayout" :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType"
-        :currentItem="currentItem" :layout="layout" :str-layout="strLayout" @save="clickSave" @preview="toPreview" @refresh="initPage"
-        @screentype="screenType = $event"></property-pane>
+        :currentItem="currentItem" :layout="layout" :str-layout="strLayout" @save="clickSave" @preview="toPreview"
+        @refresh="initPage" @screentype="screenType = $event"></property-pane>
     </div>
     <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
       <div class="custom-design" id="custom-design" ref="customDesign" :style="[stylefn(styleJson)]"
@@ -218,7 +218,7 @@ export default {
     },
     isDataview() {
       // 预览模式
-      return this.$route?.name === "gridview"||this.$route?.name === "gridViewDetail";
+      return this.$route?.name === "gridview" || this.$route?.name === "gridViewDetail";
     },
     showFullScreen() {
       return (
@@ -691,11 +691,24 @@ export default {
         } else {
           // 直接将坐标、宽高存在组件上
           this.comJson.forEach((item, index) => {
+            switch (item.com_type) {
+              case 'list':
+                if(!item.srv_req_json&&item.list_json?.default_srv_req_json){
+                  item.srv_req_json = item.list_json.default_srv_req_json
+                }
+                if(!item.cols_map_json&&item.list_json?.cols_map_json){
+                  item.cols_map_json = item.list_json.cols_map_json
+                }
+                break;
+            
+              default:
+                break;
+            }
             const obj = {
               x: item.layout_x,
               y: item.layout_y,
-              w: item.layout_height,
-              h: item.layout_width,
+              w: item.layout_width,
+              h: item.layout_height,
               i: item.id || new Date().getTime(), // item.seq - 1
               // i: index, // item.seq - 1
               // layout_no: item.layout_no,
@@ -1013,9 +1026,9 @@ export default {
     removeItem: function (val) {
       const index = this.layout.map((item) => item.i).indexOf(val);
       this.layout.splice(index, 1);
-      this.layout.forEach((item, i) => {
-        item.i = i;
-      });
+      // this.layout.forEach((item, i) => {
+      //   item.i = item.id || i;
+      // });
     },
     dragDefFn(e) {
       e.preventDefault();
@@ -1133,19 +1146,35 @@ export default {
           h: this.initWH.h,
           i: DragPos.i,
           __uuid: this.getUuid(),
-          data: o,
+          data: JSON.parse(JSON.stringify(o)),
           isLeftBarItem: true,
         };
         switch (o.com_type) {
           case 'chart':
-            if(obj.data.row_json){
+            if (obj.data.row_json) {
               obj.data.chart_json = JSON.parse(obj.data.row_json)
             }
             break;
-            case 'cardGroup':
-            if(obj.data.row_json){
+          case 'cardGroup':
+            if (obj.data.row_json) {
               const cfg = JSON.parse(obj.data.row_json)
               obj.data.card_group_json = cfg
+            }
+            break;
+          case 'list':
+            if (obj.data.list_json) {
+              const cfg = JSON.parse(obj.data.list_json)
+              obj.data.list_json = cfg
+              if(cfg.list_type==='卡片'){
+                obj.data.card_group_json = {
+                  card_unit_json:cfg.card_unit_json,
+                  card_layout_json:cfg.layout_json,
+                  interface_json:cfg.interface_json
+                }
+              }
+              if(cfg?.default_srv_req_json){
+                obj.data.srv_req_json = cfg?.default_srv_req_json
+              }
             }
             break;
         }
@@ -1283,20 +1312,6 @@ export default {
     width: 100%;
     height: 100%;
     min-height: 30px;
-    // width: 100%;
-    // height: 100%;
-    // min-height: 30px;
-    // border: 1px dashed #666;
-    // position: relative;
-    // &::after{
-    //   position: absolute;
-    //   content: '';
-    //   left: 0;
-    //   top: 0;
-    //   width: 100%;
-    //   height: 100%;
-    //   border: 1px dashed #666;
-    // }
   }
 
   &.active {
@@ -1340,7 +1355,7 @@ export default {
     .component-list {
       // display: flex;
       // flex-direction: column;
-      // flex:1;
+      flex: 1;
       overflow-x: hidden;
       overflow-y: auto;
 
@@ -1354,7 +1369,6 @@ export default {
         background-color: #f1f3f2;
         border-radius: 8px;
         border: none;
-        padding: 5px;
         overflow: hidden;
         cursor: unset;
 
@@ -1370,7 +1384,7 @@ export default {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          margin-top: 5px;
+          padding: 5px;
         }
       }
     }
@@ -1541,5 +1555,12 @@ export default {
   line-height: 24px;
   text-align: center;
   z-index: 1;
+  transition: all 0.3s ease-in-out;
+  &:hover{
+    font-size:28px;
+    font-weight: bold;
+    background-color: #333;
+    color: #fff;
+  }
 }
 </style>

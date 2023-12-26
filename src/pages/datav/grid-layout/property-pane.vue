@@ -435,8 +435,8 @@ export default {
             }
             return;
           } else {
-            // 保存页面属性后删除在页面上移除的组件
             if (this.strLayout) {
+              // 保存页面属性后删除在页面上移除的组件
               let oldLayout = JSON.parse(this.strLayout)
               let deleteIds = oldLayout.filter(item => item?.id && !this.layout.find(e => e.id === item.id)).map(item => item.id)
               if (deleteIds?.length) {
@@ -445,16 +445,52 @@ export default {
                 }
                 await this.httpOperate("delete", deleteObj, deleteIds.toString())
               };
+              // 更新页面属性，同时更新宽高以及定位变化的组件
+              const updateList = this.layout.filter(item => {
+                if (item.id) {
+                  let newItem = oldLayout.find(e => e.id === item.id)
+                  if (newItem) {
+                    return newItem.w !== item.w || newItem.h !== item.h || newItem.x !== item.x || newItem.y !== item.y
+                  }
+                }
+
+              })
+              if (updateList?.length) {
+                const updateObj = updateList.map(item => {
+                  return {
+                    serviceName: "srvpage_cfg_page_component_update",
+                    condition: [{
+                      colName: 'id',
+                      ruleType: 'eq',
+                      value: item.id
+                    }],
+                    data: [
+                      {
+                        layout_width: item.w,
+                        layout_height: item.h,
+                        layout_x: item.x,
+                        layout_y: item.y
+                      }
+                    ]
+                  }
+                })
+                await this.httpOperate("update", updateObj)
+              }
             }
             //更新页面属性，同时创建新增的组件
             const list = this.layout.filter(item => item.isLeftBarItem === true)
             if (list?.length) {
               await this.insertComponents(resData, list)
             }
+
           }
         }
       }
       this.$emit("refresh", "page", event);
+    },
+    // 更新组件的宽高以及定位
+    async updateComponent(event) {
+
     },
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
@@ -467,7 +503,7 @@ export default {
         }
         let addCompArr = []
         layout.forEach((item, i) => {
-          const ignoreField = ['chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
+          const ignoreField = ['srv_req_json', 'list_json', 'card_group_json', 'sys_option', 'chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
           const data = { ...item.data }
           ignoreField.forEach(key => {
             if (data[key]) {

@@ -16,10 +16,10 @@ export default {
           label: "柱状图",
           value: "柱状图",
         },
-        {
-          label: "组合图",
-          value: "组合图",
-        },
+        // {
+        //   label: "组合图",
+        //   value: "组合图",
+        // },
         {
           label: "条形图",
           value: "条形图",
@@ -38,28 +38,28 @@ export default {
         },
         {
           label: "图表地图",
-          value: "图表地图",
+          value: "地图",
         },
-        {
-          label: "热力图",
-          value: "热力图",
-        },
-        {
-          label: "散点图",
-          value: "散点图",
-        },
+        // {
+        //   label: "热力图",
+        //   value: "热力图",
+        // },
+        // {
+        //   label: "散点图",
+        //   value: "散点图",
+        // },
         {
           label: "词云图",
           value: "词云图",
         },
-        {
-          label: "仪表盘",
-          value: "仪表盘",
-        },
-        {
-          label: "水球图",
-          value: "水球图",
-        },
+        // {
+        //   label: "仪表盘",
+        //   value: "仪表盘",
+        // },
+        // {
+        //   label: "水球图",
+        //   value: "水球图",
+        // },
         // {
         //   label: "数字翻牌器",
         //   value: "数字翻牌器",
@@ -68,10 +68,10 @@ export default {
         //   label: "排行滚动表",
         //   value: "排行滚动表",
         // },
-        {
-          label: "地图",
-          value: "地图",
-        },
+        // {
+        //   label: "地图",
+        //   value: "地图",
+        // },
       ],
     },
     {

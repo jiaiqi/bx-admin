@@ -119,9 +119,9 @@ onMounted(() => {
     // 使用模拟数据
     cellData.value = pageItem.mock_srv_data_json;
     option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
-  }else if(chartConfig.value?.mock_data_json?.length){
-    option.value = useBuildOption(chartType.value, pageItem, chartConfig.value.mock_data_json, props.layout);
-  } else if (!pageItem?.srv_req_type&&!cellData.value?.length) {
+  } else if ( chartConfig.value?.more_option?.includes('使用模拟数据') && !pageItem?.srv_req_json && !cellData.value.length) {
+    option.value = useBuildOption(chartType.value, pageItem, chartConfig.value.mock_data_json||[], props.layout);
+  } else if (!pageItem?.srv_req_type && !cellData.value?.length) {
     option.value = setDefaultChartOption(chartType.value, pageItem, [], props.layout);
   } else {
     let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;

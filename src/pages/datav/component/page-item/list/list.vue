@@ -352,6 +352,7 @@ export default {
 
 <style lang="scss" scoped>
 .bx-table {
+  color: #fff;
   .table-head {
     background-color: rgba($color: #fff, $alpha: 0.1);
   }
