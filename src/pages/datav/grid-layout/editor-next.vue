@@ -29,23 +29,24 @@
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
             <div class="com-item dashed" v-if="isDataview">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
+              <page-item :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""
+                @resize="resize"></page-item>
             </div>
             <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
               @click.stop.prevent.capture="changeDesign(item.i)">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                :page-item="item.data" :layout="item"></page-item>
+              <page-item :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item"></page-item>
             </div>
           </grid-item>
         </grid-layout>
       </div>
-      <div class="custom-design" id="custom-design" ref="customDesign" v-else-if="screenType === 'mobile'"
+      <div class="custom-design" :class="{mobile:screenType === 'mobile'}" id="custom-design" ref="customDesign" v-else-if="screenType === 'mobile'"
         style="width: 375px;height: 667px;margin-top: 5vh;overflow-y:auto;overflow-x: hidden;">
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
-          :preventCollision="true" :responsive="false" :is-draggable="!isDataview" :is-resizable="!isDataview"
-          :is-mirrored="false" :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent">
+          :vertical-compact="true" :is-draggable="!isDataview"
+          :is-resizable="false" :is-mirrored="false" :margin="[0, 0]" :autoSize="true"
+          :use-css-transforms="true" @layout-updated="layoutUpdatedEvent" :responsive="true" :preventCollision="true" >
           <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
           <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
@@ -96,7 +97,7 @@ let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 import pageParams from '../common/params/page-params-mixin.js'
 
 export default {
-  name: "pageEditor",
+  // name: "pageEditor",
   mixins: [pageParams],
   components: {
     GridLayout,
@@ -152,6 +153,8 @@ export default {
     };
   },
   created() {
+    debugger
+
     if (this.$route.query.appNo) {
       this.appNo = this.$route.query.appNo;
     }
@@ -165,32 +168,34 @@ export default {
     if (this.$route.query.screenType) {
       this.screenType = this.$route.query.screenType
     }
-    document.addEventListener(
-      "dragover",
-      function (e) {
-        mouseXY.x = e.clientX;
-        mouseXY.y = e.clientY;
-      },
-      false
-    );
-
     this.initDesign();
-
-    this.moveMousemove();
-    this.moveMouseup();
+    if (!this.isDataview) {
+      // 编辑模式 监听事件
+      document.addEventListener(
+        "dragover",
+        function (e) {
+          mouseXY.x = e.clientX;
+          mouseXY.y = e.clientY;
+        },
+        false
+      );
+      this.moveMousemove();
+      this.moveMouseup();
+      document.getElementById('custom-design').onclick = (e) => {
+        this.curDesign = "";
+      };
+    }
     this.initColNum();
 
-    document.getElementById('custom-design').onclick = (e) => {
-      this.curDesign = "";
-    };
-    if (!process?.env?.NODE_ENV === "development") {
-      // 开发模式不监听窗口变化
-      if (this.isDataview) {
-        window.addEventListener('resize', () => {
-          this.resize();
-        })
-      }
+
+    // if (!process?.env?.NODE_ENV === "development") {
+    // 开发模式不监听窗口变化
+    if (this.isDataview) {
+      window.addEventListener('resize', () => {
+        this.resize();
+      })
     }
+    // }
 
     setTimeout(() => {
       if (this.needLogin) {
@@ -240,7 +245,7 @@ export default {
         const eleWidth = ele.offsetWidth
         return {
           w: this.screenType === 'mobile' ? 100 : 10,
-          h: parseFloat((5 * eleWidth / eleHeight).toFixed(6)),
+          h: this.screenType === 'mobile' ? 20 : parseFloat((5 * eleWidth / eleHeight).toFixed(6)),
           // w: containerWidth / 4,
           // h: containerWidth / 8,
         };
@@ -597,11 +602,10 @@ export default {
       ).page_no;
     },
     async initPage(data) {
+      console.log('initPage');
       if (data?.page_no) {
         this.pgNo = data.page_no
       }
-      debugger
-
       this.layout = []
       const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
@@ -663,13 +667,16 @@ export default {
         //   });
         // });
         this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
+
+        this.layoutJson = data.layout_json_data;
+        if (Array.isArray(data.layout_json_data) && data.layout_json_data.length > 0) {
+          this.layoutJson.parts_json = data.layout_json_data.sort(
+            (a, b) => a.seq - b.seq
+          );
+        }
         if (this.useLayout) {
           // 使用布局容器
           this.parentLayoutNo = data.layout_no;
-          this.layoutJson = data.layout_json_data;
-          this.layoutJson.parts_json = this.layoutJson.parts_json.sort(
-            (a, b) => a.seq - b.seq
-          );
           this.layoutJson.parts_json.forEach((item, index) => {
             // const data = this.comJson.find(e=>e.layout_seq===item.seq);
             const data = this.comJson[index];
@@ -690,32 +697,48 @@ export default {
           });
         } else {
           // 直接将坐标、宽高存在组件上
+          if (this.layoutJson?.parts_json?.length) {
+
+          } else {
+            this.comJson = this.comJson.sort((a, b) => a.com_seq - b.com_seq);
+          }
           this.comJson.forEach((item, index) => {
+            let layoutItem = {}
+            if (this.layoutJson?.parts_json?.length - 1 >= index) {
+              // 兼容之前使用布局容器的方案
+              layoutItem = this.layoutJson.parts_json[index]
+            }
             switch (item.com_type) {
               case 'list':
-                if(!item.srv_req_json&&item.list_json?.default_srv_req_json){
+                if (!item.srv_req_json && item.list_json?.default_srv_req_json) {
                   item.srv_req_json = item.list_json.default_srv_req_json
                 }
-                if(!item.cols_map_json&&item.list_json?.cols_map_json){
+                if (!item.cols_map_json && item.list_json?.cols_map_json) {
                   item.cols_map_json = item.list_json.cols_map_json
                 }
                 break;
-            
               default:
                 break;
             }
             const obj = {
-              x: item.layout_x,
-              y: item.layout_y,
-              w: item.layout_width,
-              h: item.layout_height,
+              x: item.layout_x || 0,
+              y: item.layout_y || index * this.initWH.h,
+              w: item.layout_width || this.initWH.w,
+              h: item.layout_height ||this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
-              // i: index, // item.seq - 1
               // layout_no: item.layout_no,
               data: { ...item },
               isLeftBarItem: false,
               id: item.id,
+              colNum: this.colNum,
             };
+            if (layoutItem?.col_span) {
+              obj.w = layoutItem?.row_span * 100 * 1.6 / 1920
+              obj.h = layoutItem?.col_span * 100 * 1.17 / 1080
+              obj.x = layoutItem?.pos_x * 100 * 1.6 / 1920
+              obj.y = layoutItem?.pos_y * 100 * 1.17 / 1080
+              obj.layout_no = layoutItem?.layout_no
+            }
             this.layout.push(obj)
           })
         }
@@ -1165,14 +1188,14 @@ export default {
             if (obj.data.list_json) {
               const cfg = JSON.parse(obj.data.list_json)
               obj.data.list_json = cfg
-              if(cfg.list_type==='卡片'){
+              if (cfg.list_type === '卡片') {
                 obj.data.card_group_json = {
-                  card_unit_json:cfg.card_unit_json,
-                  card_layout_json:cfg.layout_json,
-                  interface_json:cfg.interface_json
+                  card_unit_json: cfg.card_unit_json,
+                  card_layout_json: cfg.layout_json,
+                  interface_json: cfg.interface_json
                 }
               }
-              if(cfg?.default_srv_req_json){
+              if (cfg?.default_srv_req_json) {
                 obj.data.srv_req_json = cfg?.default_srv_req_json
               }
             }
@@ -1332,6 +1355,11 @@ export default {
   img {
     height: 100%;
     overflow: hidden;
+  }
+}
+.mobile {
+  .com-item.dashed{
+    height: unset;
   }
 }
 
@@ -1556,8 +1584,9 @@ export default {
   text-align: center;
   z-index: 1;
   transition: all 0.3s ease-in-out;
-  &:hover{
-    font-size:28px;
+
+  &:hover {
+    font-size: 28px;
     font-weight: bold;
     background-color: #333;
     color: #fff;

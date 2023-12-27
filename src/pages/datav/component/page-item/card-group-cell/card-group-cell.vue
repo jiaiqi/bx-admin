@@ -1,8 +1,8 @@
 <template>
     <div :style="[gridStyle]" class="bx-card">
-      <div
+      <template
         v-if="('static' && listOptions.indexOf('分页') !== -1) || (listOptions.indexOf('分页') == -1 && index < totalMaximum)"
-        v-for="(cellItemData,index) in cellDataRun" :key="index">
+        v-for="(cellItemData,index) in cellDataRun" >
   
         <div v-for="(cellLayoutJson,i) in cellsLayout" :key="i" class="bx-card-cell"
           :class="{checked:pageItem&&pageItem._refedCol && currentRadio===cellItemData[pageItem._refedCol]}"
@@ -209,7 +209,7 @@
               @click.stop="onRowButton({row:cellItemData,button:button,index:index})">{{button.button_name}}</button>
           </div>
         </div> -->
-      </div>
+      </template>
       <!-- <uni-popup ref="updateFormPopup" type="bottom" style="z-index: 9999999;">
         <div class="update-title" v-if="updateTitle">
           {{updateTitle}}
@@ -397,7 +397,7 @@
             }
           }
           if (Object.keys(style).indexOf('gap') == -1) {
-            style['gap'] = '10rpx'
+            style['gap'] = '5px'
           }
           let style_json_diy = config.style_json_diy || {}
           if (Object.keys(style_json_diy).indexOf('gap') !== -1) {
@@ -615,7 +615,17 @@
         buildColStyleJson(styleJson, cssArr, cellLayoutJson,column) {
           let style = {}
           if (styleJson) {
+            // 将rpx转换为px
+            function convertRpxToPx(css) {
+              return css.replace(/\d+rpx/g, (match) => {
+                const value = parseFloat(match);
+                return `${value / 2}px`;
+              });
+            }
             for (let key in styleJson) {
+              if(typeof styleJson[key] === 'string' &&  styleJson[key]&&styleJson[key].indexOf('rpx')>-1){
+                styleJson[key] = convertRpxToPx(styleJson[key]||'')
+              }
               if (cssArr && cssArr.length > 0) {
                 let cssArrs = cssArr.split(',')
                 for (let getKey of cssArrs) {
@@ -640,7 +650,7 @@
             style['background-repeat'] = 'no';
           }
           if (cellLayoutJson && !style.hasOwnProperty('min-height') && bgImg) {
-            style['min-height'] = '120rpx'
+            style['min-height'] = '60px'
           };
           if (!style['background-color']) {
             style['background-color'] = 'transparent'
@@ -649,7 +659,7 @@
           // console.log('styleJson',name,style)
           if(column){
             return style[column]||''
-          }
+          } 
           return style
         },
         getPartModelData(item, map, itemData) {

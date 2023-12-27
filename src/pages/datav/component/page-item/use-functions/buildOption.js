@@ -340,7 +340,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       break;
     case "pie":
     case "ring":
-
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
@@ -460,7 +459,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         }
         return `${name}(${v})`;
       };
-      ecOptions.legend.show = false
+      ecOptions.legend.show = false;
       if (type === "ring") {
         const title = chartJson?.ring_sum_label || "总数";
         ecOptions.title = {
@@ -730,6 +729,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           console.log(layout);
           if (layout?.w) {
             iconSize = (layout?.w * iconScale) / 100;
+            if (layout.colNum === 100) {
+              iconSize = ((layout?.w * 12) * iconScale) / 100;
+            }
           }
         }
         let serie = {
@@ -877,9 +879,9 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
     },
     series: [],
   };
-  const datas = [0,1,2,3,4,5].map(item=>{
-    return Math.random()*100
-  })
+  const datas = [0, 1, 2, 3, 4, 5].map((item) => {
+    return Math.random() * 100;
+  });
   switch (chartType) {
     case "line":
     case "bar":
