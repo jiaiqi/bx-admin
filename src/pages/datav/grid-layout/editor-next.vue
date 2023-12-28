@@ -1,6 +1,6 @@
 <template>
-  <div class="customhome-container" :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)"
-    @dragover="dragDefFn($event)">
+  <div class="customhome-container" :class="{ mobile: screenType === 'mobile' && isDataview }"
+    :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
     <div class="cushome-sidebar" v-if="!isDataview">
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
@@ -41,34 +41,46 @@
           </grid-item>
         </grid-layout>
       </div>
-      <div class="custom-design" :class="{mobile:screenType === 'mobile'}" id="custom-design" ref="customDesign" v-else-if="screenType === 'mobile'"
+      <div class="custom-design" :class="{ mobile: screenType === 'mobile' }" id="custom-design" ref="customDesign"
+        v-else-if="screenType === 'mobile'"
         style="width: 375px;height: 667px;margin-top: 5vh;overflow-y:auto;overflow-x: hidden;">
         <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
-          :vertical-compact="true" :is-draggable="!isDataview"
-          :is-resizable="false" :is-mirrored="false" :margin="[0, 0]" :autoSize="true"
-          :use-css-transforms="true" @layout-updated="layoutUpdatedEvent" :responsive="true" :preventCollision="true" >
+          :vertical-compact="true" :is-draggable="!isDataview" :is-resizable="true" :is-mirrored="false" :margin="[0, 0]"
+          :autoSize="true" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent" :responsive="false"
+          :preventCollision="true">
           <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
-          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
-            @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
-            <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
-            <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
-              @click.stop.prevent.capture="changeDesign(item.i)">
-              <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
-            </div>
-            <div class="com-item dashed" v-else-if="isDataview">
+          <template v-if="isDataview || onMobilePreview">
+            <div v-for="item in layout" style="min-height: 100px;">
               <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
                 :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
             </div>
-            <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
-              @click.stop.prevent.capture="changeDesign(item.i)">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                :page-item="item.data" :layout="item"></page-item>
-            </div>
-          </grid-item>
+
+          </template>
+          <template v-else>
+            <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+              @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
+              <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i
+                  class="el-icon-close"></i></span>
+              <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
+                @click.stop.prevent.capture="changeDesign(item.i)">
+                <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
+              </div> -->
+              <div class="com-item dashed" v-if="isDataview">
+                <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+                  :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
+              </div>
+              <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
+                @click.stop.prevent.capture="changeDesign(item.i)">
+                <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+                  :page-item="item.data" :layout="item"></page-item>
+              </div>
+            </grid-item>
+          </template>
         </grid-layout>
       </div>
-      <div v-if="screenType === 'mobile' && pgNo" style="text-align: center;margin-top: 50px;">
-        <el-button @click="previewMobile">预览</el-button>
+      <div v-if="screenType === 'mobile' && !isDataview && pgNo" style="text-align: center;margin-top: 50px;">
+        <el-button @click="previewCurrent">{{ onMobilePreview ? '编辑' : '预览' }}</el-button>
+        <el-button @click="previewMobile">h5</el-button>
       </div>
     </div>
 
@@ -108,6 +120,7 @@ export default {
   },
   data() {
     return {
+      onMobilePreview: false,
       screenType: "PC",
       rightWidth: 340,
       isDown: false,
@@ -190,7 +203,7 @@ export default {
 
     // if (!process?.env?.NODE_ENV === "development") {
     // 开发模式不监听窗口变化
-    if (this.isDataview) {
+    if (this.isDataview && this.screenType === 'pc') {
       window.addEventListener('resize', () => {
         this.resize();
       })
@@ -266,6 +279,10 @@ export default {
     },
   },
   methods: {
+    previewCurrent() {
+      this.onMobilePreview = !this.onMobilePreview
+      // window.open(window.location.hash.replace("/editor/", "/view/"));
+    },
     previewMobile() {
       window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`)
     },
@@ -724,7 +741,7 @@ export default {
               x: item.layout_x || 0,
               y: item.layout_y || index * this.initWH.h,
               w: item.layout_width || this.initWH.w,
-              h: item.layout_height ||this.initWH.h,
+              h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
               // layout_no: item.layout_no,
               data: { ...item },
@@ -732,7 +749,7 @@ export default {
               id: item.id,
               colNum: this.colNum,
             };
-            if (layoutItem?.col_span) {
+            if (layoutItem?.col_span && this.screenType === 'pc') {
               obj.w = layoutItem?.row_span * 100 * 1.6 / 1920
               obj.h = layoutItem?.col_span * 100 * 1.17 / 1080
               obj.x = layoutItem?.pos_x * 100 * 1.6 / 1920
@@ -910,9 +927,11 @@ export default {
       this.$nextTick(() => {
         // this.resize();
       })
-      setTimeout(() => {
-        this.resize();
-      }, 1000);
+      if (this.screenType === 'PC') {
+        setTimeout(() => {
+          this.resize();
+        }, 1000);
+      }
     },
     //鼠标移动
     moveMousemove() {
@@ -1357,9 +1376,16 @@ export default {
     overflow: hidden;
   }
 }
+
 .mobile {
-  .com-item.dashed{
-    height: unset;
+
+
+  .com-item.dashed {
+    .page-item {
+      pointer-events: none;
+    }
+
+    // height: unset;
   }
 }
 
@@ -1368,6 +1394,22 @@ export default {
   height: 100vh;
   background: #f1f3f2;
   user-select: none;
+
+  &.mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .cushome-content {
+      position: relative;
+      width: 375px;
+
+      .custom-design {
+        height: 667px;
+        overflow-y: auto;
+      }
+    }
+  }
 
   .cushome-sidebar {
     width: 340px;
@@ -1582,7 +1624,7 @@ export default {
   margin: 0 auto;
   line-height: 24px;
   text-align: center;
-  z-index: 1;
+  z-index: 5;
   transition: all 0.3s ease-in-out;
 
   &:hover {

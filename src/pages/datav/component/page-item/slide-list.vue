@@ -266,6 +266,7 @@ export default {
 			width: 100%;
 			height: 100%;
 			object-fit: fill;
+			min-height: 100px;
 		}
 	}
 
@@ -305,4 +306,5 @@ export default {
 	// uni-swiper[class*="-dot"] .uni-swiper-dots {
 	//   justify-content: flex-start !important;
 	// }
-}</style>
+}
+</style>
