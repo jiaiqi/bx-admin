@@ -70,12 +70,21 @@ export default {
     useLayout: Boolean,//使用布局容器，默认不使用
   },
   watch: {
-    componentId(newValue, oldValue) {
-      if (newValue && !oldValue) {
-        this.activeTab = "组件";
-      } else if (!newValue && oldValue) {
-        this.activeTab = "页面";
+    currentItem: {
+      handler(newValue, oldValue) {
+        if (newValue) {
+          this.activeTab = "组件";
+        } else {
+          this.activeTab = "页面";
+        }
       }
+    },
+    componentId(newValue, oldValue) {
+      // if (newValue && !oldValue) {
+      //   this.activeTab = "组件";
+      // } else if (!newValue && oldValue) {
+      //   this.activeTab = "页面";
+      // }
       if (newValue && newValue !== oldValue) {
         this.componentLoading = true;
         this.layoutLoading = true;
