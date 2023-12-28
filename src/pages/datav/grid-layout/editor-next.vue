@@ -749,7 +749,7 @@ export default {
               id: item.id,
               colNum: this.colNum,
             };
-            if (layoutItem?.col_span && this.screenType === 'pc') {
+            if (layoutItem?.col_span && layoutItem.row_span && layoutItem.pos_x && layoutItem.pos_y && this.screenType === 'pc') {
               obj.w = layoutItem?.row_span * 100 * 1.6 / 1920
               obj.h = layoutItem?.col_span * 100 * 1.17 / 1080
               obj.x = layoutItem?.pos_x * 100 * 1.6 / 1920
@@ -1218,6 +1218,35 @@ export default {
                 obj.data.srv_req_json = cfg?.default_srv_req_json
               }
             }
+            break;
+          case 'widget':
+          case '控件':
+            if (obj.data.row_json) {
+              obj.data.widget_json = JSON.parse(obj.data.row_json)
+            }
+            break;
+          case 'swiper':
+            if (obj.data.figure_row_json) {
+              try {
+                obj.data.swiper_json = JSON.parse(obj.data.figure_row_json)
+              } catch (error) {
+              }
+            }
+            break;
+          case 'map':
+            if (obj.data.row_json) {
+              obj.data.map_json = JSON.parse(obj.data.row_json)
+              if (obj.data.map_json?.srv_req_json) {
+                obj.data.srv_req_json = obj.data.map_json?.srv_req_json
+              }
+              if (obj.data.map_json?.cols_map_json) {
+                obj.data.cols_map_json = obj.data.map_json?.cols_map_json
+              }
+              if (obj.data.map_json?.interface_json) {
+                obj.data.interface_json = obj.data.map_json?.interface_json
+              }
+            }
+
             break;
         }
         this.layout.push(obj);

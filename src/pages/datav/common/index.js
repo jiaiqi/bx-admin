@@ -3,7 +3,7 @@ import { getImagePath } from "./http";
 // 处理后端返回的样式数据
 const formatStyleData = (json) => {
   const str = JSON.stringify(json);
-  if (!isJSON(str)) return "";
+  if (!isJSON(str)) return {};
 
   let obj = {};
   for (let key in json) {

@@ -512,7 +512,7 @@ export default {
         }
         let addCompArr = []
         layout.forEach((item, i) => {
-          const ignoreField = ['srv_req_json', 'list_json', 'card_group_json', 'sys_option', 'chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
+          const ignoreField = ['map_json', 'interface_json', 'cols_map_json', 'swiper_json', 'widget_json', 'srv_req_json', 'list_json', 'card_group_json', 'sys_option', 'chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
           const data = { ...item.data }
           ignoreField.forEach(key => {
             if (data[key]) {
@@ -539,6 +539,16 @@ export default {
             case 'cardGroup':
               compObj.serviceName = 'srvpage_cfg_card_group_add'
               break;
+            case '控件':
+            case 'widget':
+              compObj.serviceName = 'srvpage_cfg_meta_col_widget_add'
+              break;
+            case 'swiper':
+              compObj.serviceName = 'srvpage_cfg_figure_swiper_add'
+              break;
+            case 'map':
+              compObj.serviceName = 'srvpage_cfg_com_map_add'
+              break
           }
           addCompArr.push(compObj)
         });
@@ -573,6 +583,16 @@ export default {
             case 'cardGroup':
               data.card_group_no = comp?.cardg_no
               break;
+            case '控件':
+            case 'widget':
+              data.widget_no = comp?.widget_no
+              break;
+            case 'swiper':
+              data.swiper_no = comp?.swiper_no
+              break;
+            case 'map':
+              data.map_no = comp?.map_no
+              break
           }
           addObj.data.push(data);
         })
