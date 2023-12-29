@@ -140,6 +140,38 @@
                     </el-row>
                 </el-card>
                 <el-card class="box-card parint-details" style="border:0;" shadow="never">
+                    <!-- 荣誉墙效果 -->
+                    <div slot="header" class="clearfix" style="">
+                        <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`荣誉卡`}}</span>
+                        <!-- <span style="border-left: 0px solid #ddd;padding-left:20px">{{`综合分值`}}
+                            <span style="color:#ff5500;min-width:2rem;font-size:1.4rem;">
+                                {{childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].filter(item => item.semester == `${semester}`).reduce((total, num) => total + num.mun, 0) / childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].filter(item => item.semester == `${semester}`).length}}
+                            </span>
+                        </span> -->
+                    </div>
+                    <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select']) && childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select'].length > 0">
+                        <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select']" class="font-weight-bold">
+                            <!-- <el-image
+                            style="width: 48px; height: 48px"
+                            :src="item.index_icon"
+                            :fit="'fit'"></el-image> -->
+                            
+                            <div style="color:#000;line-height:1.5rem;min-width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{item.index_name}}</div>
+                            <div style="padding:8px;text-align:left">
+                                <div style="color:#007bff;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1rem;min-width:3rem;" >{{item.index_cnt}}</span></div>
+                            </div>
+                        </el-col >
+                    </el-row>
+                    <!-- <div  class="text item " style="display:flex;flex-wrap: wrap;" v-if="Array.isArray(child['_load_data']) && child['_load_data'].length > 0">
+                        <div :style="`text-align:center;background:#e8f3fd;border-radius: 10px;position: relative;margin-right:20px;margin-bottom:16px;box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);padding:8px;`" v-for="(item,index) in child['_load_data']">
+                        
+                            <div style="color:#000;line-height:1.5rem;font-size:0.8rem;color:#000;">{{item.index_name}}</div>
+                            <div style="">{{item.index_cnt ? 'X': ''}}{{item.index_cnt}}</div>
+                            
+                        </div>
+                    </div> -->
+                </el-card>
+                <el-card class="box-card parint-details" style="border:0;" shadow="never">
                     <!-- 劳动任务完成统计 -->
                     <div slot="header" class="clearfix" style="">
                         <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`完成劳动任务统计`}}</span>
@@ -363,7 +395,7 @@ var chartPie=null;
         childSrvLoaded:false,
         taskTypeSum:null,
         taskTypeState:null,
-        childServiceNames:['srvledu_semester_evaluate_task_type_select','srvledu_semester_evaluate_task_state_select','srvledu_semester_evaluate_task_select','srvledu_semester_comment_semester_select','srvledu_semester_evaluate_course_select','srvledu_semester_evaluate_labor_task_select'],
+        childServiceNames:['srvledu_semester_evaluate_task_type_select','srvledu_semester_evaluate_task_state_select','srvledu_semester_evaluate_task_select','srvledu_semester_comment_semester_select','srvledu_semester_evaluate_course_select','srvledu_semester_evaluate_labor_task_select','srvledu_semester_evaluate_labor_task_tea_select'],
         childServiceLoadDatas:{},
         option:{
             // title: {
@@ -385,6 +417,7 @@ var chartPie=null;
                 }
             ]
         },
+        allCourse:0,
       };
     },
   computed:{
@@ -398,7 +431,7 @@ var chartPie=null;
         if(this.childServiceLoadDatas && this.childServiceLoadDatas['srvledu_semester_evaluate_task_select']){
             value = this.childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester && item.semester == `${this.semester}`).reduce((total, num) => total + num.index_score, 0) / this.childServiceLoadDatas['srvledu_semester_evaluate_task_select'].filter(item => item.semester == `${this.semester}`).length;
         }
-        this.$set(this,'allValuestr',value)  // 赋值
+        // this.$set(this,'allValuestr',value)  // 赋值
         return value
     }
   },
@@ -476,6 +509,7 @@ var chartPie=null;
                             this.title = title
                             document.title = title
                             // this.detailData = response.body;
+                            this.getAllCourse() // 总分
                             // 保存详情数据
                             if(Array.isArray(this.childServiceNames) && this.childServiceNames.length > 0){
                                 // 静态需要查询的 服务数据队列
@@ -484,6 +518,7 @@ var chartPie=null;
                                     
                                 }
                             }
+                            
                         }
                     });
                     
@@ -600,6 +635,53 @@ var chartPie=null;
                 }
             });
         },
+        async getAllCourse(){
+            // srvledu_semester_evaluate_select
+            let self = this
+            let srv =  'srvledu_semester_evaluate_select'
+            let app = 'ledu'
+            let condition = [{
+                colName:'sch_year',
+                ruleType:"eq",
+                value:this.detailData.sch_year
+            },{
+                colName:'student_no',
+                ruleType:"eq",
+                value:this.detailData.student_no
+            },{
+                colName:'semester',
+                ruleType:"eq",
+                value:this.semester
+            }]
+            
+            await this.select(
+                srv,
+                condition,
+                {
+                "pageNo": 1,
+                "rownumber": 999
+                }, [],
+                null,
+                null,
+                app
+            ).then(response => {
+                
+                // console.log('srvAuthKey',srvAuthKey,response.body)
+                if(response.body.resultCode == '0111'){
+                }else{
+                    let data = response.body.data;
+                    if(response.body.state == 'SUCCESS' && Array.isArray(data) && data.length > 0){
+                        // self.$set(self.childServiceLoadDatas,srv,data); // 保存各模块内容查询数据
+                        
+                        let allValue = data[0]['all_course']
+                        console.log('评价总分',Number(allValue) ,data)
+                        this.$set(this,'allValuestr',allValue)
+                    }
+                    
+                    
+                }
+            });
+        }, 
         async getTaskCountListData(s){
             // 单独查询 4、完成劳动任务统计  // 查询所有子模块数据 通用，除了基本信息
             let self = this
