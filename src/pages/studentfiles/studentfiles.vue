@@ -140,7 +140,7 @@
                     </el-row>
                 </el-card>
                 <el-card class="box-card parint-details" style="border:0;" shadow="never">
-                    <!-- 荣誉墙效果 -->
+                    <!-- 荣誉卡 -->
                     <div slot="header" class="clearfix" style="">
                         <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`荣誉卡`}}</span>
                         <!-- <span style="border-left: 0px solid #ddd;padding-left:20px">{{`综合分值`}}
@@ -761,12 +761,12 @@ var chartPie=null;
                     }
                 }
                 completionRate = isCompletion/allNum
-                // console.log(completionRate.toFixed(2),isCompletion,allNum)
+                console.log(completionRate.toFixed(2),isCompletion,allNum)
             }
             let options =  { 
                 title : {
                     show:true,//显示策略，默认值true,可选为：true（显示） | false（隐藏）
-                    text: `${completionRate.toFixed(2)}%`,//主标题文本，'\n'指定换行
+                    text: `${completionRate.toFixed(2) * 100}%`,//主标题文本，'\n'指定换行
                     subtext: '完成率',//副标题文本，'\n'指定换行
                     x:'50%',//水平安放位置，默认为'left'，可选为：'center' | 'left' | 'right' | {number}（x坐标，单位px）
                     y: '45%',//垂直安放位置，默认为top，可选为：'top' | 'bottom' | 'center' | {number}（y坐标，单位px）
