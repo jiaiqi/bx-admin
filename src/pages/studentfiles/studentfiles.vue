@@ -274,9 +274,9 @@
                     <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;min-height:60px`" >
                         <el-col :span="24" :style="`padding:8px;`" >
                             <div style="padding:8px;text-align:left;display:flex;align-items:center;">
-                                <!-- <div style="color:#ff5500;font-size:3rem;">
-                                    {{allValue}}
-                                </div> -->
+                                <div style="color:#ff5500;font-size:3rem;">
+                                    {{allValuestr}}
+                                </div>
                                 <div style="padding-left:10px;">
                                     <!-- <div>
                                         评分
