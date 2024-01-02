@@ -1,6 +1,6 @@
 <template>
 	<div class="notice-bar">
-		<img :src="getImagePath(pageItem.notice_bar_json.icon)" class="notice-icon">
+		<img :src="getImagePath(pageItem.notice_bar_json.icon)" class="notice-icon" v-if="pageItem.notice_bar_json">
 		<el-alert :title="item" type="warning" v-for="item in list">
 		</el-alert>
 		<!-- <u-notice-bar class="notice-item" bg-color="#fff" color="#333" font-size="26" padding="9px 0 9px 30px" :mode="mode" :list="list"
@@ -53,7 +53,14 @@ export default {
 	},
 	methods: {
 		async getNoticeBarData(p) {
-			if (!p.serviceName || !p.mapp) return
+			if (!p.serviceName || !p.mapp) {
+				console.log('getNoticeBarData');
+				this.listData = this.pageItem?.notice_bar_json?.mock_data_json || []
+				if(!this.listData.length&&this.pageItem.mock_data_json){
+					this.listData=JSON.parse(this.pageItem.mock_data_json)
+				}
+				return
+			}
 
 			const url = `/${p.mapp}/select/${p.serviceName}`
 			const req = {

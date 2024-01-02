@@ -15,7 +15,7 @@
         v-loading="componentLoading">
         <simple-update ref="compFormUpdate" name="list-update" :service="componentService" :navAfterSubmit="false"
           :pk="componentId" pkCol="id" @action-complete="onComponentUpdate"
-          @form-loaded="componentLoading = false, componentLoaded = true" v-if="componentId">
+          @form-loaded="componentLoading = false, componentLoaded = true, setCompServiceCfg()" v-if="componentId">
         </simple-update>
         <simple-add ref="compForm" :pageName="'list-duplicate'" :service="componentService"
           :defaultValues="addCompDefaultValues" @executor-complete="onComponentUpdate($event, 'add')"
@@ -74,6 +74,7 @@ export default {
       handler(newValue, oldValue) {
         if (newValue) {
           this.activeTab = "组件";
+          this.setCompServiceCfg()
         } else {
           this.activeTab = "页面";
         }
@@ -88,67 +89,49 @@ export default {
       if (newValue && newValue !== oldValue) {
         this.componentLoading = true;
         this.layoutLoading = true;
+        this.setCompServiceCfg()
         setTimeout(() => {
           this.componentLoading = false;
           this.layoutLoading = false;
         }, 3000);
+      } else if (!newValue) {
+        this.compServiceCfg = null
       }
     },
   },
   computed: {
+    strLayoutObj(){
+      if(this.strLayout){
+        return JSON.parse(this.strLayout)
+      }
+    },
     compFormModel() {
       return this.$refs?.compFormUpdate?.formModel
     },
-    compServiceCfg() {
-      if (this.componentLoaded) {
-        const obj = {
-          service: '',
-          col: "",
-          pkCol: '',
-          pk: ''
+    updateList() {
+      let oldLayout = JSON.parse(this.strLayout)
+      const updateList = this.layout.filter(item => {
+        if (item.id) {
+          let newItem = oldLayout.find(e => e.id === item.id)
+          if (newItem) {
+            return newItem.w !== item.w || newItem.h !== item.h || newItem.x !== item.x || newItem.y !== item.y
+          }
         }
-        switch (this.compType) {
-          case 'chart':
-            obj.service = 'srvpage_cfg_com_chart_update'
-            obj.pkCol = 'chart_no'
-            break;
-          case 'swiper':
-            obj.service = 'srvpage_cfg_figure_swiper_update'
-            obj.pkCol = 'swiper_no'
-            break;
-          case 'list'://列表
-            obj.service = 'srvpage_cfg_com_list_update'
-            obj.pkCol = 'list_no'
-            break;
-          case 'grid': //宫格
-            obj.service = 'srvpage_cfg_com_grid_update'
-            obj.pkCol = 'grid_no'
-            break
-          case 'cardGroup': //卡片组
-            obj.service = 'srvpage_cfg_card_group_update'
-            obj.col = 'card_group_no'
-            obj.pkCol = 'cardg_no'
-            break
-          case 'map': //地图
-            obj.service = 'srvpage_cfg_com_map_update'
-            obj.pkCol = 'map_no'
-            break
-          case 'tabs': //
-            obj.service = 'srvpage_cfg_com_tabs_update'
-            obj.pkCol = 'tabs_no'
-            break
-          case '控件': //
-            obj.service = 'srvpage_cfg_meta_col_widget_update'
-            obj.pkCol = 'widget_no'
-            break
-          default:
-            break;
+      })
+      return updateList.map(item => {
+        return {
+          id: item.id,
+          layout_width: item.w,
+          layout_height: item.h,
+          layout_x: item.x,
+          layout_y: item.y
         }
-        obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol]
-        return obj
-      }
-
+      })
     },
+    // compServiceCfg() {
+
+
+    // },
     screentype: {
       get() {
         return this.screeType
@@ -224,9 +207,74 @@ export default {
       layoutLoading: false,
       activeTab: "页面",
       componentLoaded: false,
+      compServiceCfg: null
     };
   },
   methods: {
+    setCompServiceCfg() {
+      if (this.componentLoaded) {
+        const obj = {
+          service: '',
+          col: "",
+          pkCol: '',
+          pk: ''
+        }
+        switch (this.compType) {
+          case 'chart':
+            obj.service = 'srvpage_cfg_com_chart_update'
+            obj.pkCol = 'chart_no'
+            break;
+          case 'swiper':
+            obj.service = 'srvpage_cfg_figure_swiper_update'
+            obj.pkCol = 'swiper_no'
+            break;
+          case 'list'://列表
+            obj.service = 'srvpage_cfg_com_list_update'
+            obj.pkCol = 'list_no'
+            break;
+          case 'grid': //宫格
+            obj.service = 'srvpage_cfg_com_grid_update'
+            obj.pkCol = 'grid_no'
+            break
+          case 'cardGroup': //卡片组
+            obj.service = 'srvpage_cfg_card_group_update'
+            obj.col = 'card_group_no'
+            obj.pkCol = 'cardg_no'
+            break
+          case 'map': //地图
+            obj.service = 'srvpage_cfg_com_map_update'
+            obj.pkCol = 'map_no'
+            break
+          case 'tabs': //
+            obj.service = 'srvpage_cfg_com_tabs_update'
+            obj.pkCol = 'tabs_no'
+            break
+          case '控件': //
+            obj.service = 'srvpage_cfg_meta_col_widget_update'
+            obj.pkCol = 'widget_no'
+            break
+          case 'noticeBar': //通知条
+            obj.service = 'srvpage_cfg_com_notice_bar_update'
+            obj.pkCol = 'notice_bar_no'
+            break
+          case 'tabs': //标签tabs
+            obj.service = 'srvpage_cfg_com_tabs_update'
+            obj.pkCol = 'tabs_no'
+            break
+          case 'form': //表单
+            obj.service = 'srvpage_cfg_com_form_update'
+            obj.pkCol = 'notice_bar_no'
+            break
+        }
+        obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol]
+        if (!obj.pk) {
+          setTimeout(() => {
+            this.setCompServiceCfg()
+          }, 3000);
+        }
+        this.compServiceCfg = obj
+      }
+    },
     async addComponent(componentData) {
       if (componentData?.id) {
         // 组件创建成功后创建对应布局
@@ -462,7 +510,6 @@ export default {
                     return newItem.w !== item.w || newItem.h !== item.h || newItem.x !== item.x || newItem.y !== item.y
                   }
                 }
-
               })
               if (updateList?.length) {
                 const updateObj = updateList.map(item => {
@@ -549,6 +596,15 @@ export default {
             case 'map':
               compObj.serviceName = 'srvpage_cfg_com_map_add'
               break
+            case 'noticeBar':
+              compObj.serviceName = 'srvpage_cfg_com_notice_bar_add'
+              break
+            case 'form': //表单
+              compObj.serviceName = 'srvpage_cfg_com_form_add'
+              break
+            case 'tabs': //
+              compObj.serviceName = 'srvpage_cfg_com_tabs_add'
+              break
           }
           addCompArr.push(compObj)
         });
@@ -589,9 +645,18 @@ export default {
               break;
             case 'swiper':
               data.swiper_no = comp?.swiper_no
+              data.image = null
               break;
             case 'map':
               data.map_no = comp?.map_no
+              break
+            case 'noticeBar':
+              data.notice_bar_no = comp?.notice_bar_no
+              break
+            case 'form':
+              data.form_no = comp?.form_no
+            case 'tabs':
+              data.tabs_no = comp?.tabs_no
               break
           }
           addObj.data.push(data);
@@ -607,12 +672,17 @@ export default {
         const response = event?.data?.response?.[0]?.response?.effect_data;
         if (Array.isArray(response) && response.length > 0) {
           const resData = response[0];
-          this.addComponent(resData).then((res) => {
-            if (res) {
-              this.$emit("refresh", resData);
-              this.activeTab = '页面'
-            }
-          });
+          if (this.useLayout) {
+            this.addComponent(resData).then((res) => {
+              if (res) {
+                this.$emit("refresh", resData);
+                this.activeTab = '页面'
+              }
+            });
+          } else {
+            this.$emit("refresh", resData);
+            this.activeTab = '页面'
+          }
           return;
         }
       }

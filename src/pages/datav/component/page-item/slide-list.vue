@@ -6,7 +6,7 @@
 				<text class="cuIcon-home"></text></button>
 		</div> -->
 		<el-carousel class="card-swiper square-dot" :indicator-dots="false"
-			:style="[tagStylefn(pageItem.swiper_json.style_json)]" :circular="true" :autoplay="true" interval="5000"
+			:style="[tagStylefn(pageItem.swiper_json.style_json)]" :circular="true" :autoplay="true" :interval="5000"
 			duration="500" @change="swiperChange" indicator-color="#333" indicator-active-color="#E8E8E8"
 			v-if="swiperList.length > 1 && swiperStyle === '卡片'">
 			<el-carousel-item v-for="(item, index) in swiperList" :key="index" :class="current == index ? 'cur' : ''">
@@ -57,7 +57,7 @@ export default {
 			return this.pageItem?.swiper_style || '平铺'
 		},
 		interval() {
-			return this.pageItem?.more_config?.interval || '5000'
+			return this.pageItem?.more_config?.interval || 5000
 		},
 		autoplay() {
 			return this.pageItem?.more_config?.autoplay === false ? false : true
@@ -116,7 +116,7 @@ export default {
 			if (this.videoContext.parse) {
 				this.videoContext.parse()
 			}
-			this.current = e.detail.current
+			this.current = e?.detail?.current||e
 			if (this.swiperList[this.current].file_type === '视频') {
 				this.videoContext = uni.createVideoContext(this.swiperList[this.current].store_video_file, this)
 			}

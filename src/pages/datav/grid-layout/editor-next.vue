@@ -739,7 +739,7 @@ export default {
             }
             const obj = {
               x: item.layout_x || 0,
-              y: item.layout_y || index * this.initWH.h,
+              y: item.layout_y || item.layout_y === 0 ? item.layout_y : index * this.initWH.h,
               w: item.layout_width || this.initWH.w,
               h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
@@ -749,14 +749,14 @@ export default {
               id: item.id,
               colNum: this.colNum,
             };
-            if (layoutItem?.col_span && layoutItem.row_span && layoutItem.pos_x && layoutItem.pos_y && this.screenType === 'pc') {
+            if (layoutItem?.col_span && layoutItem.row_span && layoutItem.pos_x && layoutItem.pos_y && this.screenType === 'pc' && this.useLayout) {
               obj.w = layoutItem?.row_span * 100 * 1.6 / 1920
               obj.h = layoutItem?.col_span * 100 * 1.17 / 1080
               obj.x = layoutItem?.pos_x * 100 * 1.6 / 1920
               obj.y = layoutItem?.pos_y * 100 * 1.17 / 1080
               obj.layout_no = layoutItem?.layout_no
             }
-            this.layout.push(obj)
+            this.layout.push(JSON.parse(JSON.stringify(obj)))
           })
         }
         this.strLayout = JSON.stringify(this.layout);
@@ -1246,7 +1246,21 @@ export default {
                 obj.data.interface_json = obj.data.map_json?.interface_json
               }
             }
-
+            break;
+          case 'tabs':
+            if (obj.data.row_json) {
+              obj.data.tabs_json = JSON.parse(obj.data.row_json)
+            }
+            break;
+          case 'form':
+            if (obj.data.row_json) {
+              obj.data.form_json = JSON.parse(obj.data.row_json)
+            }
+            break;
+          case 'noticeBar':
+            if (obj.data.row_json) {
+              obj.data.notice_bar_json = JSON.parse(obj.data.row_json)
+            }
             break;
         }
         this.layout.push(obj);
