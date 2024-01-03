@@ -256,6 +256,7 @@ export default {
           case 'noticeBar': //通知条
             obj.service = 'srvpage_cfg_com_notice_bar_update'
             obj.pkCol = 'notice_bar_no'
+            obj.col = 'noticebar_no'
             break
           case 'tabs': //标签tabs
             obj.service = 'srvpage_cfg_com_tabs_update'
@@ -559,7 +560,7 @@ export default {
         }
         let addCompArr = []
         layout.forEach((item, i) => {
-          const ignoreField = ['map_json', 'interface_json', 'cols_map_json', 'swiper_json', 'widget_json', 'srv_req_json', 'list_json', 'card_group_json', 'sys_option', 'chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
+          const ignoreField = ['notice_bar_json','tabs_json','form_json','map_json', 'interface_json', 'cols_map_json', 'swiper_json', 'widget_json', 'srv_req_json', 'list_json', 'card_group_json', 'sys_option', 'chart_json', 'com_type', 'comp_label', 'create_time', 'com_no', 'create_user', 'create_user_disp', 'del_flag', 'id', 'modify_time', 'modify_user', 'modify_user_disp', 'row_json', 'page_no']
           const data = { ...item.data }
           ignoreField.forEach(key => {
             if (data[key]) {
@@ -651,7 +652,7 @@ export default {
               data.map_no = comp?.map_no
               break
             case 'noticeBar':
-              data.notice_bar_no = comp?.notice_bar_no
+              data.notice_bar_no = comp?.noticebar_no
               break
             case 'form':
               data.form_no = comp?.form_no
