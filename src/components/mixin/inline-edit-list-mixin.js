@@ -348,6 +348,9 @@ export default {
             }
             // this.oldGridData[index][e.column] = e.oldValue
             this.$set(item, e.column, e.newValue);
+            if (!item._dirtyFlags || item._dirtyFlags === "pristine") {
+              this.$set(item, "_dirtyFlags", "update");
+            }
           } else {
             isValid = false;
             this.$refs?.[`inlineEditor${e.column}`][index]?.showValid({
