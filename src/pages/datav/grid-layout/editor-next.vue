@@ -1,85 +1,263 @@
 <template>
-  <div class="customhome-container" :class="{ mobile: screenType === 'mobile' && isDataview }"
-    :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
+  <div
+    class="customhome-container"
+    :class="{ mobile: screenType === 'mobile' && isDataview }"
+    :style="'--right-width:' + rightWidth + 'px'"
+    @dragenter="dragDefFn($event)"
+    @dragover="dragDefFn($event)"
+  >
     <div class="cushome-sidebar" v-if="!isDataview">
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
-        <div v-for="item in comList" :key="item.id" class="com-item margin component">
-          <img :src="getImagePath(item.preview)" alt="" class="example" @drag="drag(item)" @dragend="dragend(item)"
-            draggable="true" unselectable="on">
+        <div
+          v-for="item in comList"
+          :key="item.id"
+          class="com-item margin component"
+        >
+          <img
+            :src="getImagePath(item.preview)"
+            alt=""
+            class="example"
+            @drag="drag(item)"
+            @dragend="dragend(item, $event)"
+            draggable="true"
+            unselectable="on"
+          />
           <div class="label">{{ item.comp_label }}</div>
         </div>
       </div>
     </div>
     <div class="cushome-right" v-if="!isDataview">
       <div class="left-line" id="left-line"></div>
-      <property-pane :use-layout="useLayout" :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType"
-        :currentItem="currentItem" :layout="layout" :str-layout="strLayout" @save="clickSave" @preview="toPreview"
-        @refresh="initPage" @screentype="screenType = $event"></property-pane>
+      <!-- <property-pane
+        :use-layout="useLayout"
+        :pageConfg="pageConfg"
+        :appNo="appNo"
+        :scree-type="screenType"
+        :currentItem="currentItem"
+        :layout="layout"
+        :str-layout="strLayout"
+        @save="clickSave"
+        @preview="toPreview"
+        @refresh="initPage"
+        @screentype="screenType = $event"
+      ></property-pane> -->
     </div>
-    <div class="cushome-content" id="content" :style="[]" :class="{ 'data-view-mode': isDataview }">
-      <div class="custom-design" id="custom-design" ref="customDesign" :style="[stylefn(styleJson)]"
-        v-if="screenType === 'PC'">
-        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
-          :preventCollision="true" :responsive="false" :is-draggable="!isDataview" :is-resizable="!isDataview"
-          :is-mirrored="false" :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent">
-          <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
-          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
-            @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
-            <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i class="el-icon-close"></i></span>
+    <div
+      class="cushome-content"
+      id="content"
+      :style="[]"
+      :class="{ 'data-view-mode': isDataview }"
+    >
+      <div
+        class="custom-design"
+        id="custom-design"
+        ref="customDesign"
+        :style="[stylefn(styleJson)]"
+        v-if="screenType === 'PC'"
+      >
+        <grid-layout
+          ref="gridlayout"
+          :layout.sync="layout"
+          :col-num="colNum"
+          :row-height="rowHeight"
+          :preventCollision="true"
+          :responsive="false"
+          :is-draggable="!isDataview"
+          :is-resizable="!isDataview"
+          :is-mirrored="false"
+          :vertical-compact="false"
+          :margin="[0, 0]"
+          :use-css-transforms="true"
+          @layout-updated="layoutUpdatedEvent"
+          v-if="allowedOverlap === false"
+        >
+          <div
+            class="grid-container"
+            id="grid-container"
+            :style="[bjStyles]"
+          ></div>
+          <grid-item
+            v-for="item in layout"
+            :x="item.x"
+            :y="item.y"
+            :w="item.w"
+            :h="item.h"
+            :i="item.i"
+            :key="item.i"
+            @moved="movedEvent"
+            @resized="resizedEvent"
+            class="gridItem"
+            @dblclick.native="toComponentDetail(item)"
+          >
+            <span
+              class="remove"
+              @click.stop="removeItem(item.i)"
+              v-if="!isDataview"
+              ><i class="el-icon-close"></i
+            ></span>
             <div class="com-item dashed" v-if="isDataview">
-              <page-item :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
-                :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item" @click.stop=""
-                @resize="resize"></page-item>
+              <page-item
+                :use-layout="useLayout"
+                ref="pageItem"
+                @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel"
+                :page-item="item.data"
+                :layout="item"
+                @click.stop=""
+                @resize="resize"
+              ></page-item>
             </div>
-            <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
-              @click.stop.prevent.capture="changeDesign(item.i)">
-              <page-item :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
-                :pageParamsModel="pageParamsModel" :page-item="item.data" :layout="item"></page-item>
+            <div
+              class="com-item dashed"
+              :class="{ active: item.i === curDesign }"
+              v-else
+              @click.stop.prevent.capture="changeDesign(item.i)"
+            >
+              <page-item
+                :use-layout="useLayout"
+                ref="pageItem"
+                @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel"
+                :page-item="item.data"
+                :layout="item"
+              ></page-item>
             </div>
           </grid-item>
         </grid-layout>
+        <div v-else class="drag-layout">
+          <!-- 可重叠布局 -->
+          <vue-drag-resize
+            :parentLimitation="true"
+            :z="item.z"
+            :x="vw2px(item.x)"
+            :y="vh2px(item.y)"
+            :w="vw2px(item.w)"
+            :h="vh2px(item.h)"
+            :isActive="item.i === curDesign"
+            :class="{ active: item.i === curDesign }"
+            @clicked="changeDesign(item.i, $event)"
+            v-for="item in layout"
+          >
+            <page-item
+              :use-layout="useLayout"
+              ref="pageItem"
+              @setPageParams="setPageParams"
+              :pageParamsModel="pageParamsModel"
+              :page-item="item.data"
+              :layout="item"
+            ></page-item>
+          </vue-drag-resize>
+        </div>
       </div>
-      <div class="custom-design" :class="{ mobile: screenType === 'mobile' }" id="custom-design" ref="customDesign"
+      <div
+        class="custom-design"
+        :class="{ mobile: screenType === 'mobile' }"
+        id="custom-design"
+        ref="customDesign"
         v-else-if="screenType === 'mobile'"
-        style="width: 375px;height: 667px;margin-top: 5vh;overflow-y:auto;overflow-x: hidden;">
-        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
-          :vertical-compact="true" :is-draggable="!isDataview" :is-resizable="true" :is-mirrored="false" :margin="[0, 0]"
-          :autoSize="true" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent" :responsive="false"
-          :preventCollision="true">
-          <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
+        style="
+          width: 375px;
+          height: 667px;
+          margin-top: 5vh;
+          overflow-y: auto;
+          overflow-x: hidden;
+        "
+      >
+        <grid-layout
+          ref="gridlayout"
+          :layout.sync="layout"
+          :col-num="colNum"
+          :row-height="rowHeight"
+          :vertical-compact="true"
+          :is-draggable="!isDataview"
+          :is-resizable="true"
+          :is-mirrored="false"
+          :margin="[0, 0]"
+          :autoSize="true"
+          :use-css-transforms="true"
+          @layout-updated="layoutUpdatedEvent"
+          :responsive="false"
+          :preventCollision="true"
+        >
+          <div
+            class="grid-container"
+            id="grid-container"
+            :style="[bjStyles]"
+          ></div>
           <template v-if="isDataview || onMobilePreview">
-            <div v-for="item in layout" style="min-height: 100px;">
-              <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
+            <div v-for="item in layout" style="min-height: 100px">
+              <page-item
+                ref="pageItem"
+                @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel"
+                :page-item="item.data"
+                :layout="item"
+                @click.stop=""
+                @resize="resize"
+              ></page-item>
             </div>
-
           </template>
           <template v-else>
-            <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
-              @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
-              <span class="remove" @click.stop="removeItem(item.i)" v-if="!isDataview"><i
-                  class="el-icon-close"></i></span>
+            <grid-item
+              v-for="item in layout"
+              :x="item.x"
+              :y="item.y"
+              :w="item.w"
+              :h="item.h"
+              :i="item.i"
+              :key="item.i"
+              @moved="movedEvent"
+              @resized="resizedEvent"
+              class="gridItem"
+              @dblclick.native="toComponentDetail(item)"
+            >
+              <span
+                class="remove"
+                @click.stop="removeItem(item.i)"
+                v-if="!isDataview"
+                ><i class="el-icon-close"></i
+              ></span>
               <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
                 @click.stop.prevent.capture="changeDesign(item.i)">
                 <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
               </div> -->
               <div class="com-item dashed" v-if="isDataview">
-                <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                  :page-item="item.data" :layout="item" @click.stop="" @resize="resize"></page-item>
+                <page-item
+                  ref="pageItem"
+                  @setPageParams="setPageParams"
+                  :pageParamsModel="pageParamsModel"
+                  :page-item="item.data"
+                  :layout="item"
+                  @click.stop=""
+                  @resize="resize"
+                ></page-item>
               </div>
-              <div class="com-item dashed" :class="{ 'active': item.i === curDesign }" v-else
-                @click.stop.prevent.capture="changeDesign(item.i)">
-                <page-item ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
-                  :page-item="item.data" :layout="item"></page-item>
+              <div
+                class="com-item dashed"
+                :class="{ active: item.i === curDesign }"
+                v-else
+                @click.stop.prevent.capture="changeDesign(item.i)"
+              >
+                <page-item
+                  ref="pageItem"
+                  @setPageParams="setPageParams"
+                  :pageParamsModel="pageParamsModel"
+                  :page-item="item.data"
+                  :layout="item"
+                ></page-item>
               </div>
             </grid-item>
           </template>
         </grid-layout>
       </div>
-      <div v-if="screenType === 'mobile' && !isDataview && pgNo" style="text-align: center;margin-top: 50px;">
-        <el-button @click="previewCurrent">{{ onMobilePreview ? '编辑' : '预览' }}</el-button>
+      <div
+        v-if="screenType === 'mobile' && !isDataview && pgNo"
+        style="text-align: center; margin-top: 50px"
+      >
+        <el-button @click="previewCurrent">{{
+          onMobilePreview ? "编辑" : "预览"
+        }}</el-button>
         <el-button @click="previewMobile">h5</el-button>
       </div>
     </div>
@@ -96,6 +274,7 @@
 <script>
 import dayjs from "dayjs";
 import { GridLayout, GridItem } from "vue-grid-layout";
+import VueDragResize from "vue-drag-resize";
 import PageItem from "../component/page-item/page-item.vue";
 import propertyPane from "./property-pane.vue";
 import componentPane from "./left-pane/component-pane.vue";
@@ -104,9 +283,8 @@ import { $axios } from "../common/http.js";
 let mouseXY = { x: null, y: null };
 let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 
-
 // 页面参数
-import pageParams from '../common/params/page-params-mixin.js'
+import pageParams from "../common/params/page-params-mixin.js";
 
 export default {
   // name: "pageEditor",
@@ -114,9 +292,10 @@ export default {
   components: {
     GridLayout,
     GridItem,
+    VueDragResize,
     PageItem,
     propertyPane,
-    componentPane
+    componentPane,
   },
   data() {
     return {
@@ -132,7 +311,7 @@ export default {
       rowHeight: 10.8,
       pgNo: "",
       pageId: "",
-      appNo: "",//应用编号
+      appNo: "", //应用编号
       pageName: "可视化配置",
       pageTitle: "可视化配置页",
       // styleJson: null,
@@ -166,20 +345,18 @@ export default {
     };
   },
   created() {
-    debugger
-
     if (this.$route.query.appNo) {
       this.appNo = this.$route.query.appNo;
     }
     if (this.$route.query.pageNo || this.$route.params?.no) {
       this.pgNo = this.$route.query.pageNo || this.$route.params?.no;
-      debugger
+      debugger;
       this.initPage();
     }
   },
   mounted() {
     if (this.$route.query.screenType) {
-      this.screenType = this.$route.query.screenType
+      this.screenType = this.$route.query.screenType;
     }
     this.initDesign();
     if (!this.isDataview) {
@@ -194,19 +371,18 @@ export default {
       );
       this.moveMousemove();
       this.moveMouseup();
-      document.getElementById('custom-design').onclick = (e) => {
+      document.getElementById("custom-design").onclick = (e) => {
         this.curDesign = "";
       };
     }
     this.initColNum();
 
-
     // if (!process?.env?.NODE_ENV === "development") {
     // 开发模式不监听窗口变化
-    if (this.isDataview && this.screenType === 'pc') {
-      window.addEventListener('resize', () => {
+    if (this.isDataview && this.screenType === "pc") {
+      window.addEventListener("resize", () => {
         this.resize();
-      })
+      });
     }
     // }
 
@@ -217,26 +393,33 @@ export default {
     }, 3000);
   },
   computed: {
+    allowedOverlap() {
+      // 允许重叠
+      return true;
+    },
     styleJson() {
-      let json = this.pageConfg?.page_row_json_data?.page_style_json
+      let json = this.pageConfg?.page_row_json_data?.page_style_json;
       if (!json) {
         json = {
-          width: this.screenType == 'PC' ? '1920px' : '375px',
-          height: this.screenType == 'PC' ? '1080px' : '667px',
-        }
+          width: this.screenType == "PC" ? "1920px" : "375px",
+          height: this.screenType == "PC" ? "1080px" : "667px",
+        };
       }
       if (this.isDataview && (json?.width || json?.height)) {
-        delete json.width
-        delete json.height
+        delete json.width;
+        delete json.height;
       }
-      return json
+      return json;
     },
     useLayout() {
-      return this.pageConfg?.page_options?.includes('布局容器') || false
+      return this.pageConfg?.page_options?.includes("布局容器") || false;
     },
     isDataview() {
       // 预览模式
-      return this.$route?.name === "gridview" || this.$route?.name === "gridViewDetail";
+      return (
+        this.$route?.name === "gridview" ||
+        this.$route?.name === "gridViewDetail"
+      );
     },
     showFullScreen() {
       return (
@@ -252,18 +435,20 @@ export default {
       );
     },
     initWH() {
-      const ele = this.$refs.customDesign
+      const ele = this.$refs.customDesign;
       if (ele && ele instanceof HTMLElement) {
-        const eleHeight = ele.offsetHeight
-        const eleWidth = ele.offsetWidth
+        const eleHeight = ele.offsetHeight;
+        const eleWidth = ele.offsetWidth;
         return {
-          w: this.screenType === 'mobile' ? 100 : 10,
-          h: this.screenType === 'mobile' ? 20 : parseFloat((5 * eleWidth / eleHeight).toFixed(6)),
+          w: this.screenType === "mobile" ? 100 : 10,
+          h:
+            this.screenType === "mobile"
+              ? 20
+              : parseFloat(((5 * eleWidth) / eleHeight).toFixed(6)),
           // w: containerWidth / 4,
           // h: containerWidth / 8,
         };
       }
-
     },
     currentItem() {
       return this.layout.find((item) => item.i === this.curDesign);
@@ -279,18 +464,50 @@ export default {
     },
   },
   methods: {
+    px2vw(num) {
+      // px转为vw
+      const ele = this.$refs.customDesign;
+      if (ele && ele instanceof HTMLElement) {
+        const eleWidth = ele.offsetWidth;
+        return (num / eleWidth) * 100;
+      }
+    },
+    px2vh(num) {
+      // px转为vh
+      const ele = this.$refs.customDesign;
+      if (ele && ele instanceof HTMLElement) {
+        const eleHeight = ele.offsetHeight;
+        return (num / eleHeight) * 100;
+      }
+    },
+    vw2px(num) {
+      //vw转为px
+      const ele = this.$refs.customDesign;
+      if (ele && ele instanceof HTMLElement) {
+        const eleWidth = ele.offsetWidth;
+        return (num / 100) * eleWidth;
+      }
+    },
+    vh2px(num) {
+      // vh转为px
+      const ele = this.$refs.customDesign;
+      if (ele && ele instanceof HTMLElement) {
+        const eleHeight = ele.offsetHeight;
+        return (num / 100) * eleHeight;
+      }
+    },
     previewCurrent() {
-      this.onMobilePreview = !this.onMobilePreview
+      this.onMobilePreview = !this.onMobilePreview;
       // window.open(window.location.hash.replace("/editor/", "/view/"));
     },
     previewMobile() {
-      window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`)
+      window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`);
     },
     resize() {
       // 自适应缩放
       if (!this.isDataview) {
         // 编辑状态不缩放
-        return
+        return;
       }
       let element = document.getElementById("custom-design");
       let resizeFull = () => {
@@ -327,10 +544,10 @@ export default {
       resizeFull();
     },
     initColNum() {
-      const ele = this.$refs.customDesign
+      const ele = this.$refs.customDesign;
       if (ele && ele instanceof HTMLElement) {
-        const eleHeight = ele.offsetHeight
-        this.rowHeight = parseFloat((eleHeight / 100).toFixed(6)) //行高设置为页面高度的1/100
+        const eleHeight = ele.offsetHeight;
+        this.rowHeight = parseFloat((eleHeight / 100).toFixed(6)); //行高设置为页面高度的1/100
       }
       let containerWidth = document.getElementById("custom-design").offsetWidth;
 
@@ -366,15 +583,14 @@ export default {
     },
     async saveFn() {
       let addObj = {};
-      const layout = this.layout.map(item => {
+      const layout = this.layout.map((item) => {
         return {
           ...item,
-          timestamp: Number((new Date().getTime() + '').slice(-9))
-        }
-      })
+          timestamp: Number((new Date().getTime() + "").slice(-9)),
+        };
+      });
       // 新增保存
       if (!this.pgNo) {
-
         // 布局容器
         addObj = {
           serviceName: "srvpage_cfg_layout_add",
@@ -597,7 +813,7 @@ export default {
           break;
       }
 
-      const response = await this.operate(params)
+      const response = await this.operate(params);
       if (response.data.state === "SUCCESS") {
         if (isTrue) {
           return response.data.response[0].response.effect_data[0];
@@ -619,11 +835,11 @@ export default {
       ).page_no;
     },
     async initPage(data) {
-      console.log('initPage');
+      console.log("initPage");
       if (data?.page_no) {
-        this.pgNo = data.page_no
+        this.pgNo = data.page_no;
       }
-      this.layout = []
+      this.layout = [];
       const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
         serviceName: "srvpage_cfg_page_guest_select",
@@ -668,9 +884,13 @@ export default {
         //   }
         // }
         this.contentData = {
-          width: this.styleJson?.width || (this.screenType === 'mobile' ? '375px' : '1920px'),
-          height: this.styleJson?.height || (this.screenType === 'mobile' ? '667px' : '1080px'),
-        }
+          width:
+            this.styleJson?.width ||
+            (this.screenType === "mobile" ? "375px" : "1920px"),
+          height:
+            this.styleJson?.height ||
+            (this.screenType === "mobile" ? "667px" : "1080px"),
+        };
         // if (this.isDataview) {
         //   delete this.styleJson.width;
         //   delete this.styleJson.height;
@@ -686,7 +906,10 @@ export default {
         this.comJson = this.comJson.sort((a, b) => a.layout_seq - b.layout_seq);
 
         this.layoutJson = data.layout_json_data;
-        if (Array.isArray(data.layout_json_data) && data.layout_json_data.length > 0) {
+        if (
+          Array.isArray(data.layout_json_data) &&
+          data.layout_json_data.length > 0
+        ) {
           this.layoutJson.parts_json = data.layout_json_data.sort(
             (a, b) => a.seq - b.seq
           );
@@ -715,23 +938,25 @@ export default {
         } else {
           // 直接将坐标、宽高存在组件上
           if (this.layoutJson?.parts_json?.length) {
-
           } else {
             this.comJson = this.comJson.sort((a, b) => a.com_seq - b.com_seq);
           }
           this.comJson.forEach((item, index) => {
-            let layoutItem = {}
+            let layoutItem = {};
             if (this.layoutJson?.parts_json?.length - 1 >= index) {
               // 兼容之前使用布局容器的方案
-              layoutItem = this.layoutJson.parts_json[index]
+              layoutItem = this.layoutJson.parts_json[index];
             }
             switch (item.com_type) {
-              case 'list':
-                if (!item.srv_req_json && item.list_json?.default_srv_req_json) {
-                  item.srv_req_json = item.list_json.default_srv_req_json
+              case "list":
+                if (
+                  !item.srv_req_json &&
+                  item.list_json?.default_srv_req_json
+                ) {
+                  item.srv_req_json = item.list_json.default_srv_req_json;
                 }
                 if (!item.cols_map_json && item.list_json?.cols_map_json) {
-                  item.cols_map_json = item.list_json.cols_map_json
+                  item.cols_map_json = item.list_json.cols_map_json;
                 }
                 break;
               default:
@@ -739,7 +964,11 @@ export default {
             }
             const obj = {
               x: item.layout_x || 0,
-              y: item.layout_y || item.layout_y === 0 ? item.layout_y : index * this.initWH.h,
+              y:
+                item.layout_y || item.layout_y === 0
+                  ? item.layout_y
+                  : index * this.initWH.h,
+              z: item.layout_z || 1,
               w: item.layout_width || this.initWH.w,
               h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
@@ -749,38 +978,33 @@ export default {
               id: item.id,
               colNum: this.colNum,
             };
-            if (layoutItem?.col_span && layoutItem.row_span && layoutItem.pos_x && layoutItem.pos_y && this.screenType === 'pc' && this.useLayout) {
-              obj.w = layoutItem?.row_span * 100 * 1.6 / 1920
-              obj.h = layoutItem?.col_span * 100 * 1.17 / 1080
-              obj.x = layoutItem?.pos_x * 100 * 1.6 / 1920
-              obj.y = layoutItem?.pos_y * 100 * 1.17 / 1080
-              obj.layout_no = layoutItem?.layout_no
+            if (
+              layoutItem?.col_span &&
+              layoutItem.row_span &&
+              layoutItem.pos_x &&
+              layoutItem.pos_y &&
+              this.screenType === "pc" &&
+              this.useLayout
+            ) {
+              obj.w = (layoutItem?.row_span * 100 * 1.6) / 1920;
+              obj.h = (layoutItem?.col_span * 100 * 1.17) / 1080;
+              obj.x = (layoutItem?.pos_x * 100 * 1.6) / 1920;
+              obj.y = (layoutItem?.pos_y * 100 * 1.17) / 1080;
+              obj.layout_no = layoutItem?.layout_no;
             }
-            this.layout.push(JSON.parse(JSON.stringify(obj)))
-          })
+            this.layout.push(JSON.parse(JSON.stringify(obj)));
+          });
         }
         this.strLayout = JSON.stringify(this.layout);
-        this.$set(this, 'loadPageMata', data)  // 保存页面元数据
-        this.initPageParams()  // 页面参数初始化
+        this.$set(this, "loadPageMata", data); // 保存页面元数据
+        this.initPageParams(); // 页面参数初始化
       } else {
         this.$message.info("无数据！");
       }
     },
-    // 对应Vue生命周期的created
-    layoutCreatedEvent(newLayout) {
-      // console.log("Created layout: ", newLayout)
-    },
-    // 对应Vue生命周期的beforeMount
-    layoutBeforeMountEvent(newLayout) {
-      // console.log("beforeMount layout: ", newLayout)
-    },
-    // 对应Vue生命周期的mounted
-    layoutMountedEvent(newLayout) {
-      // console.log("Mounted layout: ", newLayout)
-    },
-    // 当完成mount中的所有操作时生成的事件
-    layoutReadyEvent(newLayout) {
-      // console.log("Ready layout: ", newLayout)
+    onActivated(e) {
+      // 点击vue-drag-resize元素
+      console.log(e);
     },
     // 更新事件（布局更新或栅格元素的位置重新计算）
     layoutUpdatedEvent(newLayout) {
@@ -900,7 +1124,7 @@ export default {
     //自定义容器初始化
     initDesign() {
       let domstyleWidth =
-        document.getElementById("custom-design").offsetWidth - 20 * 10,
+          document.getElementById("custom-design").offsetWidth - 20 * 10,
         domstyleHeight = 50,
         domContainer = document.getElementById("custom-design"),
         resWidth = domstyleWidth / 12,
@@ -926,8 +1150,8 @@ export default {
       // this.containerWidth = document.getElementById("content").offsetWidth;
       this.$nextTick(() => {
         // this.resize();
-      })
-      if (this.screenType === 'PC') {
+      });
+      if (this.screenType === "PC") {
         setTimeout(() => {
           this.resize();
         }, 1000);
@@ -936,11 +1160,11 @@ export default {
     //鼠标移动
     moveMousemove() {
       document.getElementById("left-line").onmousedown = (e) => {
-        this.isDown = true
-      }
+        this.isDown = true;
+      };
       document.getElementById("left-line").onmouseup = (e) => {
-        this.isDown = false
-      }
+        this.isDown = false;
+      };
       window.onmousemove = (ev) => {
         if (this.isDown == true) {
           //获取x和y
@@ -1077,6 +1301,10 @@ export default {
     },
 
     drag: function (o) {
+      if (this.allowedOverlap) {
+        // 允许重叠 使用vue-drag-resize
+        return;
+      }
       // let parentRect = document
       //   .getElementById("content")
       //   .getBoundingClientRect();
@@ -1113,7 +1341,7 @@ export default {
           this.$refs.gridlayout.$children[
             this.layout.length
           ].$refs.item.style.display = "none";
-        } catch { }
+        } catch {}
         let el = this.$refs.gridlayout.$children[index];
         el.dragging = {
           top: mouseXY.y - parentRect.top,
@@ -1153,10 +1381,111 @@ export default {
         }
       }
     },
-    dragend: function (o) {
-      let parentRect = document
-        .getElementById("content")
-        .getBoundingClientRect();
+    initComCfg(type, config) {
+      // 初始化组件配置
+      switch (type) {
+        case "chart":
+          if (config.row_json) {
+            config.chart_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "cardGroup":
+          if (config.row_json) {
+            const cfg = JSON.parse(config.row_json);
+            config.card_group_json = cfg;
+          }
+          break;
+        case "list":
+          if (config.list_json) {
+            const cfg = JSON.parse(config.list_json);
+            config.list_json = cfg;
+            if (cfg.list_type === "卡片") {
+              config.card_group_json = {
+                card_unit_json: cfg.card_unit_json,
+                card_layout_json: cfg.layout_json,
+                interface_json: cfg.interface_json,
+              };
+            }
+            if (cfg?.default_srv_req_json) {
+              config.srv_req_json = cfg?.default_srv_req_json;
+            }
+          }
+          break;
+        case "widget":
+        case "控件":
+          if (config.row_json) {
+            config.widget_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "swiper":
+          if (config.figure_row_json) {
+            try {
+              config.swiper_json = JSON.parse(config.figure_row_json);
+            } catch (error) {}
+          }
+          break;
+        case "map":
+          if (config.row_json) {
+            config.map_json = JSON.parse(config.row_json);
+            if (config.map_json?.srv_req_json) {
+              config.srv_req_json = config.map_json?.srv_req_json;
+            }
+            if (config.map_json?.cols_map_json) {
+              config.cols_map_json = config.map_json?.cols_map_json;
+            }
+            if (config.map_json?.interface_json) {
+              config.interface_json = config.map_json?.interface_json;
+            }
+          }
+          break;
+        case "tabs":
+          if (config.row_json) {
+            config.tabs_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "form":
+          if (config.row_json) {
+            config.form_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "noticeBar":
+          if (config.row_json) {
+            config.notice_bar_json = JSON.parse(config.row_json);
+          }
+          break;
+      }
+      return JSON.parse(JSON.stringify(config));
+    },
+    dragend: function (o, pos) {
+      let parentRect = document.getElementById("content").getBoundingClientRect();
+      if (this.allowedOverlap) {
+        // 允许重叠 使用vue-drag-resize
+        if (
+          pos.x > parentRect.left &&
+          pos.x < parentRect.right &&
+          pos.y > parentRect.top &&
+          pos.y < parentRect.bottom
+        ) {
+          // 拖拽到画布中
+          let cvs = document
+            .getElementById("custom-design")
+            .getBoundingClientRect();
+          let obj = {
+            x: ((pos.x - cvs.left - 80) * 100) / cvs.width,
+            y: ((pos.y - cvs.top - 40) * 100) / cvs.height,
+            w: this.initWH.w,
+            h: this.initWH.h,
+            i: this.layout.length,
+            __uuid: this.getUuid(),
+            data: JSON.parse(JSON.stringify(o)),
+            isLeftBarItem: true,
+          };
+          obj.data = this.initComCfg(o.com_type, obj.data);
+          this.layout.push(obj);
+        }
+        return;
+      }
+
       let mouseInGrid = false;
       if (
         mouseXY.x > parentRect.left &&
@@ -1191,78 +1520,78 @@ export default {
           data: JSON.parse(JSON.stringify(o)),
           isLeftBarItem: true,
         };
-        switch (o.com_type) {
-          case 'chart':
-            if (obj.data.row_json) {
-              obj.data.chart_json = JSON.parse(obj.data.row_json)
-            }
-            break;
-          case 'cardGroup':
-            if (obj.data.row_json) {
-              const cfg = JSON.parse(obj.data.row_json)
-              obj.data.card_group_json = cfg
-            }
-            break;
-          case 'list':
-            if (obj.data.list_json) {
-              const cfg = JSON.parse(obj.data.list_json)
-              obj.data.list_json = cfg
-              if (cfg.list_type === '卡片') {
-                obj.data.card_group_json = {
-                  card_unit_json: cfg.card_unit_json,
-                  card_layout_json: cfg.layout_json,
-                  interface_json: cfg.interface_json
-                }
-              }
-              if (cfg?.default_srv_req_json) {
-                obj.data.srv_req_json = cfg?.default_srv_req_json
-              }
-            }
-            break;
-          case 'widget':
-          case '控件':
-            if (obj.data.row_json) {
-              obj.data.widget_json = JSON.parse(obj.data.row_json)
-            }
-            break;
-          case 'swiper':
-            if (obj.data.figure_row_json) {
-              try {
-                obj.data.swiper_json = JSON.parse(obj.data.figure_row_json)
-              } catch (error) {
-              }
-            }
-            break;
-          case 'map':
-            if (obj.data.row_json) {
-              obj.data.map_json = JSON.parse(obj.data.row_json)
-              if (obj.data.map_json?.srv_req_json) {
-                obj.data.srv_req_json = obj.data.map_json?.srv_req_json
-              }
-              if (obj.data.map_json?.cols_map_json) {
-                obj.data.cols_map_json = obj.data.map_json?.cols_map_json
-              }
-              if (obj.data.map_json?.interface_json) {
-                obj.data.interface_json = obj.data.map_json?.interface_json
-              }
-            }
-            break;
-          case 'tabs':
-            if (obj.data.row_json) {
-              obj.data.tabs_json = JSON.parse(obj.data.row_json)
-            }
-            break;
-          case 'form':
-            if (obj.data.row_json) {
-              obj.data.form_json = JSON.parse(obj.data.row_json)
-            }
-            break;
-          case 'noticeBar':
-            if (obj.data.row_json) {
-              obj.data.notice_bar_json = JSON.parse(obj.data.row_json)
-            }
-            break;
-        }
+        obj.data = this.initComCfg(o.com_type, obj.data);
+        // switch (o.com_type) {
+        //   case "chart":
+        //     if (obj.data.row_json) {
+        //       obj.data.chart_json = JSON.parse(obj.data.row_json);
+        //     }
+        //     break;
+        //   case "cardGroup":
+        //     if (obj.data.row_json) {
+        //       const cfg = JSON.parse(obj.data.row_json);
+        //       obj.data.card_group_json = cfg;
+        //     }
+        //     break;
+        //   case "list":
+        //     if (obj.data.list_json) {
+        //       const cfg = JSON.parse(obj.data.list_json);
+        //       obj.data.list_json = cfg;
+        //       if (cfg.list_type === "卡片") {
+        //         obj.data.card_group_json = {
+        //           card_unit_json: cfg.card_unit_json,
+        //           card_layout_json: cfg.layout_json,
+        //           interface_json: cfg.interface_json,
+        //         };
+        //       }
+        //       if (cfg?.default_srv_req_json) {
+        //         obj.data.srv_req_json = cfg?.default_srv_req_json;
+        //       }
+        //     }
+        //     break;
+        //   case "widget":
+        //   case "控件":
+        //     if (obj.data.row_json) {
+        //       obj.data.widget_json = JSON.parse(obj.data.row_json);
+        //     }
+        //     break;
+        //   case "swiper":
+        //     if (obj.data.figure_row_json) {
+        //       try {
+        //         obj.data.swiper_json = JSON.parse(obj.data.figure_row_json);
+        //       } catch (error) {}
+        //     }
+        //     break;
+        //   case "map":
+        //     if (obj.data.row_json) {
+        //       obj.data.map_json = JSON.parse(obj.data.row_json);
+        //       if (obj.data.map_json?.srv_req_json) {
+        //         obj.data.srv_req_json = obj.data.map_json?.srv_req_json;
+        //       }
+        //       if (obj.data.map_json?.cols_map_json) {
+        //         obj.data.cols_map_json = obj.data.map_json?.cols_map_json;
+        //       }
+        //       if (obj.data.map_json?.interface_json) {
+        //         obj.data.interface_json = obj.data.map_json?.interface_json;
+        //       }
+        //     }
+        //     break;
+        //   case "tabs":
+        //     if (obj.data.row_json) {
+        //       obj.data.tabs_json = JSON.parse(obj.data.row_json);
+        //     }
+        //     break;
+        //   case "form":
+        //     if (obj.data.row_json) {
+        //       obj.data.form_json = JSON.parse(obj.data.row_json);
+        //     }
+        //     break;
+        //   case "noticeBar":
+        //     if (obj.data.row_json) {
+        //       obj.data.notice_bar_json = JSON.parse(obj.data.row_json);
+        //     }
+        //     break;
+        // }
         this.layout.push(obj);
         this.$refs.gridlayout.dragEvent(
           "dragend",
@@ -1278,7 +1607,7 @@ export default {
           this.$refs.gridlayout.$children[
             this.layout.length
           ].$refs.item.style.display = "block";
-        } catch { }
+        } catch {}
       }
     },
     randomNum(n) {
@@ -1400,11 +1729,10 @@ export default {
   }
 
   &.active {
-
     // border: 1px solid #409eff;
     &::after {
       position: absolute;
-      content: '';
+      content: "";
       left: 0;
       top: 0;
       width: 100%;
@@ -1421,8 +1749,6 @@ export default {
 }
 
 .mobile {
-
-
   .com-item.dashed {
     .page-item {
       pointer-events: none;
@@ -1525,7 +1851,7 @@ export default {
       cursor: col-resize;
 
       &::after {
-        content: '';
+        content: "";
         width: 4px;
         height: 0px;
         background: transparent;
@@ -1581,8 +1907,17 @@ export default {
       // transform: scale(0.8);
       margin: 0 auto;
       background: #040711;
-
+      position: relative;
       .grid-container {
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        position: absolute;
+      }
+      .drag-layout {
+        width: 100%;
         height: 100%;
         top: 0;
         left: 0;
@@ -1631,7 +1966,7 @@ export default {
   background: #197f54;
 }
 
-.vue-grid-item>.vue-resizable-handle {
+.vue-grid-item > .vue-resizable-handle {
   position: absolute;
   width: 0;
   height: 0;
