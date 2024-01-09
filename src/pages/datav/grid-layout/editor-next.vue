@@ -134,10 +134,13 @@
             :y="vh2px(item.y)"
             :w="vw2px(item.w)"
             :h="vh2px(item.h)"
-            :isActive="item.i === curDesign"
-            :class="{ active: item.i === curDesign }"
-            @clicked="changeDesign(item.i, $event)"
-            v-for="item in layout"
+            :isActive="item.i && item.i === curDesign"
+            @clicked="changeDesign(item.i)"
+            @deactivated="deactivated"
+            @resizestop="onResizestop($event, lIndex)"
+            @dragstop="onDragstop($event, lIndex)"
+            ::key="item.i"
+            v-for="(item, lIndex) in layout"
           >
             <page-item
               :use-layout="useLayout"
@@ -147,6 +150,64 @@
               :page-item="item.data"
               :layout="item"
             ></page-item>
+            <div class="tool-box">
+              <!-- <el-tooltip
+                class="item"
+                effect="dark"
+                content="置顶"
+                placement="bottom"
+              >
+                <div
+                  class="tool-item"
+                  :class="{ disabled: isTop(item.z) }"
+                  @click.stop.capture="toUp(lIndex, 1)"
+                >
+                  <i class="el-icon-upload2"></i>置顶
+                </div>
+              </el-tooltip>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="置底"
+                placement="bottom"
+              >
+                <div
+                  class="tool-item"
+                  :class="{ disabled: isBottom(item.z) }"
+                  @click="toDown(lIndex)"
+                >
+                  <i class="el-icon-download"></i>置底
+                </div>
+              </el-tooltip> -->
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="上移"
+                placement="bottom"
+              >
+                <div
+                  class="tool-item"
+                  :class="{ disabled: isTop(item.z) }"
+                  @click="toUp(lIndex, 1)"
+                >
+                  <i class="el-icon-top"></i>上移
+                </div>
+              </el-tooltip>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="下移"
+                placement="bottom"
+              >
+                <div
+                  class="tool-item"
+                  :class="{ disabled: isBottom(item.z) }"
+                  @click="toDown(lIndex, 1)"
+                >
+                  <i class="el-icon-bottom"></i>下移
+                </div>
+              </el-tooltip>
+            </div>
           </vue-drag-resize>
         </div>
       </div>
@@ -371,9 +432,11 @@ export default {
       );
       this.moveMousemove();
       this.moveMouseup();
-      document.getElementById("custom-design").onclick = (e) => {
-        this.curDesign = "";
-      };
+      if (!this.allowedOverlap) {
+        document.getElementById("custom-design").onclick = (e) => {
+          this.curDesign = "";
+        };
+      }
     }
     this.initColNum();
 
@@ -464,6 +527,9 @@ export default {
     },
   },
   methods: {
+    deactivated() {
+      this.curDesign = "";
+    },
     px2vw(num) {
       // px转为vw
       const ele = this.$refs.customDesign;
@@ -495,6 +561,68 @@ export default {
         const eleHeight = ele.offsetHeight;
         return (num / 100) * eleHeight;
       }
+    },
+    isTop(z) {
+      // 判断是否是顶端元素 从大到小第0位
+      return z === this.layout.map((item) => item.z).sort((a, b) => b - a)[0];
+    },
+    isBottom(z) {
+      // 判断是否是最底端元素 从小到大第0位
+      return z === this.layout.map((item) => item.z).sort((a, b) => a - b)[0];
+    },
+    toDown(index, step) {
+      let zArr = this.layout.map((item) => item.z).sort((a, b) => a - b);
+      if (!this.isBottom(this.layout[index].z)) {
+        // 下移
+        if (step) {
+          let curZ = this.layout[index].z;
+          let curIndex = zArr.findIndex((item) => item === curZ);
+          if (curIndex >0) {
+            let oldZ = zArr[curIndex - 1];
+            let oldIndex = this.layout.findIndex((item) => item.z === oldZ);
+            this.layout[oldIndex].z = curZ;
+            this.layout[index].z = zArr[curIndex - 1];
+            console.log(oldIndex, curIndex);
+          }
+        } else {
+          //置底
+          // let curZ = this.layout[index].z;
+          // let nextIndex = this.layout.find((item) => item.z === zArr[0])
+          // this.layout[index].z = zArr[0];
+          // this.layout[nextIndex].z = curZ;
+        }
+      } else {
+        this.layout[index].z = this.layout[index].z - 1;
+      }
+      console.log(this.layout[index].z );
+
+    },
+    toUp(index, step) {
+      // 上移
+      let zArr = this.layout.map((item) => item.z).sort((a, b) => a - b);
+      if (!this.isTop(this.layout[index].z)) {
+        if (step) {
+          // 上移一层
+          let curZ = this.layout[index].z;
+          let curIndex = zArr.findIndex((item) => item === curZ);
+          if (curIndex < zArr.length - 1) {
+            let oldZ = zArr[curIndex + 1];
+            let oldIndex = this.layout.findIndex((item) => item.z === oldZ);
+            this.layout[oldIndex].z = curZ;
+            this.layout[index].z = zArr[curIndex + 1];
+            console.log(oldIndex, curIndex);
+          }
+        } else {
+          //置顶
+          let curZ = this.layout[index].z;
+          let nextIndex = this.layout.find((item) => item.z === zArr[0])
+          this.layout[index].z = zArr[0];
+          this.layout[nextIndex].z = curZ;
+        }
+      } else {
+        this.layout[index].z = this.layout[index].z + 1;
+      }
+      console.log(this.layout[index].z );
     },
     previewCurrent() {
       this.onMobilePreview = !this.onMobilePreview;
@@ -968,7 +1096,7 @@ export default {
                 item.layout_y || item.layout_y === 0
                   ? item.layout_y
                   : index * this.initWH.h,
-              z: item.layout_z || 1,
+              z: item.layout_z || index + 1,
               w: item.layout_width || this.initWH.w,
               h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
@@ -1001,10 +1129,6 @@ export default {
       } else {
         this.$message.info("无数据！");
       }
-    },
-    onActivated(e) {
-      // 点击vue-drag-resize元素
-      console.log(e);
     },
     // 更新事件（布局更新或栅格元素的位置重新计算）
     layoutUpdatedEvent(newLayout) {
@@ -1040,6 +1164,36 @@ export default {
       // this.layout.forEach((item, index) => {
       //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
       // });
+    },
+    onDragstop({ left, top, width, height }, index) {
+      this.curDesign = this.layout[index].i;
+      console.log(
+        "拖拽停止：",
+        index,
+        left,
+        top,
+        width,
+        height,
+        this.layout[index].z
+      );
+      this.$set(this.layout, index, {
+        ...this.layout[index],
+        x: this.px2vw(left),
+        y: this.px2vh(top),
+        w: this.px2vw(width),
+        h: this.px2vh(height),
+      });
+    },
+    onResizestop({ left, top, width, height }, index) {
+      this.curDesign = this.layout[index].i;
+      console.log("大小改变：", index, left, top, width, height);
+      this.$set(this.layout, index, {
+        ...this.layout[index],
+        x: this.px2vw(left),
+        y: this.px2vh(top),
+        w: this.px2vw(width),
+        h: this.px2vh(height),
+      });
     },
     toComponentDetail(item) {
       if (!this.isDataview && item?.data?.id) {
@@ -1457,7 +1611,9 @@ export default {
       return JSON.parse(JSON.stringify(config));
     },
     dragend: function (o, pos) {
-      let parentRect = document.getElementById("content").getBoundingClientRect();
+      let parentRect = document
+        .getElementById("content")
+        .getBoundingClientRect();
       if (this.allowedOverlap) {
         // 允许重叠 使用vue-drag-resize
         if (
@@ -1924,6 +2080,38 @@ export default {
         right: 0;
         bottom: 0;
         position: absolute;
+        .active {
+          background-color: rgba(255, 255, 255, 0.2);
+          .tool-box {
+            display: flex;
+            // justify-content: space-around;
+            color: #fff;
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            width: 240px;
+            z-index: 999;
+            .tool-item {
+              cursor: pointer;
+              // width: 30px;
+              height: 30px;
+              line-height: 30px;
+              text-align: center;
+              font-size: 12px;
+              margin-right: 10px;
+              position: relative;
+              &:active {
+                transform: translate(2px, 2px);
+              }
+              i {
+                font-size: 16px;
+              }
+            }
+          }
+        }
+        .tool-box {
+          display: none;
+        }
       }
     }
   }
