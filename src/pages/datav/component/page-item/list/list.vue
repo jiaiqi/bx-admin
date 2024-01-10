@@ -267,7 +267,6 @@ export default {
                   let mapsCol = mapsJonss.filter(item => item.col_to === par || item.col_from === par)
                   if(Array.isArray(mapsCol) && mapsCol.length > 0){
                     // 遍历组件参数 映射 
-                      let value = ''
                       let model = null
                       for(let col of mapsCol){
                          switch (col.from_type) {
@@ -278,6 +277,9 @@ export default {
                               case '组件':
                                 // 目标为组件的参数，设置动态获取的值
                                 cond.value = this.pageParamsModel[key].value
+                                if(cond.value===undefined&&cond.ruleType==='eq'){
+                                  cond.ruleType = 'like'
+                                }
                                 break;
                               case '页面':
                                 
