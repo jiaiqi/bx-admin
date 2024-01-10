@@ -104,9 +104,9 @@ export default {
   
           row[value.colName] = value.value;
         }
-        if(Object.keys(row).length===1&&row.hasOwnProperty('_rtDataCtx')){
-          return null;
-        }
+        // if(Object.keys(row).length===1&&row.hasOwnProperty('_rtDataCtx')){
+        //   return null;
+        // }
         return row;
       },
     }

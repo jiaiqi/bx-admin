@@ -135,7 +135,7 @@
             :w="vw2px(item.w)"
             :h="vh2px(item.h)"
             :isActive="item.i && item.i === curDesign"
-            @clicked="changeDesign(item.i)"
+            @clicked=""
             @deactivated="deactivated"
             @resizestop="onResizestop($event, lIndex)"
             @dragstop="onDragstop($event, lIndex)"
@@ -143,6 +143,7 @@
             v-for="(item, lIndex) in layout"
           >
             <page-item
+              @click.native.stop.prevent.capture="changeDesign(item.i)"
               :use-layout="useLayout"
               ref="pageItem"
               @setPageParams="setPageParams"
@@ -458,7 +459,7 @@ export default {
   computed: {
     allowedOverlap() {
       // 允许重叠
-      return true;
+      return this.pageConfg?.page_options?.includes("可重叠大屏") || false;
     },
     styleJson() {
       let json = this.pageConfg?.page_row_json_data?.page_style_json;
@@ -577,7 +578,7 @@ export default {
         if (step) {
           let curZ = this.layout[index].z;
           let curIndex = zArr.findIndex((item) => item === curZ);
-          if (curIndex >0) {
+          if (curIndex > 0) {
             let oldZ = zArr[curIndex - 1];
             let oldIndex = this.layout.findIndex((item) => item.z === oldZ);
             this.layout[oldIndex].z = curZ;
@@ -594,8 +595,7 @@ export default {
       } else {
         this.layout[index].z = this.layout[index].z - 1;
       }
-      console.log(this.layout[index].z );
-
+      console.log(this.layout[index].z);
     },
     toUp(index, step) {
       // 上移
@@ -615,14 +615,14 @@ export default {
         } else {
           //置顶
           let curZ = this.layout[index].z;
-          let nextIndex = this.layout.find((item) => item.z === zArr[0])
+          let nextIndex = this.layout.find((item) => item.z === zArr[0]);
           this.layout[index].z = zArr[0];
           this.layout[nextIndex].z = curZ;
         }
       } else {
         this.layout[index].z = this.layout[index].z + 1;
       }
-      console.log(this.layout[index].z );
+      console.log(this.layout[index].z);
     },
     previewCurrent() {
       this.onMobilePreview = !this.onMobilePreview;
@@ -1629,6 +1629,7 @@ export default {
           let obj = {
             x: ((pos.x - cvs.left - 80) * 100) / cvs.width,
             y: ((pos.y - cvs.top - 40) * 100) / cvs.height,
+            z: this.layout.length - 1,
             w: this.initWH.w,
             h: this.initWH.h,
             i: this.layout.length,
