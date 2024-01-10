@@ -1,12 +1,12 @@
 <template>
   <div
     class="customhome-container"
-    :class="{ mobile: screenType === 'mobile' && isDataview }"
+    :class="{ mobile: screenType === 'mobile' && !inEditor }"
     :style="'--right-width:' + rightWidth + 'px'"
     @dragenter="dragDefFn($event)"
     @dragover="dragDefFn($event)"
   >
-    <div class="cushome-sidebar" v-if="!isDataview">
+    <div class="cushome-sidebar" v-if="inEditor">
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
         <div
@@ -27,7 +27,7 @@
         </div>
       </div>
     </div>
-    <div class="cushome-right" v-if="!isDataview">
+    <div class="cushome-right" v-if="inEditor">
       <div class="left-line" id="left-line"></div>
       <!-- <property-pane
         :use-layout="useLayout"
@@ -47,7 +47,7 @@
       class="cushome-content"
       id="content"
       :style="[]"
-      :class="{ 'data-view-mode': isDataview }"
+      :class="{ 'data-view-mode': !inEditor }"
     >
       <div
         class="custom-design"
@@ -63,8 +63,8 @@
           :row-height="rowHeight"
           :preventCollision="true"
           :responsive="false"
-          :is-draggable="!isDataview"
-          :is-resizable="!isDataview"
+          :is-draggable="inEditor"
+          :is-resizable="inEditor"
           :is-mirrored="false"
           :vertical-compact="false"
           :margin="[0, 0]"
@@ -93,10 +93,10 @@
             <span
               class="remove"
               @click.stop="removeItem(item.i)"
-              v-if="!isDataview"
+              v-if="inEditor"
               ><i class="el-icon-close"></i
             ></span>
-            <div class="com-item dashed" v-if="isDataview">
+            <div class="com-item dashed" v-if="!inEditor">
               <page-item
                 :use-layout="useLayout"
                 ref="pageItem"
@@ -129,12 +129,14 @@
           <!-- 可重叠布局 -->
           <vue-drag-resize
             :parentLimitation="true"
+            :isResizable="inEditor"
+            :isDraggable="inEditor"
+            :isActive="item.i && item.i === curDesign && inEditor"
             :z="item.z"
             :x="vw2px(item.x)"
             :y="vh2px(item.y)"
             :w="vw2px(item.w)"
             :h="vh2px(item.h)"
-            :isActive="item.i && item.i === curDesign"
             @clicked=""
             @deactivated="deactivated"
             @resizestop="onResizestop($event, lIndex)"
@@ -232,7 +234,7 @@
           :col-num="colNum"
           :row-height="rowHeight"
           :vertical-compact="true"
-          :is-draggable="!isDataview"
+          :is-draggable="inEditor"
           :is-resizable="true"
           :is-mirrored="false"
           :margin="[0, 0]"
@@ -247,7 +249,7 @@
             id="grid-container"
             :style="[bjStyles]"
           ></div>
-          <template v-if="isDataview || onMobilePreview">
+          <template v-if="!inEditor || onMobilePreview">
             <div v-for="item in layout" style="min-height: 100px">
               <page-item
                 ref="pageItem"
@@ -277,14 +279,14 @@
               <span
                 class="remove"
                 @click.stop="removeItem(item.i)"
-                v-if="!isDataview"
+                v-if="inEditor"
                 ><i class="el-icon-close"></i
               ></span>
               <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
                 @click.stop.prevent.capture="changeDesign(item.i)">
                 <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
               </div> -->
-              <div class="com-item dashed" v-if="isDataview">
+              <div class="com-item dashed" v-if="!inEditor">
                 <page-item
                   ref="pageItem"
                   @setPageParams="setPageParams"
@@ -314,7 +316,7 @@
         </grid-layout>
       </div>
       <div
-        v-if="screenType === 'mobile' && !isDataview && pgNo"
+        v-if="screenType === 'mobile' && inEditor && pgNo"
         style="text-align: center; margin-top: 50px"
       >
         <el-button @click="previewCurrent">{{
@@ -421,7 +423,7 @@ export default {
       this.screenType = this.$route.query.screenType;
     }
     this.initDesign();
-    if (!this.isDataview) {
+    if (this.inEditor) {
       // 编辑模式 监听事件
       document.addEventListener(
         "dragover",
@@ -443,7 +445,7 @@ export default {
 
     // if (!process?.env?.NODE_ENV === "development") {
     // 开发模式不监听窗口变化
-    if (this.isDataview && this.screenType === "pc") {
+    if (!this.inEditor && this.screenType === "PC") {
       window.addEventListener("resize", () => {
         this.resize();
       });
@@ -469,7 +471,7 @@ export default {
           height: this.screenType == "PC" ? "1080px" : "667px",
         };
       }
-      if (this.isDataview && (json?.width || json?.height)) {
+      if (!this.inEditor && (json?.width || json?.height)) {
         delete json.width;
         delete json.height;
       }
@@ -477,6 +479,10 @@ export default {
     },
     useLayout() {
       return this.pageConfg?.page_options?.includes("布局容器") || false;
+    },
+    inEditor() {
+      // 编辑状态
+      return this.$route?.name?.includes("gridEditor");
     },
     isDataview() {
       // 预览模式
@@ -633,7 +639,7 @@ export default {
     },
     resize() {
       // 自适应缩放
-      if (!this.isDataview) {
+      if (this.inEditor) {
         // 编辑状态不缩放
         return;
       }
@@ -1196,7 +1202,7 @@ export default {
       });
     },
     toComponentDetail(item) {
-      if (!this.isDataview && item?.data?.id) {
+      if (this.inEditor && item?.data?.id) {
         this.$confirm(`是否打开组件【${item.data.com_name}】详情？`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -1283,7 +1289,7 @@ export default {
         domContainer = document.getElementById("custom-design"),
         resWidth = domstyleWidth / 12,
         everyWidth = ((resWidth / domstyleWidth) * 100).toFixed(2);
-      if (!this.isDataview) {
+      if (this.inEditor) {
         this.bjStyles = {
           // right: "20px",
           // background: `linear-gradient(to right, transparent 1px,#eee 1px),linear-gradient(to bottom, transparent 1px,#eee 1px)`,
