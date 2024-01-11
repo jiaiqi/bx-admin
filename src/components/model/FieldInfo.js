@@ -69,6 +69,11 @@ export class FieldInfo {
       this._finderAuto = true
     }
 
+    if(this.moreConfig?.query_init_value){
+      //默认查询条件
+      this.queryInitValue = this.moreConfig.query_init_value
+    }
+
     this.subType = srvCol.subtype;   // 子类型
     // only for add form, set too srvval
     this.initValueExpr = srvCol.init_expr;
