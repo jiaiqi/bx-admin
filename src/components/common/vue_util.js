@@ -608,6 +608,12 @@ function init_util() {
       "vpage_no":vpageNo,
       use_type:use_type     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
+    if(query.condition.length){
+      let divCond = query.condition.filter(item => item.use_div_calc === '是');
+      if(divCond?.length){
+        query.divCond = divCond
+      }
+    }
     if(use_type==='treelist'){
      // 2023年11月13日增加，top tree data特性，后端返回符合条件的数据的最顶层节点数据，不使用parentCol为null作为条件
     //  query["rdt"] = "ttd";
