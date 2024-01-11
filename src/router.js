@@ -482,7 +482,14 @@ routes.push( {
       },
     ]
   },
-  
+  // JS API 百度地图，依赖 index.html 百度库
+  {
+    path: '/bmap',
+    name: 'bmap',
+    component: () => import('@/pages/bmap/index.vue')
+    //子路由
+    
+  }
 
 ]
 
