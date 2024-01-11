@@ -501,6 +501,21 @@
               this.groupFields[fieldName].info.seq = i * 100;
             }
           });
+        }).then(()=>{
+          const queryInitValueFields = []
+          Object.keys(this.fields).forEach(key=>{
+            if(this.fields[key].info.queryInitValue){
+              if(this.fields[key].info.queryInitValue?.value){
+                queryInitValueFields.push(key)
+                this.fields[key].setSrvVal(this.fields[key].info.queryInitValue?.value)
+              }
+            }
+          })
+          if(queryInitValueFields?.length){
+            this.$nextTick(()=>{
+              this.onSearchClicked()
+            })
+          }
         })
 
     }
