@@ -343,6 +343,16 @@ export default {
         if (v2Data.hasOwnProperty("his_version")) {
           this.isHistory = v2Data.his_version;
         }
+        if(v2Data?.pub_field_map?.id){
+          if(condition?.length){
+            condition.forEach(item=>{
+              if(item.colName=='id'){
+                // id 字段映射
+                item.colName = v2Data.pub_field_map.id
+              }
+            })
+          }
+        }
         if(response.body.data['cfg_json']&&response.body.data['cfg_json'].indexOf('page_title')>-1){
           // 使用配置的标题
           const cfg_json = JSON.parse(response.body.data.cfg_json)

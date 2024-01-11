@@ -106,6 +106,7 @@ export default {
       sumConfig: null,
       vpageNo: null,
       service_view_name:null,
+      pub_field_map:null
     };
   },
 
@@ -1391,6 +1392,9 @@ export default {
         self.onUpdateClicked(row);
       } else if ("detail" == type) {
         var urlParams = "/" + exeservice + "/" + row.id + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
+        if(this.pub_field_map?.id){
+            urlParams = "/" + exeservice + "/" + row[this.pub_field_map.id] + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
+        }
         var disp_col = operate_item._disp_col;
         var disp_value = row[disp_col];//详情页面上的标签
         tab_title = tab_title.replace('查询', '');
@@ -2425,6 +2429,10 @@ export default {
 
           if(respData.cfg_json){
             this.handleCfgJson(respData.cfg_json)
+          }
+
+          if(respData.pub_field_map){
+            this.pub_field_map = respData.pub_field_map
           }
 
           if(respData.more_config && respData.more_config.length >0 && respData.more_config !== undefined){
