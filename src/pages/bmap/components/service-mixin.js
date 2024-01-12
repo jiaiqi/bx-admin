@@ -1,0 +1,345 @@
+
+
+export default {
+    props: {
+        depts: {
+          type: Array,
+          default: function () {
+            return [];
+          }
+        }
+    },
+    data(){
+        return {
+            activeDeptNo:'',
+            activeTollLink:null,
+            loadStations:[],
+            tolllinks:[]
+        }
+    },
+    computed:{
+        urlPath(){
+            return this.$route.path
+        },
+        
+        initLinks(){
+            let self = this
+            let loadlinks = this.bxDeepClone(this.tolllinks)
+            // let line = {"name":"蓝色",
+            // "type":"line",
+            // "id":"line-001",
+            // "points":[
+            //     {"name":"起点",
+            //     "lng":"108.889033",
+            //     "lat":"34.181221",
+            //     "startCity":"",
+            //     "endCity":"",
+            //     "type":0,
+            //     "active":false,
+            //     "size":{"width":32,"height":32},
+            //     "id":"003",
+            //     "uid":"line-001@1@003"
+            // }]
+            //     ,
+            //     "params":{
+            //         "origin":"34.181221,108.889033",
+            //     "destination":"34.404827,108.798106",
+            //     "waypoints":"",
+            //     "tactics":4,
+            //     "waypoints_str":"34.18876,108.893024|34.194719,108.875163|34.20437,108.838162",
+            //     "ak":"FC190506b9b4fa8b366db9f78cb5e93e"
+            // }}
+            loadlinks = loadlinks.map(item => {
+                let obj = {}
+                obj['name'] = item['name']
+                obj['type'] = 'line'
+                obj['id'] = item['id']
+                obj["points"]=[
+                //     {"name":"起点",
+                //     "lng":"108.889033",
+                //     "lat":"34.181221",
+                //     "startCity":"",
+                //     "endCity":"",
+                //     "type":0,
+                //     "active":false,
+                //     "size":{"width":32,"height":32},
+                //     "id":"003",
+                //     "uid":"line-001@1@003"
+                // }
+            ]
+                let start = {
+                    "name":'起点',
+                    "lat":item['startlat'],
+                    "lng":item['startlng'],
+                    "_dev_point_type":'start',
+                    "type":"point"
+                }
+                let end = {
+                    "name":'终点',
+                    "lat":item['endlat'],
+                    "lng":item['endlng'],
+                    "_dev_point_type":'end',
+                    "type":"point"
+                }
+                obj['start'] = start
+                obj['end'] = end
+                obj["points"].push(start)
+                obj["points"].push(end)
+                obj['params'] = {
+                    "origin":"34.181221,108.889033",
+                    "destination":"34.404827,108.798106",
+                    "waypoints":"",
+                    "tactics":4,
+                    "waypoints_str":"34.18876,108.893024|34.194719,108.875163|34.20437,108.838162",
+                    "ak":"FC190506b9b4fa8b366db9f78cb5e93e"
+                }
+                obj['params']['origin'] = `${start.lat},${start.lng}`
+                obj['params']['destination'] = `${end.lat},${end.lng}`
+                if(self.activeTollLink && item.id == self.activeTollLink.id && Array.isArray(self.loadStations) && self.loadStations.length > 0){
+                    let points = self.bxDeepClone(self.loadStations)
+                    obj["points"] = points.map( p => {
+                        let point = {
+                            ...p
+                        }
+                        point['_dev_point_type'] = p['category']
+                        return point
+                    })
+                }
+                return  this.bxDeepClone(obj)
+
+            })
+            return loadlinks
+        }
+    },
+    mounted(){
+        this.initMap()
+        if(this.urlPath == '/bmap/check'){
+
+        }else{
+            this.getDriving()
+        }
+       
+       
+    },
+    methods: {
+        requestUpdatePoint(e){
+            console.log('修改点坐标',e)
+            let bxRequests = []
+            let request = {
+                srvApp:'aud',
+                serviceName:'',
+                data:[],
+                condition:[{
+                    colName:'id',
+                    ruleType:'eq',
+                    value:e.id
+                }]
+            }
+            if(e && e.id){
+                request.data.push({
+                    lat:e.lat,
+                    lng:e.lng
+                })
+                switch (e['_dev_point_type']) {
+                    case '门架':
+                        request['serviceName'] = 'srvaud_tollgrantry_update'
+                        break;
+                    case '收费站':
+                        request['serviceName'] = 'srvaud_tollstation_update'
+                        
+                        break;
+                
+                    default:
+                        break;
+                }
+                bxRequests.push(this.bxDeepClone(request))
+            }
+            if(Array.isArray(bxRequests) && bxRequests.length > 0){
+                this.$confirm('保存新位置, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                  }).then(() => {
+                    this.operate(bxRequests).then(response => {
+                        let state = response.body.state;
+          
+                        if ("SUCCESS" == state) {
+          
+                            this.$message({
+                                type: 'success',
+                                message: '保存成功!'
+                              });
+                              if(this.activeLine){
+                                this.getAllStations(this.activeLine.id)
+                              }
+                              
+                        } else {
+                          this.$message({
+                            type: "error",
+                            message: response.body.resultMessage
+                          });
+                        }
+                      });
+                    
+                  }).catch(() => {
+                    this.$message({
+                      type: 'info',
+                      message: '已取消保存'
+                    });          
+                  });
+                
+            }
+            
+        },
+        onTollLink(e){
+            let self = this
+            // 选中路段
+            if(e){
+                self.$set(self,'activeTollLink',self.bxDeepClone(e))
+                // self.$set(self,'activeLine',self.bxDeepClone(e))
+            }
+            
+            self.onLineList(e)
+        },
+        // activeTollLink(e){
+        //     // 选中路段
+        // },
+        getAllTolllinks(){
+            // 查询所有分公司下路段
+            let self = this
+            // category取值：门架、收费站
+            // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
+            // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let srv = 'srvaud_tolllink_select';
+            let srvAuth = 'aud'
+            let conds = [{
+                colName:'company_no',
+                ruleType:'eq',
+                value:this.activeDeptNo
+            }]
+            let relationCondition = {}
+            let page = null
+            let order = null
+            if(!this.activeDeptNo){
+                console.log('未选择分公司')
+                return 
+            }
+            self.select(
+                srv,
+                conds,
+                page,
+                order,
+                null,
+                null,
+                srvAuth,
+                null,
+                null,
+                relationCondition,
+                false,
+                null,
+                // srvAuth
+              ).then(res => {
+                // console.log('分公司',res.data)
+                res = res.data
+                if(res.state == "SUCCESS"){
+                    // depts
+                    self.tolllinks = res.data.map(item => item)
+                    // console.log('分公司',res.data)
+                }else{
+                    console.log('查询收费路段 异常',res)
+                }
+              })
+        },
+        getAllStations(road_no){
+            // 查询所有门架
+            let self = this
+            // category取值：门架、收费站
+            // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
+            // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let srv = 'srvaud_tollgrantry_station_select';
+            let srvAuth = 'aud'
+            let conds = [
+                {
+                colName:'company_no',
+                ruleType:'eq',
+                value:this.activeDeptNo
+                }
+            ]
+            if(road_no){
+                conds.push({
+                    colName:'road_no',
+                    ruleType:'[like]',
+                    value:road_no
+                })
+            }
+            let relationCondition = {}
+            let page = null
+            let order = null
+            if(!this.activeDeptNo){
+                console.log('未选择分公司')
+                return 
+            }
+            self.select(
+                srv,
+                conds,
+                page,
+                order,
+                null,
+                null,
+                srvAuth,
+                null,
+                null,
+                relationCondition,
+                false,
+                null,
+                // srvAuth
+              ).then(res => {
+                // console.log('分公司',res.data)
+                res = res.data
+                if(res.state == "SUCCESS"){
+                    // depts
+                    self.loadStations = res.data.filter(item => item['grantry_type'] !== '虚拟门架')
+                    // console.log('分公司',res.data)
+                }else{
+                    console.log('查询门架|收费站等 异常',res)
+                }
+              })
+        }
+    },
+    watch:{
+        "activeDeptNo":{
+            deep:true,
+            handler:function(nval,oval){
+                console.log('切换分公司',nval)
+                this.$nextTick(() => {
+                    this.$set(this,'loadStations',[])
+                    this.getAllTolllinks()
+                })
+            }
+        },
+        "tolllinks":{
+            deep:true,
+            handler:function(nval,oval){
+                console.log('路段更新了',nval)
+                this.$nextTick(() => {
+                    // this.getAllTolllinks()
+                })
+            }
+        },
+        "activeTollLink":{
+            deep:true,
+            handler:function(nval,oval){
+                console.log('切换分公司路段',nval)
+                if(nval){
+                    this.$nextTick(() => {
+
+                        this.getAllStations(nval.id)
+                    })
+                }
+                
+            }
+        }
+    }
+  
+  };
+  

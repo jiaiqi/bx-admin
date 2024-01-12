@@ -5,9 +5,73 @@
             
             
         </div>
+        
         <div class="ui-layout" >
-                    <!-- v-if="lineInfoShow && activeLine" -->
-                    <div class="line-info-title">
+            <div class="ui-layout-left">
+                <div class="ui-layout-left-head">
+                    <el-select v-model="activeDeptNo" filterable placeholder="请选择" style="width:100%;">
+                        <el-option
+                        v-for="item in depts"
+                        :key="item.dept_no"
+                        :label="item.dept_name"
+                        :value="item.dept_no">
+                        </el-option>
+                    </el-select>
+                </div>
+                <div class="ui-layout-left-body">
+                    <el-card class="box-card">
+                        <div class="point-layout-bar" :class=" activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? 'active' : ''" v-for="(tolllink,s) in buildResLine" v-if="buildResLine.length > 0" @click.stop="onTollLink(tolllink)">
+                            <div class="point-layout-bar-title">
+                                {{tolllink.name}}
+                                <!-- <span>{{tolllink.category}}-{{tolllink.grantry_type}}</span> -->
+                            </div>
+                            <div class="point-layout-bar-more">
+                                {{tolllink.id}}
+                            </div>
+                        </div>
+                    </el-card>
+                </div>
+                <div class="ui-layout-left-footer">
+                </div>
+            </div>
+            <div class="ui-layout-center">
+                <div class="ui-layout-center-head">
+                </div>
+                <div class="ui-layout-center-body">
+                </div>
+                <div class="ui-layout-center-footer">
+                </div>
+            </div>
+            <div class="ui-layout-right">
+                <div class="ui-layout-right-head">
+                    门架列表
+                </div>
+                <div class="ui-layout-right-body">
+                    <el-card class="box-card">
+                        <div class="point-layout-bar" :class="activePoint && activePoint.id == station.id ? 'active' : ''" v-for="(station,s) in loadStations" v-if="loadStations.length > 0" @click="onPointList(station)">
+                            <div class="point-layout-bar-title">
+                                {{station.name}}
+                                <span>{{station.category}}-{{station.grantry_type}}</span>
+                            </div>
+                            <div class="point-layout-bar-more">
+                                {{station.id}}
+                            </div>
+                        </div>
+                        <div class="point-layout-bar none"  v-if="loadStations.length == 0" >
+                            <div class="point-layout-bar-title">
+                                未选择路段
+                            </div>
+                            <div class="point-layout-bar-more">
+                                暂无门架可显示
+                            </div>
+                        </div>
+                    </el-card>
+                    
+                </div>
+                <div class="ui-layout-right-footer">
+                </div>
+            </div>
+                    <!-- <div class="line-info-title">
                         <button >关闭</button>
                     </div>
                     <div class="line-info-mini" v-if="activeLine">
@@ -27,9 +91,9 @@
                                 
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     <!-- waypoints_points -->
-                </div>
+        </div>
                 <!-- <div class="top-tool-bar">
                     <div class="tool-bar" v-for="(tool,index) in topTools" @click="onClickBar(tool)">
                         <i :class="tool.icon"></i>
@@ -48,13 +112,12 @@ import cameraIcon from '../assets/icon/camera.png'
 
 import { getBaiduMapApi} from './api.js'
 
-import mapMixin from './map-mixin.js'
-// import {BmNavigation,BmCityList,BmMarker,BmContextMenu,BmContextMenuItem,BmBoundary,BmlLushu,BmDriving,BmLabel,BmPolyline,BmInfoWindow,BmControl} from 'vue-baidu-map'
-// bm-navigation
+import mapMixin from './map-mixin.js'  // 地图相关
+import srvMixin from './service-mixin.js' // 业务相关
   export default {
     name: 'bmap-web',
-    // components:{BaiduMap,BmNavigation,BmCityList,BmMarker,BmContextMenu,BmContextMenuItem,BmBoundary,BmlLushu,BmDriving,BmLabel,BmPolyline,BmInfoWindow,BmControl},
-    mixins:[mapMixin],
+    
+    mixins:[mapMixin,srvMixin],
     data() {
       return {
         mockLines:[{
@@ -344,10 +407,7 @@ import mapMixin from './map-mixin.js'
             }
         }
     },
-    mounted(){
-        this.initMap()
-        this.getDriving()
-    },
+    
     computed:{
         
     },
@@ -389,15 +449,113 @@ import mapMixin from './map-mixin.js'
     height:calc(100vh - 10px);
     
 }
-
+$activeColor:#409eff;
+$activeBgColor:#ebf4fd;
+$uiBarBorderColor:#eee;
+$uiBarActiveBorderColor:$activeColor;
+$uiBarActiveBgColor:$activeBgColor;
+$bgColor:#fff;
 .ui-layout{
         
-        height:400px;
+        // height:400px;
         position: fixed;
-        top: 10px;
-        left: 10px;
-        background: #fff;
-        color:#000;
+        top:0;
+        left:0;
+        // right:0;
+        // bottom:0;
+        // height:100vh;
+        // width:100vw;
+        
+        // display:grid;
+        //     grid-template-columns: 16rem auto 16rem;
+        .ui-layout-left{
+            padding:1rem;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width:16rem;
+
+            .ui-layout-left-head{
+
+            }
+            .ui-layout-left-body{
+                max-height:calc(100% - 0px);
+                position:relative;
+                overflow:hidden;
+                .box-card{
+                    height:100%;
+                    overflow-y: auto;
+                }
+                .point-layout-bar{
+                    border:1px solid $uiBarBorderColor;
+                    margin-bottom:4px;
+                    padding:2px;
+                    overflow:hidden;
+                    &.active{
+                        border:1px solid $uiBarActiveBorderColor;
+                        background-color: $uiBarActiveBgColor;
+                    }
+                }
+            }
+            .ui-layout-left-footer{
+                
+            }
+        }
+        .ui-layout-center{
+            // position: fixed;
+            width:100%;
+            z-index:-1;
+            .ui-layout-left-head{
+
+            }
+            .ui-layout-left-body{
+                
+            }
+            .ui-layout-left-footer{
+                
+            }
+        }
+        .ui-layout-right{
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width:16rem;
+            max-height:calc(100vh - 20px);
+            padding:1rem;
+            display:grid;
+            grid-template-rows: 30px auto 60px;
+            .ui-layout-right-head{
+                padding:0.5rem;
+                background-color:$bgColor;
+            }
+            .ui-layout-right-body{
+                max-height:calc(100vh - 40px);
+                position:relative;
+                overflow:hidden;
+                .box-card{
+                    height:100%;
+                    overflow-y: auto;
+                }
+                .point-layout-bar{
+                    border:1px solid $uiBarBorderColor;
+                    margin-bottom:4px;
+                    padding:2px;
+                    overflow:hidden;
+                    &.active{
+                        border:1px solid $uiBarActiveBorderColor;
+                        background-color: $uiBarActiveBgColor;
+                    }
+                    &.none{
+                        text-align:center;
+                        color:#ddd;
+                    }
+                }
+                
+            }
+            .ui-layout-right-footer{
+                
+            }
+        }
         .line-info-content{
             display:flex;
             .line-info-content-list{

@@ -1,48 +1,6 @@
 
  
-// import config from '../../web-config'
-// import request from '@/utils/request'
-import qs from 'qs'
- 
-/**
- * 登录接口封装
- */
-let config = {}
-const host = config.port ? `${config.protocol}://${config.host}:${config.port}` : `${config.protocol}://${config.host}`
-const website = `${config.webNo}`  // 站点编号
-// const website = 'PCWS202304230001'  // 瓦特
-const no = 'yiqipao'
-const app = config.app
-
-export function getWebSiteConfig () {
-  // 站点信息查询
-  let req = {
-		"serviceName": "srvdaq_pc_website_cfg_select",
-		"colNames": [
-			"*"
-		],
-		"condition": [
-			{
-				"colName": "website_no",
-				"ruleType": "eq",
-				// "ruleType": "like",
-				"value": website
-				// "value": ''
-			}
-		],
-		"page": {
-			"pageNo": 1,
-			"rownumber": 999
-		},
-		"order": []
-	}
-  // console.log(host)
-  return request({
-    url: `${host}/${app}/select/srvdaq_pc_website_cfg_select`,
-    method: 'POST',
-    data: req
-  })
-}
+import axios from "axios";
 
 export function getBaiduMapApi (url,params) {
   // 查询轮播
@@ -58,11 +16,28 @@ export function getBaiduMapApi (url,params) {
       }
     }
   }
-  console.log('getBaiduMapApi',url)
-  return request({
+  // console.log('getBaiduMapApi',url)
+  return axios({
     url: `${url}`,
     method: 'GET'
   })
+}
+export function getBxSrv(srv,type,params) {
+  // 查询轮播
+  
+  // console.log('getBaiduMapApi',url) srvaud_tollgrantry_station_select
+  switch (type) {
+    case 'select':
+      return this.$select({
+        url: `${url}`,
+        method: 'GET'
+      })
+      break;
+  
+    default:
+      break;
+  }
+  
 }
 
 

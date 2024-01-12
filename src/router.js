@@ -486,9 +486,26 @@ routes.push( {
   {
     path: '/bmap',
     name: 'bmap',
-    component: () => import('@/pages/bmap/index.vue')
+    component: () => import('@/pages/bmap/index.vue'),
     //子路由
-    
+    //子路由
+    children:[
+      {
+        path:'check',
+        //新增
+        component:()=> import('@/pages/bmap/index.vue')
+      },
+      {
+        path:'editor/:no',
+        //修改
+        component:()=> import('@/pages/bmap/index.vue')
+      },
+      {
+        path:'view/:no',
+        //只读
+        component:()=> import('@/pages/bmap/index.vue')
+      },
+    ]
   }
 
 ]
