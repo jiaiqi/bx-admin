@@ -2,6 +2,13 @@
 import mapStyle from './mapStyle.json'
 
 import cameraIcon from '../assets/icon/camera.png'
+import gantry from '../assets/icon/gantry.png'
+import gantryActive from '../assets/icon/gantry-active.png'
+import startIcon from '../assets/icon/start.png'
+import endIcon from '../assets/icon/end.png'
+import toll from '../assets/icon/toll.png'
+import tollActive from '../assets/icon/toll-active.png'
+
 import { getBaiduMapApi} from './api.js'
 let activeLineColor = '#f1cb00'
 // let linesColor = 
@@ -70,7 +77,7 @@ export default {
                             }
                         })
                         line['uid'] = `${line.id}@${ Number(iIndex) +1}`
-                        line['type'] = 'line'
+                        line['_type'] = 'line'
                         line['points'] = line.points.map((p,index) => {
                             p['uid'] = `${line.uid}@${p.id}`
                             return p
@@ -131,7 +138,7 @@ export default {
                         //     }
                         // })
                         line['uid'] = `${line.id}@${ Number(iIndex) +1}`
-                        line['type'] = 'line'
+                        line['_type'] = 'line'
                         line['points'] = line.points.map((p,index) => {
                             p['uid'] = `${line.uid}@${p.id || index}`
                             return p
@@ -160,6 +167,14 @@ export default {
                                 
                             }
                         }
+                        // import gantry from '../assets/icon/gantry.png'
+                        // import gantryActive from '../assets/icon/gantry-active.png'
+                        // import startIcon from '../assets/icon/start.png'
+                        // import endIcon from '../assets/icon/end.png'
+                        // import toll from '../assets/icon/toll.png'
+                        // import tollActive from '../assets/icon/toll-active.png'
+                        line.start['icon'] = startIcon
+                        line.end['icon'] = endIcon
                         line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
                         lines.push(line)
                     }
@@ -191,7 +206,7 @@ export default {
         updateLine(line){
             let self = this
             let overlays = self.BMap.getOverlays()
-            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['type'] == 'line')
+            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line')
             console.log('updateLine',overlays)
             let selectedColor = activeLineColor;
             if(Array.isArray(overlays) && overlays.length>0){
@@ -212,30 +227,52 @@ export default {
         updateActivePoint(point){
             let self = this
             let overlays = self.BMap.getOverlays()
-            console.log('updateActivePoint',overlays)
-            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['type'] == 'label' || o['_data']['type'] == 'label'))
-            console.log('updateActivePoint',overlays)
+            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'label' || o['_data']['_type'] == 'point'))
+            console.log('updateActivePoint',point)
             let selectedColor = activeLineColor;
             if(Array.isArray(overlays) && overlays.length>0){
                 for(let overlay of overlays){
+                    switch (overlay['_data']['_type']) {
+                        case 'point':
+                            let iconPath = overlay['_data']['icon']
+                            if(overlay['_data'].id == point.id){
 
-                    if(overlay['_data'].id == point.id){
+                                // 更新 marker 图标
+                                iconPath = overlay['_data']['icon_active']
+                            }
+                                let icon =  new BMap.Icon(iconPath, new BMap.Size(32, 32), {    
+                                    anchor: new BMap.Size(0, 0),      
+                                    imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
+                                })
+                                overlay.setIcon(icon)
+                            break;
+                        case 'label':
+                            if(overlay['_data'].id == point.id){
 
-                        overlay.setStyle({                              // 设置选中label的样式
-                            color: 'red',
-                            fontSize: '12px',
-                            border: '1px solid red',
-                            borderRadius:'4px',
-                            zIndex:999
-                        })
-                    }else{
-                        overlay.setStyle({                              // 设置label的样式
-                            color: '#323232',
-                            fontSize: '12px',
-                            border: '1px solid #ddd',
-                            borderRadius:'4px'
-                        })
+                                overlay.setStyle({                              // 设置选中label的样式
+                                    color: 'red',
+                                    fontSize: '12px',
+                                    border: '1px solid red',
+                                    borderRadius:'4px',
+                                    zIndex:999
+                                })
+                            }else{
+                                overlay.setStyle({                              // 设置label的样式
+                                    color: '#323232',
+                                    fontSize: '12px',
+                                    border: '1px solid #ddd',
+                                    borderRadius:'4px'
+                                })
+                            }
+                            break;
+
+                    
+                        default:
+                            break;
                     }
+                    
+
+                    
                    
                 }
                 
@@ -256,7 +293,7 @@ export default {
             // 判断是否已经绘制 
             // console.log('添加线条',line.id,line)
             let overlays = self.BMap.getOverlays()
-            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['type'] == 'line' && o['_data']['id'] == line.id)
+            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id)
             if(Array.isArray(overlays) && overlays.length == 1){
                 self.BMap.removeOverlay(overlays[0]); // 从地图上移除覆盖物
                 console.log('移除已经存在的线',overlays,line.id)
@@ -294,7 +331,7 @@ export default {
                     let overlay = e.overlay
                     let title = ''
                     
-                    if(overlay && overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data'].type == 'line'){
+                    if(overlay && overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'line'){
                         
                         // console.log('点击线',overlay['_data'])
                         // self.$set(self,'activeLine',overlay['_data'])
@@ -348,7 +385,7 @@ export default {
             if(self.BMap){
                 
                 let overlays = self.BMap.getOverlays()
-                let removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['type'] == 'point' || o['_data']['type'] == 'label'))
+                let removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label'))
                 console.log('需要清除的点',removeOverlays)  
                 for(let o of removeOverlays){
                     self.BMap.removeOverlay(o); // 从地图上移除覆盖物
@@ -371,7 +408,6 @@ export default {
                         position: point,
                         offset: new BMap.Size(32, 0)
                     })  
-
                     var myIcon = new BMap.Icon(p.icon || cameraIcon, new BMap.Size(32, 32), {   
                         // 指定定位位置。  
                         // 当标注显示在地图上时，其所指向的地理位置距离图标左上   
@@ -385,10 +421,10 @@ export default {
                     });     
                         // 创建标注对象并添加到地图  
                         
-                    var marker = new BMap.Marker(point, {icon: myIcon,title:p.id,enableDragging: true});   
+                    var marker = new BMap.Marker(point, {icon: myIcon,title:p.name,enableDragging: true});   
                     marker['_data'] = p
                     let labelData = self.bxDeepClone(p)
-                    labelData['type'] = 'label'
+                    labelData['_type'] = 'label'
                     label['_data'] = labelData
                     if(this.activePoint && this.activePoint.id == p.id){
                         label.setStyle({                              // 设置label的样式
@@ -411,14 +447,23 @@ export default {
                         let overlay = e.currentTarget
                         let overlays = self.BMap.getOverlays()
                         
-                        if(overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data'].type == 'point'){
+                        if(overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'point'){
                             self.$set(self,'activePoint',overlay['_data'])
-                            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'].type == 'label' )
+                            // 更新 marker 图标
+                            let activeIconPath = overlay['_data']['icon_active']
+                            console.log('activeIconPath',overlay['_data'],activeIconPath)
+                            let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(32, 32), {    
+                                anchor: new BMap.Size(0, 0),      
+                                imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
+                            })
+                            overlay.setIcon(activeIcon)
+
+                            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'label' )
                             // overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'].type == 'point' && o['_data'].uid == overlay.uid)
 
                             if(Array.isArray(overlays) ){
                                 for(let l of overlays){
-                                    if(l['_data'].uid == overlay['_data'].uid){
+                                    if(l['_data'].id == overlay['_data'].id){
 
                                         l.setStyle({                              // 设置选中label的样式
                                             color: 'red',
@@ -437,6 +482,15 @@ export default {
                                 }
                             }
                             console.log("您点击了标注",e,overlay, overlays);  
+                        }else{
+                            // 更新 marker 图标
+                            let activeIconPath = overlay['_data']['icon']
+                            console.log('activeIconPath',overlay['_data'],activeIconPath)
+                            let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(32, 32), {    
+                                anchor: new BMap.Size(0, 0),      
+                                imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
+                            })
+                            overlay.setIcon(activeIcon)
                         }
                         
                     });
@@ -516,7 +570,7 @@ export default {
             // 清除所有线
             if(self.BMap){
                 let overlays = self.BMap.getOverlays()
-                overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['type'] == 'line')
+                overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line')
                 if(Array.isArray(overlays) && overlays.length > 0 && self.BMap){
                     for(let o of overlays){
                         self.BMap.removeOverlay(o); // 从地图上移除覆盖物
@@ -603,10 +657,10 @@ export default {
                             
                             line['waypoints_points'] = line['waypoints_points'].map((item,pIndex) => {
                                 // item['uid'] = `${line.lineId}-${pIndex}`
-                                item['type'] = 'point'
+                                item['_type'] = 'point'
                                 return item
                             })
-                            line['type'] = 'line'
+                            line['_type'] = 'line'
                             self.polylines.push(self.bxDeepClone(line))
                             self.addLines(self.bxDeepClone(line))  // 添加路线
                         }

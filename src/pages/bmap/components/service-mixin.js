@@ -1,4 +1,9 @@
-
+import gantry from '../assets/icon/gantry.png'
+import gantryActive from '../assets/icon/gantry-active.png'
+import startIcon from '../assets/icon/start.png'
+import endIcon from '../assets/icon/end.png'
+import toll from '../assets/icon/toll.png'
+import tollActive from '../assets/icon/toll-active.png'
 
 export default {
     props: {
@@ -101,9 +106,30 @@ export default {
                         let point = {
                             ...p
                         }
+                        
                         point['_dev_point_type'] = p['category']
+                        switch (point['_dev_point_type']) {
+                            case '门架':
+                                point['icon'] = gantry
+                                point['icon_active'] = gantryActive
+                                break;
+                            case '收费站':
+                                point['icon'] = toll
+                                point['icon_active'] = tollActive
+                                
+                                break;
+                        
+                            default:
+                                break;
+                        }
                         return point
                     })
+//                     import gantry from '../assets/icon/gantry.png'
+// import gantryActive from '../assets/icon/gantry-active.png'
+// import startIcon from '../assets/icon/start.png'
+// import endIcon from '../assets/icon/end.png'
+// import toll from '../assets/icon/toll.png'
+// import tollActive from '../assets/icon/toll-active.png'
                 }
                 return  this.bxDeepClone(obj)
 
@@ -298,7 +324,27 @@ export default {
                 res = res.data
                 if(res.state == "SUCCESS"){
                     // depts
-                    self.loadStations = res.data.filter(item => item['grantry_type'] !== '虚拟门架')
+                    self.loadStations = res.data.filter(item => {
+                        if(item['grantry_type'] !== '虚拟门架'){
+                            switch (item['category']) {
+                                case '门架':
+                                    
+                            item['icon'] = gantry
+                            item['icon_active'] = gantryActive
+                                    break;
+                                case '收费站':
+                                        
+                                item['icon'] = toll
+                                item['icon_active'] = tollActive
+                                    break;
+                            
+                                default:
+                                    break;
+                            }
+                            return item
+                        }
+                        
+                    })
                     // console.log('分公司',res.data)
                 }else{
                     console.log('查询门架|收费站等 异常',res)

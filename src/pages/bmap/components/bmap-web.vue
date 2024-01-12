@@ -109,6 +109,13 @@
 // import store from '@/store'
 
 import cameraIcon from '../assets/icon/camera.png'
+// 
+import gantry from '../assets/icon/gantry.png'
+import gantryActive from '../assets/icon/gantry-active.png'
+import startIcon from '../assets/icon/start.png'
+import endIcon from '../assets/icon/end.png'
+import toll from '../assets/icon/toll.png'
+import tollActive from '../assets/icon/toll-active.png'
 
 import { getBaiduMapApi} from './api.js'
 
