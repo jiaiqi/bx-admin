@@ -740,7 +740,6 @@ function init_util() {
     if(divCond){
       divCond = JSON.parse(decodeURIComponent(divCond))
       if(Array.isArray(divCond)&&divCond.length){
-        divCond = divCond.filter(item=>item.use_div_calc==='是')
         if(divCond.length){
           params['divCond'] = divCond
         }

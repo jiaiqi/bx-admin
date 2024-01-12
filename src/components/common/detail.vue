@@ -307,7 +307,8 @@ export default {
         this.service_name,
         condition,
         this.$route.query.isdraft,
-        this.srvAuthLogin
+        this.srvAuthLogin,
+        this.$route.query.divCond
       ).then(response => {
         
         detailData = response.body;
@@ -395,7 +396,7 @@ export default {
           this.detailData = response.body;
           this.mainFormDatas = response.body;
           this.id=this.detailData.id;
-          if(response.response.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
+          if(response?.response?.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
             this.detailChartDatas = response.response.chart_data.map(item => {
               item['status'] = item['state'] == '1' ? 'success' :  item['state'] == '0' ? 'process' : 'wait'; //success
               return  item

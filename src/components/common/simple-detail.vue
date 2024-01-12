@@ -331,11 +331,9 @@ export default {
         if (this.$route.query.divCond) {
           try {
             divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
+            console.log(divCond);
           } catch (error) {
-            
-          }
-          if (Array.isArray(divCond) && divCond.length) {
-            divCond = divCond.filter(item => item.use_div_calc === '是')
+            console.error(error);
           }
         }
 
