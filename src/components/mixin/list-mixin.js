@@ -1395,6 +1395,17 @@ export default {
         if(this.pub_field_map?.id){
             urlParams = "/" + exeservice + "/" + row[this.pub_field_map.id] + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
         }
+        let divCond = this.searchFormCondition.filter(item => item.use_div_calc === '是').map(item=>{
+          return {
+            colName:item.colName,
+            ruleType:item.ruleType,
+            value:item.value
+          }
+        })
+        if(divCond?.length){
+          // 分表查询条件 2024.1.12新增，传到详情页面 
+          urlParams+=`&divCond=${encodeURIComponent(JSON.stringify(divCond))}`
+        }
         var disp_col = operate_item._disp_col;
         var disp_value = row[disp_col];//详情页面上的标签
         tab_title = tab_title.replace('查询', '');

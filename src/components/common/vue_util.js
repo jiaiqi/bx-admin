@@ -727,7 +727,8 @@ function init_util() {
   };
 
 
-  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth,pageType) {
+  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth,pageType,divCond) {
+    // divCond 分表查询参数 2021年1月12日新增
     var url = this.getServiceUrl("select", service_name);
     var params = {
       "serviceName": service_name,
@@ -736,6 +737,15 @@ function init_util() {
       "draft": draft === 'true' ? true : false,
       "hisVer": isHisVer || false
     };
+    if(divCond){
+      divCond = JSON.parse(decodeURIComponent(divCond))
+      if(Array.isArray(divCond)&&divCond.length){
+        divCond = divCond.filter(item=>item.use_div_calc==='是')
+        if(divCond.length){
+          params['divCond'] = divCond
+        }
+      }
+    }
     if(pageType){
       params['query_source'] = pageType
       console.log('on page TYPe',pageType)

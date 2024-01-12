@@ -38,7 +38,7 @@
     },
 
     methods: {
-      run(condition) {
+      run(condition,divCond) {
         if(Array.isArray(condition)&&condition.length>0){
           this.conditions = condition
         }
@@ -48,7 +48,9 @@
 
         let query = {}
         query.serviceName = this.service
-        
+        if(divCond&&divCond.length>0){
+          query.divCond = divCond
+        }
 
         query.condition = this.buildConditions(this.pageIsDraft)
         if (!query.condition) {

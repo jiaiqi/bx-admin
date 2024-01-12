@@ -327,8 +327,19 @@ export default {
             return item;
           });
         }
+        let divCond = null;
+        if (this.$route.query.divCond) {
+          try {
+            divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
+          } catch (error) {
+            
+          }
+          if (Array.isArray(divCond) && divCond.length) {
+            divCond = divCond.filter(item => item.use_div_calc === '是')
+          }
+        }
 
-        return loader.run(condition);
+        return loader.run(condition,divCond);
       })
       .then(() => {
         this.formLoaded = true;

@@ -136,7 +136,8 @@ export default {
       moreConfig:null,
       initValToCols:[],  //请求赋值col
       cfgJson:null,
-      sectionsCollapse:{}
+      sectionsCollapse:{},
+      pub_field_map:null, //公共字段映射
     }
   },
 
@@ -624,6 +625,10 @@ export default {
 
         let listData = data.srv_cols;
         this.srvCols = listData;
+        if(data.pub_field_map){
+          // 字段映射
+          this.pub_field_map = data.pub_field_map;
+        }
         for (var i = 0; i < listData.length; i++) {
           let srvCol = listData[ i ];
           let fi = new FieldInfo(srvCol, this.formType);
