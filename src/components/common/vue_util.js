@@ -608,6 +608,25 @@ function init_util() {
       "vpage_no":vpageNo,
       use_type:use_type     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
+    if(query.condition.length){
+      let divCond = query.condition.filter(item => item.use_div_calc === '是');
+      if(divCond?.length){
+        query.divCond = divCond.map(item=>{
+          return {
+            colName:item.colName,
+            ruleType:item.ruleType,
+            value:item.value
+          }
+        })
+        query.condition = query.condition.map(item=>{
+          return {
+            colName:item.colName,
+            ruleType:item.ruleType,
+            value:item.value
+          }
+        })
+      }
+    }
     if(use_type==='treelist'){
      // 2023年11月13日增加，top tree data特性，后端返回符合条件的数据的最顶层节点数据，不使用parentCol为null作为条件
     //  query["rdt"] = "ttd";
@@ -708,7 +727,8 @@ function init_util() {
   };
 
 
-  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth,pageType) {
+  Vue.prototype.selectOne = function (service_name, condition, draft = false, isHisVer, srvAuth,pageType,divCond) {
+    // divCond 分表查询参数 2021年1月12日新增
     var url = this.getServiceUrl("select", service_name);
     var params = {
       "serviceName": service_name,
@@ -717,6 +737,14 @@ function init_util() {
       "draft": draft === 'true' ? true : false,
       "hisVer": isHisVer || false
     };
+    if(divCond){
+      divCond = JSON.parse(decodeURIComponent(divCond))
+      if(Array.isArray(divCond)&&divCond.length){
+        if(divCond.length){
+          params['divCond'] = divCond
+        }
+      }
+    }
     if(pageType){
       params['query_source'] = pageType
       console.log('on page TYPe',pageType)

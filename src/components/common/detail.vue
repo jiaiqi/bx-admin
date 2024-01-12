@@ -13,7 +13,7 @@
                 </div> 
                 <div class="text item" v-if="initLoad">
 
-                      <simple-detail :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
+                      <simple-detail :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id" @form-loaded="$emit('form-loaded', $event)">
 
                         <div slot="field-form-prepend" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
                           <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
@@ -80,7 +80,7 @@
                 
                 <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
-                  <simple-detail :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
+                  <simple-detail :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id" @form-loaded="$emit('form-loaded', $event)">
 
                         <div slot="field-form-prepend" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
                           <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
@@ -240,8 +240,8 @@ export default {
       mainFormDatas: null,
       isHistory: false,
       srvAuthLogin:false,
-      detailChartDatas:[]
-
+      detailChartDatas:[],
+      pkCol:'id',
     };
   },
   methods: {
@@ -307,7 +307,8 @@ export default {
         this.service_name,
         condition,
         this.$route.query.isdraft,
-        this.srvAuthLogin
+        this.srvAuthLogin,
+        this.$route.query.divCond
       ).then(response => {
         
         detailData = response.body;
@@ -344,6 +345,7 @@ export default {
           this.isHistory = v2Data.his_version;
         }
         if(v2Data?.pub_field_map?.id){
+          this.pkCol = v2Data.pub_field_map?.id
           if(condition?.length){
             condition.forEach(item=>{
               if(item.colName=='id'){
@@ -374,7 +376,8 @@ export default {
         this.$route.query.isdraft,
         this.isHistory,
         srvAuthKey && this.$route.query.hasOwnProperty(srvAuthKey)  ? true : false,
-        'detail_page'
+        'detail_page',
+        this.$route.query.divCond
       ).then(response => {
         
           // console.log('srvAuthKey',srvAuthKey,response.body)
@@ -393,7 +396,7 @@ export default {
           this.detailData = response.body;
           this.mainFormDatas = response.body;
           this.id=this.detailData.id;
-          if(response.response.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
+          if(response?.response?.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
             this.detailChartDatas = response.response.chart_data.map(item => {
               item['status'] = item['state'] == '1' ? 'success' :  item['state'] == '0' ? 'process' : 'wait'; //success
               return  item

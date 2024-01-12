@@ -79,7 +79,7 @@
               <el-time-picker v-else-if="field.info.editor === 'time-range'" is-range v-model="field.model" :picker-options="{ format: 'HH:mm' }" value-format="HH:mm" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)">
               </el-time-picker>
 
-              <el-date-picker v-else-if="field.info.editor === 'date-time-range'" v-model="field.model" type="datetimerange" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)">
+              <el-date-picker v-else-if="field.info.editor === 'date-time-range'" v-model="field.model" type="datetimerange" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="changeDependField(field)">
               </el-date-picker>
 
               <input-range v-else-if="field.info.editor === 'input-range'" :field="field" @field-value-changed="
@@ -335,7 +335,23 @@ export default {
     },
     getDisabled: function() {
       return !this.field.evalEditable();
-    }
+    },
+    queryInitValue(){
+      return this.field.info.queryInitValue
+    },
+    dateRangePickerOptions(){
+      if (this.queryInitValue?.query_scope_max) {
+        return {
+          disabledDate: time => {
+            console.log(time);
+            if(this.queryInitValue.type==='日'){
+              return time.getTime() > Date.now() - 8.64e7;
+            }
+          }
+        }
+      }
+    
+    },
   },
   
   created: function() {
@@ -355,6 +371,32 @@ export default {
       }
     },
     changeDependField(field){
+      if (this.field.info?.editor === 'date-time-range' && this.queryInitValue?.query_scope_max) {
+        if (this.field.model.length === 2) {
+          let oneUnitTimes, rangeMaxTimes, unit
+          const startDayTimes = new Date(this.field.model[0]).getTime()
+          const endDayTimes = new Date(this.field.model[1]).getTime()
+          switch (this.queryInitValue.type) {
+            case '日':
+              unit = '天'
+              oneUnitTimes = 24 * 60 * 60 * 1000;
+              break;
+            case '月':
+              unit = '个月'
+              oneUnitTimes = 24 * 60 * 60 * 1000 * 31;
+              break;
+            case '年':
+              unit = '年'
+              oneUnitTimes = 24 * 60 * 60 * 1000 * 365;
+              break;
+          }
+          rangeMaxTimes = this.queryInitValue?.query_scope_max * oneUnitTimes
+          if (rangeMaxTimes && !isNaN(rangeMaxTimes) && endDayTimes - startDayTimes > rangeMaxTimes) {
+            this.field.model = [];
+            return this.$message.warning(`选择范围不能超过${this.queryInitValue?.query_scope_max}${unit}`);
+          }
+        }
+      }
       this.$emit('field-value-changed', field.info.name, field)
     },
     onBlur() {

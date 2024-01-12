@@ -259,6 +259,12 @@
             ruleType: field.ruleType,
             value: field.getSrvVal(),
           }
+          if(field.info.queryInitValue?.use_div_calc){
+            condition.use_div_calc = field.info.queryInitValue.use_div_calc
+          }
+          if(field.info.queryInitValue?.use_query){
+            condition.use_query = field.info.queryInitValue.use_query
+          }
           if (condition.value != null && condition.value != '') {
             if (Array.isArray(condition.value)) {
               if (condition.value.length == 0) {
@@ -505,7 +511,7 @@
           const queryInitValueFields = []
           Object.keys(this.fields).forEach(key=>{
             if(this.fields[key].info.queryInitValue){
-              if(this.fields[key].info.queryInitValue?.value){
+              if(this.fields[key].info.queryInitValue?.value&&this.fields[key].info.queryInitValue?.use_query==='是'){
                 queryInitValueFields.push(key)
                 this.fields[key].setSrvVal(this.fields[key].info.queryInitValue?.value)
               }

@@ -327,8 +327,17 @@ export default {
             return item;
           });
         }
+        let divCond = null;
+        if (this.$route.query.divCond) {
+          try {
+            divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
+            console.log(divCond);
+          } catch (error) {
+            console.error(error);
+          }
+        }
 
-        return loader.run(condition);
+        return loader.run(condition,divCond);
       })
       .then(() => {
         this.formLoaded = true;
