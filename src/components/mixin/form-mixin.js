@@ -635,9 +635,9 @@ export default {
           let f = new Field(fi, this);
           f.vif = !(filter && !filter(srvCol))
           // hack
-          if (fi.name == "id") {
-            fi.visible = false;
-          }
+          // if (fi.name == "id") {
+          //   fi.visible = false;
+          // }
           if (fi.editor == 'multiselect') {
             f.model = [];
           }

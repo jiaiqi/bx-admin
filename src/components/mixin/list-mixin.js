@@ -2183,9 +2183,9 @@ export default {
       
       for (var serviceCol of srv_cols) {  
         let colName = serviceCol["columns"];
-        if (colName == "id") {
-          continue;
-        }
+        // if (colName == "id") {
+          // continue;
+        // }
 
         if (serviceCol.col_type === "InlineList") {
           this.addInlineListRowButton(serviceCol);
