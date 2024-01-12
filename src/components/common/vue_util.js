@@ -611,7 +611,20 @@ function init_util() {
     if(query.condition.length){
       let divCond = query.condition.filter(item => item.use_div_calc === '是');
       if(divCond?.length){
-        query.divCond = divCond
+        query.divCond = divCond.map(item=>{
+          return {
+            colName:item.colName,
+            ruleType:item.ruleType,
+            value:item.value
+          }
+        })
+        query.condition = query.condition.map(item=>{
+          return {
+            colName:item.colName,
+            ruleType:item.ruleType,
+            value:item.value
+          }
+        })
       }
     }
     if(use_type==='treelist'){
