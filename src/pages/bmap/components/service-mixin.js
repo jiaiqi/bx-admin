@@ -19,7 +19,8 @@ export default {
             activeDeptNo:'',
             activeTollLink:null,
             loadStations:[],
-            tolllinks:[]
+            tolllinks:[],
+            updatePoints:[]
         }
     },
     computed:{
@@ -174,6 +175,133 @@ export default {
        
     },
     methods: {
+        submitUpdatePoints(){
+            let self = this
+            console.log('修改点坐标',this.updatePoints)
+            let bxRequestsPoints = []
+            let bxRequestsLines = []
+            let request = {
+                srvApp:'aud',
+                serviceName:'',
+                data:[],
+                condition:[{
+                    colName:'id',
+                    ruleType:'eq',
+                    value:''
+                }]
+            }
+            let points = self.bxDeepClone(this.updatePoints)
+            for(let e of points){
+                if(e && e.id){
+                    request['condition'][0]['value'] = e.id
+                    switch (e['_dev_point_type']) {
+                        case '门架':
+                            request['serviceName'] = 'srvaud_tollgrantry_update'
+                            request.data.push({
+                                lat:`${e.lat}`,
+                                lng:`${e.lng}`
+                            })
+                            bxRequestsPoints.push(self.bxDeepClone(request))
+                            break;
+                        case '收费站':
+                            request['serviceName'] = 'srvaud_tollstation_update'
+                            request.data.push({
+                                lat:`${e.lat}`,
+                                lng:`${e.lng}`
+                            })
+                            bxRequestsPoints.push(self.bxDeepClone(request))
+                            break;
+                        case 'end':
+                            console.log('起终点修改',e)
+                            request['serviceName'] = 'srvaud_tolllink_update'
+                            
+                            request.data.push({
+                                endlat:`${e.lat}`,
+                                endlng:`${e.lng}`
+                            })
+                            bxRequestsLines.push(self.bxDeepClone(request))
+                            break;
+                        case 'start':
+                            console.log('起终点修改',e)
+                            request['serviceName'] = 'srvaud_tolllink_update'
+                            
+                            request.data.push({
+                                startlat:`${e.lat}`,
+                                startlng:`${e.lng}`
+                            })
+                            
+                            bxRequestsLines.push(self.bxDeepClone(request))
+                            break;
+                    
+                        default:
+                            break;
+                    }
+                    
+                }
+            }
+            if((Array.isArray(bxRequestsPoints) && bxRequestsPoints.length > 0) || (Array.isArray(bxRequestsLines) && bxRequestsLines.length > 0)){
+                this.$confirm('保存所有位置校准, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                  }).then(() => {
+                    self.updatePoints = [].map(item => item)
+
+
+                    if(Array.isArray(bxRequestsLines) && bxRequestsLines.length > 0){
+                        self.operate(bxRequestsLines).then(response => {
+                            let state = response.body.state;
+                            // console.log(state,e['_dev_point_type'])
+                            if ("SUCCESS" == state) {
+              
+                                self.$message({
+                                    type: 'success',
+                                    message: '保存成功!'
+                                });
+                                self.getAllTolllinks()
+                            } else {
+                              this.$message({
+                                type: "error",
+                                message: response.body.resultMessage
+                              });
+                            }
+                          });
+                    }
+                    if(Array.isArray(bxRequestsPoints) && bxRequestsPoints.length > 0){
+                        self.operate(bxRequestsPoints).then(response => {
+                            let state = response.body.state;
+                            // console.log(state,e['_dev_point_type'])
+                            if ("SUCCESS" == state) {
+              
+                                self.$message({
+                                    type: 'success',
+                                    message: '保存成功!'
+                                });
+                                
+                                if( self.activeLine){
+                                    // 重新加载门架
+                                    self.getAllStations(self.activeLine.id)
+                                }
+                            } else {
+                              this.$message({
+                                type: "error",
+                                message: response.body.resultMessage
+                              });
+                            }
+                          });
+                    }
+                      
+                   
+                    
+                  }).catch(() => {
+                    this.$message({
+                      type: 'info',
+                      message: '已取消保存'
+                    });          
+                  });
+            }
+
+        },
         requestUpdatePoint(e){
             let self = this
             console.log('修改点坐标',e)
@@ -422,6 +550,8 @@ export default {
                 this.$nextTick(() => {
                     this.$set(this,'activeLine',null)
                     this.$set(this,'activeTollLink',null)
+                    this.$set(this,'activePoint',null)
+                    
                     this.$set(this,'tolllinks',[])
                     this.$set(this,'loadStations',[])
                     this.getAllTolllinks()

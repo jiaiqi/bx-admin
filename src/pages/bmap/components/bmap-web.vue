@@ -9,6 +9,7 @@
         <div class="ui-layout" >
             <div class="ui-layout-left">
                 <div class="ui-layout-left-head">
+                    
                     <el-select v-model="activeDeptNo" filterable placeholder="请选择" style="width:100%;">
                         <el-option
                         v-for="item in depts"
@@ -16,6 +17,11 @@
                         :label="item.dept_name"
                         :value="item.dept_no">
                         </el-option>
+                        <i slot="prefix" style="line-height:40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-diagram-3-fill" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zm-6 8A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm6 0A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1z"/>
+</svg>
+                        </i>
                     </el-select>
                 </div>
                 <div class="ui-layout-left-body">
@@ -23,11 +29,11 @@
                         <div class="point-layout-bar" :class=" activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? 'active' : ''" v-for="(tolllink,s) in buildResLine" v-if="buildResLine.length > 0" @click.stop="onTollLink(tolllink)">
                             <div class="point-layout-bar-title">
                                 {{tolllink.name}}
-                                <!-- <span>{{tolllink.category}}-{{tolllink.grantry_type}}</span> -->
+                                <span :style="`display:block;width:1rem;background-color:${activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? lineColors[s%4].selectedColor : lineColors[s%4].color};opacity:${0.8};border-radius: 4px;`"></span>
                             </div>
-                            <div class="point-layout-bar-more">
+                            <!-- <div class="point-layout-bar-more">
                                 {{tolllink.id}}
-                            </div>
+                            </div> -->
                         </div>
                     </el-card>
                 </div>
@@ -36,6 +42,7 @@
             </div>
             <div class="ui-layout-center">
                 <div class="ui-layout-center-head">
+                    <el-button type="primary" v-if="updatePoints.length > 0" @click="submitUpdatePoints">保存</el-button>
                 </div>
                 <div class="ui-layout-center-body">
                 </div>
@@ -51,7 +58,10 @@
                         <div class="point-layout-bar" :class="activePoint && activePoint.id == station.id ? 'active' : ''" v-for="(station,s) in loadStations" v-if="loadStations.length > 0" @click="onPointList(station)">
                             <div class="point-layout-bar-title">
                                 {{station.name}}
-                                <span>{{station.category}}-{{station.grantry_type}}</span>
+                                <!-- <span>{{station.category}}</span> -->
+                                <el-tag v-if="station.category == '门架'" size="mini">{{station.category}}</el-tag>
+                                <el-tag v-if="station.category == '收费站'" type="danger" size="mini">{{station.category}}</el-tag>
+                                
                             </div>
                             <div class="point-layout-bar-more">
                                 {{station.id}}
@@ -478,8 +488,8 @@ $bgColor:#fff;
         .ui-layout-left{
             padding:1rem;
             position: fixed;
-            top: 10px;
-            left: 10px;
+            top: 0;
+            left: 0;
             width:16rem;
 
             .ui-layout-left-head{
@@ -496,11 +506,19 @@ $bgColor:#fff;
                 .point-layout-bar{
                     border:1px solid $uiBarBorderColor;
                     margin-bottom:4px;
-                    padding:2px;
+                    padding:6px;
+                    border-radius:6px;
                     overflow:hidden;
                     &.active{
                         border:1px solid $uiBarActiveBorderColor;
                         background-color: $uiBarActiveBgColor;
+                        color:$uiBarActiveBorderColor;
+                    }
+                    .point-layout-bar-title{
+                        font-size:12px;
+                        display:flex;
+                        justify-content: space-between;
+                        
                     }
                 }
             }
@@ -509,24 +527,28 @@ $bgColor:#fff;
             }
         }
         .ui-layout-center{
-            // position: fixed;
-            width:100%;
+            position: fixed;
+            width:calc(100% - 34rem);
+            left:16rem;
+            top:0;
             z-index:-1;
-            .ui-layout-left-head{
-
+            .ui-layout-center-head{
+                padding:1rem;
+                display:flex;
+                justify-content: end;
             }
-            .ui-layout-left-body{
+            .ui-layout-center-body{
                 
             }
-            .ui-layout-left-footer{
+            .ui-layout-center-footer{
                 
             }
         }
         .ui-layout-right{
             position: fixed;
-            top: 10px;
-            right: 10px;
-            width:16rem;
+            top: 0;
+            right: 0;
+            width:18rem;
             max-height:calc(100vh - 2rem);
             padding:1rem;
             display:grid;
@@ -536,7 +558,7 @@ $bgColor:#fff;
                 background-color:$bgColor;
             }
             .ui-layout-right-body{
-                max-height:calc(100vh - 4rem);
+                max-height:calc(100vh - 5rem);
                 position:relative;
                 overflow:hidden;
                 .box-card{
@@ -546,8 +568,9 @@ $bgColor:#fff;
                 .point-layout-bar{
                     border:1px solid $uiBarBorderColor;
                     margin-bottom:4px;
-                    padding:2px;
                     overflow:hidden;
+                    padding:6px;
+                    border-radius:6px;
                     &.active{
                         border:1px solid $uiBarActiveBorderColor;
                         background-color: $uiBarActiveBgColor;
@@ -555,6 +578,12 @@ $bgColor:#fff;
                     &.none{
                         text-align:center;
                         color:#ddd;
+                    }
+                    .point-layout-bar-title{
+                        font-size:14px;
+                    }
+                    .point-layout-bar-more{
+                        font-size:12px;
                     }
                 }
                 
