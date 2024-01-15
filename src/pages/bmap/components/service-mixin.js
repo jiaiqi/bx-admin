@@ -73,23 +73,39 @@ export default {
                 // }
             ]
                 let start = {
+                    "id":item.id,
                     "name":'起点',
                     "lat":item['startlat'],
                     "lng":item['startlng'],
                     "_dev_point_type":'start',
-                    "type":"point"
+                    "type":"point",
+                    "_type":"point",
+                    "icon":startIcon,
+                    "icon_active":startIcon,
+                    "icon_size":{
+                        w:42,
+                        h:42
+                    }
                 }
                 let end = {
+                    "id":item.id,
                     "name":'终点',
                     "lat":item['endlat'],
                     "lng":item['endlng'],
                     "_dev_point_type":'end',
-                    "type":"point"
+                    "type":"point",
+                    "_type":"point",
+                    "icon":endIcon,
+                    "icon_active":endIcon,
+                    "icon_size":{
+                        w:42,
+                        h:42
+                    }
                 }
                 obj['start'] = start
                 obj['end'] = end
-                obj["points"].push(start)
-                obj["points"].push(end)
+                // obj["points"].push(start)
+                // obj["points"].push(end)
                 obj['params'] = {
                     "origin":"34.181221,108.889033",
                     "destination":"34.404827,108.798106",
@@ -112,17 +128,25 @@ export default {
                             case '门架':
                                 point['icon'] = gantry
                                 point['icon_active'] = gantryActive
+                                point["icon_size"]={
+                                    w:25,
+                                    h:30
+                                }
                                 break;
                             case '收费站':
                                 point['icon'] = toll
                                 point['icon_active'] = tollActive
+                                point["icon_size"]={
+                                    w:25,
+                                    h:30
+                                }
                                 
                                 break;
                         
                             default:
                                 break;
                         }
-                        return point
+                        return  this.bxDeepClone(point)
                     })
 //                     import gantry from '../assets/icon/gantry.png'
 // import gantryActive from '../assets/icon/gantry-active.png'
@@ -131,6 +155,8 @@ export default {
 // import toll from '../assets/icon/toll.png'
 // import tollActive from '../assets/icon/toll-active.png'
                 }
+                obj["points"].unshift(start)
+                obj["points"].push(end)
                 return  this.bxDeepClone(obj)
 
             })
@@ -149,6 +175,7 @@ export default {
     },
     methods: {
         requestUpdatePoint(e){
+            let self = this
             console.log('修改点坐标',e)
             let bxRequests = []
             let request = {
@@ -162,57 +189,92 @@ export default {
                 }]
             }
             if(e && e.id){
-                request.data.push({
-                    lat:e.lat,
-                    lng:e.lng
-                })
                 switch (e['_dev_point_type']) {
                     case '门架':
                         request['serviceName'] = 'srvaud_tollgrantry_update'
+                        request.data.push({
+                            lat:`${e.lat}`,
+                            lng:`${e.lng}`
+                        })
                         break;
                     case '收费站':
                         request['serviceName'] = 'srvaud_tollstation_update'
+                        request.data.push({
+                            lat:`${e.lat}`,
+                            lng:`${e.lng}`
+                        })
+                        break;
+                    case 'end':
+                        console.log('起终点修改',e)
+                        request['serviceName'] = 'srvaud_tolllink_update'
                         
+                        request.data.push({
+                            endlat:`${e.lat}`,
+                            endlng:`${e.lng}`
+                        })
+                        break;
+                    case 'start':
+                        console.log('起终点修改',e)
+                        request['serviceName'] = 'srvaud_tolllink_update'
+                        
+                        request.data.push({
+                            startlat:`${e.lat}`,
+                            startlng:`${e.lng}`
+                        })
                         break;
                 
                     default:
                         break;
                 }
-                bxRequests.push(this.bxDeepClone(request))
+                bxRequests.push(self.bxDeepClone(request))
             }
             if(Array.isArray(bxRequests) && bxRequests.length > 0){
-                this.$confirm('保存新位置, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                  }).then(() => {
-                    this.operate(bxRequests).then(response => {
-                        let state = response.body.state;
-          
-                        if ("SUCCESS" == state) {
-          
-                            this.$message({
-                                type: 'success',
-                                message: '保存成功!'
-                              });
-                              if(this.activeLine){
-                                this.getAllStations(this.activeLine.id)
-                              }
-                              
-                        } else {
-                          this.$message({
-                            type: "error",
-                            message: response.body.resultMessage
-                          });
+                self.operate(bxRequests).then(response => {
+                    let state = response.body.state;
+                    console.log(state,e['_dev_point_type'])
+                    if ("SUCCESS" == state) {
+      
+                        self.$message({
+                            type: 'success',
+                            message: '保存成功!'
+                        });
+                        
+                        switch(e['_dev_point_type']) {
+                            case ('门架'||'收费站'):
+                                console.log('加载门架')
+                                self.getAllStations(self.activeLine.id)
+                                break;
+                            case ('end'||'start'):
+                                console.log('加载路段')
+                                self.getAllTolllinks()
+                                break;
+                            default:
+                                break;
                         }
+                        //   if(this.activeLine){
+                        //     this.getAllStations(this.activeLine.id)
+                        //   }
+                          
+                    } else {
+                      this.$message({
+                        type: "error",
+                        message: response.body.resultMessage
                       });
-                    
-                  }).catch(() => {
-                    this.$message({
-                      type: 'info',
-                      message: '已取消保存'
-                    });          
+                    }
                   });
+                // this.$confirm('保存新位置, 是否继续?', '提示', {
+                //     confirmButtonText: '确定',
+                //     cancelButtonText: '取消',
+                //     type: 'warning'
+                //   }).then(() => {
+                    
+                    
+                //   }).catch(() => {
+                //     this.$message({
+                //       type: 'info',
+                //       message: '已取消保存'
+                //     });          
+                //   });
                 
             }
             
@@ -241,12 +303,12 @@ export default {
             let conds = [{
                 colName:'company_no',
                 ruleType:'eq',
-                value:this.activeDeptNo
+                value:self.activeDeptNo
             }]
             let relationCondition = {}
             let page = null
             let order = null
-            if(!this.activeDeptNo){
+            if(!self.activeDeptNo){
                 console.log('未选择分公司')
                 return 
             }
@@ -268,11 +330,11 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    // depts
                     self.tolllinks = res.data.map(item => item)
-                    // console.log('分公司',res.data)
+                    console.log('分公司',res.data)
                 }else{
-                    console.log('查询收费路段 异常',res)
+                    this.$message.error(JSON.stringify(res));
+                    // console.log('查询收费路段 异常',res)
                 }
               })
         },
@@ -323,7 +385,6 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    // depts
                     self.loadStations = res.data.filter(item => {
                         if(item['grantry_type'] !== '虚拟门架'){
                             switch (item['category']) {
@@ -347,6 +408,7 @@ export default {
                     })
                     // console.log('分公司',res.data)
                 }else{
+                    this.$message.error(JSON.stringify(res));
                     console.log('查询门架|收费站等 异常',res)
                 }
               })
@@ -358,6 +420,9 @@ export default {
             handler:function(nval,oval){
                 console.log('切换分公司',nval)
                 this.$nextTick(() => {
+                    this.$set(this,'activeLine',null)
+                    this.$set(this,'activeTollLink',null)
+                    this.$set(this,'tolllinks',[])
                     this.$set(this,'loadStations',[])
                     this.getAllTolllinks()
                 })
@@ -380,6 +445,20 @@ export default {
                     this.$nextTick(() => {
 
                         this.getAllStations(nval.id)
+                    })
+                }
+                
+            }
+        },
+        "depts":{
+            deep:true,
+            handler:function(nval,oval){
+                console.log('分公司查询',nval)
+                if(Array.isArray(nval) && nval.length > 0){
+                    let activeDept = nval[0]
+                    this.$nextTick(() => {
+
+                       this.$set(this,'activeDeptNo',activeDept.dept_no)
                     })
                 }
                 

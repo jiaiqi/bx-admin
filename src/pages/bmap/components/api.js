@@ -9,9 +9,9 @@ export function getBaiduMapApi (url,params) {
   if(keys.length > 0){
     for(let i in keys){
       let key = keys[i]
-      if(i == 0){
+      if(i == 0 && params[key]){
         url += `?${key}=${params[key]}`
-      }else{
+      }else if(params[key]){
         url += `&${key}=${params[key]}`
       }
     }

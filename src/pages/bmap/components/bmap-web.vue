@@ -453,7 +453,7 @@ import srvMixin from './service-mixin.js' // 业务相关
   <style lang="scss" scoped>
 #mapContainer{
     width:100%;
-    height:calc(100vh - 10px);
+    height:calc(100vh - 1px);
     
 }
 $activeColor:#409eff;
@@ -527,7 +527,7 @@ $bgColor:#fff;
             top: 10px;
             right: 10px;
             width:16rem;
-            max-height:calc(100vh - 20px);
+            max-height:calc(100vh - 2rem);
             padding:1rem;
             display:grid;
             grid-template-rows: 30px auto 60px;
@@ -536,7 +536,7 @@ $bgColor:#fff;
                 background-color:$bgColor;
             }
             .ui-layout-right-body{
-                max-height:calc(100vh - 40px);
+                max-height:calc(100vh - 4rem);
                 position:relative;
                 overflow:hidden;
                 .box-card{

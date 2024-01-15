@@ -65,65 +65,65 @@ export default {
             get:function(){
                 let lines = []
                 let loadLineData = this.bxDeepClone(this.mockLines)
-                if(Array.isArray(loadLineData) && loadLineData.length > 0){
-                    for(let iIndex in loadLineData){
-                        let item =  this.bxDeepClone(loadLineData[iIndex])
-                        let line = {}
-                        line = {...item}
+                // if(Array.isArray(loadLineData) && loadLineData.length > 0){
+                //     for(let iIndex in loadLineData){
+                //         let item =  this.bxDeepClone(loadLineData[iIndex])
+                //         let line = {}
+                //         line = {...item}
                         
-                        line['start'] = line.points.filter((p,index) => {
-                            if(p.id == '000'){
-                                return p
-                            }
-                        })
-                        line['uid'] = `${line.id}@${ Number(iIndex) +1}`
-                        line['_type'] = 'line'
-                        line['points'] = line.points.map((p,index) => {
-                            p['uid'] = `${line.uid}@${p.id}`
-                            return p
-                        })
-                        if(line['start'].length > 0){
-                            line['start'] = line['start'][0]
-                        }
-                        line['end'] = line.points.filter((p,index) => {
-                            if(p.id == '00x'){
-                                return p
-                            }
-                        })
-                        if(line['end'].length > 0){
-                            line['end'] = line['end'][0]
-                        }
-                        line['waypoints'] = line.points.filter((p,index) => {
-                            if(p.id  !== '000' && p.id !== '00x'){
-                                return p
-                            }
-                        })
-                        line['params'] = {
-                            // 路线规划参数
-                            origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
-                            destination:``,  // 终点 40.056878,116.30815
-                            waypoints:'', // 途径点 40.465,116.314|40.232,116.352|40.121,116.453
-                            tactics:4    // 4 高速有限
-                        }
-                        line['params']['origin'] = `${line.start.lat},${line.start.lng}`  // 起点参数
-                        line['params']['destination'] = `${line.end.lat},${line.end.lng}` // 终点
-                        if(Array.isArray(line.waypoints) && line.waypoints.length > 0){
-                            // 途径点参数
-                            line['params']['waypoints_str'] = ''
-                            for(let i in line.waypoints){
-                                let p = line.waypoints[i]
-                                if(i == 0){
-                                    line['params']['waypoints_str'] += `${p.lat},${p.lng}`
-                                }else{
-                                    line['params']['waypoints_str'] += `|${p.lat},${p.lng}`
-                                }
+                //         line['start'] = line.points.filter((p,index) => {
+                //             if(p.id == '000'){
+                //                 return p
+                //             }
+                //         })
+                //         line['uid'] = `${line.id}@${ Number(iIndex) +1}`
+                //         line['_type'] = 'line'
+                //         line['points'] = line.points.map((p,index) => {
+                //             p['uid'] = `${line.uid}@${p.id}`
+                //             return p
+                //         })
+                //         if(line['start'].length > 0){
+                //             line['start'] = line['start'][0]
+                //         }
+                //         line['end'] = line.points.filter((p,index) => {
+                //             if(p.id == '00x'){
+                //                 return p
+                //             }
+                //         })
+                //         if(line['end'].length > 0){
+                //             line['end'] = line['end'][0]
+                //         }
+                //         line['waypoints'] = line.points.filter((p,index) => {
+                //             if(p.id  !== '000' && p.id !== '00x'){
+                //                 return p
+                //             }
+                //         })
+                //         line['params'] = {
+                //             // 路线规划参数
+                //             origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
+                //             destination:``,  // 终点 40.056878,116.30815
+                //             waypoints:'', // 途径点 40.465,116.314|40.232,116.352|40.121,116.453
+                //             tactics:4    // 4 高速有限
+                //         }
+                //         line['params']['origin'] = `${line.start.lat},${line.start.lng}`  // 起点参数
+                //         line['params']['destination'] = `${line.end.lat},${line.end.lng}` // 终点
+                //         if(Array.isArray(line.waypoints) && line.waypoints.length > 0){
+                //             // 途径点参数
+                //             line['params']['waypoints_str'] = ''
+                //             for(let i in line.waypoints){
+                //                 let p = line.waypoints[i]
+                //                 if(i == 0){
+                //                     line['params']['waypoints_str'] += `${p.lat},${p.lng}`
+                //                 }else{
+                //                     line['params']['waypoints_str'] += `|${p.lat},${p.lng}`
+                //                 }
                                 
-                            }
-                        }
-                        line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
-                        lines.push(line)
-                    }
-                }
+                //             }
+                //         }
+                //         line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
+                //         lines.push(line)
+                //     }
+                // }
                 if(Array.isArray(this.initLinks) && this.initLinks.length > 0){
                     lines = [].map(item => item)
                     loadLineData = this.bxDeepClone(this.initLinks)
@@ -175,6 +175,11 @@ export default {
                         // import tollActive from '../assets/icon/toll-active.png'
                         line.start['icon'] = startIcon
                         line.end['icon'] = endIcon
+                        line.start['icon_active'] = startIcon
+                        line.end['icon_active'] = endIcon
+
+                        
+                        
                         line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
                         lines.push(line)
                     }
@@ -201,6 +206,7 @@ export default {
             //     poiIcon: false,
             //     poiText: false
             // })
+            map.setMapStyle({styleJson: mapStyle.styleJson});
             this.BMap = map
         },
         updateLine(line){
@@ -293,10 +299,17 @@ export default {
             // 判断是否已经绘制 
             // console.log('添加线条',line.id,line)
             let overlays = self.BMap.getOverlays()
-            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id)
-            if(Array.isArray(overlays) && overlays.length == 1){
-                self.BMap.removeOverlay(overlays[0]); // 从地图上移除覆盖物
-                console.log('移除已经存在的线',overlays,line.id)
+            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'])
+            if(Array.isArray(overlays) && overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id).length == 1){
+                let lines = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id)
+                self.BMap.removeOverlay(lines[0]); // 从地图上移除覆盖物
+                console.log('移除已经存在的线',lines,line.id)
+            }else if(Array.isArray(overlays) && overlays.filter(o => o.hasOwnProperty('_data')).length > 0){
+                let oldpoints = overlays.filter(o => o.hasOwnProperty('_data') && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label' ))
+                console.log('oldpoints',oldpoints,overlays)
+                for(let oldo of oldpoints){
+                    // self.BMap.removeOverlay(oldo); // 从地图上移除覆盖物
+                }
             }
 
             // 开始绘制逻辑
@@ -370,10 +383,19 @@ export default {
                     
                     
               });
+              
+              console.log('addline 初始化',this.activePoint,this.activeLine,this.polylines)
               if(this.activePoint){
                 this.initViewport([this.activePoint])
               }else if(this.activeLine){
                 this.initViewport(this.activeLine.points)
+              }else if(Array.isArray(this.polylines) && this.polylines.length > 0){
+                console.log('addline 初始化 none active',this.polylines)
+                let wps = []
+                for(let pLine of this.polylines){
+                    wps = wps.concat(pLine.waypoints_points)
+                }
+                this.initViewport(wps)
               }
            
 
@@ -385,20 +407,27 @@ export default {
             if(self.BMap){
                 
                 let overlays = self.BMap.getOverlays()
-                let removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label'))
-                console.log('需要清除的点',removeOverlays)  
+                let removeOverlays = []
+                console.log('需要清除的点',removeOverlays) 
+                if(line){
+                    removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label'))
+                }else{
+                    removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label' || o['_data']['_type'] == 'line'))
+                }
                 for(let o of removeOverlays){
                     self.BMap.removeOverlay(o); // 从地图上移除覆盖物
                 } 
             }    
+            if(line){
+                self.addMarkers(line)
+            }
             
-            self.addMarkers(line)
         },
         
         addMarkers(line){
             // 绘制标点
             let self = this
-            console.log('绘制标点',line)
+            console.log('绘制标点',line,line['waypoints_points'])
             let waypoints = line['waypoints_points']
             if(Array.isArray(waypoints) && waypoints.length > 0){
                 for(let p of waypoints){
@@ -408,7 +437,7 @@ export default {
                         position: point,
                         offset: new BMap.Size(32, 0)
                     })  
-                    var myIcon = new BMap.Icon(p.icon || cameraIcon, new BMap.Size(32, 32), {   
+                    var myIcon = new BMap.Icon(p.icon || cameraIcon, new BMap.Size(p["icon_size"].w, p["icon_size"].h), {   
                         // 指定定位位置。  
                         // 当标注显示在地图上时，其所指向的地理位置距离图标左上   
                         // 角各偏移10像素和25像素。您可以看到在本例中该位置即是  
@@ -421,7 +450,8 @@ export default {
                     });     
                         // 创建标注对象并添加到地图  
                         
-                    var marker = new BMap.Marker(point, {icon: myIcon,title:p.name,enableDragging: true});   
+                    var marker = new BMap.Marker(point, {icon: myIcon,title:p.name,enableDragging: true}); 
+                    
                     marker['_data'] = p
                     let labelData = self.bxDeepClone(p)
                     labelData['_type'] = 'label'
@@ -449,22 +479,16 @@ export default {
                         
                         if(overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'point'){
                             self.$set(self,'activePoint',overlay['_data'])
-                            // 更新 marker 图标
-                            let activeIconPath = overlay['_data']['icon_active']
-                            console.log('activeIconPath',overlay['_data'],activeIconPath)
-                            let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(32, 32), {    
-                                anchor: new BMap.Size(0, 0),      
-                                imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
-                            })
-                            overlay.setIcon(activeIcon)
-
+                            
+                            let pointOverlays =  overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'point' )
                             overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'label' )
                             // overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'].type == 'point' && o['_data'].uid == overlay.uid)
 
                             if(Array.isArray(overlays) ){
+                                // 更新label 样式
                                 for(let l of overlays){
                                     if(l['_data'].id == overlay['_data'].id){
-
+                                       
                                         l.setStyle({                              // 设置选中label的样式
                                             color: 'red',
                                             fontSize: '12px',
@@ -478,19 +502,39 @@ export default {
                                             border: '1px solid #ddd',
                                             borderRadius:'4px'
                                         })
+                                        
                                     }
                                 }
                             }
-                            console.log("您点击了标注",e,overlay, overlays);  
+                            if(Array.isArray(pointOverlays) ){
+                                // 更新点图标
+                                for(let l of pointOverlays){
+                                    if(l['_data'].id == overlay['_data'].id){
+                                        // 更新 marker 图标
+                                        let activeIconPath = l['_data']['icon_active']
+                                        console.log('activeIconPath 1',overlay['_data'],activeIconPath)
+                                        let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {    
+                                            anchor: new BMap.Size(0, 0),      
+                                            imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
+                                        })
+                                        l.setIcon(activeIcon)
+                                        
+                                    }else{
+                                        
+                                        // 更新 marker 图标
+                                        let activeIconPath = l['_data']['icon']
+                                        console.log('activeIconPath 0',overlay['_data'],activeIconPath)
+                                        let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {    
+                                            anchor: new BMap.Size(0, 0),      
+                                            imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
+                                        })
+                                        l.setIcon(activeIcon)
+                                    }
+                                }
+                            }
+                            console.log("您点击了标注：",overlay);  
                         }else{
-                            // 更新 marker 图标
-                            let activeIconPath = overlay['_data']['icon']
-                            console.log('activeIconPath',overlay['_data'],activeIconPath)
-                            let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(32, 32), {    
-                                anchor: new BMap.Size(0, 0),      
-                                imageOffset: new BMap.Size(0, 0)   // 设置图片偏移   
-                            })
-                            overlay.setIcon(activeIcon)
+                            
                         }
                         
                     });
@@ -517,15 +561,20 @@ export default {
             let i = null
             let idsArr = p.uid.split('@')
             console.log(p,idsArr)
-            for(let initLine of this.mockLines){
+            let isUpdate = false
+            let newLatAndLng = null
+            let loadLines = this.initLinks || this.mockLines
+            for(let initLine of loadLines){
                 if(initLine.id == `${idsArr[0]}`){
                     console.log('更新线条下的点位置',p)
                     let ps = this.bxDeepClone(initLine.points)
                     for(let point of initLine.points){
                         console.log('0:',JSON.stringify(point),p.id)
-                        if(`${idsArr[idsArr.length - 1]}` == point.id){
-                            point['lat'] = `${p.lat}`
-                            point['lng'] = `${p.lng}`
+                        if(`${idsArr[idsArr.length - 1]}` == point.id && (`${p.lat}` !== `${point['lat']}` || `${p.lng}` !== `${point['lng']}`)){
+                            isUpdate = true
+                            newLatAndLng = point
+                            // point['lat'] = `${p.lat}`
+                            // point['lng'] = `${p.lng}`
                             console.log('1:',JSON.stringify(point))
                         }
                         
@@ -533,8 +582,17 @@ export default {
                     // initLine.points = ps.map(item => item)
                 }
             }
+            if(isUpdate){
+                this.$confirm('保存新位置, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    type: 'warning'
+                  }).then(() => {
+                    newLatAndLng['lat'] = `${p.lat}`
+                    newLatAndLng['lng'] = `${p.lng}`
+                    this.requestUpdatePoint(p)
+                  })
+            }
             
-            this.requestUpdatePoint(p)
             
             
         },
@@ -570,10 +628,10 @@ export default {
             // 清除所有线
             if(self.BMap){
                 let overlays = self.BMap.getOverlays()
-                overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line')
+                overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'line' || o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label'))
                 if(Array.isArray(overlays) && overlays.length > 0 && self.BMap){
                     for(let o of overlays){
-                        self.BMap.removeOverlay(o); // 从地图上移除覆盖物
+                        self.BMap.removeOverlay(o); // 从地图上移除全部覆盖物
                     }
                 }
             }
@@ -598,17 +656,17 @@ export default {
                     params['waypoints'] = `${loadLine.params['waypoints_str']}`
                     params['ak'] = `${loadLine.params['ak']}`
                     url = `${mapApi}`
-                    let keys = Object.keys(params)
-                    if(keys.length > 0){
-                      for(let i in keys){
-                        let key = keys[i]
-                        if(i == 0){
-                          url += `?${key}=${params[key]}`
-                        }else{
-                          url += `&${key}=${params[key]}`
-                        }
-                      }
-                    }
+                    // let keys = Object.keys(params)
+                    // if(keys.length > 0){
+                    //   for(let i in keys){
+                    //     let key = keys[i]
+                    //     if(i == 0){
+                    //       url += `?${key}=${params[key]}`
+                    //     }else{
+                    //       url += `&${key}=${params[key]}`
+                    //     }
+                    //   }
+                    // }
                     // console.log('getBaiduMapApi',url)
                     // this.requestDriving(url,loadLine,i)   // 请求 jsapi 路线规划
                     getBaiduMapApi(url,params).then(res => {
@@ -663,6 +721,8 @@ export default {
                             line['_type'] = 'line'
                             self.polylines.push(self.bxDeepClone(line))
                             self.addLines(self.bxDeepClone(line))  // 添加路线
+                        }else{
+                            this.$message.error(JSON.stringify(res));
                         }
                     })
                 }
