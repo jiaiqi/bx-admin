@@ -92,7 +92,23 @@
               :filters="item.filters" :column-key="item.column" :sortable="item.sortable && !isMem() ? 'custom' : false"
               :cell-style="cellStyle">
               <template slot-scope="scope">
-                <div v-if="item.srvcol && item.srvcol.subtype && ['progress', 'rate'].includes(item.srvcol.subtype)">
+                <!-- 二进制文件 -->
+                <div v-if="item.col_type === 'ImgBin'">
+                  <el-image
+                    style="width: 50px; height: 50px"
+                    :src="blobToBase64(scope.row[item.column])"
+                    fit="cover">
+                  </el-image>
+                </div>
+                <!-- 在线url -->
+                <div v-else-if="item.col_type === 'ImgUrl'">
+                  <el-image
+                    style="width: 50px; height: 50px"
+                    :src="scope.row[item.column]"
+                    fit="cover">
+                  </el-image>
+                </div>
+                <div v-else-if="item.srvcol && item.srvcol.subtype && ['progress', 'rate'].includes(item.srvcol.subtype)">
                   <el-rate :value="scope.row[item.column]" show-score :disabled="true" text-color="#ff9900"
                     style="width: 100%;" v-if="item.srvcol.subtype === 'rate'">
                   </el-rate>
@@ -439,6 +455,7 @@ import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 
 import inlineEditListMixin from '../mixin/inline-edit-list-mixin' //行内编辑列表相关逻辑
 import inlineEditList from './inline-edit-list.vue';
+import { blobToBase64 } from '../../common/common'
 
 export default {
   name: "list",

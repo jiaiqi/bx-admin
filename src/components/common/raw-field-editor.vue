@@ -7,7 +7,23 @@
         <!--主体内容-->
 
         <template>
-          <div v-if="ifUseRawFieldEditor()">
+          <div v-if="['ImgBin', 'ImgUrl'].includes(field.info.srvCol.col_type)">
+             <!-- 二进制文件 -->
+              <el-image
+              v-if="field.info.srvCol.col_type === 'ImgBin'"
+                style="width: 50px; height: 50px"
+                :src="blobToBase64(field.model)"
+                fit="cover">
+              </el-image>
+            <!-- 在线url -->
+              <el-image
+              v-else-if="field.info.srvCol.col_type === 'ImgUrl'"
+                style="width: 50px; height: 50px"
+                :src="field.model"
+                fit="cover">
+              </el-image>
+          </div>
+          <div v-else-if="ifUseRawFieldEditor()">
               <bx-input-number v-if="field.info.editor === 'input-number'" controls-position="right" v-model="field.model" :disabled="getDisabled" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
               </bx-input-number>
               <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" >
@@ -252,6 +268,7 @@ import ueditorPlus from "../ui/ueditor-plus.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
+import { blobToBase64 } from '../../common/common'
 
 export default {
   components: {
