@@ -42,6 +42,8 @@
             </div>
             <div class="ui-layout-center">
                 <div class="ui-layout-center-head">
+                    
+                    <el-button icon="el-icon-tickets" circle @click="showHelp = true"></el-button>
                     <el-button type="primary" v-if="updatePoints.length > 0" @click="submitUpdatePoints">保存</el-button>
                 </div>
                 <div class="ui-layout-center-body">
@@ -110,6 +112,20 @@
                         <span>{{tool.label}}</span>
                     </div>
                 </div> -->
+
+                <el-dialog
+                title="提示"
+                :visible.sync="showHelp"
+                width="30%"
+                >
+                    <div>1.切换路段：选择分公司>选择路段>选择门架或收费站.</div>
+                    <div>2.地图操作：地图鼠标滚轮缩放，鼠标左键按下移动视口.</div>
+                    <div>3.鼠标左键按下拖动地图门架或收费站图标，松开鼠标点击【确认】即可立即保存.</div>
+                    <div>注意:选择路段或门架后地图会自动切换中心位置，缩放不合适请使用鼠标操作平移或放大缩小！</div>
+                    <span slot="footer" class="dialog-footer">
+                        <el-button type="primary" @click="showHelp = false">确 定</el-button>
+                    </span>
+                </el-dialog>
     </div>
     
   </template>
@@ -137,6 +153,7 @@ import srvMixin from './service-mixin.js' // 业务相关
     mixins:[mapMixin,srvMixin],
     data() {
       return {
+        showHelp:false,
         mockLines:[{
                 name:'蓝色',
                 type:'',
@@ -493,7 +510,7 @@ $bgColor:#fff;
             width:16rem;
 
             .ui-layout-left-head{
-
+                display:flex;
             }
             .ui-layout-left-body{
                 max-height:calc(100% - 0px);

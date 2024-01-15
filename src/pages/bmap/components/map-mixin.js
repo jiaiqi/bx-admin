@@ -209,7 +209,7 @@ export default {
             map.addControl(new BMap.NavigationControl(
                 {
                     type : BMAP_NAVIGATION_CONTROL_ZOOM, //缩放控件类型 仅包含缩放按钮
-                    anchor : BMAP_ANCHOR_BOTTOM_RIGHT, //右下角
+                    anchor : BMAP_ANCHOR_BOTTOM_LEFT, //右下角
                     offset : new BMap.Size(1,1) //进一步控制缩放按钮的水平竖直偏移量
                 }
             ));
