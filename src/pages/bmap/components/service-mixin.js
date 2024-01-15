@@ -372,7 +372,11 @@ export default {
                                 console.log('加载门架')
                                 self.getAllStations(self.activeLine.id)
                                 break;
-                            case ('end'||'start'):
+                            case 'end':
+                                console.log('加载路段')
+                                self.getAllTolllinks()
+                                break;
+                            case 'start':
                                 console.log('加载路段')
                                 self.getAllTolllinks()
                                 break;

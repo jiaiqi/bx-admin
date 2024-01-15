@@ -471,6 +471,7 @@ export default {
                     let iconPath = p.icon
                     if(self.activePoint && p.id == self.activePoint.id){
                         iconPath = p.icon_active
+                        zIndex = 999
                     }
                     let myIcon = new BMap.Icon(iconPath || cameraIcon, new BMap.Size(p["icon_size"].w, p["icon_size"].h), {   
                         // 指定定位位置。  
