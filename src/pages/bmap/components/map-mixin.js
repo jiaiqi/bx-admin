@@ -8,17 +8,27 @@ import startIcon from '../assets/icon/start.png'
 import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
+import car from '../assets/icon/car.png'
 
 import { getBaiduMapApi} from './api.js'
 import { over } from 'lodash'
 let activeLineColor = '#32bafd'
-// let linesColor = 
+let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
+// let bMapApi = '/baiduApi/direction/v2/driving'
 export default {
     props: {
-        
+        modeUrl:{
+            type:String,
+            default:''
+        },
+        no:{
+            type:String,
+            default:''
+        }
     },
     data(){
         return {
+            carIconUrl:car,
             lineTemplate:{
                 enableEditing: false, // 是否启用线编辑，默认为false
                 strokeWeight: 8, // 折线宽度
@@ -151,17 +161,17 @@ export default {
                             return p
                         })
                         line['waypoints_points'] = line.points.map(p=>p)
-                        line['waypoints'] = []
-                        line['params'] = {
-                            // 路线规划参数
-                            origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
-                            destination:``,  // 终点 40.056878,116.30815
-                            waypoints:'', // 途径点 40.465,116.314|40.232,116.352|40.121,116.453
-                            tactics:4    // 4 高速有限
-                        }
+                        // line['waypoints'] = []
+                        // line['params'] = {
+                        //     // 路线规划参数
+                        //     origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
+                        //     destination:``,  // 终点 40.056878,116.30815
+                        //     waypoints:'', // 途径点 40.465,116.314|40.232,116.352|40.121,116.453
+                        //     tactics:4    // 4 高速有限
+                        // }
                         line['params']['origin'] = `${line.start.lat},${line.start.lng}`  // 起点参数
                         line['params']['destination'] = `${line.end.lat},${line.end.lng}` // 终点
-                        line['params']['waypoints_str'] = ''
+                        // line['params']['waypoints_str'] = ''
                         if(Array.isArray(line.waypoints) && line.waypoints.length > 0){
                             // 途径点参数
                             for(let i in line.waypoints){
@@ -174,20 +184,13 @@ export default {
                                 
                             }
                         }
-                        // import gantry from '../assets/icon/gantry.png'
-                        // import gantryActive from '../assets/icon/gantry-active.png'
-                        // import startIcon from '../assets/icon/start.png'
-                        // import endIcon from '../assets/icon/end.png'
-                        // import toll from '../assets/icon/toll.png'
-                        // import tollActive from '../assets/icon/toll-active.png'
                         line.start['icon'] = startIcon
                         line.end['icon'] = endIcon
                         line.start['icon_active'] = startIcon
                         line.end['icon_active'] = endIcon
-
-                        
-                        
                         line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
+
+                       
                         lines.push(line)
                     }
                 }
@@ -412,13 +415,13 @@ export default {
                     
               });
               
-              console.log('addline 初始化',this.activePoint,this.activeLine,this.polylines)
+            //   console.log('addline 初始化',this.activePoint,this.activeLine,this.polylines)
               if(this.activePoint){
                 this.initViewport([this.activePoint])
               }else if(this.activeLine){
                 this.initViewport(this.activeLine.points)
               }else if(Array.isArray(this.polylines) && this.polylines.length > 0){
-                console.log('addline 初始化 none active',this.polylines)
+                // console.log('addline 初始化 none active',this.polylines)
                 let wps = []
                 for(let pLine of this.polylines){
                     wps = wps.concat(pLine.waypoints_points)
@@ -486,7 +489,7 @@ export default {
                         zIndex:zIndex
                     });     
                         // 创建标注对象并添加到地图  
-                    var marker = new BMap.Marker(point, {icon: myIcon,title:p.name,enableDragging: true}); 
+                    var marker = new BMap.Marker(point, {icon: myIcon,title:p.name,enableDragging: this.isEditor}); 
                     
                     marker['_data'] = p
                     let labelData = self.bxDeepClone(p)
@@ -582,7 +585,10 @@ export default {
                         }
                         
                     });
-                    marker.enableDragging() // 开启拖动 dragend
+                    if(this.isEditor){
+                        marker.enableDragging() // 开启拖动 dragend
+                    }
+                    
                     marker.addEventListener('dragend', function (event) {
                         console.log('标注已移动至：' + event.point.lng + ', ' + event.point.lat,event.target['_data'].uid);
                         let point = self.bxDeepClone(event.target['_data'])
@@ -652,7 +658,7 @@ export default {
               //进入显示的百分比
               //打开地图时的位置
               
-            console.log('初始化',centerPoint,centerPoint.center,centerPoint.zoom)
+            // console.log('初始化',centerPoint,centerPoint.center,centerPoint.zoom)
             // 初始化地图，设置中心点坐标和地图级别
             if(this.activePoint){
                 this.BMap.centerAndZoom(centerPoint.center, 14)
@@ -665,7 +671,7 @@ export default {
           },
         getDriving(){
             let self = this
-            let mapApi = '/baiduApi/direction/v2/driving';
+            let mapApi = bMapApi;
             let url = ''
             let params = {
                 origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
@@ -685,7 +691,7 @@ export default {
             }
             
             let loadLines = this.buildResLine
-            if(Array.isArray(loadLines) && loadLines.length > 0){
+            if((this.modeUrl == '/bmap/check' &&  Array.isArray(loadLines) && loadLines.length > 0) || (this.modeUrl == '/bmap/editor/' &&  Array.isArray(loadLines) && loadLines.length > 0 &&  Array.isArray(this.loadStations) && this.loadStations.length > 0)){
                 self.polylines = [].map(item => item)
                 for(let i in loadLines){
                     let loadLine = this.bxDeepClone(loadLines[i])
