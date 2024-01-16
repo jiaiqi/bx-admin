@@ -136,7 +136,11 @@
     computed: {},
 
     methods: {
-      onSearchClicked: function () {
+      onSearchClicked: async function () {
+        const validate = await this.validateForm()
+        if(!validate){
+          this.$message.error("请检查输入数据信息");
+        }
         let groups = this.supportGroup ? this.buildGroups4Query() : null;
         let headers = this.supportGroup ? this.buildResultHeader() : null;
 
