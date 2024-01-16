@@ -24,6 +24,11 @@ const mutations = {
     }
     state.cache[key] = response
   },
+  clearSrvCols(state){
+    if(Object.keys(state.cache).length > 0){
+      state.cache = {}
+    }
+  }
 }
 
 export default {
