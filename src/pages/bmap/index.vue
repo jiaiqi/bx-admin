@@ -2,7 +2,7 @@
     <div class="web-layout bg-light">
         
         <!-- <cMap></cMap> -->
-        <BMapJs :depts="depts"></BMapJs>
+        <BMapJs :depts="depts" :modeUrl="urlPath" :no="no"></BMapJs>
     </div>
     
 </template>
@@ -30,6 +30,21 @@ import BMapJs from "./components/bmap-web.vue"
         urlParams(){
             let params = this.$route.query
             return params
+        },
+        urlPath(){
+            let routePath = this.$route.path
+            let path = ''
+            if(routePath.indexOf('/bmap/editor/') !== -1){
+                path = '/bmap/editor/'
+            }else if(routePath.indexOf('/bmap/check') !== -1){
+                path = '/bmap/check'
+            }
+            return path
+        },
+        no(){
+            let params = this.$route.params
+            params = params.no || ''
+            return params
         }
     },
     data(){
@@ -40,7 +55,12 @@ import BMapJs from "./components/bmap-web.vue"
     created(){
     },
     mounted(){
-        this.getAllDepts()
+        if(this.urlPath.indexOf('/bmap/editor/') !== -1){
+
+        }else if(this.urlPath.indexOf('/bmap/check') !== -1){
+            this.getAllDepts()
+        }
+        
     },
     methods:{
         getAllDepts(){

@@ -10,7 +10,7 @@
             <div class="ui-layout-left">
                 <div class="ui-layout-left-head">
                     
-                    <el-select v-model="activeDeptNo" filterable placeholder="请选择" style="width:100%;">
+                    <el-select v-model="activeDeptNo" filterable placeholder="请选择" style="width:100%;" v-if="modeUrl == '/bmap/check'">
                         <el-option
                         v-for="item in depts"
                         :key="item.dept_no"
@@ -25,11 +25,39 @@
                     </el-select>
                 </div>
                 <div class="ui-layout-left-body">
-                    <el-card class="box-card">
+                    <el-card class="box-card" v-if="modeUrl == '/bmap/check'">
                         <div class="point-layout-bar" :class=" activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? 'active' : ''" v-for="(tolllink,s) in buildResLine" v-if="buildResLine.length > 0" @click.stop="onTollLink(tolllink)">
                             <div class="point-layout-bar-title">
                                 {{tolllink.name}}
                                 <span :style="`display:block;width:1rem;background-color:${activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? lineColors[s%4].selectedColor : lineColors[s%4].color};opacity:${0.8};border-radius: 4px;`"></span>
+                            </div>
+                            <!-- <div class="point-layout-bar-more">
+                                {{tolllink.id}}
+                            </div> -->
+                        </div>
+                    </el-card>
+                    <el-card class="box-card" v-if="modeUrl == '/bmap/editor/'" :header-style="{ padding: '10px' }" :body-style="{ padding: '20px' }">
+                        
+                        <div class="point-layout-bar" v-for="(tolllink,s) in buildResLine" v-if="buildResLine.length > 0" @click.stop="onTollLink(tolllink)">
+                            <div  class="point-layout-bar-title">
+                                <span style="color:rgb(0, 122, 255);font-size:1.2rem;">车辆信息</span>
+                                <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
+                            </div>
+                            <div class="point-layout-bar-body">
+                                <div class="point-layout-bar-body-icon">
+                                    <el-image
+                                    style="width: 100px; height: 100px"
+                                    :src="carIconUrl"
+                                    :fit="'fit'"></el-image>
+                                </div>
+                                <div class="point-layout-bar-body-info">
+                                    <div> {{tolllink.vehicleid}}</div>
+                                    <div>起点： {{tolllink.enstationname}}</div>
+                                    <div>终点： {{tolllink.exstationname}}</div>
+                                    <div>应收：{{tolllink.payfee}}</div>
+                                </div>
+                               
+                                <!-- <span :style="`display:block;width:1rem;background-color:${activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? lineColors[s%4].selectedColor : lineColors[s%4].color};opacity:${0.8};border-radius: 4px;`"></span> -->
                             </div>
                             <!-- <div class="point-layout-bar-more">
                                 {{tolllink.id}}
@@ -507,7 +535,7 @@ $bgColor:#fff;
             position: fixed;
             top: 0;
             left: 0;
-            width:16rem;
+            min-width:16rem;
 
             .ui-layout-left-head{
                 display:flex;
@@ -516,6 +544,7 @@ $bgColor:#fff;
                 max-height:calc(100% - 0px);
                 position:relative;
                 overflow:hidden;
+
                 .box-card{
                     height:100%;
                     overflow-y: auto;
@@ -536,6 +565,10 @@ $bgColor:#fff;
                         display:flex;
                         justify-content: space-between;
                         
+                    }
+                    .point-layout-bar-body{
+                        display:flex;
+                        width:20rem;
                     }
                 }
             }
