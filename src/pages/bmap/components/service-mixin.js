@@ -32,10 +32,10 @@ export default {
             
             loadlinks = loadlinks.map(item => {
                 let obj = {}
-                if(this.modeUrl == '/bmap/editor/'){
+                if(this.modeUrl == '/bmap/editor/' || this.modeUrl == '/bmap/check'){
                     obj = {...item}
                 }
-                obj['name'] = `${item['vehicleid']}-${item['enstationname']}-${item['exstationname']}`
+                
                 obj['type'] = 'line'
                 obj['id'] = item['id']
                 obj["points"]=[]
@@ -129,6 +129,7 @@ export default {
                     })
                 }
                 if(this.modeUrl == '/bmap/editor/' &&  Array.isArray(self.loadStations) && self.loadStations.length > 0){
+                    obj['name'] = `${item['vehicleid']}-${item['enstationname']}-${item['exstationname']}`
                     let points = self.bxDeepClone(self.loadStations)
                     obj["points"] = points.map( p => {
                         let point = {
