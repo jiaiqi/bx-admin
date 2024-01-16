@@ -1825,6 +1825,10 @@ export default {
     },
     loadTableData(srvAuth) {
       let self = this
+      if(!this.vpageNo){
+        // 登录过期后刷新
+        return this.initGridData()
+      }
       if (!this.shouldLoadFromDb) {
         return Promise.resolve(true);
       }
@@ -1871,6 +1875,12 @@ export default {
             "list_page",
             this.vpageNo
           ).then(response => {
+            if(response.body.resultCode == '0011'){
+              // 登录过期
+              this.$store.commit('clearSrvCols')
+              this.vpageNo = null
+              return
+            }
             // console.log("responseresponse",response)
             var listData = response.body.data;
             for (var row in listData) {
@@ -1938,7 +1948,11 @@ export default {
               this.vpageNo
             ).then(response => {
 
-              if(response.body.resultCode == '0111'){
+              if(response.body.resultCode == '0011'){
+                // 登录过期
+                this.$store.commit('clearSrvCols')
+                this.vpageNo = null
+              }else if(response.body.resultCode == '0111'){
                 console.log('response.body',response.body)
                  this.activeForm = 'srv-auth-login'
                  this.srvAuthLogin = true

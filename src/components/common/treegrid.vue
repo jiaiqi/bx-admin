@@ -623,6 +623,12 @@ export default {
             },
             this.order,null,null,null,null,null,null,null,null,null,this.vpageNo,'treelist'
           ).then((response) => {
+            if(response.body.resultCode == '0011'){
+              // 登录过期
+              this.$store.commit('clearSrvCols')
+              this.vpageNo = null
+              return
+            }
             this.buildData(response.body.data, false);
             childData = response.body.data;
           });
@@ -1049,7 +1055,12 @@ export default {
               item._children = item.children;
               delete item.children;
             });
-           
+          if(response.body.resultCode == '0011'){
+            // 登录过期
+            this.$store.commit('clearSrvCols')
+            this.vpageNo = null
+            return
+          }
           this.buildData(response.body.data, true);
          
           this.gridData = response.body.data
