@@ -156,7 +156,8 @@ export class FieldInfo {
   }
 
   isFilterable() {
-    return !(this.isUploader() || this.type === "Note")
+    return !( this.type === "Note")
+    // return !(this.isUploader() || this.type === "Note")
   }
 
   isJoinedDisp() {
