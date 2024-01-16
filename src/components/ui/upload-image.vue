@@ -32,7 +32,7 @@
                :disabled="!field.info.editable"
                list-type="picture-card">
       <el-button size="small" type="primary">点击上传</el-button>
-      <div slot="tip" class="el-upload__tip">{{fileDesc}}</div>
+      <div slot="tip" class="el-upload__tip">{{setFileDesc}}</div>
     </el-upload>
   </div>
 
@@ -53,6 +53,13 @@
       //   type: String,
       //   default: "file",
       // },
+    },
+    computed: {
+      setFileDesc() {
+        const fileType = this.field.fileType||'jpg/png/svg'
+        const fileSize = this.field.fileSize||2
+        return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`
+      }
     },
     data() {
       return {
@@ -131,7 +138,11 @@
         }
         let flag = false
         for (let i in this.fileType.split('/')) {
-          if (file.name.split('.')[1] === this.fileType.split('/')[i]) {
+          let fileType = this.fileType.split('/')[i]
+          if(fileType && typeof fileType ==='string'){
+            fileType = fileType.toLowerCase()
+          }
+          if (file.name.split('.')[1] === fileType) {
             flag = true
             break
           }

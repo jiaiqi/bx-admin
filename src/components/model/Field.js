@@ -46,6 +46,18 @@ export class Field {
     this.vif = true;
     this.moreInfo = null
     
+    if(fieldInfo.moreConfig?.fileType){
+      this.fileType = fieldInfo.moreConfig?.fileType
+    }
+
+    if(fieldInfo.moreConfig?.fileDesc){
+      this.fileDesc = fieldInfo.moreConfig?.fileDesc
+    }
+
+    if(fieldInfo.moreConfig?.fileSize){
+      this.fileSize = fieldInfo.moreConfig?.fileSize
+    }
+
     if (this.info.editor == 'multiselect') {
       // multiselect need default value as []
       this.model = this.model || []
