@@ -89,7 +89,7 @@ export default {
                     "destination":"34.404827,108.798106",
                     "waypoints":"",
                     "tactics":4,
-                    "waypoints_str":"34.18876,108.893024|34.194719,108.875163|34.20437,108.838162",
+                    "waypoints_str":"",
                     "ak":"FC190506b9b4fa8b366db9f78cb5e93e"
                 }
                 obj['params']['origin'] = `${start.lat},${start.lng}`
