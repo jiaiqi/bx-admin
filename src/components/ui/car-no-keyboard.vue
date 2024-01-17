@@ -146,10 +146,6 @@ export default {
     //   type: Boolean,
     //   default: true
     // },
-    keyboardStyle: { //键盘样式 slide-从屏幕底部弹出 popover-展示在输入框下方
-      type: String,
-      default: "popover",
-    },
     allowSwitch: { //是否允许切换键盘
       type: Boolean,
       default: true
@@ -223,6 +219,10 @@ export default {
       // 键盘上输入的内容立即反馈到表单中
       return this.keyboardStyle === 'popover'
     },
+    keyboardStyle(){
+      //键盘样式 slide-从屏幕底部弹出 popover-展示在输入框下方
+      return this.field?.info?.moreConfig?.keyboardStyle || 'popover'
+    }
   },
   methods: {
     init() {
