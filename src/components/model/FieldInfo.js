@@ -264,6 +264,8 @@ export class FieldInfo {
       this.editor = 'userlist';
     } else if (this.type == 'QrCode') {
       this.editor = 'qrcode';
+    } else if (this.type == 'CarNo' || this.type == 'carNo' ) {
+      this.editor = 'carNoKeyboard';//车牌号输入键盘
     } else if (this.isFinder()) {
       this.editor = 'finder';
       if(this.srvCol && this.srvCol.option_list_v2 && this.srvCol.option_list_v2.hasOwnProperty("autoSplicDisplay")){
