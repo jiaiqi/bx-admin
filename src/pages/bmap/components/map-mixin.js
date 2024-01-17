@@ -12,7 +12,8 @@ import car from '../assets/icon/car.png'
 
 import { getBaiduMapApi} from './api.js'
 import { over } from 'lodash'
-let activeLineColor = '#32bafd'
+let activeLineColor = 'rgb(255 167 0)'
+// let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
 let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
 // let bMapApi = '/baiduApi/direction/v2/driving'
 export default {
@@ -45,20 +46,47 @@ export default {
             reqRoutes:[],
             reqPaths:[],
             lineColors:[{
-                type:'red',
-                color:'rgb(253 19 249)',
+                label:'行驶路径',
+                type:'driving',
+                color:'#fd503e',
                 selectedColor:activeLineColor,
               },{
-                type:'green',
-                color:'#089d0d',
+                label:'收费路径',
+                type:'driving_pay',
+                color:'#409eff',
                 selectedColor:activeLineColor,
               },{
-                type:'blue',
-                color:'#f1cb00',
+                label:'最小路径',
+                type:'driving_min',
+                color:'#409eff',
                 selectedColor:activeLineColor,
               },{
-                type:'blue',
-                color:'rgb(3 207 213)',
+                label:'其它',
+                type:'none',
+                color:'rgb(60 189 166)',
+                selectedColor:activeLineColor,
+              },
+              
+            ],
+            pointsColors:[{
+                label:'交易点',
+                type:'driving',
+                color:'rgb(253 226 19)',
+                selectedColor:activeLineColor,
+              },{
+                label:'车牌识别',
+                type:'driving',
+                color:'#409eff',
+                selectedColor:activeLineColor,
+              },{
+                label:'拟合点',
+                type:'driving',
+                color:'rgb(224 31 225)',
+                selectedColor:activeLineColor,
+              },{
+                label:'人工校准',
+                type:'driving',
+                color:'rgb(40 189 108)',
                 selectedColor:activeLineColor,
               },
               
@@ -82,65 +110,7 @@ export default {
             get:function(){
                 let lines = []
                 let loadLineData = this.bxDeepClone(this.mockLines)
-                // if(Array.isArray(loadLineData) && loadLineData.length > 0){
-                //     for(let iIndex in loadLineData){
-                //         let item =  this.bxDeepClone(loadLineData[iIndex])
-                //         let line = {}
-                //         line = {...item}
-                        
-                //         line['start'] = line.points.filter((p,index) => {
-                //             if(p.id == '000'){
-                //                 return p
-                //             }
-                //         })
-                //         line['uid'] = `${line.id}@${ Number(iIndex) +1}`
-                //         line['_type'] = 'line'
-                //         line['points'] = line.points.map((p,index) => {
-                //             p['uid'] = `${line.uid}@${p.id}`
-                //             return p
-                //         })
-                //         if(line['start'].length > 0){
-                //             line['start'] = line['start'][0]
-                //         }
-                //         line['end'] = line.points.filter((p,index) => {
-                //             if(p.id == '00x'){
-                //                 return p
-                //             }
-                //         })
-                //         if(line['end'].length > 0){
-                //             line['end'] = line['end'][0]
-                //         }
-                //         line['waypoints'] = line.points.filter((p,index) => {
-                //             if(p.id  !== '000' && p.id !== '00x'){
-                //                 return p
-                //             }
-                //         })
-                //         line['params'] = {
-                //             // 路线规划参数
-                //             origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
-                //             destination:``,  // 终点 40.056878,116.30815
-                //             waypoints:'', // 途径点 40.465,116.314|40.232,116.352|40.121,116.453
-                //             tactics:4    // 4 高速有限
-                //         }
-                //         line['params']['origin'] = `${line.start.lat},${line.start.lng}`  // 起点参数
-                //         line['params']['destination'] = `${line.end.lat},${line.end.lng}` // 终点
-                //         if(Array.isArray(line.waypoints) && line.waypoints.length > 0){
-                //             // 途径点参数
-                //             line['params']['waypoints_str'] = ''
-                //             for(let i in line.waypoints){
-                //                 let p = line.waypoints[i]
-                //                 if(i == 0){
-                //                     line['params']['waypoints_str'] += `${p.lat},${p.lng}`
-                //                 }else{
-                //                     line['params']['waypoints_str'] += `|${p.lat},${p.lng}`
-                //                 }
-                                
-                //             }
-                //         }
-                //         line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
-                //         lines.push(line)
-                //     }
-                // }
+                
                 if(Array.isArray(this.initLinks) && this.initLinks.length > 0){
                     lines = [].map(item => item)
                     loadLineData = this.bxDeepClone(this.initLinks)
@@ -194,6 +164,8 @@ export default {
                         lines.push(line)
                     }
                 }
+                
+                
                 return lines
             },
             set:function(point){
@@ -226,6 +198,12 @@ export default {
             // })
             map.setMapStyle({styleJson: mapStyle.styleJson});
             this.BMap = map
+        },
+        openIsEditor(){
+            this.isEditor = true
+            this.$nextTick(() => {
+                this.getDriving()
+            })
         },
         updateLine(line){
             let self = this
@@ -330,17 +308,21 @@ export default {
             // console.log('添加线条',line.id,line)
             let overlays = self.BMap.getOverlays()
             overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'])
-            if(Array.isArray(overlays) && overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id).length == 1){
-                let lines = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id)
-                self.BMap.removeOverlay(lines[0]); // 从地图上移除覆盖物
-                console.log('移除已经存在的线',lines,line.id)
-            }else if(Array.isArray(overlays) && overlays.filter(o => o.hasOwnProperty('_data')).length > 0){
-                let oldpoints = overlays.filter(o => o.hasOwnProperty('_data') && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label' ))
-                console.log('oldpoints',oldpoints,overlays)
-                for(let oldo of oldpoints){
-                    // self.BMap.removeOverlay(oldo); // 从地图上移除覆盖物
+            if(this.modeUrl == '/bmap/check'){
+                // 门架 编辑时 移除重绘线
+                if(Array.isArray(overlays) && overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id).length == 1){
+                    let lines = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'line' && o['_data']['id'] == line.id)
+                    self.BMap.removeOverlay(lines[0]); // 从地图上移除覆盖物
+                    console.log('移除已经存在的线',lines,line.id)
+                }else if(Array.isArray(overlays) && overlays.filter(o => o.hasOwnProperty('_data')).length > 0){
+                    let oldpoints = overlays.filter(o => o.hasOwnProperty('_data') && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label' ))
+                    console.log('oldpoints',oldpoints,overlays)
+                    for(let oldo of oldpoints){
+                        // self.BMap.removeOverlay(oldo); // 从地图上移除覆盖物
+                    }
                 }
             }
+            
 
             // 开始绘制逻辑
             if(points && points.length > 0){
@@ -460,6 +442,11 @@ export default {
             let self = this
             console.log('绘制标点',line,line['waypoints_points'])
             let waypoints = line['waypoints_points']
+            if(this.modeUrl == '/bmap/editor/'){
+                // 如果时路径校准地图时 ， marker 使用全部点 all_points  存在拆线情况
+                waypoints = line['all_points']
+                
+            }
             if(Array.isArray(waypoints) && waypoints.length > 0){
                 for(let pIndex in waypoints){
                     let p = waypoints[pIndex]
@@ -690,8 +677,9 @@ export default {
                 }
             }
             
-            let loadLines = this.buildResLine
-            if((this.modeUrl == '/bmap/check' &&  Array.isArray(loadLines) && loadLines.length > 0) || (this.modeUrl == '/bmap/editor/' &&  Array.isArray(loadLines) && loadLines.length > 0 &&  Array.isArray(this.loadStations) && this.loadStations.length > 0)){
+            let loadLines = self.bxDeepClone(self.buildResLine)
+            console.log('getDriving',)
+            if((this.modeUrl == '/bmap/check' &&  Array.isArray(loadLines) && loadLines.length > 0) || (this.modeUrl == '/bmap/editor/' &&  Array.isArray(loadLines) && loadLines.length > 0 )){
                 self.polylines = [].map(item => item)
                 for(let i in loadLines){
                     let loadLine = this.bxDeepClone(loadLines[i])
@@ -723,62 +711,77 @@ export default {
                     // }
                     // console.log('getBaiduMapApi',url)
                     // this.requestDriving(url,loadLine,i)   // 请求 jsapi 路线规划
-                    getBaiduMapApi(url,params).then(res => {
-                        // console.log('/direction/v2/driving res',res.data)
-                        let routes = []
-                        res = res.data || null 
-                        if(res && res.status === 0){
-
-                            this.reqRoutes = res.result.routes
-                            for(let route of res.result.routes){
-                                
-                                let steps = []
-                                for(let step of route.steps){
-                                    let path = step.path.split(';')
-                                    path = path.map(item => {
-                                        let point= {
-                                            lat:`${item.split(',')[1]}`,
-                                            lng:`${item.split(',')[0]}`,
-                                        }
-                                        return point
-                                    })
-                                    steps = steps.concat(path)
-                                }
-                                routes = routes.concat(steps)
-                            }
-                            this.reqPaths = routes.map(item => item)
-                            // console.log('routes',routes)
-                            let points = []
-                            for(let p of routes){
-                                points.push(p);
-
-                            }
-                            let line = {
-                                    strokeColor:self.lineColors[i%4].color,  // linear-gradient(#ff0000 0%, #ffff00 50%, #0000ff 100%)
-                                    selectedColor: self.lineColors[i%4].selectedColor,
-                                    uid:`${loadLine.uid}`,
-                                    ...self.lineTemplate
+                    if(Array.isArray(loadLine['points']) && loadLine['points'].length > 0){
+                        getBaiduMapApi(url,params).then(res => {
+                            // console.log('/direction/v2/driving res',res.data)
+                            let routes = []
+                            res = res.data || null 
+                            if(res && res.status === 0){
+    
+                                this.reqRoutes = res.result.routes
+                                for(let route of res.result.routes){
                                     
+                                    let steps = []
+                                    for(let step of route.steps){
+                                        let path = step.path.split(';')
+                                        path = path.map(item => {
+                                            let point= {
+                                                lat:`${item.split(',')[1]}`,
+                                                lng:`${item.split(',')[0]}`,
+                                            }
+                                            return point
+                                        })
+                                        steps = steps.concat(path)
+                                    }
+                                    routes = routes.concat(steps)
+                                }
+                                this.reqPaths = routes.map(item => item)
+                                // console.log('routes',routes)
+                                let points = []
+                                for(let p of routes){
+                                    points.push(p);
+    
+                                }
+                                let color = self.lineColors[i%4]
+                                if(self.modeUrl == '/bmap/editor/'){
+                                    color = self.lineColors.filter(item => item.type == loadLine['_editor_type'])
+                                    if(Array.isArray(color) && color.length > 0){
+                                        color = color[0]
+                                    }
+                                }
+                                let line = {
+                                        strokeColor:color.color,  // linear-gradient(#ff0000 0%, #ffff00 50%, #0000ff 100%)
+                                        selectedColor: color.selectedColor,
+                                        uid:`${loadLine.uid}`,
+                                        ...self.lineTemplate
+                                        
+                                }
+                                line['points'] = points.map(item => item)
+                                line['id'] = id
+                                line['waypoints'] =  this.bxDeepClone(loadLine.waypoints)
+                                line['waypoints_points'] =  this.bxDeepClone(loadLine.points)
+                                line['start'] = this.bxDeepClone(loadLine.start)
+                                line['end'] = this.bxDeepClone(loadLine.end)
+                                if(this.modeUrl == '/bmap/editor/'){
+                                    // 如果时路径校准地图时 ， marker 使用全部点 all_points  存在拆线情况
+                                    line['all_points'] = this.bxDeepClone(loadLine.all_points)
+                                    
+                                }
+                                
+                                line['waypoints_points'] = line['waypoints_points'].map((item,pIndex) => {
+                                    // item['uid'] = `${line.lineId}-${pIndex}`
+                                    item['_type'] = 'point'
+                                    return item
+                                })
+                                line['_type'] = 'line'
+                                self.polylines.push(self.bxDeepClone(line))
+                                self.addLines(self.bxDeepClone(line))  // 添加路线
+                            }else{
+                                this.$message.error(JSON.stringify(res));
                             }
-                            line['points'] = points.map(item => item)
-                            line['id'] = id
-                            line['waypoints'] =  this.bxDeepClone(loadLine.waypoints)
-                            line['waypoints_points'] =  this.bxDeepClone(loadLine.points)
-                            line['start'] = this.bxDeepClone(loadLine.start)
-                            line['end'] = this.bxDeepClone(loadLine.end)
-                            
-                            line['waypoints_points'] = line['waypoints_points'].map((item,pIndex) => {
-                                // item['uid'] = `${line.lineId}-${pIndex}`
-                                item['_type'] = 'point'
-                                return item
-                            })
-                            line['_type'] = 'line'
-                            self.polylines.push(self.bxDeepClone(line))
-                            self.addLines(self.bxDeepClone(line))  // 添加路线
-                        }else{
-                            this.$message.error(JSON.stringify(res));
-                        }
-                    })
+                        })
+                    }
+                    
                 }
                 
             } 

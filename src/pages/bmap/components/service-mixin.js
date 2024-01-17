@@ -5,6 +5,7 @@ import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 
+let waypointsLen = 20  // 最大途径点 包含起终点数量
 export default {
     props: {
         depts: {
@@ -20,8 +21,10 @@ export default {
             activeDeptNo:'',
             activeTollLink:null,
             loadStations:[],
+            loadPassconvPath:{},
             tolllinks:[],
             updatePoints:[]
+
         }
     },
     computed:{
@@ -35,7 +38,15 @@ export default {
                 if(this.modeUrl == '/bmap/editor/' || this.modeUrl == '/bmap/check'){
                     obj = {...item}
                 }
+                let keyNo = item.id
+                switch (self.modeUrl) {
+                    case '/bmap/editor/':
+                        keyNo = item.passid
+                        break;
                 
+                    default:
+                        break;
+                }
                 obj['type'] = 'line'
                 obj['id'] = item['id']
                 obj["points"]=[]
@@ -83,8 +94,11 @@ export default {
                 }
                 obj['params']['origin'] = `${start.lat},${start.lng}`
                 obj['params']['destination'] = `${end.lat},${end.lng}`
-                if(this.modeUrl == '/bmap/check' && self.activeTollLink && item.id == self.activeTollLink.id && Array.isArray(self.loadStations) && self.loadStations.length > 0){
-                    let points = self.bxDeepClone(self.loadStations)
+                let loadStationsDatas = self.bxDeepClone(self.loadStations)
+               
+                if(this.modeUrl == '/bmap/check' && self.activeTollLink && item.id == self.activeTollLink.id && Array.isArray(loadStationsDatas) && loadStationsDatas.length > 0){
+                    // 门架编辑 
+                    let points = self.bxDeepClone(loadStationsDatas)
                     obj["points"] = points.map( p => {
                         let point = {
                             ...p
@@ -128,51 +142,55 @@ export default {
                         return  this.bxDeepClone(point)
                     })
                 }
-                if(this.modeUrl == '/bmap/editor/' &&  Array.isArray(self.loadStations) && self.loadStations.length > 0){
-                    obj['name'] = `${item['vehicleid']}-${item['enstationname']}-${item['exstationname']}`
-                    let points = self.bxDeepClone(self.loadStations)
-                    obj["points"] = points.map( p => {
-                        let point = {
-                            ...p
-                        }
-                        
-                        point['_dev_point_type'] = p['category'] || '门架'
-                        switch (point['_dev_point_type']) {
-                            case '门架':
-                                point['icon'] = gantry
-                                point['icon_active'] = gantryActive
-                                point["icon_size"]={
-                                    w:25,
-                                    h:30
-                                }
-                                break;
-                            case '收费站':
-                                point['icon'] = toll
-                                point['icon_active'] = tollActive
-                                point["icon_size"]={
-                                    w:25,
-                                    h:30
-                                }
-                                
-                                break;
-                        
-                            default:
-                                break;
-                        }
-
-                        // 路径编辑业务 格式处理 都是门架
-                        if(this.modeUrl == '/bmap/editor/' && this.no){
-                            point['icon'] = gantry
-                            point['icon_active'] = gantryActive
-                            point["icon_size"]={
-                                w:25,
-                                h:30
-                            }
-                        }
-                        
-
-                        return  this.bxDeepClone(point)
+                console.log(keyNo,self.loadPassconvPath,item.id,item.passid)
+                
+                if(self.modeUrl == '/bmap/editor/' && keyNo && self.loadPassconvPath[keyNo]){
+                    // 路径可视化
+                    loadStationsDatas = self.loadPassconvPath[keyNo].map(item => {
+                        item['_type'] = 'point'
+                        return item
                     })
+                    if(Array.isArray(loadStationsDatas) && loadStationsDatas.length > 0){
+                        // 处理合并线 的 路径点
+                        obj['name'] = `${item['vehicleid']}-${item['enstationname']}-${item['exstationname']}`  // name  拼接
+                        let points = self.bxDeepClone(loadStationsDatas).map(item => item)
+                        obj["points"] = points.map( p => {
+                            let point = {
+                                ...p
+                            }
+                            
+                            point['_dev_point_type'] = p['category'] || '门架'
+                            switch (point['_dev_point_type']) {
+                                case '门架':
+                                    point['icon'] = gantry
+                                    point['icon_active'] = gantryActive
+                                    point["icon_size"]={
+                                        w:25,
+                                        h:30
+                                    }
+                                    break;
+                                case '收费站':
+                                    point['icon'] = toll
+                                    point['icon_active'] = tollActive
+                                    point["icon_size"]={
+                                        w:25,
+                                        h:30
+                                    }
+                                    
+                                    break;
+                            
+                                default:
+                                    break;
+                            }
+
+                            
+                            
+
+                            return  this.bxDeepClone(point)
+                        })
+                        obj['all_points'] = this.bxDeepClone(obj.points)
+                    }
+                    
                 }
                 if(this.modeUrl == '/bmap/editor/' && this.no){
                     if(obj.points.length >= 2){
@@ -193,36 +211,128 @@ export default {
                                 let str = `${p.lat},${p.lng}`
                                 obj['params']['waypoints_str'].push(str)
                                 obj['params']['waypoints'].push(this.bxDeepClone(p))
-                                console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj['params'].waypoints,obj['params']['waypoints_str'].join('|'))
+                                // console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj['params'].waypoints,obj['params']['waypoints_str'].join('|'))
                             }
                         }
-                        console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj.waypoints,obj['params']['waypoints_str'].join('|'))
+                        // console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj.waypoints,obj['params']['waypoints_str'].join('|'))
                         if(Array.isArray(obj['params']['waypoints_str'])){
                             obj['params']['waypoints_str'] = obj['params']['waypoints_str'].join('|')
                         }
                         
+                        
                     }
-
+                    
                 }else if(this.modeUrl == '/bmap/check'){
                     obj["points"].unshift(start)
                     obj["points"].push(end)
                 }
                 
-
+                obj['all_points'] = this.bxDeepClone(obj.points)
 
                 
 
                 return  this.bxDeepClone(obj)
 
             })
+            if(this.modeUrl == '/bmap/editor/' && this.no){
+                // 拆分线逻辑
+                let lines = this.bxDeepClone(loadlinks)
+                let sliceLines = []
+                for(let line of lines){
+                    let pLens = []
+                    // console.log(line.name,line.points.length)
+                    if(line.points.length - 2 > waypointsLen){
+                        let pointsLen = []
+                        let step = 0
+                        let index = 0
+                        for(let i in line.points){
+                            let p = line.points[i]
+                            // if(Number(i) % waypointsLen !== 0){
+                            //     pointsLen[step] = [].concat()
+                            // }
+                            // console.log(i,line.points,p,((Number(i)+1) % waypointsLen))
+                            if(((Number(i)+1) % waypointsLen) == 0){
+                                // 当前已到途径点长途，保存后重新截取
+                                let l = this.bxDeepClone(line)
+
+                                pointsLen.push(p)
+                                pLens.push(this.bxDeepClone(pointsLen))
+                                l['points'] = this.bxDeepClone(pointsLen)
+                                l['all_points'] = this.bxDeepClone(line.points)
+                                pointsLen = [p]
+                                sliceLines.push(this.bxDeepClone(l))
+                            }else if(Number(i) != line.points.length - 1){
+                                // 不是最后一个点，也不是截取点时
+                                pointsLen.push(p)
+                            }else if(Number(i) == line.points.length - 1){
+                                // 最后一个点时
+                                
+                                let l = this.bxDeepClone(line)
+                                pointsLen.push(p)
+                                l['points'] = this.bxDeepClone(pointsLen)
+                                l['all_points'] = this.bxDeepClone(line.points)
+                                pLens.push(this.bxDeepClone(pointsLen))
+                                
+                                sliceLines.push(this.bxDeepClone(l))
+
+                            }
+                        }
+                        // console.log('截取',pLens.length,sliceLines,pLens,pointsLen)
+                    }
+
+                    if(sliceLines.length > loadlinks.length ){
+                        loadlinks = sliceLines.map(nItem => {
+                            // 初始化  params
+                            if(nItem.points.length >= 2){
+                                let start = this.bxDeepClone(nItem.points[0])
+                                let end = this.bxDeepClone(nItem.points[nItem.points.length - 1])
+                                nItem["start"] = start
+                                nItem["end"] = end
+                                // 重新设置 起终点
+                                nItem['params']['origin'] = `${start.lat},${start.lng}`
+                                nItem['params']['destination'] = `${end.lat},${end.lng}`
+                                nItem['params']['waypoints_str'] = ``
+                                
+                                nItem['params']['waypoints_str'] = []
+                                nItem['params']['waypoints'] = []
+                                for(let pIndex in nItem['points']){
+                                    // 处理途径点 和 参数
+                                    let p = this.bxDeepClone(nItem['points'][pIndex])
+                                    if(pIndex != '0' && pIndex != `${nItem['points'].length - 1}`){
+                                        let str = `${p.lat},${p.lng}`
+                                        nItem['params']['waypoints_str'].push(str)
+                                        nItem['params']['waypoints'].push(this.bxDeepClone(p))
+                                        // console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj['params'].waypoints,obj['params']['waypoints_str'].join('|'))
+                                    }
+                                }
+                                // console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj.waypoints,obj['params']['waypoints_str'].join('|'))
+                                if(Array.isArray(nItem['params']['waypoints_str'])){
+                                    // 途径点参数装字符串
+                                    nItem['params']['waypoints_str'] = nItem['params']['waypoints_str'].join('|')
+                                }
+                                
+                            }
+                            return nItem
+                        })
+                    }
+                }
+
+
+                
+
+            }
+            
+
             return loadlinks
         }
     },
     mounted(){
         this.initMap()
         if(this.modeUrl == '/bmap/check'){
-
+            this.isEditor = true
         }else if(this.modeUrl == '/bmap/editor/' && this.no){
+            
+            this.isEditor = false
             this.getPassconv()
             this.getPassconvpath()
         }
@@ -268,8 +378,11 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    self.tolllinks = res.data.map(item => item)
-                    console.log('分公司',res.data)
+                    self.tolllinks = res.data.map(item => {
+                        item['_editor_type'] = 'driving'
+                        return item
+                    })
+                    // console.log('分公司',res.data)
                 }else{
                     this.$message.error(JSON.stringify(res));
                     // console.log('查询收费路段 异常',res)
@@ -282,20 +395,21 @@ export default {
             // category取值：门架、收费站
             // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
             // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let passid = this.no
             let srv = 'srvaud_passconvpath_select';
             let srvAuth = 'aud'
             let conds = [
                 {
                 colName:'passid',
                 ruleType:'eq',
-                value:this.no
+                value:passid
                 }
             ]
             
             let relationCondition = {}
             let page = null
             let order = null
-            if(!this.no){
+            if(!passid){
                 console.log('初始化参数缺少 passid')
                 return 
             }
@@ -317,10 +431,15 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    self.loadStations = res.data.map(item =>{
-                        item['name'] = item['tollgrantry_name']
-                        return item
+                    let passconvPaths = res.data.filter(item =>{
+                        if(item['grantry_type'] !== '虚拟门架'){
+                            item['name'] = item['tollgrantry_name']
+                            return item
+                        }
+                        
                     })
+                    self.$set(self.loadPassconvPath,`${passid}`,self.bxDeepClone(passconvPaths))
+                    // self.loadPassconvPath[`${passid}`] = passconvPaths.map(item => item)
                     // console.log('分公司',res.data)
                 }else{
                     this.$message.error(JSON.stringify(res));
