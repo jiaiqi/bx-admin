@@ -24,7 +24,9 @@
               </el-image>
           </div>
           <div v-else-if="ifUseRawFieldEditor()">
-              <bx-input-number v-if="field.info.editor === 'input-number'" controls-position="right" v-model="field.model" :disabled="getDisabled" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
+             <car-no-keyboard :field="field" v-if="field.info.editor === 'carNoKeyboard'" v-model="field.model" :readonly="getDisabled" @field-value-changed="$emit('field-value-changed', field.info.name, field)" @onBlur="onBlur">
+              </car-no-keyboard>
+              <bx-input-number v-else-if="field.info.editor === 'input-number'" controls-position="right" v-model="field.model" :disabled="getDisabled" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
               </bx-input-number>
               <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" >
                 <!-- style="height:80px;" -->
@@ -268,6 +270,7 @@ import ueditorPlus from "../ui/ueditor-plus.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
+import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 import { blobToBase64 } from '../../common/common'
 
 export default {
@@ -289,7 +292,8 @@ export default {
     multiFinder,
     dynamicSubTemp,
     verifyMobile,
-    autocompleteInput
+    autocompleteInput,
+    carNoKeyboard
   },
 
   props: {

@@ -32,7 +32,9 @@
                :disabled="!field.info.editable"
                list-type="picture-card">
       <el-button size="small" type="primary">点击上传</el-button>
-      <div slot="tip" class="el-upload__tip">{{setFileDesc}}</div>
+      <div slot="tip" class="el-upload__tip" :class="{'text-red':field.getAnyValidateError()}">
+        <i slot="reference" class="el-icon-warning" v-if="field.getAnyValidateError()"></i>
+        {{setFileDesc}}</div>
     </el-upload>
   </div>
 
@@ -56,8 +58,11 @@
     },
     computed: {
       setFileDesc() {
-        const fileType = this.field.fileType||'jpg/png/svg'
-        const fileSize = this.field.fileSize||2
+        if (this.field.getAnyValidateError()) {
+          return this.field.getAnyValidateError()
+        }
+        const fileType = this.field.fileType || 'jpg/png/svg'
+        const fileSize = this.fileSize ? this.fileSize / 1024 : 2
         return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`
       }
     },
@@ -213,7 +218,9 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
+  .text-red{
+    color: #F56C6C;
+  }
   .el-table th {
     text-align: center;
   }
