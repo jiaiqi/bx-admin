@@ -80,7 +80,7 @@
                 </div>
                 <div class="ui-layout-center-footer">
                     <div class="ui-layout-center-footer-bar" v-if="modeUrl == '/bmap/editor/'">
-                        <div class="ui-layout-center-footer-bar-item" v-for="(line,i) in lineColors" v-if="line.type !== 'none'">
+                        <div class="ui-layout-center-footer-bar-item" :class="activeLine && activeLine['_editor_type'] == line.type ? 'active' : ''" v-for="(line,i) in lineColors" v-if="line.type !== 'none'" @click="onEditorType(line.type)">
                             
                             <span v-if="line.type !== 'driving_min'" :style="`width:1rem;height:4px;background-color:${line.color};`">
                             </span>
@@ -105,7 +105,7 @@
                 <div class="ui-layout-right-head">
                     <div v-if="isEditor" style="background-color:#fff;">门架列表</div>
                     
-                    <el-button icon="el-icon-edit" v-if="isEditor == false" @click="openIsEditor">校准</el-button>
+                    <!-- <el-button icon="el-icon-edit" v-if="isEditor == false" @click="openIsEditor">校准</el-button> -->
                 </div>
                 <div class="ui-layout-right-body">
                     <el-card class="box-card" v-if="modeUrl == '/bmap/check'">
@@ -671,10 +671,12 @@ $bgColor:#fff;
                     background-color:#fff;
                     margin-right:10px;
                     border-radius:4px;
+                     padding:5px;
                     .ui-layout-center-footer-bar-item{
                         padding:5px;
                         display:flex;
                         align-items:center;
+                        border:1px solid #fff;
                         &>span{
                             margin-right:4px;
                             display:inline-block;
@@ -682,6 +684,10 @@ $bgColor:#fff;
                         &>i{
                             margin-right:4px;
                             display:inline-block;
+                        }
+                        &.active{
+                            border:1px solid rgb(253, 226, 19);
+                            background-color:rgb(255 252 231);
                         }
                         
                     }
