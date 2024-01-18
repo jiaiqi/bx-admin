@@ -245,6 +245,10 @@ export default {
                                     // 更新 marker 图标
                                     iconPath = overlay['_data']['icon_active']
                                     console.log('更新选中marker',overlay,zIndex)
+                                    
+                                    overlay.setTop(true)
+                                }else{
+                                    overlay.setTop(false)
                                 }
                                 let icon =  new BMap.Icon(iconPath, new BMap.Size(32, 32), {    
                                     anchor: new BMap.Size(0, 0),      
@@ -498,7 +502,7 @@ export default {
                             borderRadius:'4px'
                         })
                     }
-                    
+                    marker.setLabel(label)  // 设置标注
                     marker.addEventListener("click", function(e){  
                         let overlay = e.currentTarget
                         let overlays = self.BMap.getOverlays()
@@ -507,41 +511,23 @@ export default {
                             self.$set(self,'activePoint',overlay['_data'])
                             
                             let pointOverlays =  overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'point' )
-                            overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'label' )
-                            // overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'].type == 'point' && o['_data'].uid == overlay.uid)
-
-                            if(Array.isArray(overlays) ){
-                                // 更新label 样式
-                                for(let lIndex in overlays){
-                                    let l = overlays[lIndex]
+                            
+                            if(Array.isArray(pointOverlays) ){
+                                // 更新点图标
+                                for(let pointIndex in pointOverlays){
+                                    let l = pointOverlays[pointIndex]
+                                    let zIndex = pointIndex+2
+                                    let label = l.getLabel()
+                                    console.log('dianji',label)
                                     if(l['_data'].id == overlay['_data'].id){
-                                       
-                                        l.setStyle({                              // 设置选中label的样式
+                                        // 更新 marker 图标
+                                        label.setStyle({                              // 设置选中label的样式
                                             color: 'red',
                                             fontSize: '12px',
                                             border: '1px solid red',
                                             borderRadius:'4px',
                                             zIndex:999
                                         })
-                                    }else{
-                                        l.setStyle({                              // 设置label的样式
-                                            color: '#323232',
-                                            fontSize: '10px',
-                                            border: '1px solid #ddd',
-                                            borderRadius:'4px',
-                                            zIndex:lIndex + 2
-                                        })
-                                        
-                                    }
-                                }
-                            }
-                            if(Array.isArray(pointOverlays) ){
-                                // 更新点图标
-                                for(let pointIndex in pointOverlays){
-                                    let l = pointOverlays[pointIndex]
-                                    let zIndex = pointIndex+2
-                                    if(l['_data'].id == overlay['_data'].id){
-                                        // 更新 marker 图标
                                         let activeIconPath = l['_data']['icon_active']
                                         console.log('activeIconPath 1',overlay['_data'],activeIconPath)
                                         let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {    
@@ -550,9 +536,16 @@ export default {
                                             zIndex:999
                                         })
                                         l.setIcon(activeIcon)
-                                        l.setZIndex(999)
+                                        // l.setZIndex(999)
+                                        l.setTop(true)
                                     }else{
-                                        
+                                        label.setStyle({                              // 设置label的样式
+                                            color: '#323232',
+                                            fontSize: '10px',
+                                            border: '1px solid #ddd',
+                                            borderRadius:'4px',
+                                            zIndex:zIndex
+                                        })
                                         // 更新 marker 图标
                                         let activeIconPath = l['_data']['icon']
                                         console.log('activeIconPath 0',overlay['_data'],activeIconPath)
@@ -562,8 +555,12 @@ export default {
                                             zIndex:zIndex
                                         })
                                         l.setIcon(activeIcon)
-                                        l.setZIndex(zIndex)
+                                        // l.setZIndex(zIndex)
+                                        l.setTop(false)
+
                                     }
+                                    
+                                    l.setLabel(label)  // 更新标注label
                                 }
                             }
                             console.log("您点击了标注：",overlay);  
@@ -588,8 +585,38 @@ export default {
                         })
                         
                     });
+                    marker.addEventListener('dragstart', function (event) {
+                        console.log('标注开始拖拽：' + event.point.lng + ', ' + event.point.lat,event.target['_data'].uid);
+                        // let point = self.bxDeepClone(event.target['_data'])
+                        // point['lng'] = event.point.lng
+                        // point['lat'] = event.point.lat
+                        // self.$nextTick(() => {
+                        //         self.updatePoint(point)
+                        // })
+                        
+                    });
+                    marker.addEventListener('dragging', function (event) {
+                        let pid = event.target['_data'].id
+                        let overlays = self.BMap.getOverlays()
+                        overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data']['_type'] == 'label' && o['_data']['id'] == pid )
+                        if(Array.isArray(overlays) && overlays.length == 1){
+                            
+                            console.log('拖拽：' + event.point.lng + ', ' + event.point.lat,overlays);
+                            let label = overlays[0]
+                            let nPoint = new BMap.Point(event.point.lng, event.point.lat);
+                            label.setPosition(nPoint)
+                        }
+                        // let point = self.bxDeepClone(event.target['_data'])
+                        // point['lng'] = event.point.lng
+                        // point['lat'] = event.point.lat
+                        // self.$nextTick(() => {
+                        //         self.updatePoint(point)
+                        // })
+                        // setPosition(position: Point)
+                    });
+                    
                     self.BMap.addOverlay(marker); 
-                    self.BMap.addOverlay(label);                        // 将标注添加到地图中
+                    // self.BMap.addOverlay(label);                        // 将标注添加到地图中
                 }
             }
             
@@ -604,16 +631,16 @@ export default {
             let loadLines = this.initLinks || this.mockLines
             for(let initLine of loadLines){
                 if(initLine.id == `${idsArr[0]}`){
-                    console.log('更新线条下的点位置',p)
+                    // console.log('更新线条下的点位置',p)
                     let ps = this.bxDeepClone(initLine.points)
                     for(let point of initLine.points){
-                        console.log('0:',JSON.stringify(point),p.id)
+                        // console.log('0:',JSON.stringify(point),p.id)
                         if(`${idsArr[idsArr.length - 1]}` == point.id && (`${p.lat}` !== `${point['lat']}` || `${p.lng}` !== `${point['lng']}`)){
                             isUpdate = true
                             newLatAndLng = point
                             // point['lat'] = `${p.lat}`
                             // point['lng'] = `${p.lng}`
-                            console.log('1:',JSON.stringify(point))
+                            // console.log('1:',JSON.stringify(point))
                         }
                         
                     }
