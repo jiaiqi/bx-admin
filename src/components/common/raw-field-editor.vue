@@ -724,6 +724,9 @@ export default {
     font-weight:var(--custom-input-font_weight)!important;
     /* line-height:var(--custom-input-line_height,40px)!important; */
   }
+  ::v-deep .el-input--prefix .el-input__inner{
+    padding-left:30px !important;
+  }
 }
 
 .el-button {
