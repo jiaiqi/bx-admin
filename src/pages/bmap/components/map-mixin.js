@@ -198,6 +198,9 @@ export default {
             // })
             map.setMapStyle({styleJson: mapStyle.styleJson});
             this.BMap = map
+            this.BMap.addEventListener("click", function (e) {
+                console.log(e.point)
+            })
         },
         openIsEditor(){
             this.isEditor = true
@@ -343,7 +346,8 @@ export default {
                 {strokeColor:line.strokeColor, 
                 strokeWeight:line.strokeWeight, 
                 strokeOpacity:line.strokeOpacity,
-                strokeStyle:strokeStyle
+                strokeStyle:strokeStyle,
+                enableClicking:true
                 });
                 if(self.activeLine && self.activeLine.id == line.id && self.activeLine['_editor_type'] == line['_editor_type']){
                     
@@ -351,7 +355,8 @@ export default {
                     {   strokeColor:selectedColor, 
                         strokeWeight:line.strokeWeight, 
                         strokeOpacity:1,
-                        strokeStyle:strokeStyle
+                        strokeStyle:strokeStyle,
+                        enableClicking:true
                     });
 
                     // 如果是绘制线的时候 进入线 标点绘制逻辑
@@ -361,21 +366,24 @@ export default {
             this.BMap.addOverlay(polyline);
             // polyline.setTitle("Custom Data");
             polyline['_data'] = this.bxDeepClone(line) 
-            this.BMap.addEventListener("click", function (e) {
-                    console.log(e.point)
-                    let overlay = e.overlay
+            // click
+                // this.BMap.addEventListener("click", function (e) {
+            polyline.addEventListener("click", function (type, target, point, pixel) {
+                    console.log(type.point,type.target)
+                    let overlay = type.target
+
                     let title = ''
-                    
+                    console.log('点击线',type, target, point, pixel)
                     if(overlay && overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'line'){
                         
-                        // console.log('点击线',overlay['_data'])
+                        
                         // self.$set(self,'activeLine',overlay['_data'])
                         self.$set(self,'activePoint',null)  // 避免视口缩放冲突，清除已选中的点
                         self.onTollLink(overlay['_data'])
                         title = overlay['_data'].id
                         
                         console.log(overlay['_data'],overlay['_data']['_editor_type'],polyline['_data']['_editor_type'],overlay['_data']['_editor_type'] == polyline['_data']['_editor_type'])
-                        if (polyline && e.overlay === polyline && overlay['_data'] && polyline['_data'] && overlay['_data']['_editor_type'] == polyline['_data']['_editor_type'] && overlay['_data']['id'] == polyline['_data']['id']) {
+                        if (polyline && overlay === polyline && overlay['_data'] && polyline['_data'] && overlay['_data']['_editor_type'] == polyline['_data']['_editor_type'] && overlay['_data']['id'] == polyline['_data']['id']) {
                             // 修改线的样式
                             console.log(overlay)
                             polyline.setStrokeColor(selectedColor);
@@ -542,7 +550,7 @@ export default {
                                         })
                                         // 更新 marker 图标
                                         let activeIconPath = l['_data']['icon']
-                                        console.log('activeIconPath 0',overlay['_data'],activeIconPath)
+                                        // console.log('activeIconPath 0',overlay['_data'],activeIconPath)
                                         let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {    
                                             anchor: new BMap.Size(0, 0),      
                                             imageOffset: new BMap.Size(0, 0),   // 设置图片偏移   
