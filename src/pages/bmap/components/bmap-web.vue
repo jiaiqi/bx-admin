@@ -38,12 +38,14 @@
                     </el-card>
                     <el-card class="box-card" v-if="modeUrl == '/bmap/editor/'" :header-style="{ padding: '10px' }" :body-style="{ padding: '20px' }">
                         
-                        <div class="point-layout-bar" v-for="(tolllink,s) in buildResLine" v-if="buildResLine.length > 0" @click.stop="onTollLink(tolllink)">
+
+                        <!-- 路径 -->
+                        <div class="point-layout-bar" style="border:0;" v-for="(tolllink,s) in buildResLine" v-if="buildResLine.length > 0 && s == 0" @click.stop="onTollLink(tolllink)">
                             <div  class="point-layout-bar-title">
                                 <span style="color:rgb(0, 122, 255);font-size:1.2rem;">车辆信息</span>
                                 <!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
                             </div>
-                            <div class="point-layout-bar-body">
+                            <div class="point-layout-bar-body" style="background-color:rgb(242 244 251);">
                                 <div class="point-layout-bar-body-icon">
                                     <el-image
                                     style="width: 100px; height: 100px"
@@ -71,20 +73,42 @@
             <div class="ui-layout-center">
                 <div class="ui-layout-center-head">
                     
-                    <el-button icon="el-icon-tickets" circle @click="showHelp = true"></el-button>
-                    <el-button type="primary" v-if="updatePoints.length > 0" @click="submitUpdatePoints">保存</el-button>
+                    <el-button icon="el-icon-question" circle @click="showHelp = true"  v-if="modeUrl == '/bmap/check'"></el-button>
+                    <el-button type="primary" v-if="updatePoints.length > 0 && modeUrl == '/bmap/check'" @click="submitUpdatePoints"  >保存</el-button>
                 </div>
                 <div class="ui-layout-center-body">
                 </div>
                 <div class="ui-layout-center-footer">
+                    <div class="ui-layout-center-footer-bar" v-if="modeUrl == '/bmap/editor/'">
+                        <div class="ui-layout-center-footer-bar-item" v-for="(line,i) in lineColors" v-if="line.type !== 'none'">
+                            
+                            <span v-if="line.type !== 'driving_min'" :style="`width:1rem;height:4px;background-color:${line.color};`">
+                            </span>
+                            <i v-if="line.type == 'driving_min'" class="el-icon-more" :style="`color:${line.color};`"></i>
+                            
+                            {{line.label}}
+                        </div>
+                    </div>
+                    <div class="ui-layout-center-footer-bar" v-if="modeUrl == '/bmap/editor/'">
+                        <div class="ui-layout-center-footer-bar-item" v-for="(point,i) in pointsColors">
+                            <span :style="`color:${point.color};`">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+  <circle cx="8" cy="8" r="8"/>
+</svg>
+                            </span>
+                            {{point.label}}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="ui-layout-right">
                 <div class="ui-layout-right-head">
-                    门架列表
+                    <div v-if="isEditor" style="background-color:#fff;">门架列表</div>
+                    
+                    <el-button icon="el-icon-edit" v-if="isEditor == false" @click="openIsEditor">校准</el-button>
                 </div>
                 <div class="ui-layout-right-body">
-                    <el-card class="box-card">
+                    <el-card class="box-card" v-if="modeUrl == '/bmap/check'">
                         <div class="point-layout-bar" :class="activePoint && activePoint.id == station.id ? 'active' : ''" v-for="(station,s) in loadStations" v-if="loadStations.length > 0" @click="onPointList(station)">
                             <div class="point-layout-bar-title">
                                 {{station.name}}
@@ -98,6 +122,53 @@
                             </div>
                         </div>
                         <div class="point-layout-bar none"  v-if="loadStations.length == 0" >
+                            <div class="point-layout-bar-title">
+                                未选择路段
+                            </div>
+                            <div class="point-layout-bar-more">
+                                暂无门架可显示
+                            </div>
+                        </div>
+                    </el-card>
+                    <el-card class="box-card" v-if="modeUrl == '/bmap/editor/' && isEditor">
+                        <!-- 路径可视化门架 -->
+                        <el-timeline v-if="activeLine && activeLine.hasOwnProperty('all_points') && Array.isArray(activeLine['all_points']) && activeLine['all_points'].length > 0" style="padding-left:5px;">
+                            <el-timeline-item
+                            v-for="(station, index) in activeLine['all_points']"
+                            :key="index"
+                            :icon="station.icon"
+                            :type="activePoint && activePoint.id == station.id ? 'primary' : 'info'"
+                            :color="station.color"
+                            :size="'large'"
+                            :timestamp="station.timestamp"
+                            @click="onPointList(station)">
+
+                                <div class="point-layout-bar" :class="activePoint && activePoint.id == station.id ? 'active' : ''"  v-if="activeLine && activeLine.hasOwnProperty('all_points') && Array.isArray(activeLine['all_points']) && activeLine['all_points'].length > 0" @click="onPointList(station)">
+                                    <div class="point-layout-bar-title">
+                                        {{station.name}}
+                                        <el-tag v-if="station.category == '门架'" size="mini">{{station.category}}</el-tag>
+                                        <el-tag v-if="station.category == '收费站'" type="danger" size="mini">{{station.category}}</el-tag>
+                                        
+                                    </div>
+                                    <div class="point-layout-bar-more">
+                                        {{station.transtime}}
+                                    </div>
+                                </div>
+                            </el-timeline-item>
+                        </el-timeline>
+                        
+                        <!-- <div class="point-layout-bar" :class="activePoint && activePoint.id == station.id ? 'active' : ''" v-for="(station,s) in activeLine['all_points']" v-if="activeLine && activeLine.hasOwnProperty('all_points') && Array.isArray(activeLine['all_points']) && activeLine['all_points'].length > 0" @click="onPointList(station)">
+                            <div class="point-layout-bar-title">
+                                {{station.name}}
+                                <el-tag v-if="station.category == '门架'" size="mini">{{station.category}}</el-tag>
+                                <el-tag v-if="station.category == '收费站'" type="danger" size="mini">{{station.category}}</el-tag>
+                                
+                            </div>
+                            <div class="point-layout-bar-more">
+                                {{station.id}}
+                            </div>
+                        </div> -->
+                        <div class="point-layout-bar none"  v-if="activeLine && activeLine.hasOwnProperty('all_points') && Array.isArray(activeLine['all_points']) && activeLine['all_points'].length == 0" >
                             <div class="point-layout-bar-title">
                                 未选择路段
                             </div>
@@ -591,7 +662,30 @@ $bgColor:#fff;
                 
             }
             .ui-layout-center-footer{
-                
+                position: fixed;
+                // top: 0;
+                bottom: 1rem;
+                display:flex;
+                .ui-layout-center-footer-bar{
+                    display:flex;
+                    background-color:#fff;
+                    margin-right:10px;
+                    border-radius:4px;
+                    .ui-layout-center-footer-bar-item{
+                        padding:5px;
+                        display:flex;
+                        align-items:center;
+                        &>span{
+                            margin-right:4px;
+                            display:inline-block;
+                        }
+                        &>i{
+                            margin-right:4px;
+                            display:inline-block;
+                        }
+                        
+                    }
+                }
             }
         }
         .ui-layout-right{
@@ -604,8 +698,11 @@ $bgColor:#fff;
             display:grid;
             grid-template-rows: 30px auto 60px;
             .ui-layout-right-head{
-                padding:0.5rem;
-                background-color:$bgColor;
+                &>div{
+                    
+                    padding:0.5rem;
+                    background-color:$bgColor;
+                }
             }
             .ui-layout-right-body{
                 max-height:calc(100vh - 5rem);

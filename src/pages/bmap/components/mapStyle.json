@@ -35,5 +35,113 @@
         "stylers": {
             "visibility": "off"
         }
+    }, {
+        "featureType": "nationalway",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "on"
+        }
+    }, {
+        "featureType": "nationalway",
+        "elementType": "labels",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "tertiaryway",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "tertiaryway",
+        "elementType": "labels",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "tertiaryway",
+        "elementType": "labels.icon",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "fourlevelway",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "fourlevelway",
+        "elementType": "labels",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "fourlevelway",
+        "elementType": "labels.icon",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "arterial",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "arterial",
+        "elementType": "labels",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "arterial",
+        "elementType": "labels.icon",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "tertiarywaysign",
+        "elementType": "labels",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "tertiarywaysign",
+        "elementType": "labels.icon",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "HDLLBUS",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "provincialway",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "on"
+        }
+    }, {
+        "featureType": "provincialway",
+        "elementType": "labels",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "green",
+        "elementType": "geometry",
+        "stylers": {
+            "visibility": "off"
+        }
+    }, {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": {
+            "color": "#dee9e3ff"
+        }
     }]
 }
