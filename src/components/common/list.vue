@@ -767,6 +767,14 @@ export default {
       }
     }
   }
+  .el-table td .cell{
+    display: block;
+  }
+  .el-table td.is-right, .el-table th.is-right{
+    .cell.el-tooltip{
+      justify-content: flex-end;
+    }
+  }
 }
 
 .table-row-badge {
@@ -824,6 +832,7 @@ export default {
   background: rgba(64, 64, 64, .9411764705882353);
   color: #fff;
 }
+
 </style>
 
 
