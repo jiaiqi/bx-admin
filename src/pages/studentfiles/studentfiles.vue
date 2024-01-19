@@ -57,7 +57,7 @@
                             </span>
                         </el-col><el-col :span="8">
                             <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
-                                学号：<span class="font-weight-bold">{{detailData.student_no}}</span>
+                                学号：<span class="font-weight-bold">{{detailData.student_id}}</span>
                             </span>
                         </el-col><el-col :span="8">
                             <span class="grid-content bg-purple-dark student-info" style="margin-right:10px; ">
@@ -645,9 +645,9 @@ var chartPie=null;
                 ruleType:"eq",
                 value:this.detailData.sch_year
             },{
-                colName:'student_id',
+                colName:'student_no',
                 ruleType:"eq",
-                value:this.detailData.student_id
+                value:this.detailData.student_no
             },{
                 colName:'semester',
                 ruleType:"eq",
