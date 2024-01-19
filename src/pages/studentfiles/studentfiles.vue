@@ -645,9 +645,9 @@ var chartPie=null;
                 ruleType:"eq",
                 value:this.detailData.sch_year
             },{
-                colName:'student_no',
+                colName:'student_id',
                 ruleType:"eq",
-                value:this.detailData.student_no
+                value:this.detailData.student_id
             },{
                 colName:'semester',
                 ruleType:"eq",
