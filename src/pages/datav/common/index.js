@@ -13,6 +13,9 @@ const formatStyleData = (json) => {
       obj[_key] = `url(${getImagePath(json[key])})`;
     }
   }
+  if(obj['background-image']&&!obj['background-size'] ){
+		obj['background-size'] = '100% 100%'
+	}
   return obj;
 };
 

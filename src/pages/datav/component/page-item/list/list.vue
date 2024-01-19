@@ -21,12 +21,12 @@
     <!-- 表格 -->
     <div class="bx-table" v-else>
       <div class="table-head">
-        <div class="table-column" v-for="col in tableColumn">
+        <div class="table-column" v-for="col in tableColumn" :style="{color:setStyle&&setStyle.color,'font-size':setStyle&&setStyle['font-size']}">
           {{ col.label }}
         </div>
       </div>
       <div class="table-row" v-for="item in tableData" :class="{ stripe: striped }">
-        <div class="table-column" v-for="col in tableColumn">
+        <div class="table-column" v-for="col in tableColumn" :style="{color:setStyle&&setStyle.color,'font-size':setStyle&&setStyle['font-size']}">
           {{ formatValue(item, col) }}
         </div>
       </div>
@@ -37,6 +37,7 @@
 <script>
 import { $http } from "@/pages/datav/common/http.js";
 import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/card-group-cell.vue"
+import { formatStyleData } from "../../../common/index";
 
 export default {
   name: "data-view-list",
@@ -152,6 +153,9 @@ export default {
       }
       return colsMapDetailJson
 
+    },
+    setStyle(){
+      return formatStyleData(this.pageItem?.style_json||{})
     },
   },
   methods: {

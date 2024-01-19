@@ -29,7 +29,7 @@
     </div>
     <div class="cushome-right" v-if="inEditor">
       <div class="left-line" id="left-line"></div>
-      <!-- <property-pane
+      <property-pane
         :use-layout="useLayout"
         :pageConfg="pageConfg"
         :appNo="appNo"
@@ -41,7 +41,7 @@
         @preview="toPreview"
         @refresh="initPage"
         @screentype="screenType = $event"
-      ></property-pane> -->
+      ></property-pane>
     </div>
     <div
       class="cushome-content"
@@ -443,14 +443,14 @@ export default {
     }
     this.initColNum();
 
-    // if (!process?.env?.NODE_ENV === "development") {
+    if (!process?.env?.NODE_ENV === "development") {
     // 开发模式不监听窗口变化
     if (!this.inEditor && this.screenType === "PC") {
       window.addEventListener("resize", () => {
         this.resize();
       });
     }
-    // }
+    }
 
     setTimeout(() => {
       if (this.needLogin) {

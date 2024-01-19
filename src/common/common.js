@@ -8,6 +8,9 @@ const formatStyleData = json => {
 		let _key = key.replace('_', '-')
 		obj[_key] = json[key]
 	}
+	if(obj['background-image']){
+		obj['background-size'] = '100% 100%'
+	}
 	return obj
 }
 

@@ -4,7 +4,7 @@
       pageItem.widget_json.init_val || ""
     }}</span>
   </div>
-  <div v-else-if="widgetType === 'navigate'" class="text-btn">{{ widgetJson.init_val || '' }}</div>
+  <div v-else-if="widgetType === 'navigate'" class="text-btn" @click="navTo">{{ widgetJson.init_val || '' }}</div>
   <date-time v-else-if="widgetType === '时间日期'" :show-seconds="showSeconds" :parts-set="timeWidgetJson['parts-set']"
     :color="widgetColor"></date-time>
   <div class="full-screen" @click="openFullscreen" v-else-if="widgetType === 'fullscreen'" :style="[textWidgetJson]">
@@ -15,7 +15,7 @@
 
 <script setup>
 import { computed, ref, defineEmits } from "vue";
-import { formatStyleData } from "@/common/common.js";
+import { formatStyleData } from "../../common/index";
 import dateTime from "../widgets/date-time.vue";
 const props = defineProps({
   pageItem: Object,
@@ -38,9 +38,26 @@ const buttonWidgetJson = computed(() => {
     return widgetJson.value.button_cfg_json;
   }
 });
+const addTabByUrl = function (url, tab_title, urlParams, type) {
+  url = url || common_page_path[type] + '?data=' + urlParams;
+  let page = {
+    title: tab_title || "新标页签",
+    url,
+  };
 
-const navTo = ()=>{
+  if (window.top.tab && window.top.tab.addTab) {
+    window.top.tab.addTab(page);
+  } else {
 
+    let strWindowFeatures = "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
+    let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures)
+    newWindow.document.title = tab_title;
+  }
+}
+const navTo = () => {
+  if (widgetJson.value?.nav_url) {
+    addTabByUrl(widgetJson.value?.nav_url)
+  }
 }
 
 // 时间日期
@@ -153,7 +170,9 @@ window.addEventListener('resize', () => {
   align-items: center;
   cursor: pointer;
   transition: all .5s ease;
-  &:active{
+
+  &:active {
     transform: scale(1.1);
   }
-}</style>
+}
+</style>

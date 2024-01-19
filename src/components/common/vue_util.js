@@ -738,7 +738,11 @@ function init_util() {
       "hisVer": isHisVer || false
     };
     if(divCond){
-      divCond = JSON.parse(decodeURIComponent(divCond))
+      try {
+        divCond = JSON.parse(decodeURIComponent(divCond))
+      } catch (error) {
+        
+      }
       if(Array.isArray(divCond)&&divCond.length){
         if(divCond.length){
           params['divCond'] = divCond
