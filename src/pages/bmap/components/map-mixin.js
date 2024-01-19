@@ -12,7 +12,7 @@ import car from '../assets/icon/car.png'
 
 import { getBaiduMapApi} from './api.js'
 import { over } from 'lodash'
-let activeLineColor = 'rgb(255 167 0)'
+let activeLineColor = 'rgb(40, 189, 108)'
 // let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
 let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
 // let bMapApi = '/baiduApi/direction/v2/driving'
@@ -32,8 +32,8 @@ export default {
             carIconUrl:car,
             lineTemplate:{
                 enableEditing: false, // 是否启用线编辑，默认为false
-                strokeWeight: 8, // 折线宽度
-                strokeOpacity: 0.6, // 折线透明度 strokeOpacity
+                strokeWeight: 4, // 折线宽度
+                strokeOpacity: 0.7, // 折线透明度 strokeOpacity
                 strokeStyle:'solid',  //折线的样式，solid 或 dashed
             },
             BMap:null,
@@ -220,6 +220,11 @@ export default {
                     if(overlay['_data']['id'] == line.id && line['_editor_type'] == overlay['_data']['_editor_type']){
                         overlay.setStrokeColor(selectedColor);
                         overlay.setStrokeOpacity(1);
+                        self.$nextTick(() => {
+                        
+                        
+                            self.initViewport(overlay['_data'].points)
+                        })
                     }else{
                         overlay.setStrokeColor(overlay['_data'].strokeColor);
                         overlay.setStrokeOpacity(overlay['_data'].strokeOpacity);
@@ -809,7 +814,12 @@ export default {
                                 self.polylines.push(self.bxDeepClone(line))
                                 self.addLines(self.bxDeepClone(line))  // 添加路线
                             }else{
-                                this.$message.error(JSON.stringify(res));
+                                if(res){
+                                    this.$message.error(JSON.stringify(res));
+                                }else{
+                                    this.$message.error('路线规划接口无响应！');
+                                }
+                                
                             }
                         })
                     }
