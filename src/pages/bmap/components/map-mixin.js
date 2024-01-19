@@ -12,7 +12,7 @@ import car from '../assets/icon/car.png'
 
 import { getBaiduMapApi} from './api.js'
 import { over } from 'lodash'
-let activeLineColor = 'rgb(255 167 0)'
+let activeLineColor = 'rgb(40, 189, 108)'
 // let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
 let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
 // let bMapApi = '/baiduApi/direction/v2/driving'
@@ -32,8 +32,8 @@ export default {
             carIconUrl:car,
             lineTemplate:{
                 enableEditing: false, // 是否启用线编辑，默认为false
-                strokeWeight: 8, // 折线宽度
-                strokeOpacity: 0.8, // 折线透明度
+                strokeWeight: 4, // 折线宽度
+                strokeOpacity: 0.7, // 折线透明度 strokeOpacity
                 strokeStyle:'solid',  //折线的样式，solid 或 dashed
             },
             BMap:null,
@@ -198,6 +198,9 @@ export default {
             // })
             map.setMapStyle({styleJson: mapStyle.styleJson});
             this.BMap = map
+            this.BMap.addEventListener("click", function (e) {
+                console.log(e.point)
+            })
         },
         openIsEditor(){
             this.isEditor = true
@@ -214,9 +217,14 @@ export default {
             if(Array.isArray(overlays) && overlays.length>0){
                 for(let overlay of overlays){
 
-                    if(overlay['_data']['id'] == line.id){
+                    if(overlay['_data']['id'] == line.id && line['_editor_type'] == overlay['_data']['_editor_type']){
                         overlay.setStrokeColor(selectedColor);
                         overlay.setStrokeOpacity(1);
+                        self.$nextTick(() => {
+                        
+                        
+                            self.initViewport(overlay['_data'].points)
+                        })
                     }else{
                         overlay.setStrokeColor(overlay['_data'].strokeColor);
                         overlay.setStrokeOpacity(overlay['_data'].strokeOpacity);
@@ -334,18 +342,26 @@ export default {
                     linePoints.push(new BMap.Point(point.lng,point.lat))
                 }
             }
+            let strokeStyle = line.strokeStyle
+            if(line['_editor_type'] == 'driving_min'){
+                strokeStyle = 'dashed'
+            }
             let polyline = new BMap.Polyline(
                 linePoints, 
                 {strokeColor:line.strokeColor, 
                 strokeWeight:line.strokeWeight, 
-                strokeOpacity:line.strokeOpacity
+                strokeOpacity:line.strokeOpacity,
+                strokeStyle:strokeStyle,
+                enableClicking:true
                 });
-                if(self.activeLine && self.activeLine.id == line.id){
+                if(self.activeLine && self.activeLine.id == line.id && self.activeLine['_editor_type'] == line['_editor_type']){
                     
                     polyline = new BMap.Polyline(linePoints, 
                     {   strokeColor:selectedColor, 
                         strokeWeight:line.strokeWeight, 
-                        strokeOpacity:1
+                        strokeOpacity:1,
+                        strokeStyle:strokeStyle,
+                        enableClicking:true
                     });
 
                     // 如果是绘制线的时候 进入线 标点绘制逻辑
@@ -355,22 +371,26 @@ export default {
             this.BMap.addOverlay(polyline);
             // polyline.setTitle("Custom Data");
             polyline['_data'] = this.bxDeepClone(line) 
-            this.BMap.addEventListener("click", function (e) {
-                console.log(e.point)
-                    let overlay = e.overlay
+            // click
+                // this.BMap.addEventListener("click", function (e) {
+            polyline.addEventListener("click", function (type, target, point, pixel) {
+                    console.log(type.point,type.target)
+                    let overlay = type.target
+
                     let title = ''
-                    
+                    console.log('点击线',type, target, point, pixel)
                     if(overlay && overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'line'){
                         
-                        // console.log('点击线',overlay['_data'])
+                        
                         // self.$set(self,'activeLine',overlay['_data'])
                         self.$set(self,'activePoint',null)  // 避免视口缩放冲突，清除已选中的点
                         self.onTollLink(overlay['_data'])
                         title = overlay['_data'].id
                         
-                       
-                        if (polyline && e.overlay === polyline) {
+                        console.log(overlay['_data'],overlay['_data']['_editor_type'],polyline['_data']['_editor_type'],overlay['_data']['_editor_type'] == polyline['_data']['_editor_type'])
+                        if (polyline && overlay === polyline && overlay['_data'] && polyline['_data'] && overlay['_data']['_editor_type'] == polyline['_data']['_editor_type'] && overlay['_data']['id'] == polyline['_data']['id']) {
                             // 修改线的样式
+                            console.log(overlay)
                             polyline.setStrokeColor(selectedColor);
                             polyline.setStrokeOpacity(1);
                             self.removeOverlays(overlay['_data'])
@@ -379,23 +399,10 @@ export default {
                             if (polyline) {
                               polyline.setStrokeColor(polyline['_data'].strokeColor);
                               polyline.setStrokeOpacity(polyline['_data'].strokeOpacity);
+                              console.log(polyline)
                             }
                         }
     
-                         
-                        if(overlay){
-                            let opts = {
-                                width: 80,     // 信息窗口宽度
-                                height: 60,    // 信息窗口高度
-                                title: "线"  // 信息窗口标题
-                            }   
-                            // 获取线的中心点
-                            
-                            let center = {lng:`e.point.lng`,lat:`e.point.lat`}
-                            let point = new BMap.Point(e.point.lng, e.point.lat);  
-                            // let infoWindow = new BMap.InfoWindow(title, opts);  // 创建信息窗口对象
-                            // self.BMap.openInfoWindow(infoWindow, point);        // 打开信息窗口
-                        }
                     }
                     
                     
@@ -518,7 +525,7 @@ export default {
                                     let l = pointOverlays[pointIndex]
                                     let zIndex = pointIndex+2
                                     let label = l.getLabel()
-                                    console.log('dianji',label)
+                                    // console.log('dianji',label)
                                     if(l['_data'].id == overlay['_data'].id){
                                         // 更新 marker 图标
                                         label.setStyle({                              // 设置选中label的样式
@@ -529,7 +536,7 @@ export default {
                                             zIndex:999
                                         })
                                         let activeIconPath = l['_data']['icon_active']
-                                        console.log('activeIconPath 1',overlay['_data'],activeIconPath)
+                                        // console.log('activeIconPath 1',overlay['_data'],activeIconPath)
                                         let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {    
                                             anchor: new BMap.Size(0, 0),      
                                             imageOffset: new BMap.Size(0, 0),   // 设置图片偏移   
@@ -548,7 +555,7 @@ export default {
                                         })
                                         // 更新 marker 图标
                                         let activeIconPath = l['_data']['icon']
-                                        console.log('activeIconPath 0',overlay['_data'],activeIconPath)
+                                        // console.log('activeIconPath 0',overlay['_data'],activeIconPath)
                                         let activeIcon =  new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {    
                                             anchor: new BMap.Size(0, 0),      
                                             imageOffset: new BMap.Size(0, 0),   // 设置图片偏移   
@@ -655,9 +662,22 @@ export default {
                     newLatAndLng['lat'] = `${p.lat}`
                     newLatAndLng['lng'] = `${p.lng}`
                     this.requestUpdatePoint(p)
+                    self.updatePoints = self.updatePoints.filter(item => item.id !== p.id) // 保存后清空该点未保存的 记录
                   }).catch((er) => {
                     console.log(er)
-                    self.updatePoints.push(p)
+                    let ids = self.updatePoints.map(item => item.id)
+                    console.log(ids)
+                    if(ids.includes(p.id)){
+                        for(let up of self.updatePoints){
+                            if(up.id == p.id){
+                                up['lng'] = `${p.lng}`
+                                up['lag'] = `${p.lag}`
+                            }
+                        }
+                    }else{
+                        self.updatePoints.push(p)
+                    }
+                    
                   })
             }
             
@@ -725,19 +745,7 @@ export default {
                     params['waypoints'] = `${loadLine.params['waypoints_str']}`
                     params['ak'] = `${loadLine.params['ak']}`
                     url = `${mapApi}`
-                    // let keys = Object.keys(params)
-                    // if(keys.length > 0){
-                    //   for(let i in keys){
-                    //     let key = keys[i]
-                    //     if(i == 0){
-                    //       url += `?${key}=${params[key]}`
-                    //     }else{
-                    //       url += `&${key}=${params[key]}`
-                    //     }
-                    //   }
-                    // }
-                    // console.log('getBaiduMapApi',url)
-                    // this.requestDriving(url,loadLine,i)   // 请求 jsapi 路线规划
+                    
                     if(Array.isArray(loadLine['points']) && loadLine['points'].length > 0){
                         getBaiduMapApi(url,params).then(res => {
                             // console.log('/direction/v2/driving res',res.data)
@@ -780,6 +788,7 @@ export default {
                                         strokeColor:color.color,  // linear-gradient(#ff0000 0%, #ffff00 50%, #0000ff 100%)
                                         selectedColor: color.selectedColor,
                                         uid:`${loadLine.uid}`,
+                                        strokeStyle:'solid',
                                         ...self.lineTemplate
                                         
                                 }
@@ -801,10 +810,16 @@ export default {
                                     return item
                                 })
                                 line['_type'] = 'line'
+                                line['_editor_type'] = loadLine['_editor_type']
                                 self.polylines.push(self.bxDeepClone(line))
                                 self.addLines(self.bxDeepClone(line))  // 添加路线
                             }else{
-                                this.$message.error(JSON.stringify(res));
+                                if(res){
+                                    this.$message.error(JSON.stringify(res));
+                                }else{
+                                    this.$message.error('路线规划接口无响应！');
+                                }
+                                
                             }
                         })
                     }
@@ -813,9 +828,15 @@ export default {
                 
             } 
         },
+        onEditorType(type){
+            let lines = this.polylines.filter(item => item['_editor_type'] == type)
+            if(Array.isArray(lines) && lines.length > 0){
+                this.onLineList(lines[0])
+            }
+        },
         onLineList(line){
             let self = this
-            if(this.activeLine && this.activeLine.id !== line.id){
+            if(this.activeLine && this.activeLine.uid !== line.uid){
                 this.$set(this,'activeLine',line)
                 this.$set(this,'activePoint',null);
             }else if(!this.activeLine){
