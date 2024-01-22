@@ -4,6 +4,7 @@ import startIcon from '../assets/icon/start.png'
 import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
+import custom from '../assets/icon/custom.png'
 
 let waypointsLen = 20  // 最大途径点 包含起终点数量
 export default {
@@ -17,6 +18,9 @@ export default {
     },
     data(){
         return {
+            newPoints:[],
+            activeNewPoint:null,
+            isEditorNews:false,
             isEditor:false,
             activeDeptNo:'',
             activeTollLink:null,
@@ -70,6 +74,10 @@ export default {
                     "icon_size":{
                         w:42,
                         h:42
+                    },
+                    'icon_anchor':{
+                        w:21,
+                        h:21
                     }
                 }
                 let end = {
@@ -85,6 +93,10 @@ export default {
                     "icon_size":{
                         w:42,
                         h:42
+                    },
+                    'icon_anchor':{
+                        w:21,
+                        h:21
                     }
                 }
                 obj['start'] = start
@@ -120,30 +132,42 @@ export default {
                                     w:25,
                                     h:30
                                 }
+                                point['icon_anchor'] = {
+                                    w:12.5,
+                                    h:30
+                                }
                                 break;
                             case '收费站':
                                 point['icon'] = toll
                                 point['icon_active'] = tollActive
                                 point["icon_size"]={
-                                    w:25,
-                                    h:30
+                                    w:30,
+                                    h:36
                                 }
-                                
+                                point['icon_anchor'] = {
+                                    w:15,
+                                    h:36
+                                }
                                 break;
                         
                             default:
+                                
                                 break;
                         }
 
                         // 路径编辑业务 格式处理 都是门架
-                        if(this.modeUrl == '/bmap/editor/' && this.no){
-                            point['icon'] = gantry
-                            point['icon_active'] = gantryActive
-                            point["icon_size"]={
-                                w:25,
-                                h:30
-                            }
-                        }
+                        // if(this.modeUrl == '/bmap/editor/' && this.no){
+                        //     point['icon'] = gantry
+                        //     point['icon_active'] = gantryActive
+                        //     point["icon_size"]={
+                        //         w:25,
+                        //         h:30
+                        //     }
+                        //     point['icon_anchor'] = {
+                        //         w:12.5,
+                        //         h:30
+                        //     }
+                        // }
                          return  this.bxDeepClone(point)
                     })
                 }
@@ -186,17 +210,26 @@ export default {
                                                 w:25,
                                                 h:30
                                             }
+                                            point['icon_anchor'] = {
+                                                w:12.5,
+                                                h:30
+                                            }
                                             break;
                                         case '收费站':
                                             point['icon'] = toll
                                             point['icon_active'] = tollActive
                                             point["icon_size"]={
-                                                w:25,
-                                                h:30
+                                                w:30,
+                                                h:36
+                                            }
+                                            point['icon_anchor'] = {
+                                                w:15,
+                                                h:36
                                             }
                                             break;
                                     
                                         default:
+
                                             break;
                                     }
                                     return  this.bxDeepClone(point)
@@ -363,6 +396,7 @@ export default {
         this.initMap()
         if(this.modeUrl == '/bmap/check'){
             this.isEditor = true
+            this.getNewPoints()
         }else if(this.modeUrl == '/bmap/editor/' && this.no){
             
             this.isEditor = false
@@ -386,13 +420,22 @@ export default {
                 ruleType:'eq',
                 value:self.no
             }]
+            
             let relationCondition = {}
             let page = null
             let order = null
-            if(!self.no){
+            let entime = this.$route.query.entime
+            let extime = this.$route.query.extime
+            if(!self.no || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
             }
+            
+            let divCond =  [{
+                "colName":"createtime",
+                "ruleType":"in",
+                "value":[`${entime},${extime}`]
+            }]
             self.select(
                 srv,
                 conds,
@@ -406,6 +449,11 @@ export default {
                 relationCondition,
                 false,
                 null,
+                null,
+                null,
+                null,
+                null,
+                divCond
                 // srvAuth
               ).then(res => {
                 // console.log('分公司',res.data)
@@ -442,10 +490,17 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            if(!passid){
+            let entime = this.$route.query.entime
+            let extime = this.$route.query.extime
+            if(!passid || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
             }
+            let divCond =  [{
+                "colName":"createtime",
+                "ruleType":"in",
+                "value":[`${entime},${extime}`]
+            }]
             self.select(
                 srv,
                 conds,
@@ -459,6 +514,11 @@ export default {
                 relationCondition,
                 false,
                 null,
+                null,
+                null,
+                null,
+                null,
+                divCond
                 // srvAuth
               ).then(res => {
                 // console.log('分公司',res.data)
@@ -479,6 +539,94 @@ export default {
                     console.log('查询门架|收费站等 异常',res)
                 }
               })
+        },
+        newPointRequestUpdatePoint(e){
+            let self = this
+            console.log('修改点坐标',e)
+            let bxRequests = []
+            let request = {
+                srvApp:'aud',
+                serviceName:'',
+                data:[],
+                condition:[{
+                    colName:'id',
+                    ruleType:'eq',
+                    value:e.id
+                }]
+            }
+            if(e && e.id){
+                switch (e['_dev_point_type']) {
+                    case '门架':
+                        request['serviceName'] = 'srvaud_tollgrantry_update'
+                        request.data.push({
+                            lat:`${e.lat}`,
+                            lng:`${e.lng}`
+                        })
+                        break;
+                    case '收费站':
+                        request['serviceName'] = 'srvaud_tollstation_update'
+                        request.data.push({
+                            lat:`${e.lat}`,
+                            lng:`${e.lng}`
+                        })
+                        break;
+                    case 'end':
+                        console.log('起终点修改',e)
+                        request['serviceName'] = 'srvaud_tolllink_update'
+                        
+                        request.data.push({
+                            endlat:`${e.lat}`,
+                            endlng:`${e.lng}`
+                        })
+                        break;
+                    case 'start':
+                        console.log('起终点修改',e)
+                        request['serviceName'] = 'srvaud_tolllink_update'
+                        
+                        request.data.push({
+                            startlat:`${e.lat}`,
+                            startlng:`${e.lng}`
+                        })
+                        break;
+                
+                    default:
+                        break;
+                }
+                bxRequests.push(self.bxDeepClone(request))
+            }
+            if(Array.isArray(bxRequests) && bxRequests.length > 0){
+                self.$alert('保存新门架位置, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    callback: action => {
+                        console.log(action)
+                        if(action == 'confirm'){
+                            self.operate(bxRequests).then(response => {
+                                let state = response.body.state;
+                                console.log(state,e['_dev_point_type'])
+                                if ("SUCCESS" == state) {
+                  
+                                    self.$message({
+                                        type: 'success',
+                                        message: '保存成功!'
+                                    });
+                                    self.getNewPoints()
+                                    
+                                } else {
+                                  this.$message({
+                                    type: "error",
+                                    message: response.body.resultMessage
+                                  });
+                                }
+                            });
+                        }
+                        
+                    }
+                  })
+                
+                
+                
+            }
+            
         },
         submitUpdatePoints(){
             let self = this
@@ -688,9 +836,7 @@ export default {
                             default:
                                 break;
                         }
-                        //   if(this.activeLine){
-                        //     this.getAllStations(this.activeLine.id)
-                        //   }
+                        
                           
                     } else {
                       this.$message({
@@ -699,19 +845,7 @@ export default {
                       });
                     }
                   });
-                // this.$confirm('保存新位置, 是否继续?', '提示', {
-                //     confirmButtonText: '确定',
-                //     cancelButtonText: '取消',
-                //     type: 'warning'
-                //   }).then(() => {
-                    
-                    
-                //   }).catch(() => {
-                //     this.$message({
-                //       type: 'info',
-                //       message: '已取消保存'
-                //     });          
-                //   });
+                
                 
             }
             
@@ -726,9 +860,69 @@ export default {
             
             self.onLineList(e)
         },
-        // activeTollLink(e){
-        //     // 选中路段
-        // },
+        getNewPoints(){
+            // 新增门架点
+            // 查询所有分公司下路段
+            let self = this
+            // category取值：门架、收费站
+            // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
+            // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let srv = 'srvaud_tollgrantry_station_new_select';
+            let srvAuth = 'aud'
+            let conds = [{
+                colName:'company_no',
+                ruleType:'eq',
+                value:self.activeDeptNo
+            }]
+            let relationCondition = {}
+            let page = null
+            let order = null
+            if(!self.activeDeptNo && !self.activeLine && !self.activeLine.road_no){
+                console.log('未选择分公司')
+                return 
+            }else if(self.activeLine && self.activeLine.road_no){
+                conds.push({
+                    colName:'road_no',
+                    ruleType:'eq',
+                    value:self.activeLine.road_no
+                })
+            }
+            self.select(
+                srv,
+                conds,
+                page,
+                order,
+                null,
+                null,
+                srvAuth,
+                null,
+                null,
+                relationCondition,
+                false,
+                null,
+                // srvAuth
+              ).then(res => {
+                // console.log('分公司',res.data)
+                res = res.data
+                if(res.state == "SUCCESS"){
+                    self.newPoints = res.data.map(item => {
+                        let p = self.bxDeepClone(item)
+                        p['icon_size'] = p['icon_size'] || {w:25,h:38}
+                        p['icon_anchor'] = p['icon_anchor'] || {w:p['icon_size']/2,h:p['icon_size'].h}
+                        p['icon'] = custom
+                        p['icon_active'] = custom
+                        p['_type'] = 'point'
+                        p['_editor'] = 'add'
+                        p['_dev_point_type'] = p['category']
+                        return p
+                    })
+                    console.log('新增门架',res.data)
+                }else{
+                    this.$message.error(JSON.stringify(res));
+                    // console.log('查询收费路段 异常',res)
+                }
+              })
+        },
         getAllTolllinks(){
             // 查询所有分公司下路段
             let self = this
@@ -864,6 +1058,7 @@ export default {
                     this.$set(this,'tolllinks',[])
                     this.$set(this,'loadStations',[])
                     this.getAllTolllinks()
+                    this.getNewPoints()
                 })
             }
         },
@@ -873,6 +1068,8 @@ export default {
                 console.log('路段更新了',nval)
                 this.$nextTick(() => {
                     // this.getAllTolllinks()
+                    this.getNewPoints()
+                    
                 })
             }
         },
@@ -902,7 +1099,41 @@ export default {
                 }
                 
             }
-        }
+        },
+        "isEditorNews":{
+            deep:true,
+            handler:function(nval,oval){
+                console.log('新增门架编辑',nval)
+                if(nval == true && Array.isArray(this.newPoints) && this.newPoints.length > 0){
+                    this.$nextTick(() => {
+
+                       this.addNewPointMarkers(this.newPoints)
+                    })
+                }else if(nval === false){
+                    this.$nextTick(() => {
+
+                        this.getAllTolllinks()
+                        
+                     })
+                }
+                
+            }
+        },
+        "newPoints":{
+            deep:true,
+            handler:function(nval,oval){
+                console.log('新增门架列表更新',nval)
+                if(Array.isArray(nval) && this.isEditorNews){
+                    this.$nextTick(() => {
+
+                       this.addNewPointMarkers(nval)
+                    })
+                }
+                
+            }
+        },
+        
+        
     }
   
   };

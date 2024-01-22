@@ -72,9 +72,23 @@
             </div>
             <div class="ui-layout-center">
                 <div class="ui-layout-center-head">
+                    <div class="ui-layout-tooltip">
+                        <div class="ui-layout-tooltip-info" v-if="newPoints.length > 0 && modeUrl == '/bmap/check'">
+                            <i class="el-icon-warning"></i>
+                            <span>
+                                新增门架提示：系统检测到<span style="color:red;font-size:1.5rem;">{{`${newPoints.length}`}}</span>个新增门架信息，请立即前往校准。
+                                <el-button v-if="!isEditorNews" type="primary" size="mini" @click="isEditorNews = !isEditorNews">前往校准</el-button>
+                                <el-button v-if="isEditorNews" type="danger" size="mini" @click="isEditorNews = !isEditorNews" plain>返回</el-button>
+                            </span>
+                            
+                        </div>
+                        
+                    </div>
+                    <div>
+                        <el-button icon="el-icon-question" circle @click="showHelp = true"  v-if="modeUrl == '/bmap/check'"></el-button>
+                        <el-button type="primary" v-if="updatePoints.length > 0 && modeUrl == '/bmap/check'" @click="submitUpdatePoints"  >保存</el-button>
+                    </div>
                     
-                    <el-button icon="el-icon-question" circle @click="showHelp = true"  v-if="modeUrl == '/bmap/check'"></el-button>
-                    <el-button type="primary" v-if="updatePoints.length > 0 && modeUrl == '/bmap/check'" @click="submitUpdatePoints"  >保存</el-button>
                 </div>
                 <div class="ui-layout-center-body">
                 </div>
@@ -103,12 +117,43 @@
             </div>
             <div class="ui-layout-right">
                 <div class="ui-layout-right-head">
-                    <div v-if="isEditor" style="background-color:#fff;">门架列表</div>
+                    <div v-if="isEditor" style="background-color:#fff;">门架列表
+                        <el-tag type="danger" style="color:#fff;" size="mini" effect="dark" :color="'red'" v-if="modeUrl == '/bmap/check' && isEditorNews == true">NEW</el-tag>
+                        <div  v-if="modeUrl == '/bmap/check' && isEditorNews == true" style="padding:0;color:#ddd;font-size:12px;">请选择门架进行操作</div>
+                    </div>
+                    
                     
                     <!-- <el-button icon="el-icon-edit" v-if="isEditor == false" @click="openIsEditor">校准</el-button> -->
                 </div>
                 <div class="ui-layout-right-body">
-                    <el-card class="box-card" v-if="modeUrl == '/bmap/check'">
+                    <el-card class="box-card" v-if="modeUrl == '/bmap/check' && isEditorNews == true">
+                        <!-- 新增门架列表 -->
+                        <div class="point-layout-bar" :class="activeNewPoint && activeNewPoint.id == station.id ? 'active' : ''" v-for="(station,s) in newPoints" v-if="newPoints.length > 0" @click="onClickNewPoint(station)">
+                            <div class="point-layout-bar-title">
+                                {{station.name}}
+                                <!-- <span>{{station.category}}</span> -->
+                                <el-tag v-if="station.category == '门架'" size="mini">{{station.category}}</el-tag>
+                                <el-tag v-if="station.category == '收费站'" type="danger" size="mini">{{station.category}}</el-tag>
+                                
+                            </div>
+                            <div class="point-layout-bar-more">
+                                {{station.id}}
+                            </div>
+                            <div class="point-layout-bar-more" style="color:#ef8514;" v-if="activeNewPoint && activeNewPoint.id == station.id && (!activeNewPoint.lng || !activeNewPoint.lat)">
+                                请点击地图放置门架位置！
+                            </div>
+                        </div>
+                        <div class="point-layout-bar none"  v-if="newPoints.length == 0" >
+                            <div class="point-layout-bar-title">
+                                未选择路段
+                            </div>
+                            <div class="point-layout-bar-more">
+                                暂无门架可显示
+                            </div>
+                        </div>
+                    </el-card>
+                    <el-card class="box-card" v-if="modeUrl == '/bmap/check' && isEditorNews == false">
+                        <!-- 已校准门架列表 -->
                         <div class="point-layout-bar" :class="activePoint && activePoint.id == station.id ? 'active' : ''" v-for="(station,s) in loadStations" v-if="loadStations.length > 0" @click="onPointList(station)">
                             <div class="point-layout-bar-title">
                                 {{station.name}}
@@ -130,6 +175,7 @@
                             </div>
                         </div>
                     </el-card>
+                    
                     <el-card class="box-card" v-if="modeUrl == '/bmap/editor/' && isEditor">
                         <!-- 路径可视化门架 -->
                         <el-timeline v-if="activeLine && activeLine.hasOwnProperty('all_points') && Array.isArray(activeLine['all_points']) && activeLine['all_points'].length > 0" style="padding-left:5px;">
@@ -588,6 +634,9 @@ $uiBarBorderColor:#eee;
 $uiBarActiveBorderColor:$activeColor;
 $uiBarActiveBgColor:$activeBgColor;
 $bgColor:#fff;
+$infoColorLight:rgb(217, 236, 255);
+$borderRadius:6px;
+$fontColor:#323232;
 .ui-layout{
         
         // height:400px;
@@ -656,7 +705,21 @@ $bgColor:#fff;
             .ui-layout-center-head{
                 padding:1rem;
                 display:flex;
-                justify-content: end;
+                justify-content: space-between;
+                // .<div class="ui-layout-center-head">
+                //     <div class="ui-layout-tooltip">
+                //         <div class="ui-layout-tooltip-info">
+                .ui-layout-tooltip{
+                    .ui-layout-tooltip-info{
+                        background-color:$infoColorLight;
+                        display:flex;
+                        border-radius:$borderRadius;
+                        align-items:center;
+                        color:$fontColor;
+                        padding:5px;
+                        line-height:30px;
+                    }
+                }
             }
             .ui-layout-center-body{
                 
@@ -702,7 +765,7 @@ $bgColor:#fff;
             max-height:calc(100vh - 2rem);
             padding:1rem;
             display:grid;
-            grid-template-rows: 30px auto 60px;
+            grid-template-rows: auto auto 60px;
             .ui-layout-right-head{
                 &>div{
                     
