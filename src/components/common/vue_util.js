@@ -539,11 +539,11 @@ function init_util() {
   };
 
   /**查询列表*/
-  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType,rdt) {
+  Vue.prototype.select = function (service_name, condition, page, order, group, mapcondition, app, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType,rdt,divCondition) {
     var url = this.getServiceUrl("select", service_name, app);
      //2023.10.20增加use_type参数 解决行按钮权限丢失问题
      //2023年11月13日增加rdt参数 目前值只有ttd 代表后端查找符合条件的数据的最顶层节点返回回来
-    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType || 'list',rdt)
+    return this.doSelect(url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth,vpageNo,useType || 'list',rdt,divCondition)
   }
 
   /***
@@ -596,7 +596,7 @@ function init_util() {
   }
 
   /**查询*/
-  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo,use_type,rdt) {
+  Vue.prototype.doSelect = function (url, service_name, condition, page, order, group, mapcondition, isproc, columns, relationCondition, draft, pageType, srvAuth, vpageNo,use_type,rdt,divCondition) {
     var query = {
       "serviceName": service_name,
       "colNames": columns || ['*'],
@@ -608,6 +608,9 @@ function init_util() {
       "vpage_no":vpageNo,
       use_type:use_type     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
+    if(divCondition){
+      query['div_cond'] = divCondition
+    }
     if(query.condition.length){
       let divCond = query.condition.filter(item => item.use_div_calc === '是');
       if(divCond?.length){
