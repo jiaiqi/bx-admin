@@ -1142,10 +1142,10 @@ export default {
         },
         onLineList(line){
             let self = this
-            if(this.activeLine && this.activeLine.uid !== line.uid){
+            if(this.activeLine && line && this.activeLine.uid !== line.uid){
                 this.$set(this,'activeLine',line)
                 this.$set(this,'activePoint',null);
-            }else if(!this.activeLine){
+            }else if(!this.activeLine && line){
                 this.$set(this,'activeLine',line)
             }
             self.$nextTick(() => {

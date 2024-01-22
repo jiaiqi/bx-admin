@@ -892,7 +892,7 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            if(!self.activeDeptNo && !self.activeLine && !self.activeLine.road_no){
+            if(!self.activeDeptNo && !self.activeLine){
                 console.log('未选择分公司')
                 return 
             }else if(self.activeLine && self.activeLine.road_no){

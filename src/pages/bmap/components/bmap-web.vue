@@ -105,7 +105,7 @@
                     </div>
                     <div class="ui-layout-center-footer-bar" v-if="modeUrl == '/bmap/editor/'">
                         <div class="ui-layout-center-footer-bar-item" v-for="(point,i) in pointsColors">
-                            <span :style="`color:${activeLine && activeLine['_editor_type'] == line.type ? 'rgb(40, 189, 108)' : point.color};`">
+                            <span :style="`color:${activePoint && activePoint['_editor_type'] == point.type ? 'rgb(40, 189, 108)' : point.color};`">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
   <circle cx="8" cy="8" r="8"/>
 </svg>
