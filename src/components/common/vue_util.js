@@ -609,7 +609,7 @@ function init_util() {
       use_type:use_type     //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
     if(divCondition){
-      query['div_cond'] = divCondition
+      query['divCond'] = divCondition
     }
     if(query.condition.length){
       let divCond = query.condition.filter(item => item.use_div_calc === '是');
