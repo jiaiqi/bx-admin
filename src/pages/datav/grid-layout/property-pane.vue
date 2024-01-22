@@ -3,113 +3,47 @@
     <el-tabs type="border-card" v-loading="pageLoading" v-model="activeTab">
       <el-tab-pane label="页面" name="页面">
         <div class="tab-content">
-          <simple-update
-            name="list-update"
-            :defaultValues="pageConfg"
-            :navAfterSubmit="false"
-            :service="pageService"
-            :pk="pageId"
-            pkCol="id"
-            @executor-complete="onPageUpdate"
-            @form-loaded="pageLoading = false"
-            v-if="pageId"
-          >
+          <simple-update name="list-update" :defaultValues="pageConfg" :navAfterSubmit="false" :service="pageService"
+            :pk="pageId" pkCol="id" @executor-complete="onPageUpdate" @form-loaded="pageLoading = false" v-if="pageId">
           </simple-update>
-          <simple-add
-            :service="pageService"
-            :navAfterSubmit="false"
-            @executor-complete="onPageUpdate($event, 'add')"
-            @form-loaded="pageLoading = false"
-            @submitted2mem=""
-            v-else
-          >
+          <simple-add :service="pageService" :navAfterSubmit="false" @executor-complete="onPageUpdate($event, 'add')"
+            @form-loaded="pageLoading = false" @submitted2mem="" v-else>
           </simple-add>
         </div>
       </el-tab-pane>
-      <el-tab-pane
-        label="组件"
-        name="组件"
-        v-if="componentId || (!componentId && pageId && currentItem)"
-        v-loading="componentLoading"
-      >
-        <simple-update
-          ref="compFormUpdate"
-          name="list-update"
-          :service="componentService"
-          :navAfterSubmit="false"
-          :pk="componentId"
-          pkCol="id"
-          @action-complete="onComponentUpdate"
-          @form-loaded="
+      <el-tab-pane label="组件" name="组件" v-if="componentId || (!componentId && pageId && currentItem)"
+        v-loading="componentLoading">
+        <simple-update ref="compFormUpdate" name="list-update" :service="componentService" :navAfterSubmit="false"
+          :pk="componentId" pkCol="id" @action-complete="onComponentUpdate" @form-loaded="
             (componentLoading = false),
-              (componentLoaded = true),
-              setCompServiceCfg()
-          "
-          v-if="componentId"
-        >
+            (componentLoaded = true),
+            setCompServiceCfg()
+            " v-if="componentId">
         </simple-update>
-        <simple-add
-          ref="compForm"
-          :pageName="'list-duplicate'"
-          :service="componentService"
-          :defaultValues="addCompDefaultValues"
-          @executor-complete="onComponentUpdate($event, 'add')"
-          @form-loaded="componentLoading = false"
-          :navAfterSubmit="false"
-          @submitted2mem=""
-          v-else-if="showAddComponent"
-        >
+        <simple-add ref="compForm" :pageName="'list-duplicate'" :service="componentService"
+          :defaultValues="addCompDefaultValues" @executor-complete="onComponentUpdate($event, 'add')"
+          @form-loaded="componentLoading = false" :navAfterSubmit="false" @submitted2mem="" v-else-if="showAddComponent">
         </simple-add>
       </el-tab-pane>
-      <el-tab-pane
-        label="组件配置"
-        name="组件配置"
-        v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk"
-      >
-        <simple-update
-          name="list-update"
-          :service="compServiceCfg.service"
-          :navAfterSubmit="false"
-          :pk="compServiceCfg.pk"
-          :pkCol="compServiceCfg.pkCol"
-          @action-complete="onComponentUpdate"
-        >
+      <el-tab-pane label="组件配置" name="组件配置" v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk">
+        <simple-update name="list-update" :service="compServiceCfg.service" :navAfterSubmit="false"
+          :pk="compServiceCfg.pk" :pkCol="compServiceCfg.pkCol" @action-complete="onComponentUpdate">
         </simple-update>
       </el-tab-pane>
       <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px">
-          <el-switch
-            v-model="screentype"
-            active-text="移动端"
-            inactive-text="PC端"
-            active-value="mobile"
-            inactive-value="PC"
-          >
+          <el-switch v-model="screentype" active-text="移动端" inactive-text="PC端" active-value="mobile" inactive-value="PC">
           </el-switch>
         </div>
-        <div
-          style="
+        <div style="
             padding: 20px;
             height: calc(100% - 80px);
             display: flex;
             justify-content: center;
             align-items: flex-end;
-          "
-        >
-          <el-button
-            size="mini"
-            type="primary"
-            style="margin-right: 10px"
-            @click="clickSave"
-            >保存</el-button
-          >
-          <el-button
-            size="mini"
-            type="primary"
-            style="margin: 10px 10px 0 0"
-            @click="toPreview"
-            >预览</el-button
-          >
+          ">
+          <el-button size="mini" type="primary" style="margin-right: 10px" @click="clickSave">保存</el-button>
+          <el-button size="mini" type="primary" style="margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -458,9 +392,8 @@ export default {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutInfo.layout_no,
-            layout_name: `${item?.data?.com_type_name}_${
-              i + 1
-            }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
+            layout_name: `${item?.data?.com_type_name}_${i + 1
+              }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
             seq: item.timestamp || i + 1, //改用时间戳做关联 相对更可靠
             pos_x: item.x,
             pos_y: item.y,
@@ -558,6 +491,7 @@ export default {
       this.$emit("preview");
     },
     async onPageUpdate(event, type) {
+      console.log('onPageUpdate', event, type);
       debugger;
       if (event?.data?.state === "SUCCESS") {
         const response = event?.data?.response?.[0]?.response?.effect_data;
@@ -647,7 +581,7 @@ export default {
       this.$emit("refresh", "page", event);
     },
     // 更新组件的宽高以及定位
-    async updateComponent(event) {},
+    async updateComponent(event) { },
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
@@ -732,19 +666,27 @@ export default {
             case "tabs": //
               compObj.serviceName = "srvpage_cfg_com_tabs_add";
               break;
+            case "grid": //
+              compObj.serviceName = "srvpage_cfg_com_grid_update";
+              compObj.condition = [{
+                colName:'grid_no',
+                ruleType:'eq',
+                value:data?.grid_no
+              }]
+              break;
           }
           addCompArr.push(compObj);
         });
-        const compRes = await this.httpOperate("batch_add", addCompArr);
+        let compRes = await this.httpOperate("batch_add", addCompArr);
 
         let addObj = {
           serviceName: "srvpage_cfg_page_component_add",
           srvApp: "config",
           data: [],
         };
-        console.log(compRes);
 
         layout.forEach((item, index) => {
+          debugger
           const comp = compRes[index]?.response?.effect_data?.[0];
           const data = {
             com_name: item.data.chart_name,
@@ -786,6 +728,9 @@ export default {
             case "tabs":
               data.tabs_no = comp?.tabs_no;
               break;
+            case 'grid':
+              data.grid_no = comp?.grid_no
+              break
           }
           addObj.data.push(data);
         });
@@ -846,8 +791,7 @@ export default {
     height: 100%;
   }
 
-  ::v-deep .el-tabs--border-card {
-  }
+  ::v-deep .el-tabs--border-card {}
 
   ::v-deep .el-tabs__content {
     height: 100%;

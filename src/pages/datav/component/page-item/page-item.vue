@@ -20,6 +20,7 @@
     <page-widget v-if="pageItem.com_type === '控件'" :ref="pageItem.com_type" :pageItem="pageItem"
       @resize="$emit('resize')"></page-widget>
     <card-group v-if="pageItem.com_type === 'cardGroup'" :ref="pageItem.com_type" :pageItem="pageItem"></card-group>
+    <grid-card v-if="pageItem.com_type === 'grid'" :ref="pageItem.com_type" :pageItem="pageItem"></grid-card>
   </div>
 </template>
 
@@ -38,7 +39,7 @@ import List from './list/list.vue'
 import pageWidget from "./widget.vue";
 import cardGroup from "./card-group/card-group.vue";
 import tabList from './list/tabs-list.vue'
-
+import gridCard from './grid-card.vue'
 // 页面组件级 参数交互处理
 import pageItemParams from '../../common/params/page-item-params-mixin.js'
 
@@ -57,7 +58,8 @@ export default {
     List,
     pageWidget,
     cardGroup,
-    tabList
+    tabList,
+    gridCard
   },
   props: {
     pageItem: {

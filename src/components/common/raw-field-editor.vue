@@ -19,7 +19,7 @@
               <el-image
               v-else-if="field.info.srvCol.col_type === 'ImgUrl'"
                 style="width: 50px; height: 50px"
-                :src="field.model"
+                :src="setImgUrl(field.model)"
                 fit="cover">
               </el-image>
           </div>
@@ -667,7 +667,18 @@ export default {
       } else {
         return false;
       }
-    }
+    },
+    setImgUrl(url) {
+      if (url) {
+        if (url.indexOf("http") > -1) {
+          return url
+        } else {
+          return `${window.backendIpAddr}${url}`
+        }
+      }else{
+        return ''
+      }
+    },
   }
 };
 </script>

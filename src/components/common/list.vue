@@ -104,7 +104,7 @@
                 <div v-else-if="item.col_type === 'ImgUrl'">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row[item.column]"
+                    :src="setImgUrl(scope.row[item.column])"
                     fit="cover">
                   </el-image>
                 </div>
@@ -709,7 +709,18 @@ export default {
           // console.log(this.currentPage)
         }
       }
-    }
+    },
+    setImgUrl(url) {
+      if (url) {
+        if (url.indexOf("http") > -1) {
+          return url
+        } else {
+          return `${window.backendIpAddr}${url}`
+        }
+      }else{
+        return ''
+      }
+    },
   }
 };
 </script>
