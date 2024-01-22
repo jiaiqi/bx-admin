@@ -16,8 +16,8 @@ import { getBaiduMapApi} from './api.js'
 import { over } from 'lodash'
 let activeLineColor = 'rgb(40, 189, 108)'
 // let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
-let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
-// let bMapApi = '/baiduApi/direction/v2/driving'
+// let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
+let bMapApi = '/baiduApi/direction/v2/driving'
 export default {
     props: {
         modeUrl:{
@@ -554,7 +554,7 @@ export default {
                 for(let pIndex in waypoints){
                     let p = waypoints[pIndex]
                     let point = new BMap.Point(p.lng, p.lat);
-                    let content = p.name; // label 显示内容
+                    let content = `${p['_seq']}.${p.name}`; // label 显示内容
                     let label = new BMap.Label(content, {       // 创建文本标注
                         position: point,
                         offset: new BMap.Size(p["icon_size"].w, 0)

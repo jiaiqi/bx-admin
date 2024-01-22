@@ -175,15 +175,29 @@ export default {
                 
                 if(self.modeUrl == '/bmap/editor/' && keyNo && self.loadPassconvPath[keyNo]){
                     // 路径可视化
-                    loadStationsDatas = self.loadPassconvPath[keyNo].map(item => {
+                    loadStationsDatas = self.loadPassconvPath[keyNo].map((item,index) => {
                         item['_type'] = 'point'
+                        item['_seq'] = index + 1
                         return item
                     })
 
                     
                      drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')
+                    drivingPoints = drivingPoints.map((item,index) => {
+                        item['_seq'] = index + 1
+                        return item
+                    })
+                    
                      drivingPayPoints = loadStationsDatas.filter(item => item['path_type'] == '收费路径')
+                     drivingPayPoints = drivingPayPoints.map((item,index) => {
+                        item['_seq'] = index + 1
+                        return item
+                    })
                      drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
+                     drivingMinPoints = drivingMinPoints.map((item,index) => {
+                        item['_seq'] = index + 1
+                        return item
+                    })
                      allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
                     // let item['_editor_type'] = 'driving'
                     
@@ -434,7 +448,7 @@ export default {
             let divCond =  [{
                 "colName":"createtime",
                 "ruleType":"in",
-                "value":[`${entime},${extime}`]
+                "value":[`${entime}`,`${extime}`]
             }]
             self.select(
                 srv,
@@ -499,7 +513,7 @@ export default {
             let divCond =  [{
                 "colName":"createtime",
                 "ruleType":"in",
-                "value":[`${entime},${extime}`]
+                "value":[`${entime}`,`${extime}`]
             }]
             self.select(
                 srv,
@@ -524,9 +538,10 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    let passconvPaths = res.data.filter(item =>{
+                    let passconvPaths = res.data.filter((item,index) =>{
                         if(item['grantry_type'] !== '虚拟门架'){
                             item['name'] = item['tollgrantry_name']
+                            item['_seq'] = index + 1
                             return item
                         }
                         
@@ -905,7 +920,7 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    self.newPoints = res.data.map(item => {
+                    self.newPoints = res.data.map((item,index) => {
                         let p = self.bxDeepClone(item)
                         p['icon_size'] = p['icon_size'] || {w:25,h:38}
                         p['icon_anchor'] = p['icon_anchor'] || {w:p['icon_size']/2,h:p['icon_size'].h}
@@ -914,6 +929,7 @@ export default {
                         p['_type'] = 'point'
                         p['_editor'] = 'add'
                         p['_dev_point_type'] = p['category']
+                        p['_seq'] = index + 1
                         return p
                     })
                     console.log('新增门架',res.data)
@@ -1016,7 +1032,7 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
-                    self.loadStations = res.data.filter(item => {
+                    self.loadStations = res.data.filter((item,index) => {
                         if(item['grantry_type'] !== '虚拟门架'){
                             switch (item['category']) {
                                 case '门架':
@@ -1033,6 +1049,7 @@ export default {
                                 default:
                                     break;
                             }
+                            item['_seq'] = index + 1
                             return item
                         }
                         
