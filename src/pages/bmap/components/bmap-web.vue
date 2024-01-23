@@ -53,7 +53,7 @@
                                     :fit="'fit'"></el-image>
                                 </div>
                                 <div class="point-layout-bar-body-info">
-                                    <div> {{tolllink.vehicleid}}</div>
+                                    <div> {{tolllink.vehicleid_str}}</div>
                                     <div>起点： {{tolllink.enstationname}}</div>
                                     <div>终点： {{tolllink.exstationname}}</div>
                                     <div>应收：{{tolllink.payfee}}</div>

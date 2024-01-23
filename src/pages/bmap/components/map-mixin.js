@@ -432,6 +432,11 @@ export default {
                         // self.BMap.removeOverlay(oldo); // 从地图上移除覆盖物
                     }
                 }
+                // if(this.initCheckPointId && this.activeDeptNo && this.initCheckPoint && line.id == this.initCheckPoint['road_no']){
+                        
+                //      this.onTollLink(line)
+                // }
+                
             }
             
 
@@ -561,7 +566,10 @@ export default {
                 for(let pIndex in waypoints){
                     let p = waypoints[pIndex]
                     let point = new BMap.Point(p.lng, p.lat);
-                    let content = `${p['_seq']}.${p.name}`; // label 显示内容
+                    let content = `${p.name}`; // label 显示内容
+                    if(self.modeUrl == '/bmap/editor/'){
+                        content = `${p['_seq']}.${p.name}`; // label 显示内容
+                    }
                     let label = new BMap.Label(content, {       // 创建文本标注
                         position: point,
                         offset: new BMap.Size(p["icon_size"].w, 0)
@@ -1218,6 +1226,21 @@ export default {
                 }
               })
         }
+    },
+    watch:{
+        "buildResLine":{
+            deep:true,
+            handler:function(nval,oval){
+                this.$nextTick(() => {
+                    // this.getAllTolllinks()
+                    
+                    
+                })
+            }
+        },
+        
+        
+        
     }
   
   };

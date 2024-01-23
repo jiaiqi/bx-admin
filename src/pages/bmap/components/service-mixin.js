@@ -14,10 +14,17 @@ export default {
           default: function () {
             return [];
           }
+        },
+        initCheckPointId:{
+            type:String,
+            default:function (){
+                return ''
+            }
         }
     },
     data(){
         return {
+            initCheckPoint:null,
             newPoints:[],
             activeNewPoint:null,
             isEditorNews:false,
@@ -407,10 +414,14 @@ export default {
         }
     },
     mounted(){
+        let self = this
         this.initMap()
-        if(this.modeUrl == '/bmap/check'){
+        if(this.modeUrl == '/bmap/check' || this.modeUrl.indexOf('/bmap/check') !== -1){
             this.isEditor = true
             this.getNewPoints()
+            if(self.initCheckPointId){
+                self.getPointInfo()
+            }
         }else if(this.modeUrl == '/bmap/editor/' && this.no){
             
             this.isEditor = false
@@ -1050,6 +1061,10 @@ export default {
                                     break;
                             }
                             item['_seq'] = index + 1
+                            if(self.initCheckPoint && item.id == self.initCheckPoint.id){
+                                // 初始化id 标点选中
+                                self.onPointList(item)
+                            }
                             return item
                         }
                         
@@ -1060,6 +1075,69 @@ export default {
                     console.log('查询门架|收费站等 异常',res)
                 }
               })
+        },
+        getPointInfo(id){
+            // initCheckPointId
+            console.log('初始化选中门架')
+            // 查询所有门架
+            let self = this
+            // category取值：门架、收费站
+            // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
+            // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let srv = 'srvaud_tollgrantry_station_select';
+            let srvAuth = 'aud'
+            let conds = [
+                {
+                colName:'id',
+                ruleType:'eq',
+                value:this.initCheckPointId
+                }
+            ]
+            let relationCondition = {}
+            let page = null
+            let order = null
+            if(!this.initCheckPointId){
+                
+                return 
+            }else{
+                self.select(
+                    srv,
+                    conds,
+                    page,
+                    order,
+                    null,
+                    null,
+                    srvAuth,
+                    null,
+                    null,
+                    relationCondition,
+                    false,
+                    null,
+                    // srvAuth
+                  ).then(res => {
+                    // console.log('分公司',res.data)
+                    res = res.data
+                    if(res.state == "SUCCESS"){
+                        if(Array.isArray(res.data) && res.data.length == 1){
+                            self.$set(self,'initCheckPoint',res.data[0])
+                            if(self.initCheckPoint['company_no']){
+                                console.log('初始化标点查询结果异常',res)
+                                self.$set(self,'activeDeptNo',self.initCheckPoint['company_no'])
+                                // self.activeDeptNo = self.initCheckPoint['company no']
+                            }
+                           
+                        }else{
+                            console.log('初始化标点查询结果异常',res)
+                        }
+                        
+                        // console.log('分公司',res.data)
+                    }else{
+                        this.$message.error(JSON.stringify(res));
+                        console.log('查询门架|收费站等 异常',res)
+                    }
+                })
+            }
+           
         }
     },
     watch:{
@@ -1086,6 +1164,17 @@ export default {
                 this.$nextTick(() => {
                     // this.getAllTolllinks()
                     this.getNewPoints()
+                    if(Array.isArray(nval)){
+                        for(let line of nval){
+                            if(this.initCheckPointId && this.activeDeptNo && this.initCheckPoint && line.id == this.initCheckPoint['road_no']){
+                                this.$nextTick(() => {
+
+                                    this.onTollLink(line)
+                                })
+                               
+                            }
+                        }
+                    }
                     
                 })
             }
@@ -1093,7 +1182,7 @@ export default {
         "activeTollLink":{
             deep:true,
             handler:function(nval,oval){
-                console.log('切换分公司路段',nval)
+                console.log('切换选中',nval)
                 if(nval){
                     this.$nextTick(() => {
 
@@ -1110,8 +1199,12 @@ export default {
                 if(Array.isArray(nval) && nval.length > 0){
                     let activeDept = nval[0]
                     this.$nextTick(() => {
-
-                       this.$set(this,'activeDeptNo',activeDept.dept_no)
+                        if(!this.initCheckPointId){
+                            this.$set(this,'activeDeptNo',activeDept.dept_no)
+                        }else{
+                            this.getPointInfo()
+                        }
+                       
                     })
                 }
                 

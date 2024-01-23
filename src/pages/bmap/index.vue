@@ -2,7 +2,7 @@
     <div class="web-layout bg-light">
         
         <!-- <cMap></cMap> -->
-        <BMapJs :depts="depts" :modeUrl="urlPath" :no="no"></BMapJs>
+        <BMapJs :depts="depts" :modeUrl="urlPath" :no="no" :initCheckPointId="initCheckPointId"></BMapJs>
     </div>
     
 </template>
@@ -49,7 +49,8 @@ import BMapJs from "./components/bmap-web.vue"
     },
     data(){
         return {
-            depts:[]
+            depts:[],
+            initCheckPointId:''
         }
     },
     created(){
@@ -58,6 +59,7 @@ import BMapJs from "./components/bmap-web.vue"
         if(this.urlPath.indexOf('/bmap/editor/') !== -1){
 
         }else if(this.urlPath.indexOf('/bmap/check') !== -1){
+            this.initCheckPointId = this.$route.query.id
             this.getAllDepts()
         }
         
