@@ -16,8 +16,15 @@ import { getBaiduMapApi} from './api.js'
 import { over } from 'lodash'
 let activeLineColor = 'rgb(40, 189, 108)'
 // let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
-let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
-// let bMapApi = '/baiduApi/direction/v2/driving'
+// let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
+let bMapApi = sessionStorage.getItem('bMapApi')
+
+if(!bMapApi){
+    bMapApi = '/baiduApi/direction/v2/driving'
+    // bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
+    // bMapApi = 'https://api.map.baidu.com/direction/v2/driving'
+}
+    
 export default {
     props: {
         modeUrl:{
@@ -931,6 +938,12 @@ export default {
                     self.BMap.removeOverlay(overlay);
                 }
             }
+
+            self.$nextTick(() => {
+                        
+                        
+                self.initViewport(points)
+            })
             
         },
         updatePoint(p,l){
