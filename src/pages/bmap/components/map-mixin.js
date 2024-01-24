@@ -9,6 +9,7 @@ import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
+import bludArrow from '../assets/icon/Icon_road_blue_arrow.png'
 
 import car from '../assets/icon/car.png'
 
@@ -41,8 +42,8 @@ export default {
             carIconUrl:car,
             lineTemplate:{
                 enableEditing: false, // 是否启用线编辑，默认为false
-                strokeWeight: 4, // 折线宽度
-                strokeOpacity: 0.7, // 折线透明度 strokeOpacity
+                strokeWeight: 6, // 折线宽度
+                strokeOpacity: 0.6, // 折线透明度 strokeOpacity
                 strokeStyle:'solid',  //折线的样式，solid 或 dashed
             },
             BMap:null,
@@ -67,7 +68,7 @@ export default {
               },{
                 label:'最小路径',
                 type:'driving_min',
-                color:'#409eff',
+                color:'#eb2df7',
                 selectedColor:activeLineColor,
               },{
                 label:'其它',
@@ -170,7 +171,7 @@ export default {
                         line['params']['ak'] = 'FC190506b9b4fa8b366db9f78cb5e93e'  // 地图票据
 
                        
-                        lines.push(line)
+                        lines.push(this.bxDeepClone(line))
                     }
                 }
                 
@@ -260,10 +261,12 @@ export default {
             overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line')
             console.log('updateLine',overlays)
             let selectedColor = activeLineColor;
-            if(Array.isArray(overlays) && overlays.length>0){
+            if(self.BMap && Array.isArray(overlays) && overlays.length>0){
                 for(let overlay of overlays){
-
+                    
                     if(overlay['_data']['id'] == line.id && line['_editor_type'] == overlay['_data']['_editor_type']){
+                        // self.BMap.removeOverlay(overlay); // 从地图上移除覆盖物
+                        //  self.addLines(overlay)
                         overlay.setStrokeColor(selectedColor);
                         overlay.setStrokeOpacity(1);
                         self.$nextTick(() => {
@@ -279,6 +282,7 @@ export default {
                 }
                 
             }
+            console.log('更新',overlays)
         },
         updateActivePoint(point){
             let self = this
@@ -448,15 +452,21 @@ export default {
             }
             let strokeStyle = line.strokeStyle
             if(line['_editor_type'] == 'driving_min'){
-                strokeStyle = 'dashed'
+                // strokeStyle = 'dashed'
             }
             let polyline = new BMap.Polyline(
                 linePoints, 
-                {strokeColor:line.strokeColor, 
-                strokeWeight:line.strokeWeight, 
-                strokeOpacity:line.strokeOpacity,
-                strokeStyle:strokeStyle,
-                enableClicking:true
+                {
+                    strokeColor:line.strokeColor, 
+                    strokeWeight:line.strokeWeight, 
+                    strokeOpacity:line.strokeOpacity,
+                    strokeStyle:strokeStyle,
+                    enableClicking:true,
+                    strokeTexture: {
+                        url: bludArrow,
+                        width: 16,
+                        height: 64
+                    },
                 });
                 if(self.activeLine && self.activeLine.id == line.id && self.activeLine['_editor_type'] == line['_editor_type']){
                     
@@ -465,10 +475,15 @@ export default {
                         strokeWeight:line.strokeWeight, 
                         strokeOpacity:1,
                         strokeStyle:strokeStyle,
-                        enableClicking:true
+                        enableClicking:true,
+                        strokeTexture: {
+                            url: bludArrow,
+                            width: 16,
+                            height: 64
+                        },
                     });
 
-                    // 如果是绘制线的时候 进入线 标点绘制逻辑
+                    // 如果是选中线的时候 进入线 标点绘制逻辑
                     self.removeOverlays(line)
                     
                 }
@@ -536,25 +551,36 @@ export default {
                 
                 let overlays = self.BMap.getOverlays()
                 let removeOverlays = []
-                // console.log('需要清除的点',removeOverlays) 
+                console.log('需要清除的点',self.BMap.getOverlays(),removeOverlays) 
                 if(line){
                     removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label'))
-                }else{
-                    removeOverlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label' || o['_data']['_type'] == 'line'))
                 }
                 for(let o of removeOverlays){
+                    
                     self.BMap.removeOverlay(o); // 从地图上移除覆盖物
                 } 
+                if(line){
+
+                    self.addMarkers(line)
+                }
             }    
-            if(line){
-                self.addMarkers(line)
-            }
+            
             
         },
         
         addMarkers(line){
             // 绘制标点
             let self = this
+            if(self.BMap){
+                let overlays = self.BMap.getOverlays() // 地图覆盖物
+            
+                // overlays = overlays.filter(item => item.hasOwnProperty('_data') && item['_data']['_type'] == 'point')
+                console.log('已有标点',overlays)
+                // for(let overlay of overlays){
+                //     self.BMap.removeOverlay(overlay);
+                // }
+            }
+            
             console.log('绘制标点',line,line['waypoints_points'])
             let waypoints = line['waypoints_points']
             if(this.modeUrl == '/bmap/editor/'){
@@ -1042,20 +1068,16 @@ export default {
             }
             // 清除所有线
             if(self.BMap){
-                let overlays = self.BMap.getOverlays()
-                overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && (o['_data']['_type'] == 'line' || o['_data']['_type'] == 'point' || o['_data']['_type'] == 'label'))
-                if(Array.isArray(overlays) && overlays.length > 0 && self.BMap){
-                    for(let o of overlays){
-                        self.BMap.removeOverlay(o); // 从地图上移除全部覆盖物
-                    }
-                }
+                self.BMap.clearOverlays();
             }
             
             let loadLines = self.bxDeepClone(self.buildResLine)
-            console.log('getDriving',)
+            console.log('getDriving 重新绘制',self.polylines,loadLines)
             if((this.modeUrl == '/bmap/check' &&  Array.isArray(loadLines) && loadLines.length > 0) || (this.modeUrl == '/bmap/editor/' &&  Array.isArray(loadLines) && loadLines.length > 0 )){
-                self.polylines = [].map(item => item)
+                self.polylines = []
+                self.polylines = self.polylines.map(item => item)
                 for(let i in loadLines){
+                    console.log('绘制line',i)
                     let loadLine = this.bxDeepClone(loadLines[i])
                     
                     let id = loadLine.id
@@ -1139,6 +1161,7 @@ export default {
                                 line['_type'] = 'line'
                                 line['_editor_type'] = loadLine['_editor_type']
                                 self.polylines.push(self.bxDeepClone(line))
+                                console.log('画线',self.bxDeepClone(line))
                                 self.addLines(self.bxDeepClone(line))  // 添加路线
                             }else{
                                 if(res){
@@ -1156,18 +1179,25 @@ export default {
             } 
         },
         onEditorType(type){
-            let lines = this.polylines.filter(item => item['_editor_type'] == type)
-            if(Array.isArray(lines) && lines.length > 0){
-                this.onLineList(lines[0])
+            if(this.BMap){
+                // 
+                console.log('type',type)
+                let lines = this.buildResLine.filter(item => item['_editor_type'] == type)
+                console.log('lines',lines)
+                if(Array.isArray(lines) && lines.length > 0){
+                    this.onLineList(lines[0])
+                }
             }
+            
         },
         onLineList(line){
             let self = this
-            if(this.activeLine && line && this.activeLine.uid !== line.uid){
-                this.$set(this,'activeLine',line)
-                this.$set(this,'activePoint',null);
-            }else if(!this.activeLine && line){
-                this.$set(this,'activeLine',line)
+            console.log(line)
+            if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line.uid)){
+                self.$set(self,'activeLine',line)
+                self.$set(self,'activePoint',null);
+            }else if(!self.activeLine && line){
+                self.$set(self,'activeLine',line)
             }
             self.$nextTick(() => {
                 self.updateLine(line)
@@ -1228,16 +1258,6 @@ export default {
         }
     },
     watch:{
-        "buildResLine":{
-            deep:true,
-            handler:function(nval,oval){
-                this.$nextTick(() => {
-                    // this.getAllTolllinks()
-                    
-                    
-                })
-            }
-        },
         
         
         

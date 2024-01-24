@@ -597,10 +597,14 @@ import srvMixin from './service-mixin.js' // 业务相关
         "buildResLine":{
             deep:true,
             handler:function (nval,oval) {
-                console.log('buildResLine',nval)
-                this.$nextTick(() => {
-                    this.getDriving()
-                })
+                console.log('buildResLine',nval,oval)
+                if(nval && oval && JSON.stringify(nval) !== JSON.stringify(oval)){
+                    this.$nextTick(() => {
+                        // this.polylines = []
+                        this.getDriving()
+                    })
+                }
+                
                
             }
         },
@@ -610,7 +614,7 @@ import srvMixin from './service-mixin.js' // 业务相关
                 console.log('activeLine',nval)
                 if(nval){
                     this.$nextTick(() => {
-                        this.removeOverlays(nval)
+                        // this.removeOverlays(nval)
                     })
                     
                 }

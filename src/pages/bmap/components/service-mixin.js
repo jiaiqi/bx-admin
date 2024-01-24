@@ -43,13 +43,14 @@ export default {
         initLinks(){
             let self = this
             let loadlinks = this.bxDeepClone(this.tolllinks)
+            let activeLine = this.bxDeepClone(this.activeLine)
             let buildLines = []
             let loadStationsDatas = self.bxDeepClone(self.loadStations)
             let drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')
             let drivingPayPoints = loadStationsDatas.filter(item => item['path_type'] == '收费路径')
             let drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
             let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
-            
+            let reslines = []
             // loadlinks = loadlinks.map(item => 
             for(let item of loadlinks){
                 let obj = {}
@@ -209,7 +210,12 @@ export default {
                     // let item['_editor_type'] = 'driving'
                     
                     // 三条路径拆分途径点和拆线
-
+                    if(activeLine && activeLine['_editor_type'] == 'driving_pay'){
+                        allPointsTypes = [drivingPoints,drivingMinPoints,drivingPayPoints]
+                    }
+                    if(activeLine && activeLine['_editor_type'] == 'driving_min'){
+                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+                    }
                     console.log(keyNo,allPointsTypes)
                     for(let subpoints of allPointsTypes){
                         if(Array.isArray(subpoints) && subpoints.length > 0){
@@ -344,7 +350,7 @@ export default {
                                 l['all_points'] = this.bxDeepClone(line.points)
                                 pointsLen = [p]
                                 sliceLines.push(this.bxDeepClone(l))
-                                console.log('i',this.bxDeepClone(l))
+                                // console.log('i',this.bxDeepClone(l))
                             }else if(Number(i) != line.points.length - 1){
                                 // 不是最后一个点，也不是截取点时
                                 pointsLen.push(p)
@@ -357,7 +363,7 @@ export default {
                                 // pLens.push(this.bxDeepClone(pointsLen))
                                 
                                 sliceLines.push(this.bxDeepClone(l))
-                                console.log('i',this.bxDeepClone(l))
+                                // console.log('i',this.bxDeepClone(l))
                             }
                             
                         }
@@ -409,8 +415,8 @@ export default {
 
             }
             
-
-            return buildLines
+            reslines = buildLines.map(item => item)
+            return reslines
         }
     },
     mounted(){
@@ -1043,6 +1049,7 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
+                    self.loadStations = []
                     self.loadStations = res.data.filter((item,index) => {
                         if(item['grantry_type'] !== '虚拟门架'){
                             switch (item['category']) {
@@ -1220,11 +1227,15 @@ export default {
                        this.addNewPointMarkers(this.newPoints)
                     })
                 }else if(nval === false){
-                    this.$nextTick(() => {
+                    // this.$nextTick(() => {
 
-                        this.getAllTolllinks()
+                    //     this.getAllTolllinks()
                         
-                     })
+                    //  })
+                     this.$nextTick(() => {
+                        // this.polylines = []
+                        this.getDriving()
+                    })
                 }
                 
             }
@@ -1242,6 +1253,14 @@ export default {
                 
             }
         },
+        "activeLine":{
+            deep:true,
+            handler:function(nval,oval){
+                
+                
+            }
+        },
+        
         
         
     }
