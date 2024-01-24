@@ -96,9 +96,9 @@
                     <div class="ui-layout-center-footer-bar" v-if="modeUrl == '/bmap/editor/'">
                         <div class="ui-layout-center-footer-bar-item" :class="activeLine && activeLine['_editor_type'] == line.type ? 'active' : ''" v-for="(line,i) in lineColors" v-if="line.type !== 'none'" @click="onEditorType(line.type)">
                             
-                            <span v-if="line.type !== 'driving_min'" :style="`width:1rem;height:4px;background-color:${activeLine && activeLine['_editor_type'] == line.type ? 'rgb(40, 189, 108)' : line.color};`">
+                            <span  :style="`width:1rem;height:4px;background-color:${activeLine && activeLine['_editor_type'] == line.type ? 'rgb(40, 189, 108)' : line.color};`">
                             </span>
-                            <i v-if="line.type == 'driving_min'" class="el-icon-more" :style="`color:${line.color};`"></i>
+                            <!-- <i v-if="line.type == 'driving_min'" class="el-icon-more" :style="`color:${line.color};`"></i> -->
                             
                             {{line.label}}
                         </div>
