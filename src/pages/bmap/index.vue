@@ -71,7 +71,7 @@ import BMapJs from "./components/bmap-web.vue"
             // category取值：门架、收费站
             // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
             // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
-            let srv = 'srvauth_dept_select';
+            let srv = 'srvauth_dept_op_select';
             let srvAuth = 'auth'
             let conds = [{
                 colName:'dept_class',
