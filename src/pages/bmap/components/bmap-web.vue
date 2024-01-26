@@ -595,7 +595,7 @@ import srvMixin from './service-mixin.js' // 业务相关
             deep:true,
             handler:function (nval,oval) {
                 console.log('buildResLine watch',this.bxDeepClone(nval),this.bxDeepClone(oval))
-                if(nval && this.modeUrl == '/bmap/editor/'){
+                if((!oval || oval.length == 0) && this.modeUrl == '/bmap/editor/' && nval && (JSON.stringify(this.bxDeepClone(nval)) !== JSON.stringify(this.bxDeepClone(oval)))){
                     this.$nextTick(() => {
                         // this.polylines = []
                         this.getDriving()

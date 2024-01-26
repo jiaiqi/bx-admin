@@ -1193,6 +1193,7 @@ export default {
         onLineList(line){
             let self = this
             console.log(line)
+            let oldActive = self.bxDeepClone(self.activeLine)
             if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line)){
                 self.$set(self,'activeLine',line)
                 self.$set(self,'activePoint',null);
@@ -1201,6 +1202,12 @@ export default {
             }
             self.$nextTick(() => {
                 // self.updateLine(line)
+                if(this.modeUrl == '/bmap/editor/'&& (line['_editor_type']=='driving' || JSON.stringify(self.activeLine) !== JSON.stringify(oldActive))){
+                    this.$nextTick(() => {
+                        // this.polylines = []
+                        this.getDriving()
+                    })
+                }
             })
         },
         onPointList(e){
