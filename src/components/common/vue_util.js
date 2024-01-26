@@ -634,6 +634,7 @@ function init_util() {
         if(!Array.isArray(item.value)){
           item.value = [item.value]
         }
+        return item
       })
     }
     if(use_type==='treelist'){
@@ -2384,7 +2385,7 @@ function init_util() {
    * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
    * @returns { Array } 返回一个长度为1的数组
    */
-  Vue.prototype.buildCustomBtnDivCond = (btn, row, mainData) => {
+  Vue.prototype.buildCustomBtnDivCond = (btn, row={}, mainData={}) => {
     let result = null;
     if (Array.isArray(row) && row.length) {
       row = JSON.parse(JSON.stringify(row[0]));
@@ -2403,13 +2404,16 @@ function init_util() {
     if (btn?.more_config) {
       try {
         const moreConfig = JSON.parse(btn.more_config);
+        if(moreConfig?.divCond?.colName){
+          moreConfig.divCond = [moreConfig.divCond]
+        }
         if (
           Array.isArray(moreConfig?.divCond) &&
           moreConfig.divCond?.length
         ) {
           result = moreConfig.divCond.map((item) => {
             const obj = {
-              colName: item.col,
+              colName: item.colName,
               ruleType: "between",
               value: [],
             };

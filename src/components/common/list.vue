@@ -503,17 +503,6 @@ export default {
   },
 
   computed: {
-    buildDivCond() {
-      if (this.$route.query?.divCol && this.$route.query?.divStartVal && this.$route.query?.divEndVal) {
-        return [
-          {
-            colName: this.$route.query.divCol,
-            ruleType: "between",
-            value: [this.$route.query.divStartVal, this.$route.query.divEndVal]
-          }
-        ]
-      }
-    },
     props4ActivePopupMemList() {
       let fk = this.activePopupMemList.foreign_key;
       return {
@@ -552,6 +541,26 @@ export default {
   },
 
   methods: {
+    buildDivCond() {
+      if (this.listType === 'list') {
+        if (this.$route.query?.divCol && this.$route.query?.divStartVal && this.$route.query?.divEndVal) {
+          return [
+            {
+              colName: this.$route.query.divCol,
+              ruleType: "between",
+              value: [this.$route.query.divStartVal, this.$route.query.divEndVal]
+            }
+          ]
+        }
+      } else if (this.listType === 'detaillist') {
+        // 详情子表
+        if (this.childForeignkey?.more_config?.includes('divCond')) {
+          const divCond = this.buildCustomBtnDivCond(this.childForeignkey, null, this.listMainFormDatas)
+          return divCond
+
+        }
+      }
+    },
     openHtml(val) {
       const h = this.$createElement;
       this.$msgbox({

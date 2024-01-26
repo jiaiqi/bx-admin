@@ -1982,7 +1982,10 @@ export default {
               this.draftRun,
               "list_page", 
               srvAuth,
-              this.vpageNo
+              this.vpageNo,
+              null,
+              null,
+              this.buildDivCond()
             ).then(response => {
 
               if(response.body.resultCode == '0011'){
@@ -2616,7 +2619,14 @@ export default {
               null,
               null,
               null,
-              relationCondition
+              relationCondition,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              this.buildDivCond()
             ).then(response => {
 
               var dataResult = response.body.data;
