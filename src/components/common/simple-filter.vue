@@ -322,7 +322,7 @@
           } else if (fieldInfo.type == 'Enum' || fieldInfo.type == 'Dict') {
             field.ruleType = 'in'
             field.model = []
-          } else if (fieldInfo.isJoinedDisp() || fieldInfo.isTextual() || fieldInfo.isFinder()) {
+          } else if (fieldInfo.isJoinedDisp() || fieldInfo.isTextual() || fieldInfo.isFinder() || fieldInfo.type == 'CarNo') {
             field.ruleType = 'like'
           } else if(fieldInfo.type =='Set'){
             field.ruleType = 'inset'
