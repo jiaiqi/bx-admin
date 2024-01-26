@@ -2333,6 +2333,74 @@ function init_util() {
   }
 
   Vue.prototype.deepClone = Vue.prototype.bxDeepClone
+   /**
+     * 构建自定义按钮配置的divCond 输出为queryString格式
+     * @param {*} btn 自定义按钮
+     * @param {*} row 行数据或者详情数据
+     * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
+     * @returns { string } 返回divCol,divStartVal,divEndVal组成的queryString
+     */
+  Vue.prototype.buildCustomBtnDivCondUrl(btn, row, mainData) {
+    const result = Vue.prototype.buildCustomBtnDivCond(btn, row, mainData)
+    if (Array.isArray(result) && result.length && result[0]?.value?.length > 1) {
+      return `divCol=${result[0].colName}&divStartVal=${result[0].value[0]}&divEndVal=${result[0].value[1]}`;
+    }
+  }
+  /**
+   * 构建自定义按钮配置的divCond
+   * @param {*} btn 自定义按钮
+   * @param {*} row 行数据或者详情数据
+   * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
+   * @returns { Array } 返回一个长度为1的数组
+   */
+  Vue.prototype.buildCustomBtnDivCond(btn, row, mainData) {
+    let result = null;
+    if(Array.isArray(row)&&row.length){
+      row = JSON.parse(JSON.stringify(row[0]));
+    }
+    const evalValue = (value, row) => {
+      if (!value || typeof value === "string") {
+        return value;
+      } else if (value?.value_type === "rowData" && value.value_key) {
+        return row[value.value_key];
+      } else if (value?.value_type === "mainData" && value.value_key) {
+        return mainData[value.value_key];
+      } else if (value?.value_type === "constant" && value.value) {
+        return value.value;
+      }
+    };
+    if (btn?.more_config) {
+      try {
+        const moreConfig = JSON.parse(btn.more_config);
+        if (
+          Array.isArray(moreConfig?.divCond) &&
+          moreConfig.divCond?.length
+        ) {
+          result = moreConfig.divCond.map((item) => {
+            const obj = {
+              colName: item.col,
+              ruleType: "between",
+              value: [],
+            };
+            let val1, val2;
+            if (item.start_value) {
+              val1 = evalValue(item.start_value, row);
+            }
+            if (item.end_value) {
+              val2 = evalValue(item.end_value, row);
+            }
+            if (val1 && val2) {
+              obj.value = [val1, val2];
+            } else if (val1 || val2) {
+              obj.value = [val1 || val2];
+            }
+            return obj;
+          });
+        }
+      } catch (error) { }
+    }
+    return result
+  }
 }
 
 export default init_util;
