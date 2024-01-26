@@ -186,6 +186,7 @@ export default {
     childrenLists: {
       type: null,
     },
+    divCond: Array
   },
   computed: {
     srvValFormModeldetail() {
@@ -327,17 +328,17 @@ export default {
             return item;
           });
         }
-        let divCond = null;
-        if (this.$route.query.divCond) {
-          try {
-            divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
-            console.log(divCond);
-          } catch (error) {
-            console.error(error);
-          }
-        }
+        // let divCond = null;
+        // if (this.$route.query.divCond) {
+        //   try {
+        //     divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
+        //     console.log(divCond);
+        //   } catch (error) {
+        //     console.error(error);
+        //   }
+        // }
 
-        return loader.run(condition,divCond);
+        return loader.run(condition,this.divCond);
       })
       .then(() => {
         this.formLoaded = true;

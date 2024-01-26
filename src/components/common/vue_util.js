@@ -610,8 +610,7 @@ function init_util() {
     };
     if(divCondition){
       query['divCond'] = divCondition
-    }
-    if(query.condition.length){
+    }else if(query.condition.length && query.condition.find(item => item.use_div_calc === '是')){
       let divCond = query.condition.filter(item => item.use_div_calc === '是');
       if(divCond?.length){
         query.divCond = divCond.map(item=>{
@@ -629,6 +628,13 @@ function init_util() {
           }
         })
       }
+    }
+    if(query['divCond']?.length){
+      query['divCond'] = query['divCond'].map(item=>{
+        if(!Array.isArray(item.value)){
+          item.value = [item.value]
+        }
+      })
     }
     if(use_type==='treelist'){
      // 2023年11月13日增加，top tree data特性，后端返回符合条件的数据的最顶层节点数据，不使用parentCol为null作为条件
@@ -744,7 +750,6 @@ function init_util() {
       try {
         divCond = JSON.parse(decodeURIComponent(divCond))
       } catch (error) {
-        
       }
       if(Array.isArray(divCond)&&divCond.length){
         if(divCond.length){
@@ -2384,7 +2389,7 @@ function init_util() {
     if (Array.isArray(row) && row.length) {
       row = JSON.parse(JSON.stringify(row[0]));
     }
-    const evalValue = (value, row) => {
+    const evalCondValue = (value, row) => {
       if (!value || typeof value === "string") {
         return value;
       } else if (value?.value_type === "rowData" && value.value_key) {
@@ -2410,10 +2415,10 @@ function init_util() {
             };
             let val1, val2;
             if (item.start_value) {
-              val1 = evalValue(item.start_value, row);
+              val1 = evalCondValue(item.start_value, row);
             }
             if (item.end_value) {
-              val2 = evalValue(item.end_value, row);
+              val2 = evalCondValue(item.end_value, row);
             }
             if (val1 && val2) {
               obj.value = [val1, val2];

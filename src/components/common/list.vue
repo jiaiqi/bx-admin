@@ -503,6 +503,17 @@ export default {
   },
 
   computed: {
+    buildDivCond() {
+      if (this.$route.query?.divCol && this.$route.query?.divStartVal && this.$route.query?.divEndVal) {
+        return [
+          {
+            colName: this.$route.query.divCol,
+            ruleType: "between",
+            value: [this.$route.query.divStartVal, this.$route.query.divEndVal]
+          }
+        ]
+      }
+    },
     props4ActivePopupMemList() {
       let fk = this.activePopupMemList.foreign_key;
       return {

@@ -1396,16 +1396,45 @@ export default {
             urlParams = "/" + exeservice + "/" + row[this.pub_field_map.id] + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
         }
         // 公共详情按钮传分表参数规则
-        const divCond = this.searchFormCondition.filter(item => item.use_div_calc === '是').map(item=>{
+        let divCond = this.searchFormCondition.filter(item => item.use_div_calc === '是').map(item=>{
           return {
             colName:item.colName,
             ruleType:item.ruleType,
             value:item.value
           }
         })
+        if (button?.more_config?.includes('divCond')) {
+          try {
+            const moreConfig = JSON.parse(button.more_config)
+            if (moreConfig?.divCond?.colName) {
+              const evalCondValue = (value, row = {}, mainData = {}) => {
+                if (!value || typeof value === "string") {
+                  return value;
+                } else if (value?.value_type === "rowData" && value.value_key) {
+                  return row[value.value_key];
+                } else if (value?.value_type === "mainData" && value.value_key) {
+                  return mainData[value.value_key];
+                } else if (value?.value_type === "constant" && value.value) {
+                  return value.value;
+                }
+              };
+              const mainDetailData = this.listMainFormDatas || {};
+
+              divCond = [
+                {
+                  colName: moreConfig.divCond.colName,
+                  ruleType: 'between',
+                  value: [evalCondValue(moreConfig.divCond.start_value, row, mainDetailData), evalCondValue(moreConfig.divCond.end_value, row, mainDetailData)]
+                }
+              ]
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
         if(divCond?.length){
           // 分表查询条件 2024.1.12新增，传到详情页面 
-          const divObj = divCond[0]
+          const divObj = [0]
           if(divCond?.length===1&&Array.isArray(divObj?.value)&&divObj.value.length>1){
             // 直接将分表参数拼接到url上
             urlParams+= `divCol=${divObj.colName}&divStartVal=${divObj.value[0]}&divEndVal=${divObj.value[1]}`
