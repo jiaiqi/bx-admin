@@ -2366,7 +2366,7 @@ function init_util() {
     * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
     * @returns { string } 返回divCol,divStartVal,divEndVal组成的queryString
     */
-  Vue.prototype.buildCustomBtnDivCondUrl(btn, row, mainData) {
+  Vue.prototype.buildCustomBtnDivCondUrl = (btn, row, mainData) => {
     const result = Vue.prototype.buildCustomBtnDivCond(btn, row, mainData)
     if (Array.isArray(result) && result.length && result[0]?.value?.length > 1) {
       return `divCol=${result[0].colName}&divStartVal=${result[0].value[0]}&divEndVal=${result[0].value[1]}`;
@@ -2379,7 +2379,7 @@ function init_util() {
    * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
    * @returns { Array } 返回一个长度为1的数组
    */
-  Vue.prototype.buildCustomBtnDivCond(btn, row, mainData) {
+  Vue.prototype.buildCustomBtnDivCond = (btn, row, mainData) => {
     let result = null;
     if (Array.isArray(row) && row.length) {
       row = JSON.parse(JSON.stringify(row[0]));
