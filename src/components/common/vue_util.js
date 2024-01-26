@@ -2333,13 +2333,39 @@ function init_util() {
   }
 
   Vue.prototype.deepClone = Vue.prototype.bxDeepClone
-   /**
-     * 构建自定义按钮配置的divCond 输出为queryString格式
-     * @param {*} btn 自定义按钮
-     * @param {*} row 行数据或者详情数据
-     * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
-     * @returns { string } 返回divCol,divStartVal,divEndVal组成的queryString
-     */
+
+  /**
+   * 将queryString格式的divCond转为数组格式
+   * @param {*} url 
+   */
+  Vue.prototype.urlDivCondToArray = (url) => {
+    if (url && url?.includes('divCol') && url.includes('divStartVal') && url.includes('divEndVal')) {
+      const queryString2Obj = (url) => {
+        let search = url.split('?')[1]
+        if (url.indexOf('?') == -1) {
+          search = url
+        }
+        if (!search) {
+          return {}
+        }
+        return JSON.parse('{"' + decodeURIComponent(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+      }
+      const obj = queryString2Obj(url)
+      return [{
+        colName: obj.divCol,
+        ruleType: 'between',
+        value: [obj.divStartVal, obj.divEndVal]
+      }]
+    }
+    return url
+  }
+  /**
+    * 构建自定义按钮配置的divCond 输出为queryString格式
+    * @param {*} btn 自定义按钮
+    * @param {*} row 行数据或者详情数据
+    * @param {*} mainData 详情页面 点击子表时按钮传入的主表数据 
+    * @returns { string } 返回divCol,divStartVal,divEndVal组成的queryString
+    */
   Vue.prototype.buildCustomBtnDivCondUrl(btn, row, mainData) {
     const result = Vue.prototype.buildCustomBtnDivCond(btn, row, mainData)
     if (Array.isArray(result) && result.length && result[0]?.value?.length > 1) {
@@ -2355,7 +2381,7 @@ function init_util() {
    */
   Vue.prototype.buildCustomBtnDivCond(btn, row, mainData) {
     let result = null;
-    if(Array.isArray(row)&&row.length){
+    if (Array.isArray(row) && row.length) {
       row = JSON.parse(JSON.stringify(row[0]));
     }
     const evalValue = (value, row) => {
