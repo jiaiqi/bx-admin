@@ -463,7 +463,7 @@ export default {
             }
             
             let divCond =  [{
-                "colName":"createtime",
+                "colName":"entime",
                 "ruleType":"in",
                 "value":[`${entime}`,`${extime}`]
             }]
@@ -528,7 +528,7 @@ export default {
                 return 
             }
             let divCond =  [{
-                "colName":"createtime",
+                "colName":"transtime",
                 "ruleType":"in",
                 "value":[`${entime}`,`${extime}`]
             }]
