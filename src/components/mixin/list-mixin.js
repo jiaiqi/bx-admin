@@ -1344,6 +1344,7 @@ export default {
     },
 
     rowButtonClick(operate_item, row) {
+
       let self =this
       let button = operate_item;
       var type = operate_item.button_type;
@@ -1364,7 +1365,6 @@ export default {
       if (button.action_validate && this.evalActionValidator(button.action_validate, row) !== true) {
         return;
       }
-
 
       var operate_service = operate_item.operate_service;
       if (operate_service) {
@@ -1395,7 +1395,8 @@ export default {
         if(this.pub_field_map?.id){
             urlParams = "/" + exeservice + "/" + row[this.pub_field_map.id] + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
         }
-        let divCond = this.searchFormCondition.filter(item => item.use_div_calc === '是').map(item=>{
+        // 公共详情按钮传分表参数规则
+        const divCond = this.searchFormCondition.filter(item => item.use_div_calc === '是').map(item=>{
           return {
             colName:item.colName,
             ruleType:item.ruleType,
@@ -1404,7 +1405,14 @@ export default {
         })
         if(divCond?.length){
           // 分表查询条件 2024.1.12新增，传到详情页面 
-          urlParams+=`&divCond=${encodeURIComponent(JSON.stringify(divCond))}`
+          const divObj = divCond[0]
+          if(divCond?.length===1&&Array.isArray(divObj?.value)&&divObj.value.length>1){
+            // 直接将分表参数拼接到url上
+            urlParams+= `divCol=${divObj.colName}&divStartVal=${divObj.value[0]}&divEndVal=${divObj.value[1]}`
+          }else{
+            // 分表参数以数组格式传到url上
+            urlParams+=`&divCond=${encodeURIComponent(JSON.stringify(divCond))}`
+          }
         }
         var disp_col = operate_item._disp_col;
         var disp_value = row[disp_col];//详情页面上的标签
