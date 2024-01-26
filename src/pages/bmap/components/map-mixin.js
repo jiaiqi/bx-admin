@@ -271,7 +271,7 @@ export default {
                         overlay.setStrokeOpacity(1);
                         self.$nextTick(() => {
                         
-                        
+                            
                             self.initViewport(overlay['_data'].points)
                         })
                     }else{
@@ -1193,14 +1193,14 @@ export default {
         onLineList(line){
             let self = this
             console.log(line)
-            if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line.uid)){
+            if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line)){
                 self.$set(self,'activeLine',line)
                 self.$set(self,'activePoint',null);
             }else if(!self.activeLine && line){
                 self.$set(self,'activeLine',line)
             }
             self.$nextTick(() => {
-                self.updateLine(line)
+                // self.updateLine(line)
             })
         },
         onPointList(e){

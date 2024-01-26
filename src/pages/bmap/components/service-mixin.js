@@ -43,7 +43,7 @@ export default {
         initLinks(){
             let self = this
             let loadlinks = this.bxDeepClone(this.tolllinks)
-            let activeLine = this.bxDeepClone(this.activeLine)
+            let activeLine = this.activeLine ? this.bxDeepClone(this.activeLine) : null
             let buildLines = []
             let loadStationsDatas = self.bxDeepClone(self.loadStations)
             let drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')

@@ -95,11 +95,8 @@
                 <div class="ui-layout-center-footer">
                     <div class="ui-layout-center-footer-bar" v-if="modeUrl == '/bmap/editor/'">
                         <div class="ui-layout-center-footer-bar-item" :class="activeLine && activeLine['_editor_type'] == line.type ? 'active' : ''" v-for="(line,i) in lineColors" v-if="line.type !== 'none'" @click="onEditorType(line.type)">
-                            
                             <span  :style="`width:1rem;height:4px;background-color:${activeLine && activeLine['_editor_type'] == line.type ? 'rgb(40, 189, 108)' : line.color};`">
                             </span>
-                            <!-- <i v-if="line.type == 'driving_min'" class="el-icon-more" :style="`color:${line.color};`"></i> -->
-                            
                             {{line.label}}
                         </div>
                     </div>
@@ -597,8 +594,13 @@ import srvMixin from './service-mixin.js' // 业务相关
         "buildResLine":{
             deep:true,
             handler:function (nval,oval) {
-                console.log('buildResLine',nval,oval)
-                if(nval && oval && JSON.stringify(nval) !== JSON.stringify(oval)){
+                console.log('buildResLine watch',this.bxDeepClone(nval),this.bxDeepClone(oval))
+                if(nval && this.modeUrl == '/bmap/editor/'){
+                    this.$nextTick(() => {
+                        // this.polylines = []
+                        this.getDriving()
+                    })
+                }else if(this.modeUrl == '/bmap/check'){
                     this.$nextTick(() => {
                         // this.polylines = []
                         this.getDriving()
