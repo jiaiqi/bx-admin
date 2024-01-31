@@ -24,12 +24,19 @@
           :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :highlight-current-row="!isMulti"
           @row-click="clickRow" @selection-change="handleSelectionChange">
           <el-table-column width="120" v-if="isMulti">
+            <template #header>
+              <div>
+                <el-checkbox :value="gridData.every(item => selected.includes(item[valueCol]))"
+                  @change="onCheckedAll"></el-checkbox>
+              </div>
+            </template>
             <template slot-scope="scope">
               <el-checkbox :value="selected.includes(scope.row[valueCol])"
                 @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
-              <!-- <el-checkbox :value="scope.row.checked" @change="changeSelected(scope.$index, scope.row)"></el-checkbox> -->
             </template>
           </el-table-column>
+          <!-- <el-table-column type="selection" width="55" v-if="isMulti">
+          </el-table-column> -->
           <el-table-column :min-width="flexColumnWidth(item.label, item.column)" :label="item.label"
             v-for="item in setGridHeader" :key="item.column" v-if="item.srvcol && item.srvcol.in_list == 1"
             :prop="item.column"></el-table-column>
@@ -116,11 +123,14 @@ export default {
     fieldType() {
       let fieldInfo = this.field.info;
       if (fieldInfo && fieldInfo.type) {
+        if (fieldInfo.moreConfig?.multi === true) {
+          return 'fks'
+        }
         return fieldInfo.type;
       }
     },
     isMulti() {
-      return this.fieldType && ["fks", "fkjsons"].includes(this.fieldType);
+      return ["fks", "fkjsons"].includes(this.fieldType) || this.field.info.moreConfig?.multi === true;
     },
     valueCol() {
       return this.fmt && this.fmt.primary_col;
@@ -129,7 +139,17 @@ export default {
       return this.fmt && this.fmt.disp_col;
     },
     fmt() {
-      return this.field && this.field.info && this.field.info.fmt;
+      const result = this.field?.info?.fmt || this.field?.info?.dispLoader || {};
+      if (!result.primary_col && result.refedCol) {
+        result.primary_col = result.refedCol;
+      }
+      if (!result.disp_col && result.dispCol) {
+        result.disp_col = result.dispCol;
+      }
+      if (!result.cols) {
+        result.cols = [result.disp_col, result.primary_col];
+      }
+      return result
     },
     setGridHeader() {
       let arr = [];
@@ -341,6 +361,28 @@ export default {
         });
       }
     },
+    handleSelectionChange(val) {
+      console.log(val);
+      // this.setFieldVal();
+      // this.selected = val.map((item) => item[this.valueCol]);
+      // this.setFieldVal();
+    },
+    onCheckedAll() {
+      if (this.gridData.every(item => this.selected.includes(item[this.valueCol]))) {
+        // 取消全选
+        this.selected = this.selected.filter(no => !this.gridData.find(item => item[this.valueCol] === no))
+        this.gridData.forEach(item => {
+          this.$set(item, 'chcecked', false)
+        })
+      } else {
+        // 全选
+        this.selected = [...new Set([...this.selected, ...this.gridData.map(item => item[this.valueCol])])]
+        this.gridData.forEach(item => {
+          this.$set(item, 'chcecked', true)
+        })
+      }
+      this.setFieldVal()
+    },
     changeSelected(index, row) {
       this.clickRow(row);
 
@@ -395,10 +437,6 @@ export default {
     changePage(page) {
       this.page.pageNo = page;
       this.loadOptions();
-    },
-
-    handleSelectionChange(val) {
-      this.setFieldVal();
     },
     async buildGridHeader() {
       if (this.fmt && this.fmt.service) {

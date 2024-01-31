@@ -219,11 +219,7 @@ export default {
       return showAutocomplete;
     },
     isFks() {
-      return (
-        this.field &&
-        this.field.info &&
-        ["fks", "fkjson", "fkjsons"].includes(this.field.info.type)
-      );
+      return ["fks", "fkjson", "fkjsons"].includes(this.field?.info?.type) || this.field?.info?.moreConfig?.multi === true
     },
     isLocation() {
       return this.field.info?.type === "bxsys_obj_type_gps";
@@ -770,7 +766,7 @@ export default {
         queryMethod: "select",
         colNames: ["*"],
         condition: [
-          { colName: fieldInfo.valueCol, value: srvVal, ruleType: "eq" },
+          { colName: fieldInfo.valueCol, value: srvVal, ruleType:srvVal?.includes(',')?'in':"eq" },
         ],
       };
 
@@ -835,7 +831,7 @@ export default {
           response.data.data &&
           response.data.data.length > 0
         ) {
-          if (["fkjsons", "fkjson", "fks"].includes(fieldInfo.type)) {
+          if (this.isFks) {
             this.multiSelected = response.data.data;
             return;
           }
