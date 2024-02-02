@@ -476,7 +476,12 @@ routes.push( {
       },
       {
         path:'editor/:mindbizNo/:rootNo',
-        //修改
+        // 脑图业务中直接打开
+        component:()=> import('@/pages/mind/index.vue')
+      },,
+      {
+        path:'bizEditor/:mindbizNo/:rootNo',
+        // 脑图业务中直接打开
         component:()=> import('@/pages/mind/index.vue')
       },
       
