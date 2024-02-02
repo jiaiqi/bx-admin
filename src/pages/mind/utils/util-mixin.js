@@ -539,7 +539,7 @@ export default {
             mindMap.execCommand('INSERT_CHILD_NODE')
             this.hide() // 隐藏右键菜单
         },
-        showSearch(){
+        onShowSearch(){
              this.centerDialogVisible=true
         },
         onDataChange(data){
@@ -549,7 +549,7 @@ export default {
             this.num = 0
             this.walk(data)
 
-            if(!this.mindConfig.rootNodeNo){
+            if(!this.rootNodeNo){
                 // 新增根节点 当前脑图还没有根节点时
                 this.noneRootNoActiveRootNode()
             }
@@ -577,20 +577,22 @@ export default {
                     pNodeData = newNodeData.parent.nodeData.data
                     pNo = pNodeData.no
                 }
+                console.log('newNodeData',newNodeData)
                 let nData = this.getRemoteData(nNodeData.data,pNo)   // 新节点数据
                 let nodes = this.mindConfig.oldNodes.filter(item => item['parent_no'] == pNo)
-                if(!nData.hasOwnProperty('seq')){
+                if(this.remoteColMaps['col_seq'] && !nData.hasOwnProperty(this.remoteColMaps['col_seq'])){
                     // 没有排序字段时，默认同级最后一个
-                    nData['seq'] = nodes.length
+                    nData[this.remoteColMaps['col_seq']] = nodes.length
                 }
                 // console.log(nData,nodes.length)
                 if(nNodeData.data.no){
                     // 如果存在 no 为修改
-                    // console.log('修改',nData)
+                    console.log('修改',nData)
                     this.onNodeUpdate(nData)
                 }else{
                     // 新节点按照同级索引进行排序
-                    nData['seq'] = newNodeData.getIndexInBrothers() // 新节点索引
+                    
+                    nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
                     
                     this.submitChange('add',nData).then( ar => {
                         console.log(ar)
