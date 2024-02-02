@@ -2,9 +2,9 @@ import {walk} from 'simple-mind-map/src/utils'
 export default {
     data() {
         return {
+            routeMade:'norm', // 'norm' 'cust'
             v2:null,
             searchValue:'',
-            
             treeData:[],
             mindConfig:{},
             loadMindDatas:{},
@@ -54,6 +54,10 @@ export default {
     },
     
     computed: {
+        rootNodeNo(){
+            let no = this.mindConfig.rootNodeNo || this.$route.params.rootNo
+            return no
+        },
         imgReqModel(){
             let model = this.bxDeepClone(this.imageMode)
             model['app_no'] = this.query.app
@@ -105,7 +109,8 @@ export default {
             let req = {
                 serviceName: serviceName
             }
-            if(this.mindConfig.rootNodeNo){
+            let rootNo = this.rootNodeNo
+            if(rootNo){
                 req['colNames'] = ['*']
                 req['condition'] = [
                     // 根节点编号查询
@@ -118,7 +123,7 @@ export default {
                     {
                         colName:'path',
                         ruleType:'[like]',
-                        value:this.mindConfig.rootNodeNo
+                        value:rootNo
                     }
                 ]
                 // req['treeData'] = true
@@ -140,7 +145,7 @@ export default {
             let mindMap = this.mindMapModel // 导图实例
             
             
-            if(!this.mindConfig.rootNodeNo && mindMap){
+            if(!this.rootNodeNo && mindMap){
                 let rootUid = mindMap.getData()
                 console.log('node add request', rootUid)
                 req['data'] = [this.getRemoteData(rootUid.data)]
@@ -211,16 +216,17 @@ export default {
             // 检测节点信息修改
             console.log(nNode)
             let req = this.bxDeepClone(this.nodeUpdateRequest) // 修改请求 
-            let no = nNode.no || ''
+            let no = nNode[this.remoteColMaps['col_no']] || nNode.no
             let old = null
             let data = {}
+            let colName = this.remoteColMaps['col_no'] || 'no'
             if(no){
                 req['condition'] = [{
-                    colName:'no',
+                    colName:colName,
                     ruleType:'eq',
                     value:no
                 }] // 构造修改条件
-                old = this.mindConfig.oldNodes.filter(item => item.no == no)
+                old = this.mindConfig.oldNodes.filter(item => item[colName] == no)
                 if(Array.isArray(old) && old.length == 1){
                     // 存在原始数据
                     old = old[0]
@@ -258,13 +264,14 @@ export default {
             this.buildMindData() // 远程数据 转 mind 数据
         },
         buildMindData(no){
-            let rootNodeNo = this.mindConfig.rootNodeNo
+            let rootNodeNo = this.rootNodeNo
             let datas = this.bxDeepClone(this.mindConfig.oldNodes)   // 脑图已保存的节点原始数据
             let root = {
                 data:null,
                 children:[]
             }
-            let rootData = datas.filter(item => item.no == rootNodeNo)[0]
+            let noColName = this.remoteColMaps['col_no'] || 'no'
+            let rootData = datas.filter(item => item[noColName] == rootNodeNo)[0]
             root['data'] = this.getMindNodeData(rootData).data
             root['children'] = this.getMindNodeData(rootData).children
             // obj.data = 
@@ -279,12 +286,16 @@ export default {
             let datas = this.bxDeepClone(this.mindConfig.oldNodes)   // 脑图已保存的节点原始数据
             let obj = {}
             let maps = this.remoteColMaps // 映射
+            let no = maps['col_no'] ||  'no'
             if(item && maps){
                 let data = {}
-                let children = datas.filter(c => c.parent_no == item.no)
+                let children = datas.filter(c => c.parent_no == item[no])
                 for(let key in item){
-                    if(key == 'no' ){
+                    if(key == 'no' || key == 'col_no' ){
                         // id
+                        data['no'] = item[key]
+                    }
+                    if(key == maps.col_no && maps.col_no){
                         data['no'] = item[key]
                     }
                     if(key == maps.col_seq && maps.col_seq){
@@ -357,7 +368,7 @@ export default {
                 }
                 
             }
-            // console.log('getMindNodeData',obj)
+            console.log('getMindNodeData',obj)
             return obj
         },
         getRemoteData(node,pNo){
@@ -373,8 +384,8 @@ export default {
                     if(key == 'expand' && maps.col_fold){
                         data[maps.col_fold] = node[key] === true ? '是' : '否'
                     }
-                    if(key == 'no'){
-                        data['no'] = node[key]
+                    if(key == 'no' && maps.col_no){
+                        data[maps.col_no] = node[key]
                     }
                     if(key == 'parent_no'){
                         data['parent_no'] = node[key]
@@ -407,8 +418,9 @@ export default {
             })
         },
         getV2(){
-            let serviceName = this.query.serviceName
-            let app = this.query.app
+            let self = this
+            let serviceName = self.query.serviceName
+            let app = self.query.app
             let req = {
                 "serviceName": "srvsys_service_columnex_v2_select",
                 "colNames": [
@@ -433,8 +445,8 @@ export default {
                     }
                 ]
             }
-            const url = this.getServiceUrl("select", "srvsys_service_columnex_v2_select", app);
-            this.$http.post(url, req).then(res => {
+            const url = self.getServiceUrl("select", "srvsys_service_columnex_v2_select", app);
+            self.$axios.post(url, req).then(res => {
                     let page = res.data
                     console.log(page)
                     if (page.state === "SUCCESS" && page.data) {
@@ -456,11 +468,79 @@ export default {
                     // })
               })
         },
+        async getCustConfig(){
+            let self = this
+            // self.getV2()
+            let serviceName = 'srvpage_cfg_com_mind_map_select'
+            
+            let app = 'config'
+            let mindbizNo = self.$route.params.mindbizNo
+            const req = {
+                "serviceName": serviceName,
+                "colNames": [
+                  "*"
+                ],
+                "condition": [{
+                    colName:'mindbiz_no',
+                    ruleType:'eq',
+                    value:mindbizNo
+                }]
+              }
+              // treeData 3000条， 普通查询500条
+            const url = self.getServiceUrl("select", serviceName, app);
+            console.log('init url',url)
+            if(!mindbizNo){
+                return false
+            }else{
+                return  self.$axios.post(url, req).then(res => {
+                    let page = res.data
+                    console.log('getCustConfig',page)
+    
+                    return new Promise(function(resolve, reject) {
+                            if (page.state === "SUCCESS" && Array.isArray(page.data) && page.data.length == 1) {
+                                let mind = page.data[0]
+                                console.log(mind,page.data)
+                                if(mind && mind.mindbiz_json){
+                                 // 是否有配置业务 有序列化json
+                                     mind.mindbiz_json = JSON.parse(mind.mindbiz_json)
+                                     self.$set(self.mindConfig,'mindbizJson',mind.mindbiz_json)
+                                     
+                                     self.$set(self.mindConfig,'mindCustConfig',self.bxDeepClone({...mind,...mind.mindbiz_json}))  // 原始数据
+                                }
+                                self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
+                                self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
+                                self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
+                                self.$set(self,'defaultTheme', 'classic4')  // 主题
+                                self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
+                                self.submitChange('select').then(r => {
+                                   
+                                    console.log('select nodes',r)
+                                    if(Array.isArray(r)){
+                                        self.$set(self.mindConfig,'oldNodes',r)
+                                        self.remoteToMindNodes()
+                                    }
+                                    
+                                    resolve(true)
+                                })
+                                
+                             }else{
+                                resolve(false)
+                             }
+                    })
+    
+                  
+                }).catch(err=>{
+                    console.log(err)
+                })
+            }
+            
+        },
         async initPage(isAll){
             // 根据脑图编号查询脑图实例
-            this.getV2()
             let self = this
+            self.getV2()
             let serviceName = this.query.serviceName
+            
             let app = this.query.app
             const req = {
                 "serviceName": serviceName,
@@ -474,7 +554,8 @@ export default {
                 }]
               }
               // treeData 3000条， 普通查询500条
-            const url = this.getServiceUrl("select", serviceName, app);
+            const url = self.getServiceUrl("select", serviceName, app);
+            console.log('init url',url)
             if(self.mindConfig && self.mindConfig.oldMind && !isAll){
                 // 只加载节点数据
                 return new Promise(function(resolve, reject) {
@@ -491,7 +572,7 @@ export default {
                 })
             }else{
                 // 加载图表
-                return  this.$http.post(url, req).then(res => {
+                return  self.$axios.post(url, req).then(res => {
                     let page = res.data
                     console.log(page)
     
@@ -505,7 +586,6 @@ export default {
                                      self.$set(self.mindConfig,'mindbizJson',mind.mindbiz_json)
                                 }
                                 self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
-         
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self,'defaultTheme', 'classic4')  // 主题
@@ -585,10 +665,14 @@ export default {
                     reqType = 'operate'
                     break;
                 case 'select':
-                    // 节点删除
+                    // 节点
                     req = this.bxDeepClone(this.nodeSelectRequest)
+                    let seq = "seq"
+                    if(this.routeMade == 'cust'){
+                        seq = this.mindConfig.mindCustConfig.col_seq
+                    }
                     req['order'] = [{
-                        "colName": "seq",
+                        "colName": seq,
                         "orderType": "asc"
                     }]
                     reqType = 'select'

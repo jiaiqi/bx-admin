@@ -475,6 +475,13 @@ routes.push( {
         component:()=> import('@/pages/mind/index.vue')
       },
       {
+        path:'editor/:mindbizNo/:rootNo',
+        //修改
+        component:()=> import('@/pages/mind/index.vue')
+      },
+      
+      
+      {
         path:'view/:no',
         //只读
         component:()=> import('@/pages/mind/index.vue')

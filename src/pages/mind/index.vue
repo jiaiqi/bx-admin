@@ -19,7 +19,7 @@
             id="mindMapContainer">
         </div>
         <div class="tool-layout">
-            <div class="hander-layout" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind">
+            <div class="hander-layout" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind && routeMade == 'norm'">
                 <div class="mind-tools shadow">
                     <div class="mind-title">
                         <span v-if="!showEdit">{{mindConfig.mainMind.mind_name}}</span>
@@ -34,9 +34,9 @@
                             </el-input>
                             <el-button type="primary" size="small" @click="updateMind()">确定</el-button>
                         </div>
-                    </div>
+                    </div> 
                     
-                    <mindtoolbar :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
+                    <mindtoolbar v-if="routeMade == 'norm'" :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
                     <div class="search-layout" v-if="showSearch">
                         <el-input
                         style="width:8rem;"
@@ -51,7 +51,7 @@
 
                 </div>
                 
-                <topToolBar class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
+                <topToolBar v-if="routeMade == 'norm'" class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
             </div>
             <div class="side-layout " v-if="showEditorUi.includes('side')">
                 <div class="side-toolbar border border-radius  shadow ">
@@ -288,14 +288,32 @@ let copyData = null
   mounted: function () {
     this.loading = false
     
-
-    this.initPage().then(res => {
-        console.log('init Page',res)
-        if(res && !this.mindMapModel){
-            this.initMind(this.dataTemp)
-            
-        }
-    })  // 加载数据
+    if(this.$route.params && this.$route.params.mindbizNo && this.$route.params.rootNo){
+        this.$set(this,'routeMade','cust')
+    }
+    switch (this.routeMade) {
+        case 'norm':
+            this.initPage().then(res => {
+                console.log('init Page',res)
+                if(res && !this.mindMapModel){
+                    this.initMind(this.dataTemp)
+                    
+                }
+            })  // 加载数据
+            break;
+        case 'cust':
+            this.getCustConfig().then(res => {
+                console.log('getCustConfig Page',res)
+                // if(res && !this.mindMapModel){
+                //     this.initMind(this.dataTemp)
+                    
+                // }
+            })  // 加载数据
+            break;
+        default:
+            break;
+    }
+    
   },
   
     
