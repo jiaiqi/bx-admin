@@ -594,16 +594,16 @@ export default {
                     
                     nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
                     
-                    // this.submitChange('add',nData).then( ar => {
-                    //     console.log(ar)
-                    //     this.initPage().then(res => {
-                    //         console.log('init Page',res)
-                    //         if(res){
-                    //             // this.initMind(this.dataTemp)
+                    this.submitChange('add',nData).then( ar => {
+                        console.log(ar)
+                        this.initPage().then(res => {
+                            console.log('init Page',res)
+                            if(res){
+                                // this.initMind(this.dataTemp)
                                 
-                    //         }
-                    //     })  // 加载数据
-                    // })
+                            }
+                        })  // 加载数据
+                    })
                     console.log('新增节点',nNodeData,nData,)
                 }
                 

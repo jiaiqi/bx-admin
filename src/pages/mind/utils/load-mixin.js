@@ -446,7 +446,8 @@ export default {
                 ]
             }
             const url = self.getServiceUrl("select", "srvsys_service_columnex_v2_select", app);
-            self.$axios.post(url, req).then(res => {
+            if(serviceName){
+                self.$axios.post(url, req).then(res => {
                     let page = res.data
                     console.log(page)
                     if (page.state === "SUCCESS" && page.data) {
@@ -467,6 +468,8 @@ export default {
                     //   }
                     // })
               })
+            }
+            
         },
         async getCustConfig(){
             let self = this
