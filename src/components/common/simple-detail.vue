@@ -160,6 +160,7 @@ import SimpleUpdate from "./simple-update.vue";
 import CustButtonMinx from "../mixin/cust-button-minx";
 import { hotTableMetadata } from "../model/Field";
 import updateHistory from "../ui/update-history.vue";
+import BroadcastMixin from '../mixin/broadcast-channel-mixin'
 export default {
   name: "simple-detail",
   components: {
@@ -169,7 +170,7 @@ export default {
     loader: Loader,
     updateHistory,
   },
-  mixins: [FormMixin, CustButtonMinx, FormValidateMixin],
+  mixins: [FormMixin, CustButtonMinx, FormValidateMixin,BroadcastMixin],
   props: {
     formType: {
       type: String,
@@ -209,6 +210,7 @@ export default {
       updateService: null,
       isXhtml: false,
       refreshService: null,
+      broadcastChannel: null,
     };
   },
 
@@ -268,9 +270,10 @@ export default {
         this.activeForm = null;
         this.$refs.loader.run();
       }
+      this.$emit('action-complete',event)
+      this.bcPostMessage('action-complete',event)
     },
   },
-
   mounted() {
     this.createFields((srvCol) => srvCol.in_detail != 0)
       .then((response) => {
