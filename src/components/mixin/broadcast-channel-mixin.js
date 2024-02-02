@@ -9,22 +9,24 @@ export default {
     this.broadcastChannel = null;
   },
   mounted() {
-    this.broadcastChannel = new BroadcastChannel("myChannel");
+    if (this.$route.query?.broadCastName) {
+      // 在组件挂载后创建BroadcastChannel
+      this.broadcastChannel = new BroadcastChannel(
+        this.$route.query?.broadCastName
+      );
+    }
   },
   methods: {
-    bcPostMessage(type,event) {
+    bcPostMessage(type, event) {
       // 通过broadcastChannel广播消息
-      if(this.broadcastChannel?.postMessage){
+      if (this.broadcastChannel?.postMessage) {
         const msg = {
           type,
           event,
-          broadCastId:this.$route.query?.broadCastId
-        }
-        this.broadcastChannel.postMessage(
-          JSON.stringify(msg)
-        )
+        };
+        console.log("通知别的标签页刷新数据", msg);
+        this.broadcastChannel.postMessage(JSON.stringify(msg));
       }
-      this.broadcastChannel.postMessage(event);
     },
   },
 };
