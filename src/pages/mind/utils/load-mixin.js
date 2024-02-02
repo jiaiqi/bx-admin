@@ -58,6 +58,10 @@ export default {
             let no = this.mindConfig.rootNodeNo || this.$route.params.rootNo
             return no
         },
+        no(){
+            let no = this.query.no || this.$route.params.no
+            return no 
+        },
         imgReqModel(){
             let model = this.bxDeepClone(this.imageMode)
             model['app_no'] = this.query.app
@@ -553,13 +557,13 @@ export default {
                 "condition": [{
                     colName:'mind_no',
                     ruleType:'eq',
-                    value:this.query.no
+                    value:this.no
                 }]
               }
               // treeData 3000条， 普通查询500条
             const url = self.getServiceUrl("select", serviceName, app);
             console.log('init url',url)
-            if(self.mindConfig && self.mindConfig.oldMind && !isAll){
+            if(self.mindConfig && self.mindConfig.oldMind && !isAll && self.no){
                 // 只加载节点数据
                 return new Promise(function(resolve, reject) {
                     self.submitChange('select').then(r => {
