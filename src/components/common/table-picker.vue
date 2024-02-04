@@ -1,18 +1,16 @@
 <template>
   <div>
-    <el-popover trigger="click" v-model="visible" ref="show_popover"
+
+    <el-popover trigger="focus" ref="show_popover"
       :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }">
-      <div slot="reference">
+      <template slot="reference">
         <el-select style="width: 100%" :disabled="disabled" v-model="selected" :value-key="valueCol"
           popper-class="popper-class" placeholder="请选择" :multiple="isMulti" clearable @remove-tag="removeTag"
-          @clear="clearSelect" @focus="
-            visible = true;
-          onSearch();
-          ">
+          @clear="clearSelect" @focus="onSearch">
           <el-option v-for="item in allData" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-      </div>
+      </template>
       <div class="picker-view">
         <div class="top-bar">
           <el-input placeholder="输入查询条件" suffix-icon="el-icon-search" v-model="inputVal" clearable
@@ -430,6 +428,7 @@ export default {
         // 单选模式
         this.selected = row[this.valueCol];
         this.visible = false;
+        this.$refs.show_popover?.doClose()
       }
 
       this.setFieldVal();
