@@ -493,7 +493,20 @@ export default {
             let mindMap = this.mindMapModel
             this.$set(this,'defaultLayout',layout)
             mindMap.setLayout(layout)
-            this.$set(this.mindConfig.mainMind,'mind_style',layout)
+            let layoutName = ''
+            if(this.routeMade == 'cust'){
+                for(let l of this.layoutList){
+                    if(l.layout == layout){
+                        layoutName = l.name
+                    }
+                }
+                if(layoutName){
+                    this.$set(this.mindConfig.mainMind,'default_style',layout)
+                }
+            }else{
+                this.$set(this.mindConfig.mainMind,'mind_style',layout)
+            }
+            
             let req = this.bxDeepClone(this.mindUpdateRequest)
             this.submitChange('update',req).then(r => {
                 this.initPage(true).then(res => {
@@ -584,7 +597,7 @@ export default {
                     // 没有排序字段时，默认同级最后一个
                     nData[this.remoteColMaps['col_seq']] = nodes.length
                 }
-                // console.log(nData,nodes.length)
+                console.log(nNodeData.data)
                 if(nNodeData.data.no){
                     // 如果存在 no 为修改
                     console.log('修改',nData)
@@ -595,14 +608,21 @@ export default {
                     nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
                     
                     this.submitChange('add',nData).then( ar => {
-                        console.log(ar)
-                        this.initPage().then(res => {
-                            console.log('init Page',res)
-                            if(res){
-                                // this.initMind(this.dataTemp)
-                                
-                            }
-                        })  // 加载数据
+                        console.log('新增成功',ar) 
+                        // 如果不刷新 会造成没有 no 值 二次新增
+                        if(this.routeMade == 'cust'){
+                            // 业务脑图
+                            this.getCustConfig()
+                        }else{
+                            this.initPage().then(res => {
+                                console.log('init Page',res)
+                                if(res){
+                                    // this.initMind(this.dataTemp)
+                                    
+                                }
+                            })  // 加载数据
+                        }
+                        
                     })
                     console.log('新增节点',nNodeData,nData,)
                 }
@@ -644,13 +664,24 @@ export default {
                     self.submitChange().then( mres => {
                         // 回填修改脑图根节点编号
                         console.log(mres)
-                        self.initPage().then(res => {
-                            console.log('init Page',res)
-                            if(res){
-                                // self.initMind(self.dataTemp)
+                        if(self.routeMade == 'cust'){
+                            self.getCustConfig()
+                        }else{
+                            self.initPage().then(res => {
+                                console.log('init Page',res)
+                                if(res){
+                                    // this.initMind(this.dataTemp)
+                                    
+                                }
+                            })  // 加载数据
+                        }
+                        // self.initPage().then(res => {
+                        //     console.log('init Page',res)
+                        //     if(res){
+                        //         // self.initMind(self.dataTemp)
                                 
-                            }
-                        })  // 加载数据
+                        //     }
+                        // })  // 加载数据
                     })
                 }
             })
@@ -694,27 +725,30 @@ export default {
           nodeDragend(nodeData,type){
             // 节点拖动结束 修改逻辑
             // 修改 父节点
+            
             let activeNode = this.mouseActiveNode
             let nData = null
+            let noColName = this.nodeNoColName // 配置的no 字段col name
+            let nodeSeqColName = this.remoteColMaps['col_seq'] // 配置的seq 字段col name
             if(activeNode){
                 nData = activeNode.nodeData.data // 拖动的节点
                 let reqs = []  // 修改请求
                 let pNo = nodeData.data.parent_no  // 放置节点父编号
                 let isTogether = (pNo == nData.parent_no)  // 是否同级
-                let brotherNodes = this.mindConfig.oldNodes.filter( item => item.parent_no == pNo && item.no !== nData.no)
+                let brotherNodes = this.mindConfig.oldNodes.filter( item => item.parent_no == pNo && item[noColName] !== nData.no)
                 if(!isTogether){
                     // 如果不是同级拖放
                     switch (type) {
                         case 'overlapNodeUid':
                             // 如果不是同级 放置在节点上
-                            brotherNodes = this.mindConfig.oldNodes.filter( item => item.parent_no == nodeData.data.no && item.no !== nData.no)
+                            brotherNodes = this.mindConfig.oldNodes.filter( item => item.parent_no == nodeData.data.no && item[noColName] !== nData.no)
                             break;
                         default:
                             break;
                     }
                 }
-                let nos = brotherNodes.map(item => item.no) // 放置 no 序列
-                // console.log(brotherNodes,nos,nodeData.data.no,type)
+                let nos = brotherNodes.map(item => item[noColName]) // 放置 no 序列
+                console.log(brotherNodes,nos,nodeData.data.no,type)
                 let onIndex = nos.length // 放置序列的末尾 index
                 for(let index in nos){
                     if(nos[index] == nodeData.data.no){
@@ -732,13 +766,12 @@ export default {
                             
                             let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
                             seqReq['condition'] = [{
-                                colName:'no',
+                                colName:noColName,
                                 ruleType:'eq',
                                 value:nos[n]
                             }]
-                            seqReq['data'] = [{
-                                'seq':n
-                            }]
+                            seqReq['data'] = [{}]
+                            seqReq['data'][0][nodeSeqColName] = n
                             if(nos[n] == nData.no){
                                 // 如果拖动的节点 修改父节点
                                 seqReq['data'][0]['parent_no'] = nodeData.data.no
@@ -752,14 +785,27 @@ export default {
                         this.submitChange('update',reqs).then( r => {
                             console.log(r)
                             if(r){
+                                if(this.routeMade == 'cust'){
+                                    // 自定义业务
+                                    this.getCustConfig()
+                                }else{
+                                    // 脑图标准数据
+                                    this.initPage().then(res => {
+                                        console.log('init Page',res)
+                                        if(res){
+                                            // this.initMind(this.dataTemp)
+                                            
+                                        }
+                                    })  // 加载数据
+                                }
                                 // 修改成功刷新mind
-                                this.initPage().then(res => {
-                                    console.log('init Page',res)
-                                    if(res){
-                                        // this.initMind(this.dataTemp)
+                                // this.initPage().then(res => {
+                                //     console.log('init Page',res)
+                                //     if(res){
+                                //         // this.initMind(this.dataTemp)
                                         
-                                    }
-                                })  // 加载数据
+                                //     }
+                                // })  // 加载数据
                             }
                             
                         })
@@ -772,13 +818,13 @@ export default {
                         for(let n in nos){
                             let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
                             seqReq['condition'] = [{
-                                colName:'no',
+                                colName:noColName,
                                 ruleType:'eq',
                                 value:nos[n]
                             }]
-                            seqReq['data'] = [{
-                                'seq':n
-                            }]
+                            
+                            seqReq['data'] = [{}]
+                            seqReq['data'][0][nodeSeqColName] = n
                             if(nos[n] == nData.no && nodeData.data.parent_no !== nData.parent_no){
                                 // 如果时拖动的节点 修改父节点
                                 seqReq['data'][0]['parent_no'] = nodeData.data.parent_no
@@ -792,14 +838,25 @@ export default {
                             this.submitChange('update',reqs).then( r => {
                                 console.log(r)
                                 if(r){
-                                    // 修改成功刷新mind
-                                    this.initPage().then(res => {
-                                        console.log('init Page',res)
-                                        if(res){
-                                            // this.initMind(this.dataTemp)
+                                    if(this.routeMade == 'cust'){
+                                        this.getCustConfig()
+                                    }else{
+                                        this.initPage().then(res => {
+                                            console.log('init Page',res)
+                                            if(res){
+                                                // this.initMind(this.dataTemp)
+                                                
+                                            }
+                                        })  // 加载数据
+                                    }
+                                    // // 修改成功刷新mind
+                                    // this.initPage().then(res => {
+                                    //     console.log('init Page',res)
+                                    //     if(res){
+                                    //         // this.initMind(this.dataTemp)
                                             
-                                        }
-                                    })  // 加载数据
+                                    //     }
+                                    // })  // 加载数据
                                 }
                                 
                             })
@@ -813,13 +870,13 @@ export default {
                         for(let n in nos){
                             let seqReq = this.bxDeepClone(this.nodeUpdateRequest)
                             seqReq['condition'] = [{
-                                colName:'no',
+                                colName:noColName,
                                 ruleType:'eq',
                                 value:nos[n]
                             }]
-                            seqReq['data'] = [{
-                                'seq':n
-                            }]
+                            
+                            seqReq['data'] = [{}]
+                            seqReq['data'][0][nodeSeqColName] = n
                             if(nos[n] == nData.no && nodeData.data.parent_no !== nData.parent_no){
                                 // 如果时拖动的节点 修改父节点
                                 seqReq['data'][0]['parent_no'] = nodeData.data.parent_no
@@ -834,14 +891,25 @@ export default {
                             this.submitChange('update',reqs).then( r => {
                                 console.log(r)
                                 if(r){
+                                    if(this.routeMade == 'cust'){
+                                        this.getCustConfig()
+                                    }else{
+                                        this.initPage().then(res => {
+                                            console.log('init Page',res)
+                                            if(res){
+                                                // this.initMind(this.dataTemp)
+                                                
+                                            }
+                                        })  // 加载数据
+                                    }
                                     // 修改成功刷新mind
-                                    this.initPage().then(res => {
-                                        console.log('init Page',res)
-                                        if(res){
-                                            // this.initMind(this.dataTemp)
+                                    // this.initPage().then(res => {
+                                    //     console.log('init Page',res)
+                                    //     if(res){
+                                    //         // this.initMind(this.dataTemp)
                                             
-                                        }
-                                    })  // 加载数据
+                                    //     }
+                                    // })  // 加载数据
                                 }
                                 
                             })
@@ -990,7 +1058,10 @@ export default {
             let mindMap = this.mindMapModel
             let searchText = e || this.searchValue
             mindMap.search.search(searchText, () => {
-                this.$refs.searchInputRef.focus()
+                if(this.$refs.searchInputRef){
+                    this.$refs.searchInputRef.focus()
+                }
+                
             })
           },
           updateMind(){

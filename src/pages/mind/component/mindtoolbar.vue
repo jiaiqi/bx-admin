@@ -112,6 +112,12 @@ import verticalTimeline from '../images/verticalTimeline.png'  // tuli
 export default {
     name:'mind-tool-bar',
     props:{
+        mode:{
+            type:String,
+            default(){
+                return 'norm'
+            }
+        },
         activeNodes:{
             type:Array,
             default(){
@@ -257,20 +263,45 @@ export default {
         toolsBuild(){
             let tools = this.bxDeepClone(this.tools)
             let mindConfig = this.mindConfig ? this.mindConfig : null
+            let toolsMode = this.mode
             if(mindConfig){
                 // 获取节点原始样式
-                let theme = mindConfig.mainMind.theme
-                let layout = mindConfig.mainMind.mind_style
-                for(let bars of tools){
-                    for(let tool of bars.tools){
-                        if(tool.key == 'theme'){
-                            tool['value'] = theme
+                let theme = mindConfig.mainMind.theme || ''
+                let layout = mindConfig.mainMind.mind_style || ''
+                if(toolsMode == 'cust'){
+                    layout = mindConfig.mainMind.default_style
+                    console.log('default_style',layout)
+                    let list = this.layouts
+                    for(let l of list){
+                        if(layout && l.name == layout){
+                            layout = l.layout
                         }
-                        if(tool.key == 'layout'){
-                            tool['value'] = layout
+                    }
+                    for(let bars of tools){
+                        for(let tool of bars.tools){
+                            if(tool.key == 'theme' && theme){
+                                tool['value'] = theme
+                            }
+                            if(tool.key == 'layout' && layout){
+                                tool['value'] = layout
+                                tool['predefines'] = this.layouts.map(item => item)
+                            }
+                        }
+                    }
+                }else{
+                    for(let bars of tools){
+                        for(let tool of bars.tools){
+                            if(tool.key == 'theme'){
+                                tool['value'] = theme
+                            }
+                            if(tool.key == 'layout'){
+                                tool['value'] = layout
+                                tool['predefines'] = this.layouts.map(item => item)
+                            }
                         }
                     }
                 }
+                
             }
             
             return tools

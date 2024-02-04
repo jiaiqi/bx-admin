@@ -1,4 +1,6 @@
 import {walk} from 'simple-mind-map/src/utils'
+
+import { themeList } from 'simple-mind-map/src/constants/constant'
 export default {
     data() {
         return {
@@ -8,6 +10,41 @@ export default {
             treeData:[],
             mindConfig:{},
             loadMindDatas:{},
+            layoutList:[
+                {
+                    layout:'logicalStructure',
+                    name:'逻辑结构图'
+                },
+                {
+                    layout:'mindMap',
+                    name:'思维导图'
+                },
+                {
+                    layout:'organizationStructure',
+                    name:'组织结构图'
+                },
+                {
+                    layout:'catalogOrganization',
+                    name:'目录组织图'
+                },
+                {
+                    layout:'timeline',
+                    name:'时间轴'
+                },
+                {
+                    layout:'timeline2',
+                    name:'时间轴2'
+                },
+                {
+                    layout:'fishbone',
+                    name:'鱼骨图'
+                },
+                {
+                    layout:'verticalTimeline',
+                    name:'竖向时间轴'
+                },
+                
+            ],
             dataTemp:{
                 data:{
                     // 节点文本
@@ -54,9 +91,320 @@ export default {
     },
     
     computed: {
+        tools(){
+            let tools = [{
+                name:'基础设置',
+                tools:[
+                {
+                    name:'修改标题',
+                    key:'edit',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    // predefines: this.layouts,
+                },{
+                    name:'主题',
+                    key:'theme',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefines: themeList,
+                },
+                {
+                    name:'布局',
+                    key:'layout',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefines: this.layouts,
+                },{
+                    name:'大纲',
+                    key:'tree',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    // predefines: this.layouts,
+                },{
+                    name:'搜索',
+                    key:'search',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    // predefines: this.layouts,
+                }]
+            }]
+            if(this.routeMade == 'cust'){
+                tools[0].tools = tools[0].tools.filter(item => !['layout','theme','edit'].includes(item.key))
+            }
+            return tools
+        },
+        topbars(){
+            let topbars = [{
+                name:'文字样式',
+                tools:[{
+                    name:'字体',
+                    key:'fontFamily',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineFonts: [{
+                        ch: '宋体',
+                        en: 'SimSun'
+                    }, {
+                        ch: '黑体',
+                        en: 'SimHei'
+                    }, {
+                        ch: '微软雅黑',
+                        en: 'Microsoft Yahei'
+                    }, {
+                        ch: '微软正黑体',
+                        en: 'Microsoft JhengHei'
+                    }, {
+                        ch: '楷体',
+                        en: 'KaiTi'
+                    }, {
+                        ch: '新宋体',
+                        en: 'NSimSun'
+                    }, {
+                        ch: '仿宋',
+                        en: 'FangSong'
+                    }],
+                },{
+                    name:'字号',
+                    key:'fontSize',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineFonts: [{
+                        name: 'H1',
+                        value: '2em'
+                    },{
+                        name: 'H2',
+                        value: '1.5em'
+                    },{
+                        name: 'H3',
+                        value: '1.17em'
+                    },{
+                        name: 'H4',
+                        value: '14px'
+                    },{
+                        name: 'H5',
+                        value: '0.83em'
+                    },{
+                        name: '正文',
+                        value: '12px'
+                    }],
+                },{
+                    name:'加粗',
+                    key:'fontWeight',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                },{
+                    name:'删除线',
+                    key:'textDecoration',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                },{
+                    name:'文字颜色',
+                    key:'color',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        // 预置颜色
+                        '#ff4500',
+                        '#ff8c00',
+                        '#ffd700',
+                        '#90ee90',
+                        '#00ced1',
+                        '#1e90ff',
+                        '#c71585',
+                        'rgba(255, 69, 0, 0.68)',
+                        'rgb(255, 120, 0)',
+                        'hsv(51, 100, 98)',
+                        'hsva(120, 40, 94, 0.5)',
+                        'hsl(181, 100%, 37%)',
+                        'hsla(209, 100%, 56%, 0.73)',
+                        '#c7158577'
+                    ],
+                }]
+            },{
+                name:'节点样式',
+                tools:[{
+                    name:'边框颜色',
+                    key:'borderColor',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        // 预置颜色
+                        '#ff4500',
+                        '#ff8c00',
+                        '#ffd700',
+                        '#90ee90',
+                        '#00ced1',
+                        '#1e90ff',
+                        '#c71585',
+                        'rgba(255, 69, 0, 0.68)',
+                        'rgb(255, 120, 0)',
+                        'hsv(51, 100, 98)',
+                        'hsva(120, 40, 94, 0.5)',
+                        'hsl(181, 100%, 37%)',
+                        'hsla(209, 100%, 56%, 0.73)',
+                        '#c7158577'
+                    ],
+                },{
+                    name:'背景颜色',
+                    key:'fillColor',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        // 预置颜色
+                        '#ff4500',
+                        '#ff8c00',
+                        '#ffd700',
+                        '#90ee90',
+                        '#00ced1',
+                        '#1e90ff',
+                        '#c71585',
+                        'rgba(255, 69, 0, 0.68)',
+                        'rgb(255, 120, 0)',
+                        'hsv(51, 100, 98)',
+                        'hsva(120, 40, 94, 0.5)',
+                        'hsl(181, 100%, 37%)',
+                        'hsla(209, 100%, 56%, 0.73)',
+                        '#c7158577'
+                    ],
+                },{
+                    name:'节点形状',
+                    key:'shape',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineShapes: [
+                        {
+                            name: '矩形',
+                            value: 'rectangle'
+                        },
+                        {
+                            name: '菱形',
+                            value: 'diamond'
+                        },
+                        {
+                            name: '平行四边形',
+                            value: 'parallelogram'
+                        },
+                        {
+                            name: '圆角矩形',
+                            value: 'roundedRectangle'
+                        },
+                        {
+                            name: '八角矩形',
+                            value: 'octagonalRectangle'
+                        },
+                        {
+                            name: '外三角矩形',
+                            value: 'outerTriangularRectangle'
+                        },
+                        {
+                            name: '内三角矩形',
+                            value: 'innerTriangularRectangle'
+                        },
+                        {
+                            name: '椭圆',
+                            value: 'ellipse'
+                        },
+                        {
+                            name: '圆',
+                            value: 'circle'
+                        }
+                        ],
+                    }]
+                },{
+                name:'节点内容',
+                tools:[{
+                    name:'插入图片',
+                    key:'setImage',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        ],
+                }]
+            }]
+            let list = []
+            if(this.routeMade == 'cust' || this.routeMade == 'norm'){
+                for(let bar of topbars){
+                    
+                    switch (bar.name) {
+                        case '文字样式':
+                            // tools[0].tools = tools[0].tools.filter(item => !['layout','theme','edit'].includes(item.key))
+                            
+                            if(this.remoteColMaps['col_style']){
+                               list.push(bar)         
+                            }
+                            break;
+                        case '节点样式':
+                            if(this.remoteColMaps['col_style']){
+                                list.push(bar)         
+                             }
+                            break;
+                        case '节点内容':
+                            if(this.remoteColMaps['col_image']){
+                                list.push(bar)         
+                             }
+                            break;
+                    
+                        default:
+                            break;
+                    }  
+                }
+                
+            }else{
+                list = topbars.map(item => item)
+            }
+            return list
+        },
         rootNodeNo(){
-            let no = this.mindConfig.rootNodeNo || this.$route.params.rootNo
+            let no = this.mindConfig.rootNodeNo
+            if(this.$route.params && this.$route.params.rootNo){
+                no = this.$route.params.rootNo
+            }
+            if(this.$route.query && this.$route.query.rootNo){
+                no = this.$route.query.rootNo
+            }
             return no
+        },
+        mindbizNo(){
+            let no = ''
+            if(this.$route.params && this.$route.params.mindbizNo){
+                no = this.$route.params.mindbizNo
+            }
+            if(this.$route.query && this.$route.query.mindbizNo){
+                no = this.$route.query.mindbizNo
+            }
+            return no 
+        },
+        no(){
+            let no = this.query.no || this.$route.params.no
+            return no 
         },
         imgReqModel(){
             let model = this.bxDeepClone(this.imageMode)
@@ -91,6 +439,14 @@ export default {
             }
 
             return map
+        },
+        nodeNoColName(){
+            let no = 'no'
+            if(this.remoteColMaps && this.remoteColMaps['col_no']){
+                no = this.remoteColMaps['col_no']
+            }
+
+            return no 
         },
         nodeSrvApp(){
             // 配置的app
@@ -186,6 +542,7 @@ export default {
             // 脑图实例修改请求  根据原始脑图数据 例如更新 根节点后 提交回填修改请求使用。
             let result = null
             let serviceName = 'srvtools_mind_map_subject_update'
+            
             let mind =  this.bxDeepClone( this.mindConfig.oldMind) // 原始数据
             let mainMind = this.bxDeepClone( this.mindConfig.mainMind) // 绑定数据
             let req = {
@@ -194,6 +551,14 @@ export default {
                     colName:'mind_no',
                     ruleType:'eq',
                     value:mind.mind_no
+                }]
+            }
+            if(this.routeMade == 'cust'){
+                req['serviceName'] = 'srvpage_cfg_com_mind_map_update'
+                req['condition'] =[{
+                    colName:'id',
+                    ruleType:'eq',
+                    value:mind.id
                 }]
             }
             let data = {}
@@ -244,14 +609,25 @@ export default {
                         this.submitChange('update',req).then( r => {
                             console.log(r)
                             if(r){
+                                if(this.routeMade == 'cust'){
+                                    this.getCustConfig()
+                                }else{
+                                    this.initPage().then(res => {
+                                        console.log('init Page',res)
+                                        if(res){
+                                            // this.initMind(this.dataTemp)
+                                            
+                                        }
+                                    })  // 加载数据
+                                }
                                 // 修改成功刷新mind
-                                this.initPage().then(res => {
-                                    console.log('init Page',res)
-                                    if(res){
-                                        // this.initMind(this.dataTemp)
+                                // this.initPage().then(res => {
+                                //     console.log('init Page',res)
+                                //     if(res){
+                                //         // this.initMind(this.dataTemp)
                                         
-                                    }
-                                })  // 加载数据
+                                //     }
+                                // })  // 加载数据
                             }
                             
                         })
@@ -368,7 +744,7 @@ export default {
                 }
                 
             }
-            console.log('getMindNodeData',obj)
+            // console.log('getMindNodeData',obj)
             return obj
         },
         getRemoteData(node,pNo){
@@ -477,7 +853,8 @@ export default {
             let serviceName = 'srvpage_cfg_com_mind_map_select'
             
             let app = 'config'
-            let mindbizNo = self.$route.params.mindbizNo
+            let mindbizNo = self.mindbizNo
+            
             const req = {
                 "serviceName": serviceName,
                 "colNames": [
@@ -513,8 +890,28 @@ export default {
                                 self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
+                                let defaultTheme = self.bxDeepClone(mind)['default_style'] 
+                                if(defaultTheme){
+                                    // 回显默认皮肤
+                                    
+                                    let defaultThemeKey = ''
+                                    if(Array.isArray(self.layoutList)){
+                                        for(let layout of self.layoutList){
+                                            if(layout.name == defaultTheme){
+                                                defaultThemeKey = layout.layout
+                                            }
+                                        }
+                                    }
+                                    if(defaultThemeKey){
+                                        self.$set(self,'defaultLayout',defaultThemeKey)
+                                    }else{
+                                        self.$set(self,'defaultLayout', defaultThemeKey || '')  // 主题
+                                    }
+                                    
+                                }
+                                
                                 self.$set(self,'defaultTheme', 'classic4')  // 主题
-                                self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
+                               
                                 self.submitChange('select').then(r => {
                                    
                                     console.log('select nodes',r)
@@ -553,13 +950,13 @@ export default {
                 "condition": [{
                     colName:'mind_no',
                     ruleType:'eq',
-                    value:this.query.no
+                    value:this.no
                 }]
               }
               // treeData 3000条， 普通查询500条
             const url = self.getServiceUrl("select", serviceName, app);
             console.log('init url',url)
-            if(self.mindConfig && self.mindConfig.oldMind && !isAll){
+            if(serviceName && self.mindConfig && self.mindConfig.oldMind && !isAll && self.no){
                 // 只加载节点数据
                 return new Promise(function(resolve, reject) {
                     self.submitChange('select').then(r => {
@@ -573,7 +970,7 @@ export default {
                         resolve(true)
                     })
                 })
-            }else{
+            }else if(serviceName){
                 // 加载图表
                 return  self.$axios.post(url, req).then(res => {
                     let page = res.data
@@ -701,7 +1098,7 @@ export default {
                 // 判断 请求结构是否基本完整
                 return  this.$http.post(url, req).then(res => {
                     let page = res.data
-                    console.log(page)
+                    console.log('request',page)
                     return new Promise(function(resolve, reject) {
                         let result = null
                         if(type == 'add'){
@@ -747,12 +1144,13 @@ export default {
           updateNodeStyle(no,newStyle){
             console.log('updateNodeStyle',no,newStyle)
             let self = this
-             let oldNode = this.mindConfig.oldNodes.filter(item => item.no == no)  
+            let noColName = self.remoteColMaps['col_no'] || 'no'
+             let oldNode = this.mindConfig.oldNodes.filter(item => item[noColName] == no)  
              // 节点原始数据
              if(Array.isArray(oldNode) && oldNode.length == 1){
                 let updateReq = this.bxDeepClone(this.nodeUpdateRequest)
                 updateReq['condition'] = [{
-                    colName:'no',
+                    colName:noColName,
                     ruleType:'eq',
                     value:no
                 }]
@@ -769,14 +1167,25 @@ export default {
                     console.log('updateNodeStyle',updateReq)
                     self.submitChange('update',updateReq).then(r=>{
                         if(r){
+                            if(this.routeMade == 'cust'){
+                                this.getCustConfig()
+                            }else{
+                                this.initPage().then(res => {
+                                    console.log('init Page',res)
+                                    if(res){
+                                        // this.initMind(this.dataTemp)
+                                        
+                                    }
+                                })  // 加载数据
+                            }
                             // 修改成功刷新mind
-                            this.initPage().then(res => {
-                                console.log('init Page',res)
-                                if(res){
-                                    // this.initMind(this.dataTemp)
+                            // this.initPage().then(res => {
+                            //     console.log('init Page',res)
+                            //     if(res){
+                            //         // this.initMind(this.dataTemp)
                                     
-                                }
-                            })  // 加载数据
+                            //     }
+                            // })  // 加载数据
                         }
                     })
                 }
@@ -807,14 +1216,25 @@ export default {
                     console.log('updateNodeImage',updateReq)
                     self.submitChange('update',updateReq).then(r=>{
                         if(r){
+                            if(this.routeMade == 'cust'){
+                                this.getCustConfig()
+                            }else{
+                                this.initPage().then(res => {
+                                    console.log('init Page',res)
+                                    if(res){
+                                        // this.initMind(this.dataTemp)
+                                        
+                                    }
+                                })  // 加载数据
+                            }
                             // 修改成功刷新mind
-                            this.initPage().then(res => {
-                                console.log('save image',res)
-                                if(res){
-                                    // this.initMind(this.dataTemp)
+                            // this.initPage().then(res => {
+                            //     console.log('save image',res)
+                            //     if(res){
+                            //         // this.initMind(this.dataTemp)
                                     
-                                }
-                            })  // 加载数据
+                            //     }
+                            // })  // 加载数据
                         }
                     })
                 }
