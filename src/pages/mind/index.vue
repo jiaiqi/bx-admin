@@ -37,7 +37,7 @@
                         </div>
                     </div> 
                     
-                    <mindtoolbar v-if="true" :tools="tools" :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
+                    <mindtoolbar v-if="true" :mode="routeMade" :tools="tools" :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
                     <div class="search-layout" v-if="showSearch">
                         <el-input
                         style="width:8rem;"

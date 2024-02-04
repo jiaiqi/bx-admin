@@ -10,6 +10,41 @@ export default {
             treeData:[],
             mindConfig:{},
             loadMindDatas:{},
+            layoutList:[
+                {
+                    layout:'logicalStructure',
+                    name:'逻辑结构图'
+                },
+                {
+                    layout:'mindMap',
+                    name:'思维导图'
+                },
+                {
+                    layout:'organizationStructure',
+                    name:'组织结构图'
+                },
+                {
+                    layout:'catalogOrganization',
+                    name:'目录组织图'
+                },
+                {
+                    layout:'timeline',
+                    name:'时间轴'
+                },
+                {
+                    layout:'timeline2',
+                    name:'时间轴2'
+                },
+                {
+                    layout:'fishbone',
+                    name:'鱼骨图'
+                },
+                {
+                    layout:'verticalTimeline',
+                    name:'竖向时间轴'
+                },
+                
+            ],
             dataTemp:{
                 data:{
                     // 节点文本
@@ -315,7 +350,7 @@ export default {
                 }]
             }]
             let list = []
-            if(this.routeMade == 'cust'){
+            if(this.routeMade == 'cust' || this.routeMade == 'norm'){
                 for(let bar of topbars){
                     
                     switch (bar.name) {
@@ -507,6 +542,7 @@ export default {
             // 脑图实例修改请求  根据原始脑图数据 例如更新 根节点后 提交回填修改请求使用。
             let result = null
             let serviceName = 'srvtools_mind_map_subject_update'
+            
             let mind =  this.bxDeepClone( this.mindConfig.oldMind) // 原始数据
             let mainMind = this.bxDeepClone( this.mindConfig.mainMind) // 绑定数据
             let req = {
@@ -515,6 +551,14 @@ export default {
                     colName:'mind_no',
                     ruleType:'eq',
                     value:mind.mind_no
+                }]
+            }
+            if(this.routeMade == 'cust'){
+                req['serviceName'] = 'srvpage_cfg_com_mind_map_update'
+                req['condition'] =[{
+                    colName:'id',
+                    ruleType:'eq',
+                    value:mind.id
                 }]
             }
             let data = {}
@@ -700,7 +744,7 @@ export default {
                 }
                 
             }
-            console.log('getMindNodeData',obj)
+            // console.log('getMindNodeData',obj)
             return obj
         },
         getRemoteData(node,pNo){
@@ -846,8 +890,28 @@ export default {
                                 self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
+                                let defaultTheme = self.bxDeepClone(mind)['default_style'] 
+                                if(defaultTheme){
+                                    // 回显默认皮肤
+                                    
+                                    let defaultThemeKey = ''
+                                    if(Array.isArray(self.layoutList)){
+                                        for(let layout of self.layoutList){
+                                            if(layout.name == defaultTheme){
+                                                defaultThemeKey = layout.layout
+                                            }
+                                        }
+                                    }
+                                    if(defaultThemeKey){
+                                        self.$set(self,'defaultLayout',defaultThemeKey)
+                                    }else{
+                                        self.$set(self,'defaultLayout', defaultThemeKey || '')  // 主题
+                                    }
+                                    
+                                }
+                                
                                 self.$set(self,'defaultTheme', 'classic4')  // 主题
-                                self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
+                               
                                 self.submitChange('select').then(r => {
                                    
                                     console.log('select nodes',r)

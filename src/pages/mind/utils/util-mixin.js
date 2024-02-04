@@ -493,7 +493,20 @@ export default {
             let mindMap = this.mindMapModel
             this.$set(this,'defaultLayout',layout)
             mindMap.setLayout(layout)
-            this.$set(this.mindConfig.mainMind,'mind_style',layout)
+            let layoutName = ''
+            if(this.routeMade == 'cust'){
+                for(let l of this.layoutList){
+                    if(l.layout == layout){
+                        layoutName = l.name
+                    }
+                }
+                if(layoutName){
+                    this.$set(this.mindConfig.mainMind,'default_style',layout)
+                }
+            }else{
+                this.$set(this.mindConfig.mainMind,'mind_style',layout)
+            }
+            
             let req = this.bxDeepClone(this.mindUpdateRequest)
             this.submitChange('update',req).then(r => {
                 this.initPage(true).then(res => {
