@@ -1,4 +1,6 @@
 import {walk} from 'simple-mind-map/src/utils'
+
+import { themeList } from 'simple-mind-map/src/constants/constant'
 export default {
     data() {
         return {
@@ -54,6 +56,297 @@ export default {
     },
     
     computed: {
+        tools(){
+            let tools = [{
+                name:'基础设置',
+                tools:[
+                {
+                    name:'修改标题',
+                    key:'edit',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    // predefines: this.layouts,
+                },{
+                    name:'主题',
+                    key:'theme',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefines: themeList,
+                },
+                {
+                    name:'布局',
+                    key:'layout',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefines: this.layouts,
+                },{
+                    name:'大纲',
+                    key:'tree',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    // predefines: this.layouts,
+                },{
+                    name:'搜索',
+                    key:'search',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    // predefines: this.layouts,
+                }]
+            }]
+            if(this.routeMade == 'cust'){
+                tools[0].tools = tools[0].tools.filter(item => !['layout','theme','edit'].includes(item.key))
+            }
+            return tools
+        },
+        topbars(){
+            let topbars = [{
+                name:'文字样式',
+                tools:[{
+                    name:'字体',
+                    key:'fontFamily',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineFonts: [{
+                        ch: '宋体',
+                        en: 'SimSun'
+                    }, {
+                        ch: '黑体',
+                        en: 'SimHei'
+                    }, {
+                        ch: '微软雅黑',
+                        en: 'Microsoft Yahei'
+                    }, {
+                        ch: '微软正黑体',
+                        en: 'Microsoft JhengHei'
+                    }, {
+                        ch: '楷体',
+                        en: 'KaiTi'
+                    }, {
+                        ch: '新宋体',
+                        en: 'NSimSun'
+                    }, {
+                        ch: '仿宋',
+                        en: 'FangSong'
+                    }],
+                },{
+                    name:'字号',
+                    key:'fontSize',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineFonts: [{
+                        name: 'H1',
+                        value: '2em'
+                    },{
+                        name: 'H2',
+                        value: '1.5em'
+                    },{
+                        name: 'H3',
+                        value: '1.17em'
+                    },{
+                        name: 'H4',
+                        value: '14px'
+                    },{
+                        name: 'H5',
+                        value: '0.83em'
+                    },{
+                        name: '正文',
+                        value: '12px'
+                    }],
+                },{
+                    name:'加粗',
+                    key:'fontWeight',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                },{
+                    name:'删除线',
+                    key:'textDecoration',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                },{
+                    name:'文字颜色',
+                    key:'color',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        // 预置颜色
+                        '#ff4500',
+                        '#ff8c00',
+                        '#ffd700',
+                        '#90ee90',
+                        '#00ced1',
+                        '#1e90ff',
+                        '#c71585',
+                        'rgba(255, 69, 0, 0.68)',
+                        'rgb(255, 120, 0)',
+                        'hsv(51, 100, 98)',
+                        'hsva(120, 40, 94, 0.5)',
+                        'hsl(181, 100%, 37%)',
+                        'hsla(209, 100%, 56%, 0.73)',
+                        '#c7158577'
+                    ],
+                }]
+            },{
+                name:'节点样式',
+                tools:[{
+                    name:'边框颜色',
+                    key:'borderColor',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        // 预置颜色
+                        '#ff4500',
+                        '#ff8c00',
+                        '#ffd700',
+                        '#90ee90',
+                        '#00ced1',
+                        '#1e90ff',
+                        '#c71585',
+                        'rgba(255, 69, 0, 0.68)',
+                        'rgb(255, 120, 0)',
+                        'hsv(51, 100, 98)',
+                        'hsva(120, 40, 94, 0.5)',
+                        'hsl(181, 100%, 37%)',
+                        'hsla(209, 100%, 56%, 0.73)',
+                        '#c7158577'
+                    ],
+                },{
+                    name:'背景颜色',
+                    key:'fillColor',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        // 预置颜色
+                        '#ff4500',
+                        '#ff8c00',
+                        '#ffd700',
+                        '#90ee90',
+                        '#00ced1',
+                        '#1e90ff',
+                        '#c71585',
+                        'rgba(255, 69, 0, 0.68)',
+                        'rgb(255, 120, 0)',
+                        'hsv(51, 100, 98)',
+                        'hsva(120, 40, 94, 0.5)',
+                        'hsl(181, 100%, 37%)',
+                        'hsla(209, 100%, 56%, 0.73)',
+                        '#c7158577'
+                    ],
+                },{
+                    name:'节点形状',
+                    key:'shape',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineShapes: [
+                        {
+                            name: '矩形',
+                            value: 'rectangle'
+                        },
+                        {
+                            name: '菱形',
+                            value: 'diamond'
+                        },
+                        {
+                            name: '平行四边形',
+                            value: 'parallelogram'
+                        },
+                        {
+                            name: '圆角矩形',
+                            value: 'roundedRectangle'
+                        },
+                        {
+                            name: '八角矩形',
+                            value: 'octagonalRectangle'
+                        },
+                        {
+                            name: '外三角矩形',
+                            value: 'outerTriangularRectangle'
+                        },
+                        {
+                            name: '内三角矩形',
+                            value: 'innerTriangularRectangle'
+                        },
+                        {
+                            name: '椭圆',
+                            value: 'ellipse'
+                        },
+                        {
+                            name: '圆',
+                            value: 'circle'
+                        }
+                        ],
+                    }]
+                },{
+                name:'节点内容',
+                tools:[{
+                    name:'插入图片',
+                    key:'setImage',
+                    icon:'el-icon-bottom-right',
+                    disabled:false,
+                    options:[],
+                    value:'',
+                    predefineColors: [
+                        ],
+                }]
+            }]
+            let list = []
+            if(this.routeMade == 'cust'){
+                for(let bar of topbars){
+                    
+                    switch (bar.name) {
+                        case '文字样式':
+                            // tools[0].tools = tools[0].tools.filter(item => !['layout','theme','edit'].includes(item.key))
+                            
+                            if(this.remoteColMaps['col_style']){
+                               list.push(bar)         
+                            }
+                            break;
+                        case '节点样式':
+                            if(this.remoteColMaps['col_style']){
+                                list.push(bar)         
+                             }
+                            break;
+                        case '节点内容':
+                            if(this.remoteColMaps['col_image']){
+                                list.push(bar)         
+                             }
+                            break;
+                    
+                        default:
+                            break;
+                    }  
+                }
+                
+            }else{
+                list = topbars.map(item => item)
+            }
+            return list
+        },
         rootNodeNo(){
             let no = this.mindConfig.rootNodeNo
             if(this.$route.params && this.$route.params.rootNo){
@@ -787,12 +1080,13 @@ export default {
           updateNodeStyle(no,newStyle){
             console.log('updateNodeStyle',no,newStyle)
             let self = this
-             let oldNode = this.mindConfig.oldNodes.filter(item => item.no == no)  
+            let noColName = self.remoteColMaps['col_no'] || 'no'
+             let oldNode = this.mindConfig.oldNodes.filter(item => item[noColName] == no)  
              // 节点原始数据
              if(Array.isArray(oldNode) && oldNode.length == 1){
                 let updateReq = this.bxDeepClone(this.nodeUpdateRequest)
                 updateReq['condition'] = [{
-                    colName:'no',
+                    colName:noColName,
                     ruleType:'eq',
                     value:no
                 }]

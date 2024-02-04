@@ -595,8 +595,10 @@ export default {
                     nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
                     
                     this.submitChange('add',nData).then( ar => {
-                        console.log('新增成功',ar)
+                        console.log('新增成功',ar) 
+                        // 如果不刷新 会造成没有 no 值 二次新增
                         if(this.routeMade == 'cust'){
+                            // 业务脑图
                             this.getCustConfig()
                         }else{
                             this.initPage().then(res => {
@@ -713,8 +715,8 @@ export default {
             
             let activeNode = this.mouseActiveNode
             let nData = null
-            let noColName = this.nodeNoColName
-            let nodeSeqColName = this.remoteColMaps['col_seq']
+            let noColName = this.nodeNoColName // 配置的no 字段col name
+            let nodeSeqColName = this.remoteColMaps['col_seq'] // 配置的seq 字段col name
             if(activeNode){
                 nData = activeNode.nodeData.data // 拖动的节点
                 let reqs = []  // 修改请求
@@ -771,8 +773,10 @@ export default {
                             console.log(r)
                             if(r){
                                 if(this.routeMade == 'cust'){
+                                    // 自定义业务
                                     this.getCustConfig()
                                 }else{
+                                    // 脑图标准数据
                                     this.initPage().then(res => {
                                         console.log('init Page',res)
                                         if(res){
@@ -1041,7 +1045,10 @@ export default {
             let mindMap = this.mindMapModel
             let searchText = e || this.searchValue
             mindMap.search.search(searchText, () => {
-                this.$refs.searchInputRef.focus()
+                if(this.$refs.searchInputRef){
+                    this.$refs.searchInputRef.focus()
+                }
+                
             })
           },
           updateMind(){

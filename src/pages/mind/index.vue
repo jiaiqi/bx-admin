@@ -19,16 +19,17 @@
             id="mindMapContainer">
         </div>
         <div class="tool-layout">
-            <div class="hander-layout" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind && routeMade == 'norm'">
+            <!-- && routeMade == 'norm' -->
+            <div class="hander-layout" v-if="showEditorUi.includes('hand') && mindConfig && mindConfig.mainMind ">
                 <div class="mind-tools shadow">
-                    <div class="mind-title">
+                    <div class="mind-title" v-if="routeMade == 'norm'">
                         <span v-if="!showEdit">{{mindConfig.mainMind.mind_name}}</span>
                         
                         <div class="search-layout" v-if="showEdit">
                             <el-input
                             style="width:8rem;"
-                            ref="searchInputRef"
-                            placeholder="请输入内容搜索"
+                            ref="editInputRef"
+                            placeholder="请输入内容"
                             v-model="mindConfig.mainMind.mind_name"
                             clearable>
                             </el-input>
@@ -36,7 +37,7 @@
                         </div>
                     </div> 
                     
-                    <mindtoolbar v-if="routeMade == 'norm'" :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
+                    <mindtoolbar v-if="true" :tools="tools" :showEdit="showEdit" :showTree="showTree" :showSearch="showSearch" :mindConfig="mindConfig" @set-mind-config="setMindConfig"></mindtoolbar>
                     <div class="search-layout" v-if="showSearch">
                         <el-input
                         style="width:8rem;"
@@ -50,8 +51,8 @@
                     </div>
 
                 </div>
-                
-                <topToolBar v-if="routeMade == 'norm'" class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
+                <!-- v-if="routeMade == 'norm'" -->
+                <topToolBar :tools="topbars"  class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
             </div>
             <div class="side-layout " v-if="showEditorUi.includes('side')">
                 <div class="side-toolbar border border-radius  shadow ">
