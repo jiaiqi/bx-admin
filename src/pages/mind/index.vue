@@ -288,7 +288,7 @@ let copyData = null
   mounted: function () {
     this.loading = false
     
-    if(this.$route.params && this.$route.params.mindbizNo && this.$route.params.rootNo){
+    if((this.$route.params && this.$route.params.mindbizNo && this.$route.params.rootNo) || (this.$route.query && this.$route.query.mindbizNo && this.$route.query.rootNo)){
         this.$set(this,'routeMade','cust')
     }
     switch (this.routeMade) {

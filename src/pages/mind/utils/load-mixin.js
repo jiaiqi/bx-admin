@@ -55,8 +55,24 @@ export default {
     
     computed: {
         rootNodeNo(){
-            let no = this.mindConfig.rootNodeNo || this.$route.params.rootNo
+            let no = this.mindConfig.rootNodeNo
+            if(this.$route.params && this.$route.params.rootNo){
+                no = this.$route.params.rootNo
+            }
+            if(this.$route.query && this.$route.query.rootNo){
+                no = this.$route.query.rootNo
+            }
             return no
+        },
+        mindbizNo(){
+            let no = ''
+            if(this.$route.params && this.$route.params.mindbizNo){
+                no = this.$route.params.mindbizNo
+            }
+            if(this.$route.query && this.$route.query.mindbizNo){
+                no = this.$route.query.mindbizNo
+            }
+            return no 
         },
         no(){
             let no = this.query.no || this.$route.params.no
@@ -481,7 +497,8 @@ export default {
             let serviceName = 'srvpage_cfg_com_mind_map_select'
             
             let app = 'config'
-            let mindbizNo = self.$route.params.mindbizNo
+            let mindbizNo = self.mindbizNo
+            
             const req = {
                 "serviceName": serviceName,
                 "colNames": [
