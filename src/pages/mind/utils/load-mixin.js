@@ -112,6 +112,14 @@ export default {
 
             return map
         },
+        nodeNoColName(){
+            let no = 'no'
+            if(this.remoteColMaps && this.remoteColMaps['col_no']){
+                no = this.remoteColMaps['col_no']
+            }
+
+            return no 
+        },
         nodeSrvApp(){
             // 配置的app
             let result = null
@@ -264,14 +272,25 @@ export default {
                         this.submitChange('update',req).then( r => {
                             console.log(r)
                             if(r){
+                                if(this.routeMade == 'cust'){
+                                    this.getCustConfig()
+                                }else{
+                                    this.initPage().then(res => {
+                                        console.log('init Page',res)
+                                        if(res){
+                                            // this.initMind(this.dataTemp)
+                                            
+                                        }
+                                    })  // 加载数据
+                                }
                                 // 修改成功刷新mind
-                                this.initPage().then(res => {
-                                    console.log('init Page',res)
-                                    if(res){
-                                        // this.initMind(this.dataTemp)
+                                // this.initPage().then(res => {
+                                //     console.log('init Page',res)
+                                //     if(res){
+                                //         // this.initMind(this.dataTemp)
                                         
-                                    }
-                                })  // 加载数据
+                                //     }
+                                // })  // 加载数据
                             }
                             
                         })
@@ -580,7 +599,7 @@ export default {
               // treeData 3000条， 普通查询500条
             const url = self.getServiceUrl("select", serviceName, app);
             console.log('init url',url)
-            if(self.mindConfig && self.mindConfig.oldMind && !isAll && self.no){
+            if(serviceName && self.mindConfig && self.mindConfig.oldMind && !isAll && self.no){
                 // 只加载节点数据
                 return new Promise(function(resolve, reject) {
                     self.submitChange('select').then(r => {
@@ -594,7 +613,7 @@ export default {
                         resolve(true)
                     })
                 })
-            }else{
+            }else if(serviceName){
                 // 加载图表
                 return  self.$axios.post(url, req).then(res => {
                     let page = res.data
@@ -722,7 +741,7 @@ export default {
                 // 判断 请求结构是否基本完整
                 return  this.$http.post(url, req).then(res => {
                     let page = res.data
-                    console.log(page)
+                    console.log('request',page)
                     return new Promise(function(resolve, reject) {
                         let result = null
                         if(type == 'add'){
@@ -790,14 +809,25 @@ export default {
                     console.log('updateNodeStyle',updateReq)
                     self.submitChange('update',updateReq).then(r=>{
                         if(r){
+                            if(this.routeMade == 'cust'){
+                                this.getCustConfig()
+                            }else{
+                                this.initPage().then(res => {
+                                    console.log('init Page',res)
+                                    if(res){
+                                        // this.initMind(this.dataTemp)
+                                        
+                                    }
+                                })  // 加载数据
+                            }
                             // 修改成功刷新mind
-                            this.initPage().then(res => {
-                                console.log('init Page',res)
-                                if(res){
-                                    // this.initMind(this.dataTemp)
+                            // this.initPage().then(res => {
+                            //     console.log('init Page',res)
+                            //     if(res){
+                            //         // this.initMind(this.dataTemp)
                                     
-                                }
-                            })  // 加载数据
+                            //     }
+                            // })  // 加载数据
                         }
                     })
                 }
@@ -828,14 +858,25 @@ export default {
                     console.log('updateNodeImage',updateReq)
                     self.submitChange('update',updateReq).then(r=>{
                         if(r){
+                            if(this.routeMade == 'cust'){
+                                this.getCustConfig()
+                            }else{
+                                this.initPage().then(res => {
+                                    console.log('init Page',res)
+                                    if(res){
+                                        // this.initMind(this.dataTemp)
+                                        
+                                    }
+                                })  // 加载数据
+                            }
                             // 修改成功刷新mind
-                            this.initPage().then(res => {
-                                console.log('save image',res)
-                                if(res){
-                                    // this.initMind(this.dataTemp)
+                            // this.initPage().then(res => {
+                            //     console.log('save image',res)
+                            //     if(res){
+                            //         // this.initMind(this.dataTemp)
                                     
-                                }
-                            })  // 加载数据
+                            //     }
+                            // })  // 加载数据
                         }
                     })
                 }
