@@ -890,7 +890,7 @@ export default {
                                 self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
-                                let defaultTheme = self.bxDeepClone(mind)['default_style'] 
+                                let defaultTheme = self.bxDeepClone(mind)['default_style']  
                                 if(defaultTheme){
                                     // 回显默认皮肤
                                     
@@ -989,7 +989,26 @@ export default {
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self,'defaultTheme', 'classic4')  // 主题
-                                self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
+                                // self.$set(self,'defaultLayout', mind.mind_style || '')  // 主题
+                                let defaultTheme = mind.mind_style
+                                if(defaultTheme){
+                                    // 回显默认皮肤
+                                    
+                                    let defaultThemeKey = ''
+                                    if(Array.isArray(self.layoutList)){
+                                        for(let layout of self.layoutList){
+                                            if(layout.name == defaultTheme){
+                                                defaultThemeKey = layout.layout
+                                            }
+                                        }
+                                    }
+                                    if(defaultThemeKey){
+                                        self.$set(self,'defaultLayout',defaultThemeKey)
+                                    }else{
+                                        self.$set(self,'defaultLayout', defaultThemeKey || '')  // 主题
+                                    }
+                                    
+                                }
                                 self.submitChange('select').then(r => {
                                    
                                     console.log('select nodes',r)

@@ -504,7 +504,14 @@ export default {
                     this.$set(this.mindConfig.mainMind,'default_style',layout)
                 }
             }else{
-                this.$set(this.mindConfig.mainMind,'mind_style',layout)
+                for(let l of this.layoutList){
+                    if(l.layout == layout){
+                        layoutName = l.name
+                    }
+                }
+                // this.$set(this.mindConfig.mainMind,'mind_style',layout)
+                this.$set(this.mindConfig.mainMind,'mind_style',layoutName)
+
             }
             
             let req = this.bxDeepClone(this.mindUpdateRequest)
