@@ -51,8 +51,11 @@
                     </div>
 
                 </div>
+                <div class="node-tools shadow">
+                    <topToolBar :tools="topbars"  class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
+
+                </div>
                 <!-- v-if="routeMade == 'norm'" -->
-                <topToolBar :tools="topbars"  class="shadow" :activeNodes="activeNodes" @set-node-tool="setNodeTool"></topToolBar>
             </div>
             <div class="side-layout " v-if="showEditorUi.includes('side')">
                 <div class="side-toolbar border border-radius  shadow ">
@@ -131,12 +134,12 @@
                 <el-tree v-if="showTree" style="max-height:100%;overflow-y:auto;overflow-x:auto;"  :data="treeData" :props="treeDefaultProps" default-expand-all @node-click="treeNodeClick"></el-tree>
             </div>
             <div class="footer-layout" v-if="showEditorUi.includes('footer')">
-                <div>
+                <div class="footer-left">
                     <div style="min-width:6rem;background:#fff;padding:6px;text-align:center;">
                         节点数:{{num}}
                     </div>
                 </div>
-                <div>
+                <div class="footer-right">
                    <!-- 搜索 -->
                     <!-- <el-button icon=" el-icon-search" @click="showSearch" title="搜索节点">
                         
@@ -144,16 +147,16 @@
                     <el-button icon="el-icon-full-screen" @click="viewFit" title="适应画布显示">
                         <!-- 适配画布显示 -->
                     </el-button>
-                    <!-- <div style="min-width:16rem;background:#fff;padding:0 10px;">
+                    <div style="min-width:16rem;background:#fff;padding:0 10px;">
                         <el-slider
-                        :min="10"
-                        :max="200"
+                        :min="60"
+                        :max="150"
                         :step="10"
                         v-model="defaultScale"
                         @change="viewSetScale"
                         show-input>
                         </el-slider>
-                    </div> -->
+                    </div>
                     <el-button  type="primary" @click="exportFile('pdf')">导出</el-button>
 
                     <!-- <el-button  type="primary" @click="getAllData()">获取数据</el-button> -->
@@ -297,7 +300,9 @@ let copyData = null
             this.initPage().then(res => {
                 console.log('init Page',res)
                 if(res && !this.mindMapModel){
-                    this.initMind(this.dataTemp)
+                    this.$nextTick(() => {
+                        this.initMind(this.dataTemp)
+                    })
                     
                 }
             })  // 加载数据
@@ -309,6 +314,7 @@ let copyData = null
                 //     this.initMind(this.dataTemp)
                     
                 // }
+                
             })  // 加载数据
             break;
         default:
@@ -350,11 +356,13 @@ let copyData = null
         // },
         initMind(d){
             // 转载初始化数据
+            let self = this
+            console.log('',this.bxDeepClone(d))
             mindMap = new MindMap({
                 el: document.getElementById('mindMapContainer'),
                 // enableFreeDrag: true,
-                theme:this.defaultTheme,
-                layout:this.defaultLayout,
+                theme:self.defaultTheme,
+                layout:self.defaultLayout,
                 data: d,
                 mousewheelAction: 'move', // move zoom
                 // initRootNodePosition: ['center', 'center'],
@@ -364,21 +372,21 @@ let copyData = null
             // mindMap.addPlugin(RichText)
             // 动态关闭富文本编辑
             // mindMap.removePlugin(RichText)
-            this.mindMapModel = mindMap
+            self.mindMapModel = mindMap
             
-            this.defaultTheme = this.mindMapModel.getTheme()
-            mindMap.on('data_change',  this.onDataChange)
+            self.defaultTheme = self.mindMapModel.getTheme()
+            mindMap.on('data_change',  self.onDataChange)
             // mindMap.on('view_data_change', this.nodeDragging)
             // mindMap.on('node_tree_render_end', updateMiniMp)
 
 
             // 右键点击事件 处理逻辑
-            mindMap.keyCommand.addShortcut('Control+c', this.copy)
-            mindMap.keyCommand.addShortcut('Control+v', this.paste)
-            mindMap.keyCommand.addShortcut('Control+x', this.cut)
+            mindMap.keyCommand.addShortcut('Control+c', self.copy)
+            mindMap.keyCommand.addShortcut('Control+v', self.paste)
+            mindMap.keyCommand.addShortcut('Control+x', self.cut)
 
             mindMap.on('node_contextmenu', (e, node) => {
-                console.log(e,node,'节点信息',this.rightMousedown)
+                console.log(e,node,'节点信息',self.rightMousedown)
                 if(node){
                     this.rightMousedown.type = 'node'
                     this.rightMousedown.left = e.clientX + 10
@@ -453,6 +461,9 @@ let copyData = null
                 this.activeNodes = activeNodeList
                 if (this.activeNodes.length > 0) {
                     let firstNode = this.activeNodes[0]
+                    // this.activeNodeId = firstNode.nodeData.data.no
+                    
+                    console.log('node_active',firstNode.nodeData)
                     this.currentIconList = firstNode.getData('icon') || []
                 } else {
                     this.currentIconList = []
@@ -478,7 +489,7 @@ let copyData = null
             this.defaultLayout = mindMap.getLayout()  // 回显 layout
             this.defaultScale = mindMap.view.getTransformData().state.scale * 100
 
-            console.log(mindMap.getLayout(),mindMap.view.getTransformData())
+            console.log('初始化脑图完成',mindMap.getLayout(),mindMap.view.getTransformData())
             // mindMap.updateConfig({
             //     enableFreeDrag: true
             // })
@@ -547,7 +558,8 @@ let copyData = null
             min-height:30%;
         }
         .hander-layout{
-            width:100%;
+            // width:100%;
+            position: fixed;
             top:0;
             background:$Transparent;
             padding:$padding;
@@ -559,6 +571,16 @@ let copyData = null
                 border-radius:$borderRadius;
             }
             .mind-tools{
+                display:flex;
+                align-items:center;
+                padding:0 6px;
+                .mind-title{
+                    padding:6px;
+                }
+            }
+            .node-tools{
+                position: fixed;
+                right:20px;
                 display:flex;
                 align-items:center;
                 padding:0 6px;
@@ -620,14 +642,25 @@ let copyData = null
             right:10px;
             padding:10px;
             max-height:80px;
-            width:100%;
+            // width:100%;
             justify-content:space-between;
             display:flex;
             flex-direction:row;
-            &>div{
+            &>div.footer-left{
                 display:flex;
                 flex-direction:row; 
                 align-items:center;
+                position: fixed;
+                left:20px;
+                bottom:20px;
+            }
+            &>div.footer-right{
+                display:flex;
+                flex-direction:row; 
+                align-items:center;
+                position: fixed;
+                right:20px;
+                bottom:20px;
             }
         }
         

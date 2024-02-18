@@ -844,7 +844,8 @@ export default {
 .top-tool-bar{
     background:#fff;
     padding:5px;
-
+    // position: fixed;
+    right:20px;
     display:flex;
     align-items:center;
     &>div{

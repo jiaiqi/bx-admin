@@ -289,6 +289,12 @@ export default {
                         }
                     }
                 }else{
+                    let list = this.layouts
+                    for(let l of list){
+                        if(layout && l.name == layout){
+                            layout = l.layout
+                        }
+                    }
                     for(let bars of tools){
                         for(let tool of bars.tools){
                             if(tool.key == 'theme'){
