@@ -649,12 +649,20 @@ export default {
             let noColName = this.remoteColMaps['col_no'] || 'no'
             let rootData = datas.filter(item => item[noColName] == rootNodeNo)[0]
             root['data'] = this.getMindNodeData(rootData).data
+
             root['children'] = this.getMindNodeData(rootData).children
             // obj.data = 
             console.log('build Mind Data',rootData,root)
-            this.$set(this,'dataTemp',this.bxDeepClone(root) )  // UI数据
-            this.$set(this,'loadMindDatas',this.bxDeepClone(root) ) // 初始数据
-            this.setMindData(this.bxDeepClone(root)) // 动态更新数据
+            if(root.data){
+                root['data']['expand'] = true
+                this.$nextTick(() => {
+                    this.$set(this,'dataTemp',this.bxDeepClone(root) )  // UI数据
+                    this.$set(this,'loadMindDatas',this.bxDeepClone(root) ) // 初始数据
+                    this.setMindData(this.bxDeepClone(root)) // 动态更新数据
+                })
+                
+            }
+            
         },
         getMindNodeData(item){
             //获取 mind 数据 item 远程行数据  远程行数据转换为 组件数据
@@ -676,7 +684,11 @@ export default {
                     }
                     if(key == maps.col_seq && maps.col_seq){
                         // 排序字段
-                        data['seq'] = item[key]
+                        // data['seq'] = item[key]
+                        if(data['seq'] && !isNaN( data['seq'])){
+                            // data['seq'] = data['seq']  + ''
+                        }
+                        
                     }
                     if(key == maps.col_title && maps.col_title){
                         // 文字内容
@@ -703,13 +715,16 @@ export default {
                     if(key == maps.col_parent_no && maps.col_parent_no){
                         data['parent_no'] = item[key]
                     }
-                    if(key == maps.col_seq && maps.col_seq){
-                        data['seq'] = item[key]
-                    }else{
-                        data['seq'] = item['seq']
-                    }
+                    // if(key == maps.col_seq && maps.col_seq){
+                    //     data['seq'] = item[key]
+                    // }else{
+                    //     data['seq'] = item['seq']
+                    // }
                     
-
+                    if(this.activeNodeId && data['no'] == this.activeNodeId){
+                        // 如果节点编号等于 记录选中 no时 选中状态设置为 true
+                        data['isActive'] = true
+                    }
                     
                     // 样式
                     if(key == maps.col_style && maps.col_style){
@@ -848,6 +863,7 @@ export default {
             
         },
         async getCustConfig(){
+            // 查询定制业务脑图配置
             let self = this
             // self.getV2()
             let serviceName = 'srvpage_cfg_com_mind_map_select'
@@ -870,6 +886,7 @@ export default {
             const url = self.getServiceUrl("select", serviceName, app);
             console.log('init url',url)
             if(!mindbizNo){
+                console.error('没有mindbizno')
                 return false
             }else{
                 return  self.$axios.post(url, req).then(res => {
@@ -887,7 +904,7 @@ export default {
                                      
                                      self.$set(self.mindConfig,'mindCustConfig',self.bxDeepClone({...mind,...mind.mindbiz_json}))  // 原始数据
                                 }
-                                self.$set(self.mindConfig,'rootNodeNo',mind.top_node_no)  // 当前脑图根节点编号
+                                self.$set(self.mindConfig,'rootNodeNo',self.rootNodeNo || mind.top_node_no)  // 当前脑图根节点编号
                                 self.$set(self.mindConfig,'oldMind',self.bxDeepClone(mind))  // 原始数据
                                 self.$set(self.mindConfig,'mainMind',self.bxDeepClone(mind))  // 原始数据
                                 let defaultTheme = self.bxDeepClone(mind)['default_style']  
@@ -1053,6 +1070,7 @@ export default {
              return children
           },
           submitChange(type,data){
+            let self = this
             let url = ''
             let reqType = ''
             let req = null
@@ -1124,6 +1142,11 @@ export default {
                             if(page.state == 'SUCCESS'){
                                 // 根据新增请求 返回的数据结构 返回有效数据
                                 result = page.response[0].response.effect_data[0]
+                                if(result && self.remoteColMaps){
+                                    self.activeNodeId = result[self.remoteColMaps['col_no']]
+                                    console.log('add',result,self.activeNodeId)
+
+                                }
                             }
                         }
                         if(type == 'select'){

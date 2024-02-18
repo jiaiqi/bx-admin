@@ -173,6 +173,7 @@ export default {
                 }
             },
             activeNodes:[], // 选中节点
+            activeNodeId:'',
             currentIconList:[],  // 选中节点图标
             defaultTheme:'',
             loadPageMata: null, // 页面元数据
@@ -575,6 +576,7 @@ export default {
             }
             let mindMap = this.mindMapModel
             this.$set(this,'treeData',[mindMap.getData()])
+            console.log(mindMap)
         },
         walk(data) {
             // 遍历
@@ -642,6 +644,7 @@ export default {
             let ns = nodes || this.activeNodes
             if(Array.isArray(ns) && ns.length > 0){
                 for(let n of ns){
+                    console.log(n.nodeData,isActive)
                     n.updateNodeByActive(isActive)
                 }
                 
@@ -695,13 +698,22 @@ export default {
         },
         // 更新脑图数据：
         setMindData(data){
-            let mindMap = this.mindMapModel
+            let self = this
+            let mindMap = self.mindMapModel
             if(mindMap){
                 // 存在mind 实例 则执行
+                console.log('初始化脑图数据')
                 mindMap.setData(data)
             }else{
                 // 没有实例时创建实例
-                this.initMind(this.dataTemp)
+                let mindData = data
+                if(mindData && !mindMap){
+                    this.$nextTick(() => {
+                        this.initMind(mindData)
+                    })
+                    
+                }
+                
             }
             
           },
