@@ -329,7 +329,8 @@
       :close-on-click-modal="1 == 2" append-to-body @close="activeForm = 'xx'">
 
       <update name="list-update" :mainService="mainService" ref="update-form" v-if="activeForm == 'update'"
-        :initOrigin="'dialog'" :service="getUpdateService" :pk="getClickedRowPk('update')" :pageIsDraft="activeTabName"
+        :initOrigin="'dialog'" :service="getUpdateService" :pk="getClickedRowPk('update')" 
+        :pkCol="getCustomPkCol" :pageIsDraft="activeTabName"
         :initLoad="initLoad" :defaultValues="clickedRow['update']" :submit2-db="storageType == 'db'"
         :parentPageType="listType" :haveDraft="isDraft" :parentMainFormDatas="listMainFormDatas"
         :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null"

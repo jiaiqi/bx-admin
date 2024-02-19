@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Message } from "element-ui"; // 引入elementUI的Message组件
 let bx_auth_ticket = "";
-// let baseURL = window.backendIpAddr || `http://192.168.0.157:8104`;
+let baseURL = window.backendIpAddr || `http://192.168.0.157:8104`;
 // let baseURL = window.backendIpAddr || `https://srvms.100xsys.cn`;
-let baseURL = window.backendIpAddr || `https://xxld.100xsys.cn`;
+// let baseURL = window.backendIpAddr || `https://xxld.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://wx.100xsys.cn`;
-const devTicket = 'xabxdzkj-f23315f5-ef5b-4647-94df-49ed0f865c20'
+const devTicket = 'xabxdzkj-f762e77a-00bd-44e2-982d-919709b3cae6'
 console.log( process.env.NODE_ENV);
 if (top?.pathConfig?.gateway) {
   baseURL = top?.pathConfig?.gateway;
@@ -30,10 +30,10 @@ const getRootWindow = (_window) => {
   }
 };
 
-
+export const backendIpAddr = baseURL
 export const $axios = axios.create({
   baseURL,
-  timeout: 20 * 1000,
+  timeout: 60 * 1000,
   withCredentials: true,
 });
 $axios.interceptors.request.use(
@@ -73,6 +73,8 @@ $axios.interceptors.response.use(
         //   type: "error",
         // });
         if (response.data.resultCode == "0011") {
+          Vue.prototype.$store&&Vue.prototype.$store.commit("clearSrvCols");
+
           // sessionStorage.clear()
           // localStorage.clear()
           if (getRootWindow()?.layer) {

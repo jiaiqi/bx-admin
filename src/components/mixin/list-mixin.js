@@ -1091,9 +1091,13 @@ export default {
             request['reqType']  = 'deleteDraft'
           }
           var cMap = {colName: "id", ruleType: "in"};
+          if(this.pub_field_map?.id){
+            // 删除时 如果列表配置了id的映射字段 则使用映射的字段作为colName
+            cMap.colName = this.pub_field_map.id
+          }
           var cVule = [];
           for (var item of deleteRowData) {
-            cVule.push(item.id);
+            cVule.push(item[cMap.colName]);
           }
           cMap["value"] = cVule.toString();
           request["condition"] = [cMap];

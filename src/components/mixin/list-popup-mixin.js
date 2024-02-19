@@ -39,10 +39,11 @@ export default {
 
     getDefaultCondition4Duplicate: function () {
       let list = this;
+      const colName =  this.pub_field_map?.id || "id"
       let condition = {
-        colName: "id",
+        colName,
         ruleType: "eq",
-        valueFunc: _ => list.clickedRow["duplicate"].id,
+        valueFunc: _ => list.clickedRow["duplicate"][colName],
       }
 
       return [condition];
@@ -50,15 +51,18 @@ export default {
 
     getDefaultCondition4DuplicateDeep: function () {
       let list = this;
+      const colName =  this.pub_field_map?.id || "id"
       let condition = {
-        colName: "id",
+        colName,
         ruleType: "eq",
-        valueFunc: _ => list.clickedRow["duplicatedeep"].id,
+        valueFunc: _ => list.clickedRow["duplicatedeep"][colName],
       }
 
       return [condition];
     },
-
+    getCustomPkCol(){
+      return this.pub_field_map?.id || null
+    },
   },
   methods: {
     onFilterFormLoaded: function (form) {
@@ -137,10 +141,11 @@ export default {
         this.loadTableData();
       }
     },
-
     getClickedRowPk(type) {
       if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].id) {
         return this.clickedRow[type].id.toString()
+      }else if(this.pub_field_map?.id&&this.clickedRow && this.clickedRow[type] && this.clickedRow[type][this.pub_field_map?.id]) {
+        return this.clickedRow[type][this.pub_field_map.id]
       } else {
         return null;
       }
