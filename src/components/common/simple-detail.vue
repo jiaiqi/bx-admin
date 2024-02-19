@@ -109,6 +109,7 @@
         v-if="activeForm == 'update'"
         :service="updateService"
         :pk="pk"
+        :pkCol="pkCol"
         :nav-after-submit="false"
         @action-complete="onUpdateFormActionComplete"
       >
