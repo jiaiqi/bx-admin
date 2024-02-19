@@ -551,6 +551,11 @@ export class FieldInfo {
       rule['message'] = `${this.label}为必填`;
       map.set('required', rule)
     }
+
+    if(map.get('ngMaxlength')&&map.get('encode')){
+      map.set('ngMaxlength',{...map.get('ngMaxlength'),encode:map.get('encode')?.encode})
+      map.delete('encode')
+    }
     // convert to rules list
     this.rules = Array.from(map.values());
   }
@@ -584,5 +589,36 @@ export class FieldInfo {
       let minRules = this.rules.filter(rule => !!rule.ngMinlength);
       return (minRules.length > 0) && minRules[0].ngMinlength;
     }
+  }
+  getEncodeType(){
+    if(!this.isNumeric() && this.rules){
+      let minRules = this.rules.filter(rule => !!rule.encode);
+      return (minRules.length > 0) && minRules[0].encode;
+    }
+  }
+  /**
+   * 计算字符长度 一个中文算两个字符
+   * @param {*} val 
+   * @returns {number}
+   */
+  calcCharLength(val){
+    //中文、中文标点、全角字符按1长度，英文、英文符号、数字按0.5长度计算
+    let cnReg = /([\u4e00-\u9fa5]|[\u3000-\u303F]|[\uFF00-\uFF60])/g;
+    let mat = val.match(cnReg);
+    let length = 0;
+    if (mat) {
+      return (length = mat.length*2 + (val.length - mat.length));
+    } else {
+      return (length = val.length);
+    }
+    // var v = val;
+    // if(v == "") return true;
+    // var len = 0 ;
+    // for (var i = 0; i < v.length; i++) {
+    //     // 一个中文算两个字符
+    //     var c = v.charCodeAt(i) > 255 ? 2 : 1;
+    //     len += c;
+    // }
+    // return len
   }
 }

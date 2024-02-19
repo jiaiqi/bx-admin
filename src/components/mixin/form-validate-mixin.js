@@ -204,11 +204,44 @@ export default {
             console.log("rule.valid",rule.valid)
             return rule.valid
           }
+      }else if(rule.encode==='en'&&rule.name==='ngMaxlength'&&rule.ngMaxlength){
+        if(fieldSrvVal&&this.calcCharLength(fieldSrvVal)>Number(rule.ngMaxlength)){
+          rule.message = `最多输入${rule.ngMaxlength}个字符,一个汉字占两个字符`
+          return false
+        }
+        return true
       }else{
         // TODO: handle min
         return true;
       }
+    },
+    /**
+   * 计算字符长度 一个中文算两个字符
+   * @param {*} val 
+   * @returns {number}
+   */
+  calcCharLength(val=''){
+    val = val + ''
+    //中文、中文标点、全角字符按1长度，英文、英文符号、数字按0.5长度计算
+    let cnReg = /([\u4e00-\u9fa5]|[\u3000-\u303F]|[\uFF00-\uFF60])/g;
+    let mat = val.match(cnReg);
+    let length = 0;
+    if (mat) {
+      length = mat.length*2 + (val.length - mat.length);
+    } else {
+      length = val.length;
     }
+    return length
+    // var v = val;
+    // if(v == "") return true;
+    // var len = 0 ;
+    // for (var i = 0; i < v.length; i++) {
+    //     // 一个中文算两个字符
+    //     var c = v.charCodeAt(i) > 255 ? 2 : 1;
+    //     len += c;
+    // }
+    // return len
+  }
 
 
   },
