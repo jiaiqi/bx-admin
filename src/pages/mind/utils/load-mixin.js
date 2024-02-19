@@ -684,10 +684,10 @@ export default {
                     }
                     if(key == maps.col_seq && maps.col_seq){
                         // 排序字段
-                        // data['seq'] = item[key]
-                        if(data['seq'] && !isNaN( data['seq'])){
-                            // data['seq'] = data['seq']  + ''
-                        }
+                        data['seq'] = item[key]
+                        // if(data['seq'] && !isNaN( data['seq'])){
+                        //     data['seq'] = data['seq']  + ''
+                        // }
                         
                     }
                     if(key == maps.col_title && maps.col_title){
@@ -1143,6 +1143,7 @@ export default {
                                 // 根据新增请求 返回的数据结构 返回有效数据
                                 result = page.response[0].response.effect_data[0]
                                 if(result && self.remoteColMaps){
+                                    // 保存新增节点key，便于回显时设置选中状态
                                     self.activeNodeId = result[self.remoteColMaps['col_no']]
                                     console.log('add',result,self.activeNodeId)
 
