@@ -410,7 +410,7 @@ export default {
           detailData = response.body;
           this.detailData = response.body;
           this.mainFormDatas = response.body;
-          this.id=this.detailData.id;
+          this.id=this.detailData[this.pkCol];
           if(response?.response?.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
             this.detailChartDatas = response.response.chart_data.map(item => {
               item['status'] = item['state'] == '1' ? 'success' :  item['state'] == '0' ? 'process' : 'wait'; //success
