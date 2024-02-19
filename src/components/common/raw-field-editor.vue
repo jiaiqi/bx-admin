@@ -28,7 +28,7 @@
               </car-no-keyboard>
               <bx-input-number v-else-if="field.info.editor === 'input-number'" controls-position="right" v-model="field.model" :disabled="getDisabled" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
               </bx-input-number>
-              <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" >
+              <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()"  @input="checkLength" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" >
                 <!-- style="height:80px;" -->
               </el-input>
               <el-switch v-else-if="field.info.editor === 'switch'" v-model="field.model" active-color="#13ce66" inactive-color="#777777">
@@ -147,7 +147,7 @@
                   $emit('field-value-changed', field.info.name, field)
                 ">
               </checkbox>
-              <el-input v-else-if="field.info.editor === 'Password'" v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable type="password" show-word-limit :maxlength="field.info.getMaxLength()" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
+              <el-input v-else-if="field.info.editor === 'Password'" v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable type="password" show-word-limit :maxlength="field.info.getMaxLength()" @input="checkLength" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
                 <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
                 <template slot="prepend" v-if="
                     field.info.moreConfig && field.info.moreConfig.prependText
@@ -165,7 +165,7 @@
                  <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
                 <autocompleteInput ref="autocompleteInput"  @change="changeDependField" :field="field"></autocompleteInput>
               </div>
-              <el-input v-else v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable show-word-limit :maxlength="field.info.getMaxLength()" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
+              <el-input v-else v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable show-word-limit :maxlength="field.info.getMaxLength()" @input="checkLength" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
                 <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
                 <template slot="prepend" v-if="
                     field.info.moreConfig && field.info.moreConfig.prependText
@@ -419,6 +419,31 @@ export default {
         }
       }
       this.$emit('field-value-changed', field.info.name, field)
+    },
+    checkLength(val){
+      const validateCnChar = this.field.info?.rules?.find(item=>item.name==='ngMaxlength'&&item.encode==='en')
+      if(validateCnChar?.ngMaxlength){
+        let b = 0; // 输入的字符数
+        for (let i = 0, length = val.length; i < length; i++) {
+          let c = val.charAt(i);
+          if (/^[\u0000-\u00ff]$/.test(c)) {
+            b++;
+          } else {
+            // 中文占两个字符
+            b += 2;
+          }
+          if (b > Number(validateCnChar?.ngMaxlength)) { // 字符长度限制
+            this.field.model = val.substr(0, i);
+            this.$message.warning(`最多输入${validateCnChar?.ngMaxlength}个字符,一个汉字占两个字符`);
+            if (/^[\u0000-\u00ff]$/.test(c)) {
+              b--;
+            } else {
+              b -= 2;
+            }
+            break;
+          }
+        }
+      }
     },
     onBlur() {
       // 校验唯一性
