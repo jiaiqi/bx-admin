@@ -130,6 +130,9 @@ export default {
     isMulti() {
       return ["fks", "fkjsons"].includes(this.fieldType) || this.field.info.moreConfig?.multi === true;
     },
+    isTree() {
+      return this.optionListV2?.is_tree === true
+    },
     valueCol() {
       return this.fmt && this.fmt.primary_col;
     },
@@ -554,7 +557,9 @@ export default {
         this.selectList(queryJson).then(res => {
           if (res?.data?.state === 'SUCCESS') {
             res.data.data = res.data.data.map(item => {
-              item.hasChildren = item.is_leaf === '否'
+              if (this.isTree) {
+                item.hasChildren = item.is_leaf === '否'
+              }
               if (this.selected.includes(item[this.listV2.no_col])) {
                 item.checked = true
               }
@@ -732,7 +737,9 @@ export default {
         if (response && response.data && response.data.data) {
 
           this.gridData = _.cloneDeep(response.data.data).map((item) => {
-            item.hasChildren = item.is_leaf === '否'
+            if (this.isTree) {
+              item.hasChildren = item.is_leaf === '否'
+            }
             item.checked = false;
             return item;
           });
