@@ -407,6 +407,7 @@ export default {
             this.hide()
         },
         toggleBold(){
+            // 加粗
             let mindMap = this.mindMapModel
             let showToolbar = this.showToolbar
             showToolbar.currentFormatInfo.bold = !showToolbar.currentFormatInfo.bold
@@ -588,6 +589,7 @@ export default {
             }
         },
         hideTextEdit(textEditNode,activeNodeList){
+            // 节点标题完成富文本编辑
             console.log('hideTextEdit',textEditNode,activeNodeList)
             if(Array.isArray(activeNodeList) && activeNodeList.length == 1){
                 let newNodeData = activeNodeList[0]
