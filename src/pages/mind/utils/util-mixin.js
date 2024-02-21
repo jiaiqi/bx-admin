@@ -615,7 +615,7 @@ export default {
                     // 新节点按照同级索引进行排序
                     
                     nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
-                    
+                    console.log('新增',newNodeData.getIndexInBrothers())
                     this.submitChange('add',nData).then( ar => {
                         console.log('新增成功',ar) 
                         // 如果不刷新 会造成没有 no 值 二次新增
@@ -802,8 +802,12 @@ export default {
                             }
                         }
                         this.submitChange('update',reqs).then( r => {
-                            console.log(r)
+                            console.log('拖动修改',r,nData)
+
                             if(r){
+                                // 根据修改请求 返回的数据结构 返回有效数据
+                                this.activeNodeId = nData.no
+                                console.log('拖动update',this.activeNodeId)
                                 if(this.routeMade == 'cust'){
                                     // 自定义业务
                                     this.getCustConfig()
@@ -855,8 +859,11 @@ export default {
                         }
                         if(reqs.length > 0){
                             this.submitChange('update',reqs).then( r => {
-                                console.log(r)
+                                console.log('拖动update',r)
                                 if(r){
+                                   // 根据修改请求 返回的数据结构 返回有效数据
+                                   this.activeNodeId = nData.no
+                                   console.log('拖动update',this.activeNodeId)
                                     if(this.routeMade == 'cust'){
                                         this.getCustConfig()
                                     }else{
@@ -908,8 +915,11 @@ export default {
                         }
                         if(reqs.length > 0){
                             this.submitChange('update',reqs).then( r => {
-                                console.log(r)
+                                console.log('拖动update',r)
                                 if(r){
+                                    // 根据修改请求 返回的数据结构 返回有效数据
+                                    this.activeNodeId = nData.no
+                                    console.log('拖动update',this.activeNodeId)
                                     if(this.routeMade == 'cust'){
                                         this.getCustConfig()
                                     }else{

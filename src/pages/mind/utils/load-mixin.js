@@ -608,17 +608,7 @@ export default {
                         req['data'] = [data]
                         this.submitChange('update',req).then( r => {
                             console.log(r)
-                            let result = null
-                            if(r.state == 'SUCCESS'){
-                                // 根据新增请求 返回的数据结构 返回有效数据
-                                result = r.response[0].response.effect_data[0]
-                                if(result && this.remoteColMaps){
-                                    // 保存新增节点key，便于回显时设置选中状态
-                                    this.activeNodeId = result[this.remoteColMaps['col_no']]
-                                    console.log('add',result,this.activeNodeId)
-
-                                }
-                            }
+                           
                             if(r){
                                 if(this.routeMade == 'cust'){
                                     this.getCustConfig()
@@ -1162,13 +1152,17 @@ export default {
                         if(type == 'update'){
                             if(page.state == 'SUCCESS'){
                                 // 根据修改请求 返回的数据结构 返回有效数据
-                                result = page.response[0].response.effect_data[0]
-                                if(result && self.remoteColMaps){
-                                    // 保存新增节点key，便于回显时设置选中状态
-                                    self.activeNodeId = result[self.remoteColMaps['col_no']]
-                                    console.log('add',result,self.activeNodeId)
+                                if(Array.isArray(page.response[0].response.effect_data) && page.response[0].response.effect_data.length == 1){
+                                    // 非批量修改排序逻辑
+                                    result = page.response[0].response.effect_data[0]
+                                    if(result && self.remoteColMaps){
+                                        // 保存新增节点key，便于回显时设置选中状态
+                                        self.activeNodeId = result[self.remoteColMaps['col_no']]
+                                        console.log('add',result,self.activeNodeId)
 
+                                    }
                                 }
+                                
                             }
                         }
                         if(page.state == 'FAILURE' && page.resultCode == '9999'){
