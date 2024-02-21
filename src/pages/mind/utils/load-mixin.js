@@ -620,14 +620,6 @@ export default {
                                         }
                                     })  // 加载数据
                                 }
-                                // 修改成功刷新mind
-                                // this.initPage().then(res => {
-                                //     console.log('init Page',res)
-                                //     if(res){
-                                //         // this.initMind(this.dataTemp)
-                                        
-                                //     }
-                                // })  // 加载数据
                             }
                             
                         })

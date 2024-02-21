@@ -602,8 +602,8 @@ export default {
                 console.log('newNodeData',newNodeData)
                 let nData = this.getRemoteData(nNodeData.data,pNo)   // 新节点数据
                 let nodes = this.mindConfig.oldNodes.filter(item => item['parent_no'] == pNo)
-                if(this.remoteColMaps['col_seq'] && !nData.hasOwnProperty(this.remoteColMaps['col_seq'])){
-                    // 没有排序字段时，默认同级最后一个
+                if(this.remoteColMaps['col_seq'] && !nData.hasOwnProperty(this.remoteColMaps['col_no']) && !nData.hasOwnProperty(this.remoteColMaps['col_seq'])){
+                    //没有业务编号的信息 为新增 没有排序字段时，默认同级最后一个
                     nData[this.remoteColMaps['col_seq']] = nodes.length
                 }
                 console.log(nNodeData.data)
