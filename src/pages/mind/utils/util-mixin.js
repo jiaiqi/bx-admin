@@ -614,7 +614,7 @@ export default {
                 }else{
                     // 新节点按照同级索引进行排序
                     
-                    nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
+                    nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() - 1; // 新节点索引
                     console.log('新增',newNodeData.getIndexInBrothers())
                     this.submitChange('add',nData).then( ar => {
                         console.log('新增成功',ar) 
