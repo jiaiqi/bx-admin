@@ -280,7 +280,7 @@ export default {
        return selectedDatas
     },
     selectedCondition(){
-
+          // 筛选条件封装
          let addColName = this.batchAddOptionsV2.batchAddColName || null
          let insetSelectedList = this.initSelectedDatas.initSelectedDatas
          console.log(addColName,insetSelectedList)
@@ -598,6 +598,7 @@ export default {
        
     },
     treeIterator(tree,list, func) {
+      // 递归 属性数据，处理 count
       let self = this
       if(tree && tree.length > 0){
         tree.forEach((node) => {
@@ -648,6 +649,7 @@ export default {
          return count
     },
     initSelectedDatasBuild(){
+      // 初始化 选择数据， 加载已选中数据处理逻辑，查询默认选中数据
       let initList = []
       let req ={}
       if(this.initSelectedDatas && this.initSelectedDatas.initSelectedDatas){
@@ -685,6 +687,7 @@ export default {
        this.$emit('closeDialog')
     },
     saveOperation(){
+      // 保存 根据外键关系输出 所选数据。
       console.log('保存操作',this.selectedDatasRun)
       let list = this.bxDeepClone(this.selectedDatasRun)
       list.forEach(item =>{
