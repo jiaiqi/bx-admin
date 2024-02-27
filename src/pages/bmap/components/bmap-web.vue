@@ -606,8 +606,6 @@ import srvMixin from './service-mixin.js' // 业务相关
                         this.getDriving()
                     })
                 }
-                
-               
             }
         },
         "activeLine":{
