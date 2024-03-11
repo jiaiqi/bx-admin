@@ -620,6 +620,7 @@ export default {
             "modify_user_disp",
             "row_json",
             "page_no",
+            'chart_no'
           ];
           const data = { ...item.data };
           ignoreField.forEach((key) => {
