@@ -297,6 +297,7 @@ let copyData = null
     }
     switch (this.routeMade) {
         case 'norm':
+            // 脑图标准业务
             this.initPage().then(res => {
                 console.log('init Page',res)
                 if(res && !this.mindMapModel){
@@ -308,6 +309,7 @@ let copyData = null
             })  // 加载数据
             break;
         case 'cust':
+            // 自定义业务脑图配置
             this.getCustConfig().then(res => {
                 console.log('getCustConfig Page',res)
                 // if(res && !this.mindMapModel){

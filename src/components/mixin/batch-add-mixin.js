@@ -10,6 +10,7 @@ export default {
             this.popupBatchDialog(button, this.gridDataRun);
         },
         popupBatchDialog(item, operateData){
+            // 自定义弹窗，批量编辑相关配置数据准备和透传。
             let self = this
             let service = item["operate_service"];
             let config = null

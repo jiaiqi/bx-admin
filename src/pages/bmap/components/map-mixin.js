@@ -117,6 +117,7 @@ export default {
             return config
         },
         buildResLine:{
+            // 初始化所有 需要绘制路径的路径点 起止点，途径点等
             get:function(){
                 let lines = []
                 let loadLineData = this.bxDeepClone(this.mockLines)
@@ -746,13 +747,6 @@ export default {
                             let nPoint = new BMap.Point(event.point.lng, event.point.lat);
                             label.setPosition(nPoint)
                         }
-                        // let point = self.bxDeepClone(event.target['_data'])
-                        // point['lng'] = event.point.lng
-                        // point['lat'] = event.point.lat
-                        // self.$nextTick(() => {
-                        //         self.updatePoint(point)
-                        // })
-                        // setPosition(position: Point)
                     });
                     
                     self.BMap.addOverlay(marker); 

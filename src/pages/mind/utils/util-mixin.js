@@ -407,6 +407,7 @@ export default {
             this.hide()
         },
         toggleBold(){
+            // 加粗
             let mindMap = this.mindMapModel
             let showToolbar = this.showToolbar
             showToolbar.currentFormatInfo.bold = !showToolbar.currentFormatInfo.bold
@@ -588,6 +589,7 @@ export default {
             }
         },
         hideTextEdit(textEditNode,activeNodeList){
+            // 节点标题完成富文本编辑
             console.log('hideTextEdit',textEditNode,activeNodeList)
             if(Array.isArray(activeNodeList) && activeNodeList.length == 1){
                 let newNodeData = activeNodeList[0]
@@ -602,8 +604,8 @@ export default {
                 console.log('newNodeData',newNodeData)
                 let nData = this.getRemoteData(nNodeData.data,pNo)   // 新节点数据
                 let nodes = this.mindConfig.oldNodes.filter(item => item['parent_no'] == pNo)
-                if(this.remoteColMaps['col_seq'] && !nData.hasOwnProperty(this.remoteColMaps['col_seq'])){
-                    // 没有排序字段时，默认同级最后一个
+                if(this.remoteColMaps['col_seq'] && !nData.hasOwnProperty(this.remoteColMaps['col_no']) && !nData.hasOwnProperty(this.remoteColMaps['col_seq'])){
+                    //没有业务编号的信息 为新增 没有排序字段时，默认同级最后一个
                     nData[this.remoteColMaps['col_seq']] = nodes.length
                 }
                 console.log(nNodeData.data)
@@ -614,8 +616,8 @@ export default {
                 }else{
                     // 新节点按照同级索引进行排序
                     
-                    nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() // 新节点索引
-                    
+                    nData[this.remoteColMaps['col_seq']] = newNodeData.getIndexInBrothers() - 1; // 新节点索引
+                    console.log('新增',newNodeData.getIndexInBrothers())
                     this.submitChange('add',nData).then( ar => {
                         console.log('新增成功',ar) 
                         // 如果不刷新 会造成没有 no 值 二次新增
@@ -802,8 +804,12 @@ export default {
                             }
                         }
                         this.submitChange('update',reqs).then( r => {
-                            console.log(r)
+                            console.log('拖动修改',r,nData)
+
                             if(r){
+                                // 根据修改请求 返回的数据结构 返回有效数据
+                                this.activeNodeId = nData.no
+                                console.log('拖动update',this.activeNodeId)
                                 if(this.routeMade == 'cust'){
                                     // 自定义业务
                                     this.getCustConfig()
@@ -855,8 +861,11 @@ export default {
                         }
                         if(reqs.length > 0){
                             this.submitChange('update',reqs).then( r => {
-                                console.log(r)
+                                console.log('拖动update',r)
                                 if(r){
+                                   // 根据修改请求 返回的数据结构 返回有效数据
+                                   this.activeNodeId = nData.no
+                                   console.log('拖动update',this.activeNodeId)
                                     if(this.routeMade == 'cust'){
                                         this.getCustConfig()
                                     }else{
@@ -908,8 +917,11 @@ export default {
                         }
                         if(reqs.length > 0){
                             this.submitChange('update',reqs).then( r => {
-                                console.log(r)
+                                console.log('拖动update',r)
                                 if(r){
+                                    // 根据修改请求 返回的数据结构 返回有效数据
+                                    this.activeNodeId = nData.no
+                                    console.log('拖动update',this.activeNodeId)
                                     if(this.routeMade == 'cust'){
                                         this.getCustConfig()
                                     }else{

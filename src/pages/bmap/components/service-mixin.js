@@ -41,6 +41,7 @@ export default {
     computed:{
         
         initLinks(){
+            // 初始化所有路径
             let self = this
             let loadlinks = this.bxDeepClone(this.tolllinks)
             let activeLine = this.activeLine ? this.bxDeepClone(this.activeLine) : null
@@ -424,7 +425,7 @@ export default {
         this.initMap()
         if(this.modeUrl == '/bmap/check' || this.modeUrl.indexOf('/bmap/check') !== -1){
             this.isEditor = true
-            this.getNewPoints()
+            this.getNewPoints()  // 新增门架
             if(self.initCheckPointId){
                 self.getPointInfo()
             }

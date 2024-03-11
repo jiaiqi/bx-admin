@@ -204,18 +204,21 @@ export default {
   },
 
   props: {
+    // 批量添加按钮，相关批量配置
     buttonInfo: {
       type: Object,
       default(){
         return null
       }
     },
+    // 初始化选中数据，目标子表的默认数据通过 批量添加外键 与 源数据匹配使用
     initSelectedDatas:{
       type: [Array,Object],
       default(){
         return null
       }
     },
+    // 页面主表model
     mainData:{
       type: [Array,Object],
       default(){
@@ -249,12 +252,13 @@ export default {
     };
   },
   created: function () {
-    this.getListConfig();
+    this.getListConfig();  
+    // 批量添加列表的 配置
   },
   computed:{
     
     redundantFields(){
-       // 表内计算字段
+       // 表内计算字段，有哪些字段需要处理表内计算
        let cols = []
        let addCols = this.initSelectedDatas.addCols
        if(addCols && Array.isArray(addCols)){
@@ -270,6 +274,7 @@ export default {
 
     },
     treeDataRun(){
+      // 目录树形数据选择 node数据 
       let self = this
        let selectedDatas = this.bxDeepClone(this.selectedDatas)
        let treeDataRun = this.bxDeepClone(this.typeDatas)
@@ -280,7 +285,7 @@ export default {
        return selectedDatas
     },
     selectedCondition(){
-
+          // 筛选条件封装 已选数据 可选数据源数据查询条件， 弹窗批量选择列表显示时，把目标子表数据主键带过来，根据关系优先查询一遍 已选数据，便于在 可选列表中展示已选对勾和 数量值。
          let addColName = this.batchAddOptionsV2.batchAddColName || null
          let insetSelectedList = this.initSelectedDatas.initSelectedDatas
          console.log(addColName,insetSelectedList)
@@ -308,6 +313,7 @@ export default {
          return conds
     }, // 已选数据的请求condition
     dependFields(){
+      // 冗余字段关系，目标子表中 需要冗余的字段 col
        let config = []
        let addCols = this.bxDeepClone(this.initSelectedDatas.addCols) 
        if(addCols && addCols.length > 0){
@@ -365,6 +371,7 @@ export default {
        return str
     },
     optionalListCondition(){
+        // 条件封装 批量添加 add column配置中的 冗余信息逻辑处理，处理表达式和常量配置。
          let checkAll = this.checkAll
          let condition = []
          let currentData = this.currentData ? this.bxDeepClone(this.currentData) : null
@@ -426,12 +433,14 @@ export default {
 
     },
     listHeader(){
+      // 备选列表 列 根据v2显示
        let header = this.optionalV2 ? this.optionalV2.srv_cols : []
        header = this.bxDeepClone(header.filter(item => item.in_list == 1))
 
        return header
     },
     defaultProps(){
+      // elmentui tree 组件的配置，使用自己的关系
        let defaultProps={
         children: "children",
         label:'this.',
@@ -489,7 +498,7 @@ export default {
        return pageItem
     },
     treeForListColKey(){
- 
+       // 树形目录 与 二维列表的 关系字段。通过目录查询关联二位数据。
        let treeConfig = this.pageItem
        let res = {}
       res['listForTreeKeyCol'] = treeConfig.tree_filter_list_fk_col
@@ -502,6 +511,7 @@ export default {
        */
 
        let treeConfig = this.bxDeepClone(this.pageItem)
+       // 批量添加组件 树形目录"商品分类"" 数据查询
        let req = {}
        if(treeConfig){
           req['serviceName'] = treeConfig.tree_filter_srv
@@ -547,10 +557,11 @@ export default {
   mounted(){
     if(this.buildTreeReq.hasOwnProperty('serviceName') && !this.typeDatas){
       this.getTreeData()
+      // 查询树形目录数据
     }
     
     if(this.buildOptionalReq.hasOwnProperty('serviceName') && !this.optionalV2){
-      // 加载初始化数据
+      // 加载初始化数据 初始化选中数据
       console.log('initSelectedDatas',this.initSelectedDatas)
       let initData = this.initSelectedDatas
       if(initData && initData.hasOwnProperty('initSelectedDatas') && initData.initSelectedDatas.length >0){
@@ -598,6 +609,7 @@ export default {
        
     },
     treeIterator(tree,list, func) {
+      // 递归 属性数据，处理 count
       let self = this
       if(tree && tree.length > 0){
         tree.forEach((node) => {
@@ -648,6 +660,7 @@ export default {
          return count
     },
     initSelectedDatasBuild(){
+      // 初始化 选择数据， 加载已选中数据处理逻辑，查询默认选中数据
       let initList = []
       let req ={}
       if(this.initSelectedDatas && this.initSelectedDatas.initSelectedDatas){
@@ -667,6 +680,7 @@ export default {
                     for(let iItem of initList){
                         if(iItem[this.batchAddOptionsV2.batchAddColName]==item[this.batchAddOptionsV2.batchAddOptionsV2.refed_col]){
                           item[this.countColNameStr] = iItem[this.configBuild.batch_select_add_count_col]
+                          // 数量字段 batch_select_add_count_col 根据配置字段 将数量持久化子表数据的 数量之 填充到 已选中 列表中。
                         }
                     }
                     return item
@@ -685,6 +699,7 @@ export default {
        this.$emit('closeDialog')
     },
     saveOperation(){
+      // 保存 根据外键关系输出 所选数据。
       console.log('保存操作',this.selectedDatasRun)
       let list = this.bxDeepClone(this.selectedDatasRun)
       list.forEach(item =>{
@@ -725,6 +740,7 @@ export default {
       cols[0] = this.configBuild.batch_select_add_count_col
 
       console.log('batch list data:',list)
+      // 通过vuex store 保存已选择的列表数据
       this.$store.commit("setFrontTableData", {
         service: this.buttonInfo.service,
         data: list,
@@ -753,7 +769,6 @@ export default {
         ids = ids.map(item => item.id)
         let clearIds = this.selectedDatas.filter(item => item.id && optionalIds.indexOf(item.id) !== -1 && rowsIds.indexOf(item.id) == -1)
         clearIds = clearIds.map(item => item.id)
-        // console.log(rowsIds,optionalIds,ids,clearIds)
         let list = this.bxDeepClone(rows)
         this.selectedDatas = this.selectedDatas.filter(item => clearIds.indexOf(item.id) == -1)
         this.$nextTick(()=>{
@@ -779,10 +794,8 @@ export default {
                       }
                     })
                   }
-                  
                 }
               }
-              
             }
           }else{
             // 取消选择任何数据
@@ -791,6 +804,7 @@ export default {
         })
       },
     rowColumnsHandleChange(val,row){
+      // 数量改变时 动态更新选中状态。
       this.$nextTick(()=>{
         if(row && row[this.countColNameStr] > 0){
           this.$refs.multipleTable.toggleRowSelection(row,true);
@@ -800,6 +814,7 @@ export default {
       })
     },
     selectionRowColumnsHandleChange(val,row){
+      // 数字input值改变时 触发，同步 数量字段值。
       this.$nextTick(()=>{
         
         if(row){
@@ -873,6 +888,7 @@ export default {
        })
     },
     getListConfig(){
+      // 根据页面编号 查询页面配置，主要为 批量添加 必须信息和外键关系
       let serviceName = 'srvpage_cfg_page_select';
       let pageNo = ''
       if(this.configBuild && this.configBuild.hasOwnProperty('page_no')){
@@ -934,6 +950,7 @@ export default {
                      let item = this.selectedDatas.filter(item => item[this.checkedIdColumn] == row[this.checkedIdColumn])
                      let val = item[0][this.countColNameStr]
                      this.$nextTick(()=>{
+                      // 初始化多选列表中的 选中状态和 数量
                         this.$set(row,this.countColNameStr,val)
                         
                         this.$refs.multipleTable.toggleRowSelection(row,true);
@@ -958,17 +975,19 @@ export default {
     },
     getListV2Data() {
       let req = this.buildOptionalReq
-      
+      // 查询 多选列表的v2
       this.loadColsV2(req.serviceName, "selectlist", req.srvApp).then(response => {
         const resData = response.body.data
         const srv_cols = resData.srv_cols
         this.$set(this,'optionalV2',resData)
         if(resData.hasOwnProperty('tabs') && resData.tabs.length > 0){
            this.buildSections(resData.tabs)
+           // 加载备选列表的 tab筛选条件
         }
         console.log('getListV2Data',resData)
         this.$nextTick(()=>{
           this.getData()
+          // 加载 备选列表数据
         })
         
       });
@@ -1000,6 +1019,7 @@ export default {
       return data[this.defaultProps.label].indexOf(value) !== -1;
     },
     handleNodeClick(data) {
+      // 点击目录选中后，更新 列表数据
       console.log("handleNodeClick",data)
       this.checkAll = false
       
@@ -1040,6 +1060,7 @@ export default {
     onFilterChange(e){
       },
     buildSections: function (tabs) {
+      // 列表头部 筛选条件封装逻辑
         // generate tab.condition, order, depend_sections from json string to js object/array
         console.log("buildSections",tabs)
         let self = this

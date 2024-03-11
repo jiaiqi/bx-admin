@@ -35,8 +35,10 @@ import BMapJs from "./components/bmap-web.vue"
             let routePath = this.$route.path
             let path = ''
             if(routePath.indexOf('/bmap/editor/') !== -1){
+                // 路径可视化
                 path = '/bmap/editor/'
             }else if(routePath.indexOf('/bmap/check') !== -1){
+                // 门架校准
                 path = '/bmap/check'
             }
             return path
@@ -62,7 +64,6 @@ import BMapJs from "./components/bmap-web.vue"
             this.initCheckPointId = this.$route.query.id
             this.getAllDepts()
         }
-        
     },
     methods:{
         getAllDepts(){

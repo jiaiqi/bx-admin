@@ -578,7 +578,7 @@ export default {
     methods: {
         
         onNodeUpdate(nNode){
-            // 检测节点信息修改
+            // 检测节点信息修改,节点修改后调取。
             console.log(nNode)
             let req = this.bxDeepClone(this.nodeUpdateRequest) // 修改请求 
             let no = nNode[this.remoteColMaps['col_no']] || nNode.no
@@ -608,6 +608,7 @@ export default {
                         req['data'] = [data]
                         this.submitChange('update',req).then( r => {
                             console.log(r)
+                           
                             if(r){
                                 if(this.routeMade == 'cust'){
                                     this.getCustConfig()
@@ -620,14 +621,6 @@ export default {
                                         }
                                     })  // 加载数据
                                 }
-                                // 修改成功刷新mind
-                                // this.initPage().then(res => {
-                                //     console.log('init Page',res)
-                                //     if(res){
-                                //         // this.initMind(this.dataTemp)
-                                        
-                                //     }
-                                // })  // 加载数据
                             }
                             
                         })
@@ -640,6 +633,7 @@ export default {
             this.buildMindData() // 远程数据 转 mind 数据
         },
         buildMindData(no){
+            // 远程数据 转 mind 数据
             let rootNodeNo = this.rootNodeNo
             let datas = this.bxDeepClone(this.mindConfig.oldNodes)   // 脑图已保存的节点原始数据
             let root = {
@@ -656,6 +650,7 @@ export default {
             if(root.data){
                 root['data']['expand'] = true
                 this.$nextTick(() => {
+                    // 设置初始化数据
                     this.$set(this,'dataTemp',this.bxDeepClone(root) )  // UI数据
                     this.$set(this,'loadMindDatas',this.bxDeepClone(root) ) // 初始数据
                     this.setMindData(this.bxDeepClone(root)) // 动态更新数据
@@ -665,7 +660,7 @@ export default {
             
         },
         getMindNodeData(item){
-            //获取 mind 数据 item 远程行数据  远程行数据转换为 组件数据
+            //获取 mind 数据 item 远程行数据  远程行数据转换为 组件数据格式
             
             let datas = this.bxDeepClone(this.mindConfig.oldNodes)   // 脑图已保存的节点原始数据
             let obj = {}
@@ -798,6 +793,7 @@ export default {
 
         },
         async getFullData(mindMap) {
+            // 获取mindmap 实例的数据
             return await new Promise(function (resolve, reject) {
                 if (mindMap) {
                     let data = mindMap.getData(true)
@@ -809,6 +805,7 @@ export default {
             })
         },
         getV2(){
+            // 查询业务需要的v2，如扩展更多字段信息时
             let self = this
             let serviceName = self.query.serviceName
             let app = self.query.app
@@ -1049,27 +1046,9 @@ export default {
             }
             
           },
-          buildMindDatas(list){
-            let treeData = []
-            if(this.query.no && this.query.pNo && this.query.title && Array.isArray(list)){
-                 let treeData = list.filter(item => !item[this.query.pNo])
-                 if(Array.isArray(treeData) && treeData.length > 0){
-                    for(let root of treeData){
-                        let no = roow[this.query.no]
-                            if(no){
-                                root['children'] = this.buildChildren(no,list)
-                            }
-                    }
-                 }
-
-
-            }
-          },
-          buildChildren(no,list){
-             let children = list.filter(item => item[this.query.pNo] == no)
-             return children
-          },
+          
           submitChange(type,data){
+            // 公共的节点请求，查询 修改 删除。处理请求格式
             let self = this
             let url = ''
             let reqType = ''
@@ -1159,7 +1138,17 @@ export default {
                         if(type == 'update'){
                             if(page.state == 'SUCCESS'){
                                 // 根据修改请求 返回的数据结构 返回有效数据
-                                result = page.response[0].response.effect_data[0]
+                                if(Array.isArray(page.response[0].response.effect_data) && page.response[0].response.effect_data.length == 1){
+                                    // 非批量修改排序逻辑
+                                    result = page.response[0].response.effect_data[0]
+                                    if(result && self.remoteColMaps){
+                                        // 保存新增节点key，便于回显时设置选中状态
+                                        self.activeNodeId = result[self.remoteColMaps['col_no']]
+                                        console.log('add',result,self.activeNodeId)
+
+                                    }
+                                }
+                                
                             }
                         }
                         if(page.state == 'FAILURE' && page.resultCode == '9999'){
@@ -1185,6 +1174,7 @@ export default {
             console.log(url,req)
           },
           updateNodeStyle(no,newStyle){
+            // 修改节点样式的请求逻辑
             console.log('updateNodeStyle',no,newStyle)
             let self = this
             let noColName = self.remoteColMaps['col_no'] || 'no'
@@ -1235,6 +1225,7 @@ export default {
              }
           },
           updateNodeImage(no,fileNo){
+            // 修改节点图片的逻辑
             console.log('updatefileNo',no,fileNo)
             let self = this
              let oldNode = this.mindConfig.oldNodes.filter(item => item.no == no)  
