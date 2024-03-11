@@ -1,11 +1,12 @@
 <template>
   <div class="inline-edit-list el-form-item" :class="{ 'is-error': isError }">
     <span class="text-red" v-if="isRequired">*</span>
-    <el-date-picker v-model="value" type="date" size="mini" format="yyyy 年 MM 月 dd 日" v-if="editorType === 'Date'"
-      @change="onChange" placeholder="选择日期">
+    <el-date-picker v-model="value" type="date" size="mini" :format="format" :value-format="valueFormat"
+      v-if="editorType === 'Date'" @change="onChange" placeholder="选择日期">
     </el-date-picker>
     <el-input-number v-model.number="value" @change="onChange" @blur="onBlur" :step="step" :precision="precision"
-      size="mini" :min="min" :max="max" :maxlength="maxlength" v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
+      size="mini" :min="min" :max="max" :maxlength="maxlength"
+      v-else-if="editorType === 'number' || editorType === 'digit'"></el-input-number>
     <el-input v-model="value" @change="onChange" @blur="onBlur" placeholder="" size="mini"
       v-else-if="editorType === 'string'"></el-input>
   </div>
@@ -36,7 +37,7 @@ export default {
       fieldData: null,
       value: undefined,
       oldValue: undefined,
-      originValue:undefined,
+      originValue: undefined,
       isChange: false,
       isError: false,
       customPrecision: null
@@ -56,8 +57,8 @@ export default {
         this.field.validators && this.field.validators.indexOf("required") > -1
       );
     },
-    maxlength(){
-      let maxlength = 99999 
+    maxlength() {
+      let maxlength = 99999
       if (this.field.col_type?.includes('decimal')) {
         const str = this.field.col_type;
         const regex = /decimal\((\d+),(\d+)\)/;
@@ -67,24 +68,58 @@ export default {
       return maxlength
     },
     precision() {
-      let precision =  this.editorType == "digit" ? 2 : 0;
+      let precision = this.editorType == "digit" ? 2 : 0;
       if (this.field.col_type?.includes('decimal')) {
         const str = this.field.col_type;
         const regex = /decimal\((\d+),(\d+)\)/;
         const match = str.match(regex)
-        precision = match[2]*1
+        precision = match[2] * 1
       }
       return precision
     },
     step() {
-      let step =  this.editorType == "digit" ? 0.1 : 1;
+      let step = this.editorType == "digit" ? 0.1 : 1;
       if (this.field.col_type?.includes('decimal')) {
         const str = this.field.col_type;
         const regex = /decimal\((\d+),(\d+)\)/;
         const match = str.match(regex)
-        step = 1 / 10**match[2]
+        step = 1 / 10 ** match[2]
       }
       return step
+    },
+    format() {
+      const type = this.editorType?.toLowerCase?.();
+      switch (type) {
+        case 'date':
+          return 'yyyy 年 MM 月 dd 日';
+        case 'datetime':
+          return 'yyyy 年 MM 月 dd 日 HH 时 mm 分 ss 秒';
+        case 'time':
+          return 'HH 时 mm 分 ss 秒';
+        case 'year':
+          return 'yyyy 年';
+        case 'month':
+          return 'yyyy 年 MM 月';
+        default:
+          return 'yyyy 年 MM 月 dd 日';
+      }
+    },
+    valueFormat() {
+      const type = this.editorType?.toLowerCase?.();
+      switch (type) {
+        case 'date':
+          return 'yyyy-MM-dd';
+        case 'datetime':
+          return 'yyyy-MM-dd HH:mm:ss';
+        case 'time':
+          return 'HH:mm:ss';
+        case 'year':
+          return 'yyyy';
+        case 'month':
+          return 'yyyy-MM';
+        default:
+          return 'yyyy-MM-dd';
+      }
     },
     editorType() {
       let type = "";
@@ -120,7 +155,7 @@ export default {
     if (this.data && this.field?.columns) {
       this.value = this.data[this.field.columns];
       this.oldValue = this.data[this.field.columns];
-      if(this.originValue===undefined){
+      if (this.originValue === undefined) {
         this.originValue = this.data[this.field.columns];
       }
     }
@@ -137,7 +172,7 @@ export default {
       let val = e;
       switch (this.editorType) {
         case "Date":
-          val = e.Format("yyyy-MM-dd");
+          // val = e.Format("yyyy-MM-dd");
           break;
         case "digit":
         case "number":
@@ -160,7 +195,7 @@ export default {
       const obj = {
         newValue: this.value,
         oldValue: this.oldValue,
-        originValue:this.originValue,
+        originValue: this.originValue,
         column: this.field.columns,
         id: this.data.id,
         isChange: true
@@ -183,7 +218,7 @@ export default {
         const obj = {
           newValue: newValue,
           oldValue: oldValue,
-          originValue:this.originValue,
+          originValue: this.originValue,
           column: this.field.columns,
           id: this.data.id,
           isChange: this.isChange
