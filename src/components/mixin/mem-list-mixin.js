@@ -1091,7 +1091,7 @@ export default {
 
   
   mounted: function () {
-    
+
     this.$watch(function () {
         return this.gridData;
       },
@@ -1112,7 +1112,9 @@ export default {
       "memInitdatasAdd":{
         deep: true,
         handler (val, oldVal) {
-
+          if(val?.length&&!this.addSrvCols?.length){
+            this.loadAddUpdateSrvCols()
+          }
           let initAddDatas = val.map(item => item)
           if(Array.isArray(initAddDatas)){
             // 内存子表 init add Datas 加载默认添加数据
