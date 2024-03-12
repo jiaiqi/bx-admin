@@ -492,7 +492,6 @@ export default {
     },
     async onPageUpdate(event, type) {
       console.log('onPageUpdate', event, type);
-      debugger;
       if (event?.data?.state === "SUCCESS") {
         const response = event?.data?.response?.[0]?.response?.effect_data;
         if (Array.isArray(response) && response.length > 0) {
