@@ -3,8 +3,8 @@
         <div class="title" v-if="content">
             {{ content.title || "" }}
         </div>
-        <div class="content" v-html="content.context"></div>
-        <div class="attachment">
+        <div class="content" v-html="content.context || content.content"></div>
+        <div class="attachment" v-if="attachmentList && attachmentList.length">
             <div>附件：</div>
             <div class="attachment-item" v-for="item in attachmentList">
                 <a :href="serviceApi().downloadFile + item.fileurl">{{ item.src_name }}</a>
@@ -19,8 +19,8 @@ export default {
         return {
             id: "",
             content: "",
-            serviceName:'',
-            srvApp:'',
+            serviceName: '',
+            srvApp: '',
             attachmentList: [],
         };
     },
@@ -30,9 +30,11 @@ export default {
             const req = {
                 serviceName: this.serviceName,
                 colNames: ["*"],
-                condition: [{ colName: "id", ruleType: "eq", value: this.id }],
                 page: { pageNo: 1, rownumber: 1 },
             };
+            if (this.id) {
+                req.condition = [{ colName: "id", ruleType: "eq", value: this.id }]
+            }
             this.select(
                 this.serviceName,
                 req.condition,
@@ -89,9 +91,7 @@ export default {
         this.id = this.$route.query.id;
         this.srvApp = this.$route.query.srvApp || 'xsyx';
         this.serviceName = this.$route.query.serviceName || 'srvyxjdsb_apply_notice_select';
-        if (this.id) {
-            this.getContent();
-        }
+        this.getContent();
     },
 };
 </script>
@@ -141,9 +141,12 @@ export default {
 
     .content {
         padding: 46px 79px;
+        max-height: 60vh;
+        overflow: auto;
     }
-    .attachment{
-        padding:  0 75px 20px ;
+
+    .attachment {
+        padding: 0 75px 20px;
     }
 }
 </style>

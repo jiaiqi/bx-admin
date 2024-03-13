@@ -258,16 +258,30 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             }
           }
         }
-
-        for (let data of cellData) {
-          if (chartJson.more_option && chartJson.more_option === "x轴反序") {
-            series["data"].unshift(data[dataColName]);
-            ecOptions["xAxis"]["data"].unshift(data[sortAxisCol]);
-          } else {
-            series["data"].push(data[dataColName]);
-            ecOptions["xAxis"]["data"].push(data[sortAxisCol]);
-          }
+        const xAxisData = cellData.map((item) => item[sortAxisCol]);
+        ecOptions["xAxis"]["data"] = [...new Set(xAxisData)];
+        series["data"] = new Array(ecOptions["xAxis"]["data"].length).fill(
+          null
+        );
+        if (chartJson.more_option && chartJson.more_option === "x轴反序") {
+          ecOptions["xAxis"]["data"] = xAxisData.reverse();
         }
+        // for (let data of cellData) {
+        //   if (chartJson.more_option && chartJson.more_option === "x轴反序") {
+        //     // series["data"].unshift(data[dataColName]);
+        //     // ecOptions["xAxis"]["data"].unshift(data[sortAxisCol]);
+        //     ecOptions["xAxis"]["data"] = xAxisData.reverse();
+        //   } else {
+        //     // series["data"].push(data[dataColName]);
+        //     // ecOptions["xAxis"]["data"].push(data[sortAxisCol]);
+        //   }
+        // }
+        series["data"] = series["data"].map((item, index) => {
+          const data = cellData.find(
+            (e) => e[sortAxisCol] === ecOptions["xAxis"]["data"][index]
+          );
+          return data?.[dataColName];
+        });
         series["smooth"] = true;
         if (chartJson.data_label === "值") {
           series.itemStyle = {
@@ -329,9 +343,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           ecOptions.tooltip.trigger = "axis";
         }
       }
-      ecOptions["xAxis"]["data"] = [
-        ...new Set(ecOptions["xAxis"]["data"] || []),
-      ];
+      debugger;
+      // ecOptions["xAxis"]["data"] = [
+      //   ...new Set(ecOptions["xAxis"]["data"] || []),
+      // ];
       if (chartJson?.chart_type === "条形图") {
         let xAxis = JSON.parse(JSON.stringify(ecOptions.yAxis));
         ecOptions.yAxis = JSON.parse(JSON.stringify(ecOptions.xAxis));
@@ -730,7 +745,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           if (layout?.w) {
             iconSize = (layout?.w * iconScale) / 100;
             if (layout.colNum === 100) {
-              iconSize = ((layout?.w * 12) * iconScale) / 100;
+              iconSize = (layout?.w * 12 * iconScale) / 100;
             }
           }
         }
@@ -787,10 +802,12 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
   let chartJson = pageItem?.chart_json || {};
   let datas = cellData;
   let seriesName = chartJson?.series_name_cfg || "";
-
+  const sortAxisCol = chartJson?.sort_axis_col
+  let xAxisData = cellData.map((item) => item[sortAxisCol]);
+  xAxisData = [...new Set(xAxisData)];
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
-
+  debugger;
   if (seriesName && Array.isArray(datas) && datas.length > 0) {
     let seriesNames = datas.reduce((pre, cur) => {
       if (!pre.includes(cur[seriesName])) {
@@ -802,9 +819,13 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
       let obj = {
         name: name,
         type: type || "line",
-        data: datas
-          .filter((e) => e[seriesName] === name)
-          .map((item) => item[chartJson.series_value_cols]),
+        // data: datas
+        //   .filter((e) => e[seriesName] === name)
+        //   .map((item) => item[chartJson.series_value_cols]),
+        data: xAxisData.map((a,index)=>{
+          const data = datas.find(e=>e[seriesName] === name && e[sortAxisCol] === a)
+          return data?.[chartJson.series_value_cols] || undefined
+        }),
         symbol: "circle",
         smooth: true,
         // yAxisIndex: 0,

@@ -1,5 +1,9 @@
 <template>
   <div v-show="evalVisible()">
+    <div class="chart-box" v-if="cfgJson&&cfgJson.options&&cfgJson.options.includes('图表')&&cfgJson.chart_json">
+    <!-- 图表 -->
+    <vue-chart :config="cfgJson.chart_json" :data="gridDataRun"></vue-chart>
+    </div>
     <el-tabs v-if="isDraft" v-model="activeTabName" @tab-click="onTabshandleClick">
       <el-tab-pane v-for="(tabItem, index) in tabsConfig" :key="index" :label="tabItem.label" :name="tabItem.key">
         <span slot="label"> {{ tabItem.label }}({{ tabItem.len }})</span>
@@ -456,6 +460,7 @@ import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 
 import inlineEditListMixin from '../mixin/inline-edit-list-mixin' //行内编辑列表相关逻辑
 import inlineEditList from './inline-edit-list.vue';
+import vueChart from '../ui/widget/chart.vue';
 import { blobToBase64 } from '../../common/common'
 
 export default {
@@ -475,7 +480,8 @@ export default {
     Add: () => import("../common/add.vue"),
     batchApprove,
     srvAuthLogin,
-    inlineEditList
+    inlineEditList,
+    vueChart
   },
   props: {
     childForeignkey: Object,

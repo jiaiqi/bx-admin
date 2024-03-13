@@ -193,7 +193,6 @@ export default {
   computed: {
     srvValFormModeldetail() {
       let model = {};
-
       for (let key in this.fields) {
         let field = this.fields[key];
         if (field.info.srvCol.in_detail != 0 || field.info.name == "id") {

@@ -1,6 +1,7 @@
 <template>
   <div class="content">
     <div class="preview" id="video-container"></div>
+		<el-button @click="reload" style="margin-top: 10px;">重新加载</el-button>
   </div>
 </template>
 
@@ -27,6 +28,9 @@
 			this.getVideoUrl()
 		},
 		methods: {
+			reload(){
+				location.reload();
+			},
 			getVideoUrl() {
         let condition = [{
 							"colName": "sn",
@@ -65,7 +69,9 @@
 						script.onload = this.initPlayer.bind(this)
 						document.head.appendChild(script)
 					}
-        }
+        }else if(response.data&&response.data.resultMessage){
+					alert(response.body.resultMessage)
+				}
       });
 			},
 			initPlayer() {
@@ -78,7 +84,7 @@
 					accessToken: this.accessToken,
 					url: this.url,
 					// simple - 极简版; pcLive-pc直播；pcRec-pc回放；mobileLive-移动端直播；mobileRec-移动端回放;security - 安防版;voice-语音版;
-					//template: 'simple',
+					// template: 'pcLive',
 					plugin: ['talk'], // 加载插件，talk-对讲
 					width: windowWidth,
 					height: windowWidth * 2 / 3,
@@ -158,6 +164,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+	height: 100vh;
+	width: 100vw;
 }
 
 .preview {

@@ -48,6 +48,16 @@ module.exports = {
     // host: "192.168.0.133",
     https: false, // https:{type:Boolean}
     open: true, //配置自动启动浏览器
+    proxy:{
+      '/baiduApi':{
+        target:'http://192.168.0.151/bxmap', // 目标接口域名
+        changeOrigin:true,  //是否跨域
+        ws: true, // 是否代理websockets
+        pathRewrite:{
+          '^/baiduApi':''   //请求的时候使用这个api就可以
+        }
+      }
+    },
     // proxy: 'http://localhost:4000' // 配置跨域处理,只有一个代理
     // proxy: {
     //   "/api": {
