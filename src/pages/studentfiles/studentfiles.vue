@@ -947,26 +947,27 @@ var chartPie=null;
         },
         exportImg(myChart,id) {
             // echart 接口获取 图标的图片base64
-            const src = (myChart).getDataURL({
+            const src = (myChart)?.getDataURL({
                 type:'png',
                 pixelRatio: 2,
                 backgroundColor: '#fff',
             });
-            const a = document.createElement('a');
-            console.log(src)
+            // const a = document.createElement('a');
+            // console.log(src)
             return src
-            
         },
         print(){
             // 吊起浏览器打印
             // this.$set(this,'radarBotImg',this.exportImg(chartBot,'radarBotImg'))
-            this.$set(this,'radarTopImg',this.exportImg(chartTop,'radarTopImg'))
-            this.$set(this,'radarPieImg',this.exportImg(chartPie,'radarPieImg'))
+            if(chartTop){
+                this.$set(this,'radarTopImg',this.exportImg(chartTop,'radarTopImg'))
+            }
+            if(chartPie){
+                this.$set(this,'radarPieImg',this.exportImg(chartPie,'radarPieImg'))
+            }
             this.$set(this,'showAction',false)
             // 图表转canvas 保存图片
             this.$nextTick(() => {
-                // setTimeout(" window.print()",200);
-                
                 this.exportPDF()
             })
         },
