@@ -50,7 +50,8 @@ module.exports = {
     open: true, //配置自动启动浏览器
     proxy:{
       '/baiduApi':{
-        target:'http://192.168.0.151/bxmap', // 目标接口域名
+        target:'https://api.map.baidu.com', // 目标接口域名
+        // target:'http://192.168.0.151/bxmap', // 目标接口域名
         changeOrigin:true,  //是否跨域
         ws: true, // 是否代理websockets
         pathRewrite:{
