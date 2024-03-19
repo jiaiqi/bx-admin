@@ -1,14 +1,42 @@
 <template>
-  <div v-if="widgetType === '文本'" :style="[textWidgetJson]">
+  <div v-if="widgetType === '文本'" :style="[widgetStyleJson]">
     <span v-if="pageItem && pageItem.widget_json">{{
       pageItem.widget_json.init_val || ""
     }}</span>
   </div>
-  <div v-else-if="widgetType === 'navigate'" class="text-btn" @click="navTo">{{ widgetJson.init_val || '' }}</div>
-  <date-time v-else-if="widgetType === '时间日期'" :show-seconds="showSeconds" :parts-set="timeWidgetJson['parts-set']"
-    :color="widgetColor"></date-time>
-  <div class="full-screen" @click="openFullscreen" v-else-if="widgetType === 'fullscreen'" :style="[textWidgetJson]">
-    <span class="el-icon-rank" v-if="isFullScreen" title="退出全屏" style="transform: rotate(45deg);"></span>
+  <div
+    class="rich-text"
+    v-else-if="widgetType === '富文本'"
+    :style="[widgetStyleJson]"
+    v-html="initRichText"
+  ></div>
+  <div v-else-if="widgetType === 'navigate'" class="text-btn" @click="navTo">
+    {{ widgetJson.init_val || "" }}
+  </div>
+  <el-button v-else-if="widgetType === '自定义按钮'" @click="btnClick">
+    <span v-if="pageItem && pageItem.comp_label">{{
+      pageItem.comp_label
+    }}</span>
+    <span v-else> 按钮 </span>
+  </el-button>
+  <date-time
+    v-else-if="widgetType === '时间日期'"
+    :show-seconds="showSeconds"
+    :parts-set="timeWidgetJson['parts-set']"
+    :color="widgetColor"
+  ></date-time>
+  <div
+    class="full-screen"
+    @click="openFullscreen"
+    v-else-if="widgetType === 'fullscreen'"
+    :style="[widgetStyleJson]"
+  >
+    <span
+      class="el-icon-rank"
+      v-if="isFullScreen"
+      title="退出全屏"
+      style="transform: rotate(45deg)"
+    ></span>
     <span class="el-icon-full-screen" v-else title="全屏"></span>
   </div>
 </template>
@@ -22,14 +50,19 @@ const props = defineProps({
 });
 
 const widgetJson = computed(() => {
-  return props.pageItem?.widget_json || {}
-})
+  return props.pageItem?.widget_json || {};
+});
 
 //文本
-const textWidgetJson = computed(() => {
+const widgetStyleJson = computed(() => {
   if (widgetJson.value?.col_text_pub_style_json) {
     return formatStyleData(widgetJson.value.col_text_pub_style_json);
   }
+});
+
+// 富文本内容
+const initRichText = computed(() => {
+  return widgetJson.value?.init_mtext || widgetJson.value?.init_val || "";
 });
 
 // 按钮
@@ -38,8 +71,9 @@ const buttonWidgetJson = computed(() => {
     return widgetJson.value.button_cfg_json;
   }
 });
+
 const addTabByUrl = function (url, tab_title, urlParams, type) {
-  url = url || common_page_path[type] + '?data=' + urlParams;
+  url = url || common_page_path[type] + "?data=" + urlParams;
   let page = {
     title: tab_title || "新标页签",
     url,
@@ -48,17 +82,21 @@ const addTabByUrl = function (url, tab_title, urlParams, type) {
   if (window.top.tab && window.top.tab.addTab) {
     window.top.tab.addTab(page);
   } else {
-
-    let strWindowFeatures = "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
-    let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures)
+    let strWindowFeatures =
+      "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
+    let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures);
     newWindow.document.title = tab_title;
   }
-}
+};
 const navTo = () => {
   if (widgetJson.value?.nav_url) {
-    addTabByUrl(widgetJson.value?.nav_url)
+    addTabByUrl(widgetJson.value?.nav_url);
   }
-}
+};
+
+const btnClick = () => {
+  // 自定义按钮 点击事件
+};
 
 // 时间日期
 const timeWidgetJson = computed(() => {
@@ -66,7 +104,6 @@ const timeWidgetJson = computed(() => {
     return formatStyleData(widgetJson.value.col_type_time_json);
   }
 });
-
 
 const showSeconds = computed(() => {
   return timeWidgetJson.value &&
@@ -78,17 +115,17 @@ const showSeconds = computed(() => {
 
 const widgetType = computed(() => {
   let type = widgetJson.value?.widget_type;
-  if (type === '系统按钮') {
-    type = widgetJson.value?.button_cfg_json?.sys_button_type
+  if (type === "系统按钮") {
+    type = widgetJson.value?.button_cfg_json?.sys_button_type;
   }
-  return type
+  return type;
 });
 
 const widgetColor = computed(() => {
   return widgetJson.value?.col_text_pub_style_json?.color;
 });
 
-const isFullScreen = ref(false)
+const isFullScreen = ref(false);
 function openFullscreen() {
   isFullScreen.value = !isFullScreen.value;
   toggleFullScreen();
@@ -138,15 +175,15 @@ function exitFullScreen() {
     }
   }
 }
-const emit = defineEmits(['resize'])
-window.addEventListener('resize', () => {
+const emit = defineEmits(["resize"]);
+window.addEventListener("resize", () => {
   if (!document.fullscreenElement) {
-    isFullScreen.value = false
+    isFullScreen.value = false;
   } else {
-    isFullScreen.value = true
+    isFullScreen.value = true;
   }
-  emit('resize')
-})
+  emit("resize");
+});
 // window.onresize = () => {
 //   if (!document.fullscreenElement) {
 //     isFullScreen.value = false
@@ -169,7 +206,7 @@ window.addEventListener('resize', () => {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 
   &:active {
     transform: scale(1.1);

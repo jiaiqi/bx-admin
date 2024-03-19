@@ -23,6 +23,9 @@ function init() {
       // back_server_ip: "wx.100xsys.cn", // oa
       // back_server_port: "",
 
+      back_server_protocol: "https",
+      back_server_ip: "api.100xsys.cn", // sass外网
+      back_server_port: "",
       // back_server_protocol: "http",
       // back_server_ip: "192.168.0.157", // 研学
       // back_server_port: "8104",
@@ -32,9 +35,9 @@ function init() {
       // back_server_port: "180",
 
       //ai稽核
-      back_server_protocol: "http",
-      back_server_ip: "192.168.0.151", // 
-      back_server_port: "180",
+      // back_server_protocol: "http",
+      // back_server_ip: "192.168.0.151", // 
+      // back_server_port: "180",
 
       // back_server_protocol: "https",
       // back_server_ip: "api.laodongcloud.com",    // 西乡
