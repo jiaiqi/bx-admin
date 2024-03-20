@@ -46,14 +46,13 @@
     <div
       class="cushome-content"
       id="content"
-      :style="[]"
       :class="{ 'data-view-mode': !inEditor }"
     >
       <div
         class="custom-design"
         id="custom-design"
         ref="customDesign"
-        :style="[stylefn(styleJson)]"
+        :style="[styleJson]"
         v-if="screenType === 'PC'"
       >
         <grid-layout
@@ -103,6 +102,7 @@
                 @setPageParams="setPageParams"
                 :pageParamsModel="pageParamsModel"
                 :page-item="item.data"
+                :page-no="pgNo"
                 :layout="item"
                 @click.stop=""
                 @resize="resize"
@@ -120,6 +120,7 @@
                 @setPageParams="setPageParams"
                 :pageParamsModel="pageParamsModel"
                 :page-item="item.data"
+                :page-no="pgNo"
                 :layout="item"
               ></page-item>
             </div>
@@ -151,6 +152,7 @@
               @setPageParams="setPageParams"
               :pageParamsModel="pageParamsModel"
               :page-item="item.data"
+              :page-no="pgNo"
               :layout="item"
             ></page-item>
             <div class="tool-box">
@@ -227,6 +229,7 @@
           overflow-y: auto;
           overflow-x: hidden;
         "
+        :style="[styleJson]"
       >
         <grid-layout
           ref="gridlayout"
@@ -256,6 +259,7 @@
                 @setPageParams="setPageParams"
                 :pageParamsModel="pageParamsModel"
                 :page-item="item.data"
+                :page-no="pgNo"
                 :layout="item"
                 @click.stop=""
                 @resize="resize"
@@ -292,6 +296,7 @@
                   @setPageParams="setPageParams"
                   :pageParamsModel="pageParamsModel"
                   :page-item="item.data"
+                  :page-no="pgNo"
                   :layout="item"
                   @click.stop=""
                   @resize="resize"
@@ -308,6 +313,7 @@
                   @setPageParams="setPageParams"
                   :pageParamsModel="pageParamsModel"
                   :page-item="item.data"
+                  :page-no="pgNo"
                   :layout="item"
                 ></page-item>
               </div>
@@ -342,7 +348,7 @@ import VueDragResize from "vue-drag-resize";
 import PageItem from "../component/page-item/page-item.vue";
 import propertyPane from "./property-pane.vue";
 import componentPane from "./left-pane/component-pane.vue";
-import { formatStyleData } from "../common/index.js";
+import { formatStyleData, rpx2px } from "../common/index.js";
 import { $axios } from "../common/http.js";
 let mouseXY = { x: null, y: null };
 let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
@@ -475,6 +481,8 @@ export default {
         delete json.width;
         delete json.height;
       }
+      json = JSON.parse(rpx2px(JSON.stringify(json)))
+      json = formatStyleData(json)
       return json;
     },
     useLayout() {
@@ -774,6 +782,7 @@ export default {
           serviceName: "srvpage_cfg_page_component_add",
           data: [],
         };
+        debugger
         layout.forEach((item, i) => {
           addObj.data.push({
             com_name: item.data.com_type_name,
@@ -892,7 +901,7 @@ export default {
         if (arrUpdateLayout.length > 0) {
           await this.saveService("update", arrUpdateLayout);
         }
-
+debugger
         layout.forEach((item, i) => {
           if (!item.id) {
             // 新增组件

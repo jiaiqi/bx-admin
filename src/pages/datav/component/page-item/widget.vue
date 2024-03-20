@@ -10,15 +10,14 @@
     :style="[widgetStyleJson]"
     v-html="initRichText"
   ></div>
-  <div v-else-if="widgetType === 'navigate'" class="text-btn" @click="navTo">
-    {{ widgetJson.init_val || "" }}
+  <div
+    v-else-if="widgetType === 'navigate'"
+    class="text-btn"
+    @click="navTo"
+    :style="[widgetStyleJson]"
+  >
+    {{ buttonWidgetJson.btn_label }}
   </div>
-  <el-button v-else-if="widgetType === '自定义按钮'" @click="btnClick">
-    <span v-if="pageItem && pageItem.comp_label">{{
-      pageItem.comp_label
-    }}</span>
-    <span v-else> 按钮 </span>
-  </el-button>
   <date-time
     v-else-if="widgetType === '时间日期'"
     :show-seconds="showSeconds"
@@ -47,6 +46,7 @@ import { formatStyleData } from "../../common/index";
 import dateTime from "../widgets/date-time.vue";
 const props = defineProps({
   pageItem: Object,
+  pageNo: String,
 });
 
 const widgetJson = computed(() => {
@@ -91,11 +91,12 @@ const addTabByUrl = function (url, tab_title, urlParams, type) {
 const navTo = () => {
   if (widgetJson.value?.nav_url) {
     addTabByUrl(widgetJson.value?.nav_url);
+  } else if (widgetJson.value.button_cfg_json?.jump_json) {
+    const jump_json = widgetJson.value.button_cfg_json.jump_json;
+    if (jump_json.dest_page_no && props.pageNo) {
+      window.open(location.href.replace(props.pageNo, jump_json.dest_page_no));
+    }
   }
-};
-
-const btnClick = () => {
-  // 自定义按钮 点击事件
 };
 
 // 时间日期
@@ -207,7 +208,10 @@ window.addEventListener("resize", () => {
   align-items: center;
   cursor: pointer;
   transition: all 0.5s ease;
-
+  background-color: #409eff;
+  color: #fff;
+  border-radius: 8px;
+  min-height: 30px;
   &:active {
     transform: scale(1.1);
   }

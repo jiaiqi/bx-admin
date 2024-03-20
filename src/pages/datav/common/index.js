@@ -13,9 +13,9 @@ const formatStyleData = (json) => {
       obj[_key] = `url(${getImagePath(json[key])})`;
     }
   }
-  if(obj['background-image']&&!obj['background-size'] ){
-		obj['background-size'] = '100% 100%'
-	}
+  if (obj["background-image"] && !obj["background-size"]) {
+    obj["background-size"] = "100% 100%";
+  }
   return obj;
 };
 
@@ -36,4 +36,10 @@ const isJSON = (str) => {
   return false;
 };
 
-export { formatStyleData };
+function rpx2px(str) {
+  if(!str) return str;
+  return str.replace(/(\d+)rpx/g, (match, p1) => {
+    return `${parseInt(p1) / 2}px`;
+  });
+}
+export { formatStyleData, rpx2px };

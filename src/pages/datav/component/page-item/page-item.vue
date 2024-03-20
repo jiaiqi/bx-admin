@@ -17,7 +17,7 @@
       :ref="pageItem.com_type"
       :pageItem="pageItem"
     ></mix-list> -->
-    <page-widget v-if="pageItem.com_type === '控件'" :ref="pageItem.com_type" :pageItem="pageItem"
+    <page-widget v-if="pageItem.com_type === '控件'" :ref="pageItem.com_type" :pageItem="pageItem" :page-no="pageNo"
       @resize="$emit('resize')"></page-widget>
     <card-group v-if="pageItem.com_type === 'cardGroup'" :ref="pageItem.com_type" :pageItem="pageItem"></card-group>
     <grid-card v-if="pageItem.com_type === 'grid'" :ref="pageItem.com_type" :pageItem="pageItem"></grid-card>

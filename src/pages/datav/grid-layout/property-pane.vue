@@ -619,7 +619,8 @@ export default {
             "modify_user_disp",
             "row_json",
             "page_no",
-            'chart_no'
+            'chart_no',
+            'widget_no'
           ];
           const data = { ...item.data };
           ignoreField.forEach((key) => {
@@ -684,16 +685,21 @@ export default {
           srvApp: "config",
           data: [],
         };
-
+        let componentsLength = 0
+        if(pageData.component_json&&typeof pageData.component_json === 'string'){
+          componentsLength = JSON.parse(pageData.component_json)?.length
+        }
+        if(isNaN(componentsLength)){
+          componentsLength = 0
+        }
         layout.forEach((item, index) => {
-          debugger
           const comp = compRes[index]?.response?.effect_data?.[0];
           const data = {
             com_name: item.data.chart_name,
             com_preview: item.data.example,
             com_type: item.data.com_type,
             page_no: pageData.page_no,
-            com_seq: (index + 1) * 100,
+            com_seq: (index + 1 + componentsLength) * 100,
             layout_x: item.x,
             layout_y: item.y,
             layout_z: item.z,

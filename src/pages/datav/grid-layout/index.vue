@@ -411,6 +411,7 @@ export default {
           serviceName: "srvpage_cfg_page_component_add",
           data: [],
         };
+        debugger
         layout.forEach((item, i) => {
           addObj.data.push({
             com_name: item.data.com_type_name,

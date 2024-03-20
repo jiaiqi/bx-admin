@@ -343,7 +343,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           ecOptions.tooltip.trigger = "axis";
         }
       }
-      debugger;
       // ecOptions["xAxis"]["data"] = [
       //   ...new Set(ecOptions["xAxis"]["data"] || []),
       // ];
@@ -424,7 +423,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         for (let data of cellData) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
-            value: data[dataColName],
+            value:parseFloat( data[dataColName]),
             name: data[chartJson?.series_name_cfg || sortAxisCol],
             itemStyle: {
               normal: {
@@ -433,6 +432,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             },
           };
           series["data"].push(dataItem);
+          // series["data"].push(parseFloat(data[dataColName]))
+          // series["data"].push(data[dataColName])
           // series["data"].push({
           //   value: 5,
           //   name: "",
@@ -807,7 +808,6 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
   xAxisData = [...new Set(xAxisData)];
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
-  debugger;
   if (seriesName && Array.isArray(datas) && datas.length > 0) {
     let seriesNames = datas.reduce((pre, cur) => {
       if (!pre.includes(cur[seriesName])) {
