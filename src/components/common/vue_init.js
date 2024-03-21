@@ -23,13 +23,13 @@ function init() {
       // back_server_ip: "wx.100xsys.cn", // oa
       // back_server_port: "",
 
-      // back_server_protocol: "https",
-      // back_server_ip: "api.100xsys.cn", // saas外网
-      // back_server_port: "",
+      back_server_protocol: "https",
+      back_server_ip: "api.100xsys.cn", // saas外网
+      back_server_port: "",
       
-      back_server_protocol: "http",
-      back_server_ip: "192.168.0.157", // 研学
-      back_server_port: "8104",
+      // back_server_protocol: "http",
+      // back_server_ip: "192.168.0.157", // 研学
+      // back_server_port: "8104",
 
       // back_server_protocol: "http",
       // back_server_ip: "192.168.0.111", // oa
