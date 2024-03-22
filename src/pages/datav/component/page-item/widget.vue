@@ -89,7 +89,15 @@ const addTabByUrl = function (url, tab_title, urlParams, type) {
   }
 };
 const navTo = () => {
-  if (widgetJson.value?.nav_url) {
+  if(widgetJson.value?.jump_json?.jump_no){
+    // 使用配置的跳转事件
+    const jumpJson = widgetJson.value.jump_json;
+    if (jumpJson.obj_type ==='内部页面' && props.pageNo) {
+      window.open(
+        location.href.replace(props.pageNo, jumpJson.dest_page_no)
+      );
+    }
+  }else if (widgetJson.value?.nav_url) {
     addTabByUrl(widgetJson.value?.nav_url);
   } else if (widgetJson.value.button_cfg_json?.jump_json) {
     const jump_json = widgetJson.value.button_cfg_json.jump_json;

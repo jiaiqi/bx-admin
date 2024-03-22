@@ -7,8 +7,8 @@ let baseURL = window.backendIpAddr || `https://api.100xsys.cn`; // sass
 // let baseURL = window.backendIpAddr || `https://srvms.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://xxld.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://wx.100xsys.cn`;
-const devTicket = 'xabxdzkj-36bac681-ce9d-42f9-b45a-cd8251dc1034'
-console.log( process.env.NODE_ENV);
+const devTicket = 'xabxdzkj-71c78749-9017-4bc4-8699-521fb84ee459'
+console.log(process.env.NODE_ENV);
 if (top?.pathConfig?.gateway) {
   baseURL = top?.pathConfig?.gateway;
 }
@@ -42,10 +42,10 @@ $axios.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
     bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
-    if (process.env.NODE_ENV === 'development'&&!sessionStorage.logined) {
-      bx_auth_ticket = devTicket
-      sessionStorage.setItem('bx_auth_ticket',devTicket)
-    }
+    // if (process.env.NODE_ENV === 'development'&&!sessionStorage.logined) {
+    //   bx_auth_ticket = devTicket
+    //   sessionStorage.setItem('bx_auth_ticket',devTicket)
+    // }
     config.headers.set("bx_auth_ticket", bx_auth_ticket);
     return config;
   },

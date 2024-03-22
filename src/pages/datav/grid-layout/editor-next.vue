@@ -643,7 +643,8 @@ export default {
       // window.open(window.location.hash.replace("/editor/", "/view/"));
     },
     previewMobile() {
-      window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`);
+      // window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`);
+      window.open(`/xmp/#/views/custom/index/index?page_no=${this.pgNo}`);
     },
     resize() {
       // 自适应缩放
@@ -2214,6 +2215,21 @@ debugger
     font-weight: bold;
     background-color: #333;
     color: #fff;
+  }
+}
+.custom-design.mobile{
+  ::v-deep .el-form {
+    .el-col {
+      width: 100%;
+    }
+  }
+
+  ::v-deep .el-form-item__label {
+    text-align: left !important;
+  }
+
+  ::v-deep .el-form-item__content {
+    margin-left: 0 !important;
   }
 }
 </style>
