@@ -1109,6 +1109,16 @@ export default {
 
   },
   watch:{
+      gridData:{
+        deep: true,
+        handler (val, oldVal) {
+          if(val?.length&&val.find(item=>['add','update'].includes(item._dirtyFlags))){
+            if(!this.addSrvCols?.length&&this.addService){
+              this.loadAddUpdateSrvCols()
+            }
+          }
+        }
+      },
       "memInitdatasAdd":{
         deep: true,
         handler (val, oldVal) {
