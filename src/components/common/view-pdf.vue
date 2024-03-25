@@ -55,6 +55,9 @@ export default {
     if (this.isTopComp() && this.$route && this.$route.query) {
       var pdfsrc = this.$route.query.pdfsrc;
       pdfsrc = decodeURIComponent(pdfsrc);
+      if(!pdfsrc?.includes('http')){
+        pdfsrc = this.serviceApi().downloadFile + pdfsrc
+      }
       this.dowloadpdfsrc = pdfsrc
       this.loadPdf(pdfsrc)
     }
