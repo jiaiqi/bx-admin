@@ -192,7 +192,7 @@ let routes=[
   },
   {
     path: '/detail/:service_name/:condcol/:condvalue',
-    name: 'detail',
+    name: 'detail1',
     component: detail
   },
   {

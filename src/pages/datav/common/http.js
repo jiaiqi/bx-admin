@@ -2,8 +2,8 @@ import axios from "axios";
 import { Message } from "element-ui"; // 引入elementUI的Message组件
 let bx_auth_ticket = "";
 // let baseURL = window.backendIpAddr || `http://192.168.0.155:8888`;
-let baseURL = window.backendIpAddr || `https://api.100xsys.cn`; // sass
-// let baseURL = window.backendIpAddr || `http://192.168.0.157:8104`;//155:180
+// let baseURL = window.backendIpAddr || `https://api.100xsys.cn`; // sass
+let baseURL = window.backendIpAddr || `http://192.168.0.157:8104`;//155:180
 // let baseURL = window.backendIpAddr || `https://srvms.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://xxld.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://wx.100xsys.cn`;

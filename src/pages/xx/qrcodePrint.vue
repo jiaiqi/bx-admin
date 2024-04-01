@@ -5,18 +5,20 @@
       <el-button size="mini" @click="toPrint" v-if="_printList.length">打印</el-button>
     </div>
     <el-checkbox-group v-model="checkList" class="checkbox-group">
-      <div class="list-item" v-for="item in list" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }"
-        :key="item.id">
+      <div class="list-item" v-for="item in list"
+           :class="{ 'on-print': checkList && checkList.includes(item.index_no) }"
+           :key="item.id">
         <div class="img" :style="setBg(item)">
-          <img :src="getQrcode(item)" alt="" class="qrcode" />
+          <img :src="getQrcode(item)" alt="" class="qrcode"/>
           <div class="note">
             {{ item.note || "" }}
           </div>
         </div>
         <div style="text-align: center; margin-top: 12px; margin-bottom: 0" class="check-box">
           <el-checkbox :label="item.index_no">{{
-            item.index_name
-          }}</el-checkbox>
+              item.index_name
+            }}
+          </el-checkbox>
           <div style="margin-top: 10px" v-if="checkList && checkList.includes(item.index_no)">
             <span style="font-size: 12px"> 打印数量： </span>
             <el-input-number size="mini" v-model="checkListNumber[item.index_no]"></el-input-number>
@@ -26,9 +28,9 @@
     </el-checkbox-group>
     <div class="list-box">
       <div class="list-item" :class="{ 'on-print': checkList && checkList.includes(item.index_no) }" :key="index"
-        v-for="(item, index) in printList">
-        <img :src="getImagePath(item.picture)" alt="" class="bg" />
-        <img :src="item.qrcodeUrl" alt="" class="qrcode" />
+           v-for="(item, index) in printList">
+        <img :src="getImagePath(item.picture)" alt="" class="bg"/>
+        <img :src="item.qrcodeUrl" alt="" class="qrcode"/>
         <div class="note">{{ item.note || "" }}</div>
       </div>
     </div>
@@ -48,25 +50,25 @@ export default {
   computed: {
     _printList() {
       return this.list
-        .filter((item) => this.checkList?.includes(item.index_no))
-        .reduce((pre, cur) => {
-          if (this.checkListNumber[cur.index_no]) {
-            for (
-              let index = 0;
-              index < this.checkListNumber[cur.index_no];
-              index++
-            ) {
-              pre.push({
-                index_no: cur.index_no,
-                index_name: cur.index_name,
-                picture: cur.picture,
-                note: cur.note,
-                school_no: cur.school_no,
-              });
+          .filter((item) => this.checkList?.includes(item.index_no))
+          .reduce((pre, cur) => {
+            if (this.checkListNumber[cur.index_no]) {
+              for (
+                  let index = 0;
+                  index < this.checkListNumber[cur.index_no];
+                  index++
+              ) {
+                pre.push({
+                  index_no: cur.index_no,
+                  index_name: cur.index_name,
+                  picture: cur.picture,
+                  note: cur.note,
+                  school_no: cur.school_no,
+                });
+              }
             }
-          }
-          return pre;
-        }, []);
+            return pre;
+          }, []);
     },
   },
   methods: {
@@ -98,10 +100,10 @@ export default {
     },
     getQrcode(item) {
       return `${this.serviceApi().qrcode}?content=${encodeURIComponent(
-        JSON.stringify({
-          a: item.index_no,
-          b: item.index_no_child
-        })
+          JSON.stringify({
+            a: item.index_no,
+            b: item.index_no_child
+          })
       )}&width=140`;
     },
     setBg(item) {
@@ -132,7 +134,7 @@ export default {
       const req = {
         serviceName: "srvledu_evaluate_index_label_select",
         colNames: ["*"],
-        page: { pageNo: 1, rownumber: 100 },
+        page: {pageNo: 1, rownumber: 100},
         order: [],
         use_type: "list",
         query_source: "list_page",

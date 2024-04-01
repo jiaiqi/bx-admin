@@ -586,6 +586,10 @@ export default {
       // console.log('行内编辑配置',e);
       if (e && typeof e === "string") {
         this.cfgJson = JSON.parse(e);
+        if(this.cfgJson?.list_type==='卡片列表' && this.cfgJson?.card_json?.parts_json &&this.childForeignkey){
+          // 子表 配置了卡片 直接展示为卡片
+          this.listStyle = 'card'
+        }
         if (
           this.cfgJson?.list_edit_srv &&
           this.cfgJson.options?.includes("列表列编辑")

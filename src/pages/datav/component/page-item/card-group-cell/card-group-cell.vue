@@ -201,6 +201,7 @@
               </div>
             </div>
           </div>
+          <slot name="footer"></slot>
         </div>
         <!-- <div class="uni-footer text-right flex justify-end flex-wrap" v-if="showRowButtons && !readOnly">
           <div v-for="(button,ib) in rowButtons" class="padding-right-xs" :key="ib"
@@ -493,6 +494,10 @@
           console.log('bx-card-cell')
           // 设置选中数据
           this.$set(this,'activeMode',item)
+          this.$emit('on-click-cell', {
+            data: item,
+            cellsLayout: cellLayoutJson
+          })
         },
         // onClickCell: throttle(function(item, cellLayoutJson) {
         //   if (this.readOnly) {
