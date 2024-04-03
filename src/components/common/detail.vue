@@ -1,7 +1,16 @@
 <template>
   <div>
-    
-    <el-card class="box-card">
+    <card-detail :pk-col="pkCol" :pk="id" :v2-data="v2Data" :div-cond="buildDivCond" :default-conditions="custCondition"
+                 :page-is-draft="pageIsDraft" :is-history="isHistory"
+                 :main-service="service_name" :field-child-keys="fieldChildKeys"
+                 :children-list-loaded="childrenListLoaded"
+                 :child-list-run="childListRun" :field-child-run="fieldChildRun" :srvCols="detail_srv_cols"
+                 :detail-data="detailData" :cells-layout-json="cfgJson.detail_card_json"
+                 @action-complete="initGridData"
+                 v-if="isCardDetail&&cfgJson&&cfgJson.detail_card_json">
+
+    </card-detail>
+    <el-card class="box-card" v-else>
         <div v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0" class="detail-steps">
           <el-steps align-center>
             <el-step :title="step.step_name" :status="step.status" v-for="(step,index) in detailChartDatas" :key="index"></el-step>
@@ -10,7 +19,7 @@
           <div v-if="!hasVisibleChildListTab()" v-show="detailshow">
                 <div slot="header" class="clearfix" v-show="is_view_title">
                   <span>{{tab_view_name}}</span>
-                </div> 
+                </div>
                 <div class="text item" v-if="initLoad">
 
                       <simple-detail :divCond="buildDivCond" :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id" @form-loaded="$emit('form-loaded', $event)">
@@ -40,7 +49,7 @@
                           </el-collapse>
 
                         </div>
-                        <div :slot="col + '-child-prepend'" class="text item" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
+                        <div :slot="col + '-child-prepend'" class="text item field-child-prepend-list" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
                           <el-collapse v-model="buildCollapsedRun[col+'_prepend']" v-if="hasVisibleChildListCollapse()">
                             <template v-for="(item, index) in fieldChildRun[col].prepend">
                               <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="col + '_prepend_' + (index)">
@@ -52,7 +61,7 @@
                             </template>
                           </el-collapse>
                         </div>
-                        <div :slot="col + '-child-append'" class="text item" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
+                        <div :slot="col + '-child-append'" class="text item field-child-append-list" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
                           <el-collapse v-model="buildCollapsedRun[col+'_append']" v-if="hasVisibleChildListCollapse()">
                             <template v-for="(item, index) in fieldChildRun[col].append">
                               <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="col + '_append_' + (index)">
@@ -77,7 +86,7 @@
 
 
               <el-tab-pane :label="tab_view_name">
-                
+
                 <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
                   <simple-detail :divCond="buildDivCond" :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id" @form-loaded="$emit('form-loaded', $event)">
@@ -159,6 +168,7 @@
 import ChildList from "./child-list.vue";
 import SimpleDetail from "./simple-detail.vue";
 import ParentChildMixin from "../mixin/parent-child-mixin";
+import cardDetail from '../ui/card-detail/card-detail.vue'
 
 /**
  * 带子表的详情页面
@@ -167,7 +177,8 @@ export default {
   name: "detail",
   components: {
     ChildList,
-    SimpleDetail
+    SimpleDetail,
+    cardDetail
   },
   mixins: [ParentChildMixin],
   props: {
@@ -211,6 +222,19 @@ export default {
     // },
   },
   computed: {
+    isCardDetail(){
+      // 展示为卡片详情
+      return this.$route?.name?.indexOf('cardDetail')===0
+    },
+    cfgJson(){
+      if(this.v2Data?.cfg_json){
+        try {
+          return JSON.parse(this.v2Data.cfg_json)
+        }catch (e) {
+          console.error(e)
+        }
+      }
+    },
     pageIsDraft: function() {
       if (
         this.$route.query.hasOwnProperty("isdraft") &&
@@ -256,6 +280,7 @@ export default {
       srvAuthLogin:false,
       detailChartDatas:[],
       pkCol:'id',
+      v2Data:null,
     };
   },
   methods: {
@@ -325,7 +350,7 @@ export default {
         null,null,
         this.buildDivCond||this.$route.query.divCond
       ).then(response => {
-        
+
         detailData = response.body;
         this.detailData = response.body;
         this.mainFormDatas = response.body;
@@ -356,6 +381,7 @@ export default {
         childList = response.body.data["child_service"];
         var temp = response.body.data["service_view_name"];
         let v2Data = response.body.data;
+        this.v2Data = v2Data
         if (v2Data.hasOwnProperty("his_version")) {
           this.isHistory = v2Data.his_version;
         }
@@ -394,10 +420,10 @@ export default {
         'detail_page',
         this.buildDivCond || this.$route.query.divCond
       ).then(response => {
-        
+
           // console.log('srvAuthKey',srvAuthKey,response.body)
         if(response.body.resultCode == '0111'){
-          
+
             console.error('this.service_name',response.body)
           console.log('response.body',response.body)
             this.srvAuthLogin = true
@@ -491,9 +517,18 @@ export default {
       border-color: #e96a02;
   }
   .el-step__title.is-process {
-    
+
       color: #e96a02;
   }
+}
+.field-child-prepend-list,.field-child-append-list{
+  width: 100%;
+  //padding: 10px 0;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.el-collapse-item:first-child{
+  margin-bottom: unset!important;
 }
 </style>
 

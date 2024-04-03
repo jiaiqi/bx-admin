@@ -44,12 +44,12 @@
               @field-value-changed="onFieldValueChanged($event)"
               @field-history-popup="onFieldHistoryPopup($event)"
             >
-              <div slot="field-child-prepend" class="padding-bottom">
+              <div slot="field-child-prepend">
                 <slot
                   :name="formItem.field.info.name + '-child-prepend'"
                 ></slot>
               </div>
-              <div slot="field-child-append" class="padding-bottom">
+              <div slot="field-child-append">
                 <slot :name="formItem.field.info.name + '-child-append'"></slot>
               </div>
             </field-editor>

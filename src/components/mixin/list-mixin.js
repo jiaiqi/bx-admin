@@ -2120,7 +2120,7 @@ export default {
 
                 this.$emit("list-data-loaded", this);
                 loading.close();
-                this.$refs['bx-table-layout'].doLayout()
+                this.$refs?.['bx-table-layout']?.doLayout()
               }
               
             }).finally(() => {

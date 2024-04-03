@@ -3,108 +3,113 @@
 
   <!-- <el-col :span="field.info.colspan"> -->
   <!-- 响应式布局属性 -->
-  <el-col
-    :xs="field.info.colspan.xs"
-    :sm="field.info.colspan.sm"
-    :md="field.info.colspan.md"
-    :lg="field.info.colspan.lg"
-    :xl="field.info.colspan.xl"
-    v-if="ignoreVif||field.evalXIf()"
-    v-show="field.evalVisible()"
-  >
-    <slot name="field-child-prepend"></slot>
-    <el-form-item
-      :key="field.info.name"
-      :prop="field.info.name"
-      :title="field.info.label"
-      :show-message="false"
-      
-      :error="field.getAnyValidateError()"
-      :class="{ fix_height_form_item: fixHeight, invalid_form_item : formHasInvalidError }"
+  <div class="field-editor">
+  <slot name="field-child-prepend"></slot>
+    <el-col
+        :xs="field.info.colspan.xs"
+        :sm="field.info.colspan.sm"
+        :md="field.info.colspan.md"
+        :lg="field.info.colspan.lg"
+        :xl="field.info.colspan.xl"
+        v-if="ignoreVif||field.evalXIf()"
+        v-show="field.evalVisible()"
     >
-      <!--显示字段label-->
-      <template v-slot:label>
-        <label
-          :for="field.info.name"
+
+      <el-form-item
+          :key="field.info.name"
+          :prop="field.info.name"
           :title="field.info.label"
-          :class="field.info.isRequired() ?  `${field.info.getLabelStyle()} required` : field.info.getLabelStyle()"
-          class="el-form-item__label"
-          style="width: 10rem; text-overflow: ellipsis;overflow: hidden;white-space: nowrap;"
-        >
+          :show-message="false"
 
-          {{field.info.label}}
-
-          <el-button
-            v-if="field.info.explain !== ''"
-            type="text"
-            @click="showHelpTips(field.info)"
-            style="color:#28d828"
-            slot="reference"
-            icon="el-icon-question"
-          ></el-button>
-
-        </label>
-      </template>
-
-      <!--内容部分-->
-      <el-dialog
-        :title="title"
-        :visible.sync="dialogVisible"
-        width="68%"
-        append-to-body
-        destroy-on-close
+          :error="field.getAnyValidateError()"
+          :class="{ fix_height_form_item: fixHeight, invalid_form_item : formHasInvalidError }"
       >
-        <div
-          style="border-radius: 4px; padding:10px; border:1px solid #dcdfe6; overflow: auto;max-width:210mm;margin:0 auto;"
-          v-html="html"
-        ></div>
-        <span
-          slot="footer"
-          class="dialog-footer"
+        <!--显示字段label-->
+        <template v-slot:label>
+          <label
+              :for="field.info.name"
+              :title="field.info.label"
+              :class="field.info.isRequired() ?  `${field.info.getLabelStyle()} required` : field.info.getLabelStyle()"
+              class="el-form-item__label"
+              style="width: 10rem; text-overflow: ellipsis;overflow: hidden;white-space: nowrap;"
+          >
+
+            {{ field.info.label }}
+
+            <el-button
+                v-if="field.info.explain !== ''"
+                type="text"
+                @click="showHelpTips(field.info)"
+                style="color:#28d828"
+                slot="reference"
+                icon="el-icon-question"
+            ></el-button>
+
+          </label>
+        </template>
+
+        <!--内容部分-->
+        <el-dialog
+            :title="title"
+            :visible.sync="dialogVisible"
+            width="68%"
+            append-to-body
+            destroy-on-close
         >
+          <div
+              style="border-radius: 4px; padding:10px; border:1px solid #dcdfe6; overflow: auto;max-width:210mm;margin:0 auto;"
+              v-html="html"
+          ></div>
+          <span
+              slot="footer"
+              class="dialog-footer"
+          >
           <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button
-            type="primary"
-            @click="dialogVisible = false"
+              type="primary"
+              @click="dialogVisible = false"
           >确 定</el-button>
         </span>
-      </el-dialog>
-      <el-row>
-        <el-col
-          v-for="contentField in this.contentFields"
-          :key="contentField.info.name"
-          v-if="ignoreVif||contentField.evalXIf()"
-          :span="getInnerFieldColspan(contentField)"
-         
-        >
-        <!-- style="display: flex;" -->
-          <!-- 
-          @field-value-changed="$emit('field-value-changed', $event)"
-          v-show="contentField.info.bodyVisible && contentField.info.srvCol.in_detail == 1"  label设置隐藏 in_detail == 2 ， 显示lebel 不显示 field-editor-->
-          <raw-field-editor
-            ref="inner"
-            :field="contentField"
-            v-if="ignoreVif||contentField.evalXIf()"
-            :childForeignkey='childForeignkey'
-            :defaultCondition='defaultCondition'
-            :mainformDatas='mainformDatas||parentAddMainFormDatas'
-            :defaultValues='defaultValues'
-            :form-model="formModel"
-            v-show="contentField.info.readonly ? contentField.info.srvCol.in_detail == 1 : contentField.info.bodyVisible"
-            @field-value-changed="$emit('field-value-changed', $event)"
-            @field-history-popup="$emit('field-history-popup', $event)"
-            style="flex: 1;"
-          >
-          </raw-field-editor>
-          <template v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson && contentField.fieldActionOptionsJson.hasOwnProperty('col_btn_json') && contentField.fieldActionOptionsJson.col_btn_json.hasOwnProperty('btn_name')">
-            <shortcutAdd v-if="contentField.fieldActionOptionsJson" :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
-          </template>
-        </el-col>
-      </el-row>
-    </el-form-item>
-    <slot name="field-child-append"></slot>
+        </el-dialog>
+        <el-row>
+          <el-col
+              v-for="contentField in this.contentFields"
+              :key="contentField.info.name"
+              v-if="ignoreVif||contentField.evalXIf()"
+              :span="getInnerFieldColspan(contentField)"
 
-  </el-col>
+          >
+            <!-- style="display: flex;" -->
+            <!--
+            @field-value-changed="$emit('field-value-changed', $event)"
+            v-show="contentField.info.bodyVisible && contentField.info.srvCol.in_detail == 1"  label设置隐藏 in_detail == 2 ， 显示lebel 不显示 field-editor-->
+            <raw-field-editor
+                ref="inner"
+                :field="contentField"
+                v-if="ignoreVif||contentField.evalXIf()"
+                :childForeignkey='childForeignkey'
+                :defaultCondition='defaultCondition'
+                :mainformDatas='mainformDatas||parentAddMainFormDatas'
+                :defaultValues='defaultValues'
+                :form-model="formModel"
+                v-show="contentField.info.readonly ? contentField.info.srvCol.in_detail == 1 : contentField.info.bodyVisible"
+                @field-value-changed="$emit('field-value-changed', $event)"
+                @field-history-popup="$emit('field-history-popup', $event)"
+                style="flex: 1;"
+            >
+            </raw-field-editor>
+            <template
+                v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson && contentField.fieldActionOptionsJson.hasOwnProperty('col_btn_json') && contentField.fieldActionOptionsJson.col_btn_json.hasOwnProperty('btn_name')">
+              <shortcutAdd v-if="contentField.fieldActionOptionsJson"
+                           :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
+            </template>
+          </el-col>
+        </el-row>
+      </el-form-item>
+    </el-col>
+    <slot name="field-child-append"></slot>
+  </div>
+
 </template>
 
 <script>
@@ -115,7 +120,7 @@ export default {
   name: "field-editor",
 
   components: {
-    shortcutAdd,RawFieldEditor
+    shortcutAdd, RawFieldEditor
   },
 
   props: {
@@ -123,7 +128,7 @@ export default {
       type: Boolean,
       default: false
     },
-     defaultCondition: {
+    defaultCondition: {
       type: Array,
     },
     childForeignkey: {
@@ -151,14 +156,14 @@ export default {
       type: Boolean,
       default: false,
     },
-     mainformDatas: {
+    mainformDatas: {
       type: Object,
     },
-    parentAddMainFormDatas:{
+    parentAddMainFormDatas: {
       type: Object,
     },
-    defaultValues:{
-      type:Object,
+    defaultValues: {
+      type: Object,
     },
     formModel: {
       type: Object,
@@ -185,10 +190,10 @@ export default {
         "userlist",
         "code-editor",
       ]);
-      return !flexEditors.has(editor);
+      return flexEditors.has(editor);
     },
   },
-  mounted(){
+  mounted() {
     this.$forceUpdate()
   },
   methods: {
@@ -208,7 +213,8 @@ export default {
       let inner = Number.parseFloat(colSpan2);
       return _.toInteger(inner * 24);
     },
-    getconsole(e) {},
+    getconsole(e) {
+    },
     showHelpTips(e) {
       this.html = e.explain;
       this.title = e.label + "[说明]";
@@ -218,7 +224,8 @@ export default {
       let tab_title = e.label + "[说明]";
       //  this.addTab(type, urlParams, tab_title);
     },
-    handleClose(e) {},
+    handleClose(e) {
+    },
   },
 };
 </script>
@@ -231,23 +238,40 @@ label.required::before {
   color: #f74b4b;
   margin-right: 4px !important;
 }
+
 .el-form label.red {
   color: #c03434;
   font-weight: 600 !important;
 }
+
 .el-form label.normal {
   color: #3f65b1 !important;
 }
+
 div.el-form-item {
-  margin-bottom: -3px;
-   margin-top: -3px;
+  margin-bottom: unset;
+  //margin-bottom: -3px;
+  //margin-top: -3px;
 }
 
 div.invalid_form_item {
   margin-bottom: 16px !important;
 }
+
 .el-form-item__error {
   padding-top: 0px;
 }
+.field-editor{
+  display: unset;
+  padding: 10px 0;
+}
+.m-y-5{
+  margin: 5px 0 !important;
+}
+.el-form .el-form-item.fix_height_form_item{
+  margin-bottom: 5px!important;
+  height: unset!important;
+}
+
 </style>
 

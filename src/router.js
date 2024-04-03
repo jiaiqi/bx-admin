@@ -200,7 +200,16 @@ let routes=[
     name: 'detailPlus',
     component: detailPlus
   },
-
+  {
+    path: '/cardDetail/:service_name/:id',
+    name: 'cardDetail',
+    component: detail
+  },
+  {
+    path: '/cardDetail/:service_name/:condcol/:condvalue',
+    name: 'cardDetail1',
+    component: detail
+  },
   {
     path: '/test_field',
     name: 'test_field',

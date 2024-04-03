@@ -80,11 +80,11 @@ const comColMapRun = computed(() => {
 
 <template>
   <div class="card-list">
-    <cardGroupCell :key="index" ref="cardGroupCell" :pageItem="pageItem"
+    <cardGroupCell class="card-item" :key="index" ref="cardGroupCell" :pageItem="pageItem"
                    :cellsLayout="[cellsLayoutJson]" :cellData="item" :comColMap="comColMapRun"
                    :cardLayout="cardLayoutJson||null"
                    @on-click-cell="onClickCell" @on-click-block="onClickBlock" @on-click-icon="onClickBlock"
-                   @data-updated="onDataUpdate" v-for="(item,index) in props.gridData">
+                   @data-updated="onDataUpdate" v-for="(item,index) in gridData">
       <template #footer>
         <slot name="footer" :data="item"></slot>
       </template>
@@ -100,14 +100,21 @@ const comColMapRun = computed(() => {
 <style lang="scss" scoped>
 .card-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   grid-gap: 10px;
-  padding: 10px 20px;
-
+  //padding: 10px 20px;
+  padding: 6px;
   ::v-deep .footer-btn {
     width: 100%;
     display: flex;
     justify-content: flex-end;
+    .footer-btn-item{
+      margin-left: 10px;
+    }
+  }
+
+  ::v-deep .card-item .bx-card-cell:hover {
+    box-shadow: 0 1px 2px -2px rgba(0, 0, 0, .08), 0 3px 6px 0 rgba(0, 0, 0, .06), 0 5px 12px 4px rgba(0, 0, 0, .04)
   }
 }
 </style>

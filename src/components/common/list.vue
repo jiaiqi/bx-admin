@@ -940,13 +940,14 @@ export default {
   border: 1px solid #e7e7e7;
   border-radius: 8px;
   overflow: hidden;
-  margin: 0 14px;
+  //margin: 0 14px;
 
   .svg-icon {
     width: 44px;
     height: 32px;
     padding: 6px 10px;
     cursor: pointer;
+
   }
 }
 </style>

@@ -7,7 +7,7 @@
         <div v-for="(cellLayoutJson,i) in cellsLayout" :key="i" class="bx-card-cell"
           :class="{checked:pageItem&&pageItem._refedCol && currentRadio===cellItemData[pageItem._refedCol]}"
           :style="[cellLayoutJson.style_json ? buildColStyleJson(cellLayoutJson.style_json,null,cellLayoutJson) : buildColStyleJson(null,null,cellLayoutJson)]"
-          style="cursor: pointer;" v-on:click="onClickCell(cellItemData,cellLayoutJson)">
+          v-on:click="onClickCell(cellItemData,cellLayoutJson)">
           <!-- @click.stop="onClickCell(cellItemData,cellLayoutJson)"  -->
           <!-- <div class="radio-box" v-if="pageItem&&pageItem.selectedType==='fkSelector'">
             <radio color="#007AFF" :class="currentRadio===cellItemData[pageItem._refedCol]?'checked blue':'blue'"
