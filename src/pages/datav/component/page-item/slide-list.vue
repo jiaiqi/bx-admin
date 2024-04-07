@@ -1,6 +1,9 @@
 <template>
+  <div class="swiper-list" v-if="!swiperList||swiperList.length===0">
+    <span v-if="pageItem&&pageItem.com_label">{{pageItem.com_label}}</span>
+  </div>
 	<div class="swiper-list" :class="{ 'left-bottom-dot': dotPostion === 'left-bottom' }" id="home-swiper-list"
-		:data-order-no="pageItem['order_no']" :style="[tagStylefn(pageItem.swiper_json.style_json)]" v-if="pageItem">
+		:data-order-no="pageItem['order_no']" :style="[tagStylefn(pageItem.swiper_json.style_json)]" v-else-if="pageItem">
 		<!-- <div class="home-btn" @click="setHomePage" v-if="pageItem.show_set_home!=='否'">
 			<button class=" cu-btn shadow-blur" v-if="userInfo && userInfo.home_store_no !== storeInfo.store_no">
 				<text class="cuIcon-home"></text></button>

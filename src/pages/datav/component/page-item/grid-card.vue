@@ -2,7 +2,7 @@
   <div class="grid" :style="'--grid-cols:' + pageItem.grid_json.max_cols" v-if="cardStyle === '上图下文'">
     <div class="grid-item" :class="{ 'no-image': !baseListItem.image }" v-for="(baseListItem, baseListIndex) in buttons"
       :key="baseListIndex" @click="onGridItem(baseListItem)" :custom-style="{ padding: '15rpx 0' }">
-      <img :src="getImagePath(baseListItem.image)" style="width: 80rpx;height:80rpx;" alt="" srcset="">
+      <img :src="getImagePath(baseListItem.image)" style="width: 40px;height:40px;" alt="" srcset="">
       <span class="grid-text" style="padding: 10upx 0;color: #323232;">{{ baseListItem.label || baseListItem.child_name
       }}</span>
     </div>
@@ -229,14 +229,20 @@ export default {
     display: flex;
     flex-direction: column;
     cursor: pointer;
+    text-align: center;
     img {
       width: 100%;
-      flex: 1;
+      min-height: 40px;
+      margin: 0 auto;
+      background-color: #333;
+
+      //flex: 1;
     }
 
     &.no-image {
       img {
-        background-color: #f2f2f2;
+        background-color: #999;
+        border-radius: 6px;
       }
     }
 

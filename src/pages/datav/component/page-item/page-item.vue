@@ -1,29 +1,44 @@
 <template>
-  <div class="page-item" v-if="pageItem && pageItem.com_type" :style="stylefn(pageItem.style_json)">
-    <video-card v-if="pageItem.com_type === 'videoCard'" :ref="pageItem.com_type" :pageItem="pageItem"></video-card>
-    <current-info v-if="pageItem.com_type === 'currentInfo'" :ref="pageItem.com_type"
+  <div class="page-item" :class="{'mobile':screenType==='mobile'}" v-if="pageItem && pageItem.com_type"
+       :style="stylefn(pageItem.style_json)">
+    <video-card :class="{'mobile':screenType==='mobile'}" v-if="pageItem.com_type === 'videoCard'"
+                :ref="pageItem.com_type" :pageItem="pageItem"></video-card>
+    <current-info :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'currentInfo'"
+                  :ref="pageItem.com_type"
                   :pageItem="pageItem"></current-info>
-    <slide-list v-if="pageItem.com_type === 'swiper'" :ref="pageItem.com_type" :pageItem="pageItem"></slide-list>
-    <user-list v-if="pageItem.com_type === 'userList'" :ref="pageItem.com_type" :pageItem="pageItem"></user-list>
-    <notice-bar v-if="pageItem.com_type === 'noticeBar'" :ref="pageItem.com_type" :pageItem="pageItem"></notice-bar>
-    <map-card v-if="pageItem.com_type === 'map'" :ref="pageItem.com_type" :pageItem="pageItem"></map-card>
-    <page-item-chart v-if="pageItem.com_type === 'chart'" :ref="pageItem.com_type" :pageParamsModel="pageParamsModel"
+    <slide-list :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'swiper'" :ref="pageItem.com_type"
+                :pageItem="pageItem"></slide-list>
+    <user-list :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'userList'"
+               :ref="pageItem.com_type" :pageItem="pageItem"></user-list>
+    <notice-bar :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'noticeBar'"
+                :ref="pageItem.com_type" :pageItem="pageItem"></notice-bar>
+    <map-card :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'map'" :ref="pageItem.com_type"
+              :pageItem="pageItem"></map-card>
+    <page-item-chart :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'chart'"
+                     :ref="pageItem.com_type" :pageParamsModel="pageParamsModel"
                      :pageItem="pageItem" :index="layout.i" :layout="layout"></page-item-chart>
-    <List v-if="pageItem.com_type === 'list'" :pageParamsModel="pageParamsModel" @setPageParams="setPageParams"
+    <List :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'list'"
+          :pageParamsModel="pageParamsModel" @setPageParams="setPageParams"
           :ref="pageItem.com_type" :pageItem="pageItem"></List>
-    <tab-list v-if="pageItem.com_type === 'tabs'" :pageParamsModel="pageParamsModel" :ref="pageItem.com_type"
+    <tab-list :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'tabs'"
+              :pageParamsModel="pageParamsModel" :ref="pageItem.com_type"
               :pageItem="pageItem"></tab-list>
     <!-- <mix-list
       v-if="pageItem.com_type === 'list'"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
     ></mix-list> -->
-    <page-widget v-if="pageItem.com_type === '控件'" :ref="pageItem.com_type" :pageItem="pageItem" :page-no="pageNo"
+    <page-widget :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === '控件'" :ref="pageItem.com_type"
+                 :pageItem="pageItem" :page-no="pageNo"
                  @resize="$emit('resize')"></page-widget>
-    <card-group v-if="pageItem.com_type === 'cardGroup'" :ref="pageItem.com_type" :pageItem="pageItem"></card-group>
-    <grid-card v-if="pageItem.com_type === 'grid'" :ref="pageItem.com_type" :pageItem="pageItem"></grid-card>
-    <form-add v-else-if="pageItem.com_type==='form'&&pageItem.form_json&&pageItem.form_json.form_type==='新增'"
+    <card-group :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'cardGroup'"
+                :ref="pageItem.com_type" :pageItem="pageItem"></card-group>
+    <grid-card :class="{'mobile':screenType==='mobile'}" v-else-if="pageItem.com_type === 'grid'" :ref="pageItem.com_type"
+               :pageItem="pageItem"></grid-card>
+    <form-add :class="{'mobile':screenType==='mobile'}"
+              v-else-if="pageItem.com_type==='form'&&pageItem.form_json&&pageItem.form_json.form_type==='新增'"
               :ref="pageItem.com_type" :pageItem="pageItem"></form-add>
+    <div v-else-if="pageItem&&pageItem.com_label">{{pageItem.com_label}}</div>
   </div>
 </template>
 
@@ -73,6 +88,7 @@ export default {
     layout: {
       type: Object,
     },
+    screenType: String
   },
   mounted() {
     // console.log(this.pageItem)
@@ -96,11 +112,19 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 .page-item {
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-size: 100% 100%;
+  color: #333;
+
+  &.mobile {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+
+  }
 }
 </style>

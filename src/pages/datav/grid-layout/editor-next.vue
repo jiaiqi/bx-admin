@@ -1,27 +1,27 @@
 <template>
   <div
-    class="customhome-container"
-    :class="{ mobile: screenType === 'mobile' && !inEditor }"
-    :style="'--right-width:' + rightWidth + 'px'"
-    @dragenter="dragDefFn($event)"
-    @dragover="dragDefFn($event)"
+      class="customhome-container"
+      :class="{ mobile: screenType === 'mobile' && !inEditor }"
+      :style="'--right-width:' + rightWidth + 'px'"
+      @dragenter="dragDefFn($event)"
+      @dragover="dragDefFn($event)"
   >
     <div class="cushome-sidebar" v-if="inEditor">
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
         <div
-          v-for="item in comList"
-          :key="item.id"
-          class="com-item margin component"
+            v-for="item in comList"
+            :key="item.id"
+            class="com-item margin component"
         >
           <img
-            :src="getImagePath(item.preview)"
-            alt=""
-            class="example"
-            @drag="drag(item)"
-            @dragend="dragend(item, $event)"
-            draggable="true"
-            unselectable="on"
+              :src="getImagePath(item.preview)"
+              alt=""
+              class="example"
+              @drag="drag(item)"
+              @dragend="dragend(item, $event)"
+              draggable="true"
+              unselectable="on"
           />
           <div class="label">{{ item.comp_label }}</div>
         </div>
@@ -30,98 +30,98 @@
     <div class="cushome-right" v-if="inEditor">
       <div class="left-line" id="left-line"></div>
       <property-pane
-        :use-layout="useLayout"
-        :pageConfg="pageConfg"
-        :appNo="appNo"
-        :scree-type="screenType"
-        :currentItem="currentItem"
-        :layout="layout"
-        :str-layout="strLayout"
-        @save="clickSave"
-        @preview="toPreview"
-        @refresh="initPage"
-        @screentype="screenType = $event"
+          :use-layout="useLayout"
+          :pageConfg="pageConfg"
+          :appNo="appNo"
+          :scree-type="screenType"
+          :currentItem="currentItem"
+          :layout="layout"
+          :str-layout="strLayout"
+          @save="clickSave"
+          @preview="toPreview"
+          @refresh="initPage"
+          @screentype="screenType = $event"
       ></property-pane>
     </div>
     <div
-      class="cushome-content"
-      id="content"
-      :class="{ 'data-view-mode': !inEditor }"
+        class="cushome-content"
+        id="content"
+        :class="{ 'data-view-mode': !inEditor }"
     >
       <div
-        class="custom-design"
-        id="custom-design"
-        ref="customDesign"
-        :style="[styleJson]"
-        v-if="screenType === 'PC'"
+          class="custom-design"
+          id="custom-design"
+          ref="customDesign"
+          :style="[styleJson]"
+          v-if="screenType === 'PC'"
       >
         <grid-layout
-          ref="gridlayout"
-          :layout.sync="layout"
-          :col-num="colNum"
-          :row-height="rowHeight"
-          :preventCollision="true"
-          :responsive="false"
-          :is-draggable="inEditor"
-          :is-resizable="inEditor"
-          :is-mirrored="false"
-          :vertical-compact="false"
-          :margin="[0, 0]"
-          :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent"
-          v-if="allowedOverlap === false"
+            ref="gridlayout"
+            :layout.sync="layout"
+            :col-num="colNum"
+            :row-height="rowHeight"
+            :preventCollision="true"
+            :responsive="false"
+            :is-draggable="inEditor"
+            :is-resizable="inEditor"
+            :is-mirrored="false"
+            :vertical-compact="false"
+            :margin="[0, 0]"
+            :use-css-transforms="true"
+            @layout-updated="layoutUpdatedEvent"
+            v-if="allowedOverlap === false"
         >
           <div
-            class="grid-container"
-            id="grid-container"
-            :style="[bjStyles]"
+              class="grid-container"
+              id="grid-container"
+              :style="[bjStyles]"
           ></div>
           <grid-item
-            v-for="item in layout"
-            :x="item.x"
-            :y="item.y"
-            :w="item.w"
-            :h="item.h"
-            :i="item.i"
-            :key="item.i"
-            @moved="movedEvent"
-            @resized="resizedEvent"
-            class="gridItem"
-            @dblclick.native="toComponentDetail(item)"
+              v-for="item in layout"
+              :x="item.x"
+              :y="item.y"
+              :w="item.w"
+              :h="item.h"
+              :i="item.i"
+              :key="item.i"
+              @moved="movedEvent"
+              @resized="resizedEvent"
+              class="gridItem"
+              @dblclick.native="toComponentDetail(item)"
           >
             <span
-              class="remove"
-              @click.stop="removeItem(item.i)"
-              v-if="inEditor"
-              ><i class="el-icon-close"></i
+                class="remove"
+                @click.stop="removeItem(item.i)"
+                v-if="inEditor"
+            ><i class="el-icon-close"></i
             ></span>
             <div class="com-item dashed" v-if="!inEditor">
-              <page-item
-                :use-layout="useLayout"
-                ref="pageItem"
-                @setPageParams="setPageParams"
-                :pageParamsModel="pageParamsModel"
-                :page-item="item.data"
-                :page-no="pgNo"
-                :layout="item"
-                @click.stop=""
-                @resize="resize"
+              <page-item :screenType="screenType"
+                         :use-layout="useLayout"
+                         ref="pageItem"
+                         @setPageParams="setPageParams"
+                         :pageParamsModel="pageParamsModel"
+                         :page-item="item.data"
+                         :page-no="pgNo"
+                         :layout="item"
+                         @click.stop=""
+                         @resize="resize"
               ></page-item>
             </div>
             <div
-              class="com-item dashed"
-              :class="{ active: item.i === curDesign }"
-              v-else
-              @click.stop.prevent.capture="changeDesign(item.i)"
+                class="com-item dashed"
+                :class="{ active: item.i === curDesign }"
+                v-else
+                @click.stop.prevent.capture="changeDesign(item.i)"
             >
-              <page-item
-                :use-layout="useLayout"
-                ref="pageItem"
-                @setPageParams="setPageParams"
-                :pageParamsModel="pageParamsModel"
-                :page-item="item.data"
-                :page-no="pgNo"
-                :layout="item"
+              <page-item :screenType="screenType"
+                         :use-layout="useLayout"
+                         ref="pageItem"
+                         @setPageParams="setPageParams"
+                         :pageParamsModel="pageParamsModel"
+                         :page-item="item.data"
+                         :page-no="pgNo"
+                         :layout="item"
               ></page-item>
             </div>
           </grid-item>
@@ -129,31 +129,31 @@
         <div v-else class="drag-layout">
           <!-- 可重叠布局 -->
           <vue-drag-resize
-            :parentLimitation="true"
-            :isResizable="inEditor"
-            :isDraggable="inEditor"
-            :isActive="item.i && item.i === curDesign && inEditor"
-            :z="item.z"
-            :x="vw2px(item.x)"
-            :y="vh2px(item.y)"
-            :w="vw2px(item.w)"
-            :h="vh2px(item.h)"
-            @clicked=""
-            @deactivated="deactivated"
-            @resizestop="onResizestop($event, lIndex)"
-            @dragstop="onDragstop($event, lIndex)"
-            ::key="item.i"
-            v-for="(item, lIndex) in layout"
+              :parentLimitation="true"
+              :isResizable="inEditor"
+              :isDraggable="inEditor"
+              :isActive="item.i && item.i === curDesign && inEditor"
+              :z="item.z"
+              :x="vw2px(item.x)"
+              :y="vh2px(item.y)"
+              :w="vw2px(item.w)"
+              :h="vh2px(item.h)"
+              @clicked=""
+              @deactivated="deactivated"
+              @resizestop="onResizestop($event, lIndex)"
+              @dragstop="onDragstop($event, lIndex)"
+              ::key="item.i"
+              v-for="(item, lIndex) in layout"
           >
-            <page-item
-              @click.native.stop.prevent.capture="changeDesign(item.i)"
-              :use-layout="useLayout"
-              ref="pageItem"
-              @setPageParams="setPageParams"
-              :pageParamsModel="pageParamsModel"
-              :page-item="item.data"
-              :page-no="pgNo"
-              :layout="item"
+            <page-item :screenType="screenType"
+                       @click.native.stop.prevent.capture="changeDesign(item.i)"
+                       :use-layout="useLayout"
+                       ref="pageItem"
+                       @setPageParams="setPageParams"
+                       :pageParamsModel="pageParamsModel"
+                       :page-item="item.data"
+                       :page-no="pgNo"
+                       :layout="item"
             ></page-item>
             <div class="tool-box">
               <!-- <el-tooltip
@@ -185,29 +185,29 @@
                 </div>
               </el-tooltip> -->
               <el-tooltip
-                class="item"
-                effect="dark"
-                content="上移"
-                placement="bottom"
+                  class="item"
+                  effect="dark"
+                  content="上移"
+                  placement="bottom"
               >
                 <div
-                  class="tool-item"
-                  :class="{ disabled: isTop(item.z) }"
-                  @click="toUp(lIndex, 1)"
+                    class="tool-item"
+                    :class="{ disabled: isTop(item.z) }"
+                    @click="toUp(lIndex, 1)"
                 >
                   <i class="el-icon-top"></i>上移
                 </div>
               </el-tooltip>
               <el-tooltip
-                class="item"
-                effect="dark"
-                content="下移"
-                placement="bottom"
+                  class="item"
+                  effect="dark"
+                  content="下移"
+                  placement="bottom"
               >
                 <div
-                  class="tool-item"
-                  :class="{ disabled: isBottom(item.z) }"
-                  @click="toDown(lIndex, 1)"
+                    class="tool-item"
+                    :class="{ disabled: isBottom(item.z) }"
+                    @click="toDown(lIndex, 1)"
                 >
                   <i class="el-icon-bottom"></i>下移
                 </div>
@@ -217,104 +217,105 @@
         </div>
       </div>
       <div
-        class="custom-design"
-        :class="{ mobile: screenType === 'mobile' }"
-        id="custom-design"
-        ref="customDesign"
-        v-else-if="screenType === 'mobile'"
-        style="
+          class="custom-design"
+          :class="{ mobile: screenType === 'mobile' }"
+          id="custom-design"
+          ref="customDesign"
+          v-else-if="screenType === 'mobile'"
+          style="
           width: 375px;
           height: 667px;
           margin-top: 5vh;
           overflow-y: auto;
           overflow-x: hidden;
         "
-        :style="[styleJson]"
+          :style="[styleJson]"
       >
         <grid-layout
-          ref="gridlayout"
-          :layout.sync="layout"
-          :col-num="colNum"
-          :row-height="rowHeight"
-          :vertical-compact="true"
-          :is-draggable="inEditor"
-          :is-resizable="true"
-          :is-mirrored="false"
-          :margin="[0, 0]"
-          :autoSize="true"
-          :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent"
-          :responsive="false"
-          :preventCollision="true"
+            ref="gridlayout"
+            :layout.sync="layout"
+            :col-num="colNum"
+            :row-height="rowHeight"
+            :vertical-compact="true"
+            :is-draggable="inEditor"
+            :is-resizable="true"
+            :is-mirrored="false"
+            :margin="[0, 0]"
+            :autoSize="true"
+            :use-css-transforms="true"
+            @layout-updated="layoutUpdatedEvent"
+            :responsive="false"
+            :preventCollision="true"
         >
           <div
-            class="grid-container"
-            id="grid-container"
-            :style="[bjStyles]"
+              class="grid-container"
+              id="grid-container"
+              :style="[bjStyles]"
           ></div>
           <template v-if="!inEditor || onMobilePreview">
-            <div v-for="item in layout" style="min-height: 100px">
-              <page-item
-                ref="pageItem"
-                @setPageParams="setPageParams"
-                :pageParamsModel="pageParamsModel"
-                :page-item="item.data"
-                :page-no="pgNo"
-                :layout="item"
-                @click.stop=""
-                @resize="resize"
+            <div v-for="item in layout" >
+              <page-item :screenType="screenType"
+                         style="min-height: 100px"
+                         ref="pageItem"
+                         @setPageParams="setPageParams"
+                         :pageParamsModel="pageParamsModel"
+                         :page-item="item.data"
+                         :page-no="pgNo"
+                         :layout="item"
+                         @click.stop=""
+                         @resize="resize"
               ></page-item>
             </div>
           </template>
           <template v-else>
             <grid-item
-              v-for="item in layout"
-              :x="item.x"
-              :y="item.y"
-              :w="item.w"
-              :h="item.h"
-              :i="item.i"
-              :key="item.i"
-              @moved="movedEvent"
-              @resized="resizedEvent"
-              class="gridItem"
-              @dblclick.native="toComponentDetail(item)"
+                v-for="item in layout"
+                :x="item.x"
+                :y="item.y"
+                :w="item.w"
+                :h="item.h"
+                :i="item.i"
+                :key="item.i"
+                @moved="movedEvent"
+                @resized="resizedEvent"
+                class="gridItem"
+                @dblclick.native="toComponentDetail(item)"
             >
               <span
-                class="remove"
-                @click.stop="removeItem(item.i)"
-                v-if="inEditor"
-                ><i class="el-icon-close"></i
+                  class="remove"
+                  @click.stop="removeItem(item.i)"
+                  v-if="inEditor"
+              ><i class="el-icon-close"></i
               ></span>
               <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
                 @click.stop.prevent.capture="changeDesign(item.i)">
                 <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
               </div> -->
               <div class="com-item dashed" v-if="!inEditor">
-                <page-item
-                  ref="pageItem"
-                  @setPageParams="setPageParams"
-                  :pageParamsModel="pageParamsModel"
-                  :page-item="item.data"
-                  :page-no="pgNo"
-                  :layout="item"
-                  @click.stop=""
-                  @resize="resize"
+                <page-item :screenType="screenType"
+                           ref="pageItem"
+                           @setPageParams="setPageParams"
+                           :pageParamsModel="pageParamsModel"
+                           :page-item="item.data"
+                           :page-no="pgNo"
+                           :layout="item"
+                           @click.stop=""
+                           @resize="resize"
                 ></page-item>
               </div>
               <div
-                class="com-item dashed"
-                :class="{ active: item.i === curDesign }"
-                v-else
-                @click.stop.prevent.capture="changeDesign(item.i)"
+                  class="com-item dashed"
+                  :class="{ active: item.i === curDesign }"
+                  v-else
+                  @click.stop.prevent.capture="changeDesign(item.i)"
               >
-                <page-item
-                  ref="pageItem"
-                  @setPageParams="setPageParams"
-                  :pageParamsModel="pageParamsModel"
-                  :page-item="item.data"
-                  :page-no="pgNo"
-                  :layout="item"
+                <page-item :screenType="screenType"
+                           ref="pageItem"
+                           @setPageParams="setPageParams"
+                           :pageParamsModel="pageParamsModel"
+                           :page-item="item.data"
+                           :page-no="pgNo"
+                           :layout="item"
                 ></page-item>
               </div>
             </grid-item>
@@ -322,13 +323,14 @@
         </grid-layout>
       </div>
       <div
-        v-if="screenType === 'mobile' && inEditor && pgNo"
-        style="text-align: center; margin-top: 50px"
+          v-if="screenType === 'mobile' && inEditor && pgNo"
+          style="text-align: center; margin-top: 50px"
       >
         <el-button @click="previewCurrent">{{
-          onMobilePreview ? "编辑" : "预览"
-        }}</el-button>
-        <el-button @click="previewMobile">h5</el-button>
+            onMobilePreview ? "编辑" : "预览"
+          }}
+        </el-button>
+        <el-button @click="previewMobile">h5预览</el-button>
       </div>
     </div>
 
@@ -343,15 +345,16 @@
 
 <script>
 import dayjs from "dayjs";
-import { GridLayout, GridItem } from "vue-grid-layout";
+import {GridLayout, GridItem} from "vue-grid-layout";
 import VueDragResize from "vue-drag-resize";
 import PageItem from "../component/page-item/page-item.vue";
 import propertyPane from "./property-pane.vue";
 import componentPane from "./left-pane/component-pane.vue";
-import { formatStyleData, rpx2px } from "../common/index.js";
-import { $axios } from "../common/http.js";
-let mouseXY = { x: null, y: null };
-let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
+import {formatStyleData, rpx2px} from "../common/index.js";
+import {$axios} from "../common/http.js";
+
+let mouseXY = {x: null, y: null};
+let DragPos = {x: null, y: null, w: 1, h: 1, i: null};
 
 // 页面参数
 import pageParams from "../common/params/page-params-mixin.js";
@@ -391,7 +394,7 @@ export default {
       layoutJson: null,
       comJson: [],
       comList: [],
-      designData: { layoutCon: [], layoutData: [] }, //容器内容
+      designData: {layoutCon: [], layoutData: []}, //容器内容
       bjStyles: {}, //栅格样式
       curDesign: "", //点击容器组件样式
       rowheight: 30, //默认一格高度
@@ -432,12 +435,12 @@ export default {
     if (this.inEditor) {
       // 编辑模式 监听事件
       document.addEventListener(
-        "dragover",
-        function (e) {
-          mouseXY.x = e.clientX;
-          mouseXY.y = e.clientY;
-        },
-        false
+          "dragover",
+          function (e) {
+            mouseXY.x = e.clientX;
+            mouseXY.y = e.clientY;
+          },
+          false
       );
       this.moveMousemove();
       this.moveMouseup();
@@ -450,12 +453,12 @@ export default {
     this.initColNum();
 
     if (!process?.env?.NODE_ENV === "development") {
-    // 开发模式不监听窗口变化
-    if (!this.inEditor && this.screenType === "PC") {
-      window.addEventListener("resize", () => {
-        this.resize();
-      });
-    }
+      // 开发模式不监听窗口变化
+      if (!this.inEditor && this.screenType === "PC") {
+        window.addEventListener("resize", () => {
+          this.resize();
+        });
+      }
     }
 
     setTimeout(() => {
@@ -495,21 +498,21 @@ export default {
     isDataview() {
       // 预览模式
       return (
-        this.$route?.name === "gridview" ||
-        this.$route?.name === "gridViewDetail"
+          this.$route?.name === "gridview" ||
+          this.$route?.name === "gridViewDetail"
       );
     },
     showFullScreen() {
       return (
-        this.pageConfg?.page_options &&
-        this.pageConfg?.page_options.indexOf("全屏按钮") > -1
+          this.pageConfg?.page_options &&
+          this.pageConfg?.page_options.indexOf("全屏按钮") > -1
       );
     },
     needLogin() {
       return (
-        this.pageConfg?.page_options &&
-        this.pageConfg?.page_options.indexOf("先登录") > -1 &&
-        sessionStorage.getItem("logined") !== "true"
+          this.pageConfg?.page_options &&
+          this.pageConfg?.page_options.indexOf("先登录") > -1 &&
+          sessionStorage.getItem("logined") !== "true"
       );
     },
     initWH() {
@@ -520,9 +523,9 @@ export default {
         return {
           w: this.screenType === "mobile" ? 100 : 10,
           h:
-            this.screenType === "mobile"
-              ? 20
-              : parseFloat(((5 * eleWidth) / eleHeight).toFixed(6)),
+              this.screenType === "mobile"
+                  ? 20
+                  : parseFloat(((5 * eleWidth) / eleHeight).toFixed(6)),
           // w: containerWidth / 4,
           // h: containerWidth / 8,
         };
@@ -717,12 +720,12 @@ export default {
         cancelButtonText: "取消",
         type: "warning",
       })
-        .then(() => {
-          this.saveFn();
-        })
-        .catch(() => {
-          // 已取消
-        });
+          .then(() => {
+            this.saveFn();
+          })
+          .catch(() => {
+            // 已取消
+          });
     },
     async saveFn() {
       let addObj = {};
@@ -741,7 +744,7 @@ export default {
             {
               layout_party: "页面",
               layout_name:
-                this.pageName + dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+                  this.pageName + dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
             },
           ],
         };
@@ -753,10 +756,10 @@ export default {
             layout_party: "组件",
             parent_no: layoutInfo.layout_no,
             layout_name:
-              this.pageName +
-              dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss") +
-              "-" +
-              i,
+                this.pageName +
+                dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss") +
+                "-" +
+                i,
             seq: item.timestamp || i + 1,
             pos_x: item.x,
             pos_y: item.y,
@@ -830,10 +833,10 @@ export default {
               if (oldItem.id === item.id) {
                 isDel = false;
                 if (
-                  oldItem.x !== item.x ||
-                  oldItem.y !== item.y ||
-                  oldItem.h !== item.h ||
-                  oldItem.w !== item.w
+                    oldItem.x !== item.x ||
+                    oldItem.y !== item.y ||
+                    oldItem.h !== item.h ||
+                    oldItem.w !== item.w
                 ) {
                   // x y h w 有任意一个发生变化，则更新
                   const data = {};
@@ -879,10 +882,10 @@ export default {
               layout_party: "组件",
               parent_no: this.parentLayoutNo,
               layout_name:
-                this.pageName +
-                dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss") +
-                "-" +
-                i,
+                  this.pageName +
+                  dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss") +
+                  "-" +
+                  i,
               seq: i + 1,
               pos_x: item.x,
               pos_y: item.y,
@@ -902,7 +905,7 @@ export default {
         if (arrUpdateLayout.length > 0) {
           await this.saveService("update", arrUpdateLayout);
         }
-debugger
+        debugger
         layout.forEach((item, i) => {
           if (!item.id) {
             // 新增组件
@@ -951,7 +954,7 @@ debugger
             {
               serviceName: o.serviceName,
               srvApp: "config",
-              condition: [{ colName: "id", ruleType: "in", value: id }],
+              condition: [{colName: "id", ruleType: "in", value: id}],
             },
           ];
           break;
@@ -970,12 +973,12 @@ debugger
     },
     getLayoutNo(data) {
       return data.reduce((p, v) =>
-        Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
+          Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
       ).layout_no;
     },
     getPageNo(data) {
       return data.reduce((p, v) =>
-        Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
+          Date.parse(p.create_time) < Date.parse(v.create_time) ? v : p
       ).page_no;
     },
     async initPage(data) {
@@ -998,9 +1001,9 @@ debugger
       };
       const res = await $axios.post(url, req);
       if (
-        res.data.state === "SUCCESS" &&
-        Array.isArray(res.data.data) &&
-        res.data.data.length > 0
+          res.data.state === "SUCCESS" &&
+          Array.isArray(res.data.data) &&
+          res.data.data.length > 0
       ) {
         let data = res.data.data[0];
         Object.keys(data).forEach((key) => {
@@ -1029,11 +1032,11 @@ debugger
         // }
         this.contentData = {
           width:
-            this.styleJson?.width ||
-            (this.screenType === "mobile" ? "375px" : "1920px"),
+              this.styleJson?.width ||
+              (this.screenType === "mobile" ? "375px" : "1920px"),
           height:
-            this.styleJson?.height ||
-            (this.screenType === "mobile" ? "667px" : "1080px"),
+              this.styleJson?.height ||
+              (this.screenType === "mobile" ? "667px" : "1080px"),
         };
         // if (this.isDataview) {
         //   delete this.styleJson.width;
@@ -1051,11 +1054,11 @@ debugger
 
         this.layoutJson = data.layout_json_data;
         if (
-          Array.isArray(data.layout_json_data) &&
-          data.layout_json_data.length > 0
+            Array.isArray(data.layout_json_data) &&
+            data.layout_json_data.length > 0
         ) {
           this.layoutJson.parts_json = data.layout_json_data.sort(
-            (a, b) => a.seq - b.seq
+              (a, b) => a.seq - b.seq
           );
         }
         if (this.useLayout) {
@@ -1094,8 +1097,8 @@ debugger
             switch (item.com_type) {
               case "list":
                 if (
-                  !item.srv_req_json &&
-                  item.list_json?.default_srv_req_json
+                    !item.srv_req_json &&
+                    item.list_json?.default_srv_req_json
                 ) {
                   item.srv_req_json = item.list_json.default_srv_req_json;
                 }
@@ -1109,26 +1112,26 @@ debugger
             const obj = {
               x: item.layout_x || 0,
               y:
-                item.layout_y || item.layout_y === 0
-                  ? item.layout_y
-                  : index * this.initWH.h,
+                  item.layout_y || item.layout_y === 0
+                      ? item.layout_y
+                      : index * this.initWH.h,
               z: item.layout_z || index + 1,
               w: item.layout_width || this.initWH.w,
               h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
               // layout_no: item.layout_no,
-              data: { ...item },
+              data: {...item},
               isLeftBarItem: false,
               id: item.id,
               colNum: this.colNum,
             };
             if (
-              layoutItem?.col_span &&
-              layoutItem.row_span &&
-              layoutItem.pos_x &&
-              layoutItem.pos_y &&
-              this.screenType === "pc" &&
-              this.useLayout
+                layoutItem?.col_span &&
+                layoutItem.row_span &&
+                layoutItem.pos_x &&
+                layoutItem.pos_y &&
+                this.screenType === "pc" &&
+                this.useLayout
             ) {
               obj.w = (layoutItem?.row_span * 100 * 1.6) / 1920;
               obj.h = (layoutItem?.col_span * 100 * 1.17) / 1080;
@@ -1181,16 +1184,16 @@ debugger
       //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
       // });
     },
-    onDragstop({ left, top, width, height }, index) {
+    onDragstop({left, top, width, height}, index) {
       this.curDesign = this.layout[index].i;
       console.log(
-        "拖拽停止：",
-        index,
-        left,
-        top,
-        width,
-        height,
-        this.layout[index].z
+          "拖拽停止：",
+          index,
+          left,
+          top,
+          width,
+          height,
+          this.layout[index].z
       );
       this.$set(this.layout, index, {
         ...this.layout[index],
@@ -1200,7 +1203,7 @@ debugger
         h: this.px2vh(height),
       });
     },
-    onResizestop({ left, top, width, height }, index) {
+    onResizestop({left, top, width, height}, index) {
       this.curDesign = this.layout[index].i;
       console.log("大小改变：", index, left, top, width, height);
       this.$set(this.layout, index, {
@@ -1220,7 +1223,7 @@ debugger
         }).then((action) => {
           if (action === "confirm") {
             window.open(
-              `/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
+                `/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
             );
           }
         });
@@ -1294,11 +1297,11 @@ debugger
     //自定义容器初始化
     initDesign() {
       let domstyleWidth =
-          document.getElementById("custom-design").offsetWidth - 20 * 10,
-        domstyleHeight = 50,
-        domContainer = document.getElementById("custom-design"),
-        resWidth = domstyleWidth / 12,
-        everyWidth = ((resWidth / domstyleWidth) * 100).toFixed(2);
+              document.getElementById("custom-design").offsetWidth - 20 * 10,
+          domstyleHeight = 50,
+          domContainer = document.getElementById("custom-design"),
+          resWidth = domstyleWidth / 12,
+          everyWidth = ((resWidth / domstyleWidth) * 100).toFixed(2);
       if (this.inEditor) {
         this.bjStyles = {
           // right: "20px",
@@ -1352,29 +1355,29 @@ debugger
         this.mouseLeft = ev.clientX;
         this.mouseTop = ev.clientY;
         if (
-          this.mouseLeft >= this.designLeft &&
-          this.mouseTop >= this.designTop
+            this.mouseLeft >= this.designLeft &&
+            this.mouseTop >= this.designTop
         ) {
           if (!this.haveData()) {
             this.computedPosi(
-              { w: 12, h: 4 },
-              this.moveData.id,
-              this.designData.layoutCon
+                {w: 12, h: 4},
+                this.moveData.id,
+                this.designData.layoutCon
             );
             this.designData.layoutData.push(this.moveData);
             this.addClass(this.moveData.id, "have");
           } else {
             let X = this.mouseLeft - this.designLeft,
-              domstyleWidth =
-                (document.getElementById("grid-container").offsetWidth -
-                  12 * 10) /
-                12,
-              xlang = Math.floor(X / domstyleWidth / 2);
+                domstyleWidth =
+                    (document.getElementById("grid-container").offsetWidth -
+                        12 * 10) /
+                    12,
+                xlang = Math.floor(X / domstyleWidth / 2);
             if (xlang > 6) {
               xlang = 6;
             }
             this.designData.layoutCon[this.filterData(this.moveData.id)].x =
-              xlang;
+                xlang;
           }
         }
       };
@@ -1388,8 +1391,8 @@ debugger
             left: 0,
           };
           if (
-            this.mouseLeft < this.designLeft ||
-            this.mouseTop < this.designTop
+              this.mouseLeft < this.designLeft ||
+              this.mouseTop < this.designTop
           ) {
             if (this.haveData()) {
               this.deleteOnlyData(this.moveData.id);
@@ -1413,10 +1416,10 @@ debugger
         h: item.h,
       };
       let Ys = [],
-        maxX = 0,
-        maxY = 0,
-        edgeX = 0,
-        edgeY = 0;
+          maxX = 0,
+          maxY = 0,
+          edgeX = 0,
+          edgeY = 0;
       layout.map((item) => {
         Ys.push(item.y + item.h);
       });
@@ -1479,20 +1482,20 @@ debugger
       //   .getElementById("content")
       //   .getBoundingClientRect();
       let parentRect = document
-        .getElementById("grid-container")
-        .getBoundingClientRect();
+          .getElementById("grid-container")
+          .getBoundingClientRect();
       let mouseInGrid = false;
       if (
-        mouseXY.x > parentRect.left &&
-        mouseXY.x < parentRect.right &&
-        mouseXY.y > parentRect.top &&
-        mouseXY.y < parentRect.bottom
+          mouseXY.x > parentRect.left &&
+          mouseXY.x < parentRect.right &&
+          mouseXY.y > parentRect.top &&
+          mouseXY.y < parentRect.bottom
       ) {
         mouseInGrid = true;
       }
       if (
-        mouseInGrid === true &&
-        this.layout.findIndex((item) => item.i === "drop") === -1
+          mouseInGrid === true &&
+          this.layout.findIndex((item) => item.i === "drop") === -1
       ) {
         this.layout.push({
           x: 0,
@@ -1509,28 +1512,29 @@ debugger
       if (index !== -1) {
         try {
           this.$refs.gridlayout.$children[
-            this.layout.length
-          ].$refs.item.style.display = "none";
-        } catch {}
+              this.layout.length
+              ].$refs.item.style.display = "none";
+        } catch {
+        }
         let el = this.$refs.gridlayout.$children[index];
         el.dragging = {
           top: mouseXY.y - parentRect.top,
           left: mouseXY.x - parentRect.left,
         };
         let new_pos = el.calcXY(
-          mouseXY.y - parentRect.top,
-          mouseXY.x - parentRect.left
+            mouseXY.y - parentRect.top,
+            mouseXY.x - parentRect.left
         );
         if (mouseInGrid === true) {
           this.$refs.gridlayout.dragEvent(
-            "dragstart",
-            "drop",
-            new_pos.x,
-            new_pos.y,
-            // 5,
-            // 10
-            this.initWH.h,
-            this.initWH.w
+              "dragstart",
+              "drop",
+              new_pos.x,
+              new_pos.y,
+              // 5,
+              // 10
+              this.initWH.h,
+              this.initWH.w
           );
           DragPos.i = String(index);
           DragPos.x = this.layout[index].x;
@@ -1538,14 +1542,14 @@ debugger
         }
         if (mouseInGrid === false) {
           this.$refs.gridlayout.dragEvent(
-            "dragend",
-            "drop",
-            new_pos.x,
-            new_pos.y,
-            // 5,
-            // 10
-            this.initWH.h,
-            this.initWH.w
+              "dragend",
+              "drop",
+              new_pos.x,
+              new_pos.y,
+              // 5,
+              // 10
+              this.initWH.h,
+              this.initWH.w
           );
           this.layout = this.layout.filter((obj) => obj.i !== "drop");
         }
@@ -1591,7 +1595,8 @@ debugger
           if (config.figure_row_json) {
             try {
               config.swiper_json = JSON.parse(config.figure_row_json);
-            } catch (error) {}
+            } catch (error) {
+            }
           }
           break;
         case "map":
@@ -1628,20 +1633,20 @@ debugger
     },
     dragend: function (o, pos) {
       let parentRect = document
-        .getElementById("content")
-        .getBoundingClientRect();
+          .getElementById("content")
+          .getBoundingClientRect();
       if (this.allowedOverlap) {
         // 允许重叠 使用vue-drag-resize
         if (
-          pos.x > parentRect.left &&
-          pos.x < parentRect.right &&
-          pos.y > parentRect.top &&
-          pos.y < parentRect.bottom
+            pos.x > parentRect.left &&
+            pos.x < parentRect.right &&
+            pos.y > parentRect.top &&
+            pos.y < parentRect.bottom
         ) {
           // 拖拽到画布中
           let cvs = document
-            .getElementById("custom-design")
-            .getBoundingClientRect();
+              .getElementById("custom-design")
+              .getBoundingClientRect();
           let obj = {
             x: ((pos.x - cvs.left - 80) * 100) / cvs.width,
             y: ((pos.y - cvs.top - 40) * 100) / cvs.height,
@@ -1661,23 +1666,23 @@ debugger
 
       let mouseInGrid = false;
       if (
-        mouseXY.x > parentRect.left &&
-        mouseXY.x < parentRect.right &&
-        mouseXY.y > parentRect.top &&
-        mouseXY.y < parentRect.bottom
+          mouseXY.x > parentRect.left &&
+          mouseXY.x < parentRect.right &&
+          mouseXY.y > parentRect.top &&
+          mouseXY.y < parentRect.bottom
       ) {
         mouseInGrid = true;
       }
       if (mouseInGrid === true) {
         this.$refs.gridlayout.dragEvent(
-          "dragend",
-          "drop",
-          DragPos.x,
-          DragPos.y,
-          // 10,
-          // 5
-          this.initWH.w,
-          this.initWH.h
+            "dragend",
+            "drop",
+            DragPos.x,
+            DragPos.y,
+            // 10,
+            // 5
+            this.initWH.w,
+            this.initWH.h
         );
         this.layout = this.layout.filter((obj) => obj.i !== "drop");
         // UNCOMMENT below if you want to add a grid-item
@@ -1767,20 +1772,21 @@ debugger
         // }
         this.layout.push(obj);
         this.$refs.gridlayout.dragEvent(
-          "dragend",
-          DragPos.i,
-          DragPos.x,
-          DragPos.y,
-          // 10,
-          // 5
-          this.initWH.w,
-          this.initWH.h
+            "dragend",
+            DragPos.i,
+            DragPos.x,
+            DragPos.y,
+            // 10,
+            // 5
+            this.initWH.w,
+            this.initWH.h
         );
         try {
           this.$refs.gridlayout.$children[
-            this.layout.length
-          ].$refs.item.style.display = "block";
-        } catch {}
+              this.layout.length
+              ].$refs.item.style.display = "block";
+        } catch {
+        }
       }
     },
     randomNum(n) {
@@ -1800,10 +1806,10 @@ debugger
         element = document.body;
       }
       var requestMethod =
-        element.requestFullScreen || //W3C
-        element.webkitRequestFullScreen || //Chrome等
-        element.mozRequestFullScreen || //FireFox
-        element.msRequestFullScreen; //IE11
+          element.requestFullScreen || //W3C
+          element.webkitRequestFullScreen || //Chrome等
+          element.mozRequestFullScreen || //FireFox
+          element.msRequestFullScreen; //IE11
       if (requestMethod) {
         requestMethod.call(element);
       } else if (typeof window.ActiveXObject !== "undefined") {
@@ -1829,10 +1835,10 @@ debugger
     exitFullScreen() {
       // 退出全屏状态 判断各种浏览器，找到正确的方法
       var exitMethod =
-        document.exitFullscreen || //W3C
-        document.mozCancelFullScreen || //FireFox
-        document.webkitExitFullscreen || //Chrome等
-        document.webkitExitFullscreen; //IE11
+          document.exitFullscreen || //W3C
+          document.mozCancelFullScreen || //FireFox
+          document.webkitExitFullscreen || //Chrome等
+          document.webkitExitFullscreen; //IE11
       if (exitMethod && document.fullscreenElement) {
         exitMethod.call(document);
       } else if (typeof window.ActiveXObject !== "undefined") {
@@ -2081,6 +2087,7 @@ debugger
       margin: 0 auto;
       background: #040711;
       position: relative;
+
       .grid-container {
         height: 100%;
         top: 0;
@@ -2089,6 +2096,7 @@ debugger
         bottom: 0;
         position: absolute;
       }
+
       .drag-layout {
         width: 100%;
         height: 100%;
@@ -2097,8 +2105,10 @@ debugger
         right: 0;
         bottom: 0;
         position: absolute;
+
         .active {
           background-color: rgba(255, 255, 255, 0.2);
+
           .tool-box {
             display: flex;
             // justify-content: space-around;
@@ -2108,6 +2118,7 @@ debugger
             left: 0;
             width: 240px;
             z-index: 999;
+
             .tool-item {
               cursor: pointer;
               // width: 30px;
@@ -2117,15 +2128,18 @@ debugger
               font-size: 12px;
               margin-right: 10px;
               position: relative;
+
               &:active {
                 transform: translate(2px, 2px);
               }
+
               i {
                 font-size: 16px;
               }
             }
           }
         }
+
         .tool-box {
           display: none;
         }
@@ -2217,7 +2231,8 @@ debugger
     color: #fff;
   }
 }
-.custom-design.mobile{
+
+.custom-design.mobile {
   ::v-deep .el-form {
     .el-col {
       width: 100%;

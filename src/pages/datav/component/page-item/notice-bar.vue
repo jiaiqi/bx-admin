@@ -1,5 +1,5 @@
 <template>
-	<div class="notice-bar">
+	<div class="notice-bar" v-if="pageItem.notice_bar_json && list && list.length">
 		<img :src="getImagePath(pageItem.notice_bar_json.icon)" class="notice-icon" v-if="pageItem.notice_bar_json">
 		<el-alert :title="item" type="warning" v-for="item in list">
 		</el-alert>
@@ -7,6 +7,9 @@
 			:volume-icon="false" :more-icon="showLinkIcon" :duration="duration" :speed="speed" :is-circular="false">
 		</u-notice-bar> -->
 	</div>
+  <div class="notice-bar" v-else-if="pageItem&&pageItem.com_label">
+    {{pageItem.com_label}}
+  </div>
 </template>
 
 <script>

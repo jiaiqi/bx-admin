@@ -3,7 +3,10 @@
       <cardGroupCell :key="pageItem.com_no" :queryOptions="queryOptions" ref="cardGroupCell" :pageItem="pageItem"
       :cellsLayout="cellsLayoutJson" :cellData="cellData" :comColMap="comColMapRun" :cardLayout="cardLayoutJson||null"
       @on-click-cell="onClickCell" @on-click-block="onClickBlock" @on-click-icon="onClickBlock"
-      @data-updated="onDataUpdate"></cardGroupCell>
+      @data-updated="onDataUpdate" v-if="cellsLayoutJson&&cellsLayoutJson.length"></cardGroupCell>
+    <div v-else-if="pageItem&&pageItem.com_label">
+      {{pageItem.com_label}}
+    </div>
     <!-- </div> -->
     
   </template>
@@ -68,7 +71,7 @@
           switch (cfgfrom) {
             case '静态配置':
             case '静态自有配置':
-              cells = this.pageItem?.card_unit_merge_json || [this.pageItem?.card_group_json?.card_unit_json]
+              cells = this.pageItem?.card_unit_merge_json || this.pageItem?.card_group_json?.card_unit_json?[this.pageItem?.card_group_json?.card_unit_json]:[]
               break;
             case '模板动态加载':
               cells = this.pageItem?.card_group_json?.card_unit_json ? [this.pageItem?.card_group_json
@@ -76,7 +79,7 @@
               ] : []
               break;
             default:
-              cells = this.pageItem?.card_unit_merge_json || [this.pageItem?.card_group_json?.card_unit_json]
+              cells = this.pageItem?.card_unit_merge_json || this.pageItem?.card_group_json?.card_unit_json?[this.pageItem?.card_group_json?.card_unit_json]:[]
               break;
           }
           return cells

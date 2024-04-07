@@ -1,10 +1,11 @@
 <template>
-  <div>
-    <el-tabs v-model="activeName" @tab-click="handleClick">
-      <el-tab-pane :label="item.name" :name="item.name" v-for="item in tabs">
-      
-      </el-tab-pane>
-    </el-tabs>
+  <div v-if="pageItem&&pageItem.com_label">
+    {{pageItem.com_label}}
+<!--    <el-tabs v-model="activeName" @tab-click="handleClick">-->
+<!--      <el-tab-pane :label="item.name" :name="item.name" v-for="item in tabs">-->
+<!--      -->
+<!--      </el-tab-pane>-->
+<!--    </el-tabs>-->
   </div>
 </template>
 
