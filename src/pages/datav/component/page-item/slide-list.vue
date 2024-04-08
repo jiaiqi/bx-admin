@@ -274,7 +274,7 @@ export default {
 	}
 
 	@media screen and (min-width: 1300px) {
-		width: 400px;
+		width: min( 400px,100%);
 		margin: auto;
 	}
 

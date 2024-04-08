@@ -38,7 +38,7 @@
     <form-add :class="{'mobile':screenType==='mobile'}"
               v-else-if="pageItem.com_type==='form'&&pageItem.form_json&&pageItem.form_json.form_type==='新增'"
               :ref="pageItem.com_type" :pageItem="pageItem"></form-add>
-    <div v-else-if="pageItem&&pageItem.com_label">{{pageItem.com_label}}</div>
+    <div v-else-if="pageItem&&pageItem.com_label" :class="{'mobile':screenType==='mobile'}">{{pageItem.com_label}}</div>
   </div>
 </template>
 
@@ -124,7 +124,9 @@ export default {
     background-color: #eee;
     border: 1px solid #ccc;
     box-sizing: border-box;
-
+    .mobile{
+      text-align: center;
+    }
   }
 }
 </style>

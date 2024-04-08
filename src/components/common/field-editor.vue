@@ -11,8 +11,8 @@
         :md="field.info.colspan.md"
         :lg="field.info.colspan.lg"
         :xl="field.info.colspan.xl"
-        v-if="ignoreVif||field.evalXIf()"
-        v-show="field.evalVisible()"
+        v-if="ignoreVif || field.evalXIf()"
+        v-show="ignoreVif || field.evalVisible()"
     >
 
       <el-form-item
