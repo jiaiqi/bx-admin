@@ -334,6 +334,56 @@ export default {
   },
 
   computed: {
+
+    excelBtn() {
+      const demoData = `{"list_excel_biz":"是","list_excel_sys":"是","copyright":"2014-2022  百想科技","top_menu_disp":"否","timeout_login":"1","title":"百想OA","record_no":"陕ICP备14006306号","menu_display_structure":"automatic"}`
+      const attr = JSON.parse(sessionStorage.getItem('pages_attribute') || '{}')
+      let show = false
+      let operate_mode = '跳转'
+      if (this.service_name?.indexOf('srvsys_') === 0 || this.service_name?.indexOf('srvpage_cfg') === 0) {
+        if (attr?.list_excel_sys === '是') {
+          show = true
+        }
+        if (attr?.list_excel_sys === '新TAB') {
+          show = true
+          operate_mode = '新TAB'
+        }
+      } else if (attr?.list_excel_biz === '是') {
+        show = true
+      } else if (attr?.list_excel_biz === '新TAB') {
+        show = true
+        operate_mode = '新TAB'
+      }
+
+      if (show) {
+        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&topTreeData=true`
+        if (this.defaultCondition?.length) {
+          this.defaultCondition.forEach(col => {
+            if (col.ruleType === 'eq') {
+              url += `&${col.colName}=${col.value}`
+            }
+          })
+        }
+        return {
+          "page_type": "列表",
+          "button_type": "customize",
+          "operate_mode": "跳转",
+          // "operate_mode": "新TAB",
+          "client_type": "PC,APP,小程序,h5",
+          "pre_data_handle": `function (rowDatas,mainDetailData){\n    return '${url}'\n}`,
+          "id": 191,
+          "page_area": "表格按钮",
+          "operate_type": "URL跳转",
+          // "operate_type": "URL跳转",
+          "visible": "是",
+          "button_name": "excel",
+          "application": this.resolveDefaultSrvApp(),
+          "service": this.service_name,
+          "is_public": false,
+          "path_col": "是",
+        }
+      }
+    },
     tableButtonsPopupRun() {
           let val = this.$store.getters.getTableButtonsPopup
           let obj = null 

@@ -32,6 +32,10 @@
 
 
       <div class="table-head-btns">
+        <icon-excel-colorful class="svg-icon" style="cursor: pointer" size="30" :colors="['#409eff']" :strokeWidth="3"
+                   @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel-colorful>
+<!--        <icon-excel class="svg-icon" style="cursor: pointer" size="30" :strokeWidth="3"-->
+<!--                             @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel>-->
         <!-- <el-button type="primary" size="small"  v-if="(defaultDirtyFlags == 'add' || listType ==  'addchildlist') && batchAddButton && batchAddButton.hasOwnProperty('batchAdd') && batchAddButton.batchAdd.isDisp && selection" @click.stop="onMemBatchUpdateActive">
           批量操作
         </el-button> -->
@@ -513,7 +517,7 @@ import inlineEditListMixin from '../mixin/inline-edit-list-mixin' //行内编辑
 import inlineEditList from './inline-edit-list.vue';
 import vueChart from '../ui/widget/chart.vue';
 import {blobToBase64} from '../../common/common'
-import {IconList, IconGrid} from '../../components/icon'
+import {IconList, IconGrid, IconExcel,IconExcelColorful} from '../../components/icon'
 import CardList from '../ui/card-list/card-list.vue'
 
 export default {
@@ -537,6 +541,8 @@ export default {
     vueChart,
     IconList,
     IconGrid,
+    IconExcel,
+    IconExcelColorful,
     CardList
   },
   props: {

@@ -8,7 +8,11 @@
       ></simple-filter>
     </div>
 
-    <el-row type="flex" class="row-bg" justify="end">
+    <el-row type="flex" class="row-bg" justify="space-between">
+      <div class="table-head-btns">
+        <icon-excel-colorful class="svg-icon" style="cursor: pointer" size="30" :colors="['#409eff']" :strokeWidth="3"
+                    @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel-colorful>
+      </div>
       <div class="table-head-btns">
         <template v-for="(item, index) in gridButton">
           <el-button
@@ -415,6 +419,7 @@ import CustButtonMinx from "../mixin/cust-button-minx";
 import MemListMixin from "../mixin/mem-list-mixin";
 import ListMixin from "../mixin/list-mixin";
 import { wrapButton } from "../common/wrapper_util";
+import {IconExcelColorful} from "../icon";
 
 function deepClone(obj) {
   if (obj == null) return null;
@@ -438,6 +443,7 @@ var removeByValue = function(sourceData, val) {
 export default {
   name: "treegrid",
   components: {
+    IconExcelColorful,
     simpleFilter,
     SimpleAdd,
     SimpleUpdate,

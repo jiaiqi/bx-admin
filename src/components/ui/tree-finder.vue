@@ -8,6 +8,7 @@
   >
     {{ field.getDispVal4Read() }}
   </a>
+  <el-input v-else-if="field.getSrvVal()&&noData" clearable @clear="onClear()" :value="field.getSrvVal()"></el-input>
   <el-cascader
     v-else
     :placeholder="field.info.placeholder"
@@ -37,6 +38,7 @@ export default {
       selected: [],
       // 树形结构数据
       options: [],
+      noData:false,
       visibleChange: false,
       hasInit:false,//已经设置过初始值
     };
@@ -66,6 +68,13 @@ export default {
   },
 
   methods: {
+    onClear(){
+      this.field.model = null;
+      this.$emit("field-value-changed", this.field.info.name, this.field);
+      this.$nextTick(()=>{
+        this.loadOptions()
+      })
+    },
     needRenameLabel() {
       return this.field.info.dispCol === "value";
     },
@@ -190,7 +199,11 @@ export default {
         },
       };
       return this.$http.post(url, params).then(response => {
+        this.noData = false;
         if (response && response.data && response.data.data) {
+          if(response.data.data.length === 0){
+            this.noData = true;
+          }
           let options = response.data.data.map(item => {
             item.children = item.is_leaf === "是" ? null : [];
             return item;
@@ -262,6 +275,7 @@ export default {
             data
           );
         }
+        this.noData = !options?.length;
         this.options = options;
       }
     },
@@ -300,6 +314,7 @@ export default {
               options.forEach(option => this.renameLable(option));
             }
             this.options = options;
+            this.noData = !options?.length;
           }
         });
       }

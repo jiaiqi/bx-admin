@@ -55,6 +55,7 @@
           :style="[styleJson]"
           v-if="screenType === 'PC'"
       >
+        <div class="page-bg" :style="[bgJson]"></div>
         <grid-layout
             ref="gridlayout"
             :layout.sync="layout"
@@ -231,6 +232,8 @@
         "
           :style="[styleJson]"
       >
+        <div class="page-bg" :style="[bgJson]"></div>
+
         <grid-layout
             ref="gridlayout"
             :layout.sync="layout"
@@ -472,8 +475,20 @@ export default {
       // 允许重叠
       return this.pageConfg?.page_options?.includes("可重叠大屏") || false;
     },
-    styleJson() {
+    bgJson(){
       let json = this.pageConfg?.page_row_json_data?.page_style_json;
+      if (!this.inEditor && (json?.width || json?.height)) {
+        delete json.width;
+        delete json.height;
+      }
+      if(json){
+        json = JSON.parse(rpx2px(JSON.stringify(json)))
+      }
+      json = formatStyleData(json)
+      return json;
+    },
+    styleJson() {
+      let json = null
       if (!json) {
         json = {
           width: this.screenType == "PC" ? "1920px" : "375px",
@@ -1862,6 +1877,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.page-bg{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 .page-header {
   position: relative;
   display: flex;
