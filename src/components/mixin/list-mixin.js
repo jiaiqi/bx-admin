@@ -356,13 +356,14 @@ export default {
       }
 
       if (show) {
-        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&topTreeData=true`
+        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}`
         if (this.defaultCondition?.length) {
           this.defaultCondition.forEach(col => {
             if (col.ruleType === 'eq') {
               url += `&${col.colName}=${col.value}`
             }
           })
+          url+=`&topTreeData=true`
         }
         return {
           "page_type": "列表",

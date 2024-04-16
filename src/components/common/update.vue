@@ -38,12 +38,10 @@
                   item.foreign_key.section_name || item.foreign_key.table_name
                 "
                 v-show="showChildList(item,defaultValues)"
-                :key="index"
                 :name="'form_prepend_' + (index)"
               >
                 <child-list
                  :pageIsDraft="pageIsDraft"
-                  :key="index"
                   @child-loaded="childDataLoadedRun($event)"
                   :childListConfig="item"
                   :ref="'childrenList'"
@@ -77,12 +75,10 @@
                   item.foreign_key.section_name || item.foreign_key.table_name
                 "
                 v-show="showChildList(item,defaultValues)"
-                :key="index"
                 :name="'form_append_' + (index)"
               >
                 <child-list
                  :pageIsDraft="pageIsDraft"
-                  :key="index"
                   :childListConfig="item"
                   @child-loaded="childDataLoadedRun($event)"
                   :ref="'childrenList'"

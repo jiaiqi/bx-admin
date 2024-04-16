@@ -36,12 +36,13 @@
             <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :form-model="formModel" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas' :parentAddMainFormDatas="parentAddMainFormDatas" :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues' v-if="formItem.field.info.visible" v-show="formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name">
             <!-- <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas||parentAddMainFormDatas' :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues||srvValFormModel()' v-show="formItem.field.info.visible && formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name"> -->
 
-              <div slot="field-child-prepend" class="padding-bottom">
-                <slot :name="formItem.field.info.name + '-child-prepend'"></slot>
-              </div>
-              <div slot="field-child-append" class="padding-bottom">
-                <slot :name="formItem.field.info.name + '-child-append'"></slot>
-              </div>
+
+            <template #field-child-prepend class="">
+              <slot :name="formItem.field.info.name + '-child-prepend'" class="padding-bottom"></slot>
+            </template>
+            <template #field-child-append class="padding-bottom">
+              <slot :name="formItem.field.info.name + '-child-append'" class="padding-bottom"></slot>
+            </template>
 
             </field-editor>
             <!-- <slot :name="formItem.field.info.name + '-append'"></slot> -->

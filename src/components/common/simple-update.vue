@@ -49,12 +49,12 @@
               @field-value-changed="onFieldValueChanged($event)"
               @field-history-popup="onFieldHistoryPopup"
             >
-            <div slot="field-child-prepend" class="padding-bottom">
-              <slot :name="formItem.field.info.name + '-child-prepend'"></slot>
-            </div>
-            <div slot="field-child-append" class="padding-bottom">
-              <slot :name="formItem.field.info.name + '-child-append'"></slot>
-            </div>
+            <template #field-child-prepend class="">
+              <slot :name="formItem.field.info.name + '-child-prepend'" class="padding-bottom"></slot>
+            </template>
+            <template #field-child-append class="padding-bottom">
+              <slot :name="formItem.field.info.name + '-child-append'" class="padding-bottom"></slot>
+            </template>
             </field-editor>
             <slot :name="formItem.field.info.name + '-append'"></slot>
           </span>
