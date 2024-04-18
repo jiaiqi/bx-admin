@@ -516,11 +516,13 @@ export default {
                                     return item
                                 }
                             })
-                            relation.relation = 'OR'
-                            colData.colName = condsModel[tabs[i]].colName[0]
-                            colData.value = val[j]
-                            colData.ruleType = rt[0].ruleType
-                            relation.data.push(self.bxDeepClone(colData))
+                            if(rt?.length){
+                              relation.relation = 'OR'
+                              colData.colName = condsModel[tabs[i]].colName[0]
+                              colData.value = val[j]
+                              colData.ruleType = rt[0].ruleType
+                              relation.data.push(self.bxDeepClone(colData))
+                            }
                         }
                         // relation.relation = 'OR'
                         // colData.colName = condsModel[tabs[i]].colName[0]
