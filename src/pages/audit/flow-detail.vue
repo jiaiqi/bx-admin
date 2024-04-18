@@ -1,14 +1,19 @@
 <script setup>
 import {useRoute} from '@/common/vueApi.js'
 import {$axios as $http} from "@/pages/datav/common/http.js";
-import {onMounted, ref,nextTick} from "vue";
-import { Loading } from 'element-ui';
+import {onMounted, ref, nextTick} from "vue";
+import {Loading} from 'element-ui';
 import inOutInfo from './components/in-out-info.vue'
 import doorFrame from './components/door-frame.vue'
 import showPath from './components/show-path.vue'
 
 const route = useRoute()
-const {passid, entime:time1, extime:time2} = route?.params || {}
+let {passid, entime: entime, extime: extime} = route?.params || {}
+
+if (route?.query?.entime && route?.query?.extime) {
+  entime = route?.query?.entime
+  extime = route?.query?.extime
+}
 
 const activeTab = ref('0')
 const inData = ref({})
@@ -18,13 +23,13 @@ const pathData = ref([])
 
 
 const getInData = async () => {
-  if(inData.value?.passid) return
+  if (inData.value?.passid) return
   const service = `srvaud_laneentry_select`
   const url = `${window.backendIpAddr}/aud/select/${service}`
   const cond = [
     {"colName": "passid", "ruleType": "eq", "value": passid},
     // {"colName": "lanesignbx", "ruleType": "eq", "value": '出口'},
-    {"colName": "createtime", "ruleType": "between", "value": [time1, time2]},
+    {"colName": "createtime", "ruleType": "between", "value": [entime, extime]},
   ]
   const req = {
     "serviceName": service,
@@ -52,13 +57,13 @@ const getInData = async () => {
 }
 
 const getOutData = async () => {
-  if(inData.value?.passid) return
+  if (inData.value?.passid) return
   const service = `srvaud_laneexit_select`
   const url = `${window.backendIpAddr}/aud/select/${service}`
   const cond = [
     {"colName": "passid", "ruleType": "eq", "value": passid},
     // {"colName": "lanesignbx", "ruleType": "eq", "value": '出口'},
-    {"colName": "createtime", "ruleType": "between", "value": [time1, time2]},
+    {"colName": "createtime", "ruleType": "between", "value": [entime, extime]},
   ]
   const req = {
     "serviceName": service,
@@ -102,7 +107,7 @@ const getDoorFrameData = async () => {
       "ruleType": "eq",
       "value": '3'
     },
-    {"colName": "transtime", "ruleType": "between", "value": [time1, time2]}]
+    {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}]
   const req = {
     "serviceName": service,
     "colNames": ["*"],
@@ -136,7 +141,7 @@ const getPathData = async () => {
       "value": passid
     },
     // {"colName": "path_type", "ruleType": "eq", "value": '行驶路径'},
-    {"colName": "transtime", "ruleType": "between", "value": [time1, time2]}
+    {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}
 
   ]
   const req = {
@@ -210,7 +215,8 @@ const handleClick = (tab, event) => {
 .flow-detail {
   //padding: 20px;
   height: 100%;
-  ::v-deep .el-tabs__content{
+
+  ::v-deep .el-tabs__content {
     padding: 0;
   }
 }
