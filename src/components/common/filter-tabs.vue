@@ -27,7 +27,7 @@
             </div>
             <div  v-if="tab._type === 'select'">
                 <selectPlus :ref="tab.list_tab_no" :tab="tab" :formModel="formModel[tab.list_tab_no]" @on-value-change="selectChange($event)"></selectPlus>
-                <!-- <el-select filterable remote :loading="loading" v-model="formModel[tab.list_tab_no].value" clearable placeholder="输入关键字搜索"  
+                <!-- <el-select filterable remote :loading="loading" v-model="formModel[tab.list_tab_no].value" clearable placeholder="输入关键字搜索"
                 :remote-method="buildFkOptionList" @blur="buildFkOptionList(null,tab)">
                     <el-option
                     v-for="(item) in formModel[tab.list_tab_no].options"
@@ -51,8 +51,16 @@
                     </el-radio>
                 </el-radio-group>
             </div>
+          <div v-else-if="tab._type === 'img'">
+            <el-row :gutter="5">
+              <el-col :span="24">
+                <upload-image :field="buildImgField(tab)" :limit="1" @change="tabChange($event,tab)">
+                </upload-image>
+              </el-col>
+            </el-row>
+          </div>
         </el-form-item>
-        
+
         <!-- <el-form-item>
             <el-button type="primary" @click="buildConditions(formModel)">查询</el-button>
             <el-button>重置</el-button>
@@ -63,6 +71,7 @@
 <script>
 import * as DataUtil from "../../util/DataUtil";
 import selectPlus from "../ui/select-plus.vue"
+import UploadImage from "../ui/upload-image.vue";
 export default {
     name:"filter-tabs",
    data() {
@@ -92,7 +101,7 @@ export default {
         onInputValue:false, // 是否有输入值
     };
   },
-  components:{selectPlus},
+  components:{UploadImage, selectPlus},
   props: {
     tabs: {
       type: Array,
@@ -125,9 +134,33 @@ export default {
        self.onBuildFormValues()
   },
   mounted() {
-      
+
   },
   methods: {
+    tabChange(no,tab){
+      this.$set(this.formModel[tab.list_tab_no],'value',no)
+    },
+    buildImgField(item) {
+      return {
+        getAnyValidateError:()=>{
+          return ''
+        },
+        info: {
+          editable: true,
+          moreConfig: {
+            fileMaxSize: item.more_config?.fileSize,//MB
+          },
+          srvCol: {
+            columns: item.more_config?.colName,
+            table_name: item.table_name,
+          }
+        },
+        fileDesc: item.more_config?.fileDesc||null,//底部提示
+        fileType: item.more_config?.fileType,// 默认jpg/png/svg
+        fileSize: item.more_config?.fileSize,// 默认2MB
+        model: item.default,
+      }
+    },
       selectChange(e){
           this.$set(this.formModel[e.listNo],'value',e.value)
       },
@@ -150,7 +183,7 @@ export default {
             //       item.options = self.getTabOptions(item)
             //   }
            item.options = self.getTabOptions(item)
-           
+
             // this.$set(item,'options',self.getTabOptions(item))
             //console.log(item.inputType,item.options)
             col.colName = item._colName
@@ -167,19 +200,22 @@ export default {
                   }else{
                       col.value = item.default == '' ?  [] : item.default.split(',')
                   }
-                  
+
                   if(item.showAllTag && col.value.length  == 0){
                       col.value.unshift('_unlimited_')
                   }
-                 
+
                 model[item.list_tab_no] = col
               }else if(item._type === 'input'){
                   col.value = item.default
-                model[item.list_tab_no] =col
+                  model[item.list_tab_no] =col
               }else if(item._type === 'select' && item.inputType == 'fk'){
                   col.value = ""
                   col.options = item['_options']
-                model[item.list_tab_no] =col
+                  model[item.list_tab_no] =col
+              }else if(item._type === 'img'){
+                col.value = item.default || ''
+                model[item.list_tab_no] = col
               }
           })
           self.formModel = model
@@ -223,13 +259,13 @@ export default {
                     return citem
                 }
             })
-            
+
         }
          // console.log('e',e)
       },
       onReset(){
           this.onBuildFormValues()
-      }, 
+      },
       buildFkOptionList(query,e){
            let self = this
           console.log('buildFkOptionList',query,e,self.formModel[e.list_tab_no])
@@ -277,7 +313,7 @@ export default {
         //                     label:item[e.buildoptions.key_disp_col]
         //             }
         //              options.push(opt)
-                    
+
         //         }
 
         //         self.formModel[e.list_tab_no]['options'] = options
@@ -350,7 +386,7 @@ export default {
                   }else if(tab.inputType === 'group'){
                       let options = []
                       self.buildGroupTags(tab).then((res) =>{
-                          
+
                       let opts = res
                           for(let cs = 0;cs<opts.length;cs++){
                             let obj = {
@@ -363,14 +399,14 @@ export default {
                             obj.checked = opts[cs].default === undefined ? false : opts[cs].default
                             options.push(obj)
                         }
-                        
+
                       })
                       self.$set(tab,'options',options)
                        return options
                       //console.log('self.buildGroupTags(tab)',self.buildGroupTags(tab))
-                        
-                       
-                      
+
+
+
                   }
                 //   if(tab.showAllTag && options !== undefined){
                 //       options.unshift({
@@ -386,7 +422,7 @@ export default {
               return []
           }
       },
-      
+
        buildGroupTags(e){
            let self = this
           let colName = e._colName[0] || ''
@@ -394,7 +430,7 @@ export default {
               colName:colName,
               type:"by"
           }]
-          
+
         return new Promise((resolve, reject) => {
               let options = []
           self.select(this.srv, [], null, null, group, null).then((res) =>{
@@ -409,7 +445,7 @@ export default {
                     if(item[colName]){
                         options.push(opt)
                     }
-                    
+
                 }
                  resolve(options)
             })
@@ -435,7 +471,7 @@ export default {
                 "data": []
             }
             let tabs = Object.keys(condsModel)
-            
+
             let colData = {}
             let relation = {
                 "relation": "OR",
@@ -455,13 +491,13 @@ export default {
                     "ruleType":"",
                     "value":""
                 }
-                if((condsModel[tabs[i]].formType === 'checkbox' || 
-                condsModel[tabs[i]].formType === 'radio') && 
+                if((condsModel[tabs[i]].formType === 'checkbox' ||
+                condsModel[tabs[i]].formType === 'radio') &&
                 condsModel[tabs[i]].value.length !== 0 && condsModel[tabs[i]].value[0] !== '_unlimited_'){
                     if(condsModel[tabs[i]].inputType === 'BetweenNumber' || condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime'){
                         relation.relation = 'AND'
                         relation.data = []
-                        let values = condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime' ?  self.formatDateValues(condsModel[tabs[i]].value) : condsModel[tabs[i]].value 
+                        let values = condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime' ?  self.formatDateValues(condsModel[tabs[i]].value) : condsModel[tabs[i]].value
                         for(let v=0;v<values.length;v++){
                             child_relation = {
                                     "relation": "AND",
@@ -481,8 +517,8 @@ export default {
                                     colData.colName = condsModel[tabs[i]].colName[0]
                                     colData.value =  condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime' ? betval[j] :Number(betval[j])
                                     colData.ruleType = betval.length > 1 ? "ge" : "like"  // 只有一个只时候 按照 like 查询
-                                    
-                                    }else if(betval[j] !== '-'){ 
+
+                                    }else if(betval[j] !== '-'){
                                         colData.colName = condsModel[tabs[i]].colName[0]
                                         colData.value = condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime' ? betval[j] :Number(betval[j])
                                         colData.ruleType = "le"
@@ -508,7 +544,7 @@ export default {
                         relation.data.push(self.bxDeepClone(colData))
                     }else if(condsModel[tabs[i]].inputType === 'String' ){
                         let tags = condsModel[tabs[i]].tags
-                        // let rt = 
+                        // let rt =
                         let val = condsModel[tabs[i]].value
                         for(let j = 0 ;j<val.length ; j++){
                             let rt = tags.filter((item) =>{
@@ -528,10 +564,10 @@ export default {
                         // colData.colName = condsModel[tabs[i]].colName[0]
                         // colData.value = condsModel[tabs[i]].value.join(",")
                         // colData.ruleType = "in"
-                        
+
                     }
-                    
-                }else if(condsModel[tabs[i]].formType === 'input' && condsModel[tabs[i]].value.length !== 0){
+
+                }else if((condsModel[tabs[i]].formType === 'input') && condsModel[tabs[i]].value.length !== 0){
                     child_relation = {
                         "relation": "OR",
                         "data": [
@@ -547,24 +583,39 @@ export default {
                         }
                         relation.data.push(self.bxDeepClone(colData))
                     }
-                }else if(condsModel[tabs[i]].inputType == 'fk'){
-                        relation.relation = 'OR'
-                        colData.colName = condsModel[tabs[i]].colName[0]
-                        colData.value = (condsModel[tabs[i]].formType == 'select' ?  condsModel[tabs[i]].value : condsModel[tabs[i]].value.join(","))
-                        colData.ruleType = "eq"
-                        if(condsModel[tabs[i]].value != '' && condsModel[tabs[i]].value != null){
-                            relation.data.push(self.bxDeepClone(colData))
-                        }
+                } else if (condsModel[tabs[i]].inputType == 'fk') {
+                  relation.relation = 'OR'
+                  colData.colName = condsModel[tabs[i]].colName[0]
+                  colData.value = (condsModel[tabs[i]].formType == 'select' ? condsModel[tabs[i]].value : condsModel[tabs[i]].value.join(","))
+                  colData.ruleType = "eq"
+                  if (condsModel[tabs[i]].value != '' && condsModel[tabs[i]].value != null) {
+                    relation.data.push(self.bxDeepClone(colData))
+                  }
+                } else if ((condsModel[tabs[i]].formType === 'img') && condsModel[tabs[i]].value.length !== 0) {
+                  child_relation = {
+                    "relation": "OR",
+                    "data": []
+                  }
+                  for (let col = 0; col < condsModel[tabs[i]].colName.length; col++) {
+                    colData.colName = condsModel[tabs[i]].colName[col]
+                    colData.value = condsModel[tabs[i]].value
+                    if (self.inputMoreConfig.value !== '') {
+                      colData.ruleType = self.inputMoreConfig.value
+                    } else {
+                      colData.ruleType = "eq"
                     }
+                    relation.data.push(self.bxDeepClone(colData))
+                  }
+                }
                if(relation.data.length !== 0){
                     relation_Conditions.data.push(self.bxDeepClone(relation))
-                } 
+                }
             }
-            
-            
+
+
             //console.log("tabs",relation_Conditions)
             return relation_Conditions
-          
+
       },
       formatDateValues(e){
           let exps = e
@@ -591,7 +642,7 @@ export default {
          }else if(type === 'nowYear'){
              return dataUtil.getYearStartAndEnd(increment)
          }
-        
+
       }
   },
   watch: {
@@ -626,12 +677,12 @@ export default {
                 //             this.$emit('on-input-value',false)
                 //         }
 
-                //         this.$emit('on-change',true) 
+                //         this.$emit('on-change',true)
                 //     }
               }
-               
-              
-              
+
+
+
           }
         },
     },

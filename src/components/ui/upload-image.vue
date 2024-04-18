@@ -18,6 +18,7 @@
     </el-dialog>
     <el-upload v-if="isEdit"
                class="upload-demo"
+               :class="{'upload-disabled':limit&&fileLength&&fileLength>=limit}"
                :action="uploadFile"
                :with-credentials="true"
                :headers="getHeaders()"
@@ -26,15 +27,18 @@
                :before-upload="beforeAvatarUpload"
                :on-remove="handleRemove"
                :on-success="handleSuccess"
+               :on-exceed="handleExceed"
                :file-list="fileLists"
                :data="uploadParams"
                clearable
+               :limit="limit"
                :disabled="!field.info.editable"
                list-type="picture-card">
       <el-button size="small" type="primary">点击上传</el-button>
       <div slot="tip" class="el-upload__tip" :class="{'text-red':field.getAnyValidateError()}">
         <i slot="reference" class="el-icon-warning" v-if="field.getAnyValidateError()"></i>
-        {{setFileDesc}}</div>
+        {{setFileDesc}}
+      </div>
     </el-upload>
   </div>
 
@@ -49,6 +53,10 @@
       field: {
         type: Object,
         default: null,
+      },
+      limit:{
+        type: Number,
+        default: 100,
       },
 
       // $srvApp: {
@@ -69,6 +77,7 @@
     data() {
       return {
         fileLists: [],
+        fileLength:0,
         fileDesc: this.field.info.moreConfig &&  this.field.info.moreConfig !== null && this.field.info.moreConfig.fileMaxSize ?  '请上传jpg/png/svg格式的图片,大小不超过' + this.field.info.moreConfig.fileMaxSize +'MB' : '请上传jpg/png/svg格式的图片,大小不超过2Mb',
         fileType: 'jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff',
         fileSize: this.field.info.moreConfig &&  this.field.info.moreConfig !== null && this.field.info.moreConfig.fileMaxSize ? this.field.info.moreConfig.fileMaxSize * 1024 : 2 * 1024,
@@ -169,6 +178,7 @@
 
       },
       async beforeRemove(file, fileList) {
+
         if (file && file.status === "success") {
           //删除
           let fileurl
@@ -181,6 +191,8 @@
             fileurl: fileurl
           }
           const response = await this.deleteFile(params)
+          this.fileLength = fileList.length-1
+          this.$emit('change', this.field.model)
           if (response && response.body.resultCode === 'SUCCESS') {
             this.$message.info(response.body.state)
             return true
@@ -195,12 +207,16 @@
           this.$message.info('上传成功！')
           this.uploadParams.file_no = response.file_no
           this.field.model = response.file_no
+          this.$emit('change', this.field.model)
         } else {
           this.$message.error('上传失败！');
           this.fileLists.splice(this.fileLists.length - 1, 1)
         }
+        this.fileLength = fileList.length
       },
-
+      handleExceed(files, fileList) {
+        this.$message.warning(`当前限制选择 ${this.limit}个文件`);
+      },
       setSrvVal(srvVal) {
         this.field.model = srvVal;
         this.getData();
@@ -217,7 +233,12 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style >
+  .upload-disabled{
+    .el-upload{
+      display: none;
+    }
+  }
   .text-red{
     color: #F56C6C;
   }
