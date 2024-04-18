@@ -7,7 +7,7 @@ let baseURL = window.backendIpAddr || `https://api.100xsys.cn`; // sass
 // let baseURL = window.backendIpAddr || `https://srvms.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://xxld.100xsys.cn`;
 // let baseURL = window.backendIpAddr || `https://wx.100xsys.cn`;
-const devTicket = 'xabxdzkj-20646020-7b72-4afd-82df-f1a04d925ff8'
+const devTicket = 'xabxdzkj-0c564c21-c47f-4853-8255-322343f3d66a'
 console.log(process.env.NODE_ENV);
 if (top?.pathConfig?.gateway) {
   baseURL = top?.pathConfig?.gateway;

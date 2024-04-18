@@ -456,8 +456,8 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            let entime = this.$route.query.entime
-            let extime = this.$route.query.extime
+            let entime = this.$route.query.entime || this.$route.params.entime
+            let extime = this.$route.query.extime || this.$route.params.extime
             if(!self.no || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
@@ -502,7 +502,7 @@ export default {
                 }
               })
         },
-        getPassconvpath(){
+        async getPassconvpath(){
             // 查询所有门架
             let self = this
             // category取值：门架、收费站
@@ -522,8 +522,8 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            let entime = this.$route.query.entime
-            let extime = this.$route.query.extime
+            let entime = this.$route.query.entime || this.$route.params.entime
+            let extime = this.$route.query.extime || this.$route.params.extime
             if(!passid || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
@@ -533,28 +533,39 @@ export default {
                 "ruleType":"in",
                 "value":[`${entime}`,`${extime}`]
             }]
-            self.select(
-                srv,
-                conds,
-                page,
-                order,
-                null,
-                null,
-                srvAuth,
-                null,
-                null,
-                relationCondition,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-                divCond
-                // srvAuth
-              ).then(res => {
+
+            let res = {}
+            if(this.pathData?.length ){
+                res = {
+                    state:'SUCCESS',
+                    data:this.pathData
+                }
+            }else{
+               const resp = await self.select(
+                    srv,
+                    conds,
+                    page,
+                    order,
+                    null,
+                    null,
+                    srvAuth,
+                    null,
+                    null,
+                    relationCondition,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    divCond
+                    // srvAuth
+                )
+                res = resp.data
+
+            }
+            // .then(res => {
                 // console.log('分公司',res.data)
-                res = res.data
                 if(res.state == "SUCCESS"){
                     let passconvPaths = res.data.filter((item,index) =>{
                         if(item['grantry_type'] !== '虚拟门架'){
@@ -571,7 +582,7 @@ export default {
                     this.$message.error(JSON.stringify(res));
                     console.log('查询门架|收费站等 异常',res)
                 }
-              })
+              // })
         },
         newPointRequestUpdatePoint(e){
             let self = this

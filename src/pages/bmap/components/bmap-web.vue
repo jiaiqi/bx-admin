@@ -788,6 +788,7 @@ export default {
     };
   },
   props: {
+    pathData:Array,
     markers: {
       type: Array,
       default() {

@@ -168,7 +168,7 @@ let routes=[
     path: '/listallproc/:service_name',
     name: 'listallproc',
     component: listallproc
-  },   
+  },
   {
     path: '/v2/listallproc/:service_name',
     name: 'listallproc_v2',
@@ -320,7 +320,24 @@ let routes=[
     name:'waybill',
     component: waybill
   }
+    ,
+    {
+        path: "/audit",
+        component: () => import('@/pages/audit/index.vue'),
 
+        children: [
+            {
+                // 嫌疑车辆流水详情
+                path: 'flow-detail/:passid',
+                component: () => import('@/pages/audit/flow-detail.vue')
+            },
+            {
+                // 嫌疑车辆流水详情
+                path: 'flow-detail/:passid/:entime/:extime',
+                component: () => import('@/pages/audit/flow-detail.vue')
+            }
+        ]
+    }
 ];
 
 routes.push( {
@@ -331,8 +348,8 @@ routes.push( {
     compName:'wxmsg'
   },
   children:[
-    
-  
+
+
 
   {
     path: '/template-config',
@@ -384,14 +401,14 @@ routes.push( {
 , {
     path:'/grid-editor',
     component:()=>import('@/pages/datav/grid-layout/index.vue')
-  }, 
+  },
   {
     // 网格布局 - 新
     path:'/lowcode-grid',
     component:()=>import('@/pages/datav/grid-layout/editor-next.vue'),
     children:[
       {
-        //可视化编辑页面 新布局 
+        //可视化编辑页面 新布局
         path:'editor',
         name:"gridEditorAdd",
         component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
@@ -498,8 +515,8 @@ routes.push( {
         // 脑图业务中直接打开
         component:()=> import('@/pages/mind/index.vue')
       },
-      
-      
+
+
       {
         path:'view/:no',
         //只读
@@ -532,7 +549,6 @@ routes.push( {
       },
     ]
   }
-
 ]
 
 });
