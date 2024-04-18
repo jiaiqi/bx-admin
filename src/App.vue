@@ -8,13 +8,25 @@
 import momentLib from "moment";
 import extjs from "./components/test/extjs.js";
 import dummy from "./components/test/spa_mock.js";
-
+import {LoadScript} from './common/common'
 export default {
   name: "App",
   data() {
     return {
       ready: false
     };
+  },
+  mounted() {
+    const init = () => {
+      const AK = 'FC190506b9b4fa8b366db9f78cb5e93e';
+      const bMapSrc = `${location.protocol}//api.map.baidu.com/api?v=2.0&ak=${AK}&s=1&callback=onBMapCallback`
+      const bMapGLSrc = `${location.protocol}//api.map.baidu.com/api?type=webgl&v=2.0&ak=${AK}`
+      LoadScript(bMapSrc).then((bmap)=>{
+        console.log(bmap)
+        this.$store.commit('setBMapLoaded', true)
+      })
+    }
+    init()
   },
 
   methods: {

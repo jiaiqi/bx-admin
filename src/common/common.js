@@ -49,6 +49,39 @@ function fileToBase64(file) {
 	});
 }
 
+export function LoadScript(src) {
+	const BMap_URL = src
+	if (!src) {
+		return
+	}
+	return new Promise((resolve, reject) => {
+		// 如果已加载直接返回
+		if (typeof BMap !== "undefined") {
+			resolve(BMap);
+			return true;
+		}
+		// // 百度地图异步加载回调处理
+		// window.onBMapCallback = function () {
+		//   console.log("百度地图脚本初始化成功...");
+		//   resolve(BMap);
+		// };
+		// 插入script脚本
+		let scriptNode = document.createElement("script");
+		scriptNode.setAttribute("type", "text/javascript");
+		scriptNode.setAttribute("src", BMap_URL);
+		// 引入成功
+		scriptNode.onload = function () {
+			console.log('js资源已加载成功了')
+			resolve(BMap);
+		}
+		// 引入失败
+		scriptNode.onerror = function (err) {
+			console.log('js资源加载失败了',err)
+		}
+		document.body.appendChild(scriptNode);
+	});
+}
+
 export {
 	blobToBase64,
 	fileToBase64,

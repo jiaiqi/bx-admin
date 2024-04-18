@@ -4,7 +4,7 @@ import SrvColData from './modules/srvcol-data'
 import HotTableData from './modules/hot-table-data'
 import frontTableData from './modules/frontTableData'
 import custActiveRefresh from './modules/custActiveRefresh'
-
+import customState from "./modules/custom-state";
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -12,7 +12,8 @@ export default new Vuex.Store({
     SrvColData,
     HotTableData,
     frontTableData,
-    custActiveRefresh
+    custActiveRefresh,
+    customState
   },
   strict: false,
 })

@@ -2,40 +2,41 @@
   <div class="web-layout bg-light">
     <!-- <cMap></cMap> -->
     <BMapJs
-      :depts="depts"
-      :modeUrl="urlPath"
-      :no="no"
-      :initCheckPointId="initCheckPointId"
-      @setPointList="setPointList"
+        :depts="depts"
+        :modeUrl="urlPath"
+        :no="no"
+        :initCheckPointId="initCheckPointId"
+        @setPointList="setPointList"
+        v-if="bMapLoaded"
     ></BMapJs>
-    <div class="point-list">
-      <div class="title">路径门架列表</div>
-      <div class="point-list-wrap">
-        <div
-          class="point-item"
-          :class="{ active: index === activePoint }"
-          v-for="(item, index) in mockPointList"
-          @click="activePoint = index"
-        >
-          <div class="left">
-            <div class="point" :style="[{ backgroundColor: item.color }]"></div>
-          </div>
-          <div class="right">
-            <div class="top">
-              <div class="point-name">
-                <div>{{ item.name }}</div>
-                <div v-if="index === activePoint"><i class="el-icon-error"></i></div>
-              </div>
-              <div class="point-time">
-                <div class="time">{{ item.time }}</div>
-                <div v-if="index === activePoint"><i class="el-icon-edit" style="color: #007aff;"></i></div>
-              </div>
-            </div>
-            <div class="add-btn">+ 添加门架</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!--    <div class="point-list">-->
+    <!--      <div class="title">路径门架列表</div>-->
+    <!--      <div class="point-list-wrap">-->
+    <!--        <div-->
+    <!--          class="point-item"-->
+    <!--          :class="{ active: index === activePoint }"-->
+    <!--          v-for="(item, index) in mockPointList"-->
+    <!--          @click="activePoint = index"-->
+    <!--        >-->
+    <!--          <div class="left">-->
+    <!--            <div class="point" :style="[{ backgroundColor: item.color }]"></div>-->
+    <!--          </div>-->
+    <!--          <div class="right">-->
+    <!--            <div class="top">-->
+    <!--              <div class="point-name">-->
+    <!--                <div>{{ item.name }}</div>-->
+    <!--                <div v-if="index === activePoint"><i class="el-icon-error"></i></div>-->
+    <!--              </div>-->
+    <!--              <div class="point-time">-->
+    <!--                <div class="time">{{ item.time }}</div>-->
+    <!--                <div v-if="index === activePoint"><i class="el-icon-edit" style="color: #007aff;"></i></div>-->
+    <!--              </div>-->
+    <!--            </div>-->
+    <!--            <div class="add-btn">+ 添加门架</div>-->
+    <!--          </div>-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--    </div>-->
   </div>
 </template>
 
@@ -48,11 +49,14 @@ import BMapJs from "./components/bmap-web.vue";
 
 export default {
   name: "b-map-index",
-  components: { BMapJs },
+  components: {BMapJs},
   props: {
     msg: String,
   },
   computed: {
+    // bMapLoaded() {
+    //   return this.$store.getters.getBMapLoaded();
+    // },
     urlParams() {
       let params = this.$route.query;
       return params;
@@ -77,6 +81,7 @@ export default {
   },
   data() {
     return {
+      bMapLoaded:false,
       activePoint: 0,
       depts: [],
       initCheckPointId: "",
@@ -120,13 +125,17 @@ export default {
       ],
     };
   },
-  created() {},
+  created() {
+  },
   mounted() {
     if (this.urlPath.indexOf("/bmap/editor/") !== -1) {
     } else if (this.urlPath.indexOf("/bmap/check") !== -1) {
       this.initCheckPointId = this.$route.query.id;
       this.getAllDepts();
     }
+    setTimeout(()=>{
+      this.bMapLoaded = this.$store.getters.getBMapLoaded()
+    },1000)
   },
   methods: {
     setPointList(list) {
@@ -150,19 +159,19 @@ export default {
       let page = null;
       let order = null;
       this.select(
-        srv,
-        conds,
-        page,
-        order,
-        null,
-        null,
-        srvAuth,
-        null,
-        null,
-        relationCondition,
-        false,
-        null
-        // srvAuth
+          srv,
+          conds,
+          page,
+          order,
+          null,
+          null,
+          srvAuth,
+          null,
+          null,
+          relationCondition,
+          false,
+          null
+          // srvAuth
       ).then((res) => {
         // console.log('分公司',res.data)
         res = res.data;
@@ -183,37 +192,45 @@ export default {
 <style lang="scss" scoped>
 .web-layout {
   display: flex;
+
   .web-layout-content {
     position: relative;
     flex: 1;
   }
+
   .point-list {
     width: 300px;
     height: 100vh;
     background-color: #fff;
     padding: 10px;
     z-index: 9;
+
     .point-item {
       display: flex;
+
       &:last-child .left {
         &::after {
           content: none;
         }
       }
+
       .top {
         border: 1px solid transparent;
       }
+
       &.active {
         .right .top {
           border-color: #3b98fd;
           background-color: #ecfaff;
         }
       }
+
       .left {
         text-align: center;
         width: 30px;
         position: relative;
         padding-top: 5px;
+
         &::after {
           content: "";
           position: absolute;
@@ -231,23 +248,29 @@ export default {
           border-radius: 50%;
         }
       }
+
       .right {
         flex: 1;
+
         .top {
           padding: 3px 10px;
           border-radius: 4px;
-          .point-name{
+
+          .point-name {
             display: flex;
             justify-content: space-between;
           }
+
           .point-time {
             display: flex;
             justify-content: space-between;
+
             .time {
               color: #aeaeae;
             }
           }
         }
+
         .add-btn {
           background-color: #edf5fd;
           text-align: center;
