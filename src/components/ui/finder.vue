@@ -32,6 +32,7 @@
       <el-autocomplete
         v-else
         ref="autocomplete"
+        :prefix-icon="field.info.dispLoader&&field.info.dispLoader.imgType==='eicon'&&field.getSrvVal()"
         :trigger-on-focus="showAutocomplete"
         :fetch-suggestions="loadOptions"
         :value-key="field.info.dispCol"

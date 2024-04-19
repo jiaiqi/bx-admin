@@ -1,6 +1,6 @@
 <template>
   <div style="display: inline-block" v-show="this.info.visible" class="bx_action">
-    <el-button v-if="info" :size="info._moreConfig.size" :type="info._moreConfig.type" :icon="info._moreConfig.icon"
+    <el-button v-if="info" :size="info._moreConfig.size" :type="info._moreConfig.type" :icon="info.button_icon || info._moreConfig.icon"
       :round="info._moreConfig.style !== '' && info._moreConfig.style === 'round'"
       :plain="info._moreConfig.style !== '' && info._moreConfig.style === 'plain'"
       :circle="info._moreConfig.style !== '' && info._moreConfig.style === 'circle'" :loading="is_draft && freeze"

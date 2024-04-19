@@ -51,10 +51,23 @@ function init() {
             // back_server_ip: "192.168.0.111", // oa
             // back_server_port: "180",
 
-            //audit
+            // //audit ai稽核项目
             back_server_protocol: "http",
             back_server_ip: "192.168.0.151", //
             back_server_port: "180",
+
+            //saas内网
+            // back_server_protocol: "https",
+            // back_server_ip: "api.100xsys.cn", //
+            // back_server_port: "6100",
+
+
+            // 后端本地环境
+            // back_server_protocol: "http",
+            // back_server_ip: "192.168.0.155", //
+            // back_server_port: "8888",
+
+
 
             // back_server_protocol: "https",
             // back_server_ip: "api.laodongcloud.com",    // 西乡

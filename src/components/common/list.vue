@@ -59,7 +59,7 @@
         <template v-for="(item, index) in sortedGridButtons">
           <el-button :key="index" :size="item._moreConfig.size"
                      :type="selectFormShow && item.button_type === 'select' ? 'success' : item._moreConfig.type"
-                     :icon="item._moreConfig.icon"
+                     :icon="item.button_icon || item._moreConfig.icon"
                      :round="item._moreConfig.style !== '' && item._moreConfig.style === 'round'"
                      :plain="item._moreConfig.style !== '' && item._moreConfig.style === 'plain'"
                      :circle="item._moreConfig.style !== '' && item._moreConfig.style === 'circle'"
@@ -273,7 +273,7 @@
                        v-if="getDispExps(button, scope.row, scope.$index) && button.permission"
                        v-show="button.button_type === '_btn_group' || isRowButtonVisible(button, scope.row, scope.$index)">
                     <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
-                               :type="button._moreConfig.type" :icon="button._moreConfig.icon"
+                               :type="button._moreConfig.type" :icon="button.button_icon || button._moreConfig.icon"
                                :round="button._moreConfig.style !== '' && button._moreConfig.style === 'round'"
                                :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
                                :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
@@ -291,7 +291,7 @@
                       <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item v-for="(subtns, i) in button.buttons" :key="i">
                           <el-button @click="rowButtonClick(subtns, scope.row)" :size="subtns._moreConfig.size"
-                                     :type="subtns._moreConfig.type" :icon="subtns._moreConfig.icon"
+                                     :type="subtns._moreConfig.type" :icon="subtns.button_icon || subtns._moreConfig.icon"
                                      :round="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'round'"
                                      :plain="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'plain'"
                                      :circle="subtns._moreConfig.style !== '' && subtns._moreConfig.style === 'circle'"
