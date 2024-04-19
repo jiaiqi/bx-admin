@@ -346,7 +346,9 @@ export class FieldInfo {
       relation_conditions: optionListV2.relation_conditions || null,
       orders: optionListV2.orders || null,
       showAsPair: optionListV2.show_as_pair || null,
-      imgUrlExpr: optionListV2.img_url_expr || null,
+      imgType: optionListV2.img_type || null, // 图片类型：img-图片 eicon- el-icon图标
+      imgCol: optionListV2.refed_col || null, // 图片字段 同之前的img_url_expr
+      imgUrlExpr: optionListV2.img_url_expr || optionListV2.img_col || null,
       dedup: optionListV2.dedup,
       srvApp:optionListV2.srv_app || null,
       parentCol:optionListV2.parent_col || optionListV2.parent_no_col || null,

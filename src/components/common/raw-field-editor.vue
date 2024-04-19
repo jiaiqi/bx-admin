@@ -165,11 +165,18 @@
                  <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
                 <autocompleteInput ref="autocompleteInput"  @change="changeDependField" :field="field"></autocompleteInput>
               </div>
-              <el-input v-else v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable show-word-limit :maxlength="field.info.getMaxLength()" @input="checkLength" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-                <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
+              <el-input
+                  :prefix-icon="elIconPrefix"
+                  v-else v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable
+                  show-word-limit :maxlength="field.info.getMaxLength()" @input="checkLength"
+                  @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
+                <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">
+                  {{ field.info.moreConfig.appendText }}
+                </template>
                 <template slot="prepend" v-if="
-                    field.info.moreConfig && field.info.moreConfig.prependText
-                  ">{{ field.info.moreConfig.prependText }}</template>
+                      field.info.moreConfig && field.info.moreConfig.prependText
+                    ">{{ field.info.moreConfig.prependText }}
+                </template>
               </el-input>
 
           </div>
@@ -330,6 +337,9 @@ export default {
     };
   },
   computed: {
+    elIconPrefix() {
+      return this.field?.info?.srvCol?.table_name === 'bxfile_icon_db' && this.field.info.srvCol.columns === 'icon_val' && this.field.model?.includes('el-icon-') && this.field.model||''
+    },
     cfgJson(){
       let cfgJson = this.field.info.srvCol?.col_cfg_json
       if(cfgJson){

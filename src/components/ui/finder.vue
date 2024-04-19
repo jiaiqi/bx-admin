@@ -52,9 +52,11 @@
         </el-button>
         <template slot-scope="{ item }">
           <span style="float: left">{{ item.labelFunc(item) }}</span>
+          <i :class="item.elIconFunc(item)" style="float: right; margin-top: 0.5rem;font-size: 20px;"
+             v-if="item.elIconFunc"></i>
           <img
             :src="item.imgUrlFunc(item)"
-            v-if="item.imgUrlFunc"
+            v-else-if="item.imgUrlFunc"
             style="float: right; margin-top: 0.5rem"
             height="30"
             width="30"
@@ -383,7 +385,6 @@ export default {
           }
         });
         if (result == "true") {
-          // debugger
           top.layer.open({
             type: 2,
             area: ["70%", "60%"],
@@ -500,9 +501,10 @@ export default {
                 : data[fieldInfo.dispCol];
             };
           });
-
           options.forEach((option) => {
-            if (loader.imgUrlExpr) {
+            if(loader.imgType==='eicon'&&loader.refedCol){
+              option.elIconFunc = data => data[loader.refedCol]
+            }else if (loader.imgUrlExpr) {
               option.imgUrlFunc = (data) => {
                 return (
                   this.serviceApi().downloadFileNo + data[loader.imgUrlExpr]
@@ -648,7 +650,6 @@ export default {
       for (let i in dispLoader.conditions) {
         let cond = dispLoader.conditions[i];
         let condition = {};
-
         try {
           condition.colName = cond.colName;
           condition.ruleType = cond.ruleType;
