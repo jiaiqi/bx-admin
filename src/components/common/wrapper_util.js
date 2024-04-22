@@ -72,8 +72,9 @@ export function getButtonPara(buttons) {
   arr = Array.from(new Set(arr))
   let btnGroup = {
     "button_type":"_btn_group",
+    "button_icon":"el-icon-s-operation",
     "button_name":"",
-    "buttons":[]
+    "buttons":[],
   }
   if(arr.length > 0){
     for(let key in arr){

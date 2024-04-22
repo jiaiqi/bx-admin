@@ -244,6 +244,7 @@ export default {
     },
     addNav2refreshAction(button) {
       let nav = new ActionInfo();
+      nav.button_icon = button?.button_icon||''
       Vue.set(this.actions, "nav2refresh", nav);
 
       this.refreshService = button.service_name;
@@ -258,6 +259,7 @@ export default {
 
     addNav2UpdateAction(button) {
       let nav = new ActionInfo();
+      nav.button_icon = button?.button_icon||''
       Vue.set(this.actions, "nav2update", nav);
 
       this.updateService = button.service_name;
