@@ -32,7 +32,7 @@
       <el-autocomplete
         v-else
         ref="autocomplete"
-        :prefix-icon="field.info.dispLoader&&field.info.dispLoader.imgType==='eicon'&&field.getSrvVal()"
+        :prefix-icon="field.info.dispLoader&&field.info.dispLoader.imgType==='eicon'&&field.getSrvVal()||''"
         :trigger-on-focus="showAutocomplete"
         :fetch-suggestions="loadOptions"
         :value-key="field.info.dispCol"
@@ -43,6 +43,7 @@
         @select="handleSelect"
         @blur="handleBlur"
         style="min-width: 220px"
+        class="finder-autocomplete"
       >
         <el-button
           slot="append"
@@ -53,12 +54,19 @@
         </el-button>
         <template slot-scope="{ item }">
           <span style="float: left">{{ item.labelFunc(item) }}</span>
-          <i :class="item.elIconFunc(item)" style="float: right; margin-top: 0.5rem;font-size: 20px;"
+          <i :class="item.elIconFunc(item)" style="font-size: 20px;"
              v-if="item.elIconFunc"></i>
+          <div
+              class="svg-icon"
+              v-html="item.imgUrlFunc(item)"
+              v-else-if="item.imgUrlFunc&&item.imgUrlFunc(item)&&item.imgUrlFunc(item).includes('<svg')"
+              height="30"
+              width="30"
+          >
+          </div>
           <img
             :src="item.imgUrlFunc(item)"
             v-else-if="item.imgUrlFunc"
-            style="float: right; margin-top: 0.5rem"
             height="30"
             width="30"
           />
@@ -503,7 +511,9 @@ export default {
             };
           });
           options.forEach((option) => {
-            if(loader.imgType==='eicon'&&loader.refedCol){
+            if(loader.imgType==='imgdata'&&loader.refedCol){
+              option.imgUrlFunc = data => data[loader.refedCol]
+            }else if(loader.imgType==='eicon'&&loader.refedCol){
               option.elIconFunc = data => data[loader.refedCol]
             }else if (loader.imgUrlExpr) {
               option.imgUrlFunc = (data) => {
@@ -971,4 +981,16 @@ export default {
   },
 };
 </script>
-<style lang="less"></style>
+<style lang="less">
+.svg-icon{
+  svg{
+    width: 30px;
+    height: 30px;
+  }
+}
+.el-autocomplete-suggestion li{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+</style>
