@@ -11,7 +11,7 @@
       </el-alert>
     </template>
     <el-row>
-      <slot name="form-child-prepend"></slot>
+      <slot name="field-form-prepend"></slot>
       <el-form
         :model="formModel"
         ref="elform"

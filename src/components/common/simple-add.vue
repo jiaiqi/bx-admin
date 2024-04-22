@@ -13,6 +13,7 @@
       </el-alert>
     </template>
     <el-row>
+      <slot name="field-form-prepend"></slot>
       <el-form :model="formModel" ref="elform" :inline="false" label-position="right" label-width="10rem" v-if="formLoaded">
 
         <el-row v-for="(formItems, section) in sections" :key="section">
@@ -48,8 +49,9 @@
           </span>
 
         </el-row>
-
       </el-form>
+      <slot name="field-form-append"></slot>
+
     </el-row>
     <loader ref="loader" :service="loaderService" :pageIsDraft="pageIsDraft" @loader-complete="onLoaderComplete($event)">
     </loader>

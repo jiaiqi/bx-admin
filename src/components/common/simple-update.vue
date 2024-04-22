@@ -22,6 +22,7 @@
                :inline="false" label-position="right" label-width="10rem"
                v-if="formLoaded"
       >
+        <slot name="field-form-prepend"></slot>
         <el-row v-for="(formItems, section) in sections" :key="section">
           <div class="el-col el-col-24 el-col-xl-24">
             <div class="el-form-item" v-if="!!section"  style="margin-bottom:0;">
