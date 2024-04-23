@@ -630,6 +630,14 @@ function init_util() {
       }
     }
     if(query['divCond']?.length){
+      if(query["condition"]?.length){
+        query.condition = query["condition"].map(item=>{
+          if(item.ruleType==='like'){
+            item.ruleType = 'eq'
+          }
+          return item
+        })
+      }
       query['divCond'] = query['divCond'].map(item=>{
         if(!Array.isArray(item.value)){
           item.value = [item.value]

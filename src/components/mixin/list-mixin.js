@@ -559,7 +559,13 @@ export default {
           
         })
       }
-      
+      sorted = sorted.map(item=>{
+        if(item.button_type==='_btn_group'&&item.buttons?.length===1){
+          // 操作按钮中只有一个按钮 直接展示 不收纳在操作按钮中
+          item = item.buttons[0]
+        }
+        return item
+      })
       return sorted
     },
 
