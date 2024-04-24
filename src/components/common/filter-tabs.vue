@@ -141,6 +141,15 @@ export default {
       this.$set(this.formModel[tab.list_tab_no],'value',no)
     },
     buildImgField(item) {
+      let _colSrvData = {}
+      if(item?._colSrvData?.length){
+        _colSrvData = item._colSrvData[0]
+        if(_colSrvData?.more_config && typeof _colSrvData?.more_config==='string'){
+          try{
+            _colSrvData._moreConfig = JSON.parse(_colSrvData.more_config)
+          }catch(e){}
+        }
+      }
       return {
         getAnyValidateError:()=>{
           return ''
@@ -148,7 +157,7 @@ export default {
         info: {
           editable: true,
           moreConfig: {
-            fileMaxSize: item.more_config?.fileSize,//MB
+            fileMaxSize: _colSrvData._moreConfig?.fileMaxSize?_colSrvData._moreConfig?.fileMaxSize*1024: item.more_config?.fileSize,//MB
           },
           srvCol: {
             columns: item.more_config?.colName,
@@ -156,8 +165,8 @@ export default {
           }
         },
         fileDesc: item.more_config?.fileDesc||null,//底部提示
-        fileType: item.more_config?.fileType,// 默认jpg/png/svg
-        fileSize: item.more_config?.fileSize,// 默认2MB
+        fileType: _colSrvData?._moreConfig?.fileType || item.more_config?.fileType,// 默认jpg/png/svg
+        fileSize: _colSrvData._moreConfig?.fileMaxSize?_colSrvData._moreConfig?.fileMaxSize*1024: item.more_config?.fileSize,// 默认2MB
         model: item.default,
       }
     },
