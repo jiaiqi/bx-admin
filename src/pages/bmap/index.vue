@@ -46,6 +46,7 @@
 // import { getWebSitePcCarousel,friendLinks,getListData } from '@/api/api.js'
 
 import BMapJs from "./components/bmap-web.vue";
+import {mounted} from "vue2-ace-editor";
 
 export default {
   name: "b-map-index",
@@ -177,7 +178,7 @@ export default {
         res = res.data;
         if (res.state == "SUCCESS") {
           // depts
-          self.depts = res.data.map((item) => item);
+          this.depts = res.data.map((item) => item);
           // console.log('分公司',res.data)
         } else {
           console.log("查询分公司信息 异常", res);

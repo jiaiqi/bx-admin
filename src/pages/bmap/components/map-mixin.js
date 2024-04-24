@@ -1050,7 +1050,7 @@ export default {
             }
             
           },
-        getDriving(){
+        getDriving(type){
             let self = this
             let mapApi = bMapApi;
             let url = ''
@@ -1066,6 +1066,14 @@ export default {
             }
             
             let loadLines = self.bxDeepClone(self.buildResLine)
+            if(Array.isArray(loadLines) && self.activeLine?._editor_type){
+                // 将当前选中的路径放在最后渲染
+                const currentLineIndex =  loadLines.findIndex(item=>item._editor_type===self.activeLine?._editor_type)
+                const currentLine = {...loadLines[currentLineIndex]}
+                loadLines=[currentLine]
+                // loadLines.splice(currentLineIndex,1)
+                // loadLines.push(currentLine)
+            }
             console.log('getDriving 重新绘制',self.polylines,loadLines)
             if((this.modeUrl == '/bmap/check' &&  Array.isArray(loadLines) && loadLines.length > 0) || (this.modeUrl == '/bmap/editor/' &&  Array.isArray(loadLines) && loadLines.length > 0 )){
                 self.polylines = []
@@ -1179,16 +1187,17 @@ export default {
                 let lines = this.buildResLine.filter(item => item['_editor_type'] == type)
                 console.log('lines',lines)
                 if(Array.isArray(lines) && lines.length > 0){
-                    this.onLineList(lines[0])
+                    this.onLineList(lines[0],type)
                 }
             }
             
         },
-        onLineList(line){
+        onLineList(line,type){
             let self = this
-            console.log(line)
             let oldActive = self.bxDeepClone(self.activeLine)
-            if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line)){
+            if(type &&　oldActive && oldActive['_editor_type'] === type){
+                self.$set(self,'activeLine',null)
+            }else if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line)){
                 self.$set(self,'activeLine',line)
                 self.$set(self,'activePoint',null);
             }else if(!self.activeLine && line){
