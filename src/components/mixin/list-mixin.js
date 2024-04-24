@@ -2064,11 +2064,10 @@ export default {
 
                 // self.statsData = response.body.stats_data? response.body.stats_data:[]
                 if(response.body.hasOwnProperty('stats_data')){
-
                   self.statsData = response.body.stats_data
-                  
+                }
+                if(self.statsData?.length){
                   self.buildStatsData()  // 格式化金额数字格式
-                  
                   self.$emit('stats-data-load',self.statsData)
                 }
                 if(!page){
@@ -2555,6 +2554,9 @@ export default {
 
           if(respData.cfg_json){
             this.handleCfgJson(respData.cfg_json)
+          }
+          if(respData.hasOwnProperty('stats_data')){
+            this.statsData = respData.stats_data
           }
 
           if(respData.pub_field_map){
