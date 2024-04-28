@@ -110,6 +110,7 @@
                     :row-class-name="tableRowClassName" row-key="id" highlight-current-row
                     @selection-change="handleSelectionChange" @filter-change="filterChange"
                     @sort-change="handleSortChange"
+                    @header-dragend="onColumnWidthChange"
                     :span-method="arraySpanMethod" @row-dblclick="onRowDbClicked">
 
             <el-table-column type="selection" label="全选" header-align="left" width="50px"
@@ -500,6 +501,7 @@ import CustButtonMinx from "../mixin/cust-button-minx"; // 自定义按钮js
 import MemListMixin from "../mixin/mem-list-mixin"; // 内存列表js
 import FieldRedundantMixin from "../mixin/field-redundant-mixin"; // 字段上下游js
 import ListMixin from "../mixin/list-mixin"; // 列表js
+import ListCalcMinWidthMixin from "../mixin/list-calc-min-width-mixin"; //保存表格最小列宽
 
 import RawFieldEditor from "../common/raw-field-editor.vue"; // 表单元件
 import srvAuthLogin from "../common/srvAuthLogin.vue"; // 服务密码验证
@@ -556,7 +558,8 @@ export default {
     MemListMixin,
     FieldRedundantMixin,
     ListMixin,
-    inlineEditListMixin
+    inlineEditListMixin,
+    ListCalcMinWidthMixin
   ],
   data() {
     return {

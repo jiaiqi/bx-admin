@@ -291,13 +291,13 @@ function init_util() {
    * 查询serviceCols, use an vuex cache here
    * @param service_name
    * @param use_type
+   * @param forceRefreshV2 强制刷新v2 不从store中读取
    * @returns {*}
    */
-  Vue.prototype.loadColsV2 = function (service_name, use_type, app) {
+  Vue.prototype.loadColsV2 = function (service_name, use_type, app,mainService,forceRefreshV2=false) {
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
-    let cacheP =
-      this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type);
-    if (cacheP) {
+    let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type);
+    if (cacheP && forceRefreshV2 !== true) {
       return cacheP;
     }
 

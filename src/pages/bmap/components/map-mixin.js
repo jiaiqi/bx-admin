@@ -1067,12 +1067,10 @@ export default {
             
             let loadLines = self.bxDeepClone(self.buildResLine)
             if(Array.isArray(loadLines) && self.activeLine?._editor_type){
-                // 将当前选中的路径放在最后渲染
+                // 只显示当前选中的路径
                 const currentLineIndex =  loadLines.findIndex(item=>item._editor_type===self.activeLine?._editor_type)
                 const currentLine = {...loadLines[currentLineIndex]}
                 loadLines=[currentLine]
-                // loadLines.splice(currentLineIndex,1)
-                // loadLines.push(currentLine)
             }
             console.log('getDriving 重新绘制',self.polylines,loadLines)
             if((this.modeUrl == '/bmap/check' &&  Array.isArray(loadLines) && loadLines.length > 0) || (this.modeUrl == '/bmap/editor/' &&  Array.isArray(loadLines) && loadLines.length > 0 )){
@@ -1196,6 +1194,7 @@ export default {
             let self = this
             let oldActive = self.bxDeepClone(self.activeLine)
             if(type &&　oldActive && oldActive['_editor_type'] === type){
+                // 点击当前路径 取消选中状态
                 self.$set(self,'activeLine',null)
             }else if(self.activeLine && line && JSON.stringify(self.activeLine) !== JSON.stringify(line)){
                 self.$set(self,'activeLine',line)

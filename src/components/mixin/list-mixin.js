@@ -1824,7 +1824,6 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
-
     handleCurrentChange(val) {
       this.gridPage.currentPage = val;
       this.loadTableData();
@@ -2452,8 +2451,12 @@ export default {
       }
       
     },
-
-    async initGridData() {
+    /**
+     *
+     * @param forceRefreshV2 强制刷新v2
+     * @returns {Promise<void>}
+     */
+    async initGridData(forceRefreshV2=false) {
       // console.log("initGridData")
       let gidInfo = new GridInfo();
 
@@ -2481,7 +2484,7 @@ export default {
       }
       
       //加载serviceCols
-      await this.loadColsV2(this.service_name, use_type,null,this.mainService)
+      await this.loadColsV2(this.service_name, use_type,null,this.mainService,forceRefreshV2)
         .then(response => {
           let respData = response.body.data;
           this.service_view_name = respData?.service_view_name

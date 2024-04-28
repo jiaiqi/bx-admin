@@ -366,10 +366,10 @@ function init_util() {
    * @param use_type
    * @returns {*}
    */
-  Vue.prototype.loadColsV2 = function (service_name, use_type,app, mainSrv) {
+  Vue.prototype.loadColsV2 = function (service_name, use_type,app, mainSrv,forceRefreshV2=false) {
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
     let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type, mainSrv);
-    if (cacheP) {
+    if (forceRefreshV2!==true && cacheP) {
       return cacheP
     }
 
