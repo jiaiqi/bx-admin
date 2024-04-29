@@ -2553,6 +2553,7 @@ export default {
           
           //列表的操作按钮
           this.gridButton = respData.gridButton.map(button => wrapButton(button,"grid"));
+
           this.rowButton = respData.rowButton.map(button => wrapButton(button,"row"));
 
           if(respData.cfg_json){

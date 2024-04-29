@@ -1,3 +1,5 @@
+import {wrapButton} from "../common/wrapper_util";
+
 export default {
     data() {
         return {
@@ -5,6 +7,17 @@ export default {
         }
     },
     computed: {
+        saveWidthBtn(){
+            if(Object.keys(this.columnWidthMap)?.length>0){
+                return wrapButton({
+                    more_config:"",
+                    _moreConfig:{},
+                    moreConfig:{},
+                    button_type:'saveColumnWidth',
+                    button_name:"保存列宽"
+                })
+            }
+        },
         // 更新表字段的最小列宽的请求参数
         calcTableColumnWidthReq() {
             if (Object.keys(this.columnWidthMap)?.length) {
@@ -89,9 +102,9 @@ export default {
                     },
                 });
             }
-            this.$nextTick(() => {
-                this.saveColumnWidth()
-            })
+            // this.$nextTick(() => {
+            //     this.saveColumnWidth()
+            // })
         },
         // 更新服务列的最小宽度
         saveColumnWidth() {

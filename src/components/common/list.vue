@@ -56,6 +56,8 @@
 
       </div>
       <div class="table-head-btns">
+        <el-button v-if="saveWidthBtn" @click="saveColumnWidth" type="primary" size="small">保存列宽
+        </el-button>
         <template v-for="(item, index) in sortedGridButtons">
           <el-button :key="index" :size="item._moreConfig.size"
                      :type="selectFormShow && item.button_type === 'select' ? 'success' : item._moreConfig.type"

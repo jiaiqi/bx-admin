@@ -102,7 +102,7 @@ export default {
     },
 
     buildAddQuery() {
-      let colNames = this.addSrvCols.filter(srvcol => srvcol.in_add !== 0).map(srvcol => srvcol.columns);
+      let colNames = this.addSrvCols.filter(srvcol => srvcol.in_add !== 0 && !srvcol.auto_generate).map(srvcol => srvcol.columns);
       let addedRows = _.cloneDeep(this.gridData.filter((item) => {
         if(item._dirtyFlags === "add"){
           return item
@@ -890,7 +890,7 @@ export default {
 
     buildAddExecutor: function (listDataFunc) {
       let vm = this;
-      let values = this.addSrvCols.filter(srvcol => srvcol.in_add !== 0).map(srvcol => {
+      let values = this.addSrvCols.filter(srvcol => srvcol.in_add !== 0 && !srvcol.auto_generate).map(srvcol => {
         return {
           colName: srvcol.columns,
           valueExpr: `item.${srvcol.columns}`,
