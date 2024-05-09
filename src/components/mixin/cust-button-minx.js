@@ -490,9 +490,14 @@ export default {
                   url,
                   req
                 );
-                if (res?.data?.data?.length) {
+                if (res?.data?.state === 'SUCCESS' &&  res?.data?.data?.length) {
                   const resData = res.data.data[0];
                   address = resData[moreConfig?.urlFromReq?.field];
+                }else{
+                  if(res?.data?.resultMessage){
+                    alert(res.data.resultMessage)
+                  }
+                  return
                 }
               }
             }
@@ -502,7 +507,7 @@ export default {
       if ("新TAB" == item.operate_mode) {
         window.open(address, "_blank");
       } else {
-        window.location.href = address;
+        this.addTabByUrl(address,item.button_name)
       }
     },
     renderStr(str, obj = {}) {

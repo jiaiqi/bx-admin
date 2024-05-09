@@ -287,7 +287,7 @@ export default {
 
   mounted: function() { 
     let self = this;
-    this.createFields(srvCol => srvCol.in_add != 0 && !srvCol.auto_generate)
+    this.createFields(srvCol => srvCol.in_add != 0)
       .then(response => {
         // make all field editable
         for (let fieldName in this.fields) {
