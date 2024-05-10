@@ -16,6 +16,12 @@ export default {
       ready: false
     };
   },
+  created(){
+    if(this.$route?.query?.bx_auth_ticket){
+      sessionStorage.setItem('bx_auth_ticket',this.$route?.query?.bx_auth_ticket)
+      localStorage.setItem('bx_auth_ticket',this.$route?.query?.bx_auth_ticket)
+    }
+  },
   mounted() {
     const init = () => {
       const AK = 'FC190506b9b4fa8b366db9f78cb5e93e';

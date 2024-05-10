@@ -86,7 +86,7 @@
             <raw-field-editor
                 ref="inner"
                 :field="contentField"
-                v-if="ignoreVif||contentField.evalXIf()"
+                v-if="(ignoreVif||contentField.evalXIf())&&!hideInput(contentField)"
                 :childForeignkey='childForeignkey'
                 :defaultCondition='defaultCondition'
                 :mainformDatas='mainformDatas||parentAddMainFormDatas'
@@ -100,8 +100,7 @@
             </raw-field-editor>
             <template
                 v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson && contentField.fieldActionOptionsJson.hasOwnProperty('col_btn_json') && contentField.fieldActionOptionsJson.col_btn_json.hasOwnProperty('btn_name')">
-              <shortcutAdd v-if="contentField.fieldActionOptionsJson"
-                           :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
+              <shortcutAdd :formModel="formModel" :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
             </template>
           </el-col>
         </el-row>
@@ -179,6 +178,11 @@ export default {
   },
 
   computed: {
+    hideInput(){
+      return (field)=>{
+        return field?.fieldActionOptionsJson?.options?.includes('隐藏输入框') === true
+      }
+    },
     fixHeight: function () {
       let editor = this.field.info.editor;
       let flexEditors = new Set([

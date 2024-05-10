@@ -1,12 +1,13 @@
 /* */
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-  <div style="display: flex; align-items: center;margin-left: 10px;">
+  <div style="display: flex; align-items: center;margin-left: 10px;margin-top: 5px">
     <el-button
       type="primary"
       size="small"
       v-if="fieldActionOptions"
       @click="onAction"
-      >{{ fieldActionOptions.col_btn_json.btn_name }}</el-button
+    >{{ fieldActionOptions.col_btn_json.btn_name }}
+    </el-button
     >
     <el-dialog
       title="添加"
@@ -21,7 +22,7 @@
         ref="add-form"
         :$srvApp="getSrvApp"
         v-if="activeForm == 'add'"
-        :service="cfg.btn_srv_name"
+        :service="serviceName"
         :submit2-db="true"
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onAddFormLoaded"
@@ -53,7 +54,7 @@
       </add> -->
       <!-- :defaultValues="listMainFormDatas" -->
       <fieldOptionsList
-      v-if="activeForm == 'list'"
+        v-if="activeForm == 'list'"
 
         :service="cfg.btn_srv_name"
         ref="popup"
@@ -70,14 +71,15 @@
 
 // import fieldOptionsAdd from "./add.vue";
 export default {
-  name: "shortcut-add",
-
+  // 字段右侧快捷按钮
+  name: "field-shortcut-button",
   components: {
     fieldOptionsAdd: () => import("../common/add.vue"),
     fieldOptionsList: () => import("../common/list.vue"),
   },
 
   props: {
+    formModel: Object,
     fieldActionOptions: {
       type: Object,
       default() {
@@ -96,30 +98,71 @@ export default {
 
   computed: {
     srvtype() {
-      let type = "add";
-      if(this.cfg?.btn_srv_type==='select'){
-        type='list'
-      }
-      return type;
+      return this.cfg?.btn_srv_type === 'select' ? 'list' : 'add'
     },
     getSrvApp() {
-      return (
-        this.cfg?.btn_srv_app || sessionStorage.getItem("current_app") || null
-      );
+      return this.btnSrvReq?.mapp || this.cfg?.btn_srv_app || sessionStorage.getItem("current_app") || null
     },
     cfg() {
-      let cfg = null;
-
-      if (this.fieldActionOptions && this.fieldActionOptions.col_btn_json) {
-        cfg = this.fieldActionOptions.col_btn_json;
+      return this.fieldActionOptions?.col_btn_json || null;
+    },
+    btnSrvReq() {
+      return this.cfg?.btn_srv_req_json || null
+    },
+    serviceName() {
+      if (this.cfg?.btn_type && this.btnSrvReq) {
+        return this.btnSrvReq.serviceName
+      } else if (this.cfg?.btn_srv_name) {
+        return this.cfg.btn_srv_name
+      } else {
+        return null
       }
-      return cfg;
     },
   },
 
   methods: {
+    addTabByUrl(url, tab_title) {
+      let page = {
+        title: tab_title || "新标页签",
+        url,
+      };
+      if (window.top.tab && window.top.tab.addTab) {
+        window.top.tab.addTab(page);
+      } else {
+        let strWindowFeatures =
+          "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
+        let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures);
+        newWindow.document.title = tab_title;
+      }
+    },
     onAction() {
-      console.log(this.fieldActionOptions);
+      if (this.cfg?.btn_type && this.btnSrvReq) {
+        // 支持配置btn_srv_req_json以及btn_type来判断要打开的页面：目前只支持跳转列表、跳转详情、打开新增弹窗 jiaqi/2024-05-10
+        let url = ''
+        switch (this.cfg.btn_type) {
+          case '详情':
+            const condition = this.btnSrvReq?.condition
+            if (condition?.length) {
+              const value = this.renderStr(condition[0].value, this.formModel)
+              url = `/vpages/#/detail/${this.btnSrvReq.serviceName}/${condition[0].colName}/${value}`
+            } else {
+              this.$message.error('详情按钮的接口请求必须配置查询条件!')
+            }
+            break;
+          case '列表':
+            url = `/vpages/#/list/${this.btnSrvReq.serviceName}?operate_params=${encodeURIComponent(this.renderStr(JSON.stringify(this.btnSrvReq), this.formModel))}`
+            break;
+          case '新增':
+            this.activeForm = 'add';
+            break;
+          case '编辑':
+            break;
+        }
+        if (url) {
+          this.addTabByUrl(url, this.cfg.btn_name)
+        }
+        return
+      }
       this.activeForm = this.srvtype;
     },
     getAddService() {
