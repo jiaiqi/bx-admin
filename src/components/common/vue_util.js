@@ -1137,6 +1137,9 @@ function init_util() {
     dialog.activeForm = params.formType;
     if(btninfo?.moreConfig?.customComponentName){
       dialog.activeForm = btninfo?.moreConfig?.customComponentName
+      if(params.listRowData){
+        dialog.rowData = params.listRowData;
+      }
     }
     // 调用弹窗的地方传进来的回调函数，如果有传，则弹窗操作完成后调用此函数触发回调，通知组件操作完成
     dialog.callback = callback

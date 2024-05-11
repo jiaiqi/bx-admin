@@ -15,7 +15,7 @@
             <el-form-item required label="选择场所">
               <el-select v-model="form.rsvo_no" placeholder="请选择场所" @change="placeChange">
                 <el-option :label="item.label" :value="item.value" v-for="item in placement"
-                  :key="item.value"></el-option>
+                           :key="item.value"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -56,7 +56,11 @@
       </el-form>
     </div>
 
-    <div class="sub-title" v-if="form.rsvo_no">预约日期</div>
+    <div class="sub-title" v-if="form.rsvo_no">
+      <span>预约日期</span>
+      <div class="sub-title_tip" v-if="canBookingTime&&canBookingTime!==true" v-html="canBookingTime">
+      </div>
+    </div>
     <el-calendar @input="dateChange" v-if="form.rsvo_no">
       <!-- 这里使用的是 2.5 slot 语法，对于新项目请使用 2.6 slot 语法-->
       <template slot="dateCell" slot-scope="{ date, data }">
@@ -68,7 +72,7 @@
         ]">
           <div>
             <span class="date">{{ data.day.split("-").slice(2).join("-") }}</span>
-           <span v-if=" datesMap[data.day]"> ({{ datesMap[data.day].cntr }}/{{ datesMap[data.day].cnt_can }})</span>
+            <span v-if=" datesMap[data.day]"> ({{ datesMap[data.day].cntr }}/{{ datesMap[data.day].cnt_can }})</span>
           </div>
           <span class="bottom"></span>
           <!-- {{ data.isSelected ? "✔️" : "" }} -->
@@ -78,8 +82,8 @@
     <div style="padding: 0 20px" v-if="form.date">选择时段</div>
     <div class="time-range" v-if="form.date">
       <div class="time-range-item"
-        :class="{ 'is-selected': item.start_time && item.start_time === form.time, disabled: !showTime(item.start_time) }"
-        v-for="item in times" @click="form.time = item.start_time">
+           :class="{ 'is-selected': item.start_time && item.start_time === form.time, disabled: !showTime(item.start_time) }"
+           v-for="item in times" @click="form.time = item.start_time">
         <div class="time">{{ item.start_time }}-{{ item.end_time }}</div>
         <div class="opening">总计：{{ item.div_count || '0' }}</div>
         <div class="booked">已约：{{ item.cnty || '0' }}</div>
@@ -89,18 +93,37 @@
     <div style="text-align: center">
       <el-button size="mini" @click="cancel">取消</el-button>
       <el-button type="primary" size="mini" @click="submit"
-        :disabled="!form.rsvo_no || !form.number || !form.date || !form.time || !form.contacts || !form.mobilephone">确认</el-button>
+                 :disabled="!form.rsvo_no || !form.number || !form.date || !form.time || !form.contacts || !form.mobilephone">
+        确认
+      </el-button>
     </div>
   </div>
 </template>
 
 <script>
 import moment from "moment";
+
+let timer = null
 export default {
   props: {
-    defaultValues: Object
+    defaultValues: Object, rowData: Object
   },
   computed: {
+    canBookingTime() {
+      if (this.rowData?.rsv_start_time) {
+        // 预约开始时间
+        if (this.currentTime && new Date(moment().format('YYYY-MM-DD ' + this.rowData?.rsv_start_time)) < new Date(this.currentTime)) {
+          return true;
+        } else {
+          if (this.rowData?.rsv_days_before) {
+            return `预约开始时间：<b>${this.rowData?.rsv_start_time}</b>，最早可以提前<b>${this.rowData?.rsv_days_before}</b>天预约`
+          }
+          return `预约开始时间：<b>${this.rowData?.rsv_start_time}</b>`
+        }
+      } else {
+        return true
+      }
+    },
     timesMap() {
       return this.times.reduce((res, cur) => {
         res[cur.start_time] = cur;
@@ -116,6 +139,7 @@ export default {
   },
   data() {
     return {
+      currentTime: null,
       loading: false,
       form: {
         school: null,
@@ -191,12 +215,22 @@ export default {
       }
     },
     disabledDate(day) {
+      if(this.canBookingTime&&this.canBookingTime!==true){
+        // 没到预约开始时间
+        return true
+      }
       let item = this.datesMap?.[day];
-      return !item;
+      const rsv_days_before = this.rowData?.rsv_days_before // 提前可预约天数
+      if (item && item.datey && rsv_days_before) {
+        if ((new Date(item.datey) - new Date()) / (60 * 60 * 24 * 1000) > parseInt(rsv_days_before)) {
+          // 今天距离此日期超出设置的提前可预约天数
+          return true
+        }
+      }
+      // return  !item
       if (item) {
         return !(
-          item &&
-          item.cnt_can &&
+          item?.cnt_can &&
           item.cnt_can - item.cntr >= this.form.number
         );
       } else {
@@ -226,7 +260,7 @@ export default {
         serviceName: "srvreserve_obj_select",
         colNames: ["*"],
         condition: [],
-        page: { pageNo: 1, rownumber: 100 },
+        page: {pageNo: 1, rownumber: 100},
       };
       this.$http.post(url, req).then((res) => {
         if (res.data.state === "SUCCESS") {
@@ -252,18 +286,27 @@ export default {
             value: this.form.rsvo_no,
           },
         ],
-        page: { pageNo: 1, rownumber: 100 },
+        page: {pageNo: 1, rownumber: 100},
       };
       this.loading = true;
       this.$http.post(url, req).then((res) => {
         this.loading = false
         if (res.data.state === "SUCCESS") {
+          const see_days_before = this.rowData?.see_days_before // 提前可看到天数
           this.dates = res.data.data.map((item) => {
             // item.label = item.rsvo_name
             // item.text = item.rsvo_name
             // item.value = item.rsvo_no
             return item;
-          });
+          }).filter(item => {
+            if (item && item.datey && see_days_before) {
+              if ((new Date(item.datey) - new Date()) / (60 * 60 * 24 * 1000) > parseInt(see_days_before)) {
+                // 今天距离此日期超出设置的提前可预约天数
+                return false
+              }
+              return true
+            }
+          })
         }
       });
     },
@@ -285,7 +328,7 @@ export default {
             value: this.form.date,
           },
         ],
-        page: { pageNo: 1, rownumber: 100 },
+        page: {pageNo: 1, rownumber: 100},
       };
       this.loading = true
       this.$http.post(url, req).then((res) => {
@@ -294,12 +337,20 @@ export default {
       });
     },
   },
+  beforeDestroy() {
+    clearInterval(timer);
+  },
   created() {
-    if(this.defaultValues&&Object.keys(this.defaultValues).length){
-      Object.keys(this.defaultValues).forEach(key=>{
-        if(this.defaultValues[key]){
+    this.$nextTick(() => {
+      timer = setInterval(() => {
+        this.currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      }, 1000)
+    })
+    if (this.defaultValues && Object.keys(this.defaultValues).length) {
+      Object.keys(this.defaultValues).forEach(key => {
+        if (this.defaultValues[key]) {
           this.form[key] = this.defaultValues[key]
-          if(key==='rsvo_no'){
+          if (key === 'rsvo_no') {
             this.fetchDate()
           }
         }
@@ -317,6 +368,16 @@ export default {
 
 .sub-title {
   font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+
+  .sub-title_tip {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #e6a23c;
+    font-weight: normal;
+    padding-right: 20px;
+  }
 }
 
 .time-range {
@@ -354,7 +415,7 @@ export default {
 }
 
 ::v-deep .el-calendar-table .el-calendar-day {
-  height:50px;
+  height: 50px;
   text-align: center;
   padding: 0;
 
@@ -364,11 +425,12 @@ export default {
     line-height: 44px;
     // text-align: left;
     // padding-left: 5px;
-    
-    .date{
+
+    .date {
       font-size: 18px;
       // font-weight: bold;
     }
+
     &.is-selected {
       background-color: #eef5ff;
       position: relative;

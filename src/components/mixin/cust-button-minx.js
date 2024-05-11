@@ -808,6 +808,9 @@ export default {
       } else if ("增加弹出" == operate_type) {
         // params.formType= "simple-add";
         params.formType = "add";
+        if(operateData?.length){
+          params.listRowData = operateData[0]
+        }
         this.popupDialog(params, callback);
       } else if ("更新弹出" == operate_type) {
         var otherParams = {};
