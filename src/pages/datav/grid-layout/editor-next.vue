@@ -50,6 +50,7 @@
     >
       <div
         class="custom-design"
+        :class="{'view':!inEditor}"
         id="custom-design"
         ref="customDesign"
         :style="[styleJson]"
@@ -731,6 +732,7 @@ export default {
       window.open(`/xmp/#/views/custom/index/index?page_no=${this.pgNo}`);
     },
     resize() {
+
       // 自适应缩放
       if (this.inEditor || this.autoScale === false) {
         // 编辑状态不缩放
@@ -2186,7 +2188,9 @@ export default {
       margin: 0 auto;
       background: #040711;
       position: relative;
-
+      &.view{
+        background: unset;
+      }
       .grid-container {
         height: 100%;
         top: 0;

@@ -266,6 +266,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         if (chartJson.more_option && chartJson.more_option === "x轴反序") {
           ecOptions["xAxis"]["data"] = xAxisData.reverse();
         }
+        if (chartJson.more_option && chartJson.more_option.includes('序列堆叠')) {
+          series.stack = sortAxisCol
+        }
+
         // for (let data of cellData) {
         //   if (chartJson.more_option && chartJson.more_option === "x轴反序") {
         //     // series["data"].unshift(data[dataColName]);
