@@ -1,4 +1,5 @@
 <script setup>
+import {computed} from 'vue'
 // 出入口信息
 const props = defineProps({
   inData: {
@@ -10,6 +11,15 @@ const props = defineProps({
     default: () => ({})
   }
 })
+
+const inPicSrc = computed(() => {
+  return props.inData?.pici ? `${window.backendIpAddr}/aud/get/station/img?picid=${props.inData.picid}` : ''
+})
+
+const outPicSrc = computed(() => {
+  return props.outData?.pici ? `${window.backendIpAddr}/aud/get/station/img?picid=${props.outData.picid}` : ''
+})
+
 const colList2 = [
   {
     column: 'extollstationname',
@@ -60,12 +70,18 @@ const colList1 = [
 <template>
   <div class="info-list">
     <div class="info-list-box">
+      <div class="img-box" v-if="inPicSrc">
+        <el-image class="image" :src="inPicSrc"></el-image>
+      </div>
       <div class="info-list-item" v-for="item in colList1">
         <div class="label">{{ item.label }}:</div>
         <div class="value">{{ inData[item.column] || '-' }}</div>
       </div>
     </div>
     <div class="info-list-box">
+      <div class="img-box" v-if="outPicSrc">
+        <el-image class="image" :src="outPicSrc"></el-image>
+      </div>
       <div class="info-list-item" v-for="item in colList2">
         <div class="label">{{ item.label }}:</div>
         <div class="value">{{ outData[item.column] || '-' }}</div>
@@ -85,7 +101,12 @@ const colList1 = [
   &-box {
     grid-row-gap: 10px;
     display: grid;
-
+    .img-box{
+      .image{
+        width: 100%;
+        height: 300px;
+      }
+    }
   }
 
   &-item {

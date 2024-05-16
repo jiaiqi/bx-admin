@@ -2,7 +2,7 @@
 import {useRoute} from '@/common/vueApi.js'
 import {$axios as $http} from "@/pages/datav/common/http.js";
 import {onMounted, ref, nextTick} from "vue";
-import {Loading} from 'element-ui';
+import {Loading, Message} from 'element-ui';
 import inOutInfo from './components/in-out-info.vue'
 import doorFrame from './components/door-frame.vue'
 import showPath from './components/show-path.vue'
@@ -52,6 +52,10 @@ const getInData = async () => {
   loading?.close();
   if (res?.data?.data?.length) {
     inData.value = res.data.data[0]
+  } else if (res?.data?.state === 'SUCCESS') {
+    Message.error('未查到入口数据')
+  } else if (res?.data?.resultMessage) {
+    Message.error(res?.data?.resultMessage)
   }
   console.log(res.data)
 }
@@ -86,12 +90,17 @@ const getOutData = async () => {
   loading?.close();
   if (res?.data?.data?.length) {
     outData.value = res.data.data[0]
+  } else if (res?.data?.state === 'SUCCESS') {
+    Message.error('未查到出口数据')
+  } else if (res?.data?.resultMessage) {
+    Message.error(res?.data?.resultMessage)
   }
   console.log(res.data)
 }
 
 const getDoorFrameData = async () => {
   const service = `srvaud_susvehpasspath_select`
+  // const service = `srvaud_susvehpasspath_select`
   const url = `${window.backendIpAddr}/aud/select/${service}`
   const cond = [
     {
@@ -102,11 +111,17 @@ const getDoorFrameData = async () => {
       "colName": "path_type",
       "ruleType": "eq",
       "value": '行驶路径'
-    }, {
-      "colName": "datatype",
-      "ruleType": "eq",
-      "value": '3'
     },
+    {
+      'colName': 'grantry_type',
+      "ruleType": "in",
+      "value": '路段门架,收费站'
+    },
+    // {
+    //   "colName": "datatype",
+    //   "ruleType": "eq",
+    //   "value": '3'
+    // },
     {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}]
   const req = {
     "serviceName": service,
@@ -127,6 +142,10 @@ const getDoorFrameData = async () => {
   loading?.close();
   if (res?.data?.data?.length) {
     doorFrameData.value = res.data.data
+  } else if (res?.data?.state === 'SUCCESS') {
+    Message.error('未查到门架数据')
+  } else if (res?.data?.resultMessage) {
+    Message.error(res?.data?.resultMessage)
   }
   console.log(res.data)
 }
@@ -163,6 +182,10 @@ const getPathData = async () => {
   loading?.close();
   if (res?.data?.data?.length) {
     pathData.value = res.data.data
+  } else if (res?.data?.state === 'SUCCESS') {
+    Message.error('未查到路径数据')
+  } else if (res?.data?.resultMessage) {
+    Message.error(res?.data?.resultMessage)
   }
   console.log(res.data)
 
@@ -170,8 +193,9 @@ const getPathData = async () => {
 
 
 onMounted(() => {
-  getInData()
-  getOutData()
+  // getInData()
+  // getOutData()
+  getDoorFrameData()
   getPathData()
 })
 
@@ -181,13 +205,13 @@ const handleClick = (tab, event) => {
     activeTab.value = tab.index
     switch (tab.index) {
       case '0':
-        getInData()
-        getOutData()
-        break
-      case '1':
+        // getInData()
+        // getOutData()
+        //   break
+        // case '1':
         getDoorFrameData()
         break
-      case '2':
+      case '1':
         getPathData()
         break
     }
@@ -199,13 +223,14 @@ const handleClick = (tab, event) => {
   <div class="flow-detail">
     <el-tabs type="border-card" class="el-tabs" @tab-click="handleClick">
       <el-tab-pane label="入出口信息">
-        <in-out-info :in-data="inData" :out-data="outData"></in-out-info>
-      </el-tab-pane>
-      <el-tab-pane label="门架信息">
+<!--        <in-out-info :in-data="inData" :out-data="outData"></in-out-info>-->
         <door-frame :data="doorFrameData"></door-frame>
       </el-tab-pane>
+      <!--      <el-tab-pane label="门架信息">-->
+      <!--        <door-frame :data="doorFrameData"></door-frame>-->
+      <!--      </el-tab-pane>-->
       <el-tab-pane label="路径展示" style="padding: 0">
-        <show-path :data="pathData" v-if="activeTab==='2'"></show-path>
+        <show-path :data="pathData" v-if="activeTab==='1'"></show-path>
       </el-tab-pane>
     </el-tabs>
   </div>

@@ -121,17 +121,18 @@ export default {
             }, 5000);
             this.$http.post(url, req).then((res) => {
                 if (res?.data?.state === "SUCCESS") {
-                    this.$message.success(res.data.resultMessage);
+                    this.$message.success(res.data.resultMessage+' 热加载后才会生效');
                     this.updateTableColumn();
                     this.columnWidthMap = {};
-                    this.hotReload().then((isReload)=>{
-                        if(isReload===true){
-                            this.initGridData(true).then(() => {
-                                loading.close();
-                            });
-                        }
 
-                    })
+                    // this.hotReload().then((isReload)=>{
+                    //     if(isReload===true){
+                    //         this.initGridData(true).then(() => {
+                    //             loading.close();
+                    //         });
+                    //     }
+                    //
+                    // })
                 } else {
                     this.$message.error(res.data.resultMessage);
                 }

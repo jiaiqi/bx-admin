@@ -409,7 +409,7 @@ export default {
       pageConfg: {},
       containerWidth: 800,
       colNum: 100,
-      rowHeight: 10.8,
+      // rowHeight: 10.8,
       pgNo: "",
       pageId: "",
       appNo: "", //应用编号
@@ -425,7 +425,7 @@ export default {
       designData: {layoutCon: [], layoutData: []}, //容器内容
       bjStyles: {}, //栅格样式
       curDesign: "", //点击容器组件样式
-      rowheight: 30, //默认一格高度
+      rowHeight: 10, //默认一格高度
       moveShow: false, //显示移动元素
       moveStyle: {}, //显示移动元素的位置
       mouseFalg: false, //按下的开关
@@ -485,6 +485,9 @@ export default {
           }
           // }
           setTimeout(() => {
+            // if (this.screenType === "PC") {
+            //   window.addEventListener("resize", this.resize);
+            // }
             if (this.needLogin) {
               // location.href = '/main/login.html'
             }
@@ -732,8 +735,8 @@ export default {
       window.open(`/xmp/#/views/custom/index/index?page_no=${this.pgNo}`);
     },
     resize() {
-
       // 自适应缩放
+      // return;
       if (this.inEditor || this.autoScale === false) {
         // 编辑状态不缩放
         return;
@@ -785,7 +788,8 @@ export default {
     initColNum() {
       const ele = this.$refs.customDesign;
       if (ele && ele instanceof HTMLElement) {
-        const eleHeight = ele.offsetHeight;
+        const eleHeight = parseFloat(this.contentData.height);
+        // const eleHeight = ele.offsetHeight;
         this.rowHeight = parseFloat((eleHeight / 100).toFixed(6)); //行高设置为页面高度的1/100
       }
       let containerWidth = document.getElementById("custom-design").offsetWidth;
@@ -1420,7 +1424,7 @@ export default {
       if (this.screenType === "PC") {
         setTimeout(() => {
           this.resize();
-        }, 1000);
+        }, 10);
       }
     },
     //鼠标移动

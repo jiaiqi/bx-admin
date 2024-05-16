@@ -504,11 +504,11 @@ export default {
           } catch (error) {}
         }
       }
-      if ("新TAB" == item.operate_mode) {
+      // if ("新TAB" == item.operate_mode) {
         window.open(address, "_blank");
-      } else {
-        this.addTabByUrl(address,item.button_name)
-      }
+      // } else {
+      //   this.addTabByUrl(address,item.button_name)
+      // }
     },
     renderStr(str, obj = {}) {
       if (typeof obj === "object" && str && typeof str === "string") {

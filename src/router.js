@@ -93,6 +93,11 @@ Vue.use(Router);
 Vue.use(VueResource);
 let routes=[
   {
+    path: '/register',
+    name:'register',
+    component: ()=>import('@/pages/common/register/register.vue')
+  },
+  {
     path: '/simple-add/:service_name',
     name: 'simple-add',
     component: SimpleAdd

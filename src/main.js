@@ -16,6 +16,11 @@ import bxPlugin from './plugin/bx-plugin.js'
 import Fragment from 'vue-fragment'
 Vue.use(Fragment.Plugin)
 
+import { BootstrapVue, BootstrapVueIcons} from 'bootstrap-vue'
+Vue.use(BootstrapVue)
+Vue.use(BootstrapVueIcons)
+
+
 // import drag from '@/util/drag'; 
 // Vue.use(drag);
 
