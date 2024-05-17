@@ -43,18 +43,18 @@ function init() {
             // back_server_ip: "vrms.vanxum.com", // 万像
             // back_server_port: "8101",
 
-            back_server_protocol: "http",
-            back_server_ip: "192.168.0.157", // 研学
-            back_server_port: "8104",
+            // back_server_protocol: "http",
+            // back_server_ip: "192.168.0.157", // 研学
+            // back_server_port: "8104",
 
             // back_server_protocol: "http",
             // back_server_ip: "192.168.0.111", // oa
             // back_server_port: "180",
 
             // //audit ai稽核项目
-            // back_server_protocol: "http",
-            // back_server_ip: "192.168.0.151", //
-            // back_server_port: "180",
+            back_server_protocol: "http",
+            back_server_ip: "192.168.0.151", //
+            back_server_port: "180",
 
             //saas内网
             // back_server_protocol: "https",
