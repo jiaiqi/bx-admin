@@ -621,6 +621,9 @@ export default {
 
     },
     buildDivCond() {
+      if(this.divCond?.length){
+        return  this.divCond;
+      }
       if (this.listType === 'list') {
         if (this.$route.query?.divCol && this.$route.query?.divStartVal && this.$route.query?.divEndVal) {
           return [

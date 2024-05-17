@@ -13,13 +13,14 @@
       :childForeignkey="foreignKey"
       :default-condition="getDefaultConditions"
       :main-data="mainData"
+      :div-cond="divCond"
       @list-loaded="onListLoaded()"
       @add-form-loaded="onAddFormLoaded($event)"
       @update-form-loaded="onUpdateFormLoaded($event)"
     >
     </treegrid>
 
-    <list-proc ref="list" :service="service" v-else-if="isProc"> </list-proc>
+    <list-proc ref="list" :service="service" v-else-if="isProc" :div-cond="divCond"> </list-proc>
     <tableEdit ref="mlist" 
       :name="name"
       :pageType="foreignKey.view_model"
@@ -41,6 +42,7 @@
       :listMainFormDatas="mainFormDatas"
       :main-data="mainData?mainData:formModel"
       :$srvApp="$srvApp"
+      :div-cond="divCond"
       @child-loaded="childDataLoadedRun($event)"
       @list-loaded="onListLoaded"
       @inline-list-loaded="onInlineListLoaded"
@@ -78,6 +80,7 @@
       :main-data="mainData"
       :mem-initdatas-add="initDatas"
       :$srvApp="$srvApp"
+      :div-cond="divCond"
       @child-loaded="childDataLoadedRun($event)"
       @list-loaded="onListLoaded"
       @inline-list-loaded="onInlineListLoaded"
@@ -229,7 +232,8 @@ export default {
     mainService:{
       type: String,
       default: '',
-    }
+    },
+    divCond:Array
   },
   computed: {
     isInplaceEditRun:function(){
