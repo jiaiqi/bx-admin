@@ -12,6 +12,10 @@ function LoadScript(src) {
       resolve(BMap);
       return true;
     }
+    if (typeof BMapGL !== "undefined") {
+      resolve(BMapGL);
+      return true;
+    }
     // // 百度地图异步加载回调处理
     // window.onBMapCallback = function () {
     //   console.log("百度地图脚本初始化成功...");
@@ -35,7 +39,8 @@ function LoadScript(src) {
 
 const init = () => {
   const AK = 'FC190506b9b4fa8b366db9f78cb5e93e';
-  const bMapSrc = `${location.protocol}//api.map.baidu.com/api?v=2.0&ak=${AK}&s=1&callback=onBMapCallback`
+  const bMapSrc = `${location.protocol}//30.61.1.37:8119/dugis-demo-3d/api/api.js`
+  // const bMapSrc = `${location.protocol}//api.map.baidu.com/api?v=2.0&ak=${AK}&s=1&callback=onBMapCallback`
   const bMapGLSrc = `${location.protocol}//api.map.baidu.com/api?type=webgl&v=2.0&ak=${AK}`
   LoadScript(bMapSrc)
 }

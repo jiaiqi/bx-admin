@@ -21,7 +21,8 @@ let activeLineColor = 'rgb(40, 189, 108)'
 let bMapApi = sessionStorage.getItem('bMapApi')
 
 if(!bMapApi){
-    bMapApi = '/baiduApi/direction/v2/driving'
+    bMapApi = 'http://30.61.1.37:8519/route/v1/route'
+    // bMapApi = '/baiduApi/direction/v2/driving'
     // bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
     // bMapApi = 'https://api.map.baidu.com/direction/v2/driving'
 }
@@ -189,6 +190,9 @@ export default {
     methods: {
         initMap(){
             let self = this
+            if(!window.BMap&&BMapGL){
+                window.BMap = BMapGL
+            }
             const map = new BMap.Map("mapContainer"); // 创建地图实例
             
             let scaleCtrl = new BMap.ScaleControl();  // 添加比例尺控件
@@ -202,13 +206,19 @@ export default {
             ));
             map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
             // 设置地图中心点和缩放级别  
-            const point = new BMap.Point(116.404, 39.915); // lng表示经度，lat表示纬度
+            const point = new BMap.Point(108.950615, 34.346415); // lng表示经度，lat表示纬度
+            // const point = new BMap.Point(116.404, 39.915); // lng表示经度，lat表示纬度
             map.centerAndZoom(point, 12); // zoomLevel表示缩放级别
             // map.setDisplayOptions({
             //     poiIcon: false,
             //     poiText: false
             // })
-            map.setMapStyle({styleJson: mapStyle.styleJson});
+            // if(map.setMapStyleV2){
+            //     map.setMapStyleV2({styleJson: mapStyle.styleJson});
+            // }else if(map.setMapStyle){
+            //     map.setMapStyle({styleJson: mapStyle.styleJson});
+            // }
+                
             this.BMap = map
             this.BMap.addEventListener("click", function (e) {
                 console.log(e.point)
@@ -231,6 +241,7 @@ export default {
         },
         onClickNewPoint(e){
             console.log(e)
+            debugger
             let self = this
             this.$set(this,'activeNewPoint',e)
             let BMap = this.BMap
@@ -717,6 +728,10 @@ export default {
                     marker.addEventListener('dragend', function (event) {
                         console.log('标注已移动至：' + event.point.lng + ', ' + event.point.lat,event.target['_data'].uid);
                         let point = self.bxDeepClone(event.target['_data'])
+                        debugger
+                        if(event.latLng){
+                            event.point = event.latLng
+                        }
                         point['lng'] = event.point.lng
                         point['lat'] = event.point.lat
                         self.$nextTick(() => {
@@ -1038,7 +1053,9 @@ export default {
             let centerPoint = this.BMap.getViewport(eval(pointsArray))  // this.pathArr 是我们知道的经纬度。可以有多个。全部以数组形式放在里面。
               //进入显示的百分比
               //打开地图时的位置
-              
+              if(!centerPoint?.center?.lat||!centerPoint?.center?.lng){
+                return
+              }
             // console.log('初始化',centerPoint,centerPoint.center,centerPoint.zoom)
             // 初始化地图，设置中心点坐标和地图级别
             if(this.activePoint){
@@ -1087,12 +1104,16 @@ export default {
                         origin:``,  // 起点经纬度 40.056878,116.30815 小数点后不超过6位，
                         destination:``,  // 终点 40.056878,116.30815
                         waypoints:'', // 途径点 40.465,116.314|40.232,116.352|40.121,116.453
-                        tactics:4    // 4 高速有限
+                        tactics:0    // 4 高速有限
+                        // tactics:4    // 4 高速有限
                     }
                     params['origin'] = `${loadLine.params['origin']}`
                     params['destination'] = `${loadLine.params['destination']}`
                     params['waypoints'] = `${loadLine.params['waypoints_str']}`
-                    params['ak'] = `${loadLine.params['ak']}`
+                    // params['ak'] = `${loadLine.params['ak']}`
+                    // if(url?.includes('route/v1/route')){
+                        params['ApiAuthorization']='USER_AK'
+                    // }
                     url = `${mapApi}`
                     
                     if(Array.isArray(loadLine['points']) && loadLine['points'].length > 0){
@@ -1103,11 +1124,28 @@ export default {
                             if(res && res.status === 0){
     
                                 this.reqRoutes = res.result.routes
-                                for(let route of res.result.routes){
-                                    
+                                if(!res.result?.routes&&res.result?.points){
+                                    // const pointsArr = res.result?.points.split(';')
+                                    // for(let point of pointsArr){
+                                    //     const pointArr = point.split(',')
+                                    //     const obj = {
+                                    //         lat:pointArr[1],
+                                    //         lng:pointArr[0]
+                                    //     }
+                                    //     routes.push(obj)
+                                    // }
                                     let steps = []
-                                    for(let step of route.steps){
-                                        let path = step.path.split(';')
+                                    for(let step of res.result?.steps){
+                                        // let path = step.path.split(';')
+                                        let path = step.path.split(',')
+                                        path = path.reduce((pre,cur,index)=>{
+                                            if(index%2===0){
+                                                pre.push(cur)
+                                            }else{
+                                                pre[pre.length-1]+=`,${cur}`
+                                            }
+                                            return pre
+                                        },[])
                                         path = path.map(item => {
                                             let point= {
                                                 lat:`${item.split(',')[1]}`,
@@ -1117,8 +1155,27 @@ export default {
                                         })
                                         steps = steps.concat(path)
                                     }
+
                                     routes = routes.concat(steps)
+                                }else if(res.result?.routes){
+                                    for(let route of res.result.routes){
+                                    
+                                        let steps = []
+                                        for(let step of route.steps){
+                                            let path = step.path.split(';')
+                                            path = path.map(item => {
+                                                let point= {
+                                                    lat:`${item.split(',')[1]}`,
+                                                    lng:`${item.split(',')[0]}`,
+                                                }
+                                                return point
+                                            })
+                                            steps = steps.concat(path)
+                                        }
+                                        routes = routes.concat(steps)
+                                    }
                                 }
+                                
                                 this.reqPaths = routes.map(item => item)
                                 // console.log('routes',routes)
                                 let points = []
