@@ -60,6 +60,10 @@ export function LoadScript(src) {
 			resolve(BMap);
 			return true;
 		}
+		if (typeof BMapGL !== "undefined") {
+			resolve(BMapGL);
+			return true;
+		}
 		// // 百度地图异步加载回调处理
 		// window.onBMapCallback = function () {
 		//   console.log("百度地图脚本初始化成功...");
@@ -72,7 +76,7 @@ export function LoadScript(src) {
 		// 引入成功
 		scriptNode.onload = function () {
 			console.log('js资源已加载成功了')
-			resolve(BMap);
+			resolve();
 		}
 		// 引入失败
 		scriptNode.onerror = function (err) {

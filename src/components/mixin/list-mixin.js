@@ -1493,12 +1493,15 @@ export default {
             console.error(error);
           }
         }
+        if(!divCond?.length&&this.buildDivCond()?.length){
+          divCond = this.buildDivCond()
+        }
         if(divCond?.length){
           // 分表查询条件 2024.1.12新增，传到详情页面 
-          const divObj = [0]
+          const divObj = divCond[0]
           if(divCond?.length===1&&Array.isArray(divObj?.value)&&divObj.value.length>1){
             // 直接将分表参数拼接到url上
-            urlParams+= `divCol=${divObj.colName}&divStartVal=${divObj.value[0]}&divEndVal=${divObj.value[1]}`
+            urlParams+= `&divCol=${divObj.colName}&divStartVal=${divObj.value[0]}&divEndVal=${divObj.value[1]}`
           }else{
             // 分表参数以数组格式传到url上
             urlParams+=`&divCond=${encodeURIComponent(JSON.stringify(divCond))}`
