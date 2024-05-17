@@ -128,8 +128,18 @@
                 :key="index"
                 :name="col + '_prepend_' + (index)"
               >
+
+<!--                <simple-add-->
+<!--                  :approvalFormMode="approvalFormMode"-->
+<!--                  ref="basicForms"-->
+<!--                  :service="'srvledu_practice_activity_reced_add'"-->
+<!--                  :childForeignkey='childForeignkey'-->
+<!--                ></simple-add>-->
+
+<!--                <iframe :src="`/dataview/#/sheet/${item.service_name}`" frameborder="0" style="width: 100%;height: 100%"></iframe>-->
+
                 <child-list
-                  
+
                 :mainService="service"
                   :pageIsDraft="pageIsDraft"
                   :key="index"
@@ -157,6 +167,7 @@
                   @inline-list-loaded="onChildInlineListLoaded"
                 >
                 </child-list>
+
               </el-collapse-item>
             </template>
           </el-collapse>

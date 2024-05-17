@@ -8,7 +8,8 @@ export default {
     },
     computed: {
         saveWidthBtn(){
-            if(Object.keys(this.columnWidthMap)?.length>0){
+            const roles = sessionStorage.getItem('current_login_user')?.roles||[];
+            if( roles.includes('admin') && Object.keys(this.columnWidthMap)?.length>0){
                 return wrapButton({
                     more_config:"",
                     _moreConfig:{},

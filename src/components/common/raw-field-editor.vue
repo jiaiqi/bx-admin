@@ -368,7 +368,9 @@ export default {
       return !this.field.evalEditable();
     },
     queryInitValue(){
-      return this.field.info.queryInitValue
+      return {
+        ...this.field.info?.queryInitValue||{},
+      }
     },
     dateRangePickerOptions(){
       if (this.queryInitValue?.query_scope_max) {
