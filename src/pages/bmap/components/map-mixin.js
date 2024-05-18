@@ -1136,7 +1136,7 @@ export default {
             // if(point2?.length){
             //     params.destination = `${point2[0].y},${point2[0].x}`
             // }
-            // params.inputCrs = 'gcj02ll'
+            params.inputCrs = 'wgs84ll'
             params.outputCrs='wgs84ll'
           }
           url = `${mapApi}`

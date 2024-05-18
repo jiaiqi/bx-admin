@@ -1075,7 +1075,6 @@ export default {
                 res = res.data
                 if(res.state == "SUCCESS"){
                     self.loadStations = []
-                    debugger
                     self.loadStations = res.data.filter((item,index) => {
                         if(item['grantry_type'] !== '虚拟门架'){
                             switch (item['category']) {
