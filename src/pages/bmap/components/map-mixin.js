@@ -12,7 +12,7 @@ import bludArrow from '../assets/icon/Icon_road_blue_arrow.png'
 
 import car from '../assets/icon/car.png'
 
-import {getBaiduMapApi} from './api.js'
+import {geoconv, getBaiduMapApi} from './api.js'
 import {over} from 'lodash'
 
 let activeLineColor = 'rgb(40, 189, 108)'
@@ -21,9 +21,9 @@ let activeLineColor = 'rgb(40, 189, 108)'
 let bMapApi = sessionStorage.getItem('bMapApi')
 
 if (!bMapApi) {
-  // bMapApi = 'http://30.61.1.37:8519/route/v1/route'
+  bMapApi = 'http://30.61.1.37:8519/route/v1/route'
   // bMapApi = '/route/v1/route'
-  bMapApi = '/baiduApi/direction/v2/driving'
+//   bMapApi = '/baiduApi/direction/v2/driving'
   // bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
   // bMapApi = 'https://api.map.baidu.com/direction/v2/driving'
   sessionStorage.setItem('bMapApi', bMapApi)
@@ -1078,7 +1078,7 @@ export default {
       }
 
     },
-    getDriving(type) {
+    async getDriving(type) {
       let self = this
       let mapApi = bMapApi;
       let url = ''
@@ -1126,15 +1126,26 @@ export default {
             // 百度地图开放平台 waypoints使用竖线作为分隔符
             // // https://lbs.baidu.com/faq/api?title=webapi/webservice-direction/dirve
             params['waypoints'] = params['waypoints'].replaceAll('|', ';')
+            // debugger
+            // const point1= await geoconv(params.origin.split(',').reverse().toString())
+            // const point2= await geoconv(params.destination.split(',').reverse().toString())
+            // debugger
+            // if(point1?.length){
+            //     params.origin = `${point1[0].y},${point1[0].x}`
+            // }
+            // if(point2?.length){
+            //     params.destination = `${point2[0].y},${point2[0].x}`
+            // }
+            // params.inputCrs = 'gcj02ll'
+            params.outputCrs='wgs84ll'
           }
+          url = `${mapApi}`
           if (url?.includes('route/v1/route')) {
             // 专网接口
             params['ApiAuthorization'] = 'USER_AK'
           } else {
             params['ak'] = `${loadLine.params['ak']}`
           }
-          url = `${mapApi}`
-
           if (Array.isArray(loadLine['points']) && loadLine['points'].length > 0) {
             // getroute(url,params).then(res => { //mockdata
             getBaiduMapApi(url, params).then(res => {
@@ -1146,6 +1157,16 @@ export default {
                 if (!res.result?.routes && res.result?.steps) {
                   // 专网接口
                   let steps = []
+                  let points = res.result.points.split(';')
+                // if(points?.length){
+                //     for (const path of points) {
+                //         const arr = path.split(',')
+                //         steps.push({
+                //             lat:arr[1],
+                //             lng:arr[0]
+                //         })
+                //     }
+                // }
                   for (let step of res.result?.steps) {
                     // let path = step.path.split(';')
                     let path = step.path.split(',')
