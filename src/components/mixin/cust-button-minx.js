@@ -506,6 +506,14 @@ export default {
       }
       // if ("新TAB" == item.operate_mode) {
         window.open(address, "_blank");
+        // this.getFileFromUrl(address,'img').then(file=>{
+        //   let a = document.createElement('a')
+        //   a.download = file.name
+        //   let href = URL.createObjectURL(file)
+        //   a.href = href
+        //   a.click()
+        //   URL.revokeObjectURL(href)
+        // })
       // } else {
       //   this.addTabByUrl(address,item.button_name)
       // }
@@ -717,12 +725,38 @@ export default {
         this.forwardAddTab(address, _tab_title, item);
       }
     },
+    //
+getFileFromUrl(url, fileName) {
+  return new Promise((resolve, reject) => {
+      var blob = null;
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", url);
+      xhr.setRequestHeader('Accept', 'image/jpg');
+      xhr.responseType = "blob";
+      // 加载时处理
+      xhr.onload = () => {
+        // 获取返回结果
+          blob = xhr.response;
+          let file= new File([blob], fileName, { type: 'image/jpg' });
+          // 返回结果
+          resolve(file);
+      };
+      xhr.onerror = (e) => {
+          reject(e)
+      };
+      // 发送
+      xhr.send();
+  });
+},
+
     /**
      * url跳转前置处理
      */
     url_pre_data_handle(item, operateData, mainDetailData) {
       let self = this;
-
+      if(!top.pathConfig.gateway){
+        top.pathConfig.gateway = window.backendIpAddr
+      }
       var back_url = "";
       var pre_data_handle = item.pre_data_handle;
       if (
