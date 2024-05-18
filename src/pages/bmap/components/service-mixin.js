@@ -5,6 +5,7 @@ import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
+import {getpassconv, getpassconvpath} from "../assets/mockData";
 
 let waypointsLen = 20  // 最大途径点 包含起终点数量
 export default {
@@ -39,7 +40,16 @@ export default {
         }
     },
     computed:{
-        
+        waypointsSeparator(){
+            if(sessionStorage.getItem('bMapApi')?.includes('/route/v1/route')){
+                // 百度地图专网接口 waypoints使用分号作为分隔符
+                return ';'
+            }else{
+                // 百度地图开放平台 waypoints使用竖线作为分隔符
+                // https://lbs.baidu.com/faq/api?title=webapi/webservice-direction/dirve
+                return '|'
+            }
+        },
         initLinks(){
             // 初始化所有路径
             let self = this
@@ -488,6 +498,7 @@ export default {
                 divCond
                 // srvAuth
               ).then(res => {
+            // getpassconv().then(res=>{ //mockData
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
@@ -561,6 +572,7 @@ export default {
                     divCond
                     // srvAuth
                 )
+               //  const resp = await getpassconvpath() //mockData
                 res = resp.data
 
             }
@@ -1062,6 +1074,7 @@ export default {
                 res = res.data
                 if(res.state == "SUCCESS"){
                     self.loadStations = []
+                    debugger
                     self.loadStations = res.data.filter((item,index) => {
                         if(item['grantry_type'] !== '虚拟门架'){
                             switch (item['category']) {

@@ -484,6 +484,8 @@ import { getBaiduMapApi } from "./api.js";
 
 import mapMixin from "./map-mixin.js"; // 地图相关
 import srvMixin from "./service-mixin.js"; // 业务相关
+
+import mockData, {getpassconvdetail} from "../assets/mockData";
 export default {
   name: "bmap-web",
 
@@ -812,6 +814,7 @@ export default {
         condition: [],
         page: { pageNo: 1, rownumber: 100 },
       };
+      // const res = await getpassconvdetail() //mockData
       const res = await this.$http.post(url, req)
       if(res?.data?.state==='SUCCESS'){
         this.pointList = res.data.data
