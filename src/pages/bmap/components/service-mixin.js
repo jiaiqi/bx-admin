@@ -194,6 +194,7 @@ export default {
                 
                 if(self.modeUrl == '/bmap/editor/' && keyNo && self.loadPassconvPath[keyNo]){
                     // 路径可视化
+                    debugger
                     loadStationsDatas = self.loadPassconvPath[keyNo].map((item,index) => {
                         item['_type'] = 'point'
                         item['_seq'] = index + 1
@@ -1271,7 +1272,7 @@ export default {
                 console.log('新增门架列表更新',nval)
                 if(Array.isArray(nval) && this.isEditorNews){
                     this.$nextTick(() => {
-
+                        debugger
                        this.addNewPointMarkers(nval)
                     })
                 }
