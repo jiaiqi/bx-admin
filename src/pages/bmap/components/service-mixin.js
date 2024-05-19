@@ -40,6 +40,35 @@ export default {
         }
     },
     computed:{
+        buildDivCond(){
+            let divCond = []
+            let entime = this.$route.query.entime || this.$route.params.entime
+            let extime = this.$route.query.extime || this.$route.params.extime
+            divCond =  [{
+                "colName":"entime",
+                "ruleType":"in",
+                "value":[`${entime}`,`${extime}`]
+            }]
+            var operate_params = this.getOperateParams();
+            if (operate_params) {
+              var operate_Object = JSON.parse(operate_params);
+              if (operate_Object["divCond"]) {
+                divCond.push(operate_Object["divCond"])
+              }
+            }
+            return divCond
+        },
+        buildCond(){
+            let cond = []
+            var operate_params = this.getOperateParams();
+            if (operate_params) {
+              var operate_Object = JSON.parse(operate_params);
+              if (operate_Object["condition"]) {
+                cond.push(...operate_Object["condition"])
+              }
+            }
+            return cond
+        },
         waypointsSeparator(){
             if(sessionStorage.getItem('bMapApi')?.includes('/route/v1/route')){
                 // 百度地图专网接口 waypoints使用分号作为分隔符
@@ -479,6 +508,7 @@ export default {
                 "ruleType":"in",
                 "value":[`${entime}`,`${extime}`]
             }]
+            divCond = this.buildDivCond
             self.select(
                 srv,
                 conds,
@@ -545,7 +575,10 @@ export default {
                 "ruleType":"in",
                 "value":[`${entime}`,`${extime}`]
             }]
-
+            // divCond = this.buildDivCond
+            if(this.buildCond?.length){
+               conds = this.buildCond
+            }
             let res = {}
             if(this.pathData?.length ){
                 res = {
