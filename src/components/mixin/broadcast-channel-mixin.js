@@ -2,6 +2,7 @@ export default {
   data() {
     return {
       broadcastChannel: null,
+      broadCastName:null,
     };
   },
   beforeDestroy() {
@@ -17,6 +18,10 @@ export default {
     }
   },
   methods: {
+    initBroadcastChannel(str='') {
+      this.broadCastName = new Date().getTime()+`_str`
+      this.broadcastChannel = new BroadcastChannel(this.broadCastName);
+    },
     bcPostMessage(type, event) {
       // 通过broadcastChannel广播消息
       if (this.broadcastChannel?.postMessage) {

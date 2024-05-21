@@ -254,8 +254,6 @@ export default {
       })
     },
     onClickNewPoint(e) {
-      console.log(e)
-      debugger
       let self = this
       this.$set(this, 'activeNewPoint', e)
       let BMap = this.BMap
@@ -509,7 +507,6 @@ export default {
         self.removeOverlays(line)
 
       }
-      debugger
       this.BMap.addOverlay(polyline);
       // polyline.setTitle("Custom Data");
       polyline['_data'] = this.bxDeepClone(line)
@@ -739,7 +736,6 @@ export default {
           marker.addEventListener('dragend', function (event) {
             console.log('标注已移动至：' + event.point.lng + ', ' + event.point.lat, event.target['_data'].uid);
             let point = self.bxDeepClone(event.target['_data'])
-            debugger
             if (event.latLng) {
               event.point = event.latLng
             }
@@ -803,7 +799,6 @@ export default {
       }
       overlays = self.BMap.getOverlays() // 地图覆盖物
       if (Array.isArray(waypoints) && waypoints.length > 0) {
-        debugger
         let oldIds = []
         for (let pIndex in waypoints) {
 
@@ -1215,7 +1210,6 @@ export default {
                 line['end'] = this.bxDeepClone(loadLine.end)
                 if (this.modeUrl == '/bmap/editor/') {
                   // 如果时路径校准地图时 ， marker 使用全部点 all_points  存在拆线情况
-                  debugger
                   line['all_points'] = this.bxDeepClone(loadLine.all_points)
 
                 }

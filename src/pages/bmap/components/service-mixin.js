@@ -194,7 +194,6 @@ export default {
                 
                 if(self.modeUrl == '/bmap/editor/' && keyNo && self.loadPassconvPath[keyNo]){
                     // 路径可视化
-                    debugger
                     loadStationsDatas = self.loadPassconvPath[keyNo].map((item,index) => {
                         item['_type'] = 'point'
                         item['_seq'] = index + 1
@@ -1075,7 +1074,6 @@ export default {
                 res = res.data
                 if(res.state == "SUCCESS"){
                     self.loadStations = []
-                    debugger
                     self.loadStations = res.data.filter((item,index) => {
                         if(item['grantry_type'] !== '虚拟门架'){
                             switch (item['category']) {
@@ -1272,7 +1270,6 @@ export default {
                 console.log('新增门架列表更新',nval)
                 if(Array.isArray(nval) && this.isEditorNews){
                     this.$nextTick(() => {
-                        debugger
                        this.addNewPointMarkers(nval)
                     })
                 }

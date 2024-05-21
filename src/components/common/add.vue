@@ -137,9 +137,9 @@
 <!--                ></simple-add>-->
 
 <!--                <iframe :src="`/dataview/#/sheet/${item.service_name}`" frameborder="0" style="width: 100%;height: 100%"></iframe>-->
-
+<!--                <custom-frame :name="item.service_name" :data="item"></custom-frame>-->
                 <child-list
-
+                :item="item"
                 :mainService="service"
                   :pageIsDraft="pageIsDraft"
                   :key="index"
@@ -268,12 +268,14 @@ import ChildList from "./child-list.vue";
 import SimpleAdd from "./simple-add.vue";
 import ParentChildMixin from '../mixin/parent-child-mixin'
 import FieldRedundantMixin from '../mixin/field-redundant-mixin'
+import customFrame from "../feature/custom-frame.vue";
 
 export default {
   name: "add",
   components: {
     SimpleAdd,
     ChildList,
+    customFrame
   },
   mixins: [ ParentChildMixin, FieldRedundantMixin ],
   props: {

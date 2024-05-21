@@ -71,6 +71,7 @@
        * @returns {*} an array of queries
        */
       buildQuery: function (conf, rtDataCtx) {
+        debugger
         let queries = [];
         if (conf.itemsFunc && conf.itemsPolicy === "servicePerItem") {
           let clone = _.cloneDeep(conf);

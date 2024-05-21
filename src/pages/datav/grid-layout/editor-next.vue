@@ -883,7 +883,6 @@ export default {
           serviceName: "srvpage_cfg_page_component_add",
           data: [],
         };
-        debugger
         layout.forEach((item, i) => {
           addObj.data.push({
             com_name: item.data.com_type_name,
@@ -1002,7 +1001,6 @@ export default {
         if (arrUpdateLayout.length > 0) {
           await this.saveService("update", arrUpdateLayout);
         }
-        debugger
         layout.forEach((item, i) => {
           if (!item.id) {
             // 新增组件

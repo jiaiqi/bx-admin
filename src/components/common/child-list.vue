@@ -54,6 +54,7 @@
       @grid-data-changed="$emit('grid-data-changed', $event)"
       @standby-row-added="onStandbyRowAdded"
       v-else-if="foreignKey.view_model == 'mlist'"></tableEdit>
+    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-else-if="'addchildlist'===listType &&item&&item.service_name"></custom-frame>
     <list
       ref="list"
       :key="service"
@@ -93,6 +94,8 @@
       @standby-row-added="onStandbyRowAdded"
     >
     </list>
+<!--    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-if="item&&item.service_name"></custom-frame>-->
+
   </div>
 </template>
 
@@ -104,13 +107,15 @@ import Treegrid from "./treegrid.vue";
 import ListProc from './listproc.vue'
 import ChildListMixin from "../mixin/child-list-mixin"
 
-import tableEdit from "./table-edit.vue"  // 新增的增强表格
+import tableEdit from "./table-edit.vue"
+import customFrame from "../feature/custom-frame.vue";  // 新增的增强表格
 
 /**
  * 子表组件， 主要是处理外键相关的逻辑： 例如外籍列、外键disp列隐藏；添加行数据自动添加外键列的值。
  */
 export default {
   components: {
+    customFrame,
     Treegrid,
     SimpleUpdate,
     SimpleAdd,
@@ -127,6 +132,7 @@ export default {
     }
   },
   props: {
+    item:Object,
     defaultCondition: {
       type: Array,
       default: function () {
@@ -307,7 +313,9 @@ export default {
     buildRunQuries () {
       if(this.$refs.mlist){
         return this.$refs.mlist.buildMlistRunQuries(this.foreignKey);
-      }else{
+      }else if(this.$refs.frameList){
+        return this.$refs.frameList?.buildRunQuries()
+      } else{
         return this.$refs.list.buildRunQuries(this.foreignKey);
       }
       
