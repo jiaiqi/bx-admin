@@ -41,6 +41,29 @@ export function getBxSrv(srv,type,params) {
   
 }
 
+export const geoconv = async(pointsStr)=>{
+// const result = []
+// if(points?.length){
+  let url = `http://30.61.1.37:8519/search/v1/geoconv?from=1&to=5&coords=${pointsStr}&ApiAuthorization=USER_AK`
+  // url+=points.reduce((pre,cur)=>{
+  //   pre+=`${cur.lng},${cur.lat};`
+  //   return pre
+  // },'')
+  const res = await axios({
+    url,
+    method:'GET'
+  })
+  if(res?.data?.status===0){
+    return res.data.result
+    // return points.map((item,index)=>{
+    //   item.lat = res.data.data[index]['y']
+    //   item.lng = res.data.data[index]['x']
+    // })
+    // res.data.result
+  }
+// }
+}
+
 
 
 
