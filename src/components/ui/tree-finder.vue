@@ -8,7 +8,7 @@
   >
     {{ field.getDispVal4Read() }}
   </a>
-  <el-input v-else-if="field.getSrvVal()&&noData" clearable @clear="onClear()" :value="field.getSrvVal()"></el-input>
+<!--  <el-input v-else-if="field.getSrvVal()&&noData" clearable @clear="onClear()" :value="field.getSrvVal()"></el-input>-->
   <el-cascader
     v-else
     :placeholder="field.info.placeholder"
@@ -201,9 +201,9 @@ export default {
       return this.$http.post(url, params).then(response => {
         this.noData = false;
         if (response && response.data && response.data.data) {
-          if(response.data.data.length === 0){
-            this.noData = true;
-          }
+          // if(response.data.data.length === 0){
+          //   this.noData = true;
+          // }
           let options = response.data.data.map(item => {
             item.children = item.is_leaf === "是" ? null : [];
             return item;

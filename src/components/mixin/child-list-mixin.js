@@ -74,7 +74,6 @@ export default {
                     initData[key] = item[this.initDataMap[key]]
                   }
                 }
-                
                 return initData
               })
               console.log(options)

@@ -1,4 +1,12 @@
 const host = window.backendIpAddr || window.pathConfig?.gateway
+import {$axios as $http} from "@/pages/datav/common/http.js";
+
+const request = async (params)=>{
+  const res = await $http(params)
+  if(res.data){
+    return res.data
+  }
+}
 
 export function getV2(data, app) {
   // 查询v2
@@ -23,6 +31,7 @@ export function setRequest(req, type, srv, app = 'sso') {
 export function sendCode(data, app) {
   //  获取普通验证码
   let srvApp = app || 'ws'
+  sessionStorage.setItem('bx_auth_ticket',null)
   return request({
     url: `${host}/${srvApp}/operate/srvmobile_note_send`,
     method: 'POST',

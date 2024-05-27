@@ -434,8 +434,12 @@ export default {
                                 let p = this.bxDeepClone(nItem['points'][pIndex])
                                 if(pIndex != '0' && pIndex != `${nItem['points'].length - 1}`){
                                     let str = `${p.lat},${p.lng}`
-                                    nItem['params']['waypoints_str'].push(str)
-                                    nItem['params']['waypoints'].push(this.bxDeepClone(p))
+                                    if(p.lat&&p.lng){
+                                        nItem['params']['waypoints_str'].push(str)
+                                        nItem['params']['waypoints'].push(this.bxDeepClone(p))
+                                    }else{
+                                        console.log('当前途径点没有经纬度信息：',p)
+                                    }
                                     // console.log("obj['params']['waypoints_str']",obj['params']['waypoints_str'],obj['params'].waypoints,obj['params']['waypoints_str'].join('|'))
                                 }
                             }
@@ -551,6 +555,14 @@ export default {
             // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
             let passid = this.no
             let srv = 'srvaud_passconvpath_select';
+            // 使用url传的服务
+            let operate_params = this.getOperateParams();
+            if (operate_params) {
+                let operate_Object = JSON.parse(operate_params);
+                if (operate_Object["serviceName"]) {
+                    srv = operate_Object.serviceName
+                }
+            }
             let srvAuth = 'aud'
             let conds = [
                 {

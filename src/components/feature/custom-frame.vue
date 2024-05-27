@@ -8,11 +8,13 @@ export default {
     src: {
       type: String
     },
-    name: {
+    serviceName: {
       type: String,
       default: "broadCast"
     },
-    data: Object
+    colSrv:String,
+    data: Object,
+    memInitdatasAdd:Array
   },
   data() {
     return {
@@ -21,9 +23,24 @@ export default {
       listData: null
     }
   },
+  watch: {
+    memInitdatasAdd: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        this.emit({
+          type:'initDataChange',
+          data:newValue
+        })
+      }
+    }
+  },
   computed: {
     frameSrc() {
-      let src = `/dataview/#/childList/add/${this.broadCastName}/ledu/srvledu_practice_activity_reced_select`
+      let src = `/dataview/#/childList/add/${this.broadCastName}/ledu/${this.serviceName}`
+      if(this.colSrv&&this.colSrv!==this.serviceName){
+        src+=`?colSrv=${this.colSrv}`
+      }
       return src
     },
     getData() {
@@ -31,7 +48,7 @@ export default {
     }
   },
   mounted() {
-    this.initBroadcastChannel(this.name)
+    this.initBroadcastChannel(this.serviceName)
   },
   methods: {
     buildRunQuries() {
@@ -67,6 +84,7 @@ export default {
     emit(data = {}) {
       // 通过broadcastChannel广播消息
       if (this.broadcastChannel?.postMessage) {
+        console.log('emit::',data)
         this.broadcastChannel.postMessage(JSON.stringify(data));
       }
     },

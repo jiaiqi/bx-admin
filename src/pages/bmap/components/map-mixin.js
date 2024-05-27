@@ -21,10 +21,10 @@ let activeLineColor = 'rgb(40, 189, 108)'
 let bMapApi = sessionStorage.getItem('bMapApi')
 
 if (!bMapApi) {
-  bMapApi = 'http://30.61.1.37:8519/route/v1/route'
+  // bMapApi = 'http://30.61.1.37:8519/route/v1/route'
   // bMapApi = '/route/v1/route'
-//   bMapApi = '/baiduApi/direction/v2/driving'
-  // bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
+  // bMapApi = '/baiduApi/direction/v2/driving'
+  bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
   // bMapApi = 'https://api.map.baidu.com/direction/v2/driving'
   sessionStorage.setItem('bMapApi', bMapApi)
 }
@@ -172,10 +172,14 @@ export default {
               // 途径点参数
               for (let i in line.waypoints) {
                 let p = line.waypoints[i]
-                if (i == 0) {
-                  line['params']['waypoints_str'] += `${p.lat},${p.lng}`
-                } else {
-                  line['params']['waypoints_str'] += `|${p.lat},${p.lng}`
+                if(p.lat&&p.lng){
+                  if (i == 0) {
+                    line['params']['waypoints_str'] += `${p.lat},${p.lng}`
+                  } else {
+                    line['params']['waypoints_str'] += `|${p.lat},${p.lng}`
+                  }
+                }else{
+                  console.log('当前途径点没有经纬度：',p)
                 }
 
               }

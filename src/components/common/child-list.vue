@@ -54,7 +54,7 @@
       @grid-data-changed="$emit('grid-data-changed', $event)"
       @standby-row-added="onStandbyRowAdded"
       v-else-if="foreignKey.view_model == 'mlist'"></tableEdit>
-    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-else-if="'addchildlist'===listType &&item&&item.service_name"></custom-frame>
+    <custom-frame :mem-initdatas-add="initDatas" ref="frameList" :key="childListService" :col-srv="childListService" :service-name="item.service_name" :data="item" v-else-if="'addchildlist'===listType &&item&&item.service_name"></custom-frame>
     <list
       ref="list"
       :key="service"
@@ -133,15 +133,6 @@ export default {
   },
   props: {
     item:Object,
-    defaultCondition: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    },
-    foreignKey: {
-      type: Object
-    },
     name: {
       type: String,
       default: 'child'
@@ -292,7 +283,29 @@ export default {
       } else {
         return false
       }
-    }
+    },
+    serviceMoreConfig(){
+      if(this.childListConfig?.more_config){
+        return JSON.parse(this.childListConfig?.more_config)
+      }
+    },
+    childListService(){
+      let result = null
+      let mainData = this.mainFormDatas;
+      if(this.serviceMoreConfig?.serviceMap){
+        Object.keys(this.serviceMoreConfig.serviceMap).forEach(service => {
+          if(this.serviceMoreConfig.serviceMap[service]){
+            if(eval(this.serviceMoreConfig.serviceMap[service]) === true){
+              result = service
+            }
+          }
+        })
+      }
+      if(!result){
+        result = this.item?.service_name
+      }
+      return result
+    },
   },
   created: function () {
 

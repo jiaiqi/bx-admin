@@ -1493,7 +1493,7 @@ export default {
             console.error(error);
           }
         }
-        if(!divCond?.length&&this.buildDivCond()?.length){
+        if(!divCond?.length&&this.buildDivCond?.()?.length){
           divCond = this.buildDivCond()
         }
         if(divCond?.length){
@@ -2048,7 +2048,7 @@ export default {
               this.vpageNo,
               null,
               null,
-              this.buildDivCond()
+              this.buildDivCond?.()
             ).then(response => {
 
               if(response.body.resultCode == '0011'){
@@ -2696,7 +2696,7 @@ export default {
               null,
               null,
               null,
-              this.buildDivCond()
+              this.buildDivCond?.()
             ).then(response => {
 
               var dataResult = response.body.data;

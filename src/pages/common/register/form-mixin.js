@@ -315,6 +315,9 @@ export default {
     change(e,msg,valid = true){
       let self = this
       console.log(e.value)
+      if(e.column==='sms_code'){
+        this.$set(this.form,'code',e.value)
+      }
       let valids = {}
       for(let field of this.formFields){
         if(e.column == field.column){
@@ -516,14 +519,6 @@ export default {
     }
   },
   watch:{
-    // "contentText":{
-    //     deep:true,
-    //     handler:function(nval,oval){
-    //         // console.log(nval,oval)
-    //         if(this.type == `mediaDetails` && this.contentText){
-    //             this.getDetail(this.contentText)
-    //         }
-    //     }
-    // },
+
   }
 }

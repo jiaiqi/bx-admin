@@ -33,7 +33,7 @@ style="display: none;" -->
 import { deleteFile } from './api'
 export default {
   props: {
-    initNo:{
+    value:{
       type:String,
       default(){
         return ''
@@ -88,12 +88,11 @@ export default {
     },
     no(){
       let no = ''
-      if(this.initNo){
-        no = this.initNo
+      if(this.value){
+        no = this.value
       }else if(this.loadNo){
         no = this.loadNo
       }
-
       return no
     },
     formData(){
@@ -171,7 +170,6 @@ export default {
           deleteFile(req).then(res => {
             if(res.resultCode == 'SUCCESS'){
               self.getInfoFiles()
-
             }
 
           })
@@ -224,7 +222,7 @@ export default {
         if(!this.no){
           this.$set(this,'loadNo',res.file_no)
         }
-
+        this.$emit('input',res.file_no)
         this.files.push(res)
       }
 

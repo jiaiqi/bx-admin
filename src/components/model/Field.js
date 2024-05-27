@@ -207,7 +207,7 @@ export class Field {
     }else {
       this.model = srvVal;
       // 如果原始值为 “” || null 时 调用默认值配置表达式，有的话则复制
-      if((srvVal === "" || srvVal === null || srvVal === undefined) && this.hasInitValueExpr()){
+      if((srvVal === "" || srvVal === null || srvVal === undefined) && this.hasInitValueExpr()&&!["",null,undefined].includes(this.evalInitValueExpr())){
         this.model = this.setSrvVal(this.evalInitValueExpr())
         console.log("默认值",srvVal,this.model,this.setSrvVal(this.evalInitValueExpr()))
       } 
