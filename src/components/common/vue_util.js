@@ -947,7 +947,8 @@ function init_util() {
     let page = {
       title: tab_title,
       url: address,
-      icon: ""
+      icon: "",
+      app:button?.application
     };
 
     if (button && button.more_config && button.more_config.indexOf('openInCurrentTab') !== -1) {

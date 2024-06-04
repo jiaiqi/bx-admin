@@ -483,6 +483,9 @@ export class FieldInfo {
       if(key==='js_validate'){
         subparts = part.split("js_validate=");
       }
+      if(key==='pattern'){
+        subparts = part.split("ngPattern=");
+      }
       let val = subparts.length > 1 ? subparts[1].trim() : true;
       if (key == 'min' || key == 'max') {
         val = Number.parseInt(val);

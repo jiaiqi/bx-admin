@@ -491,6 +491,10 @@ export default {
       }
 
       let app = this.$srvApp && this.field.evalFormExpr(this.$srvApp, "");
+      // app配置了this或者data.app的 使用当前app
+      if(app === 'this' || (!app && loader?.srvApp?.includes('data.app'))){
+        app = sessionStorage.getItem('current_app')
+      }
       if (this.$srvApp && !app) {
         // 使用了动态srvApp，但是eval结果出错，取消查询
         cb([]);
