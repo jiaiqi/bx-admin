@@ -151,9 +151,18 @@ const getDoorFrameData = async () => {
 }
 
 const getPathData = async () => {
-  const service = `srvaud_susvehpasspath_select`
+  // 获取途径点
+  let operateParams = route?.query?.operate_params;
+  if(operateParams){
+    try {
+      operateParams = JSON.parse(operateParams);
+    } catch (error) {
+      
+    }
+  }
+  const service = operateParams?.serviceName || `srvaud_susvehpasspath_select`
   const url = `${window.backendIpAddr}/aud/select/${service}`
-  const cond = [
+  let cond = [
     {
       "colName": "passid",
       "ruleType": "eq",
@@ -163,6 +172,9 @@ const getPathData = async () => {
     {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}
 
   ]
+  if(operateParams?.condition?.length){
+    cond = [...operateParams.condition]
+  }
   const req = {
     "serviceName": service,
     "colNames": ["*"],
