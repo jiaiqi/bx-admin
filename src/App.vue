@@ -8,7 +8,7 @@
 import momentLib from "moment";
 import extjs from "./components/test/extjs.js";
 import dummy from "./components/test/spa_mock.js";
-import {LoadScript} from './common/common'
+import { LoadScript } from './common/common'
 export default {
   name: "App",
   data() {
@@ -16,10 +16,10 @@ export default {
       ready: false
     };
   },
-  created(){
-    if(this.$route?.query?.bx_auth_ticket){
-      sessionStorage.setItem('bx_auth_ticket',this.$route?.query?.bx_auth_ticket)
-      localStorage.setItem('bx_auth_ticket',this.$route?.query?.bx_auth_ticket)
+  created() {
+    if (this.$route?.query?.bx_auth_ticket) {
+      sessionStorage.setItem('bx_auth_ticket', this.$route?.query?.bx_auth_ticket)
+      localStorage.setItem('bx_auth_ticket', this.$route?.query?.bx_auth_ticket)
     }
   },
   mounted() {
@@ -30,11 +30,11 @@ export default {
       // const bMapSrc = `${location.protocol}//30.61.1.37:8119/dugis-demo-3d/api/api.js`
       const bMapGLSrc = `${location.protocol}//api.map.baidu.com/api?type=webgl&v=2.0&ak=${AK}`
       // LoadScript(bMapSrc).then((bmap)=>{
-        // console.log(bmap)
-        // setTimeout(() => {
-        this.$store.commit('setBMapLoaded', true)
-          
-        // }, 1000);
+      // console.log(bmap)
+      // setTimeout(() => {
+      this.$store.commit('setBMapLoaded', true)
+
+      // }, 1000);
       // })
     }
     init()
@@ -105,25 +105,29 @@ export default {
     }
   },
 
-  beforeMount: function() {
+  beforeMount: function () {
     dummy();
     window.debugExtjs ? this.testExtJs() : this.loadExtJs();
+    if (this.$route?.query?.viewMode === 'demo' || sessionStorage.getItem('viewMode') === 'demo') {
+      document.body.classList.add('is-demo')
+    }
   }
 };
 </script>
 
-<style>
+<style lang="scss">
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
-html{
+body {
   height: 100%;
   margin: 0;
   padding: 0;
 }
-body{
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -131,16 +135,151 @@ body{
   height: 100%;
   color: #2c3e50;
 }
+
 .el-input.is-disabled .el-input__inner {
   color: #303133 !important;
 }
+
 .el-textarea.is-disabled .el-textarea__inner {
   color: #303133 !important;
 }
-.customDialogClass{
+
+.customDialogClass {
   .el-dialog__body {
-      padding: 10px 20px!important;
+    padding: 10px 20px !important;
   }
 }
 
+
+.is-demo {
+
+  // 原型图样式
+  .el-checkbox__input.is-checked+.el-checkbox__label {
+    color: #666;
+  }
+
+  .el-checkbox__input.is-checked .el-checkbox__inner,
+  .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+    background-color: #666;
+    border-color: #666;
+  }
+
+  .el-checkbox__inner {
+    border-color: #666;
+  }
+
+  .el-input__inner::-webkit-input-placeholder {
+    color: #666!important;
+    font-size: 12px;
+  }
+
+  .el-collapse-item__header.is-active {
+    color: #333 !important;
+  }
+
+  .el-input__inner,
+  .el-textarea__inner {
+    border: 1px solid #999;
+    border-radius: 0;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .el-textarea__inner {
+    height: unset;
+  }
+
+  .el-form .el-form-item .el-form-item__label {
+    color: #666;
+
+    .normal {
+      color: #666 !important;
+    }
+  }
+
+  a {
+    color: #333 !important;
+  }
+
+  .el-form-item__label.required::before {
+    color: #666;
+  }
+
+  .el-button {
+    &.el-button--success {
+      background-color: #999;
+      border-color: #999;
+    }
+
+    i {
+      display: none;
+    }
+
+    &.el-button--primary {
+      color: #000;
+      background-color: #dbdbdb;
+      outline: none;
+      border-color: #dbdbdb;
+    }
+  }
+
+  .el-button--primary.is-plain {
+    color: #000;
+    background-color: #dbdbdb;
+    outline: none;
+    border-color: #dbdbdb;
+  }
+
+  .el-button--primary.is-plain:hover {
+    color: #000;
+
+    background-color: #dbdbdb;
+    outline: none;
+    border-color: #dbdbdb;
+  }
+
+  .el-table {
+    // 统一处理el-table样式
+    margin: 20px;
+
+    .el-table--border::after {
+      background-color: #8b8b8b;
+    }
+
+    th>.cell {
+      color: #333;
+    }
+
+    .cell {
+      color: #333;
+    }
+
+    th {
+      background-color: #dadada;
+
+    }
+
+    .hover-row,
+    .hover-row>td,
+    .current-row>td {
+      background-color: #ececec !important;
+    }
+
+    .el-table--border td,
+    .el-table--border th,
+    td,
+    th {
+      border-right: 1px solid #8b8b8b !important;
+      border-bottom: 1px solid #8b8b8b !important;
+    }
+
+    &.el-table--border,
+    &.el-table--group {
+      border-top: 1px solid #8b8b8b !important;
+      border-bottom: 1px solid #8b8b8b !important;
+      border-left: 1px solid #8b8b8b !important;
+      border-right: 1px solid #8b8b8b !important;
+    }
+  }
+}
 </style>
