@@ -16,8 +16,15 @@ const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
 }
-const getPic = (item, imgtype) => {
-  return `${window.backendIpAddr}/aud/get/gantry/img?gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}&imgtype=${imgtype||''}`
+const getPic = (item, imgtype,enType) => {
+  let url = `${window.backendIpAddr}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
+  if(enType){
+    url+=`&enextype=${enType}`
+  }
+  if(imgtype){
+    url+=`&imgtype=${imgtype}`
+  }
+  return url
 }
 const hideDialog = () => {
   centerDialogVisible.value = false
@@ -47,7 +54,7 @@ const hideDialog = () => {
             计费金额：{{ activity.fee_disp }}
           </div>
           <div v-if="activity.grantry_type==='收费站'">
-            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car')"></el-image>
+            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===data.length-1?'ex':'')"></el-image>
           </div>
           <div class="button" v-else>
             <el-button type="primary" size="mini" @click="showPicture(activity)"><i class="el-icon-download mr-2"></i>获取图片

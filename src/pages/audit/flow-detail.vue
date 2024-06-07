@@ -162,16 +162,17 @@ const getPathData = async () => {
   }
   const service = operateParams?.serviceName || `srvaud_susvehpasspath_select`
   const url = `${window.backendIpAddr}/aud/select/${service}`
-  let cond = [
-    {
-      "colName": "passid",
-      "ruleType": "eq",
-      "value": passid
-    },
+  let divCond = [
+    // {
+    //   "colName": "passid",
+    //   "ruleType": "eq",
+    //   "value": passid
+    // },
     // {"colName": "path_type", "ruleType": "eq", "value": '行驶路径'},
     {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}
 
   ]
+  let cond = [...divCond]
   if(operateParams?.condition?.length){
     cond = [...operateParams.condition]
   }
@@ -179,7 +180,7 @@ const getPathData = async () => {
     "serviceName": service,
     "colNames": ["*"],
     "condition": cond,
-    "divCond": cond
+    "divCond": divCond
   }
   const loading = Loading.service({
     lock: true,

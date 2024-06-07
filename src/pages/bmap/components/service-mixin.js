@@ -91,7 +91,7 @@ export default {
             let drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
             let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
             let reslines = []
-            // loadlinks = loadlinks.map(item => 
+            // loadlinks = loadlinks.map(item =>
             for(let item of loadlinks){
                 let obj = {}
                 if(this.modeUrl == '/bmap/editor/' || this.modeUrl == '/bmap/check'){
@@ -625,7 +625,7 @@ export default {
                 // console.log('分公司',res.data)
                 if(res.state == "SUCCESS"){
                     let passconvPaths = res.data.filter((item,index) =>{
-                        if(item['grantry_type'] !== '虚拟门架'){
+                        if(item['grantry_type'] !== '虚拟门架' && item.lng && item.lat){
                             item['name'] = item['tollgrantry_name']
                             item['_seq'] = index + 1
                             return item
