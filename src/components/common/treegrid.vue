@@ -946,6 +946,48 @@ export default {
             wrapButton(button, "row")
           );
 
+          let addButton = _.find(
+            this.gridButton,
+            item => item.button_type === "add"
+          );
+          if (addButton) {
+            this.addService = addButton.service_name;
+          }
+
+          if(!this.addService){
+
+            let importButton = _.find(
+              this.gridButton,
+              item => item.button_type === "import"
+            );
+            if(importButton){
+              this.addService = importButton.service_name;
+            }
+
+          }
+
+
+          let updateButton = _.find(
+            this.rowButton,
+            item => item.button_type === "edit"
+          );
+          if (updateButton) {
+            this.updateService = updateButton.service_name;
+          }
+
+          let deleteButton = _.find(
+            this.rowButton,
+            item => item.button_type === "delete"||item.button_type==='batch_delete'
+          );
+
+          if(!deleteButton) {
+            deleteButton = _.find(this.gridButton,item => item.button_type === "delete"||item.button_type==='batch_delete')
+          }
+          
+          if (deleteButton) {
+            this.deleteService = deleteButton.service_name;
+          }
+
           this.srv_cols = listData;
           this.noCol = response.body.data["no_col"];
           this.parentCol = response.body.data["parent_no_col"];

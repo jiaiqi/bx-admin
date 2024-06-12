@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import { Message as $message } from 'element-ui';
 export default {
   props: {
     disabled: {
@@ -97,7 +98,7 @@ export default {
         this.curSelect = null;
       }
     },
-    async getLocationFromSys() {
+    async getLocationFromSys(gpsId = null) {
       const serviceName = this.optionV2?.serviceName;
       if (!serviceName) {
         return;
@@ -117,6 +118,15 @@ export default {
           rownumber: 1,
         },
       };
+      if (gpsId) {
+        req.condition = [
+          {
+            colName: 'id',
+            ruleType: "eq",
+            value: gpsId
+          }
+        ]
+      }
       const url = this.getServiceUrl("select", serviceName, this.srvApp);
 
       const res = await this.$http.post(url, req);
@@ -164,6 +174,13 @@ export default {
       console.log(res);
       const resData = res?.data?.response?.[0]?.response?.effect_data?.[0];
       if (resData) {
+        if (resData?.id && !resData[this.optionV2.refed_col]) {
+          let gnoData = await this.getLocationFromSys(resData.id);
+          if (gnoData?.id&& gnoData[this.optionV2.refed_col]) {
+            console.log('gnoData::', gnoData);
+            resData = gnoData
+          }
+        }
         this.value = resData[this.optionV2.refed_col];
         this.$emit("on-selected", resData);
       } else if (res?.data?.state === 'FAILURE' && res.data.resultMessage) {
