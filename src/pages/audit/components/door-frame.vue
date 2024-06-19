@@ -53,6 +53,9 @@ const hideDialog = () => {
           <div class="item-list">
             计费金额：{{ activity.fee_disp }}
           </div>
+          <!-- <div class="item-list" v-if="activity.ljfyfee_disp">
+            路径反演金额：{{ activity.ljfyfee_disp }}
+          </div> -->
           <div v-if="activity.grantry_type==='收费站'">
             <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===data.length-1?'ex':'')"></el-image>
           </div>

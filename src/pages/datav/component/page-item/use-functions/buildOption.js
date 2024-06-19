@@ -266,8 +266,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         if (chartJson.more_option && chartJson.more_option === "x轴反序") {
           ecOptions["xAxis"]["data"] = xAxisData.reverse();
         }
-        if (chartJson.more_option && chartJson.more_option.includes('序列堆叠')) {
-          series.stack = sortAxisCol
+        if (
+          chartJson.more_option &&
+          chartJson.more_option.includes("序列堆叠")
+        ) {
+          series.stack = sortAxisCol;
         }
 
         // for (let data of cellData) {
@@ -410,7 +413,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 label: {
                   show: true,
                   position: "outside",
-                  color: "#ddd",
+                  // color: "#ddd",
                   formatter: `{b}\r\n {c}${chartJson?.y1_unit || ""}`,
                   rich: rich,
                 },
@@ -427,7 +430,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         for (let data of cellData) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
-            value:parseFloat( data[dataColName]),
+            value: parseFloat(data[dataColName]),
             name: data[chartJson?.series_name_cfg || sortAxisCol],
             itemStyle: {
               normal: {
@@ -491,7 +494,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           padding: [24, 0],
           subtext: title,
           subtextStyle: {
-            color: "#fff",
+            color: pageItem?.style_json?.color || "#fff",
             fontSize: 14,
             align: "center", //文字水平对齐方式（left/right）
           },
@@ -807,7 +810,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
   let chartJson = pageItem?.chart_json || {};
   let datas = cellData;
   let seriesName = chartJson?.series_name_cfg || "";
-  const sortAxisCol = chartJson?.sort_axis_col
+  const sortAxisCol = chartJson?.sort_axis_col;
   let xAxisData = cellData.map((item) => item[sortAxisCol]);
   xAxisData = [...new Set(xAxisData)];
   let lineVal1 = chartJson?.refer_line1 || "none";
@@ -826,9 +829,11 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         // data: datas
         //   .filter((e) => e[seriesName] === name)
         //   .map((item) => item[chartJson.series_value_cols]),
-        data: xAxisData.map((a,index)=>{
-          const data = datas.find(e=>e[seriesName] === name && e[sortAxisCol] === a)
-          return data?.[chartJson.series_value_cols] || undefined
+        data: xAxisData.map((a, index) => {
+          const data = datas.find(
+            (e) => e[seriesName] === name && e[sortAxisCol] === a
+          );
+          return data?.[chartJson.series_value_cols] || undefined;
         }),
         symbol: "circle",
         smooth: true,

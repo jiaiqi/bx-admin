@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="table-row" v-for="item in tableData" :class="{ stripe: striped }">
-        <div class="table-column" v-for="col in tableColumn" :style="{color:setStyle&&setStyle.color,'font-size':setStyle&&setStyle['font-size']}">
+        <div class="table-column" v-for="col in tableColumn" :title="formatValue(item, col)" :style="{color:setStyle&&setStyle.color,'font-size':setStyle&&setStyle['font-size']}">
           {{ formatValue(item, col) }}
         </div>
       </div>
@@ -379,6 +379,7 @@ export default {
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
+      cursor: pointer;
     }
   }
 }

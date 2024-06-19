@@ -108,6 +108,7 @@ const comColMapRun = computed(() => {
     width: 100%;
     display: flex;
     justify-content: flex-end;
+    padding: 0 10px 10px;
     .footer-btn-item{
       margin-left: 10px;
     }

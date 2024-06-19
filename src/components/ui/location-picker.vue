@@ -10,7 +10,7 @@
           <el-button type="primary" @click="confirm" :disabled="curSelect === null">确定</el-button>
         </div>
       </div>
-      <el-input :value="valueDisp" slot="reference" :disabled="disabled" @click="visible = true"
+      <el-input :value="valueDisp" slot="reference" :title="valueDisp" :disabled="disabled" @click="visible = true"
         suffix-icon="el-icon-location"></el-input>
       <!-- <div slot="reference" style="display: flex; align-items: center">
         <div style="flex: 1">

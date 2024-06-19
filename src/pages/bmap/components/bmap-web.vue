@@ -107,7 +107,9 @@
                   <div>{{ tolllink.vehicleid_str }}</div>
                   <div>起点： {{ tolllink.enstationname }}</div>
                   <div>终点： {{ tolllink.exstationname }}</div>
-                  <div>应收：{{ tolllink.payfee }}</div>
+                  <!-- <div>应收：{{ tolllink.payfee }}</div> -->
+                  <div>应收：{{ tolllink.fee_disp }}</div>
+                  <div v-if="tolllink.ljfyfee_disp">路径反演金额：{{ tolllink.ljfyfee_disp }}</div>
                 </div>
 
                 <!-- <span :style="`display:block;width:1rem;background-color:${activeTollLink && tolllink && activeTollLink['id'] == tolllink['id'] ? lineColors[s%4].selectedColor : lineColors[s%4].color};opacity:${0.8};border-radius: 4px;`"></span> -->

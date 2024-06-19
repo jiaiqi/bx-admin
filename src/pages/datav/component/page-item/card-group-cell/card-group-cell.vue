@@ -15,7 +15,7 @@
               :value="cellItemData[pageItem._refedCol]"></radio>
           </div> -->
   
-          <div v-for="(item,n) in cellLayoutJson.parts_json" :key="n">
+          <div v-for="(item,n) in cellLayoutJson.parts_json" :key="n" :style="item.parts_type == 'iconImg'?`display: inline-flex;`:''">
             <div v-if="item.parts_type == 'string' && partsShow(item,comColMap,cellItemData)"
               :class="'bx-cell-'+item.parts_type" @click.stop="onClickSubBlock(cellItemData,item,cellLayoutJson)"
               :style="[buildColStyleJson(item.style_json)]">

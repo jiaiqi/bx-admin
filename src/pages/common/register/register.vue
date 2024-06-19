@@ -11,15 +11,15 @@
               </b-button>
             </div>
             <div class="d-flex justify-content-between pt-2 pb-4">
-              <div class="step-item" :class="{ active: [0, 1, 2,3].includes(currentStep) }">
+              <div class="step-item" :class="{ active: [0, 1, 2, 3].includes(currentStep) }">
                 <span>1</span>
                 <span>选择注册类型</span>
               </div>
-              <div class="step-item" :class="{ active: [1,2,3].includes(currentStep) }">
+              <div class="step-item" :class="{ active: [1, 2, 3].includes(currentStep) }">
                 <span>2</span>
                 <span>填写账号信息</span>
               </div>
-              <div class="step-item" :class="{ active: [2,3].includes(currentStep) }">
+              <div class="step-item" :class="{ active: [2, 3].includes(currentStep) }">
                 <span>3</span>
                 <span>完善基础信息</span>
               </div>
@@ -29,62 +29,57 @@
               </div>
             </div>
             <!-- @submit="onSubmit"-->
-            <b-form @reset="onReset" novalidate v-if="[1,2].includes(currentStep)"
-                    style="max-height: 60vh;overflow-y: auto;overflow-x: hidden" :class="{
-                      twoColumn:currentStep===2&&registerType===0
-                    }">
+            <b-form @reset="onReset" novalidate v-if="[1, 2].includes(currentStep)"
+              style="max-height: 60vh;overflow-y: auto;overflow-x: hidden" :class="{
+                twoColumn: currentStep === 2
+              }">
               <template v-for="(field, index) in formFields">
-                <b-form-group :id="`${field.column}-${field.type}`" :label="field.label"
-                              :label-for="`${field.column}`" v-if="field.show && field.type !== 'radio'"
-                              label-size="md" label-align="right" label-cols-lg="3" label-cols="3">
-                  <b-form-select v-model="field.value" :options="field.options"
-                                 v-if="field.type === 'select'" @change="change(field)"></b-form-select>
+                <b-form-group :style="{gridColumn:field.gridColumn}" :class="{'grid-column-1-3':field.gridColumn==='1/3'}" :id="`${field.column}-${field.type}`" :label="field.label" :label-for="`${field.column}`"
+                  v-if="field.show && field.type !== 'radio'" label-size="md" label-align="right" label-cols-lg="3"
+                  label-cols="3">
+                  <location-picker v-if="field.type === 'location-picker'" :field="field" :current-selected="field.model"
+                    @on-selected="onPickerSelected($event, field)"></location-picker>
+                  <b-form-select v-model="field.value" :options="field.options" v-if="field.type === 'select'"
+                    @change="change(field)"></b-form-select>
                   <!--                  <b-form-datepicker v-model="field.value" placeholder="选择日期"-->
                   <!--                                     v-if="field.type === 'date'"></b-form-datepicker>-->
 
-                  <el-date-picker
-                    style="width: 100%;"
-                    value-format="yyyy-MM-dd"
-                    v-model="field.value"
-                    type="date"
-                    v-if="field.type === 'date'"
-                    placeholder="选择日期">
+                  <el-date-picker style="width: 100%;" value-format="yyyy-MM-dd" v-model="field.value" type="date"
+                    v-if="field.type === 'date'" placeholder="选择日期">
                   </el-date-picker>
                   <b-input-group v-if="field.type == 'code'">
-                    <b-form-input :id="`${field.column}`" v-model="field.value" required
-                                  autocomplete="off" :placeholder="field.placeholder" :readonly="readonlyInput"
-                                  @change="change(field)" :state="field.state" placeholder="验证码"
-                                  description="验证码"></b-form-input>
+                    <b-form-input :id="`${field.column}`" v-model="field.value" required autocomplete="off"
+                      :placeholder="field.placeholder" :readonly="readonlyInput" @change="change(field)"
+                      :state="field.state" placeholder="验证码" description="验证码"></b-form-input>
                     <b-button variant="outline-primary" :disabled="codeState" @click="getCode">{{
-                        codeState ? `剩余${codeTime}s` : `获取验证码`
-                      }}
+                      codeState ? `剩余${codeTime}s` : `获取验证码`
+                    }}
                     </b-button>
                   </b-input-group>
                   <upload :ref="field.column" v-if="field.type == 'image'" :initColumn="field.column"
-                          :initTable="field.initTable|| 'bxledu_org'" v-model="field.value" :appNo="'ledu'"
-                          :initMax="field.column == 'head_image' ? 1 : field.column == 'card_no' ? 2 : '-'"
-                          :mainProps="field.column == 'card_no' ? { width: 148, height: 100 } : { width: 100, height: 100 }">
+                    :initTable="field.initTable || 'bxledu_org'" v-model="field.value" :appNo="'ledu'"
+                    :initMax="field.column == 'head_image' ? 1 : field.column == 'card_no' ? 2 : '-'"
+                    :mainProps="field.column == 'card_no' ? { width: 148, height: 100 } : { width: 100, height: 100 }">
                   </upload>
-                  <fk-selector v-if="field.type==='fk'" :config="field.config" v-model="field.value"
-                               @change="change(field)" style="width: 100%"></fk-selector>
+                  <fk-selector v-if="field.type === 'fk'" :config="field.config" v-model="field.value"
+                    @change="change(field)" style="width: 100%"></fk-selector>
                   <b-form-input :id="`${field.column}`" v-model="field.value" v-if="field.type == 'text'"
-                                :type="field.type" required autocomplete="off" :placeholder="field.placeholder"
-                                :readonly="readonlyInput" @change="change(field)"
-                                :state="field.state"></b-form-input>
+                    :type="field.type" required autocomplete="off" :placeholder="field.placeholder"
+                    :readonly="readonlyInput" @change="change(field)" :state="field.state"></b-form-input>
 
-                  <b-form-textarea v-if="field.type == 'textarea'" :id="`${field.column}`"
-                                   v-model="field.value" :type="field.type" required autocomplete="off"
-                                   :placeholder="field.placeholder" :readonly="readonlyInput" @change="change(field)"
-                                   :state="field.state" rows="3" max-rows="6"></b-form-textarea>
+                  <b-form-textarea v-if="field.type == 'textarea'" :id="`${field.column}`" v-model="field.value"
+                    :type="field.type" required autocomplete="off" :placeholder="field.placeholder"
+                    :readonly="readonlyInput" @change="change(field)" :state="field.state" rows="3"
+                    max-rows="6"></b-form-textarea>
                   <b-form-invalid-feedback :state="field.state">
                     {{ field.msg }}
                   </b-form-invalid-feedback>
                 </b-form-group>
                 <b-form-group :id="`${field.column}`" :label="field.label" :label-for="`${field.column}`"
-                              v-if="field.show && field.type == 'radio'" label-size="md" label-align="right"
-                              label-cols-lg="2" @change="change(field)" label-cols="3">
+                  v-if="field.show && field.type == 'radio'" label-size="md" label-align="right" label-cols-lg="2"
+                  @change="change(field)" label-cols="3">
                   <b-form-radio-group size="lg" v-model="field.value" :options="field.options"
-                                      :name="`${field.column}`">
+                    :name="`${field.column}`">
                     <b-form-invalid-feedback :state="field.state">
                       {{ field.msg }}
                     </b-form-invalid-feedback>
@@ -92,11 +87,11 @@
                 </b-form-group>
               </template>
             </b-form>
-            <div class="select-box" v-if="currentStep===0">
-              <div class="select-box-item" :class="{active:registerType===0}" @click="registerType=0">注册基地</div>
-              <div class="select-box-item" :class="{active:registerType===1}" @click="registerType=1">注册机构</div>
+            <div class="select-box" v-if="currentStep === 0">
+              <div class="select-box-item" :class="{ active: registerType === 0 }" @click="registerType = 0">注册基地</div>
+              <div class="select-box-item" :class="{ active: registerType === 1 }" @click="registerType = 1">注册机构</div>
             </div>
-            <div v-else-if="currentStep===3">
+            <div v-else-if="currentStep === 3">
               <div class="d-flex justify-content-center p-4 text-icon">
                 <b-icon-check2-circle></b-icon-check2-circle>
               </div>
@@ -110,13 +105,12 @@
             </div>
             <div class="" style="margin-top: 50px;padding: 0 20%;display: flex;align-items: center">
               <b-button style="margin:0 10px" block variant="light" size="lg" @click="currentStep--"
-                        v-if="[1,2].includes(currentStep)">上一步
+                v-if="[1, 2].includes(currentStep)">上一步
               </b-button>
-              <b-button style="margin: 0" block variant="primary" size="lg" @click="nextStep" :disabled="currentStep >= 2"
-                        v-if="[0].includes(currentStep)||(currentStep===1&&form.code)">下一步
+              <b-button style="margin: 0" block variant="primary" size="lg" @click="nextStep"
+                :disabled="currentStep >= 2" v-if="[0].includes(currentStep) || (currentStep === 1 && form.code)">下一步
               </b-button>
-              <b-button block variant="primary" size="lg" @click="nextStep"
-                        v-else-if="currentStep === 2">创建账号
+              <b-button block variant="primary" size="lg" @click="nextStep" v-else-if="currentStep === 2">创建账号
               </b-button>
             </div>
             <!--            <div class="p-5"></div>-->
@@ -131,16 +125,17 @@
 <script>
 
 import formMixin from './form-mixin'
-import {setRequest, sendCode} from './api'
+import { setRequest, sendCode } from './api'
 import upload from './upload.vue'
 import FkSelector from "./fk-selector.vue";
-
+import locationPicker from "@/components/ui/location-picker.vue";
 var codeTime = null
 export default {
   name: 'register',//机构注册
   components: {
     FkSelector,
-    upload
+    upload,
+    locationPicker
   },
   mixins: [formMixin],
   props: {
@@ -221,16 +216,16 @@ export default {
       jdFields: {
         step1: [
           {
-            "label": "联系人",
+            "label": "姓名",
             "column": "jdlxr",
             "type": "text",
             "value": null,
-            "placeholder": "请填写机构联系人",
+            "placeholder": "请填写姓名",
             "rules": [
               {
                 "type": "required",
                 "trigger": "change",
-                "msg": "联系人不能为空"
+                "msg": "姓名不能为空"
               }
             ],
             "state": null,
@@ -238,17 +233,17 @@ export default {
             "show": true
           },
           {
-            "label": "联系人电话",
+            "label": "电话",
             "column": "jdlxrdh",
             "subType": 'phone',
             "type": "text",
             "value": null,
-            "placeholder": "请填写联系人电话",
+            "placeholder": "请填写电话",
             "rules": [
               {
                 "type": "required",
                 "trigger": "change",
-                "msg": "联系人电话不能为空"
+                "msg": "电话不能为空"
               },
               {
                 type: 'regular',
@@ -299,7 +294,7 @@ export default {
           },
           {
             "label": "基地级别",
-            "column": "jdmc",
+            "column": "jdjb",
             "type": "select",
             "value": null,
             "placeholder": "请选择基地级别",
@@ -395,113 +390,99 @@ export default {
             "state": null,
             "msg": "",
             "show": true
-          }, {
-            "label": "所在地",
-            "column": "address",
-            "type": "fk",
+          },
+
+          {
+            "label": "主题分类",
+            "column": "dwlb",
+            "type": "select",
+            "options": [
+              { text: '优秀传统文化板块', value: '优秀传统文化板块' }, { text: '革命传统教育板块', value: '革命传统教育板块' }, { text: '国情教育板块', value: '国情教育板块' }, { text: '国防科工板块', value: '国防科工板块' }, { text: '自然生态板块', value: '自然生态板块' }
+            ],
             "value": null,
-            "placeholder": "请填写所在地",
+            "placeholder": "请填写主题分类",
             "rules": [
               {
                 "type": "required",
                 "trigger": "change",
-                "msg": "所在地不能为空"
+                "msg": "主题分类不能为空"
               }
             ],
-            "config": {
-              "refed_col": "no",
-              "service_label": "所在地详情",
-              "srv_app": "config",
-              "select_type": "下拉选择",
-              "serviceName": "srvconfig_area_adj_select",
-              "key_disp_col": "name",
-              "is_tree":true
-            },
             "state": null,
             "msg": "",
             "show": true
-          }, {
-            "label": "公司名称",
-            "column": "dwmc",
+          },
+          {
+            "label": "基地坐标",
+            "column": "gps_no",
+            "type": "location-picker",
+            "value": "",
+            "placeholder": "请填写基地坐标",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "基地坐标不能为空"
+              }
+            ],
+            "state": null,
+            "msg": "",
+            "show": true,
+            info: {
+              srvCol: {
+                "service_name": "srvledu_practice_base_reg_add",
+                "columns": "gps_no",
+                "table_name": "bxledu_practice_base",
+                "table_column": "gps_no",
+                "table_var": null,
+                "bx_col_type": "fk",
+                "col_type": "bxsys_obj_type_gps",
+                "label": "基地坐标",
+                "seq": 3400,
+                "in_add": 1,
+                "in_list": 2,
+                "in_detail": 1,
+                "in_update": 1,
+                "in_cond": 1,
+                "in_cond_def": 0,
+                "updatable": 1,
+                "col_span": "0.5",
+                "required": "否",
+                "validators": "ngMaxlength=50",
+                "generate_time": "草稿",
+
+                "is_encrypt_col": false,
+                "batch_col": false,
+                "option_data_type": "remote",
+                "option_list_v2": {
+                  "refed_col": "gpsno",
+                  "allow_input": "下拉选择",
+                  "serviceName": "srvsys_obj_type_gps_select",
+                  "key_disp_col": "addr_str",
+                  "is_tree": false
+                }
+              }
+            }
+          },
+          {
+            label: "详细地址",
+            "column": "txdz",
             "type": "text",
+            gridColumn:"1/3",
             "value": null,
-            "placeholder": "请填写公司名称",
+            "placeholder": "请填写详细地址",
             "rules": [
               {
                 "type": "required",
                 "trigger": "change",
-                "msg": "公司名称不能为空"
+                "msg": "详细地址不能为空"
               }
             ],
             "state": null,
             "msg": "",
             "show": true
-          }, {
-            "label": "注册资本",
-            "column": "zczb",
-            "type": "text",
-            "value": null,
-            "placeholder": "请填写注册资本",
-            "rules": [
-              {
-                "type": "required",
-                "trigger": "change",
-                "msg": "注册资本不能为空"
-              }
-            ],
-            "state": null,
-            "msg": "",
-            "show": true
-          }, {
-            "label": "统一社会信用代码",
-            "column": "shxydm",
-            "type": "text",
-            "value": null,
-            "placeholder": "请填写统一社会信用代码",
-            "rules": [
-              {
-                "type": "required",
-                "trigger": "change",
-                "msg": "统一社会信用代码不能为空"
-              }
-            ],
-            "state": null,
-            "msg": "",
-            "show": true
-          }, {
-            "label": "营业执照",
-            "column": "yyzz",
-            "type": "image",
-            "initTable": 'bxledu_practice_base',
-            "value": null,
-            "placeholder": "请上传营业执照",
-            "rules": [
-              {
-                "type": "required",
-                "trigger": "change",
-                "msg": "营业执照不能为空"
-              }
-            ],
-            "state": null,
-            "msg": "",
-            "show": true
-          }, {
-            "label": "法人",
-            "column": "faren",
-            "type": "text",
-            "value": null,
-            "placeholder": "请填写法人",
-            "rules": [
-              {
-                "type": "required",
-                "trigger": "change",
-                "msg": "法人不能为空"
-              }
-            ],
-            "state": null,
-            "msg": "",
-            "show": true
-          }, {
+          },
+          {
             "label": "基地负责人",
             "column": "jdfzr",
             "type": "text",
@@ -534,6 +515,115 @@ export default {
                 trigger: "change",
                 value: /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/,
                 msg: '请输入正确的手机号'
+              }
+            ],
+            "state": null,
+            "msg": "",
+            "show": true
+          },
+          {
+            "label": "公司名称",
+            "column": "dwmc",
+            "type": "text",
+            "value": null,
+            "placeholder": "请填写公司名称",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "公司名称不能为空"
+              }
+            ],
+            "state": null,
+            "msg": "",
+            "show": true
+          },
+          {
+            "label": "法人",
+            "column": "faren",
+            "type": "text",
+            "value": null,
+            "placeholder": "请填写法人",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "法人不能为空"
+              }
+            ],
+            "state": null,
+            "msg": "",
+            "show": true
+          },
+          {
+            "label": "注册资本",
+            "column": "zczb",
+            "type": "text",
+            "value": null,
+            "placeholder": "请填写注册资本",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "注册资本不能为空"
+              }
+            ],
+            "state": null,
+            "msg": "",
+            "show": true
+          }, {
+            "label": "所在地",
+            "column": "address",
+            "type": "fk",
+            "value": null,
+            "placeholder": "请填写所在地",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "所在地不能为空"
+              }
+            ],
+            "config": {
+              "refed_col": "no",
+              "service_label": "所在地详情",
+              "srv_app": "config",
+              "select_type": "下拉选择",
+              "serviceName": "srvconfig_area_adj_select",
+              "key_disp_col": "name",
+              "is_tree": true
+            },
+            "state": null,
+            "msg": "",
+            "show": true
+          }, {
+            "label": "统一社会信用代码",
+            "column": "shxydm",
+            "type": "text",
+            "value": null,
+            "placeholder": "请填写统一社会信用代码",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "统一社会信用代码不能为空"
+              }
+            ],
+            "state": null,
+            "msg": "",
+            "show": true
+          }, {
+            "label": "营业执照",
+            "column": "yyzz",
+            "type": "image",
+            "initTable": 'bxledu_practice_base',
+            "value": null,
+            "placeholder": "请上传营业执照",
+            "rules": [
+              {
+                "type": "required",
+                "trigger": "change",
+                "msg": "营业执照不能为空"
               }
             ],
             "state": null,
@@ -672,25 +762,59 @@ export default {
           "msg": "",
           "show": true
         }
-        ,
-        {
-          "label": "统一信用社会代码",
-          "column": "uscc",
+        , {
+          "label": "公司名称",
+          "column": "gsmc",
           "type": "text",
           "value": null,
-          "placeholder": "请填写统一信用社会代码",
+          "placeholder": "请填写公司名称",
           "rules": [
             {
               "type": "required",
               "trigger": "change",
-              "msg": "统一信用社会代码不能为空"
+              "msg": "公司名称不能为空"
+            }
+          ],
+          "state": null,
+          "msg": "",
+          "show": true
+        }, {
+          "label": "法人",
+          "column": "faren",
+          "type": "text",
+          "value": null,
+          "placeholder": "请填写法人",
+          "rules": [
+            {
+              "type": "required",
+              "trigger": "change",
+              "msg": "法人不能为空"
             }
           ],
           "state": null,
           "msg": "",
           "show": true
         }
+
         ,
+        {
+          "label": "注册资本",
+          "column": "zczb",
+          "type": "text",
+          "value": null,
+          "placeholder": "请填写注册资本",
+          "rules": [
+            {
+              "type": "required",
+              "trigger": "change",
+              "msg": "注册资本不能为空"
+            }
+          ],
+          "state": null,
+          "msg": "",
+          "show": true
+        },
+
         {
           "label": "成立日期",
           "column": "establish_date",
@@ -702,24 +826,6 @@ export default {
               "type": "required",
               "trigger": "change",
               "msg": "成立日期不能为空"
-            }
-          ],
-          "state": null,
-          "msg": "",
-          "show": true
-        }
-        ,
-        {
-          "label": "营业执照",
-          "column": "bus_license",
-          "type": "image",
-          "value": null,
-          "placeholder": "请填写营业执照",
-          "rules": [
-            {
-              "type": "required",
-              "trigger": "change",
-              "msg": "营业执照不能为空"
             }
           ],
           "state": null,
@@ -753,6 +859,25 @@ export default {
           "msg": "",
           "show": true
         },
+        {
+          "label": "统一信用社会代码",
+          "column": "uscc",
+          "type": "text",
+          "value": null,
+          "placeholder": "请填写统一信用社会代码",
+          "rules": [
+            {
+              "type": "required",
+              "trigger": "change",
+              "msg": "统一信用社会代码不能为空"
+            }
+          ],
+          "state": null,
+          "msg": "",
+          "show": true
+        }
+
+        ,
         {
           "label": "注册地址",
           "column": "reg_address",
@@ -800,6 +925,23 @@ export default {
               "type": "required",
               "trigger": "change",
               "msg": "机构介绍不能为空"
+            }
+          ],
+          "state": null,
+          "msg": "",
+          "show": true
+        },
+        {
+          "label": "营业执照",
+          "column": "bus_license",
+          "type": "image",
+          "value": null,
+          "placeholder": "请填写营业执照",
+          "rules": [
+            {
+              "type": "required",
+              "trigger": "change",
+              "msg": "营业执照不能为空"
             }
           ],
           "state": null,
@@ -898,7 +1040,7 @@ export default {
             }).then(() => {
               if (self.webConfig.manage) {
                 window.location.href = self.webConfig.manage
-              }else{
+              } else {
                 self.toLogin()
               }
             }).catch(() => {
@@ -1103,8 +1245,8 @@ export default {
           console.log('获取成功')
           let countdown = res.response[0].response.exp_time
           let bx_auth_ticket = res.response[0].response.bx_auth_ticket
-          if(bx_auth_ticket){
-            sessionStorage.setItem('bx_auth_ticket',bx_auth_ticket)
+          if (bx_auth_ticket) {
+            sessionStorage.setItem('bx_auth_ticket', bx_auth_ticket)
           }
           if (countdown) {
             this.codeState = true
@@ -1248,6 +1390,7 @@ body {
 .twoColumn {
   display: grid;
   grid-template-columns: 1fr 1fr;
+
   @media screen and (max-width: 1200px) {
     grid-template-columns: 1fr;
   }
@@ -1270,5 +1413,8 @@ body {
   padding: 0;
   margin: 0;
   height: unset;
+}
+.grid-column-1-3 .col-form-label{
+  max-width: 114px;
 }
 </style>

@@ -1,186 +1,70 @@
 <template>
-  <div
-    class="customhome-container"
-    :class="{ mobile: screenType === 'mobile' && !inEditor }"
-    :style="'--right-width:' + rightWidth + 'px'"
-    @dragenter="dragDefFn($event)"
-    @dragover="dragDefFn($event)"
-  >
+  <div class="customhome-container" :class="{ mobile: screenType === 'mobile' && !inEditor, 'fixedWH': !autoScale }"
+    :style="'--right-width:' + rightWidth + 'px'" @dragenter="dragDefFn($event)" @dragover="dragDefFn($event)">
     <div class="cushome-sidebar" v-if="inEditor">
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
-        <div
-          v-for="item in comList"
-          :key="item.id"
-          class="com-item margin component"
-        >
-          <img
-            :src="getImagePath(item.preview)"
-            alt=""
-            class="example"
-            @drag="drag(item)"
-            @dragend="dragend(item, $event)"
-            draggable="true"
-            unselectable="on"
-          />
+        <div v-for="item in comList" :key="item.id" class="com-item margin component">
+          <img :src="getImagePath(item.preview)" alt="" class="example" @drag="drag(item)"
+            @dragend="dragend(item, $event)" draggable="true" unselectable="on" />
           <div class="label">{{ item.comp_label }}</div>
         </div>
       </div>
     </div>
     <div class="cushome-right" v-if="inEditor">
       <div class="left-line" id="left-line"></div>
-      <property-pane
-        :use-layout="useLayout"
-        :pageConfg="pageConfg"
-        :appNo="appNo"
-        :scree-type="screenType"
-        :currentItem="currentItem"
-        :layout="layout"
-        :str-layout="strLayout"
-        @save="clickSave"
-        @preview="toPreview"
-        @refresh="initPage"
-        @screentype="screenType = $event"
-      ></property-pane>
+      <property-pane :use-layout="useLayout" :pageConfg="pageConfg" :appNo="appNo" :scree-type="screenType"
+        :currentItem="currentItem" :layout="layout" :str-layout="strLayout" @save="clickSave" @preview="toPreview"
+        @refresh="initPage" @screentype="screenType = $event"></property-pane>
     </div>
-    <div
-      class="cushome-content"
-      id="content"
-      :class="{ 'data-view-mode': !inEditor }"
-    >
-      <div
-        class="custom-design"
-        :class="{'view':!inEditor}"
-        id="custom-design"
-        ref="customDesign"
-        :style="[styleJson]"
-        v-if="screenType === 'PC'"
-      >
+    <div class="cushome-content" id="content" :class="{ 'data-view-mode': !inEditor }">
+      <div class="custom-design" :class="{ 'view': !inEditor }" id="custom-design" ref="customDesign"
+        :style="[styleJson]" v-if="screenType === 'PC'">
         <div class="page-bg" :style="[bgJson]"></div>
-        <div class="grid-container"
-             id="grid-container"
-             :style="[bjStyles]" v-if="!inEditor&&allowedOverlap === false">
+        <div class="grid-container" id="grid-container" :style="[bjStyles]"
+          v-if="!inEditor && allowedOverlap === false">
 
           <div v-for="item in layout" style="position: absolute;" :style="{
-            height:rowHeight*item.h +'px',
-            width:(1920*item.w/colNum)+'px',
-            top:(rowHeight*item.y)+'px',
-            left:(1920*item.x/colNum)+'px',
+            height: rowHeight * item.h + 'px',
+            width: (parseInt(styleJson.width||'1920') * item.w / colNum) + 'px',
+            top: (rowHeight * item.y) + 'px',
+            left: (parseInt(styleJson.width||'1920') * item.x / colNum) + 'px',
           }">
-            <page-item :screenType="screenType"
-                       :use-layout="useLayout"
-                       ref="pageItem"
-                       @setPageParams="setPageParams"
-                       :pageParamsModel="pageParamsModel"
-                       :page-item="item.data"
-                       :page-no="pgNo"
-                       :layout="item"
-                       @click.stop=""
-                       @resize="resize"
-
-            ></page-item>
+            <page-item :screenType="screenType" :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
+              :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo" :layout="item" @click.stop=""
+              @resize="resize"></page-item>
           </div>
         </div>
-        <grid-layout
-          ref="gridlayout"
-          :layout.sync="layout"
-          :col-num="colNum"
-          :row-height="rowHeight"
-          :preventCollision="false"
-          :responsive="false"
-          :is-draggable="inEditor"
-          :is-resizable="inEditor"
-          :is-mirrored="false"
-          :vertical-compact="false"
-          :margin="[0, 0]"
-          :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent"
-          v-else-if="allowedOverlap === false"
-        >
-          <div
-            class="grid-container"
-            id="grid-container"
-            :style="[bjStyles]"
-          ></div>
-          <grid-item
-            v-for="item in layout"
-            :x="item.x"
-            :y="item.y"
-            :w="item.w"
-            :h="item.h"
-            :i="item.i"
-            :key="item.i"
-            @moved="movedEvent"
-            @resized="resizedEvent"
-            class="gridItem"
-            @dblclick.native="toComponentDetail(item)"
-          >
-            <span
-              class="remove"
-              @click.stop="removeItem(item.i)"
-              v-if="inEditor"
-            ><i class="el-icon-close"></i
-            ></span>
+        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
+          :preventCollision="false" :responsive="false" :is-draggable="inEditor" :is-resizable="inEditor"
+          :is-mirrored="false" :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true"
+          @layout-updated="layoutUpdatedEvent" v-else-if="allowedOverlap === false">
+          <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
+          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+            @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
+            <span class="remove" @click.stop="removeItem(item.i)" v-if="inEditor"><i class="el-icon-close"></i></span>
             <div class="com-item dashed" v-if="!inEditor">
-              <page-item :screenType="screenType"
-                         :use-layout="useLayout"
-                         ref="pageItem"
-                         @setPageParams="setPageParams"
-                         :pageParamsModel="pageParamsModel"
-                         :page-item="item.data"
-                         :page-no="pgNo"
-                         :layout="item"
-                         @click.stop=""
-                         @resize="resize"
-              ></page-item>
+              <page-item :screenType="screenType" :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo" :layout="item" @click.stop=""
+                @resize="resize"></page-item>
             </div>
-            <div
-              class="com-item dashed"
-              :class="{ active: item.i === curDesign }"
-              v-else
-              @click.stop.prevent.capture="changeDesign(item.i)"
-            >
-              <page-item :screenType="screenType"
-                         :use-layout="useLayout"
-                         ref="pageItem"
-                         @setPageParams="setPageParams"
-                         :pageParamsModel="pageParamsModel"
-                         :page-item="item.data"
-                         :page-no="pgNo"
-                         :layout="item"
-              ></page-item>
+            <div class="com-item dashed" :class="{ active: item.i === curDesign }" v-else
+              @click.stop.prevent.capture="changeDesign(item.i)">
+              <page-item :screenType="screenType" :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams"
+                :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo" :layout="item"></page-item>
             </div>
           </grid-item>
         </grid-layout>
         <div v-else class="drag-layout">
           <!-- 可重叠布局 -->
-          <vue-drag-resize
-            :parentLimitation="true"
-            :isResizable="inEditor"
-            :isDraggable="inEditor"
-            :isActive="item.i && item.i === curDesign && inEditor"
-            :z="item.z"
-            :x="vw2px(item.x)"
-            :y="vh2px(item.y)"
-            :w="vw2px(item.w)"
-            :h="vh2px(item.h)"
-            @clicked=""
-            @deactivated="deactivated"
-            @resizestop="onResizestop($event, lIndex)"
-            @dragstop="onDragstop($event, lIndex)"
-            ::key="item.i"
-            v-for="(item, lIndex) in layout"
-          >
-            <page-item :screenType="screenType"
-                       @click.native.stop.prevent.capture="changeDesign(item.i)"
-                       :use-layout="useLayout"
-                       ref="pageItem"
-                       @setPageParams="setPageParams"
-                       :pageParamsModel="pageParamsModel"
-                       :page-item="item.data"
-                       :page-no="pgNo"
-                       :layout="item"
-            ></page-item>
+          <vue-drag-resize :parentLimitation="true" :isResizable="inEditor" :isDraggable="inEditor"
+            :isActive="item.i && item.i === curDesign && inEditor" :z="item.z" :x="vw2px(item.x)" :y="vh2px(item.y)"
+            :w="vw2px(item.w)" :h="vh2px(item.h)" @clicked="" @deactivated="deactivated"
+            @resizestop="onResizestop($event, lIndex)" @dragstop="onDragstop($event, lIndex)" ::key="item.i"
+            v-for="(item, lIndex) in layout">
+            <page-item :screenType="screenType" @click.native.stop.prevent.capture="changeDesign(item.i)"
+              :use-layout="useLayout" ref="pageItem" @setPageParams="setPageParams" :pageParamsModel="pageParamsModel"
+              :page-item="item.data" :page-no="pgNo" :layout="item"></page-item>
             <div class="tool-box">
               <!-- <el-tooltip
                 class="item"
@@ -210,31 +94,13 @@
                   <i class="el-icon-download"></i>置底
                 </div>
               </el-tooltip> -->
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="上移"
-                placement="bottom"
-              >
-                <div
-                  class="tool-item"
-                  :class="{ disabled: isTop(item.z) }"
-                  @click="toUp(lIndex, 1)"
-                >
+              <el-tooltip class="item" effect="dark" content="上移" placement="bottom">
+                <div class="tool-item" :class="{ disabled: isTop(item.z) }" @click="toUp(lIndex, 1)">
                   <i class="el-icon-top"></i>上移
                 </div>
               </el-tooltip>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="下移"
-                placement="bottom"
-              >
-                <div
-                  class="tool-item"
-                  :class="{ disabled: isBottom(item.z) }"
-                  @click="toDown(lIndex, 1)"
-                >
+              <el-tooltip class="item" effect="dark" content="下移" placement="bottom">
+                <div class="tool-item" :class="{ disabled: isBottom(item.z) }" @click="toDown(lIndex, 1)">
                   <i class="el-icon-bottom"></i>下移
                 </div>
               </el-tooltip>
@@ -242,121 +108,54 @@
           </vue-drag-resize>
         </div>
       </div>
-      <div
-        class="custom-design"
-        :class="{ mobile: screenType === 'mobile' }"
-        id="custom-design"
-        ref="customDesign"
-        v-else-if="screenType === 'mobile'"
-        style="
+      <div class="custom-design" :class="{ mobile: screenType === 'mobile' }" id="custom-design" ref="customDesign"
+        v-else-if="screenType === 'mobile'" style="
           width: 375px;
           height: 667px;
           margin-top: 5vh;
           overflow-y: auto;
           overflow-x: hidden;
-        "
-        :style="[styleJson]"
-      >
+        " :style="[styleJson]">
         <div class="page-bg" :style="[bgJson]"></div>
 
-        <grid-layout
-          ref="gridlayout"
-          :layout.sync="layout"
-          :col-num="colNum"
-          :row-height="rowHeight"
-          :vertical-compact="true"
-          :is-draggable="inEditor"
-          :is-resizable="inEditor"
-          :is-mirrored="false"
-          :margin="[0, 0]"
-          :autoSize="false"
-          :use-css-transforms="true"
-          @layout-updated="layoutUpdatedEvent"
-          :responsive="false"
-          :preventCollision="true"
-        >
-          <div
-            class="grid-container"
-            id="grid-container"
-            :style="[bjStyles]"
-          ></div>
+        <grid-layout ref="gridlayout" :layout.sync="layout" :col-num="colNum" :row-height="rowHeight"
+          :vertical-compact="true" :is-draggable="inEditor" :is-resizable="inEditor" :is-mirrored="false"
+          :margin="[0, 0]" :autoSize="false" :use-css-transforms="true" @layout-updated="layoutUpdatedEvent"
+          :responsive="false" :preventCollision="true">
+          <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
           <template v-if="!inEditor || onMobilePreview">
             <div v-for="item in layout">
-              <page-item :screenType="screenType"
-                         style="min-height: 100px"
-                         ref="pageItem"
-                         @setPageParams="setPageParams"
-                         :pageParamsModel="pageParamsModel"
-                         :page-item="item.data"
-                         :page-no="pgNo"
-                         :layout="item"
-                         @click.stop=""
-                         @resize="resize"
-              ></page-item>
+              <page-item :screenType="screenType" style="min-height: 100px" ref="pageItem"
+                @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo"
+                :layout="item" @click.stop="" @resize="resize"></page-item>
             </div>
           </template>
           <template v-else>
-            <grid-item
-              v-for="item in layout"
-              :x="item.x"
-              :y="item.y"
-              :w="item.w"
-              :h="item.h"
-              :i="item.i"
-              :key="item.i"
-              @moved="movedEvent"
-              @resized="resizedEvent"
-              class="gridItem"
-              @dblclick.native="toComponentDetail(item)"
-            >
-              <span
-                class="remove"
-                @click.stop="removeItem(item.i)"
-                v-if="inEditor"
-              ><i class="el-icon-close"></i
-              ></span>
+            <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+              @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
+              <span class="remove" @click.stop="removeItem(item.i)" v-if="inEditor"><i class="el-icon-close"></i></span>
               <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
                 @click.stop.prevent.capture="changeDesign(item.i)">
                 <img :src="getImagePath(item.data.example)" alt="" style="display: inline-block; width: 100%" />
               </div> -->
               <div class="com-item dashed" v-if="!inEditor">
-                <page-item :screenType="screenType"
-                           ref="pageItem"
-                           @setPageParams="setPageParams"
-                           :pageParamsModel="pageParamsModel"
-                           :page-item="item.data"
-                           :page-no="pgNo"
-                           :layout="item"
-                           @click.stop=""
-                           @resize="resize"
-                ></page-item>
+                <page-item :screenType="screenType" ref="pageItem" @setPageParams="setPageParams"
+                  :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo" :layout="item"
+                  @click.stop="" @resize="resize"></page-item>
               </div>
-              <div
-                class="com-item dashed"
-                :class="{ active: item.i === curDesign }"
-                v-else
-                @click.stop.prevent.capture="changeDesign(item.i)"
-              >
-                <page-item :screenType="screenType"
-                           ref="pageItem"
-                           @setPageParams="setPageParams"
-                           :pageParamsModel="pageParamsModel"
-                           :page-item="item.data"
-                           :page-no="pgNo"
-                           :layout="item"
-                ></page-item>
+              <div class="com-item dashed" :class="{ active: item.i === curDesign }" v-else
+                @click.stop.prevent.capture="changeDesign(item.i)">
+                <page-item :screenType="screenType" ref="pageItem" @setPageParams="setPageParams"
+                  :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo" :layout="item"></page-item>
               </div>
             </grid-item>
           </template>
         </grid-layout>
       </div>
-      <div
-        v-if="screenType === 'mobile' && inEditor && pgNo"
-        style="text-align: center; margin-top: 50px"
-      >
+      <div v-if="screenType === 'mobile' && inEditor && pgNo" style="text-align: center; margin-top: 50px">
         <el-button @click="previewCurrent">{{
-            onMobilePreview ? "编辑" : "预览"
-          }}
+          onMobilePreview ? "编辑" : "预览"
+        }}
         </el-button>
         <el-button @click="previewMobile">h5预览</el-button>
       </div>
@@ -373,16 +172,16 @@
 
 <script>
 import dayjs from "dayjs";
-import {GridLayout, GridItem} from "vue-grid-layout";
+import { GridLayout, GridItem } from "vue-grid-layout";
 import VueDragResize from "vue-drag-resize";
 import PageItem from "../component/page-item/page-item.vue";
 import propertyPane from "./property-pane.vue";
 import componentPane from "./left-pane/component-pane.vue";
-import {formatStyleData, rpx2px} from "../common/index.js";
-import {$axios} from "../common/http.js";
+import { formatStyleData, rpx2px } from "../common/index.js";
+import { $axios } from "../common/http.js";
 
-let mouseXY = {x: null, y: null};
-let DragPos = {x: null, y: null, w: 1, h: 1, i: null};
+let mouseXY = { x: null, y: null };
+let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
 
 // 页面参数
 import pageParams from "../common/params/page-params-mixin.js";
@@ -422,7 +221,7 @@ export default {
       layoutJson: null,
       comJson: [],
       comList: [],
-      designData: {layoutCon: [], layoutData: []}, //容器内容
+      designData: { layoutCon: [], layoutData: [] }, //容器内容
       bjStyles: {}, //栅格样式
       curDesign: "", //点击容器组件样式
       rowHeight: 10, //默认一格高度
@@ -568,6 +367,12 @@ export default {
       if (!this.inEditor && (json?.width || json?.height)) {
         delete json.width;
         delete json.height;
+      }
+      if (this.pageInfo?.page_options?.includes("不缩放")) {
+        json = {
+          width: this.pageInfo?.page_style_json_data?.width,
+          height: this.pageInfo?.page_style_json_data?.height,
+        };
       }
       json = JSON.parse(rpx2px(JSON.stringify(json)))
       json = formatStyleData(json)
@@ -1049,7 +854,7 @@ export default {
             {
               serviceName: o.serviceName,
               srvApp: "config",
-              condition: [{colName: "id", ruleType: "in", value: id}],
+              condition: [{ colName: "id", ruleType: "in", value: id }],
             },
           ];
           break;
@@ -1215,7 +1020,7 @@ export default {
               h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
               // layout_no: item.layout_no,
-              data: {...item},
+              data: { ...item },
               isLeftBarItem: false,
               id: item.id,
               colNum: this.colNum,
@@ -1279,7 +1084,7 @@ export default {
       //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
       // });
     },
-    onDragstop({left, top, width, height}, index) {
+    onDragstop({ left, top, width, height }, index) {
       this.curDesign = this.layout[index].i;
       console.log(
         "拖拽停止：",
@@ -1298,7 +1103,7 @@ export default {
         h: this.px2vh(height),
       });
     },
-    onResizestop({left, top, width, height}, index) {
+    onResizestop({ left, top, width, height }, index) {
       this.curDesign = this.layout[index].i;
       console.log("大小改变：", index, left, top, width, height);
       this.$set(this.layout, index, {
@@ -1392,7 +1197,7 @@ export default {
     //自定义容器初始化
     initDesign() {
       let domstyleWidth =
-          document.getElementById("custom-design").offsetWidth - 20 * 10,
+        document.getElementById("custom-design").offsetWidth - 20 * 10,
         domstyleHeight = 50,
         domContainer = document.getElementById("custom-design"),
         resWidth = domstyleWidth / 12,
@@ -1455,7 +1260,7 @@ export default {
         ) {
           if (!this.haveData()) {
             this.computedPosi(
-              {w: 12, h: 4},
+              { w: 12, h: 4 },
               this.moveData.id,
               this.designData.layoutCon
             );
@@ -1608,7 +1413,7 @@ export default {
         try {
           this.$refs.gridlayout.$children[
             this.layout.length
-            ].$refs.item.style.display = "none";
+          ].$refs.item.style.display = "none";
         } catch {
         }
         let el = this.$refs.gridlayout.$children[index];
@@ -1879,7 +1684,7 @@ export default {
         try {
           this.$refs.gridlayout.$children[
             this.layout.length
-            ].$refs.item.style.display = "block";
+          ].$refs.item.style.display = "block";
         } catch {
         }
       }
@@ -2011,6 +1816,7 @@ export default {
   }
 
   &.active {
+
     // border: 1px solid #409eff;
     &::after {
       position: absolute;
@@ -2045,6 +1851,15 @@ export default {
   height: 100vh;
   background: #f1f3f2;
   user-select: none;
+
+  // &.fixedWH {
+  //   .cushome-content {
+  //     .custom-design {
+  //       overflow-y: auto;
+  //     }
+  //   }
+
+  // }
 
   &.mobile {
     display: flex;
@@ -2190,9 +2005,11 @@ export default {
       margin: 0 auto;
       background: #040711;
       position: relative;
-      &.view{
+
+      &.view {
         background: unset;
       }
+
       .grid-container {
         height: 100%;
         top: 0;
@@ -2290,7 +2107,7 @@ export default {
   background: #197f54;
 }
 
-.vue-grid-item > .vue-resizable-handle {
+.vue-grid-item>.vue-resizable-handle {
   position: absolute;
   width: 0;
   height: 0;
