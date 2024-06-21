@@ -1,7 +1,7 @@
 <template>
   <div>
     <treegrid
-    :mainService="mainService"
+      :mainService="mainService"
       ref="list"
       v-if="isTree && storageType === 'db'"
       :name="name"
@@ -20,8 +20,15 @@
     >
     </treegrid>
 
-    <list-proc ref="list" :service="service" v-else-if="isProc" :div-cond="divCond"> </list-proc>
-    <tableEdit ref="mlist" 
+    <list-proc
+      ref="list"
+      :service="service"
+      v-else-if="isProc"
+      :div-cond="divCond"
+    >
+    </list-proc>
+    <tableEdit
+      ref="mlist"
       :name="name"
       :pageType="foreignKey.view_model"
       :pageIsDraft="pageIsDraft"
@@ -40,7 +47,7 @@
       :default-dirty-flags="defaultDirtyFlags"
       :merge-col="mergeCol"
       :listMainFormDatas="mainFormDatas"
-      :main-data="mainData?mainData:formModel"
+      :main-data="mainData ? mainData : formModel"
       :$srvApp="$srvApp"
       :div-cond="divCond"
       @child-loaded="childDataLoadedRun($event)"
@@ -53,8 +60,22 @@
       @list-data-loaded="listLoaded($event)"
       @grid-data-changed="$emit('grid-data-changed', $event)"
       @standby-row-added="onStandbyRowAdded"
-      v-else-if="foreignKey.view_model == 'mlist'"></tableEdit>
-    <custom-frame :mem-initdatas-add="initDatas" ref="frameList" :key="childListService" :col-srv="childListService" :service-name="item.service_name" :data="item" v-else-if="'addchildlist'===listType &&item&&item.service_name"></custom-frame>
+      v-else-if="foreignKey.view_model == 'mlist'"
+    ></tableEdit>
+    <custom-frame
+      :mem-initdatas-add="initDatas"
+      ref="frameList"
+      :key="childListService"
+      :col-srv="childListService"
+      :service-name="item.service_name"
+      :data="item"
+      v-else-if="
+        uiMode === 'excel' &&
+        'addchildlist' === listType &&
+        item &&
+        item.service_name
+      "
+    ></custom-frame>
     <list
       ref="list"
       :key="service"
@@ -94,8 +115,7 @@
       @standby-row-added="onStandbyRowAdded"
     >
     </list>
-<!--    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-if="item&&item.service_name"></custom-frame>-->
-
+    <!--    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-if="item&&item.service_name"></custom-frame>-->
   </div>
 </template>
 
@@ -104,11 +124,11 @@ import SimpleAdd from "./simple-add.vue";
 import SimpleUpdate from "./simple-update.vue";
 import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
-import ListProc from './listproc.vue'
-import ChildListMixin from "../mixin/child-list-mixin"
+import ListProc from "./listproc.vue";
+import ChildListMixin from "../mixin/child-list-mixin";
 
-import tableEdit from "./table-edit.vue"
-import customFrame from "../feature/custom-frame.vue";  // 新增的增强表格
+import tableEdit from "./table-edit.vue";
+import customFrame from "../feature/custom-frame.vue"; // 新增的增强表格
 
 /**
  * 子表组件， 主要是处理外键相关的逻辑： 例如外籍列、外键disp列隐藏；添加行数据自动添加外键列的值。
@@ -121,65 +141,68 @@ export default {
     SimpleAdd,
     List,
     ListProc,
-    tableEdit
+    tableEdit,
   },
 
-  mixins: [ ChildListMixin ],
+  mixins: [ChildListMixin],
 
-  data () {
+  data() {
     return {
-      pageSize: 5
-    }
+      pageSize: 5,
+    };
   },
   props: {
-    item:Object,
+    item: Object,
     name: {
       type: String,
-      default: 'child'
+      default: "child",
     },
     isTableForm: false,
     mainFormDatas: {
       type: Object,
       default: function () {
-        return null
-      }
+        return null;
+      },
     },
     service: {
-      type: String
+      type: String,
     },
     foreignKey: {
-      type: Object
+      type: Object,
     },
-    isTree: { //子表是树形表
+    isTree: {
+      //子表是树形表
       type: Boolean,
       default: false,
     },
-    isProc: { //子表是流程表
+    isProc: {
+      //子表是流程表
       type: Boolean,
       default: false,
     },
     defDataPara: {
       type: Object,
       default: function () {
-        return null
-      }
+        return null;
+      },
     },
     readOnly: {
       type: Boolean,
       default: function () {
         return false;
-      }
+      },
     },
     defaultCondition: {
       type: Array,
       default: function () {
-        return []
-      }
+        return [];
+      },
     },
     searchForm: {
-      type: Boolean, default: function () {
-        return true
-      }
+      type: Boolean,
+      default: function () {
+        return true;
+      },
     },
     storageType: {
       type: String,
@@ -213,48 +236,52 @@ export default {
     childListConfig: {
       type: Object,
       default: function () {
-        return {}
-      }
+        return {};
+      },
     },
     pageIsDraft: {
       type: String,
-      default: 'norm',
+      default: "norm",
     },
     mainData: {
       type: Object,
       default: function () {
-        return {}
-      }
+        return {};
+      },
     },
-    mainService:{
+    mainService: {
       type: String,
-      default: '',
+      default: "",
     },
-    divCond:Array
+    divCond: Array,
   },
   computed: {
-    isInplaceEditRun:function(){
-      if(this.foreignKey && this.foreignKey.hasOwnProperty('more_config') && this.foreignKey.more_config){
-        let config = JSON.parse(this.foreignKey.more_config)
-        if(config.tableType == 'special'){
-          return config
-        }else{
-          return null
+    isInplaceEditRun: function () {
+      if (
+        this.foreignKey &&
+        this.foreignKey.hasOwnProperty("more_config") &&
+        this.foreignKey.more_config
+      ) {
+        let config = JSON.parse(this.foreignKey.more_config);
+        if (config.tableType == "special") {
+          return config;
+        } else {
+          return null;
         }
-      }else{
-        return null
+      } else {
+        return null;
       }
     },
     getRefColValue: function () {
       if (this.defaultCondition && this.defaultCondition.length > 0) {
-        return this.defaultCondition[ 0 ].value;
+        return this.defaultCondition[0].value;
       }
 
       return null;
     },
 
     innerList: function () {
-      return this.$refs && this.$refs.list
+      return this.$refs && this.$refs.list;
     },
 
     gridData: function () {
@@ -267,7 +294,7 @@ export default {
 
     getDefaultConditions: function () {
       if (this.foreignKey.conditions && this.foreignKey.conditions.length > 0) {
-        return _.concat(this.defaultCondition, this.foreignKey.conditions)
+        return _.concat(this.defaultCondition, this.foreignKey.conditions);
       } else {
         return this.defaultCondition;
       }
@@ -275,63 +302,70 @@ export default {
     showPagination: function () {
       //let windowConfig = window.sessionStorage.getItem('childPagination') == true ||window.sessionStorage.getItem('childPagination') == false  ? window.sessionStorage.getItem('childPagination') : true
       // let isShow = this.childListConfig.showPagination
-      let isShow = true
+      let isShow = true;
       // console.log("showPagination",isShow)
       //console.log(isShow,this.storageType)
-      if (isShow && this.storageType !== 'mem') {
-        return isShow == 'false' || isShow == false ? false : true
+      if (isShow && this.storageType !== "mem") {
+        return isShow == "false" || isShow == false ? false : true;
       } else {
-        return false
+        return false;
       }
     },
-    serviceMoreConfig(){
-      if(this.childListConfig?.more_config){
-        return JSON.parse(this.childListConfig?.more_config)
+    serviceMoreConfig() {
+      if (this.childListConfig?.more_config) {
+        return JSON.parse(this.childListConfig?.more_config);
+      }else if(this.childListConfig?._childMoreConfig){
+        return this.childListConfig._childMoreConfig
       }
     },
-    childListService(){
-      let result = null
+    fkMoreConfig() {
+      return this.foreignKey?.more_config
+        ? JSON.parse(this.foreignKey?.more_config)
+        : null;
+    },
+    uiMode() {
+      return this.fkMoreConfig?.uiMode||this.serviceMoreConfig?.uiMode;
+    },
+    childListService() {
+      let result = null;
       let mainData = this.mainFormDatas;
-      if(this.serviceMoreConfig?.serviceMap){
-        Object.keys(this.serviceMoreConfig.serviceMap).forEach(service => {
-          if(this.serviceMoreConfig.serviceMap[service]){
-            if(eval(this.serviceMoreConfig.serviceMap[service]) === true){
-              result = service
+      if (this.serviceMoreConfig?.serviceMap) {
+        Object.keys(this.serviceMoreConfig.serviceMap).forEach((service) => {
+          if (this.serviceMoreConfig.serviceMap[service]) {
+            if (eval(this.serviceMoreConfig.serviceMap[service]) === true) {
+              result = service;
             }
           }
-        })
+        });
       }
-      if(!result){
-        result = this.item?.service_name
+      if (!result) {
+        result = this.item?.service_name;
       }
-      return result
+      return result;
     },
   },
-  created: function () {
-
-  },
+  created: function () {},
 
   methods: {
-    listLoaded (e) {
+    listLoaded(e) {
       // console.log("list Loaded",e)
-      if (this.listType == 'detaillist') {
+      if (this.listType == "detaillist") {
         // console.log('detail child list loaded')
-        this.$emit("detailOnLoaded", e)
+        this.$emit("detailOnLoaded", e);
       }
     },
-    childDataLoadedRun (e) {
+    childDataLoadedRun(e) {
       //console.log("child-list",e)
-      this.$emit("child-loaded", e)
+      this.$emit("child-loaded", e);
     },
-    buildRunQuries () {
-      if(this.$refs.mlist){
+    buildRunQuries() {
+      if (this.$refs.mlist) {
         return this.$refs.mlist.buildMlistRunQuries(this.foreignKey);
-      }else if(this.$refs.frameList){
-        return this.$refs.frameList?.buildRunQuries()
-      } else{
+      } else if (this.$refs.frameList) {
+        return this.$refs.frameList?.buildRunQuries();
+      } else {
         return this.$refs.list.buildRunQuries(this.foreignKey);
       }
-      
     },
 
     isInplaceEdit: function () {
@@ -340,17 +374,16 @@ export default {
 
     isMem: function () {
       let list = this.$refs.list;
-      return list.isMem()
+      return list.isMem();
     },
 
     buildExecutors4Edit: function () {
       let list = this.$refs.list;
-      return list.buildExecutors4Edit()
+      return list.buildExecutors4Edit();
     },
 
-    listrefresh: function (){
-
-      let list = this.$refs[ "list" ];
+    listrefresh: function () {
+      let list = this.$refs["list"];
       list.loadTableData();
     },
     /**
@@ -358,25 +391,21 @@ export default {
      * @param form
      */
     onAddFormLoaded: function (form) {
-
-
       // hide ref cols
-      let refCol = this.foreignKey.column_name || this.foreignKey.ref_service_column;
-      let refColField = form.fields[ refCol ];
+      let refCol =
+        this.foreignKey.column_name || this.foreignKey.ref_service_column;
+      let refColField = form.fields[refCol];
       refColField.info.visible = false;
       refColField.setSrvVal(this.getRefColValue);
 
       // hide extra fk condition cols and set values
       if (this.foreignKey.conditions) {
-        this.foreignKey.conditions.forEach(item => {
-
-          let refCol = item.colName
-          let refColField = form.fields[ refCol ]
-          refColField.info.visible = false
-          refColField.setSrvVal(item.value)
-
-
-        })
+        this.foreignKey.conditions.forEach((item) => {
+          let refCol = item.colName;
+          let refColField = form.fields[refCol];
+          refColField.info.visible = false;
+          refColField.setSrvVal(item.value);
+        });
       }
 
       form.actions.submit.nav2Location = null;
@@ -384,13 +413,11 @@ export default {
       this.$emit("add-form-loaded", form);
     },
 
-
     /**
      * hide ref column
      * @param form
      */
     onUpdateFormLoaded: function (form) {
-
       this.hiddRefColFieldInForm(form);
       form.actions.submit.nav2Location = null;
 
@@ -400,19 +427,15 @@ export default {
     onFilterFormLoaded: function (form) {
       let refCol = this.foreignKey.column_name;
       refCol = "_" + refCol + "_disp";
-      let refColField = form.fields[ refCol ];
+      let refColField = form.fields[refCol];
       if (refColField) {
         refColField.info.visible = false;
       }
     },
 
     onInlineListLoaded: function (inlineList) {
-      this.$emit('inline-list-loaded', inlineList, this)
+      this.$emit("inline-list-loaded", inlineList, this);
     },
   },
-
-}
+};
 </script>
-
-
-

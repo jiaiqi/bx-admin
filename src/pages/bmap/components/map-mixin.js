@@ -21,10 +21,10 @@ let activeLineColor = 'rgb(40, 189, 108)'
 let bMapApi = sessionStorage.getItem('bMapApi')
 
 if (!bMapApi) {
-  // bMapApi = 'http://30.61.1.37:8519/route/v1/route'
+  bMapApi = 'http://30.61.1.37:8519/route/v1/route'
   // bMapApi = '/route/v1/route'
   // bMapApi = '/baiduApi/direction/v2/driving'
-  bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
+  // bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'
   // bMapApi = 'https://api.map.baidu.com/direction/v2/driving'
   sessionStorage.setItem('bMapApi', bMapApi)
 }

@@ -62,7 +62,7 @@ export default {
     },
     srvApp() {
       return (
-        this.$srvApp ||
+        this.optionV2?.srv_app || this.$srvApp ||
         sessionStorage.getItem("current_app") ||
         top.pathConfig.application
       );

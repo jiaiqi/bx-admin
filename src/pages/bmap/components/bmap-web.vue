@@ -108,7 +108,7 @@
                   <div>起点： {{ tolllink.enstationname }}</div>
                   <div>终点： {{ tolllink.exstationname }}</div>
                   <!-- <div>应收：{{ tolllink.payfee }}</div> -->
-                  <div>应收：{{ tolllink.fee_disp }}</div>
+                  <div>实收：{{ tolllink.fee_disp }}</div>
                   <div v-if="tolllink.ljfyfee_disp">路径反演金额：{{ tolllink.ljfyfee_disp }}</div>
                 </div>
 
