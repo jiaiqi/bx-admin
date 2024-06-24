@@ -279,7 +279,7 @@ import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
 import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 import { blobToBase64 } from '../../common/common'
-
+import { evalJson } from '@/util/evalJsonExpr.js'
 export default {
   components: {
     Checkbox,
@@ -337,6 +337,17 @@ export default {
     };
   },
   computed: {
+    updatableJson() {
+      if(this.field?.info?.srvCol?.updatable_json){
+        const jsonStr = this.field.info.srvCol.updatable_json;
+        return JSON.parse(jsonStr);
+      }
+    },
+    updatable() {
+      if (this.updatableJson) {
+        return evalJson(this.updatableJson, this.formModel);
+      }
+    },
     elIconPrefix() {
       return this.field?.info?.srvCol?.table_name === 'bxfile_icon_db' && this.field.info.srvCol.columns === 'icon_val' && this.field.model?.includes('el-icon-') && this.field.model||''
     },
@@ -365,7 +376,7 @@ export default {
       }
     },
     getDisabled: function() {
-      return !this.field.evalEditable();
+      return !this.field.evalEditable() || this.updatable===false;
     },
     queryInitValue(){
       return {

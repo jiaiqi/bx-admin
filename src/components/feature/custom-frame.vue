@@ -14,7 +14,8 @@ export default {
     },
     colSrv:String,
     data: Object,
-    memInitdatasAdd:Array
+    memInitdatasAdd:Array,
+    disabled:Boolean,
   },
   data() {
     return {
@@ -40,6 +41,9 @@ export default {
       let src = `/dataview/#/childList/add/${this.broadCastName}/ledu/${this.serviceName}`
       if(this.colSrv&&this.colSrv!==this.serviceName){
         src+=`?colSrv=${this.colSrv}`
+      }
+      if(this.disabled===true){
+        src+=`&disabled=true`
       }
       return src
     },

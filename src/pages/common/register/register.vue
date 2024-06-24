@@ -1221,17 +1221,17 @@ export default {
           type: "warning",
         })
           .then(() => {
-            if (self.webConfig.manage) {
-              window.location.href = self.webConfig.manage;
-            } else {
+            // if (self.webConfig && self.webConfig.manage) {
+            //   window.location.href = self.webConfig.manage;
+            // } else if(self.toLogin){
               self.toLogin();
-            }
+            // }
           })
           .catch(() => {
-            this.$message({
-              type: "info",
-              message: "取消操作",
-            });
+            // this.$message({
+            //   type: "info",
+            //   message: "取消操作",
+            // });
           });
           return true
       } else {

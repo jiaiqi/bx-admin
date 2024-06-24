@@ -1,6 +1,7 @@
 /**
  * 带子表的组件的mixin，主要处理主表和子表的关系。 Add, Update, Detail都使用该mixin
  */
+import { evalJson } from '@/util/evalJsonExpr.js'
 export default {
 
   data() {
@@ -508,7 +509,16 @@ export default {
       let expr = fk.show_ui_child_table;
       let showExpr = fk.show_child_list_expr
       let data = self.mainFormDatas || mainFromData
-      
+      if(fk?.show_ctable_json){
+        try {
+          const json = JSON.parse(fk.show_ctable_json)
+          if(json && evalJson(json,data)===false){
+            return false
+          }
+        } catch (error) {
+          
+        }
+      }
       if (fk && expr) {
         if (_.isString(expr)) {
           if (expr === "否") {
