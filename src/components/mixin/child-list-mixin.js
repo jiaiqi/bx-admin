@@ -50,7 +50,7 @@ export default {
        }
       }else{
         req = null 
-      }
+      }initDatas
       
       return req
    }

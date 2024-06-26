@@ -432,7 +432,7 @@ export default {
       if (this.$refs.childrenList !== undefined) {
         this.$refs.childrenList.forEach(childList => {
           let updateQueries = childList.buildRunQuries();
-          if (updateQueries.length > 0) {
+          if (updateQueries && updateQueries.length > 0) {
             childDataList = childDataList.concat(updateQueries);
           }
 

@@ -294,11 +294,11 @@ export default {
     },
     buildRunQuries() {
       if (this.$refs.mlist) {
-        return this.$refs.mlist.buildMlistRunQuries(this.foreignKey);
+        return this.$refs.mlist.buildMlistRunQuries(this.foreignKey)||[];
       } else if (this.$refs.frameList) {
-        return this.$refs.frameList?.buildRunQuries();
+        return this.$refs.frameList?.buildRunQuries(this.foreignKey)||[];
       } else {
-        return this.$refs.list.buildRunQuries(this.foreignKey);
+        return this.$refs.list.buildRunQuries(this.foreignKey)||[];
       }
     },
 

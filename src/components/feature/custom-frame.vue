@@ -90,6 +90,9 @@ export default {
       if (this.broadcastChannel?.postMessage) {
         console.log('emit::',data)
         this.broadcastChannel.postMessage(JSON.stringify(data));
+        if(this.frameSrc?.includes('disabled=true')){
+          this.listData = data.data
+        }
       }
     },
     beforeDestroy() {
