@@ -37,7 +37,7 @@
     </el-dialog>
 
     <el-dialog title="编辑" width="90%" :close-on-click-modal="1==2"  :visible="activeForm == 'update'" @close="onCloseEvent()" append-to-body>
-      <update name="list-update" ref="update-form" v-if="activeForm == 'update' " :init-load="initLoad" :pk="pk" :pkCol="pkCol" :service="service"   :defaultValues="defaultValues"  :parentPageType="'list'" @action-complete="activeForm = null">
+      <update name="list-update" ref="update-form" v-if="activeForm == 'update' " :init-load="initLoad" :pk="pk" :pkCol="pkCol" :service="service"   :defaultValues="defaultValues" :defaultConditions="defaultConditions"  :parentPageType="'list'" @action-complete="activeForm = null">
       </update>
       <!-- <simple-update name="update" :appNo="customSrvApp" :init-load="initLoad" ref="update-form" v-if="activeForm == 'update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null">
       </simple-update> -->

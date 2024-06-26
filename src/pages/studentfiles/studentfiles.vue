@@ -763,10 +763,11 @@ var chartPie=null;
                 completionRate = isCompletion/allNum
                 console.log(completionRate.toFixed(2),isCompletion,allNum)
             }
+            let text = completionRate?`${completionRate.toFixed(2) * 100}%`:'0%'
             let options =  { 
                 title : {
                     show:true,//显示策略，默认值true,可选为：true（显示） | false（隐藏）
-                    text: `${completionRate.toFixed(2) * 100}%`,//主标题文本，'\n'指定换行
+                    text,//主标题文本，'\n'指定换行
                     subtext: '完成率',//副标题文本，'\n'指定换行
                     x:'50%',//水平安放位置，默认为'left'，可选为：'center' | 'left' | 'right' | {number}（x坐标，单位px）
                     y: '45%',//垂直安放位置，默认为top，可选为：'top' | 'bottom' | 'center' | {number}（y坐标，单位px）

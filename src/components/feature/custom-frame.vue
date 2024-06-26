@@ -43,7 +43,7 @@ export default {
         src+=`?colSrv=${this.colSrv}`
       }
       if(this.disabled===true){
-        src+=`&disabled=true`
+        src+= src?.includes('?')?'&disabled=true': `?disabled=true`
       }
       return src
     },

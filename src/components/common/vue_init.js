@@ -73,13 +73,13 @@ function init() {
 
 
 
-            // back_server_protocol: "https",
-            // back_server_ip: "api.laodongcloud.com",    // 西乡
-            // back_server_port: "",
+            back_server_protocol: "https",
+            back_server_ip: "api.laodongcloud.com",    // 西乡
+            back_server_port: "",
 
-            back_server_protocol: "http",
-            back_server_ip: "192.168.0.157",    // 西乡
-            back_server_port: "8104",
+            // back_server_protocol: "http",
+            // back_server_ip: "192.168.0.157",    // 西乡
+            // back_server_port: "8104",
 
             // back_server_protocol: "https",
             // back_server_ip: "xxld.100xsys.cn",    // 西乡
