@@ -58,8 +58,12 @@ export default {
     buildRunQuries() {
       return this.listData
     },
+    
     load() {
       this.emit(this.data)
+      this.emit({
+        childListCfg:this.data
+      })
     },
     initBroadcastChannel(str = '') {
       this.broadCastName = new Date().getTime() + `_${str}`
@@ -90,9 +94,24 @@ export default {
       if (this.broadcastChannel?.postMessage) {
         console.log('emit::',data)
         this.broadcastChannel.postMessage(JSON.stringify(data));
-        if(this.frameSrc?.includes('disabled=true')){
-          this.listData = data.data
-        }
+      //   if(this.frameSrc?.includes('disabled=true')){
+      //     this.listData = [
+      //   {
+      //     "serviceName": this.addButton?.service_name,
+      //     "data": [...data],
+      //     "depend_keys": [
+      //       {
+      //         "type": "column",
+      //         "depend_key": this.childListCfg?.foreign_key?.referenced_column_name,
+      //         "add_col": this.childListCfg?.foreign_key?.column_name,
+      //       }
+      //     ]
+      //   }
+      // ]
+          
+          
+      //     data.data
+      //   }
       }
     },
     beforeDestroy() {
