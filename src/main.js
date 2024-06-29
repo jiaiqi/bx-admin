@@ -20,6 +20,13 @@ import { BootstrapVue, BootstrapVueIcons} from 'bootstrap-vue'
 Vue.use(BootstrapVue)
 Vue.use(BootstrapVueIcons)
 
+// 生产环境重写console.log达到去除log的目的
+function rewirteLog() {
+  console.log = (function (log) {
+    return process.env.NODE_ENV == 'production' ? function () { } : log
+  }(console.log))
+}
+rewirteLog()
 
 // import drag from '@/util/drag'; 
 // Vue.use(drag);

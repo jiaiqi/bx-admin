@@ -29,50 +29,95 @@
         @on-selected="onPickerSelected"
         v-else-if="isFks"
       ></table-picker>
-      <el-autocomplete
-        v-else
-        ref="autocomplete"
-        :prefix-icon="field.info.dispLoader&&field.info.dispLoader.imgType==='eicon'&&field.getSrvVal()||''"
-        :trigger-on-focus="showAutocomplete"
-        :fetch-suggestions="loadOptions"
-        :value-key="field.info.dispCol"
-        :disabled="!field.info.editable"
-        v-model="selected"
-        :placeholder="field.info.placeholder"
-        clearable
-        @select="handleSelect"
-        @blur="handleBlur"
-        style="min-width: 220px"
-        class="finder-autocomplete"
-      >
-        <el-button
-          slot="append"
-          icon="el-icon-search"
-          v-if="!field.info.noSearchIcon"
-          @click="onPopupClicked"
+      <div v-else style="display: flex; align-items: center">
+        <el-autocomplete
+          ref="autocomplete"
+          :prefix-icon="
+            (field.info.dispLoader &&
+              field.info.dispLoader.imgType === 'eicon' &&
+              field.getSrvVal()) ||
+            ''
+          "
+          :trigger-on-focus="showAutocomplete"
+          :fetch-suggestions="loadOptions"
+          :value-key="field.info.dispCol"
+          :disabled="!field.info.editable"
+          v-model="selected"
+          :placeholder="field.info.placeholder"
+          clearable
+          @select="handleSelect"
+          @blur="handleBlur"
+          style="min-width: 220px; flex: 1"
+          class="finder-autocomplete"
         >
-        </el-button>
-        <template slot-scope="{ item }">
-          <span style="float: left">{{ item.labelFunc(item) }}</span>
-          <i :class="item.elIconFunc(item)" style="font-size: 20px;"
-             v-if="item.elIconFunc"></i>
-          <div
+          <div slot="append">
+            <el-button
+              icon="el-icon-search"
+              v-if="!field.info.noSearchIcon"
+              @click="onPopupClicked"
+            >
+            </el-button>
+          </div>
+          <template slot-scope="{ item }">
+            <span style="float: left">{{ item.labelFunc(item) }}</span>
+            <i
+              :class="item.elIconFunc(item)"
+              style="font-size: 20px"
+              v-if="item.elIconFunc"
+            ></i>
+            <div
               class="svg-icon"
               v-html="item.imgUrlFunc(item)"
-              v-else-if="item.imgUrlFunc&&item.imgUrlFunc(item)&&item.imgUrlFunc(item).includes('<svg')"
+              v-else-if="
+                item.imgUrlFunc &&
+                item.imgUrlFunc(item) &&
+                item.imgUrlFunc(item).includes('<svg')
+              "
               height="30"
               width="30"
-          >
-          </div>
-          <img
-            :src="item.imgUrlFunc(item)"
-            v-else-if="item.imgUrlFunc"
-            height="30"
-            width="30"
-          />
-        </template>
-      </el-autocomplete>
-
+            ></div>
+            <img
+              :src="item.imgUrlFunc(item)"
+              v-else-if="item.imgUrlFunc"
+              height="30"
+              width="30"
+            />
+          </template>
+        </el-autocomplete>
+        <el-button
+          icon="el-icon-plus"
+          style="margin-left: 5px; height: 38px"
+          size="mini"
+          v-if="
+            addSrvCfg &&
+            addSrvCfg.permission &&
+            addSrvCfg.srv &&
+            optionListV2 &&
+            optionListV2.allow_input === '编辑选择'
+          "
+          @click="activePopup = 'add'"
+        >
+        </el-button>
+      </div>
+      <el-dialog
+        title="新增选项"
+        width="90%"
+        :close-on-click-modal="1 == 2"
+        append-to-body
+        :visible="activePopup === 'add'"
+        @close="activePopup = ''"
+      >
+        <add
+          name="add-popup"
+          ref="add-form"
+          v-if="activePopup == 'add'"
+          :service="addService"
+          :$srvApp="addApp"
+          :navAfterSubmit="false"
+          @executor-complete="onExecutorComplete"
+        >
+        </add>
+      </el-dialog>
       <el-dialog
         title="查询选择"
         width="90%"
@@ -126,6 +171,7 @@ export default {
     List: () => import("../common/list.vue"),
     tablePicker,
     locationPicker,
+    Add: () => import("../common/add.vue"),
     //  () => import("../common/table-picker.vue")
   },
   model: {
@@ -145,6 +191,7 @@ export default {
     return {
       selected: null,
       popup: false,
+      activePopup: "",
       appNo: null,
       options: [],
       childForeign: null,
@@ -212,6 +259,9 @@ export default {
     },
   },
   computed: {
+    optionListV2() {
+      return this.field?.info?.srvCol?.option_list_v2;
+    },
     optionsRun: function () {
       return this.options;
     },
@@ -230,13 +280,35 @@ export default {
       return showAutocomplete;
     },
     isFks() {
-      return ["fks", "fkjson", "fkjsons"].includes(this.field?.info?.type) || this.field?.info?.moreConfig?.multi === true
+      return (
+        ["fks", "fkjson", "fkjsons"].includes(this.field?.info?.type) ||
+        this.field?.info?.moreConfig?.multi === true
+      );
     },
     isLocation() {
       return this.field.info?.type === "bxsys_obj_type_gps";
     },
+    addSrvCfg() {
+      return this.optionListV2?.add_srv_cfg;
+    },
+    addService() {
+      return (
+        this.optionListV2?.add_srv_cfg?.srv
+      );
+    },
+    addApp() {
+      return this.addSrvCfg?.app|| this.optionListV2?.srv_app || this.appNo|| null;
+    },
   },
   methods: {
+    onExecutorComplete(event) {
+      console.log(event);
+      const data = event.data?.response[0]?.response?.effect_data?.[0];
+      if (data) {
+        this.handleSelect(data);
+      }
+      this.activePopup = "";
+    },
     setInitVal() {
       let fieldInfo = this.field.info;
       if (
@@ -333,19 +405,30 @@ export default {
                   : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
               item["value"] = item[fieldInfo.valueCol];
               item.labelFunc = (item) => {
+                if (item[fieldInfo.dispCol]) {
+                  if (loader.showAsPair) {
+                    return `${item[fieldInfo.dispCol]}/${
+                      item[fieldInfo.valueCol]
+                    }`;
+                  } else {
+                    return item[fieldInfo.dispCol];
+                  }
+                } else {
+                  return item[fieldInfo.valueCol];
+                }
                 return loader.showAsPair !== true
                   ? item[fieldInfo.dispCol]
                   : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
               };
             });
 
-            options.forEach((item) => {
-              item.labelFunc = (data) => {
-                return loader.showAsPair !== true
-                  ? data[fieldInfo.dispCol]
-                  : `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`;
-              };
-            });
+            // options.forEach((item) => {
+            //   item.labelFunc = (data) => {
+            //     return loader.showAsPair !== true
+            //       ? data[fieldInfo.dispCol]
+            //       : `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`;
+            //   };
+            // });
             this.options = options.map((item) => item);
             // cb(options)
             this.setInitVal();
@@ -492,8 +575,8 @@ export default {
 
       let app = this.$srvApp && this.field.evalFormExpr(this.$srvApp, "");
       // app配置了this或者data.app的 使用当前app
-      if(app === 'this' || (!app && loader?.srvApp?.includes('data.app'))){
-        app = sessionStorage.getItem('current_app')
+      if (app === "this" || (!app && loader?.srvApp?.includes("data.app"))) {
+        app = sessionStorage.getItem("current_app");
       }
       if (this.$srvApp && !app) {
         // 使用了动态srvApp，但是eval结果出错，取消查询
@@ -515,11 +598,11 @@ export default {
             };
           });
           options.forEach((option) => {
-            if(loader.imgType==='imgdata'&&loader.refedCol){
-              option.imgUrlFunc = data => data[loader.refedCol]
-            }else if(loader.imgType==='eicon'&&loader.refedCol){
-              option.elIconFunc = data => data[loader.refedCol]
-            }else if (loader.imgUrlExpr) {
+            if (loader.imgType === "imgdata" && loader.refedCol) {
+              option.imgUrlFunc = (data) => data[loader.refedCol];
+            } else if (loader.imgType === "eicon" && loader.refedCol) {
+              option.elIconFunc = (data) => data[loader.refedCol];
+            } else if (loader.imgUrlExpr) {
               option.imgUrlFunc = (data) => {
                 return (
                   this.serviceApi().downloadFileNo + data[loader.imgUrlExpr]
@@ -782,7 +865,11 @@ export default {
         queryMethod: "select",
         colNames: ["*"],
         condition: [
-          { colName: fieldInfo.valueCol, value: srvVal, ruleType:srvVal?.includes(',')?'in':"eq" },
+          {
+            colName: fieldInfo.valueCol,
+            value: srvVal,
+            ruleType: srvVal?.includes(",") ? "in" : "eq",
+          },
         ],
       };
 
@@ -986,13 +1073,14 @@ export default {
 };
 </script>
 <style lang="less">
-.svg-icon{
-  svg{
+.svg-icon {
+  svg {
     width: 30px;
     height: 30px;
   }
 }
-.el-autocomplete-suggestion li{
+
+.el-autocomplete-suggestion li {
   display: flex;
   justify-content: space-between;
   align-items: center;

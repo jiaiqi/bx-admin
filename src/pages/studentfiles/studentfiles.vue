@@ -277,10 +277,8 @@
                                 <div style="color:#ff5500;font-size:3rem;">
                                     {{allValuestr}}
                                 </div>
-                                <div style="padding-left:10px;">
-                                    <!-- <div>
-                                        评分
-                                    </div> -->
+                                <!-- <div style="padding-left:10px;">
+                                   
                                     <div >
                                         <el-rate
                                         style="height:40px;font-size:30px;"
@@ -290,7 +288,7 @@
                                         text-color="#ff9900">
                                         </el-rate>
                                     </div>
-                                </div>
+                                </div> -->
                                 
                                 <!-- <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}</div>
                                 <div style="color:#000;line-height:1.5rem; font-size:0.9rem;"class="font-weight-bold">{{item.evaluate_comment}}
@@ -638,7 +636,8 @@ var chartPie=null;
         async getAllCourse(){
             // srvledu_semester_evaluate_select
             let self = this
-            let srv =  'srvledu_semester_evaluate_select'
+            // let srv =  'srvledu_semester_evaluate_select'
+            let srv =  'srvledu_semester_evaluate_countall_select'
             let app = 'ledu'
             let condition = [{
                 colName:'sch_year',
