@@ -1,6 +1,7 @@
 import moment from "moment";
 import Dialog from '../common/dialog.vue'
 import * as DataUtil from "../../util/DataUtil";
+// import { $axios } from './vueAxiosInit'
 import {
   formatMoney,
   monthEnd,
@@ -282,7 +283,14 @@ function init_util() {
       try {
 
         var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
-        location.href = url;
+        // location.href = url;
+        console.time("download");
+        // this.$http.get(url).then(res=>{
+        //   console.timeEnd("download");
+        //   debugger
+        //   console.log("download::",res);
+
+        // })
         var loading = this.openLoading();
 
         const checkToken = function () {
@@ -291,9 +299,9 @@ function init_util() {
             clearTimeout(downloadTimer);
             loading.close();
           }
-          setTimeout(() => {
-            loading.close();
-          }, 1000);
+          // setTimeout(() => {
+          //   loading.close();
+          // }, 1000);
         }
 
         //获取cookie
@@ -317,18 +325,54 @@ function init_util() {
     } else {
       var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
       window.location.href = url;
-
+      var loading = this.openLoading('文件准备中...');
+      const getFileState = (stateNum) => {
+        Vue.prototype.getFileState(uuid,app).then((res)=>{
+          stateNum++
+          if(stateNum>100){
+            loading.close();
+            return
+          }
+          console.log(res);
+          if(res==='完成'){
+            loading.close()
+          }else{
+            setTimeout(getFileState(stateNum),1000)
+          }
+        }).catch(err=>{
+          console.log(err)
+          loading.close()
+          clearInterval(downloadTimer)
+        })
+      }
+      getFileState(0)
     }
 
   }
 
+  /**
+   * 查询后端生成文件的状态
+   * @param {*} uuid 后端返回的文件唯一标识
+   * @param {string} app 应用编号
+   */
+  Vue.prototype.getFileState = async function (uuid,app) {
+    const url = `/${app}/export/file/check?uuid=${uuid}`
+    const res = await Vue.prototype.$axios(url)
+    console.log(res.data);
+    if (res.data.state === 'SUCCESS') {
+      return res.data.resultMessage
+    } else {
+      return null
+    }
+  }
+
 
   //打开遮罩
-  Vue.prototype.openLoading = function () {
+  Vue.prototype.openLoading = function (text) {
 
     const loading = this.$loading({
       lock: true,
-      text: '加载中',
+      text: text || '加载中',
       spinner: 'el-icon-loading',
       background: 'rgba(0, 0, 0, 0.7)'
     });

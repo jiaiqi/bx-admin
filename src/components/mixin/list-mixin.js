@@ -2866,10 +2866,10 @@ export default {
         isProc = this.listType
       }
       
-
+      var loading = this.openLoading();
       this.genExportExcel(this.service_name, this.buildQueryConditions(), null, this.order,null,null,isProc,columns)
         .then((response) => {
-
+          loading.close()
           var uuid = response.body.data.uuid
           this.downloadexport(uuid);
 

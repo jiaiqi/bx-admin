@@ -23,15 +23,15 @@ function getProdExternals() {
 
 module.exports = {
   chainWebpack: (config) => {
-    // 移除 prefetch 插件
-    config.plugins.delete("prefetch");
-    // 移除 preload 插件
-    config.plugins.delete("preload");
-    // 删除懒加载模块的 prefetch preload，降低带宽压力
-    // config.plugins.delete('prefetch')
-    // config.plugins.delete('preload')
-    // // 压缩代码
-    config.optimization.minimize(true)
+    if (process.env.NODE_ENV === "production") {
+      // 生产环境 删除懒加载模块的 prefetch preload，降低带宽压力
+      // 移除 prefetch 插件
+      config.plugins.delete("prefetch");
+      // 移除 preload 插件
+      config.plugins.delete("preload");
+      // 生产环境 压缩代码
+      // config.optimization.minimize(true)
+    }
   },
   productionSourceMap: false, // 生产环境是否生成 sourceMap 文件
   transpileDependencies: ["simple-mind-map"], // 思维导图
