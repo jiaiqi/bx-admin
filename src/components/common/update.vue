@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-loading="allChildDataLoaded===false">
     <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
       <!-- <div slot="header" class="clearfix">
         <span>{{ label }}</span>
@@ -372,6 +372,10 @@ export default {
 
   methods: {
     childDataLoadedRun(e){
+      console.log("childDataLoadedRun",e);
+      if(e?.constraint_name){
+        this.$set(this.childDataLoadedMap,e.constraint_name,true)
+      }
       this.$emit("child-loaded",e)
     },
     getChildGridData:function(){

@@ -485,7 +485,7 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :span="24">
+              <el-col :span="24" v-loading="onFormLoading">
                 <el-row type="flex" class="row-bg" justify="center">
                   <el-form-item>
                     <el-button type="primary" @click="submitApprovalForm('approval_form', false)">提交
@@ -659,7 +659,8 @@ export default {
       procHanleStepConfigJson: {},
       validateFunOpertion: { valid: true, msg: "" },
       validateFun: new Function("return " + this.validateFunOpertion),
-      opinion: null
+      opinion: null,
+      onFormLoading:true,
     };
   },
   computed: {
@@ -707,6 +708,8 @@ export default {
       if (e) {
         this.childDataLoaded[e.name] = e.data;
       }
+      console.log('onFormLoading',this.onFormLoading)
+      this.onFormLoading = false
     },
     detail_form_loaded(instacne) {
       if (instacne.actions && instacne.actions.nav2update) {
@@ -2105,6 +2108,12 @@ export default {
     }
     this.initload = true;
     this.initProcData();
+    this.$nextTick(() => {
+      // 10秒后自动关闭loading
+      setTimeout(() => {
+        this.onFormLoading = false
+      },10*1000)
+    })
   }
 };
 </script>

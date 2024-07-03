@@ -35,9 +35,9 @@ function init() {
       // back_server_ip: "wx.100xsys.cn", // oa
       // back_server_port: "",
 
-      // back_server_protocol: "https",
-      // back_server_ip: "api.100xsys.cn", // saas外网
-      // back_server_port: "",
+      back_server_protocol: "https",
+      back_server_ip: "api.100xsys.cn", // saas外网
+      back_server_port: "",
 
       // back_server_protocol: "http",
       // back_server_ip: "vrms.vanxum.com", // 万像
@@ -52,9 +52,9 @@ function init() {
       // back_server_port: "180",
 
       //audit ai稽核项目
-      back_server_protocol: "http",
-      back_server_ip: "192.168.0.151", //
-      back_server_port: "180",
+      // back_server_protocol: "http",
+      // back_server_ip: "192.168.0.151", //
+      // back_server_port: "180",
       // 稽核生产环境
       // back_server_protocol: "http",
       // back_server_ip: "30.61.1.21", //

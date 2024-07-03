@@ -2100,7 +2100,8 @@ export default {
                   }
                   let child = {
                     name:this.service,
-                    data:this.gridData
+                    data:this.gridData,
+                    constraint_name:this.childforeignkey?.constraint_name
                   }
                   this.$emit("child-loaded",child)
                 }

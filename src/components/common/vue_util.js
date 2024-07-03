@@ -276,77 +276,129 @@ function init_util() {
   Vue.prototype.downloadexport = function (uuid) {
 
     var app = this.resolveDefaultSrvApp();
-    var page_origin = (window.location.protocol + "//" + window.location.hostname);
-    var gateway_origin = (window.top.pathConfig.gateway_protocol + "://" + window.top.pathConfig.gateway_ip);
-    //跨域暂时没有想到好的解决方案
-    if (page_origin == gateway_origin) {
-      try {
-
-        var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
-        // location.href = url;
-        console.time("download");
-        // this.$http.get(url).then(res=>{
-        //   console.timeEnd("download");
-        //   debugger
-        //   console.log("download::",res);
-
-        // })
-        var loading = this.openLoading();
-
-        const checkToken = function () {
-          var token = getCookie("downloadToken");
-          if (token && token == uuid) {
-            clearTimeout(downloadTimer);
+    var url =
+      backendIpAddr +
+      "/" +
+      app +
+      "/downloadexport/" +
+      uuid +
+      "?bx_auth_ticket=" +
+      sessionStorage.getItem("bx_auth_ticket");
+    window.location.href = url;
+    var loading = this.openLoading("文件准备中...");
+    const downloadTimer = setInterval(() => {
+      Vue.prototype.getFileState(uuid, app).then((res) => {
+          if (res === "完成") {
             loading.close();
+          clearInterval(downloadTimer);
           }
-          // setTimeout(() => {
-          //   loading.close();
-          // }, 1000);
-        }
-
-        //获取cookie
-        const getCookie = function (cookieName) {
-          var strCookie = document.cookie;
-          var arrCookie = strCookie.split(";");
-          for (var i = 0; i < arrCookie.length; i++) {
-            var arr = arrCookie[i].split("=");
-            if (cookieName == arr[0].trim()) {
-              return arr[1];
-            }
-          }
-          return "";
-        }
-
-        var downloadTimer = setInterval(checkToken, 1000);
-      } catch (e) {
-        alert(e.name + ": " + e.message);
-      }
-
-    } else {
-      var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
-      window.location.href = url;
-      var loading = this.openLoading('文件准备中...');
-      const getFileState = (stateNum) => {
-        Vue.prototype.getFileState(uuid,app).then((res)=>{
-          stateNum++
-          if(stateNum>100){
-            loading.close();
-            return
-          }
-          console.log(res);
-          if(res==='完成'){
-            loading.close()
-          }else{
-            setTimeout(getFileState(stateNum),1000)
-          }
-        }).catch(err=>{
-          console.log(err)
-          loading.close()
-          clearInterval(downloadTimer)
         })
-      }
-      getFileState(0)
-    }
+        .catch((err) => {
+          console.log(err);
+          loading.close();
+          clearInterval(downloadTimer);
+        });
+    }, 1000);
+    // const getFileState = (stateNum) => {
+    //   Vue.prototype
+    //     .getFileState(uuid, app)
+    //     .then((res) => {
+    //       stateNum++;
+    //       if (stateNum > 100) {
+    //         loading.close();
+    //         return;
+    //       }
+    //       console.log(res);
+    //       if (res === "完成") {
+    //         loading.close();
+    //       } else {
+    //         // 未完成 等待一秒后重新发送查找文件状态的请求
+    //         setTimeout(getFileState(stateNum), 1000);
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       console.log(err);
+    //       loading.close();
+    //       clearInterval(downloadTimer);
+    //     });
+    // };
+    // setTimeout(() => {
+    //   getFileState(0);
+    // }, 1000);
+    // var page_origin = (window.location.protocol + "//" + window.location.hostname);
+    // var gateway_origin = (window.top.pathConfig.gateway_protocol + "://" + window.top.pathConfig.gateway_ip);
+         
+    //跨域暂时没有想到好的解决方案
+    // if (page_origin == gateway_origin) {
+    //   try {
+
+    //     var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
+    //     location.href = url;
+        
+    //     // console.time("download");
+    //     // this.$http.get(url).then(res=>{
+    //     //   console.timeEnd("download");
+    //     //   debugger
+    //     //   console.log("download::",res);
+
+    //     // })
+    //     // var loading = this.openLoading();
+
+    //     // const checkToken = function () {
+    //     //   var token = getCookie("downloadToken");
+    //     //   if (token && token == uuid) {
+    //     //     clearTimeout(downloadTimer);
+    //     //     loading.close();
+    //     //   }
+    //     //   // setTimeout(() => {
+    //     //   //   loading.close();
+    //     //   // }, 1000);
+    //     // }
+
+    //     //获取cookie
+    //     // const getCookie = function (cookieName) {
+    //     //   var strCookie = document.cookie;
+    //     //   var arrCookie = strCookie.split(";");
+    //     //   for (var i = 0; i < arrCookie.length; i++) {
+    //     //     var arr = arrCookie[i].split("=");
+    //     //     if (cookieName == arr[0].trim()) {
+    //     //       return arr[1];
+    //     //     }
+    //     //   }
+    //     //   return "";
+    //     // }
+
+    //     // var downloadTimer = setInterval(checkToken, 1000);
+    //   } catch (e) {
+    //     alert(e.name + ": " + e.message);
+    //   }
+
+    // } else {
+    //   var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
+    //   window.location.href = url;
+    //   var loading = this.openLoading('文件准备中...');
+    //   const getFileState = (stateNum) => {
+    //     Vue.prototype.getFileState(uuid,app).then((res)=>{
+    //       stateNum++
+    //       if(stateNum>100){
+    //         loading.close();
+    //         return
+    //       }
+    //       console.log(res);
+    //       if(res==='完成'){
+    //         loading.close()
+    //       }else{
+    //         // 未完成 等待一秒后重新发送查找文件状态的请求
+    //         setTimeout(getFileState(stateNum),1000)
+    //       }
+    //     }).catch(err=>{
+    //       console.log(err)
+    //       loading.close()
+    //       clearInterval(downloadTimer)
+    //     })
+    //   }
+    //   getFileState(0)
+    // }
 
   }
 
