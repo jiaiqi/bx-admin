@@ -1,4 +1,4 @@
-import momentLib from "moment";
+import dayjs from "dayjs";
 import { FieldInfo } from "../model/FieldInfo";
 import { Field } from "../model/Field";
 
@@ -280,7 +280,7 @@ export default {
 
       if (func) {
         let row = rowData;
-        let moment = momentLib;
+        let moment = dayjs;
         let ret = eval("var zz=" + func + "(row, vm); zz");
         console.log("evalFun:", ret, column, fieldInfo, rowData);
         if (ret === "Invalid date") {

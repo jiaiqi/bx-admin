@@ -41,7 +41,7 @@
 
 <script>
 import Vue from "vue";
-import _ from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 import { FieldInfo } from "../model/FieldInfo";
 import { Field } from "../model/Field";
 import RawFieldEditor from "./raw-field-editor.vue";
@@ -381,7 +381,7 @@ export default {
     //实现JS数组的深拷贝不引用
     onExtend(list) {
       let arr = [];
-      let obj = _.cloneDeep(list);
+      let obj = cloneDeep(list);
       for (let i in obj) {
         arr.push(obj[i]);
       }

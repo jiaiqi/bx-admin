@@ -41,7 +41,6 @@
 <script>
   import SimpleUpdate from "../components/common/simple-update";
   import List from "../components/common/list";
-  import momentLib from "moment";
 
   export default {
     name: "personal-update",

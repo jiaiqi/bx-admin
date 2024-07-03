@@ -5,7 +5,6 @@
 </template>
 
 <script>
-import momentLib from "moment";
 import extjs from "./components/test/extjs.js";
 import dummy from "./components/test/spa_mock.js";
 import { LoadScript } from './common/common'
@@ -80,7 +79,6 @@ export default {
       //   this.select("srvsys_page_extjs_select", condition).then((resp) => {
       //     try {
       //       if (resp.data && resp.data.data && resp.data.data.length > 0) {
-      //         let moment = momentLib;
       //         eval(resp.data.data[0].extjs)
       //       }
       //     } finally {

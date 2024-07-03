@@ -3,8 +3,6 @@
 </template>
 
 <script>
-import _ from "lodash";
-import Vue from "vue";
 export default {
   components: {},
   mixins: [],

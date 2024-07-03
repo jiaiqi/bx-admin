@@ -1,4 +1,4 @@
-import _ from "lodash"
+import isString from "lodash/isString"
 
 export class ActionInfo {
 
@@ -86,7 +86,7 @@ export class ActionInfo {
     }
   }
     this.visibleFunc = () => {
-      if (_.isString(self.visible)) {
+      if (isString(self.visible)) {
         try {
           return eval(self.visible)
         } catch (e) {

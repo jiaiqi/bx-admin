@@ -46,7 +46,6 @@
   import Vue from 'vue';
   import Action from '../components/common/action';
   import {ExecutorInfo} from '../components/model/ExecutorInfo'
-  import momentLib from "moment";
 
   export default {
     name: "personal-info-update",

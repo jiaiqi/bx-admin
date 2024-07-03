@@ -2,7 +2,7 @@ import {FieldInfo} from '../model/FieldInfo'
 import {Field} from '../model/Field'
 import Vue from 'vue'
 import {ActionInfo} from "../model/ActionInfo";
-import momentLib from "moment";
+import dayjs from "dayjs";
 
 export default {
 
@@ -85,7 +85,7 @@ export default {
       let func = fieldInfo.redundant.func
 
         if (func) {
-        let moment = momentLib;
+        let moment = dayjs;
         let row = formModelFunc();
         // console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm); zz");

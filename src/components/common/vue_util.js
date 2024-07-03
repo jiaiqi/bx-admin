@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import Dialog from '../common/dialog.vue'
 import * as DataUtil from "../../util/DataUtil";
 // import { $axios } from './vueAxiosInit'
@@ -13,7 +13,12 @@ import {
 } from "../../util/DataUtil";
 import Vue from "vue";
 
-import _ from "lodash";
+import isBoolean from 'lodash/isBoolean'
+import isArray from 'lodash/isArray'
+import isUndefined from 'lodash/isUndefined'
+import isString from 'lodash/isString'
+import isFunction from 'lodash/isFunction'
+import isEmpty from 'lodash/isEmpty'
 
 function init_util() {
   const eventBus = new Vue()
@@ -1152,23 +1157,23 @@ function init_util() {
       return newObj;
   }
   Vue.prototype.parseDateTime = function (dateStr) {
-    return moment(dateStr).toDate();
+    return dayjs(dateStr).toDate();
   }
 
   Vue.prototype.formatDateTime = function (date) {
-    return moment(date).format("YYYY-MM-DD  HH:mm:ss");
+    return dayjs(date).format("YYYY-MM-DD  HH:mm:ss");
   }
 
   Vue.prototype.parseDate = function (dateStr) {
-    return moment(dateStr).toDate();
+    return dayjs(dateStr).toDate();
   }
 
   Vue.prototype.formatDate = function (date) {
-    return moment(date).format("YYYY-MM-DD");
+    return dayjs(date).format("YYYY-MM-DD");
   }
 
   Vue.prototype.addDate = function (date, amount, flag) {
-    return moment(date).add(amount, flag).toDate();
+    return dayjs(date).add(amount, flag).toDate();
   }
 
   Vue.prototype.templateToString = function (row, temp) {
@@ -1377,13 +1382,13 @@ function init_util() {
         if (key === "_rtDataCtx") {
           delete obj._rtDataCtx
         } else if (key === "data") {
-          if (!obj.data || _.isEmpty(obj.data)) {
+          if (!obj.data || isEmpty(obj.data)) {
             delete obj.data
           }
         }
       },
       (obj, key) => {
-        return (key === "data" || key === "child_data_list" || _.isArray(obj))
+        return (key === "data" || key === "child_data_list" || Array.isArray(obj))
       });
 
   }
@@ -1471,7 +1476,7 @@ function init_util() {
     let node = this;
     while (node) {
       let isMarker = node.isMarker || (this.$attrs && this.$attrs["is-mark"] === "true");
-      if (isMarker || (node.getName && _.isFunction(node.getName) && node === this)) {
+      if (isMarker || (node.getName && isFunction(node.getName) && node === this)) {
         let name = node.getName();
         tokens.splice(0, 0, name);
       }
@@ -1642,16 +1647,16 @@ function init_util() {
 
   Vue.prototype.evalExprOrFunc = function (value, data, defaultValue) {
     try {
-      if (_.isString(value)) {
+      if (isString(value)) {
         let vm = this;
         return eval(value);
-      } else if (_.isFunction(value)) {
+      } else if (isFunction(value)) {
         return value(data);
       } else {
 
       }
     } catch (e) {
-      if (_.isUndefined(defaultValue)) {
+      if (isUndefined(defaultValue)) {
         throw e
       } else {
         return defaultValue
@@ -1660,9 +1665,9 @@ function init_util() {
   }
 
   Vue.prototype.evalVersatileFlagVar = function (flagVar, data) {
-    if (_.isBoolean(flagVar)) {
+    if (isBoolean(flagVar)) {
       return flagVar;
-    } else if (_.isFunction(flagVar)) {
+    } else if (isFunction(flagVar)) {
       return flagVar(data);
     } else {
       return !!flagVar;

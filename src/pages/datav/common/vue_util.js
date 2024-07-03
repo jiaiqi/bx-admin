@@ -10,7 +10,12 @@ import {
   parseUrlParams,
 } from "./DataUtil";
 import Vue from "vue";
-import _ from "lodash";
+import isBoolean from "lodash/isBoolean";
+import isUndefined from "lodash/isUndefined";
+import isFunction from "lodash/isFunction";
+import isString from "lodash/isString";
+import isEmpty from "lodash/isEmpty";
+
 import { $axios as $http } from "@/common/http";
 
 function init_util() {
@@ -1096,7 +1101,7 @@ function init_util() {
         }
       },
       (obj, key) => {
-        return key === "data" || key === "child_data_list" || _.isArray(obj);
+        return key === "data" || key === "child_data_list" || Array.isArray(obj);
       }
     );
   };

@@ -1,21 +1,20 @@
-import moment from "moment";
-
+import dayjs from 'dayjs'
 export function formatDate(jsDate, type,format) {
   if ("date" === type) {
-    return moment(jsDate).format("YYYY-MM-DD");
+    return dayjs(jsDate).format("YYYY-MM-DD");
   } else if ("datetime" === type) {
     if(format && format == 'yyyy-MM-dd HH:mm'){
       
-      return moment(jsDate).format("YYYY-MM-DD HH:mm");
+      return dayjs(jsDate).format("YYYY-MM-DD HH:mm");
     }else{
-      return moment(jsDate).format("YYYY-MM-DD HH:mm:ss");
+      return dayjs(jsDate).format("YYYY-MM-DD HH:mm:ss");
     }
     
   } else if ("year" === type) {
-    return moment(jsDate).format("YYYY");
+    return dayjs(jsDate).format("YYYY");
   } else if ("month" === type) {
-    // return moment(jsDate).format("YYYY-MM" + "-01");
-    return moment(jsDate).format("YYYY-MM");
+    // return dayjs(jsDate).format("YYYY-MM" + "-01");
+    return dayjs(jsDate).format("YYYY-MM");
   } else if ("time" === type) {
     return jsDate;
   } else {
@@ -293,7 +292,7 @@ export function monthEnd() {
   return new Date(
     (now).getYear() + 1900,
     (now).getMonth(),
-    moment().daysInMonth())
+    dayjs().daysInMonth())
 };
 
 

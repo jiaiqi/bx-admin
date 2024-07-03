@@ -1,6 +1,16 @@
 import * as DataUtil from "../../util/DataUtil";
 import {formatMoney} from "../../util/DataUtil";
-import _ from "lodash";
+import isFunction from 'lodash/isFunction'
+import isBoolean from "lodash/isBoolean";
+import isString from "lodash/isString";
+import isObject from "lodash/isObject";
+import isUndefined from "lodash/isUndefined";
+import isNull from "lodash/isNull";
+import _isEmpty from "lodash/isEmpty";
+import split from "lodash/split";
+import join from "lodash/join";
+import clone from "lodash/clone";
+
 
 export const hotTableMetadata = {
   User: {
@@ -182,7 +192,7 @@ export class Field {
 
   setSrvVal(srvVal) {
     if (srvVal&&srvVal === this.getSrvVal()) {
-      let isFinderValScalar = (this.info.isFinder() && !_.isObject(this.model));
+      let isFinderValScalar = (this.info.isFinder() && !isObject(this.model));
       if (!isFinderValScalar) {
         return
       }
@@ -250,8 +260,8 @@ export class Field {
             items = items.map((item) => {
               return  item.disp
             })
-            // return _.join(items.map(item => item.disp), ",")
-            let valKeys =  _.join(items.map(item => item), ",")
+            // return join(items.map(item => item.disp), ",")
+            let valKeys =  join(items.map(item => item), ",")
             
              return valKeys
           }
@@ -272,7 +282,7 @@ export class Field {
 
     let value = this.getDispVal();
     let isSensitive = value === "******";
-    if (_.isNull(value) || _.isUndefined(value) || "" === value || isSensitive) {
+    if (isNull(value) || isUndefined(value) || "" === value || isSensitive) {
       return value;
     }
 
@@ -280,10 +290,10 @@ export class Field {
     let dispCol = this.info.dispCol;
     let separator = "-";
     if ("year" === fieldType.toLowerCase()) {
-      return _.split(value, separator)[0]
+      return split(value, separator)[0]
     } else if ("month" === fieldType.toLowerCase()) {
-      let parts = _.split(value, separator).slice(0, 2)
-      return _.join(parts, separator);
+      let parts = split(value, separator).slice(0, 2)
+      return join(parts, separator);
     } else if (fieldType === "Boolean") {
       return !!value ? "是" : "否";
     } else if (fieldType === "Money") {
@@ -293,7 +303,7 @@ export class Field {
         return ''
       }
       
-    } else if(fieldType === "fk" && _.isObject(this.model)){
+    } else if(fieldType === "fk" && isObject(this.model)){
       // fk 详情页显示 option list配置的 拼接值
       let fieldInfo = this.info
       let loader = fieldInfo.dispLoader
@@ -384,12 +394,12 @@ export class Field {
     let vm = this.form;
     let formModel = vm.srvValFormModel && vm.srvValFormModel();
 
-    if (_.isBoolean(flagVar)) {
+    if (isBoolean(flagVar)) {
       return flagVar;
-    } else if (_.isString(flagVar)) {
+    } else if (isString(flagVar)) {
       return vm.evalBxExpr(flagVar, formModel, vm);
       // 运行字符串表达式
-    } else if (_.isFunction(flagVar)) {
+    } else if (isFunction(flagVar)) {
       return flagVar(formModel);
     } else {
       return !!flagVar; 
@@ -398,13 +408,13 @@ export class Field {
 
   evalFormExpr(expr, defaultValue) {
     let vm = this.form;
-    if (_.isBoolean(expr)) {
+    if (isBoolean(expr)) {
       return expr;
     } else {
       let formModel = vm.srvValFormModel && vm.srvValFormModel();
-      if (_.isFunction(expr)) {
+      if (isFunction(expr)) {
         return expr(formModel);
-      } else if (_.isString(expr)) {
+      } else if (isString(expr)) {
         if (expr.trim().startsWith("${") && expr.trim().endsWith("}")) {
           let readExpr = expr.trim().substring(2, expr.trim().length - 1);
           return vm.evalBxExpr(readExpr, formModel, vm, defaultValue);
@@ -448,35 +458,35 @@ export class Field {
   putValidateError(rule, errMsg) {
     console.log('put Validate Error:',rule, errMsg)
     this.errMsg[rule] = errMsg;
-    this.errMsg = _.clone(this.errMsg);
+    this.errMsg = clone(this.errMsg);
 
   }
 
   putValidatePrompt(rule, promptMsg) {
   
     this.promptMsg[rule] = promptMsg;
-    this.promptMsg = _.clone(this.promptMsg);
+    this.promptMsg = clone(this.promptMsg);
 
   }
 
   clearValidateError(ruleName) {
     
     delete this.errMsg[ruleName];
-    this.errMsg = _.clone(this.errMsg);
+    this.errMsg = clone(this.errMsg);
   }
 
   clearValidatePrompt(ruleName) {
     
     delete this.promptMsg[ruleName];
-    this.promptMsg = _.clone(this.promptMsg);
+    this.promptMsg = clone(this.promptMsg);
   }
 
   hasValidateError() {
-    return !_.isEmpty(this.errMsg);
+    return !_isEmpty(this.errMsg);
   }
 
   hasValidatePrompt() {
-    return !_.isEmpty(this.promptMsg);
+    return !_isEmpty(this.promptMsg);
   }
 
   getAnyValidateError() {
@@ -492,7 +502,7 @@ export class Field {
     return "";
   }
   hasHistoryData(){
-    return !_.isEmpty(this.historyData) && this.historyData.length > 1;
+    return !_isEmpty(this.historyData) && this.historyData.length > 1;
   }
   getUniqueCheck(){
     let isUnique = this.info.moreConfig

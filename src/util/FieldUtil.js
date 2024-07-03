@@ -1,4 +1,3 @@
-import moment from "moment";
 
 export function createLinkUrlFunc(optionListV2, thisColName) {
   let func = function (data) {

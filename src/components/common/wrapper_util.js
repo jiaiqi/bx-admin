@@ -1,4 +1,6 @@
-import _ from "lodash"
+import isBoolean from "lodash/isBoolean"
+import lodashExtend from "lodash/extend"
+import isFunction from "lodash/isFunction"
 
 export class ActionWrapper4Button {
   // 按钮模型构造函数
@@ -43,9 +45,9 @@ export class ActionWrapper4Button {
 
 
   evalVersatileFlagVar(flagVar, rowData) {
-    if (_.isBoolean(flagVar)) {
+    if (isBoolean(flagVar)) {
       return flagVar;
-    } else if (_.isFunction(flagVar)) {
+    } else if (isFunction(flagVar)) {
       return flagVar(rowData);
     } else {
       return !!flagVar;
@@ -112,7 +114,7 @@ export function getButtonPara(buttons) {
 
 export function wrapButton(button,type) {
   let self = this
-  let extend = _.extend(new ActionWrapper4Button(), button);  // 按钮工厂函数
+  let extend = lodashExtend(new ActionWrapper4Button(), button);  // 按钮工厂函数
   /**
    * 处理自定义按钮 风格
    */
@@ -194,9 +196,9 @@ export class Wrapper4Header {
   }
 
   evalVersatileFlagVar(flagVar) {
-    if (_.isBoolean(flagVar)) {
+    if (isBoolean(flagVar)) {
       return flagVar;
-    } else if (_.isFunction(flagVar)) {
+    } else if (isFunction(flagVar)) {
       return flagVar();
     } else {
       return !!flagVar;
@@ -206,6 +208,6 @@ export class Wrapper4Header {
 
 
 export function wrapHeader(header) {
-  let extend = _.extend(new Wrapper4Header(), header);
+  let extend = lodashExtend(new Wrapper4Header(), header);
   return extend;
 }

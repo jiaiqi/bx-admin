@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import VueEvent from '../../util/VueEvent.js';
 export default {
   computed: {

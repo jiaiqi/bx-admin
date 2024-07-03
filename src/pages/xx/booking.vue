@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import moment from "moment";
+import dayjs from "dayjs";
 
 let timer = null
 export default {
@@ -112,7 +112,7 @@ export default {
     canBookingTime() {
       if (this.rowData?.rsv_start_time) {
         // 预约开始时间
-        if (this.currentTime && new Date(moment().format('YYYY-MM-DD ' + this.rowData?.rsv_start_time)) < new Date(this.currentTime)) {
+        if (this.currentTime && new Date(dayjs().format('YYYY-MM-DD ' + this.rowData?.rsv_start_time)) < new Date(this.currentTime)) {
           return true;
         } else {
           if (this.rowData?.rsv_days_before) {
@@ -247,7 +247,7 @@ export default {
       this.fetchDate();
     },
     dateChange(val) {
-      let date = moment(val).format("YYYY-MM-DD");
+      let date = dayjs(val).format("YYYY-MM-DD");
       if (!this.disabledDate(date)) {
         this.form.date = date;
         this.fetchTime();
@@ -343,7 +343,7 @@ export default {
   created() {
     this.$nextTick(() => {
       timer = setInterval(() => {
-        this.currentTime = moment().format("YYYY-MM-DD HH:mm:ss");
+        this.currentTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
       }, 1000)
     })
     if (this.defaultValues && Object.keys(this.defaultValues).length) {

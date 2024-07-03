@@ -1,6 +1,7 @@
 import {createLinkUrlFunc} from "../../util/FieldUtil";
-import _ from 'lodash';
-import Vue from "vue";
+import cloneDeep from 'lodash/cloneDeep';
+import isArray from 'lodash/isArray';
+import assign from 'lodash/assign';
 
 export class FieldInfo { 
   constructor(srvCol, formType) {

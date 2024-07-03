@@ -1,4 +1,3 @@
-import moment from "moment";
 
 export function dispCol2ValCol(dispColName) {
   let colName = dispColName.substring(1, dispColName.length)

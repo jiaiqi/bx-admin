@@ -9,7 +9,6 @@
 </style>
   
 <script>
-import _ from "lodash";
 import "@/assets/common.scss";
 let $ = require("jquery");
 import commonMixin from "@/components/mixin/global-page-mixin";

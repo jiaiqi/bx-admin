@@ -42,7 +42,6 @@
 <script>
   import SimpleDetail from "../components/common/simple-detail";
   import List from "../components/common/list";
-  import momentLib from "moment";
 
   export default {
     name: "personal-info",

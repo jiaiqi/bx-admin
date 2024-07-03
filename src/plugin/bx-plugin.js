@@ -1,4 +1,3 @@
-import _ from "lodash"
 
 export default {
   // The install method will be called with the Vue constructor as

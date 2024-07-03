@@ -13,7 +13,6 @@ import bludArrow from '../assets/icon/Icon_road_blue_arrow.png'
 import car from '../assets/icon/car.png'
 
 import {geoconv, getBaiduMapApi} from './api.js'
-import {over} from 'lodash'
 
 let activeLineColor = 'rgb(40, 189, 108)'
 // let bMapApi = 'http://192.168.0.151/bxmap/direction/v2/driving'  //https://api.map.baidu.com/direction/v2/driving   //'/baiduApi/direction/v2/driving'
