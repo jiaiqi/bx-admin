@@ -349,7 +349,10 @@
       <simple-add name="list-duplicate" ref="duplicate-form" :pageName="'list-duplicate'"
         v-if="activeForm == 'duplicate'" :service="getAddService" :default-conditions="getDefaultCondition4Duplicate"
         :submit2-db="storageType == 'db'" :parentPageType="listType" :defaultValues="activeData"
-        :parentMainFormDatas="listMainFormDatas" @action-complete="onAddFormActionComplete($event)"
+        :parentMainFormDatas="listMainFormDatas"
+        duplicateType="duplicate"
+        :duplicateData="clickedRow&&clickedRow.duplicate?clickedRow.duplicate:null"
+        @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded" @submitted2mem="onAdd2MemSubmitted">
       </simple-add>
     </el-dialog>
@@ -360,7 +363,10 @@
         :service="getAddService" :default-conditions="getDefaultCondition4DuplicateDeep"
         :submit2-db="storageType == 'db'" :parentPageType="listType" :haveDraft="isDraft"
         :pageName="'list-duplicatedeep'" :parentMainFormDatas="listMainFormDatas" :pageIsDraft="activeTabName"
-        :defaultValues="activeData" @action-complete="onAddFormActionComplete($event)"
+        :defaultValues="activeData"
+        duplicateType="duplicatedeep"
+        :duplicateData="clickedRow&&clickedRow.duplicatedeep?clickedRow.duplicatedeep:null"
+        @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded" @submitted2mem="onAdd2MemSubmitted">
       </add>
     </el-dialog>

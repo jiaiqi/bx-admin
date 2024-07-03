@@ -16,7 +16,9 @@
       itemsFunc: null,
       itemsPolicy: "valuePerItem",  // or servicePerItem
       dependKeys: [],
-      defaultValues:Object
+      defaultValues:Object,
+      duplicateType:String,
+      duplicateData:Object,
     },
 
     data() {
@@ -71,7 +73,6 @@
        * @returns {*} an array of queries
        */
       buildQuery: function (conf, rtDataCtx) {
-        debugger
         let queries = [];
         if (conf.itemsFunc && conf.itemsPolicy === "servicePerItem") {
           let clone = _.cloneDeep(conf);
@@ -82,6 +83,15 @@
           })
         } else {
           let query = this.buildSrvQuery(conf, null, rtDataCtx);
+          if(query && ['duplicatedeep','duplicate'].includes(this.duplicateType)&&this.duplicateData?.id){
+            // 复制、深度复制时 提交被复制数据的id
+            if(conf.dependKeys && conf.originListData?.length){
+              query['condition'] = [...query?.condition||[],{colName:'id',ruleType:'in',value:conf.originListData.map(e=>e.id).toString()}]
+            }else if(!conf.dependKeys){
+              query['duplicate'] = true
+              query['condition'] = [...query?.condition||[],{colName:'id',ruleType:'eq',value:this.duplicateData.id}]
+            }
+          }
           queries = [query];
         }
         queries = queries.filter(e => !!e);
@@ -194,7 +204,6 @@
         }
 
         this.santinizeQueries(queries)
-
         return this.operate(queries)
           .then((response) => {
             if (response && response.data) {

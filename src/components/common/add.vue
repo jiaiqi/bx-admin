@@ -18,6 +18,8 @@
           :defaultCondition='defaultCondition'
           :srvval-form-model-decorator="srvvalFormModelDecorator"
           :parentAddMainFormDatas="parentMainFormDatas"
+          :duplicateType="duplicateType" 
+          :duplicateData="duplicateData"
           @form-loaded="onAddFormLoaded"
           @srv-config-loaded="onSrvConfigLoaded($event)"
           @form-model-changed="onInnerFormModelChanged($event)"
@@ -339,7 +341,9 @@ export default {
     parentPageType:{
       type: String,
       default: '',
-    }
+    },
+    duplicateType:String,
+    duplicateData:Object,
   },
 
   data () {

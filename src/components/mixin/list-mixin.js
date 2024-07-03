@@ -106,7 +106,8 @@ export default {
       sumConfig: null,
       vpageNo: null,
       service_view_name:null,
-      pub_field_map:null
+      pub_field_map:null,
+      originListData:null
     };
   },
 
@@ -1983,6 +1984,7 @@ export default {
             }
             // console.log("responseresponse",response)
             var listData = response.body.data;
+            this.originListData = JSON.parse(JSON.stringify(listData));
             for (var row in listData) {
               for (var key in this.keyValueData) {
                 var dicts = this.keyValueData[key];
@@ -2061,6 +2063,7 @@ export default {
                  this.srvAuthLogin = true
               }else{
                 this.gridData = response.body.data;
+                this.originListData = JSON.parse(JSON.stringify( response.body.data));
                 let page = response.body.page
 
 

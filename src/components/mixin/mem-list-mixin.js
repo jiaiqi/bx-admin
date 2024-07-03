@@ -854,7 +854,6 @@ export default {
     addInlineListExecutors: function (executor) {
       if (!_.isEmpty(this.inlineLists)) {
         executor.children = [];
-
         let addedInlineLists = new Set()
         this.$refs.inlineLists.forEach(inlineList => {
           let fk = inlineList.foreignKey;
@@ -878,7 +877,6 @@ export default {
                   depend_key: fk.referenced_column_name,
                 };
                 item.dependKeys = [dependKey];
-
                 executor.children.push(item);
               })
             })
@@ -914,7 +912,7 @@ export default {
         itemsFunc: itemsFunc,
         ignoreNullValue: true,
       };
-
+      executor.originListData = this.originListData
       this.addInlineListExecutors(executor)
 
       return executor;

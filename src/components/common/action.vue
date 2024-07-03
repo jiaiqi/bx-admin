@@ -19,7 +19,7 @@
       >{{ info.label}}
     </el-button> -->
 
-    <executor v-if="info && info.executor" ref="executor" v-bind.sync="info.executor" :defaultValues="info.defaultValues"
+    <executor :duplicateType="duplicateType" :duplicateData="duplicateData" v-if="info && info.executor" ref="executor" v-bind.sync="info.executor" :defaultValues="info.defaultValues"
       @executor-complete="$emit('executor-complete', $event)">
     </executor>
 
@@ -55,7 +55,9 @@ export default {
           value: null
         };
       }
-    }
+    },
+    duplicateType:String,
+    duplicateData:Object
   },
 
   data() {
