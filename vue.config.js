@@ -23,13 +23,37 @@ const productionGzipExtensions = ["js", "css"];
 module.exports = {
   chainWebpack: (config) => {
     if (process.env.NODE_ENV === "production") {
+      // 只在生产环境中应用此配置
       // 生产环境 删除懒加载模块的 prefetch preload，降低带宽压力
       // 移除 prefetch 插件
       config.plugins.delete("prefetch");
       // 移除 preload 插件
       config.plugins.delete("preload");
       // 生产环境 压缩代码
-      config.optimization.minimize(true)
+      config.optimization.splitChunks = {
+        chunks: "all", // 对所有类型的chunk（同步和异步）进行分割
+        minSize: 10*1000, // 最小尺寸，这里设置为10KB（10000字节），默认是30000字节
+        maxSize: 500* 1000, // 添加这个配置来确保超过500KB的chunk会被分割
+        minChunks: 1, // 被至少多少个chunk共享的模块才会被提取
+        maxAsyncRequests: 20, // 最大异步请求数量
+        maxInitialRequests: 20, // 入口点处的最大并行请求数量
+        automaticNameDelimiter: "~", // 文件名连接符
+        name: true, // 根据模块的路径自动生成名称
+        cacheGroups: {
+          // 缓存组配置，可以根据不同的条件定制拆分规则
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10, // 优先级
+            filename: "vendors.js", // 提取出的chunk命名
+          },
+          default: {
+            minChunks: 2, // 默认情况下，被至少两个chunk共享的模块才会被提取
+            priority: -20,
+            reuseExistingChunk: true, // 如果已存在对应的chunk，则复用而不是新建
+          },
+        },
+      };
+      config.optimization.minimize(true);
     }
   },
   productionSourceMap: false, // 生产环境是否生成 sourceMap 文件

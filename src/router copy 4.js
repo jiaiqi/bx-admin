@@ -289,18 +289,18 @@ let routes = [
   },
   {
     path: "/audit",
-    component: () => import(/* webpackChunkName: "audit" */"@/pages/audit/index.vue"),
+    component: () => import("@/pages/audit/index.vue"),
 
     children: [
       {
         // 嫌疑车辆流水详情
         path: "flow-detail/:passid",
-        component: () => import(/* webpackChunkName: "audit" */"@/pages/audit/flow-detail.vue"),
+        component: () => import("@/pages/audit/flow-detail.vue"),
       },
       {
         // 嫌疑车辆流水详情
         path: "flow-detail/:passid/:entime/:extime",
-        component: () => import(/* webpackChunkName: "audit" */"@/pages/audit/flow-detail.vue"),
+        component: () => import("@/pages/audit/flow-detail.vue"),
       },
     ],
   },
@@ -340,60 +340,84 @@ routes.push({
       path: "/platform",
       component: () => import("@/pages/platform/index.vue"),
     },
-    
+    // 西乡劳动项目
+    {
+      path: "/booking",
+      component: () => import("@/pages/xx/booking.vue"),
+    },
+    {
+      //西乡 课表
+      path: "/timetable",
+      component: () => import("@/pages/xx/timetable.vue"),
+    },
+    {
+      //西乡 评价列表
+      path: "/evaluate",
+      component: () => import("@/pages/xx/evaluateList.vue"),
+    },
+    {
+      //西乡 评价列表
+      path: "/evaluate/:class_record_no",
+      component: () => import("@/pages/xx/evaluateList.vue"),
+    },
+    {
+      //西乡 荣誉墙
+      path: "/qrcodeprint",
+      component: () => import("@/pages/xx/qrcodePrint.vue"),
+    },
     // storeMonitor
     //大屏拖拽页面
     {
+      path: "/grid-editor",
+      component: () => import("@/pages/datav/grid-layout/index.vue"),
+    },
+    {
       // 网格布局 - 新
       path: "/lowcode-grid",
-      component: () => import(/* webpackChunkName: "grid-editor" */"@/pages/datav/grid-layout/editor-next.vue"),
+      component: () => import("@/pages/datav/grid-layout/editor-next.vue"),
       children: [
         {
           //可视化编辑页面 新布局
           path: "editor",
           name: "gridEditorAdd",
-          component: () => import(/* webpackChunkName: "grid-editor" */"@/pages/datav/grid-layout/editor-next.vue"),
+          component: () => import("@/pages/datav/grid-layout/editor-next.vue"),
         },
         {
           //可视化编辑页面(update) 新布局
           path: "editor/:no",
           name: "gridEditorUpdate",
-          component: () => import(/* webpackChunkName: "grid-editor" */"@/pages/datav/grid-layout/editor-next.vue"),
+          component: () => import("@/pages/datav/grid-layout/editor-next.vue"),
         },
         {
           //可视化编辑页面(update) 新布局
           path: "view/:no",
           name: "gridViewDetail",
-          component: () => import(/* webpackChunkName: "grid-editor" */"@/pages/datav/grid-layout/editor-next.vue"),
+          component: () => import("@/pages/datav/grid-layout/editor-next.vue"),
         },
       ],
     },
     // 网格布局
     {
-      path: "/grid-editor",
-      component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
-    },
-    {
       path: "/gridview",
-      component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
+      component: () => import("@/pages/datav/grid-layout/index.vue"),
       children: [
         {
           //可视化编辑页面
           path: "editor",
           name: "gridEditor",
-          component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
+          component: () => import("@/pages/datav/grid-layout/index.vue"),
         },
         {
           //可视化编辑页面(update)
           path: "editor/:no",
           name: "gridEditor2",
-          component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
+          component: () => import("@/pages/datav/grid-layout/index.vue"),
         },
         {
           // 预览页面
           path: "view/:no",
           name: "gridview",
-          component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
+          component: () => import("@/pages/datav/grid-layout/index.vue"),
         },
       ],
     },
@@ -401,96 +425,71 @@ routes.push({
     {
       path: "/layer",
       name: "layerview",
-      component: () => import(/* webpackChunkName: "layer" */"@/pages/datav/layer-layout/index.vue"),
+      component: () => import("@/pages/datav/layer-layout/index.vue"),
       //子路由
       children: [
         {
           path: "editor/:no",
           //也不使用懒加载，先在文件头部提前引入
-          component: () => import(/* webpackChunkName: "layer" */"@/pages/datav/layer-layout/index.vue"),
+          component: () => import("@/pages/datav/layer-layout/index.vue"),
         },
         {
           path: "editor",
           //也不使用懒加载，先在文件头部提前引入
-          component: () => import(/* webpackChunkName: "layer" */"@/pages/datav/layer-layout/index.vue"),
+          component: () => import("@/pages/datav/layer-layout/index.vue"),
         },
         {
           path: "view/:no",
           //@是定位 src 文件夹
-          component: () => import(/* webpackChunkName: "layer" */"@/pages/datav/layer-layout/index.vue"),
+          component: () => import("@/pages/datav/layer-layout/index.vue"),
         },
       ],
-    },
-    // 西乡劳动项目
-    {
-      path: "/booking",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/xx/booking.vue"),
-    },
-    {
-      //西乡 课表
-      path: "/timetable",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/xx/timetable.vue"),
-    },
-    {
-      //西乡 评价列表
-      path: "/evaluate",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/xx/evaluateList.vue"),
-    },
-    {
-      //西乡 评价列表
-      path: "/evaluate/:class_record_no",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/xx/evaluateList.vue"),
-    },
-    {
-      //西乡 荣誉墙
-      path: "/qrcodeprint",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/xx/qrcodePrint.vue"),
     },
     // 学生档案  西乡特有页面
     {
       path: "/studentfiles/:serviceName/:id",
       name: "studentfiles",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/studentfiles/studentfiles.vue"),
+      component: () => import("@/pages/studentfiles/studentfiles.vue"),
     },
     // 学生档案  西乡特有页面
     {
       path: "/pdfReview/:serviceName/:id",
       name: "pdfReview",
-      component: () => import(/* webpackChunkName: "xixiang" */"@/pages/studentfiles/pdfReview.vue"),
+      component: () => import("@/pages/studentfiles/pdfReview.vue"),
     },
     // 思维导图demo
     {
       path: "/mind",
       name: "mind",
-      component: () => import(/* webpackChunkName: "mind-page" */"@/pages/mind/index.vue"),
+      component: () => import("@/pages/mind/index.vue"),
       //子路由
       children: [
         {
           path: "editor",
           //新增
-          component: () => import(/* webpackChunkName: "mind-page" */"@/pages/mind/index.vue"),
+          component: () => import("@/pages/mind/index.vue"),
         },
         {
           path: "editor/:no",
           //修改
-          component: () => import(/* webpackChunkName: "mind-page" */"@/pages/mind/index.vue"),
+          component: () => import("@/pages/mind/index.vue"),
         },
         {
           path: "editor/:mindbizNo/:rootNo",
           // 脑图业务中直接打开
-          component: () => import(/* webpackChunkName: "mind-page" */"@/pages/mind/index.vue"),
+          component: () => import("@/pages/mind/index.vue"),
         },
         ,
         {
           path: "bizEditor/:mindbizNo/:rootNo",
           // 脑图业务中直接打开
-          component: () => import(/* webpackChunkName: "mind-page" */"@/pages/mind/index.vue"),
+          component: () => import("@/pages/mind/index.vue"),
         },
 
         {
           path: "view/:no",
           //只读
-          component: () => import(/* webpackChunkName: "mind-page" */"@/pages/mind/index.vue"),
+          component: () => import("@/pages/mind/index.vue"),
         },
       ],
     },
@@ -498,24 +497,24 @@ routes.push({
     {
       path: "/bmap",
       name: "bmap",
-      component: () => import(/* webpackChunkName: "bmap-page" */"@/pages/bmap/index.vue"),
+      component: () => import("@/pages/bmap/index.vue"),
       //子路由
       //子路由
       children: [
         {
           path: "check",
           //新增
-          component: () => import(/* webpackChunkName: "bmap-page" */"@/pages/bmap/index.vue"),
+          component: () => import("@/pages/bmap/index.vue"),
         },
         {
           path: "editor/:no",
           //修改
-          component: () => import(/* webpackChunkName: "bmap-page" */"@/pages/bmap/index.vue"),
+          component: () => import("@/pages/bmap/index.vue"),
         },
         {
           path: "view/:no",
           //只读
-          component: () => import(/* webpackChunkName: "bmap-page" */"@/pages/bmap/index.vue"),
+          component: () => import("@/pages/bmap/index.vue"),
         },
       ],
     },
