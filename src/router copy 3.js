@@ -2,51 +2,52 @@ import Vue from "vue";
 import Router from "vue-router";
 import VueResource from "vue-resource";
 
+// import SimpleAdd from "@/components/common/simple-add";
+// const viewpdf = () => import("@/components/common/viewpdf");
+// import Add from "@/components/common/add";
+// import Update from "@/components/common/update";
+// import SimpleFilter from "@/components/common/simple-filter";
+// import SimpleUpdate from "@/components/common/simple-update";
+// import list from "@/components/common/list";
 import TabList from "@/components/common/tab-list2";
-const SimpleAdd = () => import("@/components/common/simple-add");
-const viewpdf = () => import("@/components/common/viewpdf");
-const Add = () => import("@/components/common/add");
-const Update = () => import("@/components/common/update");
-const SimpleFilter = () => import("@/components/common/simple-filter");
-const SimpleUpdate = () => import("@/components/common/simple-update");
-const list = () => import("@/components/common/list");
-const listproc = () => import("@/components/common/listproc");
-const listallproc = () => import("@/components/common/listallproc");
-const detail = () => import("@/components/common/detail");
-const detailPlus = () => import("@/components/common/detail-plus");
-const treegrid = () => import("@/components/common/treegrid");
-const procdetail = () => import("@/components/common/procdetail");
-const procdetail_v2 = () => import("@/components/common/procdetail_v2");
-const editgrid = () => import("@/components/common/edit-grid");
-const encryptColumnCfgList = () => import("@/pages/encrypt-column-cfg-list");
-const stat = () => import("@/components/common/stat");
-const ConfStatChart = () => import("@/pages/conf-stat-chart");
-const ShowStatChart = () => import("@/pages/show-stat-chart");
-const treelevel = () => import("@/components/common/treelevel");
-const CustomPage = () => import("@/components/common/custom-page");
-const permission = () => import("@/components/common/permission");
-const upgrade = () => import("@/components/common/upgrade");
-const reportList = () => import("@/components/common/report-list");
-const explain = () => import("@/components/ui/rich-text-view");
+// import listproc from "@/components/common/listproc";
+// import listallproc from "@/components/common/listallproc";
+// import detail from "@/components/common/detail";
+// import detailPlus from "@/components/common/detail-plus";
+// import treegrid from "@/components/common/treegrid";
+// import procdetail from "@/components/common/procdetail";
+// import procdetail_v2 from "@/components/common/procdetail_v2";
+// import editgrid from "@/components/common/edit-grid";
+// import encryptColumnCfgList from "@/pages/encrypt-column-cfg-list";
+// import stat from "@/components/common/stat";
+// import ConfStatChart from "@/pages/conf-stat-chart";
+// import ShowStatChart from "@/pages/show-stat-chart";
+// import treelevel from "@/components/common/treelevel";
+// import CustomPage from "@/components/common/custom-page";
+// import permission from "@/components/common/permission";
+// import upgrade from "@/components/common/upgrade";
+// import reportList from "@/components/common/report-list";
+// import explain from "@/components/ui/rich-text-view";
 
-const wxmsg = () => import("@/components/develop/wxmsg");
+// import wxmsg from "@/components/develop/wxmsg";
 
-// vxhr pages
-const PersonalInfo = () => import("@/vxhr/personal-info");
-const PersonalInfoUpdate = () => import("@/vxhr/personal-info-update");
-const PersonalUpdate = () => import("@/vxhr/personal-update");
+// // vxhr pages
+// import PersonalInfo from "@/vxhr/personal-info";
+// import PersonalInfoUpdate from "@/vxhr/personal-info-update";
+// import PersonalUpdate from "@/vxhr/personal-update";
 
-const test_field = () => import("@/components/test/test_field");
+// import test_field from "@/components/test/test_field";
 
-const Index = () => import("@/pages/index");
-const templateConfig = () => import("@/pages/template/config");
-const erConfig = () => import("@/pages/template/er-config");
-const printPage = () => import("@/pages/template/print-page");
+import Index from "@/pages/index";
 
-const inlineEditList = () => import("@/components/common/inline-edit-list.vue");
-const waybill = () => import("@/pages/waybill.vue");
+// import templateConfig from "@/pages/template/config";
+// import erConfig from "@/pages/template/er-config";
+// import printPage from "@/pages/template/print-page";
 
-const inForm = () => import("@/pages/inform.vue");
+// import inlineEditList from "@/components/common/inline-edit-list.vue";
+// import waybill from "@/pages/waybill.vue";
+
+// import inForm from "@/pages/inform.vue";
 
 // pages
 Vue.use(Router);
@@ -60,42 +61,43 @@ let routes = [
   {
     path: "/simple-add/:service_name",
     name: "simple-add",
-    component: SimpleAdd,
+    component: () => import("@/components/common/simple-add.vue"),
   },
   {
     path: "/permission/:role_no",
     name: "permission",
-    component: permission,
+    component: () => import("@/components/common/permission"),
   },
   {
     path: "/upgrade",
     name: "upgrade",
-    component: upgrade,
+    component: () => import("@/components/common/upgrade"),
   },
   {
     path: "/add/:service_name",
     name: "add",
-    component: Add,
+    component: () => import("@/components/common/add.vue"),
   },
   {
     path: "/update/:service_name/:id",
     name: "update",
-    component: Update,
+    component: () => import("@/components/common/update"),
   },
   {
     path: "/simple-filter/:service_name",
     name: "simple-filter",
-    component: SimpleFilter,
+    component: () => import("@/components/common/simple-filter"),
   },
   {
     path: "/simple-update/:service_name/:id",
     name: "simple-update",
-    component: SimpleUpdate,
+    component: () => import("@/components/common/simple-update"),
   },
   {
     path: "/list/:service_name",
     name: "list",
     component: TabList,
+    // component: () => import("@/components/common/tab-list2"),
     meta: {
       compName: "list",
     },
@@ -103,7 +105,7 @@ let routes = [
   {
     path: "/list/:service_name/:card_no",
     name: "cardlist",
-    component: list,
+    component: () => import("@/components/common/list"),
     meta: {
       compName: "list",
     },
@@ -111,7 +113,7 @@ let routes = [
   {
     path: "/reportList",
     name: "reportList",
-    component: reportList,
+    component: () => import("@/components/common/report-list"),
     meta: {
       compName: "reportList",
     },
@@ -119,7 +121,7 @@ let routes = [
   {
     path: "/explain",
     name: "explain",
-    component: explain,
+    component: () => import("@/components/ui/rich-text-view"),
     meta: {
       compName: "explain",
     },
@@ -127,104 +129,104 @@ let routes = [
   {
     path: "/stat/:service_name",
     name: "stat",
-    component: stat,
+    component: () => import("@/components/common/stat"),
   },
   {
     path: "/listallproc/:service_name",
     name: "listallproc",
-    component: listallproc,
+    component: () => import("@/components/common/listallproc"),
   },
   {
     path: "/v2/listallproc/:service_name",
     name: "listallproc_v2",
-    component: listallproc,
+    component: () => import("@/components/common/listallproc"),
   },
 
   {
     path: "/listproc/:service_name",
     name: "listproc",
-    component: listproc,
+    component: () => import("@/components/common/listproc"),
   },
   {
     path: "/v2/listproc/:service_name",
     name: "listproc_v2",
-    component: listproc,
+    component: () => import("@/components/common/listproc"),
   },
   {
     path: "/detail/:service_name/:id",
     name: "detail",
-    component: detail,
+    component: () => import("@/components/common/detail"),
   },
   {
     path: "/detail/:service_name/:condcol/:condvalue",
     name: "detail1",
-    component: detail,
+    component: () => import("@/components/common/detail"),
   },
   {
     path: "/detailPlus/:service_name/:id",
     name: "detailPlus",
-    component: detailPlus,
+    component: () => import("@/components/common/detail-plus"),
   },
   {
     path: "/cardDetail/:service_name/:id",
     name: "cardDetail",
-    component: detail,
+    component: () => import("@/components/common/detail"),
   },
   {
     path: "/cardDetail/:service_name/:condcol/:condvalue",
     name: "cardDetail1",
-    component: detail,
+    component: () => import("@/components/common/detail"),
   },
   {
     path: "/test_field",
     name: "test_field",
-    component: test_field,
+    component: () => import("@/components/test/test_field"),
   },
   {
     path: "/treegrid/:service_name",
     name: "treegrid",
-    component: TabList,
+    component: () => import("@/components/common/tab-list2"),
   },
   {
     path: "/startproc/:service_name",
     name: "startproc",
-    component: procdetail,
+    component: () => import("@/components/common/procdetail"),
   },
   {
     path: "/v2/startproc/:service_name",
     name: "startproc_v2",
-    component: procdetail_v2,
+    component: () => import("@/components/common/procdetail_v2"),
   },
   {
     path: "/v2/procdetail/:proc_instance_no",
     name: "procdetail_v2",
-    component: procdetail_v2,
+    component: () => import("@/components/common/procdetail_v2"),
   },
   {
     path: "/procdetail/:proc_instance_no",
     name: "procdetail",
-    component: procdetail,
+    component: () => import("@/components/common/procdetail"),
   },
   {
     path: "/encrypt-column-cfg-list",
     name: "encryptColumnCfgList",
-    component: encryptColumnCfgList,
+    component: () => import("@/pages/encrypt-column-cfg-list"),
   },
   {
     path: "/editgrid/:service_name",
     name: "editgrid",
-    component: editgrid,
+    component: () => import("@/components/common/edit-grid"),
   },
   {
     path: "/conf-stat-chart/:chartid",
     name: "confstatchart",
-    component: ConfStatChart,
+    component: () => import("@/pages/conf-stat-chart"),
   },
 
   {
     path: "/show-stat-chart/:chartid",
     name: "showstatchart",
-    component: ShowStatChart,
+    component: () => import("@/pages/show-stat-chart"),
   },
   {
     path: "/viewpdf",
@@ -240,12 +242,12 @@ let routes = [
   {
     path: "/treelevel/:service_name",
     name: "treelevel",
-    component: treelevel,
+    component: () => import("@/components/common/treelevel"),
   },
   {
     path: "/custom-page/:page_no",
     name: "custompage",
-    component: CustomPage,
+    component: () => import("@/components/common/custom-page"),
   },
   // {
   //   path: '/excelEditView',
@@ -255,22 +257,22 @@ let routes = [
   {
     path: "/vxhr/personal-info",
     name: "personalInfo",
-    component: PersonalInfo,
+    component: () => import("@/vxhr/personal-info"),
   },
   {
     path: "/vxhr/personal-info-update",
     name: "personalInfoUpdate",
-    component: PersonalInfoUpdate,
+    component: () => import("@/vxhr/personal-info-update"),
   },
   {
     path: "/vxhr/personal-update",
     name: "personalUpdate",
-    component: PersonalUpdate,
+    component: () => import("@/vxhr/personal-update"),
   },
   {
     path: "/wxmsg",
     name: "wxmsg",
-    component: wxmsg,
+    component: () => import("@/components/develop/wxmsg"),
     meta: {
       compName: "wxmsg",
     },
@@ -285,12 +287,11 @@ let routes = [
     // 运单打印
     path: "/waybill/:type",
     name: "waybill",
-    component: waybill,
+    component: () => import("@/pages/waybill.vue"),
   },
   {
     path: "/audit",
     component: () => import("@/pages/audit/index.vue"),
-
     children: [
       {
         // 嫌疑车辆流水详情
@@ -317,24 +318,24 @@ routes.push({
     {
       path: "/template-config",
       name: "template-config",
-      component: templateConfig,
+      component: ()=>import( "@/pages/template/config"),
     },
     {
       path: "/er-config",
       name: "er-config",
-      component: erConfig,
+      component: ()=>import("@/pages/template/er-config"),
     },
     {
       path: "/print-page",
-      component: printPage,
+      component: ()=>import( "@/pages/template/print-page"),
     },
     {
       path: "/inline-edit-list/:serviceName",
-      component: inlineEditList,
+      component: ()=>import("@/components/common/inline-edit-list.vue"),
     },
     {
       path: "/inform",
-      component: inForm,
+      component: ()=>import("@/pages/inform.vue"),
     },
     {
       path: "/platform",

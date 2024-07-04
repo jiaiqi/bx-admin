@@ -1,25 +1,24 @@
 const webpack = require("webpack");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
-const { chain } = require("lodash");
 const productionGzipExtensions = ["js", "css"];
 
-function getProdExternals() {
-  // for lib target
-  // return {
-  //   lodash: "lodash",
-  //   moment: "moment",
-  // };
+// function getProdExternals() {
+//   // for lib target
+//   // return {
+//   //   lodash: "lodash",
+//   //   moment: "moment",
+//   // };
 
-  // for app target
-  return {
-    // "vue":"Vue",
-    // "vue-router":"VueRouter",
-    // "vuex":"Vuex",
-    lodash: "_",
-    moment: "moment",
-    // "element-ui":"ELEMENT"
-  };
-}
+//   // for app target
+//   return {
+//     // "vue":"Vue",
+//     // "vue-router":"VueRouter",
+//     // "vuex":"Vuex",
+//     lodash: "_",
+//     moment: "moment",
+//     // "element-ui":"ELEMENT"
+//   };
+// }
 
 module.exports = {
   chainWebpack: (config) => {
@@ -30,17 +29,17 @@ module.exports = {
       // 移除 preload 插件
       config.plugins.delete("preload");
       // 生产环境 压缩代码
-      // config.optimization.minimize(true)
+      config.optimization.minimize(true)
     }
   },
   productionSourceMap: false, // 生产环境是否生成 sourceMap 文件
   transpileDependencies: ["simple-mind-map"], // 思维导图
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
   publicPath: "/vpages/",
-  outputDir: "vpages",
+  outputDir: "dist",
   // lintOnSave: false,//在线excel添加
   configureWebpack: {
-    externals: process.env.NODE_ENV === "production" ? getProdExternals() : {},
+    // externals: process.env.NODE_ENV === "production" ? getProdExternals() : {},
     plugins:
       process.env.NODE_ENV !== "development"
         ? //// 配置compression-webpack-plugin压缩 对超过10kb的文件gzip压缩

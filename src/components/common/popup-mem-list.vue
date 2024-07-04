@@ -170,7 +170,7 @@
 </script>
 
 
-<style scoped lang="less">
+<style scoped lang="scss">
   #app {
     > div {
       > .el-row {

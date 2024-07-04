@@ -437,7 +437,7 @@ import RawFieldEditor from "@/components/common/raw-field-editor.vue";
         }
     }
   </script>
-  <style scoped lang="less">
+  <style scoped lang="scss">
   .form-list{
     .el-select el-select--mini{
         margin-left: 0px!important;

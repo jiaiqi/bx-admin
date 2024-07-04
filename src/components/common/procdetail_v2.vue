@@ -2119,7 +2119,7 @@ export default {
 </script>
 
 
-<style lang="less">
+<style lang="scss">
 /**
   div.aaaaa:hover{cursor:pointer;border-bottom:1px solid #000;color:red}
   div.aaaaa:visited {border-bottom:1px solid #000;}**/

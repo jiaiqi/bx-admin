@@ -1072,7 +1072,7 @@ export default {
   },
 };
 </script>
-<style lang="less">
+<style lang="scss">
 .svg-icon {
   svg {
     width: 30px;

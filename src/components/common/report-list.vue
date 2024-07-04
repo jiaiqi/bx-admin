@@ -816,7 +816,7 @@ export default {
     }
 }
 </script>
-<style lang="less">
+<style lang="scss">
     .reportview {
         th>.cell {
             text-overflow: clip !important;

@@ -825,7 +825,7 @@ export default {
   overflow-y: auto !important;
 }
 </style>
-<style lang="less">
+<style lang="scss">
 #app {
   >div {
     >.el-row {

@@ -207,7 +207,7 @@ import parentChildMixin from "../mixin/parent-child-mixin"; // 内存列表js
 
   }
 </script>
-<style lang="less">
+<style lang="scss">
 .tableCellFun{
   padding:0!important;
 }

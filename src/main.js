@@ -6,7 +6,8 @@ import router from './router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 // 自定义theme.css
-import '../theme/less/common-theme.less'
+import '../theme/scss/common-theme.scss'
+// import '../theme/less/common-theme.less'
 import VueResource from 'vue-resource';
 import VueInit from '@/components/common/vue_init'
 import VueUtil from '@/components/common/vue_util'

@@ -245,7 +245,7 @@
 </script>
 
 
-<style lang="less">
+<style lang="scss">
   #app {
     > div {
       > .el-row {

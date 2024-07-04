@@ -76,6 +76,7 @@
               <el-table-column
                 :prop="head.columns"
                 :label="head.label"
+                :key="head.columns"
                 v-for="(head,hi) in listHeader">
               </el-table-column>
               
@@ -148,6 +149,7 @@
                   <el-table-column
                     :prop="head.columns"
                     :label="head.label"
+                    :key="head.columns"
                     v-for="(head,hi) in listHeader">
                   </el-table-column>
                   

@@ -187,8 +187,8 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-@backBordZIndex: 980511;
+<style scoped lang="scss">
+$backBordZIndex: 980511;
 .cursor-pointer{
   cursor: pointer;
 }
@@ -197,7 +197,7 @@ export default {
 }
 
 .keybord-wrap {
-  z-index: @backBordZIndex + 1;
+  z-index: $backBordZIndex + 1;
 
   width: 100%;
   // height: 210px;

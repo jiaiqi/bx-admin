@@ -24,7 +24,7 @@
         <div class="grid-container" id="grid-container" :style="[bjStyles]"
           v-if="!inEditor && allowedOverlap === false">
 
-          <div v-for="item in layout" style="position: absolute;" :style="{
+          <div v-for="(item,index) in layout" :key="index" style="position: absolute;" :style="{
             height: rowHeight * item.h + 'px',
             width: (parseInt(styleJson.width||'1920') * item.w / colNum) + 'px',
             top: (rowHeight * item.y) + 'px',
@@ -40,7 +40,7 @@
           :is-mirrored="false" :vertical-compact="false" :margin="[0, 0]" :use-css-transforms="true"
           @layout-updated="layoutUpdatedEvent" v-else-if="allowedOverlap === false">
           <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
-          <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+          <grid-item v-for="(item,index) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
             @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
             <span class="remove" @click.stop="removeItem(item.i)" v-if="inEditor"><i class="el-icon-close"></i></span>
             <div class="com-item dashed" v-if="!inEditor">
@@ -124,14 +124,14 @@
           :responsive="false" :preventCollision="true">
           <div class="grid-container" id="grid-container" :style="[bjStyles]"></div>
           <template v-if="!inEditor || onMobilePreview">
-            <div v-for="item in layout">
+            <div v-for="(item,key) in layout" :key="index">
               <page-item :screenType="screenType" style="min-height: 100px" ref="pageItem"
                 @setPageParams="setPageParams" :pageParamsModel="pageParamsModel" :page-item="item.data" :page-no="pgNo"
                 :layout="item" @click.stop="" @resize="resize"></page-item>
             </div>
           </template>
           <template v-else>
-            <grid-item v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+            <grid-item v-for="(item,key) in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
               @moved="movedEvent" @resized="resizedEvent" class="gridItem" @dblclick.native="toComponentDetail(item)">
               <span class="remove" @click.stop="removeItem(item.i)" v-if="inEditor"><i class="el-icon-close"></i></span>
               <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"

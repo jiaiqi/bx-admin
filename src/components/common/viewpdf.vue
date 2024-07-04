@@ -143,7 +143,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .pdf {
   background: #585858;
   .arrow {

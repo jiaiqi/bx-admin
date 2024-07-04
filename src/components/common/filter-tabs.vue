@@ -697,7 +697,7 @@ export default {
     },
 }
 </script>
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .filter-list-view{
     border: 1px solid #f2f2f2;
     padding: 5px;

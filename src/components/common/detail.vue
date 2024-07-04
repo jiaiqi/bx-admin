@@ -510,7 +510,7 @@ export default {
   }
 };
 </script>
-<style lang="less">
+<style lang="scss">
 .detail-steps{
   .el-step__head.is-process {
       color: #e96a02;

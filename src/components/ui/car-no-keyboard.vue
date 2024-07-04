@@ -340,8 +340,8 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-@backBordZIndex: 980511;
+<style scoped lang="scss">
+$backBordZIndex: 980511;
 .cursor-pointer{
   cursor: pointer;
 }
@@ -352,7 +352,7 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: @backBordZIndex;
+  z-index: $backBordZIndex;
   background-color: rgba(0, 0, 0, 0.1);
 }
 

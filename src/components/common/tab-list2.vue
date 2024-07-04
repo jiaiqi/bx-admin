@@ -685,7 +685,7 @@
 
   }
 </script>
-<style lang="less" scoped>
+<style lang="scss" scoped>
 
   .stata-data-layout{
     width:100%;
@@ -705,7 +705,7 @@
   }
 </style>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 
   .stata-data-layout{
     width:100%;
