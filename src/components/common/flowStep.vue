@@ -23,12 +23,7 @@
 </template>
 
 <script>
-
-
 import echarts from 'echarts'
-
-import iconReturn from "../../assets/return.png"
-
 
 var myChart = null
 export default {
