@@ -1,10 +1,10 @@
 <template>
 <el-row class="filter-list-view" v-if="tabs.length > 0 &&  Object.keys(formModel).length > 0 ">
-     <el-form ref="form" label-width="80px" size="mini">
+     <el-form ref="form" inline validateOnRuleChange label-width="100px" size="medium" >
         <el-form-item  :label="tab.label" v-for="(tab,index) in tabs" :key="index">
             <div v-if="tab._type === 'input'">
                 <el-row :gutter="5">
-                    <el-col :span="6">
+                    <el-col :span="24">
                         <el-input col="2" :placeholder="tab.placeholder" clearable :name="tab.list_tab_no" v-model="formModel[tab.list_tab_no].value"></el-input>
                     </el-col>
                     <!-- <el-col :span="6">
@@ -18,12 +18,13 @@
             </div>
             <div v-if="tab._type === 'between'">
                 <el-col :span="11">
-                    <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker>
+                    <el-date-picker value-format="yyyy-MM-dd HH:mm:ss" startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="formModel[tab.list_tab_no].value" style="width: 100%;"></el-date-picker>
+                    <!-- <el-date-picker startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker> -->
                 </el-col>
-                <el-col class="line" :span="2">-</el-col>
+                <!-- <el-col class="line" :span="2">-</el-col>
                 <el-col :span="11">
                     <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
-                </el-col>
+                </el-col> -->
             </div>
             <div  v-if="tab._type === 'select'">
                 <selectPlus :ref="tab.list_tab_no" :tab="tab" :formModel="formModel[tab.list_tab_no]" @on-value-change="selectChange($event)"></selectPlus>
@@ -225,6 +226,9 @@ export default {
               }else if(item._type === 'img'){
                 col.value = item.default || ''
                 model[item.list_tab_no] = col
+              }else if(item._type === 'between'){
+                col.value = item.default || []
+                model[item.list_tab_no] = col
               }
           })
           self.formModel = model
@@ -368,7 +372,7 @@ export default {
                                 }
                             }
                         }
-                  }else if(tab.inputType === 'BetweenNumber' || tab.inputType === 'Date'  || tab.inputType === 'DateTime'  || tab.inputType === 'String'){
+                  }else if(tab.inputType==='BetweenDate' || tab.inputType === 'BetweenNumber' || tab.inputType === 'Date'  || tab.inputType === 'DateTime'  || tab.inputType === 'String'){
                       tab['value'] = []
                         options = []
                         let opts = tab.more_config.tags
@@ -503,7 +507,7 @@ export default {
                 if((condsModel[tabs[i]].formType === 'checkbox' ||
                 condsModel[tabs[i]].formType === 'radio') &&
                 condsModel[tabs[i]].value.length !== 0 && condsModel[tabs[i]].value[0] !== '_unlimited_'){
-                    if(condsModel[tabs[i]].inputType === 'BetweenNumber' || condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime'){
+                    if( condsModel[tabs[i]].inputType === 'BetweenNumber' || condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime'){
                         relation.relation = 'AND'
                         relation.data = []
                         let values = condsModel[tabs[i]].inputType === 'Date' || condsModel[tabs[i]].inputType === 'DateTime' ?  self.formatDateValues(condsModel[tabs[i]].value) : condsModel[tabs[i]].value
@@ -576,7 +580,14 @@ export default {
 
                     }
 
-                }else if((condsModel[tabs[i]].formType === 'input') && condsModel[tabs[i]].value.length !== 0){
+                } else if((condsModel[tabs[i]].inputType === 'BetweenDate') && condsModel[tabs[i]].value?.length){
+                    relation.data.push({
+                        colName: condsModel[tabs[i]].colName[0],
+                        ruleType: "between",
+                        value: condsModel[tabs[i]].value
+                    })
+
+                } else if((condsModel[tabs[i]].formType === 'input') && condsModel[tabs[i]].value.length !== 0){
                     child_relation = {
                         "relation": "OR",
                         "data": [
@@ -664,6 +675,8 @@ export default {
               let newNum = 0
               this.$emit('on-input-value',true)
               this.$emit('on-change',true)
+              console.log("更新了",val);
+              debugger
               for(let i =0;i<keys.length;i++){
                 //   console.log("更新了",val[keys[i]].value, oldVal[keys[i]].value)
                   if(val[keys[i]] && oldVal[keys[i]] &&  val[keys[i]].hasOwnProperty('value') && oldVal[keys[i]].hasOwnProperty('value') && val[keys[i]].value !== oldVal[keys[i]].value){
@@ -698,6 +711,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+// @import '/assets/element.css';
 .filter-list-view{
     border: 1px solid #f2f2f2;
     padding: 5px;
