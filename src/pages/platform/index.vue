@@ -37,6 +37,7 @@
               <el-table-column
                 :prop="column.columns"
                 :label="column.label"
+                :key="column.columns"
                 v-for="column in item.columns || []"
               >
                 <template slot-scope="scope">

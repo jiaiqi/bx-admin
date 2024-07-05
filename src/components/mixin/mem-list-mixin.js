@@ -4,6 +4,14 @@ import Executor from "../common/executor.vue";
 import Vue from "vue";
 import {InlineForm} from "../model/InlineForm";
 import {traverseObj} from "../../util/DataUtil";
+import cloneDeep from "lodash/cloneDeep";
+import isEmpty from "lodash/isEmpty";
+import includes from "lodash/includes";
+// import find from "lodash/find";
+// import findIndex from "lodash/findIndex";
+// import join from "lodash/join";
+import assign from "lodash/assign";
+import flatten from "lodash/flatten";
 
 /**
  * 内存型表格的逻辑处理，
@@ -103,7 +111,7 @@ export default {
 
     buildAddQuery() {
       let colNames = this.addSrvCols.filter(srvcol => srvcol.in_add !== 0 && !srvcol.auto_generate).map(srvcol => srvcol.columns);
-      let addedRows = _.cloneDeep(this.gridData.filter((item) => {
+      let addedRows = cloneDeep(this.gridData.filter((item) => {
         if(item._dirtyFlags === "add"){
           return item
         }
@@ -120,7 +128,7 @@ export default {
       };
 
       // 每一行添加inlineList数据
-      if (this.inlineLists && !_.isEmpty(this.inlineLists)) {
+      if (this.inlineLists && !isEmpty(this.inlineLists)) {
         addedRows.forEach(row => {
 
           row.child_data_list = [];
@@ -144,7 +152,7 @@ export default {
       // 删除 _ 前缀的字段
       addedRows.forEach(row => {
         for (let key in row) {
-          if ( key !== 'child_data_list' && !_.includes(colNames, key)) {
+          if ( key !== 'child_data_list' && !includes(colNames, key)) {
             delete  row[key];
           }
         }
@@ -157,7 +165,7 @@ export default {
     buildUpdateQueries() {
 
       let colNames = this.updateSrvCols.filter(srvcol => srvcol.in_update !== 0).map(srvcol => srvcol.columns);
-      let updatedRows = _.cloneDeep(this.gridData.filter(item => item._dirtyFlags === "update")) ;
+      let updatedRows = cloneDeep(this.gridData.filter(item => item._dirtyFlags === "update")) ;
       let queries = updatedRows.map(row => {
         return {
           serviceName: this.updateService,
@@ -168,7 +176,7 @@ export default {
 
 
       // 每一行添加inlineList数据
-      if (this.inlineLists && !_.isEmpty(this.inlineLists)) {
+      if (this.inlineLists && !isEmpty(this.inlineLists)) {
         queries.forEach(query => {
           let row = query.data[0];
           row.child_data_list = [];
@@ -191,7 +199,7 @@ export default {
       // 删除 _ 前缀的字段
       updatedRows.forEach(row => {
         for (let key in row) {
-          if (key !== 'child_data_list' && !_.includes(colNames, key)) {
+          if (key !== 'child_data_list' && !includes(colNames, key)) {
             delete  row[key];
           }
         }
@@ -340,15 +348,15 @@ export default {
       this.addFinderDispCol(fields, srvvalRow);
       let target = null
       if(srvvalRow.hasOwnProperty("_guid") && srvvalRow._guid !== null){
-        target = _.find(this.gridData, item => srvvalRow._guid && item._guid == srvvalRow._guid);
+        target = this.gridData.find( item => srvvalRow._guid && item._guid == srvvalRow._guid);
       }else if(!srvvalRow.hasOwnProperty("_guid") && srvvalRow.hasOwnProperty("id") && srvvalRow.id !== null){
-        target = _.find(this.gridData, item => srvvalRow.id && item.id == srvvalRow.id);
+        target = this.gridData.find( item => srvvalRow.id && item.id == srvvalRow.id);
       }
       
       if(target.hasOwnProperty('id') && target.id == null){
         this.updateDirtyFlags(target, "add");
       }
-      target = target || _.find(this.gridData, item => item._guid == srvvalRow._guid);
+      target = target || this.gridData.find( item => item._guid == srvvalRow._guid);
 
       // _.assign(target, srvvalRow); //202.11.20更改 不用之前的_.assign方法，改为手动遍历对象的key来合并对象，合并时使用vue的$set方法，使得页面数据更新
       if(Object.keys(srvvalRow).length){
@@ -368,14 +376,14 @@ export default {
      */
     onDeleteSubmitted: function (deleteRows) {
       deleteRows.forEach(item => {
-        let target = _.find(this.gridData, i => item.id && (i.id == item.id));
+        let target = this.gridData.find(i => item.id && (i.id == item.id));
         if (target) {
           this.updateDirtyFlags(target, "delete");
           // this.gridData = this.gridData.filter((item) => item._dirtyFlags && item._dirtyFlags !== 'delete')
         } else {
           // to delete an mem-added item, but left standby row
           if ("standby" !== item._dirtyFlags) {
-            let index = _.findIndex(this.gridData, i => item._guid && (i._guid == item._guid))
+            let index = this.gridData.findIndex( i => item._guid && (i._guid == item._guid))
             this.gridData.splice(index, 1)
           }
         }
@@ -406,8 +414,8 @@ export default {
     syncRow2Fields: function (targetRow) {
       // sync dbrow to fields
       if (this.inplaceEditData) {
-        let fieldMap = _.find(this.inplaceEditData, item => (item.id && item.id === targetRow.id));
-        fieldMap = fieldMap || _.find(this.inplaceEditData, item => item._guid == targetRow._guid);
+        let fieldMap = this.inplaceEditData.find( item => (item.id && item.id === targetRow.id));
+        fieldMap = fieldMap || this.inplaceEditData.find( item => item._guid == targetRow._guid);
         if (fieldMap) {
           for (let key in targetRow) {
             if (fieldMap[key] && fieldMap[key].setSrvVal) {
@@ -421,13 +429,13 @@ export default {
     },
 
     duplicateRowInplace: function (row) {
-      let copy = _.cloneDeep(row);
+      let copy = cloneDeep(row);
       this.$set(copy, "_dirtyFlags", "add")
       delete copy.id
       delete copy._guid
 
-      let standbyRow = _.find(this.gridData, item => item._dirtyFlags === "standby");
-      _.assign(standbyRow, copy)
+      let standbyRow = this.gridData.find( item => item._dirtyFlags === "standby");
+      assign(standbyRow, copy)
 
       this.syncRow2Fields(standbyRow)
 
@@ -440,7 +448,7 @@ export default {
       }
 
       if (row._dirtyFlags === "add") {
-        let posi = _.findIndex(this.gridData, i => i._guid == row._guid);
+        let posi = this.gridData.findIndex(i => i._guid == row._guid);
         this.gridData.splice(posi, 1);
         this.$forceUpdate();
       } else if (row._dirtyFlags === "delete") {
@@ -451,8 +459,8 @@ export default {
         }];
         this.select(this.service_name, conditions).then(response => {
           let dbRow = response.data.data[0];
-          let targetRow = _.find(this.gridData, i => row.id && i.id == row.id);
-          _.assign(targetRow, dbRow);
+          let targetRow = this.gridData.find(i => row.id && i.id == row.id);
+          assign(targetRow, dbRow);
           this.syncRow2Fields(targetRow);
           this.$set(row, "_dirtyFlags", null);
         })
@@ -525,7 +533,7 @@ export default {
       return newRow
     },
     addStandbyRow(e) {
-      let standbyRow = _.find(this.gridData, row => row._dirtyFlags === 'standby');
+      let standbyRow = this.gridData.find(row => row._dirtyFlags === 'standby');
       if (!!standbyRow) {
         return;
       }
@@ -588,15 +596,14 @@ export default {
       let fields = editSrvCols
         .filter(item => {
           let editable = item[srvcolInFlag] === 1 && item.table_column !== "id";
-          let inListCols = !!_.find(
-            this.srv_cols,
+          let inListCols = !!this.srv_cols.find(
             listcol => listcol.table_name === item.table_name && listcol.table_column === item.table_column);
          
           return editable && inListCols;
         })
         .map(item => {
           let fi = new FieldInfo(item, "update");
-          let listCol = _.find(this.srv_cols, col => col.table_name === item.table_name && col.table_column === item.table_column);
+          let listCol = this.srv_cols.find(col => col.table_name === item.table_name && col.table_column === item.table_column);
 
           
 
@@ -664,7 +671,7 @@ export default {
             return queries;
           })
 
-          let flatQuries = _.flatten(queriesArr).filter(item => !!item);
+          let flatQuries = flatten(queriesArr).filter(item => !!item);
           let submitP = Promise.resolve(true);
           if (flatQuries.length > 0) {
             this.santinizeQueries(flatQuries)
@@ -759,7 +766,7 @@ export default {
         listSrvColName = listSrvColName.substring(1).substring(0, listSrvColName.length - 6);
       }
 
-      let fieldMap = _.find(this.inplaceEditData, item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
+      let fieldMap = this.inplaceEditData.find( item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
 
       let field = fieldMap ? fieldMap[listSrvColName] : null;
       
@@ -827,7 +834,7 @@ export default {
       let field = this.findEditField(row, column);
 
       if (field) {
-        let fieldMap = _.find(this.inplaceEditData, item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
+        let fieldMap = this.inplaceEditData.find( item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
         this.handleFieldFkRedundant(field, fieldMap);
         /**
          * 处理起止日期值分离同步
@@ -852,7 +859,7 @@ export default {
     ,
 
     addInlineListExecutors: function (executor) {
-      if (!_.isEmpty(this.inlineLists)) {
+      if (!isEmpty(this.inlineLists)) {
         executor.children = [];
         let addedInlineLists = new Set()
         this.$refs.inlineLists.forEach(inlineList => {
@@ -927,7 +934,7 @@ export default {
           valueExpr: `item.${srvcol.columns}`,
           enableFunc: (value, item) => {
             let newValue = item[srvcol.columns];
-            let oldRow = _.find(vm.unmodifiedGridData, unmodified => unmodified.id === item.id);
+            let oldRow = vm.unmodifiedGridData.find( unmodified => unmodified.id === item.id);
 
             if (!oldRow) {
               return false;
@@ -976,7 +983,7 @@ export default {
           required: true,
           valueFunc: () => {
             let ids = vm.gridData.filter(item => item._dirtyFlags === "delete").map(item => item.id);
-            return _.join(ids, ",");
+            return ids.join(",");
           }
         }],
       };
@@ -999,7 +1006,7 @@ export default {
 
     isFkWithDispCol(srvcol) {
       let dispCol = `_${srvcol}_disp`
-      return !!_.find(this.srv_cols, item => item.columns === dispCol);
+      return !!this.srv_cols.find( item => item.columns === dispCol);
     }
     ,
 

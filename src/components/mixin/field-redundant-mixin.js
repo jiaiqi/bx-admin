@@ -3,7 +3,7 @@ import {Field} from '../model/Field'
 import Vue from 'vue'
 import {ActionInfo} from "../model/ActionInfo";
 import dayjs from "dayjs";
-
+import cloneDeep from 'lodash/cloneDeep'
 export default {
 
   methods: {
@@ -227,7 +227,7 @@ export default {
           if (sync) {
             if (field.model && (field.model[dependentField.info.redundant.refedCol]||field.model[dependentField.info.redundant.refedCol]===0)) {
               dependentField.setSrvVal(field.model[dependentField.info.redundant.refedCol]);
-              field.modelOld = _.cloneDeep(field.model)
+              field.modelOld = cloneDeep(field.model)
             } else {
               dependentField.reset();
             }

@@ -5,7 +5,8 @@ import {GridInfo} from "../model/GridInfo";
 import {wrapButton, wrapHeader,getButtonPara} from "../common/wrapper_util";
 import {getUnitData} from "../../util/UnitUtil";
 import * as DataUtil from "../../util/DataUtil";
-
+import cloneDeep from 'lodash/cloneDeep'
+import isFunction from 'lodash/isFunction'
 import batchAddMixin from "./batch-add-mixin";
 import { Loading } from 'element-ui';
 export function MissRequiredConditionError() { 
@@ -985,7 +986,7 @@ export default {
             console.log(error)
           }
           if (items && items.length) {
-            return _.join(items.map(item => item.disp), ",");
+            return items.map(item => item.disp).join(',');
           }
         } else if (type === "Boolean") {
           return !!value ? "是" : "否";
@@ -993,7 +994,7 @@ export default {
           // 增加 支持 fk时 显示 _xx_disp 字段
           let dispColName = `_${header.column}_disp`;
           return !!row[dispColName] ? row[dispColName] : value;
-        } else if (_.includes(userDeptTypes, type)) {
+        } else if (userDeptTypes.includes(type)) {
           // 尝试从row 寻找 _disp
           let dispColName = `_${header.column}_disp`;
           if (row.hasOwnProperty(dispColName)) {
@@ -1875,7 +1876,7 @@ export default {
         item.value = eval(item.value);
       });
 
-      this.condition.filter(item => item.valueFunc && _.isFunction(item.valueFunc))
+      this.condition.filter(item => item.valueFunc && isFunction(item.valueFunc))
         .forEach(item => item.value = item.valueFunc())
 
 
@@ -2109,7 +2110,7 @@ export default {
                   this.$emit("child-loaded",child)
                 }
                 // console.log(_)
-                this.unmodifiedGridData = _.cloneDeep(this.gridData);
+                this.unmodifiedGridData = cloneDeep(this.gridData);
                 if(this.gridData && this.gridData.length >0 && this.gridData[0].hasOwnProperty('_encrypt_cols')){
                   this._encrypt_cols = this.gridData[0]['_encrypt_cols']  // 加密的字段
                 // this.gridData.splice(0, this.gridData.length - 1)
@@ -2200,7 +2201,7 @@ export default {
             ).then(response => {
               this.gridData = response.body.data;
               console.log( this.gridData)
-              this.unmodifiedGridData = _.cloneDeep(this.gridData);
+              this.unmodifiedGridData = cloneDeep(this.gridData);
               // this.gridData.splice(0, this.gridData.length - 1)
               if(this.gridData && this.gridData.length >0 && this.gridData[0].hasOwnProperty('_encrypt_cols')){
                 this._encrypt_cols = this.gridData[0]['_encrypt_cols']  // 加密的字段
@@ -2344,7 +2345,7 @@ export default {
         ) {
           let filters = [];
           var option_list_v2 = serviceCol["option_list_v2"];
-          if (option_list_v2 && _.isArray(option_list_v2)) {
+          if (option_list_v2 && Array.isArray(option_list_v2)) {
             for (var item of option_list_v2) {
               filters.push({text: item["label"], value: item["value"]});
             }
@@ -2587,20 +2588,14 @@ export default {
           }else{
             this.selection = this.getIsBatchFun(this.gridButton)   // 检查批量操作权限
           }
-          let addButton = _.find(
-            this.gridButton,
-            item => item.button_type === "add"
-          );
+          let addButton = this.gridButton.find(item => item.button_type === "add");
           if (addButton) {
             this.addService = addButton.service_name;
           }
 
           if(!this.addService){
 
-            let importButton = _.find(
-              this.gridButton,
-              item => item.button_type === "import"
-            );
+            let importButton =  this.gridButton.find(item => item.button_type === "import");
             if(importButton){
               this.addService = importButton.service_name;
             }
@@ -2608,21 +2603,17 @@ export default {
           }
 
 
-          let updateButton = _.find(
-            this.rowButton,
-            item => item.button_type === "edit"
-          );
+          let updateButton = this.rowButton.find(item => item.button_type === "edit");
           if (updateButton) {
             this.updateService = updateButton.service_name;
           }
 
-          let deleteButton = _.find(
-            this.rowButton,
+          let deleteButton = this.rowButton.find(
             item => item.button_type === "delete"||item.button_type==='batch_delete'
           );
 
           if(!deleteButton) {
-            deleteButton = _.find(this.gridButton,item => item.button_type === "delete"||item.button_type==='batch_delete')
+            deleteButton = this.gridButton.find(item => item.button_type === "delete"||item.button_type==='batch_delete')
           }
           
           if (deleteButton) {

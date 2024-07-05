@@ -586,7 +586,6 @@ export default {
                         ruleType: "between",
                         value: condsModel[tabs[i]].value
                     })
-
                 } else if((condsModel[tabs[i]].formType === 'input') && condsModel[tabs[i]].value.length !== 0){
                     child_relation = {
                         "relation": "OR",

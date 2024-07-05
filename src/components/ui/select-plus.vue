@@ -56,7 +56,7 @@ export default {
            let e = self.tab
           console.log('buildFkOptionList',query,e,self.formModel[e.list_tab_no])
           let conds = []
-          if(this.tab.hasOwnProperty("option_list") && this.tab.option_list.hasOwnProperty("conditions") && this.tab.option_list.conditions){
+          if(this.tab?.option_list?.conditions){
             conds = this.tab.option_list.conditions
           }
            self.loading = true

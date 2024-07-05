@@ -2,23 +2,23 @@ const webpack = require("webpack");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const productionGzipExtensions = ["js", "css"];
 
-// function getProdExternals() {
-//   // for lib target
-//   // return {
-//   //   lodash: "lodash",
-//   //   moment: "moment",
-//   // };
+function getProdExternals() {
+  // for lib target
+  // return {
+  //   lodash: "lodash",
+  //   moment: "moment",
+  // };
 
-//   // for app target
-//   return {
-//     // "vue":"Vue",
-//     // "vue-router":"VueRouter",
-//     // "vuex":"Vuex",
-//     lodash: "_",
-//     moment: "moment",
-//     // "element-ui":"ELEMENT"
-//   };
-// }
+  // for app target
+  return {
+    // "vue":"Vue",
+    // "vue-router":"VueRouter",
+    // "vuex":"Vuex",
+    lodash: "_",
+    moment: "moment",
+    // "element-ui":"ELEMENT"
+  };
+}
 
 module.exports = {
   chainWebpack: (config) => {
@@ -63,6 +63,7 @@ module.exports = {
   outputDir: "dist",
   // lintOnSave: false,//在线excel添加
   configureWebpack: {
+    // externals:  getProdExternals(),
     // externals: process.env.NODE_ENV === "production" ? getProdExternals() : {},
     plugins:
       process.env.NODE_ENV !== "development"

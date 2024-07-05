@@ -58,6 +58,8 @@ import tableEdit from "./table-edit.vue";
 import customFrame from "../feature/custom-frame.vue"; // 新增的增强表格
 
 import { evalJson } from '@/util/evalJsonExpr.js'
+
+import concat from 'lodash/concat';
 /**
  * 子表组件， 主要是处理外键相关的逻辑： 例如外籍列、外键disp列隐藏；添加行数据自动添加外键列的值。
  */
@@ -222,7 +224,7 @@ export default {
 
     getDefaultConditions: function () {
       if (this.foreignKey.conditions && this.foreignKey.conditions.length > 0) {
-        return _.concat(this.defaultCondition, this.foreignKey.conditions);
+        return concat(this.defaultCondition, this.foreignKey.conditions);
       } else {
         return this.defaultCondition;
       }

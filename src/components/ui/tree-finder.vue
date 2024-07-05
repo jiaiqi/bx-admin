@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import  debounce from 'lodash/debounce';
 export default {
   props: ["field"],
   data() {
@@ -83,7 +84,7 @@ export default {
         this.onSelectChange(val[val.length - 1]);
       }
     },
-    inputChange: _.debounce(function(e) {
+    inputChange: debounce(function(e) {
       console.log(e.target.value);
       let val = e.target.value;
       let loader = this.field.info.dispLoader;

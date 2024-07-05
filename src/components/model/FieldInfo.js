@@ -326,7 +326,7 @@ export class FieldInfo {
       srvCol.option_list_v2 = srvCol.fmt
     }
 
-    if (_.isArray(srvCol.option_list_v2)) {
+    if (isArray(srvCol.option_list_v2)) {
       let options = srvCol.option_list_v2
       srvCol.option_list_v2 = {
         options,
@@ -339,7 +339,7 @@ export class FieldInfo {
       return
     }
 
-    let optionListV2 = _.cloneDeep(srvCol.option_list_v2) ;
+    let optionListV2 = cloneDeep(srvCol.option_list_v2) ;
 
     this.dispLoader = {
       service: optionListV2.serviceName || optionListV2.service,
@@ -407,8 +407,7 @@ export class FieldInfo {
         key_disp_col: 'value',
         show_as_pair: false,
       }
-
-      _.assign(srvCol.option_list_v2, ext)
+      assign(srvCol.option_list_v2, ext)
     }
   }
 

@@ -420,7 +420,7 @@ import MemListMixin from "../mixin/mem-list-mixin";
 import ListMixin from "../mixin/list-mixin";
 import { wrapButton } from "../common/wrapper_util";
 import {IconExcelColorful} from "../icon";
-
+import remove from "lodash/remove";
 function deepClone(obj) {
   if (obj == null) return null;
   let newObj = obj instanceof Array ? [] : {};
@@ -946,8 +946,7 @@ export default {
             wrapButton(button, "row")
           );
 
-          let addButton = _.find(
-            this.gridButton,
+          let addButton = this.gridButton.find(
             item => item.button_type === "add"
           );
           if (addButton) {
@@ -956,8 +955,7 @@ export default {
 
           if(!this.addService){
 
-            let importButton = _.find(
-              this.gridButton,
+            let importButton =  this.gridButton.find(
               item => item.button_type === "import"
             );
             if(importButton){
@@ -967,21 +965,19 @@ export default {
           }
 
 
-          let updateButton = _.find(
-            this.rowButton,
+          let updateButton = this.rowButton.find(
             item => item.button_type === "edit"
           );
           if (updateButton) {
             this.updateService = updateButton.service_name;
           }
 
-          let deleteButton = _.find(
-            this.rowButton,
+          let deleteButton = this.rowButton.find(
             item => item.button_type === "delete"||item.button_type==='batch_delete'
           );
 
           if(!deleteButton) {
-            deleteButton = _.find(this.gridButton,item => item.button_type === "delete"||item.button_type==='batch_delete')
+            deleteButton = this.gridButton.find(item => item.button_type === "delete"||item.button_type==='batch_delete')
           }
           
           if (deleteButton) {
@@ -1344,7 +1340,7 @@ export default {
 
       // loop over list find it, delete its subtree
       let target = targets[0];
-      _.remove(this.gridData, (item) => item.path.startsWith(target.path));
+      remove(this.gridData, (item) => item.path.startsWith(target.path));
       // hack to fix the _.remove not play nice with vue
       this.gridData = [...this.gridData];
 
@@ -1358,9 +1354,7 @@ export default {
         // remove it from parent._children
         if (parent._children && parent._children.length > 0) {
           // remove from parent._children
-          _.remove(
-            parent._children,
-            (item) => item[this.noCol] == target[this.noCol]
+          parent._children = parent._children.filter((item) => item[this.noCol] !== target[this.noCol]
           );
 
           // change to leaf is children is null

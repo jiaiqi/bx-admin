@@ -91,7 +91,7 @@ import Vue from "vue";
 import Loader from "./loader.vue";
 import CustButtonMinx from "../mixin/cust-button-minx";
 import agreementBox from './agreement-box.vue';
-
+import cloneDeep from 'lodash/cloneDeep';
 export default {
   name: "simple-add",
   components: {
@@ -160,7 +160,7 @@ export default {
 
   methods: {
     buildRunQuries() {
-      let formModel = _.cloneDeep(this.srvValFormModel());
+      let formModel = cloneDeep(this.srvValFormModel());
       delete formModel._children;
 
       let query = {

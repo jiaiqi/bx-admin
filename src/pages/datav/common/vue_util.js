@@ -1095,7 +1095,7 @@ function init_util() {
         if (key === "_rtDataCtx") {
           delete obj._rtDataCtx;
         } else if (key === "data") {
-          if (!obj.data || _.isEmpty(obj.data)) {
+          if (!obj.data || isEmpty(obj.data)) {
             delete obj.data;
           }
         }
@@ -1192,7 +1192,7 @@ function init_util() {
         node.isMarker || (this.$attrs && this.$attrs["is-mark"] === "true");
       if (
         isMarker ||
-        (node.getName && _.isFunction(node.getName) && node === this)
+        (node.getName && isFunction(node.getName) && node === this)
       ) {
         let name = node.getName();
         tokens.splice(0, 0, name);
@@ -1376,15 +1376,15 @@ function init_util() {
 
   Vue.prototype.evalExprOrFunc = function (value, data, defaultValue) {
     try {
-      if (_.isString(value)) {
+      if (isString(value)) {
         let vm = this;
         return eval(value);
-      } else if (_.isFunction(value)) {
+      } else if (isFunction(value)) {
         return value(data);
       } else {
       }
     } catch (e) {
-      if (_.isUndefined(defaultValue)) {
+      if (isUndefined(defaultValue)) {
         throw e;
       } else {
         return defaultValue;
@@ -1393,9 +1393,9 @@ function init_util() {
   };
 
   Vue.prototype.evalVersatileFlagVar = function (flagVar, data) {
-    if (_.isBoolean(flagVar)) {
+    if (isBoolean(flagVar)) {
       return flagVar;
-    } else if (_.isFunction(flagVar)) {
+    } else if (isFunction(flagVar)) {
       return flagVar(data);
     } else {
       return !!flagVar;

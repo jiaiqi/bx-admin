@@ -77,7 +77,8 @@
   import ListMixin from "../mixin/list-mixin"
 
   import RawFieldEditor from "../common/raw-field-editor.vue";
-
+  import cloneDeep from "lodash/cloneDeep";
+  
   export default {
     components: {
       RawFieldEditor,
@@ -109,7 +110,7 @@
       },
 
       isDirty(){
-        return !!_.find( this.gridData, row => row._dirtyFlags !== 'pristine' );
+        return !!this.gridData.find( row => row._dirtyFlags !== 'pristine' );
       },
 
       onSubmit() {
@@ -139,7 +140,7 @@
         this.rawGridData = data;
 
         // 原始数据的copy作为编辑的数据，
-        this.gridData = _.cloneDeep(data);
+        this.gridData = cloneDeep(data);
 
         this.parentRow = parentRow;
       },

@@ -598,7 +598,9 @@ import add from "./add.vue";
 import update from "./update.vue";
 import SimpleUpdate from "./simple-update.vue";
 import UploadFile from "../ui/upload-file.vue";
-
+import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
+import isUndefined from "lodash/isUndefined";
 var init_page_index = 0;
 export default {
   name: "procdetail",
@@ -719,14 +721,11 @@ export default {
         : defaultMsg;
     },
     isStepDataReady() {
-      return !_.isEmpty(this.proHanleData) && !_.isEmpty(this.proCharData);
+      return !isEmpty(this.proHanleData) && !isEmpty(this.proCharData);
     },
 
     isFinished() {
-      return (
-        !_.isUndefined(this.proHanleData.finishStatus) &&
-        !_.isNull(this.proHanleData.finishStatus)
-      );
+      return (!isUndefined(this.proHanleData.finishStatus) && !isNull(this.proHanleData.finishStatus));
     },
 
     isInApplyStep() {
@@ -1767,8 +1766,7 @@ export default {
 
     isSubmitableCol(datakey) {
       return (
-        (!datakey.startsWith("_") && datakey != "id") ||
-        _.find(this.submitableLodashCols, (col) => col === datakey)
+        (!datakey.startsWith("_") && datakey != "id") || this.submitableLodashCols.find( (col) => col === datakey)
       );
     },
   },

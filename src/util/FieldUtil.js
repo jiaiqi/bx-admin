@@ -35,6 +35,6 @@ export function createLinkUrlFunc(optionListV2, thisColName) {
 
 export function resolveAppFromService(service) {
   let appList = ["auth", "sso"];
-  let ret = _.find(appList, app => service.includes(app));
+  let ret = appList.find(app => service.includes(app));
   return ret || "";
 }

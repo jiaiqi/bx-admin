@@ -547,8 +547,9 @@ import update from "./update";
 import SimpleUpdate from "./simple-update";
 import UploadFile from "../ui/upload-file";
 import ProcV2Mixin from "../mixin/proc-v2-mixin";
-
-var init_page_index = 0;
+import isEmpty from "lodash/isEmpty";
+import isNull from "lodash/isNull";
+import isUndefined from "lodash/isUndefined";
 export default {
   name: "procdetail",
   components: {
@@ -1178,7 +1179,7 @@ export default {
         : defaultMsg;
     },
     isStepDataReady() {
-      return !_.isEmpty(this.proHanleData) && !_.isEmpty(this.proCharData);
+      return isEmpty(this.proHanleData) && isEmpty(this.proCharData);
     },
     hideFlowchart(data) {
       if (this.viewFlowChart) {
@@ -1198,8 +1199,8 @@ export default {
     },
     isFinished() {
       return (
-        !_.isUndefined(this.proHanleData.finishStatus) &&
-        !_.isNull(this.proHanleData.finishStatus)
+        isUndefined(this.proHanleData.finishStatus) &&
+        isNull(this.proHanleData.finishStatus)
       );
     },
 

@@ -115,7 +115,7 @@
 <script>
 import RawFieldEditor from "./raw-field-editor.vue";
 import shortcutAdd from "./field-shortcut-add.vue";
-
+import toInteger from "lodash/toInteger"
 export default {
   name: "field-editor",
 
@@ -216,7 +216,7 @@ export default {
         colSpan2 = contentField.info.srvCol.col_span;
       }
       let inner = Number.parseFloat(colSpan2);
-      return _.toInteger(inner * 24);
+      return toInteger(inner * 24);
     },
     getconsole(e) {
     },

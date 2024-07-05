@@ -133,8 +133,9 @@
   import {FieldInfo} from "../model/FieldInfo";
   import {Field} from "../model/Field";
   import agreementBox from './agreement-box.vue';
-
-
+  import cloneDeep from 'lodash/cloneDeep'
+  import bind from 'lodash/bind'
+  
   export default {
     name: "simple-update",
     components: {
@@ -210,14 +211,14 @@
     methods: {
 
       buildRunQuries() {
-        let formModel = _.cloneDeep(this.srvValFormModel());
+        let formModel = cloneDeep(this.srvValFormModel());
         delete formModel._children;
 
         let delta = {};
         Object.entries(formModel).forEach(([key, value]) => {
           // key is either an array index or object key
           let valueEnableFunc = this.createExecutorValueEnableFunc(key);
-          let bound = _.bind(valueEnableFunc, this);
+          let bound = bind(valueEnableFunc, this);
           bound(value) && (delta[key] = value);
         });
 

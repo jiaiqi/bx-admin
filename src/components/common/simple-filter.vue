@@ -82,7 +82,7 @@ import FormValidateMixin from "../mixin/form-validate-mixin";
 import Executor from './executor.vue'
 import Vue from 'vue'
 import dayjs from 'dayjs'
-
+import join from 'lodash/join'
 export default {
   name: "simple-filter",
   components: {
@@ -169,7 +169,7 @@ export default {
           && complementFlagsField.model.map(item => this.noramlizeFieldName(item)).filter(item => item == key).length > 0) {
           continue;
         }
-        if (_.includes(flagsFields, key)) {
+        if (flagsFields.includes(key)) {
           continue;
         }
 
@@ -350,7 +350,7 @@ export default {
           return srvCols.length > 0 && srvCols[0].in_cond === 1
         });
 
-      this.fflagsField.setSrvVal(_.join(inCondFields, ","))
+      this.fflagsField.setSrvVal(join(inCondFields, ","))
     },
 
 

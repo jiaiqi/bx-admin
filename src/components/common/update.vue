@@ -281,7 +281,7 @@
 // import ChildList from "./child-list.vue";
 import SimpleUpdate from "./simple-update.vue";
 import ParentChildMixin from '../mixin/parent-child-mixin'
-
+import cloneDeep from 'lodash/cloneDeep'
 export default {
   name: "update",
   components: {
@@ -420,7 +420,7 @@ export default {
      * @returns {{serviceName: (default.props.service|{type}|*), data: *[]}[]}
      */
     buildRunQuries () {
-      let formModel = _.cloneDeep(this.srvValFormModel());
+      let formModel = cloneDeep(this.srvValFormModel());
       delete formModel._children;
 
       let query = {

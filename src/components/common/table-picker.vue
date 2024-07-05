@@ -53,7 +53,8 @@
 <script>
 // import ListMixin from "../mixin/list-mixin"; // 列表js
 import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
-
+import cloneDeep from 'lodash/cloneDeep'
+import uniqBy from 'lodash/uniqBy'
 export default {
   props: {
     field: {
@@ -410,22 +411,6 @@ export default {
             this.selected = this.selected.concat(rowChildren)
           }
         }
-        // this.$refs.multipleTable.toggleRowSelection(row)
-
-        // this.gridData = this.gridData.map((item) => {
-        //   if (item[this.valueCol] === row[this.valueCol]) {
-        //     item.checked = !item.checked;
-        //     if (item.checked) {
-        //       this.selected.push(item[this.valueCol]);
-        //       this.selected = _.uniq(this.selected);
-        //     } else {
-        //       this.selected = this.selected.filter(
-        //         (e) => e !== item[this.valueCol]
-        //       );
-        //     }
-        //   }
-        //   return item;
-        // });
 
       } else {
         // 单选模式
@@ -512,7 +497,7 @@ export default {
           ) {
             let filters = [];
             var option_list_v2 = serviceCol["option_list_v2"];
-            if (option_list_v2 && _.isArray(option_list_v2)) {
+            if (option_list_v2 && Array.isArray(option_list_v2)) {
               for (var item of option_list_v2) {
                 filters.push({ text: item["label"], value: item["value"] });
               }
@@ -565,21 +550,20 @@ export default {
               }
               return item
             })
-            let allData = _.uniqBy(
+            let allData = uniqBy(
               [
                 ...res.data.data,
                 ...this.gridData,
                 ...this.allData,
-                ..._.cloneDeep(this.selectedGridData),
+                ...cloneDeep(this.selectedGridData),
               ],
               this.valueCol
             );
-            this.allData = _.cloneDeep(allData).map((item) => {
+            this.allData = cloneDeep(allData).map((item) => {
               item.label = item[this.labelCol];
               item.value = item[this.valueCol];
               return item;
             });
-            // this.$set(tree,'children',_.cloneDeep(res.data.data))
             //重新计算弹框的位置：
             this.$nextTick(() => {
               this.$refs?.show_popover?.updatePopper();
@@ -736,22 +720,22 @@ export default {
       return this.selectList(queryJson).then((response) => {
         if (response && response.data && response.data.data) {
 
-          this.gridData = _.cloneDeep(response.data.data).map((item) => {
+          this.gridData = cloneDeep(response.data.data).map((item) => {
             if (this.isTree) {
               item.hasChildren = item.is_leaf === '否'
             }
             item.checked = false;
             return item;
           });
-          let allData = _.uniqBy(
+          let allData = uniqBy(
             [
               ...this.gridData,
               ...this.allData,
-              ..._.cloneDeep(this.selectedGridData),
+              ...cloneDeep(this.selectedGridData),
             ],
             this.valueCol
           );
-          this.allData = _.cloneDeep(allData).map((item) => {
+          this.allData = cloneDeep(allData).map((item) => {
             item.label = item[this.labelCol];
             item.value = item[this.valueCol];
             return item;

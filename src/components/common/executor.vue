@@ -4,6 +4,8 @@
 <script>
   import ExecutorMixin from '../mixin/executor-minx'
   import {ExecutorInfo} from '../model/ExecutorInfo'
+  import cloneDeep from 'lodash/cloneDeep';
+  import flatten from 'lodash/flatten';
 
   export default {
     mixins: [ExecutorMixin],
@@ -75,7 +77,7 @@
       buildQuery: function (conf, rtDataCtx) {
         let queries = [];
         if (conf.itemsFunc && conf.itemsPolicy === "servicePerItem") {
-          let clone = _.cloneDeep(conf);
+          let clone = cloneDeep(conf);
           clone.itemsPolicy = "valuePerItem";
           queries = (conf.itemsFunc)(rtDataCtx).map(item => {
             clone.itemsFunc = _ => [item];
@@ -100,7 +102,7 @@
             if (query) {
               query.data.forEach(item => {
                 let subQueries = conf.children.map(child => this.buildQuery(child, item._rtDataCtx)).filter(e => !!e);
-                subQueries = _.flatten(subQueries).filter(e => !!e);
+                subQueries = flatten(subQueries).filter(e => !!e);
 
                 if (subQueries && subQueries.length > 0) {
                   item.child_data_list = subQueries;

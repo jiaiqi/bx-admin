@@ -2,6 +2,9 @@
  * 带子表的组件的mixin，主要处理主表和子表的关系。 Add, Update, Detail都使用该mixin
  */
 import { evalJson } from "@/util/evalJsonExpr.js";
+import remove from "lodash/remove";
+import isEqual from 'lodash/isEqual'
+import isString from 'lodash/isString'
 export default {
   data() {
     return {
@@ -498,7 +501,7 @@ export default {
       if (executor && childList.isMem()) {
         let fk = childList.foreignKey;
         // remove previous added
-        _.remove(executor.children, (item) => _.isEqual(item.fk, fk));
+        remove(executor.children, (item) => isEqual(item.fk, fk));
 
         // readd
         childList.buildExecutors4Edit().then((subexecutors) => {
@@ -537,7 +540,7 @@ export default {
         } catch (error) {}
       }
       if (fk && expr) {
-        if (_.isString(expr)) {
+        if (isString(expr)) {
           if (expr === "否") {
             return false;
           } else if (expr === "是") {

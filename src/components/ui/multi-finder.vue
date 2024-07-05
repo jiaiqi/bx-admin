@@ -89,6 +89,11 @@
 </template>
 
 <script>
+import remove from 'lodash/remove';
+import cloneDeepWith from 'lodash/cloneDeepWith';
+import isEmpty from 'lodash/isEmpty';
+import isObject from 'lodash/isObject';
+
 export default {
   components: {
     List: () => import('../common/list.vue')
@@ -183,7 +188,7 @@ export default {
         if (gridData && gridData.length) {
           let key_col = this.field.info.srvCol.columns;
           let existVals = gridData.map(item => item[ key_col ]);
-          _.remove(options, option => _.includes(existVals, option[ key_col ]))
+          remove(options, option => existVals.includes(option[ key_col ]))
         }
       }
     },
@@ -390,15 +395,15 @@ this.loading = false
         }
       }
 
-      var evaled = _.cloneDeepWith(dispLoader.relation_conditions, evalCustomizer);
+      var evaled = cloneDeepWith(dispLoader.relation_conditions, evalCustomizer);
 
       function pruneCustomizer (value, key, obj, stack) {
-        if (key === 'data' && _.isArray(value) && !_.isEmpty(value) && value[ 0 ].hasOwnProperty("colName")) {
-          return _.filter(value, leafCondition => leafCondition.value !== '' && leafCondition.value !== null && leafCondition.value !== undefined)
+        if (key === 'data' && Array.isArray(value) && !isEmpty(value) && value[ 0 ].hasOwnProperty("colName")) {
+          return value.filter( leafCondition => leafCondition.value !== '' && leafCondition.value !== null && leafCondition.value !== undefined)
         }
       }
 
-      var result = _.cloneDeepWith(evaled, pruneCustomizer);
+      var result = cloneDeepWith(evaled, pruneCustomizer);
       return result;
     },
 
@@ -521,7 +526,7 @@ this.loading = false
 
           this.options = response.data.data  // 默认选中的option
           // this.field.model = item;
-          if (_.isObject(this.field.model)) {
+          if (isObject(this.field.model)) {
             // 对象 fk值 设置 默认selected 显示值
             console.log("setSrvVal", item)
             let fieldInfo = this.field.info
@@ -581,7 +586,7 @@ this.loading = false
       if (value == undefined || value == null) {
         this.setSrvVal(this.field.model);
       } else {
-        console.log("modal--12", this.field.model, this.selected, _.isObject(this.field.model))
+        console.log("modal--12", this.field.model, this.selected, isObject(this.field.model))
         let fieldInfo = this.field.info
         let loader = fieldInfo.dispLoader
         // this.selected = (loader.showAsPair !== false ? `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]}` : this.field.model[ fieldInfo.dispCol ])

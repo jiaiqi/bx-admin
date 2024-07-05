@@ -3,7 +3,8 @@ import { Field } from '../model/Field'
 import Vue from 'vue'
 import { ActionInfo } from "../model/ActionInfo"; 
 import { formatDate } from "../../util/DataUtil";
-
+import remove from 'lodash/remove'
+import isString from 'lodash/isString'
 export default {
   created: function () {
     window.forms = window.forms || {}
@@ -243,7 +244,7 @@ export default {
         let fieldsInSection = sections[ key ];
         let isGroupedField = field => field.info.srvCol.group_field;
         let groupedFields = fieldsInSection.filter(isGroupedField)
-        _.remove(fieldsInSection, isGroupedField);
+        remove(fieldsInSection, isGroupedField);
 
         let formItems = fieldsInSection.map(majorField => {
           let contentFields = [ majorField ].concat(
@@ -436,7 +437,7 @@ export default {
     },
 
     formatSection: function (section) {
-      return section && _.isString(section) && section.startsWith('$') ? "" : section;
+      return section && isString(section) && section.startsWith('$') ? "" : section;
     },
 
     srvValFormModel: function () {
@@ -908,7 +909,7 @@ export default {
               if (field.info.name === 'biz_path') {
               }
               let firstRow = historyOfRow.indexOf(ver) == 0;
-              let changed = _.includes(ver._diff_cols, field.info.name);
+              let changed = ver._diff_cols.includes(field.info.name);
               return firstRow || changed
             })
             .map(ver => {
@@ -928,7 +929,7 @@ export default {
         
       }
 
-      if (this.encryptedCols && _.isArray(this.encryptedCols)) {
+      if (this.encryptedCols && Array.isArray(this.encryptedCols)) {
         // 老版加密数据处理逻辑，已废弃
         // 如果当前数据为敏感数据，因为值为******, 则没有看的权限，进而不可编辑
         if (map._sensitive_data === true) {

@@ -265,7 +265,7 @@
       },
       sectionVisible(section) {
         let dependSectionNames = section.depend_sections;
-        if (_.isArray(dependSectionNames) && dependSectionNames.length > 0) {
+        if (Array.isArray(dependSectionNames) && dependSectionNames.length > 0) {
           if (section.depend_display === true) {
             return true;
           }
@@ -344,7 +344,7 @@
           section.tabs.filter(item => item !== tab).forEach(item => this.$set(item, "isActive", false))
         }
         this.$set(tab, "isActive", !tab.isActive)
-        let hasSelection = _.find(section.tabs, item => item.label !== '不限' && item.isActive);
+        let hasSelection = section.tabs.find( item => item.label !== '不限' && item.isActive);
         this.$nextTick(_ => {
           // find affected group sections and rebuild them
           this.sections.filter(section2 => section2.section_type === "groupby" && section2.depend_sections && section2.depend_sections.indexOf(section.list_tab_no) >= 0)
@@ -383,14 +383,14 @@
           let orders = null;
 
           (section.depend_sections || []).forEach(dependSectionName => {
-            let dependSection = _.find(this.sections, sec => sec.list_tab_no === dependSectionName);
+            let dependSection = this.sections.find(sec => sec.list_tab_no === dependSectionName);
             if (!dependSection) {
               return;
             }
 
             if (dependSection.section_type === "groupby") {
-              let groupByCol = _.find(eval(dependSection.section_groups), ele => ele.type === 'by').colName;
-              let activeTab = _.find(dependSection.tabs, tab => tab.isActive && tab.label !== '不限');
+              let groupByCol = eval(dependSection.section_groups).find(ele => ele.type === 'by').colName;
+              let activeTab = dependSection.tabs.find( tab => tab.isActive && tab.label !== '不限');
               if (activeTab) {
                 let condition = {
                   colName: groupByCol,

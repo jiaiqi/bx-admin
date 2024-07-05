@@ -76,12 +76,12 @@
         if (xAxisField && yAxisField) {
           let simpleDetail = this.$refs.detail.$refs['simple-detail'];
           let axes = simpleDetail.srvValFormModel()._children["bxsys_stat_axis_fk1"];
-          let xaxis_no = _.find(axes, item => item.xory === 'X轴').axis_no;
+          let xaxis_no = axes.find(item => item.xory === 'X轴').axis_no;
           if (xaxis_no) {
             form.fields.xaxis_no.setSrvVal(xaxis_no);
           }
 
-          let yaxis_no = _.find(axes, item => item.xory === 'Y轴').axis_no;
+          let yaxis_no = axes.find(item => item.xory === 'Y轴').axis_no;
           if (yaxis_no) {
             form.fields.yaxis_no.setSrvVal(yaxis_no);
           }

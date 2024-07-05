@@ -166,6 +166,12 @@
 <script>
 import tablePicker from "../common/table-picker.vue";
 import locationPicker from "./location-picker.vue";
+import includes from 'lodash/includes'
+import remove from 'lodash/remove'
+import cloneDeepWith from 'lodash/cloneDeepWith'
+import cloneDeep from "lodash/cloneDeep";
+import isEmpty from "lodash/isEmpty";
+import isObject from "lodash/isObject";
 export default {
   components: {
     List: () => import("../common/list.vue"),
@@ -510,7 +516,7 @@ export default {
         if (gridData && gridData.length) {
           let key_col = this.field.info.srvCol.columns;
           let existVals = gridData.map((item) => item[key_col]);
-          _.remove(options, (option) => _.includes(existVals, option[key_col]));
+          remove(options, (option) => existVals.includes( option[key_col]));
         }
       }
     },
@@ -717,7 +723,7 @@ export default {
         }
       }
 
-      var evaled = _.cloneDeepWith(
+      var evaled = cloneDeepWith(
         dispLoader.relation_conditions,
         evalCustomizer
       );
@@ -725,13 +731,11 @@ export default {
       function pruneCustomizer(value, key, obj, stack) {
         if (
           key === "data" &&
-          _.isArray(value) &&
-          !_.isEmpty(value) &&
+          Array.isArray(value) &&
+          !isEmpty(value) &&
           value[0].hasOwnProperty("colName")
         ) {
-          return _.filter(
-            value,
-            (leafCondition) =>
+          return value.filter((leafCondition) =>
               leafCondition.value !== "" &&
               leafCondition.value !== null &&
               leafCondition.value !== undefined
@@ -739,7 +743,7 @@ export default {
         }
       }
 
-      var result = _.cloneDeepWith(evaled, pruneCustomizer);
+      var result = cloneDeepWith(evaled, pruneCustomizer);
       return result;
     },
 
@@ -940,7 +944,7 @@ export default {
           }
           let item = response.data.data[0];
           this.field.model = item;
-          if (_.isObject(this.field.model)) {
+          if (isObject(this.field.model)) {
             // 对象 fk值 设置 默认selected 显示值
             console.log("setSrvVal", item);
             let fieldInfo = this.field.info;
@@ -1036,7 +1040,6 @@ export default {
       if (value == undefined || value == null) {
         this.setSrvVal(this.field.model);
       } else {
-        // console.log("modal--12", this.field.model, this.selected, _.isObject(this.field.model))
         let fieldInfo = this.field.info;
         let loader = fieldInfo.dispLoader;
         this.options = [this.field.model];

@@ -19,7 +19,7 @@
 
 <script>
   import CustomPageBlock from "./custom-page-block";
-
+  import sortBy from "lodash/sortBy";
   export default {
     name: "custom-page",
     components: {CustomPageBlock},
@@ -63,9 +63,9 @@
           })
 
           // sort row, col
-          this.rows = _.sortBy(Object.values(rowMap), item => item.row_index);
+          this.rows = sortBy(Object.values(rowMap), item => item.row_index);
           this.rows.forEach(row => {
-            row.blocks = _.sortBy(row.blocks, item => item.col_index)
+            row.blocks = sortBy(row.blocks, item => item.col_index)
           })
         })
     }

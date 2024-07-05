@@ -271,6 +271,7 @@ import SimpleAdd from "./simple-add.vue";
 import ParentChildMixin from '../mixin/parent-child-mixin'
 import FieldRedundantMixin from '../mixin/field-redundant-mixin'
 import customFrame from "../feature/custom-frame.vue";
+import cloneDeep from 'lodash/cloneDeep'
 
 export default {
   name: "add",
@@ -374,7 +375,7 @@ export default {
      */
     buildRunQuries () {
       // 主表数据
-      let formModel = _.cloneDeep(this.srvValFormModel());
+      let formModel = cloneDeep(this.srvValFormModel());
       delete formModel._children;
 
       let query = {
@@ -384,7 +385,7 @@ export default {
 
       // 子表的数据
       let childDataList = []
-      if (this.$refs.childrenList) { 
+      if (this.$refs.childrenList) {
         this.$refs.childrenList.forEach(childList => {
           let updateQueries = childList.buildRunQuries();
           if (updateQueries && updateQueries.length > 0) {
