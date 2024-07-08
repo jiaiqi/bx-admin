@@ -458,7 +458,6 @@
 
       buildSections: function (tabs) {
         // generate tab.condition, order, depend_sections from json string to js object/array
-        console.log("buildSections",tabs)
         let self = this
         let tab = {}
         let tabsData = []

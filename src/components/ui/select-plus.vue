@@ -51,7 +51,7 @@ export default {
        },
    },
    methods:{
-       buildFkOptionList(query){
+       async buildFkOptionList(query){
            let self = this
            let e = self.tab
           console.log('buildFkOptionList',query,e,self.formModel[e.list_tab_no])
@@ -70,27 +70,27 @@ export default {
         } else {
           // conds = [];
         }
-          let options = []
-        //   url, service_name, condition, page, order, group, mapcondition,isproc,columns,relationCondition,draft,pageType
-          self.select(e.option_list.serviceName, conds, null, null, null, null,null, null, null, null,false).then((res) =>{
-              let resData = res.data.data
-                for(let i =0;i<resData.length;i++){
-                    let item = resData[i]
-                    let opt = {
-                            value:item[e.option_list.refed_col],
-                            label:item[e.option_list.key_disp_col]
-                    }
-                     options.push(opt)
-                }
-
-                // self.formModel[e.list_tab_no]['options'] = options
-                // e.options = options
-                // self.$set(self.formModel[e.list_tab_no],"options",options)
-                console.log("options",options)
-                self.formModelData.options = options
-                self.loading = false
+       let options = e.options || []
+       if (e?.option_list?.serviceName) {
+         //   url, service_name, condition, page, order, group, mapcondition,isproc,columns,relationCondition,draft,pageType
+         const res = await self.select(e.option_list.serviceName, conds, null, null, null, null, null, null, null, null, false)
+         const resData = res.data.data
+         for (let i = 0; i < resData.length; i++) {
+           let item = resData[i]
+           let opt = {
+             value: item[e.option_list.refed_col],
+             label: item[e.option_list.key_disp_col]
+           }
+           options.push(opt)
+         }
+       }
+       // self.formModel[e.list_tab_no]['options'] = options
+       // e.options = options
+       // self.$set(self.formModel[e.list_tab_no],"options",options)
+       console.log("options", options)
+       self.formModelData.options = options
+       self.loading = false
                 //  resolve(options)
-            })
             // self.$set(self.formModel[e.list_tab_no],"options",options)
         // return new Promise((resolve, reject) => {
         //       let options = []
@@ -114,18 +114,28 @@ export default {
       }
    },
    watch: {
-        'formModelData': {
-          deep: true,
-          immediate: true,
-          handler: function (val, oldVal) {
-              if(val.hasOwnProperty('value') && oldVal.hasOwnProperty('value') && val.value !== oldVal.value){
-                        this.$emit('on-value-change',{value:val.value,listNo:tab.list_tab_no})
-              }else if(val.hasOwnProperty('value') && !oldVal.hasOwnProperty('value') && val.value !== oldVal.value){
-                    this.$emit('on-value-change',{value:val.value,listNo:this.tab.list_tab_no})
-              }
-              
-          }
-        },
+     'formModelData.value': {
+       deep: true,
+       immediate: true,
+       handler: function (val, oldVal) {
+         console.log('formModelData', val, oldVal);
+         if (val !== oldVal) {
+           this.$emit('on-value-change', { value: val, listNo: this.tab.list_tab_no })
+         }
+       }
+     },
+        // 'formModelData': {
+        //   deep: true,
+        //   immediate: true,
+        //   handler: function (val, oldVal) {
+        //     console.log('formModelData', val, oldVal);
+        //       if(val.hasOwnProperty('value') && oldVal.hasOwnProperty('value') && val.value !== oldVal.value){
+        //                 this.$emit('on-value-change',{value:val.value,listNo:tab.list_tab_no})
+        //       }else if(val.hasOwnProperty('value') && !oldVal.hasOwnProperty('value') && val.value !== oldVal.value){
+        //             this.$emit('on-value-change',{value:val.value,listNo:this.tab.list_tab_no})
+        //       }
+        //   }
+        // },
     },
-} 
+}
 </script>

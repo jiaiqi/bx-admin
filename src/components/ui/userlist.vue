@@ -39,18 +39,16 @@
 
     methods: {
       onValueChange() {
-        
         this.field.model = this.selected
         this.$emit('field-value-changed', this.field.info.name, this.field)
       },
 
-      loadOptions(queryString) {
+      loadOptions(queryString='') {
         let fieldInfo = this.field.info
         let loader = fieldInfo.dispLoader
         if (!loader) {
           return Promise.resolve(false);
         }
-
         if (loader.enableFunc) {
           if (!loader.enableFunc()) {
             return;
@@ -131,8 +129,9 @@
 
     created: function () {
       if (this.field.model) {
-
         this.setSrvVal(this.field.model)
+      }else{
+        this.loadOptions()
       }
     }
   }

@@ -27,7 +27,7 @@
                 </el-col> -->
             </div>
             <div  v-if="tab._type === 'select'">
-                <selectPlus :ref="tab.list_tab_no" :tab="tab" :formModel="formModel[tab.list_tab_no]" @on-value-change="selectChange($event)"></selectPlus>
+                <selectPlus :ref="tab.list_tab_no" :tab="tab" :formModel="formModel[tab.list_tab_no]" @on-value-change="selectChange($event,tab)"></selectPlus>
                 <!-- <el-select filterable remote :loading="loading" v-model="formModel[tab.list_tab_no].value" clearable placeholder="输入关键字搜索"
                 :remote-method="buildFkOptionList" @blur="buildFkOptionList(null,tab)">
                     <el-option
@@ -171,7 +171,8 @@ export default {
         model: item.default,
       }
     },
-      selectChange(e){
+      selectChange(e,tab){
+        console.log(e,tab);
           this.$set(this.formModel[e.listNo],'value',e.value)
       },
       onBuildFormValues(){
