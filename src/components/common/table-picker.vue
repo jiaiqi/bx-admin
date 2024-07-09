@@ -132,7 +132,7 @@ export default {
       return ["fks", "fkjsons"].includes(this.fieldType) || this.field.info.moreConfig?.multi === true;
     },
     isTree() {
-      return this.optionListV2?.is_tree === true
+      return this.optionListV2?.is_tree === true || this.listV2?.is_tree===true
     },
     valueCol() {
       return this.fmt && this.fmt.primary_col;

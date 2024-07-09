@@ -872,7 +872,7 @@ export default {
           {
             colName: fieldInfo.valueCol,
             value: srvVal,
-            ruleType: srvVal?.includes(",") ? "in" : "eq",
+            ruleType: srvVal?.includes?.(",") ? "in" : "eq",
           },
         ],
       };
