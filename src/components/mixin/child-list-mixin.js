@@ -84,7 +84,7 @@ export default {
       
     },
 
-    onListLoaded: function (innerList) { 
+    onListLoaded: function (innerList) {
       let refCol = this.foreignKey.column_name;
       let refTable = this.foreignKey.table_name;
       let refedCol = this.foreignKey.referenced_column_name;
@@ -95,8 +95,6 @@ export default {
         refTable = this.foreignKey.ref_service;
         refedCol = this.foreignKey.refed_service_column;
         refedTable = this.foreignKey.refed_service;
-
-
         // hide headers if srvcol comes from main table
         if (innerList != undefined) {
           innerList.gridHeader.filter(header => {
@@ -104,13 +102,9 @@ export default {
             if (!srvcol) {
               return false
             }
-
             let isRefCol = srvcol.service_name == refTable && srvcol.columns == refCol;
             let isRefedDispCol = srvcol.service_name == refedTable && srvcol.columns;
-
             let hide = isRefCol || isRefedDispCol;
-            
-
             return hide;
           }).forEach(header => {
             header.show = false;
@@ -134,11 +128,16 @@ export default {
           });
         }
       }
-      
 
+      // 从主表冗余过来的字段在子表列表中不显示
+      innerList?.gridHeader?.filter(header=>{
+        return header?.srvcol?.main_sub_red?.quoteCol
+      }).forEach(header=>{
+        header.show = false
+      })
 
       if (this !== innerList) {
-        
+
         this.$emit("list-loaded", this);
       }
     },
