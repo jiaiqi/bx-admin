@@ -33,8 +33,7 @@
         <el-autocomplete
           ref="autocomplete"
           :prefix-icon="
-            (field.info.dispLoader &&
-              field.info.dispLoader.imgType === 'eicon' &&
+            (dispLoaderV2 &&dispLoaderV2.imgType === 'eicon' &&
               field.getSrvVal()) ||
             ''
           "
@@ -127,7 +126,7 @@
         @close="popup = false"
       >
         <list
-          :service="field.info.dispLoader.service"
+          :service="dispLoaderV2.service"
           v-if="popup"
           ref="popup"
           :$srvApp="appNo"
@@ -166,9 +165,9 @@
 <script>
 import tablePicker from "../common/table-picker.vue";
 import locationPicker from "./location-picker.vue";
-import includes from 'lodash/includes'
-import remove from 'lodash/remove'
-import cloneDeepWith from 'lodash/cloneDeepWith'
+import includes from "lodash/includes";
+import remove from "lodash/remove";
+import cloneDeepWith from "lodash/cloneDeepWith";
 import cloneDeep from "lodash/cloneDeep";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
@@ -206,6 +205,19 @@ export default {
     };
   },
   watch: {
+    optionListV2:{
+      deep:true,
+      immediate:true,
+      handler(newVal, oldVal) {
+        if(newVal?.serviceName&&this.field?.info?.srvCol?.option_list_v2?.serviceName){
+          if(JSON.stringify(newVal)!==JSON.stringify(this.field?.info?.srvCol?.option_list_v2||{})){
+            const srvCol = cloneDeep(this.field.info.srvCol)
+            srvCol.option_list_v2 = cloneDeep(newVal)
+            this.field.info.resolveOptions(srvCol)
+          }
+        }
+      },
+    },
     "field.form.formModel": {
       deep: true,
       immediate: true,
@@ -265,7 +277,49 @@ export default {
     },
   },
   computed: {
+    dispLoaderV2() {
+      if (this.optionListV2?.refed_col) {
+        const optionListV2 = this.optionListV2
+        return {
+          service: optionListV2.serviceName || optionListV2.service,
+          conditions: optionListV2.conditions || [],
+          relation_conditions: optionListV2.relation_conditions || null,
+          orders: optionListV2.orders || null,
+          showAsPair: optionListV2.show_as_pair || null,
+          imgType: optionListV2.img_type || null, // 图片类型：img-图片 eicon- el-icon图标
+          imgCol: optionListV2.refed_col || null, // 图片字段 同之前的img_url_expr
+          imgUrlExpr: optionListV2.img_url_expr || optionListV2.img_col || null,
+          dedup: optionListV2.dedup,
+          srvApp: optionListV2.srv_app || null,
+          parentCol:
+            optionListV2.parent_col || optionListV2.parent_no_col || null,
+          refedCol: optionListV2.refed_col,
+          dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
+        };
+      }else{
+        return this.field?.info?.dispLoader
+      }
+    },
     optionListV2() {
+      if (this.field?.info?.srvCol?.option_list_v3?.length) {
+        // 如果有v3 则使用v3
+        const option_list_v3 = this.field?.info?.srvCol?.option_list_v3;
+        const result = option_list_v3.find((item) => {
+          if (item.conds?.length) {
+            // 条件外键
+            return item.conds.every(
+              (cond) => this.formModel[cond.case_col] === cond.case_val
+            );
+          } else {
+            return true;
+          }
+        });
+        if (result) {
+          return result;
+        } else {
+          return null;
+        }
+      }
       return this.field?.info?.srvCol?.option_list_v2;
     },
     optionsRun: function () {
@@ -298,12 +352,12 @@ export default {
       return this.optionListV2?.add_srv_cfg;
     },
     addService() {
-      return (
-        this.optionListV2?.add_srv_cfg?.srv
-      );
+      return this.optionListV2?.add_srv_cfg?.srv;
     },
     addApp() {
-      return this.addSrvCfg?.app|| this.optionListV2?.srv_app || this.appNo|| null;
+      return (
+        this.addSrvCfg?.app || this.optionListV2?.srv_app || this.appNo || null
+      );
     },
   },
   methods: {
@@ -325,7 +379,7 @@ export default {
         this.field.info.srvCol &&
         this.field.info.srvCol.init_expr === "$firstRowData"
       ) {
-        let loader = fieldInfo.dispLoader;
+        let loader = this.dispLoaderV2;
         this.field.model = this.options[0];
         this.selected =
           loader.showAsPair !== true
@@ -345,7 +399,7 @@ export default {
     getOptions(queryString) {
       let self = this;
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       if (queryString == true) {
         if (loader.enableFunc) {
           if (!loader.enableFunc()) {
@@ -500,12 +554,12 @@ export default {
     popupDefaultConditions() {
       let conditions = this.defaultConditions || [];
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       return conditions.concat(this.buildConditions(loader));
     },
 
     dedupOptions(options) {
-      let loader = this.field.info.dispLoader;
+      let loader = this.dispLoaderV2;
       if (!loader.dedup) {
         return;
       }
@@ -516,7 +570,7 @@ export default {
         if (gridData && gridData.length) {
           let key_col = this.field.info.srvCol.columns;
           let existVals = gridData.map((item) => item[key_col]);
-          remove(options, (option) => existVals.includes( option[key_col]));
+          remove(options, (option) => existVals.includes(option[key_col]));
         }
       }
     },
@@ -525,7 +579,7 @@ export default {
       let self = this;
 
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       if (loader.enableFunc) {
         if (!loader.enableFunc()) {
           cb([]);
@@ -735,7 +789,8 @@ export default {
           !isEmpty(value) &&
           value[0].hasOwnProperty("colName")
         ) {
-          return value.filter((leafCondition) =>
+          return value.filter(
+            (leafCondition) =>
               leafCondition.value !== "" &&
               leafCondition.value !== null &&
               leafCondition.value !== undefined
@@ -809,7 +864,7 @@ export default {
       this.field.model = item;
 
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       if (this.subType == "select") {
         let selectItem = this.options.filter(
           (opt) => opt[fieldInfo.valueCol] == item
@@ -830,6 +885,31 @@ export default {
     },
 
     emitFieldValueChange() {
+      let objCol = null
+      const objInfo = this.optionListV2?.obj_info
+      if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
+        // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
+        const newValue = this.field.model
+        const cols = objInfo?.a_save_b_cols.split(',')
+        const obj = {}
+        const objStr = ''
+        if (cols?.length) {
+          cols.forEach(col => {
+            obj[col] = newValue?.[col]
+          })
+        }
+        objStr = JSON.stringify(obj)
+        if (objStr === '{}' || !newValue || !isObject(newValue)) {
+          objStr = ""
+        }
+        objCol = {
+          type: 'a_save_b_obj',
+          col: objInfo.a_save_b_obj_col,
+          val: objStr
+        }
+        // 将更新的字段信息保存在_obj_col上，方便在form中获取
+        this.$set(this.field, '_obj_col', objCol)
+      }
       this.$emit("field-value-changed", this.field.info.name, this.field);
     },
 
@@ -863,7 +943,7 @@ export default {
       }
 
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       let queryJson = {
         serviceName: loader.service,
         queryMethod: "select",
@@ -948,7 +1028,7 @@ export default {
             // 对象 fk值 设置 默认selected 显示值
             console.log("setSrvVal", item);
             let fieldInfo = this.field.info;
-            let loader = fieldInfo.dispLoader;
+            let loader = this.dispLoaderV2;
             if (this.subType === "select") {
               this.selected = this.field.model[fieldInfo.valueCol];
             } else {
@@ -999,7 +1079,7 @@ export default {
       this.$emit("blur", this.field);
       this.emitFieldValueChange();
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       this.selected =
         loader.showAsPair !== true
           ? item[fieldInfo.dispCol]
@@ -1041,7 +1121,7 @@ export default {
         this.setSrvVal(this.field.model);
       } else {
         let fieldInfo = this.field.info;
-        let loader = fieldInfo.dispLoader;
+        let loader = this.dispLoaderV2;
         this.options = [this.field.model];
         if (this.subType === "select") {
           this.selected = this.field.model[fieldInfo.valueCol];

@@ -793,9 +793,17 @@ export default {
       let self = this
       // console.log('onFieldValueChanged fieldName',this.fields[fieldName].info.label,this.fields[fieldName],this.fields[fieldName].model)
       if (this.formLoaded) {
-        // 处理下游游字段变化 field a -> b,  when a is null, and b is changed, set a
         
         let field = this.fields[ fieldName ];
+
+        if(field['_obj_col']?.col){
+          // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
+          if(this.fields[field['_obj_col']?.col]){
+            this.fields[field['_obj_col']?.col].model = field['_obj_col']?.val
+          }
+        }
+
+        // 处理下游游字段变化 field a -> b,  when a is null, and b is changed, set a
         if (field.info.upstream) {
           let upstreamField = this.fields[ field.info.upstream.field ];
           if (!upstreamField.model) {
@@ -807,7 +815,7 @@ export default {
         }
         /**
          * 处理起止日期值分离同步
-         */ 
+         */
         let DateRangeEndCol = field.info._DateRangeEndColName
         if (field.info.editor === "DateRange" && DateRangeEndCol !== null) {
           if (field.hasOwnProperty('_DateRangeModel') && field._DateRangeModel !== null) {

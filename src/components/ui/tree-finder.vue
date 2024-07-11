@@ -56,7 +56,7 @@ export default {
     },
     unlimited: function() {
       // 是否允许选择 任意一级， false ，true
-      let unlimited = this.field.info.srvCol.option_list_v2;
+      let unlimited = this.optionListV2 || this.field.info.srvCol.option_list_v2;
       if (
         unlimited.hasOwnProperty("unlimited") &&
         unlimited.unlimited === false
@@ -65,7 +65,52 @@ export default {
       } else {
         return true;
       }
-    }
+    },
+    dispLoaderV2() {
+      if (this.optionListV2?.refed_col) {
+        const optionListV2 = this.optionListV2
+        return {
+          service: optionListV2.serviceName || optionListV2.service,
+          conditions: optionListV2.conditions || [],
+          relation_conditions: optionListV2.relation_conditions || null,
+          orders: optionListV2.orders || null,
+          showAsPair: optionListV2.show_as_pair || null,
+          imgType: optionListV2.img_type || null, // 图片类型：img-图片 eicon- el-icon图标
+          imgCol: optionListV2.refed_col || null, // 图片字段 同之前的img_url_expr
+          imgUrlExpr: optionListV2.img_url_expr || optionListV2.img_col || null,
+          dedup: optionListV2.dedup,
+          srvApp: optionListV2.srv_app || null,
+          parentCol:
+            optionListV2.parent_col || optionListV2.parent_no_col || null,
+          refedCol: optionListV2.refed_col,
+          dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
+        };
+      }else{
+        return this.field?.info?.dispLoader
+      }
+    },
+    optionListV2() {
+      if (this.field?.info?.srvCol?.option_list_v3?.length) {
+        const option_list_v3 = this.field?.info?.srvCol?.option_list_v3;
+        const formModel = this.field.form.srvValFormModel()
+        const result = option_list_v3.find((item) => {
+          if (item.conds?.length) {
+            // 条件外键
+            return item.conds.every(
+              (cond) => formModel[cond.case_col] === cond.case_val
+            );
+          } else {
+            return true;
+          }
+        });
+        if (result) {
+          return result;
+        } else {
+          return null;
+        }
+      }
+      return this.field?.info?.srvCol?.option_list_v2;
+    },
   },
 
   methods: {
@@ -87,7 +132,7 @@ export default {
     inputChange: debounce(function(e) {
       console.log(e.target.value);
       let val = e.target.value;
-      let loader = this.field.info.dispLoader;
+      let loader = this.dispLoaderV2 || this.field.info.dispLoader;
       if (loader.parentCol) {
         console.log(val, "onSelectChange");
         this.treeLazySelect(loader, null, val);
@@ -302,7 +347,7 @@ export default {
     loadOptions() {
       let fieldInfo = this.field.info;
       let conditions = [];
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       conditions = this.buildConditions(loader);
       if (loader.parentCol) {
         let curVal = this.field.getSrvVal();
@@ -333,7 +378,7 @@ export default {
     },
 
     onSelectChange(val) {
-      let loader = this.field.info.dispLoader;
+      let loader = this.dispLoaderV2;
 
       if (this.selected && this.selected.length > 0) {
         this.field.model = this.findSelectedItem();
@@ -385,7 +430,7 @@ export default {
         return;
       }
       let fieldInfo = this.field.info;
-      let loader = fieldInfo.dispLoader;
+      let loader = this.dispLoaderV2;
       let queryJson = {
         serviceName: loader.service,
         queryMethod: "select",
@@ -515,10 +560,7 @@ export default {
     },
 
     onLinkClicked() {
-      let tabTitle =
-        (this.field.info.srvCol &&
-          this.field.info.srvCol.option_list_v2 &&
-          this.field.info.srvCol.option_list_v2.service_label) ||
+      let tabTitle = this.optionListV2?.service_label || this.field.info?.srvCol?.option_list_v2?.service_label ||
         "详情";
       this.addTabByUrl(this.getLinkUrl(), tabTitle);
     }
@@ -534,7 +576,7 @@ export default {
           value = this.field.model;
         }
         console.log("tree-finder", this);
-        if (this.field.info.dispLoader.parentCol) {
+        if (this.dispLoaderV2?.parentCol) {
           // this.setInitValOption(value)
         } else {
           this.setSrvVal(value);
