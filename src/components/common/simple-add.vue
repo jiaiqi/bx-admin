@@ -19,7 +19,7 @@
         <el-row v-for="(formItems, section) in sections" :key="section">
 
           <div class="el-col el-col-24 el-col-xl-24">
-            <div class="el-form-item" v-if="!!section" style="margin-bottom:0;">
+            <div class="el-form-item" v-if="!!section&&formatSection(section)" style="margin-bottom:0;">
               <span class="section-title" @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
               
                 <template v-if="section !== '$' && cfgJsonOptionsType.indexOf('分组默认折叠') !== -1">
@@ -199,7 +199,7 @@ export default {
         };
       }
 
-      if (this.submit2Db) { 
+      if (this.submit2Db) {
         let executor = new ExecutorInfo();
         submitAction.executor = executor;
 

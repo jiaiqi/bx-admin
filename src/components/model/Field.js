@@ -175,7 +175,10 @@ export class Field {
         ret = DataUtil.formatDate(ret, temporalType,this.info.format)
       }
     } else if (this.info.isFinder()) {
-      if (typeof ret === 'object') {
+      // 自行输入且为add表单时，直接提交对象
+      if(this.info.allowInput==='自行输入' && this.info?.srvCol?.service_name?.includes('add')){
+        ret = typeof ret === 'object' ? ret : null
+      }else if (typeof ret === 'object') {
         ret = ret[this.info.valueCol];
       }
     } else if (this.info.editor == "multiselect") {

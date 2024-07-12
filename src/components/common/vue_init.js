@@ -35,9 +35,9 @@ function init() {
       // back_server_ip: "wx.100xsys.cn", // oa
       // back_server_port: "",
 
-      // back_server_protocol: "https",
-      // back_server_ip: "api.100xsys.cn", // saas外网
-      // back_server_port: "",
+      back_server_protocol: "https",
+      back_server_ip: "api.100xsys.cn", // saas外网
+      back_server_port: "",
 
       // back_server_protocol: "http",
       // back_server_ip: "vrms.vanxum.com", // 万像
@@ -118,9 +118,9 @@ function init() {
       // back_server_ip: "39.98.203.134",    // 240 139.129.128.155:5021
       // back_server_port: "8081",
 
-      back_server_protocol: "http",
-      back_server_ip: "192.168.0.244",    // 240 139.129.128.155:5021
-      back_server_port: "8101",
+      // back_server_protocol: "http",
+      // back_server_ip: "192.168.0.244",    // 240 139.129.128.155:5021
+      // back_server_port: "8101",
       // back_server_ip: "api.vanxum.com",    // http://api.vanxum.com:9080
       // back_server_port: "9080",
       // back_server_ip: "192.168.0.240",    // 240 139.129.128.155:5021   中铁

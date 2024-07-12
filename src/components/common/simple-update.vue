@@ -25,7 +25,7 @@
         <slot name="field-form-prepend"></slot>
         <el-row v-for="(formItems, section) in sections" :key="section">
           <div class="el-col el-col-24 el-col-xl-24">
-            <div class="el-form-item" v-if="!!section"  style="margin-bottom:0;">
+            <div class="el-form-item" v-if="!!section&&formatSection(section)"  style="margin-bottom:0;">
               <!-- <span class="section-title">{{formatSection(section)}}</span> -->
               <span class="section-title"  @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
               

@@ -10,6 +10,19 @@
       >
         {{ field.getDispVal4Read() }}
       </a>
+      <div
+        class="div-el-input"
+        v-else-if="
+          formType === 'add' &&
+          optionListV2 &&
+          optionListV2.allow_input === '自行输入' &&
+          addService
+        "
+        @click="activePopup = 'add'"
+      >
+        <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
+        <i class="el-icon-edit"></i>
+      </div>
       <location-picker
         v-else-if="isLocation"
         :field="field"
@@ -33,7 +46,8 @@
         <el-autocomplete
           ref="autocomplete"
           :prefix-icon="
-            (dispLoaderV2 &&dispLoaderV2.imgType === 'eicon' &&
+            (dispLoaderV2 &&
+              dispLoaderV2.imgType === 'eicon' &&
               field.getSrvVal()) ||
             ''
           "
@@ -99,7 +113,7 @@
         </el-button>
       </div>
       <el-dialog
-        title="新增选项"
+        :title="submit2Db ? '新增选项' : '编辑'"
         width="90%"
         :close-on-click-modal="1 == 2"
         append-to-body
@@ -109,11 +123,15 @@
         <add
           name="add-popup"
           ref="add-form"
-          v-if="activePopup == 'add'"
           :service="addService"
           :$srvApp="addApp"
           :navAfterSubmit="false"
+          :submit2Db="submit2Db"
+          :defaultValues="submit2Db?null:field.model"
+          @submitted2mem="submitted2mem"
           @executor-complete="onExecutorComplete"
+          @form-loaded="onAddFormLoaded"
+          v-if="activePopup == 'add'"
         >
         </add>
       </el-dialog>
@@ -205,15 +223,21 @@ export default {
     };
   },
   watch: {
-    optionListV2:{
-      deep:true,
-      immediate:true,
+    optionListV2: {
+      deep: true,
+      immediate: true,
       handler(newVal, oldVal) {
-        if(newVal?.serviceName&&this.field?.info?.srvCol?.option_list_v2?.serviceName){
-          if(JSON.stringify(newVal)!==JSON.stringify(this.field?.info?.srvCol?.option_list_v2||{})){
-            const srvCol = cloneDeep(this.field.info.srvCol)
-            srvCol.option_list_v2 = cloneDeep(newVal)
-            this.field.info.resolveOptions(srvCol)
+        if (
+          newVal?.serviceName &&
+          this.field?.info?.srvCol?.option_list_v2?.serviceName
+        ) {
+          if (
+            JSON.stringify(newVal) !==
+            JSON.stringify(this.field?.info?.srvCol?.option_list_v2 || {})
+          ) {
+            const srvCol = cloneDeep(this.field.info.srvCol);
+            srvCol.option_list_v2 = cloneDeep(newVal);
+            this.field.info.resolveOptions(srvCol);
           }
         }
       },
@@ -277,9 +301,24 @@ export default {
     },
   },
   computed: {
+    formType() {
+      const service = this.field?.info?.srvCol?.service_name;
+      return service?.includes("add")
+        ? "add"
+        : service?.includes("update")
+        ? "update"
+        : "detail";
+    },
+    submit2Db() {
+      if (this.optionListV2?.allow_input === "自行输入") {
+        return false;
+      } else {
+        return true;
+      }
+    },
     dispLoaderV2() {
       if (this.optionListV2?.refed_col) {
-        const optionListV2 = this.optionListV2
+        const optionListV2 = this.optionListV2;
         return {
           service: optionListV2.serviceName || optionListV2.service,
           conditions: optionListV2.conditions || [],
@@ -296,15 +335,16 @@ export default {
           refedCol: optionListV2.refed_col,
           dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
         };
-      }else{
-        return this.field?.info?.dispLoader
+      } else {
+        return this.field?.info?.dispLoader;
       }
     },
     optionListV2() {
+      let result = null;
       if (this.field?.info?.srvCol?.option_list_v3?.length) {
         // 如果有v3 则使用v3
         const option_list_v3 = this.field?.info?.srvCol?.option_list_v3;
-        const result = option_list_v3.find((item) => {
+        result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
             return item.conds.every(
@@ -314,13 +354,9 @@ export default {
             return true;
           }
         });
-        if (result) {
-          return result;
-        } else {
-          return null;
-        }
       }
-      return this.field?.info?.srvCol?.option_list_v2;
+      result = this.field?.info?.srvCol?.option_list_v2;
+      return result;
     },
     optionsRun: function () {
       return this.options;
@@ -361,8 +397,40 @@ export default {
     },
   },
   methods: {
+    onAddFormLoaded: function (form) {
+      if (form?.actions?.submit) {
+        // 去掉提交后跳转事件
+        form.actions.submit.nav2Location = null;
+      }
+    },
+    submitted2mem(event) {
+      console.log("submitted2mem:", event);
+      if (
+        typeof event === "object" &&
+        Object.keys(event).length &&
+        Object.keys(event).some((key) => event[key] && true)
+      ) {
+        // 值是一个对象且对象中含有有值的key
+        const result = Object.keys(event).reduce((res, key) => {
+          if (
+            event[key] !== undefined &&
+            event[key] !== null &&
+            event[key] !== ""
+          ) {
+            res[key] = event[key];
+          }
+          return res;
+        }, {});
+        this.field.model = result;
+        this.selected = result;
+      } else {
+        this.field.model = null;
+        this.selected = null;
+      }
+      this.activePopup = "";
+    },
     onExecutorComplete(event) {
-      console.log(event);
+      console.log("onExecutorComplete:", event);
       const data = event.data?.response[0]?.response?.effect_data?.[0];
       if (data) {
         this.handleSelect(data);
@@ -885,30 +953,30 @@ export default {
     },
 
     emitFieldValueChange() {
-      let objCol = null
-      const objInfo = this.optionListV2?.obj_info
+      let objCol = null;
+      const objInfo = this.optionListV2?.obj_info;
       if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
         // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
-        const newValue = this.field.model
-        const cols = objInfo?.a_save_b_cols.split(',')
-        const obj = {}
-        const objStr = ''
+        const newValue = this.field.model;
+        const cols = objInfo?.a_save_b_cols.split(",");
+        const obj = {};
+        const objStr = "";
         if (cols?.length) {
-          cols.forEach(col => {
-            obj[col] = newValue?.[col]
-          })
+          cols.forEach((col) => {
+            obj[col] = newValue?.[col];
+          });
         }
-        objStr = JSON.stringify(obj)
-        if (objStr === '{}' || !newValue || !isObject(newValue)) {
-          objStr = ""
+        objStr = JSON.stringify(obj);
+        if (objStr === "{}" || !newValue || !isObject(newValue)) {
+          objStr = "";
         }
         objCol = {
-          type: 'a_save_b_obj',
+          type: "a_save_b_obj",
           col: objInfo.a_save_b_obj_col,
-          val: objStr
-        }
+          val: objStr,
+        };
         // 将更新的字段信息保存在_obj_col上，方便在form中获取
-        this.$set(this.field, '_obj_col', objCol)
+        this.$set(this.field, "_obj_col", objCol);
       }
       this.$emit("field-value-changed", this.field.info.name, this.field);
     },
@@ -1167,5 +1235,36 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.div-el-input {
+  position: relative;
+  font-size: 14px;
+  display: inline-block;
+  -webkit-appearance: none;
+  background-color: #fff;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #dcdfe6;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  color: #606266;
+  display: inline-block;
+  font-size: inherit;
+  height: 40px;
+  line-height: 40px;
+  width: 100%;
+  outline: 0;
+  padding: 0 15px;
+  -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  cursor: pointer;
+  [class*="el-icon-"] {
+    position: absolute;
+    right: 10px;
+    line-height: 40px;
+    color: #c0c4cc;
+    font-size: 14px;
+  }
 }
 </style>

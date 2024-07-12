@@ -533,8 +533,11 @@ export class FieldInfo {
     let editable  = srvCol.col_updatable_expr || (srvCol.updatable !== 0 && srvCol.updatable !== "0")
     if(this.isFinder() && editable ){
       // finder类型字段 自动加上合法值校验
-      let rule = {name: 'isValidValue', trigger: 'change',message:'请在下拉选项中选择有效值后提交'}
-      map.set('isValidValue',rule)
+      // 非自行输入或者不是add表单的时候才加上合法值校验
+      if( this.allowInput !== '自行输入' || srvCol?.service_name?.includes('add') === false ){
+        let rule = {name: 'isValidValue', trigger: 'change',message:'请在下拉选项中选择有效值后提交'}
+        map.set('isValidValue',rule)
+      }
     }
 
     // put validator message to map
