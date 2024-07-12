@@ -100,7 +100,8 @@ export default {
         parentNoField.setSrvVal(row[this.noCol]);
       }
 
-      this.$emit('add-child-form-loaded', this.$refs['add-child-form']);
+      // this.$emit('add-child-form-loaded', this.$refs['add-child-form']);
+      this.$emit('add-form-loaded', this.$refs['add-child-form']);
     },
 
     onDuplicateFormLoaded(form) {

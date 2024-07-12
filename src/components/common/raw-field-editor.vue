@@ -74,7 +74,7 @@
               <el-time-picker v-else-if="field.info.editor === 'time-picker' && field.model !== '******'" :picker-options="{ format: 'HH:mm' }" value-format="HH:mm" v-model="field.model" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
               </el-time-picker>
 
-              <el-select v-else-if="field.info.editor === 'multiselect'" v-model="field.model" multiple collapse-tags clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)">
+              <el-select v-else-if="field.info.editor === 'multiselect'" v-model="field.model" multiple collapse-tags clearable filterable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)">
                 <el-option v-for="item in field.optionsFunc()" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>

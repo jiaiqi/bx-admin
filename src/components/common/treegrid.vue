@@ -256,15 +256,14 @@
 
       </simple-add> :defaultValues="listMainFormDatas"-->
       <add
-      :mainService="mainService"
+        :mainService="mainService"
         name="list-add"
         ref="add-form"
         v-if="activeForm == 'add'"
         :service="getAddService"
-        :submit2-db="storageType == 'db'"
+        :submit2-db="!isMem()"
         :defaultCondition="defaultCondition"
         :form-model-decorator="formModelDecorator"
-        
         :haveDraft="isDraft"
         :pageIsDraft="activeTabName"
         :childForeignkey="childForeignkey"
@@ -374,6 +373,7 @@
     
     <!-- :defaultValues="listMainFormDatas" -->
       <add
+        :mainService="mainService"
         name="list-add-child"
         ref="add-child-form"
         v-if="activeForm == 'add-child'"

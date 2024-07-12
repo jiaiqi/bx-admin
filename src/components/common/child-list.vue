@@ -335,6 +335,7 @@ export default {
       refColField.setSrvVal(this.getRefColValue);
 
       // hide extra fk condition cols and set values
+      // 隐藏子表中跟主表关联的字段并给该字段设置默认值
       if (this.foreignKey.conditions) {
         this.foreignKey.conditions.forEach((item) => {
           let refCol = item.colName;
