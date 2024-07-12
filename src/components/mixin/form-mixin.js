@@ -723,7 +723,14 @@ export default {
               }
             }
             customAction.invokeFunc = _ => {
-              form.customizeOperate(button, [ this.srvValFormModel() ]);
+              let callback = null;
+              if(form.formType==='detail'){
+                callback = ()=>{
+                  // 详情页 刷新页面
+                  form?.$refs?.loader?.run?.()
+                }
+              }
+              form.customizeOperate(button, [ this.srvValFormModel() ],callback);
             }
 
           }

@@ -1398,7 +1398,10 @@ export default {
             // this.customize_add(button, this.multipleSelection);
         }else{
             button.listservice = this.service;
-            this.customizeOperate(button, this.multipleSelection);
+            this.customizeOperate(button, this.multipleSelection,(e)=>{
+              // dialog操作完成之后的回调 刷新列表
+              this.loadTableData();
+            });
           }
         }
       }else if("batch_approve" == type){
@@ -1570,7 +1573,10 @@ export default {
             this.customize_add(operate_item, data);
           } else{
             operate_item.listservice = this.service;
-            this.customizeOperate(operate_item, data);
+            this.customizeOperate(operate_item, data,(e)=>{
+              // dialog操作完成之后的回调 刷新列表
+              this.loadTableData();
+            });
           }
         }
 
@@ -1600,7 +1606,10 @@ export default {
       // 2021 02 26
       //自定义弹出
 
-      this.customizeOperate(operate_item, data);
+      this.customizeOperate(operate_item, data,(e)=>{
+        // dialog操作完成之后的回调 刷新列表
+        this.loadTableData();
+      });
       // if(data.operate_type.endsWith("弹出")){
 
       // }else{
