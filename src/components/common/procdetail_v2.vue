@@ -550,6 +550,8 @@ import ProcV2Mixin from "../mixin/proc-v2-mixin";
 import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import isUndefined from "lodash/isUndefined";
+import debounce from "lodash/debounce";
+
 export default {
   name: "procdetail",
   components: {
@@ -1705,7 +1707,15 @@ export default {
       }
       this.getStepConfigJson(); // 获取当前步骤审批表单配置信息
     },
-    start(operate_type, procState, timerSave) {
+    start: debounce(function (operate_type, procState, timerSave) {
+      console.log("start: debounce:", operate_type, procState, timerSave);
+      this._start(operate_type, procState, timerSave)
+    }, 3000, { // 3s内只有第一次点击有用
+      trailing: false,// 延迟结束后调用
+      leading: true,// 延迟开始调用
+    }
+    ),
+    _start(operate_type, procState, timerSave) {
       let self = this;
       var bxRequests = [];
       var bxRequest = {};
@@ -1746,7 +1756,6 @@ export default {
           }else{
              bxRequest["urgentProc"]="否";
           }
-         
           break;
         }
       }

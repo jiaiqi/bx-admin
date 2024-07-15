@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import Dialog from '../common/dialog.vue'
 import * as DataUtil from "../../util/DataUtil";
+import { Loading } from "element-ui";
 // import { $axios } from './vueAxiosInit'
 import {
   formatMoney,
@@ -1091,11 +1092,25 @@ function init_util() {
     return this.$http.post(url, requests);
   };
   //直接启动流程
-  Vue.prototype.startProc = function (requests) {
+  Vue.prototype.startProc = async function (requests) {
     let service = requests.length > 0 ? requests[0].serviceName : "";
     var url = this.getServiceUrl("apply", service);
     url = url + "?" + service;
-    return this.$http.post(url, requests);
+    let loadingInstance = Loading.service({
+      body:true,
+      lock:true,//锁定
+      background:'rgba(0, 0, 0, 0.7)',
+      spinner:'el-icon-loading',//加载图标'
+      text:'提交中...'
+    });
+    setTimeout(() => {
+      loadingInstance.close();// 20s后自动关闭遮罩
+    }, 20*1000);
+    const res = await this.$http.post(url, requests);
+    this.$nextTick(() => { // 以服务的方式调用的 Loading 需要异步关闭
+      loadingInstance.close();//请求提交成功后自动关闭遮罩
+    });
+    return res
   };
 
   //保存草稿
