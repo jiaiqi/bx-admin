@@ -10,6 +10,7 @@ import _isEmpty from "lodash/isEmpty";
 import split from "lodash/split";
 import join from "lodash/join";
 import clone from "lodash/clone";
+import cloneDeep from "lodash/cloneDeep";
 
 
 export const hotTableMetadata = {
@@ -89,7 +90,7 @@ export class Field {
     // cache value for upstream fmoreConfigield.model
     // if field has upstream field, add it as an condition
 
-    if (this.info.upstream) { 
+    if (this.info.upstream) {
       let field = this;
       let upstreamCondition = {
         colName: this.info.upstream.refCol,
@@ -100,9 +101,9 @@ export class Field {
       };
 
       if (this.info.dispLoader) {
-      
         this.info.dispLoader.conditions = this.info.dispLoader.conditions || [];
         this.info.dispLoader.conditions.push(upstreamCondition);
+        this.info._upstreamCondition = cloneDeep(upstreamCondition)
       }
     }
 

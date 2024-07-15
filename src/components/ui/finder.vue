@@ -355,7 +355,16 @@ export default {
           }
         });
       }
-      result = this.field?.info?.srvCol?.option_list_v2;
+      if (!result) {
+        result = this.field?.info?.srvCol?.option_list_v2;
+      }
+      if(this.field?.info?._upstreamCondition?.colName){
+        if(Array.isArray(result?.conditions)){
+          result.conditions.push(cloneDeep(this.field.info._upstreamCondition))
+        }else{
+          result.conditions = [cloneDeep(this.field.info._upstreamCondition)]
+        }
+      }
       return result;
     },
     optionsRun: function () {
