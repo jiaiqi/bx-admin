@@ -19,12 +19,6 @@ export default {
     field: Object,
   },
   mounted() {
-    console.log(
-      "mounted",
-      this.field.info.name,
-      this.field.info.label,
-      item[valColumn]
-    );
   },
   computed: {
     modelValue() {

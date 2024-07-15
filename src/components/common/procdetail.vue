@@ -1415,12 +1415,14 @@ export default {
                 name: "procdetail",
                 params: { proc_instance_no: proc_instance_no },
               });
-              window.location.reload();
+              // setTimeout(() => {
+              //   window.location.reload();
+              // }, 200);
             }
           } else {
             this.$message({
               type: "error",
-              message: response.body.resultMessage,
+              message: resp.body.resultMessage,
             });
           }
         });

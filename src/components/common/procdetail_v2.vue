@@ -176,7 +176,7 @@
 
                 <detail :approvalFormMode="approvalFormRun" form-type="procdetail" :name="'stepr' + step_item.step_no + 'i' + index" ref="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
                     getFormViewCondition(biz_item, step_item.step_no)
-                  " :is_view_title="1 == 2"></detail>
+                  " :is_view_title="1 == 2" @form-loaded='onFormLoading=false'></detail>
               </div>
             </template>
           </div>
@@ -244,7 +244,7 @@
                     " :pk="proc_instance_no" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></update>
                   <detail :approvalFormMode="approvalFormRun" v-show="'否' != biz_item.is_show" v-else-if="biz_item._type_form == 'select'" :name="'collapse_apply_detail' + collapse_index" form-type="procdetail" name="collapse-proc-simple-detail" :service="biz_item.select_service" :default-conditions="
                       getFormViewCondition(biz_item, step_item.step_no)
-                    "></detail>
+                    " @form-loaded='onFormLoading=false'></detail>
                   <add :approvalFormMode="approvalFormRun" v-show="'否' != biz_item.is_show" v-else :name="'collapse_apply_add' + collapse_index" :def-data-para="defDataPara" :default-values="startProcDefaultValue" :ref="'collapse-proc-add-form-submit_' + collapse_index" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
                 </el-col>
               </template>
@@ -375,7 +375,7 @@
                     <add :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'add'" :name="'apv' + step_item.step_no + 'i' + index" ref="proc-add-form-approval" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
                     <detail :approvalFormMode="approvalFormRun" :is_view_title="1 == 2" v-if="biz_item._type_form == 'select'" :name="'apv' + step_item.step_no + 'i' + index" form-type="procdetail" name="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
                         getFormViewCondition(biz_item, step_item.step_no)
-                      "></detail>
+                      " @form-loaded='onFormLoading=false'></detail>
                   </div>
                 </div>
               </template>
@@ -411,8 +411,8 @@
                         " :pk="proc_instance_no" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></update>
                       <add :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'add'" :name="'apv' + step_item.step_no + 'i' + index" ref="proc-add-form-approval" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
                       <detail :approvalFormMode="approvalFormRun" :is_view_title="1 == 2" v-if="biz_item._type_form == 'select'" :name="'apv' + step_item.step_no + 'i' + index" form-type="procdetail" name="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
-                          getFormViewCondition(biz_item, step_item.step_no)
-                        "></detail>
+                          getFormViewCondition(biz_item, step_item.step_no) 
+                        " @form-loaded='onFormLoading=false'></detail>
                     </div>
                   </el-tab-pane>
                 </template>
@@ -718,6 +718,7 @@ export default {
       if (instacne.actions && instacne.actions.nav2update) {
         instacne.actions.nav2update.visible = false;
       }
+      this.onFormLoading=false
     },
     onRecordListLoaded: function(listIns) {
       this.appvalResult = listIns.gridData.length;
@@ -778,6 +779,7 @@ export default {
           }
         }
       }
+      this.onFormLoading=false
     },
 
     async submitApprovalForm(formName, is_draft, timerSave) {
@@ -1920,7 +1922,9 @@ export default {
                 }
               }
               this.$router.push(route);
-              window.location.reload();
+              // setTimeout(() => {
+              //   window.location.reload();
+              // }, 200);
             } else {
               this.$message({
                 type: "error",

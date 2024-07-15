@@ -56,7 +56,7 @@ module.exports = {
       config.optimization.minimize(true);
     }
   },
-  productionSourceMap: false, // 生产环境是否生成 sourceMap 文件
+  productionSourceMap: true, // 生产环境是否生成 sourceMap 文件
   transpileDependencies: ["simple-mind-map"], // 思维导图
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
   publicPath: "/vpages/",

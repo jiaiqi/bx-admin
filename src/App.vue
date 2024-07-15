@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view v-if="ready"></router-view>
+    <router-view v-if="ready" :key="$route.path"></router-view>
   </div>
 </template>
 
