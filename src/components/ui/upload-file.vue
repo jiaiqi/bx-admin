@@ -360,8 +360,8 @@ import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
       },
       getData() {
 
-        this.uploadParams.table_name=this.field.info.srvCol.table_name;
-        this.uploadParams.columns=this.field.info.srvCol.columns;
+        this.uploadParams.table_name=this.field?.info?.srvCol?.table_name;
+        this.uploadParams.columns=this.field?.info?.srvCol?.columns;
 
         //初始化文件列表
         this.fileLists = []

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <treegrid :disabled="updatable === false" :mainService="mainService" ref="list" v-if="isTree && storageType === 'db'"
+    <treegrid :disabled="updatable === false" :read-only="updatable===false || readOnly" :mainService="mainService" ref="list" v-if="isTree && storageType === 'db'"
       :name="name" list-type="treelist" :listMainFormDatas="mainFormDatas" :storage-type="storageType"
       :service="service" :page-size="pageSize" :childForeignkey="foreignKey" :default-condition="getDefaultConditions"
       :main-data="mainData" :div-cond="divCond" @list-loaded="onListLoaded()" @add-form-loaded="onAddFormLoaded($event)"
@@ -32,7 +32,7 @@
     <list ref="list" :key="service" :disabled="updatable === false" v-else :name="name" :mainService="mainService"
       :pageIsDraft="pageIsDraft" :showPagination="childListConfig.showPagination && showPagination"
       :list-type="listType" :defaultCondition="defaultCondition" :storage-type="storageType" :service="service"
-      :childForeignkey="foreignKey" :def-data-para="defDataPara" :read-only="readOnly" :childforeignkey="foreignKey"
+      :childForeignkey="foreignKey" :def-data-para="defDataPara" :read-only="updatable===false || readOnly" :childforeignkey="foreignKey"
       :childforeignvalue="getRefColValue" :default-condition="getDefaultConditions" :inplace-edit="inplaceEdit"
       :default-inplace-edit-mode="defaultInplaceEditMode" :default-dirty-flags="defaultDirtyFlags" :merge-col="mergeCol"
       :listMainFormDatas="mainFormDatas" :main-data="mainData" :mem-initdatas-add="initDatas" :$srvApp="$srvApp"
