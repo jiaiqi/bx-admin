@@ -336,7 +336,7 @@ export default {
           dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
         };
       } else {
-        return this.field?.info?.dispLoader;
+        // return this.field?.info?.dispLoader;
       }
     },
     optionListV2() {
@@ -354,14 +354,16 @@ export default {
             return true;
           }
         });
-      }
-      if (!result) {
+      }else if (this.field?.info?.srvCol?.option_list_v2) {
         result = this.field?.info?.srvCol?.option_list_v2;
       }
+      // if (!result) {
+      //   result = this.field?.info?.srvCol?.option_list_v2;
+      // }
       if(this.field?.info?._upstreamCondition?.colName){
         if(Array.isArray(result?.conditions)){
           result.conditions.push(cloneDeep(this.field.info._upstreamCondition))
-        }else{
+        }else if(result){
           result.conditions = [cloneDeep(this.field.info._upstreamCondition)]
         }
       }
@@ -477,6 +479,9 @@ export default {
       let self = this;
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
+      if(!loader){
+        return
+      }
       if (queryString == true) {
         if (loader.enableFunc) {
           if (!loader.enableFunc()) {
@@ -657,6 +662,10 @@ export default {
 
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
+      if(!loader){
+        cb([]);
+        return;
+      }
       if (loader.enableFunc) {
         if (!loader.enableFunc()) {
           cb([]);
