@@ -1,38 +1,33 @@
 <template>
-
   <div>
-
     <el-container style="border: 1px solid #eee;">
-
       <el-aside style="width:auto">
 
         <div style="min-width:250px">
           <el-input style="width:230px" placeholder="输入关键字进行过滤" v-model="filterText">
           </el-input>
+          <template v-for="(item, index) in rowButton">
+            <i :key="index" v-if="item.button_type == 'addchild'" @click="rowButtonClick('', '')"
+              class="el-icon-document-add"></i>
+          </template>
 
-           <template v-for="(item, index) in rowButton">
-            
-                <i  :key="index" v-if="item.button_type=='addchild'" @click="rowButtonClick('','')" class="el-icon-document-add"></i>
-           </template>
-
-          <el-tree style="max-height: 100vh;overflow-y: auto;" class="filter-tree" :data="treeData" :props="defaultProps"  :filter-node-method="filterNode" :expand-on-click-node='1==2' highlight-current node-key="id" @node-click="handleNodeClick" ref="tree">
+          <el-tree style="max-height: 100vh;overflow-y: auto;" class="filter-tree" :data="treeData"
+            :props="defaultProps" :filter-node-method="filterNode" :expand-on-click-node='1 == 2' highlight-current
+            node-key="id" @node-click="handleNodeClick" ref="tree">
             <!-- default-expand-all -->
             <span class="custom-tree-node" slot-scope="{ node, data }">
               <span>{{ node.label }}</span>
               <span>
-
                 <el-dropdown>
                   <span class="el-dropdown-link">
                     <i class="el-icon-s-tools"></i>
                   </span>
                   <el-dropdown-menu slot="dropdown">
                     <template v-for="(item, index) in rowButton">
-
                       <el-dropdown-item :key="index">
-                        <i @click="rowButtonClick(item,data)" v-bind:class="item.icon">{{item.button_name}}</i>
+                        <i @click="rowButtonClick(item, data)" v-bind:class="item.icon">{{ item.button_name }}</i>
                       </el-dropdown-item>
                     </template>
-
                   </el-dropdown-menu>
                 </el-dropdown>
 
@@ -43,32 +38,38 @@
         </div>
       </el-aside>
       <el-main>
-
-        <div v-if="mainType=='detail'">
-
-          <div>
-            <detail :detailshow="detailshow" v-if="showTreeDetail=='1'" form-type="detail" name="tree-node-detail" ref="tree-node-detail" :service="service_name" :pkid="getCurrentCondition()"></detail>
-
+        <div v-if="mainType == 'detail'">
+          <div v-if="currentData&&currentData.id">
+            <detail :detailshow="detailshow" form-type="detail" name="tree-node-detail"
+              ref="tree-node-detail" :service="service_name"  :pkid="getCurrentCondition"></detail>
           </div>
-
-          <div>
-
-            <detail :detailshow="detailshow" v-if="showTreeDetail=='2'" form-type="detail" name="tree-node-detail" ref="tree-node-detail" :service="service_name" :pkid="getCurrentCondition()"></detail>
+          <!-- <div>
+            <detail :detailshow="detailshow" v-if="showTreeDetail == '1'" form-type="detail" name="tree-node-detail"
+              ref="tree-node-detail" :service="service_name" :pkid="getCurrentCondition"></detail>
           </div>
-
+          <div>
+            <detail :detailshow="detailshow" v-if="showTreeDetail == '2'" form-type="detail" name="tree-node-detail"
+              ref="tree-node-detail" :service="service_name" :pkid="getCurrentCondition"></detail>
+          </div> -->
         </div>
-
       </el-main>
-
     </el-container>
 
-    <el-dialog title="添加" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'add-child'" @close="activeForm = 'xx'" append-to-body>
-      <simple-add name="list-add-child" ref="add-child-form" v-if="activeForm == 'add-child'" :submit2-db="!isMem()" :service="getAddService" @form-loaded="onAddChildFormLoaded()" @action-complete="onAddChildFormActionComplete($event)" @executor-complete="onAddExecutorComplete($event)" @submitted2mem="onAdd2MemSubmitted">
+    <el-dialog title="添加" width="90%" :close-on-click-modal="1 == 2" :visible="activeForm == 'add-child'"
+      @close="activeForm = 'xx'" append-to-body>
+      <simple-add name="list-add-child" ref="add-child-form" v-if="activeForm == 'add-child'" :submit2-db="!isMem()"
+        :service="getAddService" @form-loaded="onAddChildFormLoaded()"
+        @action-complete="onAddChildFormActionComplete($event)" @executor-complete="onAddExecutorComplete($event)"
+        @submitted2mem="onAdd2MemSubmitted">
       </simple-add>
     </el-dialog>
 
-    <el-dialog title="复制" width="90%" :close-on-click-modal="1==2" append-to-body :visible="activeForm == 'duplicate'" @close="activeForm = 'xx'">
-      <simple-add name="list-duplicate" ref="duplicate-form" v-if="activeForm == 'duplicate'" :service="getAddService" :default-conditions="getDefaultCondition4Duplicate" :submit2-db="storageType == 'db'" @action-complete="onAddFormActionComplete($event)" @form-loaded="onDuplicateFormLoaded" @submitted2mem="onAdd2MemSubmitted">
+    <el-dialog title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="activeForm == 'duplicate'"
+      @close="activeForm = 'xx'">
+      <simple-add name="list-duplicate" ref="duplicate-form" v-if="activeForm == 'duplicate'" :service="getAddService"
+        :default-conditions="getDefaultCondition4Duplicate" :submit2-db="storageType == 'db'"
+        @action-complete="onAddFormActionComplete($event)" @form-loaded="onDuplicateFormLoaded"
+        @submitted2mem="onAdd2MemSubmitted">
       </simple-add>
     </el-dialog>
 
@@ -78,16 +79,19 @@
 
 
 
-<style scoped>
+<style scoped lang="scss">
 .el-main {
   padding: 0px;
 }
+
 .el-aside {
   padding: 0px;
 }
+
 .tree-aside {
   width: auto;
 }
+
 .custom-tree-node {
   flex: 1;
   display: flex;
@@ -95,6 +99,15 @@
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+}
+
+.el-icon-document-add {
+  cursor: pointer;
+  margin: 0 10px;
+
+  &:hover {
+    color: #409EFF;
+  }
 }
 </style>
 
@@ -136,7 +149,7 @@ export default {
       rowButton: [],
       gridButton: [],
       mainType: "detail",
-      detailshow:true,
+      detailshow: true,
       defaultProps: {
         children: "children",
         label: ""
@@ -149,6 +162,11 @@ export default {
       type: String
     }
   },
+  computed: {
+    getCurrentCondition() {
+      return this.currentData?.id + "";
+    },
+  },
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val);
@@ -159,9 +177,9 @@ export default {
       if (!value) return true;
       return data[this.defaultProps.label].indexOf(value) !== -1;
     },
-    getCurrentCondition() {
-      return this.currentData.id + "";
-    },
+    // getCurrentCondition() {
+    //   return this.currentData.id + "";
+    // },
     getDefaultCond() {
       return [
         {
@@ -175,6 +193,7 @@ export default {
       if (this.currentData != data) {
         this.currentData = data;
         //var xxx= this.$refs["tree-node-detail"];
+        // this.$refs['tree-node-detail']?.refreshDetail?.()
         if (this.showTreeDetail == "1") {
           this.showTreeDetail = "2";
         } else {
@@ -285,14 +304,14 @@ export default {
     }
   },
 
-  created: function() {
+  created: function () {
 
-    var detailshowvalue=this.getVueUrlParams("detailshow");
-    if(detailshowvalue){
-      if("0"==detailshowvalue){
-           this.detailshow=false;
-      }else{
-          this.detailshow=true;
+    var detailshowvalue = this.getVueUrlParams("detailshow");
+    if (detailshowvalue) {
+      if ("0" == detailshowvalue) {
+        this.detailshow = false;
+      } else {
+        this.detailshow = true;
       }
     }
     this.loadTableData();

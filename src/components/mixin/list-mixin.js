@@ -332,6 +332,15 @@ export default {
         // }
         
       }
+    },
+    defaultCondition:{
+      deep:true,
+      handler(newVal,oldVal){
+        console.log('list-mixin:::',cloneDeep(newVal),cloneDeep(oldVal));
+        if(newVal&&oldVal&&JSON.stringify(newVal)!==JSON.stringify(oldVal)){
+          this.loadTableData?.()
+        }
+      }
     }
   },
 
@@ -1910,7 +1919,7 @@ export default {
             rownumber: pageSize
           };
       let relationCondition = self.relationCondition
-            // console.log("select",relationCondition)
+            console.log("loadDraftLength",cloneDeep(this.condition))
             // service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition
             return self.select(
               self.service_name,
@@ -1957,7 +1966,7 @@ export default {
       try {
 
         this.buildQueryConditions()
-
+        console.log("loadTableData",cloneDeep(this.condition));
         let pageSize = this.setPageSize || this.pageSize || this.gridPage.pageSize;
         var page = (this.isMem() || (this.gridPage && pageSize < 0))
           ? null

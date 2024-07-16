@@ -1,165 +1,303 @@
 <template>
   <div>
     <card-detail :pk-col="pkCol" :pk="id" :v2-data="v2Data" :div-cond="buildDivCond" :default-conditions="custCondition"
-                 :page-is-draft="pageIsDraft" :is-history="isHistory"
-                 :main-service="service_name" :field-child-keys="fieldChildKeys"
-                 :children-list-loaded="childrenListLoaded"
-                 :child-list-run="childListRun" :field-child-run="fieldChildRun" :srvCols="detail_srv_cols"
-                 :detail-data="detailData" :cells-layout-json="cfgJson.detail_card_json"
-                 @action-complete="initGridData"
-                 v-if="isCardDetail&&cfgJson&&cfgJson.detail_card_json">
-
+      :page-is-draft="pageIsDraft" :is-history="isHistory" :main-service="service_name"
+      :field-child-keys="fieldChildKeys" :children-list-loaded="childrenListLoaded" :child-list-run="childListRun"
+      :field-child-run="fieldChildRun" :srvCols="detail_srv_cols" :detail-data="detailData"
+      :cells-layout-json="cfgJson.detail_card_json" @action-complete="initGridData"
+      v-if="isCardDetail && cfgJson && cfgJson.detail_card_json">
     </card-detail>
     <el-card class="box-card" v-else>
-        <div v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0" class="detail-steps">
-          <el-steps align-center>
-            <el-step :title="step.step_name" :status="step.status" v-for="(step,index) in detailChartDatas" :key="index"></el-step>
-          </el-steps>
+      <div v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0" class="detail-steps">
+        <el-steps align-center>
+          <el-step :title="step.step_name" :status="step.status" v-for="(step, index) in detailChartDatas"
+            :key="index"></el-step>
+        </el-steps>
+      </div>
+      <div v-if="!hasVisibleChildListTab()" v-show="detailshow">
+        <div slot="header" class="clearfix" v-show="is_view_title">
+          <span>{{ tab_view_name }}</span>
         </div>
-          <div v-if="!hasVisibleChildListTab()" v-show="detailshow">
-                <div slot="header" class="clearfix" v-show="is_view_title">
-                  <span>{{tab_view_name}}</span>
-                </div>
-                <div class="text item" v-if="initLoad">
+        <div class="text item" v-if="initLoad">
 
-                      <simple-detail :divCond="buildDivCond" :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id" @form-loaded="$emit('form-loaded', $event)">
+          <simple-detail :divCond="buildDivCond" :mainService="mainService" :isHistory="isHistory"
+            :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode"
+            :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition"
+            :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id"
+            @form-loaded="$emit('form-loaded', $event)">
 
-                        <div slot="field-form-prepend" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
-                          <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in childListRun.form.prepend">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="'form_prepend_' + (index)">
-                                <simple-detail :isHistory="isHistory" v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail>
-                                <child-list  :mainService='service_name'  v-else :isTree="item.table_type==='树形表'" :isProc="item.table_type==='流程表'"  :name="item.service_name" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
+            <div slot="field-form-prepend" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
+              <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
+                <template v-for="(item, index) in childListRun.form.prepend">
+                  <el-collapse-item :title="item.foreign_key.section_name"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                    :name="'form_prepend_' + (index)">
+                    <simple-detail :isHistory="isHistory" v-if="item.foreign_key.view_model == 'detail'"
+                      form-type="detail" ref="child-simple-detail" :service="item.service_name"
+                      :default-condition="getChildListDefaultCondition(item)"></simple-detail>
+                    <child-list :mainService='service_name' v-else :isTree="item.table_type === '树形表'"
+                      :isProc="item.table_type === '流程表'" :name="item.service_name" :childListConfig="item"
+                      @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft"
+                      :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :key="index"
+                      ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name"
+                      :foreign-key="item.foreign_key"
+                      :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                      :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                      :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                      @list-loaded="$emit('list-loaded', $event)"
+                      @update-form-loaded="$emit('update-form-loaded', $event)"
+                      @add-form-loaded="$emit('add-form-loaded', $event)">
+                    </child-list>
+                  </el-collapse-item>
+                </template>
+              </el-collapse>
 
-                        </div>
-                        <div slot="field-form-append" v-if="childrenListLoaded && childListRun.form.append.length > 0">
-                          <el-collapse v-model="buildCollapsedRun['form_append']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in childListRun.form.append">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="'form_append_' + (index)">
+            </div>
+            <div slot="field-form-append" v-if="childrenListLoaded && childListRun.form.append.length > 0">
+              <el-collapse v-model="buildCollapsedRun['form_append']" v-if="hasVisibleChildListCollapse()">
+                <template v-for="(item, index) in childListRun.form.append">
+                  <el-collapse-item :title="item.foreign_key.section_name"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                    :name="'form_append_' + (index)">
 
-                                <simple-detail :divCond="buildDivCond" :isHistory="isHistory" :pageIsDraft="pageIsDraft" v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail>
-                                <child-list  :mainService='service_name'  v-else :isTree="item.table_type==='树形表'"  :isProc="item.table_type==='流程表'"   :name="item.service_name" :pageIsDraft="pageIsDraft" :childListConfig="item" @detailOnLoaded="refreshDetail" :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
+                    <simple-detail :divCond="buildDivCond" :isHistory="isHistory" :pageIsDraft="pageIsDraft"
+                      v-if="item.foreign_key.view_model == 'detail'" form-type="detail" ref="child-simple-detail"
+                      :service="item.service_name"
+                      :default-condition="getChildListDefaultCondition(item)"></simple-detail>
+                    <child-list :mainService='service_name' v-else :isTree="item.table_type === '树形表'"
+                      :isProc="item.table_type === '流程表'" :name="item.service_name" :pageIsDraft="pageIsDraft"
+                      :childListConfig="item" @detailOnLoaded="refreshDetail"
+                      :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :key="index"
+                      ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name"
+                      :foreign-key="item.foreign_key"
+                      :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                      :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                      :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                      @list-loaded="$emit('list-loaded', $event)"
+                      @update-form-loaded="$emit('update-form-loaded', $event)"
+                      @add-form-loaded="$emit('add-form-loaded', $event)">
+                    </child-list>
+                  </el-collapse-item>
+                </template>
+              </el-collapse>
 
-                        </div>
-                        <div :slot="col + '-child-prepend'" class="text item field-child-prepend-list" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
-                          <el-collapse v-model="buildCollapsedRun[col+'_prepend']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in fieldChildRun[col].prepend">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="col + '_prepend_' + (index)">
+            </div>
+            <div :slot="col + '-child-prepend'" class="text item field-child-prepend-list"
+              v-for="(col, colIndex) in fieldChildKeys" :key="colIndex"
+              v-if="childrenListLoaded && fieldChildKeys.length > 0">
+              <el-collapse v-model="buildCollapsedRun[col + '_prepend']" v-if="hasVisibleChildListCollapse()">
+                <template v-for="(item, index) in fieldChildRun[col].prepend">
+                  <el-collapse-item :title="item.foreign_key.section_name"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                    :name="col + '_prepend_' + (index)">
 
-                                <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail> -->
-                                <child-list  :mainService='service_name'  :isTree="item.table_type==='树形表'"  :isProc="item.table_type==='流程表'"  :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
-                        </div>
-                        <div :slot="col + '-child-append'" class="text item field-child-append-list" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
-                          <el-collapse v-model="buildCollapsedRun[col+'_append']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in fieldChildRun[col].append">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="col + '_append_' + (index)">
+                    <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
+                    <child-list :mainService='service_name' :isTree="item.table_type === '树形表'"
+                      :isProc="item.table_type === '流程表'"
+                      :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :childListConfig="item"
+                      @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList"
+                      :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key"
+                      :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                      :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                      :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                      @list-loaded="$emit('list-loaded', $event)"
+                      @update-form-loaded="$emit('update-form-loaded', $event)"
+                      @add-form-loaded="$emit('add-form-loaded', $event)">
+                    </child-list>
+                  </el-collapse-item>
+                </template>
+              </el-collapse>
+            </div>
+            <div :slot="col + '-child-append'" class="text item field-child-append-list"
+              v-for="(col, colIndex) in fieldChildKeys" :key="colIndex"
+              v-if="childrenListLoaded && fieldChildKeys.length > 0">
+              <el-collapse v-model="buildCollapsedRun[col + '_append']" v-if="hasVisibleChildListCollapse()">
+                <template v-for="(item, index) in fieldChildRun[col].append">
+                  <el-collapse-item :title="item.foreign_key.section_name"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                    :name="col + '_append_' + (index)">
 
-                                <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail> -->
-                                <child-list  :mainService='service_name'  :isTree="item.table_type==='树形表'"  :isProc="item.table_type==='流程表'"  :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
+                    <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
+                    <child-list :mainService='service_name' :isTree="item.table_type === '树形表'"
+                      :isProc="item.table_type === '流程表'"
+                      :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :childListConfig="item"
+                      @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList"
+                      :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key"
+                      :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                      :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                      :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                      @list-loaded="$emit('list-loaded', $event)"
+                      @update-form-loaded="$emit('update-form-loaded', $event)"
+                      @add-form-loaded="$emit('add-form-loaded', $event)">
+                    </child-list>
+                  </el-collapse-item>
+                </template>
+              </el-collapse>
 
-                        </div>
-                      </simple-detail>
-                </div>
-          </div>
+            </div>
+          </simple-detail>
+        </div>
+      </div>
 
 
 
 
-          <div>
-            <el-tabs v-if="hasVisibleChildListTab()">
+      <div>
+        <el-tabs v-if="hasVisibleChildListTab()">
 
 
-              <el-tab-pane :label="tab_view_name">
+          <el-tab-pane :label="tab_view_name">
 
-                <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
+            <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
-                  <simple-detail :divCond="buildDivCond" :mainService="mainService" :isHistory="isHistory" :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id" @form-loaded="$emit('form-loaded', $event)">
+            <simple-detail :divCond="buildDivCond" :mainService="mainService" :isHistory="isHistory"
+              :childrenLists='child_service' :pageIsDraft="pageIsDraft" :approvalFormMode="approvalFormMode"
+              :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition"
+              :srvval-form-model-decorator="srvvalFormModelDecorator" :pk-col="pkCol" :pk="id"
+              @form-loaded="$emit('form-loaded', $event)">
 
-                        <div slot="field-form-prepend" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
-                          <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in childListRun.form.prepend">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="'form_prepend_' + (index)">
+              <div slot="field-form-prepend" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
+                <el-collapse v-model="buildCollapsedRun['form_prepend']" v-if="hasVisibleChildListCollapse()">
+                  <template v-for="(item, index) in childListRun.form.prepend">
+                    <el-collapse-item :title="item.foreign_key.section_name"
+                      v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                      :name="'form_prepend_' + (index)">
 
-                                <simple-detail :divCond="buildDivCond" :isHistory="isHistory" v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail>
-                                <child-list :divCond="buildDivCond"  :mainService='service_name'  v-else :isTree="item.table_type==='树形表'" :isProc="item.table_type==='流程表'"  :name="item.service_name" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
+                      <simple-detail :divCond="buildDivCond" :isHistory="isHistory"
+                        v-if="item.foreign_key.view_model == 'detail'" form-type="detail" ref="child-simple-detail"
+                        :service="item.service_name"
+                        :default-condition="getChildListDefaultCondition(item)"></simple-detail>
+                      <child-list :divCond="buildDivCond" :mainService='service_name' v-else
+                        :isTree="item.table_type === '树形表'" :isProc="item.table_type === '流程表'"
+                        :name="item.service_name" :childListConfig="item" @detailOnLoaded="refreshDetail"
+                        :pageIsDraft="pageIsDraft"
+                        :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :key="index"
+                        ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name"
+                        :foreign-key="item.foreign_key"
+                        :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                        :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                        :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                        @list-loaded="$emit('list-loaded', $event)"
+                        @update-form-loaded="$emit('update-form-loaded', $event)"
+                        @add-form-loaded="$emit('add-form-loaded', $event)">
+                      </child-list>
+                    </el-collapse-item>
+                  </template>
+                </el-collapse>
 
-                        </div>
-                        <div slot="field-form-append" v-if="childrenListLoaded && childListRun.form.append.length > 0">
-                          <el-collapse v-model="buildCollapsedRun['form_append']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in childListRun.form.append">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="'form_append_' + (index)">
+              </div>
+              <div slot="field-form-append" v-if="childrenListLoaded && childListRun.form.append.length > 0">
+                <el-collapse v-model="buildCollapsedRun['form_append']" v-if="hasVisibleChildListCollapse()">
+                  <template v-for="(item, index) in childListRun.form.append">
+                    <el-collapse-item :title="item.foreign_key.section_name"
+                      v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                      :name="'form_append_' + (index)">
 
-                                <simple-detail :divCond="buildDivCond" :isHistory="isHistory" :pageIsDraft="pageIsDraft" v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail>
-                                <child-list :divCond="buildDivCond"  :mainService='service_name'  v-else :isTree="item.table_type==='树形表'"  :isProc="item.table_type==='流程表'"   :name="item.service_name" :pageIsDraft="pageIsDraft" :childListConfig="item" @detailOnLoaded="refreshDetail" :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
+                      <simple-detail :divCond="buildDivCond" :isHistory="isHistory" :pageIsDraft="pageIsDraft"
+                        v-if="item.foreign_key.view_model == 'detail'" form-type="detail" ref="child-simple-detail"
+                        :service="item.service_name"
+                        :default-condition="getChildListDefaultCondition(item)"></simple-detail>
+                      <child-list :divCond="buildDivCond" :mainService='service_name' v-else
+                        :isTree="item.table_type === '树形表'" :isProc="item.table_type === '流程表'"
+                        :name="item.service_name" :pageIsDraft="pageIsDraft" :childListConfig="item"
+                        @detailOnLoaded="refreshDetail"
+                        :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :key="index"
+                        ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name"
+                        :foreign-key="item.foreign_key"
+                        :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                        :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                        :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                        @list-loaded="$emit('list-loaded', $event)"
+                        @update-form-loaded="$emit('update-form-loaded', $event)"
+                        @add-form-loaded="$emit('add-form-loaded', $event)">
+                      </child-list>
+                    </el-collapse-item>
+                  </template>
+                </el-collapse>
 
-                        </div>
-                        <div :slot="col + '-child-prepend'" class="text item" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
-                          <el-collapse v-model="buildCollapsedRun[col+'_prepend']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in fieldChildRun[col].prepend">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="col + '_prepend_' + (index)">
+              </div>
+              <div :slot="col + '-child-prepend'" class="text item" v-for="(col, colIndex) in fieldChildKeys"
+                :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
+                <el-collapse v-model="buildCollapsedRun[col + '_prepend']" v-if="hasVisibleChildListCollapse()">
+                  <template v-for="(item, index) in fieldChildRun[col].prepend">
+                    <el-collapse-item :title="item.foreign_key.section_name"
+                      v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                      :name="col + '_prepend_' + (index)">
 
-                                <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail> -->
-                                <child-list :divCond="buildDivCond" :mainService='service_name'  :isTree="item.table_type==='树形表'"  :isProc="item.table_type==='流程表'"  :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
-                        </div>
-                        <div :slot="col + '-child-append'" class="text item" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
-                          <el-collapse v-model="buildCollapsedRun[col+'_append']" v-if="hasVisibleChildListCollapse()">
-                            <template v-for="(item, index) in fieldChildRun[col].append">
-                              <el-collapse-item :title="item.foreign_key.section_name" v-show="showChildList(item,detailData) && !isTabsModel(item)" :key="index" :name="col + '_append_' + (index)">
+                      <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
+                      <child-list :divCond="buildDivCond" :mainService='service_name'
+                        :isTree="item.table_type === '树形表'" :isProc="item.table_type === '流程表'"
+                        :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :childListConfig="item"
+                        @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList"
+                        :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key"
+                        :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                        :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                        :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                        @list-loaded="$emit('list-loaded', $event)"
+                        @update-form-loaded="$emit('update-form-loaded', $event)"
+                        @add-form-loaded="$emit('add-form-loaded', $event)">
+                      </child-list>
+                    </el-collapse-item>
+                  </template>
+                </el-collapse>
+              </div>
+              <div :slot="col + '-child-append'" class="text item" v-for="(col, colIndex) in fieldChildKeys"
+                :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
+                <el-collapse v-model="buildCollapsedRun[col + '_append']" v-if="hasVisibleChildListCollapse()">
+                  <template v-for="(item, index) in fieldChildRun[col].append">
+                    <el-collapse-item :title="item.foreign_key.section_name"
+                      v-show="showChildList(item, detailData) && !isTabsModel(item)" :key="index"
+                      :name="col + '_append_' + (index)">
 
-                                <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="item.defaultCondition"></simple-detail> -->
-                                <child-list :divCond="buildDivCond"  :mainService='service_name'  :isTree="item.table_type==='树形表'"  :isProc="item.table_type==='流程表'"  :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :childListConfig="item" @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="childListReadonly || item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                                </child-list>
-                              </el-collapse-item>
-                            </template>
-                          </el-collapse>
+                      <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
+                      <child-list :divCond="buildDivCond" :mainService='service_name'
+                        :isTree="item.table_type === '树形表'" :isProc="item.table_type === '流程表'"
+                        :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :childListConfig="item"
+                        @detailOnLoaded="refreshDetail" :pageIsDraft="pageIsDraft" :key="index" ref="childrenList"
+                        :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key"
+                        :read-only="childListReadonly || item.foreign_key.child_table_readonly == '是'"
+                        :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                        :is-tree="!!item.parent_no_col" :mainFormDatas="detailData" :inplace-edit="true"
+                        @list-loaded="$emit('list-loaded', $event)"
+                        @update-form-loaded="$emit('update-form-loaded', $event)"
+                        @add-form-loaded="$emit('add-form-loaded', $event)">
+                      </child-list>
+                    </el-collapse-item>
+                  </template>
+                </el-collapse>
 
-                        </div>
-                      </simple-detail>
+              </div>
+            </simple-detail>
 
-              </el-tab-pane>
+          </el-tab-pane>
 
-              <template v-for="(item, index) in childTabShowList">
+          <template v-for="(item, index) in childTabShowList">
 
-                <el-tab-pane :lazy="1==1" :label="item.foreign_key.section_name" v-if="showChildList(item,detailData) && isTabsModel(item)&&item.show" :key="index">
+            <el-tab-pane :lazy="1 == 1" :label="item.foreign_key.section_name"
+              v-if="showChildList(item, detailData) && isTabsModel(item) && item.show" :key="index">
 
-                  <simple-detail :divCond="buildDivCond" :isHistory="isHistory" :pageIsDraft="pageIsDraft" v-if="item.foreign_key.view_model=='detail'" @form-load-nodata="noDataHand(item)" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-conditions="item.defaultCondition"></simple-detail>
+              <simple-detail :divCond="buildDivCond" :isHistory="isHistory" :pageIsDraft="pageIsDraft"
+                v-if="item.foreign_key.view_model == 'detail'" @form-load-nodata="noDataHand(item)" form-type="detail"
+                ref="child-simple-detail" :service="item.service_name"
+                :default-conditions="getChildListDefaultCondition(item)"></simple-detail>
 
-                  <child-list :divCond="buildDivCond" :mainService='service_name'  v-else :isTree="item.table_type==='树形表'" :isProc="item.table_type==='流程表'" :list-type="formType=='procdetail'?'procdetaillist':'detaillist'" :childListConfig='item' :pageIsDraft="pageIsDraft" :key="index" :name="item.service_name" ref="childrenList" :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key" :read-only="item.foreign_key.child_table_readonly=='是'" :default-condition="item.defaultCondition" :search-form="searchForm" :mainFormDatas="detailData" :is-tree="!!item.parent_no_col" :inplace-edit="true" @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)" @add-form-loaded="$emit('add-form-loaded', $event)">
-                  </child-list>
+              <child-list :divCond="buildDivCond" :mainService='service_name' v-else :isTree="item.table_type === '树形表'"
+                :isProc="item.table_type === '流程表'"
+                :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'" :childListConfig='item'
+                :pageIsDraft="pageIsDraft" :key="index" :name="item.service_name" ref="childrenList"
+                :$srv-app="item.srv_app" :service="item.service_name" :foreign-key="item.foreign_key"
+                :read-only="item.foreign_key.child_table_readonly == '是'"
+                :default-condition="getChildListDefaultCondition(item)" :search-form="searchForm"
+                :mainFormDatas="detailData" :is-tree="!!item.parent_no_col" :inplace-edit="true"
+                @list-loaded="$emit('list-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)"
+                @add-form-loaded="$emit('add-form-loaded', $event)">
+              </child-list>
 
-                </el-tab-pane>
-              </template>
+            </el-tab-pane>
+          </template>
 
-            </el-tabs>
-          </div>
+        </el-tabs>
+      </div>
     </el-card>
   </div>
 </template>
@@ -187,13 +325,13 @@ export default {
     },
     formType: {
       type: String,
-      default: function() {
+      default: function () {
         return "detail";
       }
     },
     is_view_title: {
       type: Boolean,
-      default: function() {
+      default: function () {
         return true;
       }
     },
@@ -221,21 +359,45 @@ export default {
     //   type:Array,
     // },
   },
+  watch: {
+    pkid: {
+      immediate: true,
+      handler(val) {
+        if (val) {
+          this.id = val
+          this.$refs?.['simple-detail']?.initDetail().then((event) => {
+            console.log(event);
+            this.$nextTick(() => {
+              if (event?.data?.length) {
+                this.detailData = event.data[0]
+                this.mainFormDatas = event.data[0]
+                if (this.$refs?.['childrenList']?.length) {
+                  this.$refs.childrenList.forEach(vm => {
+                    vm?.$refs?.list?.initGridData?.()
+                  })
+                }
+              }
+            })
+          })
+        }
+      }
+    }
+  },
   computed: {
-    isCardDetail(){
+    isCardDetail() {
       // 展示为卡片详情
-      return this.$route?.name?.indexOf('cardDetail')===0
+      return this.$route?.name?.indexOf('cardDetail') === 0
     },
-    cfgJson(){
-      if(this.v2Data?.cfg_json){
+    cfgJson() {
+      if (this.v2Data?.cfg_json) {
         try {
           return JSON.parse(this.v2Data.cfg_json)
-        }catch (e) {
+        } catch (e) {
           console.error(e)
         }
       }
     },
-    pageIsDraft: function() {
+    pageIsDraft: function () {
       if (
         this.$route.query.hasOwnProperty("isdraft") &&
         this.$route.query.isdraft === "true"
@@ -255,10 +417,13 @@ export default {
             value: [this.$route.query.divStartVal, this.$route.query.divEndVal]
           }
         ]
-      }else if(this.$route.query.divCond){
+      } else if (this.$route.query.divCond) {
         return JSON.parse(this.$route.query.divCond)
       }
     },
+    getChildListDefaultCondition() {
+      return (child) => this._getChildListDefaultCondition(child)
+    }
   },
   data() {
     return {
@@ -277,13 +442,41 @@ export default {
       initLoad: false,
       mainFormDatas: null,
       isHistory: false,
-      srvAuthLogin:false,
-      detailChartDatas:[],
-      pkCol:'id',
-      v2Data:null,
+      srvAuthLogin: false,
+      detailChartDatas: [],
+      pkCol: 'id',
+      v2Data: null,
     };
   },
   methods: {
+    _getChildListDefaultCondition(child) {
+      const detailData = this.mainFormDatas
+      let foreign_key = child.foreign_key;
+      let defaultCondition = []
+      if (child.srv_cols) {
+        // intra-app fk
+        let referenced_column_name = foreign_key.referenced_column_name;
+        defaultCondition = [
+          {
+            colName: foreign_key.column_name,
+            ruleType: "eq",
+            value: detailData[referenced_column_name]
+          }
+        ];
+      } else {
+        // inter-app fk
+        let referenced_column_name = foreign_key.refed_service_column;
+        defaultCondition = [
+          {
+            colName: foreign_key.ref_service_column,
+            ruleType: "eq",
+            value: detailData[referenced_column_name]
+          }
+        ];
+      }
+      console.log('getChildListDefaultCondition', defaultCondition);
+      return defaultCondition
+    },
     hasVisibleChildListTab() {
       return (
         this.child_service &&
@@ -330,8 +523,8 @@ export default {
         if (this.id != undefined) {
           condition = [{ colName: "id", value: this.id, ruleType: "eq" }];
         }
-        if(this.condcol!=undefined&&this.condvalue!=undefined){
-            condition =[{ colName: this.condcol, value: this.condvalue, ruleType: "eq" }]
+        if (this.condcol != undefined && this.condvalue != undefined) {
+          condition = [{ colName: this.condcol, value: this.condvalue, ruleType: "eq" }]
         }
 
         if (this.custCondition.length > 0) {
@@ -341,16 +534,15 @@ export default {
 
       let detailData = null;
       let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${this.service_name}`
-      console.log('srvAuthKey',srvAuthKey,this.$route.query.hasOwnProperty(srvAuthKey))
+      console.log('srvAuthKey', srvAuthKey, this.$route.query.hasOwnProperty(srvAuthKey))
       await this.selectOne(
         this.service_name,
         condition,
         this.$route.query.isdraft,
         this.srvAuthLogin,
-        null,null,
-        this.buildDivCond||this.$route.query.divCond
+        null, null,
+        this.buildDivCond || this.$route.query.divCond
       ).then(response => {
-
         detailData = response.body;
         this.detailData = response.body;
         this.mainFormDatas = response.body;
@@ -367,8 +559,8 @@ export default {
           condition = [{ colName: "id", value: this.id, ruleType: "eq" }];
         }
 
-        if(this.condcol!=undefined&&this.condvalue!=undefined){
-            condition =[{ colName: this.condcol, value: this.condvalue, ruleType: "eq" }]
+        if (this.condcol != undefined && this.condvalue != undefined) {
+          condition = [{ colName: this.condcol, value: this.condvalue, ruleType: "eq" }]
         }
         if (this.custCondition.length > 0) {
           condition = condition.concat(this.custCondition);
@@ -376,7 +568,7 @@ export default {
       }
 
       let childList = [];
-      await this.loadColsV2(this.service_name, "detail",null,this.service_name).then(response => {
+      await this.loadColsV2(this.service_name, "detail", null, this.service_name).then(response => {
         this.detail_srv_cols = response.body.data["srv_cols"];
         childList = response.body.data["child_service"];
         var temp = response.body.data["service_view_name"];
@@ -385,24 +577,24 @@ export default {
         if (v2Data.hasOwnProperty("his_version")) {
           this.isHistory = v2Data.his_version;
         }
-        if(v2Data?.pub_field_map?.id){
+        if (v2Data?.pub_field_map?.id) {
           this.pkCol = v2Data.pub_field_map?.id
-          if(condition?.length){
-            condition.forEach(item=>{
-              if(item.colName=='id'){
+          if (condition?.length) {
+            condition.forEach(item => {
+              if (item.colName == 'id') {
                 // id 字段映射
                 item.colName = v2Data.pub_field_map.id
               }
             })
           }
         }
-        if(response.body.data['cfg_json']&&response.body.data['cfg_json'].indexOf('page_title')>-1){
+        if (response.body.data['cfg_json'] && response.body.data['cfg_json'].indexOf('page_title') > -1) {
           // 使用配置的标题
           const cfg_json = JSON.parse(response.body.data.cfg_json)
-          if(cfg_json?.page_title){
+          if (cfg_json?.page_title) {
             this.tab_view_name = cfg_json?.page_title
           }
-        }else if (temp.endsWith("查询")) {
+        } else if (temp.endsWith("查询")) {
           this.tab_view_name = temp.substr(0, temp.length - 2) + "详情";
         } else {
           this.tab_view_name = response.body.data["service_view_name"] + "详情";
@@ -410,39 +602,39 @@ export default {
       });
       let detailData = null;
       let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${this.service_name}`
-      console.log('srvAuthKey',srvAuthKey,this.$route.query.hasOwnProperty(srvAuthKey))
+      console.log('srvAuthKey', srvAuthKey, this.$route.query.hasOwnProperty(srvAuthKey))
       await this.selectOne(
         this.service_name,
         condition,
         this.$route.query.isdraft,
         this.isHistory,
-        srvAuthKey && this.$route.query.hasOwnProperty(srvAuthKey)  ? true : false,
+        srvAuthKey && this.$route.query.hasOwnProperty(srvAuthKey) ? true : false,
         'detail_page',
         this.buildDivCond || this.$route.query.divCond
       ).then(response => {
 
-          // console.log('srvAuthKey',srvAuthKey,response.body)
-        if(response.body.resultCode == '0111'){
+        // console.log('srvAuthKey',srvAuthKey,response.body)
+        if (response.body.resultCode == '0111') {
 
-            console.error('this.service_name',response.body)
-          console.log('response.body',response.body)
-            this.srvAuthLogin = true
-            this.$message({
-              message: response.data.resultMessage,
-              type: "error",
-            });
-        }else{
-           console.error('this.service_name2',response.body,response.response)
+          console.error('this.service_name', response.body)
+          console.log('response.body', response.body)
+          this.srvAuthLogin = true
+          this.$message({
+            message: response.data.resultMessage,
+            type: "error",
+          });
+        } else {
+          console.error('this.service_name2', response.body, response.response)
           detailData = response.body;
           this.detailData = response.body;
           this.mainFormDatas = response.body;
-          this.id=this.detailData[this.pkCol];
-          if(response?.response?.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)){
+          this.id = this.detailData[this.pkCol];
+          if (response?.response?.hasOwnProperty('chart_data') && Array.isArray(response.response.chart_data)) {
             this.detailChartDatas = response.response.chart_data.map(item => {
-              item['status'] = item['state'] == '1' ? 'success' :  item['state'] == '0' ? 'process' : 'wait'; //success
-              return  item
+              item['status'] = item['state'] == '1' ? 'success' : item['state'] == '0' ? 'process' : 'wait'; //success
+              return item
             })
-            console.log('response.body222',response)
+            console.log('response.body222', response)
           }
         }
       });
@@ -483,7 +675,7 @@ export default {
       }
     }
   },
-  created: function() {
+  created: function () {
     var operate_params = this.getOperateParams();
     if (operate_params) {
       var operate_Object = JSON.parse(operate_params);
@@ -494,9 +686,9 @@ export default {
     }
 
 
-       if(this.condcol!=undefined&&this.condvalue!=undefined){
-            this.custCondition =this.custCondition.concat([{ colName: this.condcol, value: this.condvalue, ruleType: "eq" }]);
-        }
+    if (this.condcol != undefined && this.condvalue != undefined) {
+      this.custCondition = this.custCondition.concat([{ colName: this.condcol, value: this.condvalue, ruleType: "eq" }]);
+    }
 
     if (this.defaultConditions != undefined) {
       this.custCondition = this.custCondition.concat(this.defaultConditions);
@@ -511,26 +703,27 @@ export default {
 };
 </script>
 <style lang="scss">
-.detail-steps{
+.detail-steps {
   .el-step__head.is-process {
-      color: #e96a02;
-      border-color: #e96a02;
+    color: #e96a02;
+    border-color: #e96a02;
   }
+
   .el-step__title.is-process {
 
-      color: #e96a02;
+    color: #e96a02;
   }
 }
-.field-child-prepend-list,.field-child-append-list{
+
+.field-child-prepend-list,
+.field-child-append-list {
   width: 100%;
   //padding: 10px 0;
   overflow: hidden;
   margin-bottom: 10px;
 }
-.el-collapse-item:first-child{
-  margin-bottom: unset!important;
+
+.el-collapse-item:first-child {
+  margin-bottom: unset !important;
 }
 </style>
-
-
-

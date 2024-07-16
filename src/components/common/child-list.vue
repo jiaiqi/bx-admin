@@ -204,6 +204,9 @@ export default {
     },
     getRefColValue: function () {
       if (this.defaultCondition && this.defaultCondition.length > 0) {
+        if(typeof this.defaultCondition[0].value === 'function'){
+          return this.defaultCondition[0].value(this.mainFormDatas)
+        }
         return this.defaultCondition[0].value;
       }
 

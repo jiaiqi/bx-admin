@@ -281,9 +281,9 @@ export default {
       this.$emit('action-complete',event)
       this.bcPostMessage('action-complete',event)
     },
-  },
-  mounted() {
-    this.createFields((srvCol) => srvCol.in_detail != 0)
+    initDetail(){
+      return new Promise(resolve=>{
+        this.createFields((srvCol) => srvCol.in_detail != 0)
       .then((response) => {
         if (response.data.encryptedCols) {
           this.encryptedCols = response.data.encryptedCols;
@@ -349,13 +349,21 @@ export default {
         //   }
         // }
 
-        return loader.run(condition,this.divCond);
+        return loader.run(condition,this.divCond).then(res=>{
+          resolve(res)
+        });
       })
-      .then(() => {
+      .then((event) => {
         this.formLoaded = true;
         this.$emit("form-loaded", this);
         this.$emit("detail-form-loaded", this);
+       
       });
+      })
+    }
+  },
+  mounted() {
+    this.initDetail()
   },
 };
 </script>

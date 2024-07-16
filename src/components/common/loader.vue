@@ -38,7 +38,7 @@
     },
 
     methods: {
-      run(condition,divCond) {
+      async run(condition,divCond) {
         if(Array.isArray(condition)&&condition.length>0){
           this.conditions = condition
         }
@@ -66,14 +66,16 @@
           query['draft'] = (this.pageIsDraft === 'draft') || this.$route.query.isdraft === 'true'
         }
         //---
-        return this.selectList( query).then((response) => {
+        const response = await this.selectList( query)
+        // .then((response) => {
           if (response && response.data && response.data.data) {
             this.lastValidResp = response.data.data;
             this.loadCount++;
           }
 
           this.$emit('loader-complete', {data: response.data.data, resp: response} );
-        })
+          return {data: response.data.data, resp: response}
+        // })
       },
 
       watchCondition() {
