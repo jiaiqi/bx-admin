@@ -972,13 +972,13 @@ export default {
 
     emitFieldValueChange() {
       let objCol = null;
-      const objInfo = this.optionListV2?.obj_info;
+      let objInfo = this.optionListV2?.obj_info;
       if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
         // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
         const newValue = this.field.model;
         const cols = objInfo?.a_save_b_cols.split(",");
         const obj = {};
-        const objStr = "";
+        let objStr = "";
         if (cols?.length) {
           cols.forEach((col) => {
             obj[col] = newValue?.[col];
