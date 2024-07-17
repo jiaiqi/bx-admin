@@ -333,15 +333,6 @@ export default {
         
       }
     },
-    defaultCondition:{
-      deep:true,
-      handler(newVal,oldVal){
-        console.log('list-mixin:::',cloneDeep(newVal),cloneDeep(oldVal));
-        if(newVal&&oldVal&&JSON.stringify(newVal)!==JSON.stringify(oldVal)){
-          this.loadTableData?.()
-        }
-      }
-    }
   },
 
   computed: {

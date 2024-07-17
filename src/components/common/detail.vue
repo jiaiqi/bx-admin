@@ -474,7 +474,6 @@ export default {
           }
         ];
       }
-      console.log('getChildListDefaultCondition', defaultCondition);
       return defaultCondition
     },
     hasVisibleChildListTab() {

@@ -2,178 +2,78 @@
 <template>
   <div>
     <div v-if="subType !== 'select'">
-      <a
-        v-if="field.info.linkUrlFunc && !field.info.editable && !isFks"
-        v-show="field.getSrvVal()"
-        style="white-space: normal; color: dodgerblue; cursor: pointer"
-        @click="onLinkClicked()"
-      >
+      <a v-if="field.info.linkUrlFunc && !field.info.editable && !isFks" v-show="field.getSrvVal()"
+        style="white-space: normal; color: dodgerblue; cursor: pointer" @click="onLinkClicked()">
         {{ field.getDispVal4Read() }}
       </a>
-      <div
-        class="div-el-input"
-        v-else-if="
-          formType === 'add' &&
-          optionListV2 &&
-          optionListV2.allow_input === '自行输入' &&
-          addService
-        "
-        @click="activePopup = 'add'"
-      >
+      <div class="div-el-input" v-else-if="onlyEdit && ['add','update'].includes(formType) " @click="activePopup = formType">
         <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
         <i class="el-icon-edit"></i>
       </div>
-      <location-picker
-        v-else-if="isLocation"
-        :field="field"
-        :disabled="!field.info.editable"
-        :mainformDatas="mainformDatas"
-        :defaultValues="defaultValues"
-        :current-selected="field.model"
-        @on-selected="onPickerSelected"
-      ></location-picker>
-      <table-picker
-        v-bind="$props"
-        :selectedGridData="multiSelected"
-        :finder-selected="field.model"
-        :defaultValues="defaultValues"
-        :mainformDatas="mainformDatas"
-        :disabled="!field.info.editable"
-        @on-selected="onPickerSelected"
-        v-else-if="isFks"
-      ></table-picker>
+      <location-picker v-else-if="isLocation" :field="field" :disabled="!field.info.editable"
+        :mainformDatas="mainformDatas" :defaultValues="defaultValues" :current-selected="field.model"
+        @on-selected="onPickerSelected"></location-picker>
+      <table-picker v-bind="$props" :selectedGridData="multiSelected" :finder-selected="field.model"
+        :defaultValues="defaultValues" :mainformDatas="mainformDatas" :disabled="!field.info.editable"
+        @on-selected="onPickerSelected" v-else-if="isFks"></table-picker>
       <div v-else style="display: flex; align-items: center">
-        <el-autocomplete
-          ref="autocomplete"
-          :prefix-icon="
-            (dispLoaderV2 &&
-              dispLoaderV2.imgType === 'eicon' &&
-              field.getSrvVal()) ||
-            ''
-          "
-          :trigger-on-focus="showAutocomplete"
-          :fetch-suggestions="loadOptions"
-          :value-key="field.info.dispCol"
-          :disabled="!field.info.editable"
-          v-model="selected"
-          :placeholder="field.info.placeholder"
-          clearable
-          @select="handleSelect"
-          @blur="handleBlur"
-          style="min-width: 220px; flex: 1"
-          class="finder-autocomplete"
-        >
+        <el-autocomplete ref="autocomplete" :prefix-icon="(dispLoaderV2 &&
+          dispLoaderV2.imgType === 'eicon' &&
+          field.getSrvVal()) ||
+          ''
+          " :trigger-on-focus="showAutocomplete" :fetch-suggestions="loadOptions" :value-key="field.info.dispCol"
+          :disabled="!field.info.editable" v-model="selected" :placeholder="field.info.placeholder" clearable
+          @select="handleSelect" @blur="handleBlur" style="min-width: 220px; flex: 1" class="finder-autocomplete">
           <div slot="append">
-            <el-button
-              icon="el-icon-search"
-              v-if="!field.info.noSearchIcon"
-              @click="onPopupClicked"
-            >
+            <el-button icon="el-icon-search" v-if="!field.info.noSearchIcon" @click="onPopupClicked">
             </el-button>
           </div>
           <template slot-scope="{ item }">
             <span style="float: left">{{ item.labelFunc(item) }}</span>
-            <i
-              :class="item.elIconFunc(item)"
-              style="font-size: 20px"
-              v-if="item.elIconFunc"
-            ></i>
-            <div
-              class="svg-icon"
-              v-html="item.imgUrlFunc(item)"
-              v-else-if="
-                item.imgUrlFunc &&
-                item.imgUrlFunc(item) &&
-                item.imgUrlFunc(item).includes('<svg')
-              "
-              height="30"
-              width="30"
-            ></div>
-            <img
-              :src="item.imgUrlFunc(item)"
-              v-else-if="item.imgUrlFunc"
-              height="30"
-              width="30"
-            />
+            <i :class="item.elIconFunc(item)" style="font-size: 20px" v-if="item.elIconFunc"></i>
+            <div class="svg-icon" v-html="item.imgUrlFunc(item)" v-else-if="
+              item.imgUrlFunc &&
+              item.imgUrlFunc(item) &&
+              item.imgUrlFunc(item).includes('<svg')
+            " height="30" width="30"></div>
+            <img :src="item.imgUrlFunc(item)" v-else-if="item.imgUrlFunc" height="30" width="30" />
           </template>
         </el-autocomplete>
-        <el-button
-          icon="el-icon-plus"
-          style="margin-left: 5px; height: 38px"
-          size="mini"
-          v-if="
-            addSrvCfg &&
-            addSrvCfg.permission &&
-            addSrvCfg.srv &&
-            optionListV2 &&
-            optionListV2.allow_input === '编辑选择'
-          "
-          @click="activePopup = 'add'"
-        >
+        <el-button icon="el-icon-plus" style="margin-left: 5px; height: 38px" size="mini" v-if="allowEditAndSelect"
+          @click="activePopup = 'add'">
         </el-button>
       </div>
-      <el-dialog
-        :title="submit2Db ? '新增选项' : '编辑'"
-        width="90%"
-        :close-on-click-modal="1 == 2"
-        append-to-body
-        :visible="activePopup === 'add'"
-        @close="activePopup = ''"
-      >
-        <add
-          name="add-popup"
-          ref="add-form"
-          :service="addService"
-          :$srvApp="addApp"
-          :navAfterSubmit="false"
-          :submit2Db="submit2Db"
-          :defaultValues="submit2Db?null:field.model"
-          @submitted2mem="submitted2mem"
-          @executor-complete="onExecutorComplete"
-          @form-loaded="onAddFormLoaded"
-          v-if="activePopup == 'add'"
-        >
+      <el-dialog :title="'新增'" width="90%" :close-on-click-modal="1 == 2" append-to-body
+        :visible="activePopup === 'add'" @close="activePopup = ''">
+        <add name="add-popup" ref="add-form" :service="addService" :$srvApp="addApp" :navAfterSubmit="false"
+          :submit2Db="submit2Db" :defaultValues="submit2Db ? null : field.model" @submitted2mem="submitted2mem"
+          @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded" v-if="activePopup == 'add'">
         </add>
       </el-dialog>
-      <el-dialog
-        title="查询选择"
-        width="90%"
-        :close-on-click-modal="1 == 2"
-        append-to-body
-        :visible="popup"
-        @close="popup = false"
-      >
-        <list
-          :service="dispLoaderV2.service"
-          v-if="popup"
-          ref="popup"
-          :$srvApp="appNo"
-          mode="finder"
-          listType="selectlist"
-          :grid-data-filter="this.dedupOptions"
-          :default-condition="popupDefaultConditions()"
-          @row-dbclick="onRowSelected"
-        >
+      <el-dialog :title="'编辑'" width="90%" :close-on-click-modal="1 == 2" append-to-body
+        :visible="activePopup === 'update'" @close="activePopup = ''">
+        <update name="add-popup" ref="update-form" :pk="field.getSrvVal()" :pkCol="optionListV2.refed_col" :service="updateService"  :$srvApp="updateApp" :navAfterSubmit="false"
+          :submit2Db="true" :defaultConditions="[{
+            colName:optionListV2.refed_col,
+            ruleType:'eq',
+            value:field.getSrvVal()
+          }]" :defaultValues=" field.model" @submitted2mem="submitted2mem"
+          @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded" v-if="activePopup == 'update'">
+        </update>
+      </el-dialog>
+      <el-dialog title="查询选择" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="popup"
+        @close="popup = false">
+        <list :service="dispLoaderV2.service" v-if="popup" ref="popup" :$srvApp="appNo" mode="finder"
+          listType="selectlist" :grid-data-filter="this.dedupOptions" :default-condition="popupDefaultConditions()"
+          @row-dbclick="onRowSelected">
         </list>
         <div style="text-align: center; color: red">请双击列表行进行选择</div>
       </el-dialog>
     </div>
     <div v-if="subType === 'select'">
-      <el-select
-        v-model="selected"
-        :value-key="field.info.dispCol"
-        :disabled="!field.info.editable"
-        clearable
-        @visible-change="getOptions"
-        @change="handleSelect"
-        :placeholder="field.info.placeholder"
-      >
-        <el-option
-          v-for="item in optionsRun"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        >
+      <el-select v-model="selected" :value-key="field.info.dispCol" :disabled="!field.info.editable" clearable
+        @visible-change="getOptions" @change="handleSelect" :placeholder="field.info.placeholder">
+        <el-option v-for="item in optionsRun" :key="item.value" :label="item.label" :value="item.value">
         </el-option>
       </el-select>
     </div>
@@ -183,7 +83,6 @@
 <script>
 import tablePicker from "../common/table-picker.vue";
 import locationPicker from "./location-picker.vue";
-import includes from "lodash/includes";
 import remove from "lodash/remove";
 import cloneDeepWith from "lodash/cloneDeepWith";
 import cloneDeep from "lodash/cloneDeep";
@@ -195,6 +94,7 @@ export default {
     tablePicker,
     locationPicker,
     Add: () => import("../common/add.vue"),
+    Update: () => import("../common/update.vue"),
     //  () => import("../common/table-picker.vue")
   },
   model: {
@@ -306,11 +206,11 @@ export default {
       return service?.includes("add")
         ? "add"
         : service?.includes("update")
-        ? "update"
-        : "detail";
+          ? "update"
+          : "detail";
     },
     submit2Db() {
-      if (this.optionListV2?.allow_input === "自行输入") {
+      if (this.optionListV2?.allow_input === "自行输入" && this.formType==='add') {
         return false;
       } else {
         return true;
@@ -354,16 +254,16 @@ export default {
             return true;
           }
         });
-      }else if (this.field?.info?.srvCol?.option_list_v2) {
+      } else if (this.field?.info?.srvCol?.option_list_v2) {
         result = this.field?.info?.srvCol?.option_list_v2;
       }
       // if (!result) {
       //   result = this.field?.info?.srvCol?.option_list_v2;
       // }
-      if(this.field?.info?._upstreamCondition?.colName){
-        if(Array.isArray(result?.conditions)){
+      if (this.field?.info?._upstreamCondition?.colName) {
+        if (Array.isArray(result?.conditions)) {
           result.conditions.push(cloneDeep(this.field.info._upstreamCondition))
-        }else if(result){
+        } else if (result) {
           result.conditions = [cloneDeep(this.field.info._upstreamCondition)]
         }
       }
@@ -406,9 +306,29 @@ export default {
         this.addSrvCfg?.app || this.optionListV2?.srv_app || this.appNo || null
       );
     },
+    updateSrvCfg() {
+      return this.optionListV2?.update_srv_cfg;
+    },
+    updateService() {
+      return this.optionListV2?.update_srv_cfg?.srv;
+    },
+    updateApp() {
+      return this.updateSrvCfg?.app || this.optionListV2?.srv_app || this.appNo || null
+    },
+    allowEditAndSelect() {
+      // 编辑选择
+      return this.addSrvCfg?.permission && this.addSrvCfg.srv && this.optionListV2.allow_input === '编辑选择'
+    },
+    onlyEdit() {
+      // 自行输入
+      if(this.formType==='update' && !this.field.getSrvVal()){
+        return false
+      }
+      return this.addSrvCfg?.permission && this.addSrvCfg.srv && this.optionListV2.allow_input === '自行输入'
+    },
   },
   methods: {
-    onAddFormLoaded: function (form) {
+    onPopupFormLoaded: function (form) {
       if (form?.actions?.submit) {
         // 去掉提交后跳转事件
         form.actions.submit.nav2Location = null;
@@ -463,9 +383,8 @@ export default {
         this.selected =
           loader.showAsPair !== true
             ? this.options[0][fieldInfo.dispCol]
-            : `${this.options[0][fieldInfo.dispCol]}/${
-                this.options[0][fieldInfo.valueCol]
-              }`;
+            : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
+            }`;
         this.hasInit = true;
       } else if (this.field.model && this.finderSelected) {
         this.selected = this.finderSelected;
@@ -479,7 +398,7 @@ export default {
       let self = this;
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
-      if(!loader){
+      if (!loader) {
         return
       }
       if (queryString == true) {
@@ -549,9 +468,8 @@ export default {
               item.labelFunc = (item) => {
                 if (item[fieldInfo.dispCol]) {
                   if (loader.showAsPair) {
-                    return `${item[fieldInfo.dispCol]}/${
-                      item[fieldInfo.valueCol]
-                    }`;
+                    return `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]
+                      }`;
                   } else {
                     return item[fieldInfo.dispCol];
                   }
@@ -662,7 +580,7 @@ export default {
 
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
-      if(!loader){
+      if (!loader) {
         cb([]);
         return;
       }
@@ -1005,7 +923,7 @@ export default {
           if (
             this.selected != this.field.getDispVal() &&
             this.selected !=
-              `${this.field.getDispVal()}/${this.field.getSrvVal()}`
+            `${this.field.getDispVal()}/${this.field.getSrvVal()}`
           ) {
             this.field.reset();
           }
@@ -1121,9 +1039,8 @@ export default {
               this.selected =
                 loader.showAsPair !== true
                   ? this.field.model[fieldInfo.dispCol]
-                  : `${this.field.model[fieldInfo.dispCol]}/${
-                      this.field.model[fieldInfo.valueCol]
-                    }`;
+                  : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
+                  }`;
             }
             // this.selected = (loader.showAsPair !== false ? `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]}` : this.field.model[ fieldInfo.dispCol ])
           }
@@ -1185,7 +1102,7 @@ export default {
     },
   },
 
-  created: function () {},
+  created: function () { },
 
   mounted: function () {
     let vm = this;
@@ -1215,9 +1132,8 @@ export default {
           this.selected =
             loader.showAsPair !== false
               ? this.field.model[fieldInfo.dispCol]
-              : `${this.field.model[fieldInfo.dispCol]}/${
-                  this.field.model[fieldInfo.valueCol]
-                }`;
+              : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
+              }`;
         }
       }
       // this.getOptions(true);
@@ -1277,6 +1193,7 @@ export default {
   -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   cursor: pointer;
+
   [class*="el-icon-"] {
     position: absolute;
     right: 10px;
