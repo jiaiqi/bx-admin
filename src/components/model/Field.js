@@ -177,6 +177,7 @@ export class Field {
       }
     } else if (this.info.isFinder()) {
       // 自行输入且为add表单时，直接提交对象
+      // if(this.info.allowInput==='自行输入'){
       if(this.info.allowInput==='自行输入' && this.info?.srvCol?.service_name?.includes('add')){
         ret = typeof ret === 'object' ? ret : null
       }else if (typeof ret === 'object') {

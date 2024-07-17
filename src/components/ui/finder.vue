@@ -6,7 +6,7 @@
         style="white-space: normal; color: dodgerblue; cursor: pointer" @click="onLinkClicked()">
         {{ field.getDispVal4Read() }}
       </a>
-      <div class="div-el-input" v-else-if="onlyEdit && ['add','update'].includes(formType) " @click="activePopup = formType">
+      <div class="div-el-input" v-else-if="onlyEdit && ['add', 'update'].includes(formType)" @click="onClickEdit">
         <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
         <i class="el-icon-edit"></i>
       </div>
@@ -39,8 +39,11 @@
             <img :src="item.imgUrlFunc(item)" v-else-if="item.imgUrlFunc" height="30" width="30" />
           </template>
         </el-autocomplete>
-        <el-button icon="el-icon-plus" style="margin-left: 5px; height: 38px" size="mini" v-if="allowEditAndSelect"
-          @click="activePopup = 'add'">
+        <el-button icon="el-icon-edit" style="margin-left: 5px; height: 38px" size="mini"
+          v-if="allowEditAndSelect && (formType === 'update' || field.getSrvVal())" @click="activePopup = 'update'">
+        </el-button>
+        <el-button icon="el-icon-plus" style="margin-left: 5px; height: 38px" size="mini"
+          v-else-if="allowEditAndSelect && (formType === 'add' || !field.getSrvVal())" @click="activePopup = 'add'">
         </el-button>
       </div>
       <el-dialog :title="'新增'" width="90%" :close-on-click-modal="1 == 2" append-to-body
@@ -52,13 +55,13 @@
       </el-dialog>
       <el-dialog :title="'编辑'" width="90%" :close-on-click-modal="1 == 2" append-to-body
         :visible="activePopup === 'update'" @close="activePopup = ''">
-        <update name="add-popup" ref="update-form" :pk="field.getSrvVal()" :pkCol="optionListV2.refed_col" :service="updateService"  :$srvApp="updateApp" :navAfterSubmit="false"
-          :submit2Db="true" :defaultConditions="[{
-            colName:optionListV2.refed_col,
-            ruleType:'eq',
-            value:field.getSrvVal()
-          }]" :defaultValues=" field.model" @submitted2mem="submitted2mem"
-          @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded" v-if="activePopup == 'update'">
+        <update name="add-popup" ref="update-form" :pk="field.getSrvVal()" :pkCol="optionListV2.refed_col"
+          :service="updateService" :$srvApp="updateApp" :navAfterSubmit="false" :submit2Db="true" :defaultConditions="[{
+            colName: optionListV2.refed_col,
+            ruleType: 'eq',
+            value: field.getSrvVal()
+          }]" :defaultValues="field.model" @submitted2mem="submitted2mem" @executor-complete="onExecutorComplete"
+          @form-loaded="onPopupFormLoaded" v-if="activePopup == 'update'">
         </update>
       </el-dialog>
       <el-dialog title="查询选择" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="popup"
@@ -119,7 +122,8 @@ export default {
       options: [],
       childForeign: null,
       multiSelected: [],
-      hasInit: false, //已经设置过初始值
+      hasInit: false, // 已经设置过初始值
+      addedData: null, // 当前数据为allow_input是编辑选择的字段,点击添加按钮,在add弹窗中新创建的数据
     };
   },
   watch: {
@@ -210,7 +214,8 @@ export default {
           : "detail";
     },
     submit2Db() {
-      if (this.optionListV2?.allow_input === "自行输入" && this.formType==='add') {
+      if (this.optionListV2?.allow_input === "自行输入" && this.formType === 'add') {
+        // if (this.optionListV2?.allow_input === "自行输入" && (this.formType === 'add' ||!this.field.getSrvVal())) {
         return false;
       } else {
         return true;
@@ -310,7 +315,7 @@ export default {
       return this.optionListV2?.update_srv_cfg;
     },
     updateService() {
-      return this.optionListV2?.update_srv_cfg?.srv;
+      return this.optionListV2?.update_srv_cfg?.srv || this.optionListV2?.serviceName?.replace('_select', '_update');
     },
     updateApp() {
       return this.updateSrvCfg?.app || this.optionListV2?.srv_app || this.appNo || null
@@ -321,13 +326,25 @@ export default {
     },
     onlyEdit() {
       // 自行输入
-      if(this.formType==='update' && !this.field.getSrvVal()){
-        return false
-      }
+      // if (this.formType === 'update' && !this.field.getSrvVal()) {
+      //   return false
+      // }
       return this.addSrvCfg?.permission && this.addSrvCfg.srv && this.optionListV2.allow_input === '自行输入'
     },
+    isAdded() {
+      // 是否是add表单中新创建的fk数据
+      return this.allowEditAndSelect && this.formType === 'add' && this.field.getSrvVal() && this.addedData?.[this.optionListV2?.refed_col] === this.field.getSrvVal()
+    }
   },
   methods: {
+    onClickEdit() {
+      if (this.formType === 'update' && !this.field.getSrvVal()) {
+        // 编辑表单，未选中数据，则打开add弹窗
+        this.activePopup = 'add'
+      } else {
+        this.activePopup = this.formType
+      }
+    },
     onPopupFormLoaded: function (form) {
       if (form?.actions?.submit) {
         // 去掉提交后跳转事件
@@ -365,6 +382,10 @@ export default {
       const data = event.data?.response[0]?.response?.effect_data?.[0];
       if (data) {
         this.handleSelect(data);
+        if (this.formType === 'add' && this.allowEditAndSelect) {
+          // 当前数据为allow_input是编辑选择的字段，点击添加按钮，在add弹窗中新创建的数据
+          this.addedData = cloneDeep(data)
+        }
       }
       this.activePopup = "";
     },
