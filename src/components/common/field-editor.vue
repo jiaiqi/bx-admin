@@ -100,8 +100,8 @@
             </raw-field-editor>
             <template
               v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson && contentField.fieldActionOptionsJson.hasOwnProperty('col_btn_json') && contentField.fieldActionOptionsJson.col_btn_json.hasOwnProperty('btn_name')">
-              <shortcutAdd :formModel="formModel"
-                           :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutAdd>
+              <shortcutButton :formModel="formModel" :field="field"
+                           :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutButton>
             </template>
           </el-col>
         </el-row>
@@ -114,13 +114,13 @@
 
 <script>
 import RawFieldEditor from "./raw-field-editor.vue";
-import shortcutAdd from "./field-shortcut-add.vue";
+import shortcutButton from "./field-shortcut-add.vue";
 import toInteger from "lodash/toInteger"
 export default {
   name: "field-editor",
 
   components: {
-    shortcutAdd, RawFieldEditor
+    shortcutButton, RawFieldEditor
   },
 
   props: {

@@ -80,6 +80,7 @@ export default {
 
   props: {
     formModel: Object,
+    field:Object,
     fieldActionOptions: {
       type: Object,
       default() {
@@ -142,8 +143,9 @@ export default {
         switch (this.cfg.btn_type) {
           case '详情':
             const condition = this.btnSrvReq?.condition
+            const formModel = this.formModel || this.field?.form?.formModel
             if (condition?.length) {
-              const value = this.renderStr(condition[0].value, this.formModel)
+              const value = this.renderStr(condition[0].value, formModel)
               url = `/vpages/#/detail/${this.btnSrvReq.serviceName}/${condition[0].colName}/${value}`
             } else {
               this.$message.error('详情按钮的接口请求必须配置查询条件!')

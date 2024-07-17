@@ -90,9 +90,9 @@
       </div>
       <!--      卡片列表-->
       <div class="" v-else-if="listStyle === 'card' && cfgJson && cfgJson.card_json">
-        <card-list :grid-data="gridDataRun" :cells-layout-json="cfgJson.card_json" :row-buttons="sortedRowButtons">
+        <card-list :grid-data="gridDataRun" :read-only="readOnly" :cells-layout-json="cfgJson.card_json" :row-buttons="sortedRowButtons">
           <template #footer="{ data }">
-            <div class="footer-btn">
+            <div class="footer-btn" v-if="readOnly!==true">
               <div class="footer-btn-item" v-for="(btn, index) in sortedRowButtons" :key="index">
                 <el-button size="mini" :type="['detail'].includes(btn.button_type) ? 'primary' : ''"
                   @click.stop="rowButtonClick(btn, data)">{{ btn.button_name }}
@@ -100,8 +100,6 @@
               </div>
             </div>
           </template>
-
-
         </card-list>
       </div>
       <div v-else>
@@ -508,6 +506,7 @@ import vueChart from '../ui/widget/chart.vue';
 import { blobToBase64 } from '../../common/common'
 import { IconList, IconGrid, IconExcel, IconExcelColorful } from '../../components/icon'
 import CardList from '../ui/card-list/card-list.vue'
+import { readonly } from "vue";
 
 export default {
   name: "list",

@@ -41,6 +41,7 @@
               :field="formItem.field"
               :content-fields="formItem.contentFields"
               :key="formItem.field.info.name"
+              :form-model="formModel"
               @field-value-changed="onFieldValueChanged($event)"
               @field-history-popup="onFieldHistoryPopup($event)"
             >
