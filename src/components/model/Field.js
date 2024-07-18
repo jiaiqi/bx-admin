@@ -388,6 +388,10 @@ export class Field {
   }
 
   evalEditable() {
+    let vm = this.form;
+    if(vm?.defaultCondition?.find(item=>item.value && ['eq'].includes(item.ruleType) && item.colName&&item.colName===this.info.name)){
+      return false
+    }
     return this.evalVersatileFlagVar(this.info.editable)
   }
 
@@ -398,7 +402,6 @@ export class Field {
   evalVersatileFlagVar(flagVar) {
     let vm = this.form;
     let formModel = vm.srvValFormModel && vm.srvValFormModel();
-
     if (isBoolean(flagVar)) {
       return flagVar;
     } else if (isString(flagVar)) {
@@ -451,7 +454,6 @@ export class Field {
   }
 
   setInitValueExpr(initValueExpr) {
-   
     this.info.initValueExpr = initValueExpr;
   }
   

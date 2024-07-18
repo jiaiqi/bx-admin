@@ -371,11 +371,17 @@ routes.push({
     // 网格布局
     {
       path: "/grid-editor",
+      meta: {
+        view:true
+      },
       component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
     },
     {
       path: "/gridview",
       component: () => import(/* webpackChunkName: "grid-view" */"@/pages/datav/grid-layout/index.vue"),
+      meta: {
+        view:true
+      },
       children: [
         {
           //可视化编辑页面

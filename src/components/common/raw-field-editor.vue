@@ -111,7 +111,7 @@
               <upload-image v-else-if="field.info.editor === 'upload-image'" :field="field" ref="editor">
               </upload-image>
 
-              <finder v-else-if="field.info.editor === 'finder'" :field="field" v-model="field.finderSelected"
+              <finder v-else-if="field.info.editor === 'finder'" :disabled="getDisabled" :field="field" v-model="field.finderSelected"
               :defaultCondition='defaultCondition' :defaultValues='defaultValues' :childForeignkey='childForeignkey' :mainformDatas='mainformDatas' :form-model="formModel"
               :$srv-app="
                   field.info.srvCol.option_list_v2 &&
@@ -127,7 +127,7 @@
                   $emit('field-value-changed', field.info.name, field)
                 " @blur="onBlur">
               </multiFinder>
-              <tree-finder v-else-if="field.info.editor === 'tree-finder'" ref="editor" :field="field" :$srv-app="field.info.srvCol.option_list_v2.srv_app" @field-value-changed="
+              <tree-finder :disabled="getDisabled" v-else-if="field.info.editor === 'tree-finder'" ref="editor" :field="field" :$srv-app="field.info.srvCol.option_list_v2.srv_app" @field-value-changed="
                   $emit('field-value-changed', field.info.name, field)
                 ">
               </tree-finder>

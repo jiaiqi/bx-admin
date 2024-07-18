@@ -238,7 +238,7 @@ export default {
     },
     isDataview() {
       // 预览模式
-      return this.$route?.name === "gridview";
+      return this.$route?.name === "gridview" || this.$route?.meta?.view===true;
     },
     showFullScreen() {
       return (

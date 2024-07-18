@@ -2,7 +2,7 @@
 <template>
   <div>
     <div v-if="subType !== 'select'">
-      <a v-if="field.info.linkUrlFunc && !field.info.editable && !isFks" v-show="field.getSrvVal()"
+      <a v-if="field.info.linkUrlFunc && setDisabled && !isFks" v-show="field.getSrvVal()"
         style="white-space: normal; color: dodgerblue; cursor: pointer" @click="onLinkClicked()">
         {{ field.getDispVal4Read() }}
       </a>
@@ -10,11 +10,11 @@
         <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
         <i class="el-icon-edit"></i>
       </div>
-      <location-picker v-else-if="isLocation" :field="field" :disabled="!field.info.editable"
-        :mainformDatas="mainformDatas" :defaultValues="defaultValues" :current-selected="field.model"
+      <location-picker v-else-if="isLocation" :field="field" :disabled="setDisabled" :mainformDatas="mainformDatas"
+        :defaultValues="defaultValues" :current-selected="field.model"
         @on-selected="onPickerSelected"></location-picker>
       <table-picker v-bind="$props" :selectedGridData="multiSelected" :finder-selected="field.model"
-        :defaultValues="defaultValues" :mainformDatas="mainformDatas" :disabled="!field.info.editable"
+        :defaultValues="defaultValues" :mainformDatas="mainformDatas" :disabled="setDisabled"
         @on-selected="onPickerSelected" v-else-if="isFks"></table-picker>
       <div v-else style="display: flex; align-items: center">
         <el-autocomplete ref="autocomplete" :prefix-icon="(dispLoaderV2 &&
@@ -22,7 +22,7 @@
           field.getSrvVal()) ||
           ''
           " :trigger-on-focus="showAutocomplete" :fetch-suggestions="loadOptions" :value-key="field.info.dispCol"
-          :disabled="!field.info.editable" v-model="selected" :placeholder="field.info.placeholder" clearable
+          :disabled="setDisabled" v-model="selected" :placeholder="field.info.placeholder" clearable
           @select="handleSelect" @blur="handleBlur" style="min-width: 220px; flex: 1" class="finder-autocomplete">
           <div slot="append">
             <el-button icon="el-icon-search" v-if="!field.info.noSearchIcon" @click="onPopupClicked">
@@ -43,13 +43,15 @@
           v-if="allowEditAndSelect && (formType === 'update' || field.getSrvVal())" @click="activePopup = 'update'">
         </el-button>
         <el-button icon="el-icon-plus" style="margin-left: 5px; height: 38px" size="mini"
-          v-else-if="allowEditAndSelect && (formType === 'add' || !field.getSrvVal())" @click="activePopup = 'add'">
+          v-else-if="!setDisabled && allowEditAndSelect && (formType === 'add' || !field.getSrvVal())"
+          @click="activePopup = 'add'">
         </el-button>
       </div>
       <el-dialog :title="'新增'" width="90%" :close-on-click-modal="1 == 2" append-to-body
         :visible="activePopup === 'add'" @close="activePopup = ''">
         <add name="add-popup" ref="add-form" :service="addService" :$srvApp="addApp" :navAfterSubmit="false"
-          :submit2Db="submit2Db" :defaultValues="submit2Db ? null : field.model" @submitted2mem="submitted2mem"
+          :submit2Db="submit2Db" :defaultCondition="evalOptionConditions"
+          :defaultValues="submit2Db ? setPopupDefaultValue : field.model" @submitted2mem="submitted2mem"
           @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded" v-if="activePopup == 'add'">
         </add>
       </el-dialog>
@@ -60,8 +62,9 @@
             colName: optionListV2.refed_col,
             ruleType: 'eq',
             value: field.getSrvVal()
-          }]" :defaultValues="field.model" @submitted2mem="submitted2mem" @executor-complete="onExecutorComplete"
-          @form-loaded="onPopupFormLoaded" v-if="activePopup == 'update'">
+          }]" :defaultCondition="evalOptionConditions" :defaultValues="field.model || setPopupDefaultValue"
+          @submitted2mem="submitted2mem" @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded"
+          v-if="activePopup == 'update'">
         </update>
       </el-dialog>
       <el-dialog title="查询选择" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="popup"
@@ -74,7 +77,7 @@
       </el-dialog>
     </div>
     <div v-if="subType === 'select'">
-      <el-select v-model="selected" :value-key="field.info.dispCol" :disabled="!field.info.editable" clearable
+      <el-select v-model="selected" :value-key="field.info.dispCol" :disabled="setDisabled" clearable
         @visible-change="getOptions" @change="handleSelect" :placeholder="field.info.placeholder">
         <el-option v-for="item in optionsRun" :key="item.value" :label="item.label" :value="item.value">
         </el-option>
@@ -91,6 +94,7 @@ import cloneDeepWith from "lodash/cloneDeepWith";
 import cloneDeep from "lodash/cloneDeep";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
+import isEqual from "lodash/isEqual";
 export default {
   components: {
     List: () => import("../common/list.vue"),
@@ -112,6 +116,7 @@ export default {
     childForeignkey: Object,
     mainformDatas: Object,
     formModel: Object,
+    disabled: Boolean
   },
   data() {
     return {
@@ -131,6 +136,13 @@ export default {
       deep: true,
       immediate: true,
       handler(newVal, oldVal) {
+        // this.handleSelect(null)
+        if (!isEqual(newVal, oldVal)) {
+          // optionListV2变化了 清空已选的值
+          console.log("optionListV2变化了:", cloneDeep(newVal), cloneDeep(oldVal));
+          this.handleSelect(null)
+        }
+
         if (
           newVal?.serviceName &&
           this.field?.info?.srvCol?.option_list_v2?.serviceName
@@ -273,6 +285,28 @@ export default {
         }
       }
       return result;
+    },
+    evalOptionConditions() {
+      // 解析请求条件
+      let loader = this.dispLoaderV2
+      if (Array.isArray(loader?.conditions)) {
+        let condition = []
+        this.buildConditions(loader).forEach((c) =>
+          condition.push(c)
+        );
+        return condition
+      }
+    },
+    setPopupDefaultValue() {
+      if (Array.isArray(this.evalOptionConditions) && this.evalOptionConditions.length) {
+        return this.evalOptionConditions.reduce((res, cur) => {
+          res[cur.colName] = cur.value;
+          return res
+        }, {})
+      }
+    },
+    setDisabled() {
+      return this.disabled === true || this.field.info.editable === false
     },
     optionsRun: function () {
       return this.options;
@@ -918,7 +952,7 @@ export default {
         const cols = objInfo?.a_save_b_cols.split(",");
         const obj = {};
         let objStr = "";
-        if (cols?.length) {
+        if (newValue && cols?.length) {
           cols.forEach((col) => {
             obj[col] = newValue?.[col];
           });
@@ -932,8 +966,12 @@ export default {
           col: objInfo.a_save_b_obj_col,
           val: objStr,
         };
+        console.log('更新obj_info',objCol);
         // 将更新的字段信息保存在_obj_col上，方便在form中获取
         this.$set(this.field, "_obj_col", objCol);
+      }else if(this.field?._obj_col?.val){
+        // 清空通过_obj_col保存的值
+        this.$set(this.field['_obj_col'], "val", '');
       }
       this.$emit("field-value-changed", this.field.info.name, this.field);
     },
