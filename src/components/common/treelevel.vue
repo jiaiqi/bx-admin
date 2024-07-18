@@ -58,7 +58,7 @@
     <el-dialog title="添加" width="90%" :close-on-click-modal="1 == 2" :visible="activeForm == 'add-child'"
       @close="activeForm = 'xx'" append-to-body>
       <simple-add name="list-add-child" ref="add-child-form" v-if="activeForm == 'add-child'" :submit2-db="!isMem()"
-        :service="getAddService" @form-loaded="onAddChildFormLoaded()"
+        :service="getAddService" :default-condition="defaultQueryCondition" :default-values="defaultQueryData" @form-loaded="onAddChildFormLoaded()"
         @action-complete="onAddChildFormActionComplete($event)" @executor-complete="onAddExecutorComplete($event)"
         @submitted2mem="onAdd2MemSubmitted">
       </simple-add>
@@ -163,6 +163,27 @@ export default {
     }
   },
   computed: {
+    defaultQueryData(){
+      if(this.$route.query.cond){
+        let cond = JSON.parse(this.$route.query.cond);
+        if(Object.keys(cond).length > 0){
+          return cond
+        }
+      }else if(this.$route.query.condKey&&this.$route.query.condVal){
+        return {[this.$route.query.condKey]:this.$route.query.condVal}
+      }
+    },
+    defaultQueryCondition(){
+       if(this.defaultQueryData && Object.keys(this.defaultQueryData).length > 0){
+          return Object.keys(this.defaultQueryData).map(key=>{
+            return {
+              colName:key,
+              ruleType:'eq',
+              value:this.defaultQueryData[key]
+            }
+          })
+        }
+    },
     getCurrentCondition() {
       return this.currentData?.id + "";
     },
@@ -292,9 +313,12 @@ export default {
           }
         }
       });
-
+      let condition = this.condition || []
+      if(Array.isArray(this.defaultQueryCondition) && this.defaultQueryCondition.length > 0){
+        condition = condition.concat(this.defaultQueryCondition)
+      }
       //加载树结构数据
-      this.treeSelect(this.service_name, this.condition).then(response => {
+      this.treeSelect(this.service_name, condition).then(response => {
         this.treeData = response.body.data;
         if (this.treeData.length > 0) {
           this.currentData = this.treeData[0];
