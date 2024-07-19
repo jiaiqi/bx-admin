@@ -1,39 +1,25 @@
 <template>
   <b-container fluid class="web-register p-0">
     <b-container class="h-100 d-flex flex-column justify-content-center">
-      <div
-        class="register-layout align-self-center h-auto bg-white rounded rounded-lg pt-2 pb-5"
-      >
+      <div class="register-layout align-self-center h-auto bg-white rounded rounded-lg pt-2 pb-5">
         <b-row class="m-0 h-100 w-100 justify-content-center">
           <b-col cols="12" md="10" class="p-3 h-100 text-left">
-            <div
-              class="p-1 pb-3 d-flex justify-content-between"
-              v-if="[0, 1].includes(currentStep)"
-            >
+            <div class="p-1 pb-3 d-flex justify-content-between" v-if="[0, 1].includes(currentStep)">
               <b-button size="sm" variant="orange" @click="toLogin">
                 已有账号，立即登录
                 <b-icon-box-arrow-up-right></b-icon-box-arrow-up-right>
               </b-button>
             </div>
             <div class="d-flex justify-content-between pt-2 pb-4">
-              <div
-                class="step-item"
-                :class="{ active: [0, 1, 2, 3].includes(currentStep) }"
-              >
+              <div class="step-item" :class="{ active: [0, 1, 2, 3].includes(currentStep) }">
                 <span>1</span>
                 <span>选择注册类型</span>
               </div>
-              <div
-                class="step-item"
-                :class="{ active: [1, 2, 3].includes(currentStep) }"
-              >
+              <div class="step-item" :class="{ active: [1, 2, 3].includes(currentStep) }">
                 <span>2</span>
                 <span>填写账号信息</span>
               </div>
-              <div
-                class="step-item"
-                :class="{ active: [2, 3].includes(currentStep) }"
-              >
+              <div class="step-item" :class="{ active: [2, 3].includes(currentStep) }">
                 <span>3</span>
                 <span>完善基础信息</span>
               </div>
@@ -43,148 +29,69 @@
               </div>
             </div>
             <!-- @submit="onSubmit"-->
-            <b-form
-              @reset="onReset"
-              novalidate
-              v-if="[1, 2].includes(currentStep)"
-              style="max-height: 60vh; overflow-y: auto; overflow-x: hidden"
-              :class="{
+            <el-alert title="以下内容请仔细核对，提交后无法修改" type="warning" show-icon :closable="false" style="margin: 0 0 20px 0;"
+              v-if="currentStep === 2">
+            </el-alert>
+            <b-form @reset="onReset" novalidate v-if="[1, 2].includes(currentStep)"
+              style="max-height: 60vh; overflow-y: auto; overflow-x: hidden" :class="{
                 twoColumn: currentStep === 2,
-              }"
-            >
+              }">
               <template v-for="(field, index) in formFields">
-                <b-form-group
-                  :style="{ gridColumn: field.gridColumn }"
-                  :class="{ 'grid-column-1-3': field.gridColumn === '1/3' }"
-                  :id="`${field.column}-${field.type}`"
-                  :label="field.label"
-                  :label-for="`${field.column}`"
-                  v-if="field.show && field.type !== 'radio'"
-                  label-size="md"
-                  label-align="right"
-                  label-cols-lg="3"
-                  label-cols="3"
-                >
-                  <location-picker
-                    v-if="field.type === 'location-picker'"
-                    :field="field"
-                    :current-selected="field.model"
-                    @on-selected="onPickerSelected($event, field)"
-                  ></location-picker>
-                  <b-form-select
-                    v-model="field.value"
-                    :options="field.options"
-                    v-if="field.type === 'select'"
-                    @change="change(field)"
-                  ></b-form-select>
+                <b-form-group :style="{ gridColumn: field.gridColumn }"
+                  :class="{ 'grid-column-1-3': field.gridColumn === '1/3' }" :id="`${field.column}-${field.type}`"
+                  :label="field.label" :label-for="`${field.column}`" v-if="field.show && field.type !== 'radio'"
+                  label-size="md" label-align="right" label-cols-lg="4" label-cols="4">
+                  <location-picker v-if="field.type === 'location-picker'" :field="field"
+                    :current-selected="field.model" @on-selected="onPickerSelected($event, field)"></location-picker>
+                  <b-form-select v-model="field.value" :options="field.options" v-if="field.type === 'select'"
+                    @change="change(field)"></b-form-select>
                   <!--                  <b-form-datepicker v-model="field.value" placeholder="选择日期"-->
                   <!--                                     v-if="field.type === 'date'"></b-form-datepicker>-->
 
-                  <el-date-picker
-                    style="width: 100%"
-                    value-format="yyyy-MM-dd"
-                    v-model="field.value"
-                    type="date"
-                    v-if="field.type === 'date'"
-                    placeholder="选择日期"
-                  >
+                  <el-date-picker style="width: 100%" value-format="yyyy-MM-dd" v-model="field.value" type="date"
+                    v-if="field.type === 'date'" placeholder="选择日期">
                   </el-date-picker>
                   <b-input-group v-if="field.type == 'code'">
-                    <b-form-input
-                      :id="`${field.column}`"
-                      v-model="field.value"
-                      required
-                      autocomplete="off"
-                      :placeholder="field.placeholder"
-                      :readonly="readonlyInput"
-                      @change="change(field)"
-                      :state="field.state"
-                      placeholder="验证码"
-                      description="验证码"
-                    ></b-form-input>
-                    <b-button
-                      variant="outline-primary"
-                      :disabled="codeState"
-                      @click="getCode"
-                      >{{ codeState ? `剩余${codeTime}s` : `获取验证码` }}
+                    <b-form-input :id="`${field.column}`" v-model="field.value" required autocomplete="off"
+                      :placeholder="field.placeholder" :readonly="readonlyInput" @change="change(field)"
+                      :state="field.state" placeholder="验证码" description="验证码"></b-form-input>
+                    <b-button variant="outline-primary" :disabled="codeState" @click="getCode">{{ codeState ?
+                      `剩余${codeTime}s` : `获取验证码` }}
                     </b-button>
                   </b-input-group>
-                  <upload
-                    :ref="field.column"
-                    v-if="field.type == 'image'"
-                    :initColumn="field.column"
-                    :initTable="field.initTable || 'bxledu_org'"
-                    v-model="field.value"
-                    :appNo="'ledu'"
-                    :initMax="
-                      field.column == 'head_image'
-                        ? 1
-                        : field.column == 'card_no'
+                  <upload :ref="field.column" v-if="field.type == 'image'" :initColumn="field.column"
+                    :initTable="field.initTable || 'bxledu_org'" v-model="field.value" :appNo="'ledu'" :initMax="field.column == 'head_image'
+                      ? 1
+                      : field.column == 'card_no'
                         ? 2
-                        : '-'
-                    "
-                    :mainProps="
-                      field.column == 'card_no'
+                        :field.limit?field.limit: '-'
+                      " :mainProps="field.column == 'card_no'
                         ? { width: 148, height: 100 }
                         : { width: 100, height: 100 }
-                    "
-                  >
+                        ">
                   </upload>
-                  <fk-selector
-                    v-if="field.type === 'fk'"
-                    :config="field.config"
-                    v-model="field.value"
-                    @change="change(field)"
-                    style="width: 100%"
-                  ></fk-selector>
-                  <b-form-input
-                    :id="`${field.column}`"
-                    v-model="field.value"
-                    v-if="field.type == 'text'"
-                    :type="field.type"
-                    required
-                    autocomplete="off"
-                    :placeholder="field.placeholder"
-                    :readonly="readonlyInput"
-                    @change="change(field)"
-                    :state="field.state"
-                  ></b-form-input>
+                  <fk-selector v-if="field.type === 'fk'" :config="field.config" v-model="field.value"
+                    @change="change(field)" style="width: 100%"></fk-selector>
+                  <b-form-input :id="`${field.column}`" v-model="field.value" v-if="field.type == 'text'"
+                    :type="field.type" required autocomplete="off" :placeholder="field.placeholder"
+                    :readonly="readonlyInput" @change="change(field)" :state="field.state"></b-form-input>
+                  <b-form-input :id="`${field.column}`" v-model="field.value" v-if="field.type == 'number'"
+                    :type="field.type" required autocomplete="off" :placeholder="field.placeholder"
+                    :readonly="readonlyInput" @change="change(field)" :state="field.state"></b-form-input>
 
-                  <b-form-textarea
-                    v-if="field.type == 'textarea'"
-                    :id="`${field.column}`"
-                    v-model="field.value"
-                    :type="field.type"
-                    required
-                    autocomplete="off"
-                    :placeholder="field.placeholder"
-                    :readonly="readonlyInput"
-                    @change="change(field)"
-                    :state="field.state"
-                    rows="3"
-                    max-rows="6"
-                  ></b-form-textarea>
+                  <b-form-textarea v-if="field.type == 'textarea'" :id="`${field.column}`" v-model="field.value"
+                    :type="field.type" required autocomplete="off" :placeholder="field.placeholder"
+                    :readonly="readonlyInput" @change="change(field)" :state="field.state" rows="3"
+                    max-rows="6"></b-form-textarea>
                   <b-form-invalid-feedback :state="field.state">
                     {{ field.msg }}
                   </b-form-invalid-feedback>
                 </b-form-group>
-                <b-form-group
-                  :id="`${field.column}`"
-                  :label="field.label"
-                  :label-for="`${field.column}`"
-                  v-if="field.show && field.type == 'radio'"
-                  label-size="md"
-                  label-align="right"
-                  label-cols-lg="2"
-                  @change="change(field)"
-                  label-cols="3"
-                >
-                  <b-form-radio-group
-                    size="lg"
-                    v-model="field.value"
-                    :options="field.options"
-                    :name="`${field.column}`"
-                  >
+                <b-form-group :id="`${field.column}`" :label="field.label" :label-for="`${field.column}`"
+                  v-if="field.show && field.type == 'radio'" label-size="md" label-align="right" label-cols-lg="2"
+                  @change="change(field)" label-cols="3">
+                  <b-form-radio-group size="lg" v-model="field.value" :options="field.options"
+                    :name="`${field.column}`">
                     <b-form-invalid-feedback :state="field.state">
                       {{ field.msg }}
                     </b-form-invalid-feedback>
@@ -193,18 +100,10 @@
               </template>
             </b-form>
             <div class="select-box" v-if="currentStep === 0">
-              <div
-                class="select-box-item"
-                :class="{ active: registerType === 0 }"
-                @click="registerType = 0"
-              >
+              <div class="select-box-item" :class="{ active: registerType === 0 }" @click="registerType = 0">
                 注册基地
               </div>
-              <div
-                class="select-box-item"
-                :class="{ active: registerType === 1 }"
-                @click="registerType = 1"
-              >
+              <div class="select-box-item" :class="{ active: registerType === 1 }" @click="registerType = 1">
                 注册机构
               </div>
             </div>
@@ -220,43 +119,21 @@
                 </b-button>
               </div>
             </div>
-            <div
-              class=""
-              style="
+            <div class="" style="
                 margin-top: 50px;
                 padding: 0 20%;
                 display: flex;
                 align-items: center;
-              "
-            >
-              <b-button
-                style="margin: 0 10px"
-                block
-                variant="light"
-                size="lg"
-                @click="currentStep--"
-                v-if="[1, 2].includes(currentStep)"
-                >上一步
+              ">
+              <b-button style="margin: 0 10px" block variant="light" size="lg" @click="currentStep--"
+                v-if="[1, 2].includes(currentStep)">上一步
               </b-button>
-              <b-button
-                style="margin: 0"
-                block
-                variant="primary"
-                size="lg"
-                @click="nextStep"
-                :disabled="currentStep >= 2"
-                v-if="
+              <b-button style="margin: 0" block variant="primary" size="lg" @click="nextStep"
+                :disabled="currentStep >= 2" v-if="
                   [0].includes(currentStep) || (currentStep === 1 && form.code)
-                "
-                >下一步
+                ">下一步
               </b-button>
-              <b-button
-                block
-                variant="primary"
-                size="lg"
-                @click="nextStep"
-                v-else-if="currentStep === 2"
-                >创建账号
+              <b-button block variant="primary" size="lg" @click="nextStep" v-else-if="currentStep === 2">创建账号
               </b-button>
             </div>
             <!--            <div class="p-5"></div>-->
@@ -352,7 +229,7 @@ export default {
   data() {
     return {
       registerType: 0, //0.研学基地（营地）；1.研学机构（旅行社）
-      currentStep: 0,
+      currentStep: 2,
       smsIsSend: false, //短信已发送
       form: {
         password: "",
@@ -724,9 +601,9 @@ export default {
             show: true,
           },
           {
-            label: "注册资本",
+            label: "注册资本(万元)",
             column: "zczb",
-            type: "text",
+            type: "number",
             value: null,
             placeholder: "请填写注册资本",
             rules: [
@@ -787,6 +664,7 @@ export default {
             label: "营业执照",
             column: "yyzz",
             type: "image",
+            limit:1,
             initTable: "bxledu_practice_base",
             value: null,
             placeholder: "请上传营业执照",
@@ -1224,7 +1102,7 @@ export default {
             // if (self.webConfig && self.webConfig.manage) {
             //   window.location.href = self.webConfig.manage;
             // } else if(self.toLogin){
-              self.toLogin();
+            self.toLogin();
             // }
           })
           .catch(() => {
@@ -1233,7 +1111,7 @@ export default {
             //   message: "取消操作",
             // });
           });
-          return true
+        return true
       } else {
         this.$message.error(res.resultMessage);
         return false;
@@ -1556,6 +1434,8 @@ export default {
             this.countdown(countdown);
           }
           this.smsIsSend = true;
+        } else if (res.resultCode === '6666' && res.resultMessage && res.resultMessage.includes('触发分钟级流控')) {
+          this.$message.error('验证码请求过于频繁，请稍后再试');
         } else {
           this.$message.error(res.resultMessage);
         }
@@ -1715,7 +1595,15 @@ body {
   margin: 0;
   height: unset;
 }
+
 .grid-column-1-3 .col-form-label {
-  max-width: 114px;
+  max-width: 152px;
+
+  @media screen and (max-width: 990px) {
+    max-width: 80px;
+  }
+  @media screen and (max-width: 765px) {
+    max-width: 55px;
+  }
 }
 </style>
