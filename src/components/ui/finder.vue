@@ -137,12 +137,11 @@ export default {
       immediate: true,
       handler(newVal, oldVal) {
         // this.handleSelect(null)
-        if (!isEqual(newVal, oldVal)) {
+        if (!isEqual(newVal, oldVal) && isObject(oldVal) && this.optionListV3) {
           // optionListV2变化了 清空已选的值
           console.log("optionListV2变化了:", cloneDeep(newVal), cloneDeep(oldVal));
           this.handleSelect(null)
         }
-
         if (
           newVal?.serviceName &&
           this.field?.info?.srvCol?.option_list_v2?.serviceName
@@ -256,11 +255,14 @@ export default {
         // return this.field?.info?.dispLoader;
       }
     },
+    optionListV3(){
+      return this.field?.info?.srvCol?.option_list_v3
+    },
     optionListV2() {
       let result = null;
-      if (this.field?.info?.srvCol?.option_list_v3?.length) {
+      if (this.optionListV3?.length) {
         // 如果有v3 则使用v3
-        const option_list_v3 = this.field?.info?.srvCol?.option_list_v3;
+        const option_list_v3 = this.optionListV3;
         result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
