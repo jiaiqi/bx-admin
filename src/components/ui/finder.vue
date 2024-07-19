@@ -263,11 +263,12 @@ export default {
       if (this.optionListV3?.length) {
         // 如果有v3 则使用v3
         const option_list_v3 = this.optionListV3;
+        const formModel = this.field.form.srvValFormModel()
         result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
             return item.conds.every(
-              (cond) => this.formModel[cond.case_col] === cond.case_val
+              (cond) =>  cond.case_val?.includes?.(formModel[cond.case_col])
             );
           } else {
             return true;
@@ -954,7 +955,9 @@ export default {
         const cols = objInfo?.a_save_b_cols.split(",");
         const obj = {};
         let objStr = "";
-        if (newValue && cols?.length) {
+        if(cols?.includes("*")){
+          obj = cloneDeep(newValue)
+        }else if (newValue && cols?.length) {
           cols.forEach((col) => {
             obj[col] = newValue?.[col];
           });

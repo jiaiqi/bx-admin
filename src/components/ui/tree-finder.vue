@@ -97,7 +97,7 @@ export default {
           if (item.conds?.length) {
             // 条件外键
             return item.conds.every(
-              (cond) => formModel[cond.case_col] === cond.case_val
+              (cond) => cond.case_val?.includes?.(formModel[cond.case_col])
             );
           } else {
             return true;
