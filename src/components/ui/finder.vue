@@ -953,7 +953,7 @@ export default {
         // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
         const newValue = this.field.model;
         const cols = objInfo?.a_save_b_cols.split(",");
-        const obj = {};
+        let obj = {};
         let objStr = "";
         if(cols?.includes("*")){
           obj = cloneDeep(newValue)

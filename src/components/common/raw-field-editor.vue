@@ -1,263 +1,697 @@
 /* */
 <template>
   <div class="raw_field_editor" @blur="onBlur" :style="customInputVar">
-
     <el-row>
-      <el-col :span="field.hasHistoryData() || field.getUniqueCheck() ? 22 : 24">
+      <el-col
+        :span="field.hasHistoryData() || field.getUniqueCheck() ? 22 : 24"
+      >
         <!--主体内容-->
 
         <template>
           <div v-if="['ImgBin', 'ImgUrl'].includes(field.info.srvCol.col_type)">
-             <!-- 二进制文件 -->
-              <el-image
+            <!-- 二进制文件 -->
+            <el-image
               v-if="field.info.srvCol.col_type === 'ImgBin'"
-                style="width: 50px; height: 50px"
-                :src="blobToBase64(field.model)"
-                fit="cover">
-              </el-image>
+              style="width: 50px; height: 50px"
+              :src="blobToBase64(field.model)"
+              fit="cover"
+            >
+            </el-image>
             <!-- 在线url -->
-              <el-image
+            <el-image
               v-else-if="field.info.srvCol.col_type === 'ImgUrl'"
-                style="width: 50px; height: 50px"
-                :src="setImgUrl(field.model)"
-                fit="cover">
-              </el-image>
+              style="width: 50px; height: 50px"
+              :src="setImgUrl(field.model)"
+              fit="cover"
+            >
+            </el-image>
           </div>
           <div v-else-if="ifUseRawFieldEditor()">
-             <car-no-keyboard :field="field" v-if="field.info.editor === 'carNoKeyboard'" v-model="field.model" :readonly="getDisabled" @field-value-changed="$emit('field-value-changed', field.info.name, field)" @onBlur="onBlur">
-              </car-no-keyboard>
-              <bx-input-number v-else-if="field.info.editor === 'input-number'" controls-position="right" v-model="field.model" :disabled="getDisabled" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-              </bx-input-number>
-              <el-input v-else-if="field.info.editor === 'textarea'" type="textarea" :rows="5" :placeholder="field.info.placeholder" :disabled="getDisabled" show-word-limit :minlength="field.info.getMinLength()" :maxlength="field.info.getMaxLength()"  @input="checkLength" v-model="field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur" >
-                <!-- style="height:80px;" -->
-              </el-input>
-              <el-switch v-else-if="field.info.editor === 'switch'" v-model="field.model" active-color="#13ce66" inactive-color="#777777">
-              </el-switch>
+            <car-no-keyboard
+              :field="field"
+              v-if="field.info.editor === 'carNoKeyboard'"
+              v-model="field.model"
+              :readonly="getDisabled"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+              @onBlur="onBlur"
+            >
+            </car-no-keyboard>
+            <bx-input-number
+              v-else-if="field.info.editor === 'input-number'"
+              controls-position="right"
+              v-model="field.model"
+              :disabled="getDisabled"
+              :min="field.info.getMin()"
+              :max="field.info.getMax()"
+              label="描述文字"
+              :fieldMoreConfig="field.info"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+            </bx-input-number>
+            <el-input
+              v-else-if="field.info.editor === 'textarea'"
+              type="textarea"
+              :rows="5"
+              :placeholder="field.info.placeholder"
+              :disabled="getDisabled"
+              show-word-limit
+              :minlength="field.info.getMinLength()"
+              :maxlength="field.info.getMaxLength()"
+              @input="checkLength"
+              v-model="field.model"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+              <!-- style="height:80px;" -->
+            </el-input>
+            <el-switch
+              v-else-if="field.info.editor === 'switch'"
+              v-model="field.model"
+              active-color="#13ce66"
+              inactive-color="#777777"
+            >
+            </el-switch>
 
-              <el-select v-else-if="field.info.editor === 'select'" v-model="field.model" :placeholder="field.info.placeholder" clearable :disabled="getDisabled" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-                <el-option v-for="item in field.optionsFunc()" :key="item.value" :label="item.label" :value="item.value">
-                </el-option>
-              </el-select>
+            <el-select
+              v-else-if="field.info.editor === 'select'"
+              v-model="field.model"
+              :placeholder="field.info.placeholder"
+              clearable
+              :disabled="getDisabled"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+              <el-option
+                v-for="item in field.optionsFunc()"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
 
-        
+            <userlist
+              v-else-if="field.info.editor === 'userlist'"
+              :field="field"
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </userlist>
 
-              <userlist v-else-if="field.info.editor === 'userlist'" :field="field" ref="editor" @field-value-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                ">
-              </userlist>
+            <ueditorPlus
+              :field="field"
+              ref="snote"
+              v-else-if="field.info.editor == 'snote'"
+              @field-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </ueditorPlus>
 
-              <ueditorPlus :field="field" ref="snote" v-else-if="field.info.editor == 'snote'" @field-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                ">
-              </ueditorPlus>
+            <ueditor
+              v-else-if="field.info.editor === 'ueditor'"
+              :field="field"
+              @field-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+              ref="editor"
+            >
+            </ueditor>
 
-              <ueditor v-else-if="field.info.editor === 'ueditor'" :field="field" @field-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                " ref="editor">
-              </ueditor>
+            <!-- temporal -->
+            <el-date-picker
+              v-else-if="
+                field.info.editor === 'date-picker' && field.model !== '******'
+              "
+              v-model="field.model"
+              :type="field.info.subtype"
+              clearable
+              :format="
+                field.info.subtype == 'year'
+                  ? 'yyyy'
+                  : field.info.subtype == 'month'
+                  ? 'MM'
+                  : field.info.subtype == 'date'
+                  ? 'yyyy 年 MM 月 dd 日'
+                  : 'yyyy 年 MM 月 dd 日'
+              "
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              :picker-options="pickerOptions"
+              @change="$emit('field-value-changed', field.info.name, field)"
+            >
+            </el-date-picker>
 
-              <!-- temporal -->
-              <el-date-picker v-else-if="field.info.editor === 'date-picker' && field.model !== '******'" v-model="field.model" :type="field.info.subtype" clearable :format="
-                  field.info.subtype == 'year'
-                    ? 'yyyy'
-                    : field.info.subtype == 'month'
-                    ? 'MM'
-                    : field.info.subtype == 'date'
-                    ? 'yyyy 年 MM 月 dd 日'
-                    : 'yyyy 年 MM 月 dd 日'
-                " :disabled="getDisabled" :placeholder="field.info.placeholder" :picker-options="pickerOptions" @change="$emit('field-value-changed', field.info.name, field)">
-              </el-date-picker>
+            <el-date-picker
+              v-else-if="
+                field.info.editor === 'date-time-picker' &&
+                field.model !== '******'
+              "
+              v-model="field.model"
+              type="datetime"
+              clearable
+              :format="field.info.format ? field.info.format : null"
+              :value-format="field.info.format ? field.info.format : null"
+              :disabled="getDisabled"
+              :placeholder="
+                field.model !== '******' ? field.info.placeholder : field.model
+              "
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+            </el-date-picker>
 
-              <el-date-picker v-else-if="field.info.editor === 'date-time-picker' && field.model !== '******'" v-model="field.model" type="datetime" clearable :format="field.info.format ? field.info.format : null" :value-format="field.info.format ? field.info.format : null" :disabled="getDisabled" :placeholder="field.model !== '******' ? field.info.placeholder:field.model" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-              </el-date-picker>
+            <el-time-picker
+              v-else-if="
+                field.info.editor === 'time-picker' && field.model !== '******'
+              "
+              :picker-options="{ format: 'HH:mm' }"
+              value-format="HH:mm"
+              v-model="field.model"
+              clearable
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+            </el-time-picker>
 
-              <el-time-picker v-else-if="field.info.editor === 'time-picker' && field.model !== '******'" :picker-options="{ format: 'HH:mm' }" value-format="HH:mm" v-model="field.model" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-              </el-time-picker>
+            <el-select
+              v-else-if="field.info.editor === 'multiselect'"
+              v-model="field.model"
+              multiple
+              collapse-tags
+              clearable
+              filterable
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @change="$emit('field-value-changed', field.info.name, field)"
+            >
+              <el-option
+                v-for="item in field.optionsFunc()"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
 
-              <el-select v-else-if="field.info.editor === 'multiselect'" v-model="field.model" multiple collapse-tags clearable filterable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)">
-                <el-option v-for="item in field.optionsFunc()" :key="item.value" :label="item.label" :value="item.value">
-                </el-option>
-              </el-select>
+            <!-- range -->
+            <el-date-picker
+              v-else-if="field.info.editor === 'date-range'"
+              v-model="field.model"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              clearable
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+            </el-date-picker>
+            <!-- DateRange -->
+            <el-date-picker
+              v-else-if="
+                field.info.editor === 'DateRange' &&
+                field.info._DateRangeEndColName
+              "
+              v-show="field.info._DateRangeEndColName"
+              v-model="field['_DateRangeModel']"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              clearable
+              :picker-options="pickerOptions"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @blur="$emit('field-value-changed', field.info.name, field)"
+            >
+            </el-date-picker>
+            <!-- DateRange 只读-->
+            <el-input
+              v-else-if="
+                field.info.editor === 'DateRange' &&
+                !field.info._DateRangeEndColName
+              "
+              readonly
+              :type="field.info.editor === 'Password' ? 'password' : 'text'"
+              v-show="!field.info._DateRangeEndColName"
+              :value="field.getDispVal4Read()"
+            >
+            </el-input>
+            <el-time-picker
+              v-else-if="field.info.editor === 'time-range'"
+              is-range
+              v-model="field.model"
+              :picker-options="{ format: 'HH:mm' }"
+              value-format="HH:mm"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              clearable
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @change="$emit('field-value-changed', field.info.name, field)"
+            >
+            </el-time-picker>
 
-              <!-- range -->
-              <el-date-picker v-else-if="field.info.editor === 'date-range'" v-model="field.model" type="daterange" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-              </el-date-picker>
-              <!-- DateRange -->
-              <el-date-picker v-else-if="
-                  field.info.editor === 'DateRange' &&
-                    field.info._DateRangeEndColName
-                " v-show="field.info._DateRangeEndColName" v-model="field['_DateRangeModel']" type="daterange" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :picker-options="pickerOptions" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd" :disabled="getDisabled" :placeholder="field.info.placeholder" @blur="$emit('field-value-changed', field.info.name, field)">
-              </el-date-picker>
-              <!-- DateRange 只读-->
-              <el-input v-else-if="
-                  field.info.editor === 'DateRange' &&
-                    !field.info._DateRangeEndColName
-                " readonly :type="field.info.editor === 'Password' ? 'password' : 'text'" v-show="!field.info._DateRangeEndColName" :value="field.getDispVal4Read()">
-              </el-input>
-              <el-time-picker v-else-if="field.info.editor === 'time-range'" is-range v-model="field.model" :picker-options="{ format: 'HH:mm' }" value-format="HH:mm" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="$emit('field-value-changed', field.info.name, field)">
-              </el-time-picker>
+            <el-date-picker
+              v-else-if="field.info.editor === 'date-time-range'"
+              v-model="field.model"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              clearable
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @change="changeDependField(field)"
+            >
+            </el-date-picker>
 
-              <el-date-picker v-else-if="field.info.editor === 'date-time-range'" v-model="field.model" type="datetimerange" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" clearable :disabled="getDisabled" :placeholder="field.info.placeholder" @change="changeDependField(field)">
-              </el-date-picker>
+            <input-range
+              v-else-if="field.info.editor === 'input-range'"
+              :field="field"
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </input-range>
 
-              <input-range v-else-if="field.info.editor === 'input-range'" :field="field" @field-value-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                ">
-              </input-range>
+            <upload-file
+              v-else-if="field.info.editor === 'upload-file'"
+              :field="field"
+              @more-info="getMoreInfo($event)"
+              :limit="uploadLimit"
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </upload-file>
 
-              <upload-file v-else-if="field.info.editor === 'upload-file'" :field="field" @more-info="getMoreInfo($event)" ref="editor">
-              </upload-file>
+            <upload-image
+              v-else-if="field.info.editor === 'upload-image'"
+              :field="field"
+              :limit="uploadLimit"
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </upload-image>
 
-              <upload-image v-else-if="field.info.editor === 'upload-image'" :field="field" ref="editor">
-              </upload-image>
-
-              <finder v-else-if="field.info.editor === 'finder'" :disabled="getDisabled" :field="field" v-model="field.finderSelected"
-              :defaultCondition='defaultCondition' :defaultValues='defaultValues' :childForeignkey='childForeignkey' :mainformDatas='mainformDatas' :form-model="formModel"
+            <finder
+              v-else-if="field.info.editor === 'finder'"
+              :disabled="getDisabled"
+              :field="field"
+              v-model="field.finderSelected"
+              :defaultCondition="defaultCondition"
+              :defaultValues="defaultValues"
+              :childForeignkey="childForeignkey"
+              :mainformDatas="mainformDatas"
+              :form-model="formModel"
               :$srv-app="
-                  field.info.srvCol.option_list_v2 &&
-                    field.info.srvCol.option_list_v2.srv_app
-                " ref="editor"
-                @field-value-changed="$emit('field-value-changed', field.info.name, field)"
-                @blur="onBlur">
-              </finder>
+                field.info.srvCol.option_list_v2 &&
+                field.info.srvCol.option_list_v2.srv_app
+              "
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+              @blur="onBlur"
+            >
+            </finder>
 
+            <multiFinder
+              v-else-if="field.info.editor === 'multifinder'"
+              :field="field"
+              :$srv-app="
+                field.info.srvCol.option_list_v2 &&
+                field.info.srvCol.option_list_v2.srv_app
+              "
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+              @blur="onBlur"
+            >
+            </multiFinder>
+            <tree-finder
+              :disabled="getDisabled"
+              v-else-if="field.info.editor === 'tree-finder'"
+              ref="editor"
+              :field="field"
+              :$srv-app="field.info.srvCol.option_list_v2.srv_app"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </tree-finder>
 
+            <qr-code
+              v-else-if="field.info.editor === 'qrcode'"
+              ref="editor"
+              :field="field"
+            >
+            </qr-code>
 
-              <multiFinder v-else-if="field.info.editor === 'multifinder'" :field="field" :$srv-app="field.info.srvCol.option_list_v2 && field.info.srvCol.option_list_v2.srv_app" ref="editor" @field-value-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                " @blur="onBlur">
-              </multiFinder>
-              <tree-finder :disabled="getDisabled" v-else-if="field.info.editor === 'tree-finder'" ref="editor" :field="field" :$srv-app="field.info.srvCol.option_list_v2.srv_app" @field-value-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                ">
-              </tree-finder>
+            <code-editor
+              v-else-if="field.info.editor === 'code-editor'"
+              ref="editor"
+              :field="field"
+              :lang="field.info.lang"
+            >
+            </code-editor>
 
-              <qr-code v-else-if="field.info.editor === 'qrcode'" ref="editor" :field="field">
-              </qr-code>
+            <radio
+              v-else-if="field.info.editor === 'radio'"
+              ref="editor"
+              :field="field"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </radio>
 
-              <code-editor v-else-if="field.info.editor === 'code-editor'" ref="editor" :field="field" :lang="field.info.lang">
-              </code-editor>
+            <checkbox
+              v-else-if="field.info.editor === 'checkbox'"
+              ref="editor"
+              :field="field"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            >
+            </checkbox>
+            <el-input
+              v-else-if="field.info.editor === 'Password'"
+              v-model="field.model"
+              :placeholder="field.info.placeholder"
+              :disabled="getDisabled"
+              clearable
+              type="password"
+              show-word-limit
+              :maxlength="field.info.getMaxLength()"
+              @input="checkLength"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+              <template
+                slot="append"
+                v-if="field.info.moreConfig && field.info.moreConfig.appendText"
+                >{{ field.info.moreConfig.appendText }}</template
+              >
+              <template
+                slot="prepend"
+                v-if="
+                  field.info.moreConfig && field.info.moreConfig.prependText
+                "
+                >{{ field.info.moreConfig.prependText }}</template
+              >
+            </el-input>
 
-              <radio v-else-if="field.info.editor === 'radio'" ref="editor" :field="field" @field-value-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                ">
-              </radio>
-
-              <checkbox v-else-if="field.info.editor === 'checkbox'" ref="editor" :field="field" @field-value-changed="
-                  $emit('field-value-changed', field.info.name, field)
-                ">
-              </checkbox>
-              <el-input v-else-if="field.info.editor === 'Password'" v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable type="password" show-word-limit :maxlength="field.info.getMaxLength()" @input="checkLength" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-                <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
-                <template slot="prepend" v-if="
-                    field.info.moreConfig && field.info.moreConfig.prependText
-                  ">{{ field.info.moreConfig.prependText }}</template>
-              </el-input>
-
-              <div v-else-if="field.info.editor == 'extend'">
-                <dynamicSubTemp ref="dynSub" :config="field.info.moreConfig" :field="field" :form="field.form"></dynamicSubTemp>
-              </div>
-              <!-- default -->
-              <div v-else-if="field.info.editor == 'verifySmsCode'">
-                <verifyMobile ref="verifyMobile"  @change="$emit('field-value-changed', field.info.name, field)" :field="field"></verifyMobile>
-              </div>
-              <div v-else-if="field.info.editor == null && field.info.type == 'String' && field.info.subType == 'autocomplete' && field.autocompleteInput">
-                 <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
-                <autocompleteInput ref="autocompleteInput"  @change="changeDependField" :field="field"></autocompleteInput>
-              </div>
-              <el-input
-                  :prefix-icon="elIconPrefix"
-                  v-else v-model="field.model" :placeholder="field.info.placeholder" :disabled="getDisabled" clearable
-                  show-word-limit :maxlength="field.info.getMaxLength()" @input="checkLength"
-                  @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-                <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">
-                  {{ field.info.moreConfig.appendText }}
-                </template>
-                <template slot="prepend" v-if="
-                      field.info.moreConfig && field.info.moreConfig.prependText
-                    ">{{ field.info.moreConfig.prependText }}
-                </template>
-              </el-input>
-
+            <div v-else-if="field.info.editor == 'extend'">
+              <dynamicSubTemp
+                ref="dynSub"
+                :config="field.info.moreConfig"
+                :field="field"
+                :form="field.form"
+              ></dynamicSubTemp>
+            </div>
+            <!-- default -->
+            <div v-else-if="field.info.editor == 'verifySmsCode'">
+              <verifyMobile
+                ref="verifyMobile"
+                @change="$emit('field-value-changed', field.info.name, field)"
+                :field="field"
+              ></verifyMobile>
+            </div>
+            <div
+              v-else-if="
+                field.info.editor == null &&
+                field.info.type == 'String' &&
+                field.info.subType == 'autocomplete' &&
+                field.autocompleteInput
+              "
+            >
+              <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
+              <autocompleteInput
+                ref="autocompleteInput"
+                @change="changeDependField"
+                :field="field"
+              ></autocompleteInput>
+            </div>
+            <el-input
+              :prefix-icon="elIconPrefix"
+              v-else
+              v-model="field.model"
+              :placeholder="field.info.placeholder"
+              :disabled="getDisabled"
+              clearable
+              show-word-limit
+              :maxlength="field.info.getMaxLength()"
+              @input="checkLength"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+              <template
+                slot="append"
+                v-if="field.info.moreConfig && field.info.moreConfig.appendText"
+              >
+                {{ field.info.moreConfig.appendText }}
+              </template>
+              <template
+                slot="prepend"
+                v-if="
+                  field.info.moreConfig && field.info.moreConfig.prependText
+                "
+                >{{ field.info.moreConfig.prependText }}
+              </template>
+            </el-input>
           </div>
-          <div v-else-if="field.info.editor == 'textarea'" v-show="field.info.bodyVisible" style="border-radius: 4px; border:1px solid #dcdfe6; overflow: auto;white-space: pre-wrap;word-break: break-all;padding:0 15px">{{ field.getDispVal() }}
+          <div
+            v-else-if="field.info.editor == 'textarea'"
+            v-show="field.info.bodyVisible"
+            style="
+              border-radius: 4px;
+              border: 1px solid #dcdfe6;
+              overflow: auto;
+              white-space: pre-wrap;
+              word-break: break-all;
+              padding: 0 15px;
+            "
+          >
+            {{ field.getDispVal() }}
           </div>
           <div v-else-if="field.info.editor == 'extend'">
-            <dynamicSubTemp ref="dynSub" :config="field.info.moreConfig" :field="field" :form="field.form"></dynamicSubTemp>
+            <dynamicSubTemp
+              ref="dynSub"
+              :config="field.info.moreConfig"
+              :field="field"
+              :form="field.form"
+            ></dynamicSubTemp>
           </div>
-          
+
           <template v-else>
             <!--只读编辑器-->
-            <bx-input-number v-if="field.info.editor === 'input-number'&&['progress','rate'].includes(field.info.subType)" controls-position="right" v-model="field.model" :disabled="true" :min="field.info.getMin()" :max="field.info.getMax()" label="描述文字" :fieldMoreConfig="field.info" @change="$emit('field-value-changed', field.info.name, field)" @blur="onBlur">
-              </bx-input-number>
-            <a v-else-if="field.info.linkUrlFunc" v-show="field.getSrvVal()" style="white-space: normal; color: dodgerblue; cursor: pointer;" @click="onLinkClicked()">
+            <bx-input-number
+              v-if="
+                field.info.editor === 'input-number' &&
+                ['progress', 'rate'].includes(field.info.subType)
+              "
+              controls-position="right"
+              v-model="field.model"
+              :disabled="true"
+              :min="field.info.getMin()"
+              :max="field.info.getMax()"
+              label="描述文字"
+              :fieldMoreConfig="field.info"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+            </bx-input-number>
+            <a
+              v-else-if="field.info.linkUrlFunc"
+              v-show="field.getSrvVal()"
+              style="white-space: normal; color: dodgerblue; cursor: pointer"
+              @click="onLinkClicked()"
+            >
               {{ field.getDispVal4Read() }}
             </a>
-            
-            <el-input v-else readonly :type="field.info.editor === 'Password' ? 'password' : 'text'" v-show="field.info.bodyVisible" :disabled="getDisabled" :value="field.getDispVal4Read()">
-              <template slot="append" v-if="field.info.moreConfig && field.info.moreConfig.appendText">{{ field.info.moreConfig.appendText }}</template>
-              <template slot="prepend" v-if="
+
+            <el-input
+              v-else
+              readonly
+              :type="field.info.editor === 'Password' ? 'password' : 'text'"
+              v-show="field.info.bodyVisible"
+              :disabled="getDisabled"
+              :value="field.getDispVal4Read()"
+            >
+              <template
+                slot="append"
+                v-if="field.info.moreConfig && field.info.moreConfig.appendText"
+                >{{ field.info.moreConfig.appendText }}</template
+              >
+              <template
+                slot="prepend"
+                v-if="
                   field.info.moreConfig && field.info.moreConfig.prependText
-                ">{{ field.info.moreConfig.prependText }}</template>
+                "
+                >{{ field.info.moreConfig.prependText }}</template
+              >
             </el-input>
           </template>
         </template>
-
       </el-col>
       <!-- <el-col :span="2">
           <i class="el-icon-warning"></i>
         </el-col> -->
-      <el-col style="text-align:center" v-show="field.getUniqueCheck()" :span="2">
-        <el-tooltip :content="field.getUniqueCheckMsg().msg ? field.getUniqueCheckMsg().msg :''" placement="top">
+      <el-col
+        style="text-align: center"
+        v-show="field.getUniqueCheck()"
+        :span="2"
+      >
+        <el-tooltip
+          :content="
+            field.getUniqueCheckMsg().msg ? field.getUniqueCheckMsg().msg : ''
+          "
+          placement="top"
+        >
           <!-- UniqueCheckNone 未校验  UniqueCheckError 错误 UniqueCheckOk 通过 loading 校验中 -->
-          <i v-if="field.getUniqueCheckMsg().state === 'UniqueCheckNone'" style="color:orange" class="el-icon-question"></i>
-          <i v-if="field.getUniqueCheckMsg().state === 'loading'" style="color:orange" class="el-icon-loading"></i>
-          <i v-if="field.getUniqueCheckMsg().state === 'UniqueCheckError'" style="color:red" class="el-icon-error"></i>
-          <i v-if="field.getUniqueCheckMsg().state === 'UniqueCheckOk'" style="color:green" class="el-icon-success"></i>
+          <i
+            v-if="field.getUniqueCheckMsg().state === 'UniqueCheckNone'"
+            style="color: orange"
+            class="el-icon-question"
+          ></i>
+          <i
+            v-if="field.getUniqueCheckMsg().state === 'loading'"
+            style="color: orange"
+            class="el-icon-loading"
+          ></i>
+          <i
+            v-if="field.getUniqueCheckMsg().state === 'UniqueCheckError'"
+            style="color: red"
+            class="el-icon-error"
+          ></i>
+          <i
+            v-if="field.getUniqueCheckMsg().state === 'UniqueCheckOk'"
+            style="color: green"
+            class="el-icon-success"
+          ></i>
         </el-tooltip>
       </el-col>
       <!-- //v-show="field.hasHistoryData()" -->
       <el-col v-show="field.hasHistoryData()" :span="2">
         <!--显示历史数据按钮-->
         <div>
-          <el-button @click="$emit('field-history-popup', field)" icon="el-icon-notebook-2"></el-button>
+          <el-button
+            @click="$emit('field-history-popup', field)"
+            icon="el-icon-notebook-2"
+          ></el-button>
         </div>
       </el-col>
-
     </el-row>
     <el-row slot="error" scope="error">
-      <el-col style="display: flex;">
+      <el-col style="display: flex">
         <!-- 显示字段校验错误信息 -->
-        <div class="el-form-item__error" v-show="field.hasValidateError() || field.hasValidatePrompt()" :title="field.getAnyValidatePrompt()">
+        <div
+          class="el-form-item__error"
+          v-show="field.hasValidateError() || field.hasValidatePrompt()"
+          :title="field.getAnyValidatePrompt()"
+        >
           <!-- v-show="field.hasValidateError() || field.hasValidatePrompt()" -->
-          <el-popover placement="bottom" width="200" v-show="field.hasValidateError() || field.hasValidatePrompt()" trigger="hover" :content="field.getAnyValidateError() ? field.getAnyValidatePrompt() ? field.getAnyValidateError() + field.getAnyValidatePrompt() : field.getAnyValidateError() : field.getAnyValidatePrompt() ?  field.getAnyValidatePrompt() : ''">
+          <el-popover
+            placement="bottom"
+            width="200"
+            v-show="field.hasValidateError() || field.hasValidatePrompt()"
+            trigger="hover"
+            :content="
+              field.getAnyValidateError()
+                ? field.getAnyValidatePrompt()
+                  ? field.getAnyValidateError() + field.getAnyValidatePrompt()
+                  : field.getAnyValidateError()
+                : field.getAnyValidatePrompt()
+                ? field.getAnyValidatePrompt()
+                : ''
+            "
+          >
             <i slot="reference" class="el-icon-warning"></i>
           </el-popover>
           <span class="no-nowrap" v-show="field.hasValidateError()">
             <!-- v-show="field.hasValidateError()" -->
-            {{ field.getAnyValidateError() }} {{field.getAnyValidateError() && field.getAnyValidatePrompt() ? ';' : ''}}
+            {{ field.getAnyValidateError() }}
+            {{
+              field.getAnyValidateError() && field.getAnyValidatePrompt()
+                ? ";"
+                : ""
+            }}
           </span>
           <!-- 显示字段校验提示信息 -->
-          <span class="el-form-item__prompt no-nowrap" v-show=" field.hasValidatePrompt()">
+          <span
+            class="el-form-item__prompt no-nowrap"
+            v-show="field.hasValidatePrompt()"
+          >
             <!-- v-show=" field.hasValidatePrompt()" -->
             {{ field.getAnyValidatePrompt() }}
           </span>
         </div>
-        <div v-if="(!getDisabled && field.info.moreConfig !== null) && getShowHelpTips(field.info)" :title="field.info.moreConfig && field.info.moreConfig.help_tips ? field.info.moreConfig.help_tips : ''" class="help-tips">
+        <div
+          v-if="
+            !getDisabled &&
+            field.info.moreConfig !== null &&
+            getShowHelpTips(field.info)
+          "
+          :title="
+            field.info.moreConfig && field.info.moreConfig.help_tips
+              ? field.info.moreConfig.help_tips
+              : ''
+          "
+          class="help-tips"
+        >
           <!-- v-if="(!getDisabled && field.info.moreConfig !== null) && getShowHelpTips(field.info)" -->
-          <el-popover placement="bottom" width="200" trigger="hover" :content=" field.info.moreConfig && field.info.moreConfig.help_tips ? field.info.moreConfig.help_tips : ''">
-            <i slot="reference" class="el-icon-question" style="color:#03a2ff;font-size:12px"></i>
+          <el-popover
+            placement="bottom"
+            width="200"
+            trigger="hover"
+            :content="
+              field.info.moreConfig && field.info.moreConfig.help_tips
+                ? field.info.moreConfig.help_tips
+                : ''
+            "
+          >
+            <i
+              slot="reference"
+              class="el-icon-question"
+              style="color: #03a2ff; font-size: 12px"
+            ></i>
           </el-popover>
-          <span v-show="field.info.moreConfig && field.info.moreConfig.help_tips" style="color:#03a2ff;font-size:12px"> {{field.info.moreConfig && field.info.moreConfig.help_tips ? field.info.moreConfig.help_tips : ''}}</span>
+          <span
+            v-show="field.info.moreConfig && field.info.moreConfig.help_tips"
+            style="color: #03a2ff; font-size: 12px"
+          >
+            {{
+              field.info.moreConfig && field.info.moreConfig.help_tips
+                ? field.info.moreConfig.help_tips
+                : ""
+            }}</span
+          >
           <!-- --- -->
         </div>
       </el-col>
-
     </el-row>
-
   </div>
 </template>
-
 
 <script>
 import InputRange from "../ui/input-range.vue";
@@ -278,8 +712,8 @@ import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
 import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
-import { blobToBase64 } from '../../common/common'
-import { evalJson } from '@/util/evalJsonExpr.js'
+import { blobToBase64 } from "../../common/common";
+import { evalJson } from "@/util/evalJsonExpr.js";
 export default {
   components: {
     Checkbox,
@@ -300,25 +734,25 @@ export default {
     dynamicSubTemp,
     verifyMobile,
     autocompleteInput,
-    carNoKeyboard
+    carNoKeyboard,
   },
 
   props: {
     field: Object,
     childForeignkey: {
-      type: Object
+      type: Object,
     },
     defaultCondition: {
-      typeof: Array
+      typeof: Array,
     },
     mainformDatas: {
-      type: Object
+      type: Object,
     },
     defaultValues: {
-      type: Object
+      type: Object,
     },
     formModel: {
-      type: Object
+      type: Object,
     },
   },
   watch: {},
@@ -328,17 +762,21 @@ export default {
       key: null,
       finderSelected: "",
       pickerOptions: {
-        disabledDate: time => {
+        disabledDate: (time) => {
           return this.field.info.subtype === "year"
             ? this.dealDisabledDate(new Date(time).getFullYear().toString())
             : this.dealDisabledDate(time);
-        }
-      }
+        },
+      },
     };
   },
   computed: {
+    uploadLimit() {
+      const config = this.field.info?.moreConfig;
+      return config?.fileLimit || config?.limit || 100;
+    },
     updatableJson() {
-      if(this.field?.info?.srvCol?.updatable_json){
+      if (this.field?.info?.srvCol?.updatable_json) {
         const jsonStr = this.field.info.srvCol.updatable_json;
         return JSON.parse(jsonStr);
       }
@@ -349,62 +787,63 @@ export default {
       }
     },
     elIconPrefix() {
-      return this.field?.info?.srvCol?.table_name === 'bxfile_icon_db' && this.field.info.srvCol.columns === 'icon_val' && this.field.model?.includes('el-icon-') && this.field.model||''
+      return (
+        (this.field?.info?.srvCol?.table_name === "bxfile_icon_db" &&
+          this.field.info.srvCol.columns === "icon_val" &&
+          this.field.model?.includes("el-icon-") &&
+          this.field.model) ||
+        ""
+      );
     },
-    cfgJson(){
-      let cfgJson = this.field.info.srvCol?.col_cfg_json
-      if(cfgJson){
+    cfgJson() {
+      let cfgJson = this.field.info.srvCol?.col_cfg_json;
+      if (cfgJson) {
         try {
-          cfgJson = JSON.parse(cfgJson)
-        } catch (error) {
-          
-        }
+          cfgJson = JSON.parse(cfgJson);
+        } catch (error) {}
       }
-      return cfgJson
+      return cfgJson;
     },
     customInputVar() {
       if (this.cfgJson?.col_style_df_json) {
-        const colStyle = this.cfgJson.col_style_df_json
-        const keys = Reflect.ownKeys(colStyle)
-        let str = ``
+        const colStyle = this.cfgJson.col_style_df_json;
+        const keys = Reflect.ownKeys(colStyle);
+        let str = ``;
         if (keys.length > 0) {
-          keys.forEach(key => {
-            str += `;--custom-input-${key}:${colStyle[key]}`
-          })
+          keys.forEach((key) => {
+            str += `;--custom-input-${key}:${colStyle[key]}`;
+          });
         }
-        return str
+        return str;
       }
     },
-    getDisabled: function() {
-      return !this.field.evalEditable() || this.updatable===false;
+    getDisabled: function () {
+      return !this.field.evalEditable() || this.updatable === false;
     },
-    queryInitValue(){
+    queryInitValue() {
       return {
-        ...this.field.info?.queryInitValue||{},
-      }
+        ...(this.field.info?.queryInitValue || {}),
+      };
     },
-    dateRangePickerOptions(){
+    dateRangePickerOptions() {
       if (this.queryInitValue?.query_scope_max) {
         return {
-          disabledDate: time => {
+          disabledDate: (time) => {
             console.log(time);
-            if(this.queryInitValue.type==='日'){
+            if (this.queryInitValue.type === "日") {
               return time.getTime() > Date.now() - 8.64e7;
             }
-          }
-        }
+          },
+        };
       }
-    
     },
   },
-  
-  created: function() {
-   
+
+  created: function () {
     this.field.editor = this;
-    
   },
 
-  mounted: function() {},
+  mounted: function () {},
 
   methods: {
     getShowHelpTips(e) {
@@ -414,38 +853,49 @@ export default {
         return false;
       }
     },
-    changeDependField(field){
-      if (this.field.info?.editor === 'date-time-range' && this.queryInitValue?.query_scope_max) {
+    changeDependField(field) {
+      if (
+        this.field.info?.editor === "date-time-range" &&
+        this.queryInitValue?.query_scope_max
+      ) {
         if (this.field.model.length === 2) {
-          let oneUnitTimes, rangeMaxTimes, unit
-          const startDayTimes = new Date(this.field.model[0]).getTime()
-          const endDayTimes = new Date(this.field.model[1]).getTime()
+          let oneUnitTimes, rangeMaxTimes, unit;
+          const startDayTimes = new Date(this.field.model[0]).getTime();
+          const endDayTimes = new Date(this.field.model[1]).getTime();
           switch (this.queryInitValue.type) {
-            case '日':
-              unit = '天'
+            case "日":
+              unit = "天";
               oneUnitTimes = 24 * 60 * 60 * 1000;
               break;
-            case '月':
-              unit = '个月'
+            case "月":
+              unit = "个月";
               oneUnitTimes = 24 * 60 * 60 * 1000 * 31;
               break;
-            case '年':
-              unit = '年'
+            case "年":
+              unit = "年";
               oneUnitTimes = 24 * 60 * 60 * 1000 * 365;
               break;
           }
-          rangeMaxTimes = this.queryInitValue?.query_scope_max * oneUnitTimes
-          if (rangeMaxTimes && !isNaN(rangeMaxTimes) && endDayTimes - startDayTimes > rangeMaxTimes) {
+          rangeMaxTimes = this.queryInitValue?.query_scope_max * oneUnitTimes;
+          if (
+            rangeMaxTimes &&
+            !isNaN(rangeMaxTimes) &&
+            endDayTimes - startDayTimes > rangeMaxTimes
+          ) {
             this.field.model = [];
-            return this.$message.warning(`选择范围不能超过${this.queryInitValue?.query_scope_max}${unit}`);
+            return this.$message.warning(
+              `选择范围不能超过${this.queryInitValue?.query_scope_max}${unit}`
+            );
           }
         }
       }
-      this.$emit('field-value-changed', field.info.name, field)
+      this.$emit("field-value-changed", field.info.name, field);
     },
-    checkLength(val){
-      const validateCnChar = this.field.info?.rules?.find(item=>item.name==='ngMaxlength'&&item.encode==='en')
-      if(validateCnChar?.ngMaxlength){
+    checkLength(val) {
+      const validateCnChar = this.field.info?.rules?.find(
+        (item) => item.name === "ngMaxlength" && item.encode === "en"
+      );
+      if (validateCnChar?.ngMaxlength) {
         let b = 0; // 输入的字符数
         for (let i = 0, length = val.length; i < length; i++) {
           let c = val.charAt(i);
@@ -455,9 +905,12 @@ export default {
             // 中文占两个字符
             b += 2;
           }
-          if (b > Number(validateCnChar?.ngMaxlength)) { // 字符长度限制
+          if (b > Number(validateCnChar?.ngMaxlength)) {
+            // 字符长度限制
             this.field.model = val.substr(0, i);
-            this.$message.warning(`最多输入${validateCnChar?.ngMaxlength}个字符,一个汉字占两个字符`);
+            this.$message.warning(
+              `最多输入${validateCnChar?.ngMaxlength}个字符,一个汉字占两个字符`
+            );
             if (/^[\u0000-\u00ff]$/.test(c)) {
               b--;
             } else {
@@ -484,7 +937,7 @@ export default {
       ) {
         let cfg = config.uniqueCheck;
         isUniqueCheck.state = "loading";
-        self.isUniqueCheck(cfg, model).then(res => {
+        self.isUniqueCheck(cfg, model).then((res) => {
           if (res.data.state == "SUCCESS" && res.data.data.length === 0) {
             isUniqueCheck.state = "UniqueCheckOk";
             isUniqueCheck.msg = "可用";
@@ -521,7 +974,7 @@ export default {
         "qrcode",
         "finder",
         "tree-finder",
-        "multifinder"
+        "multifinder",
       ]);
       let linkSupportEditors = new Set(["finder", "tree-finder"]); //
       let editorSupportReadonly = readonlySupportEditors.has(
@@ -606,7 +1059,7 @@ export default {
           paramArr = paramStr.split("&");
         }
         let result = false;
-        paramArr.forEach(item => {
+        paramArr.forEach((item) => {
           if (item.indexOf("openlayer=") !== -1) {
             result = item.split("openlayer=")[1];
           }
@@ -615,7 +1068,7 @@ export default {
           top.layer.open({
             type: 2,
             area: ["70%", "60%"],
-            content: this.getLinkUrl() //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+            content: this.getLinkUrl(), //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
           });
         } else {
           this.addTabByUrl(this.getLinkUrl(), tabTitle);
@@ -719,15 +1172,15 @@ export default {
     setImgUrl(url) {
       if (url) {
         if (url.indexOf("http") > -1) {
-          return url
+          return url;
         } else {
-          return `${window.backendIpAddr}${url}`
+          return `${window.backendIpAddr}${url}`;
         }
-      }else{
-        return ''
+      } else {
+        return "";
       }
     },
-  }
+  },
 };
 </script>
 
@@ -766,25 +1219,25 @@ export default {
 
 .raw_field_editor {
   position: relative;
-  ::v-deep input{
+  ::v-deep input {
     /* 配置的字段样式 */
-    color: var(--custom-input-color)!important;
+    color: var(--custom-input-color) !important;
     /* font: var(--custom-input-font)!important; */
     /* overflow: var(--custom-input-overflow)!important; */
-    font-size: var(--custom-input-font_size)!important;
+    font-size: var(--custom-input-font_size) !important;
     /* white-space: var(--custom-input-white_space)!important; */
-    text-align: var(--custom-input-text_align)!important;
+    text-align: var(--custom-input-text_align) !important;
     /* text-overflow:var(--custom-input-text_overflow)!important; */
     /* border-radius:var(--custom-input-border_radius)!important; */
     /* border:var(--custom-input-border,1px solid #DCDFE6)!important; */
-    padding:var(--custom-input-padding,0 15px)!important;
+    padding: var(--custom-input-padding, 0 15px) !important;
     /* height:var(--custom-input-height,40px)!important; */
-    margin:var(--custom-input-margin)!important;
-    font-weight:var(--custom-input-font_weight)!important;
+    margin: var(--custom-input-margin) !important;
+    font-weight: var(--custom-input-font_weight) !important;
     /* line-height:var(--custom-input-line_height,40px)!important; */
   }
-  ::v-deep .el-input--prefix .el-input__inner{
-    padding-left:30px !important;
+  ::v-deep .el-input--prefix .el-input__inner {
+    padding-left: 30px !important;
   }
 }
 
@@ -816,5 +1269,3 @@ export default {
   color: #303133 !important;
 }
 </style>
-
-

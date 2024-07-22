@@ -805,6 +805,7 @@ export default {
 
         if(field['_obj_col']?.col){
           // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
+          console.log('onFieldValueChanged-_obj_col',field['_obj_col']);
           if(this.fields[field['_obj_col']?.col]){
             this.fields[field['_obj_col']?.col].model = field['_obj_col']?.val
           }
