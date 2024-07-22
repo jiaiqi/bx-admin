@@ -406,6 +406,22 @@
       >
       </simple-add> -->
     </el-dialog>
+    <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body
+      @close="activeForm = 'xx'">
+      <import-dialog :service="getImportService" :sign-service-name="getAddService" v-if="activeForm == 'import'"
+        :button="actionGridButton" @close="onImportDialogClosed">
+      </import-dialog>
+    </el-dialog>
+    <el-dialog class="customDialogClass" title="自定义导入" width="90%" :visible="activeForm == 'customizeImport'"
+      append-to-body @close="activeForm = 'xx'">
+      <import-dialog :service="getImportService" :sign-service-name="getAddService" :importPageType="'customize'"
+        v-if="activeForm == 'customizeImport'" :button="actionGridButton" @close="onImportDialogClosed">
+      </import-dialog>
+    </el-dialog>
+    <el-dialog class="customDialogClass" title="导出" width="90%" :visible="activeForm == 'export'" append-to-body
+      @close="onExportDialogClosed">
+      <exportLayout :columns="gridHeader" :type="'exprot'" @on-export-clicked="onExportClicked($event)"></exportLayout>
+    </el-dialog>
   </div>
 </template>
 
@@ -421,6 +437,10 @@ import ListMixin from "../mixin/list-mixin";
 import { wrapButton } from "../common/wrapper_util";
 import {IconExcelColorful} from "../icon";
 import remove from "lodash/remove";
+
+import ImportDialog from "../ui/import-form.vue"; // 导入ui
+import exportLayout from "./export-layout"; // 自定义导出 || 导入
+
 function deepClone(obj) {
   if (obj == null) return null;
   let newObj = obj instanceof Array ? [] : {};
@@ -449,6 +469,8 @@ export default {
     SimpleUpdate,
     Add: () => import("../common/add.vue"),
     update: () => import("../common/update.vue"),
+    ImportDialog,
+    exportLayout
   },
   mixins: [ListPopupMixin, CustButtonMinx, MemListMixin, ListMixin],
 

@@ -21,7 +21,15 @@ export default {
     getAddService: function () {
       let addButton = this.gridButton.filter(item => item.button_type === "add");
       if (addButton && addButton.length > 0) {
-        return addButton [0].service_name
+        return addButton[0].service_name
+      } else {
+        return this.mainTable && (this.mainTable.replace("bx", "srv") + "_add")
+      }
+    },
+    getImportService(){
+      let button = this.gridButton.find(item => item.button_type === "import");
+      if (button && button.service_name) {
+        return button.service_name
       } else {
         return this.mainTable && (this.mainTable.replace("bx", "srv") + "_add")
       }
