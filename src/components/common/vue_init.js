@@ -43,9 +43,9 @@ function init() {
       // back_server_ip: "vrms.vanxum.com", // 万像
       // back_server_port: "8101",
 
-      // back_server_protocol: "http",
-      // back_server_ip: "192.168.0.157", // 研学
-      // back_server_port: "8104",
+      back_server_protocol: "http",
+      back_server_ip: "192.168.0.157", // 研学
+      back_server_port: "8104",
 
       // back_server_protocol: "http",
       // back_server_ip: "192.168.0.111", // oa
@@ -103,9 +103,9 @@ function init() {
 
       // back_server_ip: "139.196.209.46",    // 240 139.129.128.155:5021
       // back_server_port: "4678",
-      back_server_protocol: "http",
-      back_server_ip: "192.168.0.155",    // 240 139.129.128.155:5021
-      back_server_port: "8888",
+      // back_server_protocol: "http",
+      // back_server_ip: "192.168.0.155",    // 240 139.129.128.155:5021
+      // back_server_port: "8888",
       // back_server_ip: "192.168.0.111",    // 240 139.129.128.155:5021   零售   http://192.168.0.155:8106
       // back_server_port: "8080",
       // back_server_ip: "192.168.0.192",  // 199

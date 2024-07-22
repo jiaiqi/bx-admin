@@ -997,7 +997,7 @@ export default {
         },
 
         {
-          label: "注册资本",
+          label: "注册资本(万元)",
           column: "zczb",
           type: "text",
           value: null,
@@ -1131,6 +1131,7 @@ export default {
           column: "bus_license",
           type: "image",
           value: null,
+          limit: 1,
           placeholder: "请填写营业执照",
           rules: [
             {
@@ -1303,7 +1304,6 @@ export default {
         //   return;
         // }
       }
-      debugger;
       if (this.currentStep === 2) {
         // 更新
         if (this.addResult?.id) {
