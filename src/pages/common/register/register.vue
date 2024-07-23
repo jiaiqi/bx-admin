@@ -488,6 +488,10 @@ export default {
                 text: "市级",
                 value: "市级",
               },
+              {
+                text: "无",
+                value: "无",
+              },
             ],
             rules: [
               {
