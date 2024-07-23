@@ -107,6 +107,7 @@
                       :placeholder="field.placeholder"
                       :readonly="readonlyInput"
                       @change="change(field)"
+                      @input="onInputCode($event,field)"
                       :state="field.state"
                       placeholder="验证码"
                       description="验证码"
@@ -269,7 +270,7 @@
                 @click="nextStep"
                 :disabled="currentStep >= 2"
                 v-if="
-                  [0].includes(currentStep) || (currentStep === 1 && form.code)
+                  [0].includes(currentStep) || (currentStep === 1 && form.code && form.code.length>=4)
                 "
                 >下一步
               </b-button>
@@ -1151,6 +1152,10 @@ export default {
     // console.log(this.webConfig)
   },
   methods: {
+    onInputCode(event, field) {
+      console.log(event, field, "onInputCode");
+      this.form.code = event
+    },
     toLogin() {
       window.location.href = "/main/login.html";
     },
