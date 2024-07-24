@@ -15,6 +15,7 @@
       </slot>
     </el-alert>
     <filterTabs
+      :$srvApp="$srvApp"
       ref="filterTabs"
       v-if="tabs.length > 0 && cols.length > 0"
       :tabs="tabs"

@@ -160,7 +160,7 @@
 import SimpleAdd from "./simple-add.vue";
 import SimpleUpdate from "./simple-update.vue";
 import List from "./list.vue";
-import TabList from "./tab-list2.vue";
+// import TabList from "./tab-list2.vue";
 import Treegrid from "./treegrid.vue";
 import ListProc from "./listproc.vue";
 import ChildListMixin from "../mixin/child-list-mixin";
@@ -181,7 +181,7 @@ export default {
     SimpleUpdate,
     SimpleAdd,
     List,
-    TabList,
+    TabList:()=>import('./tab-list2.vue'),
     ListProc,
     tableEdit,
   },

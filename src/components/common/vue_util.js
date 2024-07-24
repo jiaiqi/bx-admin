@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import Dialog from "../common/dialog.vue";
 import * as DataUtil from "../../util/DataUtil";
 import { Loading } from "element-ui";
-// import { $axios } from './vueAxiosInit'
+
 import {
   formatMoney,
   monthEnd,
@@ -15,7 +15,6 @@ import {
 import Vue from "vue";
 
 import isBoolean from "lodash/isBoolean";
-import isArray from "lodash/isArray";
 import isUndefined from "lodash/isUndefined";
 import isString from "lodash/isString";
 import isFunction from "lodash/isFunction";
@@ -270,7 +269,7 @@ function init_util() {
     } else {
       // whole path does not have $srvApp,
       // try  page level
-      if (node?.$route?.query?.srvApp) {
+      if (node?.$route && node?.$route?.query?.srvApp) {
         app = node?.$route?.query?.srvApp;
       } else {
         let defaultApp =
@@ -810,10 +809,10 @@ function init_util() {
       rdt,
       divCondition
     );
-    if(res.data){
-      return res.data
-    }else{
-      console.error(res)
+    if (res.data) {
+      return res.data;
+    } else {
+      console.error(res);
     }
   };
 

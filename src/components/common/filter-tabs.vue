@@ -10,114 +10,133 @@
       label-width="100px"
       size="medium"
     >
-      <el-form-item
-        :label="tab.label"
-        v-for="(tab, index) in tabs"
-        :key="index"
-      >
-        <div v-if="tab._type === 'input'">
-          <el-row :gutter="5">
-            <el-col :span="24">
-              <el-input
-                col="2"
-                :placeholder="tab.placeholder"
-                clearable
-                :name="tab.list_tab_no"
+      <template v-for="tab in tabs">
+        <el-form-item :label="tab.label" v-if="showFilterTab(tab)">
+          <div v-if="tab._type === 'input'">
+            <el-row :gutter="5">
+              <el-col :span="24">
+                <el-input
+                  col="2"
+                  :placeholder="tab.placeholder"
+                  clearable
+                  :name="tab.list_tab_no"
+                  v-model="formModel[tab.list_tab_no].value"
+                ></el-input>
+              </el-col>
+              <!-- <el-col :span="6">
+                <el-radio-group
+                  :disabled="formModel[tab.list_tab_no].value == ''"
+                  v-model="inputMoreConfig.value"
+                >
+                  <el-radio
+                    :label="item.value"
+                    name="type"
+                    v-for="(item, index) in inputMoreConfig.options"
+                    :key="index"
+                  >
+                    {{ item.label }}
+                  </el-radio>
+                </el-radio-group>
+              </el-col> -->
+            </el-row>
+          </div>
+          <div v-if="tab._type === 'between'">
+            <el-col :span="11">
+              <el-date-picker
+                value-format="yyyy-MM-dd HH:mm:ss"
+                startPlaceholder="开始日期"
+                endPlaceholder="结束日期"
+                type="datetimerange"
+                appendToBody
+                placeholder="选择日期"
                 v-model="formModel[tab.list_tab_no].value"
-              ></el-input>
+                style="width: 100%"
+              ></el-date-picker>
+              <!-- <el-date-picker startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker> -->
             </el-col>
-            <!-- <el-col :span="6">
-                        <el-radio-group :disabled="formModel[tab.list_tab_no].value == ''" v-model="inputMoreConfig.value">
-                            <el-radio :label="item.value" name="type" v-for="(item,index) in inputMoreConfig.options" :key="index">
-                                {{item.label}}
-                            </el-radio>
-                        </el-radio-group>
-                    </el-col> -->
-          </el-row>
-        </div>
-        <div v-if="tab._type === 'between'">
-          <el-col :span="11">
-            <el-date-picker
-              value-format="yyyy-MM-dd HH:mm:ss"
-              startPlaceholder="开始日期"
-              endPlaceholder="结束日期"
-              type="datetimerange"
-              appendToBody
-              placeholder="选择日期"
+            <!-- <el-col class="line" :span="2">-</el-col>
+            <el-col :span="11">
+              <el-time-picker
+                placeholder="选择时间"
+                v-model="form.date2"
+                style="width: 100%"
+              ></el-time-picker>
+            </el-col> -->
+          </div>
+          <div v-if="tab._type === 'select'">
+            <selectPlus
+              :main-data="mainData"
+              :ref="tab.list_tab_no"
+              :tab="tab"
+              :formModels="formModel"
+              :formModel="formModel[tab.list_tab_no]"
+              @on-value-change="selectChange($event, tab)"
+            ></selectPlus>
+            <!-- <el-select
+              filterable
+              remote
+              :loading="loading"
               v-model="formModel[tab.list_tab_no].value"
-              style="width: 100%"
-            ></el-date-picker>
-            <!-- <el-date-picker startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker> -->
-          </el-col>
-          <!-- <el-col class="line" :span="2">-</el-col>
-                <el-col :span="11">
-                    <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
-                </el-col> -->
-        </div>
-        <div v-if="tab._type === 'select'">
-          <selectPlus
-            :main-data="mainData"
-            :ref="tab.list_tab_no"
-            :tab="tab"
-            :formModels="formModel"
-            :formModel="formModel[tab.list_tab_no]"
-            @on-value-change="selectChange($event, tab)"
-          ></selectPlus>
-          <!-- <el-select filterable remote :loading="loading" v-model="formModel[tab.list_tab_no].value" clearable placeholder="输入关键字搜索"
-                :remote-method="buildFkOptionList" @blur="buildFkOptionList(null,tab)">
-                    <el-option
-                    v-for="(item) in formModel[tab.list_tab_no].options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                    </el-option>
-                </el-select> -->
-        </div>
-        <div v-if="tab._type === 'checkbox'">
-          <el-checkbox-group
-            v-model="formModel[tab.list_tab_no].value"
-            v-if="tab._colSrvData"
-          >
-            <el-checkbox
-              :label="item.value"
-              :name="item.value"
-              v-for="(item, index) in tab.options"
-              :key="index"
-              @change="onCheckChange($event, item, tab.list_tab_no)"
+              clearable
+              placeholder="输入关键字搜索"
+              :remote-method="buildFkOptionList"
+              @blur="buildFkOptionList(null, tab)"
             >
-              {{ item.label }}
-            </el-checkbox>
-          </el-checkbox-group>
-        </div>
-        <div v-if="tab._type === 'radio'">
-          <el-radio-group
-            v-model="formModel[tab.list_tab_no].value"
-            v-if="tab._colSrvData"
-            v-show="tab.options && tab.options.length > 0"
-          >
-            <el-radio
-              :label="item.value"
-              name="type"
-              v-for="(item, index) in tab.options"
-              :key="index"
-            >
-              {{ item.label }}
-            </el-radio>
-          </el-radio-group>
-        </div>
-        <div v-else-if="tab._type === 'img'">
-          <el-row :gutter="5">
-            <el-col :span="24">
-              <upload-image
-                :field="buildImgField(tab)"
-                :limit="1"
-                @change="tabChange($event, tab)"
+              <el-option
+                v-for="item in formModel[tab.list_tab_no].options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
               >
-              </upload-image>
-            </el-col>
-          </el-row>
-        </div>
-      </el-form-item>
+              </el-option>
+            </el-select> -->
+          </div>
+          <div v-if="tab._type === 'checkbox'">
+            <el-checkbox-group
+              v-model="formModel[tab.list_tab_no].value"
+              v-if="tab._colSrvData"
+            >
+              <el-checkbox
+                :label="item.value"
+                :name="item.value"
+                v-for="(item, index) in tab.options"
+                :key="index"
+                @change="onCheckChange($event, item, tab.list_tab_no)"
+              >
+                {{ item.label }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </div>
+          <div v-if="tab._type === 'radio'">
+            <el-radio-group
+              v-model="formModel[tab.list_tab_no].value"
+              v-if="tab._colSrvData"
+              v-show="tab.options && tab.options.length > 0"
+            >
+              <el-radio
+                :label="item.value"
+                name="type"
+                v-for="(item, index) in tab.options"
+                :key="index"
+              >
+                {{ item.label }}
+              </el-radio>
+            </el-radio-group>
+          </div>
+          <div v-else-if="tab._type === 'img'">
+            <el-row :gutter="5">
+              <el-col :span="24">
+                <upload-image
+                  :field="buildImgField(tab)"
+                  :limit="1"
+                  @change="tabChange($event, tab)"
+                >
+                </upload-image>
+              </el-col>
+            </el-row>
+          </div>
+        </el-form-item>
+      </template>
 
       <!-- <el-form-item>
             <el-button type="primary" @click="buildConditions(formModel)">查询</el-button>
@@ -131,6 +150,7 @@ import cloneDeep from "lodash/cloneDeep";
 import * as DataUtil from "../../util/DataUtil";
 import selectPlus from "../ui/select-plus.vue";
 import UploadImage from "../ui/upload-image.vue";
+import { onFetch } from "../../common/httpUtil";
 export default {
   name: "filter-tabs",
   data() {
@@ -185,6 +205,7 @@ export default {
     },
     mainData: Object,
     defaultCondition: Array,
+    $srvApp: String,
   },
   computed: {
     tabRun: function () {
@@ -199,6 +220,13 @@ export default {
   },
   mounted() {},
   methods: {
+    showFilterTab(tab) {
+      if (["checkbox", "radio"].includes(tab._type)) {
+        return tab?.options?.length > 0;
+      } else {
+        return true;
+      }
+    },
     tabChange(no, tab) {
       this.$set(this.formModel[tab.list_tab_no], "value", no);
     },
@@ -498,15 +526,20 @@ export default {
       //     null
       //   );
       //   const resData = res.data.data;
-      const res = await this.onFetch({
-        service: this.srv,
-        condition: condition,
-        group: group,
-        page: {
-          pageNo: 1,
-          rownumber: 100,
+
+      const res = await onFetch(
+        {
+          app: this.$srvApp,
+          service: this.srv,
+          condition: condition,
+          group: group,
+          page: {
+            pageNo: 1,
+            rownumber: 100,
+          },
         },
-      });
+        this
+      );
       if (res.state === "SUCCESS") {
         const resData = res.data;
         for (let i = 0; i < resData.length; i++) {
