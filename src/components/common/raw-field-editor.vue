@@ -112,7 +112,19 @@
               "
             >
             </ueditorPlus>
-
+            <wang-editor
+              ref="editor"
+              :disabled="getDisabled"
+              :field="field"
+              v-model="field.model"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              v-else-if="
+                field.info.editor === 'ueditor' &&
+                field.info.moreConfig &&
+                field.info.moreConfig.mode === 'modern'
+              "
+            >
+            </wang-editor>
             <ueditor
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -708,6 +720,8 @@ import CodeEditor from "../ui/code-editor.vue";
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
+// import tiptapEditor from "../ui/tiptap-editor/index.vue";
+import wangEditor from "../ui/wang-editor/wang-editor.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
@@ -728,6 +742,8 @@ export default {
     InputRange,
     Finder,
     ueditorPlus,
+    wangEditor,
+    // tiptapEditor,
     ueditor: UEditor,
     QrCode,
     multiFinder,
