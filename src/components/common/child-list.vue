@@ -1,47 +1,157 @@
 <template>
   <div>
-    <treegrid :disabled="updatable === false" :read-only="updatable===false || readOnly" :mainService="mainService" ref="list" v-if="isTree && storageType === 'db'"
-      :name="name" list-type="treelist" :listMainFormDatas="mainFormDatas" :storage-type="storageType"
-      :service="service" :page-size="pageSize" :childForeignkey="foreignKey" :default-condition="getDefaultConditions"
-      :main-data="mainData" :div-cond="divCond" @list-loaded="onListLoaded()" @add-form-loaded="onAddFormLoaded($event)"
-      @update-form-loaded="onUpdateFormLoaded($event)">
+    <treegrid
+      :disabled="updatable === false"
+      :read-only="updatable === false || readOnly"
+      :mainService="mainService"
+      ref="list"
+      v-if="isTree && storageType === 'db'"
+      :name="name"
+      list-type="treelist"
+      :listMainFormDatas="mainFormDatas"
+      :storage-type="storageType"
+      :service="service"
+      :page-size="pageSize"
+      :childForeignkey="foreignKey"
+      :default-condition="getDefaultConditions"
+      :main-data="mainData"
+      :div-cond="divCond"
+      @list-loaded="onListLoaded()"
+      @add-form-loaded="onAddFormLoaded($event)"
+      @update-form-loaded="onUpdateFormLoaded($event)"
+    >
     </treegrid>
 
-    <list-proc ref="list" :service="service" :disabled="updatable === false" v-else-if="isProc" :div-cond="divCond">
+    <list-proc
+      ref="list"
+      :service="service"
+      :disabled="updatable === false"
+      v-else-if="isProc"
+      :div-cond="divCond"
+    >
     </list-proc>
-    <tableEdit ref="mlist" :name="name" :disabled="updatable === false" :pageType="foreignKey.view_model"
-      :pageIsDraft="pageIsDraft" :showPagination="childListConfig.showPagination && showPagination"
-      :list-type="listType" :defaultCondition="defaultCondition" :storage-type="storageType" :service="service"
-      :childForeignkey="foreignKey" :def-data-para="defDataPara" :read-only="readOnly"
-      :childforeignvalue="getRefColValue" :default-condition="getDefaultConditions" :inplace-edit="inplaceEdit"
-      :default-inplace-edit-mode="defaultInplaceEditMode" :default-dirty-flags="defaultDirtyFlags" :merge-col="mergeCol"
-      :listMainFormDatas="mainFormDatas" :main-data="mainData ? mainData : formModel" :$srvApp="$srvApp"
-      :div-cond="divCond" @child-loaded="childDataLoadedRun($event)" @list-loaded="onListLoaded"
-      @inline-list-loaded="onInlineListLoaded" @add-form-loaded="onAddFormLoaded($event)"
-      @update-form-loaded="onUpdateFormLoaded($event)" @duplicate-form-loaded="onAddFormLoaded($event)"
-      @filter-form-loaded="onFilterFormLoaded" @list-data-loaded="listLoaded($event)"
-      @grid-data-changed="$emit('grid-data-changed', $event)" @standby-row-added="onStandbyRowAdded"
-      v-else-if="foreignKey.view_model == 'mlist'"></tableEdit>
-    <custom-frame :mem-initdatas-add="initDatas" :disabled="updatable === false" ref="frameList" :key="childListService"
-      :col-srv="childListService" :service-name="item.service_name" :data="item" v-else-if="
+    <tableEdit
+      ref="mlist"
+      :name="name"
+      :disabled="updatable === false"
+      :pageType="foreignKey.view_model"
+      :pageIsDraft="pageIsDraft"
+      :showPagination="childListConfig.showPagination && showPagination"
+      :list-type="listType"
+      :defaultCondition="defaultCondition"
+      :storage-type="storageType"
+      :service="service"
+      :childForeignkey="foreignKey"
+      :def-data-para="defDataPara"
+      :read-only="readOnly"
+      :childforeignvalue="getRefColValue"
+      :default-condition="getDefaultConditions"
+      :inplace-edit="inplaceEdit"
+      :default-inplace-edit-mode="defaultInplaceEditMode"
+      :default-dirty-flags="defaultDirtyFlags"
+      :merge-col="mergeCol"
+      :listMainFormDatas="mainFormDatas"
+      :main-data="mainData ? mainData : formModel"
+      :$srvApp="$srvApp"
+      :div-cond="divCond"
+      @child-loaded="childDataLoadedRun($event)"
+      @list-loaded="onListLoaded"
+      @inline-list-loaded="onInlineListLoaded"
+      @add-form-loaded="onAddFormLoaded($event)"
+      @update-form-loaded="onUpdateFormLoaded($event)"
+      @duplicate-form-loaded="onAddFormLoaded($event)"
+      @filter-form-loaded="onFilterFormLoaded"
+      @list-data-loaded="listLoaded($event)"
+      @grid-data-changed="$emit('grid-data-changed', $event)"
+      @standby-row-added="onStandbyRowAdded"
+      v-else-if="foreignKey.view_model == 'mlist'"
+    ></tableEdit>
+    <custom-frame
+      :mem-initdatas-add="initDatas"
+      :disabled="updatable === false"
+      ref="frameList"
+      :key="childListService"
+      :col-srv="childListService"
+      :service-name="item.service_name"
+      :data="item"
+      v-else-if="
         uiMode === 'excel' &&
         'addchildlist' === listType &&
         item &&
         item.service_name
-      "></custom-frame>
-    <list ref="list" :key="service" :disabled="updatable === false" v-else :name="name" :mainService="mainService"
-      :pageIsDraft="pageIsDraft" :showPagination="childListConfig.showPagination && showPagination"
-      :list-type="listType" :defaultCondition="defaultCondition" :storage-type="storageType" :service="service"
-      :childForeignkey="foreignKey" :def-data-para="defDataPara" :read-only="updatable===false || readOnly" :childforeignkey="foreignKey"
-      :childforeignvalue="getRefColValue" :default-condition="getDefaultConditions" :inplace-edit="inplaceEdit"
-      :default-inplace-edit-mode="defaultInplaceEditMode" :default-dirty-flags="defaultDirtyFlags" :merge-col="mergeCol"
-      :listMainFormDatas="mainFormDatas" :main-data="mainData" :mem-initdatas-add="initDatas" :$srvApp="$srvApp"
-      :div-cond="divCond" @child-loaded="childDataLoadedRun($event)" @list-loaded="onListLoaded"
-      @inline-list-loaded="onInlineListLoaded" @add-form-loaded="onAddFormLoaded($event)"
-      @update-form-loaded="onUpdateFormLoaded($event)" @duplicate-form-loaded="onAddFormLoaded($event)"
-      @filter-form-loaded="onFilterFormLoaded" @list-data-loaded="listLoaded($event)"
-      @grid-data-changed="$emit('grid-data-changed', $event)" @standby-row-added="onStandbyRowAdded">
-    </list>
+      "
+    ></custom-frame>
+    <!-- <list
+      ref="list"
+      :key="service"
+      :disabled="updatable === false"
+      v-else
+      :name="name"
+      :mainService="mainService"
+      :pageIsDraft="pageIsDraft"
+      :showPagination="childListConfig.showPagination && showPagination"
+      :list-type="listType"
+      :defaultCondition="defaultCondition"
+      :storage-type="storageType"
+      :service="service"
+      :childForeignkey="foreignKey"
+      :childforeignkey="foreignKey"
+      :def-data-para="defDataPara"
+      :read-only="updatable === false || readOnly"
+      :childforeignvalue="getRefColValue"
+      :default-condition="getDefaultConditions"
+      :inplace-edit="inplaceEdit"
+      :default-inplace-edit-mode="defaultInplaceEditMode"
+      :default-dirty-flags="defaultDirtyFlags"
+      :merge-col="mergeCol"
+      :listMainFormDatas="mainFormDatas"
+      :main-data="mainData"
+      :mem-initdatas-add="initDatas"
+      :$srvApp="$srvApp"
+      :div-cond="divCond"
+      @child-loaded="childDataLoadedRun($event)"
+      @list-loaded="onListLoaded"
+      @inline-list-loaded="onInlineListLoaded"
+      @add-form-loaded="onAddFormLoaded($event)"
+      @update-form-loaded="onUpdateFormLoaded($event)"
+      @duplicate-form-loaded="onAddFormLoaded($event)"
+      @filter-form-loaded="onFilterFormLoaded"
+      @list-data-loaded="listLoaded($event)"
+      @grid-data-changed="$emit('grid-data-changed', $event)"
+      @standby-row-added="onStandbyRowAdded"
+    >
+    </list> -->
+    <tab-list
+      ref="list"
+      :key="service"
+      :tab-list-type="listType"
+      :storage-type="storageType"
+      :service="service"
+      :foreignKey="foreignKey"
+      :default-condition="getDefaultConditions"
+      :inplace-edit="inplaceEdit"
+      :default-inplace-edit-mode="defaultInplaceEditMode"
+      :default-dirty-flags="defaultDirtyFlags"
+      :$srvApp="$srvApp"
+      :div-cond="divCond"
+      :list-main-form-datas="mainFormDatas"
+      :mainService="mainService"
+      :list-name="service"
+      :childforeignvalue="getRefColValue"
+      :readOnly="readOnly"
+      @child-loaded="childDataLoadedRun($event)"
+      @list-loaded="onListLoaded"
+      @inline-list-loaded="onInlineListLoaded"
+      @add-form-loaded="onAddFormLoaded($event)"
+      @update-form-loaded="onUpdateFormLoaded($event)"
+      @duplicate-form-loaded="onAddFormLoaded($event)"
+      @filter-form-loaded="onFilterFormLoaded"
+      @list-data-loaded="listLoaded($event)"
+      @grid-data-changed="$emit('grid-data-changed', $event)"
+      @standby-row-added="onStandbyRowAdded"
+      v-else
+    >
+    </tab-list>
     <!--    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-if="item&&item.service_name"></custom-frame>-->
   </div>
 </template>
@@ -50,6 +160,7 @@
 import SimpleAdd from "./simple-add.vue";
 import SimpleUpdate from "./simple-update.vue";
 import List from "./list.vue";
+import TabList from "./tab-list2.vue";
 import Treegrid from "./treegrid.vue";
 import ListProc from "./listproc.vue";
 import ChildListMixin from "../mixin/child-list-mixin";
@@ -57,9 +168,9 @@ import ChildListMixin from "../mixin/child-list-mixin";
 import tableEdit from "./table-edit.vue";
 import customFrame from "../feature/custom-frame.vue"; // 新增的增强表格
 
-import { evalJson } from '@/util/evalJsonExpr.js'
+import { evalJson } from "@/util/evalJsonExpr.js";
 
-import concat from 'lodash/concat';
+import concat from "lodash/concat";
 /**
  * 子表组件， 主要是处理外键相关的逻辑： 例如外籍列、外键disp列隐藏；添加行数据自动添加外键列的值。
  */
@@ -70,6 +181,7 @@ export default {
     SimpleUpdate,
     SimpleAdd,
     List,
+    TabList,
     ListProc,
     tableEdit,
   },
@@ -204,8 +316,8 @@ export default {
     },
     getRefColValue: function () {
       if (this.defaultCondition && this.defaultCondition.length > 0) {
-        if(typeof this.defaultCondition[0].value === 'function'){
-          return this.defaultCondition[0].value(this.mainFormDatas)
+        if (typeof this.defaultCondition[0].value === "function") {
+          return this.defaultCondition[0].value(this.mainFormDatas);
         }
         return this.defaultCondition[0].value;
       }
@@ -248,7 +360,7 @@ export default {
       if (this.childListConfig?.more_config) {
         return JSON.parse(this.childListConfig?.more_config);
       } else if (this.childListConfig?._childMoreConfig) {
-        return this.childListConfig._childMoreConfig
+        return this.childListConfig._childMoreConfig;
       }
     },
     fkMoreConfig() {
@@ -278,12 +390,12 @@ export default {
     },
     updatable() {
       if (this.foreignKey?.child_read_json) {
-        const json = JSON.parse(this.foreignKey.child_read_json)
-        return evalJson(json, this.mainFormDatas) !== true
+        const json = JSON.parse(this.foreignKey.child_read_json);
+        return evalJson(json, this.mainFormDatas) !== true;
       }
     },
   },
-  created: function () { },
+  created: function () {},
 
   methods: {
     listLoaded(e) {
@@ -299,11 +411,11 @@ export default {
     },
     buildRunQuries() {
       if (this.$refs.mlist) {
-        return this.$refs.mlist.buildMlistRunQuries(this.foreignKey)||[];
+        return this.$refs.mlist.buildMlistRunQuries(this.foreignKey) || [];
       } else if (this.$refs.frameList) {
-        return this.$refs.frameList?.buildRunQuries(this.foreignKey)||[];
+        return this.$refs.frameList?.buildRunQuries(this.foreignKey) || [];
       } else {
-        return this.$refs.list.buildRunQuries(this.foreignKey)||[];
+        return this.$refs.list.buildRunQuries(this.foreignKey) || [];
       }
     },
 

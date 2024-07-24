@@ -20,6 +20,8 @@
       :tabs="tabs"
       :srv="getService()"
       :cols="cols"
+      :default-condition="defaultCondition"
+      :main-data="listMainFormDatas"
       @on-input-value="onFilterChange"
       @on-change="getTableDatas"
     ></filterTabs>
@@ -91,8 +93,8 @@
       <template>
         <treegrid
           ref="list"
-          v-if="isTreeReal() && storageType === 'db'"
-          :list-type="listType()"
+          v-if="isTreeReal && storageType === 'db'"
+          :list-type="getListType"
           :storage-type="storageType"
           :service="getService()"
           :default-condition="getDefaultConditions"
@@ -101,8 +103,8 @@
         </treegrid>
         <list
           ref="list"
-          v-else
-          :list-type="listType()"
+          :$srvApp="$srvApp"
+          :list-type="getListType"
           :storage-type="storageType"
           :service="getService()"
           @more-config-loaded="moreConfigLoaded"
@@ -111,9 +113,26 @@
           :inplace-edit="inplaceEdit"
           :default-inplace-edit-mode="defaultInplaceEditMode"
           :default-dirty-flags="defaultDirtyFlags"
+          :childforeignvalue="childforeignvalue"
+          :name="listName"
+          :childForeignkey="foreignKey"
+          :childforeignkey="foreignKey"
+          :listMainFormDatas="listMainFormDatas"
+          :mainService="mainService"
+          :readOnly="readOnly"
           @stats-data-load="statsLoaded"
-          @grid-data-changed="$emit('grid-data-changed', $event)"
           @v2-loaded-isDraft="v2LoadedIsDraft($event)"
+          @child-loaded="$emit('child-loaded', $event)"
+          @list-loaded="$emit('list-loaded', $event)"
+          @inline-list-loaded="$emit('inline-list-loaded', $event)"
+          @add-form-loaded="$emit('add-form-loaded', $event)"
+          @update-form-loaded="$emit('update-form-loaded', $event)"
+          @duplicate-form-loaded="$emit('duplicate-form-loaded', $event)"
+          @filter-form-loaded="$emit('filter-form-loaded', $event)"
+          @list-data-loaded="$emit('list-data-loaded', $event)"
+          @grid-data-changed="$emit('grid-data-changed', $event)"
+          @standby-row-added="$emit('standby-row-added',$event)"
+          v-else
         >
         </list>
       </template>
@@ -127,6 +146,7 @@ import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
 // 表头的筛选过滤条件 2020 版
 import filterTabs from "./filter-tabs.vue";
+import { main } from "@popperjs/core";
 /**
  * concepts:
  * row: 一行页面元素，包含多个section;
@@ -177,7 +197,12 @@ export default {
         return [];
       },
     },
-
+    tabListType: String,
+    listName: String,
+    childforeignvalue: [String, Number, Object],
+    listMainFormDatas: [Array, Object],
+    mainService: String,
+    readOnly: Boolean,
     searchForm: {
       type: Boolean,
       default: function () {
@@ -207,6 +232,22 @@ export default {
   },
 
   computed: {
+    isTreeReal: function () {
+      if (this.$route?.path?.indexOf("treegrid") > 0) {
+        return true;
+      }
+      return this.isTree;
+    },
+
+    getListType: function () {
+      if (this.tabListType) {
+        return this.tabListType;
+      } else if (this.isTreeReal) {
+        return "treelist";
+      } else {
+        return "list";
+      }
+    },
     rows: function () {
       let rows = [];
       let activeRow = { sections: [] };
@@ -245,7 +286,9 @@ export default {
           }
         }
       }
-
+      if (this.defaultCondition?.length) {
+        conditions.push(...this.defaultCondition);
+      }
       return conditions;
     },
   },
@@ -315,22 +358,6 @@ export default {
       } else {
         return true;
       }
-    },
-
-    listType: function () {
-      return this.isTreeReal() ? "treelist" : "list";
-    },
-
-    isTreeReal: function () {
-      if (
-        this.$route &&
-        this.$route.path &&
-        this.$route.path.indexOf("treegrid") > 0
-      ) {
-        return true;
-      }
-
-      return this.isTree;
     },
 
     getDisplay: function (index) {
@@ -497,6 +524,10 @@ export default {
 
     buildSections: function (tabs) {
       // generate tab.condition, order, depend_sections from json string to js object/array
+      const colsMap = this.cols.reduce((res, cur) => {
+        res[cur.columns] = { ...cur };
+        return res;
+      }, {});
       let self = this;
       let tab = {};
       let tabsData = [];
@@ -526,7 +557,8 @@ export default {
         tab._data = t;
         tab._options = [];
         tab._type = mc.type || null;
-        tab.option_list = mc.option_list || null;
+        tab.option_list =
+          mc.option_list || colsMap?.[mc.colName]?.option_list_v2 || null;
         tab._colName = mc.colName || null;
         tab.inputType = mc.inputType || null;
         tab.showAllTag = mc.showAllTag || false;
@@ -548,7 +580,11 @@ export default {
             }
           }
         }
-        if (tab.inputType == "fk") {
+        if (
+          tab.inputType == "fk" &&
+          tab.option_list &&
+          tab.option_list.serviceName
+        ) {
           let cond = [
             {
               colName: tab.option_list.key_disp_col,
@@ -702,7 +738,8 @@ export default {
   mounted: function () {
     window.tabs = this;
     let self = this;
-    this.loadColsV2(this.getService(), this.listType()).then((response) => {
+    this.loadColsV2(this.getService(), this.getListType).then((response) => {
+      debugger;
       if (
         response &&
         response.data &&

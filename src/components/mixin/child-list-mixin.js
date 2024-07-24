@@ -152,8 +152,6 @@ export default {
         this.foreignKey.conditions.forEach(item => {
           let refCol = item.colName
           newRow[refCol] = item.value
-
-          
         })
       }
     },
