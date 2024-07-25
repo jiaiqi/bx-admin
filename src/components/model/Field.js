@@ -1,6 +1,6 @@
 import * as DataUtil from "../../util/DataUtil";
-import {formatMoney} from "../../util/DataUtil";
-import isFunction from 'lodash/isFunction'
+import { formatMoney } from "../../util/DataUtil";
+import isFunction from "lodash/isFunction";
 import isBoolean from "lodash/isBoolean";
 import isString from "lodash/isString";
 import isObject from "lodash/isObject";
@@ -11,7 +11,6 @@ import split from "lodash/split";
 import join from "lodash/join";
 import clone from "lodash/clone";
 import cloneDeep from "lodash/cloneDeep";
-
 
 export const hotTableMetadata = {
   User: {
@@ -29,11 +28,10 @@ export const hotTableMetadata = {
     valueCol: "dept_no",
     dispCol: "dept_name",
   },
-
-}
+};
 
 export function getHotTableName(type) {
-  return hotTableMetadata[type] && hotTableMetadata[type].table
+  return hotTableMetadata[type] && hotTableMetadata[type].table;
 }
 
 let guid = function () {
@@ -43,45 +41,60 @@ let guid = function () {
       .substring(1);
   }
 
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
-
+  return (
+    s4() +
+    s4() +
+    "-" +
+    s4() +
+    "-" +
+    s4() +
+    "-" +
+    s4() +
+    "-" +
+    s4() +
+    s4() +
+    s4()
+  );
+};
 
 export class Field {
-
   constructor(fieldInfo, form) {
-    this.guid = guid()
+    this.guid = guid();
     this.info = fieldInfo;
     this.model = null;
     this.modelOld = null;
     this.vif = true;
-    this.moreInfo = null
-    
-    if(fieldInfo.moreConfig?.fileType){
-      this.fileType = fieldInfo.moreConfig?.fileType
+    this.moreInfo = null;
+
+    if (fieldInfo.moreConfig?.fileType) {
+      this.fileType = fieldInfo.moreConfig?.fileType;
     }
 
-    if(fieldInfo.moreConfig?.fileDesc){
-      this.fileDesc = fieldInfo.moreConfig?.fileDesc
+    if (fieldInfo.moreConfig?.fileDesc) {
+      this.fileDesc = fieldInfo.moreConfig?.fileDesc;
     }
 
-    if(fieldInfo.moreConfig?.fileSize){
-      this.fileSize = fieldInfo.moreConfig?.fileSize
+    if (fieldInfo.moreConfig?.fileSize) {
+      this.fileSize = fieldInfo.moreConfig?.fileSize;
     }
 
-    if (this.info.editor == 'multiselect') {
+    if (this.info.editor == "multiselect") {
       // multiselect need default value as []
-      this.model = this.model || []
+      this.model = this.model || [];
     }
 
-    if (this.info.editor == 'finder') {
-      this.finderSelected = ""
+    if (this.info.editor == "finder") {
+      this.finderSelected = "";
     }
 
-    this.options = (this.info.srvCol && this.info.srvCol.option_list_v2 && this.info.srvCol.option_list_v2.options) || [];
-    this.optionsFunc = _ => {
+    this.options =
+      (this.info.srvCol &&
+        this.info.srvCol.option_list_v2 &&
+        this.info.srvCol.option_list_v2.options) ||
+      [];
+    this.optionsFunc = (_) => {
       return this.options;
-    }
+    };
 
     // vm instance of field-editor
     this.editor = null;
@@ -95,15 +108,15 @@ export class Field {
       let upstreamCondition = {
         colName: this.info.upstream.refCol,
         ruleType: "eq",
-        valueFunc: _ => {
+        valueFunc: (_) => {
           return field.form.fields[field.info.upstream.field].getSrvVal();
-        }
+        },
       };
 
       if (this.info.dispLoader) {
         this.info.dispLoader.conditions = this.info.dispLoader.conditions || [];
         this.info.dispLoader.conditions.push(upstreamCondition);
-        this.info._upstreamCondition = cloneDeep(upstreamCondition)
+        this.info._upstreamCondition = cloneDeep(upstreamCondition);
       }
     }
 
@@ -117,70 +130,132 @@ export class Field {
     // array item is object, keys: value, remark
     this.historyData = [];
 
-    this.autocompleteInput = false
-    if(this.info.editor == null && this.info.redundant){
-      let dependField = this.info.redundant.dependField
-      let field = this
-      this.autocompleteInput = true
-      this.autocompleteFunc =  (_) => {
-        
-        let dependField = field.form.fields[this.info.redundant.dependField]
-        if(Array.isArray(field.form.fields)){
-           for(let f of field.form.fields){
-             if(f.info.name == this.info.redundant.dependField){
-              dependField = f
-             }
-           }
+    this.autocompleteInput = false;
+    if (this.info.editor == null && this.info.redundant) {
+      let dependField = this.info.redundant.dependField;
+      let field = this;
+      this.autocompleteInput = true;
+
+      this.autocompleteFunc = (_) => {
+        let dependField = field.form.fields[this.info.redundant.dependField];
+        if (Array.isArray(field.form.fields)) {
+          for (let f of field.form.fields) {
+            if (f.info.name == this.info.redundant.dependField) {
+              dependField = f;
+            }
+          }
         }
-        if(dependField){
-          return  (dependField.info.srvCol && dependField.info.srvCol.option_list_v2) || [];
-        }else{
-          return []
+        if (dependField) {
+          let result = dependField?.info?.srvCol?.option_list_v2;
+          const option_list_v3 = dependField?.info?.srvCol?.optionListV3;
+          if (option_list_v3?.length) {
+            const formModel = this.field.form.srvValFormModel();
+            result = option_list_v3.find((item) => {
+              if (item.conds?.length) {
+                // 条件外键
+                return item.conds.every((cond) =>
+                  cond.case_val?.includes?.(formModel[cond.case_col])
+                );
+              } else {
+                return true;
+              }
+            });
+          }
+          return result;
+          // return (
+          //   (dependField.info.srvCol &&
+          //     dependField.info.srvCol.option_list_v2) ||
+          //   []
+          // );
+        } else {
+          return [];
         }
-        
-      }
+      };
+      this.isAutocomplete = () => {
+        //*如果引用的字段是fk字段的显示字段 则自动使用autocomplete特性,并且隐藏掉fk字段
+        //?目前先默认不隐藏fk字段，sessionStorage中hide_fk_field为true时再隐藏，后续没啥问题了放开这个限制
+        let optionsV2 = this.autocompleteFunc();
+        let redundant = this.info.redundant;
+        if (
+          optionsV2?.key_disp_col &&
+          optionsV2?.key_disp_col === redundant?.refedCol
+        ) {
+          // 引用的字段是fk字段的显示字段
+          if (sessionStorage.getItem("hide_fk_field") === "true") {
+            let dependField =
+              field.form.fields[this.info.redundant.dependField];
+            const addSrvCfg = optionsV2?.add_srv_cfg;
+            function hasPermission() {
+              // 有新增的权限
+              return addSrvCfg?.permission && addSrvCfg.srv && true;
+            }
+            function allowEditAndSelect() {
+              // 编辑选择
+              return hasPermission() && optionsV2.allow_input === "编辑选择";
+            }
+            function onlyEdit() {
+              // 自行输入
+              return hasPermission() && optionsV2.allow_input === "自行输入";
+            }
+            if (!allowEditAndSelect() && !onlyEdit()) {
+              // 编辑选择跟自行输入的 不隐藏fk字段
+              dependField.info.visible = false;
+            }
+          }
+          return true;
+        }
+        return false;
+      };
       // let dependFieldOptionsListV2 = field.form.fields
     }
 
-    this.fieldActionOptionsJson = null
-    if(this.info.srvCol.col_cfg_json){
-      
+    this.fieldActionOptionsJson = null;
+    if (this.info.srvCol.col_cfg_json) {
       try {
-        this.fieldActionOptionsJson = JSON.parse(this.info.srvCol.col_cfg_json)
+        this.fieldActionOptionsJson = JSON.parse(this.info.srvCol.col_cfg_json);
       } catch (error) {
-        console.error(`字段${this.info.label}col_cfg_json配置错误,无效的json字符串`)
+        console.error(
+          `字段${this.info.label}col_cfg_json配置错误,无效的json字符串`
+        );
       }
     }
   }
   getSrvVal() {
     // 获取字段值
-    if (this.info.type == 'Note' && this.editor) {
+    if (this.info.type == "Note" && this.editor) {
       return this.editor.getSrvVal();
-    } else if (this.info.type == 'Boolean') {
+    } else if (this.info.type == "Boolean") {
       return !!this.model ? 1 : 0;
     } else if (this.info.editor == "userlist" && this.editor) {
       return this.editor.getSrvVal();
-    } 
+    }
     let ret = this.model;
     if (ret == null || ret == undefined) {
       return null;
     }
 
-    if (this.info.isTemporal() && ret !== '******') {
+    if (this.info.isTemporal() && ret !== "******") {
       let temporalType = this.info.subtype || this.info.type.toLowerCase();
       if (Array.isArray(ret)) {
         for (let key in ret) {
-          ret[key] = DataUtil.formatDate(ret[key], temporalType,this.info.format)
+          ret[key] = DataUtil.formatDate(
+            ret[key],
+            temporalType,
+            this.info.format
+          );
         }
       } else {
-        ret = DataUtil.formatDate(ret, temporalType,this.info.format)
+        ret = DataUtil.formatDate(ret, temporalType, this.info.format);
       }
     } else if (this.info.isFinder()) {
       // 自行输入且为add表单时，直接提交对象
       // if(this.info.allowInput==='自行输入'){
-      if(this.info.allowInput==='自行输入' && this.info?.srvCol?.service_name?.includes('add')){
-        ret = typeof ret === 'object' ? ret : null
-      }else if (typeof ret === 'object') {
+      if (
+        this.info.allowInput === "自行输入" &&
+        this.info?.srvCol?.service_name?.includes("add")
+      ) {
+        ret = typeof ret === "object" ? ret : null;
+      } else if (typeof ret === "object") {
         ret = ret[this.info.valueCol];
       }
     } else if (this.info.editor == "multiselect") {
@@ -196,48 +271,61 @@ export class Field {
   }
 
   setSrvVal(srvVal) {
-    if (srvVal&&srvVal === this.getSrvVal()) {
-      let isFinderValScalar = (this.info.isFinder() && !isObject(this.model));
+    if (srvVal && srvVal === this.getSrvVal()) {
+      let isFinderValScalar = this.info.isFinder() && !isObject(this.model);
       if (!isFinderValScalar) {
-        return
+        return;
       }
     }
 
     let handledByEditor = false;
     if (this.editor && this.editor.isSpecial()) {
       this.editor.setSrvVal(srvVal);
-      handledByEditor = true 
+      handledByEditor = true;
     } else if (this.info.editor == "multiselect") {
       if (srvVal && srvVal.trim()) {
         this.model = srvVal.trim().split(",");
       } else {
         this.model = [];
       }
-    } else if( this.info.isNumeric()) {
-      if(Number.parseFloat(srvVal) !== NaN && srvVal !== null && srvVal !== '******') {
-        this.model = Number.parseFloat(srvVal)
+    } else if (this.info.isNumeric()) {
+      if (
+        Number.parseFloat(srvVal) !== NaN &&
+        srvVal !== null &&
+        srvVal !== "******"
+      ) {
+        this.model = Number.parseFloat(srvVal);
       } else {
-        this.model = srvVal
+        this.model = srvVal;
       }
-    }else {
+    } else {
       this.model = srvVal;
       // 如果原始值为 “” || null 时 调用默认值配置表达式，有的话则复制
-      if((srvVal === "" || srvVal === null || srvVal === undefined) && this.hasInitValueExpr()&&!["",null,undefined].includes(this.evalInitValueExpr())){
-        this.model = this.setSrvVal(this.evalInitValueExpr())
-        console.log("默认值",srvVal,this.model,this.setSrvVal(this.evalInitValueExpr()))
-      } 
+      if (
+        (srvVal === "" || srvVal === null || srvVal === undefined) &&
+        this.hasInitValueExpr() &&
+        !["", null, undefined].includes(this.evalInitValueExpr())
+      ) {
+        this.model = this.setSrvVal(this.evalInitValueExpr());
+        console.log(
+          "默认值",
+          srvVal,
+          this.model,
+          this.setSrvVal(this.evalInitValueExpr())
+        );
+      }
     }
 
     if (!handledByEditor && this.editor) {
-      this.editor.$emit("field-value-changed", this.info.name)
+      this.editor.$emit("field-value-changed", this.info.name);
     }
   }
 
-   getDispVal() {
-    let self = this
+  getDispVal() {
+    let self = this;
     if (this.info.isFinder()) {
       if (!this.model) {
-        return null
+        return null;
       }
 
       let dispCol = this.info.dispCol;
@@ -248,31 +336,32 @@ export class Field {
       }
     } else if (this.info.isDict()) {
       if (this.options) {
-        let target = this.options.filter(pair => pair.value == this.model);
+        let target = this.options.filter((pair) => pair.value == this.model);
         return target.length > 0 ? target[0].label : this.getSrvVal();
       } else {
         return this.getSrvVal();
       }
-
-    } else if (this.info.type == 'Boolean') {
-      return !!this.model ? '是' : '否';
-    } else if (this.info.type == 'UserList') {
-      // function 
+    } else if (this.info.type == "Boolean") {
+      return !!this.model ? "是" : "否";
+    } else if (this.info.type == "UserList") {
+      // function
       try {
         if (this.model) {
-          let items = JSON.parse(this.model)
+          let items = JSON.parse(this.model);
           if (items && items.length) {
             items = items.map((item) => {
-              return  item.disp
-            })
+              return item.disp;
+            });
             // return join(items.map(item => item.disp), ",")
-            let valKeys =  join(items.map(item => item), ",")
-            
-             return valKeys
+            let valKeys = join(
+              items.map((item) => item),
+              ","
+            );
+
+            return valKeys;
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       return "";
     } else {
@@ -281,7 +370,7 @@ export class Field {
   }
 
   getDispVal4Read() {
-    if(this.noPerm4Sensi === true){
+    if (this.noPerm4Sensi === true) {
       return "******";
     }
 
@@ -295,58 +384,60 @@ export class Field {
     let dispCol = this.info.dispCol;
     let separator = "-";
     if ("year" === fieldType.toLowerCase()) {
-      return split(value, separator)[0]
+      return split(value, separator)[0];
     } else if ("month" === fieldType.toLowerCase()) {
-      let parts = split(value, separator).slice(0, 2)
+      let parts = split(value, separator).slice(0, 2);
       return join(parts, separator);
     } else if (fieldType === "Boolean") {
       return !!value ? "是" : "否";
     } else if (fieldType === "Money") {
-      if(value !== null &&  value !== ''){
-        return formatMoney(value + "")
-      }else{
-        return ''
+      if (value !== null && value !== "") {
+        return formatMoney(value + "");
+      } else {
+        return "";
       }
-      
-    } else if(fieldType === "fk" && isObject(this.model)){
+    } else if (fieldType === "fk" && isObject(this.model)) {
       // fk 详情页显示 option list配置的 拼接值
-      let fieldInfo = this.info
-      let loader = fieldInfo.dispLoader
-      let item = this.model
-        console.log("1",value,this.model)
-        value =  loader.showAsPair !== true ?  item[ fieldInfo.dispCol ] : `${item[ fieldInfo.dispCol ]}/${item[ fieldInfo.valueCol ]}`;
-        
-        console.log("2",value,this.model)
-        return value;
-    }else if (this.shouldConvertDispValue4HotTable() && this.form.$store) {
-      let table = getHotTableName(this.info.type)
+      let fieldInfo = this.info;
+      let loader = fieldInfo.dispLoader;
+      let item = this.model;
+      console.log("1", value, this.model);
+      value =
+        loader.showAsPair !== true
+          ? item[fieldInfo.dispCol]
+          : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
+
+      console.log("2", value, this.model);
+      return value;
+    } else if (this.shouldConvertDispValue4HotTable() && this.form.$store) {
+      let table = getHotTableName(this.info.type);
       let noVal = this.getSrvVal();
       let tableData = this.form.$store.getters.getTableData(table);
       if (tableData && tableData.length > 0) {
-        let target = tableData.filter(item => item[this.info.valueCol] === noVal)
-        return target && target.length && target[0][dispCol]
+        let target = tableData.filter(
+          (item) => item[this.info.valueCol] === noVal
+        );
+        return target && target.length && target[0][dispCol];
       } else {
-        
         return noVal;
       }
-    }else if(fieldType === "fkjsons" && value){
-      const fmt = this.info.fmt
-      if(fmt && fmt.disp_col){
-        const arr= JSON.parse(value)
-        return arr.map(item=>item[fmt.disp_col]||'')
+    } else if (fieldType === "fkjsons" && value) {
+      const fmt = this.info.fmt;
+      if (fmt && fmt.disp_col) {
+        const arr = JSON.parse(value);
+        return arr.map((item) => item[fmt.disp_col] || "");
       }
-      return value
-    }
-    else {
-         
+      return value;
+    } else {
       return value;
     }
   }
 
-
   shouldConvertDispValue4HotTable() {
     let type = this.info.type;
-    return (hotTableMetadata[type]) && this.form && this.form.formType === "detail";
+    return (
+      hotTableMetadata[type] && this.form && this.form.formType === "detail"
+    );
   }
 
   reset() {
@@ -358,24 +449,24 @@ export class Field {
 
   reset2Init() {
     if (this.hasInitValueExpr()) {
-      this.setSrvVal(this.evalInitValueExpr())
+      this.setSrvVal(this.evalInitValueExpr());
     } else {
       this.reset();
     }
   }
 
   evalXIf() {
-    let self = this
+    let self = this;
     if (self.info.xIf == null || self.info.xIf == undefined) {
       return true;
-    } else if (typeof(variable) == typeof(true)) {
+    } else if (typeof variable == typeof true) {
       return self.info.xIf;
     } else if (self.form && self.form) {
       // should be an string of test_func
       // noinspection JSUnusedLocalSymbols
-      let mainData = self.form.getParentFormModel()
-      let approval = self.form.approvalFormMode 
-      
+      let mainData = self.form.getParentFormModel();
+      let approval = self.form.approvalFormMode;
+
       // console.log('表单',approval,"var zz=" + self.info.xIf + "(row,mainData,approval); zz")
       let row = self.form.srvValFormModel();
       let ret = eval("var zz=" + self.info.xIf + "(row,mainData,approval); zz");
@@ -384,19 +475,27 @@ export class Field {
   }
 
   evalVisibleExpr() {
-    return this.evalVersatileFlagVar(this.info.visible)
+    return this.evalVersatileFlagVar(this.info.visible);
   }
 
   evalEditable() {
     let vm = this.form;
-    if(vm?.defaultCondition?.find(item=>item.value && ['eq'].includes(item.ruleType) && item.colName&&item.colName===this.info.name)){
-      return false
+    if (
+      vm?.defaultCondition?.find(
+        (item) =>
+          item.value &&
+          ["eq"].includes(item.ruleType) &&
+          item.colName &&
+          item.colName === this.info.name
+      )
+    ) {
+      return false;
     }
-    return this.evalVersatileFlagVar(this.info.editable)
+    return this.evalVersatileFlagVar(this.info.editable);
   }
 
   evalInitValueExpr() {
-    return this.evalVersatileFlagVar(this.info.initValueExpr)
+    return this.evalVersatileFlagVar(this.info.initValueExpr);
   }
 
   evalVersatileFlagVar(flagVar) {
@@ -410,7 +509,7 @@ export class Field {
     } else if (isFunction(flagVar)) {
       return flagVar(formModel);
     } else {
-      return !!flagVar; 
+      return !!flagVar;
     }
   }
 
@@ -435,14 +534,18 @@ export class Field {
     }
   }
 
-
   evalVisible() {
     return this.evalXIf() && this.evalVisibleExpr();
   }
 
   isEmpty() {
     let srvval = this.getSrvVal();
-    return srvval === null || srvval === undefined || srvval === '' || srvval === 'Invalid date';
+    return (
+      srvval === null ||
+      srvval === undefined ||
+      srvval === "" ||
+      srvval === "Invalid date"
+    );
   }
 
   setVisible(visible) {
@@ -456,34 +559,30 @@ export class Field {
   setInitValueExpr(initValueExpr) {
     this.info.initValueExpr = initValueExpr;
   }
-  
 
   hasInitValueExpr() {
-    return !!this.info.initValueExpr&&this.info.initValueExpr!=='$firstRowData';
+    return (
+      !!this.info.initValueExpr && this.info.initValueExpr !== "$firstRowData"
+    );
   }
 
   putValidateError(rule, errMsg) {
-    console.log('put Validate Error:',rule, errMsg)
+    console.log("put Validate Error:", rule, errMsg);
     this.errMsg[rule] = errMsg;
     this.errMsg = clone(this.errMsg);
-
   }
 
   putValidatePrompt(rule, promptMsg) {
-  
     this.promptMsg[rule] = promptMsg;
     this.promptMsg = clone(this.promptMsg);
-
   }
 
   clearValidateError(ruleName) {
-    
     delete this.errMsg[ruleName];
     this.errMsg = clone(this.errMsg);
   }
 
   clearValidatePrompt(ruleName) {
-    
     delete this.promptMsg[ruleName];
     this.promptMsg = clone(this.promptMsg);
   }
@@ -508,25 +607,24 @@ export class Field {
     }
     return "";
   }
-  hasHistoryData(){
+  hasHistoryData() {
     return !_isEmpty(this.historyData) && this.historyData.length > 1;
   }
-  getUniqueCheck(){
-    let isUnique = this.info.moreConfig
-    if(isUnique && isUnique.hasOwnProperty('uniqueCheck')){
-       return true
-    }else{
-      return false
+  getUniqueCheck() {
+    let isUnique = this.info.moreConfig;
+    if (isUnique && isUnique.hasOwnProperty("uniqueCheck")) {
+      return true;
+    } else {
+      return false;
     }
   }
-  getUniqueCheckMsg(){
-    let isUnique = this.info.isUniqueCheck
-    
-    return isUnique
+  getUniqueCheckMsg() {
+    let isUnique = this.info.isUniqueCheck;
+
+    return isUnique;
   }
-  setNoPerm4Sensi(value){
+  setNoPerm4Sensi(value) {
     this.noPerm4Sensi = value;
     value && this.setEditable(false);
   }
-
 }

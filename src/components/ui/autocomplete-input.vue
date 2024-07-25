@@ -107,7 +107,6 @@ export default {
       this.selectList(req, req.srvApp).then((response) => {
         if (response && response.data && response.data.data) {
           let options = response.data.data;
-          console.log(options);
           results = options.map((item) => {
             let result = {
               option: item,

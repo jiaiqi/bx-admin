@@ -453,6 +453,21 @@
               v-else-if="
                 field.info.editor == null &&
                 field.info.type == 'String' &&
+                field.autocompleteInput &&
+                field.isAutocomplete()
+              "
+            >
+              <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
+              <autocompleteInput
+                ref="autocompleteInput"
+                @change="changeDependField"
+                :field="field"
+              ></autocompleteInput>
+            </div>
+            <div
+              v-else-if="
+                field.info.editor == null &&
+                field.info.type == 'String' &&
                 field.info.subType == 'autocomplete' &&
                 field.autocompleteInput
               "

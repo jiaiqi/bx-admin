@@ -446,6 +446,8 @@ export default {
         this.hasInit = true;
       } else if (this.field.model && this.finderSelected) {
         this.selected = this.finderSelected;
+      } else if(!this.field.model && !this.finderSelected){
+        this.selected = null
       }
     },
     onPickerSelected(selected) {
