@@ -2,84 +2,217 @@
 <template>
   <div>
     <div v-if="subType !== 'select'">
-      <a v-if="field.info.linkUrlFunc && setDisabled && !isFks" v-show="field.getSrvVal()"
-        style="white-space: normal; color: dodgerblue; cursor: pointer" @click="onLinkClicked()">
+      <a
+        v-if="field.info.linkUrlFunc && setDisabled && !isFks"
+        v-show="field.getSrvVal()"
+        style="white-space: normal; color: dodgerblue; cursor: pointer"
+        @click="onLinkClicked()"
+      >
         {{ field.getDispVal4Read() }}
       </a>
-      <div class="div-el-input" v-else-if="onlyEdit && ['add', 'update'].includes(formType)" @click="onClickEdit">
+      <div
+        class="div-el-input"
+        v-else-if="onlyEdit && ['add', 'update'].includes(formType)"
+        @click="onClickEdit"
+      >
         <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
+        <span v-else class="placeholder">点击进行编辑</span>
+        <i class="el-icon-circle-close close-icon" title="清除" @click.stop="handleSelect()" v-if="field.getDispVal()"></i>
         <i class="el-icon-edit"></i>
       </div>
-      <location-picker v-else-if="isLocation" :field="field" :disabled="setDisabled" :mainformDatas="mainformDatas"
-        :defaultValues="defaultValues" :current-selected="field.model"
-        @on-selected="onPickerSelected"></location-picker>
-      <table-picker v-bind="$props" :selectedGridData="multiSelected" :finder-selected="field.model"
-        :defaultValues="defaultValues" :mainformDatas="mainformDatas" :disabled="setDisabled"
-        @on-selected="onPickerSelected" v-else-if="isFks"></table-picker>
+      <location-picker
+        v-else-if="isLocation"
+        :field="field"
+        :disabled="setDisabled"
+        :mainformDatas="mainformDatas"
+        :defaultValues="defaultValues"
+        :current-selected="field.model"
+        @on-selected="onPickerSelected"
+      ></location-picker>
+      <table-picker
+        v-bind="$props"
+        :selectedGridData="multiSelected"
+        :finder-selected="field.model"
+        :defaultValues="defaultValues"
+        :mainformDatas="mainformDatas"
+        :disabled="setDisabled"
+        @on-selected="onPickerSelected"
+        v-else-if="isFks"
+      ></table-picker>
       <div v-else style="display: flex; align-items: center">
-        <el-autocomplete ref="autocomplete" :prefix-icon="(dispLoaderV2 &&
-          dispLoaderV2.imgType === 'eicon' &&
-          field.getSrvVal()) ||
-          ''
-          " :trigger-on-focus="showAutocomplete" :fetch-suggestions="loadOptions" :value-key="field.info.dispCol"
-          :disabled="setDisabled" v-model="selected" :placeholder="field.info.placeholder" clearable
-          @select="handleSelect" @blur="handleBlur" style="min-width: 220px; flex: 1" class="finder-autocomplete">
+        <el-autocomplete
+          ref="autocomplete"
+          :prefix-icon="
+            (dispLoaderV2 &&
+              dispLoaderV2.imgType === 'eicon' &&
+              field.getSrvVal()) ||
+            ''
+          "
+          :trigger-on-focus="showAutocomplete"
+          :fetch-suggestions="loadOptions"
+          :value-key="field.info.dispCol"
+          :disabled="setDisabled"
+          v-model="selected"
+          :placeholder="field.info.placeholder"
+          clearable
+          @select="handleSelect"
+          @blur="handleBlur"
+          style="min-width: 220px; flex: 1"
+          class="finder-autocomplete"
+        >
           <div slot="append">
-            <el-button icon="el-icon-search" v-if="!field.info.noSearchIcon" @click="onPopupClicked">
+            <el-button
+              icon="el-icon-search"
+              v-if="!field.info.noSearchIcon"
+              @click="onPopupClicked"
+            >
             </el-button>
           </div>
           <template slot-scope="{ item }">
             <span style="float: left">{{ item.labelFunc(item) }}</span>
-            <i :class="item.elIconFunc(item)" style="font-size: 20px" v-if="item.elIconFunc"></i>
-            <div class="svg-icon" v-html="item.imgUrlFunc(item)" v-else-if="
-              item.imgUrlFunc &&
-              item.imgUrlFunc(item) &&
-              item.imgUrlFunc(item).includes('<svg')
-            " height="30" width="30"></div>
-            <img :src="item.imgUrlFunc(item)" v-else-if="item.imgUrlFunc" height="30" width="30" />
+            <i
+              :class="item.elIconFunc(item)"
+              style="font-size: 20px"
+              v-if="item.elIconFunc"
+            ></i>
+            <div
+              class="svg-icon"
+              v-html="item.imgUrlFunc(item)"
+              v-else-if="
+                item.imgUrlFunc &&
+                item.imgUrlFunc(item) &&
+                item.imgUrlFunc(item).includes('<svg')
+              "
+              height="30"
+              width="30"
+            ></div>
+            <img
+              :src="item.imgUrlFunc(item)"
+              v-else-if="item.imgUrlFunc"
+              height="30"
+              width="30"
+            />
           </template>
         </el-autocomplete>
-        <el-button icon="el-icon-edit" style="margin-left: 5px; height: 38px" size="mini"
-          v-if="allowEditAndSelect && (formType === 'update' || field.getSrvVal())" @click="activePopup = 'update'">
+        <el-button
+          icon="el-icon-edit"
+          style="margin-left: 5px; height: 38px"
+          size="mini"
+          v-if="
+            allowEditAndSelect && (formType === 'update' || field.getSrvVal())
+          "
+          @click="activePopup = 'update'"
+        >
         </el-button>
-        <el-button icon="el-icon-plus" style="margin-left: 5px; height: 38px" size="mini"
-          v-else-if="!setDisabled && allowEditAndSelect && (formType === 'add' || !field.getSrvVal())"
-          @click="activePopup = 'add'">
+        <el-button
+          icon="el-icon-plus"
+          style="margin-left: 5px; height: 38px"
+          size="mini"
+          v-else-if="
+            !setDisabled &&
+            allowEditAndSelect &&
+            (formType === 'add' || !field.getSrvVal())
+          "
+          @click="activePopup = 'add'"
+        >
         </el-button>
       </div>
-      <el-dialog :title="'新增'" width="90%" :close-on-click-modal="1 == 2" append-to-body
-        :visible="activePopup === 'add'" @close="activePopup = ''">
-        <add name="add-popup" ref="add-form" :service="addService" :$srvApp="addApp" :navAfterSubmit="false"
-          :submit2Db="submit2Db" :defaultCondition="evalOptionConditions"
-          :defaultValues="submit2Db ? setPopupDefaultValue : field.model" @submitted2mem="submitted2mem"
-          @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded" v-if="activePopup == 'add'">
+      <el-dialog
+        :title="'新增'"
+        width="90%"
+        :close-on-click-modal="1 == 2"
+        append-to-body
+        :visible="activePopup === 'add'"
+        @close="activePopup = ''"
+      >
+        <add
+          name="add-popup"
+          ref="add-form"
+          :service="addService"
+          :$srvApp="addApp"
+          :navAfterSubmit="false"
+          :submit2Db="submit2Db"
+          :defaultCondition="evalOptionConditions"
+          :defaultValues="submit2Db ? setPopupDefaultValue : field.model"
+          @submitted2mem="submitted2mem"
+          @executor-complete="onExecutorComplete"
+          @form-loaded="onPopupFormLoaded"
+          v-if="activePopup == 'add'"
+        >
         </add>
       </el-dialog>
-      <el-dialog :title="'编辑'" width="90%" :close-on-click-modal="1 == 2" append-to-body
-        :visible="activePopup === 'update'" @close="activePopup = ''">
-        <update name="add-popup" ref="update-form" :pk="field.getSrvVal()" :pkCol="optionListV2.refed_col"
-          :service="updateService" :$srvApp="updateApp" :navAfterSubmit="false" :submit2Db="true" :defaultConditions="[{
-            colName: optionListV2.refed_col,
-            ruleType: 'eq',
-            value: field.getSrvVal()
-          }]" :defaultCondition="evalOptionConditions" :defaultValues="field.model || setPopupDefaultValue"
-          @submitted2mem="submitted2mem" @executor-complete="onExecutorComplete" @form-loaded="onPopupFormLoaded"
-          v-if="activePopup == 'update'">
+      <el-dialog
+        :title="'编辑'"
+        width="90%"
+        :close-on-click-modal="1 == 2"
+        append-to-body
+        :visible="activePopup === 'update'"
+        @close="activePopup = ''"
+      >
+        <update
+          name="add-popup"
+          ref="update-form"
+          :pk="field.getSrvVal()"
+          :pkCol="optionListV2.refed_col"
+          :service="updateService"
+          :$srvApp="updateApp"
+          :navAfterSubmit="false"
+          :submit2Db="true"
+          :defaultConditions="[
+            {
+              colName: optionListV2.refed_col,
+              ruleType: 'eq',
+              value: field.getSrvVal(),
+            },
+          ]"
+          :defaultCondition="evalOptionConditions"
+          :defaultValues="field.model || setPopupDefaultValue"
+          @submitted2mem="submitted2mem"
+          @executor-complete="onExecutorComplete"
+          @form-loaded="onPopupFormLoaded"
+          v-if="activePopup == 'update'"
+        >
         </update>
       </el-dialog>
-      <el-dialog title="查询选择" width="90%" :close-on-click-modal="1 == 2" append-to-body :visible="popup"
-        @close="popup = false">
-        <list :service="dispLoaderV2.service" v-if="popup" ref="popup" :$srvApp="appNo" mode="finder"
-          listType="selectlist" :grid-data-filter="this.dedupOptions" :default-condition="popupDefaultConditions()"
-          @row-dbclick="onRowSelected">
+      <el-dialog
+        title="查询选择"
+        width="90%"
+        :close-on-click-modal="1 == 2"
+        append-to-body
+        :visible="popup"
+        @close="popup = false"
+      >
+        <list
+          :service="dispLoaderV2.service"
+          v-if="popup"
+          ref="popup"
+          :$srvApp="appNo"
+          mode="finder"
+          listType="selectlist"
+          :grid-data-filter="this.dedupOptions"
+          :default-condition="popupDefaultConditions()"
+          @row-dbclick="onRowSelected"
+        >
         </list>
         <div style="text-align: center; color: red">请双击列表行进行选择</div>
       </el-dialog>
     </div>
     <div v-if="subType === 'select'">
-      <el-select v-model="selected" :value-key="field.info.dispCol" :disabled="setDisabled" clearable
-        @visible-change="getOptions" @change="handleSelect" :placeholder="field.info.placeholder">
-        <el-option v-for="item in optionsRun" :key="item.value" :label="item.label" :value="item.value">
+      <el-select
+        v-model="selected"
+        :value-key="field.info.dispCol"
+        :disabled="setDisabled"
+        clearable
+        @visible-change="getOptions"
+        @change="handleSelect"
+        :placeholder="field.info.placeholder"
+      >
+        <el-option
+          v-for="item in optionsRun"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
         </el-option>
       </el-select>
     </div>
@@ -116,7 +249,7 @@ export default {
     childForeignkey: Object,
     mainformDatas: Object,
     formModel: Object,
-    disabled: Boolean
+    disabled: Boolean,
   },
   data() {
     return {
@@ -139,8 +272,12 @@ export default {
         // this.handleSelect(null)
         if (!isEqual(newVal, oldVal) && isObject(oldVal) && this.optionListV3) {
           // optionListV2变化了 清空已选的值
-          console.log("optionListV2变化了:", cloneDeep(newVal), cloneDeep(oldVal));
-          this.handleSelect(null)
+          console.log(
+            "optionListV2变化了:",
+            cloneDeep(newVal),
+            cloneDeep(oldVal)
+          );
+          this.handleSelect(null);
         }
         if (
           newVal?.serviceName &&
@@ -221,11 +358,14 @@ export default {
       return service?.includes("add")
         ? "add"
         : service?.includes("update")
-          ? "update"
-          : "detail";
+        ? "update"
+        : "detail";
     },
     submit2Db() {
-      if (this.optionListV2?.allow_input === "自行输入" && this.formType === 'add') {
+      if (
+        this.optionListV2?.allow_input === "自行输入" &&
+        this.formType === "add"
+      ) {
         // if (this.optionListV2?.allow_input === "自行输入" && (this.formType === 'add' ||!this.field.getSrvVal())) {
         return false;
       } else {
@@ -255,20 +395,20 @@ export default {
         // return this.field?.info?.dispLoader;
       }
     },
-    optionListV3(){
-      return this.field?.info?.srvCol?.option_list_v3
+    optionListV3() {
+      return this.field?.info?.srvCol?.option_list_v3;
     },
     optionListV2() {
       let result = null;
       if (this.optionListV3?.length) {
         // 如果有v3 则使用v3
         const option_list_v3 = this.optionListV3;
-        const formModel = this.field.form.srvValFormModel()
+        const formModel = this.field.form.srvValFormModel();
         result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
-            return item.conds.every(
-              (cond) =>  cond.case_val?.includes?.(formModel[cond.case_col])
+            return item.conds.every((cond) =>
+              cond.case_val?.includes?.(formModel[cond.case_col])
             );
           } else {
             return true;
@@ -282,34 +422,35 @@ export default {
       // }
       if (this.field?.info?._upstreamCondition?.colName) {
         if (Array.isArray(result?.conditions)) {
-          result.conditions.push(cloneDeep(this.field.info._upstreamCondition))
+          result.conditions.push(cloneDeep(this.field.info._upstreamCondition));
         } else if (result) {
-          result.conditions = [cloneDeep(this.field.info._upstreamCondition)]
+          result.conditions = [cloneDeep(this.field.info._upstreamCondition)];
         }
       }
       return result;
     },
     evalOptionConditions() {
       // 解析请求条件
-      let loader = this.dispLoaderV2
+      let loader = this.dispLoaderV2;
       if (Array.isArray(loader?.conditions)) {
-        let condition = []
-        this.buildConditions(loader).forEach((c) =>
-          condition.push(c)
-        );
-        return condition
+        let condition = [];
+        this.buildConditions(loader).forEach((c) => condition.push(c));
+        return condition;
       }
     },
     setPopupDefaultValue() {
-      if (Array.isArray(this.evalOptionConditions) && this.evalOptionConditions.length) {
+      if (
+        Array.isArray(this.evalOptionConditions) &&
+        this.evalOptionConditions.length
+      ) {
         return this.evalOptionConditions.reduce((res, cur) => {
           res[cur.colName] = cur.value;
-          return res
-        }, {})
+          return res;
+        }, {});
       }
     },
     setDisabled() {
-      return this.disabled === true || this.field.info.editable === false
+      return this.disabled === true || this.field.info.editable === false;
     },
     optionsRun: function () {
       return this.options;
@@ -352,34 +493,56 @@ export default {
       return this.optionListV2?.update_srv_cfg;
     },
     updateService() {
-      return this.optionListV2?.update_srv_cfg?.srv || this.optionListV2?.serviceName?.replace('_select', '_update');
+      return (
+        this.optionListV2?.update_srv_cfg?.srv ||
+        this.optionListV2?.serviceName?.replace("_select", "_update")
+      );
     },
     updateApp() {
-      return this.updateSrvCfg?.app || this.optionListV2?.srv_app || this.appNo || null
+      return (
+        this.updateSrvCfg?.app ||
+        this.optionListV2?.srv_app ||
+        this.appNo ||
+        null
+      );
     },
     allowEditAndSelect() {
       // 编辑选择
-      return this.addSrvCfg?.permission && this.addSrvCfg.srv && this.optionListV2.allow_input === '编辑选择'
+      return (
+        this.addSrvCfg?.permission &&
+        this.addSrvCfg.srv &&
+        this.optionListV2.allow_input === "编辑选择"
+      );
     },
     onlyEdit() {
       // 自行输入
       // if (this.formType === 'update' && !this.field.getSrvVal()) {
       //   return false
       // }
-      return this.addSrvCfg?.permission && this.addSrvCfg.srv && this.optionListV2.allow_input === '自行输入'
+      return (
+        this.addSrvCfg?.permission &&
+        this.addSrvCfg.srv &&
+        this.optionListV2.allow_input === "自行输入"
+      );
     },
     isAdded() {
       // 是否是add表单中新创建的fk数据
-      return this.allowEditAndSelect && this.formType === 'add' && this.field.getSrvVal() && this.addedData?.[this.optionListV2?.refed_col] === this.field.getSrvVal()
-    }
+      return (
+        this.allowEditAndSelect &&
+        this.formType === "add" &&
+        this.field.getSrvVal() &&
+        this.addedData?.[this.optionListV2?.refed_col] ===
+          this.field.getSrvVal()
+      );
+    },
   },
   methods: {
     onClickEdit() {
-      if (this.formType === 'update' && !this.field.getSrvVal()) {
+      if (this.formType === "update" && !this.field.getSrvVal()) {
         // 编辑表单，未选中数据，则打开add弹窗
-        this.activePopup = 'add'
+        this.activePopup = "add";
       } else {
-        this.activePopup = this.formType
+        this.activePopup = this.formType;
       }
     },
     onPopupFormLoaded: function (form) {
@@ -419,9 +582,9 @@ export default {
       const data = event.data?.response[0]?.response?.effect_data?.[0];
       if (data) {
         this.handleSelect(data);
-        if (this.formType === 'add' && this.allowEditAndSelect) {
+        if (this.formType === "add" && this.allowEditAndSelect) {
           // 当前数据为allow_input是编辑选择的字段，点击添加按钮，在add弹窗中新创建的数据
-          this.addedData = cloneDeep(data)
+          this.addedData = cloneDeep(data);
         }
       }
       this.activePopup = "";
@@ -441,13 +604,14 @@ export default {
         this.selected =
           loader.showAsPair !== true
             ? this.options[0][fieldInfo.dispCol]
-            : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
-            }`;
+            : `${this.options[0][fieldInfo.dispCol]}/${
+                this.options[0][fieldInfo.valueCol]
+              }`;
         this.hasInit = true;
       } else if (this.field.model && this.finderSelected) {
         this.selected = this.finderSelected;
-      } else if(!this.field.model && !this.finderSelected){
-        this.selected = null
+      } else if (!this.field.model && !this.finderSelected) {
+        this.selected = null;
       }
     },
     onPickerSelected(selected) {
@@ -459,7 +623,7 @@ export default {
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
       if (!loader) {
-        return
+        return;
       }
       if (queryString == true) {
         if (loader.enableFunc) {
@@ -528,8 +692,9 @@ export default {
               item.labelFunc = (item) => {
                 if (item[fieldInfo.dispCol]) {
                   if (loader.showAsPair) {
-                    return `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]
-                      }`;
+                    return `${item[fieldInfo.dispCol]}/${
+                      item[fieldInfo.valueCol]
+                    }`;
                   } else {
                     return item[fieldInfo.dispCol];
                   }
@@ -936,7 +1101,7 @@ export default {
         this.field.model = selectItem[0] || "";
         // this.emitFieldValueChange();
       } else {
-        if (item === null) {
+        if (item === null || item === undefined || item === "") {
           this.selected = "";
         } else {
           this.selected =
@@ -957,9 +1122,9 @@ export default {
         const cols = objInfo?.a_save_b_cols.split(",");
         let obj = {};
         let objStr = "";
-        if(cols?.includes("*")){
-          obj = cloneDeep(newValue)
-        }else if (newValue && cols?.length) {
+        if (cols?.includes("*")) {
+          obj = cloneDeep(newValue);
+        } else if (newValue && cols?.length) {
           cols.forEach((col) => {
             obj[col] = newValue?.[col];
           });
@@ -973,12 +1138,12 @@ export default {
           col: objInfo.a_save_b_obj_col,
           val: objStr,
         };
-        console.log('更新obj_info',objCol);
+        console.log("更新obj_info", objCol);
         // 将更新的字段信息保存在_obj_col上，方便在form中获取
         this.$set(this.field, "_obj_col", objCol);
-      }else if(this.field?._obj_col?.val){
+      } else if (this.field?._obj_col?.val) {
         // 清空通过_obj_col保存的值
-        this.$set(this.field['_obj_col'], "val", '');
+        this.$set(this.field["_obj_col"], "val", "");
       }
       this.$emit("field-value-changed", this.field.info.name, this.field);
     },
@@ -989,7 +1154,7 @@ export default {
           if (
             this.selected != this.field.getDispVal() &&
             this.selected !=
-            `${this.field.getDispVal()}/${this.field.getSrvVal()}`
+              `${this.field.getDispVal()}/${this.field.getSrvVal()}`
           ) {
             this.field.reset();
           }
@@ -1105,8 +1270,9 @@ export default {
               this.selected =
                 loader.showAsPair !== true
                   ? this.field.model[fieldInfo.dispCol]
-                  : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
-                  }`;
+                  : `${this.field.model[fieldInfo.dispCol]}/${
+                      this.field.model[fieldInfo.valueCol]
+                    }`;
             }
             // this.selected = (loader.showAsPair !== false ? `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]}` : this.field.model[ fieldInfo.dispCol ])
           }
@@ -1168,7 +1334,7 @@ export default {
     },
   },
 
-  created: function () { },
+  created: function () {},
 
   mounted: function () {
     let vm = this;
@@ -1198,8 +1364,9 @@ export default {
           this.selected =
             loader.showAsPair !== false
               ? this.field.model[fieldInfo.dispCol]
-              : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
-              }`;
+              : `${this.field.model[fieldInfo.dispCol]}/${
+                  this.field.model[fieldInfo.valueCol]
+                }`;
         }
       }
       // this.getOptions(true);
@@ -1259,13 +1426,25 @@ export default {
   -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   cursor: pointer;
-
+  .placeholder{
+    color: #C8CBD2;
+  }
   [class*="el-icon-"] {
     position: absolute;
     right: 10px;
     line-height: 40px;
     color: #c0c4cc;
     font-size: 14px;
+  }
+  .close-icon{
+    display: none;
+    right: 35px;
+  }
+  &:hover {
+    .close-icon {
+      display: inline-block;
+      color: #666;
+    }
   }
 }
 </style>
