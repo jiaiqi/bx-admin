@@ -1,5 +1,4 @@
 import Vue from "vue";
-import store from "../../store/index";
 function init() {
   let backendIpAddr = null;
   if (!window.top.pathConfig?.gateway && sessionStorage.getItem("pathConfig")) {
@@ -147,9 +146,7 @@ function init() {
   }
   window.backendIpAddr = backendIpAddr;
 
-  let defaultApp =
-    (window.frameElement && window.frameElement.dataset["app"]) ||
-    (top.window.pathConfig && top.window.pathConfig.application);
+  const defaultApp =  window?.frameElement?.dataset?.["app"] ||  top.window?.pathConfig?.application;
 
   var service_api = {
     selectOne: backendIpAddr + "/" + defaultApp + "/select",
@@ -167,88 +164,8 @@ function init() {
       backendIpAddr + "/" + defaultApp + "/downloadTemplate/excel/",
     imageFileNo: backendIpAddr + "/file/download?fileNo=",
   };
-
   window.serviceApi = service_api;
-
   Vue.prototype.service_api = service_api;
-
-  // Vue.prototype.http = $http
-  // http conf, 请求跨域
-//   Vue.http.options.xhr = {
-//     withCredentials: true,
-//   };
-
-//   Vue.http.interceptors.push((request, next) => {
-//     request.credentials = true;
-//     // console.log('request',request)
-//     request.headers.set(
-//       "bx_auth_ticket",
-//       sessionStorage.getItem("bx_auth_ticket")
-//     );
-
-//     return function (response) {
-//       // this.msgTips()
-
-//       if (response.hasOwnProperty("status") && response.status === 429) {
-//         //layer.msg('当前使用人数过多，请稍后再试', {icon: 12});
-//         // this.msgTips()
-//         Vue.prototype.msgTips();
-//       }
-//       // console.log("response",response)
-//       if (response.data.state == "FAILURE") {
-//         if (response.data.resultCode == "0011") {
-//           store && store.commit("clearSrvCols");
-//           if (this.getRootWindow().layer) {
-//             var login_page = "/main/login.html";
-
-//             try {
-//               if (top.getLoginAddress) {
-//                 console.info("1");
-//                 login_page = "/" + top.getLoginAddress();
-//               }
-//             } catch (exception) {}
-
-//             this.getRootWindow().layer.open({
-//               title: false,
-//               type: 2,
-//               content: window.location.origin + login_page,
-//               closeBtn: 0,
-//               area: ["300px", "350px"],
-//               shade: 0.9,
-//             });
-//           } else {
-//             // 当vue页面在iframe中时，跳转到登录页面
-//             if (top !== window) {
-//               var login_page = "/main/index.html";
-//               try {
-//                 if (top.getMainAddress) {
-//                   console.info("1");
-//                   login_page = "/" + top.getMainAddress();
-//                 }
-//               } catch (exception) {}
-
-//               window.location.href = window.location.origin + login_page;
-//             }
-//           }
-//         } else if (response.data.resultCode == "0000") {
-//           if (sessionStorage.getItem("need_login_flag") != "need_login") {
-//             // alert(response.data.resultMessage);
-//           }
-//         } else {
-//           if (
-//             response.data.resultCode !== "9998" &&
-//             response.data.resultCode !== "0111"
-//           ) {
-//             if (sessionStorage.getItem("need_login_flag") != "need_login") {
-//               // alert(response.data.resultMessage);
-//             }
-//           }
-//         }
-//       }
-//     };
-
-//     next();
-//   });
 }
 
 export default init;

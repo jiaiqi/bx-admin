@@ -1,3 +1,4 @@
+import Vue from "vue";
 import dayjs from "dayjs";
 import Dialog from "../common/dialog.vue";
 import * as DataUtil from "../../util/DataUtil";
@@ -12,7 +13,6 @@ import {
   weekStart,
   parseUrlParams,
 } from "../../util/DataUtil";
-import Vue from "vue";
 
 import isBoolean from "lodash/isBoolean";
 import isUndefined from "lodash/isUndefined";
@@ -23,17 +23,17 @@ import isEmpty from "lodash/isEmpty";
 function init_util() {
   const eventBus = new Vue();
   const common_page_path = {
-    detail: "/vpages/index.html#/detail",
-    list: "/vpages/index.html#/list",
-    "simple-add": "/vpages/index.html#/simple-add",
-    "simple-update": "/vpages/index.html#/simple-update",
-    "start-proc": "/vpages/index.html#/startproc",
-    procdetail: "/vpages/index.html#/procdetail",
-    procdetail_v2: "/vpages/index.html#/v2/procdetail",
-    "start-proc_v2": "/vpages/index.html#/v2/startproc",
-    editgrid: "/vpages/index.html#/editgrid",
-    explain: "/vpages/index.html#/explain?",
-    report: "/vpages/index.html#/reportList",
+    detail: "/vpages/#/detail",
+    list: "/vpages/#/list",
+    "simple-add": "/vpages/#/simple-add",
+    "simple-update": "/vpages/#/simple-update",
+    "start-proc": "/vpages/#/startproc",
+    procdetail: "/vpages/#/procdetail",
+    procdetail_v2: "/vpages/#/v2/procdetail",
+    "start-proc_v2": "/vpages/#/v2/startproc",
+    editgrid: "/vpages/#/editgrid",
+    explain: "/vpages/#/explain?",
+    report: "/vpages/#/reportList",
   };
 
   Vue.prototype.getImagePath = (no, notThumb) => {
@@ -105,7 +105,6 @@ function init_util() {
   };
   Vue.prototype.word2number = function (w, type) {
     //阿拉伯数字转中文数字
-
     // 节内转换算法
     function SectionToChinese(section) {
       var strIns = "",
@@ -302,15 +301,15 @@ function init_util() {
    * @returns {string}
    */
   Vue.prototype.downloadexport = function (uuid) {
-    var app = this.resolveDefaultSrvApp();
-    var url =
-      backendIpAddr +
-      "/" +
-      app +
-      "/downloadexport/" +
-      uuid +
-      "?bx_auth_ticket=" +
-      sessionStorage.getItem("bx_auth_ticket");
+    const app = this.resolveDefaultSrvApp();
+    const url = `${backendIpAddr}/${app}/downloadexport/${uuid}?bx_auth_ticket=${sessionStorage.getItem()}`;
+    // backendIpAddr +
+    // "/" +
+    // app +
+    // "/downloadexport/" +
+    // uuid +
+    // "?bx_auth_ticket=" +
+    // sessionStorage.getItem("bx_auth_ticket");
     window.location.href = url;
     var loading = this.openLoading("文件准备中...");
     const downloadTimer = setInterval(() => {
@@ -328,106 +327,6 @@ function init_util() {
           clearInterval(downloadTimer);
         });
     }, 1000);
-    // const getFileState = (stateNum) => {
-    //   Vue.prototype
-    //     .getFileState(uuid, app)
-    //     .then((res) => {
-    //       stateNum++;
-    //       if (stateNum > 100) {
-    //         loading.close();
-    //         return;
-    //       }
-    //       console.log(res);
-    //       if (res === "完成") {
-    //         loading.close();
-    //       } else {
-    //         // 未完成 等待一秒后重新发送查找文件状态的请求
-    //         setTimeout(getFileState(stateNum), 1000);
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       console.log(err);
-    //       loading.close();
-    //       clearInterval(downloadTimer);
-    //     });
-    // };
-    // setTimeout(() => {
-    //   getFileState(0);
-    // }, 1000);
-    // var page_origin = (window.location.protocol + "//" + window.location.hostname);
-    // var gateway_origin = (window.top.pathConfig.gateway_protocol + "://" + window.top.pathConfig.gateway_ip);
-
-    //跨域暂时没有想到好的解决方案
-    // if (page_origin == gateway_origin) {
-    //   try {
-
-    //     var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
-    //     location.href = url;
-
-    //     // console.time("download");
-    //     // this.$http.get(url).then(res=>{
-    //     //   console.timeEnd("download");
-    //     //   debugger
-    //     //   console.log("download::",res);
-
-    //     // })
-    //     // var loading = this.openLoading();
-
-    //     // const checkToken = function () {
-    //     //   var token = getCookie("downloadToken");
-    //     //   if (token && token == uuid) {
-    //     //     clearTimeout(downloadTimer);
-    //     //     loading.close();
-    //     //   }
-    //     //   // setTimeout(() => {
-    //     //   //   loading.close();
-    //     //   // }, 1000);
-    //     // }
-
-    //     //获取cookie
-    //     // const getCookie = function (cookieName) {
-    //     //   var strCookie = document.cookie;
-    //     //   var arrCookie = strCookie.split(";");
-    //     //   for (var i = 0; i < arrCookie.length; i++) {
-    //     //     var arr = arrCookie[i].split("=");
-    //     //     if (cookieName == arr[0].trim()) {
-    //     //       return arr[1];
-    //     //     }
-    //     //   }
-    //     //   return "";
-    //     // }
-
-    //     // var downloadTimer = setInterval(checkToken, 1000);
-    //   } catch (e) {
-    //     alert(e.name + ": " + e.message);
-    //   }
-
-    // } else {
-    //   var url = backendIpAddr + "/" + app + "/downloadexport/" + uuid + "?bx_auth_ticket=" + sessionStorage.getItem("bx_auth_ticket");
-    //   window.location.href = url;
-    //   var loading = this.openLoading('文件准备中...');
-    //   const getFileState = (stateNum) => {
-    //     Vue.prototype.getFileState(uuid,app).then((res)=>{
-    //       stateNum++
-    //       if(stateNum>100){
-    //         loading.close();
-    //         return
-    //       }
-    //       console.log(res);
-    //       if(res==='完成'){
-    //         loading.close()
-    //       }else{
-    //         // 未完成 等待一秒后重新发送查找文件状态的请求
-    //         setTimeout(getFileState(stateNum),1000)
-    //       }
-    //     }).catch(err=>{
-    //       console.log(err)
-    //       loading.close()
-    //       clearInterval(downloadTimer)
-    //     })
-    //   }
-    //   getFileState(0)
-    // }
   };
 
   /**
@@ -437,7 +336,7 @@ function init_util() {
    */
   Vue.prototype.getFileState = async function (uuid, app) {
     const url = `/${app}/export/file/check?uuid=${uuid}`;
-    const res = await Vue.prototype.$axios(url);
+    const res = await Vue.prototype.$http(url);
     console.log(res.data);
     if (res.data.state === "SUCCESS") {
       return res.data.resultMessage;
@@ -509,15 +408,6 @@ function init_util() {
         response: loadedP,
         mainSrv,
       });
-    // this.doLoadColsV2(service_name, use_type).then((res)=>{
-    //   console.log("doLoadColsV2")
-    // this.$store && this.$store.commit('addSrvCols', {
-    //   service: fullServiceName,
-    //   useType: use_type,
-    //   response: loadedP,
-    // })
-
-    // })
     return loadedP;
   };
 
@@ -580,30 +470,6 @@ function init_util() {
     );
     url = url + "?colsel_v2=" + service_name;
     return this.$http.post(url, data).then((response) => {
-      //region mock data
-
-      try {
-        // if (service_name === 'srvsso_user_add') {
-        //   response.body.data.validators = [{
-        //     in_table_validate: "function(data, vm) {\n" +
-        //       "            if (!data.email || !data.real_name) {\n" +
-        //       "              return true\n" +
-        //       "            }\n" +
-        //       "            if (!data.email.startsWith(data.real_name) ) {\n" +
-        //       "              return {\n" +
-        //       "                \"message\": \"邮箱要以姓名开头\",\n" +
-        //       "                \"cols\": [\"email\", \"real_name\"]\n" +
-        //       "              };\n" +
-        //       "            }else{\n" +
-        //       "              return true\n" +
-        //       "            }\n" +
-        //       "          }"
-        //   }]
-        // }
-      } catch (e) {}
-
-      //endregion
-
       return response;
     });
   };
@@ -636,7 +502,6 @@ function init_util() {
     url = url + "?" + service;
 
     this.$http.post(url, params).then((response) => {
-      console.log("xabxdzkj-edcb38b7-40d9-489b-9566-b5fc5f29f4d4");
       let data = response.data.data;
       this.$store.commit("addTableData", {
         table,
@@ -728,94 +593,6 @@ function init_util() {
       divCondition
     );
   };
-
-  /**
-   * 通用查询方法
-   * @param {object} option
-   * @param {string} option.service 服务名
-   * @param {?array} option.condition 查询条件
-   * @param {?object} option.page 分页信息
-   * @param {?object}} option.order 排序信息
-   * @param {?array} option.group 分组信息
-   * @param {?object} option.mapcondition 映射条件
-   * @param {?boolean} option.isproc 是否是流程
-   * @param {?array} option.columns 查询字段
-   * @param {?array} option.relationCondition 关联查询条件
-   * @param {?boolean} option.draft 是否是草稿
-   * @param {?string} option.pageType 页面类型
-   * @param {?boolean} option.srvAuth 是否在header中增加bx_srv_auth_ticket参数
-   * @param {?string} option.vpageNo v2唯一标识
-   * @param {?string} option.useType 使用类型
-   * @param {?boolean} option.rdt 是否是树形结构
-   * @param {?array} option.divCondition 分表条件
-   * @returns
-   */
-  Vue.prototype.onFetch = async function (
-    option = {
-      service: "",
-      condition: [],
-      page: {},
-      order: [],
-      group: [],
-      mapcondition: [],
-      isproc: false,
-      columns: ["*"],
-      relationCondition: [],
-      draft: false,
-      pageType: null,
-      srvAuth: null,
-      vpageNo: null,
-      useType: "list",
-      rdt: false,
-      divCondition: null,
-    }
-  ) {
-    const {
-      service,
-      condition,
-      page,
-      order,
-      group,
-      mapcondition,
-      app,
-      isproc,
-      columns,
-      relationCondition,
-      draft,
-      pageType,
-      srvAuth,
-      vpageNo,
-      useType,
-      rdt,
-      divCondition,
-    } = option;
-    const url = this.getServiceUrl("select", service, app);
-    const res = await this.doSelect(
-      url,
-      service,
-      condition,
-      page,
-      order,
-      group,
-      mapcondition,
-      isproc,
-      columns,
-      relationCondition,
-      draft,
-      pageType,
-      srvAuth,
-      vpageNo,
-      useType,
-      rdt,
-      divCondition
-    );
-    if (res.data) {
-      return res.data;
-    } else {
-      console.error(res);
-    }
-  };
-
   /***
    * 根据文件data 获取文件类别
    */
@@ -1412,6 +1189,8 @@ function init_util() {
     }
     return newObj;
   };
+  Vue.prototype.deepClone = Vue.prototype.bxDeepClone;
+
   Vue.prototype.parseDateTime = function (dateStr) {
     return dayjs(dateStr).toDate();
   };
@@ -1531,51 +1310,16 @@ function init_util() {
     dialog.activeForm = formType;
   };
 
-  Vue.prototype.getUuid = function () {
+  const getUuid = function () {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000)
         .toString(16)
         .substring(1);
     }
-
-    return (
-      s4() +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      s4() +
-      s4()
-    );
+    return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
   };
-
-  Vue.prototype.guid = function () {
-    function s4() {
-      return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-    }
-
-    return (
-      s4() +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      s4() +
-      s4()
-    );
-  };
+  Vue.prototype.getUuid = getUuid;
+  Vue.prototype.guid = getUuid;
 
   Vue.prototype.formartMoney = function (s) {
     return formatMoney(s);
@@ -2539,46 +2283,6 @@ function init_util() {
   };
 
   Vue.prototype.parseDate2 = function parseDate(date, time, type) {
-    /** let date =newe Date();
-     *   parseDate(date);
-     *
-     *      return {
-     *         year:'2014-05-01',
-     *          month:'05',
-     *          day:'18',
-     *          hours:12,
-     *          minutes:06,
-     *          seconds：10
-  
-     *
-     *      }
-     *   parseDate(date,{
-     *          date:-5
-     *      });
-     *      返回当前时间减去5天的年月日
-     *
-     *
-     *  parseDate(date,{
-     *          month:-10
-     *      });
-     *
-     *
-     * parseDate(date,{
-     *          year:-1
-     *      });
-     *
-     *
-     *  parseDate(date,{
-     *          hours:-1
-     *      });
-     *
-     *  返回当前时间减去上一年的的年月日
-     *
-     *
-     *
-     *
-     */
-
     function getTime(nowDate2) {
       let year = nowDate2.getFullYear();
       let month = nowDate2.getMonth() + 1;
@@ -2696,8 +2400,6 @@ function init_util() {
     }
     return str;
   };
-
-  Vue.prototype.deepClone = Vue.prototype.bxDeepClone;
 
   /**
    * 将queryString格式的divCond转为数组格式

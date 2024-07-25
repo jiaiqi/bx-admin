@@ -223,7 +223,6 @@ export default function () {
         // headers: {'X-Custom-Header': 'foobar'}
     });
     instance3.interceptors.request.use(function (config) {
-
         // 在发送请求之前做些什么
         // request.headers.set('bx_auth_ticket', sessionStorage.getItem("bx_auth_ticket"))
         let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket")

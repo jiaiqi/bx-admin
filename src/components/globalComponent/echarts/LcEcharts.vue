@@ -12,6 +12,7 @@
 import "@/assets/common.scss";
 let $ = require("jquery");
 import commonMixin from "@/components/mixin/global-page-mixin";
+import echarts from "echarts";
 
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/popover";
@@ -319,7 +320,7 @@ export default {
   created: function () {},
 
   mounted: function () {
-    this.echarts = this.$echarts.init(this.$refs.echart);
+    this.echarts = echarts.init(this.$refs.echart);
     this.parseOption();
   },
 };
