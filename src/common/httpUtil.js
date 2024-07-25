@@ -3,12 +3,12 @@ import { $http } from "./http";
 /**
  * 通用查询方法
  * @param {object} option
- * @param {string} option.app 应用名
  * @param {string} option.service 服务名
  * @param {?array} option.condition 查询条件
  * @param {?object} option.page 分页信息
- * @param {?object}} option.order 排序信息
+ * @param {?object} option.order 排序信息
  * @param {?array} option.group 分组信息
+ * @param {?string} option.app 应用名
  * @param {?object} option.mapcondition 映射条件
  * @param {?boolean} option.isproc 是否是流程
  * @param {?array} option.columns 查询字段
@@ -20,17 +20,17 @@ import { $http } from "./http";
  * @param {?string} option.useType 使用类型
  * @param {?boolean} option.rdt 是否是树形结构
  * @param {?array} option.divCondition 分表条件
- * @returns
+ * @param {?object} vm vue实例
  */
 export const onFetch = async (
   option = {
-    app: null,
     service: "",
     condition: [],
     page: {},
     order: [],
     group: [],
     mapcondition: [],
+    app: null,
     isproc: false,
     columns: ["*"],
     relationCondition: [],

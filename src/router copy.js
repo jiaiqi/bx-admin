@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import VueResource from 'vue-resource'
 // pages
 // import SimpleAdd from '@/components/common/simple-add'
 // // import viewpdf from '@/components/common/viewpdf'
@@ -90,7 +89,6 @@ import inForm from '@/pages/inform.vue'
 
 // pages
 Vue.use(Router);
-Vue.use(VueResource);
 let routes=[
   {
     path: '/register',

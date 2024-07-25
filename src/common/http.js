@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import store from "../store/index";
 // import jscookie from 'js-cookie'; //引入cookie操作依赖
 
 const instance = axios.create({
@@ -24,17 +24,18 @@ instance.interceptors.response.use(
   function (response) {
     // 2xx 范围内的状态码都会触发该函数。
     // 对响应数据做点什么
-    let _this = window.app;
+    let _this = window.app; //vue实例
     if (response.hasOwnProperty("status") && response.status === 429) {
+      // 当前使用人数过多，请稍后再试
       window.top.limitingTips();
     }
     if (response.data.state == "FAILURE") {
       if (response.data.resultCode == "0011") {
+        store && store.commit("clearSrvCols");
         if (_this.getRootWindow().layer) {
           var login_page = "/main/login.html";
           try {
             if (top.getLoginAddress) {
-              console.info("1");
               login_page = "/" + top.getLoginAddress();
             }
           } catch (exception) {}
@@ -71,6 +72,9 @@ instance.interceptors.response.use(
         }
       }
     }
+    if(response.data){
+      response.body = response.data
+    }
     return response;
   },
   function (error) {
@@ -80,4 +84,4 @@ instance.interceptors.response.use(
   }
 );
 
-export const $http = instance
+export const $http = instance;
