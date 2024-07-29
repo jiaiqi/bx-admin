@@ -13,7 +13,8 @@ const devTicket = "xabxdzkj-0c564c21-c47f-4853-8255-322343f3d66a";
 let bx_auth_ticket = "";
 
 if(process.env.NODE_ENV === 'development'){
-  baseURL = `http://192.168.0.155:8888`
+  // baseURL = `http://192.168.0.155:8888`
+  baseURL = `https://api.100xsys.cn`
 }
 
 if (top?.pathConfig?.gateway) {

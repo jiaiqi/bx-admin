@@ -130,9 +130,9 @@
           @update-form-loaded="$emit('update-form-loaded', $event)"
           @duplicate-form-loaded="$emit('duplicate-form-loaded', $event)"
           @filter-form-loaded="$emit('filter-form-loaded', $event)"
-          @list-data-loaded="$emit('list-data-loaded', $event)"
+          @list-data-loaded="listDataLoaded"
           @grid-data-changed="$emit('grid-data-changed', $event)"
-          @standby-row-added="$emit('standby-row-added',$event)"
+          @standby-row-added="$emit('standby-row-added', $event)"
           v-else
         >
         </list>
@@ -147,7 +147,8 @@ import List from "./list.vue";
 import Treegrid from "./treegrid.vue";
 // 表头的筛选过滤条件 2020 版
 import filterTabs from "./filter-tabs.vue";
-import { main } from "@popperjs/core";
+import cloneDeep from "lodash/cloneDeep";
+import isEqual from "lodash/isEqual";
 /**
  * concepts:
  * row: 一行页面元素，包含多个section;
@@ -178,6 +179,7 @@ export default {
       onInputValue: false, // 是否有查询条件,
       moreConfig: null,
       statsData: [],
+      tableData: [],
     };
   },
 
@@ -295,6 +297,14 @@ export default {
   },
 
   methods: {
+    listDataLoaded(event) {
+      this.$emit("list-data-loaded", event);
+      console.log("listDataLoaded", event.gridData);
+      if (!isEqual(cloneDeep(event.gridData), cloneDeep(this.tableData))) {
+        this.$refs.filterTabs?.refreshRelatedTabOptions?.();
+      }
+      this.tableData = cloneDeep(event.gridData);
+    },
     statsLoaded(e) {
       // console.log('statsLoaded',e)
       let stataList = this.$refs.list.buildStatsData(e);

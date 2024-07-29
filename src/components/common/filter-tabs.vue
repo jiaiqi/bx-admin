@@ -10,8 +10,8 @@
       label-width="100px"
       size="medium"
     >
-      <template v-for="tab in tabs">
-        <el-form-item :label="tab.label" v-if="showFilterTab(tab)">
+      <template v-for="tab in tabs" v-if="showFilterTab(tab)">
+        <el-form-item :label="tab.label">
           <div v-if="tab._type === 'input'">
             <el-row :gutter="5">
               <el-col :span="24">
@@ -220,9 +220,36 @@ export default {
   },
   mounted() {},
   methods: {
+    refreshRelatedTabOptions() {
+      // 刷新关联tab的options
+      if (this.tabs?.length) {
+        this.tabs.forEach((tab) => {
+          if (tab?.inputType === "group") {
+            let options = [];
+            this.$set(tab, "options", options);
+            this.buildGroupTags(tab).then((res) => {
+              let opts = res;
+              for (let cs = 0; cs < opts.length; cs++) {
+                let obj = {
+                  label: "",
+                  value: "",
+                };
+                obj.label = opts[cs].tagName;
+                obj.value = opts[cs].value;
+                obj.ruleType = opts[cs].ruleType;
+                obj.checked =
+                  opts[cs].default === undefined ? false : opts[cs].default;
+                options.push(obj);
+              }
+              this.$set(this.formModel[tab.list_tab_no], "options", options);
+            });
+          }
+        });
+      }
+    },
     showFilterTab(tab) {
       if (["checkbox", "radio"].includes(tab._type)) {
-        return tab?.options?.length > 0;
+        return tab?.options?.length > 0 || this.formModel[tab.list_tab_no]?.options?.length;
       } else {
         return true;
       }
@@ -475,22 +502,22 @@ export default {
             return options;
           } else if (tab.inputType === "group") {
             let options = [];
-            self.buildGroupTags(tab).then((res) => {
-              let opts = res;
-              for (let cs = 0; cs < opts.length; cs++) {
-                let obj = {
-                  label: "",
-                  value: "",
-                };
-                obj.label = opts[cs].tagName;
-                obj.value = opts[cs].value;
-                obj.ruleType = opts[cs].ruleType;
-                obj.checked =
-                  opts[cs].default === undefined ? false : opts[cs].default;
-                options.push(obj);
-              }
-            });
-            self.$set(tab, "options", options);
+            // self.buildGroupTags(tab).then((res) => {
+            //   let opts = res;
+            //   for (let cs = 0; cs < opts.length; cs++) {
+            //     let obj = {
+            //       label: "",
+            //       value: "",
+            //     };
+            //     obj.label = opts[cs].tagName;
+            //     obj.value = opts[cs].value;
+            //     obj.ruleType = opts[cs].ruleType;
+            //     obj.checked =
+            //       opts[cs].default === undefined ? false : opts[cs].default;
+            //     options.push(obj);
+            //   }
+            // });
+            // self.$set(tab, "options", options);
             return options;
           }
         }

@@ -326,7 +326,7 @@ export default {
     },
 
     innerList: function () {
-      return this.$refs && this.$refs.list;
+      return  this.$refs?.list?.$refs?.list || this.$refs?.list;
     },
 
     gridData: function () {
@@ -421,6 +421,7 @@ export default {
 
     isInplaceEdit: function () {
       return this.innerList && this.innerList.isInplaceEdit();
+      // return this.innerList?.$refs?.list?.isInplaceEdit?.();
     },
 
     isMem: function () {

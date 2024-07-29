@@ -1179,6 +1179,7 @@ export default {
 
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
+      if(!loader) return
       let queryJson = {
         serviceName: loader.service,
         queryMethod: "select",
