@@ -1,9 +1,39 @@
 import axios from "axios";
 import store from "../store/index";
+import Vue from "vue";
 // import jscookie from 'js-cookie'; //引入cookie操作依赖
+import loginDialog from "../components/ui/login-dialog/login-dialog.vue";
+let _loginDialog = null
+let baseURL = window.backendIpAddr   || `https://api.100xsys.cn`;
+const devTicket = 'xabxdzkj-0c564c21-c47f-4853-8255-322343f3d66a'
+let bx_auth_ticket = ''
+if (top?.pathConfig?.gateway) {
+  baseURL = top?.pathConfig?.gateway;
+}
+let pathConfig = sessionStorage.pathConfig;
+if (pathConfig) {
+  try {
+    pathConfig = JSON.parse(pathConfig);
+    if (pathConfig?.gateway) {
+      baseURL = pathConfig?.gateway;
+    }
+  } catch (error) {}
+}
+window.backendIpAddr = baseURL
+export const backendIpAddr = baseURL
+
+const getRootWindow = (_window) => {
+  _window = _window || window;
+  if (_window.top !== _window) {
+    return getRootWindow(_window.top);
+  } else {
+    return _window;
+  }
+};
+
 
 const instance = axios.create({
-  baseURL: `${window.backendIpAddr}`,
+  baseURL: baseURL,
   timeout: 1000 * 20,
   withCredentials: true,
   // headers: {'X-Custom-Header': 'foobar'}
@@ -11,8 +41,10 @@ const instance = axios.create({
 instance.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
-    const bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
-    config.headers.set("bx_auth_ticket", bx_auth_ticket);
+    bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
+    if(bx_auth_ticket){
+      config.headers.set("bx_auth_ticket", bx_auth_ticket);
+    }
     return config;
   },
   function (error) {
@@ -24,7 +56,7 @@ instance.interceptors.response.use(
   function (response) {
     // 2xx 范围内的状态码都会触发该函数。
     // 对响应数据做点什么
-    let _this = window.app; //vue实例
+    // let _this = window.app; //vue实例
     if (response.hasOwnProperty("status") && response.status === 429) {
       // 当前使用人数过多，请稍后再试
       window.top.limitingTips();
@@ -32,14 +64,34 @@ instance.interceptors.response.use(
     if (response.data.state == "FAILURE") {
       if (response.data.resultCode == "0011") {
         store && store.commit("clearSrvCols");
-        if (_this.getRootWindow().layer) {
+        if(process?.env?.NODE_ENV === 'development'){
+          // 开发环境 调用登录弹窗
+          let dialog = null
+          if (!_loginDialog) {
+            // create dialog
+            let ComponentClass = Vue.extend(loginDialog);
+            dialog = new ComponentClass();
+            _loginDialog = dialog;
+            dialog.$mount();
+          }else{
+            dialog = _loginDialog
+          }
+          dialog?.open((o)=>{
+            if(sessionStorage.bx_auth_ticket){
+              const isReload = window.confirm('登录票据更新，是否刷新页面？')
+              if(isReload){
+                window.location.reload()
+              }
+            }
+          })
+        }else if (getRootWindow?.()?.layer) {
           var login_page = "/main/login.html";
           try {
             if (top.getLoginAddress) {
               login_page = "/" + top.getLoginAddress();
             }
           } catch (exception) {}
-          _this.getRootWindow().layer.open({
+          getRootWindow().layer.open({
             title: false,
             type: 2,
             content: window.location.origin + login_page,

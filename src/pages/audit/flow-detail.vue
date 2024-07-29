@@ -1,6 +1,7 @@
 <script setup>
 import {useRoute} from '@/common/vueApi.js'
-import {$axios as $http} from "@/pages/datav/common/http.js";
+// import {$axios as $http} from "@/pages/datav/common/http.js";
+import { $http } from '@/common/http';
 import {onMounted, ref, nextTick} from "vue";
 import {Loading, Message} from 'element-ui';
 import inOutInfo from './components/in-out-info.vue'

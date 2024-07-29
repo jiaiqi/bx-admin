@@ -1,6 +1,6 @@
 const host = window.backendIpAddr || window.pathConfig?.gateway
-import {$axios as $http} from "@/pages/datav/common/http.js";
-
+// import {$axios as $http} from "@/pages/datav/common/http.js";
+import { $http } from '@/common/http';
 const request = async (params)=>{
   const res = await $http(params)
   if(res.data){

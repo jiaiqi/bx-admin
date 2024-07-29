@@ -35,7 +35,8 @@
 </template>
 
 <script>
-import { $http } from "@/pages/datav/common/http.js";
+// import { $http } from "@/pages/datav/common/http.js";
+import { $http } from '@/common/http';
 import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/card-group-cell.vue"
 import { formatStyleData } from "../../../common/index";
 
