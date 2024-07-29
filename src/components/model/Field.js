@@ -207,8 +207,33 @@ export class Field {
         return false;
       };
       // let dependFieldOptionsListV2 = field.form.fields
+    } else if (
+      this.info.srvCol?.subtype==='autocomplete' &&
+      this.info?.srvCol?.option_list_v2?.serviceName
+    ) {
+      // 普通字符串 autocomplete特性 既可以输入也可以选择
+      this.stringAutocompleteInput = true;
+      let field = this;
+      this.isAutocomplete = () => false;
+      this.autocompleteFunc = (_) => {
+        let result = field?.info?.srvCol?.option_list_v2;
+        const option_list_v3 = field?.info?.srvCol?.optionListV3;
+        if (option_list_v3?.length) {
+          const formModel = field.form.srvValFormModel();
+          result = option_list_v3.find((item) => {
+            if (item.conds?.length) {
+              // 条件外键
+              return item.conds.every((cond) =>
+                cond.case_val?.includes?.(formModel[cond.case_col])
+              );
+            } else {
+              return true;
+            }
+          });
+        }
+        return result;
+      };
     }
-
     this.fieldActionOptionsJson = null;
     if (this.info.srvCol.col_cfg_json) {
       try {

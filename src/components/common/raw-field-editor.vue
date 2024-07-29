@@ -469,7 +469,7 @@
                 field.info.editor == null &&
                 field.info.type == 'String' &&
                 field.info.subType == 'autocomplete' &&
-                field.autocompleteInput
+                (field.autocompleteInput || field.stringAutocompleteInput)
               "
             >
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->

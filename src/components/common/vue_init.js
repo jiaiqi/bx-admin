@@ -144,7 +144,7 @@ function init() {
       ":" +
       server_cfg.back_server_port;
   }
-  window.backendIpAddr = backendIpAddr;
+  // window.backendIpAddr = backendIpAddr;
 
   const defaultApp =  window?.frameElement?.dataset?.["app"] ||  top.window?.pathConfig?.application;
 

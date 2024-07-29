@@ -35,7 +35,10 @@ export default {
     },
     optionsReq() {
       let optionsV2 = this.field.autocompleteFunc();
-      let refedCol = this.field.info.redundant.refedCol;
+      let refedCol = this.field.info?.redundant?.refedCol;
+      if(this.field.stringAutocompleteInput){
+        refedCol = optionsV2?.refed_col || optionsV2?.key_disp_col
+      }
       let req = {
         serviceName: optionsV2.serviceName,
         srvApp: optionsV2.srv_app || null,
@@ -91,6 +94,9 @@ export default {
     handleSelect(item) {
       console.log(item);
       this.selected = item;
+      if(this.field.stringAutocompleteInput){
+        return
+      }
       let dependField;
       if (this.field.form.fields && Array.isArray(this.field.form.fields)) {
         for (let f of this.field.form.fields) {
