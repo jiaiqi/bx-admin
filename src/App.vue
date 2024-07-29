@@ -1,15 +1,21 @@
 <template>
   <div id="app">
     <router-view v-if="ready" :key="$route.path"></router-view>
+    <login-dialog ref="loginRef"></login-dialog>
   </div>
 </template>
 
 <script>
 import extjs from "./components/test/extjs.js";
-import dummy from "./components/test/spa_mock.js";
-import { LoadScript } from './common/common'
+// import dummy from "./components/test/spa_mock.js";
+import loginDialog from "./components/ui/login-dialog/login-dialog.vue";
+import Vue from "vue";
+// import { LoadScript } from './common/common'
 export default {
   name: "App",
+  components: {
+    loginDialog,
+  },
   data() {
     return {
       ready: false
@@ -22,6 +28,9 @@ export default {
     }
   },
   mounted() {
+    if(process?.env?.NODE_ENV === 'development'){
+      Vue.prototype.$loginRef = this.$refs.loginRef
+    }
     const init = () => {
       // const AK = 'FC190506b9b4fa8b366db9f78cb5e93e';
       // const bMapSrc = `${location.protocol}//api.map.baidu.com/api?v=2.0&ak=${AK}&s=1&callback=onBMapCallback`
@@ -104,7 +113,7 @@ export default {
   },
 
   beforeMount: function () {
-    dummy();
+    // dummy();
     window.debugExtjs ? this.testExtJs() : this.loadExtJs();
     if (this.$route?.query?.viewMode === 'demo' || sessionStorage.getItem('viewMode') === 'demo') {
       document.body.classList.add('is-demo')

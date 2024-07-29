@@ -1,12 +1,13 @@
 import axios from "axios";
 import store from "../store/index";
 import Vue from "vue";
+import { Message } from "element-ui";
 // import jscookie from 'js-cookie'; //引入cookie操作依赖
 import loginDialog from "../components/ui/login-dialog/login-dialog.vue";
-let _loginDialog = null
-let baseURL = window.backendIpAddr   || `https://api.100xsys.cn`;
-const devTicket = 'xabxdzkj-0c564c21-c47f-4853-8255-322343f3d66a'
-let bx_auth_ticket = ''
+let _loginDialog = null;
+let baseURL = window.backendIpAddr || `https://api.100xsys.cn`;
+const devTicket = "xabxdzkj-0c564c21-c47f-4853-8255-322343f3d66a";
+let bx_auth_ticket = "";
 if (top?.pathConfig?.gateway) {
   baseURL = top?.pathConfig?.gateway;
 }
@@ -19,8 +20,8 @@ if (pathConfig) {
     }
   } catch (error) {}
 }
-window.backendIpAddr = baseURL
-export const backendIpAddr = baseURL
+window.backendIpAddr = baseURL;
+export const backendIpAddr = baseURL;
 
 const getRootWindow = (_window) => {
   _window = _window || window;
@@ -30,7 +31,6 @@ const getRootWindow = (_window) => {
     return _window;
   }
 };
-
 
 const instance = axios.create({
   baseURL: baseURL,
@@ -42,7 +42,7 @@ instance.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
     bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
-    if(bx_auth_ticket){
+    if (bx_auth_ticket) {
       config.headers.set("bx_auth_ticket", bx_auth_ticket);
     }
     return config;
@@ -64,27 +64,27 @@ instance.interceptors.response.use(
     if (response.data.state == "FAILURE") {
       if (response.data.resultCode == "0011") {
         store && store.commit("clearSrvCols");
-        if(process?.env?.NODE_ENV === 'development'){
+        if (process?.env?.NODE_ENV === "development") {
           // 开发环境 调用登录弹窗
-          let dialog = null
+          let dialog = null;
           if (!_loginDialog) {
             // create dialog
             let ComponentClass = Vue.extend(loginDialog);
             dialog = new ComponentClass();
             _loginDialog = dialog;
             dialog.$mount();
-          }else{
-            dialog = _loginDialog
+          } else {
+            dialog = _loginDialog;
           }
-          dialog?.open((o)=>{
-            if(sessionStorage.bx_auth_ticket){
-              const isReload = window.confirm('登录票据更新，是否刷新页面？')
-              if(isReload){
-                window.location.reload()
+          dialog?.open((o) => {
+            if (sessionStorage.bx_auth_ticket) {
+              const isReload = window.confirm("登录票据更新，是否刷新页面？");
+              if (isReload) {
+                window.location.reload();
               }
             }
-          })
-        }else if (getRootWindow?.()?.layer) {
+          });
+        } else if (getRootWindow?.()?.layer) {
           var login_page = "/main/login.html";
           try {
             if (top.getLoginAddress) {
@@ -114,18 +114,18 @@ instance.interceptors.response.use(
         }
       } else if (response.data.resultCode == "0000") {
         if (sessionStorage.getItem("need_login_flag") != "need_login") {
-          alert(response.data.resultMessage);
+          Message.error(response.data.resultMessage);
         }
       } else {
         if (response.data.resultCode !== "9998") {
           if (sessionStorage.getItem("need_login_flag") != "need_login") {
-            alert(response.data.resultMessage);
+            Message.error(response.data.resultMessage);
           }
         }
       }
     }
-    if(response.data){
-      response.body = response.data
+    if (response.data) {
+      response.body = response.data;
     }
     return response;
   },

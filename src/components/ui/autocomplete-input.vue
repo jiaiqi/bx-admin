@@ -18,8 +18,7 @@ export default {
   props: {
     field: Object,
   },
-  mounted() {
-  },
+  mounted() {},
   computed: {
     modelValue() {
       let value = this.field.model;
@@ -54,6 +53,31 @@ export default {
         },
         relation_condition: {},
       };
+      // if(this.modelValue){
+      //   req.condition.push( {
+      //       colName: refedCol,
+      //       ruleType: "[like]",
+      //       value: this.modelValue,
+      //     },)
+      // }
+      if (this.optionsV2List?.conditions?.length) {
+        const formModel = this.field.form.srvValFormModel();
+        this.optionsV2List.conditions.forEach((item) => {
+          const obj = {
+            colName: item.colName,
+            ruleType: item.ruleType,
+          };
+          if (item.value?.indexOf("data.") === 0) {
+            obj.value = formModel[item.value.replace("data.", "")];
+          }else{
+            obj.ruleType = 'like'
+            obj.value = formModel[item.value.replace("data.", "")];
+          }
+          if (obj.value) {
+            req.condition.push(obj);
+          }
+        });
+      }
       return req;
     },
   },
@@ -82,6 +106,7 @@ export default {
       let dependType = dependField?.info?.editor;
       switch (dependType) {
         case "finder":
+        case "tree-finder":
           if (item) {
             dependField.model = item.option;
             dependField.finderSelected = item.value;

@@ -8,7 +8,13 @@ export default {
     },
     computed: {
         saveWidthBtn(){
-            const roles = sessionStorage.getItem('current_login_user')?.roles||[];
+            let current_login_user = sessionStorage.getItem('current_login_user');
+            let roles = [];
+            try {
+                current_login_user = JSON.parse(current_login_user);
+                roles = current_login_user?.roles||[]
+            } catch (error) {
+            }
             if( roles.includes('admin') && Object.keys(this.columnWidthMap)?.length>0){
                 return wrapButton({
                     more_config:"",
@@ -122,7 +128,7 @@ export default {
             }, 5000);
             this.$http.post(url, req).then((res) => {
                 if (res?.data?.state === "SUCCESS") {
-                    this.$message.success(res.data.resultMessage+' 热加载后才会生效');
+                    this.$message.success(res.data.resultMessage+' 如未生效，请热加载后刷新页面');
                     this.updateTableColumn();
                     this.columnWidthMap = {};
 
