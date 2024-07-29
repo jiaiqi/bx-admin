@@ -330,11 +330,11 @@ export default {
     },
 
     gridData: function () {
-      return this.innerList && this.innerList.gridDataRun;
+      return this.innerList?.gridDataRun;
     },
 
     inlineLists: function () {
-      return this.innerList && this.innerList.inlineLists;
+      return this.innerList?.inlineLists;
     },
 
     getDefaultConditions: function () {
@@ -415,28 +415,28 @@ export default {
       } else if (this.$refs.frameList) {
         return this.$refs.frameList?.buildRunQuries(this.foreignKey) || [];
       } else {
-        return this.$refs.list.buildRunQuries(this.foreignKey) || [];
+        return this.innerList?.buildRunQuries?.(this.foreignKey) || [];
       }
     },
 
     isInplaceEdit: function () {
-      return this.innerList && this.innerList.isInplaceEdit();
+      return this.innerList?.isInplaceEdit?.();
       // return this.innerList?.$refs?.list?.isInplaceEdit?.();
     },
 
     isMem: function () {
-      let list = this.$refs.list;
-      return list.isMem();
+      let list = this.innerList;
+      return list?.isMem?.();
     },
 
     buildExecutors4Edit: function () {
-      let list = this.$refs.list;
-      return list.buildExecutors4Edit();
+      let list = this.innerList;
+      return list?.buildExecutors4Edit?.();
     },
 
     listrefresh: function () {
-      let list = this.$refs["list"];
-      list.loadTableData();
+      let list = this.innerList;
+      list?.loadTableData?.();
     },
     /**
      * hide ref column and set a vaue
