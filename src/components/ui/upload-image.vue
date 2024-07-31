@@ -163,8 +163,8 @@ export default {
     },
 
     getData() {
-      this.uploadParams.table_name = this.field.info.srvCol.table_name;
-      this.uploadParams.columns = this.field.info.srvCol.columns;
+      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name||'';
+      this.uploadParams.columns = this.field?.info?.srvCol?.columns||'';
 
       this.fileLists = []; //初始化文件列表
       if (this.field.fileDesc != null) {

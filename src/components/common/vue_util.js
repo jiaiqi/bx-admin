@@ -302,7 +302,7 @@ function init_util() {
    */
   Vue.prototype.downloadexport = function (uuid) {
     const app = this.resolveDefaultSrvApp();
-    const url = `${backendIpAddr}/${app}/downloadexport/${uuid}?bx_auth_ticket=${sessionStorage.getItem()}`;
+    const url = `${backendIpAddr}/${app}/downloadexport/${uuid}?bx_auth_ticket=${sessionStorage.getItem('bx_auth_ticket')}`;
     // backendIpAddr +
     // "/" +
     // app +

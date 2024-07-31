@@ -4,17 +4,18 @@ import Vue from "vue";
 import { Message } from "element-ui";
 // import jscookie from 'js-cookie'; //引入cookie操作依赖
 import loginDialog from "../components/ui/login-dialog/login-dialog.vue";
-
-
+import { pathConfigMap } from "./envList";
 let _loginDialog = null;
-// let baseURL = window.backendIpAddr || `https://api.100xsys.cn`;
-let baseURL = window.backendIpAddr ;
-const devTicket = "xabxdzkj-0c564c21-c47f-4853-8255-322343f3d66a";
+let baseURL = window.backendIpAddr;
 let bx_auth_ticket = "";
 
-if(process.env.NODE_ENV === 'development'){
-  // baseURL = `http://192.168.0.155:8888`
-  baseURL = `https://api.100xsys.cn`
+if (process.env.NODE_ENV === "development") {
+  // const ENV = "dev";
+  const ENV = "saas";
+  // const ENV = "244";
+  const pathConfig = pathConfigMap[ENV];
+  baseURL = pathConfig.gateway; // 正式环境
+  top.pathConfig = pathConfig;
 }
 
 if (top?.pathConfig?.gateway) {

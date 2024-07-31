@@ -326,15 +326,20 @@ export default {
     },
 
     innerList: function () {
+      if(this.$refs.list&&this.$refs.list.$refs.list){
+        return this.$refs.list.$refs.list
+      }else{
+        return this.$refs.list
+      }
       return  this.$refs?.list?.$refs?.list || this.$refs?.list;
     },
 
     gridData: function () {
-      return this.innerList?.gridDataRun;
+      return this.getInnerList?.()?.gridDataRun;
     },
 
     inlineLists: function () {
-      return this.innerList?.inlineLists;
+      return this.getInnerList?.()?.inlineLists;
     },
 
     getDefaultConditions: function () {
@@ -398,6 +403,9 @@ export default {
   created: function () {},
 
   methods: {
+    getInnerList(){
+      return this.$refs?.list?.$refs?.list || this.$refs.list
+    },
     listLoaded(e) {
       // console.log("list Loaded",e)
       if (this.listType == "detaillist") {
@@ -415,27 +423,27 @@ export default {
       } else if (this.$refs.frameList) {
         return this.$refs.frameList?.buildRunQuries(this.foreignKey) || [];
       } else {
-        return this.innerList?.buildRunQuries?.(this.foreignKey) || [];
+        return this.getInnerList?.()?.buildRunQuries?.(this.foreignKey) || [];
       }
     },
 
     isInplaceEdit: function () {
-      return this.innerList?.isInplaceEdit?.();
-      // return this.innerList?.$refs?.list?.isInplaceEdit?.();
+      return this.getInnerList?.()?.isInplaceEdit?.();
+      // return this.getInnerList?.()?.$refs?.list?.isInplaceEdit?.();
     },
 
     isMem: function () {
-      let list = this.innerList;
+      let list = this.getInnerList();
       return list?.isMem?.();
     },
 
     buildExecutors4Edit: function () {
-      let list = this.innerList;
+      let list = this.getInnerList();
       return list?.buildExecutors4Edit?.();
     },
 
     listrefresh: function () {
-      let list = this.innerList;
+      let list = this.getInnerList();
       list?.loadTableData?.();
     },
     /**

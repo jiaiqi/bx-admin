@@ -369,8 +369,8 @@ export default {
         formData.append("serviceName", "srv_bxfile_service"); //
         formData.append("interfaceName", "add"); //
         formData.append("app_no", self.resolveDefaultSrvApp()); //
-        formData.append("table_name", self.field.info.srvCol.table_name); //
-        formData.append("columns", self.field.info.srvCol.columns); //
+        formData.append("table_name", self.field?.info?.srvCol?.table_name||''); //
+        formData.append("columns", self.field?.info?.srvCol?.columns||''); //
         if (
           !self.uploadParams.hasOwnProperty("file_no") &&
           !self.uploadParams.file_no
@@ -498,8 +498,8 @@ export default {
       }
     },
     getData() {
-      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name;
-      this.uploadParams.columns = this.field?.info?.srvCol?.columns;
+      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name||'';
+      this.uploadParams.columns = this.field?.info?.srvCol?.columns||'';
 
       //初始化文件列表
       this.fileLists = [];

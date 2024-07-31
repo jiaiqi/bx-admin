@@ -350,8 +350,9 @@ export default {
         // index and fk constraint name key-value pair
         for (let i in this.$refs.childrenList) {
           let child = this.$refs.childrenList[i];
-          childrenList[i] = child.gridData;
-          childrenList[child.foreignKey.constraint_name] = child.gridData;
+          const listData = child?.$refs?.list?.gridData || child.gridData || []
+          childrenList[i] = listData;
+          childrenList[child.foreignKey.constraint_name] = listData;
         }
         this.$set(formModel, "_children", childrenList);
       }
@@ -375,7 +376,11 @@ export default {
       );
     },
 
-    onChildListLoaded(childList) {
+    onChildListLoaded(_cList) {
+      let childList = _cList
+      if(_cList?.$refs?.list?.$refs?.list){
+        childList = _cList?.$refs?.list
+      }
       let basicForm = this.getBasicForm();
       let submitAction = basicForm.actions.submit;
       let executor = null;
@@ -485,7 +490,11 @@ export default {
       // }
     },
 
-    onChildInlineListLoaded(inlineList, childList) {
+    onChildInlineListLoaded(inlineList, _cList) {
+      let childList = _cList
+      if(_cList?.$refs?.list?.$refs?.list){
+        childList = _cList?.$refs?.list
+      }
       let basicForm = this.getBasicForm();
       let submitAction = basicForm.actions.submit;
       let executor = null;
@@ -525,7 +534,11 @@ export default {
      * @param childList
      * @returns {*}
      */
-    showChildList: function (childList, mainFromData) {
+    showChildList: function (_cList, mainFromData) {
+      let childList = _cList
+      if(_cList?.$refs?.list?.$refs?.list){
+        childList = _cList?.$refs?.list
+      }
       let self = this;
       const fk = childList.foreign_key;
       let expr = fk.show_ui_child_table;

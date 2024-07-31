@@ -415,8 +415,9 @@ export default {
           }
         });
       } else if (this.field?.info?.srvCol?.option_list_v2) {
-        result = this.field?.info?.srvCol?.option_list_v2;
+        result = this.field.info.srvCol.option_list_v2
       }
+      result = cloneDeep(result)
       // if (!result) {
       //   result = this.field?.info?.srvCol?.option_list_v2;
       // }
