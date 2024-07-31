@@ -717,11 +717,13 @@ export default {
         if (!_tab_title && this.service_view_name) {
           _tab_title = `${item.button_name}(${this.service_view_name})`;
         }
+        if(item.tabTitle){
+          _tab_title = item.tabTitle;
+        }
 
         // if(_tab_title==null||_tab_title==""||_tab_title==undefined){
         //   _tab_title=item.button_name;
         // }
-
         this.forwardAddTab(address, _tab_title, item);
       }
     },

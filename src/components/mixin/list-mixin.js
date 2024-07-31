@@ -367,6 +367,17 @@ export default {
           })
           url+=`&topTreeData=true`
         }
+        let tabTitle = ''
+        if(this.childForeignkey?.kedispcol&&this.listMainFormDatas[this.childForeignkey?.kedispcol]){
+          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]}`
+        }
+        if(this.childForeignkey?.section_name){
+          tabTitle += `/${this.childForeignkey?.section_name}【excel】)`
+        }else if(tabTitle && this.service_view_name){
+          tabTitle += `/${this.service_view_name}【excel】`
+        }if(!tabTitle && this.service_view_name){
+          tabTitle = `${this.service_view_name}【excel】`
+        }
         return {
           "page_type": "列表",
           "button_type": "customize",
@@ -379,7 +390,8 @@ export default {
           "operate_type": "URL跳转",
           // "operate_type": "URL跳转",
           "visible": "是",
-          "button_name": "excel",
+          "button_name": 'excel',
+          "tabTitle":tabTitle,
           "application": this.resolveDefaultSrvApp(),
           "service": this.service_name,
           "is_public": false,
