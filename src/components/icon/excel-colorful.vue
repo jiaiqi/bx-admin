@@ -21,13 +21,15 @@ const props = defineProps({
   strokeLinejoin: {
     type: String,
     default: 'round'
-  }
+  },
+  title:String
 })
 </script>
 
 <template>
   <svg class="icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
        :width="props.size" :height="props.size">
+       <title v-if="title">{{title}}</title>
     <path
         d="M682.666667 42.666667H298.666667c-25.6 0-42.666667 17.066667-42.666667 42.666666v213.333334l426.666667 213.333333 170.666666 64 170.666667-64V298.666667l-341.333333-256z"
         fill="#21A366" p-id="3695"></path>

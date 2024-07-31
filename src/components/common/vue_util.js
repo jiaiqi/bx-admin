@@ -302,7 +302,9 @@ function init_util() {
    */
   Vue.prototype.downloadexport = function (uuid) {
     const app = this.resolveDefaultSrvApp();
-    const url = `${backendIpAddr}/${app}/downloadexport/${uuid}?bx_auth_ticket=${sessionStorage.getItem('bx_auth_ticket')}`;
+    const url = `${backendIpAddr}/${app}/downloadexport/${uuid}?bx_auth_ticket=${sessionStorage.getItem(
+      "bx_auth_ticket"
+    )}`;
     // backendIpAddr +
     // "/" +
     // app +
@@ -1058,21 +1060,27 @@ function init_util() {
     let page = {
       title: tab_title,
       url: address,
-      icon: "",
+      icon: button?.tabIcon || "",
       app: button?.application,
     };
-
-    if (
-      button &&
-      button.more_config &&
-      button.more_config.indexOf("openInCurrentTab") !== -1
-    ) {
-      // window.location.href = address
-      window.top.tab.replaceTab(page);
-      return;
+    if (window.top.tab) {
+      if (
+        button &&
+        button.more_config &&
+        button.more_config.indexOf("openInCurrentTab") !== -1
+      ) {
+        // window.location.href = address
+        window.top.tab.replaceTab(page);
+        return;
+      }
+      window.top.tab.addTab(page);
+    } else {
+      // 没有tab实例，在浏览器中打开新标签页
+      const page = window.open(address);
+      setTimeout(() => {
+        page.document.title = tab_title;
+      }, 500);
     }
-
-    window.top.tab.addTab(page);
   }; /**操作*/
   Vue.prototype.custAddTab = function (type, urlParams, tab_title, button) {
     if (tab_title == undefined || tab_title == null || tab_title == "") {

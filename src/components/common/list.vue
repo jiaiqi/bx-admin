@@ -32,7 +32,7 @@
 
 
       <div class="table-head-btns">
-        <icon-excel-colorful class="svg-icon" style="cursor: pointer" size="30" :colors="['#409eff']" :strokeWidth="3"
+        <icon-excel-colorful class="svg-icon" style="cursor: pointer" size="30" :colors="['#409eff']" :strokeWidth="3" title="打开excel进行编辑"
           @click.native="gridButtonClick(excelBtn)" v-if="excelBtn"></icon-excel-colorful>
         <!--        <icon-excel class="svg-icon" style="cursor: pointer" size="30" :strokeWidth="3"-->
         <!--                             @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel>-->

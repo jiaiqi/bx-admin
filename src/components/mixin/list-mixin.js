@@ -372,7 +372,7 @@ export default {
           tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]}`
         }
         if(this.childForeignkey?.section_name){
-          tabTitle += `/${this.childForeignkey?.section_name}【excel】)`
+          tabTitle += `/${this.childForeignkey?.section_name}【excel】`
         }else if(tabTitle && this.service_view_name){
           tabTitle += `/${this.service_view_name}【excel】`
         }if(!tabTitle && this.service_view_name){
@@ -392,6 +392,7 @@ export default {
           "visible": "是",
           "button_name": 'excel',
           "tabTitle":tabTitle,
+          "tabIcon":'&#xe60a;',
           "application": this.resolveDefaultSrvApp(),
           "service": this.service_name,
           "is_public": false,
