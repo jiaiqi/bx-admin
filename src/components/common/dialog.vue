@@ -37,7 +37,7 @@
     </el-dialog>
 
     <el-dialog title="编辑" width="90%" :close-on-click-modal="1==2"  :visible="activeForm == 'update'" @close="onCloseEvent()" append-to-body>
-      <update name="list-update" ref="update-form" v-if="activeForm == 'update' " :init-load="initLoad" :pk="pk" :pkCol="pkCol" :service="service"   :defaultValues="defaultValues" :defaultConditions="defaultConditions"  :parentPageType="'list'" @action-complete="activeForm = null">
+      <update name="list-update" ref="update-form" v-if="activeForm == 'update' " :init-load="initLoad" :pk="pk" :pkCol="pkCol" :service="service"   :defaultValues="defaultValues" :defaultConditions="defaultConditions"  :parentPageType="'list'" @action-complete="onActionComplete">
       </update>
       <!-- <simple-update name="update" :appNo="customSrvApp" :init-load="initLoad" ref="update-form" v-if="activeForm == 'update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null">
       </simple-update> -->
@@ -83,7 +83,7 @@
     <!--列表加form操作-->
     <el-dialog title="列表" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'list_update'" @close="activeForm = 'xx'" append-to-body >
 
-      <simple-update  name="list-update-form" ref="list-update-form" :init-load="1==2" v-if="activeForm == 'list_update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null" @form-loaded="onFormLoaded('update')">
+      <simple-update  name="list-update-form" ref="list-update-form" :init-load="1==2" v-if="activeForm == 'list_update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="onActionComplete" @form-loaded="onFormLoaded('update')">
 
       </simple-update>
 
@@ -236,7 +236,6 @@ export default {
 
     },
     onActionComplete(e){
-
       if(e !== 'reset'){
         this.activeForm='xx'
       }
@@ -260,6 +259,3 @@ export default {
   margin-right: 3px;
 }
 </style>
-
-
-

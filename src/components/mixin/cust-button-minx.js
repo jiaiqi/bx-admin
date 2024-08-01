@@ -837,10 +837,10 @@ getFileFromUrl(url, fileName) {
       if ("列表弹出" == operate_type) {
         params.formType = "list";
 
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else if ("详情弹出" == operate_type) {
         params.formType = "detail";
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else if ("增加弹出" == operate_type) {
         // params.formType= "simple-add";
         params.formType = "add";
@@ -855,17 +855,17 @@ getFileFromUrl(url, fileName) {
         otherParams["buttonInfo"] = item;
         params["otherParams"] = otherParams;
         otherParams["initOrigin"] = "dialog";
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else if ("编辑列表弹出" == operate_type) {
         params.formType = "editgrid";
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else if ("选择填充表格" == operate_type) {
         // 曹鹏开发 批量添加 已弃用
         params.formType = "select_fill_grid";
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else if ("树列表弹出" == operate_type) {
         params.formType = "treegrid";
-        this.popupDialog(params);
+        this.popupDialog(params,callback);
       } else {
         alert(operate_type + ":暂未实现");
       }
