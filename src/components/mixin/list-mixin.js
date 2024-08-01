@@ -245,6 +245,46 @@ export default {
   },
 
   watch: {
+    "gridHeader": {
+      deep: true,
+      handler(newVal,oldVal) {
+        if (newVal?.length&&JSON.stringify(newVal)!=JSON.stringify(oldVal)) {
+          console.log("gridHeader changed",cloneDeep(newVal),cloneDeep(oldVal));
+          this.$nextTick(() => {
+            const tableColumns = this.$refs['bx-table-layout']?.columns
+            let needRefresh = false
+            const filters = {}
+            if (tableColumns?.length) {
+              newVal.forEach(head=>{
+                if(head._default_value&&Array.isArray(head.filters)){
+                  const index = tableColumns.findIndex(col=>head.column&&col.columnKey===head.column)
+                  if(index>-1){
+                    needRefresh = true
+                    this.$refs['bx-table-layout'].columns[index].filteredValue = head._default_value.split(',');
+                    filters[head.column] = head._default_value.split(',');
+                  }
+                }
+              })
+            }
+            if(needRefresh){
+              this.filterCondition = [];
+              for (var key in filters) {
+                var cMap = {};
+                if (filters[key].length > 0) {
+                  cMap["colName"] = key;
+                  cMap["value"] = filters[key].toString();
+                  cMap["ruleType"] = "in";
+                  this.filterCondition.push(cMap);
+                }
+              }
+              this.gridPage.currentPage = 1;
+              // this.filterChange(filters)
+            }
+          })
+        }
+
+      },
+    },
     '$store.state.frontTableData': {
       deep: true,
       handler(newVal) {
@@ -834,13 +874,28 @@ export default {
     },
 
     filterChange(filters) {
+      console.log('filterChange', filters);
+      let _filters = this.$refs?.['bx-table-layout']?.columns?.filter(item => item.filteredValue?.length).reduce((res, cur) => {
+        res[cur.columnKey] = cur.filteredValue
+        return res
+      }, {})
       this.filterCondition = [];
-      for (var key in filters) {
+      const headersMap = this.gridHeader.reduce((res,cur)=>{
+        res[cur.column] = cloneDeep(cur)
+        return res
+      },{})
+      for (var key in _filters) {
+        if(filters[key]?.length > 0){
+          _filters[key] = filters[key];
+        }
         var cMap = {};
-        if (filters[key].length > 0) {
+        if (_filters[key].length > 0) {
           cMap["colName"] = key;
-          cMap["value"] = filters[key].toString();
+          cMap["value"] = _filters[key].toString();
           cMap["ruleType"] = "in";
+          if(headersMap[key]?.col_type==='Set'){
+            cMap["ruleType"] = "inset";
+          }
           this.filterCondition.push(cMap);
         }
       }
@@ -2361,10 +2416,7 @@ export default {
         if(more_config !== null && more_config.hasOwnProperty('onListShowExp')){
           header["showListExp"] = more_config.onListShowExp
         }
-        if (
-          serviceCol["col_type"] == "Enum" ||
-          serviceCol["col_type"] == "Dict"
-        ) {
+        if (["Enum","Dict","Set"].includes(serviceCol["col_type"])) {
           let filters = [];
           var option_list_v2 = serviceCol["option_list_v2"];
           if (option_list_v2 && Array.isArray(option_list_v2)) {
@@ -2372,8 +2424,6 @@ export default {
               filters.push({text: item["label"], value: item["value"]});
             }
           }
-
-
           this.keyValueData[header["column"]] = filters;
           header["filters"] = filters;
         } else if (serviceCol["col_type"] == "Money") {
@@ -2446,7 +2496,13 @@ export default {
             this.groupHeaderCols[header["column"]].push(serviceCol);
           }
         }
-
+        if(header?.srvcol?.init_expr){
+          try {
+            header._default_value = eval(header?.srvcol?.init_expr)
+          } catch (error) {
+            console.log(error);
+          }
+        }
         this.gridHeader.push(wrapHeader(header));
       }
 
