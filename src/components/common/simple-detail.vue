@@ -23,20 +23,44 @@
       >
         <el-row v-for="(formItems, section) in sections" :key="section">
           <div class="el-col el-col-24 el-col-xl-24">
-            <div class="el-form-item" v-if="!!section&&formatSection(section)"  style="margin-bottom:0;">
+            <div
+              class="el-form-item"
+              v-if="!!section && formatSection(section)"
+              style="margin-bottom: 0"
+            >
               <!-- <span class="section-title">{{ formatSection(section) }}</span> -->
-              <span class="section-title"  @click.stop="onSectionsCollapseChange(section)" style="display: flex;justify-content: space-between;">{{formatSection(section)}}
-              
-              <template v-if="section !== '$' && formItems.length > 0  && cfgJsonOptionsType.indexOf('分组默认折叠') !== -1">
-                <i class="el-icon-arrow-right" v-show="sectionsCollapse[section]"></i>
-                <i class="el-icon-arrow-down" v-show="!sectionsCollapse[section]"></i>
-              </template>
-            </span>
+              <span
+                class="section-title"
+                @click.stop="onSectionsCollapseChange(section)"
+                style="display: flex; justify-content: space-between"
+                >{{ formatSection(section) }}
+
+                <template
+                  v-if="
+                    section !== '$' &&
+                    formItems.length > 0 &&
+                    cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
+                  "
+                >
+                  <i
+                    class="el-icon-arrow-right"
+                    v-show="sectionsCollapse[section]"
+                  ></i>
+                  <i
+                    class="el-icon-arrow-down"
+                    v-show="!sectionsCollapse[section]"
+                  ></i>
+                </template>
+              </span>
             </div>
           </div>
           <slot :name="section + '-begin'"></slot>
 
-          <div v-for="(formItem,fIndex) in formItems"  v-show="!getSectionShow(section)"  :key="fIndex">
+          <div
+            v-for="(formItem, fIndex) in formItems"
+            v-show="!getSectionShow(section)"
+            :key="fIndex"
+          >
             <field-editor
               :field="formItem.field"
               :content-fields="formItem.contentFields"
@@ -46,19 +70,25 @@
               @field-history-popup="onFieldHistoryPopup($event)"
             >
               <template #field-child-prepend class="">
-                <slot :name="formItem.field.info.name + '-child-prepend'" class="padding-bottom"></slot>
+                <slot
+                  :name="formItem.field.info.name + '-child-prepend'"
+                  class="padding-bottom"
+                ></slot>
               </template>
               <template #field-child-append class="padding-bottom">
-                <slot :name="formItem.field.info.name + '-child-append'" class="padding-bottom"></slot>
+                <slot
+                  :name="formItem.field.info.name + '-child-append'"
+                  class="padding-bottom"
+                ></slot>
               </template>
-<!--              <div slot="field-child-prepend">-->
-<!--                <slot-->
-<!--                  :name="formItem.field.info.name + '-child-prepend'"-->
-<!--                ></slot>-->
-<!--              </div>-->
-<!--              <div slot="field-child-append">-->
-<!--                <slot :name="formItem.field.info.name + '-child-append'"></slot>-->
-<!--              </div>-->
+              <!--              <div slot="field-child-prepend">-->
+              <!--                <slot-->
+              <!--                  :name="formItem.field.info.name + '-child-prepend'"-->
+              <!--                ></slot>-->
+              <!--              </div>-->
+              <!--              <div slot="field-child-append">-->
+              <!--                <slot :name="formItem.field.info.name + '-child-append'"></slot>-->
+              <!--              </div>-->
             </field-editor>
             <slot :name="formItem.field.info.name + '-append'"></slot>
           </div>
@@ -79,7 +109,7 @@
       <el-card>
         <el-col
           :span="24"
-          style="text-align: center;padding:6px;padding-bottom:20px;"
+          style="text-align: center; padding: 6px; padding-bottom: 20px"
         >
           <action
             v-for="item in actions"
@@ -94,7 +124,7 @@
       </el-card>
     </el-row>
 
-    <el-row  v-if="historyData&&historyData.length>0">
+    <el-row v-if="historyData && historyData.length > 0">
       <update-history
         :historyData="historyData"
         :srvCols="srvCols"
@@ -110,7 +140,7 @@
       append-to-body
       @close="activeForm = 'xx'"
     >
-      <simple-update
+      <!-- <simple-update
         name="update-form"
         ref="update-form"
         v-if="activeForm == 'update'"
@@ -120,7 +150,21 @@
         :nav-after-submit="false"
         @action-complete="onUpdateFormActionComplete"
       >
-      </simple-update>
+      </simple-update> -->
+      <update
+        name="detail-update"
+        ref="update-form"
+        v-if="activeForm == 'update'"
+        :pk="pk"
+        :pkCol="pkCol"
+        :service="updateService"
+        :default-values="defaultValues"
+        :default-conditions="defaultConditions"
+        :nav-after-submit="false"
+        :parentPageType="'detail'"
+        @action-complete="onUpdateFormActionComplete"
+      >
+      </update>
     </el-dialog>
 
     <el-dialog
@@ -141,7 +185,12 @@
           <template slot-scope="scope">
             <div
               v-show="isXhtml"
-              style="border-radius: 4px;min-height:300px; border:1px solid #dcdfe6; overflow: auto"
+              style="
+                border-radius: 4px;
+                min-height: 300px;
+                border: 1px solid #dcdfe6;
+                overflow: auto;
+              "
               v-html="scope.row"
             ></div>
             <span v-show="!isXhtml">
@@ -168,7 +217,7 @@ import SimpleUpdate from "./simple-update.vue";
 import CustButtonMinx from "../mixin/cust-button-minx";
 import { hotTableMetadata } from "../model/Field";
 import updateHistory from "../ui/update-history.vue";
-import BroadcastMixin from '../mixin/broadcast-channel-mixin'
+import BroadcastMixin from "../mixin/broadcast-channel-mixin";
 export default {
   name: "simple-detail",
   components: {
@@ -177,8 +226,9 @@ export default {
     action: Action,
     loader: Loader,
     updateHistory,
+    update:()=>import("./update.vue"),
   },
-  mixins: [FormMixin, CustButtonMinx, FormValidateMixin,BroadcastMixin],
+  mixins: [FormMixin, CustButtonMinx, FormValidateMixin, BroadcastMixin],
   props: {
     formType: {
       type: String,
@@ -186,16 +236,16 @@ export default {
     },
 
     pkCol: {
-      type: [String,Number],
+      type: [String, Number],
     },
 
     pk: {
-      type: [String,Number],
+      type: [String, Number],
     },
     childrenLists: {
       type: null,
     },
-    divCond: Array
+    divCond: Array,
   },
   computed: {
     srvValFormModeldetail() {
@@ -245,7 +295,7 @@ export default {
     },
     addNav2refreshAction(button) {
       let nav = new ActionInfo();
-      nav.button_icon = button?.button_icon||''
+      nav.button_icon = button?.button_icon || "";
       Vue.set(this.actions, "nav2refresh", nav);
 
       this.refreshService = button.service_name;
@@ -260,7 +310,7 @@ export default {
 
     addNav2UpdateAction(button) {
       let nav = new ActionInfo();
-      nav.button_icon = button?.button_icon||''
+      nav.button_icon = button?.button_icon || "";
       Vue.set(this.actions, "nav2update", nav);
 
       this.updateService = button.service_name;
@@ -279,92 +329,91 @@ export default {
         this.activeForm = null;
         this.$refs.loader.run();
       }
-      this.$emit('action-complete',event)
-      this.bcPostMessage('action-complete',event)
+      this.$emit("action-complete", event);
+      this.bcPostMessage("action-complete", event);
     },
-    initDetail(){
-      return new Promise(resolve=>{
+    initDetail() {
+      return new Promise((resolve) => {
         this.createFields((srvCol) => srvCol.in_detail != 0)
-      .then((response) => {
-        if (response.data.encryptedCols) {
-          this.encryptedCols = response.data.encryptedCols;
-        }
+          .then((response) => {
+            if (response.data.encryptedCols) {
+              this.encryptedCols = response.data.encryptedCols;
+            }
 
-        let fields = this.fields;
-        for (let fieldName in fields) {
-          let field = fields[fieldName];
-          field.info.readonly = true;
-          field.info.editable = false;
+            let fields = this.fields;
+            for (let fieldName in fields) {
+              let field = fields[fieldName];
+              field.info.readonly = true;
+              field.info.editable = false;
 
-          if (
-            field.info.srvCol.in_detail != 1 ||
-            field.info.srvCol.in_detail === 2
-          ) {
-            field.info.visible = false;
-          }
+              if (
+                field.info.srvCol.in_detail != 1 ||
+                field.info.srvCol.in_detail === 2
+              ) {
+                field.info.visible = false;
+              }
 
-          let type = field.info.type;
-          if (hotTableMetadata[type]) {
-            this.loadHotTableData(hotTableMetadata[type]);
-          }
-        }
+              let type = field.info.type;
+              if (hotTableMetadata[type]) {
+                this.loadHotTableData(hotTableMetadata[type]);
+              }
+            }
 
-        if (response && response.data && response.data.formButton) {
-          let formButtons = response.data.formButton;
-          this.createActions(formButtons);
-        }
+            if (response && response.data && response.data.formButton) {
+              let formButtons = response.data.formButton;
+              this.createActions(formButtons);
+            }
 
-        this.confLoader();
+            this.confLoader();
 
-        this.emitEvent("metadata-loaded", this);
-      })
-      .then(() => {
-        // init load and watch conditions
-        let loader = this.$refs.loader;
-        let condition = [];
-        if (this.pk && this.pkCol) {
-          condition.push({
-            colName: this.pkCol,
-            ruleType: "eq",
-            valueExpr: this.pk,
-            literalValue: true,
+            this.emitEvent("metadata-loaded", this);
+          })
+          .then(() => {
+            // init load and watch conditions
+            let loader = this.$refs.loader;
+            let condition = [];
+            if (this.pk && this.pkCol) {
+              condition.push({
+                colName: this.pkCol,
+                ruleType: "eq",
+                valueExpr: this.pk,
+                literalValue: true,
+              });
+            }
+            if (
+              Array.isArray(this.defaultConditions) &&
+              this.defaultConditions.length > 0
+            ) {
+              condition = this.defaultConditions.map((item) => {
+                item.valueExpr = item.value;
+                item.literalValue = true;
+                return item;
+              });
+            }
+            // let divCond = null;
+            // if (this.$route.query.divCond) {
+            //   try {
+            //     divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
+            //     console.log(divCond);
+            //   } catch (error) {
+            //     console.error(error);
+            //   }
+            // }
+
+            return loader.run(condition, this.divCond).then((res) => {
+              resolve(res);
+            });
+          })
+          .then((event) => {
+            this.formLoaded = true;
+            this.$emit("form-loaded", this);
+            this.$emit("detail-form-loaded", this);
           });
-        }
-        if (
-          Array.isArray(this.defaultConditions) &&
-          this.defaultConditions.length > 0
-        ) {
-          condition = this.defaultConditions.map((item) => {
-            item.valueExpr = item.value;
-            item.literalValue = true;
-            return item;
-          });
-        }
-        // let divCond = null;
-        // if (this.$route.query.divCond) {
-        //   try {
-        //     divCond = JSON.parse(decodeURIComponent(this.$route.query.divCond))
-        //     console.log(divCond);
-        //   } catch (error) {
-        //     console.error(error);
-        //   }
-        // }
-
-        return loader.run(condition,this.divCond).then(res=>{
-          resolve(res)
-        });
-      })
-      .then((event) => {
-        this.formLoaded = true;
-        this.$emit("form-loaded", this);
-        this.$emit("detail-form-loaded", this);
-       
       });
-      })
-    }
+    },
   },
   mounted() {
-    this.initDetail()
+    this.initDetail();
   },
 };
 </script>

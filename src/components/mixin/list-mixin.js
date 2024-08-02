@@ -108,7 +108,8 @@ export default {
       vpageNo: null,
       service_view_name:null,
       pub_field_map:null,
-      originListData:null
+      originListData:null,
+      listV2Data:null,
     };
   },
 
@@ -1113,6 +1114,9 @@ export default {
         result = item._rowDisp[rowIndex]
       }
 
+      if(item.button_type === "batchupdate" && this.showBatchEditButton !== true){
+        result = false
+      }
       return result;
     },
     getButtonDispExps(btns,data,index){
@@ -2573,6 +2577,7 @@ export default {
       await this.loadColsV2(this.service_name, use_type,null,this.mainService,forceRefreshV2)
         .then(response => {
           let respData = response.body.data;
+          this.listV2Data = cloneDeep(respData)
           this.service_view_name = respData?.service_view_name
           this.vpageNo = respData.vpage_no
           let card_cfg_list = respData.card_cfg;

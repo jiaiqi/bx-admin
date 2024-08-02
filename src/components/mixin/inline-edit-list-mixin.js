@@ -15,11 +15,18 @@ export default {
     };
   },
   mounted() {
-    if (this.listType === "updatechildlist") {
+    if (this.showBatchEditButton && this.listType === "updatechildlist") {
       this.onInlineEditing = true;
     }
   },
   computed: {
+    showBatchEditButton() {
+      return (
+        this.inlineEditCols &&
+        typeof this.inlineEditCols === "object" &&
+        Object.keys(this.inlineEditCols).length
+      );
+    },
     setPageSize() {
       let pageSize = this.pageSize;
       if (this.cfgJson?.list_paging_json) {
@@ -358,7 +365,7 @@ export default {
             });
           }
         }
-        return item
+        return item;
       });
 
       // this.newGridData = this.gridData.map((item, index) => {
@@ -586,9 +593,13 @@ export default {
       // console.log('行内编辑配置',e);
       if (e && typeof e === "string") {
         this.cfgJson = JSON.parse(e);
-        if(this.cfgJson?.list_type==='卡片列表' && this.cfgJson?.card_json?.parts_json &&this.childForeignkey){
+        if (
+          this.cfgJson?.list_type === "卡片列表" &&
+          this.cfgJson?.card_json?.parts_json &&
+          this.childForeignkey
+        ) {
           // 子表 配置了卡片 直接展示为卡片
-          this.listStyle = 'card'
+          this.listStyle = "card";
         }
         if (
           this.cfgJson?.list_edit_srv &&

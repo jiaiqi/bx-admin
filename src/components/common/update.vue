@@ -1,15 +1,16 @@
 <template>
-  <div v-loading="allChildDataLoaded===false">
+  <div v-loading="allChildDataLoaded === false">
     <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
       <!-- <div slot="header" class="clearfix">
         <span>{{ label }}</span>
       </div> -->
       <div class="text item">
         <simple-update
+          :navAfterSubmit="navAfterSubmit"
           :mainService="mainService"
-           :approvalFormMode="approvalFormMode" 
-           :haveDraft="haveDraft"
-           :parentPageType="parentPageType"
+          :approvalFormMode="approvalFormMode"
+          :haveDraft="haveDraft"
+          :parentPageType="parentPageType"
           ref="basicForm"
           :loaderServiceProp="selectSrvName"
           :initOrigin="initOrigin"
@@ -26,160 +27,180 @@
           @form-loaded="onBasicFormLoaded"
           @action-complete="$emit('action-complete', $event)"
           @form-model-changed="onInnerFormModelChanged($event)"
-           @executor-complete="$emit('executor-complete', $event)"
+          @executor-complete="$emit('executor-complete', $event)"
           @submitted2mem="onSubmitted2mem"
-          :childrenLists='childrenList'
+          :childrenLists="childrenList"
         >
-           <div slot="field-form-prepend" class="text item" v-if="childrenListLoaded && childListRun.form.prepend.length > 0">
-          <el-collapse v-model="buildCollapsedRun['form_prepend']">
-            <template v-for="(item, index) in childListRun.form.prepend">
-              <el-collapse-item
-                :title="
-                  item.foreign_key.section_name || item.foreign_key.table_name
-                "
-                v-show="showChildList(item,defaultValues)"
-                :name="'form_prepend_' + (index)"
-              >
-                <child-list
-                 :pageIsDraft="pageIsDraft"
-                  @child-loaded="childDataLoadedRun($event)"
-                  :childListConfig="item"
-                  :ref="'childrenList'"
-                  :name="item.service_name"
-                  storage-type="mem"
-                  :service="item.service_name"
-                  :foreign-key="item.foreign_key"
-                  :default-condition="item.defaultCondition"
-                  :is-tree="!!item.parent_no_col"
-                  :inplace-edit="true"
-                  list-type="updatechildlist"
-                  :read-only="item.foreign_key.child_table_readonly=='是'"
-                  :mainFormDatas="mainFormDatas || defaultValues"
-                  :default-inplace-edit-mode="false"
-                  :merge-col="false"
-                  @update-form-loaded="$emit('update-form-loaded', $event)"
-                  @add-form-loaded="$emit('add-form-loaded', $event)"
-                  @grid-data-changed="onChildListDataChanged"
-                  @list-loaded="onChildListLoaded"
+          <div
+            slot="field-form-prepend"
+            class="text item"
+            v-if="childrenListLoaded && childListRun.form.prepend.length > 0"
+          >
+            <el-collapse v-model="buildCollapsedRun['form_prepend']">
+              <template v-for="(item, index) in childListRun.form.prepend">
+                <el-collapse-item
+                  :title="
+                    item.foreign_key.section_name || item.foreign_key.table_name
+                  "
+                  v-show="showChildList(item, defaultValues)"
+                  :name="'form_prepend_' + index"
                 >
-                </child-list>
-              </el-collapse-item>
-            </template>
-          </el-collapse>
-         </div>
-         <div slot="field-form-append" class="text item" v-if="childrenListLoaded && childListRun.form.append.length > 0">
-          <el-collapse v-model="buildCollapsedRun['form_append']">
-            <template v-for="(item, index) in childListRun.form.append">
-              <el-collapse-item
-                :title="
-                  item.foreign_key.section_name || item.foreign_key.table_name
-                "
-                v-show="showChildList(item,defaultValues)"
-                :name="'form_append_' + (index)"
-              >
-                <child-list
-                 :pageIsDraft="pageIsDraft"
-                  :childListConfig="item"
-                  @child-loaded="childDataLoadedRun($event)"
-                  :ref="'childrenList'"
-                  :name="item.service_name"
-                  storage-type="mem"
-                  :service="item.service_name"
-                  :foreign-key="item.foreign_key"
-                  :default-condition="item.defaultCondition"
-                  :read-only="item.foreign_key.child_table_readonly=='是'"
-                  :is-tree="!!item.parent_no_col"
-                  :inplace-edit="true"
-                  list-type="updatechildlist"
-                  :mainFormDatas="mainFormDatas || defaultValues"
-                  :default-inplace-edit-mode="false"
-                  :merge-col="false"
-                  @update-form-loaded="$emit('update-form-loaded', $event)"
-                  @add-form-loaded="$emit('add-form-loaded', $event)"
-                  @grid-data-changed="onChildListDataChanged"
-                  @list-loaded="onChildListLoaded"
+                  <child-list
+                    :pageIsDraft="pageIsDraft"
+                    @child-loaded="childDataLoadedRun($event)"
+                    :childListConfig="item"
+                    :ref="'childrenList'"
+                    :name="item.service_name"
+                    storage-type="mem"
+                    :service="item.service_name"
+                    :foreign-key="item.foreign_key"
+                    :default-condition="item.defaultCondition"
+                    :is-tree="!!item.parent_no_col"
+                    :inplace-edit="true"
+                    list-type="updatechildlist"
+                    :read-only="item.foreign_key.child_table_readonly == '是'"
+                    :mainFormDatas="mainFormDatas || defaultValues"
+                    :default-inplace-edit-mode="false"
+                    :merge-col="false"
+                    @update-form-loaded="$emit('update-form-loaded', $event)"
+                    @add-form-loaded="$emit('add-form-loaded', $event)"
+                    @grid-data-changed="onChildListDataChanged"
+                    @list-loaded="onChildListLoaded"
+                  >
+                  </child-list>
+                </el-collapse-item>
+              </template>
+            </el-collapse>
+          </div>
+          <div
+            slot="field-form-append"
+            class="text item"
+            v-if="childrenListLoaded && childListRun.form.append.length > 0"
+          >
+            <el-collapse v-model="buildCollapsedRun['form_append']">
+              <template v-for="(item, index) in childListRun.form.append">
+                <el-collapse-item
+                  :title="
+                    item.foreign_key.section_name || item.foreign_key.table_name
+                  "
+                  v-show="showChildList(item, defaultValues)"
+                  :name="'form_append_' + index"
                 >
-                </child-list>
-              </el-collapse-item>
-            </template>
-          </el-collapse>
-         </div>
+                  <child-list
+                    :pageIsDraft="pageIsDraft"
+                    :childListConfig="item"
+                    @child-loaded="childDataLoadedRun($event)"
+                    :ref="'childrenList'"
+                    :name="item.service_name"
+                    storage-type="mem"
+                    :service="item.service_name"
+                    :foreign-key="item.foreign_key"
+                    :default-condition="item.defaultCondition"
+                    :read-only="item.foreign_key.child_table_readonly == '是'"
+                    :is-tree="!!item.parent_no_col"
+                    :inplace-edit="true"
+                    list-type="updatechildlist"
+                    :mainFormDatas="mainFormDatas || defaultValues"
+                    :default-inplace-edit-mode="false"
+                    :merge-col="false"
+                    @update-form-loaded="$emit('update-form-loaded', $event)"
+                    @add-form-loaded="$emit('add-form-loaded', $event)"
+                    @grid-data-changed="onChildListDataChanged"
+                    @list-loaded="onChildListLoaded"
+                  >
+                  </child-list>
+                </el-collapse-item>
+              </template>
+            </el-collapse>
+          </div>
 
-          <div :slot="col + '-child-prepend'" class="text item"  v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
-          <el-collapse v-model="buildCollapsedRun[col+'_prepend']">
-            <template v-for="(item, index) in fieldChildRun[col].prepend">
-              <el-collapse-item
-                :title="
-                  item.foreign_key.section_name || item.foreign_key.table_name
-                "
-                v-show="showChildList(item,defaultValues)"
-                :key="index"
-                :name="col + '_prepend_' + (index)"
-              >
-                <child-list
-                 :pageIsDraft="pageIsDraft"
+          <div
+            :slot="col + '-child-prepend'"
+            class="text item"
+            v-for="(col, colIndex) in fieldChildKeys"
+            :key="colIndex"
+            v-if="childrenListLoaded && fieldChildKeys.length > 0"
+          >
+            <el-collapse v-model="buildCollapsedRun[col + '_prepend']">
+              <template v-for="(item, index) in fieldChildRun[col].prepend">
+                <el-collapse-item
+                  :title="
+                    item.foreign_key.section_name || item.foreign_key.table_name
+                  "
+                  v-show="showChildList(item, defaultValues)"
                   :key="index"
-                  :childListConfig="item"
-                  @child-loaded="childDataLoadedRun($event)"
-                  :ref="'childrenList'"
-                  :name="item.service_name"
-                  storage-type="mem"
-                  :service="item.service_name"
-                  :foreign-key="item.foreign_key"
-                  :default-condition="item.defaultCondition"
-                  :is-tree="!!item.parent_no_col"
-                  :inplace-edit="true"
-                  list-type="updatechildlist"
-                  :mainFormDatas="mainFormDatas || defaultValues"
-                  :read-only="item.foreign_key.child_table_readonly=='是'"
-                  :default-inplace-edit-mode="false"
-                  :merge-col="false"
-                  @update-form-loaded="$emit('update-form-loaded', $event)"
-                  @add-form-loaded="$emit('add-form-loaded', $event)"
-                  @grid-data-changed="onChildListDataChanged"
-                  @list-loaded="onChildListLoaded"
+                  :name="col + '_prepend_' + index"
                 >
-                </child-list>
-              </el-collapse-item>
-            </template>
-          </el-collapse>
-         </div>
-         <div :slot="col + '-child-append'" class="text item" v-for="(col, colIndex) in fieldChildKeys" :key="colIndex" v-if="childrenListLoaded && fieldChildKeys.length > 0">
-          <el-collapse v-model="buildCollapsedRun[col+'_append']"  >
-            <template v-for="(item, index) in fieldChildRun[col].append">
-              <el-collapse-item
-                :title="
-                  item.foreign_key.section_name || item.foreign_key.table_name
-                "
-                v-show="showChildList(item,defaultValues)"
-                :key="index"
-                :name="col + '_append_' + (index)"
-              >
-                <child-list
-                 :pageIsDraft="pageIsDraft"
+                  <child-list
+                    :pageIsDraft="pageIsDraft"
+                    :key="index"
+                    :childListConfig="item"
+                    @child-loaded="childDataLoadedRun($event)"
+                    :ref="'childrenList'"
+                    :name="item.service_name"
+                    storage-type="mem"
+                    :service="item.service_name"
+                    :foreign-key="item.foreign_key"
+                    :default-condition="item.defaultCondition"
+                    :is-tree="!!item.parent_no_col"
+                    :inplace-edit="true"
+                    list-type="updatechildlist"
+                    :mainFormDatas="mainFormDatas || defaultValues"
+                    :read-only="item.foreign_key.child_table_readonly == '是'"
+                    :default-inplace-edit-mode="false"
+                    :merge-col="false"
+                    @update-form-loaded="$emit('update-form-loaded', $event)"
+                    @add-form-loaded="$emit('add-form-loaded', $event)"
+                    @grid-data-changed="onChildListDataChanged"
+                    @list-loaded="onChildListLoaded"
+                  >
+                  </child-list>
+                </el-collapse-item>
+              </template>
+            </el-collapse>
+          </div>
+          <div
+            :slot="col + '-child-append'"
+            class="text item"
+            v-for="(col, colIndex) in fieldChildKeys"
+            :key="colIndex"
+            v-if="childrenListLoaded && fieldChildKeys.length > 0"
+          >
+            <el-collapse v-model="buildCollapsedRun[col + '_append']">
+              <template v-for="(item, index) in fieldChildRun[col].append">
+                <el-collapse-item
+                  :title="
+                    item.foreign_key.section_name || item.foreign_key.table_name
+                  "
+                  v-show="showChildList(item, defaultValues)"
                   :key="index"
-                  @child-loaded="childDataLoadedRun($event)"
-                  :ref="'childrenList'"
-                  :childListConfig="item"
-                  :name="item.service_name"
-                  storage-type="mem"
-                  :service="item.service_name"
-                  :foreign-key="item.foreign_key"
-                  :default-condition="item.defaultCondition"
-                  :is-tree="!!item.parent_no_col"
-                  :inplace-edit="true"
-                  list-type="updatechildlist"
-                  :mainFormDatas="mainFormDatas || defaultValues"
-                  :read-only="item.foreign_key.child_table_readonly=='是'"
-                  :default-inplace-edit-mode="false"
-                  :merge-col="false"
-                  @update-form-loaded="$emit('update-form-loaded', $event)"
-                  @add-form-loaded="$emit('add-form-loaded', $event)"
-                  @grid-data-changed="onChildListDataChanged"
-                  @list-loaded="onChildListLoaded"
+                  :name="col + '_append_' + index"
                 >
-                </child-list>
-                <!-- <child-list
+                  <child-list
+                    :pageIsDraft="pageIsDraft"
+                    :key="index"
+                    @child-loaded="childDataLoadedRun($event)"
+                    :ref="'childrenList'"
+                    :childListConfig="item"
+                    :name="item.service_name"
+                    storage-type="mem"
+                    :service="item.service_name"
+                    :foreign-key="item.foreign_key"
+                    :default-condition="item.defaultCondition"
+                    :is-tree="!!item.parent_no_col"
+                    :inplace-edit="true"
+                    list-type="updatechildlist"
+                    :mainFormDatas="mainFormDatas || defaultValues"
+                    :read-only="item.foreign_key.child_table_readonly == '是'"
+                    :default-inplace-edit-mode="false"
+                    :merge-col="false"
+                    @update-form-loaded="$emit('update-form-loaded', $event)"
+                    @add-form-loaded="$emit('add-form-loaded', $event)"
+                    @grid-data-changed="onChildListDataChanged"
+                    @list-loaded="onChildListLoaded"
+                  >
+                  </child-list>
+                  <!-- <child-list
                 :key="index"
                 ref="childrenList"
                 :name="item.service_name"
@@ -199,11 +220,11 @@
                 @list-loaded="onChildListLoaded"
               >
               </child-list> -->
-              </el-collapse-item>
-            </template>
-          </el-collapse>
-         </div>
-      <!-- <template  v-slot:child-body="{ mainForm }" class="text item" v-if="childrenListLoaded">
+                </el-collapse-item>
+              </template>
+            </el-collapse>
+          </div>
+          <!-- <template  v-slot:child-body="{ mainForm }" class="text item" v-if="childrenListLoaded">
         <el-collapse v-model="activeName">
           <template v-for="(item, index) in childrenList">
             <el-collapse-item
@@ -236,10 +257,9 @@
           </template>
         </el-collapse>
       </template > -->
-
         </simple-update>
       </div>
-     <!-- <div class="text item" v-if="childrenListLoaded">
+      <!-- <div class="text item" v-if="childrenListLoaded">
         <el-collapse v-model="activeName">
           <template v-for="(item, index) in childrenList">
             <el-collapse-item
@@ -280,39 +300,39 @@
 <script>
 // import ChildList from "./child-list.vue";
 import SimpleUpdate from "./simple-update.vue";
-import ParentChildMixin from '../mixin/parent-child-mixin'
-import cloneDeep from 'lodash/cloneDeep'
+import ParentChildMixin from "../mixin/parent-child-mixin";
+import cloneDeep from "lodash/cloneDeep";
 export default {
   name: "update",
   components: {
     SimpleUpdate,
-    ChildList:() => import("./child-list.vue"),
+    ChildList: () => import("./child-list.vue"),
   },
-  mixins: [ ParentChildMixin, ],
+  mixins: [ParentChildMixin],
   props: {
-    initOrigin:{
-      type:String,
-      default:'none'
+    initOrigin: {
+      type: String,
+      default: "none",
     },
-    childrenLists:{
-      type:Array
+    childrenLists: {
+      type: Array,
     },
     service: {
-      type: String
+      type: String,
     },
-      haveDraft:{
-        type:Boolean,
-        default:false
-      },
+    haveDraft: {
+      type: Boolean,
+      default: false,
+    },
     // for update/detail/add, it is loader's condition
     // for filter, it is default condition
     defaultConditions: {
-      type: Array
+      type: Array,
     },
 
     // for update/add, it is form fields default value
     defaultValues: {
-      type: Object
+      type: Object,
     },
 
     navAfterSubmit: {
@@ -331,11 +351,11 @@ export default {
     },
 
     pkCol: {
-      type: String
+      type: String,
     },
 
     pk: {
-      type: String
+      type: String,
     },
 
     initLoad: {
@@ -343,26 +363,26 @@ export default {
       default: true,
     },
     selectSrvName: {
-      type: String
+      type: String,
     },
     parentMainFormDatas: {
-      type: Object
+      type: Object,
     },
     pageIsDraft: {
       type: String,
-      default: 'norm',
+      default: "norm",
     },
-    parentPageType:{
+    parentPageType: {
       type: String,
-      default: '',
+      default: "",
     },
     mainService: {
       type: String,
       default: "",
-    }
+    },
   },
 
-  data () {
+  data() {
     return {
       service_name: this.service || this.$route.params.service_name,
       activeName: 0,
@@ -371,95 +391,96 @@ export default {
   },
 
   methods: {
-    childDataLoadedRun(e){
-      console.log("childDataLoadedRun",e);
-      if(e?.constraint_name){
-        this.$set(this.childDataLoadedMap,e.constraint_name,true)
+    childDataLoadedRun(e) {
+      console.log("childDataLoadedRun", e);
+      if (e?.constraint_name) {
+        this.$set(this.childDataLoadedMap, e.constraint_name, true);
       }
-      this.$emit("child-loaded",e)
+      this.$emit("child-loaded", e);
     },
-    getChildGridData:function(){
-      let childs = this.$refs
+    getChildGridData: function () {
+      let childs = this.$refs;
     },
     onInnerFormModelChanged: function (e) {
-      let self = this
+      let self = this;
       // notify child list inplace edit redundant via js
       if (this.$refs && this.$refs.childrenList) {
-        this.$refs.childrenList.filter(item => item.isInplaceEdit()).forEach(childlist => {
-          let realList = childlist.$refs.list
-          realList.inplaceEditData.forEach(fieldsMap => {
-            let row = {};
-            for (let key in fieldsMap) {
-              let field = fieldsMap[ key ];
-              if (field && field.getSrvVal) {
-                row[ key ] = field.getSrvVal()
+        this.$refs.childrenList
+          .filter((item) => item.isInplaceEdit())
+          .forEach((childlist) => {
+            let realList = childlist.$refs.list;
+            realList.inplaceEditData.forEach((fieldsMap) => {
+              let row = {};
+              for (let key in fieldsMap) {
+                let field = fieldsMap[key];
+                if (field && field.getSrvVal) {
+                  row[key] = field.getSrvVal();
+                }
               }
-            }
 
-            for (let key in fieldsMap) {
-              let field = fieldsMap[ key ]
-              if (field && field.getSrvVal) {
-                let vm = this
-                this.handleRedundantViaJs(field, _ => row, vm)
+              for (let key in fieldsMap) {
+                let field = fieldsMap[key];
+                if (field && field.getSrvVal) {
+                  let vm = this;
+                  this.handleRedundantViaJs(field, (_) => row, vm);
+                }
               }
-            }
-          })
-        })
-
+            });
+          });
       }
       if (e.formModel !== undefined) {
-        //  Vue.set('data', 'mainFormDatas', e.formModel) 
-        this.mainFormDatas = e.formModel
+        //  Vue.set('data', 'mainFormDatas', e.formModel)
+        this.mainFormDatas = e.formModel;
 
         // this.mainFormDatas = e.formModel
       }
-
     },
     /**
      * 返回编辑主子表数据的请求
      * @returns {{serviceName: (default.props.service|{type}|*), data: *[]}[]}
      */
-    buildRunQuries () {
+    buildRunQuries() {
       let formModel = cloneDeep(this.srvValFormModel());
       delete formModel._children;
 
       let query = {
         serviceName: this.service_name,
-        data: [ formModel ],
-        condition: [ {
-          colName: "id", ruleType: "eq", value: formModel.id,
-        } ]
+        data: [formModel],
+        condition: [
+          {
+            colName: "id",
+            ruleType: "eq",
+            value: formModel.id,
+          },
+        ],
       };
 
       // 子表的数据
-      let childDataList = []
+      let childDataList = [];
       if (this.$refs.childrenList !== undefined) {
-        this.$refs.childrenList.forEach(childList => {
+        this.$refs.childrenList.forEach((childList) => {
           let updateQueries = childList.buildRunQuries();
           if (updateQueries && updateQueries.length > 0) {
             childDataList = childDataList.concat(updateQueries);
           }
-
         });
       }
 
-
       // put in top level query
-      query.data[ 0 ].child_data_list = childDataList;
+      query.data[0].child_data_list = childDataList;
 
-      return [ query ];
+      return [query];
     },
 
-
     gotPk: function () {
-      let self = this
+      let self = this;
       let pk = null;
-      if(self.pk){
-        pk = self.pk
-      }else if(self.$route && self.$route.params && self.$route.params.id){
-        pk = self.$route.params.id
+      if (self.pk) {
+        pk = self.pk;
+      } else if (self.$route && self.$route.params && self.$route.params.id) {
+        pk = self.$route.params.id;
       }
-      return pk
+      return pk;
     },
 
     /**
@@ -467,24 +488,18 @@ export default {
      * @param form
      */
     onBasicFormLoaded: function (form) {
-      this.$emit("form-loaded", this)
+      this.$emit("form-loaded", this);
 
       // if itself is submit2mem, no childlist
       if (this.submit2Db) {
-        this.buildChildrenList()
+        this.buildChildrenList();
       }
-    }
+    },
   },
 
   created: function () {
-    window.forms = window.forms || {}
-    window.forms.update = this
-
-  }
-
-
+    window.forms = window.forms || {};
+    window.forms.update = this;
+  },
 };
 </script>
-
-
-
