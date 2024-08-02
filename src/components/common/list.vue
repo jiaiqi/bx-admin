@@ -490,7 +490,23 @@
                       @click="toDetail(item.column, scope.row, scope.$index)"
                       >{{ formatValue(scope.row, item) }}</a
                     >
-                    <span v-else>{{ formatValue(scope.row, item) }}</span>
+                    <span
+                      v-else
+                      :class="{
+                        hasBg:
+                          item.backgroundMap &&
+                          item.backgroundMap[scope.row[item.column]],
+                      }"
+                      :style="{
+                        color:
+                          item.colorMap &&
+                          item.colorMap[scope.row[item.column]],
+                        background:
+                          item.backgroundMap &&
+                          item.backgroundMap[scope.row[item.column]],
+                      }"
+                      >{{ formatValue(scope.row, item) }}</span
+                    >
                   </template>
                 </template>
               </template>
@@ -1528,5 +1544,11 @@ export default {
     color: #409eff;
     cursor: pointer;
   }
+}
+.hasBg{
+  display: inline-block;
+  padding: 2px 5px;
+  color: #fff;
+  border-radius: 2px;
 }
 </style>

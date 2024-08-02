@@ -2689,6 +2689,8 @@ export default {
           serviceCol["more_config"] && JSON.parse(serviceCol["more_config"])
             ? JSON.parse(serviceCol["more_config"])
             : null;
+        header["backgroundMap"] = header["more_config"]?.backgroundMap || false;
+        header["colorMap"] = header["more_config"]?.colorMap || false;
         if (more_config !== null && more_config.hasOwnProperty("list_width")) {
           header["width"] = more_config.list_width;
         }
