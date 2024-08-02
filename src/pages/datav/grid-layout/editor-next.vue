@@ -1791,7 +1791,6 @@ export default {
 .com-item {
   min-height: 90px;
   cursor: move;
-  text-align: center;
   display: grid;
   font-size: 14px;
   border: 1px solid transparent;
