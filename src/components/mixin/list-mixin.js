@@ -1,21 +1,18 @@
-import {hotTableMetadata} from "../model/Field";
-import {createLinkUrlFunc} from "../../util/FieldUtil";
-import {dispCol2ValCol} from "../../util/NameUtil";
-import {GridInfo} from "../model/GridInfo";
-import {wrapButton, wrapHeader,getButtonPara} from "../common/wrapper_util";
-import {getUnitData} from "../../util/UnitUtil";
+import { hotTableMetadata } from "../model/Field";
+import { createLinkUrlFunc } from "../../util/FieldUtil";
+import { dispCol2ValCol } from "../../util/NameUtil";
+import { GridInfo } from "../model/GridInfo";
+import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
+import { getUnitData } from "../../util/UnitUtil";
 import * as DataUtil from "../../util/DataUtil";
-import cloneDeep from 'lodash/cloneDeep'
-import isFunction from 'lodash/isFunction'
+import cloneDeep from "lodash/cloneDeep";
+import isFunction from "lodash/isFunction";
 import batchAddMixin from "./batch-add-mixin";
-import { Loading } from 'element-ui';
-export function MissRequiredConditionError() { 
-}
-let polling  = null
+import { Loading } from "element-ui";
+export function MissRequiredConditionError() {}
+let polling = null;
 export default {
-  mixins: [
-    batchAddMixin
-  ],
+  mixins: [batchAddMixin],
   data() {
     return {
       tabsConfig: [
@@ -106,29 +103,29 @@ export default {
       sumRowData: null,
       sumConfig: null,
       vpageNo: null,
-      service_view_name:null,
-      pub_field_map:null,
-      originListData:null,
-      listV2Data:null,
+      service_view_name: null,
+      pub_field_map: null,
+      originListData: null,
+      listV2Data: null,
     };
   },
 
   props: {
     name: {
       type: String,
-      default: 'main'
+      default: "main",
     },
-    listMainFormDatas:{
+    listMainFormDatas: {
       type: Object,
       default: function () {
-        return null
-      }
+        return null;
+      },
     },
     service: {
-      type: String
+      type: String,
     },
     card: {
-      type: String
+      type: String,
     },
     pageSize: {
       type: Number,
@@ -138,63 +135,63 @@ export default {
       type: Boolean,
       default: function () {
         return true;
-      }
+      },
     },
     defDataPara: {
       type: Object,
       default: function () {
         return null;
-      }
+      },
     },
-    mainFormData:{
+    mainFormData: {
       type: Object,
       default: function () {
         return null;
-      }
+      },
     },
     readOnly: {
       type: Boolean,
       default: function () {
         return false;
-      }
+      },
     },
 
     listType: {
       type: String,
       default: function () {
         return "list";
-      }
+      },
     },
     existsGridButton: {
       type: Boolean,
       default: function () {
         return true;
-      }
+      },
     },
     existsRowButton: {
       type: Boolean,
       default: function () {
         return true;
-      }
+      },
     },
     defaultCondition: {
       type: Array,
       default: function () {
         return [];
-      }
+      },
     },
     defaultOrder: {
       type: Array,
       default: function () {
         return [];
-      }
+      },
     },
 
     operate_params: {
       type: Object,
       default: function () {
         return null;
-      }
+      },
     },
     hideButtons: {
       type: Boolean,
@@ -207,16 +204,16 @@ export default {
     },
 
     mapcondition: {
-      type: Object
+      type: Object,
     },
-    relationCondition:{
-      type: Object
+    relationCondition: {
+      type: Object,
     },
     childforeignkey: {
-      type: Object
+      type: Object,
     },
     childforeignvalue: {
-      type: String
+      type: String,
     },
     mergeCol: {
       type: Boolean,
@@ -235,39 +232,49 @@ export default {
       type: Boolean,
       default: true,
     },
-    showPagination:{
+    showPagination: {
       type: Boolean,
       default: true,
     },
     pageIsDraft: {
       type: String,
-      default: 'norm',
-    }
+      default: "norm",
+    },
   },
 
   watch: {
-    "gridHeader": {
+    gridHeader: {
       deep: true,
-      handler(newVal,oldVal) {
-        if (newVal?.length&&JSON.stringify(newVal)!=JSON.stringify(oldVal)) {
-          console.log("gridHeader changed",cloneDeep(newVal),cloneDeep(oldVal));
+      handler(newVal, oldVal) {
+        if (
+          newVal?.length &&
+          JSON.stringify(newVal) != JSON.stringify(oldVal)
+        ) {
+          console.log(
+            "gridHeader changed",
+            cloneDeep(newVal),
+            cloneDeep(oldVal)
+          );
           this.$nextTick(() => {
-            const tableColumns = this.$refs['bx-table-layout']?.columns
-            let needRefresh = false
-            const filters = {}
+            const tableColumns = this.$refs["bx-table-layout"]?.columns;
+            let needRefresh = false;
+            const filters = {};
             if (tableColumns?.length) {
-              newVal.forEach(head=>{
-                if(head._default_value&&Array.isArray(head.filters)){
-                  const index = tableColumns.findIndex(col=>head.column&&col.columnKey===head.column)
-                  if(index>-1){
-                    needRefresh = true
-                    this.$refs['bx-table-layout'].columns[index].filteredValue = head._default_value.split(',');
-                    filters[head.column] = head._default_value.split(',');
+              newVal.forEach((head) => {
+                if (head._default_value && Array.isArray(head.filters)) {
+                  const index = tableColumns.findIndex(
+                    (col) => head.column && col.columnKey === head.column
+                  );
+                  if (index > -1) {
+                    needRefresh = true;
+                    this.$refs["bx-table-layout"].columns[index].filteredValue =
+                      head._default_value.split(",");
+                    filters[head.column] = head._default_value.split(",");
                   }
                 }
-              })
+              });
             }
-            if(needRefresh){
+            if (needRefresh) {
               this.filterCondition = [];
               for (var key in filters) {
                 var cMap = {};
@@ -281,556 +288,665 @@ export default {
               this.gridPage.currentPage = 1;
               // this.filterChange(filters)
             }
-          })
+          });
         }
-
       },
     },
-    '$store.state.frontTableData': {
+    "$store.state.frontTableData": {
       deep: true,
       handler(newVal) {
-        console.log('$store.state.frontTableData',newVal)
-        const service = newVal.tables.service
+        console.log("$store.state.frontTableData", newVal);
+        const service = newVal.tables.service;
         if (this.service === service) {
-          const from = newVal.tables.params.from
-          const to = newVal.tables.params.to
-          const data = newVal.tables.data
-          const cols = newVal.tables.params.cols
-          let addCols = []
-          if(Array.isArray(this.addSrvCols)&&this.addSrvCols.length>0){
-            addCols = this.addSrvCols.filter(item=>item.in_add!==0||item.in_update!==0).map(item=>item.columns)
+          const from = newVal.tables.params.from;
+          const to = newVal.tables.params.to;
+          const data = newVal.tables.data;
+          const cols = newVal.tables.params.cols;
+          let addCols = [];
+          if (Array.isArray(this.addSrvCols) && this.addSrvCols.length > 0) {
+            addCols = this.addSrvCols
+              .filter((item) => item.in_add !== 0 || item.in_update !== 0)
+              .map((item) => item.columns);
           }
           if (data.length == 0) {
-            this.gridData = []
-            return
+            this.gridData = [];
+            return;
           }
           if (this.gridData.length == 0) {
-            data.forEach(item => {
-              let obj = {}
+            data.forEach((item) => {
+              let obj = {};
               for (const index in addCols) {
-                const key = addCols[index]
-                if (item[key]!==undefined) {
-                  obj[key] = item[key]
-                }else{
-                  obj[key] = null
+                const key = addCols[index];
+                if (item[key] !== undefined) {
+                  obj[key] = item[key];
+                } else {
+                  obj[key] = null;
                 }
               }
-              obj['_guid']=this.guid()  // 数据增加 唯一id
-              obj['_dirtyFlags']='add'
-              
-              obj[to] = item[from]
-              console.log('add',obj)
-              this.gridData.push(obj)
-            })
-            return
+              obj["_guid"] = this.guid(); // 数据增加 唯一id
+              obj["_dirtyFlags"] = "add";
+
+              obj[to] = item[from];
+              console.log("add", obj);
+              this.gridData.push(obj);
+            });
+            return;
           }
           // 从当前list中删除内存中没有的数据
-          this.gridData = this.gridData.filter(x => data.findIndex(y => y[from] === x[to]) !== -1);
+          this.gridData = this.gridData.filter(
+            (x) => data.findIndex((y) => y[from] === x[to]) !== -1
+          );
           // 内存中有list的数据，重新赋值；没有的为新增数据，添加到list中
-          data.forEach(item => {
-            let sameVal = false
-            
-            this.gridData.forEach(grid => {
+          data.forEach((item) => {
+            let sameVal = false;
+
+            this.gridData.forEach((grid) => {
               if (item[from] === grid[to]) {
-                cols.forEach(col => {
-                  grid[col] = item[col]
-                  sameVal = true
-                })
+                cols.forEach((col) => {
+                  grid[col] = item[col];
+                  sameVal = true;
+                });
               }
-            })
-            
+            });
+
             if (!sameVal) {
-              let obj = {}
+              let obj = {};
               for (const index in addCols) {
-                const key = addCols[index]
-                if (item[key]!==undefined) {
-                  obj[key] = item[key]
-                }else{
-                  obj[key] = null
+                const key = addCols[index];
+                if (item[key] !== undefined) {
+                  obj[key] = item[key];
+                } else {
+                  obj[key] = null;
                 }
               }
-              obj[to] = item[from]
-              
-              if(!obj['id']&&!obj['_dirtyFlags']){
-                obj['_guid']=this.guid()  // 数据增加 唯一id
-                obj['_dirtyFlags']='add'
+              obj[to] = item[from];
+
+              if (!obj["id"] && !obj["_dirtyFlags"]) {
+                obj["_guid"] = this.guid(); // 数据增加 唯一id
+                obj["_dirtyFlags"] = "add";
               }
               // item[to] = item[from]
-              this.gridData.push(obj)
+              this.gridData.push(obj);
             }
-          })
+          });
         }
-      }
+      },
     },
-    '$store.getters.tableButtonsPopup': {
+    "$store.getters.tableButtonsPopup": {
       deep: true,
-      handler(newVal,oldVal) {
-        console.log('$store.state.tableButtonsPopup ::::::',newVal,oldVal)
-        // let activeModel = null 
+      handler(newVal, oldVal) {
+        console.log("$store.state.tableButtonsPopup ::::::", newVal, oldVal);
+        // let activeModel = null
         // if(newVal && newVal[this.service] == this.serviceName  && !activeModel){
         //   activeModel = newVal[this.service]
         //   console.log('$store.state.tableButtonsPopup',activeModel)
         // }
-        
-      }
+      },
     },
   },
 
   computed: {
-
+    detailBtn() {
+      return this.sortedRowButtons?.find(
+        (item) => item.button_type == "detail"
+      );
+    },
     excelBtn() {
-      const demoData = `{"list_excel_biz":"是","list_excel_sys":"是","copyright":"2014-2022  百想科技","top_menu_disp":"否","timeout_login":"1","title":"百想OA","record_no":"陕ICP备14006306号","menu_display_structure":"automatic"}`
-      const attr = JSON.parse(sessionStorage.getItem('pages_attribute') || '{}')
-      let show = false
-      let operate_mode = '跳转'
-      if (this.service_name?.indexOf('srvsys_') === 0 || this.service_name?.indexOf('srvpage_cfg') === 0) {
-        if (attr?.list_excel_sys === '是') {
-          show = true
+      const attr = JSON.parse(
+        sessionStorage.getItem("pages_attribute") || "{}"
+      );
+      let show = false;
+      let operate_mode = "跳转";
+      if (
+        this.service_name?.indexOf("srvsys_") === 0 ||
+        this.service_name?.indexOf("srvpage_cfg") === 0
+      ) {
+        if (attr?.list_excel_sys === "是") {
+          show = true;
         }
-        if (attr?.list_excel_sys === '新TAB') {
-          show = true
-          operate_mode = '新TAB'
+        if (attr?.list_excel_sys === "新TAB") {
+          show = true;
+          operate_mode = "新TAB";
         }
-      } else if (attr?.list_excel_biz === '是') {
-        show = true
-      } else if (attr?.list_excel_biz === '新TAB') {
-        show = true
-        operate_mode = '新TAB'
+      } else if (attr?.list_excel_biz === "是") {
+        show = true;
+      } else if (attr?.list_excel_biz === "新TAB") {
+        show = true;
+        operate_mode = "新TAB";
       }
 
       if (show) {
-        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}`
+        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${
+          this.updateService
+        }&srvApp=${this.resolveDefaultSrvApp()}`;
         if (this.defaultCondition?.length) {
-          this.defaultCondition.forEach(col => {
-            if (col.ruleType === 'eq') {
-              url += `&${col.colName}=${col.value}`
+          this.defaultCondition.forEach((col) => {
+            if (col.ruleType === "eq") {
+              url += `&${col.colName}=${col.value}`;
             }
-          })
-          url+=`&topTreeData=true`
+          });
+          url += `&topTreeData=true`;
         }
-        let tabTitle = ''
-        if(this.childForeignkey?.kedispcol&&this.listMainFormDatas[this.childForeignkey?.kedispcol]){
-          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]}`
+        let tabTitle = "";
+        if (
+          this.childForeignkey?.kedispcol &&
+          this.listMainFormDatas[this.childForeignkey?.kedispcol]
+        ) {
+          tabTitle = `${
+            this.listMainFormDatas[this.childForeignkey?.kedispcol]
+          }`;
         }
-        if(this.childForeignkey?.section_name){
-          tabTitle += `/${this.childForeignkey?.section_name}【excel】`
-        }else if(tabTitle && this.service_view_name){
-          tabTitle += `/${this.service_view_name}【excel】`
-        }if(!tabTitle && this.service_view_name){
-          tabTitle = `${this.service_view_name}【excel】`
+        if (this.childForeignkey?.section_name) {
+          tabTitle += `/${this.childForeignkey?.section_name}【excel】`;
+        } else if (tabTitle && this.service_view_name) {
+          tabTitle += `/${this.service_view_name}【excel】`;
+        }
+        if (!tabTitle && this.service_view_name) {
+          tabTitle = `${this.service_view_name}【excel】`;
         }
         return {
-          "page_type": "列表",
-          "button_type": "customize",
-          "operate_mode": "跳转",
+          page_type: "列表",
+          button_type: "customize",
+          operate_mode: "跳转",
           // "operate_mode": "新TAB",
-          "client_type": "PC,APP,小程序,h5",
-          "pre_data_handle": `function (rowDatas,mainDetailData){\n    return '${url}'\n}`,
-          "id": 191,
-          "page_area": "表格按钮",
-          "operate_type": "URL跳转",
+          client_type: "PC,APP,小程序,h5",
+          pre_data_handle: `function (rowDatas,mainDetailData){\n    return '${url}'\n}`,
+          id: 191,
+          page_area: "表格按钮",
+          operate_type: "URL跳转",
           // "operate_type": "URL跳转",
-          "visible": "是",
-          "button_name": 'excel',
-          "tabTitle":tabTitle,
-          "tabIcon":'&#xe60a;',
-          "application": this.resolveDefaultSrvApp(),
-          "service": this.service_name,
-          "is_public": false,
-          "path_col": "是",
-        }
+          visible: "是",
+          button_name: "excel",
+          tabTitle: tabTitle,
+          tabIcon: "&#xe60a;",
+          application: this.resolveDefaultSrvApp(),
+          service: this.service_name,
+          is_public: false,
+          path_col: "是",
+        };
       }
     },
     tableButtonsPopupRun() {
-          let val = this.$store.getters.getTableButtonsPopup
-          let obj = null 
-          console.log('按钮状态更新了：',val)
-          if(val && val.hasOwnProperty(this.service)){
-            obj = val[this.service]
+      let val = this.$store.getters.getTableButtonsPopup;
+      let obj = null;
+      console.log("按钮状态更新了：", val);
+      if (val && val.hasOwnProperty(this.service)) {
+        obj = val[this.service];
+      }
+
+      return obj; //需要监听的数据
+    },
+    listCellsTextDispWarp() {
+      let config = false;
+      if (
+        this.cfgJson &&
+        this.cfgJson.hasOwnProperty("list_style_json") &&
+        this.cfgJson.list_style_json &&
+        this.cfgJson.list_style_json.hasOwnProperty("list_cells_text_disp")
+      ) {
+        config =
+          this.cfgJson.list_style_json.list_cells_text_disp == "自动换行";
+      }
+
+      return config;
+    },
+
+    groupByLayoutRun: function () {
+      let req =
+        this.moreConfig && this.moreConfig.hasOwnProperty("groupByLayout")
+          ? this.moreConfig.groupByLayout
+          : false;
+      let groupConfig = req.group || [];
+
+      let reqData = this.groupByLayoutData;
+      for (let cfg of groupConfig) {
+        for (let val in reqData) {
+          if (val == cfg.aliasName || val == cfg.colName) {
+            cfg["value"] = reqData[val];
           }
-          
-          return obj;　　//需要监听的数据
-      
-    },
-    listCellsTextDispWarp(){
-        let config = false
-        if(this.cfgJson && this.cfgJson.hasOwnProperty('list_style_json') && this.cfgJson.list_style_json && this.cfgJson.list_style_json.hasOwnProperty('list_cells_text_disp')){
-          config = this.cfgJson.list_style_json.list_cells_text_disp == '自动换行'
         }
-
-        return config
+      }
+      return groupConfig;
     },
-
-    groupByLayoutRun:function(){
-        let req = this.moreConfig && this.moreConfig.hasOwnProperty("groupByLayout") ? this.moreConfig.groupByLayout : false
-        let groupConfig = req.group || []
-        
-        let reqData = this.groupByLayoutData
-        for(let cfg of groupConfig){
-            for(let val in reqData){
-                if(val == cfg.aliasName || val == cfg.colName){
-                    cfg["value"] = reqData[val]
-                }
-            }
-        }
-        return groupConfig
+    draftRun: function () {
+      if (
+        this.activeTabName === "draft" ||
+        ((this.listType === "updatechildlist" ||
+          this.listType === "addchildlist" ||
+          this.listType === "detaillist") &&
+          this.pageIsDraft === "draft")
+      ) {
+        return true;
+      } else {
+        return false;
+      }
     },
-    draftRun:function(){
-        if(this.activeTabName === 'draft' || ((this.listType === 'updatechildlist' || this.listType === 'addchildlist'|| this.listType === 'detaillist') && this.pageIsDraft === 'draft')){
-          return true
-        }else{
-          return false
-        }
-    },
-    gridDataRun:function(){
-      
-        // 重新构造 gridData 为了过滤内存表删除操作
-        let self = this
-        let data = self.gridData
-        let colType = "string"
-        let orderType = self.orderColumn
-        let columnName = null
-        if(self.orderColumn.indexOf(" ") !== -1){
-          orderType = self.orderColumn.split(' ')
-          columnName = orderType[0]
-          orderType = orderType[1]  // 排序类型默认为升序，未实现
-        }else{
-          columnName = self.orderColumn
-        }
-        if(data){
-          data = data.filter((item)=>{
-            if(item.hasOwnProperty("_dirtyFlags") && (item._dirtyFlags !== 'delete')){
-              return item
-            }else if(!item.hasOwnProperty("_dirtyFlags")){
-              return item
-            }
-          })
-          
-          if(columnName && this.storageType == 'mem'){
-            // 如果是内存表时 使用根据返回 排序字段 使用前端排序
-            let colData = self.gridHeader
-            colData = colData.filter((item)=>item.column === columnName)
-            if(colData.length > 0){
-              colType = colData[0].col_type
+    gridDataRun: function () {
+      // 重新构造 gridData 为了过滤内存表删除操作
+      let self = this;
+      let data = self.gridData;
+      let colType = "string";
+      let orderType = self.orderColumn;
+      let columnName = null;
+      if (self.orderColumn.indexOf(" ") !== -1) {
+        orderType = self.orderColumn.split(" ");
+        columnName = orderType[0];
+        orderType = orderType[1]; // 排序类型默认为升序，未实现
+      } else {
+        columnName = self.orderColumn;
+      }
+      if (data) {
+        data = data.filter((item) => {
+          if (
+            item.hasOwnProperty("_dirtyFlags") &&
+            item._dirtyFlags !== "delete"
+          ) {
+            return item;
+          } else if (!item.hasOwnProperty("_dirtyFlags")) {
+            return item;
+          }
+        });
 
+        if (columnName && this.storageType == "mem") {
+          // 如果是内存表时 使用根据返回 排序字段 使用前端排序
+          let colData = self.gridHeader;
+          colData = colData.filter((item) => item.column === columnName);
+          if (colData.length > 0) {
+            colType = colData[0].col_type;
 
-              if(colType == 'int' || colType == 'Integer' || colType == 'Money' ){
-                data.sort(function(a,b){
-                  return a[columnName] - b[columnName]
-                })
-              }else{
-                data.sort()
-              }
-              
-              
-              
-              // else if(colType == 'string' || colType == 'String'){
-                // data.sort(function(a, b){
-                //   var x = null
-                //   var y = null
-                //   if(isNaN(a[columnName]) ){
-                //     x = a[columnName].toLowerCase()
-                //   }else{
-                //     x = a[columnName]
-                //   }
-                //   if(isNaN(b[columnName]) ){
-                //     y = b[columnName].toLowerCase();
-                //   }else{
-                //     y = b[columnName]
-                //   }
-                //   // var x = a[self.orderColumn].toLowerCase() || 1;
-                //   // var y = b[self.orderColumn].toLowerCase() || 2;
-                //   if (x < y) {return -1;}
-                //   if (x > y) {return 1;}
-                //   return 0;
-                // });
-              // }else{
-              //   data.sort()
-              // }
+            if (
+              colType == "int" ||
+              colType == "Integer" ||
+              colType == "Money"
+            ) {
+              data.sort(function (a, b) {
+                return a[columnName] - b[columnName];
+              });
+            } else {
+              data.sort();
             }
 
-            
-            
+            // else if(colType == 'string' || colType == 'String'){
+            // data.sort(function(a, b){
+            //   var x = null
+            //   var y = null
+            //   if(isNaN(a[columnName]) ){
+            //     x = a[columnName].toLowerCase()
+            //   }else{
+            //     x = a[columnName]
+            //   }
+            //   if(isNaN(b[columnName]) ){
+            //     y = b[columnName].toLowerCase();
+            //   }else{
+            //     y = b[columnName]
+            //   }
+            //   // var x = a[self.orderColumn].toLowerCase() || 1;
+            //   // var y = b[self.orderColumn].toLowerCase() || 2;
+            //   if (x < y) {return -1;}
+            //   if (x > y) {return 1;}
+            //   return 0;
+            // });
+            // }else{
+            //   data.sort()
+            // }
           }
-          if(this.sumRowData){
-            data.push(this.sumRowData)
-          }
-          return data
-        }else{
-          return []
         }
-        
+        if (this.sumRowData) {
+          data.push(this.sumRowData);
+        }
+        return data;
+      } else {
+        return [];
+      }
     },
     sortedGridButtons() {
       let sorted = this.gridButton.slice();
-      sorted.sort((a, b) => a.seq - b.seq)
+      sorted.sort((a, b) => a.seq - b.seq);
 
       //处理草稿界面按钮
-      if(this.draftRun){
-        sorted = sorted.filter(item => item.button_type === 'batch_delete' || item.button_type === 'add' || item.button_type === 'refresh' || item.button_type === 'select')
+      if (this.draftRun) {
+        sorted = sorted.filter(
+          (item) =>
+            item.button_type === "batch_delete" ||
+            item.button_type === "add" ||
+            item.button_type === "refresh" ||
+            item.button_type === "select"
+        );
       }
-      return sorted
+      return sorted;
     },
     sortedRowButtons() {
       let sorted = this.rowButton.slice();
-      if(Array.isArray(this.gridData) && this.gridData.length>0){
-        this.gridData.forEach((item,index) => {
-          if(item?._buttons?.length===sorted.length){
-            sorted = sorted.map((btn,bIndex)=>{
-              if(btn['_rowDisp']){
-                btn['_rowDisp'][index] = item._buttons[bIndex]
-              }else{
-                btn['_rowDisp'] = {[index]:item._buttons[bIndex]}
+      if (Array.isArray(this.gridData) && this.gridData.length > 0) {
+        this.gridData.forEach((item, index) => {
+          if (item?._buttons?.length === sorted.length) {
+            sorted = sorted.map((btn, bIndex) => {
+              if (btn["_rowDisp"]) {
+                btn["_rowDisp"][index] = item._buttons[bIndex];
+              } else {
+                btn["_rowDisp"] = { [index]: item._buttons[bIndex] };
               }
-              return btn 
-            })
+              return btn;
+            });
           }
         });
       }
-      sorted.sort((a, b) => a.seq - b.seq)
+      sorted.sort((a, b) => a.seq - b.seq);
 
-      if(Array.isArray(this.gridData) && this.gridData.length>0){
+      if (Array.isArray(this.gridData) && this.gridData.length > 0) {
         // 至少某一行要能显示出来 才返回这个按钮
-        sorted = sorted.filter(btn=>this.gridData.some((item,index)=>this.getDispExps(btn,item,index)))
+        sorted = sorted.filter((btn) =>
+          this.gridData.some((item, index) =>
+            this.getDispExps(btn, item, index)
+          )
+        );
       }
 
-
-      sorted = getButtonPara(sorted)  // 封装按钮分组数据
+      sorted = getButtonPara(sorted); // 封装按钮分组数据
       //处理草稿界面按钮
-      if(this.draftRun){
-        let buts = []
+      if (this.draftRun) {
+        let buts = [];
         sorted.forEach((item) => {
-          if(item.button_type !== '_btn_group'){
-            buts.push(item)
-          }else if(item.buttons.length > 0){
-            buts.push.apply(buts,item.buttons);
+          if (item.button_type !== "_btn_group") {
+            buts.push(item);
+          } else if (item.buttons.length > 0) {
+            buts.push.apply(buts, item.buttons);
           }
-        })
+        });
         sorted = buts.filter((item) => {
-          if(item.button_type === 'delete' || item.button_type === 'detail' || item.button_type === 'edit'){
-            let i = sorted = this.bxDeepClone(item) 
-            i.permission = true
-            return i
+          if (
+            item.button_type === "delete" ||
+            item.button_type === "detail" ||
+            item.button_type === "edit"
+          ) {
+            let i = (sorted = this.bxDeepClone(item));
+            i.permission = true;
+            return i;
           }
-          
-        })
+        });
       }
-      sorted = sorted.map(item=>{
-        if(item.button_type==='_btn_group'&&item.buttons?.length===1){
+      sorted = sorted.map((item) => {
+        if (item.button_type === "_btn_group" && item.buttons?.length === 1) {
           // 操作按钮中只有一个按钮 直接展示 不收纳在操作按钮中
-          item = item.buttons[0]
+          item = item.buttons[0];
         }
-        return item
-      })
-      return sorted
+        return item;
+      });
+      return sorted;
     },
 
     columnHeaders() {
-      return this.gridHeader.filter(item => item.col_type !== "InlineList");
+      return this.gridHeader.filter((item) => item.col_type !== "InlineList");
     },
-
 
     maxTableHeight() {
-      let ratio = 0.8
-      let h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      let ratio = 0.8;
+      let h = Math.max(
+        document.documentElement.clientHeight,
+        window.innerHeight || 0
+      );
       h = h <= 1 ? 800 : h;
-      console.info("max table height: " + h)
-      return this.tableHeight || (h * ratio);
-    }
+      console.info("max table height: " + h);
+      return this.tableHeight || h * ratio;
+    },
     // showPagination(){
-      // let self = this
-      // let isShow = self.showPagination
-      // let type = self.listType
-      // if(type === '')
+    // let self = this
+    // let isShow = self.showPagination
+    // let type = self.listType
+    // if(type === '')
     // }
   },
-  beforeDestroy(){
-     console.log('列表销毁')
-     clearInterval(polling)
+  beforeDestroy() {
+    console.log("列表销毁");
+    clearInterval(polling);
   },
   methods: {
-    setPolling(){
-      let self = this
-       let time = 0
-       if(this.cfgJson && this.cfgJson.list_refresh_cfg){
-         let config = this.cfgJson.list_refresh_cfg
-         if(config.type.indexOf('data') !== -1){
-            
-            time = config.cycle
-            console.log('我是定时执行');//我是定时执行
-            polling = setInterval(function () {
-              // Loading.service({ fullscreen: true });
-              // self.$message({
-              //   message: '数据更新成功.',
-              //   type: 'success'
-              // });
-              self.refresh()  
-              
-            },time * 1000);
-         }
-       }
+    isDetailLink(column = "", data = {}, rowIndex) {
+      if (
+        column !== "id" &&
+        this.detailBtn &&
+        this.listV2Data?.key_disp_col &&
+        column === this.listV2Data.key_disp_col
+      ) {
+        return (
+          this.getDispExps(this.detailBtn, data, rowIndex) &&
+          this.isRowButtonVisible(this.detailBtn, data, rowIndex)
+        );
+      }
     },
-    cellStyle(){
-       let style={}
-       if(this.listCellsTextDispWarp){
-          //  style = {
-          //   'overflow': 'auto',
-          //   'text-overflow': 'ellipsis',
-          //   '-webkit-line-clamp': 'initial',
-          //     'line-clamp': 'initial'
-          //  }
-       }
-       return style
+    toDetail(column = "", data = {}, rowIndex) {
+      if (this.isDetailLink(column, data, rowIndex)) {
+        this.rowButtonClick(this.detailBtn, data);
+        // let address = `/vpages/#/detail/${this.serviceName}/${this.row.id}?srvApp=${this.app}`;
+        // let tab_title = this.detailButton.service_view_name;
+        // let disp_col = this.detailButton._disp_col;
+        // let disp_value = this.row[disp_col]; //详情页面上的标签
+        // tab_title = tab_title.replace("查询", "");
+        // if (disp_value != null && disp_value != undefined && disp_value != "") {
+        //   tab_title = disp_value + "(" + tab_title + "详情)";
+        // } else {
+        //   tab_title = tab_title + "详情";
+        // }
+        // let page = {
+        //   title: tab_title,
+        //   url: address,
+        //   icon: "",
+        //   app: this.app,
+        // };
+        // if (window.top.tab) {
+        //   window.top.tab.addTab(page);
+        // } else {
+        //   // 没有tab实例，在浏览器中打开新标签页
+        //   const page = window.open(address);
+        //   setTimeout(() => {
+        //     page.document.title = tab_title;
+        //   }, 500);
+        // }
+      }
+    },
+    setPolling() {
+      let self = this;
+      let time = 0;
+      if (this.cfgJson && this.cfgJson.list_refresh_cfg) {
+        let config = this.cfgJson.list_refresh_cfg;
+        if (config.type.indexOf("data") !== -1) {
+          time = config.cycle;
+          console.log("我是定时执行"); //我是定时执行
+          polling = setInterval(function () {
+            // Loading.service({ fullscreen: true });
+            // self.$message({
+            //   message: '数据更新成功.',
+            //   type: 'success'
+            // });
+            self.refresh();
+          }, time * 1000);
+        }
+      }
+    },
+    cellStyle() {
+      let style = {};
+      if (this.listCellsTextDispWarp) {
+        //  style = {
+        //   'overflow': 'auto',
+        //   'text-overflow': 'ellipsis',
+        //   '-webkit-line-clamp': 'initial',
+        //     'line-clamp': 'initial'
+        //  }
+      }
+      return style;
     },
     arraySpanMethod({ row, column, rowIndex, columnIndex }) {
-      if(row.hasOwnProperty('_data_type') && row['_data_type'] == 'sumRow'){
-        let colspan = this.sumConfig.sum_text_col_span
+      if (row.hasOwnProperty("_data_type") && row["_data_type"] == "sumRow") {
+        let colspan = this.sumConfig.sum_text_col_span;
         // 尾行合计 配置 需要跨列，进行动态处理。
-        if(column.hasOwnProperty('property') && this.sumConfig && column.property ==   this.sumConfig.sum_text_col && row[column.property] == this.sumConfig.sum_text && !isNaN(Number(this.sumConfig.sum_text_col_span))){
+        if (
+          column.hasOwnProperty("property") &&
+          this.sumConfig &&
+          column.property == this.sumConfig.sum_text_col &&
+          row[column.property] == this.sumConfig.sum_text &&
+          !isNaN(Number(this.sumConfig.sum_text_col_span))
+        ) {
           //  console.log({ row, column, rowIndex, columnIndex })
-            // return [1,1]
+          // return [1,1]
 
-            return {
-              rowspan: 1,
-              colspan: colspan
-            }
-            // [1, this.sumConfig.sum_text_col_span];
-        }else if(columnIndex < colspan){
-            return {
-              rowspan: 0,
-              colspan: 0
-            }
+          return {
+            rowspan: 1,
+            colspan: colspan,
+          };
+          // [1, this.sumConfig.sum_text_col_span];
+        } else if (columnIndex < colspan) {
+          return {
+            rowspan: 0,
+            colspan: 0,
+          };
         }
-      }else{
-        
-        let rowspan = 1
-        let colspan = 1
-        let rowSpanCols = []
-        let colName = column.property
-        if(this.cfgJson && this.cfgJson.hasOwnProperty('list_style_json') && this.cfgJson.list_style_json && this.cfgJson.list_style_json.hasOwnProperty('list_auto_row_span_cols') && this.cfgJson.list_style_json.list_auto_row_span_cols){
-          rowSpanCols = this.cfgJson.list_style_json.list_auto_row_span_cols.split(',')
+      } else {
+        let rowspan = 1;
+        let colspan = 1;
+        let rowSpanCols = [];
+        let colName = column.property;
+        if (
+          this.cfgJson &&
+          this.cfgJson.hasOwnProperty("list_style_json") &&
+          this.cfgJson.list_style_json &&
+          this.cfgJson.list_style_json.hasOwnProperty(
+            "list_auto_row_span_cols"
+          ) &&
+          this.cfgJson.list_style_json.list_auto_row_span_cols
+        ) {
+          rowSpanCols =
+            this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
         }
-        let iValue = this.gridDataRun[rowIndex][colName]+''  // 值
-        if(rowSpanCols && rowSpanCols.indexOf(colName) !== -1){
-          let lastValue = ''
-          let firstValue = ''
-          if(rowIndex !== 0 && rowIndex < this.gridDataRun.length - 1){
-            firstValue = this.gridDataRun[rowIndex-1][colName] + '' // 前一行
-            lastValue = this.gridDataRun[rowIndex+1][colName] + '' // 前一行
-          }else if(rowIndex == 0){
+        let iValue = this.gridDataRun[rowIndex][colName] + ""; // 值
+        if (rowSpanCols && rowSpanCols.indexOf(colName) !== -1) {
+          let lastValue = "";
+          let firstValue = "";
+          if (rowIndex !== 0 && rowIndex < this.gridDataRun.length - 1) {
+            firstValue = this.gridDataRun[rowIndex - 1][colName] + ""; // 前一行
+            lastValue = this.gridDataRun[rowIndex + 1][colName] + ""; // 前一行
+          } else if (rowIndex == 0) {
             // 当前是第一行数据
-            firstValue = undefined // 前一行
-            lastValue = this.gridDataRun[rowIndex+1][colName]+'' // 前一行
-          }else if(rowIndex == this.gridDataRun.length - 1){
+            firstValue = undefined; // 前一行
+            lastValue = this.gridDataRun[rowIndex + 1][colName] + ""; // 前一行
+          } else if (rowIndex == this.gridDataRun.length - 1) {
             // 当前是最后一行
-            firstValue = this.gridDataRun[rowIndex-1][colName]+'' // 前一行
-            lastValue = undefined // 前一行
+            firstValue = this.gridDataRun[rowIndex - 1][colName] + ""; // 前一行
+            lastValue = undefined; // 前一行
           }
-          
 
-          if(firstValue !== iValue){
-            let allRows = 1
-            let isNext = true
-            for(let i in this.gridDataRun){
-                if(Number(i) > rowIndex && isNext && (this.gridDataRun[i][colName] +'') == (iValue+'')){
-                  // console.log('rowIndex',colName,iValue,this.gridDataRun[i][colName]+'',allRows)
-                  allRows = (allRows + 1)
-                }else if(Number(i) > rowIndex){
-                  isNext = false
-                  
-                }
-                
-                // console.log(i,rowIndex,Number(i) > rowIndex,allRows,(iValue+''),(this.gridDataRun[i][colName] +'') == (iValue+''))
+          if (firstValue !== iValue) {
+            let allRows = 1;
+            let isNext = true;
+            for (let i in this.gridDataRun) {
+              if (
+                Number(i) > rowIndex &&
+                isNext &&
+                this.gridDataRun[i][colName] + "" == iValue + ""
+              ) {
+                // console.log('rowIndex',colName,iValue,this.gridDataRun[i][colName]+'',allRows)
+                allRows = allRows + 1;
+              } else if (Number(i) > rowIndex) {
+                isNext = false;
+              }
+
+              // console.log(i,rowIndex,Number(i) > rowIndex,allRows,(iValue+''),(this.gridDataRun[i][colName] +'') == (iValue+''))
             }
-            rowspan = allRows
-            colspan = 1
-          }else if(firstValue == iValue){
-            rowspan = 0
-            colspan = 0
+            rowspan = allRows;
+            colspan = 1;
+          } else if (firstValue == iValue) {
+            rowspan = 0;
+            colspan = 0;
           }
-          
-          
+
           // console.log('span Method:',rowIndex,colName,iValue,'跨行：',rowspan)
           return {
             rowspan: rowspan,
-            colspan: colspan
+            colspan: colspan,
+          };
+        }
+      }
+    },
+    getColumnsShow(row) {
+      if (row.hasOwnProperty("_data_type") && row["_data_type"] == "sumRow") {
+        // console.log(row,false)
+        return false;
+      } else {
+        // console.log(row,true)
+        return true;
+      }
+    },
+    getButtonOptSrv(btn, row, type) {
+      let self = this;
+      let serviceName = "";
+      let serviceViewName = "";
+      let permission = false;
+      let operateList = [];
+      let isBtnOptShow = false;
+      let isBtnExpShow = false;
+      let data = row;
+      let mainData = self.listMainFormDatas;
+      if (
+        btn.permission &&
+        btn.operate_service &&
+        Object.prototype.toString.call(btn.operate_service) !==
+          "[object String]"
+      ) {
+        for (let key in btn.operate_service) {
+          let config = btn.operate_service[key];
+          //  let funBody = `let data=e;let mainData=b;return ${config.disp_exps}`
+          let args = ["e", "b"];
+          //  let testFun = new Function(...args, funBody)
+          //  let mainData = listMainFormDatas || {}
+          //  let isValid = testFun(row,mainData)
+          let isValid = eval(config.disp_exps);
+
+          if (config.permission) {
+            operateList.push({
+              serviceName: key,
+              serviceViewName: config.service_view_name,
+              permission: config.permission,
+              isValid: isValid,
+            });
           }
         }
-        
-
       }
-      
-    },
-    getColumnsShow(row){
-       if(row.hasOwnProperty('_data_type') && row['_data_type' ]== 'sumRow'){
-        // console.log(row,false)
-        return false
-       }else{
-        // console.log(row,true)
-        return true
-       }
-    },
-    getButtonOptSrv(btn,row,type){
-         let self = this
-         let serviceName=""
-         let serviceViewName=""
-         let permission = false
-         let operateList = []
-         let isBtnOptShow = false
-         let isBtnExpShow = false
-         let data = row
-         let mainData = self.listMainFormDatas
-         if(btn.permission && btn.operate_service &&  Object.prototype.toString.call(btn.operate_service) !== "[object String]"){
-          for(let key in btn.operate_service){
-             let config = btn.operate_service[key]
-            //  let funBody = `let data=e;let mainData=b;return ${config.disp_exps}`
-             let args = ["e", "b"]
-            //  let testFun = new Function(...args, funBody)
-            //  let mainData = listMainFormDatas || {}
-            //  let isValid = testFun(row,mainData)
-             let isValid = eval(config.disp_exps)
-
-             if(config.permission){
-              operateList.push({
-                serviceName:key,
-                serviceViewName:config.service_view_name,
-                permission:config.permission,
-                isValid:isValid
-              })
-                 
-             }
-          }
-       }
-       let dispExps = btn.disp_exps
-       if(btn.permission && dispExps){
+      let dispExps = btn.disp_exps;
+      if (btn.permission && dispExps) {
         // let funBody = `let data = e;let mainData=b ;return ${dispExps}`
         // console.log('funBody',funBody)
-        let args = ["e", "b"]
+        let args = ["e", "b"];
         // let testFun = new Function(...args, funBody)
         // let mainData = listMainFormDatas || {}
         // isBtnExpShow = testFun(row,mainData)
-        isBtnExpShow = eval(dispExps)
-       }else{
-        isBtnExpShow = btn.permission
-       }
-         if(type && type == 'isShow' && isBtnExpShow){
-            let optionsList = operateList.filter((item) => item.isValid)
-            if(btn.permission &&(optionsList.length !== 0 || (btn.operate_service && Object.prototype.toString.call(btn.operate_service) == "[object String]") || !btn.operate_service ) ){
-              isBtnOptShow = true
-            }else{
-              isBtnOptShow = false
-            }
-            // console.log('getButtonOptSrv isshow',btn.button_name ,isBtnExpShow && isBtnOptShow,isBtnExpShow,isBtnOptShow)
-            return isBtnExpShow && isBtnOptShow
-         }else if(type && type == 'active'){
-          let opIsShow = operateList.filter((item) => item.isValid)
-            return opIsShow
-         }else{
-          let opIsShow = operateList.filter((item) => item.isValid)
-            return opIsShow
-         }
-        
-        //"[object String]"
+        isBtnExpShow = eval(dispExps);
+      } else {
+        isBtnExpShow = btn.permission;
+      }
+      if (type && type == "isShow" && isBtnExpShow) {
+        let optionsList = operateList.filter((item) => item.isValid);
+        if (
+          btn.permission &&
+          (optionsList.length !== 0 ||
+            (btn.operate_service &&
+              Object.prototype.toString.call(btn.operate_service) ==
+                "[object String]") ||
+            !btn.operate_service)
+        ) {
+          isBtnOptShow = true;
+        } else {
+          isBtnOptShow = false;
+        }
+        // console.log('getButtonOptSrv isshow',btn.button_name ,isBtnExpShow && isBtnOptShow,isBtnExpShow,isBtnOptShow)
+        return isBtnExpShow && isBtnOptShow;
+      } else if (type && type == "active") {
+        let opIsShow = operateList.filter((item) => item.isValid);
+        return opIsShow;
+      } else {
+        let opIsShow = operateList.filter((item) => item.isValid);
+        return opIsShow;
+      }
+
+      //"[object String]"
     },
     // showPagination(e){
     //    let listType = this.listType
@@ -839,13 +955,13 @@ export default {
     //       return e? e : false
     //    }
     // },
-    onTabshandleClick(e){
-      console.log('handle Click',e)
-      this.loadTableData()
+    onTabshandleClick(e) {
+      console.log("handle Click", e);
+      this.loadTableData();
     },
-    actionSuccess(){
-       this.refresh()
-       this.activeForm = 'xx'
+    actionSuccess() {
+      this.refresh();
+      this.activeForm = "xx";
     },
     filterHandler(value, row, column) {
       // console.log("filterHandler",value, row, column)
@@ -856,11 +972,15 @@ export default {
     },
 
     evalVisible() {
-      return this.evalVersatileFlagVar(this.visible)
+      return this.evalVersatileFlagVar(this.visible);
     },
 
     getButtonName(button, row) {
-      return (button.button_name_expr && this.evalBxExpr(button.button_name_expr, row, this)) || button.button_name;
+      return (
+        (button.button_name_expr &&
+          this.evalBxExpr(button.button_name_expr, row, this)) ||
+        button.button_name
+      );
     },
     getRows() {
       return this.gridData;
@@ -875,18 +995,20 @@ export default {
     },
 
     filterChange(filters) {
-      console.log('filterChange', filters);
-      let _filters = this.$refs?.['bx-table-layout']?.columns?.filter(item => item.filteredValue?.length).reduce((res, cur) => {
-        res[cur.columnKey] = cur.filteredValue
-        return res
-      }, {})
+      console.log("filterChange", filters);
+      let _filters = this.$refs?.["bx-table-layout"]?.columns
+        ?.filter((item) => item.filteredValue?.length)
+        .reduce((res, cur) => {
+          res[cur.columnKey] = cur.filteredValue;
+          return res;
+        }, {});
       this.filterCondition = [];
-      const headersMap = this.gridHeader.reduce((res,cur)=>{
-        res[cur.column] = cloneDeep(cur)
-        return res
-      },{})
+      const headersMap = this.gridHeader.reduce((res, cur) => {
+        res[cur.column] = cloneDeep(cur);
+        return res;
+      }, {});
       for (var key in _filters) {
-        if(filters[key]?.length > 0){
+        if (filters[key]?.length > 0) {
           _filters[key] = filters[key];
         }
         var cMap = {};
@@ -894,7 +1016,7 @@ export default {
           cMap["colName"] = key;
           cMap["value"] = _filters[key].toString();
           cMap["ruleType"] = "in";
-          if(headersMap[key]?.col_type==='Set'){
+          if (headersMap[key]?.col_type === "Set") {
             cMap["ruleType"] = "inset";
           }
           this.filterCondition.push(cMap);
@@ -922,77 +1044,116 @@ export default {
       // 西高子表显示 数据没有的列 数字显示无效值问题。
       // let value = row[key_col] ;
       // console.log("formatValue",row, key_col)
-      let self = this
-      let ops = ''
-      if (this.header_view_model == 'group' && this.groupHeaderCols[key_col] ) {
+      let self = this;
+      let ops = "";
+      if (this.header_view_model == "group" && this.groupHeaderCols[key_col]) {
         var str = "";
         var gheaders = this.groupHeaderCols[key_col];
         if (gheaders.length == 1) {
           str = value;
-          let resultValue = ''
-          if(header.col_type=='Dict' &&  self.keyValueData[header.column] && value !== null && value !== ''){
-            let keyValueData = self.keyValueData[header.column]
-            if(keyValueData&&Array.isArray(keyValueData)){
-              for(let i = 0;i<keyValueData.length;i++){
-                if(keyValueData[i].value == value){
-                  resultValue = keyValueData[i].text
-                }else{
+          let resultValue = "";
+          if (
+            header.col_type == "Dict" &&
+            self.keyValueData[header.column] &&
+            value !== null &&
+            value !== ""
+          ) {
+            let keyValueData = self.keyValueData[header.column];
+            if (keyValueData && Array.isArray(keyValueData)) {
+              for (let i = 0; i < keyValueData.length; i++) {
+                if (keyValueData[i].value == value) {
+                  resultValue = keyValueData[i].text;
+                } else {
                   // resultValue = keyValueData[i].value
                 }
               }
             }
           }
-          if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'datetime' && header.format && value !== '' && value !== null){
+          if (
+            header.srvcol.col_type &&
+            header.srvcol.col_type.toLowerCase() === "datetime" &&
+            header.format &&
+            value !== "" &&
+            value !== null
+          ) {
             // 根据日期的格式配置 格式化日期值
-            resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
-          }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'date' && value !== '' && value !== null){
-            resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format||'')
-          }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'month' && header.format && value !== '' && value !== null){
-            resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
-          }else if(header.col_type=='Money' && value !== null &&  value !== 'null' && value !== '******'){
+            resultValue = DataUtil.formatDate(
+              value,
+              header.srvcol.col_type.toLowerCase(),
+              header.format
+            );
+          } else if (
+            header.srvcol.col_type &&
+            header.srvcol.col_type.toLowerCase() === "date" &&
+            value !== "" &&
+            value !== null
+          ) {
+            resultValue = DataUtil.formatDate(
+              value,
+              header.srvcol.col_type.toLowerCase(),
+              header.format || ""
+            );
+          } else if (
+            header.srvcol.col_type &&
+            header.srvcol.col_type.toLowerCase() === "month" &&
+            header.format &&
+            value !== "" &&
+            value !== null
+          ) {
+            resultValue = DataUtil.formatDate(
+              value,
+              header.srvcol.col_type.toLowerCase(),
+              header.format
+            );
+          } else if (
+            header.col_type == "Money" &&
+            value !== null &&
+            value !== "null" &&
+            value !== "******"
+          ) {
             // 格式化 Money
-            resultValue = DataUtil.formatMoney(value + '')
+            resultValue = DataUtil.formatMoney(value + "");
           }
-        
-          if(resultValue){
-            str =  resultValue
-          }else{
-            str= this.singleFormatValue(value, header, null, row);
+
+          if (resultValue) {
+            str = resultValue;
+          } else {
+            str = this.singleFormatValue(value, header, null, row);
           }
         } else {
-
           for (var gHeader of gheaders) {
-
             if (gHeader["in_list"] === 1) {
               var gcol = gHeader["columns"];
               let gvalue = row[gcol];
               var label = gHeader["label"];
-              
+
               gvalue = this.singleFormatValue(gvalue, gHeader, key_col);
-              if (str == '') {
+              if (str == "") {
                 str = label + ": " + gvalue;
               } else {
                 str = str + "\n" + label + ": " + gvalue;
               }
-
             }
-
           }
-
         }
         // return str;
-        
-        ops =  str;
+
+        ops = str;
       } else {
-        let resultValue = ''
-        if(header.col_type=='Dict' &&  self.keyValueData[header.column] && value !== null && value !== ''){
-          let keyValueData = self.keyValueData[header.column]
-          if(keyValueData&&Array.isArray(keyValueData)){
-            for(let i = 0;i<keyValueData.length;i++){
-              if(keyValueData[i].value == value){
-                resultValue = keyValueData[i].text
+        let resultValue = "";
+        if (
+          header.col_type == "Dict" &&
+          self.keyValueData[header.column] &&
+          value !== null &&
+          value !== ""
+        ) {
+          let keyValueData = self.keyValueData[header.column];
+          if (keyValueData && Array.isArray(keyValueData)) {
+            for (let i = 0; i < keyValueData.length; i++) {
+              if (keyValueData[i].value == value) {
+                resultValue = keyValueData[i].text;
                 // console.log("格式化值1:" +header.column ,value,keyValueData[i].text,value==keyValueData[i].value)
-              }else{
+              } else {
                 // resultValue = keyValueData[i].value
                 // console.log("格式化值2:" +header.column ,value,keyValueData[i].text,value==keyValueData[i].value)
               }
@@ -1000,34 +1161,71 @@ export default {
           }
           // console.log("格式化值:" +header.column ,resultValue,value,Array.isArray(keyValueData),keyValueData,self.keyValueData,header.column)
         }
-        
-        if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'datetime' && header.format && value !== '' && value !== null){
+
+        if (
+          header.srvcol.col_type &&
+          header.srvcol.col_type.toLowerCase() === "datetime" &&
+          header.format &&
+          value !== "" &&
+          value !== null
+        ) {
           // 根据日期的格式配置 格式化日期值
-          resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
-        }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'date' && value !== '' && value !== null){
-          resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format||'')
-        }else if(header.srvcol.col_type && header.srvcol.col_type.toLowerCase() === 'month' && header.format && value !== '' && value !== null){
-          resultValue = DataUtil.formatDate(value, header.srvcol.col_type.toLowerCase(),header.format)
-        }else if(header.col_type=='Money' && value !== null &&  value !== 'null'&& value !== '******'){
+          resultValue = DataUtil.formatDate(
+            value,
+            header.srvcol.col_type.toLowerCase(),
+            header.format
+          );
+        } else if (
+          header.srvcol.col_type &&
+          header.srvcol.col_type.toLowerCase() === "date" &&
+          value !== "" &&
+          value !== null
+        ) {
+          resultValue = DataUtil.formatDate(
+            value,
+            header.srvcol.col_type.toLowerCase(),
+            header.format || ""
+          );
+        } else if (
+          header.srvcol.col_type &&
+          header.srvcol.col_type.toLowerCase() === "month" &&
+          header.format &&
+          value !== "" &&
+          value !== null
+        ) {
+          resultValue = DataUtil.formatDate(
+            value,
+            header.srvcol.col_type.toLowerCase(),
+            header.format
+          );
+        } else if (
+          header.col_type == "Money" &&
+          value !== null &&
+          value !== "null" &&
+          value !== "******"
+        ) {
           // 格式化 Money
-          resultValue = DataUtil.formatMoney(value + '')
+          resultValue = DataUtil.formatMoney(value + "");
         }
-       
-        if(resultValue){
+
+        if (resultValue) {
           // return resultValue
-          ops= resultValue
-        }else{
+          ops = resultValue;
+        } else {
           // return this.singleFormatValue(value, header, null, row);
           ops = this.singleFormatValue(value, header, null, row);
         }
       }
-      let moreTempl = header.srvcol && header.srvcol.more_config ? header.srvcol.more_config : "{}"
-      let moreSte = moreTempl ? JSON.parse(moreTempl) : null
-      if(moreSte && moreSte.hasOwnProperty('format_display')){
-        moreTempl = moreSte.format_display
-        ops = self.templateToString(row,moreTempl) 
+      let moreTempl =
+        header.srvcol && header.srvcol.more_config
+          ? header.srvcol.more_config
+          : "{}";
+      let moreSte = moreTempl ? JSON.parse(moreTempl) : null;
+      if (moreSte && moreSte.hasOwnProperty("format_display")) {
+        moreTempl = moreSte.format_display;
+        ops = self.templateToString(row, moreTempl);
       }
-      
+
       // let more
       // if(header)
       // if(key_col == 'waybill_amount_to_pay'){
@@ -1035,8 +1233,7 @@ export default {
       // }else{
       //   console.log(key_col,row[key_col],ops,str)
       // }
-      return ops
-
+      return ops;
     },
     singleFormatValue(value, header, key_col, row) {
       // 从方法中那个取到值  res后面可以根据复杂程度改为对象
@@ -1051,11 +1248,11 @@ export default {
           try {
             items = JSON.parse(value);
           } catch (error) {
-            items = [items]
-            console.log(error)
+            items = [items];
+            console.log(error);
           }
           if (items && items.length) {
-            return items.map(item => item.disp).join(',');
+            return items.map((item) => item.disp).join(",");
           }
         } else if (type === "Boolean") {
           return !!value ? "是" : "否";
@@ -1077,26 +1274,24 @@ export default {
           let dispCol = hotTableMetadata[type].dispCol;
           let tableData = this.$store.getters.getTableData(table);
           if (tableData && tableData.length > 0) {
-            let target = tableData.filter(item => item[valueCol] === value);
+            let target = tableData.filter((item) => item[valueCol] === value);
             return target && target.length && target[0][dispCol];
           } else {
- 
             return value;
           }
         }
         return value;
       }
-
     },
-    getDispExps(item, data,rowIndex) {
+    getDispExps(item, data, rowIndex) {
       var result = true;
-      let mainData = null
-      if(this.listMainFormDatas){
-        mainData = this.listMainFormDatas
+      let mainData = null;
+      if (this.listMainFormDatas) {
+        mainData = this.listMainFormDatas;
       }
-      
+
       //催办按钮只在 我的申请页面显示
-      if(this.listType != "mine"&&item.button_type=='urge'){
+      if (this.listType != "mine" && item.button_type == "urge") {
         return false;
       }
 
@@ -1105,31 +1300,36 @@ export default {
         if (disp_exps != undefined && disp_exps != "" && disp_exps != null) {
           result = eval(disp_exps);
         }
-      } catch (err) {
-       
-      }
+      } catch (err) {}
 
       // 使用后端返回的参数控制按钮显示隐藏
-      if(item._rowDisp && typeof rowIndex==='number' && [0,1].includes(item._rowDisp[rowIndex])){
-        result = item._rowDisp[rowIndex]
+      if (
+        item._rowDisp &&
+        typeof rowIndex === "number" &&
+        [0, 1].includes(item._rowDisp[rowIndex])
+      ) {
+        result = item._rowDisp[rowIndex];
       }
 
-      if(item.button_type === "batchupdate" && this.showBatchEditButton !== true){
-        result = false
+      if (
+        item.button_type === "batchupdate" &&
+        this.showBatchEditButton !== true
+      ) {
+        result = false;
       }
       return result;
     },
-    getButtonDispExps(btns,data,index){
+    getButtonDispExps(btns, data, index) {
       var result = true;
-      let mainData = null
-      if(this.listMainFormDatas){
-        mainData = this.listMainFormDatas
+      let mainData = null;
+      if (this.listMainFormDatas) {
+        mainData = this.listMainFormDatas;
       }
-      if(data?.card_parts_name==='状态-设置'){
-        debugger
+      if (data?.card_parts_name === "状态-设置") {
+        debugger;
       }
-      let isShow = []
-      if(btns.length > 0){
+      let isShow = [];
+      if (btns.length > 0) {
         for (let item of btns) {
           if (item["_rowDisp"]) {
             if (item["_rowDisp"][index] === 1) {
@@ -1154,28 +1354,23 @@ export default {
           }
         }
 
-        if(isShow.length !== 0){
-          return true
-        }else{
-          return false
+        if (isShow.length !== 0) {
+          return true;
+        } else {
+          return false;
         }
-      }else{
-        return false
+      } else {
+        return false;
       }
-
-
-      
     },
-    getGridHeaderDispExps(item,listMainFormDatas) {
+    getGridHeaderDispExps(item, listMainFormDatas) {
       // 获取表格列显示
       let result = item.show;
       var disp_exps = item.showListExp;
-      if (result && item.hasOwnProperty('showListExp')) {
-
-       
-        let mainFormData = listMainFormDatas
+      if (result && item.hasOwnProperty("showListExp")) {
+        let mainFormData = listMainFormDatas;
         // result = eval(disp_exps);
-        result =  eval('('+ disp_exps + ')(mainFormData)');
+        result = eval("(" + disp_exps + ")(mainFormData)");
       }
       return result;
     },
@@ -1184,9 +1379,9 @@ export default {
 
       if (column["column"] != null) {
         if ("ascending" == column["order"]) {
-          this.order.push({colName: column["prop"], orderType: "asc"});
+          this.order.push({ colName: column["prop"], orderType: "asc" });
         } else {
-          this.order.push({colName: column["prop"], orderType: "desc"});
+          this.order.push({ colName: column["prop"], orderType: "desc" });
         }
       }
 
@@ -1201,7 +1396,7 @@ export default {
     batchDeleteData(exeservice) {
       if (this.multipleSelection.length == 0) {
         this.$alert("请选择删除数据", "提示", {
-          confirmButtonText: "确定"
+          confirmButtonText: "确定",
         });
       } else {
         this.deleteData(this.multipleSelection, exeservice);
@@ -1212,19 +1407,19 @@ export default {
       this.$confirm("此操作将永久删除该数据, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "info"
+        type: "info",
       })
         .then(() => {
           var deleteRequests = [];
           var request = {};
           request["serviceName"] = exeservice;
-          if(this.activeTabName === 'draft'){
-            request['reqType']  = 'deleteDraft'
+          if (this.activeTabName === "draft") {
+            request["reqType"] = "deleteDraft";
           }
-          var cMap = {colName: "id", ruleType: "in"};
-          if(this.pub_field_map?.id){
+          var cMap = { colName: "id", ruleType: "in" };
+          if (this.pub_field_map?.id) {
             // 删除时 如果列表配置了id的映射字段 则使用映射的字段作为colName
-            cMap.colName = this.pub_field_map.id
+            cMap.colName = this.pub_field_map.id;
           }
           var cVule = [];
           for (var item of deleteRowData) {
@@ -1235,13 +1430,13 @@ export default {
 
           deleteRequests.push(request);
 
-          this.operate(deleteRequests).then(response => {
+          this.operate(deleteRequests).then((response) => {
             var state = response.body.state;
 
             if ("SUCCESS" == state) {
               this.$message({
                 type: "success",
-                message: "删除成功!"
+                message: "删除成功!",
               });
               if (this.gridData.length == cVule.length) {
                 if (this.gridPage.currentPage > 1) {
@@ -1252,7 +1447,7 @@ export default {
             } else {
               this.$message({
                 type: "error",
-                message: response.body.resultMessage
+                message: response.body.resultMessage,
               });
             }
           });
@@ -1260,39 +1455,49 @@ export default {
         .catch(() => {
           this.$message({
             type: "info",
-            message: "已取消删除"
+            message: "已取消删除",
           });
         });
     },
-    
+
     gridButtonClick(button) {
       //　列表头部按钮
       //console.log("gridButtonClick",this,this.$parent)
-      console.log("gridButtonClick",button)
-       this.$emit("extend-change",button)
-      let self = this
+      console.log("gridButtonClick", button);
+      this.$emit("extend-change", button);
+      let self = this;
       var type = button.button_type;
       var exeservice = button.service_name;
       var tab_title = button.service_view_name;
       var operate_type = button.operate_type;
-      var moreConfig = null
-      if(button.more_config && typeof button.more_config === 'string'){
+      var moreConfig = null;
+      if (button.more_config && typeof button.more_config === "string") {
         try {
-          moreConfig = JSON.parse(button.more_config)
-          
+          moreConfig = JSON.parse(button.more_config);
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
       }
 
-      if(button.hasOwnProperty("always_show") && button.always_show && !button.permission){
+      if (
+        button.hasOwnProperty("always_show") &&
+        button.always_show &&
+        !button.permission
+      ) {
         // 无权限的按钮永久显示，操作弹出配置提示信息
-        this.$alert(button.tip_msg ?button.tip_msg:"您无法进行该操作" , "提示", {
-          confirmButtonText: "确定"
-        });
+        this.$alert(
+          button.tip_msg ? button.tip_msg : "您无法进行该操作",
+          "提示",
+          {
+            confirmButtonText: "确定",
+          }
+        );
         return;
       }
-      if (button.action_validate && this.evalActionValidator(button.action_validate, this.gridData) !== true) {
+      if (
+        button.action_validate &&
+        this.evalActionValidator(button.action_validate, this.gridData) !== true
+      ) {
         return;
       }
 
@@ -1307,8 +1512,7 @@ export default {
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
       } else if ("add" == type) {
-
-        if (operate_type == '页内添加') {
+        if (operate_type == "页内添加") {
           if (this.list_inner_add) {
             self.list_inner_add = false;
           } else {
@@ -1317,15 +1521,12 @@ export default {
         } else {
           self.onAddClicked();
         }
-
-
       } else if ("confirmadd" == type) {
         if (this.multipleSelection.length == 0) {
           this.$alert("请选择需要添加的数据", "提示", {
-            confirmButtonText: "确定"
+            confirmButtonText: "确定",
           });
         } else {
-
           var relation_col = "";
           var referenced_column_name = "";
           let map_table = this.mapcondition.map_table;
@@ -1338,9 +1539,7 @@ export default {
             }
           }
 
-
           if (relation_col != "") {
-
             let bxRequests = [];
             let bxRequest = {};
             bxRequests.push(bxRequest);
@@ -1349,46 +1548,39 @@ export default {
 
             for (var item of this.multipleSelection) {
               var dataMap = {};
-              dataMap[this.mapcondition.input_col_name] = this.mapcondition.input_col_value;
+              dataMap[this.mapcondition.input_col_name] =
+                this.mapcondition.input_col_value;
               dataMap[relation_col] = item[referenced_column_name];
               bxRequest.data.push(dataMap);
-
-
             }
 
-            this.operate(bxRequests).then(response => {
+            this.operate(bxRequests).then((response) => {
               var state = response.body.state;
 
               if ("SUCCESS" == state) {
-
                 this.$message({
                   type: "success",
-                  message: "添加成功!"
+                  message: "添加成功!",
                 });
 
                 // this.loadTableData()
-                this.$emit('action-complete');
+                this.$emit("action-complete");
               } else {
                 this.$message({
                   type: "error",
-                  message: response.body.resultMessage
+                  message: response.body.resultMessage,
                 });
               }
             });
-
           }
-
-
         }
-
       } else if ("batchadd" == type) {
-        console.log('batchadd',button)
-        if(button.hasOwnProperty('btn_cfg_json')){
-           this.buildBatchConfig(button)
-        }else{
-           console.error(button)
+        console.log("batchadd", button);
+        if (button.hasOwnProperty("btn_cfg_json")) {
+          this.buildBatchConfig(button);
+        } else {
+          console.error(button);
         }
-
 
         /**旧版老代码 */
         // var select_optionlist = ""
@@ -1419,21 +1611,26 @@ export default {
         // }
 
         //批量添加
-
       } else if ("batchupdate" == type) {
-
-        if (this.header_view_model != 'normal') {
+        if (this.header_view_model != "normal") {
           this.header_view_model = "normal";
           this.gridHeader = this.noramlHeaders;
         }
-        this.onBatchUpdateClick()
+        this.onBatchUpdateClick();
         // this.onInplaceEditClicked();
       } else if ("saveall" == type) {
         this.onSaveAllClicked();
       } else if ("apply" == type) {
         // var urlParams = `/${exeservice}?time=${(new Date()).getTime()}`;
         var urlParams = `/${exeservice}`;
-        this.addTab("start-proc", urlParams, tab_title,null,button,button.application);
+        this.addTab(
+          "start-proc",
+          urlParams,
+          tab_title,
+          null,
+          button,
+          button.application
+        );
       } else if ("export" == type) {
         this.onExportClicked();
         // this.activeForm = "export"   // 显示导出配置
@@ -1443,13 +1640,16 @@ export default {
         var operate_params_cfg = button.operate_params;
         var select_data = button.select_data;
         if (
-          (select_data == null || select_data == undefined || select_data == '是') && this.multipleSelection <= 0 &&
+          (select_data == null ||
+            select_data == undefined ||
+            select_data == "是") &&
+          this.multipleSelection <= 0 &&
           operate_params_cfg != undefined &&
           operate_params_cfg != "" &&
-          operate_params_cfg != null 
+          operate_params_cfg != null
         ) {
           this.$alert("请选择操作数据", "提示", {
-            confirmButtonText: "确定"
+            confirmButtonText: "确定",
           });
         } else {
           var me = this;
@@ -1460,30 +1660,28 @@ export default {
             this.customize_delete(operate_item, this.multipleSelection);
           } else if (button.operate_type == "增加") {
             this.customize_add(button, this.multipleSelection);
-          } else  if(button.operate_type == "增加弹出"){
-
-            console.log("customize button",button)
-            this.customizeOperate(button, this.multipleSelection,(e)=>{
+          } else if (button.operate_type == "增加弹出") {
+            console.log("customize button", button);
+            this.customizeOperate(button, this.multipleSelection, (e) => {
               // dialog操作完成之后的回调 刷新列表
               this.loadTableData();
             });
             // this.customize_add(button, this.multipleSelection);
-        }else{
+          } else {
             button.listservice = this.service;
-            this.customizeOperate(button, this.multipleSelection,(e)=>{
+            this.customizeOperate(button, this.multipleSelection, (e) => {
               // dialog操作完成之后的回调 刷新列表
               this.loadTableData();
             });
           }
         }
-      }else if("batch_approve" == type){
-        this.onBatchApprove(this.multipleSelection,button);
+      } else if ("batch_approve" == type) {
+        this.onBatchApprove(this.multipleSelection, button);
       }
     },
 
     rowButtonClick(operate_item, row) {
-
-      let self =this
+      let self = this;
       let button = operate_item;
       var type = operate_item.button_type;
       // console.log(type)
@@ -1491,16 +1689,27 @@ export default {
       var exeservice = operate_item.service_name;
       var tab_title = operate_item.service_view_name;
       // this.clickedRow = row
-      this.activeRowButton = operate_item
-      this.rowButtonActiveServiceName = ""
-      if(button.hasOwnProperty("always_show") && button.always_show && !button.permission){
+      this.activeRowButton = operate_item;
+      this.rowButtonActiveServiceName = "";
+      if (
+        button.hasOwnProperty("always_show") &&
+        button.always_show &&
+        !button.permission
+      ) {
         // 无权限的按钮永久显示，操作弹出配置提示信息
-        this.$alert(button.tip_msg ?button.tip_msg:"您无法进行该操作" , "提示", {
-          confirmButtonText: "确定"
-        });
+        this.$alert(
+          button.tip_msg ? button.tip_msg : "您无法进行该操作",
+          "提示",
+          {
+            confirmButtonText: "确定",
+          }
+        );
         return;
       }
-      if (button.action_validate && this.evalActionValidator(button.action_validate, row) !== true) {
+      if (
+        button.action_validate &&
+        this.evalActionValidator(button.action_validate, row) !== true
+      ) {
         return;
       }
 
@@ -1512,45 +1721,67 @@ export default {
       if ("delete" == type) {
         this.deleteRowData(row, exeservice);
       } else if ("edit" == type) {
-
-        
-        if(button.operate_service && Object.prototype.toString.call(button.operate_service) !== "[object String]"){
-          let srv = this.getButtonOptSrv(button,row,"active")
-          if(srv.length > 0){
-            this.rowButtonActiveServiceName = srv[0].serviceName 
-          }else{
-
+        if (
+          button.operate_service &&
+          Object.prototype.toString.call(button.operate_service) !==
+            "[object String]"
+        ) {
+          let srv = this.getButtonOptSrv(button, row, "active");
+          if (srv.length > 0) {
+            this.rowButtonActiveServiceName = srv[0].serviceName;
+          } else {
           }
-          
-        }else{
-          this.rowButtonActiveServiceName = button.operate_service ||  button.service_name
+        } else {
+          this.rowButtonActiveServiceName =
+            button.operate_service || button.service_name;
         }
-       let actionConfig = this.getButtonOptSrv(button,row,'active')
-        console.log('getButtonOptSrv',actionConfig)
+        let actionConfig = this.getButtonOptSrv(button, row, "active");
+        console.log("getButtonOptSrv", actionConfig);
         self.onUpdateClicked(row);
       } else if ("detail" == type) {
-        var urlParams = "/" + exeservice + "/" + row.id + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
-        if(this.pub_field_map?.id){
-            urlParams = "/" + exeservice + "/" + row[this.pub_field_map.id] + "?srvApp=" + this.resolveDefaultSrvApp() + '&isdraft=' + this.draftRun;//跳转
+        var urlParams =
+          "/" +
+          exeservice +
+          "/" +
+          row.id +
+          "?srvApp=" +
+          this.resolveDefaultSrvApp() +
+          "&isdraft=" +
+          this.draftRun; //跳转
+        if (this.pub_field_map?.id) {
+          urlParams =
+            "/" +
+            exeservice +
+            "/" +
+            row[this.pub_field_map.id] +
+            "?srvApp=" +
+            this.resolveDefaultSrvApp() +
+            "&isdraft=" +
+            this.draftRun; //跳转
         }
         // 公共详情按钮传分表参数规则
-        let divCond = this.searchFormCondition.filter(item => item.use_div_calc === '是').map(item=>{
-          return {
-            colName:item.colName,
-            ruleType:item.ruleType,
-            value:item.value
-          }
-        })
-        if (button?.more_config?.includes('divCond')) {
+        let divCond = this.searchFormCondition
+          .filter((item) => item.use_div_calc === "是")
+          .map((item) => {
+            return {
+              colName: item.colName,
+              ruleType: item.ruleType,
+              value: item.value,
+            };
+          });
+        if (button?.more_config?.includes("divCond")) {
           try {
-            const moreConfig = JSON.parse(button.more_config)
+            const moreConfig = JSON.parse(button.more_config);
             if (moreConfig?.divCond?.colName) {
               const evalCondValue = (value, row = {}, mainData = {}) => {
                 if (!value || typeof value === "string") {
                   return value;
                 } else if (value?.value_type === "rowData" && value.value_key) {
                   return row[value.value_key];
-                } else if (value?.value_type === "mainData" && value.value_key) {
+                } else if (
+                  value?.value_type === "mainData" &&
+                  value.value_key
+                ) {
                   return mainData[value.value_key];
                 } else if (value?.value_type === "constant" && value.value) {
                   return value.value;
@@ -1561,33 +1792,50 @@ export default {
               divCond = [
                 {
                   colName: moreConfig.divCond.colName,
-                  ruleType: 'between',
-                  value: [evalCondValue(moreConfig.divCond.start_value, row, mainDetailData), evalCondValue(moreConfig.divCond.end_value, row, mainDetailData)]
-                }
-              ]
+                  ruleType: "between",
+                  value: [
+                    evalCondValue(
+                      moreConfig.divCond.start_value,
+                      row,
+                      mainDetailData
+                    ),
+                    evalCondValue(
+                      moreConfig.divCond.end_value,
+                      row,
+                      mainDetailData
+                    ),
+                  ],
+                },
+              ];
             }
           } catch (error) {
             console.error(error);
           }
         }
-        if(!divCond?.length&&this.buildDivCond?.()?.length){
-          divCond = this.buildDivCond()
+        if (!divCond?.length && this.buildDivCond?.()?.length) {
+          divCond = this.buildDivCond();
         }
-        if(divCond?.length){
-          // 分表查询条件 2024.1.12新增，传到详情页面 
-          const divObj = divCond[0]
-          if(divCond?.length===1&&Array.isArray(divObj?.value)&&divObj.value.length>1){
+        if (divCond?.length) {
+          // 分表查询条件 2024.1.12新增，传到详情页面
+          const divObj = divCond[0];
+          if (
+            divCond?.length === 1 &&
+            Array.isArray(divObj?.value) &&
+            divObj.value.length > 1
+          ) {
             // 直接将分表参数拼接到url上
-            urlParams+= `&divCol=${divObj.colName}&divStartVal=${divObj.value[0]}&divEndVal=${divObj.value[1]}`
-          }else{
+            urlParams += `&divCol=${divObj.colName}&divStartVal=${divObj.value[0]}&divEndVal=${divObj.value[1]}`;
+          } else {
             // 分表参数以数组格式传到url上
-            urlParams+=`&divCond=${encodeURIComponent(JSON.stringify(divCond))}`
+            urlParams += `&divCond=${encodeURIComponent(
+              JSON.stringify(divCond)
+            )}`;
           }
         }
         var disp_col = operate_item._disp_col;
-        var disp_value = row[disp_col];//详情页面上的标签
-        tab_title = tab_title.replace('查询', '');
-        if (disp_value != null && disp_value != undefined && disp_value != '') {
+        var disp_value = row[disp_col]; //详情页面上的标签
+        tab_title = tab_title.replace("查询", "");
+        if (disp_value != null && disp_value != undefined && disp_value != "") {
           tab_title = disp_value + "(" + tab_title + "详情)";
         } else {
           tab_title = tab_title + "详情";
@@ -1595,17 +1843,21 @@ export default {
         this.addTab("detail", urlParams, tab_title, null, button);
         //debugger
       } else if ("procdetail" == type) {
-        var urlParams = "/" + row["proc_instance_no"]+"?srvApp=" + this.resolveDefaultSrvApp();
+        var urlParams =
+          "/" +
+          row["proc_instance_no"] +
+          "?srvApp=" +
+          this.resolveDefaultSrvApp();
         this.addTab("procdetail", urlParams, tab_title, null, button);
       } else if ("addchild" == type) {
         this.onAddChildClicked(row);
       } else if ("duplicate" == type) {
-        if(this.storageType === 'mem'){
-          this.activeData  =  row
-        }else{
-          this.activeData = null
+        if (this.storageType === "mem") {
+          this.activeData = row;
+        } else {
+          this.activeData = null;
         }
-        
+
         this.onDuplicateClicked(row);
       } else if ("duplicatedeep" == type) {
         this.onDuplicateDeepClicked(row);
@@ -1618,24 +1870,19 @@ export default {
       } else if ("startproc" == type) {
         //开启数据流程
         this.start_dataproc(row, operate_item);
-
       } else if ("deletedraft" == type) {
         this.procOperate(row, operate_item);
       } else if ("extjs" === type) {
         operate_item.handlerFunc && operate_item.handlerFunc(row);
       } else if ("manage_childlist" === type) {
         this.onPopupMemListClick(row, button);
-      }else if("urge"==type) {
+      } else if ("urge" == type) {
         //催办
         this.procOperate(row, operate_item);
-
-      }else if ("customize" == type) {
-
-        if(button.hasOwnProperty('version') && button.version == 'v2'){
-
-
-          this.customButtonV2(button,row)
-        }else{
+      } else if ("customize" == type) {
+        if (button.hasOwnProperty("version") && button.version == "v2") {
+          this.customButtonV2(button, row);
+        } else {
           let data = [row];
           if (operate_item.operate_type == "修改") {
             this.customize_update(operate_item, data);
@@ -1643,9 +1890,9 @@ export default {
             this.customize_delete(operate_item, data);
           } else if (operate_item.operate_type == "增加") {
             this.customize_add(operate_item, data);
-          } else{
+          } else {
             operate_item.listservice = this.service;
-            this.customizeOperate(operate_item, data,(e)=>{
+            this.customizeOperate(operate_item, data, (e) => {
               // dialog操作完成之后的回调 刷新列表
               this.loadTableData();
             });
@@ -1653,32 +1900,31 @@ export default {
         }
 
         let pageKey = {
-          service:operate_item.service,
-           buttonsKey:`${operate_item["operate_service"]}-${operate_item.id}`,
-           buttonType:operate_item.operate_type,
-           buttonMode:operate_item.servcie_type,
-           submitState:false
-       }
-       console.log(operate_item)
-       this.$store.commit("setTableButtonsPopup", {
-         ...pageKey
-       })
-       // 初始化弹出表单状态
-        
-      }else if("batch_approve" == type){
+          service: operate_item.service,
+          buttonsKey: `${operate_item["operate_service"]}-${operate_item.id}`,
+          buttonType: operate_item.operate_type,
+          buttonMode: operate_item.servcie_type,
+          submitState: false,
+        };
+        console.log(operate_item);
+        this.$store.commit("setTableButtonsPopup", {
+          ...pageKey,
+        });
+        // 初始化弹出表单状态
+      } else if ("batch_approve" == type) {
         // 流程批量审批
-        this.onBatchApprove([row],button);
-      }else if("customize_import" == type){
+        this.onBatchApprove([row], button);
+      } else if ("customize_import" == type) {
         // 自定义导入
-        this.onCustomizeImport(row,button);
+        this.onCustomizeImport(row, button);
       }
     },
     //
-    customPopup(operate_item, data){
+    customPopup(operate_item, data) {
       // 2021 02 26
       //自定义弹出
 
-      this.customizeOperate(operate_item, data,(e)=>{
+      this.customizeOperate(operate_item, data, (e) => {
         // dialog操作完成之后的回调 刷新列表
         this.loadTableData();
       });
@@ -1687,25 +1933,21 @@ export default {
       // }else{
       //   this.customizeOperate(operate_item, data);
       // }
-      
     },
     //开启数据流程
     start_dataproc(row, buttinfo) {
       var me = this;
 
-
       var pre_confirm_msg = buttinfo.pre_confirm_msg;
-      if(!pre_confirm_msg){
-        pre_confirm_msg="您确定要执行此操作?";
+      if (!pre_confirm_msg) {
+        pre_confirm_msg = "您确定要执行此操作?";
       }
       this.$confirm(pre_confirm_msg, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "info"
+        type: "info",
       })
         .then(() => {
-
-
           var requests = [];
           var request = {};
           requests.push(request);
@@ -1715,149 +1957,124 @@ export default {
             request["parent_proc_instance_no"] = parent_proc_instance_no;
           }
           request["proc_no"] = JSON.parse(buttinfo.operate_params).proc_no;
-          let condition = [{
-            "colName": "id",
-            "value": row.id,
-            "ruleType": "eq"
-          }];
+          let condition = [
+            {
+              colName: "id",
+              value: row.id,
+              ruleType: "eq",
+            },
+          ];
           request["condition"] = condition;
 
-
-          this.startDataProc(requests).then(response => {
+          this.startDataProc(requests).then((response) => {
             var state = response.body.state;
-
 
             if ("SUCCESS" == state) {
               var resultMessage = "操作成功!";
 
-              if (resultMessage != '' && resultMessage != null && resultMessage != undefined) {
+              if (
+                resultMessage != "" &&
+                resultMessage != null &&
+                resultMessage != undefined
+              ) {
                 resultMessage = response.body.resultMessage;
               }
 
               this.$message({
                 type: "success",
-                message: resultMessage
+                message: resultMessage,
               });
 
               me.loadTableData();
             } else {
               this.$message({
                 type: "error",
-                message: response.body.resultMessage
+                message: response.body.resultMessage,
               });
             }
           });
-
-
         })
         .catch(() => {
           this.$message({
             type: "info",
-            message: "已取消"
+            message: "已取消",
           });
         });
-
     },
     procOperate(row, buttinfo) {
-
       var me = this;
       var type = buttinfo.button_type;
       if ("closeproc" == type) {
-
-        this.$prompt('', '请输入关闭原因', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputValidator: function (value) {
-            if (value == "" || value == undefined && value == null) {
-              return "请输入关闭原因";
-            }
-
-          }
-
-        }).then(({value}) => {
-
-          if (value == "" || value == undefined && value == null) {
-
-            this.$message({
-              type: 'info',
-              message: '请输入关闭原因'
-            });
-
-          } else {
-            me.procRelateOperate(row, buttinfo, value);
-          }
-
-
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '取消操作'
-          });
-        });
-      } else if ("proccancel" == type) {
-
-
-        this.$prompt('', '请输入撤销原因', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputValidator: function (value) {
-            if (value == "" || value == undefined && value == null) {
-              return "请输入撤销原因";
-            }
-
-          }
-
-        }).then(({value}) => {
-
-          if (value == "" || value == undefined && value == null) {
-
-            this.$message({
-              type: 'info',
-              message: '请输入撤销原因'
-            });
-
-          } else {
-            me.procRelateOperate(row, buttinfo, value);
-          }
-
-
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '取消操作'
-          });
-        });
-
-
-      } else {
-
-
-        this.$confirm("您确定要执行此操作?", "提示", {
+        this.$prompt("", "请输入关闭原因", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
-          type: "info"
+          inputValidator: function (value) {
+            if (value == "" || (value == undefined && value == null)) {
+              return "请输入关闭原因";
+            }
+          },
         })
-          .then(() => {
-
-            me.procRelateOperate(row, buttinfo);
-
+          .then(({ value }) => {
+            if (value == "" || (value == undefined && value == null)) {
+              this.$message({
+                type: "info",
+                message: "请输入关闭原因",
+              });
+            } else {
+              me.procRelateOperate(row, buttinfo, value);
+            }
           })
           .catch(() => {
             this.$message({
               type: "info",
-              message: "已取消"
+              message: "取消操作",
             });
           });
-
-
+      } else if ("proccancel" == type) {
+        this.$prompt("", "请输入撤销原因", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputValidator: function (value) {
+            if (value == "" || (value == undefined && value == null)) {
+              return "请输入撤销原因";
+            }
+          },
+        })
+          .then(({ value }) => {
+            if (value == "" || (value == undefined && value == null)) {
+              this.$message({
+                type: "info",
+                message: "请输入撤销原因",
+              });
+            } else {
+              me.procRelateOperate(row, buttinfo, value);
+            }
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "取消操作",
+            });
+          });
+      } else {
+        this.$confirm("您确定要执行此操作?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "info",
+        })
+          .then(() => {
+            me.procRelateOperate(row, buttinfo);
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "已取消",
+            });
+          });
       }
-
-
     },
     procRelateOperate(row, buttinfo, remark) {
-
       var me = this;
-
 
       var type = buttinfo.button_type;
       var requests = [];
@@ -1866,46 +2083,46 @@ export default {
       var cMap = {
         colName: "proc_instance_no",
         ruleType: "eq",
-        value: row.proc_instance_no
+        value: row.proc_instance_no,
       };
       request["condition"] = [cMap];
 
-      if (remark != undefined && remark != null && remark != '') {
-
+      if (remark != undefined && remark != null && remark != "") {
         var dataMap = {
-          "remark": remark
+          remark: remark,
         };
         request["data"] = [dataMap];
       }
 
-
       requests.push(request);
 
-      this.operate(requests).then(response => {
+      this.operate(requests).then((response) => {
         var state = response.body.state;
-
 
         if ("SUCCESS" == state) {
           var resultMessage = "操作成功!";
 
-          if (resultMessage != '' && resultMessage != null && resultMessage != undefined) {
+          if (
+            resultMessage != "" &&
+            resultMessage != null &&
+            resultMessage != undefined
+          ) {
             resultMessage = response.body.resultMessage;
           }
 
           this.$message({
             type: "success",
-            message: resultMessage
+            message: resultMessage,
           });
 
           me.loadTableData();
         } else {
           this.$message({
             type: "error",
-            message: response.body.resultMessage
+            message: response.body.resultMessage,
           });
         }
       });
-
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
@@ -1930,8 +2147,7 @@ export default {
 
     buildQueryConditions() {
       this.condition = [];
-      if(this.listType == "wait"){
-
+      if (this.listType == "wait") {
       }
       for (var cMap of this.custCondition) {
         this.condition.push(cMap);
@@ -1945,72 +2161,76 @@ export default {
         this.condition.push(cMap);
       }
 
-      if(Array.isArray(this.defaultCondition)){
+      if (Array.isArray(this.defaultCondition)) {
         for (var cMap of this.defaultCondition) {
           this.condition.push(cMap);
         }
       }
-    
 
-      this.condition.filter(item => item.dynamic === true).forEach(item => {
-        let ctx = this
-        item.value = eval(item.value);
-      });
+      this.condition
+        .filter((item) => item.dynamic === true)
+        .forEach((item) => {
+          let ctx = this;
+          item.value = eval(item.value);
+        });
 
-      this.condition.filter(item => item.valueFunc && isFunction(item.valueFunc))
-        .forEach(item => item.value = item.valueFunc())
-
+      this.condition
+        .filter((item) => item.valueFunc && isFunction(item.valueFunc))
+        .forEach((item) => (item.value = item.valueFunc()));
 
       let hasEmptyRequiredCondition =
         this.condition.filter(
-          item => item.required === true && this.isEmptyCondition(item)
+          (item) => item.required === true && this.isEmptyCondition(item)
         ).length > 0;
       if (hasEmptyRequiredCondition) {
         throw new MissRequiredConditionError();
       }
       return this.condition;
     },
-    loadDraftLength(){
-      let self = this
-      this.buildQueryConditions()
+    loadDraftLength() {
+      let self = this;
+      this.buildQueryConditions();
 
-        let pageSize = this.pageSize || this.gridPage.pageSize;
-        var page = (this.isMem() || (this.gridPage && pageSize < 0))
+      let pageSize = this.pageSize || this.gridPage.pageSize;
+      var page =
+        this.isMem() || (this.gridPage && pageSize < 0)
           ? null
           : {
-            pageNo: this.gridPage.currentPage,
-            rownumber: pageSize
-          };
-      let relationCondition = self.relationCondition
-            console.log("loadDraftLength",cloneDeep(this.condition))
-            // service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition
-            return self.select(
-              self.service_name,
-              self.condition,
-              self.showPagination? page : null,
-              self.order,
-              null,
-              self.mapcondition,
-              null,
-              null,
-              null,
-              relationCondition,
-              true,
-              "list_page"
-            ).then(response => {
-              let gridData = response.body.data;
-              let page = response.body.page
-              if(!page){
-                page = { total:response.body.data.length }
-              }
-              self.tabsConfig[1].len = page.total || 0
-            })
+              pageNo: this.gridPage.currentPage,
+              rownumber: pageSize,
+            };
+      let relationCondition = self.relationCondition;
+      console.log("loadDraftLength", cloneDeep(this.condition));
+      // service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition
+      return self
+        .select(
+          self.service_name,
+          self.condition,
+          self.showPagination ? page : null,
+          self.order,
+          null,
+          self.mapcondition,
+          null,
+          null,
+          null,
+          relationCondition,
+          true,
+          "list_page"
+        )
+        .then((response) => {
+          let gridData = response.body.data;
+          let page = response.body.page;
+          if (!page) {
+            page = { total: response.body.data.length };
+          }
+          self.tabsConfig[1].len = page.total || 0;
+        });
     },
     loadTableData(srvAuth) {
-      let self = this
-      if(!this.vpageNo){
+      let self = this;
+      if (!this.vpageNo) {
         // 登录过期后刷新
-        return this.initGridData()
+        return this.initGridData();
       }
       if (!this.shouldLoadFromDb) {
         return Promise.resolve(true);
@@ -2018,33 +2238,34 @@ export default {
 
       const loading = this.$loading({
         lock: true,
-        text: '加载中',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
+        text: "加载中",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
       });
 
       // setTimeout(() => {
       //   loading.close();
       // }, 5000);
       try {
-
-        this.buildQueryConditions()
-        console.log("loadTableData",cloneDeep(this.condition));
-        let pageSize = this.setPageSize || this.pageSize || this.gridPage.pageSize;
-        var page = (this.isMem() || (this.gridPage && pageSize < 0))
-          ? null
-          : {
-            pageNo: this.gridPage.currentPage,
-            rownumber: pageSize
-          };
+        this.buildQueryConditions();
+        console.log("loadTableData", cloneDeep(this.condition));
+        let pageSize =
+          this.setPageSize || this.pageSize || this.gridPage.pageSize;
+        var page =
+          this.isMem() || (this.gridPage && pageSize < 0)
+            ? null
+            : {
+                pageNo: this.gridPage.currentPage,
+                rownumber: pageSize,
+              };
 
         if (
           this.listType == "wait" ||
           this.listType == "mine" ||
           this.listType == "myall" ||
-          this.listType == "processed"||
-          this.listType == "all"||
-          this.listType == "userall"||
+          this.listType == "processed" ||
+          this.listType == "all" ||
+          this.listType == "userall" ||
           this.listType == "cc"
         ) {
           //加载表格数据
@@ -2052,73 +2273,78 @@ export default {
             this.service_name,
             this.condition,
             // page,
-            this.showPagination? page : null,
+            this.showPagination ? page : null,
             this.order,
             this.listType,
             "list_page",
             this.vpageNo
-          ).then(response => {
-            if(response.body.resultCode == '0011'){
-              // 登录过期
-              this.$store.commit('clearSrvCols')
-              this.vpageNo = null
-              return
-            }
-            // console.log("responseresponse",response)
-            var listData = response.body.data;
-            this.originListData = JSON.parse(JSON.stringify(listData));
-            for (var row in listData) {
-              for (var key in this.keyValueData) {
-                var dicts = this.keyValueData[key];
-                for (var map in dicts) {
-                  if (listData[row][key] == dicts[map]["value"]) {
-                    listData[row][key] = dicts[map]["text"];
-                    break;
+          )
+            .then((response) => {
+              if (response.body.resultCode == "0011") {
+                // 登录过期
+                this.$store.commit("clearSrvCols");
+                this.vpageNo = null;
+                return;
+              }
+              // console.log("responseresponse",response)
+              var listData = response.body.data;
+              this.originListData = JSON.parse(JSON.stringify(listData));
+              for (var row in listData) {
+                for (var key in this.keyValueData) {
+                  var dicts = this.keyValueData[key];
+                  for (var map in dicts) {
+                    if (listData[row][key] == dicts[map]["value"]) {
+                      listData[row][key] = dicts[map]["text"];
+                      break;
+                    }
                   }
                 }
               }
 
-            }
+              this.gridData = listData;
 
-            this.gridData = listData;
+              if (
+                this.gridData &&
+                this.gridData.length > 0 &&
+                this.gridData[0].hasOwnProperty("_encrypt_cols")
+              ) {
+                this._encrypt_cols = this.gridData[0]["_encrypt_cols"]; // 加密的字段
+                // this.gridData.splice(0, this.gridData.length - 1)
+              } else {
+                this._encrypt_cols = []; // 加密的字段
+                // this.gridData.splice(0, this.gridData.length - 1)
+              }
+              if (response.body["page"] != undefined) {
+                this.gridPage.currentPage = response.body["page"]["pageNo"];
+                this.gridPage.total = response.body["page"]["total"];
+              }
+              this.init_card_data = true;
+              if (this.cardInstance != null) {
+                this.cardInstance.setCardData(this.gridData);
+              }
 
-            if(this.gridData && this.gridData.length >0 && this.gridData[0].hasOwnProperty('_encrypt_cols')){
-              this._encrypt_cols = this.gridData[0]['_encrypt_cols']  // 加密的字段
-            // this.gridData.splice(0, this.gridData.length - 1)
-            }else{
-              this._encrypt_cols =  [] // 加密的字段
-            // this.gridData.splice(0, this.gridData.length - 1)
-            }
-            if (response.body["page"] != undefined) {
-              this.gridPage.currentPage = response.body["page"]["pageNo"];
-              this.gridPage.total = response.body["page"]["total"];
-            }
-            this.init_card_data = true;
-            if (this.cardInstance != null) {
-              this.cardInstance.setCardData(this.gridData);
-            }
-            
-            // this.
-            this.$nextTick((_) => {
-              this.$emit("gridData-change", response.body, this.listType);
+              // this.
+              this.$nextTick((_) => {
+                this.$emit("gridData-change", response.body, this.listType);
+              });
+              loading.close();
             })
-            loading.close();
-          }).catch((err)=>{
-            loading.close();
-            console.log("err",err)
-          });
+            .catch((err) => {
+              loading.close();
+              console.log("err", err);
+            });
         } else {
           //加载表格数据
           if (this.defaultapi == "select") {
             // console.log(this.pageSize)
-            
-            let relationCondition = this.relationCondition
+
+            let relationCondition = this.relationCondition;
             // console.log(this.showPagination)
             // service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition
             return this.select(
               this.service_name,
               this.condition,
-              this.showPagination? page : null,
+              this.showPagination ? page : null,
               this.order,
               null,
               this.mapcondition,
@@ -2127,169 +2353,196 @@ export default {
               null,
               relationCondition,
               this.draftRun,
-              "list_page", 
+              "list_page",
               srvAuth,
               this.vpageNo,
               null,
               null,
               this.buildDivCond?.()
-            ).then(response => {
+            )
+              .then((response) => {
+                if (response.body.resultCode == "0011") {
+                  // 登录过期
+                  this.$store.commit("clearSrvCols");
+                  this.vpageNo = null;
+                } else if (response.body.resultCode == "0111") {
+                  console.log("response.body", response.body);
+                  this.activeForm = "srv-auth-login";
+                  this.srvAuthLogin = true;
+                } else {
+                  this.gridData = response.body.data;
+                  this.originListData = JSON.parse(
+                    JSON.stringify(response.body.data)
+                  );
+                  let page = response.body.page;
 
-              if(response.body.resultCode == '0011'){
-                // 登录过期
-                this.$store.commit('clearSrvCols')
-                this.vpageNo = null
-              }else if(response.body.resultCode == '0111'){
-                console.log('response.body',response.body)
-                 this.activeForm = 'srv-auth-login'
-                 this.srvAuthLogin = true
-              }else{
-                this.gridData = response.body.data;
-                this.originListData = JSON.parse(JSON.stringify( response.body.data));
-                let page = response.body.page
-
-
-                // self.statsData = response.body.stats_data? response.body.stats_data:[]
-                if(response.body.hasOwnProperty('stats_data')){
-                  self.statsData = response.body.stats_data
-                }
-                if(self.statsData?.length){
-                  self.buildStatsData()  // 格式化金额数字格式
-                  self.$emit('stats-data-load',self.statsData)
-                }
-                if(!page){
-                  page = { total:response.body.data.length }
-                }
-                // 草稿标前显示 数量
-                if(this.draftRun){
-                  this.tabsConfig[1].len = page.total || 0
-                }else{
-                  this.tabsConfig[0].len = page.total || 0
-                }
-
-                if(this.listType.indexOf("childlist") !== -1){
-                  // 汇聚子表数据
-                  if(this.storageType === 'mem' && this.inplaceEdit){
-                    this.gridData.forEach(row => {
-                      if (!row._dirtyFlags && this.defaultDirtyFlags === 'add') {
-                        // 如果没有 dirtyFlags，设置默认的flags
-                        row["_guid"] = this.guid()
-                        row['id'] = null
-                        // this.$set(row, "_dirtyFlags", this.defaultDirtyFlags)
-                        // if (this.defaultDirtyFlags === "add") {
-                        //   this.$set(row, "_guid", this.guid())
-                        //   this.$set(row, "id", null)
-                        // }
-                      }
-                    })
+                  // self.statsData = response.body.stats_data? response.body.stats_data:[]
+                  if (response.body.hasOwnProperty("stats_data")) {
+                    self.statsData = response.body.stats_data;
                   }
-                  let child = {
-                    name:this.service,
-                    data:this.gridData,
-                    constraint_name:this.childforeignkey?.constraint_name
+                  if (self.statsData?.length) {
+                    self.buildStatsData(); // 格式化金额数字格式
+                    self.$emit("stats-data-load", self.statsData);
                   }
-                  this.$emit("child-loaded",child)
-                }
-                // console.log(_)
-                this.unmodifiedGridData = cloneDeep(this.gridData);
-                if(this.gridData && this.gridData.length >0 && this.gridData[0].hasOwnProperty('_encrypt_cols')){
-                  this._encrypt_cols = this.gridData[0]['_encrypt_cols']  // 加密的字段
-                // this.gridData.splice(0, this.gridData.length - 1)
-                }else{
-                  this._encrypt_cols =  [] // 加密的字段
-                // this.gridData.splice(0, this.gridData.length - 1)
-                }
-                
-                var listData = response.body.data;
+                  if (!page) {
+                    page = { total: response.body.data.length };
+                  }
+                  // 草稿标前显示 数量
+                  if (this.draftRun) {
+                    this.tabsConfig[1].len = page.total || 0;
+                  } else {
+                    this.tabsConfig[0].len = page.total || 0;
+                  }
 
-                if (this.gridDataFilter) {
-                  let filter = this.gridDataFilter;
-                  filter(listData);
-                }
+                  if (this.listType.indexOf("childlist") !== -1) {
+                    // 汇聚子表数据
+                    if (this.storageType === "mem" && this.inplaceEdit) {
+                      this.gridData.forEach((row) => {
+                        if (
+                          !row._dirtyFlags &&
+                          this.defaultDirtyFlags === "add"
+                        ) {
+                          // 如果没有 dirtyFlags，设置默认的flags
+                          row["_guid"] = this.guid();
+                          row["id"] = null;
+                          // this.$set(row, "_dirtyFlags", this.defaultDirtyFlags)
+                          // if (this.defaultDirtyFlags === "add") {
+                          //   this.$set(row, "_guid", this.guid())
+                          //   this.$set(row, "id", null)
+                          // }
+                        }
+                      });
+                    }
+                    let child = {
+                      name: this.service,
+                      data: this.gridData,
+                      constraint_name: this.childforeignkey?.constraint_name,
+                    };
+                    this.$emit("child-loaded", child);
+                  }
+                  // console.log(_)
+                  this.unmodifiedGridData = cloneDeep(this.gridData);
+                  if (
+                    this.gridData &&
+                    this.gridData.length > 0 &&
+                    this.gridData[0].hasOwnProperty("_encrypt_cols")
+                  ) {
+                    this._encrypt_cols = this.gridData[0]["_encrypt_cols"]; // 加密的字段
+                    // this.gridData.splice(0, this.gridData.length - 1)
+                  } else {
+                    this._encrypt_cols = []; // 加密的字段
+                    // this.gridData.splice(0, this.gridData.length - 1)
+                  }
 
-                listData.forEach(row => {
+                  var listData = response.body.data;
 
-                  // handle sth.
-                  for (var key in this.keyValueData) {
-                    var dictData = this.keyValueData[key];
-                    for (var map in dictData) {
-                      if (row[key] == dictData[map]["value"]) {
-                        // row[key] = dictData[map]["text"];  // 0115+
-                        break;
+                  if (this.gridDataFilter) {
+                    let filter = this.gridDataFilter;
+                    filter(listData);
+                  }
+
+                  listData.forEach((row) => {
+                    // handle sth.
+                    for (var key in this.keyValueData) {
+                      var dictData = this.keyValueData[key];
+                      for (var map in dictData) {
+                        if (row[key] == dictData[map]["value"]) {
+                          // row[key] = dictData[map]["text"];  // 0115+
+                          break;
+                        }
                       }
                     }
-                  } 
 
-                  // load child list data for inline list
-                  if (this.inlineLists) {
-                    row._inlineLists = row._inlineLists || {};
-                    this.inlineLists.forEach(inlineList => {
-                      let fk = inlineList.foreign_key;
-                      if (!row[fk.referenced_column_name]) {
-                        return;
-                      }
+                    // load child list data for inline list
+                    if (this.inlineLists) {
+                      row._inlineLists = row._inlineLists || {};
+                      this.inlineLists.forEach((inlineList) => {
+                        let fk = inlineList.foreign_key;
+                        if (!row[fk.referenced_column_name]) {
+                          return;
+                        }
 
-                      let conditions = [{
-                        colName: fk.column_name,
-                        ruleType: "eq",
-                        value: row[fk.referenced_column_name],
-                      }];
-                      this.select(inlineList.inline_list_select_service, conditions).then(resp => {
-                        resp.data && resp.data.data && (row._inlineLists[fk.constraint_name] = resp.data.data);
-                      })
-                    })
+                        let conditions = [
+                          {
+                            colName: fk.column_name,
+                            ruleType: "eq",
+                            value: row[fk.referenced_column_name],
+                          },
+                        ];
+                        this.select(
+                          inlineList.inline_list_select_service,
+                          conditions
+                        ).then((resp) => {
+                          resp.data &&
+                            resp.data.data &&
+                            (row._inlineLists[fk.constraint_name] =
+                              resp.data.data);
+                        });
+                      });
+                    }
+                  });
+
+                  // 表格尾部合计行数据   sum_row_data
+
+                  if (
+                    response.body.hasOwnProperty("sum_row_data") &&
+                    response.body.sum_row_data
+                  ) {
+                    this.sumRowData = this.bxDeepClone(
+                      response.body.sum_row_data
+                    );
+                    this.sumRowData["_data_type"] = "sumRow";
+                    if (
+                      this.sumConfig &&
+                      this.sumConfig.sum_text_col &&
+                      this.sumConfig.sum_text
+                    ) {
+                      this.sumRowData[this.sumConfig.sum_text_col] =
+                        this.sumConfig.sum_text;
+                    }
                   }
 
-                });
+                  if (response.body["page"]) {
+                    this.gridPage.currentPage = response.body["page"]["pageNo"];
+                    this.gridPage.total = response.body["page"]["total"];
+                  }
+                  this.init_card_data = true;
+                  if (this.cardInstance != null) {
+                    this.cardInstance.setCardData(this.gridData);
+                  }
 
-                // 表格尾部合计行数据   sum_row_data
-
-                if(response.body.hasOwnProperty('sum_row_data') && response.body.sum_row_data){
-                   this.sumRowData = this.bxDeepClone(response.body.sum_row_data)
-                   this.sumRowData["_data_type"] = 'sumRow'
-                   if(this.sumConfig && this.sumConfig.sum_text_col && this.sumConfig.sum_text){
-                    this.sumRowData[this.sumConfig.sum_text_col] = this.sumConfig.sum_text
-                   }
+                  this.$emit("list-data-loaded", this);
+                  loading.close();
+                  this.$refs?.["bx-table-layout"]?.doLayout();
                 }
-
-
-                if (response.body["page"]) {
-                  this.gridPage.currentPage = response.body["page"]["pageNo"];
-                  this.gridPage.total = response.body["page"]["total"];
-                }
-                this.init_card_data = true;
-                if (this.cardInstance != null) {
-                  this.cardInstance.setCardData(this.gridData);
-                }
-
-                this.$emit("list-data-loaded", this);
+              })
+              .finally(() => {
                 loading.close();
-                this.$refs?.['bx-table-layout']?.doLayout()
-              }
-              
-            }).finally(() => {
-              loading.close();
-            });
+              });
           } else {
             return this.selectByUser(
               this.service_name,
               this.condition,
-              this.showPagination? page : null,
+              this.showPagination ? page : null,
               this.order,
               null,
               this.mapcondition,
               "list_page"
-            ).then(response => {
+            ).then((response) => {
               this.gridData = response.body.data;
-              console.log( this.gridData)
+              console.log(this.gridData);
               this.unmodifiedGridData = cloneDeep(this.gridData);
               // this.gridData.splice(0, this.gridData.length - 1)
-              if(this.gridData && this.gridData.length >0 && this.gridData[0].hasOwnProperty('_encrypt_cols')){
-                this._encrypt_cols = this.gridData[0]['_encrypt_cols']  // 加密的字段
-              // this.gridData.splice(0, this.gridData.length - 1)
-              }else{
-                this._encrypt_cols =  [] // 加密的字段
-              // this.gridData.splice(0, this.gridData.length - 1)
+              if (
+                this.gridData &&
+                this.gridData.length > 0 &&
+                this.gridData[0].hasOwnProperty("_encrypt_cols")
+              ) {
+                this._encrypt_cols = this.gridData[0]["_encrypt_cols"]; // 加密的字段
+                // this.gridData.splice(0, this.gridData.length - 1)
+              } else {
+                this._encrypt_cols = []; // 加密的字段
+                // this.gridData.splice(0, this.gridData.length - 1)
               }
               var listData = response.body.data;
               // 转译字典
@@ -2315,28 +2568,23 @@ export default {
               }
 
               this.$emit("list-data-loaded", this);
-              
-              
+
               loading.close();
             });
           }
-          
         }
-        
       } catch (e) {
         loading.close();
         throw e;
       }
-
-
     },
 
     createCustomLinkUrlFunc: function (linkUrlFunc) {
       return (data) => {
-        let vm = this
+        let vm = this;
         let ret = eval("var zz=" + linkUrlFunc + "(data, vm); zz");
         return ret;
-      }
+      };
     },
 
     addInlineListRowButton: function (srvcol) {
@@ -2348,33 +2596,47 @@ export default {
         permission: true,
       };
 
-      button.service_name = srvcol.service_name
-      button.foreign_key = srvcol.foreign_key
-      button.inline_list_select_service = srvcol.inline_list_select_service
+      button.service_name = srvcol.service_name;
+      button.foreign_key = srvcol.foreign_key;
+      button.inline_list_select_service = srvcol.inline_list_select_service;
 
       let fk = button.foreign_key;
       button.defaultCondition = (row) => {
-        return [{
-          colName: fk.column_name,
-          ruleType: "eq",
-          valueFunc: _ => {
-            return row[fk.referenced_column_name];
-          }
-        }];
+        return [
+          {
+            colName: fk.column_name,
+            ruleType: "eq",
+            valueFunc: (_) => {
+              return row[fk.referenced_column_name];
+            },
+          },
+        ];
       };
 
       this.inlineLists.push(button);
 
-      this.rowButton.push(wrapButton(button,"row"));
+      this.rowButton.push(wrapButton(button, "row"));
     },
 
-    getColAlign:function(colType){
-      if(colType === "Money" || colType === "int" || colType === "Integer" || colType === "Email" || colType === "TelNo"){
-        return 'right'
-      }else if(colType === "Enum" || colType === "Dict"  || colType === "Date" || colType === "DateRange"  || colType === "DateTime" ){
-        return 'center'
-      }else{
-        return 'left'
+    getColAlign: function (colType) {
+      if (
+        colType === "Money" ||
+        colType === "int" ||
+        colType === "Integer" ||
+        colType === "Email" ||
+        colType === "TelNo"
+      ) {
+        return "right";
+      } else if (
+        colType === "Enum" ||
+        colType === "Dict" ||
+        colType === "Date" ||
+        colType === "DateRange" ||
+        colType === "DateTime"
+      ) {
+        return "center";
+      } else {
+        return "left";
       }
     },
     buildGridHeaders: function (srv_cols) {
@@ -2382,21 +2644,26 @@ export default {
       this.gridHeader = [];
       var cur_section_list = "";
       var exist_section_list = false;
-      
-      for (var serviceCol of srv_cols) {  
+
+      for (var serviceCol of srv_cols) {
         let colName = serviceCol["columns"];
         // if (colName == "id") {
-          // continue;
+        // continue;
         // }
 
         if (serviceCol.col_type === "InlineList") {
           this.addInlineListRowButton(serviceCol);
-          continue
+          continue;
         }
 
         let header = {};
         header.srvcol = serviceCol;
-        let more_config = (serviceCol["more_config"] !== null && serviceCol["more_config"] !== undefined && serviceCol["more_config"] !== '') ? JSON.parse(serviceCol["more_config"]) : null
+        let more_config =
+          serviceCol["more_config"] !== null &&
+          serviceCol["more_config"] !== undefined &&
+          serviceCol["more_config"] !== ""
+            ? JSON.parse(serviceCol["more_config"])
+            : null;
         let colType = serviceCol["col_type"];
         header["column"] = colName;
         header["label"] = serviceCol["label"];
@@ -2405,27 +2672,43 @@ export default {
         header["sortable"] = true;
         header["col_type"] = colType;
         header["list_min_width"] = serviceCol["list_min_width"];
-        header['show_option_icon'] = serviceCol["more_config"] && JSON.parse(serviceCol["more_config"]).option_icon && JSON.parse(serviceCol["more_config"]).option_icon !== null ? JSON.parse(serviceCol["more_config"]).option_icon : false;
-        header["align"] = this.getColAlign(colType)
-        header['format'] =  serviceCol["more_config"] && JSON.parse(serviceCol["more_config"]).format && JSON.parse(serviceCol["more_config"]).format !== null ? JSON.parse(serviceCol["more_config"]).format : null;
-        header['more_config'] =  serviceCol["more_config"] && JSON.parse(serviceCol["more_config"]) ? JSON.parse(serviceCol["more_config"]) : null;
-        if(more_config !== null && more_config.hasOwnProperty('list_width')){
-          header["width"] = more_config.list_width
+        header["show_option_icon"] =
+          serviceCol["more_config"] &&
+          JSON.parse(serviceCol["more_config"]).option_icon &&
+          JSON.parse(serviceCol["more_config"]).option_icon !== null
+            ? JSON.parse(serviceCol["more_config"]).option_icon
+            : false;
+        header["align"] = this.getColAlign(colType);
+        header["format"] =
+          serviceCol["more_config"] &&
+          JSON.parse(serviceCol["more_config"]).format &&
+          JSON.parse(serviceCol["more_config"]).format !== null
+            ? JSON.parse(serviceCol["more_config"]).format
+            : null;
+        header["more_config"] =
+          serviceCol["more_config"] && JSON.parse(serviceCol["more_config"])
+            ? JSON.parse(serviceCol["more_config"])
+            : null;
+        if (more_config !== null && more_config.hasOwnProperty("list_width")) {
+          header["width"] = more_config.list_width;
         }
-        if(more_config !== null && more_config.hasOwnProperty('rowFixed')){
-          header["rowFixed"] = more_config.rowFixed
-        }else{
-          header["rowFixed"] = false
+        if (more_config !== null && more_config.hasOwnProperty("rowFixed")) {
+          header["rowFixed"] = more_config.rowFixed;
+        } else {
+          header["rowFixed"] = false;
         }
-        if(more_config !== null && more_config.hasOwnProperty('onListShowExp')){
-          header["showListExp"] = more_config.onListShowExp
+        if (
+          more_config !== null &&
+          more_config.hasOwnProperty("onListShowExp")
+        ) {
+          header["showListExp"] = more_config.onListShowExp;
         }
-        if (["Enum","Dict","Set"].includes(serviceCol["col_type"])) {
+        if (["Enum", "Dict", "Set"].includes(serviceCol["col_type"])) {
           let filters = [];
           var option_list_v2 = serviceCol["option_list_v2"];
           if (option_list_v2 && Array.isArray(option_list_v2)) {
             for (var item of option_list_v2) {
-              filters.push({text: item["label"], value: item["value"]});
+              filters.push({ text: item["label"], value: item["value"] });
             }
           }
           this.keyValueData[header["column"]] = filters;
@@ -2446,24 +2729,29 @@ export default {
           };
         }
 
-
         // make link url func
-        let isFinder =
-          colType && (colType.startsWith("bx") || isBuiltinFinder);
-        let isDisp = colType && colType.startsWith("_") && colType.endsWith("_disp");
+        let isFinder = colType && (colType.startsWith("bx") || isBuiltinFinder);
+        let isDisp =
+          colType && colType.startsWith("_") && colType.endsWith("_disp");
         let linkUrlFunc = serviceCol.link_url_func;
         if (linkUrlFunc) {
-         
-          header.linkUrlFunc = this.createCustomLinkUrlFunc(linkUrlFunc)
+          header.linkUrlFunc = this.createCustomLinkUrlFunc(linkUrlFunc);
         } else if (isFinder || isDisp) {
           let dataColName = isDisp ? dispCol2ValCol(colName) : colName;
-          header.linkUrlFunc = createLinkUrlFunc(serviceCol.option_list_v2, dataColName);
+          header.linkUrlFunc = createLinkUrlFunc(
+            serviceCol.option_list_v2,
+            dataColName
+          );
         }
-
 
         var section_list = serviceCol["section_list"];
 
-        if (section_list != undefined && section_list != null && section_list != '' && this.mergeCol) {
+        if (
+          section_list != undefined &&
+          section_list != null &&
+          section_list != "" &&
+          this.mergeCol
+        ) {
           exist_section_list = true;
           var groupHeadr = {};
           cur_section_list = section_list;
@@ -2476,33 +2764,29 @@ export default {
 
           var gheaders = this.groupHeaderCols[section_list];
 
-          if (gheaders == undefined || gheaders == null && gheaders == '') {
+          if (gheaders == undefined || (gheaders == null && gheaders == "")) {
             this.groupHeaders.push(groupHeadr);
           }
 
-
-          if (gheaders != undefined && gheaders != null && gheaders != '') {
+          if (gheaders != undefined && gheaders != null && gheaders != "") {
             this.groupHeaderCols[section_list].push(serviceCol);
           } else {
             this.groupHeaderCols[section_list] = [];
             this.groupHeaderCols[section_list].push(serviceCol);
           }
-
         } else {
-
           var gheaders = this.groupHeaderCols[cur_section_list];
-          if (gheaders != undefined && gheaders != null && gheaders != '') {
+          if (gheaders != undefined && gheaders != null && gheaders != "") {
             this.groupHeaderCols[cur_section_list].push(serviceCol);
           } else {
-
             this.groupHeaders.push(header);
             this.groupHeaderCols[header["column"]] = [];
             this.groupHeaderCols[header["column"]].push(serviceCol);
           }
         }
-        if(header?.srvcol?.init_expr){
+        if (header?.srvcol?.init_expr) {
           try {
-            header._default_value = eval(header?.srvcol?.init_expr)
+            header._default_value = eval(header?.srvcol?.init_expr);
           } catch (error) {
             console.log(error);
           }
@@ -2512,41 +2796,41 @@ export default {
 
       this.noramlHeaders = this.bxDeepClone(this.gridHeader);
 
-
       if (exist_section_list) {
         this.gridHeader = this.groupHeaders;
       } else {
-        this.header_view_model = 'normal'
+        this.header_view_model = "normal";
       }
-
-
     },
-    getIsBatchFun(e){
+    getIsBatchFun(e) {
       // 获取是否有 批量操作功能
-      if(e && e.length > 0 ){
-        let batchs = []
+      if (e && e.length > 0) {
+        let batchs = [];
         batchs = e.filter((item) => {
-          if((item.button_type === 'batch_delete' || item.button_type === 'batch_update'|| item.button_type === 'batch_approve') &&  item.permission === true){
-            return item
+          if (
+            (item.button_type === "batch_delete" ||
+              item.button_type === "batch_update" ||
+              item.button_type === "batch_approve") &&
+            item.permission === true
+          ) {
+            return item;
           }
-         
-        })
-        if(batchs.length > 0){
-          return true
-        }else{
-          return false
+        });
+        if (batchs.length > 0) {
+          return true;
+        } else {
+          return false;
         }
-      }else{
-        return false
+      } else {
+        return false;
       }
-      
     },
     /**
      *
      * @param forceRefreshV2 强制刷新v2
      * @returns {Promise<void>}
      */
-    async initGridData(forceRefreshV2=false) {
+    async initGridData(forceRefreshV2 = false) {
       // console.log("initGridData")
       let gidInfo = new GridInfo();
 
@@ -2559,71 +2843,76 @@ export default {
         this.listType == "mine" ||
         this.listType == "myall" ||
         this.listType == "processed" ||
-        this.listType == "all"||
-        this.listType == "userall"||
+        this.listType == "all" ||
+        this.listType == "userall" ||
         this.listType == "cc"
-        
       ) {
         use_type = "proclist";
       }
 
-      if (
-        this.listType == "procreadlist"
-      ) {
+      if (this.listType == "procreadlist") {
         use_type = "procreadlist";
       }
-      
+
       //加载serviceCols
-      await this.loadColsV2(this.service_name, use_type,null,this.mainService,forceRefreshV2)
-        .then(response => {
+      await this.loadColsV2(
+        this.service_name,
+        use_type,
+        null,
+        this.mainService,
+        forceRefreshV2
+      )
+        .then((response) => {
           let respData = response.body.data;
-          this.listV2Data = cloneDeep(respData)
-          this.service_view_name = respData?.service_view_name
-          this.vpageNo = respData.vpage_no
+          this.listV2Data = cloneDeep(respData);
+          this.service_view_name = respData?.service_view_name;
+          this.vpageNo = respData.vpage_no;
           let card_cfg_list = respData.card_cfg;
           // 列表的顺序
-          if(respData.hasOwnProperty('order_columns') && respData.order_columns){
-            this.orderColumn = respData.order_columns
+          if (
+            respData.hasOwnProperty("order_columns") &&
+            respData.order_columns
+          ) {
+            this.orderColumn = respData.order_columns;
           }
           // 列表的顺序
-          if(respData.hasOwnProperty('cfg_json') && respData.cfg_json ){
-            let config = null
+          if (respData.hasOwnProperty("cfg_json") && respData.cfg_json) {
+            let config = null;
             try {
-              config = JSON.parse(respData.cfg_json)
-              if(config.hasOwnProperty('sum_row_json')){
-                config = config.sum_row_json
-                this.sumConfig = config
+              config = JSON.parse(respData.cfg_json);
+              if (config.hasOwnProperty("sum_row_json")) {
+                config = config.sum_row_json;
+                this.sumConfig = config;
               }
             } catch (error) {
-              new Error('cfg_json' + error)
+              new Error("cfg_json" + error);
             }
-           
           }
 
-          
-    
-          
           // draft_support为true时表示上次操作有保存为草稿
-          if(respData.hasOwnProperty('draft_support')){
+          if (respData.hasOwnProperty("draft_support")) {
             // 获取草稿标记
-            this.isDraft = respData["draft_support"]
-            if( respData["draft_support"] && respData["draft_tab"]){  
-                this.tabsConfig.forEach((item) =>{
-                   if(item.key == 'norm'){
-                    //  待提交
-                    item.label = respData["draft_tab"].normal || item.label
-                   }else if(item.key == 'draft'){
-                     //草稿
-                    item.label = respData["draft_tab"].temp || item.label
-                   }
-                })
+            this.isDraft = respData["draft_support"];
+            if (respData["draft_support"] && respData["draft_tab"]) {
+              this.tabsConfig.forEach((item) => {
+                if (item.key == "norm") {
+                  //  待提交
+                  item.label = respData["draft_tab"].normal || item.label;
+                } else if (item.key == "draft") {
+                  //草稿
+                  item.label = respData["draft_tab"].temp || item.label;
+                }
+              });
             }
-            if(this.isDraft){
-              this.loadDraftLength()
+            if (this.isDraft) {
+              this.loadDraftLength();
             }
-            this.$emit('v2-loaded-isDraft',{isDraft:respData["draft_support"],tab:respData['draft_tab']})
+            this.$emit("v2-loaded-isDraft", {
+              isDraft: respData["draft_support"],
+              tab: respData["draft_tab"],
+            });
           }
-          
+
           if (
             card_cfg_list != null &&
             card_cfg_list != undefined &&
@@ -2641,64 +2930,81 @@ export default {
           }
           let listData = respData["srv_cols"];
           this.mainTable = respData.main_table;
-          
+
           //列表的操作按钮
-          this.gridButton = respData.gridButton.map(button => wrapButton(button,"grid"));
+          this.gridButton = respData.gridButton.map((button) =>
+            wrapButton(button, "grid")
+          );
 
-          this.rowButton = respData.rowButton.map(button => wrapButton(button,"row"));
+          this.rowButton = respData.rowButton.map((button) =>
+            wrapButton(button, "row")
+          );
 
-          if(respData.cfg_json){
-            this.handleCfgJson(respData.cfg_json)
+          if (respData.cfg_json) {
+            this.handleCfgJson(respData.cfg_json);
           }
-          if(respData.hasOwnProperty('stats_data')){
-            this.statsData = respData.stats_data
+          if (respData.hasOwnProperty("stats_data")) {
+            this.statsData = respData.stats_data;
           }
 
-          if(respData.pub_field_map){
-            this.pub_field_map = respData.pub_field_map
+          if (respData.pub_field_map) {
+            this.pub_field_map = respData.pub_field_map;
           }
 
-          if(respData.more_config && respData.more_config.length >0 && respData.more_config !== undefined){
+          if (
+            respData.more_config &&
+            respData.more_config.length > 0 &&
+            respData.more_config !== undefined
+          ) {
             // service more config 配置 selection 是否为可选择列表，默认为 false
-            let moreConfig = JSON.parse(respData.more_config)
-            this.moreConfig = moreConfig
-            this.$emit('more-config-loaded',moreConfig)
-            if(this.moreConfig.hasOwnProperty("selection")){
-               this.selection = this.moreConfig.selection    // moreConfig 配置有限批量操作 检查
-            }else{
-              this.selection = this.getIsBatchFun(this.gridButton)   // 检查批量操作权限
+            let moreConfig = JSON.parse(respData.more_config);
+            this.moreConfig = moreConfig;
+            this.$emit("more-config-loaded", moreConfig);
+            if (this.moreConfig.hasOwnProperty("selection")) {
+              this.selection = this.moreConfig.selection; // moreConfig 配置有限批量操作 检查
+            } else {
+              this.selection = this.getIsBatchFun(this.gridButton); // 检查批量操作权限
             }
-          }else{
-            this.selection = this.getIsBatchFun(this.gridButton)   // 检查批量操作权限
+          } else {
+            this.selection = this.getIsBatchFun(this.gridButton); // 检查批量操作权限
           }
-          let addButton = this.gridButton.find(item => item.button_type === "add");
+          let addButton = this.gridButton.find(
+            (item) => item.button_type === "add"
+          );
           if (addButton) {
             this.addService = addButton.service_name;
           }
 
-          if(!this.addService){
-
-            let importButton =  this.gridButton.find(item => item.button_type === "import");
-            if(importButton){
+          if (!this.addService) {
+            let importButton = this.gridButton.find(
+              (item) => item.button_type === "import"
+            );
+            if (importButton) {
               this.addService = importButton.service_name;
             }
-
           }
 
-
-          let updateButton = this.rowButton.find(item => item.button_type === "edit");
+          let updateButton = this.rowButton.find(
+            (item) => item.button_type === "edit"
+          );
           if (updateButton) {
             this.updateService = updateButton.service_name;
           }
 
           let deleteButton = this.rowButton.find(
-            item => item.button_type === "delete"||item.button_type==='batch_delete'
+            (item) =>
+              item.button_type === "delete" ||
+              item.button_type === "batch_delete"
           );
 
-          if(!deleteButton) {
-            deleteButton = this.gridButton.find(item => item.button_type === "delete"||item.button_type==='batch_delete')
+          if (!deleteButton) {
+            deleteButton = this.gridButton.find(
+              (item) =>
+                item.button_type === "delete" ||
+                item.button_type === "batch_delete"
+            );
           }
-          
+
           if (deleteButton) {
             this.deleteService = deleteButton.service_name;
           }
@@ -2708,17 +3014,17 @@ export default {
 
           if (this.mode === "finder") {
             this.gridButton
-              .filter(button => button.name != "查询")
-              .forEach(button => (button.show = false));
-            this.rowButton.forEach(button => (button.show = false));
+              .filter((button) => button.name != "查询")
+              .forEach((button) => (button.show = false));
+            this.rowButton.forEach((button) => (button.show = false));
           }
 
-          this.setPolling()  // 调用轮询逻辑
+          this.setPolling(); // 调用轮询逻辑
         })
-        .then(_ => {
+        .then((_) => {
           this.listLoaded = true;
           this.initLoad = true;
-          this.emitEvent("metadata-loaded", this)
+          this.emitEvent("metadata-loaded", this);
         });
 
       try {
@@ -2726,19 +3032,15 @@ export default {
           this.order = this.order.concat(this.defaultOrder);
         }
 
-        this.loadTableData().finally(_ => {
+        this.loadTableData().finally((_) => {
           if (this.defaultInplaceEditMode) {
             this.onInplaceEditClicked();
           }
 
-          
-         
           this.$emit("list-loaded", this);
-        })
-
+        });
       } catch (e) {
         // handle case in add child list
-        
 
         this.$emit("list-loaded", this);
         if (this.defaultInplaceEditMode) {
@@ -2753,10 +3055,9 @@ export default {
           var tar_srv = tar_cfg.tar_srv;
           var col_rel = tar_cfg.col_rel;
           if (tar_srv == this.service) {
-
             let query_srv = this.defDataPara.serviceName;
             let query_condition = this.defDataPara.condition;
-            let relationCondition = this.relationCondition
+            let relationCondition = this.relationCondition;
             await this.select(
               query_srv,
               query_condition,
@@ -2775,11 +3076,9 @@ export default {
               null,
               null,
               this.buildDivCond?.()
-            ).then(response => {
-
+            ).then((response) => {
               var dataResult = response.body.data;
               if (dataResult.length > 0) {
-
                 var dataArray = [];
                 for (var itemMap of dataResult) {
                   var temMap = {};
@@ -2789,27 +3088,20 @@ export default {
                       temMap[tar_col] = itemMap[key];
                     }
                   }
-                  if(this.storageType == 'mem'){
-                    temMap['_dirtyFlags'] = this.defaultDirtyFlags || add
-                    temMap['_guid'] = this.guid()
+                  if (this.storageType == "mem") {
+                    temMap["_dirtyFlags"] = this.defaultDirtyFlags || add;
+                    temMap["_guid"] = this.guid();
                   }
                   dataArray.push(temMap);
                 }
 
                 this.gridData = this.gridData.concat(dataArray);
-
               }
-
 
               this.$emit("list-data-loaded", this);
             });
-
-
           }
-
         }
-
-
       }
     },
 
@@ -2832,69 +3124,78 @@ export default {
         (header.srvcol &&
           header.srvcol.option_list_v2 &&
           header.srvcol.option_list_v2.service_label) ||
-          row[header.column] + "详情";
+        row[header.column] + "详情";
       this.addTabByUrl(this.getLinkUrl(row, header), tabTitle);
     },
 
     handleEdit(index, row) {
-      let frontTableData = this.$store.getters.getFrontTableData()
+      let frontTableData = this.$store.getters.getFrontTableData();
       if (frontTableData && frontTableData.selectFillGrid) {
-        frontTableData.selectFillGrid = frontTableData.selectFillGrid.map(item => {
-          return item.id === row.id ? row : item
-        })
+        frontTableData.selectFillGrid = frontTableData.selectFillGrid.map(
+          (item) => {
+            return item.id === row.id ? row : item;
+          }
+        );
         this.$store.commit("setFrontTableData", {
-          table: 'selectFillGrid',
-          data: frontTableData.selectFillGrid
-        })
+          table: "selectFillGrid",
+          data: frontTableData.selectFillGrid,
+        });
       }
     },
 
     onInlineListLoaded(row, inlineList) {
       if (this.isInplaceEdit()) {
-       
-        inlineList.onInplaceEditClicked()
+        inlineList.onInplaceEditClicked();
       }
 
       // inline lists as map, key as inlinelist.fk, value inlineList.gridData
       let propName = "_inlineLists";
       if (!row.hasOwnProperty(propName)) {
-        this.$set(row, propName, {})
+        this.$set(row, propName, {});
       }
 
       let inlineListsData = row[propName];
-    
-      inlineListsData[inlineList.foreignKey.constraint_name] = inlineList.gridData
 
-      this.$emit('inline-list-loaded', inlineList, this)
+      inlineListsData[inlineList.foreignKey.constraint_name] =
+        inlineList.gridData;
+
+      this.$emit("inline-list-loaded", inlineList, this);
     },
-    getListShowFileList(col){
-      let colItem = col || null
-      
-      if(colItem){
-        let moreConfig = colItem.more_config
-        return moreConfig && moreConfig.hasOwnProperty('append_file_info') && moreConfig.append_file_info ?  true : false
-      }else{
-        return false
+    getListShowFileList(col) {
+      let colItem = col || null;
+
+      if (colItem) {
+        let moreConfig = colItem.more_config;
+        return moreConfig &&
+          moreConfig.hasOwnProperty("append_file_info") &&
+          moreConfig.append_file_info
+          ? true
+          : false;
+      } else {
+        return false;
       }
     },
-    getListFileDatas(col,row){
-      let dipsCol = '_'+ col.column + '_disp'
-      if(row.hasOwnProperty(dipsCol)){
-        return row[dipsCol]
-      }else{
-        return []
+    getListFileDatas(col, row) {
+      let dipsCol = "_" + col.column + "_disp";
+      if (row.hasOwnProperty(dipsCol)) {
+        return row[dipsCol];
+      } else {
+        return [];
       }
-       
     },
     onInlineListaDataChanged: function (row, inlineList) {
       // sync inline list into row data
       let propName = "_inlineLists";
       if (!row.hasOwnProperty(propName)) {
-        this.$set(row, propName, {})
+        this.$set(row, propName, {});
       }
 
       let inlineListsData = row[propName];
-      this.$set(inlineListsData, inlineList.foreignKey.constraint_name, inlineList.gridData)
+      this.$set(
+        inlineListsData,
+        inlineList.foreignKey.constraint_name,
+        inlineList.gridData
+      );
 
       // set row data dirty flags = update
       if (!row._dirtyFlags || row._dirtyFlags === "pristine") {
@@ -2904,158 +3205,167 @@ export default {
     handleScroll: function () {
       let scrollTop = document.documentElement.scrollTop;
       this.scroll = scrollTop;
-
     },
 
     onImportClicked: function (e) {
-      this.actionGridButton = e
-      this.activeForm = "import"
+      this.actionGridButton = e;
+      this.activeForm = "import";
     },
-    onBatchApprove(rows,item){
-      let self = this
-      this.activeForm = "batchApprove"
-      if(rows && rows.length > 0 ){
-         self.approvaList = rows
+    onBatchApprove(rows, item) {
+      let self = this;
+      this.activeForm = "batchApprove";
+      if (rows && rows.length > 0) {
+        self.approvaList = rows;
       }
-      if(item && item.button_type === 'batch_approve'){
-        let config = item.more_config ? JSON.parse(item.more_config) : null
+      if (item && item.button_type === "batch_approve") {
+        let config = item.more_config ? JSON.parse(item.more_config) : null;
         // console.log("more_config",item.more_config,JSON.parse(item.more_config))
-        if(config && config.hasOwnProperty('approvalOptions')){
-          self.approvalOptions = config.approvalOptions
+        if (config && config.hasOwnProperty("approvalOptions")) {
+          self.approvalOptions = config.approvalOptions;
         }
-        
       }
-      console.log("onBatchApprove",rows,item)
+      console.log("onBatchApprove", rows, item);
     },
     onExportClicked(columns) {
       // send req to generate excel
       // 导出操作
-      console.log("onExportClicked",columns)
-      
-      let isProc = false
+      console.log("onExportClicked", columns);
+
+      let isProc = false;
       if (
         this.listType == "wait" ||
         this.listType == "mine" ||
         this.listType == "myall" ||
-        this.listType == "processed"||
-        this.listType == "all"||
+        this.listType == "processed" ||
+        this.listType == "all" ||
         this.listType == "userall"
       ) {
-        isProc = this.listType
+        isProc = this.listType;
       }
-      
-      var loading = this.openLoading();
-      this.genExportExcel(this.service_name, this.buildQueryConditions(), null, this.order,null,null,isProc,columns)
-        .then((response) => {
-          loading.close()
-          var uuid = response.body.data.uuid
-          this.downloadexport(uuid);
 
-        })
+      var loading = this.openLoading();
+      this.genExportExcel(
+        this.service_name,
+        this.buildQueryConditions(),
+        null,
+        this.order,
+        null,
+        null,
+        isProc,
+        columns
+      ).then((response) => {
+        loading.close();
+        var uuid = response.body.data.uuid;
+        this.downloadexport(uuid);
+      });
     },
 
     onImportDialogClosed() {
-      this.activeForm = 'xx'
+      this.activeForm = "xx";
       this.loadTableData();
     },
-    onExportDialogClosed(){
-      this.activeForm = 'xx'
+    onExportDialogClosed() {
+      this.activeForm = "xx";
       this.loadTableData();
     },
     isRowButtonVisible(button, row, index) {
       // if(button['_rowDisp']){
       //   return button['_rowDisp'][index]===1
       // }
-      if(button.button_type !== "_btn_group"){
-        let notDeleteOnStandby = !('standby' === row._dirtyFlags && ('delete' === button.button_type))
-        let noUpdateDetail4InplaceEdit = !(this.isInplaceEdit() && (button.button_type === 'update' || button.button_type === 'detail' ))
-        return notDeleteOnStandby && noUpdateDetail4InplaceEdit && button.evalVisible(row);
-      }else{
-        return true
+      if (button.button_type !== "_btn_group") {
+        let notDeleteOnStandby = !(
+          "standby" === row._dirtyFlags && "delete" === button.button_type
+        );
+        let noUpdateDetail4InplaceEdit = !(
+          this.isInplaceEdit() &&
+          (button.button_type === "update" || button.button_type === "detail")
+        );
+        return (
+          notDeleteOnStandby &&
+          noUpdateDetail4InplaceEdit &&
+          button.evalVisible(row)
+        );
+      } else {
+        return true;
       }
-      
     },
 
     onPopupMemListClick(row, button) {
-      this.activeForm = 'manageChildList';
+      this.activeForm = "manageChildList";
       this.activeRow4PopupMemList = row;
       this.activePopupMemList = button;
-
     },
 
     onPopupMemListLoaded(popupMemList) {
       let fk = this.activePopupMemList.foreign_key;
-      popupMemList.setGridData(this.activeRow4PopupMemList._inlineLists[fk.constraint_name], this.activeRow4PopupMemList);
+      popupMemList.setGridData(
+        this.activeRow4PopupMemList._inlineLists[fk.constraint_name],
+        this.activeRow4PopupMemList
+      );
       popupMemList.setEditMode(true);
     },
-    isFkJson(row,col){
-      let isFkJson = false
-      if(col&&col.srvcol&&col.srvcol.col_type){
-        isFkJson =['fks','fkjson','fkjsons'].indexOf( col.srvcol.col_type) > -1
+    isFkJson(row, col) {
+      let isFkJson = false;
+      if (col && col.srvcol && col.srvcol.col_type) {
+        isFkJson =
+          ["fks", "fkjson", "fkjsons"].indexOf(col.srvcol.col_type) > -1;
       }
-      return isFkJson
+      return isFkJson;
     },
-    getFkJson(row,col){
-      let val = ''
-      let result = []
-      if( row && col && col.column && row[col.column] ){
-        val = row[col.column]
+    getFkJson(row, col) {
+      let val = "";
+      let result = [];
+      if (row && col && col.column && row[col.column]) {
+        val = row[col.column];
       }
-      let colType = ''
-      if(col&&col.srvcol&&col.srvcol.col_type){
-        colType = col.srvcol.col_type
+      let colType = "";
+      if (col && col.srvcol && col.srvcol.col_type) {
+        colType = col.srvcol.col_type;
       }
-      let fmt = col&&col.srvcol&&col.srvcol.fmt
-      let valueCol = fmt&&fmt.primary_col;
-      let dispCol = fmt&&fmt.disp_col;
+      let fmt = col && col.srvcol && col.srvcol.fmt;
+      let valueCol = fmt && fmt.primary_col;
+      let dispCol = fmt && fmt.disp_col;
       switch (colType) {
-        case 'fks':
-          result = val?val.split(','):[]
+        case "fks":
+          result = val ? val.split(",") : [];
           break;
-        case 'fkjson':
+        case "fkjson":
           try {
-            result = val?JSON.parse(val):{}
+            result = val ? JSON.parse(val) : {};
           } catch (error) {
-            console.log(error)
+            console.log(error);
           }
-          if(result && result[dispCol]){
-            result = [result[dispCol]||result[valueCol]]
+          if (result && result[dispCol]) {
+            result = [result[dispCol] || result[valueCol]];
           }
           break;
-        case 'fkjsons':
+        case "fkjsons":
           try {
-            result = val?JSON.parse(val):[]
-          } catch (error) {
-            
+            result = val ? JSON.parse(val) : [];
+          } catch (error) {}
+          if (Array.isArray(result) && result.length > 0) {
+            result = result.map((item) => item[dispCol] || item[valueCol]);
           }
-          if(Array.isArray(result)&&result.length>0){
-            result = result.map(item=>item[dispCol]||item[valueCol])
-          }
-          break
+          break;
       }
-      return result
+      return result;
     },
-    buildStatsData(statsData){
-       let datas = statsData || []
-       let heads = this.gridData
-       for(let data of datas){
-        if(data.col_type == 'Money'){
+    buildStatsData(statsData) {
+      let datas = statsData || [];
+      let heads = this.gridData;
+      for (let data of datas) {
+        if (data.col_type == "Money") {
           // this.$set(data,'value',DataUtil.formatMoney(''+ data.value))
           // console.log(data.value,DataUtil.formatMoney(''+ data.value))
-          data.value = DataUtil.formatMoney(''+ data.value)
+          data.value = DataUtil.formatMoney("" + data.value);
         }
       }
-       return datas
-    }
+      return datas;
+    },
   },
 
-
   created: function () {
-
-
     // alert(this.getVersionNo());
-
-    
 
     if (this.$route && this.$route.params) {
       if (this.isListTopComp() && this.$route.params.service_name) {
@@ -3069,13 +3379,21 @@ export default {
      * 1014 邓旭升需求，此处变更
      */
     if (this.isListTopComp() && this.$route && this.$route.query) {
-   // if (this.$route && this.$route.query) {
+      // if (this.$route && this.$route.query) {
       var operate_params = this.getOperateParams();
-      if (operate_params != "" && operate_params != null && this.listType.indexOf('childlist') === -1) {
+      if (
+        operate_params != "" &&
+        operate_params != null &&
+        this.listType.indexOf("childlist") === -1
+      ) {
         var operate_Object = JSON.parse(operate_params);
         // this.service_name = operate_Object["serviceName"] ;
-        if(typeof operate_Object ==='object'){
-          this.service_name = operate_Object?.serviceName|| this.service || this.service_name || this.$route.params.service_name
+        if (typeof operate_Object === "object") {
+          this.service_name =
+            operate_Object?.serviceName ||
+            this.service ||
+            this.service_name ||
+            this.$route.params.service_name;
           if (
             operate_Object["condition"] != undefined &&
             operate_Object["condition"] != null
@@ -3083,31 +3401,28 @@ export default {
             this.custCondition = operate_Object["condition"];
           }
         }
-      }else{
-        this.service_name = this.service || this.service_name // this.service list 组件 props service 优先使用
+      } else {
+        this.service_name = this.service || this.service_name; // this.service list 组件 props service 优先使用
       }
       var selectType = this.$route.query.selectType;
       if (selectType != undefined && selectType != "" && selectType != null) {
         this.defaultapi = "selectByUser";
       }
     }
-    if(this.listType !== 'treelist'){
+    if (this.listType !== "treelist") {
       this.initGridData();
     }
-    
 
     if (this.card_no != undefined) {
       this.gridPage.pageSize = 12;
       this.gridPage.pageSizes.push(12);
     }
     if (this.pageSize != undefined) {
-
       this.gridPage.pageSize = this.pageSize;
     }
 
     this.uid = this._uid;
     window.list = window.list || {};
     window.list[this.service_name] = this;
-
   },
 };
