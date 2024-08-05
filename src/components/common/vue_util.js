@@ -521,7 +521,8 @@ function init_util() {
     group,
     mapcondition,
     isproc,
-    columns
+    columns,
+    relationCondition
   ) {
     // var url = this.service_api.exportExcel;
     var url = this.getServiceUrl("export", service_name);
@@ -534,7 +535,8 @@ function init_util() {
       group,
       mapcondition,
       isproc,
-      columns
+      columns,
+      relationCondition
     );
   };
 

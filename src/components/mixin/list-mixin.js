@@ -3245,7 +3245,7 @@ export default {
       ) {
         isProc = this.listType;
       }
-
+      const relationCondition = this.$parent?.$refs?.filterTabs?.buildConditions?.();
       var loading = this.openLoading();
       this.genExportExcel(
         this.service_name,
@@ -3255,7 +3255,8 @@ export default {
         null,
         null,
         isProc,
-        columns
+        columns,
+        relationCondition
       ).then((response) => {
         loading.close();
         var uuid = response.body.data.uuid;

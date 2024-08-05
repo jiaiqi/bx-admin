@@ -32,4 +32,13 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "oa",
   },
+  wanxiang: {
+    //
+    gateway_protocol: "http",
+    gateway_ip: "vrms.vanxum.com",
+    port: "8101",
+    gateway: "http://vrms.vanxum.com:8101",
+    sso_app: "sso",
+    application: "devlop",
+  },
 };

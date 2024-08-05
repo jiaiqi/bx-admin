@@ -111,6 +111,7 @@
             "current_login_user",
             JSON.stringify(resData.login_user_info)
           );
+          window.user = resData.login_user_info;
           sessionStorage.setItem("logined", true);
           return true;
         } else {
