@@ -250,11 +250,11 @@ export default {
           newVal?.length &&
           JSON.stringify(newVal) != JSON.stringify(oldVal)
         ) {
-          console.log(
-            "gridHeader changed",
-            cloneDeep(newVal),
-            cloneDeep(oldVal)
-          );
+          // console.log(
+          //   "gridHeader changed",
+          //   cloneDeep(newVal),
+          //   cloneDeep(oldVal)
+          // );
           this.$nextTick(() => {
             const tableColumns = this.$refs["bx-table-layout"]?.columns;
             let needRefresh = false;

@@ -92,6 +92,11 @@ instance.interceptors.response.use(
               const isReload = window.confirm("登录票据更新，是否刷新页面？");
               if (isReload) {
                 window.location.reload();
+                setTimeout(() => {
+                  window.user = JSON.parse(
+                    sessionStorage.getItem("current_login_user")
+                  );
+                }, 500);
               }
             }
           });

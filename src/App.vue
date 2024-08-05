@@ -31,6 +31,7 @@ export default {
     if(process?.env?.NODE_ENV === 'development'){
       Vue.prototype.$loginRef = this.$refs.loginRef
     }
+
     const init = () => {
       // const AK = 'FC190506b9b4fa8b366db9f78cb5e93e';
       // const bMapSrc = `${location.protocol}//api.map.baidu.com/api?v=2.0&ak=${AK}&s=1&callback=onBMapCallback`
@@ -46,6 +47,9 @@ export default {
       // })
     }
     init()
+    if(!top.user && sessionStorage.current_login_user){
+      top.user = JSON.parse(sessionStorage.current_login_user)
+    }
   },
 
   methods: {
