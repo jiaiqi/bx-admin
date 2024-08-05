@@ -2690,6 +2690,7 @@ export default {
             ? JSON.parse(serviceCol["more_config"])
             : null;
         header["backgroundMap"] = header["more_config"]?.backgroundMap || false;
+        header["styleMap"] = header["more_config"]?.styleMap || false;
         header["colorMap"] = header["more_config"]?.colorMap || false;
         if (more_config !== null && more_config.hasOwnProperty("list_width")) {
           header["width"] = more_config.list_width;

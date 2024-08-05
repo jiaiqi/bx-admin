@@ -495,16 +495,9 @@
                       :class="{
                         hasBg:
                           item.backgroundMap &&
-                          item.backgroundMap[scope.row[item.column]],
+                          item.backgroundMap[scope.row[item.column]] || item.backgroundMap['_default'],
                       }"
-                      :style="{
-                        color:
-                          item.colorMap &&
-                          item.colorMap[scope.row[item.column]],
-                        background:
-                          item.backgroundMap &&
-                          item.backgroundMap[scope.row[item.column]],
-                      }"
+                      :style="setTdStyle(item, scope.row)"
                       >{{ formatValue(scope.row, item) }}</span
                     >
                   </template>
@@ -1181,6 +1174,43 @@ export default {
   },
 
   methods: {
+    setTdStyle(column = {}, row = {}) {
+      let sty = "";
+      if (column?.colorMap) {
+        if (!row[column.column] && column.colorMap?._default) {
+          sty = `color:${column.colorMap._default}`;
+        } else {
+          sty = `color:${
+            column.colorMap[row[column.column]] ||
+            column.colorMap?._default ||
+            ""
+          }`;
+        }
+      }
+      if (column?.backgroundMap) {
+        if (!row[column.column] && column.backgroundMap?._default) {
+          sty += `;background-color:${column.backgroundMap._default}`;
+        } else {
+          sty += `;background-color:${
+            column.backgroundMap[row[column.column]] ||
+            column.backgroundMap?._default ||
+            ""
+          }`;
+        }
+      }
+      if (column?.styleMap) {
+        if (!row[column.column] && column.styleMap?._default) {
+          sty += `;${column.styleMap._default}`;
+        } else {
+          sty += `;${
+            column.styleMap[row[column.column]] ||
+            column.styleMap?._default ||
+            ""
+          }`;
+        }
+      }
+      return sty;
+    },
     changeListStyle(type = "list") {
       console.log(type);
       this.listStyle = type;
@@ -1545,8 +1575,9 @@ export default {
     cursor: pointer;
   }
 }
-.hasBg{
+.hasBg {
   display: inline-block;
+  box-sizing: border-box;
   padding: 2px 5px;
   color: #fff;
   border-radius: 2px;
