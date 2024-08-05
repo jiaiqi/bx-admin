@@ -1,15 +1,18 @@
-import {FieldInfo} from '../model/FieldInfo'
-import {Field} from '../model/Field'
-import Vue from 'vue'
-import {ActionInfo} from "../model/ActionInfo";
+import { FieldInfo } from "../model/FieldInfo";
+import { Field } from "../model/Field";
+import Vue from "vue";
+import { ActionInfo } from "../model/ActionInfo";
 import dayjs from "dayjs";
-import cloneDeep from 'lodash/cloneDeep'
+import cloneDeep from "lodash/cloneDeep";
 export default {
-
   methods: {
-
-    handleRedundantOnFormModelChange: function (newVal, oldVal, fields, formModelFunc) {
-      let self = this
+    handleRedundantOnFormModelChange: function (
+      newVal,
+      oldVal,
+      fields,
+      formModelFunc
+    ) {
+      let self = this;
       if (!this.isLoaded()) {
         return;
       }
@@ -27,13 +30,20 @@ export default {
           let upstreamField = fields[fieldInfo.upstream.field];
           let upstreamFieldValue = upstreamField.model;
 
-          if (upstreamFieldValue && upstreamFieldValue != fieldInfo.upstream.fieldValue) {
+          if (
+            upstreamFieldValue &&
+            upstreamFieldValue != fieldInfo.upstream.fieldValue
+          ) {
             fieldInfo.upstream.fieldValue = upstreamFieldValue;
 
             // if value changed,  reset curr field,
             let refCol = fieldInfo.upstream.refCol;
             /// field.hasOwnProperty(refCol)  is to rule out downstream field not a finder
-            if (field.model && field.hasOwnProperty(refCol) && field.model[refCol] != upstreamField.getSrvVal()) {
+            if (
+              field.model &&
+              field.hasOwnProperty(refCol) &&
+              field.model[refCol] != upstreamField.getSrvVal()
+            ) {
               field.reset();
             }
           }
@@ -47,23 +57,29 @@ export default {
           }
         }
 
-        if (fieldInfo.redundant ) {
+        if (fieldInfo.redundant) {
           if (!(diffFields.size == 1 && diffFields.has(fieldName))) {
-            let vm = this
-            this.handleRedundantViaJs(field, formModelFunc, vm)
+            let vm = this;
+            this.handleRedundantViaJs(field, formModelFunc, vm);
           }
         }
-        if(fieldInfo.mainSubRedundant){
+        if (fieldInfo.mainSubRedundant) {
           // 主子表冗余
-          let mainData = self.parentAddMainFormDatas
-          let subMainRedundant = fieldInfo.mainSubRedundant
-          
-          if(mainData && subMainRedundant.trigger=="always"){
-              if(mainData.hasOwnProperty(subMainRedundant.quoteCol)){
-                 let ret = mainData[subMainRedundant.quoteCol]
-                 field.setSrvVal(ret)
-              }
-              console.log(fieldName,':',mainData,subMainRedundant.quoteCol,mainData.hasOwnProperty(subMainRedundant.quoteCol))
+          let mainData = self.parentAddMainFormDatas;
+          let subMainRedundant = fieldInfo.mainSubRedundant;
+
+          if (mainData && subMainRedundant.trigger == "always") {
+            if (mainData.hasOwnProperty(subMainRedundant.quoteCol)) {
+              let ret = mainData[subMainRedundant.quoteCol];
+              field.setSrvVal(ret);
+            }
+            console.log(
+              fieldName,
+              ":",
+              mainData,
+              subMainRedundant.quoteCol,
+              mainData.hasOwnProperty(subMainRedundant.quoteCol)
+            );
           }
         }
       }
@@ -76,19 +92,25 @@ export default {
      * @param vm used in func js
      */
     handleRedundantViaJs: function (field, formModelFunc, vm) {
-      let fieldInfo = field.info
+      let fieldInfo = field.info;
       if (!fieldInfo.redundant || !fieldInfo.redundant.func) {
-        return
+        return;
       }
 
+      let func = fieldInfo.redundant.func;
 
-      let func = fieldInfo.redundant.func
-
-        if (func) {
+      if (func) {
         let moment = dayjs;
         let row = formModelFunc();
         // console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm); zz");
+        const calc_rule = fieldInfo.redundant.calc_rule;
+        if (calc_rule?.type === "求和" && calc_rule?.constraint_name) {
+          if (!row?._children?.[calc_rule.constraint_name]||!row?._children?.[calc_rule.constraint_name]?.length) {
+            // 没有子表或者子表数量为0的时候不进行计算
+            return;
+          }
+        }
         // console.log('计算结果',fieldInfo.label,ret)
         // 有返回calc_rule的话 使用calc_rule的逻辑来计算
         // const calc_rule = fieldInfo.redundant.calc_rule
@@ -113,27 +135,28 @@ export default {
         //   }
         // }
 
-        if (ret === 'Invalid date') {
-          return
+        if (ret === "Invalid date") {
+          return;
         }
 
-        if(typeof ret ==='function'){
-          return
+        if (typeof ret === "function") {
+          return;
         }
 
-        let update = false
-        if (fieldInfo.redundant.trigger == 'isnull' && field.isEmpty()) {
-          update = true
-        } else if (!fieldInfo.redundant.trigger || fieldInfo.redundant.trigger == 'always') {
-          update = true
+        let update = false;
+        if (fieldInfo.redundant.trigger == "isnull" && field.isEmpty()) {
+          update = true;
+        } else if (
+          !fieldInfo.redundant.trigger ||
+          fieldInfo.redundant.trigger == "always"
+        ) {
+          update = true;
         }
 
-          if (update && field.getSrvVal() !== ret) {
-            
-            // console.log("计算字段",row,field.info.label,ret,field,func)
-            field.setSrvVal(ret);
-          }
-
+        if (update && field.getSrvVal() !== ret) {
+          // console.log("计算字段",row,field.info.label,ret,field,func)
+          field.setSrvVal(ret);
+        }
       }
     },
 
@@ -150,7 +173,10 @@ export default {
           field.info.dispLoader.conditions.length > 0
         ) {
           const hascondDependField = field.info.dispLoader.conditions.find(
-            (item) => item.value&&typeof item.value==='string' && item.value.indexOf("data") !== -1
+            (item) =>
+              item.value &&
+              typeof item.value === "string" &&
+              item.value.indexOf("data") !== -1
           );
 
           if (hascondDependField) {
@@ -162,8 +188,7 @@ export default {
                 field2.info.name &&
                 field.info.dispLoader.conditions.find(
                   (item) =>
-                    item.value &&
-                    item.value.indexOf(field2.info.name) > -1
+                    item.value && item.value.indexOf(field2.info.name) > -1
                 )
               ) {
                 field2.condDependentFields =
@@ -174,10 +199,16 @@ export default {
           }
         }
 
-        if (field && field.info && field.info.redundant && field.info.redundant.dependField) {
+        if (
+          field &&
+          field.info &&
+          field.info.redundant &&
+          field.info.redundant.dependField
+        ) {
           let dependField = fields[field.info.redundant.dependField];
           if (dependField) {
-            dependField.dependentFields = dependField.dependentFields || new Set();
+            dependField.dependentFields =
+              dependField.dependentFields || new Set();
             dependField.dependentFields.add(field.info.name);
           }
         }
@@ -190,30 +221,39 @@ export default {
      * @param fields
      */
     handleFieldFkRedundant: function (field, fields) {
-
-      if(field.model===null && field.condDependentFields && field.condDependentFields.size>0 ){
-        field.condDependentFields.forEach(dependentFieldName=>{
+      if (
+        field.model === null &&
+        field.condDependentFields &&
+        field.condDependentFields.size > 0
+      ) {
+        field.condDependentFields.forEach((dependentFieldName) => {
           let dependentField = fields[dependentFieldName];
-          dependentField.reset()
-        })
+          dependentField.reset();
+        });
       }
 
       if (field.dependentFields) {
-        field.dependentFields.forEach((dependentFieldName,index) => {
+        field.dependentFields.forEach((dependentFieldName, index) => {
           let dependentField = fields[dependentFieldName];
 
           let sync = true;
-          if (dependentField.info.redundant.trigger === 'isnull') {
+          if (dependentField.info.redundant.trigger === "isnull") {
             // 触发字段数据发生变化，其它字段为null的时候冗余
             sync = dependentField.isEmpty();
           }
 
-          if (dependentField.info.redundant.trigger === 'unchange') {
+          if (dependentField.info.redundant.trigger === "unchange") {
             //  触发字段数据发生变化，其它字段没有被手动修改的时候，冗余，如果存在手动修改，则不在冗余
-            if(dependentField.model===null||field.modelOld&&dependentField.getSrvVal&&dependentField.getSrvVal()===field.modelOld[dependentField.info.redundant.refedCol]){
-              sync = true
-            }else{
-              sync = false
+            if (
+              dependentField.model === null ||
+              (field.modelOld &&
+                dependentField.getSrvVal &&
+                dependentField.getSrvVal() ===
+                  field.modelOld[dependentField.info.redundant.refedCol])
+            ) {
+              sync = true;
+            } else {
+              sync = false;
             }
           }
 
@@ -225,9 +265,15 @@ export default {
           // }
 
           if (sync) {
-            if (field.model && (field.model[dependentField.info.redundant.refedCol]||field.model[dependentField.info.redundant.refedCol]===0)) {
-              dependentField.setSrvVal(field.model[dependentField.info.redundant.refedCol]);
-              field.modelOld = cloneDeep(field.model)
+            if (
+              field.model &&
+              (field.model[dependentField.info.redundant.refedCol] ||
+                field.model[dependentField.info.redundant.refedCol] === 0)
+            ) {
+              dependentField.setSrvVal(
+                field.model[dependentField.info.redundant.refedCol]
+              );
+              field.modelOld = cloneDeep(field.model);
             } else {
               dependentField.reset();
             }
@@ -239,14 +285,13 @@ export default {
       let dispFieldName = `_${field.info.name}_disp`;
       if (field.info.type === "User" && fields[dispFieldName]) {
         if (field.model) {
-          fields[dispFieldName].setSrvVal(field.model.user_disp)
+          fields[dispFieldName].setSrvVal(field.model.user_disp);
         }
       }
-      
+
       // else{
       //   fields[dispFieldName].setSrvVal(field.model.user_disp)
       // }
     },
-  }
-
+  },
 };

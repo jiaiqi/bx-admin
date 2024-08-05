@@ -1157,7 +1157,7 @@ export default {
                 if (!res.result?.routes && res.result?.steps) {
                   // 专网接口
                   let steps = []
-                  let points = res.result.points.split(';')
+                  // let points = res.result.points.split(';')
                 // if(points?.length){
                 //     for (const path of points) {
                 //         const arr = path.split(',')

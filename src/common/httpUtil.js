@@ -2,7 +2,7 @@ import { $http } from "./http";
 
 /**
  * 通用查询方法
- * @param {object} option
+ * @param {Object} option 用来查询的选项
  * @param {string} option.service 服务名
  * @param {?array} option.condition 查询条件
  * @param {?object} option.page 分页信息
@@ -14,7 +14,7 @@ import { $http } from "./http";
  * @param {?array} option.columns 查询字段
  * @param {?array} option.relationCondition 关联查询条件
  * @param {?boolean} option.draft 是否是草稿
- * @param {?string} option.pageType 页面类型
+ * @param {'list' | 'detail'|'childlist'|'detaillist'} option.pageType 页面类型
  * @param {?boolean} option.srvAuth 是否在header中增加bx_srv_auth_ticket参数
  * @param {?string} option.vpageNo v2唯一标识
  * @param {?string} option.useType 使用类型

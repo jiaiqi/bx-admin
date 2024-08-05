@@ -11,8 +11,8 @@ let bx_auth_ticket = "";
 
 if (process.env.NODE_ENV === "development") {
   // const ENV = "dev";
-  const ENV = "wanxiang";
-  // const ENV = "saas";
+  // const ENV = "wanxiang";
+  const ENV = "saas";
   // const ENV = "244";
   const pathConfig = pathConfigMap[ENV];
   baseURL = pathConfig.gateway; // 正式环境
