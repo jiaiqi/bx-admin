@@ -1158,15 +1158,15 @@ export default {
                   // 专网接口
                   let steps = []
                   // let points = res.result.points.split(';')
-                // if(points?.length){
-                //     for (const path of points) {
-                //         const arr = path.split(',')
-                //         steps.push({
-                //             lat:arr[1],
-                //             lng:arr[0]
-                //         })
-                //     }
-                // }
+                  // if(points?.length){
+                  //     for (const path of points) {
+                  //         const arr = path.split(',')
+                  //         steps.push({
+                  //             lat:arr[1],
+                  //             lng:arr[0]
+                  //         })
+                  //     }
+                  // }
                   for (let step of res.result?.steps) {
                     // let path = step.path.split(';')
                     let path = step.path.split(',')
