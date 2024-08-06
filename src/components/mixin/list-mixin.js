@@ -261,24 +261,37 @@ export default {
             const filters = {};
             if (tableColumns?.length) {
               newVal.forEach((head) => {
-                if (head._default_value && Array.isArray(head.filters)) {
+                if (
+                  (head._default_value || head._default_value === "") &&
+                  Array.isArray(head.filters)
+                ) {
+                  if (head._default_value === "") {
+                    this.$refs["bx-table-layout"]?.clearFilter?.([head.column]);
+                  }
                   const index = tableColumns.findIndex(
                     (col) => head.column && col.columnKey === head.column
                   );
                   if (index > -1) {
                     needRefresh = true;
-                    this.$refs["bx-table-layout"].columns[index].filteredValue =
-                      head._default_value.split(",");
-                    filters[head.column] = head._default_value.split(",");
+                    if (head._default_value === "") {
+                      this.$refs["bx-table-layout"].columns[
+                        index
+                      ].filteredValue = null;
+                    } else {
+                      this.$refs["bx-table-layout"].columns[
+                        index
+                      ].filteredValue = head._default_value.split(",");
+                      filters[head.column] = head._default_value.split(",");
+                    }
                   }
                 }
               });
             }
+            this.filterCondition = [];
             if (needRefresh) {
-              this.filterCondition = [];
               for (var key in filters) {
                 var cMap = {};
-                if (filters[key].length > 0) {
+                if (filters[key].length > 0 && filters[key].toString()) {
                   cMap["colName"] = key;
                   cMap["value"] = filters[key].toString();
                   cMap["ruleType"] = "in";
@@ -286,8 +299,8 @@ export default {
                 }
               }
               this.gridPage.currentPage = 1;
-              // this.filterChange(filters)
             }
+            this.loadTableData();
           });
         }
       },
@@ -995,13 +1008,13 @@ export default {
     },
 
     filterChange(filters) {
-      console.log("filterChange", filters);
       let _filters = this.$refs?.["bx-table-layout"]?.columns
         ?.filter((item) => item.filteredValue?.length)
         .reduce((res, cur) => {
           res[cur.columnKey] = cur.filteredValue;
           return res;
         }, {});
+
       this.filterCondition = [];
       const headersMap = this.gridHeader.reduce((res, cur) => {
         res[cur.column] = cloneDeep(cur);
@@ -1024,7 +1037,8 @@ export default {
       }
       this.gridPage.currentPage = 1;
 
-      this.loadTableData();
+      this.buildGridHeaders(this.srv_cols,null,this.filterCondition);
+      // this.loadTableData();
     },
     cardLoadinit(card) {
       this.cardInstance = card;
@@ -2142,7 +2156,10 @@ export default {
       this.searchFormCondition = condtion;
       this.gridPage.currentPage = 1;
       this.condition = [];
-      this.loadTableData();
+      this.buildGridHeaders(this.srv_cols, condtion);
+      // console.log(cloneDeep(this.filterCondition));
+
+      // this.loadTableData();
     },
 
     buildQueryConditions() {
@@ -2639,7 +2656,11 @@ export default {
         return "left";
       }
     },
-    buildGridHeaders: function (srv_cols) {
+    buildGridHeaders: function (
+      srv_cols,
+      searchFormCondition,
+      filterCondition
+    ) {
       //sectionlist分组
       this.gridHeader = [];
       var cur_section_list = "";
@@ -2708,7 +2729,10 @@ export default {
         }
         if (["Enum", "Dict", "Set"].includes(serviceCol["col_type"])) {
           let filters = [];
-          var option_list_v2 = serviceCol["option_list_v2"];
+          const option_list_v2 = cloneDeep(
+            serviceCol["option_list_v2"]?.options ||
+              serviceCol["option_list_v2"]
+          );
           if (option_list_v2 && Array.isArray(option_list_v2)) {
             for (var item of option_list_v2) {
               filters.push({ text: item["label"], value: item["value"] });
@@ -2787,9 +2811,31 @@ export default {
             this.groupHeaderCols[header["column"]].push(serviceCol);
           }
         }
-        if (header?.srvcol?.init_expr) {
+        // 万像不需要这个特性 打包的时候去掉
+        if (
+          ["Enum", "Set", "Dict"].includes(header.col_type) &&
+          header?.srvcol?.init_expr
+        ) {
           try {
             header._default_value = eval(header?.srvcol?.init_expr);
+            if (
+              Array.isArray(searchFormCondition) ||
+              Array.isArray(filterCondition)
+            ) {
+              const conditions = searchFormCondition || filterCondition;
+              if (conditions?.length === 0) {
+                header._default_value = "";
+              } else {
+                let condition = conditions.find(
+                  (item) =>
+                    item.colName === header["column"] &&
+                    ["in", "inset", "eq"].includes(item.ruleType)
+                );
+                if (condition?.colName) {
+                  header._default_value = condition?.value || "";
+                }
+              }
+            }
           } catch (error) {
             console.log(error);
           }
@@ -3245,7 +3291,8 @@ export default {
       ) {
         isProc = this.listType;
       }
-      const relationCondition = this.$parent?.$refs?.filterTabs?.buildConditions?.();
+      const relationCondition =
+        this.$parent?.$refs?.filterTabs?.buildConditions?.();
       var loading = this.openLoading();
       this.genExportExcel(
         this.service_name,

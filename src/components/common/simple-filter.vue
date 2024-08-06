@@ -108,15 +108,11 @@ export default {
   data() {
     return {
       service_name: this.service || 'srvsys_menu_select',
-
-
       groupFields: {},
       reduceFields: {},
-
       fflagsField: null,
       gflagsField: null,
       rflagsField: null,
-
       groupName2Label: {
         "by": "按值汇总",
         "by_year": "按年汇总",
@@ -136,7 +132,15 @@ export default {
   },
 
   computed: {},
-
+  watch: {
+    defaultValues: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        this.setFieldsDefaultValue?.()
+      }
+    }
+  },
   methods: {
     onSearchClicked: async function () {
       const validate = await this.validateForm()
@@ -476,6 +480,7 @@ export default {
 
   mounted: function () {
     let colFilter = srvCol => {
+      // return (srvCol.columns !== 'id' || !srvCol.auto_generate) && srvCol.in_cond > 0
       return srvCol.columns !== 'id' && srvCol.in_cond > 0
     };
 
@@ -536,6 +541,8 @@ export default {
           this.onSearchClicked()
         })
       }
+    }).then(()=>{
+      this.setFieldsDefaultValue()
     })
 
   }

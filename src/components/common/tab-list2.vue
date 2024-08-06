@@ -21,7 +21,7 @@
       :tabs="tabs"
       :srv="getService()"
       :cols="cols"
-      :default-condition="defaultCondition"
+      :default-condition="getDefaultConditions"
       :main-data="listMainFormDatas"
       @on-input-value="onFilterChange"
       @on-change="getTableDatas"

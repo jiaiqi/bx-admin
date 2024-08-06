@@ -30,6 +30,7 @@
       <simple-filter
         v-if="srv_cols"
         :srv_cols="srv_cols"
+        :defaultValues="setDefaultValue"
         :supportGroup="false"
         v-on:search-clicked="query"
         ref="filter-form"
@@ -1130,6 +1131,16 @@ export default {
     };
   },
   computed: {
+    setDefaultValue(){
+      if(this.filterCondition?.length){
+        return this.filterCondition.reduce((res,cur)=>{
+          if(['eq','in','inset'].includes(cur.ruleType)){
+            res[cur.colName] = cur.value
+          }
+          return res
+        },{})
+      }
+    },
     isDemo() {
       return (
         this.$route?.query?.viewMode === "demo" ||
