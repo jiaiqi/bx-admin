@@ -50,6 +50,7 @@
       v-if="isEdit"
       class="upload-demo"
       ref="upload"
+      clearable
       :action="uploadFile"
       :with-credentials="true"
       :multiple="true"
@@ -59,11 +60,13 @@
       :before-upload="beforeAvatarUpload"
       :on-remove="handleRemove"
       :on-success="handleSuccess"
+      :on-exceed="handleExceed"
       :on-change="fileChange"
       :on-error="onErrorChange"
       :data="uploadParamsRun"
       :auto-upload="true"
       :file-list="fileLists"
+      :limit="limit"
       :disabled="!field.info.editable"
     >
       <viewer
@@ -178,6 +181,10 @@ export default {
     field: {
       type: Object,
       default: null,
+    },
+    limit: {
+      type: Number,
+      default: 100,
     },
 
     // $srvApp: {
@@ -753,6 +760,9 @@ export default {
         this.$set(this.field["_obj_col"], "val", null);
       }
       this.$emit("field-value-changed", this.field.info.name, this.field);
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning(`当前限制选择 ${this.limit}个文件`);
     },
     setSrvVal(srvVal) {
       this.field.model = srvVal;

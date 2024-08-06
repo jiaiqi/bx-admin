@@ -281,6 +281,13 @@ export default {
     },
 
     onSubmitted2mem: function (srvvalFormMode, fields) {
+      if(Object.keys(srvvalFormMode).length){
+        Object.keys(srvvalFormMode).forEach(key => {
+          if(fields[key]?.moreInfo){
+           this.$set(srvvalFormMode,`_${key}_disp`,fields[key]?.moreInfo)
+          }
+        });
+      }
       this.$emit("submitted2mem", srvvalFormMode, fields);
     },
 
