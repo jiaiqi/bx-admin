@@ -41,4 +41,13 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "devlop",
   },
+  audDev: {
+    //
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.151:180",
+    port: "180",
+    gateway: "http://192.168.0.151:180",
+    sso_app: "sso",
+    application: "aud",
+  },
 };
