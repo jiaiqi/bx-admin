@@ -10,13 +10,24 @@
 
     <el-row type="flex" class="row-bg" justify="space-between">
       <div class="table-head-btns">
-        <icon-excel-colorful class="svg-icon" style="cursor: pointer" size="30" :colors="['#409eff']" :strokeWidth="3"
-                    @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel-colorful>
+        <icon-excel-colorful
+          class="svg-icon"
+          style="cursor: pointer"
+          size="30"
+          :colors="['#409eff']"
+          :strokeWidth="3"
+          @click.native="gridButtonClick(excelBtn)"
+          v-if="excelBtn"
+        ></icon-excel-colorful>
       </div>
       <div class="table-head-btns">
         <template v-for="(item, index) in gridButton">
           <el-button
-            :size="item._moreConfig&&item._moreConfig.size?item._moreConfig.size:''"
+            :size="
+              item._moreConfig && item._moreConfig.size
+                ? item._moreConfig.size
+                : ''
+            "
             :type="!item.button_cls ? 'primary' : item.button_cls"
             :key="index"
             v-if="item.permission"
@@ -107,8 +118,22 @@
         :sortable="item.sortable && !isMem() ? 'custom' : false"
       >
         <template slot-scope="scope">
-          <p v-if="formatValue(scope.row, item)&&['Note','RichText'].includes(item.col_type)" v-html="formatValue(scope.row, item)"
-                  style="max-height:10vh;overflow:hidden;" @dblclick="openHtml(formatValue(scope.row, item))"></p>
+          <p
+            v-if="
+              formatValue(scope.row, item) &&
+              ['Note', 'RichText'].includes(item.col_type)
+            "
+            v-html="formatValue(scope.row, item)"
+            style="max-height: 10vh; overflow: hidden"
+            @dblclick="openHtml(formatValue(scope.row, item))"
+          ></p>
+          <a
+            class="link-to-detail"
+            title="点击查看详情"
+            v-else-if="isDetailLink(item.column, scope.row, scope.$index)"
+            @click="toDetail(item.column, scope.row, scope.$index)"
+            >{{ formatValue(scope.row, item) }}</a
+          >
           <span v-else>{{ formatValue(scope.row, item) }}</span>
         </template>
       </el-table-column>
@@ -120,20 +145,20 @@
         width="255"
         v-if="
           !readOnly &&
-            listType != 'selectlist' &&
-            !hideButtons &&
-            sortedRowButtons.length > 0
+          listType != 'selectlist' &&
+          !hideButtons &&
+          sortedRowButtons.length > 0
         "
       >
         <template slot-scope="scope">
           <span
             v-for="(button, index) in sortedRowButtons"
             :key="index"
-            style="margin-right:10px"
+            style="margin-right: 10px"
             v-if="getDispExps(button, scope.row) && button.permission"
             v-show="
               button.button_type === '_btn_group' ||
-                isRowButtonVisible(button, scope.row, scope.$index)
+              isRowButtonVisible(button, scope.row, scope.$index)
             "
           >
             <el-button
@@ -143,20 +168,20 @@
               :icon="button._moreConfig.icon"
               :round="
                 button._moreConfig.style !== '' &&
-                  button._moreConfig.style === 'round'
+                button._moreConfig.style === 'round'
               "
               :plain="
                 button._moreConfig.style !== '' &&
-                  button._moreConfig.style === 'plain'
+                button._moreConfig.style === 'plain'
               "
               :circle="
                 button._moreConfig.style !== '' &&
-                  button._moreConfig.style === 'circle'
+                button._moreConfig.style === 'circle'
               "
               :disabled="button.evalDisable()"
               v-if="
                 button.button_type !== '_btn_group' &&
-                  getButtonOptSrv(button, scope.row, 'isShow')
+                getButtonOptSrv(button, scope.row, 'isShow')
               "
             >
               {{ getButtonName(button, scope.row) }}
@@ -164,8 +189,8 @@
             <el-dropdown
               v-else-if="
                 button.button_type === '_btn_group' &&
-                  button.buttons.length > 0 &&
-                  getButtonDispExps(button.buttons, scope.row, scope.$index)
+                button.buttons.length > 0 &&
+                getButtonDispExps(button.buttons, scope.row, scope.$index)
               "
             >
               <el-button :type="button.type" :size="button.size" plain>
@@ -185,21 +210,22 @@
                     :icon="subtns._moreConfig.icon"
                     :round="
                       subtns._moreConfig.style !== '' &&
-                        subtns._moreConfig.style === 'round'
+                      subtns._moreConfig.style === 'round'
                     "
                     :plain="
                       subtns._moreConfig.style !== '' &&
-                        subtns._moreConfig.style === 'plain'
+                      subtns._moreConfig.style === 'plain'
                     "
                     :circle="
                       subtns._moreConfig.style !== '' &&
-                        subtns._moreConfig.style === 'circle'
+                      subtns._moreConfig.style === 'circle'
                     "
                     :disabled="subtns.evalDisable()"
                     v-show="
-                      isRowButtonVisible(subtns, scope.row,scope.$index) &&
-                        (getDispExps(subtns, scope.row) && subtns.permission) &&
-                        getButtonOptSrv(subtns, scope.row, 'isShow')
+                      isRowButtonVisible(subtns, scope.row, scope.$index) &&
+                      getDispExps(subtns, scope.row) &&
+                      subtns.permission &&
+                      getButtonOptSrv(subtns, scope.row, 'isShow')
                     "
                     >{{ subtns.button_name }}</el-button
                   >
@@ -298,7 +324,7 @@
       >
       </simple-add>
       <add
-      :mainService="mainService"
+        :mainService="mainService"
         name="list-duplicatedeep"
         ref="duplicatedeep-form"
         v-if="activeForm == 'duplicatedeep'"
@@ -327,7 +353,7 @@
       append-to-body
     >
       <update
-      :mainService="mainService"
+        :mainService="mainService"
         name="list-update"
         ref="update-form"
         :initOrigin="'dialog'"
@@ -370,8 +396,7 @@
       @close="activeForm = 'xx'"
       append-to-body
     >
-    
-    <!-- :defaultValues="listMainFormDatas" -->
+      <!-- :defaultValues="listMainFormDatas" -->
       <add
         :mainService="mainService"
         name="list-add-child"
@@ -406,21 +431,54 @@
       >
       </simple-add> -->
     </el-dialog>
-    <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body
-      @close="activeForm = 'xx'">
-      <import-dialog :service="getImportService" :sign-service-name="getAddService" v-if="activeForm == 'import'"
-        :button="actionGridButton" @close="onImportDialogClosed">
+    <el-dialog
+      class="customDialogClass"
+      title="导入"
+      width="90%"
+      :visible="activeForm == 'import'"
+      append-to-body
+      @close="activeForm = 'xx'"
+    >
+      <import-dialog
+        :service="getImportService"
+        :sign-service-name="getAddService"
+        v-if="activeForm == 'import'"
+        :button="actionGridButton"
+        @close="onImportDialogClosed"
+      >
       </import-dialog>
     </el-dialog>
-    <el-dialog class="customDialogClass" title="自定义导入" width="90%" :visible="activeForm == 'customizeImport'"
-      append-to-body @close="activeForm = 'xx'">
-      <import-dialog :service="getImportService" :sign-service-name="getAddService" :importPageType="'customize'"
-        v-if="activeForm == 'customizeImport'" :button="actionGridButton" @close="onImportDialogClosed">
+    <el-dialog
+      class="customDialogClass"
+      title="自定义导入"
+      width="90%"
+      :visible="activeForm == 'customizeImport'"
+      append-to-body
+      @close="activeForm = 'xx'"
+    >
+      <import-dialog
+        :service="getImportService"
+        :sign-service-name="getAddService"
+        :importPageType="'customize'"
+        v-if="activeForm == 'customizeImport'"
+        :button="actionGridButton"
+        @close="onImportDialogClosed"
+      >
       </import-dialog>
     </el-dialog>
-    <el-dialog class="customDialogClass" title="导出" width="90%" :visible="activeForm == 'export'" append-to-body
-      @close="onExportDialogClosed">
-      <exportLayout :columns="gridHeader" :type="'exprot'" @on-export-clicked="onExportClicked($event)"></exportLayout>
+    <el-dialog
+      class="customDialogClass"
+      title="导出"
+      width="90%"
+      :visible="activeForm == 'export'"
+      append-to-body
+      @close="onExportDialogClosed"
+    >
+      <exportLayout
+        :columns="gridHeader"
+        :type="'exprot'"
+        @on-export-clicked="onExportClicked($event)"
+      ></exportLayout>
     </el-dialog>
   </div>
 </template>
@@ -435,9 +493,9 @@ import CustButtonMinx from "../mixin/cust-button-minx";
 import MemListMixin from "../mixin/mem-list-mixin";
 import ListMixin from "../mixin/list-mixin";
 import { wrapButton } from "../common/wrapper_util";
-import {IconExcelColorful} from "../icon";
+import { IconExcelColorful } from "../icon";
 import remove from "lodash/remove";
-
+import cloneDeep from "lodash/cloneDeep";
 import ImportDialog from "../ui/import-form.vue"; // 导入ui
 import exportLayout from "./export-layout"; // 自定义导出 || 导入
 
@@ -450,7 +508,7 @@ function deepClone(obj) {
   return newObj;
 }
 
-var removeByValue = function(sourceData, val) {
+var removeByValue = function (sourceData, val) {
   //对数组原型添加删除指定项的方法
   for (var i = 0; i < sourceData.length; i++) {
     if (sourceData[i] == val) {
@@ -470,7 +528,7 @@ export default {
     Add: () => import("../common/add.vue"),
     update: () => import("../common/update.vue"),
     ImportDialog,
-    exportLayout
+    exportLayout,
   },
   mixins: [ListPopupMixin, CustButtonMinx, MemListMixin, ListMixin],
 
@@ -480,13 +538,13 @@ export default {
     },
     searchForm: {
       type: Boolean,
-      default: function() {
+      default: function () {
         return true;
       },
     },
     listType: {
       type: String,
-      default: function() {
+      default: function () {
         return "treelist";
       },
     },
@@ -495,11 +553,11 @@ export default {
     },
     defaultCondition: {
       type: Array,
-      default: function() {
+      default: function () {
         return [];
       },
     },
-    relationCondition:Object,
+    relationCondition: Object,
     childForeignkey: Object,
   },
   data() {
@@ -525,27 +583,26 @@ export default {
         currentPage: 1,
         total: 0,
       },
-      unfoldDataMap:{}
+      unfoldDataMap: {},
     };
   },
   methods: {
-    openHtml(val){
+    openHtml(val) {
       const h = this.$createElement;
       this.$msgbox({
-        title: '详情',
+        title: "详情",
         customClass: "message-box",
-        message: h('p', {
+        message: h("p", {
           domProps: {
-            innerHTML: val
+            innerHTML: val,
           },
           style: {
-            width: '100%'
-          }
+            width: "100%",
+          },
         }),
         showCancelButton: false,
-        confirmButtonText: '确定',
-    
-      })
+        confirmButtonText: "确定",
+      });
     },
     toggleIconShow(record) {
       if (record.is_leaf == "是") {
@@ -589,7 +646,7 @@ export default {
             arr.indexOf(value[this.parentCol]) > -1 &&
             !value["_level_node"]
           ) {
-            this.$set(this.unfoldDataMap,value.id+'',false)
+            this.$set(this.unfoldDataMap, value.id + "", false);
             removeByValue(me.gridData, value);
           }
         });
@@ -649,13 +706,24 @@ export default {
               pageNo: 1, // 展开下级不参与分页，默认加载 300条数据。
               rownumber: 300,
             },
-            this.order,null,null,null,null,null,null,null,null,null,this.vpageNo,'treelist'
+            this.order,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            this.vpageNo,
+            "treelist"
           ).then((response) => {
-            if(response.body.resultCode == '0011'){
+            if (response.body.resultCode == "0011") {
               // 登录过期
-              this.$store.commit('clearSrvCols')
-              this.vpageNo = null
-              return
+              this.$store.commit("clearSrvCols");
+              this.vpageNo = null;
+              return;
             }
             this.buildData(response.body.data, false);
             childData = response.body.data;
@@ -675,13 +743,13 @@ export default {
             i++;
           }
         }
-        if(rowData._children && rowData._children.length > 0){
-          rowData._children.forEach(item=>{
-            if(this.unfoldDataMap[item.id]===true){
-                // 展开的
-                this.toggle(item)
-              }
-          })
+        if (rowData._children && rowData._children.length > 0) {
+          rowData._children.forEach((item) => {
+            if (this.unfoldDataMap[item.id] === true) {
+              // 展开的
+              this.toggle(item);
+            }
+          });
         }
 
         // let index = me.gridData.indexOf(rowData);
@@ -691,7 +759,7 @@ export default {
         // me.gridData = concatChildren.concat(last);
       }
       rowData._expanded = !rowData._expanded;
-      this.$set(this.unfoldDataMap,rowData.id+'',rowData._expanded)
+      this.$set(this.unfoldDataMap, rowData.id + "", rowData._expanded);
     },
     getChildFlowId(data, emptyArr) {
       // 获取子级的flowId
@@ -901,9 +969,9 @@ export default {
           request["serviceName"] = exeservice;
 
           var cMap = { colName: "id", ruleType: "in" };
-          if(this.pub_field_map?.id){
+          if (this.pub_field_map?.id) {
             // 删除时 如果列表配置了id的映射字段 则使用映射的字段作为colName
-            cMap.colName = this.pub_field_map.id
+            cMap.colName = this.pub_field_map.id;
           }
           var cVule = [];
           for (var item of deleteRowData) {
@@ -954,9 +1022,10 @@ export default {
       await this.loadColsV2(this.service_name, this.listType)
         .then((response) => {
           let respData = response.body.data;
-          this.service_view_name = respData?.service_view_name
+          this.listV2Data = cloneDeep(respData);
+          this.service_view_name = respData?.service_view_name;
           let listData = response.body.data["srv_cols"];
-          this.vpageNo = respData.vpage_no
+          this.vpageNo = respData.vpage_no;
 
           // this.gridButton = response.body.data["gridButton"];
           // this.rowButton = response.body.data["rowButton"];
@@ -969,39 +1038,42 @@ export default {
           );
 
           let addButton = this.gridButton.find(
-            item => item.button_type === "add"
+            (item) => item.button_type === "add"
           );
           if (addButton) {
             this.addService = addButton.service_name;
           }
 
-          if(!this.addService){
-
-            let importButton =  this.gridButton.find(
-              item => item.button_type === "import"
+          if (!this.addService) {
+            let importButton = this.gridButton.find(
+              (item) => item.button_type === "import"
             );
-            if(importButton){
+            if (importButton) {
               this.addService = importButton.service_name;
             }
-
           }
 
-
           let updateButton = this.rowButton.find(
-            item => item.button_type === "edit"
+            (item) => item.button_type === "edit"
           );
           if (updateButton) {
             this.updateService = updateButton.service_name;
           }
 
           let deleteButton = this.rowButton.find(
-            item => item.button_type === "delete"||item.button_type==='batch_delete'
+            (item) =>
+              item.button_type === "delete" ||
+              item.button_type === "batch_delete"
           );
 
-          if(!deleteButton) {
-            deleteButton = this.gridButton.find(item => item.button_type === "delete"||item.button_type==='batch_delete')
+          if (!deleteButton) {
+            deleteButton = this.gridButton.find(
+              (item) =>
+                item.button_type === "delete" ||
+                item.button_type === "batch_delete"
+            );
           }
-          
+
           if (deleteButton) {
             this.deleteService = deleteButton.service_name;
           }
@@ -1113,43 +1185,61 @@ export default {
       }
 
       //加载表格数据
-      let rdt = this.childForeignkey?.constraint_name?'ttd':null //是子表 使用ttd特性 2023年11月13日jiaqi
-      if(this.$route?.query?.topTreeData==='true'){
-        rdt = 'ttd'
+      let rdt = this.childForeignkey?.constraint_name ? "ttd" : null; //是子表 使用ttd特性 2023年11月13日jiaqi
+      if (this.$route?.query?.topTreeData === "true") {
+        rdt = "ttd";
       }
-      this.select(this.service_name, cond, page, this.order,null,null,null,null,null,this.relationCondition||null,null,null,null,this.vpageNo,'treelist',rdt).then(
-        (response) => {
-          // rename for element stupid bug of using children as bulitin
-          response.body.data &&
-            response.body.data.forEach((item) => {
-              item._children = item.children;
-              delete item.children;
-            });
-          if(response.body.resultCode == '0011'){
-            // 登录过期
-            this.$store.commit('clearSrvCols')
-            this.vpageNo = null
-            return
-          }
-          this.buildData(response.body.data, true);
-         
-          this.gridData = response.body.data
-          if(this.gridData.length>0){
-            this.gridData.forEach(item=>{
-              if(this.unfoldDataMap[item.id]===true){
-                // 展开的
-                this.toggle(item)
-              }
-              // return item
-            });
-          }
-          if (response.body.page) {
-            this.gridPage.pageSize = response.body["page"]["rownumber"]>100?100:response.body["page"]["rownumber"];
-            this.gridPage.currentPage = response.body["page"]["pageNo"];
-            this.gridPage.total = response.body["page"]["total"];
-          }
+      this.select(
+        this.service_name,
+        cond,
+        page,
+        this.order,
+        null,
+        null,
+        null,
+        null,
+        null,
+        this.relationCondition || null,
+        null,
+        null,
+        null,
+        this.vpageNo,
+        "treelist",
+        rdt
+      ).then((response) => {
+        // rename for element stupid bug of using children as bulitin
+        response.body.data &&
+          response.body.data.forEach((item) => {
+            item._children = item.children;
+            delete item.children;
+          });
+        if (response.body.resultCode == "0011") {
+          // 登录过期
+          this.$store.commit("clearSrvCols");
+          this.vpageNo = null;
+          return;
         }
-      );
+        this.buildData(response.body.data, true);
+
+        this.gridData = response.body.data;
+        if (this.gridData.length > 0) {
+          this.gridData.forEach((item) => {
+            if (this.unfoldDataMap[item.id] === true) {
+              // 展开的
+              this.toggle(item);
+            }
+            // return item
+          });
+        }
+        if (response.body.page) {
+          this.gridPage.pageSize =
+            response.body["page"]["rownumber"] > 100
+              ? 100
+              : response.body["page"]["rownumber"];
+          this.gridPage.currentPage = response.body["page"]["pageNo"];
+          this.gridPage.total = response.body["page"]["total"];
+        }
+      });
     },
 
     query(condtion) {
@@ -1376,7 +1466,8 @@ export default {
         // remove it from parent._children
         if (parent._children && parent._children.length > 0) {
           // remove from parent._children
-          parent._children = parent._children.filter((item) => item[this.noCol] !== target[this.noCol]
+          parent._children = parent._children.filter(
+            (item) => item[this.noCol] !== target[this.noCol]
           );
 
           // change to leaf is children is null
@@ -1432,17 +1523,17 @@ export default {
     },
 
     onAddFormActionComplete(action) {
-      console.log('onAddFormActionComplete',action)
+      console.log("onAddFormActionComplete", action);
       if (action == "submit") {
         this.activeForm = null;
-        this.loadTableData(true)
+        this.loadTableData(true);
       }
     },
 
     onUpdateFormActionComplete(action) {
       if (action == "submit") {
         this.activeForm = null;
-        this.loadTableData(true)
+        this.loadTableData(true);
       }
     },
 
@@ -1464,7 +1555,7 @@ export default {
     },
   },
 
-  created: function() {
+  created: function () {
     //   if (this.isListTopComp() && this.$route && this.$route.query) {
     // // if (this.$route && this.$route.query) {
     //     var operate_params = this.getOperateParams();
@@ -1506,7 +1597,7 @@ export default {
   ::v-deep .el-table__empty-block {
     width: 100% !important;
   }
-  .button{
+  .button {
     cursor: pointer;
     margin-right: 5px;
   }
