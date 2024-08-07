@@ -9,6 +9,7 @@
     value-key="label"
     suffix-icon="el-icon-edit"
     @select="handleSelect"
+    @clear="handleClear"
   >
   </el-autocomplete>
 </template>
@@ -36,8 +37,8 @@ export default {
     optionsReq() {
       let optionsV2 = this.field.autocompleteFunc();
       let refedCol = this.field.info?.redundant?.refedCol;
-      if(this.field.stringAutocompleteInput){
-        refedCol = optionsV2?.refed_col || optionsV2?.key_disp_col
+      if (this.field.stringAutocompleteInput) {
+        refedCol = optionsV2?.refed_col || optionsV2?.key_disp_col;
       }
       let req = {
         serviceName: optionsV2.serviceName,
@@ -72,8 +73,8 @@ export default {
           };
           if (item.value?.indexOf("data.") === 0) {
             obj.value = formModel[item.value.replace("data.", "")];
-          }else{
-            obj.ruleType = 'like'
+          } else {
+            obj.ruleType = "like";
             obj.value = formModel[item.value.replace("data.", "")];
           }
           if (obj.value) {
@@ -87,16 +88,12 @@ export default {
   data() {
     return {
       selected: null,
+      oldValue: null,
     };
   },
 
   methods: {
-    handleSelect(item) {
-      console.log(item);
-      this.selected = item;
-      if(this.field.stringAutocompleteInput){
-        return
-      }
+    getDependField() {
       let dependField; //fk字段
       if (this.field.form.fields && Array.isArray(this.field.form.fields)) {
         for (let f of this.field.form.fields) {
@@ -108,6 +105,50 @@ export default {
         dependField =
           this.field.form.fields[this.field.info.redundant.dependField];
       }
+      return dependField;
+    },
+    handleClear() {
+      // 清空autocomplete字段时候，是否清空fk字段的值的逻辑
+      const dependField = this.getDependField();
+      const redundant = this.field.info?.redundant;
+      if (redundant?.trigger) {
+        if (redundant?.trigger === "isnull") {
+          // 为空的时候才进行冗余 配置了isnull的字段清空时不改变fk字段的值
+          return;
+        }
+      }
+      const refedCol = redundant?.refedCol;
+      const refedColVal = dependField.model[refedCol];
+      if (refedCol && refedColVal) {
+        this.$nextTick(() => {
+          if (this.oldValue && this.oldValue === refedColVal) {
+            // 当前字段的值跟fk字段中冗余到当前字段的值一致时，才清空fk字段的值
+            dependField.model = null;
+            dependField.finderSelected = null;
+            this.$set(dependField, "model", null);
+            this.$emit("change", dependField);
+          }
+        });
+      }
+    },
+    handleSelect(item) {
+      console.log(item);
+      this.selected = item;
+      if (this.field.stringAutocompleteInput) {
+        return;
+      }
+      let dependField = this.getDependField();
+      // let dependField; //fk字段
+      // if (this.field.form.fields && Array.isArray(this.field.form.fields)) {
+      //   for (let f of this.field.form.fields) {
+      //     if (f.info.name == this.field.info.redundant.dependField) {
+      //       dependField = f;
+      //     }
+      //   }
+      // } else {
+      //   dependField =
+      //     this.field.form.fields[this.field.info.redundant.dependField];
+      // }
 
       let dependType = dependField?.info?.editor;
       switch (dependType) {
@@ -168,6 +209,7 @@ export default {
       deep: true,
       handler: function (nval, oval) {
         console.log(nval);
+        this.oldValue = oval;
         if (!nval) {
           // this.handleSelect();
         }
