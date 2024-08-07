@@ -323,7 +323,6 @@ export default {
       return nav;
     },
     onUpdateFormActionComplete(event) {
-      // debugger
       if (event === "reset") {
       } else {
         this.activeForm = null;

@@ -460,7 +460,7 @@
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
                 ref="autocompleteInput"
-                @change="changeDependField"
+                @change="autocompleteSelected"
                 :field="field"
               ></autocompleteInput>
             </div>
@@ -475,7 +475,7 @@
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
                 ref="autocompleteInput"
-                @change="changeDependField"
+                @change="autocompleteSelected"
                 :field="field"
               ></autocompleteInput>
             </div>
@@ -883,6 +883,11 @@ export default {
       } else {
         return false;
       }
+    },
+    autocompleteSelected(field){
+      this.$emit("field-value-changed", field.info.name, field);
+      // autocomplete字段手动改变下拉选项，通知表单组件进行冗余
+      this.field?.form?.handleFieldFkRedundant?.(field,field?.form?.fields,true)
     },
     changeDependField(field) {
       if (

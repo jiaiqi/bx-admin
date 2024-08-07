@@ -1911,7 +1911,6 @@ function init_util() {
     let parentNode = [];
     let chain = makeChain(array, parentNode);
     // let result = [];
-    // debugger
     /*
      * 递归把商品费雷给成children
      */
@@ -2007,7 +2006,6 @@ function init_util() {
     let parentNode = [];
     let chain = makeChain(array, parentNode);
     // let result = [];
-    // debugger
     /*
      * 递归把商品费雷给成children
      */

@@ -750,7 +750,6 @@ export default {
     window.tabs = this;
     let self = this;
     this.loadColsV2(this.getService(), this.getListType).then((response) => {
-      debugger;
       if (
         response &&
         response.data &&

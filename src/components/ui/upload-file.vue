@@ -67,7 +67,7 @@
       :auto-upload="true"
       :file-list="fileLists"
       :limit="limit"
-      :disabled="!field.info.editable"
+      :disabled="!field.info.editable&&true"
     >
       <viewer
         v-show="false"

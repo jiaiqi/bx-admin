@@ -153,7 +153,7 @@ export default {
           update = true;
         }
 
-        if (update && field.getSrvVal() !== ret) {
+        if (update && field.getSrvVal() !== ret && field.info?.subType!=='autocomplete') {
           // console.log("计算字段",row,field.info.label,ret,field,func)
           field.setSrvVal(ret);
         }
@@ -219,8 +219,9 @@ export default {
      * 处理通过fk引用的冗余字段
      * @param field
      * @param fields
+     * @param {true|false} onHandle - autocomplete字段手动改变下拉选项
      */
-    handleFieldFkRedundant: function (field, fields) {
+    handleFieldFkRedundant: function (field, fields,onHandle=false) {
       if (
         field.model === null &&
         field.condDependentFields &&
@@ -265,6 +266,10 @@ export default {
           // }
 
           if (sync) {
+            if(dependentField.info.subType==='autocomplete' && dependentField.getSrvVal()&&onHandle!==true){
+              // 表单自动冗余操作，如果字段是autocomplete且本身有值，不进行冗余
+              return
+            }
             if (
               field.model &&
               (field.model[dependentField.info.redundant.refedCol] ||

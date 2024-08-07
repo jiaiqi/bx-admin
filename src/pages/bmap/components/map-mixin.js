@@ -1124,10 +1124,8 @@ export default {
             // 百度地图开放平台 waypoints使用竖线作为分隔符
             // // https://lbs.baidu.com/faq/api?title=webapi/webservice-direction/dirve
             params['waypoints'] = params['waypoints'].replaceAll('|', ';')
-            // debugger
             // const point1= await geoconv(params.origin.split(',').reverse().toString())
             // const point2= await geoconv(params.destination.split(',').reverse().toString())
-            // debugger
             // if(point1?.length){
             //     params.origin = `${point1[0].y},${point1[0].x}`
             // }

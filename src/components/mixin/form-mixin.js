@@ -800,7 +800,7 @@ export default {
       let self = this
       // console.log('onFieldValueChanged fieldName',this.fields[fieldName].info.label,this.fields[fieldName],this.fields[fieldName].model)
       if (this.formLoaded) {
-        
+
         let field = this.fields[ fieldName ];
 
         if(field['_obj_col']?.col){

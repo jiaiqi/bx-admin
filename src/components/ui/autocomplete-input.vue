@@ -97,7 +97,7 @@ export default {
       if(this.field.stringAutocompleteInput){
         return
       }
-      let dependField;
+      let dependField; //fk字段
       if (this.field.form.fields && Array.isArray(this.field.form.fields)) {
         for (let f of this.field.form.fields) {
           if (f.info.name == this.field.info.redundant.dependField) {
@@ -119,9 +119,9 @@ export default {
             this.$set(dependField, "model", item.option);
             this.$emit("change", dependField);
           } else {
-            dependField.model = item;
-            dependField.finderSelected = item;
-            this.$set(dependField, "model", item);
+            dependField.model = null;
+            dependField.finderSelected = null;
+            this.$set(dependField, "model", null);
             this.$emit("change", dependField);
           }
           break;
@@ -154,11 +154,6 @@ export default {
                 item[this.optionsV2List["refed_col"]]
               }/${item[this.optionsV2List["key_disp_col"]]})`;
             }
-            console.log(
-              this.field.info.name,
-              this.field.info.label,
-              item[valColumn]
-            );
             return result;
           });
         }
@@ -174,7 +169,7 @@ export default {
       handler: function (nval, oval) {
         console.log(nval);
         if (!nval) {
-          this.handleSelect();
+          // this.handleSelect();
         }
       },
     },
