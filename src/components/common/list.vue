@@ -274,6 +274,32 @@
               :sortable="item.sortable && !isMem() ? 'custom' : false"
               :cell-style="cellStyle"
             >
+              <!-- <template slot="header" slot-scope="scope">
+                <div style="display: inline-flex;">
+                  <span>
+                  {{ item.label }}
+                  </span>
+                  <div style="display: flex;flex-direction: column;line-height: unset;">
+                    <span
+                    style="line-height: unset;"
+                    v-for="key in Object.keys(item.backgroundMap)"
+                    v-if="item.backgroundMap"
+                  >
+                    <span
+                      :style="{
+                        background: item.backgroundMap[key],
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '10px',
+                        display: 'inline-block',
+                      }"
+                    ></span>
+                    <span>
+                    </span>
+                  </span>
+                  </div>
+                </div>
+              </template> -->
               <template slot-scope="scope">
                 <!-- 二进制文件 -->
                 <div v-if="item.col_type === 'ImgBin'">
@@ -495,8 +521,9 @@
                       v-else
                       :class="{
                         hasBg:
-                          item.backgroundMap &&
-                          item.backgroundMap[scope.row[item.column]] || item.backgroundMap['_default'],
+                          (item.backgroundMap &&
+                            item.backgroundMap[scope.row[item.column]]) ||
+                          item.backgroundMap['_default'],
                       }"
                       :style="setTdStyle(item, scope.row)"
                       >{{ formatValue(scope.row, item) }}</span
@@ -1131,14 +1158,14 @@ export default {
     };
   },
   computed: {
-    setDefaultValue(){
-      if(this.filterCondition?.length){
-        return this.filterCondition.reduce((res,cur)=>{
-          if(['eq','in','inset'].includes(cur.ruleType)){
-            res[cur.colName] = cur.value
+    setDefaultValue() {
+      if (this.filterCondition?.length) {
+        return this.filterCondition.reduce((res, cur) => {
+          if (["eq", "in", "inset"].includes(cur.ruleType)) {
+            res[cur.colName] = cur.value;
           }
-          return res
-        },{})
+          return res;
+        }, {});
       }
     },
     isDemo() {

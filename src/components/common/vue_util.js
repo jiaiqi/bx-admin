@@ -3,7 +3,6 @@ import dayjs from "dayjs";
 import Dialog from "../common/dialog.vue";
 import * as DataUtil from "../../util/DataUtil";
 import { Loading } from "element-ui";
-
 import {
   formatMoney,
   monthEnd,
@@ -1340,12 +1339,10 @@ function init_util() {
     if (condition.ruleType == "isnull" || condition.ruleType == "notnull") {
       return false;
     } else if (condition.ruleType == "between") {
-      return (
-        jQuery.isEmptyObject(value) || (value[0] == null && value[1] == null)
-      );
+      return isEmpty(value) || (value[0] == null && value[1] == null);
     } else {
       if (typeof value == "object") {
-        return jQuery.isEmptyObject(value);
+        return isEmpty(value);
       } else {
         return value == null || value == undefined || value === "";
       }
@@ -2242,19 +2239,6 @@ function init_util() {
         } else {
           this.hasTemplate = false;
         }
-
-        /**
- *
- 
-  {
-    title:'23',
-    name:'jack'
-  }
- 
- *
- * @param {*} array
- * @memberof TemplateStr
- */
       }
 
       setColumns(array) {

@@ -8,8 +8,9 @@ import * as DataUtil from "../../util/DataUtil";
 import cloneDeep from "lodash/cloneDeep";
 import isFunction from "lodash/isFunction";
 import batchAddMixin from "./batch-add-mixin";
-import { Loading } from "element-ui";
-export function MissRequiredConditionError() {}
+export function MissRequiredConditionError(cond) {
+  console.error("缺少条件：" , cond);
+}
 let polling = null;
 export default {
   mixins: [batchAddMixin],
@@ -246,16 +247,16 @@ export default {
     gridHeader: {
       deep: true,
       handler(newVal, oldVal) {
-        if (
-          newVal?.length &&
-          JSON.stringify(newVal) != JSON.stringify(oldVal)
-        ) {
-          // console.log(
-          //   "gridHeader changed",
-          //   cloneDeep(newVal),
-          //   cloneDeep(oldVal)
-          // );
-          this.$nextTick(() => {
+        // console.log(
+        //   "gridHeader changed",
+        //   cloneDeep(newVal),
+        //   cloneDeep(oldVal)
+        // );
+        this.$nextTick(() => {
+          if (
+            newVal?.length &&
+            JSON.stringify(newVal) != JSON.stringify(oldVal)
+          ) {
             const tableColumns = this.$refs["bx-table-layout"]?.columns;
             let needRefresh = false;
             const filters = {};
@@ -300,13 +301,9 @@ export default {
               }
               this.gridPage.currentPage = 1;
             }
-            this.loadTableData();
-          });
-        }else{
-          this.$nextTick(()=>{
-            this.loadTableData();
-          })
-        }
+          }
+          this.loadTableData();
+        });
       },
     },
     "$store.state.frontTableData": {
@@ -1041,7 +1038,7 @@ export default {
       }
       this.gridPage.currentPage = 1;
 
-      this.buildGridHeaders(this.srv_cols,null,this.filterCondition);
+      this.buildGridHeaders(this.srv_cols, null, this.filterCondition);
       // this.loadTableData();
     },
     cardLoadinit(card) {
@@ -2199,7 +2196,7 @@ export default {
           (item) => item.required === true && this.isEmptyCondition(item)
         ).length > 0;
       if (hasEmptyRequiredCondition) {
-        throw new MissRequiredConditionError();
+        throw new MissRequiredConditionError( this.condition);
       }
       return this.condition;
     },
@@ -2259,9 +2256,9 @@ export default {
         background: "rgba(0, 0, 0, 0.7)",
       });
 
-      // setTimeout(() => {
-      //   loading.close();
-      // }, 5000);
+      setTimeout(() => {
+        loading.close();
+      }, 5000);
       try {
         this.buildQueryConditions();
         console.log("loadTableData", cloneDeep(this.condition));

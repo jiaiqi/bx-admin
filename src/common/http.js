@@ -13,7 +13,9 @@ if (process.env.NODE_ENV === "development") {
   // const ENV = "dev";
   // const ENV = "wanxiang";
   // const ENV = "audDev";
+  // const ENV = "yanxueDev";
   const ENV = "saas";
+  // const ENV = "xixiang";
   // const ENV = "244";
   const pathConfig = pathConfigMap[ENV];
   baseURL = pathConfig.gateway; // 正式环境

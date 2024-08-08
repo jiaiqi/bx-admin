@@ -154,7 +154,6 @@
 import remove from "lodash/remove";
 import dayjs from "dayjs";
 import "@/assets/common.scss";
-let $ = require("jquery");
 
 import { FieldInfo } from "@/components/model/FieldInfo";
 import { Field } from "@/components/model/Field";

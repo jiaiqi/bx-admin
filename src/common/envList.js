@@ -50,4 +50,22 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "aud",
   },
+  yanxueDev: {
+    // 研学内网
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.157",
+    port: "8104",
+    gateway: "http://192.168.0.157:8104",
+    sso_app: "sso",
+    application: "config",
+  },
+  xixiang: {
+    // 西乡
+    gateway_protocol: "https",
+    gateway_ip: "api.laodongcloud.com",
+    port: "",
+    gateway: "https://api.laodongcloud.com",
+    sso_app: "sso",
+    application: "ledu",
+  },
 };

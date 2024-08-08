@@ -538,6 +538,9 @@ export default {
       const conditions = literalConditions.map(a => Object.assign({}, a));
       for (let i in conditions) {
         conditions[ i ].valueExpr = `'${conditions[ i ].value}'`;
+        if(conditions[ i ].literalValue===true){
+          conditions[ i ].valueExpr = conditions[ i ].value;
+        }
       }
       return conditions;
     },
