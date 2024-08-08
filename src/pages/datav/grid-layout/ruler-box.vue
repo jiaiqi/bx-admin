@@ -1,8 +1,8 @@
 <template>
-  <div v-if="disabled == true" style="width: 100%;height: 100%;">
+  <div v-if="disabled == true" style="width: 100%; height: 100%">
     <slot></slot>
   </div>
-  <div class="wrapper" id="wrapper" v-else>
+  <div class="wrapper" id="wrapper" v-else :style="cursorValue+setCanvasLeft">
     <SketchRule
       :lang="lang"
       :thick="thick"
@@ -36,7 +36,7 @@
 <script>
 import Vue from "vue";
 import SketchRule from "vue-sketch-ruler";
-
+import { useCtrlDown } from "./ruler-box-hook";
 export default Vue.extend({
   props: {
     disabled: {
@@ -58,6 +58,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      cursor: "default",
       scale: 1,
       startX: 0,
       startY: 0,
@@ -65,7 +66,6 @@ export default Vue.extend({
         h: [],
         v: [],
       },
-      thick: this.thick,
       width: this.rectWidth,
       height: this.rectHeight,
       lang: "zh-CN", // 中英文
@@ -77,6 +77,9 @@ export default Vue.extend({
     SketchRule,
   },
   computed: {
+    setCanvasLeft() {
+      return `;--margin-left:-${(this.rectWidth/2)}px;`;
+    },
     shadow() {
       return {
         x: 0,
@@ -101,19 +104,16 @@ export default Vue.extend({
       return;
     },
     handleScroll() {
-      const screensRect = document
-        .querySelector("#screens")
-        .getBoundingClientRect();
-      const canvasRect = document
-        .querySelector("#canvas")
-        .getBoundingClientRect();
+      const screensRect = document.querySelector("#screens").getBoundingClientRect();
+      const canvasRect = document.querySelector("#canvas").getBoundingClientRect();
 
       // 标尺开始的刻度
       const startX =
         (screensRect.left + this.thick - canvasRect.left) / this.scale;
       const startY =
         (screensRect.top + this.thick - canvasRect.top) / this.scale;
-
+        console.log(screensRect.left,canvasRect.left);
+        
       this.startX = startX >> 0;
       this.startY = startY >> 0;
     },
@@ -138,6 +138,29 @@ export default Vue.extend({
       this.width = wrapperRect.width - this.thick - borderWidth;
       this.height = wrapperRect.height - this.thick - borderWidth;
     },
+    listenCtrlMouseDown() {
+      // 监听ctrl+鼠标拖拽
+      const scrollElement = document.querySelector("#screens");
+      let curScrollElement = null;
+      scrollElement.addEventListener("mousedown", function (e) {
+        if (e.ctrlKey && e.button === 0) {
+          e.preventDefault();
+          curScrollElement = this;
+        }
+      });
+
+      addEventListener("mousemove", function (e) {
+        curScrollElement?.scrollBy(-e.movementX, -e.movementY);
+      });
+
+      addEventListener("mouseup", function (e) {
+        curScrollElement = null;
+      });
+    },
+  },
+  setup() {
+    const { cursorValue } = useCtrlDown();
+    return { cursorValue };
   },
   mounted() {
     if (this.disabled) {
@@ -145,9 +168,10 @@ export default Vue.extend({
     }
     // 滚动居中
     this.$refs.screensRef.scrollLeft =
-      this.$refs.containerRef.getBoundingClientRect().width / 2 - 300; // 300 = #screens.width / 2
+      this.$refs.containerRef.getBoundingClientRect().width / 2 - this.$refs.screensRef.getBoundingClientRect().width/2; // 300 = #screens.width / 2
     this.$nextTick(() => {
       this.initSize();
+      // this.listenCtrlMouseDown();
     });
   },
 });
@@ -180,6 +204,7 @@ body * {
   width: 100%;
   height: 100%;
   overflow: auto;
+  cursor: var(--cursor);
 }
 
 .screen-container {
@@ -216,6 +241,7 @@ body * {
   top: 40px;
   left: 50%;
   margin-left: -80px;
+  margin-left: var(--margin-left);
   width: 160px;
   height: 200px;
   background: lightblue;

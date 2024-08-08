@@ -52,7 +52,11 @@
       ref="screensRef"
       :class="{ 'data-view-mode': !inEditor }"
     >
-      <ruler-box :disabled="!inEditor" :rectWidth="parseInt(styleJson.width || '1920')" :rectHeight="parseInt(styleJson.height || '1080')">
+      <ruler-box
+        :disabled="!inEditor"
+        :rectWidth="parseInt(styleJson.width || '1920')"
+        :rectHeight="parseInt(styleJson.height || '1080')"
+      >
         <div
           class="custom-design"
           :class="{ view: !inEditor }"
@@ -521,6 +525,7 @@ export default {
     }
   },
   mounted() {
+    // this.startMove()
     // this.initDesign();
     // if (this.inEditor) {
     //   // 编辑模式 监听事件
@@ -659,36 +664,7 @@ export default {
     },
   },
   methods: {
-    handleScroll() {
-      const screensRect = document
-        .querySelector("#screens")
-        .getBoundingClientRect();
-      const canvasRect = document
-        .querySelector("#grid-container")
-        .getBoundingClientRect();
-
-      // 标尺开始的刻度
-      const startX =
-        (screensRect.left + this.thick - canvasRect.left) / this.ruleScale;
-      const startY =
-        (screensRect.top + this.thick - canvasRect.top) / this.ruleScale;
-
-      this.startX = startX >> 0;
-      this.startY = startY >> 0;
-    },
-    // 控制缩放值
-    handleWheel(e) {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        const nextScale = parseFloat(
-          Math.max(0.2, this.ruleScale - e.deltaY / 500).toFixed(2)
-        );
-        this.ruleScale = nextScale;
-      }
-      this.$nextTick(() => {
-        this.handleScroll();
-      });
-    },
+   
     deactivated() {
       this.curDesign = "";
     },
