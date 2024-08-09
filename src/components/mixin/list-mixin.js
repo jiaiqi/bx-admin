@@ -9,7 +9,7 @@ import cloneDeep from "lodash/cloneDeep";
 import isFunction from "lodash/isFunction";
 import batchAddMixin from "./batch-add-mixin";
 export function MissRequiredConditionError(cond) {
-  console.error("缺少条件：" , cond);
+  console.error("缺少条件：", cond);
 }
 let polling = null;
 export default {
@@ -301,8 +301,9 @@ export default {
               }
               this.gridPage.currentPage = 1;
             }
+            this.loadTableData();
           }
-          this.loadTableData();
+          // this.loadTableData();
         });
       },
     },
@@ -1039,7 +1040,7 @@ export default {
       this.gridPage.currentPage = 1;
 
       this.buildGridHeaders(this.srv_cols, null, this.filterCondition);
-      // this.loadTableData();
+      this.loadTableData();
     },
     cardLoadinit(card) {
       this.cardInstance = card;
@@ -2155,7 +2156,7 @@ export default {
       this.buildGridHeaders(this.srv_cols, condtion);
       // console.log(cloneDeep(this.filterCondition));
 
-      // this.loadTableData();
+      this.loadTableData();
     },
 
     buildQueryConditions() {
@@ -2196,7 +2197,7 @@ export default {
           (item) => item.required === true && this.isEmptyCondition(item)
         ).length > 0;
       if (hasEmptyRequiredCondition) {
-        throw new MissRequiredConditionError( this.condition);
+        throw new MissRequiredConditionError(this.condition);
       }
       return this.condition;
     },
