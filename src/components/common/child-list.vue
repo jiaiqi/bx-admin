@@ -138,6 +138,7 @@
       :mainService="mainService"
       :list-name="service"
       :childforeignvalue="getRefColValue"
+      :def-data-para="defDataPara"
       :readOnly="readOnly"
       @child-loaded="childDataLoadedRun($event)"
       @list-loaded="onListLoaded"

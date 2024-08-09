@@ -120,6 +120,7 @@
           :childforeignkey="foreignKey"
           :listMainFormDatas="listMainFormDatas"
           :mainService="mainService"
+          :def-data-para="defDataPara"
           :readOnly="readOnly"
           @stats-data-load="statsLoaded"
           @v2-loaded-isDraft="v2LoadedIsDraft($event)"
@@ -231,6 +232,12 @@ export default {
     defaultDirtyFlags: {
       type: String,
       default: "pristine",
+    },
+    defDataPara: {
+      type: Object,
+      default: function () {
+        return {};
+      },
     },
   },
 
