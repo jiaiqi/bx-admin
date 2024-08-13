@@ -342,6 +342,25 @@ let routes = [
       },
     ],
   },
+  {
+    path:'/lowcode',
+    name: "lowcode",
+    component:()=>import(
+      /* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"
+    ),
+    children:[
+      {
+        path:'edit/:no',
+        name: "lowcode-detail",
+        meta:{
+          isEditor:true
+        },
+        component:()=>import(
+          /* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"
+        )
+      }
+    ]
+  }
 ];
 
 routes.push({

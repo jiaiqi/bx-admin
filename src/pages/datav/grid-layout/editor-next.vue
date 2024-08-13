@@ -612,7 +612,10 @@ export default {
     },
     inEditor() {
       // 编辑状态
-      return this.$route?.name?.includes("gridEditor");
+      return (
+        this.$route?.name?.includes("gridEditor") ||
+        this.$route?.meta?.isEditor === true
+      );
     },
     isDataview() {
       // 预览模式
@@ -664,7 +667,6 @@ export default {
     },
   },
   methods: {
-   
     deactivated() {
       this.curDesign = "";
     },
@@ -2075,7 +2077,7 @@ export default {
   height: 100vh;
   background: #f1f3f2;
   user-select: none;
-
+  position: relative;
   // &.fixedWH {
   //   .cushome-content {
   //     .custom-design {
@@ -2103,7 +2105,8 @@ export default {
 
   .cushome-sidebar {
     width: 340px;
-    position: fixed;
+    position: absolute;
+    // position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
@@ -2153,7 +2156,8 @@ export default {
   .cushome-right {
     width: 340px;
     width: var(--right-width);
-    position: fixed;
+    position: absolute;
+    // position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
@@ -2193,7 +2197,8 @@ export default {
   }
 
   .cushome-content {
-    position: fixed;
+    position: absolute;
+    // position: fixed;
     top: 0;
     bottom: 0;
     right: var(--right-width);
