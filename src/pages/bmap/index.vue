@@ -46,7 +46,6 @@
 // import { getWebSitePcCarousel,friendLinks,getListData } from '@/api/api.js'
 
 import BMapJs from "./components/bmap-web.vue";
-import {mounted} from "vue2-ace-editor";
 
 export default {
   name: "b-map-index",
