@@ -1,27 +1,13 @@
 <template>
-  <el-row
-    class="filter-list-view"
-    v-if="tabs.length > 0 && Object.keys(formModel).length > 0"
-  >
-    <el-form
-      ref="form"
-      inline
-      validateOnRuleChange
-      label-width="100px"
-      size="medium"
-    >
+  <el-row class="filter-list-view" v-if="tabs.length > 0 && Object.keys(formModel).length > 0">
+    <el-form ref="form" inline validateOnRuleChange label-width="100px" size="medium">
       <template v-for="tab in tabs" v-if="showFilterTab(tab)">
         <el-form-item :label="tab.label">
           <div v-if="tab._type === 'input'">
             <el-row :gutter="5">
               <el-col :span="24">
-                <el-input
-                  col="2"
-                  :placeholder="tab.placeholder"
-                  clearable
-                  :name="tab.list_tab_no"
-                  v-model="formModel[tab.list_tab_no].value"
-                ></el-input>
+                <el-input col="2" :placeholder="tab.placeholder" clearable :name="tab.list_tab_no"
+                  v-model="formModel[tab.list_tab_no].value"></el-input>
               </el-col>
               <!-- <el-col :span="6">
                 <el-radio-group
@@ -42,16 +28,9 @@
           </div>
           <div v-if="tab._type === 'between'">
             <el-col :span="11">
-              <el-date-picker
-                value-format="yyyy-MM-dd HH:mm:ss"
-                startPlaceholder="开始日期"
-                endPlaceholder="结束日期"
-                type="datetimerange"
-                appendToBody
-                placeholder="选择日期"
-                v-model="formModel[tab.list_tab_no].value"
-                style="width: 100%"
-              ></el-date-picker>
+              <el-date-picker value-format="yyyy-MM-dd HH:mm:ss" startPlaceholder="开始日期" endPlaceholder="结束日期"
+                type="datetimerange" appendToBody placeholder="选择日期" v-model="formModel[tab.list_tab_no].value"
+                style="width: 100%"></el-date-picker>
               <!-- <el-date-picker startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker> -->
             </el-col>
             <!-- <el-col class="line" :span="2">-</el-col>
@@ -64,14 +43,8 @@
             </el-col> -->
           </div>
           <div v-if="tab._type === 'select'">
-            <selectPlus
-              :main-data="mainData"
-              :ref="tab.list_tab_no"
-              :tab="tab"
-              :formModels="formModel"
-              :formModel="formModel[tab.list_tab_no]"
-              @on-value-change="selectChange($event, tab)"
-            ></selectPlus>
+            <selectPlus :main-data="mainData" :ref="tab.list_tab_no" :tab="tab" :formModels="formModel"
+              :formModel="formModel[tab.list_tab_no]" @on-value-change="selectChange($event, tab)"></selectPlus>
             <!-- <el-select
               filterable
               remote
@@ -92,33 +65,17 @@
             </el-select> -->
           </div>
           <div v-if="tab._type === 'checkbox'">
-            <el-checkbox-group
-              v-model="formModel[tab.list_tab_no].value"
-              v-if="tab._colSrvData"
-            >
-              <el-checkbox
-                :label="item.value"
-                :name="item.value"
-                v-for="(item, index) in tab.options"
-                :key="index"
-                @change="onCheckChange($event, item, tab.list_tab_no)"
-              >
+            <el-checkbox-group v-model="formModel[tab.list_tab_no].value" v-if="tab._colSrvData">
+              <el-checkbox :label="item.value" :name="item.value" v-for="(item, index) in tab.options" :key="index"
+                @change="onCheckChange($event, item, tab.list_tab_no)">
                 {{ item.label }}
               </el-checkbox>
             </el-checkbox-group>
           </div>
           <div v-if="tab._type === 'radio'">
-            <el-radio-group
-              v-model="formModel[tab.list_tab_no].value"
-              v-if="tab._colSrvData"
-              v-show="tab.options && tab.options.length > 0"
-            >
-              <el-radio
-                :label="item.value"
-                name="type"
-                v-for="(item, index) in tab.options"
-                :key="index"
-              >
+            <el-radio-group v-model="formModel[tab.list_tab_no].value" v-if="tab._colSrvData"
+              v-show="tab.options && tab.options.length > 0">
+              <el-radio :label="item.value" name="type" v-for="(item, index) in tab.options" :key="index">
                 {{ item.label }}
               </el-radio>
             </el-radio-group>
@@ -126,11 +83,7 @@
           <div v-else-if="tab._type === 'img'">
             <el-row :gutter="5">
               <el-col :span="24">
-                <upload-image
-                  :field="buildImgField(tab)"
-                  :limit="1"
-                  @change="tabChange($event, tab)"
-                >
+                <upload-image :field="buildImgField(tab)" :limit="1" @change="tabChange($event, tab)">
                 </upload-image>
               </el-col>
             </el-row>
@@ -218,7 +171,7 @@ export default {
     let self = this;
     self.onBuildFormValues();
   },
-  mounted() {},
+  mounted() { },
   methods: {
     refreshRelatedTabOptions() {
       // 刷新关联tab的options
@@ -227,6 +180,11 @@ export default {
           if (tab?.inputType === "group") {
             let options = [];
             this.$set(tab, "options", options);
+            if (tab?.option_list?.length && !tab?.options?.length) {
+              tab.options = tab.option_list
+              this.$set(this.formModel[tab.list_tab_no], "options", tab.option_list);
+              return
+            }
             this.buildGroupTags(tab).then((res) => {
               let opts = res;
               for (let cs = 0; cs < opts.length; cs++) {
@@ -267,7 +225,7 @@ export default {
         ) {
           try {
             _colSrvData._moreConfig = JSON.parse(_colSrvData.more_config);
-          } catch (e) {}
+          } catch (e) { }
         }
       }
       return {
@@ -528,6 +486,7 @@ export default {
 
     async buildGroupTags(e) {
       let colName = e._colName[0] || "";
+
       let group = [
         {
           colName: colName,
@@ -825,6 +784,7 @@ export default {
   border: 1px solid #f2f2f2;
   padding: 5px;
 }
+
 .el-form-item--mini.el-form-item,
 .el-form-item--small.el-form-item {
   margin-bottom: 8px;

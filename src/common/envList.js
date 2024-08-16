@@ -20,7 +20,7 @@ export const pathConfigMap = {
     ws_port: "55555",
     ws_gateway: "ws://192.168.0.157:55555",
     sso_app: "sso",
-    application: "oa",
+    application: "config",
     app_path: "https://api.100xsys.cn:443/oa",
   },
   244: {

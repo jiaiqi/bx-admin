@@ -646,6 +646,7 @@ export default {
         }
         tabsData.push(tab);
       });
+      
       if (!self.tabsBuild) {
         self.tabs = tabsData;
         self.tabsBuild = true;
