@@ -3,7 +3,7 @@
         <div v-if="isShowList">
             <el-row :gutter="20" style="padding:2px;font-weight: 600;">
                 <el-col :span="12">
-                    <span style="font-size:18px;">{{reportTitle }}</span>
+                    <span style="font-size:18px;">{{reportTitle||'-' }}</span>
                 </el-col>
                 <el-col :span="12"  style="text-align:right">
                     <el-button type="success " size="small" icon="el-icon-download" @click="exportExcel('out-table-data',reportTitle)">导出Excel</el-button>
@@ -412,7 +412,7 @@ export default {
         if(this.$route.query.hasOwnProperty('operate_params')){
             let params = decodeURI(this.$route.query.operate_params)
             // console.log("url params",params,this.$route.query.operate_params)
-            this.defaultConditions = JSON.parse(params) 
+            this.defaultConditions = JSON.parse(params)
         }
         this.getReportData()
         this.getHeight()
@@ -542,7 +542,7 @@ export default {
                     "colNames": [
                         "*"
                     ],
-                    "condition": self.defaultConditions
+                    "condition": self.defaultConditions?.condition || self.defaultConditions
                 }
                 this.selectList(query, null).then((res)=>{
                     if(res.data.state === 'SUCCESS'){
@@ -577,7 +577,7 @@ export default {
                     // console.log('list',req)
                 }
 
-                let urlParams = JSON.stringify(req)
+                let urlParams = decodeURIComponent(JSON.stringify(req))
                 this.addTab(type, urlParams, data.report_name,serviceName);
             }
             
@@ -817,6 +817,9 @@ export default {
 }
 </script>
 <style lang="scss">
+#table-view{
+  padding: 0 10px ;
+}
     .reportview {
         th>.cell {
             text-overflow: clip !important;
