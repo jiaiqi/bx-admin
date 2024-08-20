@@ -1,16 +1,7 @@
 <template>
-  <el-autocomplete
-    class="inline-input"
-    v-model="field.model"
-    clearable
-    :trigger-on-focus="true"
-    :fetch-suggestions="querySearch"
-    placeholder="请输入内容"
-    value-key="label"
-    suffix-icon="el-icon-edit"
-    @select="handleSelect"
-    @clear="handleClear"
-  >
+  <el-autocomplete class="inline-input" v-model="field.model" clearable :trigger-on-focus="true"
+    :fetch-suggestions="querySearch" placeholder="请输入内容" value-key="label" suffix-icon="el-icon-edit"
+    @select="handleSelect" @clear="handleClear">
   </el-autocomplete>
 </template>
 
@@ -19,7 +10,7 @@ export default {
   props: {
     field: Object,
   },
-  mounted() {},
+  mounted() { },
   computed: {
     modelValue() {
       let value = this.field.model;
@@ -73,9 +64,12 @@ export default {
           };
           if (item.value?.indexOf("data.") === 0) {
             obj.value = formModel[item.value.replace("data.", "")];
+          } else if (item.value && item.value.startsWith("'") && item.value.endsWith("'")) {
+            // /^'.*'$/.test(item.value)
+            obj.value = item.value.replace(/'/g, "");
           } else {
             obj.ruleType = "like";
-            obj.value = formModel[item.value.replace("data.", "")];
+            obj.value = item.value
           }
           if (obj.value) {
             req.condition.push(obj);
@@ -191,9 +185,8 @@ export default {
             if (valColumn == this.optionsV2List["key_disp_col"]) {
               result.label = item[this.optionsV2List["key_disp_col"]];
             } else {
-              result.label = `${item[this.optionsV2List["key_disp_col"]]}(${
-                item[this.optionsV2List["refed_col"]]
-              }/${item[this.optionsV2List["key_disp_col"]]})`;
+              result.label = `${item[this.optionsV2List["key_disp_col"]]}(${item[this.optionsV2List["refed_col"]]
+                }/${item[this.optionsV2List["key_disp_col"]]})`;
             }
             return result;
           });

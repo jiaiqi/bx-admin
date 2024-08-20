@@ -18,8 +18,15 @@ if (process.env.NODE_ENV === "development") {
   // const ENV = "xixiang";
   // const ENV = "244";
   const pathConfig = pathConfigMap[ENV];
+  if(location.href?.includes?.('menuapp=')){
+    let app = location.href.split('menuapp=')[1].split(';')[0]
+    if(app){
+      pathConfig.application = app
+    }
+  }
   baseURL = pathConfig.gateway; // 正式环境
   top.pathConfig = pathConfig;
+
 }
 
 if (top?.pathConfig?.gateway) {

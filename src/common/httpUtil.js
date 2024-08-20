@@ -71,6 +71,8 @@ export const resolveDefaultSrvApp = function (vm = {}) {
     // try  page level
     if (node?.$route && node?.$route?.query?.srvApp) {
       app = node?.$route?.query?.srvApp;
+    } else if (node?.$route && node?.$route?.query?.menuapp) {
+      app = node?.$route?.query?.menuapp;
     } else {
       let defaultApp =
         (window.frameElement && window.frameElement.dataset["app"]) ||

@@ -30,7 +30,7 @@ export const pathConfigMap = {
     port: "8101",
     gateway: "http://192.168.0.244:8101",
     sso_app: "sso",
-    application: "oa",
+    application: "vxfinance",
   },
   wanxiang: {
     //

@@ -410,7 +410,7 @@ export default {
             this.reportTitle = this.$route.query.title
         }
         if(this.$route.query.hasOwnProperty('operate_params')){
-            let params = decodeURI(this.$route.query.operate_params)
+            let params = decodeURIComponent(this.$route.query.operate_params)
             // console.log("url params",params,this.$route.query.operate_params)
             this.defaultConditions = JSON.parse(params)
         }
@@ -577,7 +577,7 @@ export default {
                     // console.log('list',req)
                 }
 
-                let urlParams = decodeURIComponent(JSON.stringify(req))
+                let urlParams = encodeURIComponent(JSON.stringify(req))
                 this.addTab(type, urlParams, data.report_name,serviceName);
             }
             
