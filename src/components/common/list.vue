@@ -74,13 +74,13 @@
                 " :circle="item._moreConfig.style !== '' &&
                   item._moreConfig.style === 'circle'
                   " v-show="item.evalVisible()" :disabled="item.evalDisable()" v-if="
-                    (!readOnly &&
-                      existsGridButton &&
-                      item.permission &&
-                      getDispExps(item)) ||
-                    (!item.permission &&
-                      item.hasOwnProperty('always_show') &&
-                      item.always_show === true)
+                  (!readOnly &&
+                    existsGridButton &&
+                    item.permission &&
+                    getDispExps(item)) ||
+                  (!item.permission &&
+                    item.hasOwnProperty('always_show') &&
+                    item.always_show === true)
                 " @click="gridButtonClick(item)">
             {{ getButtonName(item) }}
           </el-button>
@@ -359,8 +359,8 @@
                           " :plain="button._moreConfig.style !== '' &&
                             button._moreConfig.style === 'plain'
                             " :circle="button._moreConfig.style !== '' &&
-                              button._moreConfig.style === 'circle'
-                              " :disabled="button.evalDisable()" v-else-if="
+                            button._moreConfig.style === 'circle'
+                            " :disabled="button.evalDisable()" v-else-if="
                             button.button_type !== '_btn_group' &&
                             getButtonOptSrv(button, scope.row, 'isShow')
                           ">
@@ -453,7 +453,7 @@
         :form-model-decorator="formModelDecorator" :haveDraft="isDraft" :pageIsDraft="activeTabName"
         :childForeignkey="childForeignkey" :parentPageType="listType" :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)" @form-loaded="onAddChildFormLoaded"
-        @executor-complete="" @submitted2mem="onAdd2MemSubmitted">
+        @executor-complete="onAddExecutorComplete($event)" @submitted2mem="onAdd2MemSubmitted">
       </add>
     </el-dialog>
     <el-dialog class="customDialogClass" title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body
@@ -1070,11 +1070,16 @@ export default {
   }
 
   .el-table td .cell {
-    // display: block;
-    line-height: 23px;
     display: block;
+    line-height: 23px;
   }
-
+  .el-table__expand-icon>.el-icon{
+    position: inherit;
+    margin-left:0;
+    margin-top:0;
+    left: 0;
+    top: 0;
+  }
   .el-table td.is-right,
   .el-table th.is-right {
     .cell.el-tooltip {
@@ -1154,7 +1159,7 @@ export default {
 }
 
 .link-to-detail {
-  // display: contents;&:hover {
+  &:hover {
     color: #409eff;
     cursor: pointer;
   }
