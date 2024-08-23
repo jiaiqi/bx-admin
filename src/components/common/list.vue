@@ -65,23 +65,23 @@
         </el-button>
         <template v-for="(item, index) in sortedGridButtons">
           <el-button :key="index" :size="item._moreConfig.size" :type="selectFormShow && item.button_type === 'select'
-              ? 'success'
-              : item._moreConfig.type
+            ? 'success'
+            : item._moreConfig.type
             " :icon="item && (item.button_icon || item._moreConfig.icon)" :round="item._moreConfig.style !== '' &&
               item._moreConfig.style === 'round'
               " :plain="item._moreConfig.style !== '' &&
-              item._moreConfig.style === 'plain'
-              " :circle="item._moreConfig.style !== '' &&
-              item._moreConfig.style === 'circle'
-              " v-show="item.evalVisible()" :disabled="item.evalDisable()" v-if="
-              (!readOnly &&
-                existsGridButton &&
-                item.permission &&
-                getDispExps(item)) ||
-              (!item.permission &&
-                item.hasOwnProperty('always_show') &&
-                item.always_show === true)
-            " @click="gridButtonClick(item)">
+                item._moreConfig.style === 'plain'
+                " :circle="item._moreConfig.style !== '' &&
+                  item._moreConfig.style === 'circle'
+                  " v-show="item.evalVisible()" :disabled="item.evalDisable()" v-if="
+                    (!readOnly &&
+                      existsGridButton &&
+                      item.permission &&
+                      getDispExps(item)) ||
+                    (!item.permission &&
+                      item.hasOwnProperty('always_show') &&
+                      item.always_show === true)
+                " @click="gridButtonClick(item)">
             {{ getButtonName(item) }}
           </el-button>
         </template>
@@ -129,20 +129,20 @@
             <!-- v-if="(item.show && (!item.evalVisible || item.evalVisible()))" ---↓-->
             <el-table-column v-for="(item, index) in gridHeader" :key="index" header-align="center"
               v-if="getGridHeaderDispExps(item, listMainFormDatas)" :width="item.width
-                  ? item.width
-                  : getListShowFileList(item)
+                ? item.width
+                : getListShowFileList(item)
+                  ? item.list_min_width
                     ? item.list_min_width
-                      ? item.list_min_width
-                      : 180
-                    : ''
+                    : 180
+                  : ''
                 " :filter-method="item.filters ? filterHandler : null" :prop="item.column" :align="item.align"
               :fixed="item.rowFixed ? true : null" :show-overflow-tooltip="getListShowFileList(item) === true
-                  ? false
-                  : !listCellsTextDispWarp
+                ? false
+                : !listCellsTextDispWarp
                 " :label="item.label" :min-width="getColumnMinWidth(item)
                   ? getColumnMinWidth(item)
                   : item.list_min_width + 'px'
-                " :filters="item.filters" :column-key="item.column"
+                  " :filters="item.filters" :column-key="item.column"
               :sortable="item.sortable && !isMem() ? 'custom' : false" :cell-style="cellStyle">
               <!-- <template slot="header" slot-scope="scope">
                 <div style="display: inline-flex;">
@@ -259,12 +259,12 @@
                     <el-link type="primary" @click="getDownloadFile(fileItem)"
                       v-if="getListFileDatas(item, scope.row).length > 0">
                       <i :class="getFileType(fileItem) === 'img'
-                          ? 'el-icon-picture-outline'
-                          : getFileType(fileItem) === 'doc'
-                            ? 'el-icon-tickets'
-                            : getFileType(fileItem) === 'media'
-                              ? 'el-icon-picture-outline'
-                              : 'el-icon-folder'
+                        ? 'el-icon-picture-outline'
+                        : getFileType(fileItem) === 'doc'
+                          ? 'el-icon-tickets'
+                          : getFileType(fileItem) === 'media'
+                            ? 'el-icon-picture-outline'
+                            : 'el-icon-folder'
                         "></i>
                       {{ getStrIntercept(fileItem.src_name, 0) }}
                     </el-link>
@@ -345,19 +345,25 @@
                     " v-show="button.button_type === '_btn_group' ||
                       isRowButtonVisible(button, scope.row, scope.$index)
                       ">
+                    <el-button type="text" :title="getButtonName(button, scope.row)"
+                      @click.stop.native="rowButtonClick(button, scope.row)" v-if="
+                        routeMeta && routeMeta.isTree === true &&
+                        button.button_type == 'addchild' &&
+                        getButtonOptSrv(button, scope.row, 'isShow')
+                      "><i class="el-icon-plus"></i></el-button>
                     <el-button @click="rowButtonClick(button, scope.row)" :size="button._moreConfig.size"
                       :type="button._moreConfig.type" :icon="button &&
                         (button.button_icon || button._moreConfig.icon)
                         " :round="button._moreConfig.style !== '' &&
-                        button._moreConfig.style === 'round'
-                        " :plain="button._moreConfig.style !== '' &&
-                        button._moreConfig.style === 'plain'
-                        " :circle="button._moreConfig.style !== '' &&
-                        button._moreConfig.style === 'circle'
-                        " :disabled="button.evalDisable()" v-if="
-                        button.button_type !== '_btn_group' &&
-                        getButtonOptSrv(button, scope.row, 'isShow')
-                      ">
+                          button._moreConfig.style === 'round'
+                          " :plain="button._moreConfig.style !== '' &&
+                            button._moreConfig.style === 'plain'
+                            " :circle="button._moreConfig.style !== '' &&
+                              button._moreConfig.style === 'circle'
+                              " :disabled="button.evalDisable()" v-else-if="
+                            button.button_type !== '_btn_group' &&
+                            getButtonOptSrv(button, scope.row, 'isShow')
+                          ">
                       {{ getButtonName(button, scope.row) }}
                     </el-button>
                     <el-dropdown v-else-if="
@@ -380,20 +386,20 @@
                             :type="subtns._moreConfig.type" :icon="subtns &&
                               (subtns.button_icon || subtns._moreConfig.icon)
                               " :round="subtns._moreConfig.style !== '' &&
-                              subtns._moreConfig.style === 'round'
-                              " :plain="subtns._moreConfig.style !== '' &&
-                              subtns._moreConfig.style === 'plain'
-                              " :circle="subtns._moreConfig.style !== '' &&
-                              subtns._moreConfig.style === 'circle'
-                              " :disabled="subtns.evalDisable()" v-show="isRowButtonVisible(
-                              subtns,
-                              scope.row,
-                              scope.$index
-                            ) &&
-                              getDispExps(subtns, scope.row) &&
-                              subtns.permission &&
-                              getButtonOptSrv(subtns, scope.row, 'isShow')
-                              ">
+                                subtns._moreConfig.style === 'round'
+                                " :plain="subtns._moreConfig.style !== '' &&
+                                  subtns._moreConfig.style === 'plain'
+                                  " :circle="subtns._moreConfig.style !== '' &&
+                                  subtns._moreConfig.style === 'circle'
+                                  " :disabled="subtns.evalDisable()" v-show="isRowButtonVisible(
+                                  subtns,
+                                  scope.row,
+                                  scope.$index
+                                ) &&
+                                  getDispExps(subtns, scope.row) &&
+                                  subtns.permission &&
+                                  getButtonOptSrv(subtns, scope.row, 'isShow')
+                                  ">
                             {{ subtns.button_name }}
                           </el-button>
                         </el-dropdown-item>
@@ -440,6 +446,16 @@
       </add>
       <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
+    <el-dialog title="添加下级节点" width="90%" :close-on-click-modal="1 == 2" :visible="activeForm == 'add-child'"
+      @close="activeForm = 'xx'" append-to-body>
+      <add :mainService="mainService" name="list-add-child" ref="add-child-form" v-if="activeForm == 'add-child'"
+        :service="getAddService" :submit2-db="!isMem()" :defaultCondition="defaultCondition"
+        :form-model-decorator="formModelDecorator" :haveDraft="isDraft" :pageIsDraft="activeTabName"
+        :childForeignkey="childForeignkey" :parentPageType="listType" :parentMainFormDatas="listMainFormDatas"
+        @action-complete="onAddFormActionComplete($event)" @form-loaded="onAddChildFormLoaded"
+        @executor-complete="" @submitted2mem="onAdd2MemSubmitted">
+      </add>
+    </el-dialog>
     <el-dialog class="customDialogClass" title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body
       :visible="activeForm == 'duplicate'" @close="activeForm = 'xx'">
       <simple-add name="list-duplicate" ref="duplicate-form" :pageName="'list-duplicate'"
@@ -458,8 +474,8 @@
         :submit2-db="storageType == 'db'" :parentPageType="listType" :haveDraft="isDraft"
         :pageName="'list-duplicatedeep'" :parentMainFormDatas="listMainFormDatas" :pageIsDraft="activeTabName"
         :defaultValues="activeData" duplicateType="duplicatedeep" :duplicateData="clickedRow && clickedRow.duplicatedeep
-            ? clickedRow.duplicatedeep
-            : null
+          ? clickedRow.duplicatedeep
+          : null
           " @action-complete="onAddFormActionComplete($event)" @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted">
       </add>
@@ -472,8 +488,8 @@
         :pageIsDraft="activeTabName" :initLoad="initLoad" :defaultValues="clickedRow['update']"
         :submit2-db="storageType == 'db'" :parentPageType="listType" :haveDraft="isDraft"
         :parentMainFormDatas="listMainFormDatas" :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null
-          " @action-complete="onUpdateFormActionComplete($event)" @form-loaded="onUpdateFormLoaded($refs['update-form'])"
-        @submitted2mem="onUpdate2MemSubmitted">
+          " @action-complete="onUpdateFormActionComplete($event)"
+        @form-loaded="onUpdateFormLoaded($refs['update-form'])" @submitted2mem="onUpdate2MemSubmitted">
       </update>
       <!-- <simple-update name="list-update" ref="update-form"
                      v-if="activeForm == 'update' " :service="getUpdateService"
@@ -530,8 +546,8 @@
         :src="src.url" v-for="(src, index) in imagesListRun" :key="index" />
     </viewer>
     <el-dialog class="customDialogClass" custom-class="preview-dialog" :title="currentType === 'pdf'
-        ? '第' + currentPage + '页/共' + pageCount + '页'
-        : '预览'
+      ? '第' + currentPage + '页/共' + pageCount + '页'
+      : '预览'
       " :visible.sync="centerDialogVisible" width="50%" lock-scroll center>
       <el-row type="flex" align="middle" v-if="currentType === 'pdf'">
         <el-col :span="2" class="grid-content">
@@ -639,6 +655,7 @@ export default {
   props: {
     childForeignkey: Object,
     defaultCondition: Array,
+    routeMeta: Object
   },
 
   mixins: [
@@ -1053,6 +1070,8 @@ export default {
   }
 
   .el-table td .cell {
+    // display: block;
+    line-height: 23px;
     display: block;
   }
 
@@ -1135,9 +1154,7 @@ export default {
 }
 
 .link-to-detail {
-  display: contents;
-
-  &:hover {
+  // display: contents;&:hover {
     color: #409eff;
     cursor: pointer;
   }
