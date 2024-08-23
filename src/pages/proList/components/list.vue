@@ -26,22 +26,10 @@
         @submitted2mem="onAdd2MemSubmitted">
       </add>
     </div>
-    <!-- <el-row v-if="groupByLayoutRun.length > 0" type="flex" class="row-bg-group-layout" justify="left">
-         <el-col :xs="8" :sm="6" :md="4" :lg="3" :xl="1" v-for="(item,index) in groupByLayoutRun" :key="index">
-           <div class="grid-content bg-purple group-by-layout">
-             {{item.aliasName}}:{{item.value}}{{item.unit}}
-           </div>
-           </el-col>
-    </el-row> -->
     <el-row v-show="!hideButtons" type="flex" class="row-bg" justify="space-between">
       <div class="table-head-btns">
         <icon-excel-colorful class="svg-icon" style="cursor: pointer" size="30" :colors="['#409eff']" :strokeWidth="3"
           title="打开excel进行编辑" @click.native="gridButtonClick(excelBtn)" v-if="excelBtn"></icon-excel-colorful>
-        <!--        <icon-excel class="svg-icon" style="cursor: pointer" size="30" :strokeWidth="3"-->
-        <!--                             @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel>-->
-        <!-- <el-button type="primary" size="small"  v-if="(defaultDirtyFlags == 'add' || listType ==  'addchildlist') && batchAddButton && batchAddButton.hasOwnProperty('batchAdd') && batchAddButton.batchAdd.isDisp && selection" @click.stop="onMemBatchUpdateActive">
-          批量操作
-        </el-button> -->
         <div v-if="cfgJson && cfgJson.list_type === '卡片列表' && !childForeignkey" class="list-style-switch">
           <icon-list :colors="listStyle === 'list' ? ['#fff'] : ['#333']" :style="{
             backgroundColor: listStyle === 'list' ? '#1684fc' : '#fff',
@@ -65,33 +53,27 @@
         </el-button>
         <template v-for="(item, index) in sortedGridButtons">
           <el-button :key="index" :size="item._moreConfig.size" :type="selectFormShow && item.button_type === 'select'
-              ? 'success'
-              : item._moreConfig.type
+            ? 'success'
+            : item._moreConfig.type
             " :icon="item && (item.button_icon || item._moreConfig.icon)" :round="item._moreConfig.style !== '' &&
               item._moreConfig.style === 'round'
               " :plain="item._moreConfig.style !== '' &&
-              item._moreConfig.style === 'plain'
-              " :circle="item._moreConfig.style !== '' &&
-              item._moreConfig.style === 'circle'
-              " v-show="item.evalVisible()" :disabled="item.evalDisable()" v-if="
-              (!readOnly &&
-                existsGridButton &&
-                item.permission &&
-                getDispExps(item)) ||
-              (!item.permission &&
-                item.hasOwnProperty('always_show') &&
-                item.always_show === true)
-            " @click="gridButtonClick(item)">
+                item._moreConfig.style === 'plain'
+                " :circle="item._moreConfig.style !== '' &&
+                item._moreConfig.style === 'circle'
+                " v-show="item.evalVisible()" :disabled="item.evalDisable()" v-if="
+                (!readOnly &&
+                  existsGridButton &&
+                  item.permission &&
+                  getDispExps(item)) ||
+                (!item.permission &&
+                  item.hasOwnProperty('always_show') &&
+                  item.always_show === true)
+              " @click="gridButtonClick(item)">
             {{ getButtonName(item) }}
           </el-button>
         </template>
       </div>
-
-      <!-- <div>
-            <el-button  @click="gridButtonClick({'button_type':'export'})">
-                导出测试
-              </el-button>
-          </div> -->
     </el-row>
 
     <div class="table-list-row">
@@ -124,53 +106,27 @@
             <el-table-column type="selection" label="全选" header-align="left" width="50px"
               v-if="selection && !readOnly && !isDemo">
             </el-table-column>
-            <!-- :show-summary="sumRowData ? true : false"
-            :summary-method="getSummaries" -->
-            <!-- v-if="(item.show && (!item.evalVisible || item.evalVisible()))" ---↓-->
             <el-table-column v-for="(item, index) in gridHeader" :key="index" header-align="center"
+              :expand="firstColumn && firstColumn.property === item.column"
               v-if="getGridHeaderDispExps(item, listMainFormDatas)" :width="item.width
-                  ? item.width
-                  : getListShowFileList(item)
+                ? item.width
+                : getListShowFileList(item)
+                  ? item.list_min_width
                     ? item.list_min_width
-                      ? item.list_min_width
-                      : 180
-                    : ''
+                    : 180
+                  : ''
                 " :filter-method="item.filters ? filterHandler : null" :prop="item.column" :align="item.align"
               :fixed="item.rowFixed ? true : null" :show-overflow-tooltip="getListShowFileList(item) === true
-                  ? false
-                  : !listCellsTextDispWarp
+                ? false
+                : !listCellsTextDispWarp
                 " :label="item.label" :min-width="getColumnMinWidth(item)
                   ? getColumnMinWidth(item)
                   : item.list_min_width + 'px'
-                " :filters="item.filters" :column-key="item.column"
+                  " :filters="item.filters" :column-key="item.column"
               :sortable="item.sortable && !isMem() ? 'custom' : false" :cell-style="cellStyle">
-              <!-- <template slot="header" slot-scope="scope">
-                <div style="display: inline-flex;">
-                  <span>
-                  {{ item.label }}
-                  </span>
-                  <div style="display: flex;flex-direction: column;line-height: unset;">
-                    <span
-                    style="line-height: unset;"
-                    v-for="key in Object.keys(item.backgroundMap)"
-                    v-if="item.backgroundMap"
-                  >
-                    <span
-                      :style="{
-                        background: item.backgroundMap[key],
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '10px',
-                        display: 'inline-block',
-                      }"
-                    ></span>
-                    <span>
-                    </span>
-                  </span>
-                  </div>
-                </div>
-              </template> -->
               <template slot-scope="scope">
+                <span v-if="index === 0">000</span>
+                <!-- <span v-if="listType==='treelist'&&scope.row._hasChildren===true" @click="toggleTree(scope.row,scope.row.expanded)">+</span> -->
                 <!-- 二进制文件 -->
                 <div v-if="item.col_type === 'ImgBin'">
                   <el-image style="width: 50px; height: 50px" :src="blobToBase64(scope.row[item.column])" fit="cover">
@@ -206,10 +162,6 @@
                 <div v-else-if="
                   isInplaceEdit() && findEditField(scope.row, item.column)
                 " class="is-InplaceEdit">
-                  <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
-                          @field-value-changed="onCellValueChanged(scope.row, item.column)"
-                          @blur="onCellBlur(scope.row, item.column)">
-                    </raw-field-editor> -->
                   {{ formatValue(scope.row, item) }}
                 </div>
                 <div v-else-if="item.col_type === 'progress'">
@@ -236,9 +188,6 @@
                     " />
                 </div>
 
-                <!-- <div v-else-if="item.col_type === 'FileList'">
-                    <upload-file :field="wrapCellIntoField(item.column, scope.row[item.column])"></upload-file>
-                  </div> 1116隐藏-->
                 <div v-else-if="
                   item.col_type === 'FileList' && getListShowFileList(item)
                 " class="list-image">
@@ -259,16 +208,15 @@
                     <el-link type="primary" @click="getDownloadFile(fileItem)"
                       v-if="getListFileDatas(item, scope.row).length > 0">
                       <i :class="getFileType(fileItem) === 'img'
-                          ? 'el-icon-picture-outline'
-                          : getFileType(fileItem) === 'doc'
-                            ? 'el-icon-tickets'
-                            : getFileType(fileItem) === 'media'
-                              ? 'el-icon-picture-outline'
-                              : 'el-icon-folder'
+                        ? 'el-icon-picture-outline'
+                        : getFileType(fileItem) === 'doc'
+                          ? 'el-icon-tickets'
+                          : getFileType(fileItem) === 'media'
+                            ? 'el-icon-picture-outline'
+                            : 'el-icon-folder'
                         "></i>
                       {{ getStrIntercept(fileItem.src_name, 0) }}
                     </el-link>
-                    <!-- <span></span> -->
                   </div>
                 </div>
 
@@ -320,20 +268,6 @@
               sortedRowButtons.length > 0
             " style="box-sizing: border-box">
               <template slot-scope="scope" v-if="getColumnsShow(scope.row)">
-                <!-- <el-button v-for="(button, index) in sortedRowButtons"
-                            :key="index"
-                            @click="rowButtonClick(button,scope.row)"
-                            :size="button._moreConfig.size" 
-                            :type="button._moreConfig.type" 
-                            :icon="button._moreConfig.icon" 
-                            :round="button._moreConfig.style !== '' &&  button._moreConfig.style === 'round'"
-                            :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
-                            :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
-                            :disabled="button.evalDisable()"
-                            v-if="getDispExps(button, scope.row) && button.permission"
-                            v-show="isRowButtonVisible(button, scope.row)">
-                    {{ getButtonName(button, scope.row) }}
-                  </el-button> -->
                 <div style="margin-bottom: -5px">
                   <div v-for="(button, index) in sortedRowButtons" :key="index" style="
                       margin-right: 5px;
@@ -349,15 +283,15 @@
                       :type="button._moreConfig.type" :icon="button &&
                         (button.button_icon || button._moreConfig.icon)
                         " :round="button._moreConfig.style !== '' &&
-                        button._moreConfig.style === 'round'
-                        " :plain="button._moreConfig.style !== '' &&
-                        button._moreConfig.style === 'plain'
-                        " :circle="button._moreConfig.style !== '' &&
-                        button._moreConfig.style === 'circle'
-                        " :disabled="button.evalDisable()" v-if="
-                        button.button_type !== '_btn_group' &&
-                        getButtonOptSrv(button, scope.row, 'isShow')
-                      ">
+                          button._moreConfig.style === 'round'
+                          " :plain="button._moreConfig.style !== '' &&
+                          button._moreConfig.style === 'plain'
+                          " :circle="button._moreConfig.style !== '' &&
+                          button._moreConfig.style === 'circle'
+                          " :disabled="button.evalDisable()" v-if="
+                          button.button_type !== '_btn_group' &&
+                          getButtonOptSrv(button, scope.row, 'isShow')
+                        ">
                       {{ getButtonName(button, scope.row) }}
                     </el-button>
                     <el-dropdown v-else-if="
@@ -380,20 +314,20 @@
                             :type="subtns._moreConfig.type" :icon="subtns &&
                               (subtns.button_icon || subtns._moreConfig.icon)
                               " :round="subtns._moreConfig.style !== '' &&
-                              subtns._moreConfig.style === 'round'
-                              " :plain="subtns._moreConfig.style !== '' &&
-                              subtns._moreConfig.style === 'plain'
-                              " :circle="subtns._moreConfig.style !== '' &&
-                              subtns._moreConfig.style === 'circle'
-                              " :disabled="subtns.evalDisable()" v-show="isRowButtonVisible(
-                              subtns,
-                              scope.row,
-                              scope.$index
-                            ) &&
-                              getDispExps(subtns, scope.row) &&
-                              subtns.permission &&
-                              getButtonOptSrv(subtns, scope.row, 'isShow')
-                              ">
+                                subtns._moreConfig.style === 'round'
+                                " :plain="subtns._moreConfig.style !== '' &&
+                                subtns._moreConfig.style === 'plain'
+                                " :circle="subtns._moreConfig.style !== '' &&
+                                subtns._moreConfig.style === 'circle'
+                                " :disabled="subtns.evalDisable()" v-show="isRowButtonVisible(
+                                subtns,
+                                scope.row,
+                                scope.$index
+                              ) &&
+                                getDispExps(subtns, scope.row) &&
+                                subtns.permission &&
+                                getButtonOptSrv(subtns, scope.row, 'isShow')
+                                ">
                             {{ subtns.button_name }}
                           </el-button>
                         </el-dropdown-item>
@@ -401,26 +335,12 @@
                     </el-dropdown>
                   </div>
                 </div>
-
-                <!-- <el-badge  class="table-row-badge" 
-                      v-if="isMem() && isDirtyRow(scope.row)"
-                      :value="getDirtyRowTagText(scope.row)"
-                      :type="getDirtyRowTagType(scope.row)"> 
-                      -->
-                <!-- {{getDirtyRowTagText(scope.row) === '添加' ? 'new' : getDirtyRowTagText(scope.row)}} -->
-                <!-- <el-tag v-if="isMem() && isDirtyRow(scope.row)"
-                          :type="getDirtyRowTagType(scope.row)">
-                    {{getDirtyRowTagText(scope.row) === '添加' ? 'new' : getDirtyRowTagText(scope.row)}}
-                  </el-tag> -->
-
-                <!-- </el-badge> -->
               </template>
             </el-table-column>
           </el-table>
         </el-row>
       </div>
 
-      <!-- <el-row type="flex" class="row-bg" justify="center" v-if="!isMem()" -->
       <el-row type="flex" class="row-bg" justify="center" v-if="showPagination && setShowPagination"
         v-show="!hidePagination && gridPage.total > 0 && !isDemo">
         <el-pagination @current-change="handleCurrentChange" @size-change="handleSizeChange"
@@ -438,7 +358,6 @@
         @action-complete="onAddFormActionComplete($event)" @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted">
       </add>
-      <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
     <el-dialog class="customDialogClass" title="复制" width="90%" :close-on-click-modal="1 == 2" append-to-body
       :visible="activeForm == 'duplicate'" @close="activeForm = 'xx'">
@@ -458,8 +377,8 @@
         :submit2-db="storageType == 'db'" :parentPageType="listType" :haveDraft="isDraft"
         :pageName="'list-duplicatedeep'" :parentMainFormDatas="listMainFormDatas" :pageIsDraft="activeTabName"
         :defaultValues="activeData" duplicateType="duplicatedeep" :duplicateData="clickedRow && clickedRow.duplicatedeep
-            ? clickedRow.duplicatedeep
-            : null
+          ? clickedRow.duplicatedeep
+          : null
           " @action-complete="onAddFormActionComplete($event)" @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted">
       </add>
@@ -472,21 +391,39 @@
         :pageIsDraft="activeTabName" :initLoad="initLoad" :defaultValues="clickedRow['update']"
         :submit2-db="storageType == 'db'" :parentPageType="listType" :haveDraft="isDraft"
         :parentMainFormDatas="listMainFormDatas" :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null
-          " @action-complete="onUpdateFormActionComplete($event)" @form-loaded="onUpdateFormLoaded($refs['update-form'])"
-        @submitted2mem="onUpdate2MemSubmitted">
+          " @action-complete="onUpdateFormActionComplete($event)"
+        @form-loaded="onUpdateFormLoaded($refs['update-form'])" @submitted2mem="onUpdate2MemSubmitted">
       </update>
-      <!-- <simple-update name="list-update" ref="update-form"
-                     v-if="activeForm == 'update' " :service="getUpdateService"
-                     :pk="getClickedRowPk('update')"
-                     :submit2-db="storageType == 'db'"
-                     :parentAddMainFormDatas="listMainFormDatas"
-                     :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null"
-                     @action-complete="onUpdateFormActionComplete($event)"
-                     @form-loaded="onUpdateFormLoaded($refs['update-form'])"
-                     @submitted2mem="onUpdate2MemSubmitted">
-      </simple-update> -->
     </el-dialog>
-
+    <el-dialog
+      title="添加下级节点"
+      width="90%"
+      :close-on-click-modal="1 == 2"
+      :visible="activeForm == 'add-child'"
+      @close="activeForm = 'xx'"
+      append-to-body
+    >
+      <add
+        :mainService="mainService"
+        name="list-add-child"
+        ref="add-child-form"
+        v-if="activeForm == 'add-child'"
+        :service="getAddService"
+        :submit2-db="!isMem()"
+        :defaultCondition="defaultCondition"
+        :form-model-decorator="formModelDecorator"
+        :haveDraft="isDraft"
+        :pageIsDraft="activeTabName"
+        :childForeignkey="childForeignkey"
+        :parentPageType="listType"
+        :parentMainFormDatas="listMainFormDatas"
+        @action-complete="onAddFormActionComplete($event)"
+        @form-loaded="onAddChildFormLoaded"
+        @executor-complete="onAddExecutorComplete($event)"
+        @submitted2mem="onAdd2MemSubmitted"
+      >
+      </add>
+    </el-dialog>
     <el-dialog class="customDialogClass" title="导入" width="90%" :visible="activeForm == 'import'" append-to-body
       @close="activeForm = 'xx'">
       <import-dialog :service="addService" :sign-service-name="addService" v-if="activeForm == 'import'"
@@ -530,8 +467,8 @@
         :src="src.url" v-for="(src, index) in imagesListRun" :key="index" />
     </viewer>
     <el-dialog class="customDialogClass" custom-class="preview-dialog" :title="currentType === 'pdf'
-        ? '第' + currentPage + '页/共' + pageCount + '页'
-        : '预览'
+      ? '第' + currentPage + '页/共' + pageCount + '页'
+      : '预览'
       " :visible.sync="centerDialogVisible" width="50%" lock-scroll center>
       <el-row type="flex" align="middle" v-if="currentType === 'pdf'">
         <el-col :span="2" class="grid-content">
@@ -563,8 +500,6 @@
             @click="changePdfPage('next')"></el-button>
         </el-col>
       </el-row>
-
-      <!-- <el-image v-else  :src="currentUrl" lazy></el-image> -->
     </el-dialog>
     <el-dialog class="customDialogClass" title="二级密码验证" :show-close="false" width="40%" :close-on-click-modal="1 == 2"
       append-to-body :visible="activeForm == 'srv-auth-login'" @close="activeForm = 'xx'">
@@ -574,42 +509,40 @@
 </template>
 
 <script>
-import simpleFilter from "./simple-filter.vue";
-import simpleCard from "./simple-card.vue";
-import SimpleAdd from "./simple-add.vue";
-import SimpleUpdate from "./simple-update.vue";
-import update from "./update.vue";
-import ListPopupMixin from "../mixin/list-popup-mixin"; // 弹出列表js
-import CustButtonMinx from "../mixin/cust-button-minx"; // 自定义按钮js
-import MemListMixin from "../mixin/mem-list-mixin"; // 内存列表js
-import FieldRedundantMixin from "../mixin/field-redundant-mixin"; // 字段上下游js
-import ListMixin from "../mixin/list-mixin"; // 列表js
-import ListCalcMinWidthMixin from "../mixin/list-calc-min-width-mixin"; //保存表格最小列宽
+import simpleFilter from "@/components/common/simple-filter.vue";
+import simpleCard from "@/components/common/simple-card.vue";
+import SimpleAdd from "@/components/common/simple-add.vue";
+import SimpleUpdate from "@/components/common/simple-update.vue";
+import update from "@/components/common/update.vue";
+import ListPopupMixin from "@/components/mixin/list-popup-mixin"; // 弹出列表js
+import CustButtonMinx from "@/components/mixin/cust-button-minx"; // 自定义按钮js
+import MemListMixin from "@/components/mixin/mem-list-mixin"; // 内存列表js
+import FieldRedundantMixin from "@/components/mixin/field-redundant-mixin"; // 字段上下游js
+import ListMixin from "@/components/mixin/list-mixin"; // 列表js
+// import ListMixin from "./list.mixin"; // 列表js
+import ListCalcMinWidthMixin from "@/components/mixin/list-calc-min-width-mixin"; //保存表格最小列宽
 
-import RawFieldEditor from "../common/raw-field-editor.vue"; // 表单元件
-import srvAuthLogin from "../common/srvAuthLogin.vue"; // 服务密码验证
-import InlineList from "../common/inline-list.vue"; // 废弃
-import ImportDialog from "../ui/import-form.vue"; // 导入ui
-import UploadFile from "../ui/upload-file.vue"; // 上传文件
-import PopupMemList from "./popup-mem-list"; // 弹出内存列表
-import exportLayout from "./export-layout"; // 自定义导出 || 导入
-import batchApprove from "../ui/batch-approve.vue"; // 流程审批
-// import batchApprove from "../ui/batch-approve.vue";   // 流程审批
-import pdf from "vue-pdf";
-import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
+import RawFieldEditor from "@/components/common/raw-field-editor.vue"; // 表单元件
+import srvAuthLogin from "@/components/common/srvAuthLogin.vue"; // 服务密码验证
+import InlineList from "@/components/common/inline-list.vue"; // 废弃
+import ImportDialog from "@/components/ui/import-form.vue"; // 导入ui
+import UploadFile from "@/components/ui/upload-file.vue"; // 上传文件
+import PopupMemList from "@/components/common/popup-mem-list"; // 弹出内存列表
+import exportLayout from "@/components/common/export-layout"; // 自定义导出 || 导入
+import batchApprove from "@/components/ui/batch-approve.vue"; // 流程审批
 
-import inlineEditListMixin from "../mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
-import inlineEditList from "./inline-edit-list.vue";
-import vueChart from "../ui/widget/chart.vue";
-import { blobToBase64 } from "../../common/common";
+import inlineEditListMixin from "@/components/mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
+import inlineEditList from "@/components/common/inline-edit-list.vue";
+import vueChart from "@/components/ui/widget/chart.vue";
+import { blobToBase64 } from "@/common/common";
+import { $http } from "../../../common/http";
 import {
   IconList,
   IconGrid,
   IconExcel,
   IconExcelColorful,
-} from "../../components/icon";
-import CardList from "../ui/card-list/card-list.vue";
-import { $http } from "@/common/http";
+} from "@/components/icon";
+import CardList from "@/components/ui/card-list/card-list.vue";
 
 export default {
   name: "list",
@@ -624,8 +557,8 @@ export default {
     RawFieldEditor,
     InlineList,
     exportLayout,
-    update: () => import("../common/update.vue"),
-    Add: () => import("../common/add.vue"),
+    update: () => import("@/components/common/update.vue"),
+    Add: () => import("@/components/common/add.vue"),
     batchApprove,
     srvAuthLogin,
     inlineEditList,
@@ -639,6 +572,7 @@ export default {
   props: {
     childForeignkey: Object,
     defaultCondition: Array,
+    routeMeta: Object,
   },
 
   mixins: [
@@ -664,6 +598,14 @@ export default {
     };
   },
   computed: {
+    firstColumn() {
+      return this.$refs["bx-table-layout"].columns?.find(
+        (item) => item.columnKey && item.property
+      );
+    },
+    isTreeList() {
+      return this.routeMeta?.isTree === true;
+    },
     setDefaultValue() {
       if (this.filterCondition?.length) {
         return this.filterCondition.reduce((res, cur) => {

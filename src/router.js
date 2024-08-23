@@ -132,6 +132,14 @@ let routes = [
     },
   },
   {
+    path: "/list/tree/:service_name",
+    name: "treeList",
+    meta: {
+      isTree: true,
+    },
+    component: TabList,
+  },
+  {
     path: "/list/:service_name/:card_no",
     name: "cardlist",
     component: list,
@@ -139,6 +147,19 @@ let routes = [
       compName: "list",
     },
   },
+  // {
+  //   path: "/proList/:service_name",
+  //   name: "proList",
+  //   component: () => import("@/pages/proList"),
+  // },
+  // {
+  //   path: "/proList/tree/:service_name",
+  //   name: "proTreeList",
+  //   meta: {
+  //     isTree: true,
+  //   },
+  //   component: () => import("@/pages/proList"),
+  // },
   {
     path: "/reportList",
     name: "reportList",
@@ -343,24 +364,22 @@ let routes = [
     ],
   },
   {
-    path:'/lowcode',
+    path: "/lowcode",
     name: "lowcode",
-    component:()=>import(
-      /* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"
-    ),
-    children:[
+    component: () =>
+      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
+    children: [
       {
-        path:'edit/:no',
+        path: "edit/:no",
         name: "lowcode-detail",
-        meta:{
-          isEditor:true
+        meta: {
+          isEditor: true,
         },
-        component:()=>import(
-          /* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"
-        )
-      }
-    ]
-  }
+        component: () =>
+          import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
+      },
+    ],
+  },
 ];
 
 routes.push({

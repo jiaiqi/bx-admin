@@ -104,8 +104,10 @@ export default {
 
       let row = this.clickedRow["add-child"];
       if (row) {
-        let parentNoField = form.fields[this.parentCol];
-        parentNoField.setSrvVal(row[this.noCol]);
+        const parentCol = this.parentCol || this.listV2Data?.["parent_no_col"];
+        const noCol = this.noCol || this.listV2Data["no_col"];
+        let parentNoField = form.fields[parentCol];
+        parentNoField.setSrvVal(row[noCol]);
       }
 
       // this.$emit('add-child-form-loaded', this.$refs['add-child-form']);

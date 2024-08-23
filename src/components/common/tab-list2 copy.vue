@@ -1,23 +1,85 @@
 <template>
   <div>
-    <el-alert v-if="moreConfig && moreConfig.hasOwnProperty('pagePrompt')"
-      :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title : ''" :closable="false" :type="moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
-        ">
+    <el-alert
+      v-if="moreConfig && moreConfig.hasOwnProperty('pagePrompt')"
+      :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title : ''"
+      :closable="false"
+      :type="
+        moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
+      "
+    >
       <slot>
         <div v-html="moreConfig.pagePrompt.description">
           {{ moreConfig.pagePrompt.description }}
         </div>
       </slot>
     </el-alert>
-    <filterTabs :$srvApp="$srvApp" ref="filterTabs" v-if="tabs.length > 0 && cols.length > 0" :tabs="tabs"
-      :srv="getService()" :cols="cols" :default-condition="getDefaultConditions" :main-data="listMainFormDatas"
-      @on-input-value="onFilterChange" @on-change="getTableDatas"></filterTabs>
-    <el-row :gutter="20" v-if="statsData.length > 0" style="border: 1px solid #f2f2f2; padding: 5px; margin: 0">
+    <filterTabs
+      :$srvApp="$srvApp"
+      ref="filterTabs"
+      v-if="tabs.length > 0 && cols.length > 0"
+      :tabs="tabs"
+      :srv="getService()"
+      :cols="cols"
+      :default-condition="getDefaultConditions"
+      :main-data="listMainFormDatas"
+      @on-input-value="onFilterChange"
+      @on-change="getTableDatas"
+    ></filterTabs>
+    <!-- <el-row  v-if="tabs.length > 0">
+      <el-col :span="24" style="text-align:center">
+         <el-button :disabled="!onInputValue" size="mini" type="primary" icon="el-icon-search" plain @click="getTableDatas">查询</el-button>
+         <el-button size="mini" type="info" icon="el-icon-refresh" plain  @click="onReset">重置</el-button>
+      </el-col>
+    </el-row> -->
+    <!-- 已废弃的tabs list 2020以前 -->
+    <!-- <div v-for="(row, rowIndex) in rows"
+         :key="rowIndex"
+         style="margin-top: 10px; "
+    >
+      <template v-for="(section, sectionIndex) in row.sections"
+      >
+        <div style="margin-left: 1rem; display: inline-block"
+             v-show="sectionVisible(section)"
+        >
+          <i :class="section.section_preicon"></i>
+          <span>{{section.section}}</span>
+          <i :class="section.section_posticon"></i>
+
+          <el-button v-for=" (tab, tabIndex) in section.tabs"
+                     :key="tabIndex"
+                     type="text"
+                     @click="activateTab(section, tab)">
+            <span :style="{color: getButtonColor(tab)}">{{tab.label}}</span>
+            <span style="color: #e74e3e"> {{ getButtonCount(tab) }}</span>
+          </el-button>
+        </div>
+      </template>
+
+    </div> -->
+    <el-row
+      :gutter="20"
+      v-if="statsData.length > 0"
+      style="border: 1px solid #f2f2f2; padding: 5px; margin: 0"
+    >
       <div class="stata-data-layout">
-        <div v-for="(sum, index) in statsData" :key="index" class="text-center stata-data-item">
-          <div class="grid-content bg-purple" style="font-size: 1.1rem; color: #409eff">
+        <div
+          v-for="(sum, index) in statsData"
+          :key="index"
+          class="text-center stata-data-item"
+        >
+          <div
+            class="grid-content bg-purple"
+            style="font-size: 1.1rem; color: #409eff"
+          >
             {{ sum.label }}
-            <el-tooltip popper-class="retail-poper" effect="dark" v-if="sum.tip" :content="sum.tip" placement="right">
+            <el-tooltip
+              popper-class="retail-poper"
+              effect="dark"
+              v-if="sum.tip"
+              :content="sum.tip"
+              placement="right"
+            >
               <i class="el-icon-question" style="color: #525252"></i>
             </el-tooltip>
           </div>
@@ -30,37 +92,62 @@
     </el-row>
     <div>
       <template>
-        <treegrid ref="list" v-if="routeName==='treegrid' && isTreeReal && storageType === 'db'" :list-type="getListType"
-          :storage-type="storageType" :service="getService()" :default-condition="getDefaultConditions"
-          :relationCondition="relationCondition">
+        <treegrid
+          ref="list"
+          v-if="isTreeReal && storageType === 'db'"
+          :list-type="getListType"
+          :storage-type="storageType"
+          :service="getService()"
+          :default-condition="getDefaultConditions"
+          :relationCondition="relationCondition"
+        >
         </treegrid>
-        <list ref="list" :route-meta="meta" :$srvApp="$srvApp" :list-type="getListType" :storage-type="storageType" :service="getService()"
-          @more-config-loaded="moreConfigLoaded" :default-condition="getDefaultConditions"
-          :relationCondition="relationCondition" :inplace-edit="inplaceEdit"
-          :default-inplace-edit-mode="defaultInplaceEditMode" :default-dirty-flags="defaultDirtyFlags"
-          :childforeignvalue="childforeignvalue" :name="listName" :childForeignkey="foreignKey"
-          :childforeignkey="foreignKey" :listMainFormDatas="listMainFormDatas" :mainService="mainService"
-          :def-data-para="defDataPara" :readOnly="readOnly" @stats-data-load="statsLoaded"
-          @v2-loaded-isDraft="v2LoadedIsDraft($event)" @child-loaded="$emit('child-loaded', $event)"
-          @list-loaded="$emit('list-loaded', $event)" @inline-list-loaded="$emit('inline-list-loaded', $event)"
-          @add-form-loaded="$emit('add-form-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)"
+        <list
+          ref="list"
+          :$srvApp="$srvApp"
+          :list-type="getListType"
+          :storage-type="storageType"
+          :service="getService()"
+          @more-config-loaded="moreConfigLoaded"
+          :default-condition="getDefaultConditions"
+          :relationCondition="relationCondition"
+          :inplace-edit="inplaceEdit"
+          :default-inplace-edit-mode="defaultInplaceEditMode"
+          :default-dirty-flags="defaultDirtyFlags"
+          :childforeignvalue="childforeignvalue"
+          :name="listName"
+          :childForeignkey="foreignKey"
+          :childforeignkey="foreignKey"
+          :listMainFormDatas="listMainFormDatas"
+          :mainService="mainService"
+          :def-data-para="defDataPara"
+          :readOnly="readOnly"
+          @stats-data-load="statsLoaded"
+          @v2-loaded-isDraft="v2LoadedIsDraft($event)"
+          @child-loaded="$emit('child-loaded', $event)"
+          @list-loaded="$emit('list-loaded', $event)"
+          @inline-list-loaded="$emit('inline-list-loaded', $event)"
+          @add-form-loaded="$emit('add-form-loaded', $event)"
+          @update-form-loaded="$emit('update-form-loaded', $event)"
           @duplicate-form-loaded="$emit('duplicate-form-loaded', $event)"
-          @filter-form-loaded="$emit('filter-form-loaded', $event)" @list-data-loaded="listDataLoaded"
+          @filter-form-loaded="$emit('filter-form-loaded', $event)"
+          @list-data-loaded="listDataLoaded"
           @grid-data-changed="$emit('grid-data-changed', $event)"
-          @standby-row-added="$emit('standby-row-added', $event)" v-else>
+          @standby-row-added="$emit('standby-row-added', $event)"
+          v-else
+        >
         </list>
       </template>
     </div>
   </div>
 </template>
 <script>
-import SimpleAdd from "@/components/common/simple-add.vue";
-import SimpleUpdate from "@/components/common/simple-update.vue";
-// import List from "./components/list.vue";
-import List from "@/components/common/list.vue";
-import Treegrid from "@/components/common/treegrid.vue";
+import SimpleAdd from "./simple-add.vue";
+import SimpleUpdate from "./simple-update.vue";
+import List from "./list.vue";
+import Treegrid from "./treegrid.vue";
 // 表头的筛选过滤条件 2020 版
-import filterTabs from "@/components/common/filter-tabs.vue";
+import filterTabs from "./filter-tabs.vue";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 /**
@@ -155,16 +242,7 @@ export default {
   },
 
   computed: {
-    meta(){
-      return this.$route?.meta
-    },
-    routeName(){
-      return this.$route?.name
-    },
     isTreeReal: function () {
-      if(this.$route.meta?.isTree===true){
-        return true;
-      }
       if (this.$route?.path?.indexOf("treegrid") > 0) {
         return true;
       }
@@ -455,7 +533,7 @@ export default {
             this.addTab(section, tab);
           }
         });
-      } catch (e) { }
+      } catch (e) {}
     },
 
     addTab: function (activeSection, tab) {
@@ -568,7 +646,7 @@ export default {
         }
         tabsData.push(tab);
       });
-
+      
       if (!self.tabsBuild) {
         self.tabs = tabsData;
         self.tabsBuild = true;
@@ -715,13 +793,30 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
-
   .stata-data-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    div {
+      padding: 0.5rem;
+      white-space: nowrap;
+    }
+  }
+}
+</style>
 
+<style lang="scss" scoped>
+.stata-data-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  .stata-data-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     div {
       padding: 0.5rem;
       white-space: nowrap;

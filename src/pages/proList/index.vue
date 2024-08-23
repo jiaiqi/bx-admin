@@ -30,10 +30,10 @@
     </el-row>
     <div>
       <template>
-        <treegrid ref="list" v-if="routeName==='treegrid' && isTreeReal && storageType === 'db'" :list-type="getListType"
+        <!-- <treegrid ref="list" v-if="isTreeReal && storageType === 'db'" :list-type="getListType"
           :storage-type="storageType" :service="getService()" :default-condition="getDefaultConditions"
           :relationCondition="relationCondition">
-        </treegrid>
+        </treegrid> -->
         <list ref="list" :route-meta="meta" :$srvApp="$srvApp" :list-type="getListType" :storage-type="storageType" :service="getService()"
           @more-config-loaded="moreConfigLoaded" :default-condition="getDefaultConditions"
           :relationCondition="relationCondition" :inplace-edit="inplaceEdit"
@@ -47,7 +47,7 @@
           @duplicate-form-loaded="$emit('duplicate-form-loaded', $event)"
           @filter-form-loaded="$emit('filter-form-loaded', $event)" @list-data-loaded="listDataLoaded"
           @grid-data-changed="$emit('grid-data-changed', $event)"
-          @standby-row-added="$emit('standby-row-added', $event)" v-else>
+          @standby-row-added="$emit('standby-row-added', $event)">
         </list>
       </template>
     </div>
@@ -58,7 +58,7 @@ import SimpleAdd from "@/components/common/simple-add.vue";
 import SimpleUpdate from "@/components/common/simple-update.vue";
 // import List from "./components/list.vue";
 import List from "@/components/common/list.vue";
-import Treegrid from "@/components/common/treegrid.vue";
+// import Treegrid from "@/components/common/treegrid.vue";
 // 表头的筛选过滤条件 2020 版
 import filterTabs from "@/components/common/filter-tabs.vue";
 import cloneDeep from "lodash/cloneDeep";
@@ -70,9 +70,9 @@ import isEqual from "lodash/isEqual";
  * tab: 标签， 包含标签文字和个数统计；
  */
 export default {
-  name: "TabList",
+  name: "ProList",
   components: {
-    Treegrid,
+    // Treegrid,
     SimpleUpdate,
     SimpleAdd,
     List,
@@ -157,9 +157,6 @@ export default {
   computed: {
     meta(){
       return this.$route?.meta
-    },
-    routeName(){
-      return this.$route?.name
     },
     isTreeReal: function () {
       if(this.$route.meta?.isTree===true){

@@ -1,19 +1,13 @@
-import { hotTableMetadata } from "@/components/model/Field";
-import { createLinkUrlFunc } from "@/util/FieldUtil";
-import { dispCol2ValCol } from "@/util/NameUtil";
-import { GridInfo } from "@/components/model/GridInfo";
-import {
-  wrapButton,
-  wrapHeader,
-  getButtonPara,
-} from "@/components/common/wrapper_util";
-import { getUnitData } from "@/util/UnitUtil";
-import * as DataUtil from "@/util/DataUtil";
+import { hotTableMetadata } from "../model/Field";
+import { createLinkUrlFunc } from "../../util/FieldUtil";
+import { dispCol2ValCol } from "../../util/NameUtil";
+import { GridInfo } from "../model/GridInfo";
+import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
+import { getUnitData } from "../../util/UnitUtil";
+import * as DataUtil from "../../util/DataUtil";
 import cloneDeep from "lodash/cloneDeep";
 import isFunction from "lodash/isFunction";
-import batchAddMixin from "@/components/mixin/batch-add-mixin";
-import { onFetch } from "@/common/httpUtil";
-
+import batchAddMixin from "./batch-add-mixin";
 export function MissRequiredConditionError(cond) {
   console.error("缺少条件：", cond);
 }
@@ -81,6 +75,7 @@ export default {
           this.childForeignkey?.show_ui_model !== "tabs"
             ? 5
             : 10,
+        // pageSize: this.listType.indexOf('list') !== -1 && this.listType != 'list' && this.listType != 'treelist'? 5:10,
         currentPage: 1,
         total: 0,
       },
@@ -837,7 +832,7 @@ export default {
           rowSpanCols =
             this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
         }
-        let iValue = this.gridDataRun?.[rowIndex]?.[colName] + ""; // 值
+        let iValue = this.gridDataRun[rowIndex][colName] + ""; // 值
         if (rowSpanCols && rowSpanCols.indexOf(colName) !== -1) {
           let lastValue = "";
           let firstValue = "";
@@ -2355,203 +2350,9 @@ export default {
         } else {
           //加载表格数据
           if (this.defaultapi == "select") {
+            // console.log(this.pageSize)
+
             let relationCondition = this.relationCondition;
-            let condition = cloneDeep(this.condition) || [];
-            let rdt = null;
-            if (this.listType === "treelist") {
-              //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
-              const noCol = this.listV2Data["no_col"];
-              const parentCol = this.listV2Data["parent_no_col"];
-              if (this.searchFormCondition.length == 0) {
-                if (!condition.find((item) => item.colName === parentCol)) {
-                  var initCondition = {
-                    colName: parentCol,
-                    ruleType: "isnull",
-                  };
-                  condition.push(initCondition);
-                }
-              }
-              rdt = this.childForeignkey?.constraint_name ? "ttd" : null; //是子表 使用ttd特性 2023年11月13日jiaqi
-              if (this.$route?.query?.topTreeData === "true") {
-                rdt = "ttd";
-              }
-            }
-
-            //加载表格数据
-            return onFetch({
-              service: this.service_name,
-              condition: condition,
-              page: page,
-              order: this.order,
-              group: this.group,
-              mapcondition: this.mapcondition,
-              app: this.resolveDefaultSrvApp(),
-              isproc: this.isproc,
-              columns: this.columns,
-              relationCondition: relationCondition,
-              isDraft: this.draftRun,
-              pageNo: this.vpageNo,
-              divCond: this.buildDivCond?.(),
-              rdt: rdt,
-            })
-              .then((response) => {
-                if (response.resultCode == "0011") {
-                  // 登录过期
-                  this.$store.commit("clearSrvCols");
-                  this.vpageNo = null;
-                } else if (response.resultCode == "0111") {
-                  console.log("response", response);
-                  this.activeForm = "srv-auth-login";
-                  this.srvAuthLogin = true;
-                } else {
-                  if (this.listType === "treelist") {
-                    response.data = response.data.map((item) => {
-                      item.hasChildren = item.is_leaf !== "是";
-                      if (item.hasChildren === true) {
-                        item.children = [];
-                        item.expanded = false;
-                      }
-                      return item;
-                    });
-                  }
-                  this.gridData = response.data;
-                  this.originListData = JSON.parse(
-                    JSON.stringify(response.data)
-                  );
-                  let page = response.page;
-
-                  if (response.hasOwnProperty("stats_data")) {
-                    self.statsData = response.stats_data;
-                  }
-                  if (self.statsData?.length) {
-                    self.buildStatsData(); // 格式化金额数字格式
-                    self.$emit("stats-data-load", self.statsData);
-                  }
-                  if (!page) {
-                    page = { total: response.data.length };
-                  }
-                  // 草稿标前显示 数量
-                  if (this.draftRun) {
-                    this.tabsConfig[1].len = page.total || 0;
-                  } else {
-                    this.tabsConfig[0].len = page.total || 0;
-                  }
-
-                  if (this.listType.indexOf("childlist") !== -1) {
-                    // 汇聚子表数据
-                    if (this.storageType === "mem" && this.inplaceEdit) {
-                      this.gridData.forEach((row) => {
-                        if (
-                          !row._dirtyFlags &&
-                          this.defaultDirtyFlags === "add"
-                        ) {
-                          // 如果没有 dirtyFlags，设置默认的flags
-                          row["_guid"] = this.guid();
-                          row["id"] = null;
-                        }
-                      });
-                    }
-                    let child = {
-                      name: this.service,
-                      data: this.gridData,
-                      constraint_name: this.childforeignkey?.constraint_name,
-                    };
-                    this.$emit("child-loaded", child);
-                  }
-                  // console.log(_)
-                  this.unmodifiedGridData = cloneDeep(this.gridData);
-                  if (
-                    this.gridData &&
-                    this.gridData.length > 0 &&
-                    this.gridData[0].hasOwnProperty("_encrypt_cols")
-                  ) {
-                    this._encrypt_cols = this.gridData[0]["_encrypt_cols"]; // 加密的字段
-                  } else {
-                    this._encrypt_cols = []; // 加密的字段
-                  }
-
-                  var listData = response.data;
-
-                  if (this.gridDataFilter) {
-                    let filter = this.gridDataFilter;
-                    filter(listData);
-                  }
-
-                  listData.forEach((row) => {
-                    // handle sth.
-                    for (var key in this.keyValueData) {
-                      var dictData = this.keyValueData[key];
-                      for (var map in dictData) {
-                        if (row[key] == dictData[map]["value"]) {
-                          // row[key] = dictData[map]["text"];  // 0115+
-                          break;
-                        }
-                      }
-                    }
-
-                    if (this.inlineLists) {
-                      row._inlineLists = row._inlineLists || {};
-                      this.inlineLists.forEach((inlineList) => {
-                        let fk = inlineList.foreign_key;
-                        if (!row[fk.referenced_column_name]) {
-                          return;
-                        }
-
-                        let conditions = [
-                          {
-                            colName: fk.column_name,
-                            ruleType: "eq",
-                            value: row[fk.referenced_column_name],
-                          },
-                        ];
-                        this.select(
-                          inlineList.inline_list_select_service,
-                          conditions
-                        ).then((resp) => {
-                          resp.data &&
-                            resp.data.data &&
-                            (row._inlineLists[fk.constraint_name] =
-                              resp.data.data);
-                        });
-                      });
-                    }
-                  });
-
-                  // 表格尾部合计行数据   sum_row_data
-
-                  if (
-                    response.hasOwnProperty("sum_row_data") &&
-                    response.sum_row_data
-                  ) {
-                    this.sumRowData = this.bxDeepClone(response.sum_row_data);
-                    this.sumRowData["_data_type"] = "sumRow";
-                    if (
-                      this.sumConfig &&
-                      this.sumConfig.sum_text_col &&
-                      this.sumConfig.sum_text
-                    ) {
-                      this.sumRowData[this.sumConfig.sum_text_col] =
-                        this.sumConfig.sum_text;
-                    }
-                  }
-
-                  if (response["page"]) {
-                    this.gridPage.currentPage = response["page"]["pageNo"];
-                    this.gridPage.total = response["page"]["total"];
-                  }
-                  this.init_card_data = true;
-                  if (this.cardInstance != null) {
-                    this.cardInstance.setCardData(this.gridData);
-                  }
-
-                  this.$emit("list-data-loaded", this);
-                  loading.close();
-                  this.$refs?.["bx-table-layout"]?.doLayout();
-                }
-              })
-              .finally(() => {
-                loading.close();
-              });
             // console.log(this.showPagination)
             // service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition
             return this.select(
@@ -3612,6 +3413,8 @@ export default {
   },
 
   created: function () {
+    // alert(this.getVersionNo());
+
     if (this.$route && this.$route.params) {
       if (this.isListTopComp() && this.$route.params.service_name) {
         this.service_name = this.service || this.$route.params.service_name;
@@ -3654,9 +3457,9 @@ export default {
         this.defaultapi = "selectByUser";
       }
     }
-    // if (this.listType !== "treelist") {
-    this.initGridData();
-    // }
+    if (this.listType !== "treelist") {
+      this.initGridData();
+    }
 
     if (this.card_no != undefined) {
       this.gridPage.pageSize = 12;
