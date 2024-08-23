@@ -2809,34 +2809,34 @@ export default {
           }
         }
         // 万像不需要这个特性 打包的时候去掉
-        if (
-          ["Enum", "Set", "Dict"].includes(header.col_type) &&
-          header?.srvcol?.init_expr
-        ) {
-          try {
-            header._default_value = eval(header?.srvcol?.init_expr);
-            if (
-              Array.isArray(searchFormCondition) ||
-              Array.isArray(filterCondition)
-            ) {
-              const conditions = searchFormCondition || filterCondition;
-              if (conditions?.length === 0) {
-                header._default_value = "";
-              } else {
-                let condition = conditions.find(
-                  (item) =>
-                    item.colName === header["column"] &&
-                    ["in", "inset", "eq"].includes(item.ruleType)
-                );
-                if (condition?.colName) {
-                  header._default_value = condition?.value || "";
-                }
-              }
-            }
-          } catch (error) {
-            console.log(error);
-          }
-        }
+        // if (
+        //   ["Enum", "Set", "Dict"].includes(header.col_type) &&
+        //   header?.srvcol?.init_expr
+        // ) {
+        //   try {
+        //     header._default_value = eval(header?.srvcol?.init_expr);
+        //     if (
+        //       Array.isArray(searchFormCondition) ||
+        //       Array.isArray(filterCondition)
+        //     ) {
+        //       const conditions = searchFormCondition || filterCondition;
+        //       if (conditions?.length === 0) {
+        //         header._default_value = "";
+        //       } else {
+        //         let condition = conditions.find(
+        //           (item) =>
+        //             item.colName === header["column"] &&
+        //             ["in", "inset", "eq"].includes(item.ruleType)
+        //         );
+        //         if (condition?.colName) {
+        //           header._default_value = condition?.value || "";
+        //         }
+        //       }
+        //     }
+        //   } catch (error) {
+        //     console.log(error);
+        //   }
+        // }
         this.gridHeader.push(wrapHeader(header));
       }
 

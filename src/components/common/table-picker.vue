@@ -3,6 +3,7 @@
     <el-popover
       trigger="focus"
       ref="show_popover"
+      :disabled="disabled"
       :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }"
     >
       <template slot="reference">
@@ -588,7 +589,20 @@ export default {
         }
         this.gridHeader = gridHeader;
         // this.buildGridHeaders(respData[ "srv_cols" ]);
-        this.loadOptions();
+        if(this.disabled!==true){
+          this.loadOptions();
+        }else if(this.finderSelected){
+          this.gridData = JSON.parse(this.finderSelected).map(item=>{
+            item.label = item[this.labelCol];
+            item.value = item[this.valueCol];
+            return item
+          })
+          this.allData = JSON.parse(this.finderSelected).map(item=>{
+            item.label = item[this.labelCol];
+            item.value = item[this.valueCol];
+            return item
+          })
+        }
       }
     },
     loadChild(tree, treeNode, resolve) {

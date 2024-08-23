@@ -97,7 +97,17 @@
           </span>
           <span v-else class="ms-tree-space">&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span :title="scope.row[firstColumn]">
-            {{ scope.row[firstColumn] }}
+            <a
+            class="link-to-detail"
+            title="点击查看详情"
+            v-if="isDetailLink(item.column, scope.row, scope.$index)"
+            @click="toDetail(item.column, scope.row, scope.$index)"
+            >{{ formatValue(scope.row, item) }}</a
+          >
+         <span v-else>
+          {{ scope.row[firstColumn] }}
+
+         </span>
           </span>
         </template>
       </el-table-column>
