@@ -304,11 +304,24 @@
                 </div>
               </template> -->
               <template slot-scope="scope">
-                <file-list
-                  v-if="item.col_type === 'FileList' && item._obj_info"
-                  :data="scope.row"
-                  :field="item"
-                ></file-list>
+                <template v-if="item._obj_info">
+                  <file-list
+                    v-if="['FileList', 'Image'].includes(item.col_type)"
+                    :data="scope.row"
+                    :field="item"
+                  ></file-list>
+                  <div v-else-if="['User', 'UserList'].includes(item.col_type)">
+                    <el-tag
+                      size="mini"
+                      style="margin-right: 4px; margin-bottom: 2px"
+                      :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+                      v-for="(tag, tIndex) in getUserTags(item, scope.row)"
+                    >
+                      {{ tag.user_disp || "--" }}
+                    </el-tag>
+                  </div>
+                </template>
+
                 <!-- 二进制文件 -->
                 <div v-else-if="item.col_type === 'ImgBin'">
                   <el-image
@@ -1264,6 +1277,26 @@ export default {
   },
 
   methods: {
+    getUserTags(column, data) {
+      let result = [];
+      if (["User", "UserList"].includes(column?.col_type)) {
+        if (
+          column?._obj_info?.a_save_b_obj_col &&
+          data[column?._obj_info?.a_save_b_obj_col]
+        ) {
+          let str = data[column?._obj_info?.a_save_b_obj_col];
+          try {
+            let arr = JSON.parse(str);
+            if (Array.isArray(arr)) {
+              result = arr;
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      }
+      return result;
+    },
     onAddChildExecutorComplete(response) {
       // 子节点增加
       let list = response.request.data;

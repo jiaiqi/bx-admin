@@ -1,5 +1,6 @@
 <template>
-  <div class="file-list">
+  <div class="user-list" v-if="field && field.col_type === 'UserList'"></div>
+  <div class="file-list" v-else>
     <template v-if="getFileList && getFileList.length">
       <div v-for="(item, index) in getFileList" :key="index" class="file-item">
         <span v-if="isImage(item)" @click="onPreView(item, index)">
@@ -15,7 +16,12 @@
           </span>
         </span>
         <span v-else>
-          <i class="el-icon-download m-r-1" title="下载" @click="download(item.url)"> </i>
+          <i
+            class="el-icon-download m-r-1"
+            title="下载"
+            @click="download(item.url)"
+          >
+          </i>
           <span @click="onPreView(item)">{{ item.src_name || "--" }}</span>
         </span>
       </div>
@@ -60,16 +66,21 @@ export default {
     };
   },
   computed: {
-    imageList() {
-      return this.getFileList?.filter((item) => item.isImage === true);
-    },
-    getFileList() {
+    getJson() {
       if (
         this.field?._obj_info?.a_save_b_obj_col &&
         this.data[this.field._obj_info.a_save_b_obj_col]
       ) {
         let objStr = this.data[this.field._obj_info.a_save_b_obj_col];
-        return JSON.parse(objStr).map((item) => {
+        return JSON.parse(objStr);
+      }
+    },
+    imageList() {
+      return this.getFileList?.filter((item) => item.isImage === true);
+    },
+    getFileList() {
+      if (Array.isArray(getJson) && this.getJson.length) {
+        return this.getJson.map((item) => {
           const fileUrl = this.serviceApi().downloadFile + item.fileurl;
           return {
             ...item,
@@ -124,12 +135,12 @@ export default {
       const imgTypes = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg"];
       return imgTypes.includes(fileType);
     },
-    isPDF(item){
+    isPDF(item) {
       let fileType = item.file_type || item.src_name.split(".").pop();
       if (fileType) {
         fileType = fileType.toLowerCase().trim();
       }
-      return fileType==='pdf';
+      return fileType === "pdf";
     },
     onerror(e) {
       console.log("显示失败", e);
@@ -148,9 +159,9 @@ export default {
   .m-r-1 {
     margin-right: 2px;
   }
-  .el-icon-download{
-    transition: all .5s ease;
-    &:hover{
+  .el-icon-download {
+    transition: all 0.5s ease;
+    &:hover {
       transform: scale(1.5);
     }
   }
