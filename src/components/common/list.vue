@@ -304,8 +304,13 @@
                 </div>
               </template> -->
               <template slot-scope="scope">
+                <file-list
+                  v-if="item.col_type === 'FileList' && item._obj_info"
+                  :data="scope.row"
+                  :field="item"
+                ></file-list>
                 <!-- 二进制文件 -->
-                <div v-if="item.col_type === 'ImgBin'">
+                <div v-else-if="item.col_type === 'ImgBin'">
                   <el-image
                     style="width: 50px; height: 50px"
                     :src="blobToBase64(scope.row[item.column])"
@@ -780,7 +785,7 @@
         :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onAddChildFormLoaded"
-        @executor-complete="onAddExecutorComplete($event)"
+        @executor-complete="onAddChildExecutorComplete($event)"
         @submitted2mem="onAdd2MemSubmitted"
       >
       </add>
@@ -1148,7 +1153,8 @@ import {
 } from "../../components/icon";
 import CardList from "../ui/card-list/card-list.vue";
 import { $http } from "@/common/http";
-
+import cloneDeep from "lodash/cloneDeep";
+import FileList from "../ui/file-list/file-list.vue";
 export default {
   name: "list",
   components: {
@@ -1173,6 +1179,7 @@ export default {
     IconExcel,
     IconExcelColorful,
     CardList,
+    FileList,
   },
   props: {
     childForeignkey: Object,
@@ -1257,6 +1264,36 @@ export default {
   },
 
   methods: {
+    onAddChildExecutorComplete(response) {
+      // 子节点增加
+      let list = response.request.data;
+      const noCol = this.listV2Data["no_col"];
+      const parentCol = this.listV2Data["parent_no_col"];
+      let parentKeyVal = list[0][parentCol];
+      let keyVal = list[0][noCol];
+      // 处理 如果没有 keyval 的情况
+      if (
+        !keyVal &&
+        response.body.state === "SUCCESS" &&
+        response.body.response[0] &&
+        response.body.response[0].response.effect_data[0]
+      ) {
+        list = response.body.response[0].response.effect_data[0];
+        keyVal = list[noCol];
+        let treeData = cloneDeep(this.gridData);
+        const setChildData = (data = []) => {
+          if (data?.length) {
+            data.forEach((item) => {
+              if (item[noCol] === parentKeyVal) {
+                item._children = [...item._children, ...list];
+              } else if (item._children?.length) {
+                setChildData(item._children);
+              }
+            });
+          }
+        };
+      }
+    },
     loadChildData(data, treeNode, resolve) {
       console.log("loadChildData", data, treeNode);
       const no_col = this.listV2Data.no_col;

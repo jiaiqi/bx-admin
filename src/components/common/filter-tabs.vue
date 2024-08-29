@@ -736,7 +736,7 @@ export default {
         let newNum = 0;
         this.$emit("on-input-value", true);
         this.$emit("on-change", true);
-        console.log("更新了", val);
+        console.log("更新了", cloneDeep(val),cloneDeep(oldVal));
         for (let i = 0; i < keys.length; i++) {
           //   console.log("更新了",val[keys[i]].value, oldVal[keys[i]].value)
           if (
@@ -761,18 +761,6 @@ export default {
             this.$emit("on-change", true);
             console.log("更新了");
           }
-
-          //   if(keys.length > 0 && val[keys[i]].value != oldVal[keys[i]].value){
-          //     if(newNum !== 0){
-          //             this.onInputValue = true
-          //             this.$emit('on-input-value',true)
-          //         }else{
-          //             this.onInputValue = false
-          //             this.$emit('on-input-value',false)
-          //         }
-
-          //         this.$emit('on-change',true)
-          //     }
         }
       },
     },

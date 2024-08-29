@@ -514,7 +514,6 @@
               border-radius: 4px;
               border: 1px solid #dcdfe6;
               overflow: auto;
-              white-space: pre-wrap;
               word-break: break-all;
               padding: 0 15px;
             "

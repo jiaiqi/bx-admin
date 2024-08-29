@@ -262,6 +262,8 @@ export default {
       let self = this;
       let tabsConds = this.$refs?.filterTabs?.buildConditions();
       this.relationCondition = tabsConds;
+      console.log("tabsConds", tabsConds);
+      
       setTimeout(function () {
         self.$refs.list.loadTableData();
       }, 100);

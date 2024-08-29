@@ -306,7 +306,7 @@ export default {
               }
               this.gridPage.currentPage = 1;
             }
-            this.loadTableData();
+            // this.loadTableData();
           }
           // this.loadTableData();
         });
@@ -2381,7 +2381,7 @@ export default {
             return onFetch({
               service: this.service_name,
               condition: condition,
-              page: page,
+              page: this.showPagination ? page : null,
               order: this.order,
               group: this.group,
               mapcondition: this.mapcondition,
@@ -2390,9 +2390,11 @@ export default {
               columns: this.columns,
               relationCondition: relationCondition,
               isDraft: this.draftRun,
-              pageNo: this.vpageNo,
               divCond: this.buildDivCond?.(),
               rdt: rdt,
+              pageType: "list_page",
+              vpageNo: this.vpageNo,
+              srvAuth: srvAuth,
             })
               .then((response) => {
                 if (response.resultCode == "0011") {
@@ -2875,6 +2877,11 @@ export default {
 
         let header = {};
         header.srvcol = serviceCol;
+        if (["FileList"].includes(serviceCol["col_type"])) {
+          if (serviceCol?.option_list_v2?.obj_info?.a_save_b_obj_col) {
+            header._obj_info = serviceCol?.option_list_v2?.obj_info;
+          }
+        }
         let more_config =
           serviceCol["more_config"] !== null &&
           serviceCol["more_config"] !== undefined &&
