@@ -2877,7 +2877,7 @@ export default {
 
         let header = {};
         header.srvcol = serviceCol;
-        if (["FileList","Image","User","UserList"].includes(serviceCol["col_type"])) {
+        if (["FileList","Image","User"].includes(serviceCol["col_type"])) {
           if (serviceCol?.option_list_v2?.obj_info?.a_save_b_obj_col) {
             header._obj_info = serviceCol?.option_list_v2?.obj_info;
           }

@@ -310,15 +310,29 @@
                     :data="scope.row"
                     :field="item"
                   ></file-list>
-                  <div v-else-if="['User', 'UserList'].includes(item.col_type)">
-                    <el-tag
+                  <div v-else-if="['User'].includes(item.col_type)">
+                    <a
+                      v-if="item.linkUrlFunc"
+                      v-show="scope.row[item.column]"
+                      style="
+                        white-space: nowrap;
+                        color: dodgerblue;
+                        cursor: pointer;
+                      "
+                      v-for="(tag, tIndex) in getUserTags(item, scope.row)"
+                      @click="onLinkClicked(scope.row, item)"
+                    >
+                      {{ tag.user_disp || "--" }}
+                    </a>
+                    <!-- <el-tag
                       size="mini"
                       style="margin-right: 4px; margin-bottom: 2px"
                       :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
                       v-for="(tag, tIndex) in getUserTags(item, scope.row)"
+                      @click="onLinkClicked(scope.row, item)"
                     >
                       {{ tag.user_disp || "--" }}
-                    </el-tag>
+                    </el-tag> -->
                   </div>
                 </template>
 
@@ -1289,12 +1303,26 @@ export default {
             let arr = JSON.parse(str);
             if (Array.isArray(arr)) {
               result = arr;
+            } else {
+              result = [arr];
             }
           } catch (error) {
             console.log(error);
           }
+        } else if (
+          column?._obj_info?.a_save_b_obj_col &&
+          !data[column?._obj_info?.a_save_b_obj_col] &&
+          data[column.column]
+        ) {
+          result = [
+            {
+              user_disp: data[column.column],
+            },
+          ];
         }
       }
+      console.log("result", result);
+
       return result;
     },
     onAddChildExecutorComplete(response) {
