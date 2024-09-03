@@ -257,59 +257,59 @@ export default {
         //   cloneDeep(newVal),
         //   cloneDeep(oldVal)
         // );
-        this.$nextTick(() => {
-          if (
-            newVal?.length &&
-            JSON.stringify(newVal) != JSON.stringify(oldVal)
-          ) {
-            const tableColumns = this.$refs["bx-table-layout"]?.columns;
-            let needRefresh = false;
-            const filters = {};
-            if (tableColumns?.length) {
-              newVal.forEach((head) => {
-                if (
-                  (head._default_value || head._default_value === "") &&
-                  Array.isArray(head.filters)
-                ) {
-                  if (head._default_value === "") {
-                    this.$refs["bx-table-layout"]?.clearFilter?.([head.column]);
-                  }
-                  const index = tableColumns.findIndex(
-                    (col) => head.column && col.columnKey === head.column
-                  );
-                  if (index > -1) {
-                    needRefresh = true;
-                    if (head._default_value === "") {
-                      this.$refs["bx-table-layout"].columns[
-                        index
-                      ].filteredValue = null;
-                    } else {
-                      this.$refs["bx-table-layout"].columns[
-                        index
-                      ].filteredValue = head._default_value.split(",");
-                      filters[head.column] = head._default_value.split(",");
-                    }
-                  }
-                }
-              });
-            }
-            this.filterCondition = [];
-            if (needRefresh) {
-              for (var key in filters) {
-                var cMap = {};
-                if (filters[key].length > 0 && filters[key].toString()) {
-                  cMap["colName"] = key;
-                  cMap["value"] = filters[key].toString();
-                  cMap["ruleType"] = "in";
-                  this.filterCondition.push(cMap);
-                }
-              }
-              this.gridPage.currentPage = 1;
-            }
-            // this.loadTableData();
-          }
-          // this.loadTableData();
-        });
+        // this.$nextTick(() => {
+        //   if (
+        //     newVal?.length &&
+        //     JSON.stringify(newVal) != JSON.stringify(oldVal)
+        //   ) {
+        //     const tableColumns = this.$refs["bx-table-layout"]?.columns;
+        //     let needRefresh = false;
+        //     const filters = {};
+        //     if (tableColumns?.length) {
+        //       newVal.forEach((head) => {
+        //         if (
+        //           (head._default_value || head._default_value === "") &&
+        //           Array.isArray(head.filters)
+        //         ) {
+        //           if (head._default_value === "") {
+        //             this.$refs["bx-table-layout"]?.clearFilter?.([head.column]);
+        //           }
+        //           const index = tableColumns.findIndex(
+        //             (col) => head.column && col.columnKey === head.column
+        //           );
+        //           if (index > -1) {
+        //             needRefresh = true;
+        //             if (head._default_value === "") {
+        //               this.$refs["bx-table-layout"].columns[
+        //                 index
+        //               ].filteredValue = null;
+        //             } else {
+        //               this.$refs["bx-table-layout"].columns[
+        //                 index
+        //               ].filteredValue = head._default_value.split(",");
+        //               filters[head.column] = head._default_value.split(",");
+        //             }
+        //           }
+        //         }
+        //       });
+        //     }
+        //     this.filterCondition = [];
+        //     if (needRefresh) {
+        //       for (var key in filters) {
+        //         var cMap = {};
+        //         if (filters[key].length > 0 && filters[key].toString()) {
+        //           cMap["colName"] = key;
+        //           cMap["value"] = filters[key].toString();
+        //           cMap["ruleType"] = "in";
+        //           this.filterCondition.push(cMap);
+        //         }
+        //       }
+        //       this.gridPage.currentPage = 1;
+        //     }
+        //     // this.loadTableData();
+        //   }
+        //   // this.loadTableData();
+        // });
       },
     },
     "$store.state.frontTableData": {
@@ -2160,7 +2160,6 @@ export default {
       this.condition = [];
       this.buildGridHeaders(this.srv_cols, condtion);
       // console.log(cloneDeep(this.filterCondition));
-
       this.loadTableData();
     },
 
@@ -2356,6 +2355,15 @@ export default {
           //加载表格数据
           if (this.defaultapi == "select") {
             let relationCondition = this.relationCondition;
+            const simpleFilterRelationCondition =
+              this.$refs?.["filter-form"]?.buildRelationConditions?.();
+            if (simpleFilterRelationCondition?.data?.length) {
+              if (relationCondition?.data) {
+                relationCondition.data.push(simpleFilterRelationCondition);
+              } else {
+                relationCondition = simpleFilterRelationCondition;
+              }
+            }
             let condition = cloneDeep(this.condition) || [];
             let rdt = null;
             if (this.listType === "treelist") {
@@ -2877,7 +2885,7 @@ export default {
 
         let header = {};
         header.srvcol = serviceCol;
-        if (["FileList","Image","User"].includes(serviceCol["col_type"])) {
+        if (["FileList", "Image", "User"].includes(serviceCol["col_type"])) {
           if (serviceCol?.option_list_v2?.obj_info?.a_save_b_obj_col) {
             header._obj_info = serviceCol?.option_list_v2?.obj_info;
           }
