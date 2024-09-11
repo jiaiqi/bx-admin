@@ -1359,7 +1359,7 @@ export default {
       console.log("loadChildData", data, treeNode);
       const no_col = this.listV2Data.no_col;
       const req = {
-        serviceName: "srvcrm_customer_c_select",
+        serviceName: this.service_name,
         colNames: ["*"],
         condition: [
           { colName: "parent_no", value: data[no_col], ruleType: "eq" },
