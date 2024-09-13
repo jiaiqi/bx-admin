@@ -446,6 +446,8 @@ export default {
               }
             });
           });
+          return
+          
         }
       }
       // let executor = basicForm.$refs.submit[0].$refs.executor;
