@@ -327,6 +327,10 @@
         :service="getAddService"
         :submit2-db="!isMem()"
         :default-conditions="getDefaultCondition4Duplicate"
+        duplicateType="duplicate"
+        :duplicateData="
+          clickedRow && clickedRow.duplicate ? clickedRow.duplicate : null
+        "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded($refs['duplicate-form'])"
         @executor-complete="onAddExecutorComplete($event)"
@@ -347,6 +351,10 @@
         :parentMainFormDatas="listMainFormDatas"
         :pageIsDraft="activeTabName"
         :defaultValues="activeData"
+        duplicateType="duplicate"
+        :duplicateData="
+          clickedRow && clickedRow.duplicatedeep ? clickedRow.duplicatedeep : null
+        "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
