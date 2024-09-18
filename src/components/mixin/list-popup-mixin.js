@@ -84,7 +84,10 @@ export default {
       if (form.actions.submit) {
         form.actions.submit.nav2Location = null;
       }
-
+      if(this.childForeignkey?.referenced_column_name && form.fields[this.childForeignkey.referenced_column_name]){
+        const column_name = this.childForeignkey.column_name
+        form.fields[this.childForeignkey.referenced_column_name].model = this.listMainFormDatas[column_name];
+      }
       this.$emit('add-form-loaded', this.$refs['add-form']);
     },
 
