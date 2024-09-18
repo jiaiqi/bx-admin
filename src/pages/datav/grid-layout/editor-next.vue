@@ -31,7 +31,11 @@
       </div>
     </div>
     <div class="cushome-right" v-if="inEditor">
-      <div class="left-line" id="left-line"></div>
+      <div class="left-line" id="left-line">
+        <span class="fold">
+        收缩
+        </span>
+      </div>
       <property-pane
         :use-layout="useLayout"
         :pageConfg="pageConfg"
@@ -52,11 +56,11 @@
       ref="screensRef"
       :class="{ 'data-view-mode': !inEditor }"
     >
-      <ruler-box
+      <!-- <ruler-box
         :disabled="!inEditor"
         :rectWidth="parseInt(styleJson.width || '1920')"
         :rectHeight="parseInt(styleJson.height || '1080')"
-      >
+      > -->
         <div
           class="custom-design"
           :class="{ view: !inEditor }"
@@ -106,7 +110,7 @@
             :layout.sync="layout"
             :col-num="colNum"
             :row-height="rowHeight"
-            :preventCollision="false"
+            :preventCollision="true"
             :responsive="false"
             :is-draggable="inEditor"
             :is-resizable="inEditor"
@@ -385,7 +389,7 @@
           </el-button>
           <el-button @click="previewMobile">h5预览</el-button>
         </div>
-      </ruler-box>
+      <!-- </ruler-box> -->
     </div>
 
     <!-- 移动组件 start -->
@@ -2174,7 +2178,12 @@ export default {
       right: calc(var(--right-width) - 5px);
       z-index: 9999;
       cursor: col-resize;
-
+      .fold{
+        position: absolute;
+        top: 50%;
+        z-index: 2;
+        cursor: pointer;
+      }
       &::after {
         content: "";
         width: 4px;

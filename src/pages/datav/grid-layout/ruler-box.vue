@@ -133,6 +133,7 @@ export default Vue.extend({
           Math.max(0.2, this.scale - e.deltaY / 500).toFixed(2)
         );
         this.scale = nextScale;
+        this.$message(`缩放比例：${nextScale}`);
       }
       this.$nextTick(() => {
         this.handleScroll();
@@ -172,7 +173,7 @@ export default Vue.extend({
   },
   mounted() {
     if (this.rectWidth > 1000) {
-      this.scale = 0.6;
+      // this.scale = 0.6;
     }
     if (this.disabled) {
       return;

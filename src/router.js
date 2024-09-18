@@ -680,6 +680,15 @@ routes.push({
   ],
 });
 
+routes.push(
+
+  { //人大首页
+    path: "/home",
+    name: "renda-home",
+    component: () => import("@/pages/renda/home.vue")
+  }
+
+)
 Vue.use(VueRouter);
 const router = new VueRouter({
   routes,
