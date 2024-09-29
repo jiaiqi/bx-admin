@@ -59,6 +59,15 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "config",
   },
+  yanxueOpen: {
+    // 研学内网
+    gateway_protocol: "https",
+    gateway_ip: "xxld.100xsys.cn",
+    port: "",
+    gateway: "https://xxld.100xsys.cn",
+    sso_app: "sso",
+    application: "config",
+  },
   xixiang: {
     // 西乡
     gateway_protocol: "https",

@@ -4,11 +4,11 @@
       <div class="top-left">
         <div class="item">
           <el-card class="box-card">
-            <div slot="header" class="">
-              <span>待办事项</span>
+            <div slot="header">
+              <span class="title">待办事项</span>
             </div>
             <div class="menu-box">
-              <div class="" v-for="item in 5">
+              <div class="flex justify-center cursor-pointer">
                 <el-badge :value="2" class="item" type="error">
                   <div class="menu-item">
                     <img
@@ -20,19 +20,99 @@
                   </div>
                 </el-badge>
               </div>
+              <div class="flex justify-center cursor-pointer">
+                <el-badge :value="2" class="item" type="error">
+                  <div class="menu-item">
+                    <img
+                      src="@/pages/renda/static/img/icon1.png"
+                      alt=""
+                      class="icon"
+                    />
+                    <span>留言反馈</span>
+                  </div>
+                </el-badge>
+              </div>
+              <div class="flex justify-center cursor-pointer">
+                <el-badge :value="2" class="item" type="error">
+                  <div class="menu-item">
+                    <img
+                      src="@/pages/renda/static/img/icon1.png"
+                      alt=""
+                      class="icon"
+                    />
+                    <span>内部消息</span>
+                  </div>
+                </el-badge>
+              </div>
+              <div class="flex justify-center cursor-pointer">
+                <el-badge :value="2" class="item" type="error">
+                  <div class="menu-item">
+                    <img
+                      src="@/pages/renda/static/img/icon1.png"
+                      alt=""
+                      class="icon"
+                    />
+                    <span>家站点活动</span>
+                  </div>
+                </el-badge>
+              </div>
+              <div class="flex justify-center cursor-pointer">
+                <el-badge :value="2" class="item" type="error">
+                  <div class="menu-item">
+                    <img
+                      src="@/pages/renda/static/img/icon1.png"
+                      alt=""
+                      class="icon"
+                    />
+                    <span>代表信息</span>
+                  </div>
+                </el-badge>
+              </div>
             </div>
           </el-card>
         </div>
         <div class="item">
           <el-card class="box-card">
             <div slot="header" class="flex justify-between">
-              <span>通知/公告</span>
+              <span class="title">通知/公告</span>
               <el-link type="danger">更多</el-link>
             </div>
             <div class="list-box">
-              <div class="list-item flex items-center py-2px" v-for="item in 5">
+              <div class="list-item flex items-center py-2px">
                 <i class="el-icon-arrow-right text-red"></i>
-                <div class="flex flex-1 px-10px">
+                <div class="flex flex-1 px-10px cursor-pointer">
+                  <span class="mr-10px">[通知]</span>
+                  <span class="flex-1">关于2022年11月1日,...</span>
+                  <span class="">2022-11-01</span>
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px cursor-pointer">
+                  <span class="mr-10px">[通知]</span>
+                  <span class="flex-1">会议通知,...</span>
+                  <span class="">2022-11-01</span>
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px cursor-pointer">
+                  <span class="mr-10px">[通知]</span>
+                  <span class="flex-1">关于2022年11月1日,...</span>
+                  <span class="">2022-11-01</span>
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px cursor-pointer">
+                  <span class="mr-10px">[通知]</span>
+                  <span class="flex-1">关于2022年11月1日,...</span>
+                  <span class="">2022-11-01</span>
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px cursor-pointer">
                   <span class="mr-10px">[通知]</span>
                   <span class="flex-1">关于2022年11月1日,...</span>
                   <span class="">2022-11-01</span>
@@ -45,7 +125,7 @@
       <div class="top-right item">
         <el-card class="box-card">
           <div slot="header" class="flex justify-between">
-            <span>工作动态</span>
+            <span class="title">工作动态</span>
             <el-link type="danger">更多</el-link>
           </div>
           <div>
@@ -64,13 +144,34 @@
               </el-carousel-item>
             </el-carousel>
             <div class="list-box py-10px">
-              <div
-                class="list-item flex items-center py-2px"
-                v-for="item in 5"
-              >
+              <div class="list-item flex items-center py-2px cursor-pointer">
                 <i class="el-icon-arrow-right text-red"></i>
                 <div class="flex flex-1 px-10px justify-between">
-                  <span class="mr-10px cursor-pointer">召开法治政府建设工作会议</span>
+                  <span class="mr-10px cursor-pointer"
+                    >召开法治政府建设工作会议</span
+                  >
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px cursor-pointer">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px justify-between">
+                  <span class="mr-10px cursor-pointer"
+                    >张坤华主持召开第十八届县人民政府第39次常务会议</span
+                  >
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px cursor-pointer">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px justify-between">
+                  <span class="mr-10px cursor-pointer">工作动态 </span>
+                </div>
+              </div>
+              <div class="list-item flex items-center py-2px cursor-pointer">
+                <i class="el-icon-arrow-right text-red"></i>
+                <div class="flex flex-1 px-10px justify-between">
+                  <span class="mr-10px cursor-pointer"
+                    >省人大常委会党组召开会议 陶明伦主持会议并讲话</span
+                  >
                 </div>
               </div>
             </div>
@@ -82,14 +183,42 @@
       <div class="bottom-item item">
         <el-card class="box-card">
           <div slot="header" class="flex justify-between">
-            <span>规章制度</span>
+            <span class="title">规章制度</span>
             <el-link type="danger">更多</el-link>
           </div>
           <div class="list-box">
-            <div class="list-item flex items-center py-10px" v-for="item in 5">
+            <div class="list-item flex items-center py-10px">
               <i class="el-icon-star-on text-red"></i>
               <div class="flex flex-1 px-10px justify-between">
                 <span class="mr-10px">人大代表小组活动制度</span>
+                <span class="">2022-11-01</span>
+              </div>
+            </div>
+            <div class="list-item flex items-center py-10px">
+              <i class="el-icon-star-on text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px">人大办理代表建议制度</span>
+                <span class="">2022-11-03</span>
+              </div>
+            </div>
+            <div class="list-item flex items-center py-10px">
+              <i class="el-icon-star-on text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px">人大讨论决定重大事项制度</span>
+                <span class="">2022-11-03</span>
+              </div>
+            </div>
+            <div class="list-item flex items-center py-10px">
+              <i class="el-icon-star-on text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px">人大代表培训制度</span>
+                <span class="">2022-11-05</span>
+              </div>
+            </div>
+            <div class="list-item flex items-center py-10px">
+              <i class="el-icon-star-on text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px">人民代表大会议事规则</span>
                 <span class="">2022-11-01</span>
               </div>
             </div>
@@ -99,14 +228,64 @@
       <div class="bottom-item item">
         <el-card class="box-card">
           <div slot="header" class="flex justify-between">
-            <span>代表风采</span>
+            <span class="title">代表风采</span>
             <el-link type="danger">更多</el-link>
           </div>
           <div class="list-box">
-            <div class="list-item flex items-center py-2px" v-for="item in 5">
+            <div class="list-item flex items-center py-2px cursor-pointer">
               <i class="el-icon-arrow-right text-red"></i>
               <div class="flex flex-1 px-10px justify-between">
                 <span class="mr-10px">人大代表履职能力提升培训</span>
+                <img
+                  src="@/pages/renda/static/img/a.jpg"
+                  alt=""
+                  class="right-img"
+                />
+              </div>
+            </div>
+            <div class="list-item flex items-center py-2px cursor-pointer">
+              <i class="el-icon-arrow-right text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px"
+                  >镇级机关代表集中到当事人家中调节矛盾纠纷</span
+                >
+                <img
+                  src="@/pages/renda/static/img/a.jpg"
+                  alt=""
+                  class="right-img"
+                />
+              </div>
+            </div>
+            <div class="list-item flex items-center py-2px cursor-pointer">
+              <i class="el-icon-arrow-right text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px">人大代表全力投入矛盾纠纷调解工作</span>
+                <img
+                  src="@/pages/renda/static/img/a.jpg"
+                  alt=""
+                  class="right-img"
+                />
+              </div>
+            </div>
+            <div class="list-item flex items-center py-2px cursor-pointer">
+              <i class="el-icon-arrow-right text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px"
+                  >图为代表视察调研克其合滩草场恢复治理情况</span
+                >
+                <img
+                  src="@/pages/renda/static/img/a.jpg"
+                  alt=""
+                  class="right-img"
+                />
+              </div>
+            </div>
+            <div class="list-item flex items-center py-2px cursor-pointer">
+              <i class="el-icon-arrow-right text-red"></i>
+              <div class="flex flex-1 px-10px justify-between">
+                <span class="mr-10px cursor-pointer"
+                  >代表视察调研镇第一寄宿制完全小学</span
+                >
                 <img
                   src="@/pages/renda/static/img/a.jpg"
                   alt=""
@@ -149,7 +328,7 @@ export default {};
     padding-right: 10px;
   }
 }
-.cursor-pointer{
+.cursor-pointer {
   cursor: pointer;
 }
 .flex {
@@ -163,6 +342,9 @@ export default {};
 }
 .justify-between {
   justify-content: space-between;
+}
+.justify-center {
+  justify-content: center;
 }
 .page-container {
   display: flex;
@@ -248,6 +430,18 @@ export default {};
 .list-item {
   .right-img {
     height: 45px;
+  }
+}
+.box-card {
+  .title {
+    background-image: url("./static/img/titleImg.png");
+    background-size: 100% 100%;
+    padding: 4px  10px  4px 30px ;
+    width: 125px;
+    height: 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
   }
 }
 </style>

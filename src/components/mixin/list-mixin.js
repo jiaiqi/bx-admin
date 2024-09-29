@@ -2354,7 +2354,7 @@ export default {
         } else {
           //加载表格数据
           if (this.defaultapi == "select") {
-            let relationCondition = this.relationCondition;
+            let relationCondition = cloneDeep(this.relationCondition);
             const simpleFilterRelationCondition =
               this.$refs?.["filter-form"]?.buildRelationConditions?.();
             if (simpleFilterRelationCondition?.data?.length) {

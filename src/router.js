@@ -681,11 +681,15 @@ routes.push({
 });
 
 routes.push(
-
   { //人大首页
     path: "/home",
     name: "renda-home",
     component: () => import("@/pages/renda/home.vue")
+  },
+  {
+    path: '/report', //意见征求报告
+    name: "renda-report",
+    component: () => import("@/pages/renda/report.vue"),
   }
 
 )

@@ -9,11 +9,12 @@ let _loginDialog = null;
 let baseURL = window.backendIpAddr;
 let bx_auth_ticket = "";
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
-  // const ENV = "wanxiang";
+  const ENV = "wanxiang";
   // const ENV = "audDev";
-  const ENV = "yanxueDev";
+  // const ENV = "yanxueOpen"; //研学外网
+  // const ENV = "yanxueDev";
   // const ENV = "saas";
   // const ENV = "xixiang";
   // const ENV = "244";
