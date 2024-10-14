@@ -77,4 +77,13 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "ledu",
   },
+   healthDev: {
+    // 健康科普资源库
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.154",
+    port: "8104",
+    gateway: "http://192.168.0.154:8104",
+    sso_app: "sso",
+    application: "daq",
+  },
 };

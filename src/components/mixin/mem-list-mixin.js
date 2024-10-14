@@ -1129,6 +1129,7 @@ export default {
       },
       "memInitdatasAdd":{
         deep: true,
+        immediate: true,
         handler (val, oldVal) {
           if(val?.length&&!this.addSrvCols?.length){
             this.loadAddUpdateSrvCols()
@@ -1136,7 +1137,6 @@ export default {
           let initAddDatas = val.map(item => item)
           if(Array.isArray(initAddDatas)){
             // 内存子表 init add Datas 加载默认添加数据
-            
             this.gridData = [].map((item) => item) 
               for(let row of initAddDatas){
                   row._dirtyFlags = "add";

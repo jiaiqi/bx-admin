@@ -416,9 +416,9 @@ export default {
               subexecutor.dependKeys = [dependKey];
               subexecutor.fk = fk;
               executor.children.unshift(subexecutor);
-              if (executorDraft) {
-                executorDraft.children.unshift(subexecutor);
-              }
+              // if (executorDraft) {
+              //   executorDraft.children.unshift(subexecutor);
+              // }
             });
           });
         }
@@ -441,9 +441,9 @@ export default {
               subexecutor.dependKeys = [dependKey];
               subexecutor.fk = fk;
               executor.children.unshift(subexecutor);
-              if (executorDraft) {
-                executorDraft.children.unshift(subexecutor);
-              }
+              // if (executorDraft) {
+              //   executorDraft.children.unshift(subexecutor);
+              // }
             });
           });
           return

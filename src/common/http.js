@@ -11,13 +11,14 @@ let bx_auth_ticket = "";
 
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
-  const ENV = "wanxiang";
+  // const ENV = "wanxiang";
   // const ENV = "audDev";
   // const ENV = "yanxueOpen"; //研学外网
   // const ENV = "yanxueDev";
   // const ENV = "saas";
   // const ENV = "xixiang";
   // const ENV = "244";
+  const ENV = 'healthDev'
   const pathConfig = pathConfigMap[ENV];
   if(location.href?.includes?.('menuapp=')){
     let app = location.href.split('menuapp=')[1].split(';')[0]

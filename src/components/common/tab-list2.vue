@@ -32,7 +32,8 @@
       <template>
         <treegrid ref="list" v-if="routeName==='treegrid' && isTreeReal && storageType === 'db'" :list-type="getListType"
           :storage-type="storageType" :service="getService()" :default-condition="getDefaultConditions"
-          :relationCondition="relationCondition">
+          :relationCondition="relationCondition"
+          :memInitdatasAdd="memInitdatasAdd">
         </treegrid>
         <list ref="list" :route-meta="meta" :$srvApp="$srvApp" :list-type="getListType" :storage-type="storageType" :service="getService()"
           @more-config-loaded="moreConfigLoaded" :default-condition="getDefaultConditions"
@@ -41,6 +42,7 @@
           :childforeignvalue="childforeignvalue" :name="listName" :childForeignkey="foreignKey"
           :childforeignkey="foreignKey" :listMainFormDatas="listMainFormDatas" :mainService="mainService"
           :def-data-para="defDataPara" :readOnly="readOnly" @stats-data-load="statsLoaded"
+          :memInitdatasAdd="memInitdatasAdd"
           @v2-loaded-isDraft="v2LoadedIsDraft($event)" @child-loaded="$emit('child-loaded', $event)"
           @list-loaded="$emit('list-loaded', $event)" @inline-list-loaded="$emit('inline-list-loaded', $event)"
           @add-form-loaded="$emit('add-form-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)"
@@ -152,6 +154,7 @@ export default {
         return {};
       },
     },
+    memInitdatasAdd:Array
   },
 
   computed: {
