@@ -84,6 +84,6 @@ export const pathConfigMap = {
     port: "8104",
     gateway: "http://192.168.0.154:8104",
     sso_app: "sso",
-    application: "daq",
+    application: "hsprl",
   },
 };

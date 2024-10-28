@@ -380,6 +380,16 @@ let routes = [
       },
     ],
   },
+  {
+    path:'/authority',
+    component:()=>import('@/pages/authority.vue'),
+    name:'authority'
+  },
+  {
+    path:'/authority/:type/:role_no',
+    component:()=>import('@/pages/authority.vue'),
+    name:'authority2'
+  }
 ];
 
 routes.push({
