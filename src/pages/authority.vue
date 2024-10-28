@@ -231,7 +231,7 @@ export default {
 
       return [{
         "serviceName": "srvsys_set_app_role_auth",
-        "srvApp": "retail",
+        "srvApp": sessionStorage.getItem('current_app') || "hsprl",
         "data": [req]
       }]
     },
@@ -489,9 +489,11 @@ export default {
       let self = this
 
       let type = this.terminalType
+
       for (let t of type) {
         var result = []
-        let list = params.filter(item => item.terminal_type == t.terminal_type)
+        let list = params
+        // let list = params.filter(item => item.terminal_type == t.terminal_type)
         for (const param of list) {
           if (param.parent_no == null || param.parent_no == '' || param.parent_no == undefined) {  // 判断是否为顶层节点
             let children = self.bxDeepClone(param)
@@ -562,20 +564,20 @@ export default {
       this.loading = true
       let self = this
       let serviceName = "srvsys_fun_auth_def_select"
-      serviceName = 'srvsys_app_role_menu_select'
+      // serviceName = 'srvsys_app_role_menu_select'
       let cond = []
       let group = [
-        // {
-        // "colName": "terminal_type",
-        // "type": "by"
-        // }
+        {
+        "colName": "terminal_type",
+        "type": "by"
+        }
       ]
       this.select(serviceName, cond, null, null, group).then((res) => {
         console.log(res.data)
         let types = res.data.data
+
         this.terminalType = types.map((item) => {
           item['value'] = []
-
           //折叠/展开"  全选/全不选  父子联动 
           item['checkCfg'] = [{
             label: "折叠/展开",
@@ -595,7 +597,21 @@ export default {
           ]
           return item
         })
-
+        if(res.data.data.length===0){
+          this.terminalType = [{
+            "terminal_type": "PC",
+            "value": [],
+            checkCfg: [{
+              label: "折叠/展开",
+              value: "expand",
+              checked: true
+            },{
+              label: "全选/全不选",
+            value: "checked",
+            checked: false
+            }]
+          }]
+        }
         self.getTreeData()
         this.loading = false
       })
