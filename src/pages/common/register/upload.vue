@@ -159,6 +159,9 @@ export default {
                   "_url"
                 ] = `${item["_url"]}&bx_auth_ticket=${this.getToken}`;
               }
+              if (item?.fileurl?.indexOf("http") === 0) {
+                item["_url"] = item.fileurl;
+              }
               return item;
             });
           } else {

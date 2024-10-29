@@ -540,6 +540,9 @@ export default {
           file.name = response.body.data[i].src_name;
           file.url =
             this.serviceApi().downloadFile + response.body.data[i].fileurl;
+          if(file?.fileurl?.indexOf('http')===0){
+            file.url = file.fileurl
+          }
           this.fileLists.push(file);
           self.$emit("more-info", self.fileLists);
         }
