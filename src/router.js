@@ -389,6 +389,11 @@ let routes = [
     path:'/authority/:type/:role_no',
     component:()=>import('@/pages/authority.vue'),
     name:'authority2'
+  },
+  {
+    path:'/comment-open-edit',
+    component:()=>import('@/pages/health/treeEdit.vue'),
+    name:'treeEdit'
   }
 ];
 
