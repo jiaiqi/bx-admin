@@ -1193,7 +1193,7 @@ export default {
 
       //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
       if (this.searchFormCondition.length == 0) {
-        if (!cond.find((item) => item.colName === this.parentCol)) {
+        if (!cond.find((item) => item.colName === this.parentCol) && this.defaultCondition.length===0) {
           var initCondition = {
             colName: this.parentCol,
             ruleType: "isnull",

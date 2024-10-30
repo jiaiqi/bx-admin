@@ -89,6 +89,12 @@ let routes = [
     component: () => import("@/pages/common/register/register.vue"),
   },
   {
+    path: "/expert-register",
+    name: "expert-register",
+    component: () => import("@/pages/health/register.vue"),
+  },
+  
+  {
     path: "/simple-add/:service_name",
     name: "simple-add",
     component: SimpleAdd,

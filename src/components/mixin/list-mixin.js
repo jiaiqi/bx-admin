@@ -2371,7 +2371,7 @@ export default {
               const noCol = this.listV2Data["no_col"];
               const parentCol = this.listV2Data["parent_no_col"];
               if (this.searchFormCondition.length == 0) {
-                if (!condition.find((item) => item.colName === parentCol)) {
+                if (!condition.find((item) => item.colName === parentCol) ) {
                   var initCondition = {
                     colName: parentCol,
                     ruleType: "isnull",
