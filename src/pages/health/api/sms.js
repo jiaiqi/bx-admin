@@ -12,5 +12,6 @@ export function getSmsCaptcha(telNum) {
     if(res.data.response?.[0]?.response?.bx_auth_ticket){
       sessionStorage.setItem('bx_auth_ticket',res.data.response?.[0]?.response?.bx_auth_ticket)
     }
+    return res
   })
 }

@@ -230,14 +230,15 @@ export default {
         return; // 防止重复点击发送
       }
       this.isSending = true;
-      this.startCountdown();
       sms.getSmsCaptcha(this.form.tel_num).then(res => {
+        this.isSending = false;
+
         if (res.data.state === 'SUCCESS') {
           this.$message.success("验证码发送成功")
+          this.startCountdown();
         } else {
           this.$message.error(res.data.resultMessage)
         }
-        this.isSending = false;
       })
     },
 
@@ -323,12 +324,17 @@ export default {
         // param.dependency=this.form.dependency
         expertInfo.insert(param).then(result => {
           if (result.data.state === 'SUCCESS') {
-            this.$message.success("注册成功，请重新登录")
-            let login_page = "/main/login.html"
-            if (top.getLoginAddress) {
+            this.$confirm("注册成功，请重新登录", "提示", {
+              confirmButtonText: '确定',
+              showCancelButton: false,
+              type: 'success'
+            }).then(() => {
+              let login_page = "/main/login.html"
+              if (top.getLoginAddress) {
               login_page = "/" + top.getLoginAddress();
             }
-            window.location.href = window.location.origin + login_page;
+              window.location.href = window.location.origin + login_page;
+            })
           } else {
             this.$message.error(result.data.resultMessage)
           }
