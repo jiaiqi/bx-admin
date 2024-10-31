@@ -11,6 +11,7 @@ export function insert(data) {
 
 // 查询机构信息
 export function queryByPage(data) {
+    console.log(data)
     const service = 'srvjk_organ_info_web_select'
     const req = {
       colNames: ['*'],
