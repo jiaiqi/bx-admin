@@ -95,6 +95,12 @@ let routes = [
   },
   
   {
+    path: "/health-test",
+    name: "health-test",
+    component: () => import("@/pages/health/index.vue"),
+  },
+  
+  {
     path: "/simple-add/:service_name",
     name: "simple-add",
     component: SimpleAdd,
