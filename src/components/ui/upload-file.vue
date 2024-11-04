@@ -4,28 +4,15 @@
       <div v-for="(file, index) in moreFileRun" :key="index">
         <span @click="handlePreview(file)" class="file-name">
           <i class="el-icon-download"></i>
-          {{ file.name }}</span
-        >
+          {{ file.name }}</span>
         <el-button type="text" class="" @click="onPreView(file, index)">
           <i class="el-icon-picture-outline"></i>
           预览
         </el-button>
       </div>
-      <viewer
-        v-show="false"
-        :images="imagesRun"
-        ref="viewer"
-        clsss="image-list"
-      >
-        <img
-          style="height: 1rem; width: 1rem"
-          :class="'image-' + src.id"
-          @error="onerror"
-          @load="onerror(src.url)"
-          :src="src.url"
-          v-for="(src, index) in imagesRun"
-          :key="index"
-        />
+      <viewer v-show="false" :images="imagesRun" ref="viewer" clsss="image-list">
+        <img style="height: 1rem; width: 1rem" :class="'image-' + src.id" @error="onerror" @load="onerror(src.url)"
+          :src="src.url" v-for="(src, index) in imagesRun" :key="index" />
       </viewer>
     </template>
 
@@ -46,124 +33,53 @@
                :data="uploadParamsRun"
                :disabled="!field.info.editable"
     > -->
-    <el-upload
-      v-if="isEdit"
-      class="upload-demo"
-      ref="upload"
-      clearable
-      :action="uploadFile"
-      :with-credentials="true"
-      :multiple="true"
-      :headers="getHeaders()"
-      :on-preview="handlePreview"
-      :before-remove="beforeRemove"
-      :before-upload="beforeAvatarUpload"
-      :on-remove="handleRemove"
-      :on-success="handleSuccess"
-      :on-exceed="handleExceed"
-      :on-change="fileChange"
-      :on-error="onErrorChange"
-      :data="uploadParamsRun"
-      :auto-upload="true"
-      :file-list="fileLists"
-      :limit="limit"
-      :disabled="!field.info.editable&&true"
-    >
-      <viewer
-        v-show="false"
-        :images="imagesRun"
-        ref="viewer"
-        clsss="image-list"
-      >
-        <img
-          style="height: 1rem; width: 1rem"
-          :class="'image-' + src.id"
-          @error="onerror"
-          @load="onerror(src.url)"
-          :src="src.url"
-          v-for="(src, index) in imagesRun"
-          :key="index"
-        />
+    <el-upload v-if="isEdit" class="upload-demo" ref="upload" clearable :action="uploadFile" :with-credentials="true"
+      :multiple="true" :headers="getHeaders()" :on-preview="handlePreview" :before-remove="beforeRemove"
+      :before-upload="beforeAvatarUpload" :on-remove="handleRemove" :on-success="handleSuccess"
+      :on-exceed="handleExceed" :on-change="fileChange" :on-error="onErrorChange" :data="uploadParamsRun"
+      :auto-upload="true" :file-list="fileLists" :limit="limit" :disabled="!field.info.editable && true">
+      <viewer v-show="false" :images="imagesRun" ref="viewer" clsss="image-list">
+        <img style="height: 1rem; width: 1rem" :class="'image-' + src.id" @error="onerror" @load="onerror(src.url)"
+          :src="src.url" v-for="(src, index) in imagesRun" :key="index" />
       </viewer>
       <el-button size="small" type="primary">点击上传</el-button>
       <!-- <el-button style="margin-left: 10px;" size="small" type="success" @click="requestUploadFile">上传到服务器</el-button> -->
       <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
-      <div
-        slot="tip"
-        class="el-upload__tip error"
-        v-if="fileError"
-        style="color: red"
-      >
+      <div slot="tip" class="el-upload__tip error" v-if="fileError" style="color: red">
         {{ fileError }}
       </div>
     </el-upload>
-    <el-dialog
-      custom-class="preview-dialog"
-      :title="
-        currentType === 'pdf'
-          ? '第' + currentPage + '页/共' + pageCount + '页'
-          : '预览'
-      "
-      :visible.sync="centerDialogVisible"
-      width="50%"
-      lock-scroll
-      center
-    >
+    <el-dialog custom-class="preview-dialog" :title="currentType === 'pdf'
+        ? '第' + currentPage + '页/共' + pageCount + '页'
+        : '预览'
+      " :visible.sync="centerDialogVisible" width="50%" lock-scroll center>
       <el-row type="flex" align="middle" v-if="currentType === 'pdf'">
         <el-col :span="2" class="grid-content">
-          <el-button
-            icon="el-icon-arrow-left"
-            circle
-            :disabled="currentPage === 1"
-            @click="changePdfPage('up')"
-          ></el-button
-        ></el-col>
+          <el-button icon="el-icon-arrow-left" circle :disabled="currentPage === 1"
+            @click="changePdfPage('up')"></el-button></el-col>
         <el-col :span="20" style="">
-          <div
-            style="
+          <div style="
               text-align: right;
               display: flex;
               justify-content: space-between;
-            "
-          >
-            <el-button
-              icon="el-icon-minus"
-              circle
-              :disabled="scale === 10"
-              @click="scaleX"
-            ></el-button>
+            ">
+            <el-button icon="el-icon-minus" circle :disabled="scale === 10" @click="scaleX"></el-button>
             <span>当前比例：{{ scale }}%</span>
-            <el-button
-              icon="el-icon-plus"
-              circle
-              :disabled="scale === 200"
-              @click="scaleD"
-            ></el-button>
+            <el-button icon="el-icon-plus" circle :disabled="scale === 200" @click="scaleD"></el-button>
           </div>
-          <div
-            style="
+          <div style="
               text-align: center;
               overflow: auto;
               border: 1px solid #eee;
               height: 735px;
-            "
-          >
-            <pdf
-              ref="wrapper"
-              :src="currentUrl"
-              :page="currentPage"
-              @num-pages="pageCount = $event"
-            >
+            ">
+            <pdf ref="wrapper" :src="currentUrl" :page="currentPage" @num-pages="pageCount = $event">
             </pdf>
           </div>
         </el-col>
         <el-col :span="2" class="grid-content" style="text-align: right">
-          <el-button
-            icon="el-icon-arrow-right"
-            circle
-            :disabled="currentPage === pageCount"
-            @click="changePdfPage('next')"
-          ></el-button>
+          <el-button icon="el-icon-arrow-right" circle :disabled="currentPage === pageCount"
+            @click="changePdfPage('next')"></el-button>
         </el-col>
       </el-row>
 
@@ -266,8 +182,8 @@ export default {
     noneFileType: function () {
       let filterType =
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileType
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileType
           ? this.field.info.moreConfig.fileType
           : "";
       if (filterType) {
@@ -285,17 +201,17 @@ export default {
       uploadFile: this.serviceApi().uploadFile,
       fileDesc:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? "请上传文件,大小不超过" +
-            this.field.info.moreConfig.fileMaxSize +
-            "MB"
+          this.field.info.moreConfig.fileMaxSize +
+          "MB"
           : "请上传文件,大小不超过200MB",
       fileType: "",
       fileSize:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 200 * 1024,
       uploadParams: {
@@ -376,8 +292,8 @@ export default {
         formData.append("serviceName", "srv_bxfile_service"); //
         formData.append("interfaceName", "add"); //
         formData.append("app_no", self.resolveDefaultSrvApp()); //
-        formData.append("table_name", self.field?.info?.srvCol?.table_name||''); //
-        formData.append("columns", self.field?.info?.srvCol?.columns||''); //
+        formData.append("table_name", self.field?.info?.srvCol?.table_name || ''); //
+        formData.append("columns", self.field?.info?.srvCol?.columns || ''); //
         if (
           !self.uploadParams.hasOwnProperty("file_no") &&
           !self.uploadParams.file_no
@@ -505,8 +421,8 @@ export default {
       }
     },
     getData() {
-      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name||'';
-      this.uploadParams.columns = this.field?.info?.srvCol?.columns||'';
+      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name || '';
+      this.uploadParams.columns = this.field?.info?.srvCol?.columns || '';
 
       //初始化文件列表
       this.fileLists = [];
@@ -522,7 +438,11 @@ export default {
       if (this.field.info.editable) {
         //判断是否是编辑
         this.isEdit = true;
-        if (this.field.model != null) {
+        if (this.field.model?.indexOf('http') === 0) {
+          this.fileLists.push({
+            url: this.field.model,
+          });
+        } else if (this.field.model != null) {
           //如果有file_no则查询出相关的图片信息
           this.uploadParams.file_no = this.field.model;
           this.queryData();
@@ -533,6 +453,12 @@ export default {
       }
     },
     queryData() {
+      if (this.field.model?.indexOf('http') === 0) {
+        this.fileLists.push({
+          url: this.field.model,
+        });
+        return
+      }
       let self = this;
       this.selectFileList(this.field.model).then((response) => {
         for (let i in response.body.data) {
@@ -540,7 +466,7 @@ export default {
           file.name = response.body.data[i].src_name;
           file.url =
             this.serviceApi().downloadFile + response.body.data[i].fileurl;
-          if(file?.fileurl?.indexOf('http')===0){
+          if (file?.fileurl?.indexOf('http') === 0) {
             file.url = file.fileurl
           }
           this.fileLists.push(file);
@@ -695,7 +621,7 @@ export default {
           if (res.message) {
             this.$set(this, "fileError", res.message);
           }
-        } catch (error) {}
+        } catch (error) { }
       }
     },
     handleSuccess(response, file, fileList) {
@@ -817,20 +743,23 @@ export default {
 .el-table tbody tr td:first-child {
   text-align: center;
 }
+
 .file-name {
   color: #333;
   border-bottom: 1px solid rgb(25, 119, 243);
 }
+
 .el-upload-list {
   border: 1px solid #dcdfe6 !important;
 }
+
 .preview-dialog .el-dialog__body {
   text-align: initial;
   padding: 5px 5px 5px !important;
 }
 </style>
 <style>
-.image-list > img {
+.image-list>img {
   height: 5rem;
   width: 5rem !important;
 }

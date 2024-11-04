@@ -3,64 +3,29 @@
     <template v-if="isEdit === false" padding="10px">
       <ul class="form-imgs">
         <li v-for="(o, index) in fileLists" :key="index" class="imgs-item">
-          <div
-            v-on:click="
-              imageDialogUrl = o.url;
-              imageDialog = true;
-            "
-          >
+          <div v-on:click="
+            imageDialogUrl = o.url;
+          imageDialog = true;
+          ">
             <img :src="o.url" min-width="70" height="70" />
           </div>
         </li>
       </ul>
     </template>
-    <el-dialog
-      title="图片预览"
-      :visible.sync="imageDialog"
-      width="60%"
-      height="65%"
-      style="text-align: center"
-    >
-      <img
-        :src="imageDialogUrl"
-        width="80%"
-        height="70%"
-        style="margin: 0 auto"
-      /><br />
+    <el-dialog title="图片预览" :visible.sync="imageDialog" width="60%" height="65%" style="text-align: center">
+      <img :src="imageDialogUrl" width="80%" height="70%" style="margin: 0 auto" /><br />
       <el-button type="primary" @click="imageDialog = false">确 定</el-button>
       <el-button type="primary" @click="dowmlaodUrl()">下载</el-button>
     </el-dialog>
-    <el-upload
-      v-if="isEdit"
-      class="upload-demo"
-      :class="{ 'upload-disabled': limit && fileLength && fileLength >= limit }"
-      :action="uploadFile"
-      :with-credentials="true"
-      :headers="getHeaders()"
-      :on-preview="handlePreview"
-      :before-remove="beforeRemove"
-      :before-upload="beforeAvatarUpload"
-      :on-remove="handleRemove"
-      :on-success="handleSuccess"
-      :on-exceed="handleExceed"
-      :file-list="fileLists"
-      :data="uploadParams"
-      clearable
-      :limit="limit"
-      :disabled="!field.info.editable"
-      list-type="picture-card"
-    >
+    <el-upload v-if="isEdit" class="upload-demo"
+      :class="{ 'upload-disabled': limit && fileLength && fileLength >= limit }" :action="uploadFile"
+      :with-credentials="true" :headers="getHeaders()" :on-preview="handlePreview" :before-remove="beforeRemove"
+      :before-upload="beforeAvatarUpload" :on-remove="handleRemove" :on-success="handleSuccess"
+      :on-exceed="handleExceed" :file-list="fileLists" :data="uploadParams" clearable :limit="limit"
+      :disabled="!field.info.editable" list-type="picture-card">
       <el-button size="small" type="primary">点击上传</el-button>
-      <div
-        slot="tip"
-        class="el-upload__tip"
-        :class="{ 'text-red': field.getAnyValidateError() }"
-      >
-        <i
-          slot="reference"
-          class="el-icon-warning"
-          v-if="field.getAnyValidateError()"
-        ></i>
+      <div slot="tip" class="el-upload__tip" :class="{ 'text-red': field.getAnyValidateError() }">
+        <i slot="reference" class="el-icon-warning" v-if="field.getAnyValidateError()"></i>
         {{ setFileDesc }}
       </div>
     </el-upload>
@@ -104,17 +69,17 @@ export default {
       fileLength: 0,
       fileDesc:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? "请上传jpg/png/svg格式的图片,大小不超过" +
-            this.field.info.moreConfig.fileMaxSize +
-            "MB"
+          this.field.info.moreConfig.fileMaxSize +
+          "MB"
           : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
       fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff",
       fileSize:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 2 * 1024,
       imageDialog: false,
@@ -143,6 +108,8 @@ export default {
               file.name = file.src_name;
               file.url =
                 this.serviceApi().downloadFile + file.fileurl;
+                console.log(11111111111111);
+                
               this.fileLists.push(file);
             });
             return;
@@ -163,8 +130,8 @@ export default {
     },
 
     getData() {
-      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name||'';
-      this.uploadParams.columns = this.field?.info?.srvCol?.columns||'';
+      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name || '';
+      this.uploadParams.columns = this.field?.info?.srvCol?.columns || '';
 
       this.fileLists = []; //初始化文件列表
       if (this.field.fileDesc != null) {
@@ -179,10 +146,17 @@ export default {
       if (this.field.info.editable) {
         //判断是否是编辑
         this.isEdit = true;
-        if (this.field.model != null) {
+        if (this.field.model != null && this.field.model?.indexOf('http') !== 0) {
           //如果有file_no则查询出相关的图片信息
           this.uploadParams.file_no = this.field.model;
           this.queryData();
+        } else if (this.field.model?.indexOf('http') === 0) {
+          console.log(2222222222222);
+          
+          this.fileLists.push({
+            url: this.field.model,
+          });
+
         }
       } else {
         this.isEdit = false;
@@ -190,15 +164,25 @@ export default {
       }
     },
     queryData() {
+      if (this.field.model?.indexOf('http') == 0) {
+        console.log(33333333333);
+        
+        this.fileLists.push({
+          url: this.field.model,
+        });
+        return
+      }
       this.selectFileList(this.field.model).then((response) => {
         for (let i in response.body.data) {
           let file = response.body.data[i];
           file.name = response.body.data[i].src_name;
           file.url =
             this.serviceApi().downloadFile + response.body.data[i].fileurl;
-          if(file?.fileurl?.indexOf('http')===0){
+          if (file?.fileurl?.indexOf('http') === 0) {
             file.url = file.fileurl
           }
+          console.log(4444444444444444);
+          
           this.fileLists.push(file);
         }
       });
@@ -262,15 +246,20 @@ export default {
       }
     },
     handleSuccess(response, file, fileList) {
-      console.log(fileList);
+      console.log(fileList,'handleSuccess');
       if (response.state === undefined) {
         this.$message.info("上传成功！");
         this.uploadParams.file_no = response.file_no;
         this.field.model = response.file_no;
+        if (response.fileurl?.indexOf('http') === 0) {
+          this.field.model = response.fileurl
+        }
         this.$emit("change", this.field.model);
         this.setObjInfo(fileList);
       } else {
         this.$message.error("上传失败！");
+        console.log(55555555555555);
+        
         this.fileLists.splice(this.fileLists.length - 1, 1);
       }
       this.fileLength = fileList.length;
