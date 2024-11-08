@@ -402,11 +402,15 @@ export default {
     }
   },
   watch: {
-    'field.model'(newValue) {
-      this.myValue = this.recoverFileAddress(newValue)
-    },
+    // field:{
+    //   handler(newValue, oldValue) {
+    //     console.log(newValue,'watchwatchwatchwatchwatchwatchwatchwatch');
+        
+    //     this.myValue = newValue.model||''
+    //   },
+    //   deep: true
+    // },
     myValue(newValue) {
-      
       this.onChange()
     }
   }

@@ -127,7 +127,7 @@
             </wang-editor>
             <TinymceEditor v-else-if="field.info.editor === 'ueditor'"
               :field="field"
-              @field-changed="
+              @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
               "
               ref="editor"></TinymceEditor>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <RichEditor :value="content" @onClick="onClick"   />
+    <RichEditor :value="content" @field-value-changed="onChange"   />
   </div>
 </template>
 
@@ -15,7 +15,7 @@
       }
     },
     methods: {
-      onClick (e) {
+      onChange (e) {
         console.log(e)
       }
     },

@@ -1029,6 +1029,9 @@ function init_util() {
       (file.hasOwnProperty("_dl_auth") && file["_dl_auth"])
     ) {
       let url = self.serviceApi().downloadFile + file.fileurl;
+      if(file.fileurl?.indexOf('http')===0){
+        url = file.fileurl
+      }
       window.location.href = url;
     } else {
       self.$alert("您无权限下载，请确认后重试！", "提示", {

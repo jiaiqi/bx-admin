@@ -66,7 +66,8 @@ export default {
     };
   },
 
-  computed: {},
+  computed: {
+  },
 
   methods: {
     fullScreen () {
@@ -136,7 +137,9 @@ export default {
       //   cMapPacked: true
       // })
       // this.src = src
-      this.src = pdf.createLoadingTask({ url: encodeURI(pdfsrc), CMapReaderFactory })
+      let url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(this.$route.query.pdfsrc)}`
+      this.src = pdf.createLoadingTask({ url: url, CMapReaderFactory })
+      // this.src = pdf.createLoadingTask({ url: encodeURI(pdfsrc), CMapReaderFactory })
       console.log('view-pdf:',this.src)
     }
   }
@@ -176,5 +179,3 @@ export default {
   }
 }
 </style>
-
-
