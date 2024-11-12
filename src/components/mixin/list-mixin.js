@@ -113,6 +113,7 @@ export default {
       pub_field_map: null,
       originListData: null,
       listV2Data: null,
+      isRefreshed:false
     };
   },
 
@@ -2246,8 +2247,9 @@ export default {
     },
     loadTableData(srvAuth) {
       let self = this;
-      if (!this.vpageNo) {
+      if (!this.vpageNo&&!this.isRefreshed) {
         // 登录过期后刷新
+        this.isRefreshed = true;
         return this.initGridData();
       }
       if (!this.shouldLoadFromDb) {
