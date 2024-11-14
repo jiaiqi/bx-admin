@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PPT Viewer</title>
+  <link rel="stylesheet" href="./css/pptxjs.css" />
+  <link rel="stylesheet" href="./css/nv.d3.min.css" />
+</head>
+
+<body>
+  <div id="loader"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; display: flex; justify-content: center; align-items: center;">
+    <div class="spinner"
+      style="border: 4px solid rgba(255, 255, 255, 0.3); border-top-color: #fff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;">
+    </div>
+  </div>
+
+  <div id="container"></div>
+  <script src="./js/jquery-1.11.3.min.js"></script>
+  <script src="./js/jszip.min.js"></script>
+  <script src="./js/filereader.js"></script>
+  <script src="./js/d3.min.js"></script>
+  <script src="./js/nv.d3.min.js"></script>
+  <script src="./js/pptxjs.js"></script>
+  <script src="./js/divs2slides.js"></script>
+  <script src="./js/jquery.fullscreen-min.js"></script>
+  <script>
+    $(function () {
+      const pptxFileUrl = new URLSearchParams(window.location.search).get('file')
+      if (pptxFileUrl) {
+        // 显示加载动画
+        $('#loader').show();
+        $('#container').pptxToHtml({
+          pptxFileUrl: pptxFileUrl,
+          slideMode: true,
+          slideModeConfig: {  //on slide mode (slideMode: true)
+            first: 1,
+            nav: true, /** true,false : show or not nav buttons*/
+            navTxtColor: "white", /** color */
+            navNextTxt: "&#8250;", //">"
+            navPrevTxt: "&#8249;", //"<"
+            showPlayPauseBtn: true,/** true,false */
+            keyBoardShortCut: true, /** true,false */
+            showSlideNum: true, /** true,false */
+            showTotalSlideNum: true, /** true,false */
+            autoSlide: true, /** false or seconds (the pause time between slides) , F8 to active(keyBoardShortCut: true) */
+            randomAutoSlide: false, /** true,false ,autoSlide:true */
+            loop: true,  /** true,false */
+            background: "black", /** false or color*/
+            transition: "default", /** transition type: "slid","fade","default","random" , to show transition efects :transitionTime > 0.5 */
+            transitionTime: 1 /** transition time in seconds */
+          },
+          loaded: function (e) {
+            console.log('PPT loaded',e)
+          },
+          onRenderComplete: function () {
+            console.log('PPT rendering complete')
+            // 隐藏加载动画
+            $('#loader').hide();
+          },
+          onError: function (error) {
+            console.error('Error rendering PPT:', error)
+            alert('ppt加载失败，请刷新重试')
+            // 隐藏加载动画
+            $('#loader').hide();
+          },
+        })
+      }
+    })
+  </script>
+  <style>
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</body>
+
+</html>

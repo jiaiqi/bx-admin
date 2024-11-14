@@ -332,9 +332,16 @@ export default {
     },
     onPreView(file, index) {
       let self = this;
+      if(!file.file_type && file.url?.indexOf('http')===0){
+        const extension = file.url.slice(file.url.lastIndexOf(".")+1);
+        file.file_type = extension
+      }
       let fileType = file.hasOwnProperty("file_type")
         ? file.file_type
         : file.response.file_type;
+      if(fileType){
+        fileType = fileType.toLowerCase();
+      }
       if (
         fileType === "jpg" ||
         fileType === "png" ||
@@ -356,13 +363,9 @@ export default {
         console.log(viewer, imgIndex, viewer2, self.$refs.viewer);
         viewer.show();
       } else if (
-        fileType === "pdf" ||
-        fileType === "jpg" ||
-        fileType === "png" ||
-        fileType === "gif" ||
-        fileType === "JPG"
+        ['pptx','pdf','jpg','png','gif'].includes(fileType)
       ) {
-        if (fileType === "pdf") {
+        if (fileType === "pdf"||fileType==='pptx') {
           //  let link = pdf.createLoadingTask({
           //    url:file.url,
           //    cMapUrl: '../../assets/cmaps/',
@@ -487,7 +490,10 @@ export default {
     handlePreview(file) {
       //点击文件时触发
       console.log("handlePreview", file);
-
+      if(!file.file_type && file.url?.indexOf('http')===0){
+        const extension = file.url.slice(file.url.lastIndexOf(".")+1);
+        file.file_type = extension
+      }
       let fileType = file.hasOwnProperty("file_type")
         ? file.file_type
         : file.response.file_type;
@@ -499,8 +505,10 @@ export default {
           //如果是新上传的文件需要获取url
           file.url = this.serviceApi().downloadFile + file.response.fileurl;
         }
-
-        if (file.url.toLowerCase().endsWith(".pdf")) {
+        if(fileType==='pptx' && file.url){
+          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`
+          this.addTabByUrl(previewUrl, "文件预览");
+        }else if (file.url.toLowerCase().endsWith(".pdf")) {
           let currLocation = window.location.href;
           let hashIndex = currLocation.indexOf("#");
           if (hashIndex > 0) {
@@ -637,7 +645,11 @@ export default {
           key: "file_no",
           value: response.file_no,
         };
-        this.field.model = response.file_no;
+        if(response.fileurl?.indexOf('http') === 0){
+          this.field.model = response.fileurl;
+        }else{
+          this.field.model = response.file_no;
+        }
 
         console.log("fileList", fileList, this.uploadParams.file_no);
         // self.setSrvVal(response.file_no)
