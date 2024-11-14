@@ -602,8 +602,9 @@ function init_util() {
   Vue.prototype.getFileType = function (e) {
     let types = {
       img: ["jpg", "JPG", "PNG", "JPEG", "jpeg", "png", "bmp", "tiff"],
-      doc: ["xlsx", "xls", "xlsm", "docx", "doc", "wps", "ppt"],
+      doc: ["xlsx", "xls", "xlsm", "docx", "doc", "wps", "ppt",'pptx'],
       pdf: ["pdf"],
+      ppt:['ppt','pptx'],
       media: ["mp3", "mp4", "avi", "mov", "mkv", "wav"],
     };
     let type = "more";
@@ -616,6 +617,8 @@ function init_util() {
         }
       }
     }
+    console.log('type:',e,type);
+    
     return type;
   };
   Vue.prototype.selectFileList = function (file_no) {

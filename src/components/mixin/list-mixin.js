@@ -3439,9 +3439,14 @@ export default {
     },
     getListFileDatas(col, row) {
       let dipsCol = "_" + col.column + "_disp";
-      if (row.hasOwnProperty(dipsCol)) {
+      if (row.hasOwnProperty(dipsCol) && row[dipsCol]) {
         return row[dipsCol];
       } else {
+        if(row[col.column]?.indexOf('http')===0){
+          let file_type = row[col.column].split('.').pop()
+          let src_name = row[col.column].split('/').pop()
+          return [{fileurl:row[col.column],file_type,src_name}]
+        }
         return [];
       }
     },

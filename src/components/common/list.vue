@@ -460,6 +460,7 @@
                   class="list-image"
                 >
                   <div
+                    style="display: flex;align-items: center;"
                     :title="fileItem.src_name"
                     v-for="(fileItem, index) in getListFileDatas(
                       item,
@@ -470,8 +471,11 @@
                     <i
                       v-show="
                         getFileType(fileItem) === 'img' ||
-                        getFileType(fileItem) === 'pdf'
+                        getFileType(fileItem) === 'pdf'||
+                        getFileType(fileItem) === 'ppt'
                       "
+                      title="预览"
+                      style="cursor: pointer;"
                       class="el-icon-view"
                       @click.stop="
                         onPreView(
@@ -1530,13 +1534,12 @@ export default {
         //console.log(viewer,imgIndex,viewer2,self.$refs.viewer)
         viewer.show();
       } else if (
-        fileType === "pdf" ||
-        fileType === "jpg" ||
-        fileType === "png" ||
-        fileType === "gif" ||
-        fileType === "JPG"
+        ["pdf", "jpg", "png", "gif",'JPG','ppt','pptx'].includes(fileType)
       ) {
-        if (fileType === "pdf") {
+        if((fileType==='pptx' || fileType==='ppt') && file.fileurl){
+          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.fileurl}`
+          this.addTabByUrl(previewUrl, "文件预览");
+        }else if (fileType === "pdf") {
           self.handlePreview(file);
         } else {
           this.currentUrl = file.url;
@@ -1562,7 +1565,10 @@ export default {
       if (!file.hasOwnProperty("url")) {
         file.url = file.fileurl;
       }
-      if (file.url.toLowerCase().endsWith(".pdf")) {
+      if(fileType==='ppt' && file.url){
+        const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`
+        this.addTabByUrl(previewUrl, "文件预览");
+      }else if (file.url.toLowerCase().endsWith(".pdf")) {
         let currLocation = window.location.href;
         let hashIndex = currLocation.indexOf("#");
         if (hashIndex > 0) {

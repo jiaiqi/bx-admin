@@ -771,7 +771,8 @@ getFileFromUrl(url, fileName) {
           "var zz=" + pre_data_handle + "(operateData,mainDetailData,self); zz"
         );
         // back_url = eval(pre_data_handle);
-        if (back_url && back_url.indexOf("srvApp") == -1) {
+        if (back_url && back_url.indexOf("srvApp") == -1 && back_url.includes(location.hostname)) {
+          // 只有域名/ip跟当前页面一样时才追加srvApp参数
           let opt = "&";
           if (back_url.indexOf("?") == -1) {
             opt = "?";
