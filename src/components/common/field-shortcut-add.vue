@@ -153,6 +153,7 @@ export default {
         if(address){
           this.addTabByUrl(address,this.cfg.btn_name)
         }
+        return
       }else if (this.cfg?.btn_type && this.btnSrvReq) {
         // 支持配置btn_srv_req_json以及btn_type来判断要打开的页面：目前只支持跳转列表、跳转详情、打开新增弹窗 jiaqi/2024-05-10
         let url = ''
