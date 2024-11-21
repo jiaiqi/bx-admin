@@ -1034,6 +1034,7 @@ function init_util() {
       let url = self.serviceApi().downloadFile + file.fileurl;
       if(file.fileurl?.indexOf('http')===0){
         url = file.fileurl
+        // url = file.fileurl.replace("http://",'https://')
       }
       window.location.href = url;
     } else {

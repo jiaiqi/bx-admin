@@ -137,7 +137,23 @@ export default {
       }
     },
     onAction() {
-      if (this.cfg?.btn_type && this.btnSrvReq) {
+      if(this.cfg?.btn_srv_type==='jump'){
+        // 跳转
+        let address = ''
+        if(this.cfg.btn_srv_jump_fun){
+          const fun = this.cfg.btn_srv_jump_fun;
+          if(!fun?.includes('function')){
+            address = fun
+          }else{
+            const me = this
+            const data = this.formModel
+            address =  eval("var zz=" + fun + "(data,me); zz");
+          }
+        }
+        if(address){
+          this.addTabByUrl(address,this.cfg.btn_name)
+        }
+      }else if (this.cfg?.btn_type && this.btnSrvReq) {
         // 支持配置btn_srv_req_json以及btn_type来判断要打开的页面：目前只支持跳转列表、跳转详情、打开新增弹窗 jiaqi/2024-05-10
         let url = ''
         switch (this.cfg.btn_type) {
