@@ -179,6 +179,10 @@ export const getImagePath = (no, notThumb) => {
     let url = `${serviceApi.imageFileNo}${no}&bx_auth_ticket=${
       bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
     }`;
+    if(location.href?.includes('lowcode-grid/editor/')){
+      // 可视化编辑页面，图片后缀增加时间戳，避免缓存
+      url += `&t=${new Date().getTime()}`
+    }
     return url;
   } else {
     return "";
