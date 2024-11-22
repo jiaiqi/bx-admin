@@ -785,7 +785,8 @@ export default {
       let element = document.getElementById("custom-design");
 
       let contentData = this.contentData;
-
+      console.log('contentData',this.contentData);
+      
       let resizeFull = () => {
         const windowWidth = window.innerWidth;
         const windowheight = window.innerHeight;
@@ -2077,11 +2078,13 @@ export default {
 }
 
 .customhome-container {
-  width: 100vw;
-  height: 100vh;
+  // width: 100vw;
+  // height: 100vh;
   background: #f1f3f2;
   user-select: none;
   position: relative;
+  height: 100%;
+  width: 100%;
   // &.fixedWH {
   //   .cushome-content {
   //     .custom-design {
