@@ -293,4 +293,9 @@ body {
     }
   }
 }
+
+	/* 在el-dialog中tinymce z-index 被太小而被遮挡 */
+	.tox-tinymce-aux{z-index:99999 !important;}
+	.tinymce.ui.FloatPanel{z-Index: 99;}
+
 </style>
