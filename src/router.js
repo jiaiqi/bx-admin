@@ -93,7 +93,11 @@ let routes = [
     name: "expert-register",
     component: () => import("@/pages/health/register.vue"),
   },
-  
+  {
+    path: "/dashboard",
+    name: "dashboard", // 地方志看板页面
+    component: () => import("@/pages/dashboard/index.vue"),
+  },
   {
     path: "/health-test",
     name: "health-test",
