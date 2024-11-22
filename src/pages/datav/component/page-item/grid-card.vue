@@ -234,7 +234,7 @@ export default {
       width: 100%;
       min-height: 40px;
       margin: 0 auto;
-      background-color: #333;
+      // background-color: #333;
 
       //flex: 1;
     }
