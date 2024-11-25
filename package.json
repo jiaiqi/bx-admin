@@ -10,6 +10,7 @@
     "deploy:dev": "deploy-cli-service deploy --mode dev"
   },
   "dependencies": {
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
     "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@popperjs/core": "^2.11.7",
     "@tinymce/tinymce-vue": "^3.0.1",
@@ -63,6 +64,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.12.16",
+    "@gradio/client": "^1.8.0",
     "@vue/cli-plugin-babel": "3.12.1",
     "@vue/cli-service": "3.12.1",
     "compression-webpack-plugin": "^6.0.3",
