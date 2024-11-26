@@ -75,7 +75,7 @@ export default {
           this.field.info.moreConfig.fileMaxSize +
           "MB"
           : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
-      fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff",
+      fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
       fileSize:
         this.field.info.moreConfig &&
           this.field.info.moreConfig !== null &&
@@ -193,16 +193,25 @@ export default {
         return false;
       }
       let flag = false;
-      for (let i in this.fileType.split("/")) {
-        let fileType = this.fileType.split("/")[i];
-        if (fileType && typeof fileType === "string") {
-          fileType = fileType.toLowerCase();
-        }
-        if (file.name.split(".")[1] === fileType) {
-          flag = true;
-          break;
-        }
+      let type = file.name.slice(file.name.lastIndexOf('.')+1).toLowerCase()
+      if(this.fileType.includes(type)){
+        flag = true
       }
+      // for (let i in this.fileType.split("/")) {
+      //   let fileType = this.fileType.split("/")[i];
+      //   if (fileType && typeof fileType === "string") {
+      //     fileType = fileType.toLowerCase();
+      //   }
+      //   if (file.name.toLowerCase().indexOf(fileType.toLowerCase()) !== -1) {
+      //     flag = true;
+      //     break;
+      //   }
+
+      //   // if (file.name.split(".")[1] === fileType) {
+      //   //   flag = true;
+      //   //   break;
+      //   // }
+      // }
       if (!flag) {
         this.$message.error("只能上传" + this.fileType + "文件!");
         return false;

@@ -1038,9 +1038,13 @@ function init_util() {
       let url = self.serviceApi().downloadFile + file.fileurl;
       if(file.fileurl?.indexOf('http')===0){
         url = file.fileurl
+        if(top.location.protocol==='https'&&url.indexOf('https')!==0){
+          url = url.replace("http://",'https://')
+        }
         // url = file.fileurl.replace("http://",'https://')
       }
-      window.location.href = url;
+      window.open(url);
+      // window.location.href = url;
     } else {
       self.$alert("您无权限下载，请确认后重试！", "提示", {
         confirmButtonText: "确定",

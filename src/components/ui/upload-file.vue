@@ -553,12 +553,16 @@ export default {
         if (this.fileType) {
           //默认支持所有类型上传
           let flag = false;
-          for (let i in this.fileType.split("/")) {
-            if (file.name.split(".")[1] === this.fileType.split("/")[i]) {
-              flag = true;
-              break;
-            }
+          let type = file.name.slice(file.name.lastIndexOf('.')+1).toLowerCase()
+          if(this.fileType.includes(type)){
+            flag = true
           }
+          // for (let i in this.fileType.split("/")) {
+          //   if (file.name.split(".")[1] === this.fileType.split("/")[i]) {
+          //     flag = true;
+          //     break;
+          //   }
+          // }
           if (!flag) {
             this.$message.error("只能上传" + this.fileType + "文件!");
             return false;
