@@ -1,26 +1,21 @@
 <template>
   <div>
-    <iframe
-      src=""
-      frameborder="0"
-      id="pdf-viewer"
-      style="width: 100%; height: calc(100vh - 20px)"
-    ></iframe>
+    <iframe src="" frameborder="0" id="pdf-viewer" style="width: 100%; height: calc(100vh - 20px)"></iframe>
   </div>
 </template>
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       dowloadpdfsrc: ''
     }
   },
   methods: {
-    loadPdf (url) {
+    loadPdf(url) {
       var paramData = {};
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', url, true);
+      xhr.open('GET', url, true);
       // 设置请求头参数，可以添加token值
       xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8;');
       // 设置响应体返回类型，这里需要把返回的文件流转换成 blob 类型
@@ -30,12 +25,12 @@ export default {
           var name = xhr.getResponseHeader('Content-disposition');
           name = decodeURIComponent(name);
 
-          
+
           // debugger
           // 返回的文件流，转换成blob对象
           // var blob = new Blob([ xhr.response ], { type: xhr.response.type });
-          var blob = new Blob([ xhr.response ], { type:  'application/pdf;charset-UTF-8;' });
-           let file =  new File([xhr.response ], name)
+          var blob = new Blob([xhr.response], { type: 'application/pdf;charset-UTF-8;' });
+          let file = new File([xhr.response], name)
           // 转换成blob类型的url
           // var blobUrl = URL.createObjectURL(blob);
           var fileUrl = URL.createObjectURL(file);
@@ -43,27 +38,30 @@ export default {
           var blobUrl = URL.createObjectURL(blob);
 
           document.getElementById('pdf-viewer').src = blobUrl
-          
+
           document.getElementById('pdf-viewer').title = name
-          console.log('name:',file,'url',fileUrl)
+          console.log('name:', file, 'url', fileUrl)
         }
       };
       xhr.send(JSON.stringify(paramData));
     }
   },
-  mounted () {
+  mounted() {
     if (this.isTopComp() && this.$route && this.$route.query) {
       var pdfsrc = this.$route.query.pdfsrc;
       pdfsrc = decodeURIComponent(pdfsrc);
-      if(!pdfsrc?.includes('http')){
+      if (!pdfsrc?.includes('http')) {
         pdfsrc = this.serviceApi().downloadFile + pdfsrc
       }
-      this.dowloadpdfsrc = pdfsrc
-      this.loadPdf(pdfsrc)
+      let url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(pdfsrc)}`
+      this.dowloadpdfsrc = url
+      this.loadPdf(url)
     }
   },
 }
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style
+  lang="scss"
+  scoped
+></style>

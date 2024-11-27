@@ -86,4 +86,13 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "hsprl",
   },
+  healthProd: {
+    // 健康科普资源库
+    gateway_protocol: "https",
+    gateway_ip: "admin.bxjkw.cn/bxapi",
+    port: "",
+    gateway: "https://admin.bxjkw.cn/bxapi",
+    sso_app: "sso",
+    application: "hsprl",
+  },
 };

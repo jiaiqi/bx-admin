@@ -18,7 +18,10 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "saas";
   // const ENV = "xixiang";
   // const ENV = "244";
-  const ENV = 'healthDev'
+  // const ENV = "244";
+  const ENV = 'healthProd'
+  // const ENV = 'healthDev'
+
   const pathConfig = pathConfigMap[ENV];
   if(location.href?.includes?.('menuapp=')){
     let app = location.href.split('menuapp=')[1].split(';')[0]

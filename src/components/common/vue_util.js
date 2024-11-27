@@ -1038,8 +1038,12 @@ function init_util() {
       let url = self.serviceApi().downloadFile + file.fileurl;
       if(file.fileurl?.indexOf('http')===0){
         url = file.fileurl
-        if(top.location.protocol==='https'&&url.indexOf('https')!==0){
+        if(top.location.protocol?.includes('https')&&url?.includes('https')===false){
           url = url.replace("http://",'https://')
+        }
+        if(top.location.protocol?.includes('https')&&url?.indexOf('http')===0 &&url?.indexOf('https')!==0){
+          // url = url.replace("http://",'https://')
+          url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(url)}`
         }
         // url = file.fileurl.replace("http://",'https://')
       }

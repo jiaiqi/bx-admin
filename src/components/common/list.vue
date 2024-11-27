@@ -1565,6 +1565,10 @@ export default {
       if (!file.hasOwnProperty("url")) {
         file.url = file.fileurl;
       }
+      if(top.location.protocol?.includes('https')&&file.url?.indexOf('http')===0 &&file.url?.indexOf('https')!==0){
+        // file.url = file.url.replace("http://",'https://')
+        file.url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(file.url)}`
+      }
       if(fileType==='ppt' && file.url){
         const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`
         this.addTabByUrl(previewUrl, "文件预览");
