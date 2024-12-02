@@ -1573,13 +1573,18 @@ export default {
         const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`
         this.addTabByUrl(previewUrl, "文件预览");
       }else if (file.url.toLowerCase().endsWith(".pdf")) {
+        let url = file.url;
+        if(file.url.indexOf('http')!==0 && file.fileurl){
+          url = this.serviceApi().downloadFile + file.fileurl;
+        }
         let currLocation = window.location.href;
         let hashIndex = currLocation.indexOf("#");
         if (hashIndex > 0) {
           let pdfPreviewUrl =
             currLocation.substring(0, hashIndex) +
             "#/viewpdf?pdfsrc=" +
-            encodeURIComponent(file.url);
+            encodeURIComponent(url);
+          // let pdfPreviewUrl = url
           this.addTabByUrl(pdfPreviewUrl, "文件预览");
           return;
         }
