@@ -410,6 +410,11 @@ let routes = [
     path:'/comment-open-edit',
     component:()=>import('@/pages/health/treeEdit.vue'),
     name:'treeEdit'
+  },
+  {
+    path:'/preview/img',
+    component:()=>import('@/pages/common/preview/img.vue'),
+    name:'imagePreview'
   }
 ];
 
