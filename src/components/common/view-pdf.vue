@@ -54,6 +54,10 @@ export default {
         pdfsrc = this.serviceApi().downloadFile + pdfsrc
       }
       let url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(pdfsrc)}`
+      if(pdfsrc.includes(location.host)){
+        console.log('url', url);
+        url = pdfsrc
+      }
       this.dowloadpdfsrc = url
       this.loadPdf(url)
     }

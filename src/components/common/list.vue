@@ -1426,16 +1426,16 @@ export default {
       this.listStyle = type;
     },
     buildDivCond() {
+      let divCond = null
       if (this.divCond?.length) {
-        return this.divCond;
-      }
-      if (this.listType === "list") {
+        divCond = this.divCond;
+      }else if (this.listType === "list") {
         if (
           this.$route.query?.divCol &&
           this.$route.query?.divStartVal &&
           this.$route.query?.divEndVal
         ) {
-          return [
+          divCond = [
             {
               colName: this.$route.query.divCol,
               ruleType: "between",
@@ -1449,14 +1449,16 @@ export default {
       } else if (this.listType === "detaillist") {
         // 详情子表
         if (this.childForeignkey?.more_config?.includes("divCond")) {
-          const divCond = this.buildCustomBtnDivCond(
+           divCond = this.buildCustomBtnDivCond(
             this.childForeignkey,
             null,
             this.listMainFormDatas
           );
-          return divCond;
         }
       }
+      console.log("divCond", divCond);;
+      
+      return divCond;
     },
     openHtml(val) {
       const h = this.$createElement;
