@@ -2388,6 +2388,7 @@ export default {
             }
 
             //加载表格数据
+            const divCond = this.buildDivCond?.();
             return onFetch({
               service: this.service_name,
               condition: condition,
@@ -2400,13 +2401,15 @@ export default {
               columns: this.columns,
               relationCondition: relationCondition,
               isDraft: this.draftRun,
-              divCond: this.buildDivCond?.(),
+              divCond:divCond,
               rdt: rdt,
               pageType: "list_page",
               vpageNo: this.vpageNo,
               srvAuth: srvAuth,
             })
               .then((response) => {
+                console.log('divCond',divCond);
+                
                 if (response.resultCode == "0011") {
                   // 登录过期
                   this.$store.commit("clearSrvCols");
@@ -3320,6 +3323,7 @@ export default {
             let query_srv = this.defDataPara.serviceName;
             let query_condition = this.defDataPara.condition;
             let relationCondition = this.relationCondition;
+            const divCond = this.buildDivCond?.();
             await this.select(
               query_srv,
               query_condition,
@@ -3337,8 +3341,9 @@ export default {
               null,
               null,
               null,
-              this.buildDivCond?.()
+              divCond
             ).then((response) => {
+debugger
               var dataResult = response.body.data;
               if (dataResult.length > 0) {
                 var dataArray = [];
