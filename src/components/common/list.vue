@@ -1464,7 +1464,8 @@ export default {
       const h = this.$createElement;
       this.$msgbox({
         title: "详情",
-        // center:true,
+        center:true,
+        fullscreen: true,
         customClass: "message-box",
         message: h("p", {
           domProps: {
@@ -1655,12 +1656,14 @@ export default {
 </script>
 <style>
 .message-box {
-  width: max(40vw, 500px) !important;
+  /* width: max(40vw, 500px) !important; */
+  width: 100vw!important;
+  height: 100vh;
 }
 
 .message-box .el-message-box__content {
   min-height: max(300px, 30vh);
-  max-height: 50vh;
+  max-height: 90vh;
   overflow-y: auto !important;
 }
 </style>
