@@ -125,12 +125,15 @@
               "
             >
             </wang-editor>
-            <TinymceEditor v-else-if="field.info.editor === 'ueditor'"
+            <TinymceEditor
+              :disabled="getDisabled"
+              v-else-if="field.info.editor === 'ueditor'"
               :field="field"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
               "
-              ref="editor"></TinymceEditor>
+              ref="editor"
+            ></TinymceEditor>
             <!-- <ueditor
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -730,7 +733,7 @@ import InputRange from "../ui/input-range.vue";
 import Finder from "../ui/finder.vue";
 import multiFinder from "../ui/multi-finder.vue";
 import UEditor from "../ui/ueditor.vue";
-import TinymceEditor from './tinymce/index.vue'
+import TinymceEditor from "./tinymce/index.vue";
 // import UploadFile from "../ui/upload-file.vue";
 import UploadImage from "../ui/upload-image.vue";
 import TreeFinder from "../ui/tree-finder.vue";
@@ -891,10 +894,14 @@ export default {
         return false;
       }
     },
-    autocompleteSelected(field){
+    autocompleteSelected(field) {
       this.$emit("field-value-changed", field.info.name, field);
       // autocomplete字段手动改变下拉选项，通知表单组件进行冗余
-      this.field?.form?.handleFieldFkRedundant?.(field,field?.form?.fields,true)
+      this.field?.form?.handleFieldFkRedundant?.(
+        field,
+        field?.form?.fields,
+        true
+      );
     },
     changeDependField(field) {
       if (
