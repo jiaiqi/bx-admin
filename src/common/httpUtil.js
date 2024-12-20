@@ -116,6 +116,9 @@ export const doSelect = function (option = {}, vm = {}) {
     vpage_no: vpageNo,
     use_type: useType, //2023.10.20增加use_type参数 解决行按钮权限丢失问题
   };
+  if(!divCondition&&option.divCond){
+    query["divCond"]  = option.divCond;
+  }
   if (divCondition) {
     query["divCond"] = divCondition;
   } else if (

@@ -15,11 +15,13 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "audDev";
   // const ENV = "yanxueOpen"; //研学外网
   // const ENV = "yanxueDev";
-  // const ENV = "saas";
+  const ENV = "saas";
   // const ENV = "xixiang";
   // const ENV = "244";
   // const ENV = "244";
-  const ENV = 'healthProd'
+  // const ENV = 'gaosudev'
+  // const ENV = 'yanxueOpen1'
+  // const ENV = 'healthProd'
   // const ENV = 'healthDev'
 
   const pathConfig = pathConfigMap[ENV];
@@ -60,7 +62,7 @@ const getRootWindow = (_window) => {
 
 const instance = axios.create({
   baseURL: baseURL,
-  timeout: 1000 * 20,
+  timeout: 1000 * 60,
   withCredentials: true,
   // headers: {'X-Custom-Header': 'foobar'}
 });
@@ -149,7 +151,9 @@ instance.interceptors.response.use(
         }
       } else {
         if (response.data.resultCode !== "9998") {
-          if (sessionStorage.getItem("need_login_flag") != "need_login") {
+          if(response.data.serviceInfo?.includes('sql语句执行异常')){
+            console.error(response.data.serviceInfo)
+          }else if (sessionStorage.getItem("need_login_flag") != "need_login") {
             Message.error(response.data.resultMessage);
           }
         }

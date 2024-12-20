@@ -68,6 +68,15 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "config",
   },
+  yanxueOpen1: {
+    // 研学内网
+    gateway_protocol: "http",
+    gateway_ip: "139.196.209.46",
+    port: "5021",
+    gateway: "http://139.196.209.46:5021",
+    sso_app: "sso",
+    application: "config",
+  },
   xixiang: {
     // 西乡
     gateway_protocol: "https",
@@ -94,5 +103,14 @@ export const pathConfigMap = {
     gateway: "https://admin.bxjkw.cn/bxapi",
     sso_app: "sso",
     application: "hsprl",
+  },
+  gaosudev: {
+    // 健康科普资源库
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.140",
+    port: "180",
+    gateway: "http://192.168.0.140:180",
+    sso_app: "sso",
+    application: "idm",
   },
 };

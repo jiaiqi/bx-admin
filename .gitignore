@@ -40,5 +40,6 @@ vpage-*
 dist-*
 l-pc-front.*
 debug.log
-
+*vpages
+*vpages.zip
 debug.log

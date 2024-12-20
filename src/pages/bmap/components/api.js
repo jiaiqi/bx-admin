@@ -145,7 +145,7 @@ export function getFileInfo (no) {
 			"pageNo": 1,
 			"rownumber": 6
 		},
-		"order": [{"colName":"modify_time","orderType":"asc"}]
+		"order": [{"colName":"seq","orderType":"asc"}]
 	}
   return request({
     url: `${host}/file/select/srvfile_attachment_select?srvfile_attachment_select`,
@@ -195,8 +195,3 @@ export function getCmt (contentNo) {
     data: req
   })
 }
-
-
-
-
-

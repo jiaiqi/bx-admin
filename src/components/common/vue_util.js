@@ -640,8 +640,11 @@ function init_util() {
         ruleType: "eq",
       },
     ];
-
-    return this.doSelect(url, serviceName, condition);
+    const order = [{
+      colName: "seq",
+      orderType: "asc"
+    }]
+    return this.doSelect(url, serviceName, condition,null,order);
   };
 
   /**查询列表*/
