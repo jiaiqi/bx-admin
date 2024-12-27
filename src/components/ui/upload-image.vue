@@ -72,12 +72,36 @@
           </transition-group>
         </draggable>
       </ul>
+      <div
+        :class="{
+          'display-none': limit && fileLength && fileLength >= limit,
+          'on-focus': onfocus === true,
+        }"
+        class="custom-upload"
+        @drop.prevent="handleDrop"
+        @paste="handlePaste"
+        @dragover.prevent
+        v-if="isEdit"
+        @click.stop.prevent="onfocus = true"
+        v-click-outside="onOutsideClick"
+      >
+        <div class="upload-btn" @click.stop="handleClick">
+          <div>点击选择或</div>
+          <div>拖放图像文件</div>
+          <div>到此区域进行上传</div>
+          <!-- <div>
+                <el-button size="small" type="primary">直接粘贴</el-button>
+              </div> -->
+        </div>
+      </div>
       <el-upload
         v-if="isEdit"
+        ref="upload"
         class="upload-demo"
         :class="{
           'upload-disabled': limit && fileLength && fileLength >= limit,
         }"
+        style="display: none"
         :action="uploadFile"
         :with-credentials="true"
         :headers="getHeaders()"
@@ -135,6 +159,21 @@ export default {
     //   default: "file",
     // },
   },
+  directives: {
+    "click-outside": {
+      bind(el, binding, vnode) {
+        el.clickOutsideEvent = function (event) {
+          if (!(el == event.target || el.contains(event.target))) {
+            vnode.context[binding.expression](event);
+          }
+        };
+        document.body.addEventListener("click", el.clickOutsideEvent);
+      },
+      unbind(el) {
+        document.body.removeEventListener("click", el.clickOutsideEvent);
+      },
+    },
+  },
   computed: {
     objInfo() {
       return this.field.info?.dispLoader?.objInfo;
@@ -182,6 +221,7 @@ export default {
       dialogVisibleDetail: false,
       dialogImageDetailUrl: "",
       loading: false,
+      onfocus: false,
     };
   },
   created: function () {
@@ -207,6 +247,156 @@ export default {
     this.getData();
   },
   methods: {
+    dataURLtoBlob(dataurl) {
+      //将base64转换为blob
+      var arr = dataurl.split(","),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], { type: mime });
+    },
+    blobToFile(theBlob, fileInfo) {
+      // 将blob转换为file
+      theBlob.lastModifiedDate = new Date();
+      theBlob.name = fileInfo?.name || `${new Date().getTime()}.jpeg`;
+      return theBlob;
+    },
+    uploadImgFromPaste(file, type, info) {
+      /**调用element的上传方法 需要把base64转换成file上传**/
+      let a = this.dataURLtoBlob(file);
+      let b = this.blobToFile(a, info);
+      const upload = this.$refs.upload;
+      upload.handleStart(b);
+      setTimeout(() => {
+        upload.submit();
+      });
+    },
+    handleClick() {
+      // 获取 el-upload 组件实例
+      const uploadComponent = this.$refs.upload;
+
+      // 访问内部的 input[type="file"] 元素并触发 click 事件
+      if (uploadComponent) {
+        // 因为默认的触发按钮被隐藏了，所以需要找到实际的 input 元素
+        const input = uploadComponent.$el.querySelector('input[type="file"]');
+        if (input) {
+          input.click(); // 触发文件选择对话框
+        }
+      }
+    },
+    handleDrop(event) {
+      const items = event.dataTransfer.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === "file") {
+          const file = items[i].getAsFile();
+          console.log(file);
+
+          if (file.type.startsWith("image/")) {
+            this.handleImage(file);
+          } else {
+            this.$message.error("只能上传图片!");
+          }
+        }
+      }
+    },
+    handlePaste(event) {
+      // 阻止默认行为
+      if (this.onfocus === false) return;
+      event.preventDefault();
+
+      // 获取剪切板中的数据
+      let clipboardData = event.clipboardData || window.clipboardData;
+      console.log(clipboardData.items);
+
+      let items = clipboardData.items;
+
+      if (items && items.length > 0) {
+        // 循环遍历所有粘贴项
+        for (let i = 0; i < items.length; i++) {
+          let item = items[i];
+          if (item.kind === "file") {
+            let file = item.getAsFile();
+            console.log("非图片文件", file);
+            // 确认是图片文件
+            if (file.type.startsWith("image/")) {
+              this.handleImage(file);
+              break; //一次只上传第一张图片
+            } else {
+              console.log("非图片文件", file);
+            }
+          }
+        }
+      }
+    },
+    onOutsideClick(event) {
+      console.log(event, "onOutsideClick");
+      this.onfocus = false;
+    },
+    async readClipboardImage() {
+      try {
+        // 检查浏览器是否支持 Clipboard API
+        if (!navigator.clipboard) {
+          this.$message.error("当前浏览器不支持剪贴板操作");
+          return;
+        }
+
+        // 请求读取权限（部分浏览器需要）
+        if (navigator.permissions) {
+          await navigator.permissions
+            .query({ name: "clipboard-read" })
+            .then((result) => {
+              if (result.state === "denied") {
+                this.$message.warning("需要授予访问剪贴板的权限");
+                return;
+              }
+            });
+        }
+
+        // 读取剪贴板内容
+        const clipboardItems = await navigator.clipboard.read();
+        console.log("clipboardItems", clipboardItems);
+
+        let hasImages = false;
+
+        for (const item of clipboardItems) {
+          for (const type of item.types) {
+            if (type.startsWith("image/")) {
+              hasImages = true;
+              const blob = await item.getType(type);
+              this.handleImage(blob);
+            }
+          }
+        }
+
+        if (!hasImages) {
+          this.$message.error("粘贴板无图片");
+        } else {
+          this.errorMessage = "";
+        }
+      } catch (error) {
+        console.error("读取剪贴板失败:", error);
+        this.$message.error("读取剪贴板失败，请确保已复制图片到剪贴板");
+      }
+    },
+    handleImage(blob) {
+      const reader = new FileReader();
+      const _this = this;
+      reader.onload = (event) => {
+        console.log("图片数据:", event.target.result);
+        let base64_str = event.target.result;
+        // 上传逻辑
+        _this.uploadImgFromPaste(base64_str, "paste", {
+          name: blob.name,
+          type: blob.type,
+          size: blob.size,
+        });
+      };
+      reader.readAsDataURL(blob);
+    },
     refreshFileList() {
       this.loading = true;
       this.selectFileList(this.field.model).then((response) => {
@@ -532,6 +722,40 @@ export default {
 ::v-deep .el-upload-list {
   border: none !important;
 }
+
+.custom-upload {
+  background-color: #fbfdff;
+  border: 1px dashed #c0ccda;
+  border-radius: 6px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 148px;
+  height: 148px;
+  // line-height: 146px;
+  vertical-align: top;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  cursor: pointer;
+
+  .upload-btn {
+    cursor: pointer;
+    line-height: 20px;
+    &:hover {
+      color: #409eff;
+    }
+  }
+}
+
+.display-none {
+  display: none;
+}
+.on-focus {
+  border-color: #409eff;
+}
+
 .upload-disabled {
   .el-upload {
     display: none;
