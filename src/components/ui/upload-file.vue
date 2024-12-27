@@ -4,15 +4,28 @@
       <div v-for="(file, index) in moreFileRun" :key="index">
         <span @click="handlePreview(file)" class="file-name">
           <i class="el-icon-download"></i>
-          {{ file.name }}</span>
+          {{ file.name }}</span
+        >
         <el-button type="text" class="" @click="onPreView(file, index)">
           <i class="el-icon-picture-outline"></i>
           预览
         </el-button>
       </div>
-      <viewer v-show="false" :images="imagesRun" ref="viewer" clsss="image-list">
-        <img style="height: 1rem; width: 1rem" :class="'image-' + src.id" @error="onerror" @load="onerror(src.url)"
-          :src="src.url" v-for="(src, index) in imagesRun" :key="index" />
+      <viewer
+        v-show="false"
+        :images="imagesRun"
+        ref="viewer"
+        clsss="image-list"
+      >
+        <img
+          style="height: 1rem; width: 1rem"
+          :class="'image-' + src.id"
+          @error="onerror"
+          @load="onerror(src.url)"
+          :src="src.url"
+          v-for="(src, index) in imagesRun"
+          :key="index"
+        />
       </viewer>
     </template>
 
@@ -33,53 +46,126 @@
                :data="uploadParamsRun"
                :disabled="!field.info.editable"
     > -->
-    <el-upload v-if="isEdit" class="upload-demo" ref="upload" clearable :action="uploadFile" :with-credentials="true"
-      :multiple="true" :headers="getHeaders()" :on-preview="handlePreview" :before-remove="beforeRemove"
-      :before-upload="beforeAvatarUpload" :on-remove="handleRemove" :on-success="handleSuccess"
-      :on-exceed="handleExceed" :on-change="fileChange" :on-error="onErrorChange" :data="uploadParamsRun"
-      :auto-upload="true" :file-list="fileLists" :limit="limit" :disabled="!field.info.editable && true">
-      <viewer v-show="false" :images="imagesRun" ref="viewer" clsss="image-list">
-        <img style="height: 1rem; width: 1rem" :class="'image-' + src.id" @error="onerror" @load="onerror(src.url)"
-          :src="src.url" v-for="(src, index) in imagesRun" :key="index" />
+    <el-upload
+      v-if="isEdit"
+      class="upload-demo"
+      ref="upload"
+      clearable
+      :action="uploadFile"
+      :with-credentials="true"
+      :multiple="true"
+      :headers="getHeaders()"
+      :on-preview="handlePreview"
+      :before-remove="beforeRemove"
+      :before-upload="beforeAvatarUpload"
+      :on-remove="handleRemove"
+      :on-progress="handleProgress"
+      :on-success="handleSuccess"
+      :on-exceed="handleExceed"
+      :on-change="fileChange"
+      :on-error="onErrorChange"
+      :data="uploadParamsRun"
+      :auto-upload="true"
+      :file-list="fileLists"
+      :limit="limit"
+      :disabled="!field.info.editable && true"
+      :http-request="uploadMethod"
+    >
+      <viewer
+        v-show="false"
+        :images="imagesRun"
+        ref="viewer"
+        clsss="image-list"
+      >
+        <img
+          style="height: 1rem; width: 1rem"
+          :class="'image-' + src.id"
+          @error="onerror"
+          @load="onerror(src.url)"
+          :src="src.url"
+          v-for="(src, index) in imagesRun"
+          :key="index"
+        />
       </viewer>
       <el-button size="small" type="primary">点击上传</el-button>
       <!-- <el-button style="margin-left: 10px;" size="small" type="success" @click="requestUploadFile">上传到服务器</el-button> -->
       <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
-      <div slot="tip" class="el-upload__tip error" v-if="fileError" style="color: red">
+      <div
+        slot="tip"
+        class="el-upload__tip error"
+        v-if="fileError"
+        style="color: red"
+      >
         {{ fileError }}
       </div>
     </el-upload>
-    <el-dialog custom-class="preview-dialog" :title="currentType === 'pdf'
-        ? '第' + currentPage + '页/共' + pageCount + '页'
-        : '预览'
-      " :visible.sync="centerDialogVisible" width="50%" lock-scroll center>
+    <el-dialog
+      custom-class="preview-dialog"
+      :title="
+        currentType === 'pdf'
+          ? '第' + currentPage + '页/共' + pageCount + '页'
+          : '预览'
+      "
+      :visible.sync="centerDialogVisible"
+      width="50%"
+      lock-scroll
+      center
+    >
       <el-row type="flex" align="middle" v-if="currentType === 'pdf'">
         <el-col :span="2" class="grid-content">
-          <el-button icon="el-icon-arrow-left" circle :disabled="currentPage === 1"
-            @click="changePdfPage('up')"></el-button></el-col>
+          <el-button
+            icon="el-icon-arrow-left"
+            circle
+            :disabled="currentPage === 1"
+            @click="changePdfPage('up')"
+          ></el-button
+        ></el-col>
         <el-col :span="20" style="">
-          <div style="
+          <div
+            style="
               text-align: right;
               display: flex;
               justify-content: space-between;
-            ">
-            <el-button icon="el-icon-minus" circle :disabled="scale === 10" @click="scaleX"></el-button>
+            "
+          >
+            <el-button
+              icon="el-icon-minus"
+              circle
+              :disabled="scale === 10"
+              @click="scaleX"
+            ></el-button>
             <span>当前比例：{{ scale }}%</span>
-            <el-button icon="el-icon-plus" circle :disabled="scale === 200" @click="scaleD"></el-button>
+            <el-button
+              icon="el-icon-plus"
+              circle
+              :disabled="scale === 200"
+              @click="scaleD"
+            ></el-button>
           </div>
-          <div style="
+          <div
+            style="
               text-align: center;
               overflow: auto;
               border: 1px solid #eee;
               height: 735px;
-            ">
-            <pdf ref="wrapper" :src="currentUrl" :page="currentPage" @num-pages="pageCount = $event">
+            "
+          >
+            <pdf
+              ref="wrapper"
+              :src="currentUrl"
+              :page="currentPage"
+              @num-pages="pageCount = $event"
+            >
             </pdf>
           </div>
         </el-col>
         <el-col :span="2" class="grid-content" style="text-align: right">
-          <el-button icon="el-icon-arrow-right" circle :disabled="currentPage === pageCount"
-            @click="changePdfPage('next')"></el-button>
+          <el-button
+            icon="el-icon-arrow-right"
+            circle
+            :disabled="currentPage === pageCount"
+            @click="changePdfPage('next')"
+          ></el-button>
         </el-col>
       </el-row>
 
@@ -182,8 +268,8 @@ export default {
     noneFileType: function () {
       let filterType =
         this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileType
+        this.field.info.moreConfig !== null &&
+        this.field.info.moreConfig.fileType
           ? this.field.info.moreConfig.fileType
           : "";
       if (filterType) {
@@ -201,17 +287,17 @@ export default {
       uploadFile: this.serviceApi().uploadFile,
       fileDesc:
         this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
+        this.field.info.moreConfig !== null &&
+        this.field.info.moreConfig.fileMaxSize
           ? "请上传文件,大小不超过" +
-          this.field.info.moreConfig.fileMaxSize +
-          "MB"
+            this.field.info.moreConfig.fileMaxSize +
+            "MB"
           : "请上传文件,大小不超过200MB",
       fileType: "",
       fileSize:
         this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
+        this.field.info.moreConfig !== null &&
+        this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 200 * 1024,
       uploadParams: {
@@ -231,6 +317,8 @@ export default {
       scale: 100, //放大系数
       currentUrlLike: "",
       fileError: "",
+      progress:0,
+      uploading:false,
     };
   },
   created: function () {
@@ -243,8 +331,7 @@ export default {
           if (Array.isArray(files) && files.length) {
             files.forEach((file) => {
               file.name = file.src_name;
-              file.url =
-                this.serviceApi().downloadFile + file.fileurl;
+              file.url = this.serviceApi().downloadFile + file.fileurl;
               this.fileLists.push(file);
             });
             this.$emit("more-info", self.fileLists);
@@ -258,6 +345,15 @@ export default {
     this.getData();
   },
   methods: {
+    uploadMethod(params){
+      this.progress = 0
+      const file = params.file
+      debugger
+      const uploadProgressEvent = (event) => {
+        this.progress = Math.round((event.loaded / event.total) * 100)
+      }
+      this.requestUploadFile(file, uploadProgressEvent)
+    },
     onerror(e) {
       console.log("显示失败", e);
     },
@@ -276,7 +372,7 @@ export default {
     submitUpload() {
       this.$refs.upload.submit();
     },
-    requestUploadFile: function (e) {
+    requestUploadFile: function (e,uploadProgressEvent) {
       let self = this;
       let file = e || [];
       // this.notUploaded.push(e)
@@ -292,8 +388,11 @@ export default {
         formData.append("serviceName", "srv_bxfile_service"); //
         formData.append("interfaceName", "add"); //
         formData.append("app_no", self.resolveDefaultSrvApp()); //
-        formData.append("table_name", self.field?.info?.srvCol?.table_name || ''); //
-        formData.append("columns", self.field?.info?.srvCol?.columns || ''); //
+        formData.append(
+          "table_name",
+          self.field?.info?.srvCol?.table_name || ""
+        ); //
+        formData.append("columns", self.field?.info?.srvCol?.columns || ""); //
         if (
           !self.uploadParams.hasOwnProperty("file_no") &&
           !self.uploadParams.file_no
@@ -306,6 +405,7 @@ export default {
             "Content-Type": "multipart/form-data",
             bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
           },
+          uploadProgressEvent:uploadProgressEvent
         };
         return new Promise((resolve, reject) => {
           self.$http.post(url, formData, config).then(
@@ -332,14 +432,14 @@ export default {
     },
     onPreView(file, index) {
       let self = this;
-      if(!file.file_type && file.url?.indexOf('http')===0){
-        const extension = file.url.slice(file.url.lastIndexOf(".")+1);
-        file.file_type = extension
+      if (!file.file_type && file.url?.indexOf("http") === 0) {
+        const extension = file.url.slice(file.url.lastIndexOf(".") + 1);
+        file.file_type = extension;
       }
       let fileType = file.hasOwnProperty("file_type")
         ? file.file_type
         : file.response.file_type;
-      if(fileType){
+      if (fileType) {
         fileType = fileType.toLowerCase();
       }
       if (
@@ -362,10 +462,8 @@ export default {
         viewer.index = imgIndex;
         console.log(viewer, imgIndex, viewer2, self.$refs.viewer);
         viewer.show();
-      } else if (
-        ['pptx','pdf','jpg','png','gif'].includes(fileType)
-      ) {
-        if (fileType === "pdf"||fileType==='pptx') {
+      } else if (["pptx", "pdf", "jpg", "png", "gif"].includes(fileType)) {
+        if (fileType === "pdf" || fileType === "pptx") {
           //  let link = pdf.createLoadingTask({
           //    url:file.url,
           //    cMapUrl: '../../assets/cmaps/',
@@ -424,8 +522,8 @@ export default {
       }
     },
     getData() {
-      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name || '';
-      this.uploadParams.columns = this.field?.info?.srvCol?.columns || '';
+      this.uploadParams.table_name = this.field?.info?.srvCol?.table_name || "";
+      this.uploadParams.columns = this.field?.info?.srvCol?.columns || "";
 
       //初始化文件列表
       this.fileLists = [];
@@ -441,7 +539,7 @@ export default {
       if (this.field.info.editable) {
         //判断是否是编辑
         this.isEdit = true;
-        if (this.field.model?.indexOf('http') === 0) {
+        if (this.field.model?.indexOf("http") === 0) {
           this.fileLists.push({
             url: this.field.model,
           });
@@ -456,11 +554,11 @@ export default {
       }
     },
     queryData() {
-      if (this.field.model?.indexOf('http') === 0) {
+      if (this.field.model?.indexOf("http") === 0) {
         this.fileLists.push({
           url: this.field.model,
         });
-        return
+        return;
       }
       let self = this;
       this.selectFileList(this.field.model).then((response) => {
@@ -469,8 +567,8 @@ export default {
           file.name = response.body.data[i].src_name;
           file.url =
             this.serviceApi().downloadFile + response.body.data[i].fileurl;
-          if (file?.fileurl?.indexOf('http') === 0) {
-            file.url = file.fileurl
+          if (file?.fileurl?.indexOf("http") === 0) {
+            file.url = file.fileurl;
           }
           this.fileLists.push(file);
           self.$emit("more-info", self.fileLists);
@@ -490,9 +588,9 @@ export default {
     handlePreview(file) {
       //点击文件时触发
       console.log("handlePreview", file);
-      if(!file.file_type && file.url?.indexOf('http')===0){
-        const extension = file.url.slice(file.url.lastIndexOf(".")+1);
-        file.file_type = extension
+      if (!file.file_type && file.url?.indexOf("http") === 0) {
+        const extension = file.url.slice(file.url.lastIndexOf(".") + 1);
+        file.file_type = extension;
       }
       let fileType = file.hasOwnProperty("file_type")
         ? file.file_type
@@ -505,10 +603,10 @@ export default {
           //如果是新上传的文件需要获取url
           file.url = this.serviceApi().downloadFile + file.response.fileurl;
         }
-        if(fileType==='pptx' && file.url){
-          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`
+        if (fileType === "pptx" && file.url) {
+          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
           this.addTabByUrl(previewUrl, "文件预览");
-        }else if (file.url.toLowerCase().endsWith(".pdf")) {
+        } else if (file.url.toLowerCase().endsWith(".pdf")) {
           let currLocation = window.location.href;
           let hashIndex = currLocation.indexOf("#");
           if (hashIndex > 0) {
@@ -553,9 +651,11 @@ export default {
         if (this.fileType) {
           //默认支持所有类型上传
           let flag = false;
-          let type = file.name.slice(file.name.lastIndexOf('.')+1).toLowerCase()
-          if(this.fileType.includes(type)){
-            flag = true
+          let type = file.name
+            .slice(file.name.lastIndexOf(".") + 1)
+            .toLowerCase();
+          if (this.fileType.includes(type)) {
+            flag = true;
           }
           // for (let i in this.fileType.split("/")) {
           //   if (file.name.split(".")[1] === this.fileType.split("/")[i]) {
@@ -633,11 +733,18 @@ export default {
           if (res.message) {
             this.$set(this, "fileError", res.message);
           }
-        } catch (error) { }
+        } catch (error) {}
       }
+    },
+    handleProgress(event, file, fileList) {
+      this.uploading = true;
+      this.progress = parseInt(event.percent); // 更新进度百分比
+      console.log("上传进度", event.percent);
+      
     },
     handleSuccess(response, file, fileList) {
       let self = this;
+      this.uploading = false;
       this.$forceUpdate();
       console.log("上传成功", response);
       if (response.state === undefined) {
@@ -649,9 +756,9 @@ export default {
           key: "file_no",
           value: response.file_no,
         };
-        if(response.fileurl?.indexOf('http') === 0){
+        if (response.fileurl?.indexOf("http") === 0) {
           this.field.model = response.fileurl;
-        }else{
+        } else {
           this.field.model = response.file_no;
         }
 
@@ -775,7 +882,7 @@ export default {
 }
 </style>
 <style>
-.image-list>img {
+.image-list > img {
   height: 5rem;
   width: 5rem !important;
 }

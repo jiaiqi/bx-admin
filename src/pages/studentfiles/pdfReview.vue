@@ -359,7 +359,7 @@ import htmlPdf from './pdf.js';
     }
   }
   </script>
-    <style lang="css">
+    <style lang="scss" scoped>
     #pdf-layout{
         padding:1rem;
     }

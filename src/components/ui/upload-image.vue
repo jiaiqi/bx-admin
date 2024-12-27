@@ -85,13 +85,10 @@
         @click.stop.prevent="onfocus = true"
         v-click-outside="onOutsideClick"
       >
-        <div class="upload-btn" @click.stop="handleClick">
+        <div class="upload-btn text-blue" @click.stop="handleClick">
           <div>点击选择或</div>
           <div>拖放图像文件</div>
-          <div>到此区域进行上传</div>
-          <!-- <div>
-                <el-button size="small" type="primary">直接粘贴</el-button>
-              </div> -->
+          <div>到此区域</div>
         </div>
       </div>
       <el-upload
@@ -333,7 +330,7 @@ export default {
       }
     },
     onOutsideClick(event) {
-      console.log(event, "onOutsideClick");
+      // console.log(event, "onOutsideClick");
       this.onfocus = false;
     },
     async readClipboardImage() {

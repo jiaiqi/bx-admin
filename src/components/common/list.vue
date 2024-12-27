@@ -769,7 +769,7 @@
       :close-on-click-modal="1 == 2"
       append-to-body
       :visible="activeForm == 'add'"
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <add
         name="list-add"
@@ -797,7 +797,7 @@
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'add-child'"
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
       append-to-body
     >
       <add
@@ -828,7 +828,7 @@
       :close-on-click-modal="1 == 2"
       append-to-body
       :visible="activeForm == 'duplicate'"
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <simple-add
         name="list-duplicate"
@@ -859,7 +859,7 @@
       :close-on-click-modal="1 == 2"
       append-to-body
       :visible="activeForm == 'duplicatedeep'"
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <add
         name="list-duplicatedeep"
@@ -894,7 +894,7 @@
       :visible="activeForm == 'update'"
       :close-on-click-modal="1 == 2"
       append-to-body
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <update
         name="list-update"
@@ -938,7 +938,7 @@
       width="90%"
       :visible="activeForm == 'import'"
       append-to-body
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <import-dialog
         :service="addService"
@@ -955,7 +955,7 @@
       width="90%"
       :visible="activeForm == 'customizeImport'"
       append-to-body
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <import-dialog
         :service="importService"
@@ -987,7 +987,7 @@
       width="90%"
       :visible="activeForm == 'manageChildList'"
       append-to-body
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <popup-mem-list
         list-type="detaillist"
@@ -1002,7 +1002,7 @@
         :inplace-edit="true"
         :should-load-from-db="false"
         @list-loaded="onPopupMemListLoaded"
-        @close-pop="activeForm = 'xx'"
+        @close-pop="closeDialog"
       >
       </popup-mem-list>
     </el-dialog>
@@ -1013,7 +1013,7 @@
       width="90%"
       :visible="activeForm == 'batchApprove'"
       append-to-body
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <batchApprove
         @action-success="actionSuccess()"
@@ -1137,7 +1137,7 @@
       :close-on-click-modal="1 == 2"
       append-to-body
       :visible="activeForm == 'srv-auth-login'"
-      @close="activeForm = 'xx'"
+      @close="closeDialog"
     >
       <srvAuthLogin
         :serviceName="service"
@@ -1478,6 +1478,9 @@ export default {
         showCancelButton: false,
         confirmButtonText: "确定",
       });
+    },
+    closeDialog(){
+      this.activeForm = ''
     },
     srvAuthSuccess(e) {
       console.log(e);
