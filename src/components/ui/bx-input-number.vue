@@ -19,7 +19,7 @@
       show-score
       :disabled="inputNumberDisabled"
       text-color="#ff9900"
-      style="width: 100%;"
+      style="width: 100%"
       @change="handleInputChange"
       v-if="subType === 'rate'"
     >
@@ -32,8 +32,8 @@
       v-else-if="!inputNumberDisabled && subType === 'progress'"
     ></el-slider>
     <el-progress
-      :percentage="currentValue||0"
-      style="width: 100%;overflow: hidden;"
+      :percentage="currentValue || 0"
+      style="width: 100%; overflow: hidden"
       v-else-if="subType === 'progress'"
     ></el-progress>
   </div>
@@ -47,7 +47,7 @@
     :name="name"
     :label="label"
     clearable
-    :placeholder="fieldMoreConfig.placeholder"
+    :placeholder="(fieldMoreConfig && fieldMoreConfig.placeholder) || ''"
     @keydown.up.native.prevent="increase"
     @keydown.down.native.prevent="decrease"
     @blur="handleBlur"
@@ -70,13 +70,13 @@
   </el-input>
 </template>
 <script>
-import ElInput from "element-ui/packages/input";
-import Focus from "element-ui/src/mixins/focus";
-import RepeatClick from "element-ui/src/directives/repeat-click";
+// import ElInput from "element-ui/packages/input";
+// import Focus from "element-ui/src/mixins/focus";
+// import RepeatClick from "element-ui/src/directives/repeat-click";
 
 export default {
   name: "BxInputNumber",
-  mixins: [Focus("input")],
+  // mixins: [Focus("input")],
   inject: {
     elForm: {
       default: "",
@@ -86,24 +86,29 @@ export default {
     },
   },
   directives: {
-    repeatClick: RepeatClick,
+    // repeatClick: RepeatClick,
   },
   components: {
-    ElInput,
+    // ElInput,
   },
   props: {
     step: {
       type: Number,
       default: 1,
     },
-    fieldMoreConfig: null,
+    fieldMoreConfig: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
     max: {
       type: Number,
-      default: Infinity,
+      default: 99999999999,
     },
     min: {
       type: Number,
-      default: -Infinity,
+      default: -99999999999,
     },
     value: {},
     disabled: Boolean,
@@ -315,7 +320,7 @@ export default {
   padding-right: 40px;
   min-width: 100px;
 }
-.el-progress__text{
+.el-progress__text {
   width: 40px;
 }
 </style>
