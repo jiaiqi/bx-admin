@@ -69,7 +69,6 @@
       :file-list="fileLists"
       :limit="limit"
       :disabled="!field.info.editable && true"
-      :http-request="uploadMethod"
     >
       <viewer
         v-show="false"
@@ -348,7 +347,6 @@ export default {
     uploadMethod(params){
       this.progress = 0
       const file = params.file
-      debugger
       const uploadProgressEvent = (event) => {
         this.progress = Math.round((event.loaded / event.total) * 100)
       }

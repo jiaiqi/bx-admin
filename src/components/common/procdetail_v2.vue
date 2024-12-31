@@ -1,8 +1,19 @@
 <template>
   <div id="proc_detail">
     <div style="font-size: 20px; position: fixed; top: 0px; z-index: 9999">
-      <el-button type="text" @click="hideFlowchart(this)" style="font-size: 20px;">
-        <i v-bind:class="icon"></i>{{ processTempl.templ_name ? processTempl.templ_name + ` - ` + (mainData.proc_status ? mainData.proc_status : "") : "" }}
+      <el-button
+        type="text"
+        @click="hideFlowchart(this)"
+        style="font-size: 20px"
+      >
+        <i v-bind:class="icon"></i
+        >{{
+          processTempl.templ_name
+            ? processTempl.templ_name +
+              ` - ` +
+              (mainData.proc_status ? mainData.proc_status : "")
+            : ""
+        }}
       </el-button>
       <!-- <el-button
       type="text"
@@ -17,112 +28,202 @@
     <el-card class="box-card" v-show="viewFlowChart">
       <div class="text item">
         <el-row>
-          <flowStep :showNostartStep="showNostartStep" :activatStepNo="handle_active_step_no" v-if="proCharData.length > 0" :stepData="proCharData" :proc_status="mainData.proc_status" :processTempl="processTempl" @node-click="step_switch"></flowStep>
+          <flowStep
+            :showNostartStep="showNostartStep"
+            :activatStepNo="handle_active_step_no"
+            v-if="proCharData.length > 0"
+            :stepData="proCharData"
+            :proc_status="mainData.proc_status"
+            :processTempl="processTempl"
+            @node-click="step_switch"
+          ></flowStep>
         </el-row>
-
       </div>
     </el-card>
 
     <!--业务表单、列表和审批表单-->
-    <el-card class="box-card" v-show="handle_active_step_no != '_approval_record_'">
-      <div slot="header" class="clearfix" >
-     
-       <label> {{ handle_active_step_name }}  </label>&nbsp; &nbsp; <label v-if="urgentStep.length>0&&proHanleData._handle_type == 'start_proc'"> <el-checkbox  :border="1==1" size="medium" v-model="urgent">紧急申请</el-checkbox> </label>
-   
+    <el-card
+      class="box-card"
+      v-show="handle_active_step_no != '_approval_record_'"
+    >
+      <div slot="header" class="clearfix">
+        <label> {{ handle_active_step_name }} </label>&nbsp; &nbsp;
+        <label
+          v-if="
+            urgentStep.length > 0 && proHanleData._handle_type == 'start_proc'
+          "
+        >
+          <el-checkbox :border="1 == 1" size="medium" v-model="urgent"
+            >紧急申请</el-checkbox
+          >
+        </label>
       </div>
 
       <template v-for="(step_item, index) in proCharData">
         <!--v-show 是控制显示隐藏的 当前激活节点-->
-        <div class="text item" :key="index" v-show="handle_active_step_no == step_item.step_no">
+        <div
+          class="text item"
+          :key="index"
+          v-show="handle_active_step_no == step_item.step_no"
+        >
           <!--显示审核过的数据 条件不等于当前处理步骤-->
 
-          <div v-if="
+          <div
+            v-if="
               handle_active_step_no == step_item.step_no &&
               (step_item.step_no != proHanleData.step_no || proc_basic.is_finsh)
-            ">
+            "
+          >
             <!--tabs模式展示-->
 
-            <el-tabs :value="getInitTabNum(step_item.biz_cfg_data) - 1 + '_view'" v-if="getInitTabNum(step_item.biz_cfg_data) > 0" type="border-card" :key="step_item.step_no + index + '_tabs_view_model'">
-              <template v-for="(biz_item, tab_index) in step_item.biz_cfg_data" v-if="biz_item.show_ui_model == 'tabs'">
-                <el-tab-pane :key="step_item.step_no + tab_index + '_tab'" :label="biz_item['_section_name']" :name="tab_index + '_view'">
+            <el-tabs
+              :value="getInitTabNum(step_item.biz_cfg_data) - 1 + '_view'"
+              v-if="getInitTabNum(step_item.biz_cfg_data) > 0"
+              type="border-card"
+              :key="step_item.step_no + index + '_tabs_view_model'"
+            >
+              <template
+                v-for="(biz_item, tab_index) in step_item.biz_cfg_data"
+                v-if="biz_item.show_ui_model == 'tabs'"
+              >
+                <el-tab-pane
+                  :key="step_item.step_no + tab_index + '_tab'"
+                  :label="biz_item['_section_name']"
+                  :name="tab_index + '_view'"
+                >
                   <el-row v-if="biz_item.type == 'grid'">
-                    <proc-simple-list @proc-simple-list-loaded="
+                    <proc-simple-list
+                      @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      " :name="'stepr' + step_item.step_no + 'i' + index" :foreign-key="biz_item._foreign_key[0]" :service="biz_item.select_service" list-type="procdetaillist" :default-condition="[
+                      "
+                      :name="'stepr' + step_item.step_no + 'i' + index"
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :service="biz_item.select_service"
+                      list-type="procdetaillist"
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </el-row>
 
                   <el-row v-if="biz_item.type == 'form'">
-                    <detail :is_view_title="1 == 2" :childListReadonly="1 == 1" form-type="detail" :name="'stepr' + step_item.step_no + 'i' + index" ref="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
+                    <detail
+                      :is_view_title="1 == 2"
+                      :childListReadonly="1 == 1"
+                      form-type="detail"
+                      :name="'stepr' + step_item.step_no + 'i' + index"
+                      ref="proc-simple-detail"
+                      :service="biz_item.select_service"
+                      :default-conditions="
                         getFormViewCondition(biz_item, step_item.step_no)
-                      " @form-loaded="detail_form_loaded($event)"></detail>
+                      "
+                      @form-loaded="detail_form_loaded($event)"
+                    ></detail>
                   </el-row>
                 </el-tab-pane>
               </template>
             </el-tabs>
 
             <!--collapse模式展示-->
-            <template v-for="(biz_item, index) in step_item.biz_cfg_data" v-if="biz_item.show_ui_model != 'tabs'">
+            <template
+              v-for="(biz_item, index) in step_item.biz_cfg_data"
+              v-if="biz_item.show_ui_model != 'tabs'"
+            >
               <!--业务只读列表-->
-              <div label-width="130px" v-if="biz_item.type == 'grid'" :key="step_item.step_no + index + '_list'">
+              <div
+                label-width="130px"
+                v-if="biz_item.type == 'grid'"
+                :key="step_item.step_no + index + '_list'"
+              >
                 <el-row>
-                  <div class="el-col el-col-24 el-col-xl-24" :key="step_item.step_no + index + '_list'">
-                    <span class="tag_font_class">{{ biz_item["_section_name"] }}
+                  <div
+                    class="el-col el-col-24 el-col-xl-24"
+                    :key="step_item.step_no + index + '_list'"
+                  >
+                    <span class="tag_font_class"
+                      >{{ biz_item["_section_name"] }}
                     </span>
                   </div>
 
                   <el-col>
-                    <proc-simple-list @proc-simple-list-loaded="
+                    <proc-simple-list
+                      @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      " :name="'stepr' + step_item.step_no + 'i' + index" :foreign-key="biz_item._foreign_key[0]" :service="biz_item.select_service" list-type="procdetaillist" :default-condition="[
+                      "
+                      :name="'stepr' + step_item.step_no + 'i' + index"
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :service="biz_item.select_service"
+                      list-type="procdetaillist"
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </el-col>
                 </el-row>
               </div>
               <!--流程列表-->
-              <div label-width="130px" v-if="biz_item.type == 'procgrid'" :key="step_item.step_no + index + '_list'">
+              <div
+                label-width="130px"
+                v-if="biz_item.type == 'procgrid'"
+                :key="step_item.step_no + index + '_list'"
+              >
                 <el-row v-if="biz_item.type == 'procgrid'">
-                  <div class="el-col el-col-24 el-col-xl-24" :key="step_item.step_no + index + '_list'">
-                    <span class="tag_font_class">{{ biz_item["_section_name"] }}
+                  <div
+                    class="el-col el-col-24 el-col-xl-24"
+                    :key="step_item.step_no + index + '_list'"
+                  >
+                    <span class="tag_font_class"
+                      >{{ biz_item["_section_name"] }}
                     </span>
                   </div>
 
                   <el-col>
-                    <proc-simple-list @proc-simple-list-loaded="
+                    <proc-simple-list
+                      @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      " :name="'stepr' + step_item.step_no + 'i' + index" :foreign-key="biz_item._foreign_key[0]" :service="biz_item.select_service" list-type="procreadlist" :default-condition="[
+                      "
+                      :name="'stepr' + step_item.step_no + 'i' + index"
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :service="biz_item.select_service"
+                      list-type="procreadlist"
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </el-col>
                 </el-row>
               </div>
 
               <!--审批表单详情-->
-              <div v-if="
+              <div
+                v-if="
                   biz_item.type == 'form' &&
                   biz_item.select_service == 'srvprocess_record_select'
-                " :key="step_item.step_no + index + '_record_result'" v-show="opinion==null?true:(opinion.show!==false)">
-
+                "
+                :key="step_item.step_no + index + '_record_result'"
+                v-show="opinion == null ? true : opinion.show !== false"
+              >
                 <el-form label-width="130px" label-suffix=":">
                   <el-row>
-                    <div class="el-col el-col-24 el-col-xl-24" :key="step_item.step_no + index + '_list_section'">
+                    <div
+                      class="el-col el-col-24 el-col-xl-24"
+                      :key="step_item.step_no + index + '_list_section'"
+                    >
                       <div class="el-form-item">
                         <span class="section-title">审批说明</span>
                       </div>
@@ -140,20 +241,51 @@
                         ></el-input> -->
 
                         <!-- opinion -->
-                        <el-input :readonly="1 == 1" :value="opinion==null?step_item.proc_result[step_item._record_data.proc_result]:opinion.disp"></el-input>
+                        <el-input
+                          :readonly="1 == 1"
+                          :value="
+                            opinion == null
+                              ? step_item.proc_result[
+                                  step_item._record_data.proc_result
+                                ]
+                              : opinion.disp
+                          "
+                        ></el-input>
                       </el-form-item>
-
                     </el-col>
-                    <el-col :span="24" v-show="opinion==null?true:(opinion.remark!==false)">
+                    <el-col
+                      :span="24"
+                      v-show="opinion == null ? true : opinion.remark !== false"
+                    >
                       <el-form-item label="说明" prop="remark">
-                        <el-input type="textarea" :value="step_item._record_data.remark" :readonly="1 == 1" :autosize="{ minRows: 6, maxRows: 8 }"></el-input>
+                        <el-input
+                          type="textarea"
+                          :value="step_item._record_data.remark"
+                          :readonly="1 == 1"
+                          :autosize="{ minRows: 6, maxRows: 8 }"
+                        ></el-input>
                       </el-form-item>
                     </el-col>
-                    <el-col :span="24" v-if="opinion==null?true:(opinion.biz_form!==false)">
-                      <el-form-item label="附件" prop="remark" v-if="step_item._record_data&&step_item._record_data.length">
-                        <a v-for="(file, index) in step_item._record_data
-                            ._fileList" :key="index + '_file'" :href="serviceApi().downloadFile + file.fileurl">
-                          {{ file.src_name }}</a>
+                    <el-col
+                      :span="24"
+                      v-if="opinion == null ? true : opinion.biz_form !== false"
+                    >
+                      <el-form-item
+                        label="附件"
+                        prop="remark"
+                        v-if="
+                          step_item._record_data &&
+                          step_item._record_data.length
+                        "
+                      >
+                        <a
+                          v-for="(file, index) in step_item._record_data
+                            ._fileList"
+                          :key="index + '_file'"
+                          :href="serviceApi().downloadFile + file.fileurl"
+                        >
+                          {{ file.src_name }}</a
+                        >
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -161,258 +293,516 @@
               </div>
 
               <!--业务详情-->
-              <div v-else-if="
+              <div
+                v-else-if="
                   (step_item.step_no != proHanleData.step_no ||
                     proc_basic.is_finsh) &&
                   biz_item.type == 'form'
-                " v-show="
+                "
+                v-show="
                   bizDataStepReadVisible[step_item.step_no] !== false &&
                   '否' != biz_item.is_show
-                " :key="step_item.step_no + index + '_detail'">
-                <div class="el-col el-col-24 el-col-xl-24" :key="step_item.step_no + index + '_form'">
-                  <span class="tag_font_class">{{ biz_item["_section_name"] }}
+                "
+                :key="step_item.step_no + index + '_detail'"
+              >
+                <div
+                  class="el-col el-col-24 el-col-xl-24"
+                  :key="step_item.step_no + index + '_form'"
+                >
+                  <span class="tag_font_class"
+                    >{{ biz_item["_section_name"] }}
                   </span>
                 </div>
 
-                <detail :approvalFormMode="approvalFormRun" form-type="procdetail" :name="'stepr' + step_item.step_no + 'i' + index" ref="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
+                <detail
+                  :approvalFormMode="approvalFormRun"
+                  form-type="procdetail"
+                  :name="'stepr' + step_item.step_no + 'i' + index"
+                  ref="proc-simple-detail"
+                  :service="biz_item.select_service"
+                  :default-conditions="
                     getFormViewCondition(biz_item, step_item.step_no)
-                  " :is_view_title="1 == 2" @form-loaded='onFormLoading=false'></detail>
+                  "
+                  :is_view_title="1 == 2"
+                  @form-loaded="onFormLoading = false"
+                ></detail>
               </div>
             </template>
           </div>
 
           <!--start_proc提交流程表单-->
-          <el-form label-width="100px" label-suffix=":" v-if="
+          <el-form
+            label-width="100px"
+            label-suffix=":"
+            v-if="
               step_item.step_no == proHanleData.step_no &&
               proHanleData._handle_type == 'start_proc' &&
               initload
-            ">
+            "
+          >
             <el-row>
               <!--collaps模式-->
-              <template v-for="(biz_item, collapse_index) in proHanleData.biz_cfg_data" v-if="biz_item.show_ui_model == 'collapse'">
-                <el-col v-if="biz_item.type == 'grid'" :key="step_item.step_no + collapse_index + '_list'">
-                  <div :key="step_item.step_no + collapse_index + '_list_section'">
+              <template
+                v-for="(biz_item, collapse_index) in proHanleData.biz_cfg_data"
+                v-if="biz_item.show_ui_model == 'collapse'"
+              >
+                <el-col
+                  v-if="biz_item.type == 'grid'"
+                  :key="step_item.step_no + collapse_index + '_list'"
+                >
+                  <div
+                    :key="step_item.step_no + collapse_index + '_list_section'"
+                  >
                     <div class="el-form-item">
-                      <span class="section-title">{{ biz_item["_section_name"] }}
+                      <span class="section-title"
+                        >{{ biz_item["_section_name"] }}
                       </span>
                     </div>
                   </div>
 
                   <el-col>
-                    <proc-simple-list :name="'apply_list' + collapse_index" @proc-simple-list-loaded="
+                    <proc-simple-list
+                      :name="'apply_list' + collapse_index"
+                      @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      " :foreign-key="biz_item._foreign_key[0]" :service="biz_item.select_service" :list-type="
+                      "
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :service="biz_item.select_service"
+                      :list-type="
                         biz_item['_type_grid'] == 'readGrid'
                           ? 'procdetaillist'
                           : 'prochandlelist'
-                      " :default-condition="[
+                      "
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </el-col>
                 </el-col>
 
-                <el-col v-if="biz_item.type == 'procgrid'" :key="step_item.step_no + collapse_index + '_list'">
-                  <div :key="step_item.step_no + collapse_index + '_list_section'">
+                <el-col
+                  v-if="biz_item.type == 'procgrid'"
+                  :key="step_item.step_no + collapse_index + '_list'"
+                >
+                  <div
+                    :key="step_item.step_no + collapse_index + '_list_section'"
+                  >
                     <div class="el-form-item">
-                      <span class="section-title">{{ biz_item["_section_name"] }}
+                      <span class="section-title"
+                        >{{ biz_item["_section_name"] }}
                       </span>
                     </div>
                   </div>
 
                   <el-col>
-                    <proc-simple-list :name="'apply_list' + collapse_index" :foreign-key="biz_item._foreign_key[0]" :service="biz_item.select_service" list-type="procreadlist" :default-condition="[
+                    <proc-simple-list
+                      :name="'apply_list' + collapse_index"
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :service="biz_item.select_service"
+                      list-type="procreadlist"
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </el-col>
                 </el-col>
 
-                <el-col v-if="biz_item.type == 'form'" :key="step_item.step_no + collapse_index + '_list'">
-                  <update @child-loaded="childDataLoadedRun($event)" :approvalFormMode="approvalFormRun" v-show="'否' != biz_item.is_show" v-if="biz_item._type_form == 'update'" :name="'collapse_apply_update' + collapse_index" :ref="'collapse-proc-update-form-submit_' + collapse_index" :service="biz_item.update_service" :pk-col="
+                <el-col
+                  v-if="biz_item.type == 'form'"
+                  :key="step_item.step_no + collapse_index + '_list'"
+                >
+                  <update
+                    @child-loaded="childDataLoadedRun($event)"
+                    :approvalFormMode="approvalFormRun"
+                    v-show="'否' != biz_item.is_show"
+                    v-if="biz_item._type_form == 'update'"
+                    :name="'collapse_apply_update' + collapse_index"
+                    :ref="'collapse-proc-update-form-submit_' + collapse_index"
+                    :service="biz_item.update_service"
+                    :pk-col="
                       biz_item.biz_type == 'main'
                         ? 'proc_instance_no'
                         : 'parent_proc_instance_no'
-                    " :pk="proc_instance_no" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></update>
-                  <detail :approvalFormMode="approvalFormRun" v-show="'否' != biz_item.is_show" v-else-if="biz_item._type_form == 'select'" :name="'collapse_apply_detail' + collapse_index" form-type="procdetail" name="collapse-proc-simple-detail" :service="biz_item.select_service" :default-conditions="
+                    "
+                    :pk="proc_instance_no"
+                    @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                  ></update>
+                  <detail
+                    :approvalFormMode="approvalFormRun"
+                    v-show="'否' != biz_item.is_show"
+                    v-else-if="biz_item._type_form == 'select'"
+                    :name="'collapse_apply_detail' + collapse_index"
+                    form-type="procdetail"
+                    name="collapse-proc-simple-detail"
+                    :service="biz_item.select_service"
+                    :default-conditions="
                       getFormViewCondition(biz_item, step_item.step_no)
-                    " @form-loaded='onFormLoading=false'></detail>
-                  <add :approvalFormMode="approvalFormRun" v-show="'否' != biz_item.is_show" v-else :name="'collapse_apply_add' + collapse_index" :def-data-para="defDataPara" :default-values="startProcDefaultValue" :ref="'collapse-proc-add-form-submit_' + collapse_index" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
+                    "
+                    @form-loaded="onFormLoading = false"
+                  ></detail>
+                  <add
+                    :approvalFormMode="approvalFormRun"
+                    v-show="'否' != biz_item.is_show"
+                    v-else
+                    :name="'collapse_apply_add' + collapse_index"
+                    :def-data-para="defDataPara"
+                    :default-values="startProcDefaultValue"
+                    :ref="'collapse-proc-add-form-submit_' + collapse_index"
+                    :service="biz_item.add_service"
+                    @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                  ></add>
                 </el-col>
               </template>
             </el-row>
 
             <!--tabs模式编辑-->
-            <el-tabs :value="getInitTabNum(proHanleData.biz_cfg_data) - 1 + '_edit'" v-if="getInitTabNum(proHanleData.biz_cfg_data) > 0" type="border-card" :key="step_item.step_no + index + '_tabs_model'">
-              <template v-for="(biz_item, tab_index) in proHanleData.biz_cfg_data" v-if="biz_item.show_ui_model == 'tabs'">
-                <el-tab-pane :key="step_item.step_no + tab_index + '_tab'" :label="biz_item['_section_name']" :name="tab_index + '_edit'">
-                  <el-col v-if="biz_item.type == 'grid'" :key="step_item.step_no + index + '_list'">
+            <el-tabs
+              :value="getInitTabNum(proHanleData.biz_cfg_data) - 1 + '_edit'"
+              v-if="getInitTabNum(proHanleData.biz_cfg_data) > 0"
+              type="border-card"
+              :key="step_item.step_no + index + '_tabs_model'"
+            >
+              <template
+                v-for="(biz_item, tab_index) in proHanleData.biz_cfg_data"
+                v-if="biz_item.show_ui_model == 'tabs'"
+              >
+                <el-tab-pane
+                  :key="step_item.step_no + tab_index + '_tab'"
+                  :label="biz_item['_section_name']"
+                  :name="tab_index + '_edit'"
+                >
+                  <el-col
+                    v-if="biz_item.type == 'grid'"
+                    :key="step_item.step_no + index + '_list'"
+                  >
                     <div :key="step_item.step_no + index + '_list_section'">
                       <div class="el-form-item">
-                        <span class="section-title">{{ biz_item["_section_name"] }}
+                        <span class="section-title"
+                          >{{ biz_item["_section_name"] }}
                         </span>
                       </div>
                     </div>
 
                     <el-col>
-                      <proc-simple-list :name="'apply_list' + tab_index" @proc-simple-list-loaded="
+                      <proc-simple-list
+                        :name="'apply_list' + tab_index"
+                        @proc-simple-list-loaded="
                           onProcSimpleListLoad(biz_item._uuid, $event)
-                        " :foreign-key="biz_item._foreign_key[0]" :mainData="mainData" :service="biz_item.select_service" :list-type="
+                        "
+                        :foreign-key="biz_item._foreign_key[0]"
+                        :mainData="mainData"
+                        :service="biz_item.select_service"
+                        :list-type="
                           biz_item['_type_grid'] == 'readGrid'
                             ? 'procdetaillist'
                             : 'prochandlelist'
-                        " :default-condition="[
+                        "
+                        :default-condition="[
                           {
                             colName: 'parent_proc_instance_no',
                             ruleType: 'eq',
                             value: proc_instance_no,
                           },
-                        ]">
+                        ]"
+                      >
                       </proc-simple-list>
                     </el-col>
                   </el-col>
 
-                  <el-col v-if="biz_item.type == 'form'" :key="step_item.step_no + tab_index + '_form'">
-                    <update @child-loaded="childDataLoadedRun($event)" :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'update'" :name="'tabs_apply_update' + tab_index" :ref="'tabs-proc-update-form-submit_' + tab_index" :service="biz_item.update_service" :pk-col="
+                  <el-col
+                    v-if="biz_item.type == 'form'"
+                    :key="step_item.step_no + tab_index + '_form'"
+                  >
+                    <update
+                      @child-loaded="childDataLoadedRun($event)"
+                      :approvalFormMode="approvalFormRun"
+                      v-if="biz_item._type_form == 'update'"
+                      :name="'tabs_apply_update' + tab_index"
+                      :ref="'tabs-proc-update-form-submit_' + tab_index"
+                      :service="biz_item.update_service"
+                      :pk-col="
                         biz_item.biz_type == 'main'
                           ? 'proc_instance_no'
                           : 'parent_proc_instance_no'
-                      " :pk="proc_instance_no" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></update>
-                    <add :approvalFormMode="approvalFormRun" v-else :name="'tabs_apply_add' + tab_index" :def-data-para="defDataPara" :default-values="startProcDefaultValue" :ref="'tabs-proc-add-form-submit_' + tab_index" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
+                      "
+                      :pk="proc_instance_no"
+                      @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                    ></update>
+                    <add
+                      :approvalFormMode="approvalFormRun"
+                      v-else
+                      :name="'tabs_apply_add' + tab_index"
+                      :def-data-para="defDataPara"
+                      :default-values="startProcDefaultValue"
+                      :ref="'tabs-proc-add-form-submit_' + tab_index"
+                      :service="biz_item.add_service"
+                      @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                    ></add>
                   </el-col>
                 </el-tab-pane>
               </template>
             </el-tabs>
-
+            <!-- 申请流程 -->
+            <proc-handler
+              ref="procHandler"
+              :proc-result="procResult"
+              v-if="procResult"
+            ></proc-handler>
             <el-row type="flex" class="row-bg" justify="center">
-              <el-button :disabled="submitStatus === 'occupy'" type="primary" @click="
+              <el-button
+                :disabled="submitStatus === 'occupy'"
+                type="primary"
+                @click="
                   submitProc(
                     proc_instance_no == '' || proc_instance_no == undefined
                       ? 'add'
                       : 'update',
                     'submit'
                   )
-                ">
+                "
+              >
                 提交
               </el-button>
 
-              <el-button type="primary" @click="
+              <el-button
+                type="primary"
+                @click="
                   submitProc(
                     proc_instance_no == '' || proc_instance_no == undefined
                       ? 'add'
                       : 'update',
                     'save'
                   )
-                ">
+                "
+              >
                 保存草稿
               </el-button>
             </el-row>
           </el-form>
 
           <!--(operate)审核流程Form以及业务表单-->
-          <el-form label-width="10rem" label-suffix=":" :model="approval_form" ref="approval_form" v-if="
+          <el-form
+            label-width="10rem"
+            label-suffix=":"
+            :model="approval_form"
+            ref="approval_form"
+            v-if="
               step_item.step_no == proHanleData.step_no &&
               proHanleData._handle_type == 'approval_proc'
-            ">
+            "
+          >
             <el-row v-if="proHanleData.authority">
               <!-- collapse模式编辑-->
               <template v-for="(biz_item, index) in proHanleData.biz_cfg_data">
-                <div v-if="biz_item.show_ui_model == 'collapse'" :key="step_item.step_no + index + '_collapse_model'">
+                <div
+                  v-if="biz_item.show_ui_model == 'collapse'"
+                  :key="step_item.step_no + index + '_collapse_model'"
+                >
                   <div :key="step_item.step_no + index + '_list_section'">
                     <div class="el-form-item">
-                      <span class="section-title">{{ biz_item["_section_name"] }}
+                      <span class="section-title"
+                        >{{ biz_item["_section_name"] }}
                       </span>
                     </div>
                   </div>
 
                   <!--子表数据-->
-                  <div v-if="biz_item.type == 'grid'" :key="step_item.step_no + index + '_list'">
-                    <proc-simple-list :name="'apv' + step_item.step_no + 'i' + index" @proc-simple-list-loaded="
+                  <div
+                    v-if="biz_item.type == 'grid'"
+                    :key="step_item.step_no + index + '_list'"
+                  >
+                    <proc-simple-list
+                      :name="'apv' + step_item.step_no + 'i' + index"
+                      @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      " :foreign-key="biz_item._foreign_key[0]" :list-type="
+                      "
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :list-type="
                         biz_item['_type_grid'] == 'readGrid'
                           ? 'procdetaillist'
                           : 'prochandlelist'
-                      " :storage-type="step_item.list_storage_type || 'mem'" :service="biz_item.select_service" :default-condition="[
+                      "
+                      :storage-type="step_item.list_storage_type || 'mem'"
+                      :service="biz_item.select_service"
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </div>
 
                   <!--流程列表-->
-                  <div label-width="130px" v-if="biz_item.type == 'procgrid'" :key="step_item.step_no + index + '_list'">
-                    <proc-simple-list :name="'stepr' + step_item.step_no + 'i' + index" @proc-simple-list-loaded="
+                  <div
+                    label-width="130px"
+                    v-if="biz_item.type == 'procgrid'"
+                    :key="step_item.step_no + index + '_list'"
+                  >
+                    <proc-simple-list
+                      :name="'stepr' + step_item.step_no + 'i' + index"
+                      @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      " :foreign-key="biz_item._foreign_key[0]" :service="biz_item.select_service" list-type="procreadlist" :default-condition="[
+                      "
+                      :foreign-key="biz_item._foreign_key[0]"
+                      :service="biz_item.select_service"
+                      list-type="procreadlist"
+                      :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
                           ruleType: 'eq',
                           value: proc_instance_no,
                         },
-                      ]">
+                      ]"
+                    >
                     </proc-simple-list>
                   </div>
 
                   <!--from表单-->
-                  <div v-if="biz_item.type == 'form'" :key="step_item.step_no + index + '_list'">
-                    <update @child-loaded="childDataLoadedRun($event)" :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'update'" :selectSrvName="biz_item.select_service" :name="'apv' + step_item.step_no + 'i' + index" ref="proc-update-form-approval" :service="biz_item.update_service" :pk-col="
+                  <div
+                    v-if="biz_item.type == 'form'"
+                    :key="step_item.step_no + index + '_list'"
+                  >
+                    <update
+                      @child-loaded="childDataLoadedRun($event)"
+                      :approvalFormMode="approvalFormRun"
+                      v-if="biz_item._type_form == 'update'"
+                      :selectSrvName="biz_item.select_service"
+                      :name="'apv' + step_item.step_no + 'i' + index"
+                      ref="proc-update-form-approval"
+                      :service="biz_item.update_service"
+                      :pk-col="
                         biz_item.biz_type == 'main'
                           ? 'proc_instance_no'
                           : 'parent_proc_instance_no'
-                      " :pk="proc_instance_no" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></update>
-                    <add :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'add'" :name="'apv' + step_item.step_no + 'i' + index" ref="proc-add-form-approval" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
-                    <detail :approvalFormMode="approvalFormRun" :is_view_title="1 == 2" v-if="biz_item._type_form == 'select'" :name="'apv' + step_item.step_no + 'i' + index" form-type="procdetail" name="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
+                      "
+                      :pk="proc_instance_no"
+                      @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                    ></update>
+                    <add
+                      :approvalFormMode="approvalFormRun"
+                      v-if="biz_item._type_form == 'add'"
+                      :name="'apv' + step_item.step_no + 'i' + index"
+                      ref="proc-add-form-approval"
+                      :service="biz_item.add_service"
+                      @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                    ></add>
+                    <detail
+                      :approvalFormMode="approvalFormRun"
+                      :is_view_title="1 == 2"
+                      v-if="biz_item._type_form == 'select'"
+                      :name="'apv' + step_item.step_no + 'i' + index"
+                      form-type="procdetail"
+                      name="proc-simple-detail"
+                      :service="biz_item.select_service"
+                      :default-conditions="
                         getFormViewCondition(biz_item, step_item.step_no)
-                      " @form-loaded='onFormLoading=false'></detail>
+                      "
+                      @form-loaded="onFormLoading = false"
+                    ></detail>
                   </div>
                 </div>
               </template>
               <!--tabs模式编辑-->
 
-              <el-tabs :value="getInitTabNum(proHanleData.biz_cfg_data) - 1 + '_edit'" v-if="getInitTabNum(proHanleData.biz_cfg_data) > 0" type="border-card" :key="step_item.step_no + index + '_tabs_model'">
-                <template v-for="(biz_item, tab_index) in proHanleData.biz_cfg_data" v-if="biz_item.show_ui_model == 'tabs'">
-                  <el-tab-pane :key="step_item.step_no + tab_index + '_tab'" :label="biz_item['_section_name']" :name="tab_index + '_edit'">
+              <el-tabs
+                :value="getInitTabNum(proHanleData.biz_cfg_data) - 1 + '_edit'"
+                v-if="getInitTabNum(proHanleData.biz_cfg_data) > 0"
+                type="border-card"
+                :key="step_item.step_no + index + '_tabs_model'"
+              >
+                <template
+                  v-for="(biz_item, tab_index) in proHanleData.biz_cfg_data"
+                  v-if="biz_item.show_ui_model == 'tabs'"
+                >
+                  <el-tab-pane
+                    :key="step_item.step_no + tab_index + '_tab'"
+                    :label="biz_item['_section_name']"
+                    :name="tab_index + '_edit'"
+                  >
                     <!--子表数据-->
-                    <div v-if="biz_item.type == 'grid'" :key="step_item.step_no + index + '_list'">
-                      <proc-simple-list :name="'apv' + step_item.step_no + 'i' + index" @proc-simple-list-loaded="
+                    <div
+                      v-if="biz_item.type == 'grid'"
+                      :key="step_item.step_no + index + '_list'"
+                    >
+                      <proc-simple-list
+                        :name="'apv' + step_item.step_no + 'i' + index"
+                        @proc-simple-list-loaded="
                           onProcSimpleListLoad(biz_item._uuid, $event)
-                        " :foreign-key="biz_item._foreign_key[0]" :list-type="
+                        "
+                        :foreign-key="biz_item._foreign_key[0]"
+                        :list-type="
                           biz_item['_type_grid'] == 'readGrid'
                             ? 'procdetaillist'
                             : 'prochandlelist'
-                        " :storage-type="step_item.list_storage_type || 'mem'" :service="biz_item.select_service" :default-condition="[
+                        "
+                        :storage-type="step_item.list_storage_type || 'mem'"
+                        :service="biz_item.select_service"
+                        :default-condition="[
                           {
                             colName: 'parent_proc_instance_no',
                             ruleType: 'eq',
                             value: proc_instance_no,
                           },
-                        ]">
+                        ]"
+                      >
                       </proc-simple-list>
                     </div>
 
                     <!--from表单-->
-                    <div v-if="biz_item.type == 'form'" :key="step_item.step_no + index + '_list'">
-                      <update @child-loaded="childDataLoadedRun($event)" :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'update'" :selectSrvName="biz_item.select_service" :name="'apv' + step_item.step_no + 'i' + index" ref="proc-update-form-approval" :service="biz_item.update_service" :pk-col="
+                    <div
+                      v-if="biz_item.type == 'form'"
+                      :key="step_item.step_no + index + '_list'"
+                    >
+                      <update
+                        @child-loaded="childDataLoadedRun($event)"
+                        :approvalFormMode="approvalFormRun"
+                        v-if="biz_item._type_form == 'update'"
+                        :selectSrvName="biz_item.select_service"
+                        :name="'apv' + step_item.step_no + 'i' + index"
+                        ref="proc-update-form-approval"
+                        :service="biz_item.update_service"
+                        :pk-col="
                           biz_item.biz_type == 'main'
                             ? 'proc_instance_no'
                             : 'parent_proc_instance_no'
-                        " :pk="proc_instance_no" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></update>
-                      <add :approvalFormMode="approvalFormRun" v-if="biz_item._type_form == 'add'" :name="'apv' + step_item.step_no + 'i' + index" ref="proc-add-form-approval" :service="biz_item.add_service" @form-loaded="onProcFormLoad(biz_item._uuid, $event)"></add>
-                      <detail :approvalFormMode="approvalFormRun" :is_view_title="1 == 2" v-if="biz_item._type_form == 'select'" :name="'apv' + step_item.step_no + 'i' + index" form-type="procdetail" name="proc-simple-detail" :service="biz_item.select_service" :default-conditions="
-                          getFormViewCondition(biz_item, step_item.step_no) 
-                        " @form-loaded='onFormLoading=false'></detail>
+                        "
+                        :pk="proc_instance_no"
+                        @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                      ></update>
+                      <add
+                        :approvalFormMode="approvalFormRun"
+                        v-if="biz_item._type_form == 'add'"
+                        :name="'apv' + step_item.step_no + 'i' + index"
+                        ref="proc-add-form-approval"
+                        :service="biz_item.add_service"
+                        @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
+                      ></add>
+                      <detail
+                        :approvalFormMode="approvalFormRun"
+                        :is_view_title="1 == 2"
+                        v-if="biz_item._type_form == 'select'"
+                        :name="'apv' + step_item.step_no + 'i' + index"
+                        form-type="procdetail"
+                        name="proc-simple-detail"
+                        :service="biz_item.select_service"
+                        :default-conditions="
+                          getFormViewCondition(biz_item, step_item.step_no)
+                        "
+                        @form-loaded="onFormLoading = false"
+                      ></detail>
                     </div>
                   </el-tab-pane>
                 </template>
@@ -420,67 +810,128 @@
             </el-row>
 
             <!--审批表单-->
-            <el-row v-if="
+            <el-row
+              v-if="
                 proHanleData.authority &&
                 proHanleData.approval_options.length > 0
-              ">
-              <div class="el-col el-col-24 el-col-xl-24" :key="step_item.step_no + index + '_list_section'" v-show="showRemark||showApproval">
+              "
+            >
+              <div
+                class="el-col el-col-24 el-col-xl-24"
+                :key="step_item.step_no + index + '_list_section'"
+                v-show="showRemark || showApproval"
+              >
                 <div class="el-form-item">
                   <span class="section-title">审批操作</span>
                 </div>
               </div>
 
               <el-col :span="24">
-                <el-form-item label="意见" prop="proc_result" :rules="{
+                <el-form-item
+                  label="意见"
+                  prop="proc_result"
+                  :rules="{
                     required: true,
                     message: '说明不能为空',
                     trigger: 'change',
-                  }" v-show="showApproval">
-                  <el-radio border v-for="item in proHanleData.approval_options" :key="item.value" v-model="approval_form.proc_result" :label="item.value">{{ item.disp }}
+                  }"
+                  v-show="showApproval"
+                >
+                  <el-radio
+                    border
+                    v-for="item in proHanleData.approval_options"
+                    :key="item.value"
+                    v-model="approval_form.proc_result"
+                    :label="item.value"
+                    >{{ item.disp }}
                   </el-radio>
                 </el-form-item>
               </el-col>
 
               <el-col :span="6" v-if="approval_form.proc_result == 'turn'">
-                <el-form-item label="转派用户" prop="turn_user_no" :rules="{
+                <el-form-item
+                  label="转派用户"
+                  prop="turn_user_no"
+                  :rules="{
                     required: true,
                     message: '用户不能为空',
                     trigger: 'change',
-                  }">
-                  <el-select @focus="findTurnUser('')" v-model="approval_form.turn_user_no" filterable remote placeholder="请选择转派用户" :remote-method="findTurnUser">
-                    <el-option v-for="item in approval_form.userOptions" :key="item.value" :label="item.label" :value="item.value">
+                  }"
+                >
+                  <el-select
+                    @focus="findTurnUser('')"
+                    v-model="approval_form.turn_user_no"
+                    filterable
+                    remote
+                    placeholder="请选择转派用户"
+                    :remote-method="findTurnUser"
+                  >
+                    <el-option
+                      v-for="item in approval_form.userOptions"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    >
                     </el-option>
                   </el-select>
                 </el-form-item>
               </el-col>
 
               <el-col :span="24" v-if="approval_form.proc_result == 'return'">
-                <el-form-item label="返回步骤" prop="step_no" :rules="{
+                <el-form-item
+                  label="返回步骤"
+                  prop="step_no"
+                  :rules="{
                     required: true,
                     message: '步骤不能为空',
                     trigger: 'change',
-                  }">
-                  <el-radio border v-for="item in proHanleData.return_options" :key="item.value" v-model="approval_form.step_no" :label="item.value">{{ item.disp }}
+                  }"
+                >
+                  <el-radio
+                    border
+                    v-for="item in proHanleData.return_options"
+                    :key="item.value"
+                    v-model="approval_form.step_no"
+                    :label="item.value"
+                    >{{ item.disp }}
                   </el-radio>
                 </el-form-item>
               </el-col>
 
-              <el-col :span="24" v-if="
+              <el-col
+                :span="24"
+                v-if="
                   getRemarkFileShow('remark') &&
                   Object.keys(procHanleStepConfigJson).length > 0 &&
                   procHanleStepConfigJson[approval_form.proc_result].remark
-                ">
-                <el-form-item label="说明" prop="remark" :rules="getRemarkRules()">
-                  <el-input type="textarea" v-model="approval_form.remark" :autosize="{ minRows: 4, maxRows: 6 }"></el-input>
+                "
+              >
+                <el-form-item
+                  label="说明"
+                  prop="remark"
+                  :rules="getRemarkRules()"
+                >
+                  <el-input
+                    type="textarea"
+                    v-model="approval_form.remark"
+                    :autosize="{ minRows: 4, maxRows: 6 }"
+                  ></el-input>
                 </el-form-item>
               </el-col>
 
-              <el-col :span="24" v-if="
+              <el-col
+                :span="24"
+                v-if="
                   approval_form.proc_result !== '' &&
                   Object.keys(procHanleStepConfigJson).length > 0 &&
                   procHanleStepConfigJson[approval_form.proc_result].attachment
-                ">
-                <el-form-item label="附件" prop="file_no" v-if="getRemarkFileShow('files')">
+                "
+              >
+                <el-form-item
+                  label="附件"
+                  prop="file_no"
+                  v-if="getRemarkFileShow('files')"
+                >
                   <upload-file :field="uplaodFiled"></upload-file>
                 </el-form-item>
               </el-col>
@@ -488,20 +939,29 @@
               <el-col :span="24" v-loading="onFormLoading">
                 <el-row type="flex" class="row-bg" justify="center">
                   <el-form-item>
-                    <el-button type="primary" @click="submitApprovalForm('approval_form', false)">提交
+                    <el-button
+                      type="primary"
+                      @click="submitApprovalForm('approval_form', false)"
+                      >提交
                     </el-button>
                     <!--
                     <el-button type="primary" @click="submitApprovalForm('approval_form',true)">保存草稿
                     </el-button>-->
 
-                    <el-button @click="resetForm('approval_form')">重置
+                    <el-button @click="resetForm('approval_form')"
+                      >重置
                     </el-button>
                   </el-form-item>
                 </el-row>
               </el-col>
             </el-row>
 
-            <el-row type="flex" class="row-bg" justify="center" v-else-if="!proHanleData.authority && !proc_basic.is_finsh">
+            <el-row
+              type="flex"
+              class="row-bg"
+              justify="center"
+              v-else-if="!proHanleData.authority && !proc_basic.is_finsh"
+            >
               {{ getNoAuthorityMessage() }}
             </el-row>
           </el-form>
@@ -510,31 +970,49 @@
     </el-card>
 
     <!--流程审批记录-->
-    <el-card class="box-card" v-if="record_default_condition.length > 0" v-show="appvalResult > 0">
+    <el-card
+      class="box-card"
+      v-if="record_default_condition.length > 0"
+      v-show="appvalResult > 0"
+    >
       <div slot="header" class="clearfix">
         <span class="tag_font_class">流程审批结果</span>
       </div>
 
       <div class="text item">
-        <proc-simple-list v-if="recordShow" service="srvprocess_record_select" v-show="appvalResult > 0" @list-loaded="onRecordListLoaded" list-type="procdetaillist" :default-order="[{ colName: 'id', orderType: 'desc' }]" :default-condition="record_default_condition">
+        <proc-simple-list
+          v-if="recordShow"
+          service="srvprocess_record_select"
+          v-show="appvalResult > 0"
+          @list-loaded="onRecordListLoaded"
+          list-type="procdetaillist"
+          :default-order="[{ colName: 'id', orderType: 'desc' }]"
+          :default-condition="record_default_condition"
+        >
         </proc-simple-list>
       </div>
 
       <div class="text item">
-        <proc-simple-list v-if="resultShow" v-show="appvalResult > 0" @list-loaded="onRecordListLoaded" service="srvprocess_result_select" list-type="procdetaillist" :default-order="[{ colName: 'id', orderType: 'desc' }]" :default-condition="record_default_condition">
+        <proc-simple-list
+          v-if="resultShow"
+          v-show="appvalResult > 0"
+          @list-loaded="onRecordListLoaded"
+          service="srvprocess_result_select"
+          list-type="procdetaillist"
+          :default-order="[{ colName: 'id', orderType: 'desc' }]"
+          :default-condition="record_default_condition"
+        >
         </proc-simple-list>
       </div>
     </el-card>
   </div>
 </template>
 
-
 <style scoped>
 .step_handle_css {
   cursor: pointer;
 }
 </style>
-
 
 <script>
 import procSimpleList from "./proc-simple-list.vue";
@@ -551,7 +1029,7 @@ import isEmpty from "lodash/isEmpty";
 import isNull from "lodash/isNull";
 import isUndefined from "lodash/isUndefined";
 import debounce from "lodash/debounce";
-
+import procHandler from "./proc-handler";
 export default {
   name: "procdetail",
   components: {
@@ -563,17 +1041,18 @@ export default {
     add,
     update,
     detail,
-    flowStep
+    flowStep,
+    procHandler,
   },
   props: {
     name: {
       type: String,
-      default: "main"
-    }
+      default: "main",
+    },
   },
   mixins: [ProcV2Mixin],
   watch: {
-    proHanleData: function(data) {
+    proHanleData: function (data) {
       if (
         data != undefined &&
         data.approval_options != undefined &&
@@ -589,7 +1068,7 @@ export default {
       }
     },
     approval_form: {
-      handler: function(data) {
+      handler: function (data) {
         if (
           data.proc_result == "return" &&
           this.proHanleData.return_options.length == 1
@@ -597,8 +1076,8 @@ export default {
           data.step_no = this.proHanleData.return_options[0]["value"];
         }
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   data() {
     return {
@@ -628,7 +1107,7 @@ export default {
       proHanleData: {},
       proHanleDataList: [],
       processTempl: {},
-      urgentStep:[],
+      urgentStep: [],
       proc_basic: {},
       startFrom: null,
       icon: "el-icon-s-fold",
@@ -637,12 +1116,12 @@ export default {
       defDataPara: null,
       uplaodFiled: {
         info: {
-          editable: true
+          editable: true,
         },
         fileDesc: "请上传文件,大小不超过50MB",
         fileSize: 6200,
         fileType: "",
-        model: ""
+        model: "",
       },
       approval_form: {
         proc_result: "",
@@ -651,7 +1130,7 @@ export default {
         turn_user_no: "",
         turn_step_no: "",
         step_no: "",
-        userOptions: []
+        userOptions: [],
       },
       button_info: null,
       page_type: "approval",
@@ -663,36 +1142,53 @@ export default {
       validateFunOpertion: { valid: true, msg: "" },
       validateFun: new Function("return " + this.validateFunOpertion),
       opinion: null,
-      onFormLoading:true,
+      onFormLoading: true,
     };
   },
   computed: {
-    showApproval: function() {
+    procResult() {
+      let result = {};
+      if (
+        this.proHanleData?.proc_result &&
+        typeof this.proHanleData?.proc_result === "string"
+      ) {
+        try {
+          result = JSON.parse(this.proHanleData.proc_result);
+          if (Array.isArray(result) && result.length > 0) {
+            result = result[0];
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      return result;
+    },
+    showApproval: function () {
       return (
         this.proHanleData.approval_options.length > 1 ||
         (this.proHanleData.approval_options.length === 1 &&
           this.proHanleData.approval_options[0].show !== false)
       );
     },
-    showRemark: function() {
+    showRemark: function () {
       return (
         this.getRemarkFileShow("remark") &&
         Object.keys(this.procHanleStepConfigJson).length > 0 &&
         this.procHanleStepConfigJson[this.approval_form.proc_result].remark
       );
     },
-    approvalFormRun: function() {
+    approvalFormRun: function () {
       let approval = this.bxDeepClone(this.approval_form);
       let mainMode = this.mainData;
       let handleStep = {
         step_name: this.handle_active_step_name,
-        step_no: this.handle_active_step_no
+        step_no: this.handle_active_step_no,
       };
       approval["_mainModel"] = this.bxDeepClone(mainMode);
       approval["_handleStep"] = this.bxDeepClone(handleStep);
       return approval;
     },
-    showNostartStep: function() {
+    showNostartStep: function () {
       let res = this.processTempl.hasOwnProperty("show_nostart_step")
         ? this.processTempl.show_nostart_step
         : true;
@@ -701,7 +1197,7 @@ export default {
       } else {
         return true;
       }
-    }
+    },
   },
   methods: {
     updateShowHelp(e) {
@@ -711,16 +1207,16 @@ export default {
       if (e) {
         this.childDataLoaded[e.name] = e.data;
       }
-      console.log('onFormLoading',this.onFormLoading)
-      this.onFormLoading = false
+      console.log("onFormLoading", this.onFormLoading);
+      this.onFormLoading = false;
     },
     detail_form_loaded(instacne) {
       if (instacne.actions && instacne.actions.nav2update) {
         instacne.actions.nav2update.visible = false;
       }
-      this.onFormLoading=false
+      this.onFormLoading = false;
     },
-    onRecordListLoaded: function(listIns) {
+    onRecordListLoaded: function (listIns) {
       this.appvalResult = listIns.gridData.length;
     },
     onProcSimpleListLoad(uuid, simpleList) {
@@ -779,7 +1275,7 @@ export default {
           }
         }
       }
-      this.onFormLoading=false
+      this.onFormLoading = false;
     },
 
     async submitApprovalForm(formName, is_draft, timerSave) {
@@ -813,18 +1309,18 @@ export default {
           }
         }
         //提交审批草稿
-        this.approval(bxRequests).then(response => {
+        this.approval(bxRequests).then((response) => {
           var state = response.body.state;
           if ("SUCCESS" == state) {
             this.$message({
               type: "success",
-              message: "保存成功!"
+              message: "保存成功!",
             });
             window.location.reload();
           } else {
             this.$message({
               type: "error",
-              message: response.body.resultMessage
+              message: response.body.resultMessage,
             });
           }
         });
@@ -844,10 +1340,10 @@ export default {
                 var instacneFormCom = biz_item._simpleFormInstance;
                 await instacneFormCom
                   .validateForm()
-                  .then(function() {
+                  .then(function () {
                     validate_result = true;
                   })
-                  .catch(function() {
+                  .catch(function () {
                     validate_result = false;
                   });
               }
@@ -871,7 +1367,7 @@ export default {
         } else {
           // let funStrb = ""
           // let testFun = new Function('return '+ funStrb)
-          this.validateFun = function() {
+          this.validateFun = function () {
             return { valid: true, msg: "" };
           };
         }
@@ -887,7 +1383,7 @@ export default {
           for (let key in childDatas) {
             let item = childDatas[key];
             if (item.length > 0) {
-              item = item.filter(row => {
+              item = item.filter((row) => {
                 // 过滤掉内存表删除的数据
                 if (
                   !row.hasOwnProperty("_dirtyFlags") &&
@@ -904,13 +1400,13 @@ export default {
         if (!vFun.valid) {
           this.$message({
             type: "error",
-            message: vFun.msg
+            message: vFun.msg,
           });
           return;
         }
 
         if (validate_result) {
-          this.$refs[formName][0].validate(valid => {
+          this.$refs[formName][0].validate((valid) => {
             if (valid) {
               var bxRequests = me.buildApprovalData(
                 proc_result,
@@ -919,18 +1415,18 @@ export default {
               );
               me.submitStatus = "occupy"; //unwanted 空闲 // occupy 占用
               //提交流程
-              this.approval(bxRequests).then(response => {
+              this.approval(bxRequests).then((response) => {
                 var state = response.body.state;
                 if ("SUCCESS" == state) {
                   this.$message({
                     type: "success",
-                    message: "审批成功!"
+                    message: "审批成功!",
                   });
                   window.location.reload();
                 } else {
                   this.$message({
                     type: "error",
-                    message: response.body.resultMessage
+                    message: response.body.resultMessage,
                   });
                 }
               });
@@ -946,14 +1442,14 @@ export default {
       var bxRequest = {
         proc_instance_no: me.proc_instance_no,
         step_no: me.proHanleData.step_no,
-        proc_data_type: submitType
+        proc_data_type: submitType,
       };
       bxRequest["data"] = [];
       var data = {
         remark: me.approval_form.remark,
         proc_result: proc_result,
         key: result_key,
-        file_no: this.uplaodFiled.model
+        file_no: this.uplaodFiled.model,
       };
 
       if (data.proc_result == "turn") {
@@ -1007,8 +1503,8 @@ export default {
                   {
                     colName: "id",
                     ruleType: "in",
-                    value: itemData.id
-                  }
+                    value: itemData.id,
+                  },
                 ];
               } else if ("delete" == itemData._dirtyFlags) {
                 childRequest["serviceName"] = item["delete_service"];
@@ -1017,8 +1513,8 @@ export default {
                   {
                     colName: "id",
                     ruleType: "in",
-                    value: itemData.id
-                  }
+                    value: itemData.id,
+                  },
                 ];
               }
 
@@ -1037,17 +1533,15 @@ export default {
             var childdata = item._simpleFormInstance.buildRunQuries();
             // var childDataFrom = this.getChildDataForm(item, "data");
             if (JSON.stringify(childdata) != "[]") {
-              data["child_data_list"] = data["child_data_list"].concat(
-                childdata
-              );
+              data["child_data_list"] =
+                data["child_data_list"].concat(childdata);
             }
           } else if (item["biz_type"] == "child") {
             var childdata = item._simpleFormInstance.buildRunQuries();
             // var childDataFrom = this.getChildDataForm(item, "data");
             if (JSON.stringify(childdata) != "[]") {
-              data["child_data_list"] = data["child_data_list"].concat(
-                childdata
-              );
+              data["child_data_list"] =
+                data["child_data_list"].concat(childdata);
             }
           }
         } else if (
@@ -1074,7 +1568,7 @@ export default {
         } else {
           this.$message({
             type: "error",
-            message: result
+            message: result,
           });
           return;
         }
@@ -1083,7 +1577,24 @@ export default {
     },
     async submitProc(operate_type, procState) {
       var me = this;
-
+      if (this.$refs?.procHandler) {
+        // 下一步、操作人、抄送人
+        let procHandler = this.$refs.procHandler;
+        if (Array.isArray(procHandler) && procHandler.length) {
+          procHandler = procHandler[0];
+          let procHandlerModel = null;
+          if (
+            procHandler?.getFormData &&
+            this.procResult &&
+            Object.keys(this.procResult).length > 0
+          ) {
+            procHandlerModel = await procHandler?.getFormData?.();
+            if (!procHandlerModel) {
+              return;
+            }
+          }
+        }
+      }
       if (procState == "submit") {
         me.submitStatus = "occupy"; //unwanted 空闲 // occupy 占用
         var validate_result = false;
@@ -1099,10 +1610,10 @@ export default {
               var instacneFormCom = biz_item._simpleFormInstance;
               await instacneFormCom
                 .validateForm()
-                .then(function() {
+                .then(function () {
                   validate_result = true;
                 })
-                .catch(function() {
+                .catch(function () {
                   let msg = "请检查输入项";
                   let tab_name = biz_item["_section_name"];
                   if (tab_name) {
@@ -1110,7 +1621,7 @@ export default {
                   }
                   me.$message({
                     type: "error",
-                    message: msg
+                    message: msg,
                   });
                   validate_result = false;
 
@@ -1128,7 +1639,7 @@ export default {
           this.$confirm("是否确认提交", "提示", {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
-            type: "info"
+            type: "info",
           })
             .then(() => {
               this.start(operate_type, procState);
@@ -1136,7 +1647,7 @@ export default {
             .catch(() => {
               this.$message({
                 type: "info",
-                message: "已取消操作"
+                message: "已取消操作",
               });
               me.submitStatus = "unwanted"; //unwanted 空闲 // occupy 占用
             });
@@ -1145,7 +1656,7 @@ export default {
         this.$confirm("是否确认提交", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
-          type: "info"
+          type: "info",
         })
           .then(() => {
             this.start(operate_type, procState);
@@ -1153,12 +1664,12 @@ export default {
           .catch(() => {
             this.$message({
               type: "info",
-              message: "已取消操作"
+              message: "已取消操作",
             });
             me.submitStatus = "unwanted"; //unwanted 空闲 // occupy 占用
           });
       }
-      setTimeout(function() {
+      setTimeout(function () {
         console.log("定时处理");
         me.submitStatus = "unwanted"; //unwanted 空闲 // occupy 占用
       }, 1200);
@@ -1327,7 +1838,7 @@ export default {
     findTurnUser(query) {
       var service_name = "srvsso_user_select";
       var condition = [
-        { colName: "user_disp", value: query, ruleType: "like" }
+        { colName: "user_disp", value: query, ruleType: "like" },
       ];
       var page = { pageNo: 1, rownumber: 50 };
 
@@ -1337,7 +1848,7 @@ export default {
         if (this.apvTurnUserOtionsFunc) {
           selectPromise = this.apvTurnUserOtionsFunc.bind(this)();
         }
-        selectPromise.then(response => {
+        selectPromise.then((response) => {
           this.approval_form.userOptions = [];
           var dataList = response.body.data;
           for (var item of dataList) {
@@ -1361,10 +1872,10 @@ export default {
         let form = instanceFormCom;
         var i = 0;
         form.$watch(
-          function() {
+          function () {
             form.srvValFormModel();
           },
-          function(newData, oldData) {
+          function (newData, oldData) {
             if (i == 0) {
               for (var item of me.proHanleData.biz_cfg_data) {
                 var addData = form.srvValFormModel();
@@ -1407,10 +1918,10 @@ export default {
         }
 
         form.$watch(
-          function() {
+          function () {
             form.srvValFormModel4Update;
           },
-          function(newData, oldData) {
+          function (newData, oldData) {
             for (var item of me.proHanleData.biz_cfg_data) {
               var updateFromData = form.srvValFormModel4Update;
 
@@ -1438,13 +1949,13 @@ export default {
         condition = {
           colName: "parent_proc_instance_no",
           ruleType: "eq",
-          value: this.proc_instance_no
+          value: this.proc_instance_no,
         };
       } else {
         condition = {
           colName: "proc_instance_no",
           ruleType: "eq",
-          value: this.proc_instance_no
+          value: this.proc_instance_no,
         };
       }
 
@@ -1466,46 +1977,43 @@ export default {
           {
             colName: "service_name",
             ruleType: "eq",
-            value: this.service_name
-          }
+            value: this.service_name,
+          },
         ];
 
         //
-        await this.select(proc_basic_srv, condition).then(response => {
+        await this.select(proc_basic_srv, condition).then((response) => {
           var respData = response.body;
           if (respData.state == "SUCCESS") {
-
-  this.proc_basic = response.body.proc_basic;
+            this.proc_basic = response.body.proc_basic;
             this.proCharData = response.body.proCharData;
 
             this.proHanleDataList = response.body.proHanleData;
-            if(response.body.urgentStep){
-              this.urgentStep=response.body.urgentStep
-              for(var item of this.urgentStep){
-                  
-            
-                  for(var it of this.proCharData){
+            if (response.body.urgentStep) {
+              this.urgentStep = response.body.urgentStep;
+              for (var item of this.urgentStep) {
+                for (var it of this.proCharData) {
+                  if (
+                    item["step_no"] == it["step_no"] &&
+                    this.proc_basic.init_step_no != it["step_no"]
+                  ) {
+                    it["step_name"] = it["step_name"] + "(紧急)";
+                    if (it["simple_step_name"] != null) {
+                      it["simple_step_name"] =
+                        it["simple_step_name"] + "(紧急)";
+                    } else {
+                      it["simple_step_name"] = it["step_name"];
+                    }
 
-                          if(item["step_no"]==it["step_no"]&& this.proc_basic.init_step_no!=it["step_no"]){
-                            it["step_name"]=it["step_name"]+"(紧急)";
-                            if(it["simple_step_name"]!=null){
-                               it["simple_step_name"]=it["simple_step_name"]+"(紧急)";
-                            }else{
-                               it["simple_step_name"]=it["step_name"];
-                            }
-                           
-                            break;
-                          }
+                    break;
                   }
-
+                }
               }
-
             }
-            
+
             this.button_info = response.body.button;
             this.processTempl = response.body.processTempl;
 
-          
             var more_config = this.proc_basic.more_config;
             if (more_config && more_config.approval) {
               this.recordShow = more_config.approval.record;
@@ -1578,23 +2086,23 @@ export default {
           {
             colName: "proc_instance_no",
             value: this.proc_instance_no,
-            ruleType: "eq"
-          }
+            ruleType: "eq",
+          },
         ];
         let proc_basic_srv = "srvProcess_basic_cfg_v2_select";
         let condition = [
           {
             colName: "proc_instance_no",
             ruleType: "eq",
-            value: this.proc_instance_no
-          }
+            value: this.proc_instance_no,
+          },
         ];
         //
-        await this.select(proc_basic_srv, condition).then(response => {
+        await this.select(proc_basic_srv, condition).then((response) => {
           this.proCharData = response.body.proCharData;
           let hanleDatas = response.body.proHanleData;
-          
-          hanleDatas.forEach(item => {
+
+          hanleDatas.forEach((item) => {
             if (item.authority) {
               this.proHanleDataList.unshift(item);
             } else {
@@ -1603,34 +2111,29 @@ export default {
           });
           this.processTempl = response.body.processTempl;
 
-         this.proc_basic = response.body.proc_basic;
+          this.proc_basic = response.body.proc_basic;
 
-          if(response.body.urgentStep&&response.body.urgent=='是'){
-                this.urgentStep=response.body.urgentStep
-              for(var item of this.urgentStep){
-                  
-            
-                  for(var it of this.proCharData){
+          if (response.body.urgentStep && response.body.urgent == "是") {
+            this.urgentStep = response.body.urgentStep;
+            for (var item of this.urgentStep) {
+              for (var it of this.proCharData) {
+                if (
+                  item["step_no"] == it["step_no"] &&
+                  this.proc_basic.init_step_no != it["step_no"]
+                ) {
+                  it["step_name"] = it["step_name"] + "(紧急)";
 
-                          if(item["step_no"]==it["step_no"]&&this.proc_basic.init_step_no!=it["step_no"]){
-                            it["step_name"]=it["step_name"]+"(紧急)";
-                           
-
-                            if(it["simple_step_name"]!=null){
-                               it["simple_step_name"]=it["simple_step_name"]+"(紧急)";
-                            }else{
-                               it["simple_step_name"]=it["step_name"];
-                            }
-                            break;
-                          }
+                  if (it["simple_step_name"] != null) {
+                    it["simple_step_name"] = it["simple_step_name"] + "(紧急)";
+                  } else {
+                    it["simple_step_name"] = it["step_name"];
                   }
-
+                  break;
+                }
               }
+            }
           }
 
-        
-
-     
           var more_config = this.proc_basic.more_config;
           if (more_config && more_config.approval) {
             this.recordShow = more_config.approval.record;
@@ -1709,20 +2212,24 @@ export default {
       }
       this.getStepConfigJson(); // 获取当前步骤审批表单配置信息
     },
-    start: debounce(function (operate_type, procState, timerSave) {
-      console.log("start: debounce:", operate_type, procState, timerSave);
-      this._start(operate_type, procState, timerSave)
-    }, 3000, { // 3s内只有第一次点击有用
-      trailing: false,// 延迟结束后调用
-      leading: true,// 延迟开始调用
-    }
+    start: debounce(
+      function (operate_type, procState, timerSave) {
+        console.log("start: debounce:", operate_type, procState, timerSave);
+        this._start(operate_type, procState, timerSave);
+      },
+      3000,
+      {
+        // 3s内只有第一次点击有用
+        trailing: false, // 延迟结束后调用
+        leading: true, // 延迟开始调用
+      }
     ),
-    _start(operate_type, procState, timerSave) {
+    async _start(operate_type, procState, timerSave) {
       let self = this;
       var bxRequests = [];
       var bxRequest = {};
       bxRequests.push(bxRequest);
-      setTimeout(function() {
+      setTimeout(function () {
         self.submitStatus = "unwanted"; //unwanted 空闲 // occupy 占用
       }, 1200);
       //构建主表数据
@@ -1739,8 +2246,8 @@ export default {
               {
                 colName: "proc_instance_no",
                 ruleType: "eq",
-                value: this.proc_instance_no
-              }
+                value: this.proc_instance_no,
+              },
             ];
             bxRequest["proc_instance_no"] = this.proc_instance_no;
           }
@@ -1752,11 +2259,35 @@ export default {
 
           var formmainData = formData[0];
           mainData = formmainData.data[0];
+          if (this.$refs?.procHandler) {
+            // 下一步、操作人、抄送人
+
+            let procHandler = this.$refs.procHandler;
+            if (Array.isArray(procHandler) && procHandler.length) {
+              procHandler = procHandler[0];
+              let procHandlerModel = null;
+              if (
+                procHandler?.getFormData &&
+                this.procResult &&
+                Object.keys(this.procResult).length > 0
+              ) {
+                procHandlerModel = await procHandler?.getFormData?.();
+                if (!procHandlerModel) {
+                  return;
+                }
+                if (Object.keys(procHandlerModel).length > 0) {
+                  Object.keys(procHandlerModel).forEach((key) => {
+                    mainData[key] = procHandlerModel[key];
+                  });
+                }
+              }
+            }
+          }
           bxRequest["data"].push(mainData);
-          if(this.urgent){
-           bxRequest["urgentProc"]="是";
-          }else{
-             bxRequest["urgentProc"]="否";
+          if (this.urgent) {
+            bxRequest["urgentProc"] = "是";
+          } else {
+            bxRequest["urgentProc"] = "否";
           }
           break;
         }
@@ -1805,8 +2336,8 @@ export default {
                   {
                     colName: "id",
                     ruleType: "in",
-                    value: itemData.id
-                  }
+                    value: itemData.id,
+                  },
                 ];
               } else if ("delete" == itemData._dirtyFlags) {
                 childRequest["serviceName"] = item["delete_service"];
@@ -1815,8 +2346,8 @@ export default {
                   {
                     colName: "id",
                     ruleType: "in",
-                    value: itemData.id
-                  }
+                    value: itemData.id,
+                  },
                 ];
               }
 
@@ -1852,7 +2383,7 @@ export default {
       } else {
         // let funStrb = ""
         // let testFun = new Function('return '+ funStrb)
-        this.validateFun = function() {
+        this.validateFun = function () {
           return { valid: true, msg: "" };
         };
       }
@@ -1866,7 +2397,7 @@ export default {
           for (let key in childDatas) {
             let item = childDatas[key];
             if (item.length > 0) {
-              item = item.filter(row => {
+              item = item.filter((row) => {
                 // 过滤掉内存表删除的数据
                 if (
                   !row.hasOwnProperty("_dirtyFlags") &&
@@ -1890,7 +2421,7 @@ export default {
           } else {
             this.$message({
               type: "error",
-              message: result + (funResult ? "" : "请填写完整的信息后再提交")
+              message: result + (funResult ? "" : "请填写完整的信息后再提交"),
             });
             return;
           }
@@ -1903,23 +2434,23 @@ export default {
         // if (vFun.valid || bxRequests[0].serviceName.indexOf("update") !== -1) {
         if (vFun.valid) {
           // 启动编辑校验子表
-          this.startProc(bxRequests).then(response => {
+          this.startProc(bxRequests).then((response) => {
             var state = response.body.state;
             if ("SUCCESS" == state) {
               this.$message({
                 type: "success",
-                message: "提交成功!"
+                message: "提交成功!",
               });
               var response = response.body["data"];
               var proc_instance_no = response[0]["proc_instance_no"];
               let route = {
                 name: "procdetail_v2",
-                params: { proc_instance_no: proc_instance_no }
-              }
-              if(this.$route.query.hasOwnProperty('srvApp')){
-                route['query'] = {
-                  srvApp:this.$route.query.srvApp
-                }
+                params: { proc_instance_no: proc_instance_no },
+              };
+              if (this.$route.query.hasOwnProperty("srvApp")) {
+                route["query"] = {
+                  srvApp: this.$route.query.srvApp,
+                };
               }
               this.$router.push(route);
               // setTimeout(() => {
@@ -1928,14 +2459,14 @@ export default {
             } else {
               this.$message({
                 type: "error",
-                message: response.body.resultMessage
+                message: response.body.resultMessage,
               });
             }
           });
         } else {
           this.$message({
             type: "error",
-            message: vFun.msg
+            message: vFun.msg,
           });
         }
       } else {
@@ -1956,28 +2487,28 @@ export default {
           }
         }
 
-        this.saveDraft(bxRequests).then(response => {
+        this.saveDraft(bxRequests).then((response) => {
           var state = response.body.state;
 
           if ("SUCCESS" == state) {
             this.$message({
               type: "success",
-              message: "保存成功!"
+              message: "保存成功!",
             });
 
             var response = response.body["data"];
             var proc_instance_no = response[0]["proc_instance_no"];
             this.proc_instance_no = proc_instance_no;
             let route = {
-                name: "procdetail_v2",
-                params: { proc_instance_no: proc_instance_no }
-              }
-              if(this.$route.query.hasOwnProperty('srvApp')){
-                route['query'] = {
-                  srvApp:this.$route.query.srvApp
-                }
-              }
-              this.$router.push(route);
+              name: "procdetail_v2",
+              params: { proc_instance_no: proc_instance_no },
+            };
+            if (this.$route.query.hasOwnProperty("srvApp")) {
+              route["query"] = {
+                srvApp: this.$route.query.srvApp,
+              };
+            }
+            this.$router.push(route);
             if (timerSave) {
             } else {
               setTimeout(() => {
@@ -1987,7 +2518,7 @@ export default {
           } else {
             this.$message({
               type: "error",
-              message: response.body.resultMessage
+              message: response.body.resultMessage,
             });
           }
         });
@@ -2014,8 +2545,8 @@ export default {
             {
               colName: "id",
               ruleType: "in",
-              value: newData.id
-            }
+              value: newData.id,
+            },
           ];
           childRequests.push(childRequest);
         }
@@ -2069,9 +2600,8 @@ export default {
     fillOperateData(data, foreignKeyList) {
       for (var item of data) {
         for (var foreign_item of foreignKeyList) {
-          item[foreign_item["column_name"]] = this.mainData[
-            foreign_item["referenced_column_name"]
-          ];
+          item[foreign_item["column_name"]] =
+            this.mainData[foreign_item["referenced_column_name"]];
         }
       }
     },
@@ -2105,9 +2635,9 @@ export default {
           // me.submitApprovalForm("approval_form", true, true);
         }
       }
-    }
+    },
   },
-  created: function() {
+  created: function () {
     if (this.$route && this.$route.query) {
       this.startProcDefaultValue = {};
       var operate_params = this.getOperateParams();
@@ -2125,13 +2655,12 @@ export default {
     this.$nextTick(() => {
       // 10秒后自动关闭loading
       setTimeout(() => {
-        this.onFormLoading = false
-      },10*1000)
-    })
-  }
+        this.onFormLoading = false;
+      }, 10 * 1000);
+    });
+  },
 };
 </script>
-
 
 <style lang="scss">
 /**
