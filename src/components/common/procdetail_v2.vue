@@ -555,6 +555,7 @@
             <!-- 申请流程 -->
             <proc-handler
               ref="procHandler"
+              type="apply"
               :proc-result="procResult"
               v-if="procResult"
             ></proc-handler>
@@ -851,6 +852,7 @@
                 <proc-handler
                   v-if="!onFormLoading && procResult && procResult.next_step"
                   ref="procHandler"
+                  type="approve"
                   :proc-result="procResult"
                 ></proc-handler
               ></el-col>

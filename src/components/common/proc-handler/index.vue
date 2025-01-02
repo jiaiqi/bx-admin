@@ -1,6 +1,12 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-    <el-row type="flex" class="el-row" justify="start" v-if="procResult">
+    <el-row
+      type="flex"
+      class="el-row"
+      justify="start"
+      v-if="procResult"
+      :class="{ 'is-approve': type === 'approve' }"
+    >
       <!-- :xs="24"
         :sm="10"
         :md="8"
@@ -13,7 +19,11 @@
           v-if="stepOptions && stepOptions.length"
           prop="next_step"
         >
-          <el-select v-model="form.next_step" placeholder="请选择下一步操作">
+          <el-select
+            v-model="form.next_step"
+            placeholder="请选择下一步操作"
+            style="width: 100%"
+          >
             <el-option
               :label="item.label"
               :value="item.value"
@@ -42,6 +52,7 @@
             v-model="form.next_handle_user"
             multiple
             placeholder="请选择处理人"
+            style="width: 100%"
           >
             <el-option
               :label="item.label"
@@ -62,7 +73,12 @@
           v-if="procResult.cc_user && procResult.cc_user.serviceName"
           prop="cc_user"
         >
-          <el-select v-model="form.cc_user" multiple placeholder="请选择抄送人">
+          <el-select
+            v-model="form.cc_user"
+            multiple
+            placeholder="请选择抄送人"
+            style="width: 100%"
+          >
             <el-option
               :label="item.label"
               :value="item.value"
@@ -264,8 +280,11 @@ export default {
 
 <style lang="scss" scoped>
 .el-form > .el-row {
-  border: none;
+  &.is-approve {
+    border: none;
+  }
 }
+
 .el-row {
   flex-wrap: wrap;
   // padding-top: 20px;
