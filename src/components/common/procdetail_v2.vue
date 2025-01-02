@@ -1170,7 +1170,7 @@ export default {
           console.error(error);
         }
       } else if (this.page_type === "detail") {
-        let item = this.proHanleData.approval_options.find(
+        let item = this.proHanleData?.approval_options?.find(
           (item) => item.value && item.value === this.approval_form.proc_result
         );
         if (item?.value) {

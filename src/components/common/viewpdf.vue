@@ -138,6 +138,8 @@ export default {
       // })
       // this.src = src
       let url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(this.$route.query.pdfsrc)}`
+      console.log(url);
+      
       this.src = pdf.createLoadingTask({ url: url, CMapReaderFactory })
       // this.src = pdf.createLoadingTask({ url: encodeURI(pdfsrc), CMapReaderFactory })
       console.log('view-pdf:',this.src)

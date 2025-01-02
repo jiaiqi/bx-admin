@@ -267,7 +267,7 @@ export default {
       this.getCCUserList();
       rules.cc_user = [
         {
-          required: true,
+          // required: true,
           message: "请选择抄送人",
           trigger: "blur",
         },
