@@ -847,6 +847,13 @@
                   </el-radio>
                 </el-form-item>
               </el-col>
+              <el-col :span="24">
+                <proc-handler
+                  v-if="!onFormLoading && procResult && procResult.next_step"
+                  ref="procHandler"
+                  :proc-result="procResult"
+                ></proc-handler
+              ></el-col>
 
               <el-col :span="6" v-if="approval_form.proc_result == 'turn'">
                 <el-form-item
@@ -1160,6 +1167,13 @@ export default {
         } catch (error) {
           console.error(error);
         }
+      } else if (this.page_type === "detail") {
+        let item = this.proHanleData.approval_options.find(
+          (item) => item.value && item.value === this.approval_form.proc_result
+        );
+        if (item?.value) {
+          result = { ...item };
+        }
       }
       return result;
     },
@@ -1289,9 +1303,31 @@ export default {
           break;
         }
       }
+      if (this.$refs?.procHandler) {
+        // 下一步、操作人、抄送人
+        let procHandler = this.$refs.procHandler;
+        if (Array.isArray(procHandler) && procHandler.length) {
+          procHandler = procHandler[0];
+          let procHandlerModel = null;
+          if (
+            procHandler?.getFormData &&
+            this.procResult &&
+            Object.keys(this.procResult).length > 0
+          ) {
+            procHandlerModel = await procHandler?.getFormData?.();
+            if (!procHandlerModel) {
+              return;
+            }
+          }
+        }
+      }
 
       if (is_draft) {
-        var bxRequests = me.buildApprovalData(proc_result, result_key, "save");
+        var bxRequests = await me.buildApprovalData(
+          proc_result,
+          result_key,
+          "save"
+        );
         //任务自动保存
         if (timerSave) {
           if (this.time_save_cycle == 0) {
@@ -1372,7 +1408,7 @@ export default {
           };
         }
         //
-        var bxRequests = me.buildApprovalData(
+        var bxRequests = await me.buildApprovalData(
           proc_result,
           result_key,
           "submit"
@@ -1408,34 +1444,33 @@ export default {
         if (validate_result) {
           this.$refs[formName][0].validate((valid) => {
             if (valid) {
-              var bxRequests = me.buildApprovalData(
-                proc_result,
-                result_key,
-                "submit"
-              );
-              me.submitStatus = "occupy"; //unwanted 空闲 // occupy 占用
-              //提交流程
-              this.approval(bxRequests).then((response) => {
-                var state = response.body.state;
-                if ("SUCCESS" == state) {
-                  this.$message({
-                    type: "success",
-                    message: "审批成功!",
-                  });
-                  window.location.reload();
-                } else {
-                  this.$message({
-                    type: "error",
-                    message: response.body.resultMessage,
+              me.buildApprovalData(proc_result, result_key, "submit").then(
+                (bxRequests) => {
+                  me.submitStatus = "occupy"; //unwanted 空闲 // occupy 占用
+                  //提交流程
+                  this.approval(bxRequests).then((response) => {
+                    var state = response.body.state;
+                    if ("SUCCESS" == state) {
+                      this.$message({
+                        type: "success",
+                        message: "审批成功!",
+                      });
+                      window.location.reload();
+                    } else {
+                      this.$message({
+                        type: "error",
+                        message: response.body.resultMessage,
+                      });
+                    }
                   });
                 }
-              });
+              );
             }
           });
         }
       }
     },
-    buildApprovalData(proc_result, result_key, submitType) {
+    async buildApprovalData(proc_result, result_key, submitType) {
       var me = this;
       //console.log("buildApprovalData", 1);
       var bxRequests = [];
@@ -1553,6 +1588,31 @@ export default {
           //var childDataFrom = this.getChildDataForm(item, "data");
           if (JSON.stringify(childdata) != "[]") {
             data["child_data_list"] = data["child_data_list"].concat(childdata);
+          }
+        }
+      }
+
+      if (this.$refs?.procHandler) {
+        // 下一步、操作人、抄送人
+
+        let procHandler = this.$refs.procHandler;
+        if (Array.isArray(procHandler) && procHandler.length) {
+          procHandler = procHandler[0];
+          let procHandlerModel = null;
+          if (
+            procHandler?.getFormData &&
+            this.procResult &&
+            Object.keys(this.procResult).length > 0
+          ) {
+            procHandlerModel = await procHandler?.getFormData?.();
+            if (!procHandlerModel) {
+              return;
+            }
+            if (Object.keys(procHandlerModel).length > 0) {
+              Object.keys(procHandlerModel).forEach((key) => {
+                data[key] = procHandlerModel[key];
+              });
+            }
           }
         }
       }
@@ -2259,9 +2319,14 @@ export default {
 
           var formmainData = formData[0];
           mainData = formmainData.data[0];
+          bxRequest["data"].push(mainData);
+          if (this.urgent) {
+            bxRequest["urgentProc"] = "是";
+          } else {
+            bxRequest["urgentProc"] = "否";
+          }
           if (this.$refs?.procHandler) {
             // 下一步、操作人、抄送人
-
             let procHandler = this.$refs.procHandler;
             if (Array.isArray(procHandler) && procHandler.length) {
               procHandler = procHandler[0];
@@ -2277,17 +2342,11 @@ export default {
                 }
                 if (Object.keys(procHandlerModel).length > 0) {
                   Object.keys(procHandlerModel).forEach((key) => {
-                    mainData[key] = procHandlerModel[key];
+                    bxRequest[key] = procHandlerModel[key];
                   });
                 }
               }
             }
-          }
-          bxRequest["data"].push(mainData);
-          if (this.urgent) {
-            bxRequest["urgentProc"] = "是";
-          } else {
-            bxRequest["urgentProc"] = "否";
           }
           break;
         }

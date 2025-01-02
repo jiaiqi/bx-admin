@@ -459,6 +459,11 @@ export default {
      * 直接请求地址
      */
     async addressRequest(item, operateData) {
+      if (item?.select_data === '是' && !operateData.length) {
+        return this.$alert("请选择操作数据", "提示", {
+          confirmButtonText: "确定",
+        });
+      }
       var address = "";
       var back_url = this.url_pre_data_handle(item, operateData);
       if (back_url != "") {
@@ -490,30 +495,32 @@ export default {
                   url,
                   req
                 );
-                if (res?.data?.state === 'SUCCESS' &&  res?.data?.data?.length) {
+                if (res?.data?.state === 'SUCCESS' && res?.data?.data?.length) {
                   const resData = res.data.data[0];
                   address = resData[moreConfig?.urlFromReq?.field];
-                }else{
-                  if(res?.data?.resultMessage){
+                } else {
+                  if (res?.data?.resultMessage) {
                     alert(res.data.resultMessage)
                   }
                   return
                 }
               }
             }
-          } catch (error) {}
+          } catch (error) { }
         }
       }
-      // if ("新TAB" == item.operate_mode) {
+      if (address) {
         window.open(address, "_blank");
-        // this.getFileFromUrl(address,'img').then(file=>{
-        //   let a = document.createElement('a')
-        //   a.download = file.name
-        //   let href = URL.createObjectURL(file)
-        //   a.href = href
-        //   a.click()
-        //   URL.revokeObjectURL(href)
-        // })
+      }
+      // if ("新TAB" == item.operate_mode) {
+      // this.getFileFromUrl(address,'img').then(file=>{
+      //   let a = document.createElement('a')
+      //   a.download = file.name
+      //   let href = URL.createObjectURL(file)
+      //   a.href = href
+      //   a.click()
+      //   URL.revokeObjectURL(href)
+      // })
       // } else {
       //   this.addTabByUrl(address,item.button_name)
       // }
@@ -581,24 +588,21 @@ export default {
             }
           });
         }
-        let detailUrl = `${
-          window.location.origin
-        }/h5/?target_nav_url=${encodeURIComponent(url)}`;
+        let detailUrl = `${window.location.origin
+          }/h5/?target_nav_url=${encodeURIComponent(url)}`;
         if (url?.indexOf("webview://") === 0) {
           url = url.replace("webview://", "");
           url = `/views/public/webview/webview?src=${encodeURIComponent(url)}`;
-          detailUrl = `${
-            window.location.origin
-          }/h5/#/views/public/webview/webview?target_nav_url=${encodeURIComponent(
-            url
-          )}`;
+          detailUrl = `${window.location.origin
+            }/h5/#/views/public/webview/webview?target_nav_url=${encodeURIComponent(
+              url
+            )}`;
         } else if (url?.includes("http")) {
           detailUrl = url;
         }
 
-        const detailUrlImage = `${
-          this.serviceApi().qrcode
-        }?content=${encodeURIComponent(detailUrl)}&width=300`;
+        const detailUrlImage = `${this.serviceApi().qrcode
+          }?content=${encodeURIComponent(detailUrl)}&width=300`;
 
         this.$alert(
           `<p style="text-align:center;"><img src="${detailUrlImage}" style="margin:0 auto;" /></p>`,
@@ -693,7 +697,7 @@ export default {
                 }
               }
             }
-          } catch (error) {}
+          } catch (error) { }
         }
       }
 
@@ -701,11 +705,11 @@ export default {
       if (item && item.more_config) {
         more_config = item.more_config;
       }
-      let divQueryString = this.buildCustomBtnDivCondUrl(item,operateData,mainDetailData)
+      let divQueryString = this.buildCustomBtnDivCondUrl(item, operateData, mainDetailData)
       if (divQueryString) {
-        if(address.indexOf("?") > -1){
+        if (address.indexOf("?") > -1) {
           address += `&${divQueryString}`
-        }else{
+        } else {
           address += `?${divQueryString}`
         }
       }
@@ -717,7 +721,7 @@ export default {
         if (!_tab_title && this.service_view_name) {
           _tab_title = `${item.button_name}(${this.service_view_name})`;
         }
-        if(item.tabTitle){
+        if (item.tabTitle) {
           _tab_title = item.tabTitle;
         }
 
@@ -728,35 +732,35 @@ export default {
       }
     },
     //
-getFileFromUrl(url, fileName) {
-  return new Promise((resolve, reject) => {
-      var blob = null;
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", url);
-      xhr.setRequestHeader('Accept', 'image/jpg');
-      xhr.responseType = "blob";
-      // 加载时处理
-      xhr.onload = () => {
-        // 获取返回结果
+    getFileFromUrl(url, fileName) {
+      return new Promise((resolve, reject) => {
+        var blob = null;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.setRequestHeader('Accept', 'image/jpg');
+        xhr.responseType = "blob";
+        // 加载时处理
+        xhr.onload = () => {
+          // 获取返回结果
           blob = xhr.response;
-          let file= new File([blob], fileName, { type: 'image/jpg' });
+          let file = new File([blob], fileName, { type: 'image/jpg' });
           // 返回结果
           resolve(file);
-      };
-      xhr.onerror = (e) => {
+        };
+        xhr.onerror = (e) => {
           reject(e)
-      };
-      // 发送
-      xhr.send();
-  });
-},
+        };
+        // 发送
+        xhr.send();
+      });
+    },
 
     /**
      * url跳转前置处理
      */
     url_pre_data_handle(item, operateData, mainDetailData) {
       let self = this;
-      if(!top.pathConfig.gateway){
+      if (!top.pathConfig.gateway) {
         top.pathConfig.gateway = window.backendIpAddr
       }
       var back_url = "";
@@ -777,13 +781,12 @@ getFileFromUrl(url, fileName) {
           if (back_url.indexOf("?") == -1) {
             opt = "?";
           }
-          back_url = `${back_url}${opt}srvApp=${
-            this.$srvApp
+          back_url = `${back_url}${opt}srvApp=${this.$srvApp
               ? this.$srvApp
               : item.application && item.application !== "this"
-              ? item.application
-              : ""
-          }`;
+                ? item.application
+                : ""
+            }`;
         }
       }
       return back_url;
@@ -838,14 +841,14 @@ getFileFromUrl(url, fileName) {
       if ("列表弹出" == operate_type) {
         params.formType = "list";
 
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else if ("详情弹出" == operate_type) {
         params.formType = "detail";
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else if ("增加弹出" == operate_type) {
         // params.formType= "simple-add";
         params.formType = "add";
-        if(operateData?.length){
+        if (operateData?.length) {
           params.listRowData = operateData[0]
         }
         this.popupDialog(params, callback);
@@ -856,17 +859,17 @@ getFileFromUrl(url, fileName) {
         otherParams["buttonInfo"] = item;
         params["otherParams"] = otherParams;
         otherParams["initOrigin"] = "dialog";
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else if ("编辑列表弹出" == operate_type) {
         params.formType = "editgrid";
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else if ("选择填充表格" == operate_type) {
         // 曹鹏开发 批量添加 已弃用
         params.formType = "select_fill_grid";
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else if ("树列表弹出" == operate_type) {
         params.formType = "treegrid";
-        this.popupDialog(params,callback);
+        this.popupDialog(params, callback);
       } else {
         alert(operate_type + ":暂未实现");
       }

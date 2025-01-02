@@ -16,8 +16,8 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "yanxueOpen"; //研学外网
   // const ENV = "yanxueDev";
   // const ENV = "saas";
-  // const ENV = "gaosu111";
-  const ENV = "xixiang";
+  const ENV = "gaosu111";
+  // const ENV = "xixiang";
   // const ENV = "244";
   // const ENV = "244";
   // const ENV = 'gaosudev'

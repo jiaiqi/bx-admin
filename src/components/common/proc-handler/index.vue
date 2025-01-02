@@ -1,13 +1,19 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="80px">
     <el-row type="flex" class="el-row" justify="start" v-if="procResult">
-      <el-col :xs="24" :sm="10" :md="8" :lg="6" :xl="4">
+      <!-- :xs="24"
+        :sm="10"
+        :md="8"
+        :lg="6"
+        :xl="4" -->
+      <el-col :span="24" v-if="stepOptions && stepOptions.length">
         <el-form-item
           label="下一步"
+          label-width="10rem"
           v-if="stepOptions && stepOptions.length"
           prop="next_step"
         >
-          <el-select v-model="form.next_step" placeholder="请选择活动区域">
+          <el-select v-model="form.next_step" placeholder="请选择下一步操作">
             <el-option
               :label="item.label"
               :value="item.value"
@@ -17,16 +23,26 @@
           </el-select>
         </el-form-item>
       </el-col>
-      <el-col :xs="24" :sm="10" :md="8" :lg="6" :xl="4">
+      <el-col
+        :span="24"
+        v-if="
+          procResult.next_handle_user && procResult.next_handle_user.serviceName
+        "
+      >
         <el-form-item
           label="处理人"
+          label-width="10rem"
           v-if="
             procResult.next_handle_user &&
             procResult.next_handle_user.serviceName
           "
           prop="next_handle_user"
         >
-          <el-select v-model="form.next_handle_user" placeholder="请选择处理人">
+          <el-select
+            v-model="form.next_handle_user"
+            multiple
+            placeholder="请选择处理人"
+          >
             <el-option
               :label="item.label"
               :value="item.value"
@@ -36,13 +52,17 @@
           </el-select>
         </el-form-item>
       </el-col>
-      <el-col :xs="24" :sm="10" :md="8" :lg="6" :xl="4">
+      <el-col
+        :span="24"
+        v-if="procResult.cc_user && procResult.cc_user.serviceName"
+      >
         <el-form-item
-          label="抄送"
+          label="抄送人"
+          label-width="10rem"
           v-if="procResult.cc_user && procResult.cc_user.serviceName"
           prop="cc_user"
         >
-          <el-select v-model="form.cc_user" placeholder="请选择抄送人">
+          <el-select v-model="form.cc_user" multiple placeholder="请选择抄送人">
             <el-option
               :label="item.label"
               :value="item.value"
@@ -102,15 +122,20 @@ export default {
             if (this.form.next_step) {
               result.next_step = this.form.next_step;
             }
-            if (this.form.next_handle_user) {
-              result.next_handle_user = this.handleUserList.find(
-                (item) => item.value === this.form.next_handle_user
-              )?._raw_value;
+            if (
+              Array.isArray(this.form.next_handle_user) &&
+              this.form.next_handle_user.length
+            ) {
+              result.next_handle_user = this.handleUserList
+                .filter((item) =>
+                  this.form.next_handle_user.includes(item.value)
+                )
+                ?.map?.((item) => item._raw_value);
             }
-            if (this.form.cc_user) {
-              result.cc_user = this.ccUserList.find(
-                (item) => this.form.cc_user === item.value
-              )?._raw_value;
+            if (Array.isArray(this.form.cc_user) && this.form.cc_user.length) {
+              result.cc_user = this.ccUserList
+                .filter((item) => this.form.cc_user.includes(item.value))
+                ?.map?.((item) => item._raw_value);
             }
             resolve(result);
           } else {
@@ -238,12 +263,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-form > .el-row {
+  border: none;
+}
 .el-row {
   flex-wrap: wrap;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  // padding-top: 20px;
+  // padding-bottom: 20px;
   ::v-deep .el-form-item {
-    margin-bottom: 0;
+    // margin-bottom: 0;
   }
 }
 </style>
