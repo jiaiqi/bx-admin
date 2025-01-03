@@ -2406,7 +2406,7 @@ export default {
               pageType: "list_page",
               vpageNo: this.vpageNo,
               srvAuth: srvAuth,
-            })
+            },this)
               .then((response) => {
                 console.log('divCond',divCond);
                 

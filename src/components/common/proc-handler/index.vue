@@ -265,13 +265,13 @@ export default {
     }
     if (this.procResult?.cc_user?.serviceName) {
       this.getCCUserList();
-      rules.cc_user = [
-        {
-          // required: true,
-          message: "请选择抄送人",
-          trigger: "blur",
-        },
-      ];
+      // rules.cc_user = [
+      //   {
+      //     // required: true,
+      //     message: "请选择抄送人",
+      //     trigger: "blur",
+      //   },
+      // ];
     }
     this.rules = rules;
   },

@@ -82,6 +82,16 @@ export const resolveDefaultSrvApp = function (vm = {}) {
   }
   return app;
 };
+export function findParentHasPageInstance(vm) {
+  if(!vm){
+    return
+  }
+  if (vm?.procPageInstance) return vm.procPageInstance
+  if (vm?.$parent) {
+    return findParentHasPageInstance(vm.$parent)
+  }
+  return
+}
 
 export const doSelect = function (option = {}, vm = {}) {
   const {
@@ -116,8 +126,13 @@ export const doSelect = function (option = {}, vm = {}) {
     vpage_no: vpageNo,
     use_type: useType, //2023.10.20增加use_type参数 解决行按钮权限丢失问题
   };
-  if(!divCondition&&option.divCond){
-    query["divCond"]  = option.divCond;
+  let proc_page_instance = findParentHasPageInstance(vm)
+  if (proc_page_instance) {
+    console.log('proc_page_instance:', proc_page_instance, query);
+    query.proc_page_instance = proc_page_instance
+  }
+  if (!divCondition && option.divCond) {
+    query["divCond"] = option.divCond;
   }
   if (divCondition) {
     query["divCond"] = divCondition;

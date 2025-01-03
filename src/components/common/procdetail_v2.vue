@@ -1152,6 +1152,7 @@ export default {
       validateFun: new Function("return " + this.validateFunOpertion),
       opinion: null,
       onFormLoading: true,
+      procPageInstance: null,
     };
   },
   computed: {
@@ -2047,6 +2048,9 @@ export default {
         await this.select(proc_basic_srv, condition).then((response) => {
           var respData = response.body;
           if (respData.state == "SUCCESS") {
+            if (respData.vpage_no) {
+              this.procPageInstance = respData.vpage_no;
+            }
             this.proc_basic = response.body.proc_basic;
             this.proCharData = response.body.proCharData;
 
@@ -2161,6 +2165,9 @@ export default {
         ];
         //
         await this.select(proc_basic_srv, condition).then((response) => {
+          if (response.body.vpage_no) {
+            this.procPageInstance = response.body.vpage_no;
+          }
           this.proCharData = response.body.proCharData;
           let hanleDatas = response.body.proHanleData;
 

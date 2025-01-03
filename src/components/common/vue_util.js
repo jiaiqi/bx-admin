@@ -46,13 +46,12 @@ function init_util() {
       if (no.indexOf("&bx_auth_ticket") !== -1) {
         no = no.split("&bx_auth_ticket")[0];
       }
-      let url = `${
-        serviceApi.imageFileNo
-      }${no}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+      let url = `${serviceApi.imageFileNo
+        }${no}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
       // if (notThumb === false) {
       //   url += `&thumbnailType=fwsu_100`
       // }
-      if(location.href?.includes('lowcode-grid/editor/')){
+      if (location.href?.includes('lowcode-grid/editor/')) {
         // 可视化编辑页面，图片后缀增加时间戳，避免缓存
         url += `&t=${new Date().getTime()}`
       }
@@ -606,9 +605,9 @@ function init_util() {
   Vue.prototype.getFileType = function (e) {
     let types = {
       img: ["jpg", "JPG", "PNG", "JPEG", "jpeg", "png", "bmp", "tiff"],
-      doc: ["xlsx", "xls", "xlsm", "docx", "doc", "wps", "ppt",'pptx'],
+      doc: ["xlsx", "xls", "xlsm", "docx", "doc", "wps", "ppt", 'pptx'],
       pdf: ["pdf"],
-      ppt:['ppt','pptx'],
+      ppt: ['ppt', 'pptx'],
       media: ["mp3", "mp4", "avi", "mov", "mkv", "wav"],
     };
     let type = "more";
@@ -621,8 +620,6 @@ function init_util() {
         }
       }
     }
-    console.log('type:',e,type);
-    
     return type;
   };
   Vue.prototype.selectFileList = function (file_no) {
@@ -644,15 +641,29 @@ function init_util() {
       colName: "seq",
       orderType: "asc"
     }]
-    return this.doSelect(url, serviceName, condition,null,order);
+    return this.doSelect(url, serviceName, condition, null, order);
   };
 
   /**查询列表*/
   Vue.prototype.selectList = function (query, app) {
     let service_name = query.serviceName;
     let url = this.getServiceUrl("select", service_name, app);
+    let proc_page_instance = findParentHasPageInstance(this)
+    if(proc_page_instance){
+      console.log('proc_page_instance:', proc_page_instance,query);
+      query.proc_page_instance = proc_page_instance
+    }
     return this.$http.post(url, query);
   };
+
+  function findParentHasPageInstance(vm) {
+    console.log(vm.procPageInstance,'findParentHasPageInstance');
+    if (vm.procPageInstance) return vm.procPageInstance
+    if (vm.$parent) {
+      return findParentHasPageInstance(vm.$parent)
+    }
+    return
+  }
 
   /**查询*/
   Vue.prototype.doSelect = function (
@@ -685,6 +696,11 @@ function init_util() {
       vpage_no: vpageNo,
       use_type: use_type, //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
+    let proc_page_instance = findParentHasPageInstance(this)
+    if(proc_page_instance){
+      console.log('proc_page_instance:', proc_page_instance,query);
+      query.proc_page_instance = proc_page_instance
+    }
     if (divCondition) {
       query["divCond"] = divCondition;
     } else if (
@@ -799,6 +815,11 @@ function init_util() {
       page: page,
       order: order,
     };
+    let proc_page_instance = findParentHasPageInstance(this)
+    if(proc_page_instance){
+      console.log('proc_page_instance:', proc_page_instance,params);
+      params.proc_page_instance = proc_page_instance
+    }
     if (pageType && pageType === "list_page") {
       params["query_source"] = "list_page";
     }
@@ -839,6 +860,11 @@ function init_util() {
     if (pageType && pageType === "list_page") {
       params["query_source"] = "list_page";
     }
+    let proc_page_instance = findParentHasPageInstance(this)
+    if(proc_page_instance){
+      console.log('proc_page_instance:', proc_page_instance,params);
+      params.proc_page_instance = proc_page_instance
+    }
     url = url + "?" + service_name;
     return this.$http.post(url, params);
   };
@@ -853,6 +879,11 @@ function init_util() {
       condition: condition,
       use_type: "treelist", //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
+    let proc_page_instance = findParentHasPageInstance(this)
+    if(proc_page_instance){
+      console.log('proc_page_instance:', proc_page_instance,params);
+      params.proc_page_instance = proc_page_instance
+    }
     url = url + "?" + service_name;
     return this.$http.post(url, params);
   };
@@ -878,7 +909,7 @@ function init_util() {
     if (divCond) {
       try {
         divCond = JSON.parse(decodeURIComponent(divCond));
-      } catch (error) {}
+      } catch (error) { }
       if (Array.isArray(divCond) && divCond.length) {
         if (divCond.length) {
           params["divCond"] = divCond;
@@ -1039,12 +1070,12 @@ function init_util() {
       (file.hasOwnProperty("_dl_auth") && file["_dl_auth"])
     ) {
       let url = self.serviceApi().downloadFile + file.fileurl;
-      if(file.fileurl?.indexOf('http')===0){
+      if (file.fileurl?.indexOf('http') === 0) {
         url = file.fileurl
-        if(top.location.protocol?.includes('https')&&url?.includes('https')===false){
-          url = url.replace("http://",'https://')
+        if (top.location.protocol?.includes('https') && url?.includes('https') === false) {
+          url = url.replace("http://", 'https://')
         }
-        if(top.location.protocol?.includes('https')&&url?.indexOf('http')===0 &&url?.indexOf('https')!==0){
+        if (top.location.protocol?.includes('https') && url?.indexOf('http') === 0 && url?.indexOf('https') !== 0) {
           // url = url.replace("http://",'https://')
           url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(url)}`
         }
@@ -1625,7 +1656,7 @@ function init_util() {
                 list.form.append.push(child);
               }
             }
-          } catch (error) {}
+          } catch (error) { }
         } else {
           if (config) {
             config = JSON.parse(config);
@@ -2436,11 +2467,11 @@ function init_util() {
         }
         return JSON.parse(
           '{"' +
-            decodeURIComponent(search)
-              .replace(/"/g, '\\"')
-              .replace(/&/g, '","')
-              .replace(/=/g, '":"') +
-            '"}'
+          decodeURIComponent(search)
+            .replace(/"/g, '\\"')
+            .replace(/&/g, '","')
+            .replace(/=/g, '":"') +
+          '"}'
         );
       };
       const obj = queryString2Obj(url);
@@ -2522,7 +2553,7 @@ function init_util() {
             return obj;
           });
         }
-      } catch (error) {}
+      } catch (error) { }
     }
     return result;
   };

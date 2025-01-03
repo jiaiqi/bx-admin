@@ -460,7 +460,7 @@
                   class="list-image"
                 >
                   <div
-                    style="display: flex;align-items: center;"
+                    style="display: flex; align-items: center"
                     :title="fileItem.src_name"
                     v-for="(fileItem, index) in getListFileDatas(
                       item,
@@ -471,11 +471,11 @@
                     <i
                       v-show="
                         getFileType(fileItem) === 'img' ||
-                        getFileType(fileItem) === 'pdf'||
+                        getFileType(fileItem) === 'pdf' ||
                         getFileType(fileItem) === 'ppt'
                       "
                       title="预览"
-                      style="cursor: pointer;"
+                      style="cursor: pointer"
                       class="el-icon-view"
                       @click.stop="
                         onPreView(
@@ -768,9 +768,18 @@
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
+      :show-close="false"
       :visible="activeForm == 'add'"
       @close="closeDialog"
     >
+      <!-- <template #title>
+      <div class="flex justify-between pr-5">
+        <div>添加</div>
+        <div>
+
+        </div>
+      </div>
+     </template> -->
       <add
         name="list-add"
         :mainService="mainService"
@@ -786,9 +795,16 @@
         :parentPageType="listType"
         :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)"
+        @executor-complete="onAddExecutorComplete($event)"
         @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
+        @close-dialog="closeDialog"
       >
+        <template #dialog-title>
+          <div class="flex justify-between pr-5">
+            <div>添加</div>
+          </div>
+        </template>
       </add>
       <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
@@ -1426,10 +1442,10 @@ export default {
       this.listStyle = type;
     },
     buildDivCond() {
-      let divCond = null
+      let divCond = null;
       if (this.divCond?.length) {
         divCond = this.divCond;
-      }else if (this.listType === "list") {
+      } else if (this.listType === "list") {
         if (
           this.$route.query?.divCol &&
           this.$route.query?.divStartVal &&
@@ -1449,22 +1465,22 @@ export default {
       } else if (this.listType === "detaillist") {
         // 详情子表
         if (this.childForeignkey?.more_config?.includes("divCond")) {
-           divCond = this.buildCustomBtnDivCond(
+          divCond = this.buildCustomBtnDivCond(
             this.childForeignkey,
             null,
             this.listMainFormDatas
           );
         }
       }
-      console.log("divCond", divCond);;
-      
+      console.log("divCond", divCond);
+
       return divCond;
     },
     openHtml(val) {
       const h = this.$createElement;
       this.$msgbox({
         title: "详情",
-        center:true,
+        center: true,
         fullscreen: true,
         customClass: "message-box",
         message: h("p", {
@@ -1479,8 +1495,8 @@ export default {
         confirmButtonText: "确定",
       });
     },
-    closeDialog(){
-      this.activeForm = ''
+    closeDialog() {
+      this.activeForm = "";
     },
     srvAuthSuccess(e) {
       console.log(e);
@@ -1540,12 +1556,12 @@ export default {
         //console.log(viewer,imgIndex,viewer2,self.$refs.viewer)
         viewer.show();
       } else if (
-        ["pdf", "jpg", "png", "gif",'JPG','ppt','pptx'].includes(fileType)
+        ["pdf", "jpg", "png", "gif", "JPG", "ppt", "pptx"].includes(fileType)
       ) {
-        if((fileType==='pptx' || fileType==='ppt') && file.fileurl){
-          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.fileurl}`
+        if ((fileType === "pptx" || fileType === "ppt") && file.fileurl) {
+          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.fileurl}`;
           this.addTabByUrl(previewUrl, "文件预览");
-        }else if (fileType === "pdf") {
+        } else if (fileType === "pdf") {
           self.handlePreview(file);
         } else {
           this.currentUrl = file.url;
@@ -1571,16 +1587,22 @@ export default {
       if (!file.hasOwnProperty("url")) {
         file.url = file.fileurl;
       }
-      if(top.location.protocol?.includes('https')&&file.url?.indexOf('http')===0 &&file.url?.indexOf('https')!==0){
+      if (
+        top.location.protocol?.includes("https") &&
+        file.url?.indexOf("http") === 0 &&
+        file.url?.indexOf("https") !== 0
+      ) {
         // file.url = file.url.replace("http://",'https://')
-        file.url = `${window.backendIpAddr}/file/forward?targetUrl=${encodeURIComponent(file.url)}`
+        file.url = `${
+          window.backendIpAddr
+        }/file/forward?targetUrl=${encodeURIComponent(file.url)}`;
       }
-      if(fileType==='ppt' && file.url){
-        const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`
+      if (fileType === "ppt" && file.url) {
+        const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
         this.addTabByUrl(previewUrl, "文件预览");
-      }else if (file.url.toLowerCase().endsWith(".pdf")) {
+      } else if (file.url.toLowerCase().endsWith(".pdf")) {
         let url = file.url;
-        if(file.url.indexOf('http')!==0 && file.fileurl){
+        if (file.url.indexOf("http") !== 0 && file.fileurl) {
           url = this.serviceApi().downloadFile + file.fileurl;
         }
         let currLocation = window.location.href;
@@ -1660,7 +1682,7 @@ export default {
 <style>
 .message-box {
   /* width: max(40vw, 500px) !important; */
-  width: 100vw!important;
+  width: 100vw !important;
   height: 100vh;
 }
 
