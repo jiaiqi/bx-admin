@@ -127,6 +127,10 @@ export default {
 </script>
 
 <style lang="scss">
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
 html {
   height: 100%;
   margin: 0;
