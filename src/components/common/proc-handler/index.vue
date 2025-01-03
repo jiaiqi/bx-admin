@@ -23,6 +23,7 @@
             v-model="form.next_step"
             placeholder="请选择下一步操作"
             style="width: 100%"
+            @change="getHandleUserList"
           >
             <el-option
               :label="item.label"
@@ -189,6 +190,18 @@ export default {
           rownumber: this.handleUserPage.rownumber,
         },
       };
+      if(this.form.next_step){
+        const next = this.stepOptions.find(item => item.value === this.form.next_step)
+        if(next?.value){
+          console.log(next);
+          
+          req.condition.push({
+            colName: "step_str",
+            value: next.label,
+            ruleType: "eq",
+          });
+        }
+      }
       const res = await this.$http.post(url, req);
       if (res.data.state === "SUCCESS") {
         this.handleUserPage.total = res.data.page.total;

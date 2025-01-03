@@ -127,6 +127,8 @@ export default {
     },
 
     onAddFormActionComplete(action) {
+      console.log('onAddFormActionComplete', action);
+      
       if (action == 'submit' || action == 'save_draft') {
         this.activeForm = null;
       }

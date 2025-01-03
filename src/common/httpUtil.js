@@ -41,6 +41,7 @@ export const onFetch = async (
     useType: "list",
     rdt: false,
     divCondition: null,
+    isDraft:false
   },
   vm = {}
 ) => {
@@ -112,6 +113,7 @@ export const doSelect = function (option = {}, vm = {}) {
     useType,
     rdt,
     divCondition,
+    isDraft
   } = option;
   const defaultApp = app || resolveDefaultSrvApp(vm);
   let url = `${window.backendIpAddr}/${app}/select/${service_name}`;
@@ -125,6 +127,7 @@ export const doSelect = function (option = {}, vm = {}) {
     draft: draft,
     vpage_no: vpageNo,
     use_type: useType, //2023.10.20增加use_type参数 解决行按钮权限丢失问题
+    draft:isDraft
   };
   let proc_page_instance = findParentHasPageInstance(vm)
   if (proc_page_instance) {

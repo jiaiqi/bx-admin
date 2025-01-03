@@ -768,7 +768,7 @@
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
-      :show-close="false"
+      :show-close="true"
       :visible="activeForm == 'add'"
       @close="closeDialog"
     >
@@ -795,7 +795,6 @@
         :parentPageType="listType"
         :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)"
-        @executor-complete="onAddExecutorComplete($event)"
         @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
         @close-dialog="closeDialog"
