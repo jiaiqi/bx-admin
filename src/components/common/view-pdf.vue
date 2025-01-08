@@ -1,9 +1,18 @@
 <template>
+  <div
+    v-if="loading"
+    style="width: 100vw; height: calc(100vh - 20px)"
+    v-loading="loading"
+    element-loading-text="拼命加载中"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
+  ></div>
   <iframe
     :src="pdfsrc"
     frameborder="0"
     id="pdf-viewer"
-    style="width: 100%; height: calc(100vh - 20px)"
+    style="width: 100vw; height: calc(100vh - 20px)"
+    v-else
   ></iframe>
 </template>
 
@@ -13,6 +22,7 @@ export default {
     return {
       dowloadpdfsrc: "",
       pdfsrc: "",
+      loading: false,
     };
   },
   methods: {
@@ -63,12 +73,15 @@ export default {
     },
 
     loadPdf(url) {
+      this.loading = true;
       this.urlToBlobUrl(url)
         .then((blobUrl) => {
           this.pdfsrc = blobUrl;
+          this.loading = false;
         })
         .catch((error) => {
           console.error("Failed to load PDF:", error);
+          this.loading = false;
         });
       // this.urlToBase64(url).then((base64String) => {
       //   this.pdfsrc = `data:application/pdf;base64,${base64String}`;
@@ -143,4 +156,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+::v-deep .el-loading-spinner {
+  .circular {
+    display: inline-block;
+  }
+}
+</style>
