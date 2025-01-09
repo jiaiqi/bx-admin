@@ -2,6 +2,10 @@ importScripts('spark-md5.min.js')
 // 创建文件切片
 function createFileChunk(file, chunkSize) {
   return new Promise((resolve, reject) => {
+    if (chunkSize <= 0) {
+      reject(new Error('Invalid chunk size'));
+      return;
+    }
     let fileChunkList = []
     let cur = 0
     while (cur < file.size) {
@@ -9,10 +13,65 @@ function createFileChunk(file, chunkSize) {
       fileChunkList.push({ chunkFile: file.slice(cur, cur + chunkSize) })
       cur += chunkSize
     }
-    // 返回全部文件切片
+   // 返回全部文件切片
     resolve(fileChunkList)
   })
 }
+
+// // 创建文件切片并计算每个切片的MD5
+// async function createFileChunk(file, chunkSize) {
+//   return new Promise((resolve, reject) => {
+//     if (chunkSize <= 0) {
+//       reject(new Error('Invalid chunk size'));
+//       return;
+//     }
+
+//     try {
+//       let fileChunkList = [];
+
+//       const promises = [];
+//       for (let cur = 0; cur < file.size; cur += chunkSize) {
+//         const chunkFile = file.slice(cur, cur + chunkSize);
+//         const reader = new FileReader();
+
+//         const promise = new Promise((resolve, reject) => {
+//           reader.onload = (e) => {
+//             try {
+//               const spark = new SparkMD5.ArrayBuffer();
+//               spark.append(e.target.result);
+//               const chunkMD5 = spark.end();
+//               fileChunkList.push({ chunkFile, chunkMD5 });
+//               resolve();
+//             } catch (err) {
+//               reject(err);
+//             } finally {
+//               reader.abort(); // 确保 FileReader 被正确释放
+//             }
+//           };
+
+//           reader.onerror = (err) => {
+//             reject(err);
+//           };
+
+//           reader.readAsArrayBuffer(chunkFile);
+//         });
+
+//         promises.push(promise);
+//       }
+
+//       Promise.all(promises)
+//         .then(() => {
+//           resolve(fileChunkList);
+//         })
+//         .catch((err) => {
+//           reject(err);
+//         });
+//     } catch (err) {
+//       reject(err);
+//     }
+//   });
+// }
+
 
 // 加载并计算文件切片的MD5
 async function calculateChunksHash(fileChunkList) {
@@ -37,7 +96,6 @@ async function calculateChunksHash(fileChunkList) {
       reader.onload = (e) => {
         count++
         spark.append(e.target.result)
-
         // 更新进度并处理下一个切片
         percentage += 100 / fileChunkList.length
         self.postMessage({ percentage }) // 发送进度到主线程

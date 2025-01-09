@@ -220,7 +220,7 @@ export default {
                 document.getElementById("myDialog").showModal();
                 that.percentage = 0;
                 const { url } = await that.handelUploadBigFile(file, {
-                  fileChunkSize: that.fileChunkSize,
+                  chunkSize: that.fileChunkSize,
                   maxRequest: that.uploadMaxRequest,
                   onHashProgress: (percentage) => {
                     that.hashPercentage = percentage;

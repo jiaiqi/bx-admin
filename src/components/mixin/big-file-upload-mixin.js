@@ -16,7 +16,6 @@ async function uploadFile(formdata) {
   // console.log(res, '-----uploadFileRes');
   return res?.data
 }
-let uploadId = '' //本次上传的唯一标识
 export default {
   data() {
     return {
@@ -27,13 +26,13 @@ export default {
       // 请求最大并发数
       maxRequest: 6,
       onUploadProgress: null,
-      onUploadSuccess:null,
-      onHashProgress:null
+      onUploadSuccess: null,
+      onHashProgress: null
     }
   },
   methods: {
     async handelUploadBigFile(file, cfg = {}) {
-      const { chunkSize, onUploadProgress ,onUploadSuccess,onHashProgress,maxRequest} = cfg
+      const { chunkSize, onUploadProgress, onUploadSuccess, onHashProgress, maxRequest } = cfg
       if (onUploadProgress) { //  上传进度
         this.onUploadProgress = onUploadProgress
       }
@@ -43,16 +42,17 @@ export default {
       if (onHashProgress) { // hash值计算进度
         this.onHashProgress = onHashProgress
       }
-      if(maxRequest){ // 并发数
+      if (maxRequest) { // 并发数
         this.maxRequest = maxRequest
       }
       if (chunkSize) { // 分片大小
         this.chunkSize = chunkSize
       }
       // 单个上传文件
-      uploadId = new Date().getTime()
+      const uploadId = this.getUuid()
       let inTaskArrItem = {
-        id: new Date().getTime(), // 因为forEach是同步，所以需要用指定id作为唯一标识
+        id: uploadId, // 唯一标识
+        uploadId,
         state: 0, // 0不做任何处理，1是计算hash中，2是正在上传中，3是上传完成，4是上传失败，5是上传取消
         fileHash: '',
         fileName: file.name,
@@ -76,7 +76,7 @@ export default {
       // 计算文件hash
       const { fileHash, fileChunkList } = await this.useWorker(file)
 
-      console.log(fileHash, '文件hash计算完成')
+      console.log(fileHash, '文件hash计算完成',fileChunkList)
       this.$message.info('文件hash计算完成')
       // 解析完成开始上传文件
       let baseName = ''
@@ -91,7 +91,7 @@ export default {
 
       // 这里要注意！可能同一个文件，是复制出来的，出现文件名不同但是内容相同，导致获取到的hash值也是相同的
       // 所以文件hash要特殊处理
-      inTaskArrItem.fileHash = `${fileHash}${baseName}`
+      inTaskArrItem.fileHash = `${fileHash}`
       inTaskArrItem.state = 2
       console.log(stateMap[inTaskArrItem.state]);
       this.$message.info(stateMap[inTaskArrItem.state])
@@ -99,7 +99,7 @@ export default {
       inTaskArrItem.allChunkList = fileChunkList.map((item, index) => {
         return {
           // 总文件hash
-          fileHash: `${fileHash}${baseName}`,
+          fileHash: `${fileHash}`,
           // 总文件size
           fileSize: file.size,
           // 总文件name
@@ -108,9 +108,9 @@ export default {
           // 切片文件本身
           chunkFile: item.chunkFile,
           // 单个切片hash,以 - 连接
-          chunkHash: `${fileHash}-${index}`,
+          chunkHash: item.chunkMD5,
           // 切片文件大小
-          chunkSize: this.chunkSize,
+          chunkSize: item.chunkSize,
           // 切片个数
           chunkNumber: fileChunkList.length,
           // 切片是否已经完成
@@ -128,12 +128,12 @@ export default {
       const that = this
       return new Promise((resolve) => {
         const worker = new Worker('./hash-worker.js')
-        worker.postMessage({ file, chunkSize: this.chunkSize })
+        worker.postMessage({ file, chunkSize: that.chunkSize })
         worker.onmessage = (e) => {
           const { fileHash, fileChunkList } = e.data
           // console.log('useWorker:',e?.data?.percentage);
-          if(e?.data?.percentage && typeof that.onHashProgress === 'function'){
-            that.onHashProgress?.(e?.data?.percentage)
+          if (e?.data?.percentage && typeof that.onHashProgress === 'function') {
+            that.onHashProgress?.(Math.round(e?.data?.percentage))
           }
           if (fileHash) {
             resolve({
@@ -179,7 +179,7 @@ export default {
       }
       return new Promise((resolve, reject) => {
         // 单个分片请求
-        const uploadChunk = async (needObj) => {
+        const uploadChunk = async (needObj, uploadId) => {
           const fd = new FormData()
           const {
             fileHash,
@@ -220,7 +220,7 @@ export default {
               taskArrItem.state = 4
             } else {
               console.log('切片上传失败还没超过3次')
-              uploadChunk(needObj) // 失败了一片,继续当前分片请求
+              uploadChunk(needObj, uploadId) // 失败了一片,继续当前分片请求
             }
           } else if (res.state === 'SUCCESS') {
             if (res.data.message) {
@@ -253,14 +253,14 @@ export default {
         }
         // 开始上传单个切片
         for (const item of whileRequest) {
-          uploadChunk(item)
+          uploadChunk(item, taskArrItem.id)
         }
       })
 
     },
 
     async mergeChunk(data) {
-      const { fileName, fileHash, chunkNumber } = data
+      const { fileName, fileHash, chunkNumber, uploadId } = data
       const url = `/file/merge`
       const req = {
         uploadId,// 分片上传任务ID
@@ -283,7 +283,8 @@ export default {
         chunkSize: this.chunkSize,
         fileName,
         fileHash,
-        chunkNumber
+        chunkNumber,
+        uploadId: taskArrItem.id
       }).catch((err) => {
         console.log(err);
       })
@@ -317,8 +318,8 @@ export default {
         ((taskArrItem.finishNumber / needObj.chunkNumber) * 100).toFixed(2)
       )
       console.log('单个文件进度条', taskArrItem.percentage);
-      if(typeof this.onUploadProgress === 'function'){
-        this.onUploadProgress?.(taskArrItem.percentage, taskArrItem.file)
+      if (typeof this.onUploadProgress === 'function') {
+        this.onUploadProgress?.(Math.round(taskArrItem.percentage), taskArrItem.file)
       }
     },
     // 设置单个文件上传已完成
