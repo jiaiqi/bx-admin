@@ -657,7 +657,6 @@ function init_util() {
   };
 
   function findParentHasPageInstance(vm) {
-    console.log(vm.procPageInstance,'findParentHasPageInstance');
     if (vm.procPageInstance) return vm.procPageInstance
     if (vm.$parent) {
       return findParentHasPageInstance(vm.$parent)

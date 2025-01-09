@@ -125,7 +125,7 @@
               "
             >
             </wang-editor>
-            <!-- <TinymceEditor
+            <TinymceEditor
               :disabled="getDisabled"
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -133,8 +133,8 @@
                 $emit('field-value-changed', field.info.name, field)
               "
               ref="editor"
-            ></TinymceEditor> -->
-            <ueditor
+            ></TinymceEditor>
+            <!-- <ueditor
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
               @field-changed="
@@ -142,7 +142,7 @@
               "
               ref="editor"
             >
-            </ueditor>
+            </ueditor> -->
 
             <!-- temporal -->
             <el-date-picker
@@ -733,7 +733,7 @@ import InputRange from "../ui/input-range.vue";
 import Finder from "../ui/finder.vue";
 import multiFinder from "../ui/multi-finder.vue";
 import UEditor from "../ui/ueditor.vue";
-// import TinymceEditor from "./tinymce/index.vue";
+import TinymceEditor from "./tinymce/index.vue";
 // import UploadFile from "../ui/upload-file.vue";
 import UploadImage from "../ui/upload-image.vue";
 import TreeFinder from "../ui/tree-finder.vue";
@@ -769,7 +769,7 @@ export default {
     wangEditor,
     // tiptapEditor,
     ueditor: UEditor,
-    // TinymceEditor,
+    TinymceEditor,
     QrCode,
     multiFinder,
     dynamicSubTemp,
