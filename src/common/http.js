@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "audDev";
   // const ENV = "yanxueOpen"; //研学外网
   // const ENV = "yanxueDev";
-  const ENV = "saas";
+  // const ENV = "saas";
   // const ENV = "gaosu111";
   // const ENV = "xixiang";
   // const ENV = "244";
@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = 'gaosudev'
   // const ENV = 'yanxueOpen1'
   // const ENV = 'healthProd'
-  // const ENV = 'healthDev'
+  const ENV = 'healthDev'
 
   const pathConfig = pathConfigMap[ENV];
   if(location.href?.includes?.('menuapp=')){

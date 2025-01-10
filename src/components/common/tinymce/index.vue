@@ -14,7 +14,9 @@
         :text-inside="true"
         :stroke-width="24"
         :percentage="hashPercentage"
-        :format="(percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`"
+        :format="
+          (percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
+        "
         v-if="hashPercentage && hashPercentage < 100"
       ></el-progress>
       <el-progress
@@ -215,7 +217,7 @@ export default {
               console.log("file_picker_callback", file);
               let fileUrl;
               const fileSize = file.size / 1024 / 1024; // 单位为MB
-              if (fileSize > 50) {
+              if (that.useSplitChuck && fileSize > 50) {
                 // 大于50M 使用分片上传
                 document.getElementById("myDialog").showModal();
                 that.percentage = 0;

@@ -38,12 +38,12 @@
       v-loading="loading"
     >
       <!-- 使用element-ui自带样式 -->
-      <ul class="el-upload-list el-upload-list--picture-card">
+      <!-- <ul class="el-upload-list el-upload-list--picture-card">
         <draggable v-model="fileLists" @end="onDragEnd" animation="300">
           <transition-group>
             <li
               v-for="(item, index) in fileLists"
-              :key="item.id"
+              :key="index"
               class="el-upload-list__item is-success animated"
             >
               <img
@@ -53,14 +53,12 @@
               />
               <i class="el-icon-close"></i>
               <span class="el-upload-list__item-actions">
-                <!-- 预览 -->
                 <span
                   class="el-upload-list__item-preview"
                   @click="handlePictureCardPreviewFileDetail(item)"
                 >
                   <i class="el-icon-zoom-in"></i>
                 </span>
-                <!-- 删除 -->
                 <span
                   class="el-upload-list__item-delete"
                   @click="handleRemoveFileDetail(item, fileLists)"
@@ -71,8 +69,8 @@
             </li>
           </transition-group>
         </draggable>
-      </ul>
-      <div
+      </ul> -->
+      <!-- <div
         :class="{
           'display-none': limit && fileLength && fileLength >= limit,
           'on-focus': onfocus === true,
@@ -90,7 +88,7 @@
           <div>拖放图像文件</div>
           <div>到此区域</div>
         </div>
-      </div>
+      </div> -->
       <el-upload
         v-if="isEdit"
         ref="upload"
@@ -98,7 +96,6 @@
         :class="{
           'upload-disabled': limit && fileLength && fileLength >= limit,
         }"
-        style="display: none"
         :action="uploadFile"
         :with-credentials="true"
         :headers="getHeaders()"
@@ -113,7 +110,7 @@
         clearable
         :limit="limit"
         :disabled="!field.info.editable"
-        :show-file-list="false"
+        :show-file-list="true"
         list-type="picture-card"
       >
         <el-button size="small" type="primary">点击上传</el-button>
@@ -231,7 +228,12 @@ export default {
           if (Array.isArray(files) && files.length) {
             files.forEach((file) => {
               file.name = file.src_name;
-              file.url = this.serviceApi().downloadFile + file.fileurl;
+              if(file.fileurl.indexOf('http') == -1){
+                file.url = this.serviceApi().downloadFile + file.fileurl;
+              }else{
+                file.url = file.fileurl;
+              }
+              // file.url = this.serviceApi().downloadFile + file.fileurl;
               this.fileLists.push(file);
             });
             return;
@@ -600,7 +602,7 @@ export default {
     handleRemove(file, fileList) {
       this.setObjInfo(fileList);
       if (fileList.length === 0) {
-        self.field.model = "";
+        this.field.model = "";
       }
     },
     handlePreview(file) {
@@ -614,6 +616,9 @@ export default {
       if (file && file.status === "success") {
         //删除
         let fileurl;
+        if(file?.file_no && !file.response){
+          file.response = {...file}
+        }
         if (file.response) {
           fileurl = file.response.fileurl;
         } else {
@@ -641,6 +646,9 @@ export default {
         this.uploadParams.file_no = response.file_no;
         this.field.model = response.file_no;
         response.url = this.serviceApi().downloadFile + response.fileurl;
+        if(response.fileurl?.indexOf("http") === 0){
+          response.url = response.fileurl;
+        }
         this.fileLists.push(response);
         if (response.fileurl?.indexOf("http") === 0) {
           this.field.model = response.fileurl;

@@ -27,10 +27,21 @@ export default {
       maxRequest: 6,
       onUploadProgress: null,
       onUploadSuccess: null,
-      onHashProgress: null
+      onHashProgress: null,
+      hashPercentage: 0,//hash计算进度
+      useSplitChuck: true, //是否使用分片上传
     }
   },
   methods: {
+    getFileUrl(url) {
+      if (url?.indexOf("http") === 0) {
+        return url;
+      } else if (url?.indexOf("data:image") === 0) {
+        return url;
+      } else {
+        return `${this.serviceApi().downloadFile}${url}`;
+      }
+    },
     async handelUploadBigFile(file, cfg = {}) {
       const { chunkSize, onUploadProgress, onUploadSuccess, onHashProgress, maxRequest } = cfg
       if (onUploadProgress) { //  上传进度
@@ -75,8 +86,9 @@ export default {
       }
       // 计算文件hash
       const { fileHash, fileChunkList } = await this.useWorker(file)
-
-      console.log(fileHash, '文件hash计算完成',fileChunkList)
+      inTaskArrItem.uploadId = fileHash
+      inTaskArrItem.id = fileHash
+      console.log(fileHash, '文件hash计算完成', fileChunkList)
       this.$message.info('文件hash计算完成')
       // 解析完成开始上传文件
       let baseName = ''
@@ -90,7 +102,6 @@ export default {
       baseName = file.name.slice(0, lastIndex)
 
       // 这里要注意！可能同一个文件，是复制出来的，出现文件名不同但是内容相同，导致获取到的hash值也是相同的
-      // 所以文件hash要特殊处理
       inTaskArrItem.fileHash = `${fileHash}`
       inTaskArrItem.state = 2
       console.log(stateMap[inTaskArrItem.state]);
@@ -191,7 +202,8 @@ export default {
             chunkSize,
             chunkNumber,
           } = needObj
-          fd.append('uploadId', uploadId)
+          // fd.append('uploadId', uploadId)
+          fd.append('uploadId', fileHash)
           fd.append('chunkIndex', index)
           fd.append('chunkHash', chunkHash)
           fd.append('file', chunkFile)

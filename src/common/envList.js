@@ -90,8 +90,11 @@ export const pathConfigMap = {
     // 健康科普资源库
     gateway_protocol: "http",
     gateway_ip: "192.168.0.154",
+    // gateway_ip: "192.168.0.155",
     port: "8104",
+    // port: "2881",
     gateway: "http://192.168.0.154:8104",
+    // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "hsprl",
   },

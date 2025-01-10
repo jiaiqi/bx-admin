@@ -69,6 +69,7 @@
       :file-list="fileLists"
       :limit="limit"
       :disabled="!field.info.editable && true"
+      :http-request="uploadMethod"
     >
       <viewer
         v-show="false"
@@ -87,7 +88,6 @@
         />
       </viewer>
       <el-button size="small" type="primary">点击上传</el-button>
-      <!-- <el-button style="margin-left: 10px;" size="small" type="success" @click="requestUploadFile">上传到服务器</el-button> -->
       <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
       <div
         slot="tip"
@@ -97,7 +97,60 @@
       >
         {{ fileError }}
       </div>
+      <!-- <el-progress :percentage="progress" v-if="progress"></el-progress> -->
     </el-upload>
+    <!-- <el-upload
+      v-if="isEdit"
+      class="upload-demo"
+      ref="upload"
+      clearable
+      :action="uploadFile"
+      :with-credentials="true"
+      :multiple="true"
+      :headers="getHeaders()"
+      :on-preview="handlePreview"
+      :before-remove="beforeRemove"
+      :before-upload="beforeAvatarUpload"
+      :on-remove="handleRemove"
+      :on-progress="handleProgress"
+      :on-success="handleSuccess"
+      :on-exceed="handleExceed"
+      :on-change="fileChange"
+      :on-error="onErrorChange"
+      :data="uploadParamsRun"
+      :auto-upload="true"
+      :file-list="fileLists"
+      :limit="limit"
+      :disabled="!field.info.editable && true"
+      :http-request="uploadMethod"
+    >
+      <viewer
+        v-show="false"
+        :images="imagesRun"
+        ref="viewer"
+        clsss="image-list"
+      >
+        <img
+          style="height: 1rem; width: 1rem"
+          :class="'image-' + src.id"
+          @error="onerror"
+          @load="onerror(src.url)"
+          :src="src.url"
+          v-for="(src, index) in imagesRun"
+          :key="index"
+        />
+      </viewer>
+      <el-button size="small" type="primary">点击上传</el-button>
+      <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
+      <div
+        slot="tip"
+        class="el-upload__tip error"
+        v-if="fileError"
+        style="color: red"
+      >
+        {{ fileError }}
+      </div>
+    </el-upload> -->
     <el-dialog
       custom-class="preview-dialog"
       :title="
@@ -174,10 +227,13 @@
 </template>
 <script>
 import pdf from "vue-pdf";
-import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
+// import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 import cloneDeep from "lodash/cloneDeep";
+import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
+
 export default {
   components: { pdf },
+  mixins: [bigFileUploadMixin],
   props: {
     field: {
       type: Object,
@@ -187,11 +243,6 @@ export default {
       type: Number,
       default: 100,
     },
-
-    // $srvApp: {
-    //   type: String,
-    //   default: "file",
-    // },
   },
   computed: {
     objInfo() {
@@ -218,9 +269,14 @@ export default {
           item.file_type === "gif" ||
           item.file_type === "JPG"
         ) {
-          let fileUrl = item.hasOwnProperty("url")
-            ? item.url
-            : self.serviceApi().downloadFile + item.response.fileurl;
+          let fileUrl = item?.url;
+          if (!fileUrl) {
+            if (item.response?.fileurl?.indexOf("http") === 0) {
+              fileUrl = item.response?.fileurl;
+            } else {
+              fileUrl = self.serviceApi().downloadFile + item.response?.fileurl;
+            }
+          }
           item.url = fileUrl;
           return {
             title: item.name,
@@ -316,8 +372,8 @@ export default {
       scale: 100, //放大系数
       currentUrlLike: "",
       fileError: "",
-      progress:0,
-      uploading:false,
+      progress: 0,
+      uploading: false,
     };
   },
   created: function () {
@@ -344,13 +400,61 @@ export default {
     this.getData();
   },
   methods: {
-    uploadMethod(params){
-      this.progress = 0
-      const file = params.file
-      const uploadProgressEvent = (event) => {
-        this.progress = Math.round((event.loaded / event.total) * 100)
+    async uploadMethod(params) {
+      this.progress = 0;
+      const that = this
+      const file = params.file;
+      const fileSize = file.size / 1024 / 1024; // 单位为MB
+      if (this.useSplitChuck && fileSize > 50) {
+        // 大于50MB并且启用分片上传的情况下 使用分片上传
+        const { url } = await that.handelUploadBigFile(file, {
+          chunkSize: that.fileChunkSize,
+          maxRequest: that.uploadMaxRequest,
+          onHashProgress: (percentage) => {
+            that.hashPercentage = percentage;
+          },
+          onUploadProgress: (percentage) => {
+            console.log("onUploadProgress", percentage, file);
+            // if (percentage < 100) {
+            //   that.percentage = Math.round(percentage);
+            // }
+            if (percentage >= 100) {
+              that.$message.warning("文件合并中...");
+            }
+            let event = {
+              percent: percentage,
+            }
+            params?.onProgress?.(event)
+          },
+          onUploadSuccess: (res) => {
+            console.log("onUploadSuccess", res);
+            // that.percentage = 100;
+            that.$message.success("文件上传成功");
+            that.hashPercentage = 0;
+            // setTimeout(() => {
+            //   document.getElementById("myDialog").close();
+            //   callback(that.getFileUrl(res.fileurl));
+            // }, 1000);
+
+            params?.onSuccess(res,file,this.fileLists)
+          },
+        });
+        console.log(url);
+      } else {
+        const onProgress = ({ event }) => {
+          event.percent = (event.loaded / event.total) * 100;
+          // this.handleProgress(event);
+          params?.onProgress?.(event);
+        };
+        this.requestUploadFile(params, onProgress).then((res) => {
+          this.fileLists.push(res);
+          if (res?.id) {
+            params?.onSuccess(res, file, this.fileLists);
+          } else {
+            params?.onError(res);
+          }
+        });
       }
-      this.requestUploadFile(file, uploadProgressEvent)
     },
     onerror(e) {
       console.log("显示失败", e);
@@ -370,7 +474,7 @@ export default {
     submitUpload() {
       this.$refs.upload.submit();
     },
-    requestUploadFile: function (e,uploadProgressEvent) {
+    requestUploadFile: function (e, uploadProgressEvent) {
       let self = this;
       let file = e || [];
       // this.notUploaded.push(e)
@@ -385,6 +489,7 @@ export default {
         formData.append("file", e.file);
         formData.append("serviceName", "srv_bxfile_service"); //
         formData.append("interfaceName", "add"); //
+        formData.append("file_no", fileNo); //
         formData.append("app_no", self.resolveDefaultSrvApp()); //
         formData.append(
           "table_name",
@@ -403,19 +508,30 @@ export default {
             "Content-Type": "multipart/form-data",
             bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
           },
-          uploadProgressEvent:uploadProgressEvent
+          // uploadProgressEvent: uploadProgressEvent,
+          onUploadProgress: uploadProgressEvent,
         };
+
         return new Promise((resolve, reject) => {
+          // const loading = self.$loading({
+          //   lock: true,
+          //   text: "上传中",
+          //   spinner: "el-icon-loading",
+          //   background: "rgba(0, 0, 0, 0.7)",
+          // });
           self.$http.post(url, formData, config).then(
             (res) => {
               // if(!self.uploadParams.hasOwnProperty('file_no')){
               //   self.uploadParams.file_no = res.data.file_no
               // }
               console.log("上传成功", res.data.file_no);
+              // loading.close();
+              self.progress = 0;
               resolve(res.data);
               return res.data;
             },
             (err) => {
+              // loading.close();
               console.error(res.message);
               reject(err);
             }
@@ -599,7 +715,11 @@ export default {
       ) {
         if (file.url == null) {
           //如果是新上传的文件需要获取url
-          file.url = this.serviceApi().downloadFile + file.response.fileurl;
+          if (file.response?.fileurl?.indexOf("http") == 0) {
+            file.url = file.response.fileurl;
+          } else {
+            file.url = this.serviceApi().downloadFile + file.response.fileurl;
+          }
         }
         if (fileType === "pptx" && file.url) {
           const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
@@ -737,15 +857,14 @@ export default {
     handleProgress(event, file, fileList) {
       this.uploading = true;
       this.progress = parseInt(event.percent); // 更新进度百分比
-      console.log("上传进度", event.percent);
-      
+      // console.log("上传进度", event.percent);
     },
     handleSuccess(response, file, fileList) {
       let self = this;
       this.uploading = false;
       this.$forceUpdate();
       console.log("上传成功", response);
-      if (response.state === undefined) {
+      if (response&&response.state === undefined) {
         this.$message.info("上传成功！");
         self.uploadParams.file_no = response.file_no;
         self.$set(self.uploadParams, "file_no", response.file_no);
@@ -764,7 +883,7 @@ export default {
         // self.setSrvVal(response.file_no)
         self.$emit("more-info", self.fileLists);
         this.setObjInfo(fileList);
-      } else {
+      } else if(response) {
         this.$message.error("上传失败！");
         this.fileLists.splice(this.fileLists.length - 1, 1);
       }
