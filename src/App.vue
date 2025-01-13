@@ -18,18 +18,24 @@ export default {
   },
   data() {
     return {
-      ready: false
+      ready: false,
     };
   },
   created() {
     if (this.$route?.query?.bx_auth_ticket) {
-      sessionStorage.setItem('bx_auth_ticket', this.$route?.query?.bx_auth_ticket)
-      localStorage.setItem('bx_auth_ticket', this.$route?.query?.bx_auth_ticket)
+      sessionStorage.setItem(
+        "bx_auth_ticket",
+        this.$route?.query?.bx_auth_ticket
+      );
+      localStorage.setItem(
+        "bx_auth_ticket",
+        this.$route?.query?.bx_auth_ticket
+      );
     }
   },
   mounted() {
-    if(process?.env?.NODE_ENV === 'development'){
-      Vue.prototype.$loginRef = this.$refs.loginRef
+    if (process?.env?.NODE_ENV === "development") {
+      Vue.prototype.$loginRef = this.$refs.loginRef;
     }
 
     const init = () => {
@@ -41,21 +47,21 @@ export default {
       // LoadScript(bMapSrc).then((bmap)=>{
       // console.log(bmap)
       // setTimeout(() => {
-      this.$store.commit('setBMapLoaded', true)
+      this.$store.commit("setBMapLoaded", true);
 
       // }, 1000);
       // })
-    }
-    init()
-    if(!top.user && sessionStorage.current_login_user){
-      top.user = JSON.parse(sessionStorage.current_login_user)
+    };
+    init();
+    if (!top.user && sessionStorage.current_login_user) {
+      top.user = JSON.parse(sessionStorage.current_login_user);
     }
   },
 
   methods: {
     getExtjsCondition() {
       let path = this.$route.path;
-      let tokens = path.split("/").filter(i => !!i);
+      let tokens = path.split("/").filter((i) => !!i);
       let pageType = tokens[0];
       let pageParam = tokens[1];
       if (path.startsWith("/procdetail") || path.startsWith("/startproc")) {
@@ -68,13 +74,13 @@ export default {
           {
             colName: "page_type",
             ruleType: "eq",
-            value: pageType
+            value: pageType,
           },
           {
             colName: "page_param",
             ruleType: "eq",
-            value: pageParam
-          }
+            value: pageParam,
+          },
         ];
       }
 
@@ -106,30 +112,33 @@ export default {
     // 开发调试extjs
     testExtJs() {
       // !!! mock test code !!!!
-      new Promise(resolve => setTimeout(resolve, 200)).then(() => {
+      new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
         extjs.bind(this)();
 
         // note: always last statement
 
         this.ready = true;
       });
-    }
+    },
   },
 
   beforeMount: function () {
     // dummy();
     window.debugExtjs ? this.testExtJs() : this.loadExtJs();
-    if (this.$route?.query?.viewMode === 'demo' || sessionStorage.getItem('viewMode') === 'demo') {
-      document.body.classList.add('is-demo')
+    if (
+      this.$route?.query?.viewMode === "demo" ||
+      sessionStorage.getItem("viewMode") === "demo"
+    ) {
+      document.body.classList.add("is-demo");
     }
-  }
+  },
 };
 </script>
 
 <style lang="scss">
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 html {
   height: 100%;
@@ -150,6 +159,11 @@ body {
   height: 100%;
   color: #2c3e50;
 }
+.el-loading-spinner {
+  .circular {
+    display: inline-block;
+  }
+}
 
 .el-input.is-disabled .el-input__inner {
   color: #303133 !important;
@@ -165,11 +179,9 @@ body {
   }
 }
 
-
 .is-demo {
-
   // 原型图样式
-  .el-checkbox__input.is-checked+.el-checkbox__label {
+  .el-checkbox__input.is-checked + .el-checkbox__label {
     color: #666;
   }
 
@@ -184,7 +196,7 @@ body {
   }
 
   .el-input__inner::-webkit-input-placeholder {
-    color: #666!important;
+    color: #666 !important;
     font-size: 12px;
   }
 
@@ -261,7 +273,7 @@ body {
       background-color: #8b8b8b;
     }
 
-    th>.cell {
+    th > .cell {
       color: #333;
     }
 
@@ -271,12 +283,11 @@ body {
 
     th {
       background-color: #dadada;
-
     }
 
     .hover-row,
-    .hover-row>td,
-    .current-row>td {
+    .hover-row > td,
+    .current-row > td {
       background-color: #ececec !important;
     }
 
@@ -298,8 +309,11 @@ body {
   }
 }
 
-	/* 在el-dialog中tinymce z-index 被太小而被遮挡 */
-	.tox-tinymce-aux{z-index:99999 !important;}
-	.tinymce.ui.FloatPanel{z-Index: 99;}
-
+/* 在el-dialog中tinymce z-index 被太小而被遮挡 */
+.tox-tinymce-aux {
+  z-index: 99999 !important;
+}
+.tinymce.ui.FloatPanel {
+  z-index: 99;
+}
 </style>

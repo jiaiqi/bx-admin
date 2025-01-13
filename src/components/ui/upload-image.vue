@@ -38,7 +38,7 @@
       v-loading="loading"
     >
       <!-- 使用element-ui自带样式 -->
-      <!-- <ul class="el-upload-list el-upload-list--picture-card">
+      <ul class="el-upload-list el-upload-list--picture-card">
         <draggable v-model="fileLists" @end="onDragEnd" animation="300">
           <transition-group>
             <li
@@ -55,12 +55,14 @@
               <span class="el-upload-list__item-actions">
                 <span
                   class="el-upload-list__item-preview"
+                  title="预览"
                   @click="handlePictureCardPreviewFileDetail(item)"
                 >
                   <i class="el-icon-zoom-in"></i>
                 </span>
                 <span
                   class="el-upload-list__item-delete"
+                  title="删除"
                   @click="handleRemoveFileDetail(item, fileLists)"
                 >
                   <i class="el-icon-delete"></i>
@@ -69,7 +71,7 @@
             </li>
           </transition-group>
         </draggable>
-      </ul> -->
+      </ul>
       <!-- <div
         :class="{
           'display-none': limit && fileLength && fileLength >= limit,
@@ -89,12 +91,33 @@
           <div>到此区域</div>
         </div>
       </div> -->
+
+      <div
+        style="display: flex; flex-wrap: wrap"
+        v-if="isEdit !== false && useFilePicker && !isHttp"
+        v-loading="loading"
+      >
+        <div
+          :class="{
+            'display-none': limit && fileLength && fileLength >= limit,
+          }"
+          class="custom-upload"
+          @click="showFilePicker = true"
+        >
+          <i class="el-icon-plus" style="font-size: 28px; color: #8c939d"></i>
+        </div>
+        <file-picker
+          v-if="showFilePicker"
+          v-model="showFilePicker"
+          @file-change="onPickerFileChange"
+        ></file-picker>
+      </div>
       <el-upload
-        v-if="isEdit"
         ref="upload"
         class="upload-demo"
         :class="{
-          'upload-disabled': limit && fileLength && fileLength >= limit,
+          'upload-disabled':
+            limit && fileLength && fileLength >= limit && !isHttp,
         }"
         :action="uploadFile"
         :with-credentials="true"
@@ -110,8 +133,9 @@
         clearable
         :limit="limit"
         :disabled="!field.info.editable"
-        :show-file-list="true"
+        :show-file-list="false"
         list-type="picture-card"
+        :style="useFilePicker ? 'display:none;' : ''"
       >
         <el-button size="small" type="primary">点击上传</el-button>
         <div
@@ -127,16 +151,31 @@
           {{ setFileDesc }}
         </div>
       </el-upload>
+
+      <div
+        slot="tip"
+        class="el-upload__tip w-full"
+        :class="{ 'text-red': field.getAnyValidateError() }"
+        v-if="isEdit !== false && useFilePicker && !isHttp"
+      >
+        <i
+          slot="reference"
+          class="el-icon-warning"
+          v-if="field.getAnyValidateError()"
+        ></i>
+        {{ setFileDesc }}
+      </div>
     </div>
   </div>
 </template>
 <script>
 import cloneDeep from "lodash/cloneDeep";
 import draggable from "vuedraggable";
-
+import filePicker from "./file-picker/file-picker.vue";
 export default {
   components: {
     draggable,
+    filePicker,
   },
   props: {
     field: {
@@ -180,9 +219,16 @@ export default {
       const fileSize = this.fileSize ? this.fileSize / 1024 : 2;
       return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`;
     },
+    useFilePicker() {
+      return this.field.info?.moreConfig?.useFilePicker;
+    },
+    isHttp() {
+      return this.field.model && this.field.model.startsWith("http");
+    },
   },
   data() {
     return {
+      showFilePicker: false,
       fileLists: [],
       fileLength: 0,
       fileDesc:
@@ -228,9 +274,9 @@ export default {
           if (Array.isArray(files) && files.length) {
             files.forEach((file) => {
               file.name = file.src_name;
-              if(file.fileurl.indexOf('http') == -1){
+              if (file.fileurl.indexOf("http") == -1) {
                 file.url = this.serviceApi().downloadFile + file.fileurl;
-              }else{
+              } else {
                 file.url = file.fileurl;
               }
               // file.url = this.serviceApi().downloadFile + file.fileurl;
@@ -246,6 +292,30 @@ export default {
     this.getData();
   },
   methods: {
+    onPickerFileChange(event) {
+      if (event?.files?.length) {
+        const file = event?.files[0];
+        const newFile = new File([file], file.name, { type: file.type });
+        console.log(this.$refs.upload);
+        const upload = this.$refs.upload;
+        upload.handleStart(newFile);
+        setTimeout(() => {
+          upload.submit();
+        });
+        // this.fileLists.push({ name: file.name, url: URL.createObjectURL(file) });
+      } else if (event?.url) {
+        if (event.url?.indexOf("http") === 0) {
+          if (this.fileLists?.length) {
+            return this.$message.error("文件url不能上传多条");
+          }
+          this.field.model = event.url;
+          this.fileLists.push({
+            fileurl: event.url,
+            url: event.url,
+          });
+        }
+      }
+    },
     dataURLtoBlob(dataurl) {
       //将base64转换为blob
       var arr = dataurl.split(","),
@@ -319,7 +389,6 @@ export default {
           let item = items[i];
           if (item.kind === "file") {
             let file = item.getAsFile();
-            console.log("非图片文件", file);
             // 确认是图片文件
             if (file.type.startsWith("image/")) {
               this.handleImage(file);
@@ -499,7 +568,9 @@ export default {
       const isDelete = await this.beforeRemove(file, fileList);
       if (isDelete) {
         this.fileLists.splice(index, 1);
+        // if (file?.url?.indexOf("http") !== 0) {
         this.handleRemove(file, fileList);
+        // }
       }
     },
     getHeaders() {
@@ -616,8 +687,8 @@ export default {
       if (file && file.status === "success") {
         //删除
         let fileurl;
-        if(file?.file_no && !file.response){
-          file.response = {...file}
+        if (file?.file_no && !file.response) {
+          file.response = { ...file };
         }
         if (file.response) {
           fileurl = file.response.fileurl;
@@ -637,16 +708,28 @@ export default {
           this.$message.info(response.body.state);
           return false;
         }
+      } else if (file.indexOf("http") === 0) {
+        this.field.model = "";
+        this.$emit("change", this.field.model);
+        return true;
       }
     },
-    handleSuccess(response, file, fileList) {
+    async handleSuccess(response, file, fileList) {
       console.log(fileList, "handleSuccess");
+      if (response.fileurl?.startsWith("http")) {
+        // 返回的http链接 延迟500毫秒再进行后续操作 避免未成功上传到华为云就显示在页面上导致显示的图片加载失败
+        console.time("handleSuccess");
+        this.loading = true;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        this.loading = false;
+        console.timeEnd("handleSuccess");
+      }
       if (response.state === undefined) {
         this.$message.info("上传成功！");
         this.uploadParams.file_no = response.file_no;
         this.field.model = response.file_no;
         response.url = this.serviceApi().downloadFile + response.fileurl;
-        if(response.fileurl?.indexOf("http") === 0){
+        if (response.fileurl?.indexOf("http") === 0) {
           response.url = response.fileurl;
         }
         this.fileLists.push(response);
@@ -657,10 +740,10 @@ export default {
         this.setObjInfo(fileList);
       } else {
         this.$message.error("上传失败！");
-        console.log(55555555555555);
         this.fileLists.splice(this.fileLists.length - 1, 1);
       }
       this.fileLength = fileList.length;
+      this.loading = false;
     },
     setObjInfo(fileList) {
       const objInfo = this.objInfo;
@@ -744,7 +827,9 @@ export default {
   align-items: center;
   flex-direction: column;
   cursor: pointer;
-
+  &:hover {
+    border-color: #409eff;
+  }
   .upload-btn {
     cursor: pointer;
     line-height: 20px;

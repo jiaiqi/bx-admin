@@ -157,9 +157,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-loading-spinner {
-  .circular {
-    display: inline-block;
-  }
-}
+
 </style>
