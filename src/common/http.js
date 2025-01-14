@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   }
   baseURL = pathConfig.gateway; // 正式环境
   top.pathConfig = pathConfig;
-
+  top.env = ENV
 }
 
 if (top?.pathConfig?.gateway) {

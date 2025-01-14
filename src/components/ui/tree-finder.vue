@@ -8,7 +8,7 @@
   >
     {{ field.getDispVal4Read() }}
   </a>
-<!--  <el-input v-else-if="field.getSrvVal()&&noData" clearable @clear="onClear()" :value="field.getSrvVal()"></el-input>-->
+  <!--  <el-input v-else-if="field.getSrvVal()&&noData" clearable @clear="onClear()" :value="field.getSrvVal()"></el-input>-->
   <el-cascader
     v-else
     :placeholder="field.info.placeholder"
@@ -25,12 +25,13 @@
     @change="onSelectChange"
     @active-item-change="onItemChange"
     @input.native="inputChange"
+    ref="elCascader"
   >
   </el-cascader>
 </template>
 
 <script>
-import  debounce from 'lodash/debounce';
+import debounce from "lodash/debounce";
 export default {
   props: ["field"],
   data() {
@@ -39,24 +40,26 @@ export default {
       selected: [],
       // 树形结构数据
       options: [],
-      noData:false,
+      noData: false,
       visibleChange: false,
-      hasInit:false,//已经设置过初始值
+      hasInit: false, //已经设置过初始值
     };
   },
 
   computed: {
-    props: function() {
+    props: function () {
       let props = {
         value: this.field.info.valueCol,
-        label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol
+        label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
+        checkStrictly: top?.env?.includes('health') ? false : true,
       };
 
       return props;
     },
-    unlimited: function() {
+    unlimited: function () {
       // 是否允许选择 任意一级， false ，true
-      let unlimited = this.optionListV2 || this.field.info.srvCol.option_list_v2;
+      let unlimited =
+        this.optionListV2 || this.field.info.srvCol.option_list_v2;
       if (
         unlimited.hasOwnProperty("unlimited") &&
         unlimited.unlimited === false
@@ -68,7 +71,7 @@ export default {
     },
     dispLoaderV2() {
       if (this.optionListV2?.refed_col) {
-        const optionListV2 = this.optionListV2
+        const optionListV2 = this.optionListV2;
         return {
           service: optionListV2.serviceName || optionListV2.service,
           conditions: optionListV2.conditions || [],
@@ -85,19 +88,19 @@ export default {
           refedCol: optionListV2.refed_col,
           dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
         };
-      }else{
-        return this.field?.info?.dispLoader
+      } else {
+        return this.field?.info?.dispLoader;
       }
     },
     optionListV2() {
       if (this.field?.info?.srvCol?.option_list_v3?.length) {
         const option_list_v3 = this.field?.info?.srvCol?.option_list_v3;
-        const formModel = this.field.form.srvValFormModel()
+        const formModel = this.field.form.srvValFormModel();
         const result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
-            return item.conds.every(
-              (cond) => cond.case_val?.includes?.(formModel[cond.case_col])
+            return item.conds.every((cond) =>
+              cond.case_val?.includes?.(formModel[cond.case_col])
             );
           } else {
             return true;
@@ -114,12 +117,12 @@ export default {
   },
 
   methods: {
-    onClear(){
+    onClear() {
       this.field.model = null;
       this.$emit("field-value-changed", this.field.info.name, this.field);
-      this.$nextTick(()=>{
-        this.loadOptions()
-      })
+      this.$nextTick(() => {
+        this.loadOptions();
+      });
     },
     needRenameLabel() {
       return this.field.info.dispCol === "value";
@@ -129,7 +132,7 @@ export default {
         this.onSelectChange(val[val.length - 1]);
       }
     },
-    inputChange: debounce(function(e) {
+    inputChange: debounce(function (e) {
       console.log(e.target.value);
       let val = e.target.value;
       let loader = this.dispLoaderV2 || this.field.info.dispLoader;
@@ -170,14 +173,14 @@ export default {
             {
               colName: fieldInfo.valueCol,
               ruleType: "like",
-              value: val
+              value: val,
             },
             {
               colName: fieldInfo.dispCol,
               ruleType: "like",
-              value: val
-            }
-          ]
+              value: val,
+            },
+          ],
         };
       } else if (curVal) {
         conditions = [
@@ -185,8 +188,8 @@ export default {
           {
             colName: this.props.value,
             ruleType: "eq",
-            value: curVal
-          }
+            value: curVal,
+          },
         ];
       } else if (parentNo) {
         if (loader.parentCol) {
@@ -195,8 +198,8 @@ export default {
             {
               colName: loader.parentCol,
               ruleType: "eq",
-              value: parentNo
-            }
+              value: parentNo,
+            },
           ];
         }
       } else if (this.selected && this.selected.length > 0) {
@@ -206,8 +209,8 @@ export default {
           {
             colName: loader.parentCol,
             ruleType: "eq",
-            value: parentNo
-          }
+            value: parentNo,
+          },
         ];
       } else {
         // 加载第一级数据
@@ -237,32 +240,32 @@ export default {
         serviceName: loader.service,
         colNames: ["*"],
         condition: conditions,
-        relation_condition: relation_condition ,
-        rdt: "ttd",//2023年11月13日 修改，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据,
+        relation_condition: relation_condition,
+        rdt: "ttd", //2023年11月13日 修改，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据,
         page: {
-          pageNo:1,
-          pageSize:2000,
+          pageNo: 1,
+          pageSize: 2000,
         },
       };
-      return this.$http.post(url, params).then(response => {
+      return this.$http.post(url, params).then((response) => {
         this.noData = false;
         if (response && response.data && response.data.data) {
           // if(response.data.data.length === 0){
           //   this.noData = true;
           // }
-          let options = response.data.data.map(item => {
+          let options = response.data.data.map((item) => {
             item.children = item.is_leaf === "是" ? null : [];
             return item;
           });
           if (this.needRenameLabel()) {
-            options.forEach(option => this.renameLable(option));
+            options.forEach((option) => this.renameLable(option));
           }
           if (curVal && response.data.data.length > 0) {
             let item = response.data.data[0];
             let path = item.path;
             this.selected = path
               .split("/")
-              .map(val => {
+              .map((val) => {
                 if (
                   typeof item[this.props.value] === "number" &&
                   !isNaN(Number(val))
@@ -271,7 +274,7 @@ export default {
                 }
                 return val;
               })
-              .filter(t => !!t);
+              .filter((t) => !!t);
             this.field.model = item;
             this.$emit("field-value-changed", this.field.info.name, this.field);
           }
@@ -300,14 +303,14 @@ export default {
           let params = {
             serviceName: loader.service,
             colNames: ["*"],
-            condition: []
+            condition: [],
           };
           params.condition = [
             {
               colName: loader.parentCol,
               ruleType: "eq",
-              value: item
-            }
+              value: item,
+            },
           ];
           let data = [];
           let res = await this.$http.post(url, params);
@@ -326,7 +329,7 @@ export default {
       }
     },
     setOptionChild(options, valCol, parentNo, children) {
-      options = options.map(item => {
+      options = options.map((item) => {
         if (item[valCol] === parentNo) {
           if (children.length === 0) {
             children = null;
@@ -353,11 +356,11 @@ export default {
         let curVal = this.field.getSrvVal();
         return this.treeLazySelect(loader, null, null, curVal);
       } else {
-        return this.treeSelect(loader.service, conditions).then(response => {
+        return this.treeSelect(loader.service, conditions).then((response) => {
           if (response && response.data && response.data.data) {
             let options = response.data.data;
             if (this.needRenameLabel()) {
-              options.forEach(option => this.renameLable(option));
+              options.forEach((option) => this.renameLable(option));
             }
             this.options = options;
             this.noData = !options?.length;
@@ -373,7 +376,7 @@ export default {
       option.valuezh = option.value;
 
       if (option.children && option.children.length > 0) {
-        option.children.forEach(child => this.renameLable(child));
+        option.children.forEach((child) => this.renameLable(child));
       }
     },
 
@@ -393,11 +396,14 @@ export default {
       }
 
       this.$emit("field-value-changed", this.field.info.name, this.field);
+      // this.$nextTick(() => {
+      //   this.$refs.elCascader.dropDownVisible = false
+      // });
     },
     getPath(val) {
       let option = {};
       if (val) {
-        option = this.options.find(item => item[this.props.value] === val);
+        option = this.options.find((item) => item[this.props.value] === val);
       }
       if (option && option.path) {
         return option.path;
@@ -407,7 +413,7 @@ export default {
       let valueCol = this.field.info.valueCol;
       let targets = this.options;
       for (let i in this.selected) {
-        targets = targets.filter(opt => opt[valueCol] == this.selected[i]);
+        targets = targets.filter((opt) => opt[valueCol] == this.selected[i]);
         if (!targets || targets.length == 0) {
           return null;
         }
@@ -436,10 +442,10 @@ export default {
         queryMethod: "select",
         colNames: ["*"],
         condition: [
-          { colName: fieldInfo.valueCol, value: srvVal, ruleType: "eq" }
-        ]
+          { colName: fieldInfo.valueCol, value: srvVal, ruleType: "eq" },
+        ],
       };
-      return this.selectList(queryJson).then(response => {
+      return this.selectList(queryJson).then((response) => {
         if (
           response &&
           response.data &&
@@ -450,7 +456,7 @@ export default {
           let path = item.path;
           this.selected = path
             .split("/")
-            .map(val => {
+            .map((val) => {
               if (
                 typeof item[this.props.value] === "number" &&
                 !isNaN(Number(val))
@@ -459,7 +465,7 @@ export default {
               }
               return val;
             })
-            .filter(t => !!t);
+            .filter((t) => !!t);
           this.field.model = item;
           this.$emit("field-value-changed", this.field.info.name, this.field);
           if (this.selected.length > 0 && loader.parentCol) {
@@ -468,7 +474,7 @@ export default {
         }
       });
     },
-    buildConditions: function(dispLoader) {
+    buildConditions: function (dispLoader) {
       let ret = [];
       for (let i in dispLoader.conditions) {
         let cond = dispLoader.conditions[i];
@@ -560,16 +566,18 @@ export default {
     },
 
     onLinkClicked() {
-      let tabTitle = this.optionListV2?.service_label || this.field.info?.srvCol?.option_list_v2?.service_label ||
+      let tabTitle =
+        this.optionListV2?.service_label ||
+        this.field.info?.srvCol?.option_list_v2?.service_label ||
         "详情";
       this.addTabByUrl(this.getLinkUrl(), tabTitle);
-    }
+    },
   },
 
-  destroyed: function() {},
+  destroyed: function () {},
 
-  mounted: function() {
-    this.loadOptions().then(_ => {
+  mounted: function () {
+    this.loadOptions().then((_) => {
       if (this.selected.length == 0 && this.field.model) {
         let value = this.field.model[this.field.info.valueCol];
         if (value == undefined || value == null) {
@@ -582,7 +590,7 @@ export default {
           this.setSrvVal(value);
         }
       } else if (
-        this.hasInit===false&&
+        this.hasInit === false &&
         this.options.length > 0 &&
         !this.field.model &&
         this.field.info &&
@@ -591,22 +599,21 @@ export default {
       ) {
         // 默认选中首行数据
         this.field.model = this.options[0];
-        this.selected = [this.field.model[this.field.info.valueCol]]
+        this.selected = [this.field.model[this.field.info.valueCol]];
         this.$emit("field-value-changed", this.field.info.name, this.field);
-        this.hasInit = true
+        this.hasInit = true;
       }
     });
   },
   watch: {
-    visibleChange: function(newValue, oldValue) {
+    visibleChange: function (newValue, oldValue) {
       if (newValue) {
         this.loadOptions();
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>
+<style scoped></style>
