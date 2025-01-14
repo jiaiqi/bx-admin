@@ -9,6 +9,9 @@ let _loginDialog = null;
 let baseURL = window.backendIpAddr;
 let bx_auth_ticket = "";
 
+const ENV = 'healthDev'
+top.env = ENV
+
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
   // const ENV = "wanxiang";
@@ -23,7 +26,6 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = 'gaosudev'
   // const ENV = 'yanxueOpen1'
   // const ENV = 'healthProd'
-  const ENV = 'healthDev'
 
   const pathConfig = pathConfigMap[ENV];
   if(location.href?.includes?.('menuapp=')){
@@ -34,7 +36,6 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   }
   baseURL = pathConfig.gateway; // 正式环境
   top.pathConfig = pathConfig;
-  top.env = ENV
 }
 
 if (top?.pathConfig?.gateway) {

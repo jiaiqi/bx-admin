@@ -2556,6 +2556,21 @@ function init_util() {
     }
     return result;
   };
+
+  Vue.prototype.checkUploadStatus = async(file_no, times = 0,timeout = 1000) =>{
+    const url = `/file/getUpPro?uploadId=${file_no}`
+    const res = await Vue.prototype.$http.get(url);
+    console.log(res.data.data, ':checkUploadStatus');
+    if (res.data.data < 100 && times < 10) {
+      await new Promise(resolve => {
+        setTimeout(() => {
+          Vue.prototype.checkUploadStatus(file_no, times + 1).then((res)=>{
+            resolve(res)
+          })
+        }, timeout);
+      })
+    }
+  }
 }
 
 export default init_util;
