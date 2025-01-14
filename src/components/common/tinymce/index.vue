@@ -1,32 +1,14 @@
 <!-- tinymc富文本 -->
 <template>
   <div>
-    <editor
-      v-model="myValue"
-      :init="init"
-      :disabled="disabled"
-      @onClick="onClick"
-      @change="onChange"
-    >
+    <editor v-model="myValue" :init="init" :disabled="disabled" @onClick="onClick" @change="onChange">
     </editor>
     <dialog id="myDialog">
-      <el-progress
-        :text-inside="true"
-        :stroke-width="24"
-        :percentage="hashPercentage"
-        :format="
-          (percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
-        "
-        v-if="hashPercentage && hashPercentage < 100"
-      ></el-progress>
-      <el-progress
-        :text-inside="true"
-        :stroke-width="24"
-        :percentage="percentage"
-        :format="(percentage) => `文件上传中，当前进度：${percentage}%`"
-        status="success"
-        v-else
-      ></el-progress>
+      <el-progress :text-inside="true" :stroke-width="24" :percentage="hashPercentage" :format="
+            (percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
+          " v-if="hashPercentage && hashPercentage < 100"></el-progress>
+      <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage"
+        :format="(percentage) => `文件上传中，当前进度：${percentage}%`" status="success" v-else></el-progress>
     </dialog>
   </div>
 </template>
@@ -166,7 +148,7 @@ export default {
             // }
           },
         },
-        images_upload_handler: (blobInfo, success, failure) => {
+        images_upload_handler: async (blobInfo, success, failure) => {
           // var formData;
           // formData = new FormData();
           var file = blobInfo.blob(); //转化为易于理解的file对象
@@ -184,27 +166,59 @@ export default {
           console.log("images_upload_handler", file);
 
           let uploadUrl = this.serviceApi().uploadFile;
-          $http
-            .post(uploadUrl, formData, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-              timeout: 60 * 60 * 1000,
-              onUploadProgress(e) {
-                const complete = (e.loaded / e.total) * 100;
-                that.percentage = Math.round(complete);
-              },
-            })
-            .then((response) => {
-              console.log("uploadImg:::", response);
-              const url = this.getFileUrl(response.data.fileurl);
-              document.getElementById("myDialog").close();
-              success(url);
-            })
-            .catch((error) => {
-              console.log(error);
-              this.$message.error("上传失败:" + error);
-            });
+          try {
+            const response = await $http.post(uploadUrl, formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+                timeout: 60 * 60 * 1000,
+                onUploadProgress(e) {
+                  const complete = (e.loaded / e.total) * 100;
+                  that.percentage = Math.round(complete);
+                },
+              })
+
+            console.log("uploadImg:::", response);
+            const url = this.getFileUrl(response.data.fileurl);
+            const file_no = response.data.file_no;
+            if (file_no && url?.startsWith('http')) {
+              this.percentage = 99;
+              await this.checkUploadStatus(file_no)
+              this.percentage = 100;
+            }
+            document.getElementById("myDialog").close();
+            success(url);
+
+          } catch (error) {
+            console.log(error);
+            this.$message.error("上传失败:" + error);
+          }
+          //  $http.post(uploadUrl, formData, 
+          //   {
+          //     headers: {
+          //       "Content-Type": "multipart/form-data",
+          //     },
+          //     timeout: 60 * 60 * 1000,
+          //     onUploadProgress(e) {
+          //       const complete = (e.loaded / e.total) * 100;
+          //       that.percentage = Math.round(complete);
+          //     },
+          //   })
+          // .then((response) => {
+          //   console.log("uploadImg:::", response);
+          //   const url = this.getFileUrl(response.data.fileurl);
+          //   const file_no = response.data.file_no;
+          //   if(file_no){
+
+          //   }
+          //   document.getElementById("myDialog").close();
+          //   success(url);
+          // })
+          // .catch((error) => {
+          //   console.log(error);
+          //   this.$message.error("上传失败:" + error);
+          // });
         },
         file_picker_types: "media",
         file_picker_callback: (callback, value, meta) => {
