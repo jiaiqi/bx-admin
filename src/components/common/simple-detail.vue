@@ -10,7 +10,7 @@
         </slot>
       </el-alert>
     </template>
-    <el-row>
+    <el-row class="form-view-wrapper">
       <slot name="field-form-prepend"></slot>
       <el-form
         :model="formModel"

@@ -172,25 +172,28 @@ body {
 .el-textarea.is-disabled .el-textarea__inner {
   color: #303133 !important;
 }
-
+// 统一add\update\detail表单在页面跟弹窗中样式，底部按钮固定
 .customDialogClass {
-  .el-dialog{
-    margin-top: 10vh!important;
+  .el-dialog {
+    margin-top: 5vh !important;
   }
-  .el-dialog__header{
+  .el-dialog__header {
     padding: 10px 20px;
-    .el-dialog__headerbtn{
-      top:10px;
+    .el-dialog__headerbtn {
+      top: 10px;
     }
   }
   .el-dialog__body {
     padding: 0px 20px 10px !important;
-    .form-view-wrapper{
-      max-height: 70vh;
-      overflow-y: auto;
-      padding-bottom: 10px;
+    .form-view-wrapper.el-row {
+      max-height: 75vh;
     }
   }
+}
+.form-view-wrapper.el-row {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding-bottom: 10px;
 }
 
 .is-demo {
