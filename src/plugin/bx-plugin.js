@@ -9,6 +9,7 @@ export default {
   // the first argument, along with possible options
   install(Vue, options) {
     Vue.prototype.$http = $http;
+    Vue.prototype.$axios = $http;
 
     Vue.use(Viewer);
     Viewer.setDefaults({
