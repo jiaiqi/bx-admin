@@ -51,7 +51,7 @@ export default {
       let props = {
         value: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
-        checkStrictly: top?.env?.includes('health') ? false : true,
+        checkStrictly: top?.env?.includes("health") ? false : true,
       };
 
       return props;
@@ -154,7 +154,7 @@ export default {
      * 如果不是点击节点后查询、不是搜索、没有默认值 则将父节点编号isnull 作为过滤条件
      * 如果有默认条件（option_list配置的）,以上所有情况 请求都带上默认条件
      */
-    treeLazySelect(loader, parentNo = "", val = "", curVal) {
+    async treeLazySelect(loader, parentNo = "", val = "", curVal) {
       const fieldInfo = this.field.info;
       let conditions = this.buildConditions(loader);
       let relation_condition = {};
@@ -247,49 +247,48 @@ export default {
           pageSize: 2000,
         },
       };
-      return this.$http.post(url, params).then((response) => {
-        this.noData = false;
-        if (response && response.data && response.data.data) {
-          // if(response.data.data.length === 0){
-          //   this.noData = true;
-          // }
-          let options = response.data.data.map((item) => {
-            item.children = item.is_leaf === "是" ? null : [];
-            return item;
-          });
-          if (this.needRenameLabel()) {
-            options.forEach((option) => this.renameLable(option));
-          }
-          if (curVal && response.data.data.length > 0) {
-            let item = response.data.data[0];
-            let path = item.path;
-            this.selected = path
-              .split("/")
-              .map((val) => {
-                if (
-                  typeof item[this.props.value] === "number" &&
-                  !isNaN(Number(val))
-                ) {
-                  return Number(val);
-                }
-                return val;
-              })
-              .filter((t) => !!t);
-            this.field.model = item;
-            this.$emit("field-value-changed", this.field.info.name, this.field);
-          }
-          if (parentNo && this.options.length > 0) {
-            this.options = this.setOptionChild(
-              this.options,
-              this.props.value,
-              parentNo,
-              options
-            );
-          } else {
-            this.options = options;
-          }
+      const response = await this.$http.post(url, params);
+      this.noData = false;
+      if (response && response.data && response.data.data) {
+        // if(response.data.data.length === 0){
+        //   this.noData = true;
+        // }
+        let options = response.data.data.map((item) => {
+          item.children = item.is_leaf === "是" ? null : [];
+          return item;
+        });
+        if (this.needRenameLabel()) {
+          options.forEach((option) => this.renameLable(option));
         }
-      });
+        if (curVal && response.data.data.length > 0) {
+          let item = response.data.data[0];
+          let path = item.path;
+          this.selected = path
+            .split("/")
+            .map((val) => {
+              if (
+                typeof item[this.props.value] === "number" &&
+                !isNaN(Number(val))
+              ) {
+                return Number(val);
+              }
+              return val;
+            })
+            .filter((t) => !!t);
+          this.field.model = item;
+          this.$emit("field-value-changed", this.field.info.name, this.field);
+        }
+        // if (parentNo && this.options.length > 0) {
+        //   this.options = this.setOptionChild(
+        //     this.options,
+        //     this.props.value,
+        //     parentNo,
+        //     options
+        //   );
+        // } else {
+        //   this.options = options;
+        // }
+      }
     },
     async setInitValOption() {
       let fieldInfo = this.field.info;
@@ -347,16 +346,15 @@ export default {
       });
       return options;
     },
-    loadOptions() {
+    async loadOptions() {
       let fieldInfo = this.field.info;
       let conditions = [];
       let loader = this.dispLoaderV2;
       conditions = this.buildConditions(loader);
       if (loader.parentCol) {
         let curVal = this.field.getSrvVal();
-        return this.treeLazySelect(loader, null, null, curVal);
-      } else {
-        return this.treeSelect(loader.service, conditions).then((response) => {
+        await this.treeLazySelect(loader, null, null, curVal);
+        this.treeSelect(loader.service, conditions).then((response) => {
           if (response && response.data && response.data.data) {
             let options = response.data.data;
             if (this.needRenameLabel()) {
@@ -366,6 +364,20 @@ export default {
             this.noData = !options?.length;
           }
         });
+        // if (loader.parentCol) {
+        //   let curVal = this.field.getSrvVal();
+        //   return this.treeLazySelect(loader, null, null, curVal);
+        // } else {
+        //   return this.treeSelect(loader.service, conditions).then((response) => {
+        //     if (response && response.data && response.data.data) {
+        //       let options = response.data.data;
+        //       if (this.needRenameLabel()) {
+        //         options.forEach((option) => this.renameLable(option));
+        //       }
+        //       this.options = options;
+        //       this.noData = !options?.length;
+        //     }
+        //   });
       }
     },
 
@@ -384,7 +396,7 @@ export default {
       let loader = this.dispLoaderV2;
 
       if (this.selected && this.selected.length > 0) {
-        this.field.model = this.findSelectedItem();
+        this.field.model = this.findSelectedItem() || this.field.model;
         // this.selected = this.field.model
       } else {
         this.field.model = null;
@@ -394,8 +406,9 @@ export default {
         console.log(val, "onSelectChange");
         this.treeLazySelect(loader, val);
       }
-
-      this.$emit("field-value-changed", this.field.info.name, this.field);
+      if (val !== this.field.getSrvVal()) {
+        this.$emit("field-value-changed", this.field.info.name, this.field);
+      }
       // this.$nextTick(() => {
       //   this.$refs.elCascader.dropDownVisible = false
       // });
@@ -606,6 +619,12 @@ export default {
     });
   },
   watch: {
+    "field.model": {
+      deep: true,
+      handler(newValue, oldValue) {
+        console.log(newValue, oldValue, "field.model", this.field);
+      },
+    },
     visibleChange: function (newValue, oldValue) {
       if (newValue) {
         this.loadOptions();

@@ -334,6 +334,7 @@ export class Field {
         this.model = this.setSrvVal(this.evalInitValueExpr());
         console.log(
           "默认值",
+          this.info.label,
           srvVal,
           this.model,
           this.setSrvVal(this.evalInitValueExpr())
