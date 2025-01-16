@@ -98,16 +98,15 @@
           <span v-else class="ms-tree-space">&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span :title="scope.row[firstColumn]">
             <a
-            class="link-to-detail"
-            title="点击查看详情"
-            v-if="isDetailLink(item.column, scope.row, scope.$index)"
-            @click="toDetail(item.column, scope.row, scope.$index)"
-            >{{ formatValue(scope.row, item) }}</a
-          >
-         <span v-else>
-          {{ scope.row[firstColumn] }}
-
-         </span>
+              class="link-to-detail"
+              title="点击查看详情"
+              v-if="isDetailLink(item.column, scope.row, scope.$index)"
+              @click="toDetail(item.column, scope.row, scope.$index)"
+              >{{ formatValue(scope.row, item) }}</a
+            >
+            <span v-else>
+              {{ scope.row[firstColumn] }}
+            </span>
           </span>
         </template>
       </el-table-column>
@@ -275,6 +274,7 @@
 
     <el-dialog
       title="添加"
+      class="customDialogClass"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'add'"
@@ -314,6 +314,7 @@
 
     <el-dialog
       title="复制"
+      class="customDialogClass"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'duplicate' || activeForm == 'duplicatedeep'"
@@ -353,7 +354,9 @@
         :defaultValues="activeData"
         duplicateType="duplicate"
         :duplicateData="
-          clickedRow && clickedRow.duplicatedeep ? clickedRow.duplicatedeep : null
+          clickedRow && clickedRow.duplicatedeep
+            ? clickedRow.duplicatedeep
+            : null
         "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
@@ -364,6 +367,7 @@
 
     <el-dialog
       title="编辑"
+      class="customDialogClass"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'update'"
@@ -409,6 +413,7 @@
     <el-dialog
       title="添加下级节点"
       width="90%"
+      class="customDialogClass"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'add-child'"
       @close="activeForm = 'xx'"
@@ -1193,7 +1198,10 @@ export default {
 
       //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
       if (this.searchFormCondition.length == 0) {
-        if (!cond.find((item) => item.colName === this.parentCol) && this.defaultCondition.length===0) {
+        if (
+          !cond.find((item) => item.colName === this.parentCol) &&
+          this.defaultCondition.length === 0
+        ) {
           var initCondition = {
             colName: this.parentCol,
             ruleType: "isnull",

@@ -9,7 +9,9 @@ let _loginDialog = null;
 let baseURL = window.backendIpAddr;
 let bx_auth_ticket = "";
 
-const ENV = 'healthDev'
+// const ENV = 'healthDev'
+const ENV = "saas";
+
 top.env = ENV
 
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
@@ -28,9 +30,9 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = 'healthProd'
 
   const pathConfig = pathConfigMap[ENV];
-  if(location.href?.includes?.('menuapp=')){
+  if (location.href?.includes?.('menuapp=')) {
     let app = location.href.split('menuapp=')[1].split(';')[0]
-    if(app){
+    if (app) {
       pathConfig.application = app
     }
   }
@@ -48,7 +50,7 @@ if (pathConfig) {
     if (pathConfig?.gateway) {
       baseURL = pathConfig?.gateway;
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 window.backendIpAddr = baseURL;
 export const backendIpAddr = baseURL;
@@ -125,7 +127,7 @@ instance.interceptors.response.use(
             if (top.getLoginAddress) {
               login_page = "/" + top.getLoginAddress();
             }
-          } catch (exception) {}
+          } catch (exception) { }
           getRootWindow().layer.open({
             title: false,
             type: 2,
@@ -143,7 +145,7 @@ instance.interceptors.response.use(
                 console.info("1");
                 login_page = "/" + top.getMainAddress();
               }
-            } catch (exception) {}
+            } catch (exception) { }
             window.location.href = window.location.origin + login_page;
           }
         }
@@ -153,9 +155,9 @@ instance.interceptors.response.use(
         }
       } else {
         if (response.data.resultCode !== "9998") {
-          if(response.data.serviceInfo?.includes('sql语句执行异常')){
+          if (response.data.serviceInfo?.includes('sql语句执行异常')) {
             console.error(response.data.serviceInfo)
-          }else if (sessionStorage.getItem("need_login_flag") != "need_login") {
+          } else if (sessionStorage.getItem("need_login_flag") != "need_login") {
             Message.error(response.data.resultMessage);
           }
         }

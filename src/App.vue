@@ -174,8 +174,22 @@ body {
 }
 
 .customDialogClass {
+  .el-dialog{
+    margin-top: 10vh!important;
+  }
+  .el-dialog__header{
+    padding: 10px 20px;
+    .el-dialog__headerbtn{
+      top:10px;
+    }
+  }
   .el-dialog__body {
-    padding: 10px 20px !important;
+    padding: 0px 20px 10px !important;
+    .form-view-wrapper{
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-bottom: 10px;
+    }
   }
 }
 
