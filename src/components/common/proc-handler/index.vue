@@ -176,8 +176,9 @@ export default {
       const cfg = this.procResult.next_handle_user;
       const app =
         cfg.srv_app ||
-        sessionStorage.getItem("current_app") ||
+        this.resolveDefaultSrvApp?.() ||
         this.$route.query.srvApp ||
+        sessionStorage.getItem("current_app") ||
         "idm";
       const url = `/${app}/select/${cfg.serviceName}`;
       const req = {
@@ -190,11 +191,13 @@ export default {
           rownumber: this.handleUserPage.rownumber,
         },
       };
-      if(this.form.next_step){
-        const next = this.stepOptions.find(item => item.value === this.form.next_step)
-        if(next?.value){
+      if (this.form.next_step) {
+        const next = this.stepOptions.find(
+          (item) => item.value === this.form.next_step
+        );
+        if (next?.value) {
           console.log(next);
-          
+
           req.condition.push({
             colName: "step_str",
             value: next.label,
@@ -218,8 +221,9 @@ export default {
       const cfg = this.procResult.cc_user;
       const app =
         cfg.srv_app ||
-        sessionStorage.getItem("current_app") ||
+        this.resolveDefaultSrvApp?.() ||
         this.$route.query.srvApp ||
+        sessionStorage.getItem("current_app") ||
         "idm";
       const url = `/${app}/select/${cfg.serviceName}`;
       const req = {

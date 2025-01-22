@@ -196,6 +196,13 @@ body {
   padding-bottom: 10px;
 }
 
+#proc_detail{
+  .form-view-wrapper.el-row{
+    max-height: unset;
+    overflow: unset;
+    padding-bottom: unset;
+  }
+}
 .is-demo {
   // 原型图样式
   .el-checkbox__input.is-checked + .el-checkbox__label {
