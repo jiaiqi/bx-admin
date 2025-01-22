@@ -103,7 +103,7 @@ let routes = [
     name: "health-test",
     component: () => import("@/pages/health/index.vue"),
   },
-  
+
   {
     path: "/simple-add/:service_name",
     name: "simple-add",
@@ -397,24 +397,24 @@ let routes = [
     ],
   },
   {
-    path:'/authority',
-    component:()=>import('@/pages/authority.vue'),
-    name:'authority'
+    path: '/authority',
+    component: () => import('@/pages/authority.vue'),
+    name: 'authority'
   },
   {
-    path:'/authority/:type/:role_no',
-    component:()=>import('@/pages/authority.vue'),
-    name:'authority2'
+    path: '/authority/:type/:role_no',
+    component: () => import('@/pages/authority.vue'),
+    name: 'authority2'
   },
   {
-    path:'/comment-open-edit',
-    component:()=>import('@/pages/health/treeEdit.vue'),
-    name:'treeEdit'
+    path: '/comment-open-edit',
+    component: () => import('@/pages/health/treeEdit.vue'),
+    name: 'treeEdit'
   },
   {
-    path:'/preview/img',
-    component:()=>import('@/pages/common/preview/img.vue'),
-    name:'imagePreview'
+    path: '/preview/img',
+    component: () => import('@/pages/common/preview/img.vue'),
+    name: 'imagePreview'
   }
 ];
 
