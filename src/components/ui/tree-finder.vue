@@ -354,16 +354,6 @@ export default {
       if (loader.parentCol) {
         let curVal = this.field.getSrvVal();
         await this.treeLazySelect(loader, null, null, curVal);
-        this.treeSelect(loader.service, conditions).then((response) => {
-          if (response && response.data && response.data.data) {
-            let options = response.data.data;
-            if (this.needRenameLabel()) {
-              options.forEach((option) => this.renameLable(option));
-            }
-            this.options = options;
-            this.noData = !options?.length;
-          }
-        });
         // if (loader.parentCol) {
         //   let curVal = this.field.getSrvVal();
         //   return this.treeLazySelect(loader, null, null, curVal);
@@ -379,6 +369,16 @@ export default {
         //     }
         //   });
       }
+      this.treeSelect(loader.service, conditions).then((response) => {
+        if (response && response.data && response.data.data) {
+          let options = response.data.data;
+          if (this.needRenameLabel()) {
+            options.forEach((option) => this.renameLable(option));
+          }
+          this.options = options;
+          this.noData = !options?.length;
+        }
+      });
     },
 
     renameLable(option) {

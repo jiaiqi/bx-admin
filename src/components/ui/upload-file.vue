@@ -447,7 +447,7 @@ export default {
           params?.onProgress?.(event);
         };
         this.requestUploadFile(params, onProgress).then((res) => {
-          this.fileLists.push(res);
+          // this.fileLists.push(res);
           if (res?.id) {
             params?.onSuccess(res, file, this.fileLists);
           } else {
