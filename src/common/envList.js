@@ -125,4 +125,13 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "idm",
   },
+  gaosu61: {
+    // 高速收费平台
+    gateway_protocol: "http",
+    gateway_ip: "61.185.210.204",
+    port: "8101",
+    gateway: "http://61.185.210.204:8101",
+    sso_app: "sso",
+    application: "idm",
+  },
 };

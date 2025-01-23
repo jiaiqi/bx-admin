@@ -129,7 +129,11 @@ export default {
   methods: {
     getLabel(button) {
       console.log("getLabel", button);
-      if (this.inStep === true && button.name === "submit") {
+      if (
+        this.inStep === true &&
+        this.lastStep !== true &&
+        button.name === "submit"
+      ) {
         return "下一步";
       }
       return button.label;
@@ -210,7 +214,6 @@ export default {
             console.log("提交成功", self.info);
             if (
               self.inStep !== true &&
-              self.lastStep !== true &&
               self.info.nav2Location &&
               self.info.nav2Location.name == "list" &&
               self.info.nav2Location.params
@@ -239,12 +242,7 @@ export default {
           }
         })
         .then((value) => {
-          if (
-            self.inStep !== true &&
-            self.lastStep !== true &&
-            self.info.nav2Location &&
-            self.$router
-          ) {
+          if (self.inStep !== true && self.info.nav2Location && self.$router) {
             self.$router.push(self.info.nav2Location);
           }
         })

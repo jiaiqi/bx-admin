@@ -12,7 +12,7 @@ export default {
     return {
       stepNo: "", //步骤编号
       stepInfo: {},
-      currentStepIndex: 3,
+      currentStepIndex: 0,
       defaultCondition: [],
       stepState: {},
     };
@@ -62,13 +62,17 @@ export default {
       if (event.data?.state === "SUCCESS") {
         // 提交成功
         const data = event.data.response?.[0]?.response?.effect_data;
-        this.$set(this.stepState, this.currentStep.step_name, data);
+        this.$set(this.stepState, this.currentStep.id + "", data);
         // setTimeout(() => {
         //   this.currentStepIndex++;
         // }, 500);
-        this.$nextTick(() => {
-          this.currentStepIndex++;
-        });
+        if (this.currentStepIndex < this.steps.length - 1) {
+          this.$nextTick(() => {
+            this.currentStepIndex++;
+          });
+        }else{
+          this.$emit("on-step-form-complete", event);
+        }
       }
     },
     onAddFormActionComplete(event) {
@@ -130,7 +134,9 @@ export default {
           name="list-add"
           ref="AddForm"
           :in-step="true"
-          :last-step="stepList.length && currentStepIndex === stepList.length - 1"
+          :last-step="
+            stepList.length && currentStepIndex === stepList.length - 1
+          "
           :$srvApp="currentStep.step_page_srv_mapp"
           :service="currentStep.step_page_srv"
           :submit2-db="true"

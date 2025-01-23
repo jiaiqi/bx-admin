@@ -2521,9 +2521,11 @@ export default {
                 };
               }
               this.$router.push(route);
-              // setTimeout(() => {
-              //   window.location.reload();
-              // }, 200);
+              if (!timerSave) {
+                setTimeout(() => {
+                  window.location.reload();
+                }, 50);
+              }
             } else {
               this.$message({
                 type: "error",
