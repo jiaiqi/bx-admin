@@ -187,17 +187,18 @@ body {
     padding: 0px 20px 10px !important;
     .form-view-wrapper.el-row {
       max-height: 75vh;
+      overflow-y: auto;
     }
   }
 }
-.form-view-wrapper.el-row {
-  max-height: calc(100vh - 150px);
-  overflow-y: auto;
-  padding-bottom: 10px;
-}
+// .form-view-wrapper.el-row {
+//   max-height: calc(100vh - 150px);
+//   overflow-y: auto;
+//   padding-bottom: 10px;
+// }
 
-#proc_detail{
-  .form-view-wrapper.el-row{
+#proc_detail {
+  .form-view-wrapper.el-row {
     max-height: unset;
     overflow: unset;
     padding-bottom: unset;

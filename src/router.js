@@ -89,7 +89,12 @@ let routes = [
     component: () => import("@/pages/common/register/register.vue"),
   },
   {
-    path: "/expert-register",
+    path: "/step/:step_no",
+    name: "stepForm", //步骤表单
+    component: () => import("@/components/common/step/form.vue"),
+  },
+  {
+    path: "/expert-register", // 专家注册
     name: "expert-register",
     component: () => import("@/pages/health/register.vue"),
   },

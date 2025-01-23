@@ -1,11 +1,29 @@
 <template>
-  <div style="display: inline-block" v-show="this.info.visible" class="bx_action">
-    <el-button v-if="info" :size="info._moreConfig.size" :type="info._moreConfig.type" :icon="info.button_icon || info._moreConfig.icon"
-      :round="info._moreConfig.style !== '' && info._moreConfig.style === 'round'"
-      :plain="info._moreConfig.style !== '' && info._moreConfig.style === 'plain'"
-      :circle="info._moreConfig.style !== '' && info._moreConfig.style === 'circle'" :loading="is_draft && freeze"
-      @click="onClicked()">{{ info.label }}
-      <span v-show="is_draft">{{ is_draft && realTime ? '(' + realTime + 's)' : '' }}</span>
+  <div
+    style="display: inline-block"
+    v-show="this.info.visible"
+    class="bx_action"
+  >
+    <el-button
+      v-if="info"
+      :size="info._moreConfig.size"
+      :type="info._moreConfig.type"
+      :icon="info.button_icon || info._moreConfig.icon"
+      :round="
+        info._moreConfig.style !== '' && info._moreConfig.style === 'round'
+      "
+      :plain="
+        info._moreConfig.style !== '' && info._moreConfig.style === 'plain'
+      "
+      :circle="
+        info._moreConfig.style !== '' && info._moreConfig.style === 'circle'
+      "
+      :loading="is_draft && freeze"
+      @click="onClicked()"
+      >{{ getLabel(info) }}
+      <span v-show="is_draft">{{
+        is_draft && realTime ? "(" + realTime + "s)" : ""
+      }}</span>
     </el-button>
     <!-- <el-button v-if="info" 
       :size="info._moreConfig.size" 
@@ -19,10 +37,16 @@
       >{{ info.label}}
     </el-button> -->
 
-    <executor :duplicateType="duplicateType" :duplicateData="duplicateData" v-if="info && info.executor" ref="executor" v-bind.sync="info.executor" :defaultValues="info.defaultValues"
-      @executor-complete="$emit('executor-complete', $event)">
+    <executor
+      :duplicateType="duplicateType"
+      :duplicateData="duplicateData"
+      v-if="info && info.executor"
+      ref="executor"
+      v-bind.sync="info.executor"
+      :defaultValues="info.defaultValues"
+      @executor-complete="$emit('executor-complete', $event)"
+    >
     </executor>
-
   </div>
 </template>
 
@@ -33,31 +57,39 @@ import Executor from "./executor.vue";
 
 export default {
   components: {
-    executor: Executor
+    executor: Executor,
   },
   mixins: [ExecutorMixin],
 
   props: {
     info: {
-      type: ActionInfo
+      type: ActionInfo,
     },
     isDraft: {
       type: String,
       default: function () {
         return "norm";
-      }
+      },
     },
     draftDataKey: {
       type: Object,
       default: function () {
         return {
           colName: "id",
-          value: null
+          value: null,
         };
-      }
+      },
     },
-    duplicateType:String,
-    duplicateData:Object
+    duplicateType: String,
+    duplicateData: Object,
+    inStep: {
+      type: Boolean,
+      default: false,
+    },
+    lastStep: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data() {
@@ -67,7 +99,7 @@ export default {
       timer: null,
       is_draft: false,
       freeze: false,
-      remainingTimes: 0
+      remainingTimes: 0,
     };
   },
   updated: function () {
@@ -95,13 +127,19 @@ export default {
     }
   },
   methods: {
+    getLabel(button) {
+      console.log("getLabel", button);
+      if (this.inStep === true && button.name === "submit") {
+        return "下一步";
+      }
+      return button.label;
+    },
     onClicked: function () {
-
       let self = this;
       let loading = null;
       let origin = Promise.resolve(true);
       origin
-        .then(_ => {
+        .then((_) => {
           if (this.info.customPrecheckFunc) {
             let checkResult = this.info.customPrecheckFunc();
             if (checkResult !== true) {
@@ -109,23 +147,23 @@ export default {
             }
           }
         })
-        .then(_ => {
+        .then((_) => {
           if (self.info.precheckFunc) {
             return self.info.precheckFunc();
           }
         })
-        .catch(err => {
+        .catch((err) => {
           if (err !== "custom precheck err") {
             self.$message.error("请检查输入数据信息");
           }
           throw "validate err";
         })
-        .then(ret => {
+        .then((ret) => {
           if (self.info.confirm) {
             return self.$confirm(self.info.confirm, "提示", {
               confirmButtonText: "确定",
               cancelButtonText: "取消",
-              type: "warning"
+              type: "warning",
             });
           }
         })
@@ -135,7 +173,7 @@ export default {
               lock: self,
               text: "加载中",
               spinner: "el-icon-loading",
-              background: "rgba(0, 0, 0, 0.7)"
+              background: "rgba(0, 0, 0, 0.7)",
             });
             // setTimeout(() => {
             //   loading.close();
@@ -150,38 +188,43 @@ export default {
               self.isDraft
             );
           } else if (self.info.invokeFunc) {
-
-
             // return self.$refs.executor.run(self.info,self.draftDataKey,self.isDraft);
             // return Promise.resolve(self.info.invokeFunc());
             return Promise.resolve(self.info.invokeFunc());
           }
         })
-        .then(response => {
+        .then((response) => {
           if (this.info.executor) {
             if (response && response.data && response.data.state == "SUCCESS") {
               self.$message({
                 message: response.data.resultMessage || "提交成功！",
-                type: "success"
+                type: "success",
               });
             } else {
               self.$message.error(response.data.resultMessage || "提交失败！");
               throw "submit err";
             }
           }
-          
-          if(response && response.data && response.data.state == "SUCCESS"){
-            console.log('提交成功',self.info)
-            if(self.info.nav2Location && self.info.nav2Location.name == "list" && self.info.nav2Location.params){
-               let srv = self.info.nav2Location.params.service_name
-               let tableButtonsPopup = this.$store.getters.getTableButtonsPopup()
-               if(srv && tableButtonsPopup.hasOwnProperty(srv)){
-                let activeMode = tableButtonsPopup[srv]
-                activeMode['submitState'] = true
+
+          if (response && response.data && response.data.state == "SUCCESS") {
+            console.log("提交成功", self.info);
+            if (
+              self.inStep !== true &&
+              self.lastStep !== true &&
+              self.info.nav2Location &&
+              self.info.nav2Location.name == "list" &&
+              self.info.nav2Location.params
+            ) {
+              let srv = self.info.nav2Location.params.service_name;
+              let tableButtonsPopup =
+                this.$store.getters.getTableButtonsPopup();
+              if (srv && tableButtonsPopup.hasOwnProperty(srv)) {
+                let activeMode = tableButtonsPopup[srv];
+                activeMode["submitState"] = true;
                 this.$store.commit("setTableButtonsPopup", {
-                  ...activeMode
-                })
-               }
+                  ...activeMode,
+                });
+              }
             }
             // let pageKey = {
             //     service:operate_item.service,
@@ -195,15 +238,20 @@ export default {
             // })
           }
         })
-        .then(value => {
-          if (self.info.nav2Location && self.$router) {
+        .then((value) => {
+          if (
+            self.inStep !== true &&
+            self.lastStep !== true &&
+            self.info.nav2Location &&
+            self.$router
+          ) {
             self.$router.push(self.info.nav2Location);
           }
         })
-        .then(_ => {
+        .then((_) => {
           self.$emit("action-complete", self.info.name);
         })
-        .catch(() => { })
+        .catch(() => {})
         .finally(() => {
           if (loading) {
             loading.close();
@@ -245,14 +293,14 @@ export default {
       self.freeze = true;
       this.$emit("form-is-loaded", {
         loaded: true,
-        text: "自动保存草稿中..."
+        text: "自动保存草稿中...",
       });
       this.$refs.executor
         .run(this.info, self.draftDataKey, self.isDraft)
-        .then(response => {
+        .then((response) => {
           this.$emit("form-is-loaded", {
             loaded: false,
-            text: "..."
+            text: "...",
           });
           if (this.info.executor) {
             if (response && response.data && response.data.state == "SUCCESS") {
@@ -275,21 +323,22 @@ export default {
               }
               this.$message({
                 message: "自动保存草稿成功！",
-                type: "success"
+                type: "success",
               });
               self.freeze = false;
               this.actionTimer(this.auto_save, this.info);
             } else {
               self.remainingTimes += self.remainingTimes;
               this.$message.error(
-                "自动保存失败！" + response.data.resultMessage || "自动保存失败！"
+                "自动保存失败！" + response.data.resultMessage ||
+                  "自动保存失败！"
               );
               this.actionTimer(this.auto_save, this.info);
               throw "submit err";
             }
           }
         });
-    }
+    },
   },
   watch: {
     isDraft: {
@@ -300,19 +349,19 @@ export default {
           this.clearTimer();
         }
       },
-      deep: true //对象内部的属性监听，也叫深度监听
+      deep: true, //对象内部的属性监听，也叫深度监听
     },
     realTime: {
       handler: function (val, oldval) {
         if (val <= 3) {
           this.$emit("form-is-loaded", {
             loaded: true,
-            text: "自动保存草稿，请勿关闭界面。"
+            text: "自动保存草稿，请勿关闭界面。",
           });
         }
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>
 
@@ -320,5 +369,5 @@ export default {
 .bx_action {
   margin-left: 3px;
   margin-right: 3px;
-}</style>
-
+}
+</style>

@@ -27,6 +27,7 @@
           @executor-complete="$emit('executor-complete', $event)"
           :childForeignkey="childForeignkey"
           :childrenLists="childrenList"
+          :in-step="inStep"
         >
           <div
             slot="field-form-prepend"
@@ -358,6 +359,14 @@ export default {
     },
     duplicateType: String,
     duplicateData: Object,
+    inStep: {
+      type: Boolean,
+      default: false,
+    },
+    lastStep:{
+      type: Boolean,
+      default: false
+    }
   },
 
   data() {
