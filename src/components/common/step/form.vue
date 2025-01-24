@@ -8,13 +8,20 @@ export default {
       default: "",
     },
   },
+  provide() {
+    return {
+      preventNav: false, //阻止默认的跳转行为
+      isLastStep: this.isLastStep,
+    };
+  },
   data() {
     return {
       stepNo: "", //步骤编号
       stepInfo: {},
-      currentStepIndex: 0,
+      currentStepIndex: 4,
       defaultCondition: [],
       stepState: {},
+      // preventNav:false,//阻止默认的跳转行为
     };
   },
   computed: {
@@ -36,6 +43,12 @@ export default {
     },
   },
   methods: {
+    isLastStep() {
+      return (
+        this.stepList.length &&
+        this.currentStepIndex === this.stepList.length - 1
+      );
+    },
     async init() {
       const service = "srvcps_page_flow_select";
       const url = `/datax/select/${service}`;
@@ -66,11 +79,13 @@ export default {
         // setTimeout(() => {
         //   this.currentStepIndex++;
         // }, 500);
-        if (this.currentStepIndex < this.steps.length - 1) {
+        if (this.currentStepIndex < this.stepList.length - 1) {
+          console.log("stepState:", this.stepState);
+
           this.$nextTick(() => {
             this.currentStepIndex++;
           });
-        }else{
+        } else {
           this.$emit("on-step-form-complete", event);
         }
       }

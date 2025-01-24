@@ -60,7 +60,7 @@ export default {
     executor: Executor,
   },
   mixins: [ExecutorMixin],
-
+  inject: ["preventNav", "isLastStep"],
   props: {
     info: {
       type: ActionInfo,
@@ -86,9 +86,10 @@ export default {
       type: Boolean,
       default: false,
     },
-    lastStep: {
-      type: Boolean,
-      default: false,
+  },
+  computed: {
+    lastStep() {
+      return this.isLastStep();
     },
   },
 
@@ -213,7 +214,8 @@ export default {
           if (response && response.data && response.data.state == "SUCCESS") {
             console.log("提交成功", self.info);
             if (
-              self.inStep !== true &&
+              (self.inStep !== true ||
+                (this.lastStep === true && this.preventNav !== true)) &&
               self.info.nav2Location &&
               self.info.nav2Location.name == "list" &&
               self.info.nav2Location.params
@@ -242,7 +244,19 @@ export default {
           }
         })
         .then((value) => {
-          if (self.inStep !== true && self.info.nav2Location && self.$router) {
+          if (
+            (self.inStep !== true ||
+              (this.lastStep === true && this.preventNav !== true)) &&
+            self.info.nav2Location &&
+            self.$router
+          ) {
+            const obj = self.info.nav2Location
+            if(!obj.query){
+              obj.query = {
+                srvApp:self.resolveDefaultSrvApp()
+              }
+            }
+
             self.$router.push(self.info.nav2Location);
           }
         })
