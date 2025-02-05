@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog class="customDialogClass" title="添加" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'booking'" @close="activeForm = 'xx'" append-to-body>
-      <booking-page :row-data="rowData" :defaultValues="defaultValues" @cancel="activeForm = 'xx'" @refresh="onActionComplete" v-if="activeForm == 'booking'"></booking-page>
+      <booking-page :defaultApplication="defaultApplication" :row-data="rowData" :defaultValues="defaultValues" @cancel="activeForm = 'xx'" @refresh="onActionComplete" v-if="activeForm == 'booking'"></booking-page>
     </el-dialog>
     <el-dialog class="customDialogClass" title="添加" width="90%" :close-on-click-modal="1==2" :visible="activeForm == 'add'" @close="activeForm = 'xx'" append-to-body>
       <!-- <simple-add name="add" ref="add-form" v-if="activeForm == 'add'" :service="service" :default-conditions="defaultConditions" :mainformDatas='listMainFormDatas' :default-condition="defaultCondition"  :childForeignkey='childForeignkey'  :default-values="defaultValues" @action-complete="onActionComplete($event)">
@@ -177,6 +177,7 @@ export default {
   data() {
     return {
       activeForm: null,
+      defaultApplication:"",
       service: null,
       selectService: null,
       defaultConditions: [],

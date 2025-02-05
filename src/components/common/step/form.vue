@@ -18,7 +18,7 @@ export default {
     return {
       stepNo: "", //步骤编号
       stepInfo: {},
-      currentStepIndex: 4,
+      currentStepIndex: 0,
       defaultCondition: [],
       stepState: {},
       // preventNav:false,//阻止默认的跳转行为

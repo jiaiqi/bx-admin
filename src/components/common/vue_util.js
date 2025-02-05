@@ -1332,6 +1332,9 @@ function init_util() {
     }
     dialog.activeForm = params.formType;
     if (btninfo?.moreConfig?.customComponentName) {
+      if(btninfo.application){
+        dialog.defaultApplication = btninfo.application;
+      }
       dialog.activeForm = btninfo?.moreConfig?.customComponentName;
       if (params.listRowData) {
         dialog.rowData = params.listRowData;
