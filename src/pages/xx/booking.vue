@@ -99,7 +99,10 @@
             <span class="date">{{
               data.day.split("-").slice(2).join("-")
             }}</span>
-            <span v-if="datesMap[data.day]">
+            <span v-if="datesMap[data.day] && datesMap[data.day].cnt_can === 1">
+              {{ datesMap[data.day].cntr === 1 ? "已约" : "未约" }}
+            </span>
+            <span v-else-if="datesMap[data.day]">
               ({{ datesMap[data.day].cntr }}/{{
                 datesMap[data.day].cnt_can
               }})</span
@@ -118,7 +121,8 @@
           'is-selected': item.start_time && item.start_time === form.time,
           disabled: !showTime(item.start_time),
         }"
-        v-for="item in times"
+        v-for="(item,index) in times"
+        :key="index"
         @click="form.time = item.start_time"
       >
         <div class="time">{{ item.start_time }}-{{ item.end_time }}</div>
@@ -155,7 +159,7 @@ export default {
   props: {
     defaultValues: Object,
     rowData: Object,
-    defaultApplication:String
+    defaultApplication: String,
   },
   computed: {
     canBookingTime() {
