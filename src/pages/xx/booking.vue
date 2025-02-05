@@ -33,16 +33,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :xs="12" :sm="8" :md="6" :lg="6" :xl="4">
-            <el-form-item required label="预约人数">
-              <el-input
-                v-model.number="form.number"
-                type="number"
-                :step="1"
-                @change="numberChange"
-              ></el-input>
-            </el-form-item>
-          </el-col>
+
           <el-col :xs="12" :sm="8" :md="6" :lg="6" :xl="4">
             <el-form-item required label="联系人">
               <el-input v-model="form.contacts"></el-input>
@@ -51,6 +42,25 @@
           <el-col :xs="12" :sm="8" :md="6" :lg="6" :xl="4">
             <el-form-item required label="手机号">
               <el-input v-model="form.mobilephone"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="12" :sm="8" :md="6" :lg="6" :xl="4">
+            <el-form-item label="预约人数" :required="numberRequired">
+              <el-input
+                v-model.number="form.number"
+                type="number"
+                :step="1"
+                @change="numberChange"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="16" :md="12" :lg="12" :xl="8">
+            <el-form-item label="备注">
+              <el-input
+                v-model="form.remark"
+                type="textarea"
+                :maxlength="200"
+              ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -119,15 +129,22 @@
         class="time-range-item"
         :class="{
           'is-selected': item.start_time && item.start_time === form.time,
-          disabled: !showTime(item.start_time),
+          disabled: !showTime(item.start_time, item.div_count, item.cnty),
         }"
-        v-for="(item,index) in times"
+        v-for="(item, index) in times"
         :key="index"
         @click="form.time = item.start_time"
       >
         <div class="time">{{ item.start_time }}-{{ item.end_time }}</div>
-        <div class="opening">总计：{{ item.div_count || "0" }}</div>
-        <div class="booked">已约：{{ item.cnty || "0" }}</div>
+        <div v-if="item.div_count === 1">
+          {{ item.cnty === 1 ? "已约" : "未约" }}
+        </div>
+        <div class="opening" v-else-if="item.div_count !== 1">
+          总计：{{ item.div_count || "0" }}
+        </div>
+        <div class="booked" v-if="item.div_count !== 1">
+          已约：{{ item.cnty || "0" }}
+        </div>
       </div>
     </div>
     <div style="text-align: center">
@@ -138,7 +155,6 @@
         @click="submit"
         :disabled="
           !form.rsvo_no ||
-          !form.number ||
           !form.date ||
           !form.time ||
           !form.contacts ||
@@ -207,10 +223,12 @@ export default {
         time: "",
         contacts: "", //人，
         mobilephone: "", //手机号
+        remark: "", //备注
       },
       placement: [], //可预约场地
       dates: [], //可预约日期
       times: [], //可预约时间段
+      numberRequired: false,
     };
   },
   methods: {
@@ -244,6 +262,7 @@ export default {
               rsvt_no: this.timesMap[this.form.time].rsvt_no, //预约时段编码
               contacts: this.form.contacts, //联系人
               mobilephone: this.form.mobilephone, //手机号
+              remark: this.form.remark,
             },
           ],
         },
@@ -264,13 +283,16 @@ export default {
     },
     showTime(time) {
       let item = this.timesMap?.[time];
-      if (item) {
-        return (
-          !this.form.number ||
-          (item &&
-            item.div_count &&
-            item.div_count - item.cnty >= this.form.number)
-        );
+      if (item && item.div_count) {
+        if (item.cnty >= item.div_count) {
+          // 已约大于等于可约
+          return false;
+        }
+        if (this.numberRequired) {
+          return item.div_count - item.cnty >= this.form.number;
+        } else {
+          return true;
+        }
       } else {
         return false;
       }
@@ -292,8 +314,14 @@ export default {
         }
       }
       // return  !item
-      if (item) {
-        return !(item?.cnt_can && item.cnt_can - item.cntr >= this.form.number);
+      if (item && item.cnt_can) {
+        return this.form.number &&
+          item?.cnt_can &&
+          item.cnt_can - item.cntr >= this.form.number
+          ? false
+          : !this.form.number
+          ? false
+          : true;
       } else {
         return true;
       }
