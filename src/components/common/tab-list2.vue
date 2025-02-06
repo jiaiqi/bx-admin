@@ -1,23 +1,54 @@
 <template>
-  <div>
-    <el-alert v-if="moreConfig && moreConfig.hasOwnProperty('pagePrompt')"
-      :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title : ''" :closable="false" :type="moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
-        ">
+  <div class="list-page-wrap">
+    <el-alert
+      v-if="moreConfig && moreConfig.hasOwnProperty('pagePrompt')"
+      :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title : ''"
+      :closable="false"
+      :type="
+        moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
+      "
+    >
       <slot>
         <div v-html="moreConfig.pagePrompt.description">
           {{ moreConfig.pagePrompt.description }}
         </div>
       </slot>
     </el-alert>
-    <filterTabs :$srvApp="$srvApp" ref="filterTabs" v-if="tabs.length > 0 && cols.length > 0" :tabs="tabs"
-      :srv="getService()" :cols="cols" :default-condition="getDefaultConditions" :main-data="listMainFormDatas"
-      @on-input-value="onFilterChange" @on-change="getTableDatas"></filterTabs>
-    <el-row :gutter="20" v-if="statsData.length > 0" style="border: 1px solid #f2f2f2; padding: 5px; margin: 0">
+    <filterTabs
+      :$srvApp="$srvApp"
+      ref="filterTabs"
+      v-if="tabs.length > 0 && cols.length > 0"
+      :tabs="tabs"
+      :srv="getService()"
+      :cols="cols"
+      :default-condition="getDefaultConditions"
+      :main-data="listMainFormDatas"
+      @on-input-value="onFilterChange"
+      @on-change="getTableDatas"
+    ></filterTabs>
+    <el-row
+      :gutter="20"
+      v-if="statsData.length > 0"
+      style="border: 1px solid #f2f2f2; padding: 5px; margin: 0"
+    >
       <div class="stata-data-layout">
-        <div v-for="(sum, index) in statsData" :key="index" class="text-center stata-data-item">
-          <div class="grid-content bg-purple" style="font-size: 1.1rem; color: #409eff">
+        <div
+          v-for="(sum, index) in statsData"
+          :key="index"
+          class="text-center stata-data-item"
+        >
+          <div
+            class="grid-content bg-purple"
+            style="font-size: 1.1rem; color: #409eff"
+          >
             {{ sum.label }}
-            <el-tooltip popper-class="retail-poper" effect="dark" v-if="sum.tip" :content="sum.tip" placement="right">
+            <el-tooltip
+              popper-class="retail-poper"
+              effect="dark"
+              v-if="sum.tip"
+              :content="sum.tip"
+              placement="right"
+            >
               <i class="el-icon-question" style="color: #525252"></i>
             </el-tooltip>
           </div>
@@ -28,28 +59,55 @@
         </div>
       </div>
     </el-row>
-    <div>
+    <div class="list-page-content">
       <template>
-        <treegrid ref="list" v-if="routeName==='treegrid' && isTreeReal && storageType === 'db'" :list-type="getListType"
-          :storage-type="storageType" :service="getService()" :default-condition="getDefaultConditions"
+        <treegrid
+          ref="list"
+          v-if="routeName === 'treegrid' && isTreeReal && storageType === 'db'"
+          :list-type="getListType"
+          :storage-type="storageType"
+          :service="getService()"
+          :default-condition="getDefaultConditions"
           :relationCondition="relationCondition"
-          :memInitdatasAdd="memInitdatasAdd">
-        </treegrid>
-        <list ref="list" :route-meta="meta" :$srvApp="$srvApp" :list-type="getListType" :storage-type="storageType" :service="getService()"
-          @more-config-loaded="moreConfigLoaded" :default-condition="getDefaultConditions"
-          :relationCondition="relationCondition" :inplace-edit="inplaceEdit"
-          :default-inplace-edit-mode="defaultInplaceEditMode" :default-dirty-flags="defaultDirtyFlags"
-          :childforeignvalue="childforeignvalue" :name="listName" :childForeignkey="foreignKey"
-          :childforeignkey="foreignKey" :listMainFormDatas="listMainFormDatas" :mainService="mainService"
-          :def-data-para="defDataPara" :readOnly="readOnly" @stats-data-load="statsLoaded"
           :memInitdatasAdd="memInitdatasAdd"
-          @v2-loaded-isDraft="v2LoadedIsDraft($event)" @child-loaded="$emit('child-loaded', $event)"
-          @list-loaded="$emit('list-loaded', $event)" @inline-list-loaded="$emit('inline-list-loaded', $event)"
-          @add-form-loaded="$emit('add-form-loaded', $event)" @update-form-loaded="$emit('update-form-loaded', $event)"
+        >
+        </treegrid>
+        <list
+          ref="list"
+          :route-meta="meta"
+          :$srvApp="$srvApp"
+          :list-type="getListType"
+          :storage-type="storageType"
+          :service="getService()"
+          @more-config-loaded="moreConfigLoaded"
+          :default-condition="getDefaultConditions"
+          :relationCondition="relationCondition"
+          :inplace-edit="inplaceEdit"
+          :default-inplace-edit-mode="defaultInplaceEditMode"
+          :default-dirty-flags="defaultDirtyFlags"
+          :childforeignvalue="childforeignvalue"
+          :name="listName"
+          :childForeignkey="foreignKey"
+          :childforeignkey="foreignKey"
+          :listMainFormDatas="listMainFormDatas"
+          :mainService="mainService"
+          :def-data-para="defDataPara"
+          :readOnly="readOnly"
+          @stats-data-load="statsLoaded"
+          :memInitdatasAdd="memInitdatasAdd"
+          @v2-loaded-isDraft="v2LoadedIsDraft($event)"
+          @child-loaded="$emit('child-loaded', $event)"
+          @list-loaded="$emit('list-loaded', $event)"
+          @inline-list-loaded="$emit('inline-list-loaded', $event)"
+          @add-form-loaded="$emit('add-form-loaded', $event)"
+          @update-form-loaded="$emit('update-form-loaded', $event)"
           @duplicate-form-loaded="$emit('duplicate-form-loaded', $event)"
-          @filter-form-loaded="$emit('filter-form-loaded', $event)" @list-data-loaded="listDataLoaded"
+          @filter-form-loaded="$emit('filter-form-loaded', $event)"
+          @list-data-loaded="listDataLoaded"
           @grid-data-changed="$emit('grid-data-changed', $event)"
-          @standby-row-added="$emit('standby-row-added', $event)" v-else>
+          @standby-row-added="$emit('standby-row-added', $event)"
+          v-else
+        >
         </list>
       </template>
     </div>
@@ -154,18 +212,18 @@ export default {
         return {};
       },
     },
-    memInitdatasAdd:Array
+    memInitdatasAdd: Array,
   },
 
   computed: {
-    meta(){
-      return this.$route?.meta
+    meta() {
+      return this.$route?.meta;
     },
-    routeName(){
-      return this.$route?.name
+    routeName() {
+      return this.$route?.name;
     },
     isTreeReal: function () {
-      if(this.$route.meta?.isTree===true){
+      if (this.$route.meta?.isTree === true) {
         return true;
       }
       if (this.$route?.path?.indexOf("treegrid") > 0) {
@@ -266,7 +324,7 @@ export default {
       let tabsConds = this.$refs?.filterTabs?.buildConditions();
       this.relationCondition = tabsConds;
       console.log("tabsConds", tabsConds);
-      
+
       setTimeout(function () {
         self.$refs.list.loadTableData();
       }, 100);
@@ -460,7 +518,7 @@ export default {
             this.addTab(section, tab);
           }
         });
-      } catch (e) { }
+      } catch (e) {}
     },
 
     addTab: function (activeSection, tab) {
@@ -715,6 +773,30 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.list-page-wrap {
+  display: flex;
+  height: 100%;
+  max-height: 100vh;
+  flex-direction: column;
+  .list-page-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    ::v-deep .list-comp-wrap {
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      .table-list-row {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+    }
+  }
+}
 .stata-data-layout {
   width: 100%;
   display: flex;
