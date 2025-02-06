@@ -488,7 +488,6 @@
                   >
                   </i>
                   <el-link
-                    type="primary"
                     @click="getDownloadFile(fileItem)"
                     v-if="getListFileDatas(item, scope.row).length > 0"
                   >
@@ -570,6 +569,30 @@
                   >
                 </template>
               </template>
+              <div
+                style="float: right"
+                v-if="
+                  showAddChildBtn(scope.row, scope.$index, item.column, index)
+                "
+              >
+                <el-button
+                  type="text"
+                  style="padding: 0; margin: 0"
+                  :title="
+                    getButtonName(
+                      showAddChildBtn(scope.row, scope.$index),
+                      scope.row
+                    )
+                  "
+                  @click.stop.native="
+                    rowButtonClick(
+                      showAddChildBtn(scope.row, scope.$index),
+                      scope.row
+                    )
+                  "
+                  ><i class="el-icon-plus"></i
+                ></el-button>
+              </div>
             </template>
           </el-table-column>
 
@@ -619,7 +642,7 @@
                     isRowButtonVisible(button, scope.row, scope.$index)
                   "
                 >
-                  <el-button
+                  <!-- <el-button
                     type="text"
                     :title="getButtonName(button, scope.row)"
                     @click.stop.native="rowButtonClick(button, scope.row)"
@@ -630,7 +653,7 @@
                       getButtonOptSrv(button, scope.row, 'isShow')
                     "
                     ><i class="el-icon-plus"></i
-                  ></el-button>
+                  ></el-button> -->
                   <el-button
                     @click="rowButtonClick(button, scope.row)"
                     :size="button._moreConfig.size"
@@ -651,7 +674,8 @@
                       button._moreConfig.style === 'circle'
                     "
                     :disabled="button.evalDisable()"
-                    v-else-if="
+                    v-if="
+                      button.button_type !== 'addchild' &&
                       button.button_type !== '_btn_group' &&
                       getButtonOptSrv(button, scope.row, 'isShow')
                     "
@@ -677,42 +701,43 @@
 
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item
-                        v-for="(subtns, i) in button.buttons"
-                        :key="i"
+                        v-for="(subBtn, subIndex) in button.buttons"
+                        :key="subIndex"
                       >
                         <el-button
-                          @click="rowButtonClick(subtns, scope.row)"
-                          :size="subtns._moreConfig.size"
-                          :type="subtns._moreConfig.type"
+                          @click="rowButtonClick(subBtn, scope.row)"
+                          :size="subBtn._moreConfig.size"
+                          :type="subBtn._moreConfig.type"
                           :icon="
-                            subtns &&
-                            (subtns.button_icon || subtns._moreConfig.icon)
+                            subBtn &&
+                            (subBtn.button_icon || subBtn._moreConfig.icon)
                           "
                           :round="
-                            subtns._moreConfig.style !== '' &&
-                            subtns._moreConfig.style === 'round'
+                            subBtn._moreConfig.style !== '' &&
+                            subBtn._moreConfig.style === 'round'
                           "
                           :plain="
-                            subtns._moreConfig.style !== '' &&
-                            subtns._moreConfig.style === 'plain'
+                            subBtn._moreConfig.style !== '' &&
+                            subBtn._moreConfig.style === 'plain'
                           "
                           :circle="
-                            subtns._moreConfig.style !== '' &&
-                            subtns._moreConfig.style === 'circle'
+                            subBtn._moreConfig.style !== '' &&
+                            subBtn._moreConfig.style === 'circle'
                           "
-                          :disabled="subtns.evalDisable()"
+                          :disabled="subBtn.evalDisable()"
                           v-show="
+                            subBtn.button_type !== 'addchild' &&
                             isRowButtonVisible(
-                              subtns,
+                              subBtn,
                               scope.row,
                               scope.$index
                             ) &&
-                            getDispExps(subtns, scope.row) &&
-                            subtns.permission &&
-                            getButtonOptSrv(subtns, scope.row, 'isShow')
+                            getDispExps(subBtn, scope.row) &&
+                            subBtn.permission &&
+                            getButtonOptSrv(subBtn, scope.row, 'isShow')
                           "
                         >
-                          {{ subtns.button_name }}
+                          {{ subBtn.button_name }}
                         </el-button>
                       </el-dropdown-item>
                     </el-dropdown-menu>
@@ -1246,8 +1271,11 @@ export default {
                   this.tableMaxHeight = entry.contentRect.height;
                 }
               });
-              console.log("this.$refs.elTableParentDiv",this.$refs.elTableParentDiv);
-              
+              console.log(
+                "this.$refs.elTableParentDiv",
+                this.$refs.elTableParentDiv
+              );
+
               this.resizeObserver.observe(this.$refs.elTableParentDiv?.$el);
             }
           });
@@ -1341,6 +1369,27 @@ export default {
   },
 
   methods: {
+    showAddChildBtn(row, index, column, columnIndex) {
+      if (column) {
+        let firstColumn = this.gridHeader.find((item) =>
+          this.getGridHeaderDispExps(item, this.listMainFormDatas)
+        );
+        if (firstColumn?.column !== column) {
+          return false;
+        }
+      }
+      const btn = this.sortedRowButtons?.find(
+        (button) =>
+          button.button_type === "addchild" &&
+          this.getButtonOptSrv(button, row, "isShow") &&
+          this.getDispExps(button, row, index) &&
+          button.permission
+      );
+      if (btn) {
+        const showBtn = this.isRowButtonVisible(btn, row, index);
+        return this.routeMeta?.isTree === true && showBtn && btn;
+      }
+    },
     getUserTags(column, data) {
       let result = [];
       if (["User", "UserList"].includes(column?.col_type)) {
@@ -1780,7 +1829,8 @@ export default {
     left: 0;
     top: 0;
   }
-
+  .cell.el-tooltip {
+  }
   .el-table td.is-right,
   .el-table th.is-right {
     .cell.el-tooltip {
