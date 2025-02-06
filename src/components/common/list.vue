@@ -372,7 +372,8 @@
                   </el-rate>
                   <el-progress
                     :percentage="scope.row[item.column] || 0"
-                    style="width: 100%"
+                    :text-inside="true"
+                    :stroke-width="18"
                     v-else-if="item.srvcol.subtype === 'progress'"
                   ></el-progress>
                 </div>
@@ -1754,6 +1755,10 @@ export default {
   .el-table th.is-right {
     .cell.el-tooltip {
       justify-content: flex-end;
+      width: 100%!important;
+      .el-progress-bar{
+        min-width: 50px;
+      }
     }
   }
 }
