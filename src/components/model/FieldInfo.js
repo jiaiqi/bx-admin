@@ -385,7 +385,7 @@ export class FieldInfo {
 
     this.dispLoader = {
       service: optionListV2.serviceName || optionListV2.service,
-      conditions: optionListV2.conditions || [],
+      conditions: optionListV2.conditions || optionListV2.condition || [],
       relation_conditions: optionListV2.relation_conditions || null,
       orders: optionListV2.orders || null,
       showAsPair: optionListV2.show_as_pair || null,

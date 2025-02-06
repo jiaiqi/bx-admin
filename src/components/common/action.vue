@@ -60,7 +60,19 @@ export default {
     executor: Executor,
   },
   mixins: [ExecutorMixin],
-  inject: ["preventNav", "isLastStep"],
+  inject: {
+    preventNav: {
+      default: false, 
+    },
+    isLastStep: {
+      default: false, 
+    },
+    inStep: {
+      default: false,
+    },
+  },
+  
+  // ["preventNav", "isLastStep","inStep"],
   props: {
     info: {
       type: ActionInfo,
@@ -82,10 +94,6 @@ export default {
     },
     duplicateType: String,
     duplicateData: Object,
-    inStep: {
-      type: Boolean,
-      default: false,
-    },
   },
   computed: {
     lastStep() {

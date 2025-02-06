@@ -3343,7 +3343,6 @@ export default {
               null,
               divCond
             ).then((response) => {
-debugger
               var dataResult = response.body.data;
               if (dataResult.length > 0) {
                 var dataArray = [];

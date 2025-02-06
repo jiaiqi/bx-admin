@@ -1758,13 +1758,13 @@ function init_util() {
     }
   };
 
-  Vue.prototype.evalExprOrFunc = function (value, data, defaultValue) {
+  Vue.prototype.evalExprOrFunc = function (value, data, defaultValue,mainData={}) {
     try {
       if (isString(value)) {
         let vm = this;
         return eval(value);
       } else if (isFunction(value)) {
-        return value(data);
+        return value(data, mainData);
       } else {
       }
     } catch (e) {

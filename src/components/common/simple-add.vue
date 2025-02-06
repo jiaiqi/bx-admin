@@ -154,7 +154,6 @@
               :isDraft="pageIsDraft"
               v-show="item1.visibleFunc()"
               :draftDataKey="draftDataKey"
-              :in-step="inStep"
               @is-data-key="resDataKey($event)"
               @form-is-loaded="onIsLoaded($event)"
               @action-complete="$emit('action-complete', $event)"
@@ -172,7 +171,6 @@
             :isDraft="pageIsDraft"
             v-show="item.visibleFunc()"
             :draftDataKey="draftDataKey"
-            :in-step="inStep"
             @is-data-key="resDataKey($event)"
             @form-is-loaded="onIsLoaded($event)"
             @action-complete="$emit('action-complete', $event)"
@@ -242,10 +240,6 @@ export default {
     },
     duplicateType: String,
     duplicateData: Object,
-    inStep: {
-      type: Boolean,
-      default: false,
-    },
     lastStep: {
       type: Boolean,
       default: false,

@@ -12,6 +12,7 @@ export default {
     return {
       preventNav: false, //阻止默认的跳转行为
       isLastStep: this.isLastStep,
+      inStep: true, //是否在步骤中
     };
   },
   data() {
@@ -148,7 +149,6 @@ export default {
         <AddForm
           name="list-add"
           ref="AddForm"
-          :in-step="true"
           :last-step="
             stepList.length && currentStepIndex === stepList.length - 1
           "

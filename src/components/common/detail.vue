@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100%">
     <card-detail
       :pk-col="pkCol"
       :pk="id"

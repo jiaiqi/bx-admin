@@ -1310,7 +1310,7 @@ export default {
       currentUrlLike: "",
       imagesRun: [],
       listStyle: "list",
-      tableMaxHeight: 200,
+      tableMaxHeight: 800,
       resizeObserver: null,
     };
   },

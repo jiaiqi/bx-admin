@@ -17,7 +17,12 @@
       >
         <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
         <span v-else class="placeholder">点击进行编辑</span>
-        <i class="el-icon-circle-close close-icon" title="清除" @click.stop="handleSelect()" v-if="field.getDispVal()"></i>
+        <i
+          class="el-icon-circle-close close-icon"
+          title="清除"
+          @click.stop="handleSelect()"
+          v-if="field.getDispVal()"
+        ></i>
         <i class="el-icon-edit"></i>
       </div>
       <location-picker
@@ -415,9 +420,9 @@ export default {
           }
         });
       } else if (this.field?.info?.srvCol?.option_list_v2) {
-        result = this.field.info.srvCol.option_list_v2
+        result = this.field.info.srvCol.option_list_v2;
       }
-      result = cloneDeep(result)
+      result = cloneDeep(result);
       // if (!result) {
       //   result = this.field?.info?.srvCol?.option_list_v2;
       // }
@@ -920,6 +925,8 @@ export default {
         relation: "AND",
         data: [],
       };
+      console.log("dispLoader:", dispLoader);
+
       let relation_condition = {};
       if (dispLoader.conditions) {
         this.buildConditions(dispLoader).forEach((c) => condition.push(c));
@@ -1034,6 +1041,8 @@ export default {
 
     buildConditions: function (dispLoader) {
       let ret = [];
+      const rowData = this.field.form.srvValFormModel();
+      const mainData = this.mainformDatas
       for (let i in dispLoader.conditions) {
         let cond = dispLoader.conditions[i];
         let condition = {};
@@ -1045,7 +1054,15 @@ export default {
           }
 
           let valueExpr = cond.valueExpr || cond.value;
-          if (valueExpr) {
+          if (valueExpr?.value_type && valueExpr?.value_key) {
+            if (valueExpr?.value_type === "rowData") {
+              condition.value = rowData[valueExpr.value_key];
+            }else if (valueExpr?.value_type === "mainData") {
+              condition.value = mainData[valueExpr.value_key];
+            } else if (valueExpr?.value_type === "constant" && valueExpr.value) {
+              condition.value = valueExpr.value;
+            }
+          } else if (valueExpr) {
             // literal value or js expr
             if (cond.literalValue) {
               condition.value = valueExpr;
@@ -1053,7 +1070,8 @@ export default {
               condition.value = this.evalExprOrFunc(
                 valueExpr,
                 this.field.form.srvValFormModel(),
-                null
+                null,
+                mainData
               );
             }
           } else if (cond.valueFunc) {
@@ -1180,7 +1198,7 @@ export default {
 
       let fieldInfo = this.field.info;
       let loader = this.dispLoaderV2;
-      if(!loader) return
+      if (!loader) return;
       let queryJson = {
         serviceName: loader.service,
         queryMethod: "select",
@@ -1428,8 +1446,8 @@ export default {
   -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   cursor: pointer;
-  .placeholder{
-    color: #C8CBD2;
+  .placeholder {
+    color: #c8cbd2;
   }
   [class*="el-icon-"] {
     position: absolute;
@@ -1438,7 +1456,7 @@ export default {
     color: #c0c4cc;
     font-size: 14px;
   }
-  .close-icon{
+  .close-icon {
     display: none;
     right: 35px;
   }
