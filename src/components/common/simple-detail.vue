@@ -131,6 +131,7 @@
     <el-dialog
       title="编辑"
       width="90%"
+      class="customDialogClass"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'update'"
       append-to-body
@@ -165,6 +166,7 @@
 
     <el-dialog
       append-to-body
+      class="customDialogClass"
       :visible="!!fieldHisotryPopup"
       title="历史版本"
       width="90%"

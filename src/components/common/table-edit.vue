@@ -235,5 +235,3 @@ import parentChildMixin from "../mixin/parent-child-mixin"; // 内存列表js
   
 }
 </style>
-
-
