@@ -101,7 +101,7 @@
       </loader>
     </el-row>
 
-    <el-row>
+    <el-row v-if="actions&&actions.length">
       <el-card>
         <el-col
           :span="24"

@@ -1100,5 +1100,10 @@ export default {
       height: 100%;
     }
   }
+  .text.item{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 }
 </style>
