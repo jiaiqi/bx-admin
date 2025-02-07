@@ -1267,8 +1267,8 @@ export default {
                 // 在这里处理高度变化
                 if (newValue?.length) {
                   this.tableMaxHeight =
-                    entry.contentRect.height < 200
-                      ? 200
+                    entry.contentRect.height < 500
+                      ? 500
                       : entry.contentRect.height;
                 } else {
                   this.tableMaxHeight = 120;

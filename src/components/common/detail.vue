@@ -1,5 +1,5 @@
 <template>
-  <div style="height:100%">
+  <div style="height: 100%">
     <card-detail
       :pk-col="pkCol"
       :pk="id"
@@ -20,7 +20,7 @@
       v-if="isCardDetail && cfgJson && cfgJson.detail_card_json"
     >
     </card-detail>
-    <el-card class="box-card" v-else>
+    <el-card class="box-card detail-box-card" v-else>
       <div
         v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0"
         class="detail-steps"
@@ -34,11 +34,11 @@
           ></el-step>
         </el-steps>
       </div>
-      <div v-if="!hasVisibleChildListTab()" v-show="detailshow">
+      <template v-if="!hasVisibleChildListTab() && detailshow">
         <div slot="header" class="clearfix" v-show="is_view_title">
           <span>{{ tab_view_name }}</span>
         </div>
-        <div class="text item" v-if="initLoad">
+        <div class="text item detail-card" v-if="initLoad">
           <simple-detail
             :divCond="buildDivCond"
             :mainService="mainService"
@@ -296,14 +296,14 @@
             </div>
           </simple-detail>
         </div>
-      </div>
+      </template>
 
-      <el-tabs v-if="hasVisibleChildListTab()" style="height:100%">
+      <el-tabs v-if="hasVisibleChildListTab()" style="height: 100%">
         <el-tab-pane :label="tab_view_name">
           <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
           <simple-detail
-            style="height: calc(100% - 50px);overflow:auto"
+            style="height: calc(100% - 50px); overflow: auto"
             :divCond="buildDivCond"
             :mainService="mainService"
             :isHistory="isHistory"
@@ -575,7 +575,7 @@
             :key="index"
           >
             <simple-detail
-              style="height: calc(100% - 50px);overflow:auto"
+              style="height: calc(100% - 50px); overflow: auto"
               :divCond="buildDivCond"
               :isHistory="isHistory"
               :pageIsDraft="pageIsDraft"
@@ -588,7 +588,7 @@
             ></simple-detail>
 
             <child-list
-              style="height: calc(100% - 50px);overflow:auto"
+              style="height: calc(100% - 50px); overflow: auto"
               :divCond="buildDivCond"
               :mainService="service_name"
               v-else
@@ -1094,13 +1094,26 @@ export default {
 }
 .box-card {
   height: 100%;
+  &.detail-box-card{
+    display: flex;
+    flex-direction: column;
+    .el-card__body{
+      flex: 1;
+      .detail-card{
+        height: calc(100% - 60px);
+        overflow: auto;
+      }
+
+
+    }
+  }
   .el-tabs__content {
     height: 100%;
     .el-tab-pane {
       height: 100%;
     }
   }
-  .text.item{
+  .text.item {
     display: flex;
     flex-direction: column;
     width: 100%;
