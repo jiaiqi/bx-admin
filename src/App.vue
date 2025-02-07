@@ -188,6 +188,15 @@ body {
     .form-view-wrapper.el-row {
       max-height: 75vh;
       overflow-y: auto;
+      .text.item {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      .el-collapse-item {
+        display: flex;
+        flex-direction: column;
+      }
     }
   }
 }
@@ -350,7 +359,7 @@ body {
     }
   }
 }
-.section-title{
+.section-title {
   margin-bottom: 10px;
 }
 </style>

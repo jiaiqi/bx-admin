@@ -265,8 +265,10 @@ div.invalid_form_item {
   padding-top: 0px;
 }
 .field-editor {
-  display: unset;
-  padding: 10px 0;
+  // display: flex;
+  // flex-direction: column;
+  // padding: 10px 0;
+  // width: 100%;
 }
 
 .m-y-5 {

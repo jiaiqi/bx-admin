@@ -101,7 +101,7 @@
       </loader>
     </el-row>
 
-    <el-row v-if="actions&&actions.length">
+    <el-row v-if="hasActions(actions)">
       <el-card>
         <el-col
           :span="24"
@@ -268,6 +268,9 @@ export default {
   },
 
   methods: {
+    hasActions(actions) {
+      return typeof actions === "object" && Object.keys(actions).length > 0;
+    },
     createExecutorValueEnableFunc(colName) {
       return (value) => {
         try {
