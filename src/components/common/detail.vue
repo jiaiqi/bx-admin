@@ -303,7 +303,7 @@
           <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
           <simple-detail
-            style="height: calc(100% - 50px)"
+            style="height: calc(100% - 50px);overflow:auto"
             :divCond="buildDivCond"
             :mainService="mainService"
             :isHistory="isHistory"
@@ -575,7 +575,7 @@
             :key="index"
           >
             <simple-detail
-              style="height: calc(100% - 50px)"
+              style="height: calc(100% - 50px);overflow:auto"
               :divCond="buildDivCond"
               :isHistory="isHistory"
               :pageIsDraft="pageIsDraft"
@@ -588,7 +588,7 @@
             ></simple-detail>
 
             <child-list
-              style="height: calc(100% - 50px)"
+              style="height: calc(100% - 50px);overflow:auto"
               :divCond="buildDivCond"
               :mainService="service_name"
               v-else

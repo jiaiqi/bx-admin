@@ -350,4 +350,7 @@ body {
     }
   }
 }
+.section-title{
+  margin-bottom: 10px;
+}
 </style>

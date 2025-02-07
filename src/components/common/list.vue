@@ -1265,7 +1265,7 @@ export default {
               for (let entry of entries) {
                 console.log("Size changed: ", entry.contentRect.height);
                 // 在这里处理高度变化
-                this.tableMaxHeight = entry.contentRect.height;
+                this.tableMaxHeight = entry.contentRect.height<200? 200:entry.contentRect.height;
               }
             });
             console.log(
