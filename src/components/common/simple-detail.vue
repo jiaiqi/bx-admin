@@ -1,15 +1,11 @@
 /* */
 <template>
   <div>
-    <template>
-      <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
-        <slot>
-          <div v-html="pagePrompt.description">
-            {{ pagePrompt.description }}
-          </div>
-        </slot>
-      </el-alert>
-    </template>
+    <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
+      <slot>
+        <div v-html="pagePrompt.description"></div>
+      </slot>
+    </el-alert>
     <el-row class="form-view-wrapper">
       <slot name="field-form-prepend"></slot>
       <el-form
@@ -226,7 +222,7 @@ export default {
     action: Action,
     loader: Loader,
     updateHistory,
-    update:()=>import("./update.vue"),
+    update: () => import("./update.vue"),
   },
   mixins: [FormMixin, CustButtonMinx, FormValidateMixin, BroadcastMixin],
   props: {

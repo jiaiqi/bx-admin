@@ -1,6 +1,6 @@
 <!-- tinymc富文本 -->
 <template>
-  <div>
+  <div class="mb-5px">
     <editor v-model="myValue" :init="init" :disabled="disabled" @onClick="onClick" @change="onChange">
     </editor>
     <dialog id="myDialog">
@@ -525,5 +525,8 @@ export default {
 <style scoped>
 #myDialog {
   width: 800px;
+}
+.mb-5px{
+  margin-bottom: 5px;
 }
 </style>

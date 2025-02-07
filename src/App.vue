@@ -341,4 +341,13 @@ body {
 .tinymce.ui.FloatPanel {
   z-index: 99;
 }
+
+.field-editor {
+  .el-form-item__label {
+    margin-bottom: 10px;
+    label {
+      margin-bottom: 0;
+    }
+  }
+}
 </style>

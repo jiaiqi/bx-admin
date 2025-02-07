@@ -106,9 +106,7 @@
           v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')"
           trigger="click"
         >
-          <div v-html="moreConfig.table_explain.desc">
-            {{ moreConfig.table_explain.desc }}
-          </div>
+          <div v-html="moreConfig.table_explain.desc"></div>
           <div slot="reference" style="color: #525252; padding: 2px 10px">
             列表字段说明<i class="el-icon-question"></i>
           </div>
@@ -210,8 +208,8 @@
         type="flex"
         class="row-bg"
         justify="center"
-        v-else
         ref="elTableParentDiv"
+        v-else
         style="flex: 1; overflow: hidden"
       >
         <el-table
@@ -1258,28 +1256,26 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
-        if (newValue?.length) {
-          this.$nextTick(() => {
-            if (this.resizeObserver) {
-              this.resizeObserver.disconnect();
-            }
-            if (this.$refs.elTableParentDiv?.$el) {
-              this.resizeObserver = new ResizeObserver((entries) => {
-                for (let entry of entries) {
-                  console.log("Size changed: ", entry.contentRect.height);
-                  // 在这里处理高度变化
-                  this.tableMaxHeight = entry.contentRect.height;
-                }
-              });
-              console.log(
-                "this.$refs.elTableParentDiv",
-                this.$refs.elTableParentDiv
-              );
+        this.$nextTick(() => {
+          if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+          }
+          if (this.$refs.elTableParentDiv?.$el) {
+            this.resizeObserver = new ResizeObserver((entries) => {
+              for (let entry of entries) {
+                console.log("Size changed: ", entry.contentRect.height);
+                // 在这里处理高度变化
+                this.tableMaxHeight = entry.contentRect.height;
+              }
+            });
+            console.log(
+              "this.$refs.elTableParentDiv",
+              this.$refs.elTableParentDiv
+            );
 
-              this.resizeObserver.observe(this.$refs.elTableParentDiv?.$el);
-            }
-          });
-        }
+            this.resizeObserver.observe(this.$refs.elTableParentDiv?.$el);
+          }
+        });
       },
     },
   },
@@ -1310,7 +1306,7 @@ export default {
       currentUrlLike: "",
       imagesRun: [],
       listStyle: "list",
-      tableMaxHeight: 800,
+      tableMaxHeight: 500,
       resizeObserver: null,
     };
   },

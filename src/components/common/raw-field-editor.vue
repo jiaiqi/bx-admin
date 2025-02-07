@@ -1235,7 +1235,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style scoped lang="scss">
 .help-tips {
   color: #c0c4cc;
   /* position:absolute; */
@@ -1301,6 +1301,8 @@ export default {
   /* display: flex; */
   /* width: 100%; */
   /* position: relative; */
+  position: relative !important;
+  margin-bottom: 5px;
 }
 .no-nowrap {
   white-space: nowrap; /*保证文本内容不会自动换行，如果多余的内容会在水平方向撑破单元格*/
@@ -1313,9 +1315,13 @@ export default {
   color: orange;
   font-size: 12px;
 }
-</style>
-<style>
+
 .el-input.is-disabled .el-input__inner {
   color: #303133 !important;
+}
+
+::v-deep .el-upload__tip{
+  line-height: normal;
+  margin: 5px 0;
 }
 </style>

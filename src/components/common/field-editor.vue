@@ -235,7 +235,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 
 label.required::before {
@@ -255,18 +255,15 @@ label.required::before {
 
 div.el-form-item {
   margin-bottom: unset;
-  //margin-bottom: -3px;
-  //margin-top: -3px;
 }
 
 div.invalid_form_item {
-  margin-bottom: 16px !important;
+  /* margin-bottom: 16px !important; */
 }
 
 .el-form-item__error {
   padding-top: 0px;
 }
-
 .field-editor {
   display: unset;
   padding: 10px 0;
@@ -282,4 +279,3 @@ div.invalid_form_item {
 }
 
 </style>
-

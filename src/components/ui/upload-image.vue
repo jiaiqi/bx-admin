@@ -3,35 +3,68 @@
     <template v-if="isEdit === false">
       <ul class="form-imgs">
         <li v-for="(o, index) in fileLists" :key="index" class="imgs-item">
-          <div v-on:click="
-                imageDialogUrl = o.url;
-                imageDialog = true;
-              ">
+          <div
+            v-on:click="
+              imageDialogUrl = o.url;
+              imageDialog = true;
+            "
+          >
             <img :src="o.url" min-width="70" height="70" />
           </div>
         </li>
       </ul>
     </template>
-    <el-dialog title="图片预览" :visible.sync="imageDialog" width="60%" height="65%" style="text-align: center"
-      append-to-body>
-      <img :src="imageDialogUrl" width="80%" height="70%" style="margin: 0 auto" /><br />
+    <el-dialog
+      title="图片预览"
+      :visible.sync="imageDialog"
+      width="60%"
+      height="65%"
+      style="text-align: center"
+      append-to-body
+    >
+      <img
+        :src="imageDialogUrl"
+        width="80%"
+        height="70%"
+        style="margin: 0 auto"
+      /><br />
       <el-button type="primary" @click="imageDialog = false">确 定</el-button>
       <el-button type="primary" @click="dowmlaodUrl()">下载</el-button>
     </el-dialog>
-  
-    <div style="display: flex; flex-wrap: wrap" v-if="isEdit !== false" v-loading="loading">
+
+    <div
+      style="display: flex; flex-wrap: wrap"
+      v-if="isEdit !== false"
+      v-loading="loading"
+    >
       <!-- 使用element-ui自带样式 -->
       <ul class="el-upload-list el-upload-list--picture-card">
         <draggable v-model="fileLists" @end="onDragEnd" animation="300">
-          <transition-group>
-            <li v-for="(item, index) in fileLists" :key="index" class="el-upload-list__item is-success animated">
-              <img :src="item.url" alt="" class="el-upload-list__item-thumbnail" />
+          <transition-group style="display: flex; flex-wrap: wrap">
+            <li
+              v-for="(item, index) in fileLists"
+              :key="index"
+              class="el-upload-list__item is-success animated"
+            >
+              <img
+                :src="item.url"
+                alt=""
+                class="el-upload-list__item-thumbnail"
+              />
               <i class="el-icon-close"></i>
               <span class="el-upload-list__item-actions">
-                <span class="el-upload-list__item-preview" title="预览" @click="handlePictureCardPreviewFileDetail(item)">
+                <span
+                  class="el-upload-list__item-preview"
+                  title="预览"
+                  @click="handlePictureCardPreviewFileDetail(item)"
+                >
                   <i class="el-icon-zoom-in"></i>
                 </span>
-                <span class="el-upload-list__item-delete" title="删除" @click="handleRemoveFileDetail(item, fileLists)">
+                <span
+                  class="el-upload-list__item-delete"
+                  title="删除"
+                  @click="handleRemoveFileDetail(item, fileLists)"
+                >
                   <i class="el-icon-delete"></i>
                 </span>
               </span>
@@ -58,33 +91,78 @@
             <div>到此区域</div>
           </div>
         </div> -->
-  
-      <div style="display: flex; flex-wrap: wrap" v-if="isEdit !== false && useFilePicker && !isHttp" v-loading="loading">
-        <div :class="{
-              'display-none': limit && fileLength && fileLength >= limit,
-            }" class="custom-upload" @click="showFilePicker = true">
+
+      <div
+        style="display: flex; flex-wrap: wrap"
+        v-if="isEdit !== false && useFilePicker && !isHttp"
+        v-loading="loading"
+      >
+        <div
+          :class="{
+            'display-none': limit && fileLength && fileLength >= limit,
+          }"
+          class="custom-upload"
+          @click="showFilePicker = true"
+        >
           <i class="el-icon-plus" style="font-size: 28px; color: #8c939d"></i>
         </div>
-        <file-picker v-if="showFilePicker" v-model="showFilePicker" @file-change="onPickerFileChange"></file-picker>
+        <file-picker
+          v-if="showFilePicker"
+          v-model="showFilePicker"
+          @file-change="onPickerFileChange"
+        ></file-picker>
       </div>
-      <el-upload ref="upload" class="upload-demo" :class="{
-            'upload-disabled':
-              limit && fileLength && fileLength >= limit && !isHttp,
-          }" :action="uploadFile" :with-credentials="true" :headers="getHeaders()" :on-preview="handlePreview"
-        :before-remove="beforeRemove" :before-upload="beforeAvatarUpload" :on-remove="handleRemove"
-        :on-success="handleSuccess" :on-exceed="handleExceed" :file-list="fileLists" :data="uploadParams" clearable
-        :limit="limit" :disabled="!field.info.editable" :show-file-list="false" list-type="picture-card"
-        :style="useFilePicker ? 'display:none;' : ''">
+      <el-upload
+        ref="upload"
+        class="upload-demo"
+        :class="{
+          'upload-disabled':
+            limit && fileLength && fileLength >= limit && !isHttp,
+        }"
+        :action="uploadFile"
+        :with-credentials="true"
+        :headers="getHeaders()"
+        :on-preview="handlePreview"
+        :before-remove="beforeRemove"
+        :before-upload="beforeAvatarUpload"
+        :on-remove="handleRemove"
+        :on-success="handleSuccess"
+        :on-exceed="handleExceed"
+        :file-list="fileLists"
+        :data="uploadParams"
+        clearable
+        :limit="limit"
+        :disabled="!field.info.editable"
+        :show-file-list="false"
+        list-type="picture-card"
+        :style="useFilePicker ? 'display:none;' : ''"
+      >
         <el-button size="small" type="primary">点击上传</el-button>
-        <div slot="tip" class="el-upload__tip" :class="{ 'text-red': field.getAnyValidateError() }">
-          <i slot="reference" class="el-icon-warning" v-if="field.getAnyValidateError()"></i>
+        <!-- <div
+          slot="tip"
+          class="el-upload__tip"
+          :class="{ 'text-red111': field.getAnyValidateError() }"
+        >
+          <i
+            slot="reference"
+            class="el-icon-warning"
+            v-if="field.getAnyValidateError()"
+          ></i>
           {{ setFileDesc }}
-        </div>
+        </div> -->
       </el-upload>
-  
-      <div slot="tip" class="el-upload__tip w-full" :class="{ 'text-red': field.getAnyValidateError() }"
-        v-if="isEdit !== false && useFilePicker && !isHttp">
-        <i slot="reference" class="el-icon-warning" v-if="field.getAnyValidateError()"></i>
+
+      <div
+        slot="tip"
+        class="el-upload__tip w-full"
+        style="margin-top: 0"
+        :class="{ 'text-red111': field.getAnyValidateError() }"
+      >
+        <i
+          slot="reference"
+          class="el-icon-warning"
+          v-if="field.getAnyValidateError()"
+        ></i>
         {{ setFileDesc }}
       </div>
     </div>
@@ -134,9 +212,9 @@ export default {
       return this.field.info?.dispLoader?.objInfo;
     },
     setFileDesc() {
-      if (this.field.getAnyValidateError()) {
-        return this.field.getAnyValidateError();
-      }
+      // if (this.field.getAnyValidateError()) {
+      //   return this.field.getAnyValidateError();
+      // }
       const fileType = this.field.fileType || "jpg/png/svg";
       const fileSize = this.fileSize ? this.fileSize / 1024 : 2;
       return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`;
@@ -155,17 +233,17 @@ export default {
       fileLength: 0,
       fileDesc:
         this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
+        this.field.info.moreConfig !== null &&
+        this.field.info.moreConfig.fileMaxSize
           ? "请上传jpg/png/svg格式的图片,大小不超过" +
-          this.field.info.moreConfig.fileMaxSize +
-          "MB"
+            this.field.info.moreConfig.fileMaxSize +
+            "MB"
           : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
       fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
       fileSize:
         this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
+        this.field.info.moreConfig !== null &&
+        this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 2 * 1024,
       imageDialog: false,
@@ -643,7 +721,7 @@ export default {
         this.loading = true;
         if (response?.file_no) {
           // 查询文件上传状态
-          await this.checkUploadStatus(response.file_no)
+          await this.checkUploadStatus(response.file_no);
         }
         // await new Promise((resolve) => setTimeout(resolve, 500));
         this.loading = false;
