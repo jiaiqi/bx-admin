@@ -780,7 +780,7 @@ export default {
   flex-direction: column;
   .list-page-content {
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     ::v-deep .list-comp-wrap {

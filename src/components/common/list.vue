@@ -763,7 +763,7 @@
       <!-- <el-row type="flex" class="row-bg" justify="center" v-if="!isMem()" -->
       <el-row
         type="flex"
-        class="row-bg"
+        class="row-bg py-2 shadow"
         justify="center"
         v-if="showPagination && setShowPagination"
         v-show="!hidePagination && gridPage.total > 0 && !isDemo"
@@ -1257,36 +1257,32 @@ export default {
       deep: true,
       handler(newValue, oldValue) {
         this.$nextTick(() => {
-          if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-          }
           if (this.$refs.elTableParentDiv?.$el) {
-            this.resizeObserver = new ResizeObserver((entries) => {
-              for (let entry of entries) {
-                console.log("Size changed: ", entry.contentRect.height);
-                // 在这里处理高度变化
-                if (newValue?.length) {
-                  this.tableMaxHeight =
-                    entry.contentRect.height < 500
-                      ? 500
-                      : entry.contentRect.height;
-                } else {
-                  this.tableMaxHeight = 120;
-                }
-              }
-            });
-            console.log(
-              "this.$refs.elTableParentDiv",
-              this.$refs.elTableParentDiv
-            );
-
-            this.resizeObserver.observe(this.$refs.elTableParentDiv?.$el);
+            const parentEle = this.$refs.elTableParentDiv?.$el;
+            let parentHeight = parentEle.offsetHeight;
+            const bodyHeight = parentEle?.querySelector(
+              ".el-table__body-wrapper"
+            )?.scrollHeight;
+            const headerHeight = parentEle?.querySelector(
+              ".el-table__header-wrapper"
+            )?.offsetHeight;
+            const tableHeight = bodyHeight + headerHeight;
+            if (tableHeight < parentHeight) {
+              this.tableMaxHeight = tableHeight;
+              parentEle.parentElement.style.display = "block";
+            } else {
+              parentEle.parentElement.style.display = "flex";
+              parentHeight = parentEle.offsetHeight;
+              this.tableMaxHeight = parentHeight;
+            }
+            if(this.tableMaxHeight<500){
+              this.tableMaxHeight = 500;
+            }
           }
         });
       },
     },
   },
-  mounted() {},
   beforeDestroy() {
     // 清理观察者
     if (this.resizeObserver) {
