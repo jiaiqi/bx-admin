@@ -11,9 +11,7 @@
     <template>
       <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
         <slot>
-          <div v-html="pagePrompt.description">
-            {{ pagePrompt.description }}
-          </div>
+          <div v-html="pagePrompt.description"></div>
         </slot>
       </el-alert>
     </template>
@@ -86,13 +84,13 @@
             >
               <!-- <field-editor :field="formItem.field" :content-fields="formItem.contentFields" :key="formItem.field.info.name" :defaultCondition='defaultCondition' :childForeignkey="childForeignkey" :mainformDatas='mainformDatas||parentAddMainFormDatas' :form-has-invalid-error="hasInvalidField()" @field-value-changed="onFieldValueChanged($event)" :defaultValues='defaultValues||srvValFormModel()' v-show="formItem.field.info.visible && formItem.field.info.visible &&formItem.field.info.name!=referenced_column_name"> -->
 
-              <template #field-child-prepend class="">
+              <template #field-child-prepend>
                 <slot
                   :name="formItem.field.info.name + '-child-prepend'"
                   class="padding-bottom"
                 ></slot>
               </template>
-              <template #field-child-append class="padding-bottom">
+              <template #field-child-append>
                 <slot
                   :name="formItem.field.info.name + '-child-append'"
                   class="padding-bottom"

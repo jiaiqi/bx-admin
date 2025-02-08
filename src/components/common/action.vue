@@ -97,7 +97,7 @@ export default {
   },
   computed: {
     lastStep() {
-      return this.isLastStep();
+      return this.isLastStep?.();
     },
   },
 

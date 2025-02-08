@@ -1,20 +1,24 @@
 import { FieldInfo } from '../model/FieldInfo'
 import { Field } from '../model/Field'
 import Vue from 'vue'
-import { ActionInfo } from "../model/ActionInfo"; 
+import { ActionInfo } from "../model/ActionInfo";
 import { formatDate } from "../../util/DataUtil";
 import remove from 'lodash/remove'
 import isString from 'lodash/isString'
 export default {
   created: function () {
     window.forms = window.forms || {}
-    window.forms[ this.name ] = this;
+    window.forms[this.name] = this;
   },
-
+  provide() {
+    return {
+      getSortedFields: () => this.sortedFields,
+    };
+  },
   props: {
-    initOrigin:{
-      type:String,
-      default:'none'
+    initOrigin: {
+      type: String,
+      default: 'none'
     },
     name: {
       type: String,
@@ -83,7 +87,7 @@ export default {
     },
     isHistory: {
       type: Boolean,
-      default () {
+      default() {
         return false
       }
     },
@@ -93,14 +97,14 @@ export default {
     },
   },
 
-  data () {
+  data() {
     return {
       isMarker: true,
 
       // the visible fields
       fields: {},
 
-      historyData:[], //字段值修改历史记录
+      historyData: [], //字段值修改历史记录
 
       allFields: {},
 
@@ -133,48 +137,48 @@ export default {
       srv_more_config: {},
       fieldWithHistory: null,
       isHistoryUse: false,
-      colValChangeRequestCols:[],
-      moreConfig:null,
-      initValToCols:[],  //请求赋值col
-      cfgJson:null,
-      sectionsCollapse:{},
-      pub_field_map:null, //公共字段映射
+      colValChangeRequestCols: [],
+      moreConfig: null,
+      initValToCols: [],  //请求赋值col
+      cfgJson: null,
+      sectionsCollapse: {},
+      pub_field_map: null, //公共字段映射
     }
   },
 
 
   computed: {
-    cfgJsonOptionsType(){
-       let json = this.cfgJson
-       let options = json && json.hasOwnProperty('options') && json.options ? json.options : ""
-       options = options.split(',')
-       return options
+    cfgJsonOptionsType() {
+      let json = this.cfgJson
+      let options = json && json.hasOwnProperty('options') && json.options ? json.options : ""
+      options = options.split(',')
+      return options
     },
-    isVerifyMobile:function(){
-       let phoneSubKey = 'verifyMobile' 
-       let smsCodeSubKey = 'verifySmsCode' 
-       let list = this.fields || null
-       let isVerify = false
-       let phoneColName = ''
-       let smsCodeColName = ''
-       if(list){
-        console.log('isVerifyMobile',list)
-        for(let key in list){
-            let feild = list[key]
-            if(feild && feild.info.subType && feild.info.subType == 'verifyMobile'){
-              phoneColName = feild.info.name
-            }
-            if(feild && feild.info.subType && feild.info.subType == 'verifySmsCode'){
-              smsCodeColName = feild.info.name
-            }
+    isVerifyMobile: function () {
+      let phoneSubKey = 'verifyMobile'
+      let smsCodeSubKey = 'verifySmsCode'
+      let list = this.fields || null
+      let isVerify = false
+      let phoneColName = ''
+      let smsCodeColName = ''
+      if (list) {
+        console.log('isVerifyMobile', list)
+        for (let key in list) {
+          let feild = list[key]
+          if (feild && feild.info.subType && feild.info.subType == 'verifyMobile') {
+            phoneColName = feild.info.name
+          }
+          if (feild && feild.info.subType && feild.info.subType == 'verifySmsCode') {
+            smsCodeColName = feild.info.name
+          }
         }
-       }
-       
-       if(phoneColName && smsCodeColName){
-        return {phoneColName,smsCodeColName}
-       }else{
+      }
+
+      if (phoneColName && smsCodeColName) {
+        return { phoneColName, smsCodeColName }
+      } else {
         return false
-       }
+      }
     },
     loaderService: function () {
       if (this.loaderServiceProp) {
@@ -190,7 +194,7 @@ export default {
     sortedFields: function () {
       // return this.sortFields(this.fields);
       let allFields = this.sortFields(this.allFields)
-      return allFields.filter(item=>item.info.srvCol.in_cond==1)
+      return allFields.filter(item => item.info.srvCol.in_cond == 1)
 
     },
 
@@ -203,11 +207,11 @@ export default {
       let fields = null;
       let section = null;
       for (let key in this.sortedAllFields) {
-        let field = this.sortedAllFields[ key ];
+        let field = this.sortedAllFields[key];
         if (field.info && field.info.sec && field.info.sec !== section) {
           // close last section,
           if (fields) {
-            sections[ section || "$" ] = fields;
+            sections[section || "$"] = fields;
           }
 
           // start a new one
@@ -220,13 +224,13 @@ export default {
         field.vif && fields.push(field);
       }
       if (fields) {
-        sections[ section || "$" ] = fields;
+        sections[section || "$"] = fields;
       }
 
       // hide section whose fields are all invisible
       let hideSections = new Set();
       for (let key in sections) {
-        let sectionFields = sections[ key ];
+        let sectionFields = sections[key];
         let visibleFields = sectionFields.filter(field => {
           return (field && field.evalVisible());
         })
@@ -236,18 +240,18 @@ export default {
         }
       }
 
-      hideSections.forEach(key => delete sections[ key ])
+      hideSections.forEach(key => delete sections[key])
 
       // 把 field 组织成: majorField 和 contentFields， 服务一个form-item 包含多个fields
       let sectionsOfFormItems = {};
       for (let key in sections) {
-        let fieldsInSection = sections[ key ];
+        let fieldsInSection = sections[key];
         let isGroupedField = field => field.info.srvCol.group_field;
         let groupedFields = fieldsInSection.filter(isGroupedField)
         remove(fieldsInSection, isGroupedField);
 
         let formItems = fieldsInSection.map(majorField => {
-          let contentFields = [ majorField ].concat(
+          let contentFields = [majorField].concat(
             groupedFields.filter(groupedField => groupedField.info.srvCol.group_field === majorField.info.name)
           );
           return {
@@ -255,27 +259,27 @@ export default {
             contentFields: contentFields,
           }
         })
-        sectionsOfFormItems[ key ] = formItems;
+        sectionsOfFormItems[key] = formItems;
         // if(this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1){
-           
+
         // }
-        if(!this.sectionsCollapse.hasOwnProperty(key)){
+        if (!this.sectionsCollapse.hasOwnProperty(key)) {
           // 没有初始化值得时候 进行
-          if(key !== '$'){
+          if (key !== '$') {
             // 表单字段默认折叠配置初始化
             this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
-          }else{
+          } else {
             this.sectionsCollapse['$'] = false
           }
           let sectionsKeys = Object.keys(this.sectionsCollapse)
-          if(sectionsKeys.length > 0){
+          if (sectionsKeys.length > 0) {
             this.sectionsCollapse[sectionsKeys[0]] = false
           }
         }
-        
-        
+
+
       }
-      
+
       // console.log(sectionsOfFormItems)
       return sectionsOfFormItems;
     },
@@ -290,34 +294,34 @@ export default {
       let model = {};
 
       for (let key in this.fields) {
-        model[ key ] = this.fields[ key ].model;
-        if(Object.prototype.toString.call(model[ key ])){
-          model[ key ]  = this.fields[ key ].getSrvVal()
+        model[key] = this.fields[key].model;
+        if (Object.prototype.toString.call(model[key])) {
+          model[key] = this.fields[key].getSrvVal()
           // 透传子表表单的主表model 
         }
       }
 
       return model;
     },
-    "colValChangeRequestColsRun":function(){
+    "colValChangeRequestColsRun": function () {
       let colValRequest = this.srv_more_config.hasOwnProperty('colValRequest') ? this.srv_more_config.colValRequest : null
-        let reqs = this.bxDeepClone(colValRequest)
-       
-        
-        let cols = this.colValChangeRequestCols
-        let formModel = this.formModel
-        for(let r of reqs){
-          let cond = r.condition
-          for(let c of cond){
-            for(let col of cols){
-              if(col == c["colName"]){
-                c.value = formModel[col]
-              }
+      let reqs = this.bxDeepClone(colValRequest)
+
+
+      let cols = this.colValChangeRequestCols
+      let formModel = this.formModel
+      for (let r of reqs) {
+        let cond = r.condition
+        for (let c of cond) {
+          for (let col of cols) {
+            if (col == c["colName"]) {
+              c.value = formModel[col]
             }
           }
         }
-        
-        return reqs
+      }
+
+      return reqs
     }
 
 
@@ -325,114 +329,114 @@ export default {
 
 
   methods: {
-    onSectionsCollapseChange(key){
+    onSectionsCollapseChange(key) {
       let self = this
-      if(key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 && key !== '$'){
-        console.log('0',key,self.sectionsCollapse[key],self.sectionsCollapse)
-        self.$set(self.sectionsCollapse,key,!this.sectionsCollapse[key])
+      if (key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 && key !== '$') {
+        console.log('0', key, self.sectionsCollapse[key], self.sectionsCollapse)
+        self.$set(self.sectionsCollapse, key, !this.sectionsCollapse[key])
         this.$forceUpdate()
-        console.log('1',key,self.sectionsCollapse[key],self.sectionsCollapse)
-      } 
-      
+        console.log('1', key, self.sectionsCollapse[key], self.sectionsCollapse)
+      }
+
     },
-    getSectionShow(key){
-       return this.sectionsCollapse[key]
+    getSectionShow(key) {
+      return this.sectionsCollapse[key]
     },
-    initColValRequest(){
+    initColValRequest() {
       let self = this
-      let conditionCol  = self.colValChangeRequestCols
-      
+      let conditionCol = self.colValChangeRequestCols
+
       let moreConfig = self.srv_more_config
-      
+
       let initValToCols = self.initValToCols
-      if(moreConfig && moreConfig.hasOwnProperty("colValRequest") && moreConfig.colValRequest){
+      if (moreConfig && moreConfig.hasOwnProperty("colValRequest") && moreConfig.colValRequest) {
         moreConfig = moreConfig.colValRequest
         // self.initValToCols = moreConfig[0].colNames
-        for(let key of moreConfig){
-          for(let ckey of key.condition){
-            if(conditionCol.indexOf(ckey.colName) == -1){
+        for (let key of moreConfig) {
+          for (let ckey of key.condition) {
+            if (conditionCol.indexOf(ckey.colName) == -1) {
               conditionCol.push(ckey.colName)
             }
           }
-          for(let c of key.colNames){
-            if(initValToCols.indexOf(c) == -1){
+          for (let c of key.colNames) {
+            if (initValToCols.indexOf(c) == -1) {
               initValToCols.push(c)
             }
           }
-          
+
         }
         // this.colValRequest(moreConfig.colValRequest)
       }
     },
-    getColValRequests(){ 
+    getColValRequests() {
       let self = this
-      let moreConfig = self.srv_more_config? self.srv_more_config.colValRequest : self.srv_more_config
+      let moreConfig = self.srv_more_config ? self.srv_more_config.colValRequest : self.srv_more_config
       let reqs = this.bxDeepClone(moreConfig[0])
       let cols = this.colValChangeRequestCols
       let fieldModel = this.formModel
       let initReqs = []
       let fields = this.allFields
       let valids = []
-        for(let cond of reqs.condition){
-          for(let f in fieldModel){
-            if(cond.colName == f){
-              cond.value = this.fields[ f ].getSrvVal()
-            }
+      for (let cond of reqs.condition) {
+        for (let f in fieldModel) {
+          if (cond.colName == f) {
+            cond.value = this.fields[f].getSrvVal()
           }
         }
+      }
       // console.log("valids === ;",cols,valids)
-        console.log("valids === 2;",cols.length,valids.length)
-        delete reqs['srvApp']
-        let url = this.getServiceUrl('select',reqs.serviceName,reqs.srvApp ? reqs.srvApp : null )
-        this.$http.post(url, reqs).then((res) =>{
-          console.log(res)
-          // let datas = res.data[0]
-          if(res){
-            this.setColValRequestsVal(res) 
-          }else{
-            console.log('colValRequest 发生异常',res)
-          }
-          
-          console.log("getColValRequests",reqs,res)
-        })
-      
-      
+      console.log("valids === 2;", cols.length, valids.length)
+      delete reqs['srvApp']
+      let url = this.getServiceUrl('select', reqs.serviceName, reqs.srvApp ? reqs.srvApp : null)
+      this.$http.post(url, reqs).then((res) => {
+        console.log(res)
+        // let datas = res.data[0]
+        if (res) {
+          this.setColValRequestsVal(res)
+        } else {
+          console.log('colValRequest 发生异常', res)
+        }
+
+        console.log("getColValRequests", reqs, res)
+      })
+
+
     },
-    setColValRequestsVal(e){
+    setColValRequestsVal(e) {
       let self = this
       let res = e.data.data[0]
       let initValToCols = self.initValToCols
       // let 
       let moreConfig = self.srv_more_config.colValRequest
-      console.log("setColValRequestsVal",res,moreConfig)
+      console.log("setColValRequestsVal", res, moreConfig)
       let fields = this.fields
 
-      for(let k of moreConfig){
-        for(let r in res){
-          for(let f in fields){
-            if(r == f){
+      for (let k of moreConfig) {
+        for (let r in res) {
+          for (let f in fields) {
+            if (r == f) {
               fields[r].setSrvVal(res[r])
             }
           }
 
         }
       }
-      
+
     },
-    onFieldHistoryPopup (field) {
+    onFieldHistoryPopup(field) {
       this.isXhtml = field.info.editor == 'ueditor'
       this.fieldHisotryPopup = true;
       this.fieldWithHistory = field;
     },
-    getFormDatas () {
+    getFormDatas() {
       return this.formModel
       // return  this.bxDeepClone(this.srvValFormModel()) 
-      
+
     },
-    getParentFormModel () {
+    getParentFormModel() {
       return this.parentAddMainFormDatas
     },
-    evalVisible () {
+    evalVisible() {
       return this.evalVersatileFlagVar(this.visible)
     },
 
@@ -445,7 +449,7 @@ export default {
 
       for (let key in this.fields) {
         // console.log(this.fields[ key ].getSrvVal())
-        model[ key ] = this.fields[ key ].getSrvVal() !== undefined && this.fields[ key ].getSrvVal() !== null ? this.fields[ key ].getSrvVal() : null;
+        model[key] = this.fields[key].getSrvVal() !== undefined && this.fields[key].getSrvVal() !== null ? this.fields[key].getSrvVal() : null;
 
       }
 
@@ -472,7 +476,7 @@ export default {
         return self.isFromLoaded
       }
     },
-    resDataKey (e) {
+    resDataKey(e) {
       self.draftDataKey = e
     },
     /**
@@ -490,7 +494,7 @@ export default {
        * 
        * 解决 从fk字段超链接详情 子表 卡片单元弹出修改使用了 超链接url的外键 conditions 造成 该条件 错误修改了多少数据。 
        */
-      if (operateParams && this.parentPageType !== 'detaillist'  && !['dialog'].includes(this.initOrigin)) {
+      if (operateParams && this.parentPageType !== 'detaillist' && !['dialog'].includes(this.initOrigin)) {
 
         /**
          * 排除 指定为 dialog  表单使用 url参数输入  && !['dialog'].includes(this.initOrigin)
@@ -528,18 +532,18 @@ export default {
           }
         }
 
-        return [ onlyCondition ];
+        return [onlyCondition];
       } else {
         return null;
       }
     },
 
-    literalConditions2Conditions (literalConditions) {
+    literalConditions2Conditions(literalConditions) {
       const conditions = literalConditions.map(a => Object.assign({}, a));
       for (let i in conditions) {
-        conditions[ i ].valueExpr = `'${conditions[ i ].value}'`;
-        if(conditions[ i ].literalValue===true){
-          conditions[ i ].valueExpr = conditions[ i ].value;
+        conditions[i].valueExpr = `'${conditions[i].value}'`;
+        if (conditions[i].literalValue === true) {
+          conditions[i].valueExpr = conditions[i].value;
         }
       }
       return conditions;
@@ -555,27 +559,27 @@ export default {
         // if (this.getOperateParams()) {
         let params = JSON.parse(this.getOperateParams());
         if (params.data && params.data.length > 0) {
-          let row = params.data[ 0 ];
+          let row = params.data[0];
           for (let key in row) {
-            let field = this.fields[ key ];
+            let field = this.fields[key];
             if (field) {
-              field.setSrvVal(row[ key ]);
+              field.setSrvVal(row[key]);
             }
           }
         }
       } else if (this.defaultValues) {
         let row = this.defaultValues;
         for (let key in row) {
-          let field = this.fields[ key ];
+          let field = this.fields[key];
           if (self.name === 'list-duplicate') {
             if (field) {
-              field.setSrvVal(row[ key ]);
+              field.setSrvVal(row[key]);
             }
           } else {
             if (field && !field.info.redundant) {
-              field.setSrvVal(row[ key ]);
+              field.setSrvVal(row[key]);
             } else if (field) {
-              field.setSrvVal(row[ key ]);
+              field.setSrvVal(row[key]);
             }
           }
 
@@ -585,10 +589,35 @@ export default {
 
     sortFields: function (fields) {
       let fieldList = [];
+      let transferField = null // 穿梭框字段
       for (let key in fields) {
-        fieldList.push(fields[ key ]);
+        if (this.formType == 'add' && fields[key]?.info?.subType === 'transfer') {
+          transferField = fields[key]
+          transferField.isTransfer = true
+          transferField.info.isTransfer = true
+          transferField.info.colspan = {
+            xs: 24,
+            sm: 24,
+            md: 24,
+            lg: 24,
+            xl: 24,
+          }
+        } else {
+          fieldList.push(fields[key]);
+        }
       }
       fieldList.sort((a, b) => a.info.seq - b.info.seq);
+      if (transferField) {
+        fieldList = fieldList.map(item => {
+          if (item.info?.redundant?.dependField === transferField.info.name) {
+            // 隐藏掉 依赖transfer的字段
+            item.dependField = transferField.info.name
+            item.evalXIf = () => false
+          }
+          return item
+        })
+        fieldList.push(transferField)
+      }
       return fieldList;
     },
 
@@ -602,7 +631,7 @@ export default {
       let self = this
       let useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
       let srvColsP = srvCols ? Promise.resolve({ body: { data: { srv_cols: srvCols } } }) :
-        this.loadColsV2(this.service_name, useType, app,this.mainService);
+        this.loadColsV2(this.service_name, useType, app, this.mainService);
       return srvColsP.then((response) => {
         let data = response.body.data;
         this.mainTable = data.main_table;
@@ -612,12 +641,12 @@ export default {
         // console.log(response)
 
         if (data.more_config !== null && data.more_config !== undefined && data.more_config !== "") {
-          self[ 'srv_more_config' ] = JSON.parse(data.more_config)
+          self['srv_more_config'] = JSON.parse(data.more_config)
           let colValChangeRequestColsDatas = self.srv_more_config.hasOwnProperty("colValRequest") ? self.srv_more_config.colValRequest[0].condition : []
-          self.colValChangeRequestCols = colValChangeRequestColsDatas.map((item)=>{
-             return item.colName
+          self.colValChangeRequestCols = colValChangeRequestColsDatas.map((item) => {
+            return item.colName
           })
-          self.initValToCols =  self[ 'srv_more_config' ].hasOwnProperty('colValRequest') ? self[ 'srv_more_config' ].colValRequest[0].colNames : []
+          self.initValToCols = self['srv_more_config'].hasOwnProperty('colValRequest') ? self['srv_more_config'].colValRequest[0].colNames : []
           self.isHistoryUse = data.his_version
           self.pagePrompt = self.srv_more_config.pagePrompt !== undefined ? self.srv_more_config.pagePrompt : null;
           self.draftConfig = self.srv_more_config.isDraft !== undefined ? Object.assign(self.srv_more_config.isDraft, { isDraft: true }) : { isDraft: false };
@@ -625,16 +654,16 @@ export default {
           self.pagePrompt = false
           self.draftConfig = null
         }
-        this.$emit('srv-config-loaded', self[ 'srv_more_config' ])
+        this.$emit('srv-config-loaded', self['srv_more_config'])
 
         let listData = data.srv_cols;
         this.srvCols = listData;
-        if(data.pub_field_map){
+        if (data.pub_field_map) {
           // 字段映射
           this.pub_field_map = data.pub_field_map;
         }
         for (var i = 0; i < listData.length; i++) {
-          let srvCol = listData[ i ];
+          let srvCol = listData[i];
           let fi = new FieldInfo(srvCol, this.formType);
           let f = new Field(fi, this);
           f.vif = !(filter && !filter(srvCol))
@@ -654,7 +683,7 @@ export default {
           for (let i in data.validators) {
             this.formValidators.push({
               name: `validator-${i}`,
-              js: data.validators[ i ].in_table_validate,
+              js: data.validators[i].in_table_validate,
             })
           }
         }
@@ -664,8 +693,8 @@ export default {
         }
 
 
-        if(data.hasOwnProperty('cfg_no') && data.cfg_no && data.cfg_json){
-           this.cfgJson = JSON.parse(data.cfg_json)
+        if (data.hasOwnProperty('cfg_no') && data.cfg_no && data.cfg_json) {
+          this.cfgJson = JSON.parse(data.cfg_json)
         }
         return response.body;
       });
@@ -677,7 +706,7 @@ export default {
       let form = this
       // formButtons = formButtons.filter(item => this.pageIsDraft == 'norm' && item.button_type !== "save_draft" && item.button_type !== 'update_draft')
       for (let i in formButtons) {
-        let button = formButtons[ i ]
+        let button = formButtons[i]
         if (!button.permission) {
           continue;
         }
@@ -719,7 +748,7 @@ export default {
             if (button.more_config) {
               const btn_more_config = JSON.parse(button.more_config)
               if (btn_more_config.isCheck) {
-                button[ "isVisibleForm" ] = btn_more_config.isCheck
+                button["isVisibleForm"] = btn_more_config.isCheck
                 customAction.precheckFunc = _ => {
                   return this.validateForm();
                 }
@@ -727,13 +756,13 @@ export default {
             }
             customAction.invokeFunc = _ => {
               let callback = null;
-              if(form.formType==='detail'){
-                callback = ()=>{
+              if (form.formType === 'detail') {
+                callback = () => {
                   // 详情页 刷新页面
                   form?.$refs?.loader?.run?.()
                 }
               }
-              form.customizeOperate(button, [ this.srvValFormModel() ],callback);
+              form.customizeOperate(button, [this.srvValFormModel()], callback);
             }
 
           }
@@ -779,10 +808,10 @@ export default {
       let form = this;
       for (let i in this.fields) {
         let valueItem = {};
-        let field = this.fields[ i ]
+        let field = this.fields[i]
         valueItem.colName = field.info.name
         valueItem.valueFunc = _ => {
-          return form.fields[ field.info.name ].getSrvVal();
+          return form.fields[field.info.name].getSrvVal();
         };
 
         // auto_gen field is not addable or updatable
@@ -804,23 +833,23 @@ export default {
       // console.log('onFieldValueChanged fieldName',this.fields[fieldName].info.label,this.fields[fieldName],this.fields[fieldName].model)
       if (this.formLoaded) {
 
-        let field = this.fields[ fieldName ];
+        let field = this.fields[fieldName];
 
-        if(field['_obj_col']?.col){
+        if (field['_obj_col']?.col) {
           // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
-          console.log('onFieldValueChanged-_obj_col',field['_obj_col']);
-          if(this.fields[field['_obj_col']?.col]){
+          console.log('onFieldValueChanged-_obj_col', field['_obj_col']);
+          if (this.fields[field['_obj_col']?.col]) {
             this.fields[field['_obj_col']?.col].model = field['_obj_col']?.val
           }
         }
 
         // 处理下游游字段变化 field a -> b,  when a is null, and b is changed, set a
         if (field.info.upstream) {
-          let upstreamField = this.fields[ field.info.upstream.field ];
+          let upstreamField = this.fields[field.info.upstream.field];
           if (!upstreamField.model) {
             let refCol = field.info.upstream.refCol;
-            if (field.model && field.model[ refCol ]) {
-              upstreamField.setSrvVal(field.model[ refCol ]);
+            if (field.model && field.model[refCol]) {
+              upstreamField.setSrvVal(field.model[refCol]);
             }
           }
         }
@@ -830,22 +859,22 @@ export default {
         let DateRangeEndCol = field.info._DateRangeEndColName
         if (field.info.editor === "DateRange" && DateRangeEndCol !== null) {
           if (field.hasOwnProperty('_DateRangeModel') && field._DateRangeModel !== null) {
-            field.model = field._DateRangeModel[ 0 ]
+            field.model = field._DateRangeModel[0]
             if (DateRangeEndCol !== undefined) {
-              let endCol = this.fields[ DateRangeEndCol ]
+              let endCol = this.fields[DateRangeEndCol]
 
-              endCol.model = field._DateRangeModel[ 1 ]// endCol.model = field._DateRangeModel[1]
+              endCol.model = field._DateRangeModel[1]// endCol.model = field._DateRangeModel[1]
             }
           }
         }
         self.handleValidation(fieldName);
-        if(self.hasOwnProperty('handleFieldFkRedundant')){
+        if (self.hasOwnProperty('handleFieldFkRedundant')) {
 
           self.handleFieldFkRedundant(field, this.fields)
         }
         // this.handleFieldFkRedundant && this.handleFieldFkRedundant(field, this.fields);
-        for(let f of self.colValChangeRequestCols){
-          if(f === fieldName){
+        for (let f of self.colValChangeRequestCols) {
+          if (f === fieldName) {
             self.getColValRequests()
           }
         }
@@ -857,43 +886,43 @@ export default {
      */
     onLoaderComplete: function ({ data, resp }) {
       let listmap = data;
-      if (!listmap || !listmap[ 0 ]) {
+      if (!listmap || !listmap[0]) {
 
         this.$emit("form-load-nodata")
         this.$emit("detail-form-load-nodata")
         return;
       }
 
-      let map = listmap[ 0 ]
-      this.encryptedCols = map[ '_encrypt_cols' ] || [] // 数据已加密的字段
+      let map = listmap[0]
+      this.encryptedCols = map['_encrypt_cols'] || [] // 数据已加密的字段
       for (let key in map) {
 
-        if (this.fields[ key ]) {
-          this.fields[ key ].setSrvVal(map[ key ])
+        if (this.fields[key]) {
+          this.fields[key].setSrvVal(map[key])
         }
 
       }
       for (let k in this.fields) {
-        if (this.fields[ k ].info.editor === 'DateRange') {
-          if (this.fields[ k ].info._DateRangeEndColName !== null) {
-            this.fields[ k ]._DateRangeModel = []
-            this.fields[ k ]._DateRangeModel.push(this.fields[ k ].model)
-            this.fields[ k ]._DateRangeModel.push(this.fields[ this.fields[ k ].info._DateRangeEndColName ].model)
+        if (this.fields[k].info.editor === 'DateRange') {
+          if (this.fields[k].info._DateRangeEndColName !== null) {
+            this.fields[k]._DateRangeModel = []
+            this.fields[k]._DateRangeModel.push(this.fields[k].model)
+            this.fields[k]._DateRangeModel.push(this.fields[this.fields[k].info._DateRangeEndColName].model)
           }
         }
         for (let c in this.encryptedCols) {
           // 加密字段设置为只读 
-          if (this.fields[ k ].info.name === this.encryptedCols[ c ]) {
-            this.fields[ k ].info.readonly = true
+          if (this.fields[k].info.name === this.encryptedCols[c]) {
+            this.fields[k].info.readonly = true
           }
         }
-        if ((this.fields[ k ].info.editor === 'upload-file' || this.fields[ k ].info.editor === 'upload-image') && (this.pageName === 'list-duplicatedeep' || this.pageName == 'list-duplicate')) {
-          this.fields[ k ].setSrvVal('')
+        if ((this.fields[k].info.editor === 'upload-file' || this.fields[k].info.editor === 'upload-image') && (this.pageName === 'list-duplicatedeep' || this.pageName == 'list-duplicate')) {
+          this.fields[k].setSrvVal('')
         }
       }
       // 把历史数据放到 field
       if (resp.data.his_data && resp.data.his_data.length > 0) {
-        let historyOfRow = resp.data.his_data[ 0 ];
+        let historyOfRow = resp.data.his_data[0];
         if (Array.isArray(historyOfRow) && historyOfRow.length > 0) {
           this.historyData = historyOfRow
             .filter(
@@ -920,7 +949,7 @@ export default {
               return res;
             }, [])
         }
-        
+
 
         Object.values(this.fields).forEach(field => {
           let hisOfField = historyOfRow
@@ -932,32 +961,32 @@ export default {
               return firstRow || changed
             })
             .map(ver => {
-              let value = ver[ field.info.name ];
+              let value = ver[field.info.name];
               if (field.info.isTemporal() && value !== '******') {
                 value = formatDate(value, field.info.type.toLowerCase(), field.info.format);
               }
-              
+
               return {
                 value: value,
                 remark: ver._data_desc
               }
             });
-          
+
           this.$set(field, "historyData", hisOfField);
         })
-        
+
       }
 
       if (this.encryptedCols && Array.isArray(this.encryptedCols)) {
         // 老版加密数据处理逻辑，已废弃
         // 如果当前数据为敏感数据，因为值为******, 则没有看的权限，进而不可编辑
         if (map._sensitive_data === true) {
-          this.encryptedCols.forEach(col => this.fields[ col ] && this.fields[ col ].setNoPerm4Sensi(true))
+          this.encryptedCols.forEach(col => this.fields[col] && this.fields[col].setNoPerm4Sensi(true))
         }
 
         // 如果_sensitive_data_update === false，则当前行敏感字段不可编辑
         if (map._sensitive_data_update === false) {
-          this.encryptedCols.forEach(col => this.fields[ col ] && (this.fields[ col ].info.editable = false))
+          this.encryptedCols.forEach(col => this.fields[col] && (this.fields[col].info.editable = false))
         }
       }
 
@@ -982,7 +1011,7 @@ export default {
           }
 
         }, {
-          immediate:true,
+        immediate: true,
         deep: true
       })
     },
@@ -1000,7 +1029,7 @@ export default {
         if (cfg.hasOwnProperty('minDate')) {
           if (cfg.minDate !== '' && cfg.minDate !== null && cfg.minDate !== undefined) {
             if (cfg.minDate.indexOf('{') !== -1 && cfg.minDate.indexOf('}') !== -1) {
-              let minexp = cfg.minDate.match(/{(\S*)}/)[ 1 ]
+              let minexp = cfg.minDate.match(/{(\S*)}/)[1]
               m.min = eval(minexp)
               if (m.min === null || m.min === undefined) {
                 m.min = '1990-01-01'
@@ -1018,7 +1047,7 @@ export default {
         if (cfg.hasOwnProperty('maxDate')) {
           if (cfg.maxDate !== '' && cfg.maxDate !== null && cfg.maxDate !== undefined) {
             if (cfg.maxDate.indexOf('{') !== -1 && cfg.maxDate.indexOf('}') !== -1) {
-              let maxexp = cfg.maxDate.match(/{(\S*)}/)[ 1 ]
+              let maxexp = cfg.maxDate.match(/{(\S*)}/)[1]
               m.max = eval(maxexp)
               if (m.max === null || m.max === undefined) {
                 m.max = '2050-12-30'
@@ -1038,11 +1067,11 @@ export default {
     }
 
   },
-  watch:{
-    "sectionsCollapse":{
-      deep:true,
-      handler:function(n,o){
-        console.log('sectionsCollapse change ',n)
+  watch: {
+    "sectionsCollapse": {
+      deep: true,
+      handler: function (n, o) {
+        console.log('sectionsCollapse change ', n)
       }
     }
   }

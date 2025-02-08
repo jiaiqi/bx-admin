@@ -1365,6 +1365,7 @@ export default {
           this.tableMaxHeight = tableHeight;
         } else {
           parentEle.parentElement.style.display = "flex";
+          parentEle.parentElement.style.flexDirection = "column";
           this.tableMaxHeight = parentEle.offsetHeight;
         }
         if (this.tableMaxHeight < 500) {

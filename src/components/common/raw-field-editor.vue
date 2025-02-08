@@ -150,14 +150,14 @@
                 field.info.editor === 'date-picker' && field.model !== '******'
               "
               v-model="field.model"
-              :type="field.info.subtype"
+              :type="field.info.subType"
               clearable
               :format="
-                field.info.subtype == 'year'
+                field.info.subType == 'year'
                   ? 'yyyy'
-                  : field.info.subtype == 'month'
+                  : field.info.subType == 'month'
                   ? 'MM'
-                  : field.info.subtype == 'date'
+                  : field.info.subType == 'date'
                   ? 'yyyy 年 MM 月 dd 日'
                   : 'yyyy 年 MM 月 dd 日'
               "
@@ -332,7 +332,28 @@
               "
             >
             </upload-image>
-
+            <!-- 穿梭框 -->
+            <transfer-vue
+              v-else-if="field.info.isTransfer"
+              v-model="field.finderSelected"
+              :disabled="getDisabled"
+              :field="field"
+              :defaultCondition="defaultCondition"
+              :defaultValues="defaultValues"
+              :childForeignKey="childForeignkey"
+              :mainFormDatas="mainformDatas"
+              :form-model="formModel"
+              :$srv-app="
+                field.info.srvCol.option_list_v2 &&
+                field.info.srvCol.option_list_v2.srv_app
+              "
+              ref="editor"
+              @field-value-changed="
+                $emit('field-value-changed', field.info.name, field)
+              "
+              @blur="onBlur"
+            >
+            </transfer-vue>
             <finder
               v-else-if="field.info.editor === 'finder'"
               :disabled="getDisabled"
@@ -750,6 +771,8 @@ import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
 import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
+import transferVue from "../ui/form-widget/transfer.vue";
+
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 export default {
@@ -776,6 +799,7 @@ export default {
     verifyMobile,
     autocompleteInput,
     carNoKeyboard,
+    transferVue,
   },
 
   props: {
@@ -804,7 +828,7 @@ export default {
       finderSelected: "",
       pickerOptions: {
         disabledDate: (time) => {
-          return this.field.info.subtype === "year"
+          return this.field.info.subType === "year"
             ? this.dealDisabledDate(new Date(time).getFullYear().toString())
             : this.dealDisabledDate(time);
         },
@@ -1181,7 +1205,7 @@ export default {
             return true;
           }
         } else if (this.field.info.editor === "date-picker") {
-          if (this.field.info.subtype === "year") {
+          if (this.field.info.subType === "year") {
             if (fi.moreConfig.hasOwnProperty("maxMin")) {
               min =
                 fi.moreConfig.maxMin.minDate === "" ||
@@ -1320,7 +1344,7 @@ export default {
   color: #303133 !important;
 }
 
-::v-deep .el-upload__tip{
+::v-deep .el-upload__tip {
   line-height: normal;
   margin: 5px 0;
 }
