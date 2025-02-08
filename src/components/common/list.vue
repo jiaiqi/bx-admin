@@ -763,7 +763,7 @@
       <!-- <el-row type="flex" class="row-bg" justify="center" v-if="!isMem()" -->
       <el-row
         type="flex"
-        class="row-bg py-2 shadow"
+        class="row-bg py-2 "
         justify="center"
         v-if="showPagination && setShowPagination"
         v-show="!hidePagination && gridPage.total > 0 && !isDemo"
