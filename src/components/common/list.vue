@@ -1257,28 +1257,7 @@ export default {
       deep: true,
       handler(newValue, oldValue) {
         this.$nextTick(() => {
-          if (this.$refs.elTableParentDiv?.$el) {
-            const parentEle = this.$refs.elTableParentDiv?.$el;
-            let parentHeight = parentEle.offsetHeight;
-            const bodyHeight = parentEle?.querySelector(
-              ".el-table__body-wrapper"
-            )?.scrollHeight;
-            const headerHeight = parentEle?.querySelector(
-              ".el-table__header-wrapper"
-            )?.offsetHeight;
-            const tableHeight = bodyHeight + headerHeight;
-            if (tableHeight < parentHeight) {
-              this.tableMaxHeight = tableHeight;
-              parentEle.parentElement.style.display = "block";
-            } else {
-              parentEle.parentElement.style.display = "flex";
-              parentHeight = parentEle.offsetHeight;
-              this.tableMaxHeight = parentHeight;
-            }
-            if(this.tableMaxHeight<500){
-              this.tableMaxHeight = 500;
-            }
-          }
+          this.setTableMaxHeight()
         });
       },
     },
@@ -1368,6 +1347,31 @@ export default {
   },
 
   methods: {
+    setTableMaxHeight() {
+      if (this.$refs.elTableParentDiv?.$el) {
+        const parentEle = this.$refs.elTableParentDiv?.$el;
+        let parentHeight = parentEle.offsetHeight;
+        const bodyHeight = parentEle?.querySelector(
+          ".el-table__body-wrapper"
+        )?.scrollHeight;
+        const headerHeight = parentEle?.querySelector(
+          ".el-table__header-wrapper"
+        )?.offsetHeight;
+        const tableHeight = bodyHeight + headerHeight;
+        console.log("tableHeight", tableHeight, parentHeight);
+        
+        if (tableHeight < parentEle.parentElement.offsetHeight - 50) {
+          parentEle.parentElement.style.display = "block";
+          this.tableMaxHeight = tableHeight;
+        } else {
+          parentEle.parentElement.style.display = "flex";
+          this.tableMaxHeight = parentEle.offsetHeight;
+        }
+        if (this.tableMaxHeight < 500) {
+          this.tableMaxHeight = 500;
+        }
+      }
+    },
     showAddChildBtn(row, index, column, columnIndex) {
       if (column) {
         let firstColumn = this.gridHeader.find((item) =>
