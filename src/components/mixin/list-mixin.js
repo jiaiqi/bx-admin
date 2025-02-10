@@ -76,9 +76,9 @@ export default {
         pageSizes: [],
         pageSize:
           this.listType.indexOf("list") !== -1 &&
-          this.listType != "list" &&
-          this.listType != "treelist" &&
-          this.childForeignkey?.show_ui_model !== "tabs"
+            this.listType != "list" &&
+            this.listType != "treelist" &&
+            this.childForeignkey?.show_ui_model !== "tabs"
             ? 5
             : 10,
         currentPage: 1,
@@ -113,7 +113,7 @@ export default {
       pub_field_map: null,
       originListData: null,
       listV2Data: null,
-      isRefreshed:false
+      isRefreshed: false
     };
   },
 
@@ -437,15 +437,17 @@ export default {
       }
 
       if (show) {
-        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${
-          this.updateService
-        }&srvApp=${this.resolveDefaultSrvApp()}`;
+        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService
+          }&srvApp=${this.resolveDefaultSrvApp()}`;
         if (this.defaultCondition?.length) {
           this.defaultCondition.forEach((col) => {
             if (col.ruleType === "eq") {
               url += `&${col.colName}=${col.value}`;
             }
           });
+          // url += `&topTreeData=true`;
+        }
+        if (this.listV2Data?.is_tree === true) {
           url += `&topTreeData=true`;
         }
         let tabTitle = "";
@@ -453,9 +455,8 @@ export default {
           this.childForeignkey?.kedispcol &&
           this.listMainFormDatas[this.childForeignkey?.kedispcol]
         ) {
-          tabTitle = `${
-            this.listMainFormDatas[this.childForeignkey?.kedispcol]
-          }`;
+          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]
+            }`;
         }
         if (this.childForeignkey?.section_name) {
           tabTitle += `/${this.childForeignkey?.section_name}【excel】`;
@@ -910,7 +911,7 @@ export default {
         btn.permission &&
         btn.operate_service &&
         Object.prototype.toString.call(btn.operate_service) !==
-          "[object String]"
+        "[object String]"
       ) {
         for (let key in btn.operate_service) {
           let config = btn.operate_service[key];
@@ -950,7 +951,7 @@ export default {
           (optionsList.length !== 0 ||
             (btn.operate_service &&
               Object.prototype.toString.call(btn.operate_service) ==
-                "[object String]") ||
+              "[object String]") ||
             !btn.operate_service)
         ) {
           isBtnOptShow = true;
@@ -1322,7 +1323,7 @@ export default {
         if (disp_exps != undefined && disp_exps != "" && disp_exps != null) {
           result = eval(disp_exps);
         }
-      } catch (err) {}
+      } catch (err) { }
 
       // 使用后端返回的参数控制按钮显示隐藏
       if (
@@ -1369,7 +1370,7 @@ export default {
               } else if (item.permission) {
                 isShow.push(item);
               }
-            } catch (err) {}
+            } catch (err) { }
           }
         }
 
@@ -1742,7 +1743,7 @@ export default {
         if (
           button.operate_service &&
           Object.prototype.toString.call(button.operate_service) !==
-            "[object String]"
+          "[object String]"
         ) {
           let srv = this.getButtonOptSrv(button, row, "active");
           if (srv.length > 0) {
@@ -2215,9 +2216,9 @@ export default {
         this.isMem() || (this.gridPage && pageSize < 0)
           ? null
           : {
-              pageNo: this.gridPage.currentPage,
-              rownumber: pageSize,
-            };
+            pageNo: this.gridPage.currentPage,
+            rownumber: pageSize,
+          };
       let relationCondition = self.relationCondition;
       console.log("loadDraftLength", cloneDeep(this.condition));
       // service_name, condition, page, order, group, mapcondition, app,isproc,columns,relationCondition
@@ -2247,7 +2248,7 @@ export default {
     },
     loadTableData(srvAuth) {
       let self = this;
-      if (!this.vpageNo&&!this.isRefreshed) {
+      if (!this.vpageNo && !this.isRefreshed) {
         // 登录过期后刷新
         this.isRefreshed = true;
         return this.initGridData();
@@ -2275,9 +2276,9 @@ export default {
           this.isMem() || (this.gridPage && pageSize < 0)
             ? null
             : {
-                pageNo: this.gridPage.currentPage,
-                rownumber: pageSize,
-              };
+              pageNo: this.gridPage.currentPage,
+              rownumber: pageSize,
+            };
 
         if (
           this.listType == "wait" ||
@@ -2373,7 +2374,7 @@ export default {
               const noCol = this.listV2Data["no_col"];
               const parentCol = this.listV2Data["parent_no_col"];
               if (this.searchFormCondition.length == 0) {
-                if (!condition.find((item) => item.colName === parentCol) ) {
+                if (!condition.find((item) => item.colName === parentCol)) {
                   var initCondition = {
                     colName: parentCol,
                     ruleType: "isnull",
@@ -2401,15 +2402,15 @@ export default {
               columns: this.columns,
               relationCondition: relationCondition,
               isDraft: this.draftRun,
-              divCond:divCond,
+              divCond: divCond,
               rdt: rdt,
               pageType: "list_page",
               vpageNo: this.vpageNo,
               srvAuth: srvAuth,
-            },this)
+            }, this)
               .then((response) => {
-                console.log('divCond',divCond);
-                
+                console.log('divCond', divCond);
+
                 if (response.resultCode == "0011") {
                   // 登录过期
                   this.$store.commit("clearSrvCols");
@@ -2897,8 +2898,8 @@ export default {
         }
         let more_config =
           serviceCol["more_config"] !== null &&
-          serviceCol["more_config"] !== undefined &&
-          serviceCol["more_config"] !== ""
+            serviceCol["more_config"] !== undefined &&
+            serviceCol["more_config"] !== ""
             ? JSON.parse(serviceCol["more_config"])
             : null;
         let colType = serviceCol["col_type"];
@@ -2911,15 +2912,15 @@ export default {
         header["list_min_width"] = serviceCol["list_min_width"];
         header["show_option_icon"] =
           serviceCol["more_config"] &&
-          JSON.parse(serviceCol["more_config"]).option_icon &&
-          JSON.parse(serviceCol["more_config"]).option_icon !== null
+            JSON.parse(serviceCol["more_config"]).option_icon &&
+            JSON.parse(serviceCol["more_config"]).option_icon !== null
             ? JSON.parse(serviceCol["more_config"]).option_icon
             : false;
         header["align"] = this.getColAlign(colType);
         header["format"] =
           serviceCol["more_config"] &&
-          JSON.parse(serviceCol["more_config"]).format &&
-          JSON.parse(serviceCol["more_config"]).format !== null
+            JSON.parse(serviceCol["more_config"]).format &&
+            JSON.parse(serviceCol["more_config"]).format !== null
             ? JSON.parse(serviceCol["more_config"]).format
             : null;
         header["more_config"] =
@@ -2947,7 +2948,7 @@ export default {
           let filters = [];
           const option_list_v2 = cloneDeep(
             serviceCol["option_list_v2"]?.options ||
-              serviceCol["option_list_v2"]
+            serviceCol["option_list_v2"]
           );
           if (option_list_v2 && Array.isArray(option_list_v2)) {
             for (var item of option_list_v2) {
@@ -3446,10 +3447,10 @@ export default {
       if (row.hasOwnProperty(dipsCol) && row[dipsCol]) {
         return row[dipsCol];
       } else {
-        if(row[col.column]?.indexOf('http')===0){
+        if (row[col.column]?.indexOf('http') === 0) {
           let file_type = row[col.column].split('.').pop()
           let src_name = row[col.column].split('/').pop()
-          return [{fileurl:row[col.column],file_type,src_name}]
+          return [{ fileurl: row[col.column], file_type, src_name }]
         }
         return [];
       }
@@ -3615,7 +3616,7 @@ export default {
         case "fkjsons":
           try {
             result = val ? JSON.parse(val) : [];
-          } catch (error) {}
+          } catch (error) { }
           if (Array.isArray(result) && result.length > 0) {
             result = result.map((item) => item[dispCol] || item[valueCol]);
           }

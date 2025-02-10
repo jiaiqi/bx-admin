@@ -150,14 +150,14 @@
                 field.info.editor === 'date-picker' && field.model !== '******'
               "
               v-model="field.model"
-              :type="field.info.subType"
+              :type="field.info.subtype"
               clearable
               :format="
-                field.info.subType == 'year'
+                field.info.subtype == 'year'
                   ? 'yyyy'
-                  : field.info.subType == 'month'
+                  : field.info.subtype == 'month'
                   ? 'MM'
-                  : field.info.subType == 'date'
+                  : field.info.subtype == 'date'
                   ? 'yyyy 年 MM 月 dd 日'
                   : 'yyyy 年 MM 月 dd 日'
               "
