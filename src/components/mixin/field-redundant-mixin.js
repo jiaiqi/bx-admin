@@ -4,6 +4,7 @@ import Vue from "vue";
 import { ActionInfo } from "../model/ActionInfo";
 import dayjs from "dayjs";
 import cloneDeep from "lodash/cloneDeep";
+import debounce from "lodash/debounce";
 export default {
   methods: {
     handleRedundantOnFormModelChange: function (
@@ -60,7 +61,13 @@ export default {
         if (fieldInfo.redundant) {
           if (!(diffFields.size == 1 && diffFields.has(fieldName))) {
             let vm = this;
-            this.handleRedundantViaJs(field, formModelFunc, vm);
+            if (Array.isArray(fieldInfo.srvCol?.calc_trigger_col)) {
+              // 触发计算的字段值有变化才进行计算
+              let needUpdate = fieldInfo.srvCol?.calc_trigger_col.some(col => newVal[col] != oldVal[col]);
+              if (needUpdate) {
+                this.handleRedundantViaJs(field, formModelFunc, vm);
+              }
+            }
           }
         }
         if (fieldInfo.mainSubRedundant) {
@@ -91,7 +98,7 @@ export default {
      * @param formModelFunc
      * @param vm used in func js
      */
-    handleRedundantViaJs: function (field, formModelFunc, vm) {
+    handleRedundantViaJs: debounce(function (field, formModelFunc, vm) {
       let fieldInfo = field.info;
       if (!fieldInfo.redundant || !fieldInfo.redundant.func) {
         return;
@@ -106,7 +113,7 @@ export default {
         let ret = eval("var zz=" + func + "(row, vm, field); zz");
         const calc_rule = fieldInfo.redundant.calc_rule;
         if (calc_rule?.type === "求和" && calc_rule?.constraint_name) {
-          if (!row?._children?.[calc_rule.constraint_name]||!row?._children?.[calc_rule.constraint_name]?.length) {
+          if (!row?._children?.[calc_rule.constraint_name] || !row?._children?.[calc_rule.constraint_name]?.length) {
             // 没有子表或者子表数量为0的时候不进行计算
             return;
           }
@@ -152,20 +159,20 @@ export default {
         ) {
           update = true;
         }
-        if(update && field.info?.subType!=='autocomplete' && ret !== undefined){
+        if (update && field.info?.subType !== 'autocomplete' && ret !== undefined) {
           // undefined说明没有返回值 不要更新
-          if(typeof ret === "object" && ret instanceof Promise){
-            ret.then((res)=>{
-                field.setSrvVal(res);
+          if (typeof ret === "object" && ret instanceof Promise) {
+            ret.then((res) => {
+              field.setSrvVal(res);
             })
-          }else{
-            if(field.getSrvVal() !== ret ){
+          } else {
+            if (field.getSrvVal() !== ret) {
               field.setSrvVal(ret);
             }
           }
         }
       }
-    },
+    },200),
 
     buildDependentFields: function (fields) {
       // construct redundant fields relations via fk
@@ -228,7 +235,7 @@ export default {
      * @param fields
      * @param {true|false} onHandle - autocomplete字段手动改变下拉选项
      */
-    handleFieldFkRedundant: function (field, fields,onHandle=false) {
+    handleFieldFkRedundant: function (field, fields, onHandle = false) {
       if (
         field.model === null &&
         field.condDependentFields &&
@@ -257,7 +264,7 @@ export default {
               (field.modelOld &&
                 dependentField.getSrvVal &&
                 dependentField.getSrvVal() ===
-                  field.modelOld[dependentField.info.redundant.refedCol])
+                field.modelOld[dependentField.info.redundant.refedCol])
             ) {
               sync = true;
             } else {
@@ -273,7 +280,7 @@ export default {
           // }
 
           if (sync) {
-            if(dependentField.info.subType==='autocomplete' && dependentField.getSrvVal()&&onHandle!==true){
+            if (dependentField.info.subType === 'autocomplete' && dependentField.getSrvVal() && onHandle !== true) {
               // 表单自动冗余操作，如果字段是autocomplete且本身有值，不进行冗余
               return
             }
