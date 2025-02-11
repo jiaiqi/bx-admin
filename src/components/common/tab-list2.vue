@@ -785,14 +785,14 @@ export default {
     flex-direction: column;
     ::v-deep .list-comp-wrap {
       height: 100%;
-      overflow: hidden;
+      // overflow: hidden;
       display: flex;
       flex-direction: column;
       .table-list-row {
         flex: 1;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        // overflow: hidden;
       }
     }
   }
