@@ -152,10 +152,16 @@ export default {
         ) {
           update = true;
         }
-
-        if (update && field.getSrvVal() !== ret && field.info?.subType!=='autocomplete') {
-          // console.log("计算字段",row,field.info.label,ret,field,func)
-          field.setSrvVal(ret);
+        if(update && field.info?.subType!=='autocomplete'){
+          if(typeof ret === "object" && ret instanceof Promise){
+            ret.then((res)=>{
+              field.setSrvVal(res); 
+            })
+          }else{
+            if(field.getSrvVal() !== ret ){
+            field.setSrvVal(ret);
+            }
+          }
         }
       }
     },
