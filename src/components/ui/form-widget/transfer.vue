@@ -173,7 +173,7 @@ export default {
       options: [],
       page: {
         pageNo: 1,
-        rownumber: 1000,
+        rownumber: 5000,
         total: 0,
       },
       rightList: [],
@@ -372,9 +372,12 @@ export default {
         condition: [],
         page: {
           pageNo: this.page.pageNo,
-          rownumber: this.page.rownumber,
+          rownumber: loader?.page?.rownumber || this.page.rownumber,
         },
       };
+      if(loader?.page?.rownumber){
+        this.page.rownumber = loader.page.rownumber;
+      }
       if (loader) {
         if (loader.conditions) {
           this.buildConditions(loader).forEach((c) =>

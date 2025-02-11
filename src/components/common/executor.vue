@@ -243,7 +243,7 @@ export default {
         const transferField = fields.find((e) => e.isTransfer === true);
         if (transferField) {
           const transferFieldRef = transferField?.editor?.$refs?.editor;
-          const values = transferFieldRef?.getTransferValues?.();
+          // const values = transferFieldRef?.getTransferValues?.();
           const addValues = transferFieldRef?.getAddValues?.();
           const removeValues = transferFieldRef?.getRemoveValues?.();
           console.log("addValues", addValues, "removeValues", removeValues);
@@ -295,6 +295,8 @@ export default {
               }
               return obj;
             });
+          }else{
+            queries = []
           }
           if (removeValues?.serviceName && removeValues?.data?.length) {
             const removeQuery = removeValues.data.map((item) => {
