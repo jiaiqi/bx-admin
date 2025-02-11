@@ -1,6 +1,6 @@
 <template>
   <div class="border p-2 rounded-sm transfer-widget">
-    <el-transfer
+      <el-transfer
       :titles="calcTitles"
       v-model="value"
       :data="options"
@@ -9,26 +9,20 @@
       filterable
       @change="handleChange"
     >
-      <!-- <template slot="left-footer">
-        <div class="text-center">
-          <el-pagination
-            small
-            layout="prev, pager, next"
-            :pager-count="5"
-            :total="page.total"
-            :current-page.sync="page.pageNo"
-            :page-size.sync="page.rownumber"
-            hide-on-single-page
-            @current-change="handleCurrentChange"
-          >
-          </el-pagination>
-        </div>
-      </template> -->
-
-      <!-- <el-button class="transfer-footer" slot="right-footer" size="small"
-        >操作</el-button
-      > -->
     </el-transfer>
+    <!-- <bxTransfer
+      :is-tree="optionListV2 && optionListV2.is_tree"
+      :titles="calcTitles"
+      v-model="value"
+      :data="options"
+      :rightList="rightList"
+      class="custom-transfer"
+      :props="props"
+      filterable
+      :loadNode="loadChildNode"
+      @change="handleChange"
+    >
+    </bxTransfer> -->
   </div>
 </template>
 
@@ -36,8 +30,14 @@
 import cloneDeep from "lodash/cloneDeep";
 import cloneDeepWith from "lodash/cloneDeepWith";
 import difference from "lodash/difference";
+// import bxTransfer from "./transfer/src/index.vue";
+import bxTransfer from "./transfer/index";
+import uniqBy from "lodash/uniqBy";
 export default {
   name: "transfer",
+  components: {
+    bxTransfer,
+  },
   model: {
     prop: "value",
     event: "change",
@@ -70,6 +70,8 @@ export default {
         key: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
         checkStrictly: top?.env?.includes("health") ? false : true,
+        children: "children",
+        isLeaf: "isLeaf",
       };
 
       return props;
@@ -171,9 +173,11 @@ export default {
       options: [],
       page: {
         pageNo: 1,
-        rownumber: 50,
+        rownumber: 1000,
         total: 0,
       },
+      rightList: [],
+      oldRightList: [],
     };
   },
   created() {
@@ -252,9 +256,97 @@ export default {
             );
             this.oldValue = cloneDeep(this.value);
             this.oldValues = cloneDeep(response.data.data);
+            if (this.value.length&&this.optionListV2.is_tree) {
+              // this.getInitValues();
+            }
           }
         });
       }
+    },
+    getInitValues() {
+      let list = this.value;
+      if (Array.isArray(list) && list.length) {
+        const loader = this.dispLoaderV2;
+        const queryJson = {
+          serviceName: loader?.service,
+          queryMethod: "select",
+          colNames: ["*"],
+          // condition: [
+          //   {
+          //     colName: loader.refedCol,
+          //     ruleType: "in",
+          //     value: list.toString(),
+          //   },
+          // ],
+          page: {
+            pageNo: 1,
+            rownumber: 100,
+          },
+        };
+        queryJson.relation_condition = {
+          relation:"OR",
+          data:list.map(item=>{
+            return {
+              colName:'path',
+              ruleType:'[like',
+              value:`/${item}/`
+            }
+          })
+        }
+        this.selectList(queryJson).then((response) => {
+          if (response && response.data && response.data.data) {
+            const resData = response.data.data.map((item) => {
+              item["label"] =
+                loader.showAsPair !== true
+                  ? item[loader.dispCol]
+                  : `${item[loader.dispCol]}/${item[loader.refedCol]}`;
+              item["value"] = item[loader.refedCol];
+              item.isLeaf = item.is_leaf === "是";
+              item.labelFunc = (item) => {
+                if (item[loader.dispCol]) {
+                  if (loader.showAsPair) {
+                    return `${item[loader.dispCol]}/${item[loader.refedCol]}`;
+                  } else {
+                    return item[loader.dispCol];
+                  }
+                } else {
+                  return item[loader.refedCol];
+                }
+              };
+              return item;
+            });
+            this.rightList = cloneDeep(resData);
+            this.oldRightList = cloneDeep(resData);
+            this.options.push(...resData);
+            // this.options = this.flatToNestedTree(
+            //   uniqBy([...resData, ...this.options], "value"),
+            //   null,
+            //   loader.parent_col,
+            //   loader.refed_col
+            // );
+          }
+        });
+      }
+    },
+    // 将平铺的树形数据转换为嵌套的树形结构
+    flatToNestedTree(
+      flatData,
+      rootId = null,
+      parent_col = "parent_no",
+      idCol = "id"
+    ) {
+      // 定义一个递归函数来构建树
+      function buildTree(parent_no) {
+        return flatData
+          .filter((item) => item[parent_col] === parent_no) // 找到所有直接子节点
+          .map((child) => ({
+            ...child, // 复制当前节点的所有属性
+            children: buildTree(child[idCol]), // 递归地为当前节点构建子树
+          }));
+      }
+
+      // 开始构建树，从rootId开始寻找根节点
+      return buildTree(rootId);
     },
     handleCurrentChange(val) {
       this.page.pageNo = val;
@@ -307,6 +399,9 @@ export default {
       if (loader && loader.orders) {
         queryJson.order = loader.orders;
       }
+      // if (this.optionListV2?.is_tree) {
+      //   queryJson.use_type = "treelist";
+      // }
 
       let app = this.$srvApp && this.field.evalFormExpr(this.$srvApp, "");
       if (this.$srvApp && !app) {
@@ -328,6 +423,7 @@ export default {
                 ? item[fieldInfo.dispCol]
                 : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
             item["value"] = item[fieldInfo.valueCol];
+            item.isLeaf = item.is_leaf === "是";
             item.labelFunc = (item) => {
               if (item[fieldInfo.dispCol]) {
                 if (loader.showAsPair) {
@@ -347,6 +443,48 @@ export default {
           this.setInitVal();
         } else {
           return [];
+        }
+      });
+    },
+    loadChildNode: function (node, resolve) {
+      let loader = this.dispLoaderV2;
+      let queryJson = {
+        serviceName: loader.service,
+        queryMethod: "select",
+        distinct: !!loader.distinct,
+        // * is here to support redundant or img url expr etc...
+        colNames: ["*"],
+        condition: [
+          {
+            colName: loader.parentCol,
+            ruleType: "eq",
+            value: node.data[loader.refedCol],
+          },
+        ],
+      };
+      this.selectList(queryJson).then((response) => {
+        if (response && response.data && response.data.data) {
+          let options = response.data.data.map((item) => {
+            item["label"] =
+              loader.showAsPair !== true
+                ? item[loader.dispCol]
+                : `${item[loader.dispCol]}/${item[loader.refedCol]}`;
+            item["value"] = item[loader.refedCol];
+            item.isLeaf = item.is_leaf === "是";
+            item.labelFunc = (item) => {
+              if (item[loader.dispCol]) {
+                if (loader.showAsPair) {
+                  return `${item[loader.dispCol]}/${item[loader.refedCol]}`;
+                } else {
+                  return item[loader.dispCol];
+                }
+              } else {
+                return item[loader.refedCol];
+              }
+            };
+            return item;
+          });
+          resolve(options);
         }
       });
     },
@@ -647,11 +785,11 @@ export default {
   align-items: center;
   ::v-deep .el-transfer-panel {
     flex: 1;
-    .el-transfer-panel__body{
+    .el-transfer-panel__body {
       display: flex;
       flex-direction: column;
       height: 500px;
-      .el-transfer-panel__list{
+      .el-transfer-panel__list {
         flex: 1;
       }
     }
