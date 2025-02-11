@@ -1,50 +1,60 @@
 /* */
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-
   <!-- <el-col :span="field.info.colspan"> -->
   <!-- 响应式布局属性 -->
   <div class="field-editor">
     <slot name="field-child-prepend"></slot>
+    <template v-if="(ignoreVif || field.evalXIf()) && field.flatChildForm">
+      <!-- <child-form v-bind="$props"></child-form> -->
+    </template>
     <el-col
       :xs="field.info.colspan.xs"
       :sm="field.info.colspan.sm"
       :md="field.info.colspan.md"
       :lg="field.info.colspan.lg"
       :xl="field.info.colspan.xl"
-      v-if="ignoreVif || field.evalXIf()"
+      v-else-if="ignoreVif || field.evalXIf()"
       v-show="ignoreVif || field.evalVisible()"
     >
-
       <el-form-item
         :key="field.info.name"
         :prop="field.info.name"
         :title="field.info.label"
         :show-message="false"
-
         :error="field.getAnyValidateError()"
-        :class="{ fix_height_form_item: fixHeight, invalid_form_item : formHasInvalidError }"
+        :class="{
+          fix_height_form_item: fixHeight,
+          invalid_form_item: formHasInvalidError,
+        }"
       >
         <!--显示字段label-->
         <template v-slot:label>
           <label
             :for="field.info.name"
             :title="field.info.label"
-            :class="field.info.isRequired() ?  `${field.info.getLabelStyle()} required` : field.info.getLabelStyle()"
+            :class="
+              field.info.isRequired()
+                ? `${field.info.getLabelStyle()} required`
+                : field.info.getLabelStyle()
+            "
             class="el-form-item__label"
-            style="width: 10rem; text-overflow: ellipsis;overflow: hidden;white-space: nowrap;"
+            style="
+              width: 10rem;
+              text-overflow: ellipsis;
+              overflow: hidden;
+              white-space: nowrap;
+            "
           >
-
             {{ field.info.label }}
 
             <el-button
               v-if="field.info.explain !== ''"
               type="text"
               @click="showHelpTips(field.info)"
-              style="color:#28d828"
+              style="color: #28d828"
               slot="reference"
               icon="el-icon-question"
             ></el-button>
-
           </label>
         </template>
 
@@ -57,27 +67,29 @@
           destroy-on-close
         >
           <div
-            style="border-radius: 4px; padding:10px; border:1px solid #dcdfe6; overflow: auto;max-width:210mm;margin:0 auto;"
+            style="
+              border-radius: 4px;
+              padding: 10px;
+              border: 1px solid #dcdfe6;
+              overflow: auto;
+              max-width: 210mm;
+              margin: 0 auto;
+            "
             v-html="html"
           ></div>
-          <span
-            slot="footer"
-            class="dialog-footer"
-          >
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button
-            type="primary"
-            @click="dialogVisible = false"
-          >确 定</el-button>
-        </span>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="dialogVisible = false"
+              >确 定</el-button
+            >
+          </span>
         </el-dialog>
         <el-row>
           <el-col
             v-for="contentField in this.contentFields"
             :key="contentField.info.name"
-            v-if="ignoreVif||contentField.evalXIf()"
+            v-if="ignoreVif || contentField.evalXIf()"
             :span="getInnerFieldColspan(contentField)"
-
           >
             <!-- style="display: flex;" -->
             <!--
@@ -86,22 +98,42 @@
             <raw-field-editor
               ref="inner"
               :field="contentField"
-              v-if="(ignoreVif||contentField.evalXIf())&&!hideInput(contentField)"
-              :childForeignkey='childForeignkey'
-              :defaultCondition='defaultCondition'
-              :mainformDatas='mainformDatas||parentAddMainFormDatas'
-              :defaultValues='defaultValues'
+              v-if="
+                (ignoreVif || contentField.evalXIf()) &&
+                !hideInput(contentField)
+              "
+              :childForeignkey="childForeignkey"
+              :defaultCondition="defaultCondition"
+              :mainformDatas="mainformDatas || parentAddMainFormDatas"
+              :defaultValues="defaultValues"
               :form-model="formModel"
-              v-show="contentField.info.readonly ? contentField.info.srvCol.in_detail == 1 : contentField.info.bodyVisible"
+              v-show="
+                contentField.info.readonly
+                  ? contentField.info.srvCol.in_detail == 1
+                  : contentField.info.bodyVisible
+              "
               @field-value-changed="$emit('field-value-changed', $event)"
               @field-history-popup="$emit('field-history-popup', $event)"
-              style="flex: 1;"
+              style="flex: 1"
             >
             </raw-field-editor>
             <template
-              v-if="(ignoreVif||contentField.evalXIf())&&contentField.fieldActionOptionsJson && contentField.fieldActionOptionsJson.hasOwnProperty('col_btn_json') && contentField.fieldActionOptionsJson.col_btn_json.hasOwnProperty('btn_name')">
-              <shortcutButton :formModel="formModel" :field="field"
-                           :fieldActionOptions="contentField.fieldActionOptionsJson"></shortcutButton>
+              v-if="
+                (ignoreVif || contentField.evalXIf()) &&
+                contentField.fieldActionOptionsJson &&
+                contentField.fieldActionOptionsJson.hasOwnProperty(
+                  'col_btn_json'
+                ) &&
+                contentField.fieldActionOptionsJson.col_btn_json.hasOwnProperty(
+                  'btn_name'
+                )
+              "
+            >
+              <shortcutButton
+                :formModel="formModel"
+                :field="field"
+                :fieldActionOptions="contentField.fieldActionOptionsJson"
+              ></shortcutButton>
             </template>
           </el-col>
         </el-row>
@@ -109,24 +141,26 @@
     </el-col>
     <slot name="field-child-append"></slot>
   </div>
-
 </template>
 
 <script>
 import RawFieldEditor from "./raw-field-editor.vue";
 import shortcutButton from "./field-shortcut-add.vue";
-import toInteger from "lodash/toInteger"
+import toInteger from "lodash/toInteger";
+import ChildForm from "./child-form/main.vue";
 export default {
   name: "field-editor",
 
   components: {
-    shortcutButton, RawFieldEditor
+    shortcutButton,
+    RawFieldEditor,
+    ChildForm,
   },
 
   props: {
     ignoreVif: {
       type: Boolean,
-      default: false
+      default: false,
     },
     defaultCondition: {
       type: Array,
@@ -181,8 +215,11 @@ export default {
   computed: {
     hideInput() {
       return (field) => {
-        return field?.fieldActionOptionsJson?.options?.includes('隐藏输入框') === true
-      }
+        return (
+          field?.fieldActionOptionsJson?.options?.includes("隐藏输入框") ===
+          true
+        );
+      };
     },
     fixHeight: function () {
       let editor = this.field.info.editor;
@@ -199,7 +236,7 @@ export default {
     },
   },
   mounted() {
-    this.$forceUpdate()
+    this.$forceUpdate();
   },
   methods: {
     handleClose() {
@@ -218,8 +255,7 @@ export default {
       let inner = Number.parseFloat(colSpan2);
       return toInteger(inner * 24);
     },
-    getconsole(e) {
-    },
+    getconsole(e) {},
     showHelpTips(e) {
       this.html = e.explain;
       this.title = e.label + "[说明]";
@@ -229,15 +265,12 @@ export default {
       let tab_title = e.label + "[说明]";
       //  this.addTab(type, urlParams, tab_title);
     },
-    handleClose(e) {
-    },
+    handleClose(e) {},
   },
 };
 </script>
 
 <style scoped lang="scss">
-
-
 label.required::before {
   content: "*";
   color: #f74b4b;
@@ -279,5 +312,4 @@ div.invalid_form_item {
   margin-bottom: 5px !important;
   height: unset !important;
 }
-
 </style>

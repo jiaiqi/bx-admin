@@ -1,10 +1,11 @@
 import { FieldInfo } from '../model/FieldInfo'
 import { Field } from '../model/Field'
-import Vue from 'vue'
+import Vue, { inject } from 'vue'
 import { ActionInfo } from "../model/ActionInfo";
 import { formatDate } from "../../util/DataUtil";
 import remove from 'lodash/remove'
 import isString from 'lodash/isString'
+import { cloneDeep } from 'lodash';
 export default {
   created: function () {
     window.forms = window.forms || {}
@@ -14,6 +15,11 @@ export default {
     return {
       getSortedFields: () => this.sortedFields,
     };
+  },
+  inject: {
+    'isPlatChildForm': { // 是否是平铺的子表单
+      default: false
+    }
   },
   props: {
     initOrigin: {
@@ -548,7 +554,41 @@ export default {
       }
       return conditions;
     },
+    async setChildFormDefaultValue() {
+      if (this.defaultValues) {
+        let row = cloneDeep(this.defaultValues);
+        const keys = Object.keys(row)
+        for (let key of keys) {
+          let field = this.fields[key];
+          if (row[key] && field?.info?.srvCol?.option_list_v2?.serviceName) {
+            let opt = field.info.srvCol.option_list_v2
+            if (opt?.allow_input === '自行输入' && opt?.view_model?.includes('平铺显示')) {
+              // 子表单 平铺显示 查找默认值
+              let app = opt?.srv_app || this.resolveDefaultSrvApp()
+              const url = `/${app}/select/${opt.serviceName}/`
+              const req = {
+                "serviceName": opt.serviceName,
+                "queryMethod": "select", "colNames": ["*"],
+                "condition": [{ "colName": opt.refed_col, "value": row[key], "ruleType": "eq" }]
+              }
+              const res = await this.$http.post(url, req)
+              if (res.data?.state == 'SUCCESS' && res.data.data.length) {
+                const childRow = res.data.data[0]
+                Object.keys(childRow).forEach((key) => {
+                  row[`${field.info.name}_child_form_${key}`] = childRow[key]
+                  if (this.fields[`${field.info.name}_child_form_${key}`]) {
+                    this.fields[`${field.info.name}_child_form_${key}`].setSrvVal(childRow[key])
+                    debugger
+                  }
+                })
+                return childRow
 
+              }
+            }
+          }
+        }
+      }
+    },
     /**
      * default values from 2 sources: querystr, props.defaultValues
      * use url params to change metadata
@@ -621,83 +661,117 @@ export default {
       return fieldList;
     },
 
-
     /**
      * 从后端获取service cols，转换为fields;
      * filter 为字段过滤器， 类型为(srvCol) => boolean
      */
-    createFields: function (filter, srvCols, app) {
+    createFields: async function (filter, srvCols, app) {
       let srvColsProvided = !!srvCols;
       let self = this
       let useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
       let srvColsP = srvCols ? Promise.resolve({ body: { data: { srv_cols: srvCols } } }) :
         this.loadColsV2(this.service_name, useType, app, this.mainService);
-      return srvColsP.then((response) => {
-        let data = response.body.data;
-        this.mainTable = data.main_table;
-        /**
-         * pagePrompt 页面配置信息处理
-         */
-        // console.log(response)
+      const response = await srvColsP
+      // .then((response) => {
+      let data = response.body.data;
+      this.mainTable = data.main_table;
+      /**
+       * pagePrompt 页面配置信息处理
+       */
+      // console.log(response)
 
-        if (data.more_config !== null && data.more_config !== undefined && data.more_config !== "") {
-          self['srv_more_config'] = JSON.parse(data.more_config)
-          let colValChangeRequestColsDatas = self.srv_more_config.hasOwnProperty("colValRequest") ? self.srv_more_config.colValRequest[0].condition : []
-          self.colValChangeRequestCols = colValChangeRequestColsDatas.map((item) => {
-            return item.colName
+      if (data.more_config !== null && data.more_config !== undefined && data.more_config !== "") {
+        self['srv_more_config'] = JSON.parse(data.more_config)
+        let colValChangeRequestColsDatas = self.srv_more_config.hasOwnProperty("colValRequest") ? self.srv_more_config.colValRequest[0].condition : []
+        self.colValChangeRequestCols = colValChangeRequestColsDatas.map((item) => {
+          return item.colName
+        })
+        self.initValToCols = self['srv_more_config'].hasOwnProperty('colValRequest') ? self['srv_more_config'].colValRequest[0].colNames : []
+        self.isHistoryUse = data.his_version
+        self.pagePrompt = self.srv_more_config.pagePrompt !== undefined ? self.srv_more_config.pagePrompt : null;
+        self.draftConfig = self.srv_more_config.isDraft !== undefined ? Object.assign(self.srv_more_config.isDraft, { isDraft: true }) : { isDraft: false };
+      } else {
+        self.pagePrompt = false
+        self.draftConfig = null
+      }
+      this.$emit('srv-config-loaded', self['srv_more_config'])
+
+      let listData = data.srv_cols;
+      this.srvCols = listData;
+      if (data.pub_field_map) {
+        // 字段映射
+        this.pub_field_map = data.pub_field_map;
+      }
+      for (var i = 0; i < listData.length; i++) {
+        let srvCol = listData[i];
+        let fi = new FieldInfo(srvCol, this.formType);
+        let f = new Field(fi, this);
+        f.vif = !(filter && !filter(srvCol))
+        // hack
+        // if (fi.name == "id") {
+        //   fi.visible = false;
+        // }
+        if (fi.editor == 'multiselect') {
+          f.model = [];
+        }
+        Vue.set(this.allFields, fi.name, f);
+        (f.vif) && Vue.set(this.fields, fi.name, f);
+        if (srvCol?.option_list_v2?.allow_input === '自行输入' && srvCol?.option_list_v2?.view_model?.includes('平铺显示')) {
+       
+
+          if (['add'].includes(useType)) {
+            f.flatChildForm = true // 平铺显示子表
+            fi.sec = fi.label
+          // if (['add', 'update'].includes(useType)) {
+            let cfg = fi.srvCol.option_list_v2[`${useType}_srv_cfg`]
+            if (cfg) {
+              // 查找字段
+              const response2 = await this.loadColsV2(cfg.srv, useType, cfg.app);
+
+              if (Array.isArray(response2.data?.data?.srv_cols) && response2?.data?.data.srv_cols.length > 0) {
+                response2.body.data.srv_cols.forEach(item => {
+                  // 标记当前字段是子表需要随主表一起提交的字段
+                  if (item.columns?.indexOf('_child_form_') === -1) {
+                    item.columns = `${fi.name}_child_form_${item.columns}`
+                  }
+
+                  let cfi = new FieldInfo(item, this.formType);
+                  let cf = new Field(cfi, this);
+                  cf.vif = !(filter && !filter(item))
+                  if (fi.editor == 'multiselect') {
+                    f.model = [];
+                  }
+                  Vue.set(this.allFields, cfi.name, cf);
+                  (cf.vif) && Vue.set(this.fields, cfi.name, cf);
+
+                })
+              }
+            }
+
+          }
+        }
+      }
+
+
+      if (data.validators) {
+        for (let i in data.validators) {
+          this.formValidators.push({
+            name: `validator-${i}`,
+            js: data.validators[i].in_table_validate,
           })
-          self.initValToCols = self['srv_more_config'].hasOwnProperty('colValRequest') ? self['srv_more_config'].colValRequest[0].colNames : []
-          self.isHistoryUse = data.his_version
-          self.pagePrompt = self.srv_more_config.pagePrompt !== undefined ? self.srv_more_config.pagePrompt : null;
-          self.draftConfig = self.srv_more_config.isDraft !== undefined ? Object.assign(self.srv_more_config.isDraft, { isDraft: true }) : { isDraft: false };
-        } else {
-          self.pagePrompt = false
-          self.draftConfig = null
         }
-        this.$emit('srv-config-loaded', self['srv_more_config'])
+      }
 
-        let listData = data.srv_cols;
-        this.srvCols = listData;
-        if (data.pub_field_map) {
-          // 字段映射
-          this.pub_field_map = data.pub_field_map;
-        }
-        for (var i = 0; i < listData.length; i++) {
-          let srvCol = listData[i];
-          let fi = new FieldInfo(srvCol, this.formType);
-          let f = new Field(fi, this);
-          f.vif = !(filter && !filter(srvCol))
-          // hack
-          // if (fi.name == "id") {
-          //   fi.visible = false;
-          // }
-          if (fi.editor == 'multiselect') {
-            f.model = [];
-          }
-          Vue.set(this.allFields, fi.name, f);
-          (f.vif) && Vue.set(this.fields, fi.name, f);
-        }
+      if (this.buildDependentFields) {
+        this.buildDependentFields(this.fields);
+      }
 
 
-        if (data.validators) {
-          for (let i in data.validators) {
-            this.formValidators.push({
-              name: `validator-${i}`,
-              js: data.validators[i].in_table_validate,
-            })
-          }
-        }
-
-        if (this.buildDependentFields) {
-          this.buildDependentFields(this.fields);
-        }
-
-
-        if (data.hasOwnProperty('cfg_no') && data.cfg_no && data.cfg_json) {
-          this.cfgJson = JSON.parse(data.cfg_json)
-        }
-        return response.body;
-      });
+      if (data.hasOwnProperty('cfg_no') && data.cfg_no && data.cfg_json) {
+        this.cfgJson = JSON.parse(data.cfg_json)
+      }
+      return response.body;
+      // });
     },
 
 

@@ -128,6 +128,7 @@
       </el-col>
     </el-row>
     <el-row
+      v-if="!isPlatChildForm"
       :class="{
         disabled:
           cfgJson &&

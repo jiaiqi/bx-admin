@@ -426,8 +426,11 @@ export default {
       // if (!result) {
       //   result = this.field?.info?.srvCol?.option_list_v2;
       // }
-      if(Array.isArray(result?.condition)&&!Array.isArray(result?.conditions)) {
-        result.conditions = result.condition
+      if (
+        Array.isArray(result?.condition) &&
+        !Array.isArray(result?.conditions)
+      ) {
+        result.conditions = result.condition;
       }
       if (this.field?.info?._upstreamCondition?.colName) {
         if (Array.isArray(result?.conditions)) {
@@ -547,11 +550,14 @@ export default {
   },
   methods: {
     onClickEdit() {
-      if (this.formType === "update" && !this.field.getSrvVal()) {
-        // 编辑表单，未选中数据，则打开add弹窗
-        this.activePopup = "add";
+      if (this.optionListV2?.view_model?.includes("平铺展示")) {
       } else {
-        this.activePopup = this.formType;
+        if (this.formType === "update" && !this.field.getSrvVal()) {
+          // 编辑表单，未选中数据，则打开add弹窗
+          this.activePopup = "add";
+        } else {
+          this.activePopup = this.formType;
+        }
       }
     },
     onPopupFormLoaded: function (form) {
@@ -1045,7 +1051,7 @@ export default {
     buildConditions: function (dispLoader) {
       let ret = [];
       const rowData = this.field.form.srvValFormModel();
-      const mainData = this.mainformDatas
+      const mainData = this.mainformDatas;
       for (let i in dispLoader.conditions) {
         let cond = dispLoader.conditions[i];
         let condition = {};
@@ -1060,9 +1066,12 @@ export default {
           if (valueExpr?.value_type && valueExpr?.value_key) {
             if (valueExpr?.value_type === "rowData") {
               condition.value = rowData[valueExpr.value_key];
-            }else if (valueExpr?.value_type === "mainData") {
+            } else if (valueExpr?.value_type === "mainData") {
               condition.value = mainData[valueExpr.value_key];
-            } else if (valueExpr?.value_type === "constant" && valueExpr.value) {
+            } else if (
+              valueExpr?.value_type === "constant" &&
+              valueExpr.value
+            ) {
               condition.value = valueExpr.value;
             }
           } else if (valueExpr) {

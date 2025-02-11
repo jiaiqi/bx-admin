@@ -354,7 +354,7 @@ export default {
       };
       loader.colNames = Object.values(this.fields).map(
         (item) => item.info.name
-      );
+      ).filter(item=>item?.indexOf('_child_form_')== -1)
       // loader.colNames = ["*"];
       loader.conditions = this.buildConditions();
     },
@@ -521,10 +521,14 @@ export default {
         } else {
           return Promise.resolve(true);
         }
+      }).then(()=>{
+        return this.setChildFormDefaultValue().then((res)=>{
+          console.log(res);
+          
+        })
       })
       .then(() => {
-        this.setFieldsDefaultValue();
-
+        this.setFieldsDefaultValue()
         if (this.overrideData) {
           for (let key in this.overrideData) {
             if (this.fields[key]) {

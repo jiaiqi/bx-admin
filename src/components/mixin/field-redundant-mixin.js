@@ -103,7 +103,7 @@ export default {
         let moment = dayjs;
         let row = formModelFunc();
         // console.log('handleRedundantViaJs row',row,func)
-        let ret = eval("var zz=" + func + "(row, vm); zz");
+        let ret = eval("var zz=" + func + "(row, vm, field); zz");
         const calc_rule = fieldInfo.redundant.calc_rule;
         if (calc_rule?.type === "求和" && calc_rule?.constraint_name) {
           if (!row?._children?.[calc_rule.constraint_name]||!row?._children?.[calc_rule.constraint_name]?.length) {
@@ -152,14 +152,15 @@ export default {
         ) {
           update = true;
         }
-        if(update && field.info?.subType!=='autocomplete'){
+        if(update && field.info?.subType!=='autocomplete' && ret !== undefined){
+          // undefined说明没有返回值 不要更新
           if(typeof ret === "object" && ret instanceof Promise){
             ret.then((res)=>{
-              field.setSrvVal(res); 
+                field.setSrvVal(res);
             })
           }else{
             if(field.getSrvVal() !== ret ){
-            field.setSrvVal(ret);
+              field.setSrvVal(ret);
             }
           }
         }
