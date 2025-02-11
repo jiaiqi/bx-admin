@@ -62,7 +62,7 @@ export default {
           if (!(diffFields.size == 1 && diffFields.has(fieldName))) {
             let vm = this;
             // 如果计算函数中发请求了，再判断是否匹配calc_trigger_col来判断是否需要进行计算，否则直接计算,避免之前没配置calc_trigger_col的表内计算不会触发
-            if(fieldInfo.redundant.func.indexOf("$http.") > -1){
+            if(fieldInfo.redundant?.func?.indexOf("$http.") > -1){
               if (Array.isArray(fieldInfo.srvCol?.calc_trigger_col) && fieldInfo.srvCol?.calc_trigger_col.length) {
                 // 触发计算的字段值有变化才进行计算
                 let needUpdate = fieldInfo.srvCol?.calc_trigger_col.some(col => newVal[col] != oldVal[col]);

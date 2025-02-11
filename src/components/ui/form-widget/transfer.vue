@@ -228,7 +228,7 @@ export default {
           condition: [],
           page: {
             pageNo: 1,
-            rownumber: 100,
+            rownumber: this.page.rownumber,
           },
         };
         if (loader.conditions) {
@@ -280,7 +280,7 @@ export default {
           // ],
           page: {
             pageNo: 1,
-            rownumber: 100,
+            rownumber: this.page.rownumber,
           },
         };
         queryJson.relation_condition = {
