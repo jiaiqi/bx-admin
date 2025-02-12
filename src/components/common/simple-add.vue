@@ -411,7 +411,6 @@ export default {
             /**
              * 处理子表默认值 引用主表from
              */
-
             if (
               infoObj.hasOwnProperty("moreConfig") &&
               infoObj.editor === "DateRange" &&
@@ -472,6 +471,10 @@ export default {
       })
       .then(() => {
         this.setFieldsDefaultValue();
+      })
+      .then(() => {
+        // 处理子表单的字段
+        this.setSubFormFields()
       })
       .then(() => {
         this.$emit("form-loaded", this);
