@@ -12,6 +12,9 @@ export default {
     getSortedFields: {
       default: () => {},
     },
+    getFormModel: {
+      default: () => {},
+    },
   },
   props: {
     service: String,
