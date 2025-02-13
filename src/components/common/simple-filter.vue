@@ -337,7 +337,7 @@ export default {
         if (field.info.queryInitValue?.use_query) {
           condition.use_query = field.info.queryInitValue.use_query;
         }
-        if (condition.value != null && condition.value != "") {
+        if (![null, "", undefined, "[]"].includes(condition.value)) {
           if (Array.isArray(condition.value)) {
             if (condition.value.length == 0) {
               continue;
