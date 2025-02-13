@@ -2,10 +2,15 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <!-- <el-col :span="field.info.colspan"> -->
   <!-- 响应式布局属性 -->
-  <div class="field-editor">
+  <div
+    class="field-editor"
+    :class="{
+      'child-form-field': (ignoreVif || field.evalXIf()) && field.flatChildForm,
+    }"
+  >
     <slot name="field-child-prepend"></slot>
     <template v-if="(ignoreVif || field.evalXIf()) && field.flatChildForm">
-      <!-- <child-form v-bind="$props"></child-form> -->
+      <child-form v-bind="$props"></child-form>
     </template>
     <el-col
       :xs="field.info.colspan.xs"
@@ -302,6 +307,20 @@ div.invalid_form_item {
   // flex-direction: column;
   // padding: 10px 0;
   // width: 100%;
+  &.child-form-field {
+    display: flex;
+    flex-direction: column;
+    // padding: 10px 0;
+    width: 100%;
+    ::v-deep(.child-form){
+      .form-view-wrapper{
+        .el-row{
+          border:none;
+          padding: 0;
+        }
+      }
+    }
+  }
 }
 
 .m-y-5 {

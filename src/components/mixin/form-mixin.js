@@ -15,6 +15,7 @@ export default {
     return {
       getSortedFields: () => this.sortedFields,
       getFormModel: () => this.formModel,
+      getAllFields: () => this.allFields,
     };
   },
   inject: {
@@ -556,9 +557,9 @@ export default {
       return conditions;
     },
     async setChildFormDefaultValue() {
-      let defaultValues = this.defaultValues || this.formModel
-      if (defaultValues) {
-        let row = cloneDeep(defaultValues);
+      let data = this.data || this.formModel
+      if (data) {
+        let row = cloneDeep(data);
         const keys = Object.keys(row)
         const hasChildFormFields = []
         for (let key of keys) {
@@ -567,7 +568,7 @@ export default {
           if (row[key] && srvCol?.option_list_v3?.length) {
             const option_list_v3 = srvCol.option_list_v3.filter(item => item.view_model === '平铺显示' && item?.allow_input === '自行输入')
             if (option_list_v3.length) {
-              hasChildFormFields.push({ field, fieldInfo: fi, srvCol, option_list_v3 })
+              hasChildFormFields.push({ field, fieldInfo: field.info, srvCol, option_list_v3 })
             }
           }
         }
@@ -581,13 +582,7 @@ export default {
               if (!item.conds?.length) {
                 return true
               } else {
-                const conds = item.conds.filter(cond => {
-                  if (onModelChange === true) {
-                    // 仅在相关字段值变化时触发
-                    return newVal?.[cond.case_col] !== oldVal?.[cond.case_col]
-                  }
-                  return true
-                })
+                const conds = item.conds
                 if (!conds.length) return false
                 this.deleteChildFormFields(fi.name)
                 return conds.every(cond => {
@@ -605,6 +600,8 @@ export default {
               // 子表单 平铺显示 查找默认值
               let app = opt?.srv_app || this.resolveDefaultSrvApp()
               const url = `/${app}/select/${opt.serviceName}/`
+              const key = fi.name
+              const field = f
               const req = {
                 "serviceName": opt.serviceName,
                 "queryMethod": "select", "colNames": ["*"],
@@ -614,9 +611,9 @@ export default {
               if (res.data?.state == 'SUCCESS' && res.data.data.length) {
                 const childRow = res.data.data[0]
                 Object.keys(childRow).forEach((key) => {
-                  row[`${field.info.name}_child_form_${key}`] = childRow[key]
-                  if (this.fields[`${field.info.name}_child_form_${key}`]) {
-                    this.fields[`${field.info.name}_child_form_${key}`].setSrvVal(childRow[key])
+                  row[`${key}_child_form_${key}`] = childRow[key]
+                  if (this.fields[`${key}_child_form_${key}`]) {
+                    this.fields[`${key}_child_form_${key}`].setSrvVal(childRow[key])
                   }
                 })
                 return childRow
@@ -715,6 +712,7 @@ export default {
         }
         // 查找字段
         f.flatChildForm = true // 平铺显示子表
+        return
         fi.sec = fi.label
         const app = cfg.app || this.resolveDefaultSrvApp()
         const response2 = await this.loadColsV2(cfg.srv, useType, app);
@@ -768,7 +766,7 @@ export default {
       // 处理fk字段子表单平铺展示 目前只有add表单支持
       console.log('setSubFormFields:start');
       const useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
-      if (['add', 'detail'].includes(useType) && typeof this.allFields === 'object' && Object.keys(this.allFields)?.length) {
+      if (['add', 'detail','update'].includes(useType) && typeof this.allFields === 'object' && Object.keys(this.allFields)?.length) {
         const data = this.formModel
         const hasChildFormFields = []
         for (let key in this.allFields) {
@@ -790,6 +788,8 @@ export default {
             const f = item.field
             const fi = item.fieldInfo
             const srvCol = item.srvCol
+            f.flatChildForm = true // 平铺显示子表
+            return
             const option_list_v3 = item.option_list_v3
             const finalOption = option_list_v3.find(item => {
               if (!item.conds?.length) {
@@ -875,38 +875,6 @@ export default {
         }
         Vue.set(this.allFields, fi.name, f);
         (f.vif) && Vue.set(this.fields, fi.name, f);
-        // if (srvCol?.option_list_v2?.allow_input === '自行输入' && srvCol?.option_list_v2?.view_model?.includes('平铺显示')) {
-        //   if (['add'].includes(useType)) {
-        //     f.flatChildForm = true // 平铺显示子表
-        //     fi.sec = fi.label
-        //     // if (['add', 'update'].includes(useType)) {
-        //     let cfg = fi.srvCol.option_list_v2[`${useType}_srv_cfg`]
-        //     if (cfg) {
-        //       // 查找字段
-        //       const response2 = await this.loadColsV2(cfg.srv, useType, cfg.app);
-
-        //       if (Array.isArray(response2.data?.data?.srv_cols) && response2?.data?.data.srv_cols.length > 0) {
-        //         response2.body.data.srv_cols.forEach(item => {
-        //           // 标记当前字段是子表需要随主表一起提交的字段
-        //           if (item.columns?.indexOf('_child_form_') === -1) {
-        //             item.columns = `${fi.name}_child_form_${item.columns}`
-        //           }
-
-        //           let cfi = new FieldInfo(item, this.formType);
-        //           let cf = new Field(cfi, this);
-        //           cf.vif = !(filter && !filter(item))
-        //           if (fi.editor == 'multiselect') {
-        //             f.model = [];
-        //           }
-        //           Vue.set(this.allFields, cfi.name, cf);
-        //           (cf.vif) && Vue.set(this.fields, cfi.name, cf);
-
-        //         })
-        //       }
-        //     }
-
-        //   }
-        // }
       }
 
 

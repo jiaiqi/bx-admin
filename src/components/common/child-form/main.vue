@@ -1,6 +1,12 @@
 <template>
-  <div class=" child-form">
-    <!-- <add
+  <div class="child-form">
+    <span
+      class="section-title"
+      v-if="field && field.info && field.info.label && optionListV2"
+      style="display: flex; justify-content: space-between"
+      >{{ field.info.label }}
+    </span>
+    <add
       ref="add-form"
       :service="addService"
       :$srvApp="addApp"
@@ -12,9 +18,31 @@
       @executor-complete="onExecutorComplete"
       @form-loaded="onFormLoaded"
       @onInnerFormModelChanged="onInnerFormModelChanged"
-      v-if="formType == 'add'"
+      :key="addService"
+      v-if="formType == 'add' && addService"
     >
-    </add> -->
+    </add>
+    <update
+      name="list-update"
+      ref="update-form"
+      :pk="pk"
+      :pkCol="pkCol"
+      :service="updateService"
+      :parentPageType="'list'"
+      :navAfterSubmit="false"
+      @form-loaded="onFormLoaded"
+      :key="updateService"
+      v-else-if="formType == 'update' && updateService"
+    >
+    </update>
+    <simple-detail
+      name="detail"
+      ref="detail-form"
+      v-if="formType == 'detail' && detailService"
+      :service="detailService"
+      :default-conditions="defaultConditions"
+    >
+    </simple-detail>
   </div>
 </template>
 
@@ -32,11 +60,16 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    formModel: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   components: {
     Add: () => import("../add.vue"),
     Update: () => import("../update.vue"),
-    fieldEditor:()=>import("../field-editor.vue")
+    SimpleDetail: () => import("../simple-detail.vue"),
+    fieldEditor: () => import("../field-editor.vue"),
   },
   data() {
     return {
@@ -44,6 +77,9 @@ export default {
     };
   },
   methods: {
+    getChildFormModel() {
+      return this.$refs[`${this.formType}-form`]?.srvValFormModel();
+    },
     onInnerFormModelChanged(event) {
       console.log("onInnerFormModelChanged", event);
       this.submitted2mem(event);
@@ -127,7 +163,7 @@ export default {
     submitted2mem(event) {
       console.log("submitted2mem:", event);
       const data = cloneDeep(event);
-      if(JSON.stringify(data) === JSON.stringify(this.addedData)) {
+      if (JSON.stringify(data) === JSON.stringify(this.addedData)) {
         return;
       }
       this.onExecutorComplete(data);
@@ -157,7 +193,7 @@ export default {
     },
     onExecutorComplete(event) {
       console.log("onExecutorComplete:", event);
-      const data = event.data?.response[0]?.response?.effect_data?.[0];
+      const data = event?.data?.response[0]?.response?.effect_data?.[0];
       if (data) {
         this.handleSelect(data);
         if (this.formType === "add" && this.allowEditAndSelect) {
@@ -218,12 +254,15 @@ export default {
       if (this.optionListV3?.length) {
         // 如果有v3 则使用v3
         const option_list_v3 = this.optionListV3;
-        const formModel = this.field.form.srvValFormModel();
+        // const formModel = this.field.form.srvValFormModel();
+        const formModel = this.field.form.formModel;
         result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
-            return item.conds.every((cond) =>
-              cond.case_val?.includes?.(formModel[cond.case_col])
+            return item.conds.every(
+              (cond) =>
+                formModel[cond.case_col] &&
+                cond.case_val?.includes?.(formModel[cond.case_col])
             );
           } else {
             return true;
@@ -285,6 +324,12 @@ export default {
         this.addSrvCfg?.app || this.optionListV2?.srv_app || this.appNo || null
       );
     },
+    pkCol() {
+      return this.optionListV2?.refed_col;
+    },
+    pk() {
+      return this.formModel?.[this.field.info.name];
+    },
     updateSrvCfg() {
       return this.optionListV2?.update_srv_cfg;
     },
@@ -301,6 +346,18 @@ export default {
         this.appNo ||
         null
       );
+    },
+    detailService() {
+      return this.optionListV2?.serviceName;
+    },
+    defaultConditions() {
+      return [
+        {
+          colName: this.pkCol,
+          ruleType: "eq",
+          value: this.pk,
+        },
+      ];
     },
     allowEditAndSelect() {
       // 编辑选择
@@ -329,11 +386,20 @@ export default {
       );
     },
   },
+  created() {
+    this.field.ChildForm = this;
+  },
 };
 </script>
 
 <style lang="scss">
 .child-form {
+  width: 100%;
+  .section-title {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
   > .el-card {
     border: none;
     width: 100%;
@@ -342,7 +408,7 @@ export default {
       > .el-form {
         > .el-row {
           border: none;
-          padding:  8px 0;
+          padding: 8px 0;
         }
       }
     }

@@ -121,6 +121,7 @@
       </el-col>
     </el-row>
     <el-row
+      v-if="!isPlatChildForm"
       :class="{
         disabled:
           cfgJson &&
@@ -521,11 +522,6 @@ export default {
         } else {
           return Promise.resolve(true);
         }
-      }).then(()=>{
-        return this.setChildFormDefaultValue().then((res)=>{
-          console.log(res);
-          
-        })
       })
       .then(() => {
         this.setFieldsDefaultValue()

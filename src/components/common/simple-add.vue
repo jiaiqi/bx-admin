@@ -473,10 +473,6 @@ export default {
         this.setFieldsDefaultValue();
       })
       .then(() => {
-        // 处理子表单的字段
-        this.setSubFormFields()
-      })
-      .then(() => {
         this.$emit("form-loaded", this);
       });
   },

@@ -64,7 +64,7 @@ export default {
       if (!valueList) {
         return row;
       }
-
+      const allFields = this.getAllFields?.();
       for (let i in valueList) {
         let confItem = valueList[i];
         let value = {};
@@ -103,22 +103,33 @@ export default {
         }
         row[value.colName] = value.value;
       }
-      const formModel = this.getFormModel()
-      if (typeof formModel === 'object' && Object.keys(formModel).length) {
-        Object.keys(formModel).forEach((key) => {
-          if (key?.includes('_child_form_')) {
-            let [fkCol, childCol] = key.split('_child_form_')
-            if (typeof row[fkCol] === 'object') {
-              row[fkCol][childCol] = formModel[key]
-            } else {
-              row[fkCol] = {
-                [childCol]: formModel[key]
-              }
-            }
-            delete row[key]
+      // 处理子表单数据
+      for (let i in valueList) {
+        let confItem = valueList[i];
+        if(allFields?.[confItem.colName]?.flatChildForm === true&&allFields?.[confItem.colName]?.ChildForm){
+          const childFormModel = allFields?.[confItem.colName]?.ChildForm?.getChildFormModel();
+          if (childFormModel) {
+            row[confItem.colName] = childFormModel;
           }
-        })
+        }
+
       }
+      // const formModel = this.getFormModel()
+      // if (typeof formModel === 'object' && Object.keys(formModel).length) {
+      //   Object.keys(formModel).forEach((key) => {
+      //     if (key?.includes('_child_form_')) {
+      //       let [fkCol, childCol] = key.split('_child_form_')
+      //       if (typeof row[fkCol] === 'object') {
+      //         row[fkCol][childCol] = formModel[key]
+      //       } else {
+      //         row[fkCol] = {
+      //           [childCol]: formModel[key]
+      //         }
+      //       }
+      //       delete row[key]
+      //     }
+      //   })
+      // }
       // if(Object.keys(row).length===1&&row.hasOwnProperty('_rtDataCtx')){
       //   return null;
       // }

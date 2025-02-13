@@ -15,6 +15,9 @@ export default {
     getFormModel: {
       default: () => {},
     },
+    getAllFields: {
+      default: () => {},
+    },
   },
   props: {
     service: String,
