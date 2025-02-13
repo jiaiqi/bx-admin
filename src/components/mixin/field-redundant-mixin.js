@@ -114,6 +114,14 @@ export default {
       if (func) {
         let moment = dayjs;
         let row = formModelFunc();
+        if(fieldInfo.name?.includes('_child_form_')){
+          Object.keys(row).forEach((key) => {
+            if (key?.includes('_child_form_')) {
+              let [fkCol, childCol] = key.split('_child_form_')
+              row[childCol] = row[key]
+            }
+          })
+        }
         // console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm, field); zz");
         const calc_rule = fieldInfo.redundant.calc_rule;
