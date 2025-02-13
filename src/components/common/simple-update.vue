@@ -112,7 +112,7 @@
     >
       <el-col
         :span="24"
-        style="text-align: center; padding: 6px; padding-bottom: 20px"
+        style="text-align: center; padding: 20px;"
       >
         <agreement-box
           :agreementJson="cfgJson.agreement_json"
@@ -132,7 +132,7 @@
     >
       <el-col
         :span="24"
-        style="text-align: center; padding: 6px; padding-bottom: 20px"
+        style="text-align: center; padding: 20px;"
       >
         <action
           v-for="item in actions"
@@ -355,7 +355,7 @@ export default {
       };
       loader.colNames = Object.values(this.fields).map(
         (item) => item.info.name
-      ).filter(item=>item?.indexOf('_child_form_')== -1)
+      )
       // loader.colNames = ["*"];
       loader.conditions = this.buildConditions();
     },

@@ -556,73 +556,6 @@ export default {
       }
       return conditions;
     },
-    async setChildFormDefaultValue() {
-      let data = this.data || this.formModel
-      if (data) {
-        let row = cloneDeep(data);
-        const keys = Object.keys(row)
-        const hasChildFormFields = []
-        for (let key of keys) {
-          let field = this.fields[key];
-          const srvCol = field?.info?.srvCol
-          if (row[key] && srvCol?.option_list_v3?.length) {
-            const option_list_v3 = srvCol.option_list_v3.filter(item => item.view_model === '平铺显示' && item?.allow_input === '自行输入')
-            if (option_list_v3.length) {
-              hasChildFormFields.push({ field, fieldInfo: field.info, srvCol, option_list_v3 })
-            }
-          }
-        }
-        if (hasChildFormFields?.length) {
-          for (let item of hasChildFormFields) {
-            const f = item.field
-            const fi = item.fieldInfo
-            const srvCol = item.srvCol
-            const option_list_v3 = item.option_list_v3
-            const finalOption = option_list_v3.find(item => {
-              if (!item.conds?.length) {
-                return true
-              } else {
-                const conds = item.conds
-                if (!conds.length) return false
-                this.deleteChildFormFields(fi.name)
-                return conds.every(cond => {
-                  // 满足条件外键显示需求
-                  if (cond.case_val?.includes?.(data[cond.case_col])) {
-                    return true
-                  } else {
-                    return false
-                  }
-                })
-              }
-            })
-            if (finalOption?.serviceName) {
-              let opt = finalOption
-              // 子表单 平铺显示 查找默认值
-              let app = opt?.srv_app || this.resolveDefaultSrvApp()
-              const url = `/${app}/select/${opt.serviceName}/`
-              const key = fi.name
-              const field = f
-              const req = {
-                "serviceName": opt.serviceName,
-                "queryMethod": "select", "colNames": ["*"],
-                "condition": [{ "colName": opt.refed_col, "value": row[key], "ruleType": "eq" }]
-              }
-              const res = await this.$http.post(url, req)
-              if (res.data?.state == 'SUCCESS' && res.data.data.length) {
-                const childRow = res.data.data[0]
-                Object.keys(childRow).forEach((key) => {
-                  row[`${key}_child_form_${key}`] = childRow[key]
-                  if (this.fields[`${key}_child_form_${key}`]) {
-                    this.fields[`${key}_child_form_${key}`].setSrvVal(childRow[key])
-                  }
-                })
-                return childRow
-              }
-            }
-          }
-        }
-      }
-    },
     /**
      * default values from 2 sources: querystr, props.defaultValues
      * use url params to change metadata
@@ -773,9 +706,9 @@ export default {
           const field = this.allFields[key]
           const srvCol = field.info.srvCol
           const fi = field.info;
-          if (key.includes('_child_form_')) {
-            continue
-          }
+          // if (key.includes('_child_form_')) {
+          //   continue
+          // }
           if (Array.isArray(srvCol?.option_list_v3) && srvCol?.option_list_v3.length) {
             const option_list_v3 = srvCol.option_list_v3.filter(item => item.view_model === '平铺显示' && item?.allow_input === '自行输入')
             if (option_list_v3.length) {

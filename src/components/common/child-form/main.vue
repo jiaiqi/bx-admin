@@ -14,7 +14,6 @@
       :submit2Db="submit2Db"
       :defaultCondition="evalOptionConditions"
       :defaultValues="submit2Db ? setDefaultValue : field.model"
-      @submitted2mem="submitted2mem"
       @executor-complete="onExecutorComplete"
       @form-loaded="onFormLoaded"
       @onInnerFormModelChanged="onInnerFormModelChanged"
@@ -31,6 +30,7 @@
       :parentPageType="'list'"
       :navAfterSubmit="false"
       @form-loaded="onFormLoaded"
+      @onInnerFormModelChanged="onInnerFormModelChanged"
       :key="updateService"
       v-else-if="formType == 'update' && updateService"
     >
@@ -48,6 +48,8 @@
 
 <script>
 import cloneDeep from "lodash/cloneDeep";
+import isObject from "lodash/isObject";
+
 export default {
   name: "childForm",
   provide() {
@@ -74,15 +76,65 @@ export default {
   data() {
     return {
       addedData: null,
+      _obj_col: null,
     };
   },
   methods: {
+    emitFieldValueChange() {
+      let objCol = null;
+      let objInfo = this.optionListV2?.obj_info;
+      const targetCol = objInfo?.a_save_b_obj_col;
+      const targetColField = this.field?.form?.allFields?.[targetCol];
+      if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
+        // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
+        const newValue = this.getChildFormVm()?.getBasicForm()?.formModel;
+        const cols = objInfo?.a_save_b_cols.split(",");
+        let obj = {};
+        let objStr = "";
+        if (cols?.includes("*")) {
+          obj = cloneDeep(newValue);
+        } else if (newValue && cols?.length) {
+          cols.forEach((col) => {
+            if (newValue?.[col]) {
+              obj[col] = newValue?.[col];
+            }
+          });
+        }
+        objStr = JSON.stringify(obj);
+        if (objStr === "{}" || !newValue || !isObject(newValue)) {
+          objStr = "";
+        }
+        objCol = {
+          type: "a_save_b_obj",
+          col: objInfo.a_save_b_obj_col,
+          val: objStr,
+        };
+        // 将更新的字段信息保存在_obj_col上，方便在form中获取
+        this._obj_col = objCol;
+        if (!objStr && !targetColField.getSrvVal?.() || targetColField.getSrvVal?.() === objStr) {
+          return;
+        }
+        targetColField?.setSrvVal?.(objStr);
+      } else if (this.field?._obj_col?.val) {
+        // 清空通过_obj_col保存的值
+        this._obj_col = null;
+        if (!targetColField.getSrvVal?.()) {
+          return;
+        }
+        targetColField?.setSrvVal?.(null);
+      }
+
+      // this.$emit("field-value-changed", this.field.info.name, this.field);
+    },
+    getChildFormVm() {
+      return this.$refs[`${this.formType}-form`];
+    },
     getChildFormModel() {
       return this.$refs[`${this.formType}-form`]?.srvValFormModel();
     },
     onInnerFormModelChanged(event) {
-      console.log("onInnerFormModelChanged", event);
-      this.submitted2mem(event);
+      // a_save_b_obj_col字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
+      // this.emitFieldValueChange();
     },
     buildConditions: function (dispLoader) {
       let ret = [];
@@ -159,37 +211,6 @@ export default {
         // 去掉提交后跳转事件
         form.actions.submit.nav2Location = null;
       }
-    },
-    submitted2mem(event) {
-      console.log("submitted2mem:", event);
-      const data = cloneDeep(event);
-      if (JSON.stringify(data) === JSON.stringify(this.addedData)) {
-        return;
-      }
-      this.onExecutorComplete(data);
-      if (
-        typeof event === "object" &&
-        Object.keys(event).length &&
-        Object.keys(event).some((key) => event[key] && true)
-      ) {
-        // 值是一个对象且对象中含有有值的key
-        const result = Object.keys(event).reduce((res, key) => {
-          if (
-            event[key] !== undefined &&
-            event[key] !== null &&
-            event[key] !== ""
-          ) {
-            res[key] = event[key];
-          }
-          return res;
-        }, {});
-        this.field.model = result;
-        this.selected = result;
-      } else {
-        this.field.model = null;
-        this.selected = null;
-      }
-      this.activePopup = "";
     },
     onExecutorComplete(event) {
       console.log("onExecutorComplete:", event);

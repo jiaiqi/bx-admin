@@ -106,8 +106,13 @@ export default {
       // 处理子表单数据
       for (let i in valueList) {
         let confItem = valueList[i];
-        if(allFields?.[confItem.colName]?.flatChildForm === true&&allFields?.[confItem.colName]?.ChildForm){
-          const childFormModel = allFields?.[confItem.colName]?.ChildForm?.getChildFormModel();
+        const field = allFields?.[confItem.colName]
+        if (field?.flatChildForm === true && field?.ChildForm) {
+          if (field?.ChildForm?._obj_col?.col) {
+            // 平铺表单支持a_save_b_obj特性
+            row[field?.ChildForm?._obj_col?.col] = field?.ChildForm?._obj_col?.val
+          }
+          const childFormModel = field?.ChildForm?.getChildFormModel();
           if (childFormModel) {
             row[confItem.colName] = childFormModel;
           }

@@ -119,7 +119,7 @@
     >
       <el-col
         :span="24"
-        style="text-align: center; padding: 6px; padding-bottom: 20px"
+        style="text-align: center; padding: 20px;"
       >
         <agreement-box
           :agreementJson="cfgJson.agreement_json"
@@ -139,7 +139,7 @@
     >
       <el-col
         :span="24"
-        style="text-align: center; padding: 6px; padding-bottom: 20px"
+        style="text-align: center;padding: 20px;"
       >
         <template v-for="item in actions">
           <template v-if="Array.isArray(item)">

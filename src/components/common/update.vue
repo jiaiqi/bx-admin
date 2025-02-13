@@ -434,6 +434,7 @@ export default {
 
         // this.mainFormDatas = e.formModel
       }
+      this.$emit("onInnerFormModelChanged", e.formModel);
     },
     /**
      * 返回编辑主子表数据的请求

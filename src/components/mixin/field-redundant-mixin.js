@@ -114,14 +114,6 @@ export default {
       if (func) {
         let moment = dayjs;
         let row = formModelFunc();
-        if(fieldInfo.name?.includes('_child_form_')){
-          Object.keys(row).forEach((key) => {
-            if (key?.includes('_child_form_')) {
-              let [fkCol, childCol] = key.split('_child_form_')
-              row[childCol] = row[key]
-            }
-          })
-        }
         // console.log('handleRedundantViaJs row',row,func)
         let ret = eval("var zz=" + func + "(row, vm, field); zz");
         const calc_rule = fieldInfo.redundant.calc_rule;
@@ -221,19 +213,20 @@ export default {
                 field2.condDependentFields =
                   field2.condDependentFields || new Set();
                 field2.condDependentFields.add(field.info.name);
-              }else if(field.info.name?.includes('_child_form_') && field2.info.name?.includes('_child_form_')){
-                if(field?.info?.dispLoader?.conditions?.find((item)=>{
-                  if(item.value?.includes(field2.info.name)){
-                    return true
-                  }else{
-                    let key = field2?.info?.name?.split('_child_form_')[1]
-                    return item.value?.includes(key)
-                  }
-                })){
-                  field2.condDependentFields = field2.condDependentFields || new Set();
-                  field2.condDependentFields.add(field.info.name);
-                }
               }
+              // else if(field.info.name?.includes('_child_form_') && field2.info.name?.includes('_child_form_')){
+              //   if(field?.info?.dispLoader?.conditions?.find((item)=>{
+              //     if(item.value?.includes(field2.info.name)){
+              //       return true
+              //     }else{
+              //       let key = field2?.info?.name?.split('_child_form_')[1]
+              //       return item.value?.includes(key)
+              //     }
+              //   })){
+              //     field2.condDependentFields = field2.condDependentFields || new Set();
+              //     field2.condDependentFields.add(field.info.name);
+              //   }
+              // }
             }
           }
         }
@@ -245,9 +238,9 @@ export default {
           field.info.redundant.dependField
         ) {
           let dependField = fields[field.info.redundant.dependField];
-          if(field.info.name?.includes('_child_form_')){
-            dependField = fields[`${field.parentField}_child_form_${field.info.redundant.dependField}`]
-          }
+          // if(field.info.name?.includes('_child_form_')){
+          //   dependField = fields[`${field.parentField}_child_form_${field.info.redundant.dependField}`]
+          // }
           if (dependField) {
             dependField.dependentFields =
               dependField.dependentFields || new Set();

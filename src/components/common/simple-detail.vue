@@ -105,7 +105,7 @@
       <el-card>
         <el-col
           :span="24"
-          style="text-align: center; padding: 6px; padding-bottom: 20px"
+          style="text-align: center;padding: 20px;"
         >
           <action
             v-for="item in actions"
@@ -406,32 +406,6 @@ export default {
           })
           .then(() => {
             this.setSubFormFields()
-            // 处理子表单的字段
-            // return this.setSubFormFields().then(() => {
-            //   let fields = this.fields;
-            //   for (let fieldName in fields) {
-            //     let field = fields[fieldName];
-            //     field.info.readonly = true;
-            //     field.info.editable = false;
-
-            //     if (
-            //       field.info.srvCol.in_detail != 1 ||
-            //       field.info.srvCol.in_detail === 2
-            //     ) {
-            //       field.info.visible = false;
-            //     }
-
-            //     let type = field.info.type;
-            //     if (hotTableMetadata[type]) {
-            //       this.loadHotTableData(hotTableMetadata[type]);
-            //     }
-            //   }
-            // });
-          })
-          .then((_) => {
-            // return this.setChildFormDefaultValue().then((res) => {
-            //   console.log(res);
-            // });
           })
           .then((event) => {
             this.formLoaded = true;
