@@ -8,7 +8,7 @@ export class FieldInfo {
     if (!srvCol) {
       return;
     }
-
+    this.formType = formType;
     // // !!! mock data !!!
     // 0.5/0.25
     // if (srvCol.columns === "id_card" || srvCol.columns === "mobile" ) {
@@ -467,6 +467,11 @@ export class FieldInfo {
 
   resolveColspan(col_span) {
     this.colspan = {};
+    const groupColType = ['date-range','date-time-range','DateRange']
+    if(this.formType === "filter" && !groupColType.includes(this.editor)){
+      // 列表顶部查询表单 除了时间范围控件 其他都四分之一宽度
+      return this.colspan = this.setLayoutColSize(0.25);
+    }
     if (!this.editor) {
       this.colspan = this.setLayoutColSize(col_span);
     } else {

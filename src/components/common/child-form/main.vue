@@ -2,9 +2,9 @@
   <div class="child-form">
     <span
       class="section-title"
-      v-if="field && field.info && field.info.label && optionListV2"
+      v-if="sectionName && optionListV2"
       style="display: flex; justify-content: space-between"
-      >{{ field.info.label }}
+      >{{ sectionName }}
     </span>
     <add
       ref="add-form"
@@ -225,6 +225,9 @@ export default {
     },
   },
   computed: {
+    sectionName(){
+      return this.optionListV2?.section_name || this.field?.info?.label || '';
+    },
     formType() {
       const service = this.field?.info?.srvCol?.service_name;
       return service?.includes("add")
