@@ -6,6 +6,7 @@
       trigger="click"
       :disabled="disabled"
       ref="popover"
+      popper-class="fk-select-dropdown-popover"
       @show="showPopover(true)"
       @hide="showPopover(false)"
     >
@@ -263,7 +264,7 @@ export default {
                       `<span style="color: red;">${this.inputValue}</span>`
                     );
                   }
-                  return result || '';
+                  return result || "";
                 };
               });
               options.forEach((option) => {
@@ -300,7 +301,7 @@ export default {
     this.loadOptions = debounce(this.loadOptions, 300);
     this.tabs = this.optionListV3.map((item) => {
       return {
-        label: item.section_name || item.conds[0].case_val,
+        label: item.conds[0].case_val || item.section_name,
         value: item.conds[0].case_val,
         case_val: item.conds[0].case_val,
         case_col: item.conds[0].case_col,
@@ -331,12 +332,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss"></style>
+<style lang="scss">
 .fk-select-dropdown {
   width: 100%;
   .el-input {
     width: 100%;
-    ::v-deep .el-input__suffix-inner {
+    .el-input__suffix-inner {
       display: inline-block;
       height: 100%;
       line-height: 1;
@@ -351,21 +353,29 @@ export default {
     }
   }
 }
-.dropdown-panel {
-  .loading-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100px;
-  }
-  .option-list {
-    // padding: 20px;
-    .option-item {
-      padding: 5px 10px;
-      cursor: pointer;
-      &:hover {
-        background-color: #f5f5f5;
-        color: var(--blue);
+.el-popper.fk-select-dropdown-popover {
+  padding: 0;
+
+  .dropdown-panel {
+    padding: 10px;
+    .el-tabs__header {
+      margin-bottom: 10px;
+    }
+    .loading-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100px;
+    }
+    .option-list {
+      // padding: 20px;
+      .option-item {
+        padding: 5px 10px;
+        cursor: pointer;
+        &:hover {
+          background-color: #f5f7fa;
+          color: var(--blue);
+        }
       }
     }
   }
