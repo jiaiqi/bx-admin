@@ -28,7 +28,10 @@
               >
                 {{ option.labelFunc ? option.labelFunc(option) : option.label }}
               </div>
-              <div v-if="currentOptions.length === 0" class="no-data">
+              <div v-if="loading" class="loading-wrapper">
+                <el-loading></el-loading>
+              </div>
+              <div v-else-if="currentOptions.length === 0" class="no-data">
                 暂无数据
               </div>
             </div>
@@ -42,6 +45,7 @@
         v-model="inputValue"
         :placeholder="placeholder"
         :prefix-icon="prefixIcon"
+        clearable
         ref="input"
         slot="reference"
       >
@@ -96,6 +100,9 @@
 </template>
 
 <script>
+// 添加防抖处理，避免频繁请求
+import { debounce } from "lodash";
+
 export default {
   name: "MultiOptionList",
   components: {
@@ -103,6 +110,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       visible: false, // 下拉面板是否可见
       inputValue: "", // 输入框的值
       currentTab: "选项一", // 当前激活的tab
@@ -121,7 +129,15 @@ export default {
       );
     },
     currentOptions() {
-      return this.currentTabCfg?.options || [];
+      let options = this.currentTabCfg?.options || [];
+      return options.filter(
+        (item) =>
+          !this.inputValue ||
+          item
+            .labelFunc(item)
+            .toLowerCase()
+            .includes(this.inputValue.toLowerCase())
+      );
     },
   },
   props: {
@@ -189,84 +205,91 @@ export default {
     },
     loadOptions() {
       // 加载选项数据
-      const optionsCfg = this.tabs.find(
-        (item) => item.label && item.label === this.currentTab
-      );
-      if (optionsCfg?.service) {
-        let app = this.$srvApp && this.field.evalFormExpr(this.$srvApp, "");
-        // app配置了this或者data.app的 使用当前app
-        if (
-          app === "this" ||
-          (!app && optionsCfg?.srvApp?.includes("data.app"))
-        ) {
-          app = sessionStorage.getItem("current_app");
-        } else if (optionsCfg?.srvApp) {
-          app = optionsCfg.srvApp;
-        }
-        let queryJson = {
-          serviceName: optionsCfg.service,
-          queryMethod: "select",
-          colNames: ["*"],
-          condition: [],
-          page: {
-            pageNo: optionsCfg.page.pageNo,
-            rownumber: optionsCfg.page.rownumber,
-          },
-        };
-        if (optionsCfg?.conditions?.length) {
-          queryJson.condition = this.$parent.buildConditions(optionsCfg);
-          queryJson.condition = this.$parent.pruneConditions(
-            queryJson.condition
-          );
-        }
-
-        if (optionsCfg.relation_conditions) {
-          queryJson.relation_condition = this.$parent.buildRelationCondition(
-            optionsCfg,
-            this.inputValue
-          );
-        }
-
-        return this.selectList(queryJson, app).then((response) => {
-          if (response && response.data && response.data.data) {
-            let options = response.data.data;
-            if (optionsCfg.dedup) {
-              this.$parent.dedupOptions(options, optionsCfg);
-            }
-            const fieldInfo = this.field.info;
-            options.forEach((item) => {
-              item.labelFunc = (data) => {
-                return optionsCfg.showAsPair == true
-                  ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
-                  : data[fieldInfo.dispCol];
-              };
-            });
-            options.forEach((option) => {
-              if (optionsCfg.imgType === "imgdata" && optionsCfg.refedCol) {
-                option.imgUrlFunc = (data) => data[optionsCfg.refedCol];
-              } else if (
-                optionsCfg.imgType === "eicon" &&
-                optionsCfg.refedCol
-              ) {
-                option.elIconFunc = (data) => data[optionsCfg.refedCol];
-              } else if (optionsCfg.imgUrlExpr) {
-                option.imgUrlFunc = (data) => {
-                  return (
-                    this.serviceApi().downloadFileNo +
-                    data[optionsCfg.imgUrlExpr]
-                  );
-                };
-              }
-            });
-            this.$set(optionsCfg, "options", options);
-          } else {
+      if (this.loading) return;
+      this.loading = true;
+      try {
+        const optionsCfg = this.tabs.find(
+          (item) => item.label && item.label === this.currentTab
+        );
+        if (optionsCfg?.service) {
+          let app = this.$srvApp && this.field.evalFormExpr(this.$srvApp, "");
+          // app配置了this或者data.app的 使用当前app
+          if (
+            app === "this" ||
+            (!app && optionsCfg?.srvApp?.includes("data.app"))
+          ) {
+            app = sessionStorage.getItem("current_app");
+          } else if (optionsCfg?.srvApp) {
+            app = optionsCfg.srvApp;
           }
-        });
+          let queryJson = {
+            serviceName: optionsCfg.service,
+            queryMethod: "select",
+            colNames: ["*"],
+            condition: [],
+            page: {
+              pageNo: optionsCfg.page.pageNo,
+              rownumber: optionsCfg.page.rownumber,
+            },
+          };
+          if (optionsCfg?.conditions?.length) {
+            queryJson.condition = this.$parent.buildConditions(optionsCfg);
+            queryJson.condition = this.$parent.pruneConditions(
+              queryJson.condition
+            );
+          }
+          if (optionsCfg.relation_conditions) {
+            queryJson.relation_condition = this.$parent.buildRelationCondition(
+              optionsCfg,
+              this.inputValue
+            );
+          }
+          return this.selectList(queryJson, app).then((response) => {
+            if (response && response.data && response.data.data) {
+              let options = response.data.data;
+              if (optionsCfg.dedup) {
+                this.$parent.dedupOptions(options, optionsCfg);
+              }
+              const fieldInfo = this.field.info;
+              options.forEach((item) => {
+                item.labelFunc = (data) => {
+                  return optionsCfg.showAsPair == true
+                    ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
+                    : data[fieldInfo.dispCol];
+                };
+              });
+              options.forEach((option) => {
+                if (optionsCfg.imgType === "imgdata" && optionsCfg.refedCol) {
+                  option.imgUrlFunc = (data) => data[optionsCfg.refedCol];
+                } else if (
+                  optionsCfg.imgType === "eicon" &&
+                  optionsCfg.refedCol
+                ) {
+                  option.elIconFunc = (data) => data[optionsCfg.refedCol];
+                } else if (optionsCfg.imgUrlExpr) {
+                  option.imgUrlFunc = (data) => {
+                    return (
+                      this.serviceApi().downloadFileNo +
+                      data[optionsCfg.imgUrlExpr]
+                    );
+                  };
+                }
+              });
+              this.$set(optionsCfg, "options", options);
+            } else {
+            }
+          });
+        }
+      } catch (error) {
+        console.error("加载选项失败:", error);
+      } finally {
+        this.loading = false;
       }
     },
   },
   created() {
     // 初始化选项数据
+    this.loadOptions = debounce(this.loadOptions, 300);
     this.tabs = this.optionListV3.map((item) => {
       return {
         label: item.section_name || item.conds[0].case_val,
@@ -321,6 +344,12 @@ export default {
   }
 }
 .dropdown-panel {
+  .loading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+  }
   .option-list {
     // padding: 20px;
     .option-item {
