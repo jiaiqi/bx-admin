@@ -60,18 +60,18 @@ export default {
 
         if (fieldInfo.redundant) {
           if (!(diffFields.size == 1 && diffFields.has(fieldName))) {
-            let vm = this;
+            let vm = self;
             // 如果计算函数中发请求了，再判断是否匹配calc_trigger_col来判断是否需要进行计算，否则直接计算,避免之前没配置calc_trigger_col的表内计算不会触发
             if(fieldInfo.redundant?.func?.indexOf("$http.") > -1){
               if (Array.isArray(fieldInfo.srvCol?.calc_trigger_col) && fieldInfo.srvCol?.calc_trigger_col.length) {
                 // 触发计算的字段值有变化才进行计算
                 let needUpdate = fieldInfo.srvCol?.calc_trigger_col.some(col => newVal[col] != oldVal[col]);
                 if (needUpdate) {
-                  this.handleRedundantViaJs(field, formModelFunc, vm);
+                  self.handleRedundantViaJs(field, formModelFunc, vm);
                 }
               }
             }else{
-              this.handleRedundantViaJs(field, formModelFunc, vm);
+              self.handleRedundantViaJs(field, formModelFunc, vm);
             }
           }
         }
@@ -103,7 +103,7 @@ export default {
      * @param formModelFunc
      * @param vm used in func js
      */
-    handleRedundantViaJs: debounce(function (field, formModelFunc, vm) {
+    handleRedundantViaJs: function (field, formModelFunc, vm) {
       let fieldInfo = field.info;
       if (!fieldInfo.redundant || !fieldInfo.redundant.func) {
         return;
@@ -177,7 +177,7 @@ export default {
           }
         }
       }
-    },200),
+    },
 
     buildDependentFields: function (fields) {
       // construct redundant fields relations via fk

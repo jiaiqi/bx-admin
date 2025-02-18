@@ -45,6 +45,21 @@
         v-else-if="isFks"
       ></table-picker>
       <div v-else style="display: flex; align-items: center">
+        <multi-tab-option-select
+          v-if="useMultiTabOptionSelect === true"
+          :placeholder="field.info.placeholder"
+          :optionListV3="optionListV3"
+          :field="field"
+          :disabled="setDisabled"
+          :prefix-icon="
+            (dispLoaderV2 &&
+              dispLoaderV2.imgType === 'eicon' &&
+              field.getSrvVal()) ||
+            ''
+          "
+          v-model="selected"
+          @select="multiTabSelectChange"
+        ></multi-tab-option-select>
         <el-autocomplete
           ref="autocomplete"
           :prefix-icon="
@@ -64,6 +79,7 @@
           @blur="handleBlur"
           style="min-width: 220px; flex: 1"
           class="finder-autocomplete"
+          v-else
         >
           <div slot="append">
             <el-button
@@ -233,6 +249,7 @@ import cloneDeep from "lodash/cloneDeep";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import isEqual from "lodash/isEqual";
+import multiTabOptionSelect from "./fk-select/multi-tab-option-select.vue";
 export default {
   components: {
     List: () => import("../common/list.vue"),
@@ -240,6 +257,7 @@ export default {
     locationPicker,
     Add: () => import("../common/add.vue"),
     Update: () => import("../common/update.vue"),
+    multiTabOptionSelect,
     //  () => import("../common/table-picker.vue")
   },
   model: {
@@ -403,22 +421,29 @@ export default {
     optionListV3() {
       return this.field?.info?.srvCol?.option_list_v3;
     },
+    useMultiTabOptionSelect() {
+      // 条件外键，没有符合的条件，使用多tab下拉组件
+      return (
+        !this.optionListV2 &&
+        this.optionListV3?.filter((item) => item.conds?.length)?.length > 0
+      );
+    },
     optionListV2() {
       let result = null;
       if (this.optionListV3?.length) {
         // 如果有v3 则使用v3
         const option_list_v3 = this.optionListV3;
-        const formModel = this.field.form.srvValFormModel();
-        result = option_list_v3.find((item) => {
-          if (item.conds?.length) {
-            // 条件外键
-            return item.conds.every((cond) =>
-              cond.case_val?.includes?.(formModel[cond.case_col])
-            );
-          } else {
-            return true;
-          }
-        });
+        const data = this.formModel;
+        result = option_list_v3.find(
+          (item) =>
+            !item.conds?.length ||
+            item.conds?.every(
+              (cond) =>
+                data?.[cond.case_col] &&
+                cond.case_val?.includes?.(data?.[cond.case_col])
+            )
+        );
+        console.log("optionListV2", result, data);
       } else if (this.field?.info?.srvCol?.option_list_v2) {
         result = this.field.info.srvCol.option_list_v2;
       }
@@ -549,6 +574,12 @@ export default {
     },
   },
   methods: {
+    multiTabSelectChange(item, cfg) {
+      this.field?.form?.allFields?.[cfg.case_col]?.setSrvVal?.(cfg.case_val);
+      this.$nextTick(() => {
+        this.handleSelect(item,cfg);
+      });
+    },
     onClickEdit() {
       if (this.optionListV2?.view_model?.includes("平铺展示")) {
       } else {
@@ -791,16 +822,16 @@ export default {
       }
     },
 
-    popupDefaultConditions() {
+    popupDefaultConditions(loader) {
       let conditions = this.defaultConditions || [];
       let fieldInfo = this.field.info;
-      let loader = this.dispLoaderV2;
+       loader = loader || this.dispLoaderV2;
       return conditions.concat(this.buildConditions(loader));
     },
 
-    dedupOptions(options) {
-      let loader = this.dispLoaderV2;
-      if (!loader.dedup) {
+    dedupOptions(options, loader) {
+      loader = loader || this.dispLoaderV2;
+      if (!loader?.dedup) {
         return;
       }
 
@@ -1119,12 +1150,12 @@ export default {
       return ret;
     },
 
-    handleSelect(item) {
+    handleSelect(item, loader) {
       console.log("handleSelect", item);
       this.field.model = item;
 
       let fieldInfo = this.field.info;
-      let loader = this.dispLoaderV2;
+      loader = loader || this.dispLoaderV2;
       if (this.subType == "select") {
         let selectItem = this.options.filter(
           (opt) => opt[fieldInfo.valueCol] == item
