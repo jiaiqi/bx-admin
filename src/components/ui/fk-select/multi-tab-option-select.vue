@@ -26,7 +26,7 @@
                 class="option-item"
                 @click="selectOption(option)"
               >
-                {{ option.labelFunc ? option.labelFunc(option) : option.label }}
+                <span v-html="option.labelFunc(option)"></span>
               </div>
               <div v-if="loading" class="loading-wrapper">
                 <el-loading></el-loading>
@@ -253,9 +253,17 @@ export default {
               const fieldInfo = this.field.info;
               options.forEach((item) => {
                 item.labelFunc = (data) => {
-                  return optionsCfg.showAsPair == true
-                    ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
-                    : data[fieldInfo.dispCol];
+                  let result =
+                    optionsCfg.showAsPair == true
+                      ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
+                      : data[fieldInfo.dispCol];
+                  if (this.inputValue && result.includes(this.inputValue)) {
+                    result = result.replace(
+                      this.inputValue,
+                      `<span style="color: red;">${this.inputValue}</span>`
+                    );
+                  }
+                  return result || '';
                 };
               });
               options.forEach((option) => {
