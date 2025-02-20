@@ -771,7 +771,8 @@ import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
 import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
-import transferVue from "../ui/form-widget/transfer.vue";
+// import transferVue from "../ui/form-widget/transfer.vue";
+import transferVue from "../ui/form-widget/multi-select/index.vue"; // 多选穿梭框组件
 
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
