@@ -143,6 +143,19 @@
             @click="toDetail(item.column, scope.row, scope.$index)"
             >{{ formatValue(scope.row, item) }}</a
           >
+          <div
+            style="display: flex; flex-wrap: wrap"
+            v-else-if="isFkJson(scope.row, item)"
+          >
+            <el-tag
+              style="margin-right: 4px; margin-bottom: 2px"
+              size="mini"
+              :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+              v-for="(tag, tIndex) in getFkJson(scope.row, item)"
+              :key="tIndex"
+              >{{ tag || "" }}
+            </el-tag>
+          </div>
           <span v-else>{{ formatValue(scope.row, item) }}</span>
         </template>
       </el-table-column>

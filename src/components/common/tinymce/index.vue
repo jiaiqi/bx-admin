@@ -55,13 +55,11 @@ export default {
     plugins: {
       type: [String, Array],
       default:
-        // 'colorpicker colorpicker contextmenu image imagetools lists table textcolor wordcount'
         "colorpicker colorpicker contextmenu image media imagetools lists table textcolor wordcount pagebreak styleselect fontselect fontsizeselect",
     },
     toolbar: {
       type: [String, Array],
       default:
-        // 'undo redo | | bold  italic | underline | strikethrough | alignleft  aligncenter alignright | outdent indent  blockquote  removeformat subscript superscript bullist numlist image charmap  table  forecolor backcolor'
         () => [
           "undo redo | | bold  italic | underline | strikethrough | alignleft  aligncenter alignright outdent indent  blockquote  removeformat subscript superscript bullist numlist | image media charmap table forecolor backcolor styleselect",
           "fontselect fontsizeselect | customlayout pagebreak",
@@ -286,7 +284,7 @@ export default {
   },
   mounted() {
     this.myValue = this.recoverFileAddress(this.field.model);
-    tinymce.init({});
+    // tinymce.init({});
   },
   methods: {
     getFileUrl(url) {
