@@ -436,6 +436,11 @@ export default {
         operate_mode = "新TAB";
       }
 
+      // tbl_options中有“EXCEl模式”则显示excel按钮
+      if(this.listV2Data?.tbl_options?.includes('EXCEl模式')){
+        show = true;
+      }
+
       if (show) {
         let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService
           }&srvApp=${this.resolveDefaultSrvApp()}`;
