@@ -63,7 +63,6 @@ export default {
             let vm = self;
             let calc_trigger_col = fieldInfo?.srvCol.calc_trigger_col;
             if(Array.isArray(calc_trigger_col)){
-              debugger
               calc_trigger_col = calc_trigger_col.filter((col) => col!== fieldName)
             }
             // 如果计算函数中发请求了，再判断是否匹配calc_trigger_col来判断是否需要进行计算，否则直接计算,避免之前没配置calc_trigger_col的表内计算不会触发

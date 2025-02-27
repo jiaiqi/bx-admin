@@ -293,10 +293,15 @@ export default {
       } else {
         Vue.set(this.actions, "submit", submitAction);
       }
-
       submitAction.name = "submit";
       submitAction.label = "提交";
       submitAction.confirm = "是否确认提交?";
+      if(this.formV2&&'tbl_options' in this.formV2){
+        if(!this.formV2.tbl_options?.includes('增加确认提示')){
+          // 增加默认不需要提示
+          submitAction.confirm = null;
+        }
+      }
       submitAction.precheckFunc = (_) => {
         return this.validateForm();
       };
@@ -359,6 +364,12 @@ export default {
       submitAction.name = "save_draft"; // e.button_type
       submitAction.label = "保存草稿1";
       submitAction.confirm = "是否确认保存?";
+      if(this.formV2&&'tbl_options' in this.formV2){
+        if(!this.formV2.tbl_options?.includes('增加确认提示')){
+          // 增加默认不需要提示
+          submitAction.confirm = null;
+        }
+      }
       // submitAction.precheckFunc = _ => {
       //   return this.validateForm();
       // }

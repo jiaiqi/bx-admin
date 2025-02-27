@@ -151,6 +151,7 @@ export default {
       cfgJson: null,
       sectionsCollapse: {},
       pub_field_map: null, //公共字段映射
+      formV2:null
     }
   },
 
@@ -767,6 +768,7 @@ export default {
       // .then((response) => {
       let data = response.body.data;
       this.mainTable = data.main_table;
+      this.formV2 = data
       /**
        * pagePrompt 页面配置信息处理
        */
