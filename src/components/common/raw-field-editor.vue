@@ -125,7 +125,7 @@
               "
             >
             </wang-editor>
-            <TinymceEditor
+            <!-- <TinymceEditor
               :disabled="getDisabled"
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -133,8 +133,8 @@
                 $emit('field-value-changed', field.info.name, field)
               "
               ref="editor"
-            ></TinymceEditor>
-            <!-- <ueditor
+            ></TinymceEditor> -->
+            <ueditor
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
               @field-changed="
@@ -142,7 +142,7 @@
               "
               ref="editor"
             >
-            </ueditor> -->
+            </ueditor>
 
             <!-- temporal -->
             <el-date-picker

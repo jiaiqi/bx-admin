@@ -9,6 +9,7 @@ export const pathConfigMap = {
   //   application: "dev2",
   //   app_path: "http://192.168.0.155:8888/dev2",
   // },
+
   dev: {
     // 开发环境
     gateway_protocol: "http",
@@ -20,6 +21,18 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "hsprl",
+  },
+  dev2: {
+    // 开发环境
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.155",
+    // gateway_ip: "192.168.0.155",
+    port: "180",
+    // port: "2881",
+    gateway: "http://192.168.0.155:180",
+    // gateway: "http://192.168.0.155:2881",
+    sso_app: "sso",
+    application: "sapp",
   },
   saas: {
     //正式环境

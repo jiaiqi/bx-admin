@@ -102,7 +102,7 @@
 
 <script>
 // 添加防抖处理，避免频繁请求
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 
 export default {
   name: "MultiOptionList",

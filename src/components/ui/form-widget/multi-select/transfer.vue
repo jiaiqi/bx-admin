@@ -15,16 +15,6 @@
         v-loading="loading"
         :title="sourceTitle"
       >
-        <!-- <el-pagination
-          small
-          layout="prev, pager, next"
-          :total="total"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          :hide-on-single-page="true"
-          :pager-count="5"
-        >
-        </el-pagination> -->
       </transfer-panel>
       <!-- 中间操作按钮 -->
       <div class="transfer-buttons">
@@ -76,10 +66,14 @@ export default {
     loadNode: {
       type: Function,
       required: true,
+      default() {
+        return ()=>{};
+      }
     },
     defaultProps: {
       type: Object,
       default: () => ({
+        key:'id',
         children: "children",
         label: "label",
         isLeaf: "isLeaf",
@@ -119,9 +113,9 @@ export default {
             }
           });
         };
-        return filterTree(cloneDeep(this.allData));
+        return filterTree(cloneDeep(this.allData||[]));
       }
-      return this.allData.filter(
+      return this.allData?.filter(
         (item) => !this.value?.includes(item[this.defaultProps.key || "id"])
       );
     },
@@ -142,9 +136,9 @@ export default {
             }
           });
         };
-        return filterTree(cloneDeep(this.allData));
+        return filterTree(cloneDeep(this.allData||[]));
       }
-      return this.allData.filter((item) =>
+      return this.allData?.filter((item) =>
         this.value?.includes(item[this.defaultProps.key || "id"])
       );
     },
@@ -162,7 +156,7 @@ export default {
       loading: false,
     };
   },
-  created() {
+  mounted() {
     this.loadPageData();
   },
   methods: {
@@ -174,7 +168,7 @@ export default {
           page: this.currentPage,
           pageSize: this.pageSize,
         });
-        this.allData = data;
+        this.allData = cloneDeep(data||[]);
         this.total = total;
         this.pageSize = rownumber || 10;
         this.flatData = flatData;
