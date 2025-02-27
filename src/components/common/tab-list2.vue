@@ -749,7 +749,8 @@ export default {
         response.data.data &&
         response.data.data.tabs
       ) {
-        let tabs = response.data.data.tabs;
+        let tabs = response.data.data.tabs.sort((a,b)=>a.orders - b.orders);
+        debugger
         this.cols = response.data.data.srv_cols;
         if (!tabs || tabs.length == 0) {
           return;
