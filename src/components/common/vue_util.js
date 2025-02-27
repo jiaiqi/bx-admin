@@ -396,6 +396,10 @@ function init_util() {
     mainSrv,
     forceRefreshV2 = false
   ) {
+    if(!service_name){
+      console.error("service_name is null");
+      return Promise.resolve({});
+    }
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
     let cacheP =
       this.$store &&
