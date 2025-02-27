@@ -22,6 +22,21 @@ function getProdExternals() {
 
 module.exports = {
   chainWebpack: (config) => {
+    config.module
+      .rule('js')
+      .use('babel-loader')
+      .tap(options => {
+        return {
+          ...options,
+          presets: [
+            ['@babel/preset-env', { useBuiltIns: 'entry', corejs: 3 }]
+          ],
+          plugins: [
+            "@babel/plugin-transform-optional-chaining", // 可选链 ?.
+            "@babel/plugin-transform-nullish-coalescing-operator" // 空值合并 ??
+          ]
+        };
+      });
     if (process.env.NODE_ENV === "production") {
       // 只在生产环境中应用此配置
       // 生产环境 删除懒加载模块的 prefetch preload，降低带宽压力
@@ -32,8 +47,8 @@ module.exports = {
       // 生产环境 压缩代码
       config.optimization.splitChunks = {
         chunks: "all", // 对所有类型的chunk（同步和异步）进行分割
-        minSize: 10*1000, // 最小尺寸，这里设置为10KB（10000字节），默认是30000字节
-        maxSize: 500* 1000, // 添加这个配置来确保超过500KB的chunk会被分割
+        minSize: 10 * 1000, // 最小尺寸，这里设置为10KB（10000字节），默认是30000字节
+        maxSize: 500 * 1000, // 添加这个配置来确保超过500KB的chunk会被分割
         minChunks: 1, // 被至少多少个chunk共享的模块才会被提取
         maxAsyncRequests: 20, // 最大异步请求数量
         maxInitialRequests: 20, // 入口点处的最大并行请求数量
@@ -57,7 +72,7 @@ module.exports = {
     }
   },
   productionSourceMap: true, // 生产环境是否生成 sourceMap 文件
-  transpileDependencies: ["simple-mind-map"], // 思维导图
+  transpileDependencies: ["simple-mind-map","@svgdotjs"], // 思维导图
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
   publicPath: "/vpages/",
   outputDir: "dist",
@@ -68,18 +83,18 @@ module.exports = {
     plugins:
       process.env.NODE_ENV !== "development"
         ? //// 配置compression-webpack-plugin压缩 对超过10kb的文件gzip压缩
-          [
-            new CompressionWebpackPlugin({
-              algorithm: "gzip",
-              test: new RegExp(
-                "\\.(" + productionGzipExtensions.join("|") + ")$"
-              ),
-              threshold: 10240,
-              minRatio: 0.8,
-            }),
-            // Ignore all locale files of moment.js
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-          ]
+        [
+          new CompressionWebpackPlugin({
+            algorithm: "gzip",
+            test: new RegExp(
+              "\\.(" + productionGzipExtensions.join("|") + ")$"
+            ),
+            threshold: 10240,
+            minRatio: 0.8,
+          }),
+          // Ignore all locale files of moment.js
+          new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+        ]
         : [new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)],
   },
   devServer: {
