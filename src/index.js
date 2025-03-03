@@ -10,7 +10,7 @@ import ProcDetail from './components/common/procdetail.vue'
 import PopupMemList from "./components/common/popup-mem-list.vue";
 import VueUtil from './components/common/vue_util'
 import bxPlugin from './plugin/bx-plugin.js'
-
+import BxForm from './components/common/form/form.vue'
 
 
 export default {
@@ -24,5 +24,6 @@ export default {
     Vue.component("simple-update", SimpleUpdate);
     Vue.component("simple-detail", SimpleDetail);
     Vue.component("proc-detail", ProcDetail);
+    Vue.component("bx-form", BxForm);
   }
 };

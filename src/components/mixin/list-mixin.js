@@ -1261,7 +1261,19 @@ export default {
       // }else{
       //   console.log(key_col,row[key_col],ops,str)
       // }
+      if(typeof ops ==='string' && ops.indexOf('$bxFileAddress$')!=-1){
+        ops = self.recoverFileAddress(ops)
+      }
       return ops;
+    },
+    recoverFileAddress(val = "") {
+      // 替换文件前缀
+      const prefix = this.serviceApi().downloadFilePrefix;
+      val = val?.replaceAll?.("$bxFileAddress$", prefix) || "";
+      // 使用正则表达式来匹配 bx_auth_ticket 的值，并使用sessionStorage.bx_auth_ticket替换它
+      const ticketStr = `bx_auth_ticket=${sessionStorage.bx_auth_ticket}`;
+      val = val.replace(/(bx_auth_ticket=)[^&]+/ig, ticketStr);
+      return val;
     },
     singleFormatValue(value, header, key_col, row) {
       // 从方法中那个取到值  res后面可以根据复杂程度改为对象

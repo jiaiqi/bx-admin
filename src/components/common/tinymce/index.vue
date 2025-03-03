@@ -1,14 +1,33 @@
 <!-- tinymc富文本 -->
 <template>
-  <div class="mb-5px">
-    <editor v-model="myValue" :init="init" :disabled="disabled" @onClick="onClick" @change="onChange">
+  <div class="mb-5px" v-if="tinymceId">
+    <editor
+      v-model="myValue"
+      :id="tinymceId"
+      :init="init"
+      :disabled="disabled"
+      @onClick="onClick"
+      @change="onChange"
+    >
     </editor>
     <dialog id="myDialog">
-      <el-progress :text-inside="true" :stroke-width="24" :percentage="hashPercentage" :format="
-            (percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
-          " v-if="hashPercentage && hashPercentage < 100"></el-progress>
-      <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage"
-        :format="(percentage) => `文件上传中，当前进度：${percentage}%`" status="success" v-else></el-progress>
+      <el-progress
+        :text-inside="true"
+        :stroke-width="24"
+        :percentage="hashPercentage"
+        :format="
+          (percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
+        "
+        v-if="hashPercentage && hashPercentage < 100"
+      ></el-progress>
+      <el-progress
+        :text-inside="true"
+        :stroke-width="24"
+        :percentage="percentage"
+        :format="(percentage) => `文件上传中，当前进度：${percentage}%`"
+        status="success"
+        v-else
+      ></el-progress>
     </dialog>
   </div>
 </template>
@@ -54,16 +73,14 @@ export default {
     },
     plugins: {
       type: [String, Array],
-      default:
-        "colorpicker colorpicker contextmenu image media imagetools lists table textcolor wordcount pagebreak styleselect fontselect fontsizeselect",
+      default: "image media lists table wordcount pagebreak",
     },
     toolbar: {
       type: [String, Array],
-      default:
-        () => [
-          "undo redo | | bold  italic | underline | strikethrough | alignleft  aligncenter alignright outdent indent  blockquote  removeformat subscript superscript bullist numlist | image media charmap table forecolor backcolor styleselect",
-          "fontselect fontsizeselect | customlayout pagebreak",
-        ],
+      default: () => [
+        "undo redo  | bold  italic | underline | strikethrough | alignleft  aligncenter alignright outdent indent  blockquote  removeformat subscript superscript bullist numlist | image media charmap table forecolor backcolor styleselect",
+        "fontselect fontsizeselect | customlayout pagebreak",
+      ],
     },
     field: Object,
   },
@@ -88,12 +105,14 @@ export default {
   data() {
     var that = this;
     return {
+      tinymceId: "",
       //初始化配置
       init: {
+        selector: `#${this.tinymceId}`,
         language_url: "/tinymce/zh_CN.js", // 这里需要单独处理
         language: "zh_CN",
-        skin_url: "/tinymce/skins/ui/oxide/", // skin路径
-        content_css: "/tinymce/skins/content/default/content.min.css",
+        skin_url: "/vpages/tinymce/skins/ui/oxide/", // skin路径
+        content_css: "/vpages/tinymce/skins/content/default/content.min.css",
         convert_urls: false,
         height: 500,
         plugins: "paste",
@@ -104,7 +123,7 @@ export default {
         menubar: true,
         forced_root_block: "p",
         force_br_newlines: false,
-        force_p_newlines: true,
+        // force_p_newlines: true,
         force_div_newlines: false,
         force_span_newlines: false,
         content_style:
@@ -165,34 +184,32 @@ export default {
 
           let uploadUrl = this.serviceApi().uploadFile;
           try {
-            const response = await $http.post(uploadUrl, formData,
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-                timeout: 60 * 60 * 1000,
-                onUploadProgress(e) {
-                  const complete = (e.loaded / e.total) * 100;
-                  that.percentage = Math.round(complete);
-                },
-              })
+            const response = await $http.post(uploadUrl, formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+              timeout: 60 * 60 * 1000,
+              onUploadProgress(e) {
+                const complete = (e.loaded / e.total) * 100;
+                that.percentage = Math.round(complete);
+              },
+            });
 
             console.log("uploadImg:::", response);
             const url = this.getFileUrl(response.data.fileurl);
             const file_no = response.data.file_no;
-            if (file_no && url?.startsWith('http')) {
+            if (file_no && url?.startsWith("http")) {
               this.percentage = 99;
-              await this.checkUploadStatus(file_no)
+              await this.checkUploadStatus(file_no);
               this.percentage = 100;
             }
             document.getElementById("myDialog").close();
             success(url);
-
           } catch (error) {
             console.log(error);
             this.$message.error("上传失败:" + error);
           }
-          //  $http.post(uploadUrl, formData, 
+          //  $http.post(uploadUrl, formData,
           //   {
           //     headers: {
           //       "Content-Type": "multipart/form-data",
@@ -282,9 +299,11 @@ export default {
       hashPercentage: 0,
     };
   },
+  created() {},
   mounted() {
-    this.myValue = this.recoverFileAddress(this.field.model);
-    // tinymce.init({});
+    this.tinymceId = `tinymce_${this.field.info?.name}_${new Date().getTime()}`;
+    this.myValue = this.recoverFileAddress(this.field.model || "");
+    tinymce.init({});
   },
   methods: {
     getFileUrl(url) {
@@ -296,18 +315,19 @@ export default {
         return `${this.serviceApi().downloadFile}${url}`;
       }
     },
-    recoverFileAddress(val) {
+    recoverFileAddress(val = "") {
       // 替换文件前缀
-      return (
-        val?.replaceAll?.("$bxFileAddress$", this.serviceApi().downloadFile) ||
-        ""
-      );
+      const prefix = this.serviceApi().downloadFilePrefix;
+      val = val?.replaceAll?.("$bxFileAddress$", prefix) || "";
+      // 使用正则表达式来匹配 bx_auth_ticket 的值，并使用sessionStorage.bx_auth_ticket替换它
+      const ticketStr = `bx_auth_ticket=${sessionStorage.bx_auth_ticket}`;
+      val = val.replace(/(bx_auth_ticket=)[^&]+/ig, ticketStr);
+      return val;
     },
-    replaceFileAddressSuffix(val) {
-      return (
-        val?.replaceAll?.(this.serviceApi().downloadFile, "$bxFileAddress$") ||
-        ""
-      );
+    replaceFileAddressSuffix(val = "") {
+      const prefix = this.serviceApi().downloadFilePrefix;
+      val = val?.replaceAll?.(prefix, "$bxFileAddress$");
+      return val;
     },
     setSrvVal(val) {
       // 设置值
@@ -524,7 +544,7 @@ export default {
 #myDialog {
   width: 800px;
 }
-.mb-5px{
+.mb-5px {
   margin-bottom: 5px;
 }
 </style>

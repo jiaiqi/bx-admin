@@ -7,7 +7,9 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "deploy:dev": "deploy-cli-service deploy --mode dev"
+    "deploy:dev": "deploy-cli-service deploy --mode dev",
+    "build-lib": "vue-cli-service build --target lib --name bxhome src/index.js",
+    "build-lib4app": "bili --format cjs --name index --plugin vue --vue.css false"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.7",

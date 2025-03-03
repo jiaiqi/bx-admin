@@ -79,7 +79,7 @@ export default {
       return this.getFileList?.filter((item) => item.isImage === true);
     },
     getFileList() {
-      if (Array.isArray(getJson) && this.getJson.length) {
+      if (Array.isArray(this.getJson) && this.getJson.length) {
         return this.getJson.map((item) => {
           const fileUrl = this.serviceApi().downloadFile + item.fileurl;
           return {

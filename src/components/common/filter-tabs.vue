@@ -583,7 +583,8 @@ export default {
             let values = ["Date", "DateTime"].includes(inputType)
               ? self.formatDateValues(value)
               : value;
-            for (let v = 0; v < values.length; v++) {
+            const valuesLength = values?.length||0
+            for (let v = 0; v < valuesLength; v++) {
               child_relation = {
                 relation: "AND",
                 data: [],

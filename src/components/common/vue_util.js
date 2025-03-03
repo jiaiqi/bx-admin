@@ -18,6 +18,7 @@ import isUndefined from "lodash/isUndefined";
 import isString from "lodash/isString";
 import isFunction from "lodash/isFunction";
 import isEmpty from "lodash/isEmpty";
+import { backendIpAddr } from "@/common/http";
 
 function init_util() {
   const eventBus = new Vue();
@@ -396,7 +397,7 @@ function init_util() {
     mainSrv,
     forceRefreshV2 = false
   ) {
-    if(!service_name){
+    if (!service_name) {
       console.error("service_name is null");
       return Promise.resolve({});
     }
@@ -653,8 +654,8 @@ function init_util() {
     let service_name = query.serviceName;
     let url = this.getServiceUrl("select", service_name, app);
     let proc_page_instance = findParentHasPageInstance(this)
-    if(proc_page_instance){
-      console.log('proc_page_instance:', proc_page_instance,query);
+    if (proc_page_instance) {
+      console.log('proc_page_instance:', proc_page_instance, query);
       query.proc_page_instance = proc_page_instance
     }
     return this.$http.post(url, query);
@@ -700,8 +701,8 @@ function init_util() {
       use_type: use_type, //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
     let proc_page_instance = findParentHasPageInstance(this)
-    if(proc_page_instance){
-      console.log('proc_page_instance:', proc_page_instance,query);
+    if (proc_page_instance) {
+      console.log('proc_page_instance:', proc_page_instance, query);
       query.proc_page_instance = proc_page_instance
     }
     if (divCondition) {
@@ -819,8 +820,8 @@ function init_util() {
       order: order,
     };
     let proc_page_instance = findParentHasPageInstance(this)
-    if(proc_page_instance){
-      console.log('proc_page_instance:', proc_page_instance,params);
+    if (proc_page_instance) {
+      console.log('proc_page_instance:', proc_page_instance, params);
       params.proc_page_instance = proc_page_instance
     }
     if (pageType && pageType === "list_page") {
@@ -864,8 +865,8 @@ function init_util() {
       params["query_source"] = "list_page";
     }
     let proc_page_instance = findParentHasPageInstance(this)
-    if(proc_page_instance){
-      console.log('proc_page_instance:', proc_page_instance,params);
+    if (proc_page_instance) {
+      console.log('proc_page_instance:', proc_page_instance, params);
       params.proc_page_instance = proc_page_instance
     }
     url = url + "?" + service_name;
@@ -883,8 +884,8 @@ function init_util() {
       use_type: "treelist", //2023.10.20增加use_type参数 解决行按钮权限丢失问题
     };
     let proc_page_instance = findParentHasPageInstance(this)
-    if(proc_page_instance){
-      console.log('proc_page_instance:', proc_page_instance,params);
+    if (proc_page_instance) {
+      console.log('proc_page_instance:', proc_page_instance, params);
       params.proc_page_instance = proc_page_instance
     }
     url = url + "?" + service_name;
@@ -1336,7 +1337,7 @@ function init_util() {
     }
     dialog.activeForm = params.formType;
     if (btninfo?.moreConfig?.customComponentName) {
-      if(btninfo.application){
+      if (btninfo.application) {
         dialog.defaultApplication = btninfo.application;
       }
       dialog.activeForm = btninfo?.moreConfig?.customComponentName;
@@ -1762,7 +1763,7 @@ function init_util() {
     }
   };
 
-  Vue.prototype.evalExprOrFunc = function (value, data, defaultValue,mainData={}) {
+  Vue.prototype.evalExprOrFunc = function (value, data, defaultValue, mainData = {}) {
     try {
       if (isString(value)) {
         let vm = this;
@@ -1821,6 +1822,7 @@ function init_util() {
   Vue.prototype.serviceApi = function (e) {
     let defaultApp = this.resolveDefaultSrvApp();
     var service_api = {
+      backendIpAddr: backendIpAddr,
       selectOne: backendIpAddr + "/" + defaultApp + "/select",
       select: backendIpAddr + "/" + defaultApp + "/select",
       selectByUser: backendIpAddr + "/" + defaultApp + "/select",
@@ -1828,12 +1830,8 @@ function init_util() {
       approval: backendIpAddr + "/" + defaultApp + "/process/approval",
 
       uploadFile: backendIpAddr + "/file/upload",
-      downloadFile:
-        backendIpAddr +
-        "/file/download?" +
-        "bx_auth_ticket=" +
-        sessionStorage.getItem("bx_auth_ticket") +
-        "&filePath=",
+      downloadFilePrefix: backendIpAddr + "/file/download",
+      downloadFile: `${backendIpAddr}/file/download?bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}&filePath=`,
       deleteFile: backendIpAddr + "/file/delete",
       downloadFileNo:
         backendIpAddr +
@@ -2564,18 +2562,22 @@ function init_util() {
     return result;
   };
 
-  Vue.prototype.checkUploadStatus = async(file_no, times = 0,timeout = 1000) =>{
+  Vue.prototype.checkUploadStatus = async (file_no, times = 0, timeout = 1000) => {
     const url = `/file/getUpPro?uploadId=${file_no}`
-    const res = await Vue.prototype.$http.get(url);
-    console.log(res.data.data, ':checkUploadStatus');
-    if (res.data.data < 100 && times < 10) {
-      await new Promise(resolve => {
-        setTimeout(() => {
-          Vue.prototype.checkUploadStatus(file_no, times + 1).then((res)=>{
-            resolve(res)
-          })
-        }, timeout);
-      })
+    try {
+      const res = await Vue.prototype.$http.get(url);
+      console.log(res.data.data, ':checkUploadStatus');
+      if (res.data.data < 100 && times < 10) {
+        await new Promise(resolve => {
+          setTimeout(() => {
+            Vue.prototype.checkUploadStatus(file_no, times + 1).then((res) => {
+              resolve(res)
+            })
+          }, timeout);
+        })
+      }
+    } catch (error) {
+      console.error(error, ':checkUploadStatus');
     }
   }
 }
