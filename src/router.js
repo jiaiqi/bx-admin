@@ -130,6 +130,11 @@ let routes = [
     component: Add,
   },
   {
+    path:"/frameForm",
+    name: "frameForm",
+    component: () => import("@/pages/common/inner/form.vue"),
+  },
+  {
     path: "/update/:service_name/:id",
     name: "update",
     component: Update,
