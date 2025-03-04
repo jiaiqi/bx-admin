@@ -188,6 +188,10 @@ body {
     .form-view-wrapper.el-row {
       max-height: 75vh;
       overflow-y: auto;
+      // &.plat-child-form{
+      //   max-height: unset;
+      //   overflow: unset;
+      // }
       .text.item {
         display: flex;
         flex-direction: column;
@@ -196,6 +200,12 @@ body {
       .el-collapse-item {
         display: flex;
         flex-direction: column;
+      }
+    }
+    .child-form-field{
+      .form-view-wrapper.el-row{
+        max-height: unset;
+        overflow: unset;
       }
     }
   }

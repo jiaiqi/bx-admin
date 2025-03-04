@@ -18,6 +18,7 @@
       @form-loaded="onFormLoaded"
       @onInnerFormModelChanged="onInnerFormModelChanged"
       :key="addService"
+      :isPlatChildForm="true"
       v-if="formType == 'add' && addService"
     >
     </add>
@@ -32,6 +33,8 @@
       @form-loaded="onFormLoaded"
       @onInnerFormModelChanged="onInnerFormModelChanged"
       :key="updateService"
+      :isPlatChildForm="true"
+
       v-else-if="formType == 'update' && updateService"
     >
     </update>
@@ -40,6 +43,8 @@
       ref="detail-form"
       v-if="formType == 'detail' && detailService"
       :service="detailService"
+      :isPlatChildForm="true"
+
       :default-conditions="defaultConditions"
     >
     </simple-detail>
@@ -52,11 +57,6 @@ import isObject from "lodash/isObject";
 
 export default {
   name: "childForm",
-  provide() {
-    return {
-      isPlatChildForm: true, // 是否是平铺的子表单
-    };
-  },
   props: {
     field: {
       type: Object,
@@ -133,7 +133,8 @@ export default {
       return this.$refs[`${this.formType}-form`];
     },
     getChildFormModel() {
-      return this.$refs[`${this.formType}-form`]?.srvValFormModel();
+      // return this.$refs[`${this.formType}-form`]?.srvValFormModel();
+      return this.$refs[`${this.formType}-form`]?.buildRunQuries();
     },
     onInnerFormModelChanged(event) {
       // a_save_b_obj_col字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col

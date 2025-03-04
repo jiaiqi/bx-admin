@@ -26,6 +26,7 @@
         @executor-complete="$emit('executor-complete', $event)"
         :childForeignkey="childForeignkey"
         :childrenLists="childrenList"
+        :isPlatChildForm="isPlatChildForm"
       >
         <div
           slot="field-form-prepend"
@@ -419,7 +420,7 @@ export default {
       this.$emit("form-loaded", this);
       // console.log("onAddFormLoaded")
       // if itself is submit2mem, no childlist
-      if (this.submit2Db) {
+      if (this.submit2Db || this.$parent?.getName?.()?.indexOf('childForm') === 0) {
         this.buildChildrenList(form);
       }
     },

@@ -97,6 +97,7 @@ export default {
      */
     buildQuery: function (conf, rtDataCtx) {
       let queries = [];
+      console.log("conf", conf)
       if (conf.itemsFunc && conf.itemsPolicy === "servicePerItem") {
         let clone = cloneDeep(conf);
         clone.itemsPolicy = "valuePerItem";

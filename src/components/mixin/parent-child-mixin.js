@@ -39,6 +39,10 @@ export default {
         return null;
       },
     },
+    isPlatChildForm:{
+      type: Boolean,
+      default: false
+    }
   },
   mounted() {
     // if(this.child_service.length > 0){

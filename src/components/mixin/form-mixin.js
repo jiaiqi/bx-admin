@@ -18,11 +18,6 @@ export default {
       getAllFields: () => this.allFields,
     };
   },
-  inject: {
-    'isPlatChildForm': { // 是否是平铺的子表单
-      default: false
-    }
-  },
   props: {
     initOrigin: {
       type: String,
@@ -103,6 +98,10 @@ export default {
       type: String,
       default: "",
     },
+    isPlatChildForm:{
+      type: Boolean,
+      default: false
+    }
   },
 
   data() {
@@ -719,7 +718,7 @@ export default {
         }
 
         if (hasChildFormFields?.length) {
-          console.log('hasChildFormFields:',hasChildFormFields);
+          // console.log('hasChildFormFields:',hasChildFormFields);
           hasChildFormFields.forEach( (key) => {
             const field = this.allFields[key]
             field.flatChildForm = true // 平铺显示子表

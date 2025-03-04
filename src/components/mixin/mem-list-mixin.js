@@ -395,7 +395,7 @@ export default {
       // 从vuex里同步删除数据
       let resArr = []
       let frontTableData = this.$store.getters.getFrontTableData()      
-      if (frontTableData && frontTableData.data.length>0) {
+      if (frontTableData && frontTableData.data && frontTableData.data.length>0) {
         const from = frontTableData.params.from
         const to = frontTableData.params.to
         const data = frontTableData.data  
