@@ -111,7 +111,10 @@ export default {
         };
         // 将更新的字段信息保存在_obj_col上，方便在form中获取
         this._obj_col = objCol;
-        if (!objStr && !targetColField.getSrvVal?.() || targetColField.getSrvVal?.() === objStr) {
+        if (
+          (!objStr && !targetColField.getSrvVal?.()) ||
+          targetColField.getSrvVal?.() === objStr
+        ) {
           return;
         }
         targetColField?.setSrvVal?.(objStr);
@@ -225,8 +228,8 @@ export default {
     },
   },
   computed: {
-    sectionName(){
-      return this.optionListV2?.section_name || this.field?.info?.label || '';
+    sectionName() {
+      return this.optionListV2?.section_name || this.field?.info?.label || "";
     },
     formType() {
       const service = this.field?.info?.srvCol?.service_name;
@@ -280,14 +283,20 @@ export default {
         const option_list_v3 = this.optionListV3;
         // const formModel = this.field.form.srvValFormModel();
         const formModel = this.field.form.formModel;
+        console.log("formModel", formModel);
+
         result = option_list_v3.find((item) => {
           if (item.conds?.length) {
             // 条件外键
-            return item.conds.every(
-              (cond) =>
-                formModel[cond.case_col] &&
-                cond.case_val?.includes?.(formModel[cond.case_col])
-            );
+            return item.conds.every((cond) => {
+              if (cond.case_val && formModel[cond.case_col]) {
+                const pass =
+                  formModel[cond.case_col]?.includes?.(cond.case_val) ||
+                  cond.case_val?.includes?.(formModel[cond.case_col]);
+                console.log("pass", pass);
+                return pass;
+              }
+            });
           } else {
             return true;
           }

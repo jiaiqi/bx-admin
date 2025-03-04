@@ -713,16 +713,28 @@ export default {
           if (Array.isArray(srvCol?.option_list_v3) && srvCol?.option_list_v3.length) {
             const option_list_v3 = srvCol.option_list_v3.filter(item => item.view_model === '平铺显示' && item?.allow_input === '自行输入')
             if (option_list_v3.length) {
-              hasChildFormFields.push({ field, fieldInfo: fi, srvCol, option_list_v3 })
+              hasChildFormFields.push(field.info.name)
             }
           }
         }
+
         if (hasChildFormFields?.length) {
-          for (let item of hasChildFormFields) {
-            const f = item.field
-            const fi = item.fieldInfo
-            const srvCol = item.srvCol
-            f.flatChildForm = true // 平铺显示子表
+          console.log('hasChildFormFields:',hasChildFormFields);
+          hasChildFormFields.forEach( (key) => {
+            const field = this.allFields[key]
+            field.flatChildForm = true // 平铺显示子表
+            // console.log('hasChildFormFields flatChildForm:',field.info.name);
+            
+            this.$set(field,'flatChildForm',true)
+          })
+          for (let key of hasChildFormFields) {
+            // const fi = item.fieldInfo
+            // const srvCol = item.srvCol
+            // const field = this.allFields[key]
+            // field.flatChildForm = true // 平铺显示子表
+            // console.log('hasChildFormFields flatChildForm:',field.info.name);
+            
+            // this.$set(field,'flatChildForm',true)
             return
             const option_list_v3 = item.option_list_v3
             const finalOption = option_list_v3.find(item => {
