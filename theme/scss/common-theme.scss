@@ -101,6 +101,8 @@ $basic-color-info: #909399;
     color: $basic-color-primary-gray;
     font-weight: $font-weight-basic;
     border-bottom-width: 0;
+    height: 30px;
+    line-height: 30px;
     &.is-active{
       border-bottom-color: $border-color-basic;
       color: $basic-color-primary;

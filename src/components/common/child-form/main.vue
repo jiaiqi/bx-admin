@@ -38,7 +38,7 @@
       v-else-if="formType == 'update' && updateService"
     >
     </update>
-    <simple-detail
+    <detail
       name="detail"
       ref="detail-form"
       v-if="formType == 'detail' && detailService"
@@ -47,7 +47,17 @@
 
       :default-conditions="defaultConditions"
     >
-    </simple-detail>
+    </detail>
+    <!-- <simple-detail
+      name="detail"
+      ref="detail-form"
+      v-if="formType == 'detail' && detailService"
+      :service="detailService"
+      :isPlatChildForm="true"
+
+      :default-conditions="defaultConditions"
+    >
+    </simple-detail> -->
   </div>
 </template>
 
@@ -71,6 +81,7 @@ export default {
     Add: () => import("../add.vue"),
     Update: () => import("../update.vue"),
     SimpleDetail: () => import("../simple-detail.vue"),
+    Detail: () => import("../detail.vue"),
     fieldEditor: () => import("../field-editor.vue"),
   },
   data() {

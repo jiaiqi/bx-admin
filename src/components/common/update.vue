@@ -30,6 +30,7 @@
           @executor-complete="$emit('executor-complete', $event)"
           @submitted2mem="onSubmitted2mem"
           :childrenLists="childrenList"
+          :isPlatChildForm="isPlatChildForm"
         >
           <div
             slot="field-form-prepend"

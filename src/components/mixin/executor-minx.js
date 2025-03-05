@@ -115,8 +115,9 @@ export default {
           const childFormModel = field?.ChildForm?.getChildFormModel();
           if (childFormModel) {
             const data = childFormModel?.[0]?.data?.[0]
+
             if(data){
-              row[confItem.colName] = childFormModel;
+              row[confItem.colName] = data;
             }
           }
         }

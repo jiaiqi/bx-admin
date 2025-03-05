@@ -55,6 +55,7 @@
             :pk="id"
             @form-loaded="$emit('form-loaded', $event)"
             @action-complete="refreshChildList"
+            :isPlatChildForm="isPlatChildForm"
           >
             <div
               slot="field-form-prepend"
@@ -318,6 +319,7 @@
             :pk-col="pkCol"
             :pk="id"
             @form-loaded="$emit('form-loaded', $event)"
+            :isPlatChildForm="isPlatChildForm"
           >
             <div
               slot="field-form-prepend"
@@ -585,6 +587,7 @@
               ref="child-simple-detail"
               :service="item.service_name"
               :default-conditions="getChildListDefaultCondition(item)"
+              :isPlatChildForm="isPlatChildForm"
             ></simple-detail>
 
             <child-list
