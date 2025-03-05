@@ -366,63 +366,70 @@ export default {
             confirmButtonText: "确定",
           });
         } else {
-          var pre_confirm_msg = butinfo["pre_confirm_msg"];
-          if (
-            pre_confirm_msg == "" ||
-            pre_confirm_msg == undefined ||
-            pre_confirm_msg == null
-          ) {
-            pre_confirm_msg = "你确定要进行此操作?";
-          }
-          this.$confirm(pre_confirm_msg, "提示", {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "info",
-          })
-            .then(() => {
-              var request = {};
+          function operate() {
+            var request = {};
+            request["serviceName"] = butinfo["operate_service"];
+            request["data"] = [new_data];
+            request["srvApp"] = butinfo["application"];
+            request["condition"] = new_conditions;
+            bxRequests.push(request);
+            if (bxRequests.length > 0) {
+              this.operate(bxRequests).then((response) => {
+                var state = response.body.state;
 
-              request["serviceName"] = butinfo["operate_service"];
-              request["data"] = [new_data];
-              request["srvApp"] = butinfo["application"];
-              request["condition"] = new_conditions;
-              bxRequests.push(request);
-              if (bxRequests.length > 0) {
-                this.operate(bxRequests).then((response) => {
-                  var state = response.body.state;
-
-                  if ("SUCCESS" == state) {
-                    var resultMessage = "操作成功!";
-
-                    if (
-                      resultMessage != "" &&
-                      resultMessage != null &&
-                      resultMessage != undefined
-                    ) {
-                      resultMessage = response.body.resultMessage;
-                    }
-                    this.$message({
-                      type: "success",
-                      message: resultMessage,
-                    });
-
-                    this.suffix_actions(butinfo);
-                    //me.loadTableData();
-                  } else {
-                    this.$message({
-                      type: "error",
-                      message: response.body.resultMessage,
-                    });
+                if ("SUCCESS" == state) {
+                  var resultMessage = "操作成功!";
+                  if (
+                    resultMessage != "" &&
+                    resultMessage != null &&
+                    resultMessage != undefined
+                  ) {
+                    resultMessage = response.body.resultMessage;
                   }
-                });
-              }
-            })
-            .catch((e) => {
-              this.$message({
-                type: "info",
-                message: "已取消",
+                  this.$message({
+                    type: "success",
+                    message: resultMessage,
+                  });
+
+                  this.suffix_actions(butinfo);
+                  //me.loadTableData();
+                } else {
+                  this.$message({
+                    type: "error",
+                    message: response.body.resultMessage,
+                  });
+                }
               });
-            });
+            }
+          }
+          var pre_confirm_msg = butinfo["pre_confirm_msg"];
+          // if (
+          //   pre_confirm_msg == "" ||
+          //   pre_confirm_msg == undefined ||
+          //   pre_confirm_msg == null
+          // ) {
+          // pre_confirm_msg = "你确定要进行此操作?";
+          // }
+
+          if (!["", null, undefined].includes(pre_confirm_msg)) {
+            this.$confirm(pre_confirm_msg, "提示", {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "info",
+            })
+              .then(() => {
+                operate()
+              })
+              .catch((e) => {
+                this.$message({
+                  type: "info",
+                  message: "已取消",
+                });
+              });
+          } else {
+            operate()
+          }
+
         }
       }
     },
@@ -782,10 +789,10 @@ export default {
             opt = "?";
           }
           back_url = `${back_url}${opt}srvApp=${this.$srvApp
-              ? this.$srvApp
-              : item.application && item.application !== "this"
-                ? item.application
-                : ""
+            ? this.$srvApp
+            : item.application && item.application !== "this"
+              ? item.application
+              : ""
             }`;
         }
       }
