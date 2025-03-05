@@ -44,8 +44,8 @@
       v-if="formType == 'detail' && detailService"
       :service="detailService"
       :isPlatChildForm="true"
-
       :default-conditions="defaultConditions"
+      @form-loaded="onFormLoaded"
     >
     </detail>
     <!-- <simple-detail
@@ -226,6 +226,7 @@ export default {
         // 去掉提交后跳转事件
         form.actions.submit.nav2Location = null;
       }
+      this.$emit("form-loaded", form)
     },
     onExecutorComplete(event) {
       console.log("onExecutorComplete:", event);

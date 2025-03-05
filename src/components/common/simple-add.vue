@@ -75,6 +75,7 @@
               :parentAddMainFormDatas="parentAddMainFormDatas"
               :form-has-invalid-error="hasInvalidField()"
               @field-value-changed="onFieldValueChanged($event)"
+              @child-form-loaded="onChildFormLoaded"
               :defaultValues="defaultValues"
               v-if="formItem.field.info.visible"
               v-show="
@@ -352,6 +353,11 @@ export default {
     resetForm: function () {
       for (let key in this.fields) {
         this.fields[key].reset2Init();
+      }
+      if(Array.isArray(this.childForm)&&this.childForm.length){
+        this.childForm.forEach(item=>{
+          item?.$refs?.basicForm?.resetForm()
+        })
       }
     },
     /**

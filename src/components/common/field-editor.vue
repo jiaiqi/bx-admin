@@ -10,7 +10,7 @@
   >
     <slot name="field-child-prepend"></slot>
     <template v-if="(ignoreVif || field.evalXIf()) && field.flatChildForm">
-      <child-form v-bind="$props"></child-form>
+      <child-form v-bind="$props" @form-loaded="$emit('child-form-loaded',$event)"></child-form>
     </template>
     <el-col
       :xs="field.info.colspan.xs"

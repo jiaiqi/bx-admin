@@ -150,7 +150,8 @@ export default {
       cfgJson: null,
       sectionsCollapse: {},
       pub_field_map: null, //公共字段映射
-      formV2:null
+      formV2:null,
+      childForm:[]
     }
   },
 
@@ -337,6 +338,9 @@ export default {
 
 
   methods: {
+    onChildFormLoaded(form){
+      this.childForm.push(form)
+    },
     onSectionsCollapseChange(key) {
       let self = this
       if (key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 && key !== '$') {

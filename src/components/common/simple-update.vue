@@ -76,6 +76,7 @@
               :form-has-invalid-error="hasInvalidField()"
               @field-value-changed="onFieldValueChanged($event)"
               @field-history-popup="onFieldHistoryPopup"
+              @child-form-loaded="onChildFormLoaded"
             >
               <template #field-child-prepend class="">
                 <slot
@@ -439,6 +440,11 @@ export default {
 
     resetForm: function () {
       this.$refs.loader.run();
+      if(Array.isArray(this.childForm)&&this.childForm.length){
+        this.childForm.forEach(item=>{
+          item?.$refs?.basicForm?.resetForm()
+        })
+      }
     },
   },
 
