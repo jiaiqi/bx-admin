@@ -589,19 +589,28 @@ export default {
         }
         this.gridHeader = gridHeader;
         // this.buildGridHeaders(respData[ "srv_cols" ]);
-        if(this.disabled!==true){
+        if (this.disabled !== true) {
+          if (this.finderSelected) {
+            try {
+              this.allData = JSON.parse(this.finderSelected).map((item) => {
+                item.label = item[this.labelCol];
+                item.value = item[this.valueCol];
+                return item;
+              });
+            } catch (error) {}
+          }
           this.loadOptions();
-        }else if(this.finderSelected){
-          this.gridData = JSON.parse(this.finderSelected).map(item=>{
+        } else if (this.finderSelected) {
+          this.gridData = JSON.parse(this.finderSelected).map((item) => {
             item.label = item[this.labelCol];
             item.value = item[this.valueCol];
-            return item
-          })
-          this.allData = JSON.parse(this.finderSelected).map(item=>{
+            return item;
+          });
+          this.allData = JSON.parse(this.finderSelected).map((item) => {
             item.label = item[this.labelCol];
             item.value = item[this.valueCol];
-            return item
-          })
+            return item;
+          });
         }
       }
     },
