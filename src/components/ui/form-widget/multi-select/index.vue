@@ -74,7 +74,7 @@ export default {
       if (this.optionListV2?.refed_col) {
         const optionListV2 = this.optionListV2;
         return {
-          isTree: optionListV2?.is_tree || true,
+          isTree: optionListV2?.is_tree || false,
           service: optionListV2.serviceName || optionListV2.service,
           conditions: optionListV2.conditions || [],
           relation_conditions: optionListV2.relation_conditions || null,
@@ -416,6 +416,8 @@ export default {
     },
     async loadRightData() {
       // 设置初始值
+      console.log("loadRightData");
+
       if (this.optionListV2?.transfer?.serviceName) {
         const loader = this.optionListV2.transfer;
         const queryJson = {
@@ -430,9 +432,15 @@ export default {
           },
         };
         if (loader.conditions) {
-          buildConditions(loader, false).forEach((c) =>
-            queryJson.condition.push(c)
-          );
+          buildConditions(
+            {
+              conditions: loader.conditions,
+              rowData: this.formModel,
+              mainData: this.mainFormDatas,
+              vm: this,
+            },
+            false
+          ).forEach((c) => queryJson.condition.push(c));
           queryJson.condition = pruneConditions(queryJson.condition);
         }
         if (loader.relation_conditions) {

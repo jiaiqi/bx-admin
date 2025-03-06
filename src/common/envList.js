@@ -22,6 +22,18 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "hsprl",
   },
+  gangu: {
+    // 甘谷人大
+    gateway_protocol: "https",
+    gateway_ip: "www.ggrdw.gov.cn",
+    // gateway_ip: "192.168.0.155",
+    port: "40007",
+    // port: "2881",
+    gateway: "https://www.ggrdw.gov.cn:40007",
+    // gateway: "http://192.168.0.155:2881",
+    sso_app: "sapp",
+    application: "sapp",
+  },
   dev2: {
     // 开发环境
     gateway_protocol: "http",

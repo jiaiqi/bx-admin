@@ -13,7 +13,7 @@ export default {
   },
   provide() {
     return {
-      getSortedFields: () => this.sortedFields,
+      getSortedFields: () => this.sortedAllFields,
       getFormModel: () => this.formModel,
       getAllFields: () => this.allFields,
     };
