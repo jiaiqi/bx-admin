@@ -127,13 +127,24 @@ export default Vue.extend({
     },
     // 控制缩放值
     handleWheel(e) {
+      const ZOOM_STEP = 0.2;
+      const MIN_ZOOM = 0.4;
+      const MAX_ZOOM = 3;
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
-        const nextScale = parseFloat(
-          Math.max(0.2, this.scale - e.deltaY / 500).toFixed(2)
+        const delta = e.deltaY > 0 ? -1 : 1;
+        let nextScale = this.scale + delta * ZOOM_STEP;
+        nextScale = parseFloat(
+          Math.min(Math.max(nextScale, MIN_ZOOM), MAX_ZOOM).toFixed(2)
         );
-        this.scale = nextScale;
-        this.$message(`缩放比例：${nextScale}`);
+        if (nextScale != this.scale) {
+          this.scale = nextScale;
+          this.$message(`缩放比例：${this.scale}`);
+        }
+        // const nextScale = parseFloat(
+        //   Math.max(0.2, this.scale - e.deltaY / 500).toFixed(2)
+        // );
+        // this.scale = nextScale;
       }
       this.$nextTick(() => {
         this.handleScroll();
@@ -213,7 +224,7 @@ body * {
 }
 .wrapper.on-ctrl {
   cursor: grab;
-  .canvas{
+  .canvas {
     pointer-events: none;
   }
 }
