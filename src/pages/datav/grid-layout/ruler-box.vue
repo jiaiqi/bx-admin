@@ -5,7 +5,7 @@
   <div
     class="wrapper"
     id="wrapper"
-    :class="{ 'on-ctrl': onCtrlKeyDown === true }"
+    :class="{ 'on-ctrl': isSpacePressed === true }"
     v-else
     :style="setCanvasLeft"
   >
@@ -42,7 +42,7 @@
 <script>
 import Vue from "vue";
 import SketchRule from "vue-sketch-ruler";
-import { useCtrlDown } from "./ruler-box-hook";
+import { useSpaceDrag } from "./ruler-box-hook";
 export default Vue.extend({
   props: {
     disabled: {
@@ -179,8 +179,8 @@ export default Vue.extend({
     },
   },
   setup() {
-    const { cursorValue, onCtrlKeyDown } = useCtrlDown();
-    return { cursorValue, onCtrlKeyDown };
+    const { cursorValue, isSpacePressed } = useSpaceDrag();
+    return { cursorValue, isSpacePressed };
   },
   mounted() {
     if (this.rectWidth > 1000) {
