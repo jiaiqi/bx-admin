@@ -3,51 +3,113 @@
     <el-tabs type="border-card" v-loading="pageLoading" v-model="activeTab">
       <el-tab-pane label="页面" name="页面">
         <div class="tab-content">
-          <simple-update name="list-update" :defaultValues="pageConfg" :navAfterSubmit="false" :service="pageService"
-                         :pk="pageId" pkCol="id" @executor-complete="onPageUpdate" @form-loaded="pageLoading = false"
-                         v-if="pageId">
+          <simple-update
+            name="list-update"
+            :defaultValues="pageConfg"
+            :navAfterSubmit="false"
+            :service="pageService"
+            :pk="pageId"
+            pkCol="id"
+            @executor-complete="onPageUpdate"
+            @form-loaded="pageLoading = false"
+            v-if="pageId"
+          >
           </simple-update>
-          <simple-add :service="pageService" :navAfterSubmit="false" @executor-complete="onPageUpdate($event, 'add')"
-                      @form-loaded="pageLoading = false" @submitted2mem="" v-else>
+          <simple-add
+            :service="pageService"
+            :navAfterSubmit="false"
+            @executor-complete="onPageUpdate($event, 'add')"
+            @form-loaded="pageLoading = false"
+            @submitted2mem=""
+            v-else
+          >
           </simple-add>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="组件" name="组件" v-if="componentId || (!componentId && pageId && currentItem)"
-                   v-loading="componentLoading">
-        <simple-update ref="compFormUpdate" name="list-update" :service="componentService" :navAfterSubmit="false"
-                       :pk="componentId" pkCol="id" @action-complete="onComponentUpdate" @form-loaded="
+      <el-tab-pane
+        label="组件"
+        name="组件"
+        v-if="componentId || (!componentId && pageId && currentItem)"
+        v-loading="componentLoading"
+      >
+        <simple-update
+          ref="compFormUpdate"
+          name="list-update"
+          :service="componentService"
+          :navAfterSubmit="false"
+          :pk="componentId"
+          pkCol="id"
+          @action-complete="onComponentUpdate"
+          @form-loaded="
             (componentLoading = false),
-            (componentLoaded = true),
-            setCompServiceCfg()
-            " v-if="componentId">
+              (componentLoaded = true),
+              setCompServiceCfg()
+          "
+          v-if="componentId"
+        >
         </simple-update>
-        <simple-add ref="compForm" :pageName="'list-duplicate'" :service="componentService"
-                    :defaultValues="addCompDefaultValues" @executor-complete="onComponentUpdate($event, 'add')"
-                    @form-loaded="componentLoading = false" :navAfterSubmit="false" @submitted2mem=""
-                    v-else-if="showAddComponent">
+        <simple-add
+          ref="compForm"
+          :pageName="'list-duplicate'"
+          :service="componentService"
+          :defaultValues="addCompDefaultValues"
+          @executor-complete="onComponentUpdate($event, 'add')"
+          @form-loaded="componentLoading = false"
+          :navAfterSubmit="false"
+          @submitted2mem=""
+          v-else-if="showAddComponent"
+        >
         </simple-add>
       </el-tab-pane>
-      <el-tab-pane label="组件配置" name="组件配置"
-                   v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk">
-        <simple-update name="list-update" :service="compServiceCfg.service" :navAfterSubmit="false"
-                       :pk="compServiceCfg.pk" :pkCol="compServiceCfg.pkCol" @action-complete="onComponentUpdate">
+      <el-tab-pane
+        label="组件配置"
+        name="组件配置"
+        v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk"
+      >
+        <simple-update
+          name="list-update"
+          :service="compServiceCfg.service"
+          :navAfterSubmit="false"
+          :pk="compServiceCfg.pk"
+          :pkCol="compServiceCfg.pkCol"
+          @action-complete="onComponentUpdate"
+        >
         </simple-update>
       </el-tab-pane>
       <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px">
-          <el-switch v-model="screentype" active-text="移动端" inactive-text="PC端" active-value="mobile"
-                     inactive-value="PC">
+          <el-switch
+            v-model="screentype"
+            active-text="移动端"
+            inactive-text="PC端"
+            active-value="mobile"
+            inactive-value="PC"
+          >
           </el-switch>
         </div>
-        <div style="
+        <div
+          style="
             padding: 20px;
             height: calc(100% - 80px);
             display: flex;
             justify-content: center;
             align-items: flex-end;
-          ">
-          <el-button size="mini" type="primary" style="margin-right: 10px" @click="clickSave">保存</el-button>
-          <el-button size="mini" type="primary" style="margin: 10px 10px 0 0" @click="toPreview">预览</el-button>
+          "
+        >
+          <el-button
+            size="mini"
+            type="primary"
+            style="margin-right: 10px"
+            @click="clickSave"
+            >保存</el-button
+          >
+          <el-button
+            size="mini"
+            type="primary"
+            style="margin: 10px 10px 0 0"
+            @click="toPreview"
+            >预览</el-button
+          >
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -123,10 +185,10 @@ export default {
           let newItem = oldLayout.find((e) => e.id === item.id);
           if (newItem) {
             return (
-                newItem.w !== item.w ||
-                newItem.h !== item.h ||
-                newItem.x !== item.x ||
-                newItem.y !== item.y
+              newItem.w !== item.w ||
+              newItem.h !== item.h ||
+              newItem.x !== item.x ||
+              newItem.y !== item.y
             );
           }
         }
@@ -160,10 +222,10 @@ export default {
     },
     showAddComponent() {
       return (
-          this.currentItem?.data &&
-          this.currentItem.i &&
-          !this.componentId &&
-          this.pageId
+        this.currentItem?.data &&
+        this.currentItem.i &&
+        !this.componentId &&
+        this.pageId
       );
     },
     addCompDefaultValues() {
@@ -296,9 +358,9 @@ export default {
         // 组件创建成功后创建对应布局
         const item = this.currentItem;
         let layout_name =
-            componentData.com_name || componentData.com_label || "组件";
+          componentData.com_name || componentData.com_label || "组件";
         layout_name += `_${item?.data?.com_type_name}_${dayjs().format(
-            "YYYY-MM-DD HH:mm:ss"
+          "YYYY-MM-DD HH:mm:ss"
         )}`;
         const addObj = {
           serviceName: "srvpage_cfg_layout_add",
@@ -312,9 +374,9 @@ export default {
               col_span: item.h,
               row_span: item.w,
               layout_name:
-                  item?.data?.com_type_name +
-                  "_" +
-                  dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                item?.data?.com_type_name +
+                "_" +
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
             },
           ],
         };
@@ -385,7 +447,7 @@ export default {
             {
               layout_party: "页面",
               layout_name: `${pageName}_${dayjs().format(
-                  "YYYY-MM-DD HH:mm:ss"
+                "YYYY-MM-DD HH:mm:ss"
               )}`,
             },
           ],
@@ -397,7 +459,8 @@ export default {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutInfo.layout_no,
-            layout_name: `${item?.data?.com_type_name}_${i + 1
+            layout_name: `${item?.data?.com_type_name}_${
+              i + 1
             }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
             seq: item.timestamp || i + 1, //改用时间戳做关联 相对更可靠
             pos_x: item.x,
@@ -469,7 +532,7 @@ export default {
             {
               serviceName: o.serviceName,
               srvApp: "config",
-              condition: [{colName: "id", ruleType: "in", value: id}],
+              condition: [{ colName: "id", ruleType: "in", value: id }],
             },
           ];
           break;
@@ -496,7 +559,7 @@ export default {
       this.$emit("preview");
     },
     async onPageUpdate(event, type) {
-      console.log('onPageUpdate', event, type);
+      console.log("onPageUpdate", event, type);
       if (event?.data?.state === "SUCCESS") {
         const response = event?.data?.response?.[0]?.response?.effect_data;
         if (Array.isArray(response) && response.length > 0) {
@@ -517,19 +580,19 @@ export default {
               // 保存页面属性后删除在页面上移除的组件
               let oldLayout = JSON.parse(this.strLayout);
               let deleteIds = oldLayout
-                  .filter(
-                      (item) =>
-                          item?.id && !this.layout.find((e) => e.id === item.id)
-                  )
-                  .map((item) => item.id);
+                .filter(
+                  (item) =>
+                    item?.id && !this.layout.find((e) => e.id === item.id)
+                )
+                .map((item) => item.id);
               if (deleteIds?.length) {
                 const deleteObj = {
                   serviceName: "srvpage_cfg_page_component_delete",
                 };
                 await this.httpOperate(
-                    "delete",
-                    deleteObj,
-                    deleteIds.toString()
+                  "delete",
+                  deleteObj,
+                  deleteIds.toString()
                 );
               }
               // 更新页面属性，同时更新宽高以及定位变化的组件
@@ -538,11 +601,11 @@ export default {
                   let newItem = oldLayout.find((e) => e.id === item.id);
                   if (newItem) {
                     return (
-                        newItem.w !== item.w ||
-                        newItem.h !== item.h ||
-                        newItem.x !== item.x ||
-                        newItem.y !== item.y ||
-                        newItem.z !== item.z
+                      newItem.w !== item.w ||
+                      newItem.h !== item.h ||
+                      newItem.x !== item.x ||
+                      newItem.y !== item.y ||
+                      newItem.z !== item.z
                     );
                   }
                 }
@@ -574,7 +637,7 @@ export default {
             }
             //更新页面属性，同时创建新增的组件
             const list = this.layout.filter(
-                (item) => item.isLeftBarItem === true
+              (item) => item.isLeftBarItem === true
             );
             if (list?.length) {
               await this.insertComponents(resData, list);
@@ -585,8 +648,7 @@ export default {
       this.$emit("refresh", "page", event);
     },
     // 更新组件的宽高以及定位
-    async updateComponent(event) {
-    },
+    async updateComponent(event) {},
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
@@ -597,39 +659,56 @@ export default {
           return true;
         }
         let addCompArr = [];
+        // 每次新增加组件类型之后要将组件表的自动生成编号字段加到componentNoKey中，创建组件的时候不能提交这个字段
+        const componentNoKey = [
+          "current_info_no",
+          "chart_no",
+          "swiper_no",
+          "list_no",
+          "grid_no",
+          "cardg_no",
+          "map_no",
+          "tabs_no",
+          "widget_no",
+          "noticebar_no",
+          "tabs_no",
+          "form_no",
+          "current_info_no",
+          "userlist_no",
+          "calendar_no",
+
+        ];
+        const ignoreField = [
+          ...componentNoKey,
+          "notice_bar_json",
+          "tabs_json",
+          "form_json",
+          "map_json",
+          "interface_json",
+          "cols_map_json",
+          "swiper_json",
+          "widget_json",
+          "srv_req_json",
+          "list_json",
+          "card_group_json",
+          "sys_option",
+          "chart_json",
+          "com_type",
+          "comp_label",
+          "create_time",
+          "com_no",
+          "create_user",
+          "create_user_disp",
+          "del_flag",
+          "id",
+          "modify_time",
+          "modify_user",
+          "modify_user_disp",
+          "row_json",
+          "page_no",
+        ];
         layout.forEach((item, i) => {
-          const ignoreField = [
-            "notice_bar_json",
-            "tabs_json",
-            "form_json",
-            "map_json",
-            "interface_json",
-            "cols_map_json",
-            "swiper_json",
-            "widget_json",
-            "srv_req_json",
-            "list_json",
-            "card_group_json",
-            "sys_option",
-            "chart_json",
-            "com_type",
-            "comp_label",
-            "create_time",
-            "com_no",
-            "create_user",
-            "create_user_disp",
-            "del_flag",
-            "id",
-            "modify_time",
-            "modify_user",
-            "modify_user_disp",
-            "row_json",
-            "page_no",
-            'chart_no',
-            'widget_no',
-            'form_no'
-          ];
-          const data = {...item.data};
+          const data = { ...item.data };
           ignoreField.forEach((key) => {
             if (data[key]) {
               delete data[key];
@@ -676,11 +755,13 @@ export default {
               break;
             case "grid": //
               compObj.serviceName = "srvpage_cfg_com_grid_update";
-              compObj.condition = [{
-                colName: 'grid_no',
-                ruleType: 'eq',
-                value: data?.grid_no
-              }]
+              compObj.condition = [
+                {
+                  colName: "grid_no",
+                  ruleType: "eq",
+                  value: data?.grid_no,
+                },
+              ];
               break;
           }
           addCompArr.push(compObj);
@@ -692,12 +773,15 @@ export default {
           srvApp: "config",
           data: [],
         };
-        let componentsLength = 0
-        if (pageData.component_json && typeof pageData.component_json === 'string') {
-          componentsLength = JSON.parse(pageData.component_json)?.length
+        let componentsLength = 0;
+        if (
+          pageData.component_json &&
+          typeof pageData.component_json === "string"
+        ) {
+          componentsLength = JSON.parse(pageData.component_json)?.length;
         }
         if (isNaN(componentsLength)) {
-          componentsLength = 0
+          componentsLength = 0;
         }
         layout.forEach((item, index) => {
           const comp = compRes[index]?.response?.effect_data?.[0];
@@ -741,9 +825,9 @@ export default {
             case "tabs":
               data.tabs_no = comp?.tabs_no;
               break;
-            case 'grid':
-              data.grid_no = comp?.grid_no
-              break
+            case "grid":
+              data.grid_no = comp?.grid_no;
+              break;
           }
           addObj.data.push(data);
         });
