@@ -4,7 +4,7 @@
         v-if="('static' && listOptions.indexOf('分页') !== -1) || (listOptions.indexOf('分页') == -1 && index < totalMaximum)"
         v-for="(cellItemData,index) in cellDataRun" >
   
-        <div v-for="(cellLayoutJson,i) in cellsLayout" :key="i" class="bx-card-cell"
+        <div v-for="(cellLayoutJson,i) in cellsLayout" :key="index+ i" class="bx-card-cell"
           :class="{checked:pageItem&&pageItem._refedCol && currentRadio===cellItemData[pageItem._refedCol]}"
           :style="[cellLayoutJson.style_json ? buildColStyleJson(cellLayoutJson.style_json,null,cellLayoutJson) : buildColStyleJson(null,null,cellLayoutJson)]"
           v-on:click="onClickCell(cellItemData,cellLayoutJson)">
