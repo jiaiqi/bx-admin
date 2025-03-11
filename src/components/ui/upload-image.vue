@@ -27,13 +27,15 @@
         width="80%"
         height="70%"
         style="margin: 0 auto"
+        class="preview-img"
       /><br />
       <el-button type="primary" @click="imageDialog = false">确 定</el-button>
       <el-button type="primary" @click="dowmlaodUrl()">下载</el-button>
     </el-dialog>
 
     <div
-      style="display: flex; flex-wrap: wrap"
+      style="display: flex; flex-wrap: wrap;"
+      class="img-list"
       v-if="isEdit !== false"
       v-loading="loading"
     >
@@ -876,5 +878,14 @@ export default {
   .imgs-item{
     max-width: 200px;
   }
+}
+.img-list .el-upload-list--picture-card .el-upload-list__item,.preview-img {
+   background-image: 
+    linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%)!important;
+  background-size: 20px 20px!important;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px!important;
 }
 </style>
