@@ -1,7 +1,8 @@
 <template>
-  <div v-if="disabled == true" style="width: 100%; height: 100%">
+  <fragment v-if="disabled == true"
+    >
     <slot></slot>
-  </div>
+  </fragment>
   <div
     class="wrapper"
     id="wrapper"

@@ -16,7 +16,13 @@
         </div>
       </div>
     </div>
-
+    <grid-list
+      class=""
+      v-if="'多行列宫格' === listType || '多行列文本' === listType"
+      :config="listConfig"
+      :list="tableData"
+    >
+    </grid-list>
     <!-- 卡片列表 -->
     <div class="bx-card-list" v-if="listType == '卡片'">
       <cardGroupCell
@@ -78,11 +84,12 @@
 import { $http } from "@/common/http";
 import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/card-group-cell.vue";
 import { formatStyleData } from "../../../common/index";
-
+import GridList from "./grid-list.vue";
 export default {
   name: "data-view-list",
   components: {
     cardGroupCell,
+    GridList,
   },
   props: {
     pageItem: {

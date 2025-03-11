@@ -188,7 +188,7 @@
               :isResizable="inEditor"
               :isDraggable="inEditor"
               :isActive="item.i && item.i === curDesign && inEditor"
-              :z="item.z"
+              :z="item.z||1"
               :x="vw2px(item.x)"
               :y="vh2px(item.y)"
               :w="vw2px(item.w)"
@@ -210,6 +210,7 @@
                 :page-no="pgNo"
                 :layout="item"
                 :pageConfig="pageConfg"
+                :style="{'cursor': inEditor ? 'move' : ''}"
               ></page-item>
               <div class="tool-box">
                 <!-- <el-tooltip
@@ -612,10 +613,15 @@ export default {
         delete json.height;
       }
       if (this.pageInfo?.page_options?.includes("不缩放")) {
-        json = {
-          width: this.pageInfo?.page_style_json_data?.width,
-          height: this.pageInfo?.page_style_json_data?.height,
-        };
+        if (this.pageInfo?.page_style_json_data) {
+          json = {
+            ...this.pageInfo?.page_style_json_data,
+          };
+        }
+        // json = {
+        //   width: this.pageInfo?.page_style_json_data?.width,
+        //   height: this.pageInfo?.page_style_json_data?.height,
+        // };
       }
       json = JSON.parse(rpx2px(JSON.stringify(json)));
       json = formatStyleData(json);
@@ -2249,6 +2255,7 @@ export default {
         }
       }
     }
+   
   }
 
   .cushome-content {

@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div class="property-pane">
     <el-tabs type="border-card" v-loading="pageLoading" v-model="activeTab">
       <el-tab-pane label="页面" name="页面">
         <div class="tab-content">
@@ -676,7 +676,7 @@ export default {
           "current_info_no",
           "userlist_no",
           "calendar_no",
-
+          "card_layout_no"
         ];
         const ignoreField = [
           ...componentNoKey,
@@ -873,10 +873,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.property-pane {
+  ::v-deep .form-view-wrapper {
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+  }
+}
 .el-tabs {
   width: 100%;
   height: calc(100vh - 2px);
-  padding-bottom: 50px;
+  // padding-bottom: 50px;
   overflow: hidden;
   border: none;
 
