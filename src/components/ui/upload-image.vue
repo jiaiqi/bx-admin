@@ -873,5 +873,8 @@ export default {
 
 .form-imgs {
   padding: 0;
+  .imgs-item{
+    max-width: 200px;
+  }
 }
 </style>

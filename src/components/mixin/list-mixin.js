@@ -437,7 +437,7 @@ export default {
       }
 
       // tbl_options中有“EXCEl模式”则显示excel按钮
-      if(this.listV2Data?.tbl_options?.includes('EXCEl模式')){
+      if (this.listV2Data?.tbl_options?.includes('EXCEl模式')) {
         show = true;
       }
 
@@ -644,20 +644,24 @@ export default {
     },
     sortedRowButtons() {
       let sorted = this.rowButton.slice();
-      if (Array.isArray(this.gridData) && this.gridData.length > 0) {
-        this.gridData.forEach((item, index) => {
-          if (item?._buttons?.length === sorted.length) {
-            sorted = sorted.map((btn, bIndex) => {
-              if (btn["_rowDisp"]) {
-                btn["_rowDisp"][index] = item._buttons[bIndex];
-              } else {
-                btn["_rowDisp"] = { [index]: item._buttons[bIndex] };
-              }
-              return btn;
-            });
-          }
-        });
-      }
+      // if (Array.isArray(this.gridData) && this.gridData.length > 0) {
+      //   this.gridData.forEach((item, index) => {
+      //     if (item?._buttons?.length === sorted.length) {
+      //       sorted = sorted.map((btn, bIndex) => {
+      //         if (btn["_rowDisp"]) {
+      //           btn["_rowDisp"][index] = item._buttons[bIndex];
+      //         } else {
+      //           btn["_rowDisp"] = { [index]: item._buttons[bIndex] };
+      //         }
+      //         return btn;
+      //       });
+      //     }
+      //   });
+      // }
+      sorted = sorted.map((item,index)=>{
+        item._btn_index = index;
+        return item
+      })
       sorted.sort((a, b) => a.seq - b.seq);
 
       if (Array.isArray(this.gridData) && this.gridData.length > 0) {
@@ -951,18 +955,24 @@ export default {
       }
       if (type && type == "isShow" && isBtnExpShow) {
         let optionsList = operateList.filter((item) => item.isValid);
-        if (
-          btn.permission &&
-          (optionsList.length !== 0 ||
-            (btn.operate_service &&
-              Object.prototype.toString.call(btn.operate_service) ==
-              "[object String]") ||
-            !btn.operate_service)
-        ) {
-          isBtnOptShow = true;
-        } else {
+        if(btn.permission){
+          if(!btn.operate_service){
+            isBtnOptShow = true;
+          }else if(typeof btn.operate_service === 'string' && btn.operate_service){
+            isBtnOptShow = true;
+          }else if(Array.isArray(optionsList) && optionsList.length){
+            isBtnOptShow = true;
+          }
+        }else{
           isBtnOptShow = false;
         }
+        // if (
+        //   btn.permission && (optionsList.length !== 0 || (btn.operate_service && typeof btn.operate_service === 'string') || !btn.operate_service)
+        // ) {
+        //   isBtnOptShow = true;
+        // } else {
+        //   isBtnOptShow = false;
+        // }
         // console.log('getButtonOptSrv isshow',btn.button_name ,isBtnExpShow && isBtnOptShow,isBtnExpShow,isBtnOptShow)
         return isBtnExpShow && isBtnOptShow;
       } else if (type && type == "active") {
@@ -1261,7 +1271,7 @@ export default {
       // }else{
       //   console.log(key_col,row[key_col],ops,str)
       // }
-      if(typeof ops ==='string' && ops.indexOf('$bxFileAddress$')!=-1){
+      if (typeof ops === 'string' && ops.indexOf('$bxFileAddress$') != -1) {
         ops = self.recoverFileAddress(ops)
       }
       return ops;
@@ -1343,13 +1353,18 @@ export default {
       } catch (err) { }
 
       // 使用后端返回的参数控制按钮显示隐藏
-      if (
-        item._rowDisp &&
-        typeof rowIndex === "number" &&
-        [0, 1].includes(item._rowDisp[rowIndex])
-      ) {
-        result = item._rowDisp[rowIndex];
+      if(typeof item?._btn_index==='number'&&Array.isArray(data?._buttons)){
+        if(data._buttons[item._btn_index] === 1){
+          result = true
+        }
       }
+      // if (
+      //   item._rowDisp &&
+      //   typeof rowIndex === "number" &&
+      //   [0, 1].includes(item._rowDisp[rowIndex])
+      // ) {
+      //   result = item._rowDisp[rowIndex];
+      // }
 
       if (
         item.button_type === "batchupdate" &&
@@ -1368,7 +1383,11 @@ export default {
       let isShow = [];
       if (btns.length > 0) {
         for (let item of btns) {
-          if (item["_rowDisp"]) {
+          if(typeof item._btn_index==='number'&&Array.isArray(data._buttons)){
+            if(data._buttons[item._btn_index] === 1){
+              isShow.push(item);
+            }
+          }else if (item["_rowDisp"]) {
             if (item["_rowDisp"][index] === 1) {
               isShow.push(item);
             }
