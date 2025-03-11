@@ -1,7 +1,11 @@
 <template>
   <div>
     <div class="statistic-box" v-if="stasticData.length">
-      <div class="statistic-item" v-for="item in stasticData">
+      <div
+        class="statistic-item"
+        v-for="(item, index) in stasticData"
+        :key="index"
+      >
         <div class="label">{{ item.label }}</div>
         <div class="value">
           {{ item.value || "0" }}
@@ -25,6 +29,18 @@
     </grid-list>
     <!-- 卡片列表 -->
     <div class="bx-card-list" v-if="listType == '卡片'">
+      <el-carousel
+        trigger="click"
+        height="150px"
+        v-if="setListSwiperImg && setListSwiperImg.length"
+      >
+        <el-carousel-item
+          v-for="(item, index) in setListSwiperImg"
+          :key="index"
+        >
+          <img :src="item._img_url" alt="" style="width: 100%; height: 100%" />
+        </el-carousel-item>
+      </el-carousel>
       <cardGroupCell
         :pageParamsModel="pageParamsModel"
         :queryOptions="queryOptions"
@@ -85,6 +101,7 @@ import { $http } from "@/common/http";
 import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/card-group-cell.vue";
 import { formatStyleData } from "../../../common/index";
 import GridList from "./grid-list.vue";
+
 export default {
   name: "data-view-list",
   components: {
@@ -206,6 +223,20 @@ export default {
     },
     setStyle() {
       return formatStyleData(this.pageItem?.style_json || {});
+    },
+    setListSwiperImg() {
+      if (
+        Array.isArray(this.tableData) &&
+        this.listOptions?.includes("顶部图片") &&
+        this.listConfig?.swiper_col
+      ) {
+        return this.tableData
+          .filter((item) => !!item[this.listConfig?.swiper_col])
+          .map((item) => {
+            item._img_url = item[this.listConfig?.swiper_col];
+            return item;
+          });
+      }
     },
   },
   methods: {
