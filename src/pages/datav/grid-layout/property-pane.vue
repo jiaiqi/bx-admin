@@ -343,6 +343,11 @@ export default {
             obj.service = "srvpage_cfg_com_form_update";
             obj.pkCol = "form_no";
             break;
+          case "navBar": //导航栏
+            obj.service = "srvpage_cfg_page_nav_bar_update";
+            obj.col = "com_case_no";
+            obj.pkCol = "nav_no";
+            break;
         }
         obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol];
         if (!obj.pk) {
@@ -676,7 +681,8 @@ export default {
           "current_info_no",
           "userlist_no",
           "calendar_no",
-          "card_layout_no"
+          "card_layout_no",
+          "nav_no",
         ];
         const ignoreField = [
           ...componentNoKey,
@@ -706,7 +712,7 @@ export default {
           "modify_user_disp",
           "row_json",
           "page_no",
-          "image"
+          "image",
         ];
         layout.forEach((item, i) => {
           const data = { ...item.data };
@@ -763,6 +769,9 @@ export default {
                   value: data?.grid_no,
                 },
               ];
+              break;
+            case "navBar":
+              compObj.serviceName = "srvpage_cfg_page_nav_bar_add";
               break;
           }
           addCompArr.push(compObj);
@@ -828,6 +837,9 @@ export default {
               break;
             case "grid":
               data.grid_no = comp?.grid_no;
+              break;
+            case "navBar":
+              data.com_case_no = comp?.nav_no;
               break;
           }
           addObj.data.push(data);

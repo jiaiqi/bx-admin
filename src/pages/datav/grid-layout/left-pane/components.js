@@ -179,6 +179,13 @@ export default {
       service: "srvpage_cfg_com_form_select",
       nameCol:'form_name',
     },
+    {
+      value: "navBar",
+      label: "导航菜单",
+      icon: "NavBar",
+      service: "srvpage_cfg_page_nav_bar_select",
+      nameCol:'nav_name',
+    },
     // {
     //   value: "detail",
     //   label: "详情",

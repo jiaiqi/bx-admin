@@ -35,14 +35,14 @@
         :style="[setSwiperStyle]"
         v-if="setListSwiperImg && setListSwiperImg.length"
         class="swiper-container"
-        :autoplay="false"
+        :autoplay="true"
       >
         <el-carousel-item
           v-for="(item, index) in setListSwiperImg"
           :key="index"
         >
-          <img :src="item._img_url" alt="" style="width: 100%; height: 100%" />
-          <div class="swiper-title" v-if="listConfig&&listConfig.swiper_title_col&&item[listConfig.swiper_title_col]">{{getImagePath(item[listConfig.swiper_title_col])}}</div>
+          <img :src="getImagePath(item._img_url)" alt="" style="width: 100%; height: 100%" />
+          <div class="swiper-title" v-if="listConfig&&listConfig.swiper_title_col&&item[listConfig.swiper_title_col]">{{item[listConfig.swiper_title_col]}}</div>
         </el-carousel-item>
       </el-carousel>
       <cardGroupCell

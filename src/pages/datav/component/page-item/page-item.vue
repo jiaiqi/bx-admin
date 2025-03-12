@@ -19,11 +19,22 @@
         <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
       </div>
     </div>
+    <nav-menu
+      class="nav-menu"
+      v-if="
+        pageItem.com_type === 'navBar' &&
+        pageItem.com_case_json &&
+        pageItem.com_case_json.label
+      "
+      :config="pageItem.com_case_json"
+    >
+      <!-- {{ pageItem.com_case_json.label }} -->
+    </nav-menu>
     <iframe
       :src="pageItem.ext_page_json.ext_page_url"
       frameborder="0"
-      style="width: 100%;height: 100%; border: none;"
-      v-if="
+      style="width: 100%; height: 100%; border: none"
+      v-else-if="
         pageItem.com_type === 'extPage' &&
         pageItem.ext_page_json &&
         pageItem.ext_page_json.ext_page_url
@@ -150,6 +161,7 @@ import cardGroup from "./card-group/card-group.vue";
 import tabList from "./list/tabs-list.vue";
 import gridCard from "./grid-card.vue";
 import formAdd from "./form/add.vue";
+import NavMenu from './nav-menu/nav-menu.vue'
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 
@@ -171,6 +183,7 @@ export default {
     tabList,
     gridCard,
     formAdd,
+    NavMenu
   },
   props: {
     pageItem: {
@@ -202,7 +215,22 @@ export default {
       } else if (this.pageConfig?.dv_com_style_json_data) {
         style = this.pageConfig?.dv_com_style_json_data;
       }
+      if(this.pageItem.com_type === 'navBar'){
+        if(style.padding){
+          delete style.padding
+        }
+         if(style.border_radius){
+          delete style.border_radius
+        }
+      }
       return formatStyleData(style);
+    },
+    mixNavStyle() {
+      let style = {};
+      if (this.pageItem?.com_case_json?.nav_style_json) {
+        style = formatStyleData(this.pageItem.com_case_json.nav_style_json);
+      }
+      return style;
     },
   },
   mounted() {
@@ -293,5 +321,6 @@ export default {
       // padding: inherit;
     }
   }
+
 }
 </style>

@@ -3,20 +3,36 @@
     <div class="left">
       <div class="component-list">
         <div class="active-bg" :style="setStyle"></div>
-        <div class="component-item" :class="{ active: activeIndex === index }" v-for="(item, index) in list"
-          @click="tapComponent(item, index)">
+        <div
+          class="component-item"
+          :class="{ active: activeIndex === index }"
+          v-for="(item, index) in list"
+          :key="index"
+          @click="tapComponent(item, index)"
+        >
           <component size="20" :is="item.icon"></component>
           <span class="label">{{ item.label }}</span>
         </div>
       </div>
     </div>
-    <div class="sub-type" v-if="current && current.children && current.children.length">
-      <div class="sub-type-item" :class="{ active: activeSubIndex === 0 }"
-        @click="(activeSubIndex = 0), (activeSubIndex = 0), getList(current)">
+    <div
+      class="sub-type"
+      v-if="current && current.children && current.children.length"
+    >
+      <div
+        class="sub-type-item"
+        :class="{ active: activeSubIndex === 0 }"
+        @click="(activeSubIndex = 0), (activeSubIndex = 0), getList(current)"
+      >
         所有
       </div>
-      <div class="sub-type-item" v-for="(item, index) in current.children" @click="tapSubType(current, item, index)"
-        :class="{ active: activeSubIndex && activeSubIndex - 1 === index }">
+      <div
+        class="sub-type-item"
+        v-for="(item, index) in current.children"
+        :key="index"
+        @click="tapSubType(current, item, index)"
+        :class="{ active: activeSubIndex && activeSubIndex - 1 === index }"
+      >
         {{ item.label }}
       </div>
     </div>
@@ -37,6 +53,7 @@ import {
   Tag,
   Text,
   Video,
+  NavBar
 } from "../../icons";
 export default {
   components: {
@@ -51,6 +68,7 @@ export default {
     Tag,
     IconText: Text,
     Video,
+    NavBar
   },
   computed: {
     setStyle() {
@@ -61,7 +79,7 @@ export default {
     },
   },
   created() {
-    this.getList(this.current)
+    this.getList(this.current);
   },
   data() {
     return {
@@ -86,17 +104,19 @@ export default {
     },
     async getList(item, subType) {
       if (!item) {
-        return
+        return;
       }
       const url = `${window.backendIpAddr}/config/select/${item.service}`;
       const req = {
         serviceName: item.service,
         colNames: ["*"],
-        condition: [{
-          colName:'sys_option',
-          ruleType:'like',
-          value:'模板'
-        }],
+        condition: [
+          {
+            colName: "sys_option",
+            ruleType: "like",
+            value: "模板",
+          },
+        ],
         page: { pageNo: 1, rownumber: 10 },
         use_type: "list",
         query_source: "list_page",
@@ -111,17 +131,20 @@ export default {
           },
         ];
       }
-      const res = await this.$http.post(url, req)
-      if (res?.data?.state === 'SUCCESS') {
-        this.$emit('set-list', res.data.data.map(ele => {
-          return {
-            ...ele,
-            com_type: item.value,
-            comp_label: ele[item.nameCol]
-          }
-        }))
+      const res = await this.$http.post(url, req);
+      if (res?.data?.state === "SUCCESS") {
+        this.$emit(
+          "set-list",
+          res.data.data.map((ele) => {
+            return {
+              ...ele,
+              com_type: item.value,
+              comp_label: ele[item.nameCol],
+            };
+          })
+        );
       } else {
-        this.$emit('set-list', [])
+        this.$emit("set-list", []);
       }
     },
   },
@@ -180,7 +203,6 @@ export default {
   }
 
   &.active {
-
     // background-color: #e6f7ff;
     &:hover {
       background-color: unset;

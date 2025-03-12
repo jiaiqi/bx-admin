@@ -1,7 +1,15 @@
 import { getImagePath } from "./http";
 
 // 处理后端返回的样式数据
-const formatStyleData = (json) => {
+const formatStyleData = (val) => {
+  let json = val;
+  if(typeof json==='string'){
+    try {
+      json = JSON.parse(json);
+    } catch (error) {
+      console.error("error：" + str + "!" + e);
+    }
+  }
   let str = JSON.stringify(json);
   if (!isJSON(str)) return {};
   let obj = {};

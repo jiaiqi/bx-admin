@@ -21,3 +21,5 @@ export { default as Tag } from "./Tag.vue";
 export { default as Form } from "./Form.vue";
 
 export { default as Map } from "./Map.vue";
+
+export { default as NavBar } from "./NavBar.vue";
