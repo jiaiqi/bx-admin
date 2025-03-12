@@ -120,7 +120,7 @@
           style="margin-left: 5px; height: 38px"
           size="mini"
           v-if="
-            allowEditAndSelect && (formType === 'update' || field.getSrvVal())
+            allowEditAndSelect && (field.getSrvVal())
           "
           @click="activePopup = 'update'"
         >
@@ -132,7 +132,7 @@
           v-else-if="
             !setDisabled &&
             allowEditAndSelect &&
-            (formType === 'add' || !field.getSrvVal())
+            (!field.getSrvVal())
           "
           @click="activePopup = 'add'"
         >

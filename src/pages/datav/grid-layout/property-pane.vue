@@ -706,6 +706,7 @@ export default {
           "modify_user_disp",
           "row_json",
           "page_no",
+          "image"
         ];
         layout.forEach((item, i) => {
           const data = { ...item.data };
@@ -812,7 +813,7 @@ export default {
               break;
             case "swiper":
               data.swiper_no = comp?.swiper_no;
-              data.image = null;
+              // data.image = null;
               break;
             case "map":
               data.map_no = comp?.map_no;

@@ -19,9 +19,19 @@
         <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
       </div>
     </div>
+    <iframe
+      :src="pageItem.ext_page_json.ext_page_url"
+      frameborder="0"
+      style="width: 100%;height: 100%; border: none;"
+      v-if="
+        pageItem.com_type === 'extPage' &&
+        pageItem.ext_page_json &&
+        pageItem.ext_page_json.ext_page_url
+      "
+    ></iframe>
     <video-card
       :class="{ mobile: screenType === 'mobile' }"
-      v-if="pageItem.com_type === 'videoCard'"
+      v-else-if="pageItem.com_type === 'videoCard'"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
     ></video-card>

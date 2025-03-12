@@ -227,6 +227,7 @@ export default {
     setListSwiperImg() {
       if (
         Array.isArray(this.tableData) &&
+        typeof this.listOptions === "string" &&
         this.listOptions?.includes("顶部图片") &&
         this.listConfig?.swiper_col
       ) {
