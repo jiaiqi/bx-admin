@@ -31,14 +31,18 @@
     <div class="bx-card-list" v-if="listType == '卡片'">
       <el-carousel
         trigger="click"
-        height="150px"
+        :height="setSwiperHeight"
+        :style="[setSwiperStyle]"
         v-if="setListSwiperImg && setListSwiperImg.length"
+        class="swiper-container"
+        :autoplay="false"
       >
         <el-carousel-item
           v-for="(item, index) in setListSwiperImg"
           :key="index"
         >
           <img :src="item._img_url" alt="" style="width: 100%; height: 100%" />
+          <div class="swiper-title" v-if="listConfig&&listConfig.swiper_title_col&&item[listConfig.swiper_title_col]">{{item[listConfig.swiper_title_col]}}</div>
         </el-carousel-item>
       </el-carousel>
       <cardGroupCell
@@ -66,6 +70,7 @@
         <div
           class="table-column"
           v-for="col in tableColumn"
+          :key="col.columns"
           :style="{
             color: setStyle && setStyle.color,
             'font-size': setStyle && setStyle['font-size'],
@@ -76,13 +81,15 @@
       </div>
       <div
         class="table-row"
-        v-for="item in tableData"
+        v-for="(item, index) in tableData"
+        :key="index"
         :class="{ stripe: striped }"
       >
         <div
           class="table-column"
           v-for="col in tableColumn"
           :title="formatValue(item, col)"
+          :key="col.columns"
           :style="{
             color: setStyle && setStyle.color,
             'font-size': setStyle && setStyle['font-size'],
@@ -223,6 +230,14 @@ export default {
     },
     setStyle() {
       return formatStyleData(this.pageItem?.style_json || {});
+    },
+    setSwiperStyle() {
+      if (this.listConfig?.swiper_style_json) {
+        return formatStyleData(this.listConfig?.swiper_style_json);
+      }
+    },
+    setSwiperHeight(){
+      return this.setSwiperStyle?.height?.includes('px')?this.setSwiperStyle.height:'150px'
     },
     setListSwiperImg() {
       if (
@@ -503,6 +518,29 @@ export default {
 
     .value {
       text-align: left;
+    }
+  }
+}
+.bx-card-list{
+  .swiper-container{
+    position: relative;
+    ::v-deep .el-carousel__indicators.el-carousel__indicators--horizontal{
+      bottom: 20px;
+    }
+    .swiper-title{
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width:100%;
+      height: 30px;
+      line-height:30px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background: rgba($color: #000, $alpha: 0.3);
+      padding:0 10px;
+      font-size: 14px;
+      color:#fff;
     }
   }
 }
