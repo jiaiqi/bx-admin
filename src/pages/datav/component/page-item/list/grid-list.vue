@@ -12,9 +12,9 @@
         'cursor-pointer':
           config.matrix_jump_url_col && item[config.matrix_jump_url_col],
       }"
-      :style="[setElementStyle, hoverStyle]"
-      @mouseenter="isHovered = true"
-      @mouseleave="isHovered = false"
+      :style="[getElementStyle(item)]"
+      @mouseenter="item.isHovered = true"
+      @mouseleave="item.isHovered = false"
       @click="openUrl(item[config.matrix_jump_url_col])"
     >
       <img
@@ -31,22 +31,38 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref,watch } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 const props = defineProps({
   config: Object,
   list: Array,
 });
 
-const setList = computed(()=>{
-  const layout = props?.config?.layout_json||{};
-  if(layout?.rows_max && layout?.cols_num>0){
-    return props.list.slice(0, layout.rows_max*layout.cols_num)
+const setList = ref([]);
+watch(
+  () => props.list,
+  (newVal) => {
+    if (Array.isArray(newVal)) {
+      setList.value = getList(newVal);
+    } else {
+      setList.value = [];
+    }
   }
-  return props.list
-})
+);
+const getList = (list) => {
+  const layout = props?.config?.layout_json || {};
+  if (layout?.rows_max && layout?.cols_num > 0) {
+    list = props.list.slice(0, layout.rows_max * layout.cols_num);
+  }
+  return list.map((item) => {
+    const obj = { ...item };
+    obj.isHovered = false;
+    return obj;
+  });
+};
+
 const setStyle = computed(() => {
-  const layout = props?.config?.layout_json||{};
+  const layout = props?.config?.layout_json || {};
   let style = {};
   style["display"] = "grid";
   let height =
@@ -67,23 +83,22 @@ const setStyle = computed(() => {
   }
   return formatStyleData(style);
 });
-
-const setElementStyle = computed(() => {
+const getElementStyle = function (item) {
   const config = props?.config;
-
   let style = {};
   if (config["element_style_json"]) {
     style = config["element_style_json"];
   }
-  return formatStyleData(style);
-});
+  style = formatStyleData(style);
+  if (item.isHovered && config["mouse_hover_style_json"]) {
+    let hoverStyle = formatStyleData(config["mouse_hover_style_json"]);
+    style = { ...style, ...hoverStyle };
+  }
+  return style;
+};
 
 // 鼠标悬浮时的样式
-const isHovered = ref(false);
 const hoverStyle = computed(() => {
-  if (!isHovered.value) {
-    return {};
-  }
   const config = props?.config;
   let style = {};
   if (config["mouse_hover_style_json"]) {
