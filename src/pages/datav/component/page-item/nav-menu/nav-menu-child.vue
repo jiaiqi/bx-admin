@@ -7,7 +7,7 @@
     @mouseleave="isHovered = false"
     ref="navMenu"
   >
-    <span @click.stop.capture="navTo(jumpJson)">
+    <span class="nav-menu-label" @click.stop.capture="navTo(jumpJson)">
       {{ label }}
     </span>
     <div
@@ -109,7 +109,7 @@ const childPositionStyle = computed(() => {
     top: 0,
     right: 0,
     width: position.width || 150 + "px",
-    height: "unset",
+    // height: "unset",
   };
 });
 
@@ -180,7 +180,10 @@ onMounted(() => {
   align-items: center;
   height: 100%;
   cursor: pointer;
-  z-index: 1;
+  z-index: 99;
+  .nav-menu-label{
+    z-index: 100;
+  }
   .nav-menu-child {
     position: absolute;
     width: 100%;
@@ -192,7 +195,7 @@ onMounted(() => {
     &.active {
       height: unset;
       overflow: unset;
-      z-index: 0;
+      z-index: 99;
       transform: translateX(100%);
     }
   }

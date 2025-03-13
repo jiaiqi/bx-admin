@@ -188,7 +188,7 @@
               :isResizable="inEditor"
               :isDraggable="inEditor"
               :isActive="item.i && item.i === curDesign && inEditor"
-              :z="item.z||1"
+              :z="item.z || 1"
               :x="vw2px(item.x)"
               :y="vh2px(item.y)"
               :w="vw2px(item.w)"
@@ -210,7 +210,7 @@
                 :page-no="pgNo"
                 :layout="item"
                 :pageConfig="pageConfg"
-                :style="{'cursor': inEditor ? 'move' : ''}"
+                :style="{ cursor: inEditor ? 'move' : '' }"
               ></page-item>
               <div class="tool-box">
                 <!-- <el-tooltip
@@ -2075,7 +2075,7 @@ export default {
   cursor: move;
   display: grid;
   font-size: 14px;
-  border: 1px solid transparent;
+  // border: 1px solid transparent;
 
   &.component {
     border-color: #000;
@@ -2085,8 +2085,31 @@ export default {
     margin: 20px;
   }
 
+  &::after {
+    position: absolute;
+    content: "";
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border: 3px dashed #ccc;
+  }
+  // &::before{
+  //   position: absolute;
+  //   content: "";
+  //   left: 0;
+  //   top: 0;
+  //   width: 100%;
+  //   height: 100%;
+  //   border: 2px dashed #ccc;
+  // }
+
   &:hover {
-    border: 1px dashed #666;
+    // border: 3px dashed #409eff;
+    &::after {
+      border-color: #409eff;
+      z-index: 99;
+    }
   }
 
   &.dashed {
@@ -2099,14 +2122,9 @@ export default {
   &.active {
     // border: 1px solid #409eff;
     &::after {
-      position: absolute;
-      content: "";
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      border: 2px solid #409eff;
-      border-radius: 5px;
+      border-color: #409eff;
+      border-style: solid;
+      z-index: 99;
     }
   }
 
@@ -2255,7 +2273,6 @@ export default {
         }
       }
     }
-   
   }
 
   .cushome-content {
@@ -2392,7 +2409,7 @@ export default {
   }
 }
 </style>
-<style lang="scss" scoped>
+<style lang="scss">
 .custom-design {
   transition: transform 0.15s ease-in-out;
 }
@@ -2407,22 +2424,51 @@ export default {
 }
 
 .vue-grid-item > .vue-resizable-handle {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border: 6px solid;
-  border-color: transparent #e8eaef #e8eaef transparent;
-  box-sizing: border-box;
-  bottom: 6px;
-  right: 6px;
-  background: none;
-  padding: 0;
+  // position: absolute;
+  // width: 0;
+  // height: 0;
+  // border: 6px solid;
+  // border-color: transparent #ccc #ccc transparent;
+  // box-sizing: border-box;
+  // bottom: 0px;
+  // right: 0px;
+  // background: none;
+  // padding: 0;
+  // z-index: 99;
+  // background-color: #197f54;
+  background-size: 50%;
+  bottom: 0px;
+  right: 0px;
   z-index: 99;
-  background-color: #197f54;
+  // width: 0;
+  // height: 0;
+
+  &:hover {
+    // border-width: 2px;
+    // border-color: transparent #409eff #409eff transparent;
+    &::after {
+      content: "";
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      width: 4px;
+      height: 20px;
+      background: #409eff;
+    }
+     &::before {
+      content: "";
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      width: 20px;
+      height: 4px;
+      background: #409eff;
+    }
+  }
 }
 
 .vue-grid-item:hover .vue-resizable-handle {
-  border-color: transparent #197f54 #197f54 transparent;
+  // border-color: transparent #197f54 #197f54 transparent;
 }
 
 .gridItem {
