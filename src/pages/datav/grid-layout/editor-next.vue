@@ -2487,7 +2487,7 @@ export default {
   margin: 0 auto;
   line-height: 24px;
   text-align: center;
-  z-index: 5;
+  z-index: 199;
   transition: all 0.3s ease-in-out;
 
   &:hover {

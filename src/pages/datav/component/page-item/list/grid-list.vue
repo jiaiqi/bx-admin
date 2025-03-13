@@ -23,9 +23,9 @@
         alt=""
         v-if="config.matrix_icon_col"
       />
-      <span v-if="config.matrix_label_col">
-        {{ item[config.matrix_label_col] }}
-      </span>
+      <!-- <span v-if="config.matrix_label_col"> -->
+        {{ item[config.matrix_label_col]||'' }}
+      <!-- </span> -->
     </div>
   </div>
 </template>

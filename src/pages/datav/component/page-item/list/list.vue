@@ -28,7 +28,7 @@
     >
     </grid-list>
     <!-- 卡片列表 -->
-    <div class="bx-card-list" v-if="listType == '卡片'">
+    <div class="bx-card-list" v-else-if="listType == '卡片'">
       <el-carousel
         trigger="click"
         :height="setSwiperHeight"
