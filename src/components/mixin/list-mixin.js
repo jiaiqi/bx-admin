@@ -443,7 +443,7 @@ export default {
 
       if (show) {
         let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService
-          }&srvApp=${this.resolveDefaultSrvApp()}`;
+          }&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
         if (this.defaultCondition?.length) {
           this.defaultCondition.forEach((col) => {
             if (col.ruleType === "eq") {

@@ -366,8 +366,7 @@ export default {
             confirmButtonText: "确定",
           });
         } else {
-          const self = this
-          function operate() {
+          const operate = () => {
             var request = {};
             request["serviceName"] = butinfo["operate_service"];
             request["data"] = [new_data];
@@ -375,7 +374,7 @@ export default {
             request["condition"] = new_conditions;
             bxRequests.push(request);
             if (bxRequests.length > 0) {
-              self.operate(bxRequests).then((response) => {
+              this.operate(bxRequests).then((response) => {
                 var state = response.body.state;
 
                 if ("SUCCESS" == state) {
