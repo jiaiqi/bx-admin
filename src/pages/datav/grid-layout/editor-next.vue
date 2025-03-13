@@ -15,7 +15,7 @@
         <div
           v-for="item in comList"
           :key="item.id"
-          class="com-item margin component"
+          class="com-item-1 margin component"
         >
           <img
             :src="getImagePath(item.preview)"
@@ -2092,7 +2092,8 @@ export default {
     top: 0;
     width: 100%;
     height: 100%;
-    border: 3px dashed #ccc;
+    border: 1px dashed #ccc;
+      z-index: 99;
   }
   // &::before{
   //   position: absolute;
@@ -2108,7 +2109,6 @@ export default {
     // border: 3px dashed #409eff;
     &::after {
       border-color: #409eff;
-      z-index: 99;
     }
   }
 
@@ -2124,7 +2124,6 @@ export default {
     &::after {
       border-color: #409eff;
       border-style: solid;
-      z-index: 99;
     }
   }
 
@@ -2196,7 +2195,7 @@ export default {
       overflow-x: hidden;
       overflow-y: auto;
 
-      .com-item {
+      .com-item-1 {
         display: inline-flex;
         flex-direction: column;
         width: calc(100% - 10px);
