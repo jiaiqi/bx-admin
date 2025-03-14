@@ -20,7 +20,8 @@
     :class="{ isHovered: isHovered }"
     v-else-if="label"
     :style="mixNavStyle"
-    @mouseenter="isHovered = true"
+    @mouseenter="isHovered = true;showChild = true"
+    @mouseleave="isHovered = false"
     ref="navMenu"
   >
     <div
@@ -34,9 +35,9 @@
       :config="config"
       :parent-config="parentConfig"
       :pageConfig="pageConfig"
-      :isHovered="isHovered"
+      :isHovered="showChild"
       :parent-style="parentStyle"
-      @leave="isHovered = false"
+      @leave="showChild = false"
     ></nav-menu-child>
     <!-- <div
       class="nav-menu-child"
@@ -75,6 +76,7 @@ export default {
   data() {
     return {
       isHovered: false,
+      showChild:false,
       position: {
         top: 0,
         left: 0,

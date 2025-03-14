@@ -19,7 +19,7 @@
     >
       <img
         class="grid-item-img"
-        :src="item[config.matrix_icon_col]"
+        :src="getImagePath(item[config.matrix_icon_col])"
         alt=""
         v-if="config.matrix_icon_col"
       />
