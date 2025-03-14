@@ -1302,8 +1302,7 @@ export default {
         style["background-color"] = "transparent";
       }
       if (!style["overflow"]) {
-        debugger;
-        style["overflow"] = "hidden";
+        // style["overflow"] = "hidden";
       }
       console.log("styleJson", style);
       if (column) {

@@ -27,6 +27,7 @@
         pageItem.com_case_json.label
       "
       :config="pageItem.com_case_json"
+      :page-config="pageConfig"
     >
       <!-- {{ pageItem.com_case_json.label }} -->
     </nav-menu>

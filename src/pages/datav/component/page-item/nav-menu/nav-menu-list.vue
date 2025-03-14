@@ -1,80 +1,48 @@
 <template>
-  <div v-if="viewMode === '展开子导航'" :style="mixNavStyle">
-    <div
-      class="nav-menu"
-      :style="mixNavStyle"
-      v-for="(item, key) in subMenu"
-      :key="key"
-    >
-      <nav-menu
-        :config="item"
-        :parent-style="navStyle"
-        :parent-hover-style="mixHoverStyle"
-        :pageConfig="pageConfig"
-        :parent-config="config"
-      ></nav-menu>
-    </div>
-  </div>
   <div
-    class="nav-menu"
-    :class="{ isHovered: isHovered }"
-    v-else-if="label"
-    :style="mixNavStyle"
-    @mouseenter="isHovered = true"
-    ref="navMenu"
+    class="nav-menu-child"
+    :class="{ active: isHovered }"
+    :style="[isHovered ? childPositionStyle : {}]"
+    v-if="subMenu && subMenu.length"
+    @mouseleave="hideSubMenu"
+    v-clickoutside="hideSubMenu"
   >
-    <div
-      class="nav-menu-label"
-      :style="[setLabelStyle]"
-      @click.stop.capture="navTo(jumpJson)"
-    >
-      {{ label }}
-    </div>
-    <nav-menu-child
-      :config="config"
-      :parent-config="parentConfig"
-      :pageConfig="pageConfig"
-      :isHovered="isHovered"
-      :parent-style="parentStyle"
-      @leave="isHovered = false"
-    ></nav-menu-child>
-    <!-- <div
-      class="nav-menu-child"
-      :class="{ active: isHovered }"
-      :style="[isHovered ? childPositionStyle : {}]"
-      v-if="subMenu && subMenu.length"
-    >
-      <nav-menu-child
-        v-for="(item, index) in subMenu"
-        :key="index"
-        :config="item"
-        :parent-style="navStyle"
-        :parent-hover-style="mixHoverStyle"
-      ></nav-menu-child>
-    </div> -->
+    <nav-sub-menu
+      v-for="(item, index) in subMenu"
+      :key="index"
+      :config="item"
+      :parent-style="mixNavStyle"
+      :parent-hover-style="mixHoverStyle"
+    ></nav-sub-menu>
   </div>
 </template>
 
 <script>
 import { formatStyleData } from "@/pages/datav/common/index.js";
-import NavMenuChild from "./nav-menu-list.vue";
+import NavSubMenu from "./nav-menu-child.vue";
 import NavMenu from "./nav-menu.vue";
-
+import clickoutside from "@/pages/datav/common/clickoutside.js";
 export default {
-  name: "NavMenu",
+  name: "NavMenuChild",
   components: {
-    NavMenuChild,
+    NavSubMenu,
     NavMenu,
+  },
+  directives: {
+    clickoutside: clickoutside,
   },
   props: {
     config: Object,
     parentConfig: Object,
     pageConfig: Object,
-    parentStyle:Object
+    parentStyle: Object,
+    isHovered: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
-      isHovered: false,
       position: {
         top: 0,
         left: 0,
@@ -133,6 +101,9 @@ export default {
       if (this.config?.nav_style_json) {
         style = formatStyleData(this.config.nav_style_json);
       }
+      if (this.parentStyle) {
+        style = { ...this.parentStyle, ...style };
+      }
       if (this.isHovered && this.mixHoverStyle) {
         style = { ...style, ...this.mixHoverStyle };
       }
@@ -149,8 +120,8 @@ export default {
     },
     childPositionStyle() {
       return {
-        top: this.position.height + "px",
-        left: 0,
+        top: this.position.height + this.position.top + "px",
+        left: this.position.left + "px",
         width: this.position.width + "px",
       };
     },
@@ -165,12 +136,16 @@ export default {
     },
   },
   mounted() {
+    document.body.appendChild(this.$el);
     this.setEleSize();
     setTimeout(() => {
       this.setEleSize();
     }, 1000);
   },
   methods: {
+    hideSubMenu() {
+      this.$emit("leave", false);
+    },
     navTo(jumpConfig) {
       if (jumpConfig?.obj_type) {
         switch (jumpConfig.obj_type) {
@@ -208,7 +183,7 @@ export default {
       }
     },
     setEleSize() {
-      const ele = this.$refs.navMenu;
+      const ele = this.$parent.$refs?.navMenu;
       if (ele) {
         const { top, left, width, height } = ele.getBoundingClientRect();
         this.position.top = top;
@@ -222,30 +197,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.nav-menu {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  cursor: pointer;
-  z-index: 99;
-  .nav-menu-label {
-    z-index: 100;
-    width: 100%;
-    text-align: center;
-  }
-  .nav-menu-child {
-    position: absolute;
-    min-width: 100%;
-    transition: all 0.3s ease-in-out;
-    height: 0;
-    overflow: hidden;
-    z-index: -1;
-    &.active {
-      height: auto;
-      overflow: unset;
-      z-index: 99;
-    }
+.nav-menu-child {
+  position: absolute;
+  transition: all 0.3s ease-in-out;
+  height: 0;
+  overflow: hidden;
+  z-index: -1;
+  &.active {
+    height: auto;
+    overflow: unset;
+    z-index: 999;
   }
 }
 </style>

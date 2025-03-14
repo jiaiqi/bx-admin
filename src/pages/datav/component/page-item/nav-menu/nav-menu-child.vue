@@ -28,11 +28,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "nav-sub-menu",
-};
-</script>
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
