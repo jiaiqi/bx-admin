@@ -280,15 +280,12 @@ export default {
     },
 
   },
+  created(){
+    if(this.$route.query){
+      this.componentParamsModels = this.$route.query;
+    }
+  },
   mounted() {
-    // if (this.serviceName) {
-    //   this.loading = true
-    //   this.getListV2().then(_ => {
-    //     this.refresh().then(_ => {
-    //       this.loading = false
-    //     })
-    //   });
-    // }
     this.$on('refresh-component', (data) => {
       console.log('on page item params update')
       this.refreshComponent()

@@ -608,9 +608,11 @@ export default {
           height: this.screenType == "PC" ? "1080px" : "667px",
         };
       }
+
       if (!this.inEditor && (json?.width || json?.height)) {
         delete json.width;
         delete json.height;
+        json.width = "100vw";
       }
       if (this.pageInfo?.page_options?.includes("不缩放")) {
         if (this.pageInfo?.page_style_json_data) {
@@ -2284,6 +2286,14 @@ export default {
     overflow: auto;
     // padding: 40px;
     background: #f1f3f2;
+    &::-webkit-scrollbar {
+      width:6px; /* 设置滚动条的宽度 */
+      height:6px; /* 设置滚动条的高度 */
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
+      border-radius: 4px; /* 设置滚动条滑块的圆角 */
+    }
     &.no-padding {
       padding: 0;
       background-color: transparent;

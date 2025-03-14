@@ -41,8 +41,21 @@
           v-for="(item, index) in setListSwiperImg"
           :key="index"
         >
-          <img :src="getImagePath(item._img_url)" alt="" style="width: 100%; height: 100%" />
-          <div class="swiper-title" v-if="listConfig&&listConfig.swiper_title_col&&item[listConfig.swiper_title_col]">{{item[listConfig.swiper_title_col]}}</div>
+          <img
+            :src="getImagePath(item._img_url)"
+            alt=""
+            style="width: 100%; height: 100%"
+          />
+          <div
+            class="swiper-title"
+            v-if="
+              listConfig &&
+              listConfig.swiper_title_col &&
+              item[listConfig.swiper_title_col]
+            "
+          >
+            {{ item[listConfig.swiper_title_col] }}
+          </div>
         </el-carousel-item>
       </el-carousel>
       <cardGroupCell
@@ -236,8 +249,10 @@ export default {
         return formatStyleData(this.listConfig?.swiper_style_json);
       }
     },
-    setSwiperHeight(){
-      return this.setSwiperStyle?.height?.includes('px')?this.setSwiperStyle.height:'150px'
+    setSwiperHeight() {
+      return this.setSwiperStyle?.height?.includes("px")
+        ? this.setSwiperStyle.height
+        : "150px";
     },
     setListSwiperImg() {
       if (
@@ -338,13 +353,40 @@ export default {
       return res;
     },
     onClickBlock(e) {
-      console.log(e);
+      console.log("onClickBlock", e);
     },
     onRowButtonClick(e) {
       console.log(e);
     },
-    onClickCell(e) {
-      console.log(e);
+    onClickCell(e = {}) {
+      console.log("onClickCell", e);
+      const { cellsLayout, data } = e;
+      if (data && cellsLayout?.jump_json) {
+        const jumpJson = cellsLayout.jump_json;
+        if (jumpJson.click_type === "跳转") {
+          if (jumpJson.tmpl_page_json?.file_path) {
+            let pagePath = jumpJson.tmpl_page_json.file_path;
+            if (jumpJson.dest_page_no) {
+              pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
+            }
+            if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
+              const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
+              mapJson.forEach((item) => {
+                if (
+                  item.to_type === "URL" &&
+                  ["当前数据", "业务", "模型"].includes(item.from_type) &&
+                  data?.[item.col_from]
+                ) {
+                  pagePath += `&${item.col_to}=${data[item.col_from]}`;
+                }
+              });
+            }
+            if(pagePath){
+              window.open(pagePath);
+            }
+          }
+        }
+      }
     },
     buildRequestParams(e) {
       // 处理请求中变量 根据参数关系 获取动态值
@@ -521,26 +563,26 @@ export default {
     }
   }
 }
-.bx-card-list{
-  .swiper-container{
+.bx-card-list {
+  .swiper-container {
     position: relative;
-    ::v-deep .el-carousel__indicators.el-carousel__indicators--horizontal{
+    ::v-deep .el-carousel__indicators.el-carousel__indicators--horizontal {
       bottom: 20px;
     }
-    .swiper-title{
+    .swiper-title {
       position: absolute;
       bottom: 0;
       left: 0;
-      width:100%;
+      width: 100%;
       height: 30px;
-      line-height:30px;
+      line-height: 30px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       background: rgba($color: #000, $alpha: 0.3);
-      padding:0 10px;
+      padding: 0 10px;
       font-size: 14px;
-      color:#fff;
+      color: #fff;
     }
   }
 }
