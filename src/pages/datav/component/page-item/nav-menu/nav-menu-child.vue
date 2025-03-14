@@ -162,14 +162,21 @@ function navToPath(jump_json) {
 }
 
 const navMenu = ref("");
-onMounted(() => {
+function setEleSize() {
   const ele = navMenu.value;
-  const { top, left, width, height } = ele.getBoundingClientRect();
-  position.top = top;
-  position.left = left;
-  position.width = width;
-  position.height = height;
-  console.log(position);
+  if (ele) {
+    const { top, left, width, height } = ele.getBoundingClientRect();
+    position.top = top;
+    position.left = left;
+    position.width = width;
+    position.height = height;
+  }
+}
+onMounted(() => {
+  setEleSize();
+  setTimeout(() => {
+    setEleSize();
+  }, 1000);
 });
 </script>
 
@@ -178,7 +185,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  // height: 100%;
   cursor: pointer;
   z-index: 99;
   .nav-menu-label{

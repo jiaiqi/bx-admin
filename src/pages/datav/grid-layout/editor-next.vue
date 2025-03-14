@@ -181,7 +181,7 @@
               </div>
             </grid-item>
           </grid-layout>
-          <div v-else class="drag-layout">
+          <div v-else-if="allowedOverlap === true" class="drag-layout">
             <!-- 可重叠布局 -->
             <vue-drag-resize
               :parentLimitation="true"
@@ -2093,7 +2093,7 @@ export default {
     width: 100%;
     height: 100%;
     border: 1px dashed #ccc;
-      z-index: 99;
+    z-index: 99;
   }
   // &::before{
   //   position: absolute;
@@ -2454,7 +2454,7 @@ export default {
       height: 20px;
       background: #409eff;
     }
-     &::before {
+    &::before {
       content: "";
       position: absolute;
       right: 2px;

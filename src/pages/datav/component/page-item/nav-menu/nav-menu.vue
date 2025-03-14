@@ -8,9 +8,13 @@
     @mouseleave="isHovered = false"
     ref="navMenu"
   >
-    <span class="nav-menu-label" @click.stop.capture="navTo(jumpJson)">
+    <div
+      class="nav-menu-label"
+      :style="[setLabelStyle]"
+      @click.stop.capture="navTo(jumpJson)"
+    >
       {{ label }}
-    </span>
+    </div>
     <div
       class="nav-menu-child"
       :class="{ active: isHovered }"
@@ -34,7 +38,7 @@ export default {
 };
 </script>
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import NavMenuChild from "./nav-menu-child.vue";
 
@@ -86,6 +90,16 @@ const mixNavStyle = computed(() => {
     style = { ...style, ...mixHoverStyle.value };
   }
   return style;
+});
+
+const setLabelStyle = computed(() => {
+  if (typeof mixNavStyle.value === "object") {
+    let style = { ...mixNavStyle.value };
+    if (style["height"]) {
+      delete style["height"];
+    }
+    return style;
+  }
 });
 
 const position = reactive({
@@ -152,68 +166,24 @@ function navToPath(jump_json) {
       window.open(path);
     }
   }
-  // const colsMapJson =
-  //   cell?.cellsLayout?.jump_json?.cols_map_json?.cols_map_detail_json || [];
-  // if (colsMapJson?.length) {
-  //   let data = {
-  //     ...cell?.cellsLayout,
-  //     ...(cell?.data || []),
-  //   };
-  //   colsMapJson.forEach((item) => {
-  //     if (
-  //       item.to_type === "URL" &&
-  //       item.from_type === "当前数据" &&
-  //       data[item.col_from]
-  //     ) {
-  //       path += `&${item.col_to}=${data[item.col_from]}`;
-  //     } else if (
-  //       item.to_type === "URL" &&
-  //       item.from_type === "页面" &&
-  //       this.componentParamsModels[item.col_from]
-  //     ) {
-  //       path += `&${item.col_to}=${this.componentParamsModels[item.col_from]}`;
-  //     } else if (
-  //       item.to_type === "URL" &&
-  //       item.from_type !== "当前数据" &&
-  //       item.col_from &&
-  //       item.col_to
-  //     ) {
-  //       let val = this.renderStr(item.col_from, {
-  //         data,
-  //       });
-  //       if (val) {
-  //         path += `&${item.col_to}=${val}`;
-  //       }
-  //     }
-  //   });
-  // }
-  // if (cell && cell.hasOwnProperty("data") && cell.data.hasOwnProperty("id")) {
-  //   // 如果有行数据默认携带 id
-  //   if (path.indexOf("?") == -1) {
-  //     path = `${path}?id=${cell.data.id}`;
-  //   } else {
-  //     path = `${path}&id=${cell.data.id}`;
-  //   }
-  // }
-  // if (pageNo) {
-  //   console.log(path);
-  //   if (jumpConfig.target_type == "新页面") {
-  //     window.open(jumpConfig.outer_url);
-  //   } else {
-  //     window.location.href = jumpConfig.outer_url;
-  //   }
-  // }
 }
 
 const navMenu = ref("");
-onMounted(() => {
+function setEleSize() {
   const ele = navMenu.value;
-  const { top, left, width, height } = ele.getBoundingClientRect();
-  position.top = top;
-  position.left = left;
-  position.width = width;
-  position.height = height;
-  console.log(position);
+  if (ele) {
+    const { top, left, width, height } = ele.getBoundingClientRect();
+    position.top = top;
+    position.left = left;
+    position.width = width;
+    position.height = height;
+  }
+}
+onMounted(() => {
+  setEleSize();
+  setTimeout(() => {
+    setEleSize();
+  }, 1000);
 });
 </script>
 
@@ -225,8 +195,10 @@ onMounted(() => {
   height: 100%;
   cursor: pointer;
   z-index: 99;
-  .nav-menu-label{
+  .nav-menu-label {
     z-index: 100;
+    width: 100%;
+    text-align: center;
   }
   .nav-menu-child {
     position: absolute;
@@ -234,12 +206,12 @@ onMounted(() => {
     transition: all 0.3s ease-in-out;
     height: 0;
     overflow: hidden;
-    top: 0;
+    bottom: 0;
     z-index: -1;
     &.active {
       height: auto;
       overflow: unset;
-      z-index:99;
+      z-index: 99;
     }
   }
 }
