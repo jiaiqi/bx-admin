@@ -19,14 +19,15 @@
 
 <script>
 import { formatStyleData } from "@/pages/datav/common/index.js";
-import NavSubMenu from "./nav-menu-child.vue";
-import NavMenu from "./nav-menu.vue";
+// import NavSubMenu from "./nav-menu-child.vue";
+// import NavMenu from "./nav-menu.vue";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
 export default {
   name: "NavMenuChild",
   components: {
-    NavSubMenu,
-    NavMenu,
+    NavSubMenu:()=>import("./nav-menu-child.vue"),
+    // NavSubMenu:()=>import("./nav-menu.vue"),
+    // NavMenu,
   },
   directives: {
     clickoutside: clickoutside,

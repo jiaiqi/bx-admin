@@ -31,8 +31,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
-import NavMenuChild from "./nav-menu-child.vue";
-
+// import NavMenuChild from "./nav-menu-child.vue";
+import NavSubMenu from './nav-menu-child.vue'
 const props = defineProps({
   config: Object,
   parentStyle: Object,
