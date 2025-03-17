@@ -849,7 +849,6 @@ export default {
         let ratioX = windowWidth / window.screen.width;
         let ratioY = windowheight / window.screen.height;
         if (!window.screen.height || !window.screen.width)
-        debugger
           return resizeFullBak();
         let dashboard_width = parseFloat(contentData.width);
         let dashboard_height = parseFloat(contentData.height);
@@ -1515,13 +1514,12 @@ export default {
       this.designTop = domContainer.offsetTop + 70;
       // this.containerWidth = document.getElementById("content").offsetWidth;
       this.$nextTick(() => {
-        // this.resize();
+        if (this.screenType === "PC") {
+          setTimeout(() => {
+            this.resize();
+          }, 50);
+        }
       });
-      if (this.screenType === "PC") {
-        setTimeout(() => {
-          this.resize();
-        }, 10);
-      }
     },
     //鼠标移动
     moveMousemove() {
@@ -2202,6 +2200,7 @@ export default {
       flex: 1;
       overflow-x: hidden;
       overflow-y: auto;
+      background-color: #f1f3f2;
 
       .com-item-1 {
         display: inline-flex;
@@ -2210,12 +2209,13 @@ export default {
         // width: calc(50% - 20px);
         margin: 5px;
         height: 130px;
-        background-color: #f1f3f2;
         border-radius: 8px;
         border: none;
         overflow: hidden;
         cursor: unset;
-
+        // box-shadow:0 2px 6px 0 rgba(0,0,0,.2);
+        border: 1px solid #999;
+        background-color: #fff;
         .example {
           flex: 1;
           background-color: #ccc;

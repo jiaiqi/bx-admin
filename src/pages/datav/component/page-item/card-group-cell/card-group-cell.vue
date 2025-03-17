@@ -264,6 +264,7 @@
                   v-for="(ssubCol, ssubindex) in subCol.sub_card_parts_json"
                 >
                   <div
+                    :key="ssubindex"
                     v-if="
                       ssubCol.parts_type == 'string' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -282,6 +283,7 @@
                     {{ getPartModelData(ssubCol, comColMap, cellItemData) }}
                   </div>
                   <div
+                    :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == 'variable' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -300,6 +302,7 @@
                     {{ getPartModelData(ssubCol, comColMap, cellItemData) }}
                   </div>
                   <el-image
+                    :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == 'iconImg' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -333,6 +336,8 @@
                   >
                   </el-image>
                   <el-rate
+                   :key="ssubindex"
+
                     :disabled="true"
                     v-else-if="ssubCol.parts_type == 'rate'"
                     :count="5"
@@ -343,6 +348,8 @@
                     "
                   ></el-rate>
                   <el-progress
+                   :key="ssubindex"
+
                     :show-text="false"
                     :style="[buildColStyleJson(ssubCol.style_json || null)]"
                     v-else-if="ssubCol.parts_type == 'progress'"
@@ -364,6 +371,7 @@
                   ></el-progress>
 
                   <div
+                   :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == '富文本' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -382,6 +390,7 @@
                     @click="false"
                   ></u-parse> -->
                   <i
+                   :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == 'icon' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -398,6 +407,7 @@
                     "
                   ></i>
                   <div
+                   :key="ssubindex"
                     :class="'bx-cell-' + ssubCol.parts_type"
                     v-else-if="
                       (ssubCol.parts_type == 'row' ||
@@ -1041,13 +1051,22 @@ export default {
   },
   methods: {
     recoverFileAddress(val = "") {
+      if(typeof val !== 'string'){
+        return val;
+      }
+      if(val && typeof val==='string' && val.indexOf('$bxFileAddress$') === -1){
+        return val;
+      }
       // 替换文件前缀
       const prefix = this.serviceApi().downloadFilePrefix;
       val = val?.replaceAll?.("$bxFileAddress$", prefix) || "";
       // 使用正则表达式来匹配 bx_auth_ticket 的值，并使用sessionStorage.bx_auth_ticket替换它
       const ticketStr = `bx_auth_ticket=${sessionStorage.bx_auth_ticket}`;
       val = val.replace(/(bx_auth_ticket=)[^&]+/gi, ticketStr);
+      // console.log('getPartModelData:recoverFileAddress:', val);
+      
       return val;
+
     },
     paramsBuild(json) {
       if (!json) {
@@ -1406,7 +1425,10 @@ export default {
           });
         }
       }
+      console.log('getPartModelData:', itemData,key,val);
+      
       return this.recoverFileAddress(val);
+
     },
   },
 };
