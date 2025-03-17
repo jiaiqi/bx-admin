@@ -9,6 +9,9 @@
     @dragenter="dragDefFn($event)"
     @dragover="dragDefFn($event)"
   >
+    <div class="tool-bar" v-if="inEditor">
+      <el-button size="small" @click="preview">预览</el-button>
+    </div>
     <div class="cushome-sidebar" v-if="inEditor">
       <component-pane @set-list="comList = $event"></component-pane>
       <div class="component-list">
@@ -821,6 +824,9 @@ export default {
     previewCurrent() {
       this.onMobilePreview = !this.onMobilePreview;
       // window.open(window.location.hash.replace("/editor/", "/view/"));
+    },
+    preview() {
+      open(`/vpages/#/lowcode-grid/view/${this.pgNo}`);
     },
     previewMobile() {
       // window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`);
@@ -2227,13 +2233,22 @@ export default {
       }
     }
   }
-
+  .tool-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 340px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .cushome-right {
     width: 340px;
     width: var(--right-width);
     position: absolute;
     // position: fixed;
-    top: 0;
+    top: 50px;
     right: 0;
     bottom: 0;
     background: #fff;
@@ -2287,8 +2302,8 @@ export default {
     // padding: 40px;
     background: #f1f3f2;
     &::-webkit-scrollbar {
-      width:6px; /* 设置滚动条的宽度 */
-      height:6px; /* 设置滚动条的高度 */
+      width: 6px; /* 设置滚动条的宽度 */
+      height: 6px; /* 设置滚动条的高度 */
     }
     &::-webkit-scrollbar-thumb {
       background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
