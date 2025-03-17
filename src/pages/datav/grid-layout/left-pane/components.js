@@ -6,7 +6,7 @@ export default {
       cond_col: "chart_type",
       icon: "Chart",
       service: "srvpage_cfg_com_chart_select",
-      nameCol:"chart_name",
+      nameCol: "chart_name",
       children: [
         {
           label: "折线图",
@@ -80,7 +80,7 @@ export default {
       icon: "List",
       cond_col: "list_type",
       service: "srvpage_cfg_com_list_select",
-      nameCol:'list_name',
+      nameCol: 'list_name',
       children: [
         {
           label: "表格",
@@ -101,28 +101,28 @@ export default {
       label: "宫格",
       icon: "Grid",
       service: "srvpage_cfg_com_grid_select",
-      nameCol:'grid_name',
+      nameCol: 'grid_name',
     },
     {
       value: "cardGroup",
       label: "卡片组",
       icon: "Card",
       service: "srvpage_cfg_card_group_select",
-      nameCol:'cardg_name',
+      nameCol: 'cardg_name',
     },
     {
       value: "控件",
       label: "控件",
       icon: "IconText",
       service: "srvpage_cfg_meta_col_widget_select",
-      nameCol:'widget_name',
+      nameCol: 'widget_name',
     },
     {
       value: "swiper",
       label: "轮播图",
       icon: "Pic",
       service: "srvpage_cfg_figure_swiper_select",
-      nameCol:'swiper_name',
+      nameCol: 'swiper_name',
     },
     // {
     //   value: "videoCard",
@@ -140,7 +140,7 @@ export default {
       label: "地图",
       icon: "Map",
       service: "srvpage_cfg_com_map_select",
-      nameCol:'map_name',
+      nameCol: 'map_name',
     },
     // {
     //   value: "currentInfo",
@@ -159,7 +159,7 @@ export default {
       label: "通知条",
       icon: "Notice",
       service: "srvpage_cfg_com_notice_bar_select",
-      nameCol:'noticebar_name',
+      nameCol: 'noticebar_name',
     },
     // {
     //   value: "steps",
@@ -170,21 +170,28 @@ export default {
       label: "标签tabs",
       icon: "Tag",
       service: "srvpage_cfg_com_tabs_select",
-      nameCol:'tabs_name',
+      nameCol: 'tabs_name',
     },
     {
       value: "form",
       label: "表单form",
       icon: "Form",
       service: "srvpage_cfg_com_form_select",
-      nameCol:'form_name',
+      nameCol: 'form_name',
     },
     {
       value: "navBar",
       label: "导航菜单",
       icon: "NavBar",
       service: "srvpage_cfg_page_nav_bar_select",
-      nameCol:'nav_name',
+      nameCol: 'nav_name',
+    },
+    {
+      value: "extPage",
+      label: "外部页面",
+      icon: "ExtPage",
+      service: "srvpage_cfg_com_ext_page_select",
+      nameCol: 'extp_name',
     },
     // {
     //   value: "detail",

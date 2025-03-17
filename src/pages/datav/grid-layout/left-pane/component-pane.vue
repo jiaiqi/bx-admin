@@ -53,7 +53,8 @@ import {
   Tag,
   Text,
   Video,
-  NavBar
+  NavBar,
+  ExtPage,
 } from "../../icons";
 export default {
   components: {
@@ -68,7 +69,8 @@ export default {
     Tag,
     IconText: Text,
     Video,
-    NavBar
+    NavBar,
+    ExtPage
   },
   computed: {
     setStyle() {

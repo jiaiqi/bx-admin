@@ -23,3 +23,5 @@ export { default as Form } from "./Form.vue";
 export { default as Map } from "./Map.vue";
 
 export { default as NavBar } from "./NavBar.vue";
+
+export { default as ExtPage } from "./ExtPage.vue";

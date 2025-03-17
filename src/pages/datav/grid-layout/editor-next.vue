@@ -615,7 +615,6 @@ export default {
       if (!this.inEditor && (json?.width || json?.height)) {
         delete json.width;
         delete json.height;
-        json.width = "100vw";
       }
       if (this.pageInfo?.page_options?.includes("不缩放")) {
         if (this.pageInfo?.page_style_json_data) {
@@ -850,6 +849,7 @@ export default {
         let ratioX = windowWidth / window.screen.width;
         let ratioY = windowheight / window.screen.height;
         if (!window.screen.height || !window.screen.width)
+        debugger
           return resizeFullBak();
         let dashboard_width = parseFloat(contentData.width);
         let dashboard_height = parseFloat(contentData.height);
