@@ -8,7 +8,19 @@
     ref="navMenu"
   >
     <span class="nav-menu-label" @click.stop.capture="navTo(jumpJson)">
-      {{ label }}
+      <span>{{ label }}</span>
+      <img
+        class="nav-icon"
+        :src="getImagePath(config.nav_icon_selected)"
+        alt=""
+        v-if="config.nav_icon_selected && isHovered"
+      />
+      <img
+        class="nav-icon"
+        :src="getImagePath(config.nav_icon)"
+        alt=""
+        v-else-if="config.nav_icon"
+      />
     </span>
     <div
       class="nav-menu-child"
@@ -32,7 +44,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 // import NavMenuChild from "./nav-menu-child.vue";
-import NavSubMenu from './nav-menu-child.vue'
+import NavSubMenu from "./nav-menu-child.vue";
 const props = defineProps({
   config: Object,
   parentStyle: Object,
@@ -183,8 +195,17 @@ onMounted(() => {
   // height: 100%;
   cursor: pointer;
   z-index: 99;
-  .nav-menu-label{
+  .nav-menu-label {
     z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .nav-icon {
+      width: 1rem;
+      height: 1em;
+      display: inline-block;
+      color: currentColor;
+    }
   }
   .nav-menu-child {
     position: absolute;

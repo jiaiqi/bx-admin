@@ -26,10 +26,12 @@
   >
     <div
       class="nav-menu-label"
-      :style="[setLabelStyle]"
+      :style="[setLabelStyle,mixNavStyle]"
       @click.stop.capture="navTo(jumpJson)"
     >
-      {{ label }}
+      <span>{{ label }}</span>
+      <img class="nav-icon" :src="getImagePath(config.nav_icon_selected)" alt="" v-if="config.nav_icon_selected && isHovered">
+      <img class="nav-icon" :src="getImagePath(config.nav_icon)" alt="" v-else-if="config.nav_icon">
     </div>
     <nav-menu-child
       :config="config"
@@ -235,6 +237,15 @@ export default {
     z-index: 100;
     width: 100%;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .nav-icon{
+      width: 1rem;
+      height: 1em;
+      display: inline-block;
+      color: currentColor;
+    }
   }
   .nav-menu-child {
     position: absolute;
