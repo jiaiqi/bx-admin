@@ -1323,7 +1323,7 @@ export default {
       if (!style["overflow"]) {
         // style["overflow"] = "hidden";
       }
-      console.log("styleJson", style);
+      // console.log("styleJson", style);
       if (column) {
         return style[column] || "";
       }
@@ -1425,7 +1425,7 @@ export default {
           });
         }
       }
-      console.log('getPartModelData:', itemData,key,val);
+      // console.log('getPartModelData:', itemData,key,val);
       
       return this.recoverFileAddress(val);
 

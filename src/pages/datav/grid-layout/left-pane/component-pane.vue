@@ -218,7 +218,7 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 10px;
-
+  border-right: 1px solid #f5f5f5;
   &-item {
     font-size: 14px;
     padding: 3px 5px;

@@ -443,7 +443,7 @@ export default {
                 cond.case_val?.includes?.(data?.[cond.case_col])
             )
         );
-        console.log("optionListV2", result, data);
+        // console.log("optionListV2", result, data);
       } else if (this.field?.info?.srvCol?.option_list_v2) {
         result = this.field.info.srvCol.option_list_v2;
       }

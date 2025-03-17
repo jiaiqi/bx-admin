@@ -1,6 +1,5 @@
 <template>
-  <fragment v-if="disabled == true"
-    >
+  <fragment v-if="disabled == true">
     <slot></slot>
   </fragment>
   <div
@@ -141,6 +140,7 @@ export default Vue.extend({
         if (nextScale != this.scale) {
           this.scale = nextScale;
           this.$message(`缩放比例：${this.scale}`);
+          this.$emit('scale-change',this.scale)
         }
         // const nextScale = parseFloat(
         //   Math.max(0.2, this.scale - e.deltaY / 500).toFixed(2)
@@ -236,6 +236,15 @@ body * {
   height: 100%;
   overflow: auto;
   cursor: var(--cursor);
+
+  &::-webkit-scrollbar {
+    width: 4px; /* 设置滚动条的宽度 */
+    height: 4px; /* 设置滚动条的高度 */
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
+    border-radius: 4px; /* 设置滚动条滑块的圆角 */
+  }
 }
 
 .screen-container {

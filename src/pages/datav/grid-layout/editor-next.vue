@@ -5,12 +5,19 @@
       mobile: screenType === 'mobile' && !inEditor,
       fixedWH: !autoScale,
     }"
-    :style="'--right-width:' + rightWidth + 'px'"
+    :style="{ '--right-width': getRightWidth, '--top-height': '40px' }"
     @dragenter="dragDefFn($event)"
     @dragover="dragDefFn($event)"
   >
-    <div class="tool-bar" v-if="inEditor">
-      <el-button size="small" @click="preview">预览</el-button>
+    <div class="tool-bar bg-white shadow" v-if="inEditor">
+      <span></span>
+      <span class="text-xs"> 缩放比例：{{ editorScale }} </span>
+      <div>
+        <el-button size="mini" @click="preview">预览</el-button>
+        <!-- <el-button size="mini" type="primary" @click="clickSave"
+          >保存</el-button
+        > -->
+      </div>
     </div>
     <div class="cushome-sidebar" v-if="inEditor">
       <component-pane @set-list="comList = $event"></component-pane>
@@ -19,26 +26,34 @@
           v-for="item in comList"
           :key="item.id"
           class="com-item-1 margin component"
+          @drag="drag(item)"
+          @dragend="dragend(item, $event)"
+          draggable="true"
+          unselectable="on"
         >
-          <img
-            :src="getImagePath(item.preview)"
-            alt=""
-            class="example"
-            @drag="drag(item)"
-            @dragend="dragend(item, $event)"
-            draggable="true"
-            unselectable="on"
-          />
+          <img :src="getImagePath(item.preview)" alt="" class="example" />
           <div class="label">{{ item.comp_label }}</div>
         </div>
       </div>
     </div>
     <div class="cushome-right" v-if="inEditor">
-      <div class="left-line" id="left-line">
-        <span class="fold">
-          <!-- 收缩 -->
+      <span
+        class="fold"
+        :class="{ unfold: showRight }"
+        @click="changeRightDisplay"
+        :title="showRight ? '收起右侧面板' : '展开右侧面板'"
+      >
+        <!-- <span v-if="!showRight">展开</span>
+        <span v-else>收起</span> -->
+        <span class="icon">
+          <i class="el-icon-d-arrow-left"></i>
         </span>
-      </div>
+      </span>
+      <div
+        class="left-line"
+        :class="{ 'show-right': showRight }"
+        id="left-line"
+      ></div>
       <property-pane
         :use-layout="useLayout"
         :pageConfg="pageConfg"
@@ -51,6 +66,7 @@
         @preview="toPreview"
         @refresh="initPage"
         @screentype="screenType = $event"
+        v-if="showRight"
       ></property-pane>
     </div>
     <div
@@ -63,6 +79,8 @@
         :disabled="!inEditor"
         :rectWidth="parseInt(styleJson.width || '1920')"
         :rectHeight="parseInt(styleJson.height || '1080')"
+        :key="showRight"
+        @scale-change="scaleChange"
       >
         <div
           class="custom-design"
@@ -442,6 +460,7 @@ export default {
   },
   data() {
     return {
+      showRight: false,
       editorScale: 1,
       onMobilePreview: false,
       screenType: "PC",
@@ -583,6 +602,9 @@ export default {
     window.removeEventListener("resize", this.resize);
   },
   computed: {
+    getRightWidth() {
+      return this.showRight === false ? "0" : `${this.rightWidth}px`;
+    },
     allowedOverlap() {
       // 允许重叠
       return this.pageConfg?.page_options?.includes("可重叠大屏") || false;
@@ -691,6 +713,12 @@ export default {
     },
   },
   methods: {
+    changeRightDisplay() {
+      this.showRight = !this.showRight;
+    },
+    scaleChange(val) {
+      this.editorScale = val;
+    },
     initZoomHandler() {
       const container = this.$refs.screensRef;
       const ZOOM_STEP = 0.1;
@@ -1523,6 +1551,9 @@ export default {
     },
     //鼠标移动
     moveMousemove() {
+      // if (!this.showRight) {
+      //   return;
+      // }
       document.getElementById("left-line").onmousedown = (e) => {
         this.isDown = true;
       };
@@ -2186,7 +2217,7 @@ export default {
     width: 340px;
     position: absolute;
     // position: fixed;
-    top: 0;
+    top: var(--top-height);
     left: 0;
     bottom: 0;
     background: #fff;
@@ -2200,27 +2231,36 @@ export default {
       flex: 1;
       overflow-x: hidden;
       overflow-y: auto;
-      background-color: #f1f3f2;
+      background-color: #fff;
 
+      &::-webkit-scrollbar {
+        width: 4px; /* 设置滚动条的宽度 */
+        height: 4px; /* 设置滚动条的高度 */
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
+        border-radius: 4px; /* 设置滚动条滑块的圆角 */
+      }
       .com-item-1 {
         display: inline-flex;
         flex-direction: column;
         width: calc(100% - 10px);
         // width: calc(50% - 20px);
         margin: 5px;
-        height: 130px;
+        min-height: 130px;
         border-radius: 8px;
         border: none;
         overflow: hidden;
         cursor: unset;
         // box-shadow:0 2px 6px 0 rgba(0,0,0,.2);
-        border: 1px solid #999;
-        background-color: #fff;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+        cursor: move;
         .example {
           flex: 1;
           background-color: #ccc;
-          border-radius: 5px;
-          cursor: move;
+          border-top-left-radius: 8px;
+          border-top-right-radius: 8px;
         }
 
         .label {
@@ -2237,23 +2277,71 @@ export default {
     position: absolute;
     top: 0;
     right: 0;
-    width: 340px;
-    height: 50px;
+    width: 100%;
+    // width: 340px;
+    height: 40px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    padding: 0 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f1f1;
+    z-index: 999;
   }
   .cushome-right {
     width: 340px;
     width: var(--right-width);
     position: absolute;
     // position: fixed;
-    top: 50px;
+    top: var(--top-height);
     right: 0;
     bottom: 0;
     background: #fff;
-    overflow: auto;
+    // overflow: auto;
 
+    &::-webkit-scrollbar {
+      width: 4px; /* 设置滚动条的宽度 */
+      height: 4px; /* 设置滚动条的高度 */
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
+      border-radius: 4px; /* 设置滚动条滑块的圆角 */
+    }
+    ::v-deep .form-view-wrapper.el-row {
+      &::-webkit-scrollbar {
+        width: 8px; /* 设置滚动条的宽度 */
+        height: 8px; /* 设置滚动条的高度 */
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
+        border-radius: 4px; /* 设置滚动条滑块的圆角 */
+      }
+      height: calc(100vh - 150px);
+    }
+    .fold {
+      position: absolute;
+      top: 50%;
+      left: -5px;
+      transform: translateX(-100%);
+      z-index: 20;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      // width: 40px;
+      .icon {
+        display: inline-block;
+        transform: rotate(0);
+        transition: all 0.5s ease-in-out;
+      }
+      &.unfold {
+        .icon {
+          transform: rotate(180deg);
+        }
+      }
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 4px;
+      padding: 2px;
+    }
     // padding: 20px;
     .left-line {
       // border-right: 2px solid transparent;
@@ -2263,29 +2351,26 @@ export default {
       top: 0;
       right: calc(var(--right-width) - 5px);
       z-index: 9999;
-      cursor: col-resize;
-      .fold {
-        position: absolute;
-        top: 50%;
-        z-index: 2;
-        cursor: pointer;
-      }
-      &::after {
-        content: "";
-        width: 4px;
-        height: 0px;
-        background: transparent;
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transition: all 0.5s ease-in-out;
-      }
 
-      &:hover {
+      &.show-right {
+        cursor: col-resize;
         &::after {
-          top: calc(50% - 50px);
-          height: 100px;
-          background: #ccc;
+          content: "";
+          width: 4px;
+          height: 0px;
+          background: transparent;
+          position: absolute;
+          right: 0;
+          top: 50%;
+          transition: all 0.5s ease-in-out;
+        }
+
+        &:hover {
+          &::after {
+            top: calc(50% - 50px);
+            height: 100px;
+            background: #ccc;
+          }
         }
       }
     }
@@ -2294,7 +2379,7 @@ export default {
   .cushome-content {
     position: absolute;
     // position: fixed;
-    top: 0;
+    top: var(--top-height);
     bottom: 0;
     right: var(--right-width);
     left: 340px;
