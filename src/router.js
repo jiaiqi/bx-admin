@@ -737,8 +737,13 @@ routes.push(
     name: "renda-report",
     component: () => import("@/pages/renda/report.vue"),
   }
-
 )
+
+routes.push( { //网站
+  path: "/force-login",
+  name: "forceLogin",
+  component: () => import("@/pages/datav/login/login.vue")
+},)
 Vue.use(VueRouter);
 const router = new VueRouter({
   routes,

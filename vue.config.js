@@ -101,7 +101,7 @@ module.exports = {
     port: 8080, // 端口号
     // host: "192.168.0.133",
     https: false, // https:{type:Boolean}
-    open: true, //配置自动启动浏览器
+    open: false, //配置自动启动浏览器
     proxy: {
       "/baiduApi": {
         target: "https://api.map.baidu.com", // 目标接口域名
