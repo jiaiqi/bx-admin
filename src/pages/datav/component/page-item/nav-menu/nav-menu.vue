@@ -1,8 +1,7 @@
 <template>
-  <div v-if="viewMode === '展开子导航'" :style="mixNavStyle">
+  <div v-if="viewMode === '展开子导航'">
     <div
       class="nav-menu"
-      :style="mixNavStyle"
       v-for="(item, key) in subMenu"
       :key="key"
     >
@@ -19,7 +18,6 @@
     class="nav-menu"
     :class="{ isHovered: isHovered }"
     v-else-if="label"
-    :style="mixNavStyle"
     @mouseenter="isHovered = true;showChild = true"
     @mouseleave="isHovered = false"
     ref="navMenu"

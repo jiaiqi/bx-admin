@@ -137,13 +137,21 @@ export default {
     },
   },
   mounted() {
-    document.body.appendChild(this.$el);
+    document.body.querySelector('#content').appendChild(this.$el);
     this.setEleSize();
     setTimeout(() => {
       this.setEleSize();
     }, 1000);
+    window.addEventListener("scroll", this.listenOnScroll);
+  },
+  beforeDestroy() {
+    document.body.querySelector('#content').removeChild(this.$el);
+    window.removeEventListener("scroll", this.listenOnScroll);
   },
   methods: {
+    listenOnScroll() {
+      this.hideSubMenu()
+    },
     hideSubMenu() {
       this.$emit("leave", false);
     },
