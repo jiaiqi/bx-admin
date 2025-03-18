@@ -75,7 +75,7 @@ module.exports = {
   transpileDependencies: ["simple-mind-map","@svgdotjs"], // 思维导图
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
   publicPath: "/vpages/",
-  outputDir: "dist",
+  outputDir: "vpages",
   // lintOnSave: false,//在线excel添加
   configureWebpack: {
     // externals:  getProdExternals(),
