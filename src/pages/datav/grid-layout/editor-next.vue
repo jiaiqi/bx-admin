@@ -5,7 +5,10 @@
       mobile: screenType === 'mobile' && !inEditor,
       fixedWH: !autoScale,
     }"
-    :style="{ '--right-width': getRightWidth, '--top-height': '40px' }"
+    :style="{
+      '--right-width': getRightWidth,
+      '--top-height': inEditor ? '40px' : '0',
+    }"
     @dragenter="dragDefFn($event)"
     @dragover="dragDefFn($event)"
   >
@@ -79,7 +82,6 @@
         :disabled="!inEditor"
         :rectWidth="parseInt(styleJson.width || '1920')"
         :rectHeight="parseInt(styleJson.height || '1080')"
-        :key="showRight"
         @scale-change="scaleChange"
       >
         <div
@@ -94,21 +96,29 @@
           <div
             class="grid-container"
             id="grid-container"
-            :style="[bjStyles]"
+            :style="[bjStyles, { width: pageContentWidth, margin: '0 auto' }]"
             v-if="!inEditor && allowedOverlap === false"
           >
             <div
               v-for="(item, index) in layout"
               :key="index"
-              style="position: absolute"
               :style="{
+                position: item.w === 100 ? 'absolute' : 'absolute',
+                zIndex: item.w === 100 ? 9 : 1,
+
                 height: rowHeight * item.h + 'px',
                 width:
-                  (parseInt(styleJson.width || '1920') * item.w) / colNum +
-                  'px',
+                  item.w === 100
+                    ? '100vw'
+                    : (parseInt(pageContentWidth || styleJson.width || '1920') *
+                        item.w) /
+                        colNum +
+                      'px',
                 top: rowHeight * item.y + 'px',
                 left:
-                  (parseInt(styleJson.width || '1920') * item.x) / colNum +
+                  (parseInt(pageContentWidth || styleJson.width || '1920') *
+                    item.x) /
+                    colNum +
                   'px',
               }"
             >
@@ -132,16 +142,23 @@
             :layout.sync="layout"
             :col-num="colNum"
             :row-height="rowHeight"
-            :preventCollision="true"
-            :responsive="false"
+            :preventCollision="preventCollision"
+            :responsive="responsive"
             :is-draggable="inEditor"
             :is-resizable="inEditor"
             :is-mirrored="false"
-            :vertical-compact="false"
+            :vertical-compact="verticalCompact"
             :margin="[0, 0]"
             :use-css-transforms="true"
             @layout-updated="layoutUpdatedEvent"
             v-else-if="allowedOverlap === false"
+            :style="[
+              {
+                width: pageContentWidth,
+                margin: '0 auto',
+                border: '1px dashed #999',
+              },
+            ]"
           >
             <div
               class="grid-container"
@@ -602,8 +619,33 @@ export default {
     window.removeEventListener("resize", this.resize);
   },
   computed: {
+    pageContentWidth() {
+      let contentWidth = this.pageConfg?.content_area_width;
+      if (contentWidth && !isNaN(Number(contentWidth))) {
+        return `${Number(contentWidth)}px`;
+      } else {
+        return null;
+      }
+    },
     getRightWidth() {
-      return this.showRight === false ? "0" : `${this.rightWidth}px`;
+      return this.showRight === false ? "0px" : `${this.rightWidth}px`;
+    },
+    responsive() {
+      return this.pageConfg?.page_options?.includes("响应式") || false;
+    },
+    verticalCompact() {
+      // 垂直紧凑 垂直方向自动补位
+      return (
+        this.pageConfg?.page_options?.includes("垂直方向自动补位") || false
+      );
+    },
+    preventCollision() {
+      // 防止碰撞
+      return this.pageConfg?.page_options?.includes("防止元素碰撞") || false;
+    },
+    needLogin() {
+      // 需要登录
+      return this.pageConfg?.page_options?.includes("需要登录") || false;
     },
     allowedOverlap() {
       // 允许重叠
@@ -651,6 +693,9 @@ export default {
       }
       json = JSON.parse(rpx2px(JSON.stringify(json)));
       json = formatStyleData(json);
+      // if (this.pageContentWidth) {
+      //   json.width = this.pageContentWidth;
+      // }
       return json;
     },
     useLayout() {
@@ -2298,7 +2343,7 @@ export default {
     bottom: 0;
     background: #fff;
     // overflow: auto;
-
+    transition: width 0.5s ease-in-out;
     &::-webkit-scrollbar {
       width: 4px; /* 设置滚动条的宽度 */
       height: 4px; /* 设置滚动条的高度 */
@@ -2386,6 +2431,7 @@ export default {
     overflow: auto;
     // padding: 40px;
     background: #f1f3f2;
+    transition: right 0.5s ease-in-out;
     &::-webkit-scrollbar {
       width: 6px; /* 设置滚动条的宽度 */
       height: 6px; /* 设置滚动条的高度 */

@@ -14,9 +14,10 @@
         v-for="item in components"
         :key="item.id"
         :style="[activeName === item.com_name ? setActiveStyle : {}]"
+        :class="{ active: activeName === item.com_name }"
         @click="activeName = item.com_name"
       >
-        {{ item.com_name || "xxx" }}
+        {{ item.com_label || "xxx" }}
       </div>
     </div>
     <div class="tab-content">
@@ -25,6 +26,7 @@
           use-layout="false"
           ref="pageItem"
           :page-item="item"
+          :in-tabs="true"
           v-if="activeName === item.com_name"
         ></page-item>
         <!-- <List
@@ -108,6 +110,7 @@ export default {
 .tab-name-box {
   display: flex;
   column-gap: 20px;
+  align-items: center;
   .tab-name {
     cursor: pointer;
   }

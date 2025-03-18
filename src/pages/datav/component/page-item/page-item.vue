@@ -7,7 +7,7 @@
   >
     <div
       class="page-item__label"
-      v-if="pageItem.show_label === '是' && pageItem.com_label"
+      v-if="inTabs!==true && pageItem.show_label === '是' && pageItem.com_label"
     >
       <div class="page-item__label-text" :style="[mixTitleStyle]">
         <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
@@ -196,6 +196,7 @@ export default {
     },
     screenType: String,
     pageConfig: Object,
+    inTabs:Boolean, // 是否在tabs中
   },
   computed: {
     mixTitleIcon() {
