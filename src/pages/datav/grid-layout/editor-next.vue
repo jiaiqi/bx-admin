@@ -83,6 +83,7 @@
         :rectWidth="parseInt(styleJson.width || '1920')"
         :rectHeight="parseInt(styleJson.height || '1080')"
         @scale-change="scaleChange"
+        ref="rulerBox"
       >
         <div
           class="custom-design"
@@ -755,6 +756,11 @@ export default {
       handler(newValue, oldValue) {
         // console.log(newValue);
       },
+    },
+    getRightWidth(val) {
+      setTimeout(() => {
+        this.$refs.rulerBox?.initSize?.();
+      }, 500);
     },
   },
   methods: {

@@ -5,6 +5,7 @@
   <div
     class="wrapper"
     id="wrapper"
+    ref="wrapper"
     :class="{ 'on-ctrl': isSpacePressed === true }"
     v-else
     :style="setCanvasLeft"
@@ -152,9 +153,7 @@ export default Vue.extend({
       });
     },
     initSize() {
-      const wrapperRect = document
-        .querySelector("#wrapper")
-        .getBoundingClientRect();
+      const wrapperRect = this.$refs.wrapper.getBoundingClientRect();
       const borderWidth = 1;
       this.width = wrapperRect.width - this.thick - borderWidth;
       this.height = wrapperRect.height - this.thick - borderWidth;
