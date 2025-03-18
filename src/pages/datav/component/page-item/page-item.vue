@@ -32,13 +32,11 @@
       <!-- {{ pageItem.com_case_json.label }} -->
     </nav-menu>
     <iframe
-      :src="pageItem.ext_page_json.ext_page_url"
+      :src="getExtPageUrl"
       frameborder="0"
       style="width: 100%; height: 100%; border: none"
       v-else-if="
-        pageItem.com_type === 'extPage' &&
-        pageItem.ext_page_json &&
-        pageItem.ext_page_json.ext_page_url
+        pageItem.com_type === 'extPage' &&getExtPageUrl
       "
     ></iframe>
     <video-card
@@ -199,6 +197,13 @@ export default {
     inTabs:Boolean, // 是否在tabs中
   },
   computed: {
+    getExtPageUrl(){
+      if(this.pageItem?.ext_page_json?.ext_page_url){
+        return this.pageItem?.ext_page_json?.ext_page_url;
+      }else if(this.pageItem?.com_case_json?.ext_page_url){
+        return this.pageItem?.com_case_json?.ext_page_url;
+      }
+    },
     mixTitleIcon() {
       return this.pageItem?.com_icon || this.pageConfig?.dv_com_icon;
     },

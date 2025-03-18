@@ -33,9 +33,11 @@
 <script setup>
 import { computed, ref,watch } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
+import {MessageBox} from 'element-ui'
 const props = defineProps({
   config: Object,
   list: Array,
+  pageItem: Object,
 });
 
 const setList = ref([]);
@@ -107,6 +109,18 @@ const hoverStyle = computed(() => {
   return formatStyleData(style);
 });
 function openUrl(url) {
+  if(props?.pageItem?.com_option?.includes('强制登录')){
+    sessionStorage.setItem('targetPage',url)
+    MessageBox.confirm('需要登录才能继续操作，是否跳转到登录？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(()=>{
+      top.window.location.href = `${location.origin}/vpages/#/lowcode-grid/view/PG2503180001`
+    })
+
+    return
+  }
   if (url) {
     window.open(url);
   }

@@ -34,7 +34,7 @@
           draggable="true"
           unselectable="on"
         >
-          <img :src="getImagePath(item.preview)" alt="" class="example" />
+          <img :src="getImagePath(item.preview)" alt="" class="example"/>
           <div class="label">{{ item.comp_label }}</div>
         </div>
       </div>
@@ -183,7 +183,7 @@
                 class="remove"
                 @click.stop="removeItem(item.i)"
                 v-if="inEditor"
-                ><i class="el-icon-close"></i
+              ><i class="el-icon-close"></i
               ></span>
               <div class="com-item dashed" v-if="!inEditor">
                 <page-item
@@ -385,7 +385,7 @@
                   class="remove"
                   @click.stop="removeItem(item.i)"
                   v-if="inEditor"
-                  ><i class="el-icon-close"></i
+                ><i class="el-icon-close"></i
                 ></span>
                 <!-- <div v-if="item.isLeftBarItem" class="com-item dashed" :class="{ 'active': item.i === curDesign }"
                 @click.stop.prevent.capture="changeDesign(item.i)">
@@ -431,7 +431,7 @@
           style="text-align: center; margin-top: 50px"
         >
           <el-button @click="previewCurrent"
-            >{{ onMobilePreview ? "编辑" : "预览" }}
+          >{{ onMobilePreview ? "编辑" : "预览" }}
           </el-button>
           <el-button @click="previewMobile">h5预览</el-button>
         </div>
@@ -449,17 +449,17 @@
 
 <script>
 import dayjs from "dayjs";
-import { GridLayout, GridItem } from "vue-grid-layout";
+import {GridLayout, GridItem} from "vue-grid-layout";
 import VueDragResize from "vue-drag-resize";
 import PageItem from "../component/page-item/page-item.vue";
 import propertyPane from "./property-pane.vue";
 import componentPane from "./left-pane/component-pane.vue";
 import rulerBox from "./ruler-box.vue";
-import { formatStyleData, rpx2px } from "../common/index.js";
-import { $axios } from "../common/http.js";
+import {formatStyleData, rpx2px} from "../common/index.js";
+import {$axios} from "../common/http.js";
 
-let mouseXY = { x: null, y: null };
-let DragPos = { x: null, y: null, w: 1, h: 1, i: null };
+let mouseXY = {x: null, y: null};
+let DragPos = {x: null, y: null, w: 1, h: 1, i: null};
 
 // 页面参数
 import pageParams from "../common/params/page-params-mixin.js";
@@ -502,7 +502,7 @@ export default {
       layoutJson: null,
       comJson: [],
       comList: [],
-      designData: { layoutCon: [], layoutData: [] }, //容器内容
+      designData: {layoutCon: [], layoutData: []}, //容器内容
       bjStyles: {}, //栅格样式
       curDesign: "", //点击容器组件样式
       rowHeight: 10, //默认一格高度
@@ -662,10 +662,18 @@ export default {
         delete json.width;
         delete json.height;
       }
+      if (this.pageConfg.background_image) {
+        if (!json) {
+          json = {}
+        }
+        json.background_image = this.pageConfg.background_image
+      }
       if (json) {
         json = JSON.parse(rpx2px(JSON.stringify(json)));
       }
+
       json = formatStyleData(json);
+
       return json;
     },
     styleJson() {
@@ -798,7 +806,7 @@ export default {
         }
       };
 
-      container.addEventListener("wheel", handleWheel, { passive: false });
+      container.addEventListener("wheel", handleWheel, {passive: false});
       this.$once("hook:beforeDestroy", () => {
         container.removeEventListener("wheel", handleWheel);
       });
@@ -1225,7 +1233,7 @@ export default {
             {
               serviceName: o.serviceName,
               srvApp: "config",
-              condition: [{ colName: "id", ruleType: "in", value: id }],
+              condition: [{colName: "id", ruleType: "in", value: id}],
             },
           ];
           break;
@@ -1391,7 +1399,7 @@ export default {
               h: item.layout_height || this.initWH.h,
               i: item.id || new Date().getTime(), // item.seq - 1
               // layout_no: item.layout_no,
-              data: { ...item },
+              data: {...item},
               isLeftBarItem: false,
               id: item.id,
               colNum: this.colNum,
@@ -1455,7 +1463,7 @@ export default {
       //   this.$refs?.pageItem?.[index]?.onResize?.(item.data.timestamp);
       // });
     },
-    onDragstop({ left, top, width, height }, index) {
+    onDragstop({left, top, width, height}, index) {
       this.curDesign = this.layout[index].i;
       console.log(
         "拖拽停止：",
@@ -1474,7 +1482,7 @@ export default {
         h: this.px2vh(height),
       });
     },
-    onResizestop({ left, top, width, height }, index) {
+    onResizestop({left, top, width, height}, index) {
       this.curDesign = this.layout[index].i;
       console.log("大小改变：", index, left, top, width, height);
       this.$set(this.layout, index, {
@@ -1633,7 +1641,7 @@ export default {
         ) {
           if (!this.haveData()) {
             this.computedPosi(
-              { w: 12, h: 4 },
+              {w: 12, h: 4},
               this.moveData.id,
               this.designData.layoutCon
             );
@@ -1786,8 +1794,9 @@ export default {
         try {
           this.$refs.gridlayout.$children[
             this.layout.length
-          ].$refs.item.style.display = "none";
-        } catch {}
+            ].$refs.item.style.display = "none";
+        } catch {
+        }
         let el = this.$refs.gridlayout.$children[index];
         el.dragging = {
           top: mouseXY.y - parentRect.top,
@@ -1867,7 +1876,8 @@ export default {
           if (config.figure_row_json) {
             try {
               config.swiper_json = JSON.parse(config.figure_row_json);
-            } catch (error) {}
+            } catch (error) {
+            }
           }
           break;
         case "map":
@@ -2055,8 +2065,9 @@ export default {
         try {
           this.$refs.gridlayout.$children[
             this.layout.length
-          ].$refs.item.style.display = "block";
-        } catch {}
+            ].$refs.item.style.display = "block";
+        } catch {
+        }
       }
     },
     randomNum(n) {
@@ -2183,6 +2194,7 @@ export default {
     border: 1px dashed #ccc;
     z-index: 99;
   }
+
   // &::before{
   //   position: absolute;
   //   content: "";
@@ -2288,10 +2300,12 @@ export default {
         width: 4px; /* 设置滚动条的宽度 */
         height: 4px; /* 设置滚动条的高度 */
       }
+
       &::-webkit-scrollbar-thumb {
         background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
         border-radius: 4px; /* 设置滚动条滑块的圆角 */
       }
+
       .com-item-1 {
         display: inline-flex;
         flex-direction: column;
@@ -2307,6 +2321,7 @@ export default {
         border: 1px solid #ccc;
         background-color: #f1f1f1;
         cursor: move;
+
         .example {
           flex: 1;
           background-color: #ccc;
@@ -2324,6 +2339,7 @@ export default {
       }
     }
   }
+
   .tool-bar {
     position: absolute;
     top: 0;
@@ -2339,6 +2355,7 @@ export default {
     border-bottom: 1px solid #f1f1f1;
     z-index: 999;
   }
+
   .cushome-right {
     width: 340px;
     width: var(--right-width);
@@ -2350,25 +2367,31 @@ export default {
     background: #fff;
     // overflow: auto;
     transition: width 0.5s ease-in-out;
+
     &::-webkit-scrollbar {
       width: 4px; /* 设置滚动条的宽度 */
       height: 4px; /* 设置滚动条的高度 */
     }
+
     &::-webkit-scrollbar-thumb {
       background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
       border-radius: 4px; /* 设置滚动条滑块的圆角 */
     }
+
     ::v-deep .form-view-wrapper.el-row {
       &::-webkit-scrollbar {
         width: 8px; /* 设置滚动条的宽度 */
         height: 8px; /* 设置滚动条的高度 */
       }
+
       &::-webkit-scrollbar-thumb {
         background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
         border-radius: 4px; /* 设置滚动条滑块的圆角 */
       }
+
       height: calc(100vh - 150px);
     }
+
     .fold {
       position: absolute;
       top: 50%;
@@ -2384,15 +2407,18 @@ export default {
         transform: rotate(0);
         transition: all 0.5s ease-in-out;
       }
+
       &.unfold {
         .icon {
           transform: rotate(180deg);
         }
       }
+
       background: rgba(0, 0, 0, 0.08);
       border-radius: 4px;
       padding: 2px;
     }
+
     // padding: 20px;
     .left-line {
       // border-right: 2px solid transparent;
@@ -2405,6 +2431,7 @@ export default {
 
       &.show-right {
         cursor: col-resize;
+
         &::after {
           content: "";
           width: 4px;
@@ -2438,20 +2465,24 @@ export default {
     // padding: 40px;
     background: #f1f3f2;
     transition: right 0.5s ease-in-out;
+
     &::-webkit-scrollbar {
       width: 6px; /* 设置滚动条的宽度 */
       height: 6px; /* 设置滚动条的高度 */
     }
+
     &::-webkit-scrollbar-thumb {
       background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
       border-radius: 4px; /* 设置滚动条滑块的圆角 */
     }
+
     &.no-padding {
       padding: 0;
       background-color: transparent;
       z-index: 9;
       pointer-events: none;
     }
+
     &.data-view-mode {
       padding: 0;
       left: 0;
@@ -2574,6 +2605,7 @@ export default {
 .custom-design {
   transition: transform 0.15s ease-in-out;
 }
+
 .custom-design .vue-grid-layout {
   min-height: calc(100% - 200px);
   padding-bottom: 200px;
@@ -2616,6 +2648,7 @@ export default {
       height: 20px;
       background: #409eff;
     }
+
     &::before {
       content: "";
       position: absolute;

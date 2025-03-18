@@ -25,6 +25,7 @@
       v-if="'多行列宫格' === listType || '多行列文本' === listType"
       :config="listConfig"
       :list="tableData"
+      :page-item="pageItem"
     >
     </grid-list>
     <!-- 卡片列表 -->

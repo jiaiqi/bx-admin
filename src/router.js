@@ -668,7 +668,6 @@ routes.push({
               /* webpackChunkName: "mind-page" */ "@/pages/mind/index.vue"
             ),
         },
-        ,
         {
           path: "bizEditor/:mindbizNo/:rootNo",
           // 脑图业务中直接打开
