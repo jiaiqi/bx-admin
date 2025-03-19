@@ -70,10 +70,14 @@
       <tr>
         <td colspan="2">专家信息文件PDF</td>
         <td colspan="5">
-          <el-button type="text" @click="previewPDF(data.highest_education_level,'专家信息文件')"
+          <el-button
+            type="text"
+            @click="previewPDF(data.highest_education_level, '专家信息文件')"
             >预览</el-button
           >
-          <el-button type="text" @click="downloadPDF(data.highest_education_level,'专家信息文件')"
+          <el-button
+            type="text"
+            @click="downloadPDF(data.highest_education_level, '专家信息文件')"
             >下载</el-button
           >
         </td>
@@ -81,8 +85,16 @@
       <tr>
         <td colspan="2">单位公示文件PDF</td>
         <td colspan="5">
-          <el-button type="text" @click="previewPDF(data.notice_file,'单位公示文件')">预览</el-button>
-          <el-button type="text" @click="downloadPDF(data.notice_file,'单位公示文件')">下载</el-button>
+          <el-button
+            type="text"
+            @click="previewPDF(data.notice_file, '单位公示文件')"
+            >预览</el-button
+          >
+          <el-button
+            type="text"
+            @click="downloadPDF(data.notice_file, '单位公示文件')"
+            >下载</el-button
+          >
         </td>
       </tr>
       <tr>
@@ -144,6 +156,16 @@
       >
       </update>
     </el-dialog>
+    <viewer v-show="false" :images="imageList" ref="viewer">
+      <img
+        style="height: 1rem; width: 1rem"
+        :class="'image-' + url"
+        @error="onerror"
+        :src="url"
+        v-for="url in imageList"
+        :key="url"
+      />
+    </viewer>
   </div>
 </template>
 
@@ -158,6 +180,7 @@ export default {
       data: {},
       activeForm: null,
       formButton: null,
+      imageList: [],
     };
   },
   computed: {
@@ -171,11 +194,48 @@ export default {
     },
   },
   methods: {
-    previewPDF(url,type){
-      this.addTabByUrl(`/vpages/#/viewpdf?pdfsrc=${encodeURIComponent(url)}`,type)
+    onerror(err){
+      console.error(err);
+      
+    },
+    isImage(url = "") {
+      if (!url) {
+        return false;
+      }
+      let fileType = url.split(".").pop();
+      if (fileType) {
+        fileType = fileType.toLowerCase();
+      }
+      const imgTypes = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg"];
+      return imgTypes.includes(fileType);
+    },
+    isPDF(url='') {
+      if (!url) {
+        return false;
+      }
+      let fileType = url.split(".").pop();
+      if (fileType) {
+        fileType = fileType.toLowerCase().trim();
+      }
+      return fileType === "pdf";
+    },
+    previewPDF(url, type) {
+      if (this.isPDF(url)) {
+        this.addTabByUrl(
+          `/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`,
+          type
+        );
+      } else if (this.isImage(url)) {
+        this.imageList = [decodeURIComponent(url)];
+        const viewer = this.$refs.viewer.$viewer;
+        viewer.show();
+      }else{
+        this.$$message.error('只支持预览图片或者pdf文件')
+      }
+
       // window.open(`/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`)
     },
-    downloadPDF(url,type){
+    downloadPDF(url, type) {
       // 创建a标签下载
       const a = document.createElement("a");
       a.href = url;
