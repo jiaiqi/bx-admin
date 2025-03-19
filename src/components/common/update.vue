@@ -356,7 +356,7 @@ export default {
     },
 
     pk: {
-      type: String,
+      type: [String,Number],
     },
 
     initLoad: {

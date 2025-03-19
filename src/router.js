@@ -309,11 +309,11 @@ let routes = [
     name: "viewpdf",
     component: (resolve) => require(["@/components/common/view-pdf"], resolve),
   }, // 预览可以预览发票信息，万象使用
-  // {
-  //   path: '/viewpdf',
-  //   name: 'viewpdf',
-  //   component: resolve => require(['@/components/common/viewpdf'],resolve) ,
-  // },  // 预览带有标题但发票内容部分无法解码
+  {
+    path: '/viewpdf2',
+    name: 'viewpdf',
+    component: resolve => require(['@/components/common/viewpdf'],resolve) ,
+  },  // 预览带有标题但发票内容部分无法解码
 
   {
     path: "/treelevel/:service_name",
@@ -738,11 +738,17 @@ routes.push(
   }
 )
 
+routes.push( { //专家详情
+  path: "/expert-detail/:id",
+  name: "ExpertDetail",
+  component: () => import("@/pages/expert/detail.vue")
+})
+
 routes.push( { //网站
   path: "/force-login",
   name: "forceLogin",
   component: () => import("@/pages/datav/login/login.vue")
-},)
+})
 Vue.use(VueRouter);
 const router = new VueRouter({
   routes,
