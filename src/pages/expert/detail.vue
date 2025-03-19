@@ -172,7 +172,7 @@ export default {
   },
   methods: {
     previewPDF(url,type){
-      this.addTabByUrl(`/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`,type)
+      this.addTabByUrl(`/vpages/#/viewpdf?pdfsrc=${encodeURIComponent(url)}`,type)
       // window.open(`/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`)
     },
     downloadPDF(url,type){

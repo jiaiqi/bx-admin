@@ -305,14 +305,16 @@ let routes = [
     component: ShowStatChart,
   },
   {
-    path: "/viewpdf",
+    path: "/viewpdf2",
     name: "viewpdf",
-    component: (resolve) => require(["@/components/common/view-pdf"], resolve),
+    component: ()=>import("@/components/common/view-pdf"),
+    //  (resolve) => require(["@/components/common/view-pdf"], resolve),
   }, // 预览可以预览发票信息，万象使用
   {
-    path: '/viewpdf2',
+    path: '/viewpdf',
     name: 'viewpdf',
-    component: resolve => require(['@/components/common/viewpdf'],resolve) ,
+    component: ()=>import("@/components/common/viewpdf"),
+    // resolve => require(['@/components/common/viewpdf'],resolve) ,
   },  // 预览带有标题但发票内容部分无法解码
 
   {
