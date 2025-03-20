@@ -51,8 +51,8 @@ export default {
       let props = {
         value: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
-        // checkStrictly: top?.env?.includes("health") ? false : true, //只有健康科普资源库后台需要只能选择最后一级节点
-        checkStrictly:true
+        checkStrictly: top?.env?.includes("health") ? false : true, //只有健康科普资源库后台需要只能选择最后一级节点
+        // checkStrictly:true
       };
 
       return props;

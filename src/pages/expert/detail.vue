@@ -61,28 +61,45 @@
       </tr>
       <tr>
         <td>联系人</td>
-        <td>{{ data.organ_level || "" }}</td>
+        <td colspan="2">{{ data.organ_level || "" }}</td>
         <td>联系电话</td>
-        <td colspan="2">{{ data.office_phone || "" }}</td>
-        <td>联系人座机</td>
-        <td colspan="1"></td>
+        <td colspan="3">{{ data.office_phone || "" }}</td>
+        <!-- <td>联系人座机</td>
+        <td colspan="1"></td> -->
       </tr>
       <tr>
-        <td colspan="2">专家信息文件PDF</td>
-        <td colspan="5">
+        <td colspan="1">专家信息文件</td>
+        <td colspan="2">
           <el-button
             type="text"
             @click="previewPDF(data.highest_education_level, '专家信息文件')"
+            v-if="data.highest_education_level"
             >预览</el-button
           >
           <el-button
             type="text"
+            v-if="data.highest_education_level"
             @click="downloadPDF(data.highest_education_level, '专家信息文件')"
             >下载</el-button
           >
         </td>
+         <td colspan="1">单位公示文件</td>
+        <td colspan="3">
+          <el-button
+            type="text"
+            v-if="data.notice_file"
+            @click="previewPDF(data.notice_file, '单位公示文件')"
+            >预览</el-button
+          >
+          <el-button
+            type="text"
+            v-if="data.notice_file"
+            @click="downloadPDF(data.notice_file, '单位公示文件')"
+            >下载</el-button
+          >
+        </td>
       </tr>
-      <tr>
+      <!-- <tr>
         <td colspan="2">单位公示文件PDF</td>
         <td colspan="5">
           <el-button
@@ -96,7 +113,7 @@
             >下载</el-button
           >
         </td>
-      </tr>
+      </tr> -->
       <tr>
         <td>擅长</td>
         <td colspan="6">
@@ -106,7 +123,7 @@
       <tr>
         <td>简介</td>
         <td colspan="6">
-          {{ data.brief_introduction || "" }}
+          <textarea style="width:100%;" class="bg-white" rows="auto" disabled :value="data.brief_introduction"></textarea>
         </td>
       </tr>
       <tr>
@@ -222,7 +239,7 @@ export default {
     previewPDF(url, type) {
       if (this.isPDF(url)) {
         this.addTabByUrl(
-          `/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`,
+          `/vpages/#/viewpdf?pdfsrc=${encodeURIComponent(url)}`,
           type
         );
       } else if (this.isImage(url)) {
