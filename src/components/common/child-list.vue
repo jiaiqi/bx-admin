@@ -1,11 +1,31 @@
 <template>
   <div>
+    <excel-list
+      :mem-initdatas-add="initDatas"
+      :disabled="updatable === false"
+      ref="frameList"
+      :main-service="mainService"
+      :key="childListService"
+      :col-srv="childListService"
+      :service-name="service"
+      :data="item"
+      :type="listType"
+      :default-condition="getDefaultConditions"
+      :childForeignkey="foreignKey"
+      :main-data="mainData"
+      :div-cond="divCond"
+      :is-tree="isTree"
+      v-if="
+        uiMode === 'excel' &&
+        // 'addchildlist' === listType &&
+        service
+      "
+    ></excel-list>
     <treegrid
       :disabled="updatable === false"
       :read-only="updatable === false || readOnly"
       :mainService="mainService"
       ref="list"
-      v-if="isTree && storageType === 'db'"
       :name="name"
       list-type="treelist"
       :listMainFormDatas="mainFormDatas"
@@ -20,6 +40,7 @@
       @list-loaded="onListLoaded()"
       @add-form-loaded="onAddFormLoaded($event)"
       @update-form-loaded="onUpdateFormLoaded($event)"
+      v-else-if="isTree && storageType === 'db'"
     >
     </treegrid>
 
@@ -67,21 +88,7 @@
       @standby-row-added="onStandbyRowAdded"
       v-else-if="foreignKey.view_model == 'mlist'"
     ></tableEdit>
-    <custom-frame
-      :mem-initdatas-add="initDatas"
-      :disabled="updatable === false"
-      ref="frameList"
-      :key="childListService"
-      :col-srv="childListService"
-      :service-name="item.service_name"
-      :data="item"
-      v-else-if="
-        uiMode === 'excel' &&
-        'addchildlist' === listType &&
-        item &&
-        item.service_name
-      "
-    ></custom-frame>
+  
     <!-- <list
       ref="list"
       :key="service"
@@ -169,7 +176,7 @@ import ListProc from "./listproc.vue";
 import ChildListMixin from "../mixin/child-list-mixin";
 
 import tableEdit from "./table-edit.vue";
-import customFrame from "../feature/custom-frame.vue"; // 新增的增强表格
+import excelList from "../feature/excel-list.vue"; // 新增的excel表格
 
 import { evalJson } from "@/util/evalJsonExpr.js";
 
@@ -179,7 +186,7 @@ import concat from "lodash/concat";
  */
 export default {
   components: {
-    customFrame,
+    excelList,
     Treegrid,
     SimpleUpdate,
     SimpleAdd,
@@ -392,7 +399,7 @@ export default {
         });
       }
       if (!result) {
-        result = this.item?.service_name;
+        result = this.service;
       }
       return result;
     },

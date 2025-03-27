@@ -282,7 +282,7 @@ import ChildList from "./child-list.vue";
 import SimpleAdd from "./simple-add.vue";
 import ParentChildMixin from "../mixin/parent-child-mixin";
 import FieldRedundantMixin from "../mixin/field-redundant-mixin";
-import customFrame from "../feature/custom-frame.vue";
+import customFrame from "../feature/excel-list.vue";
 import cloneDeep from "lodash/cloneDeep";
 
 export default {
