@@ -202,16 +202,24 @@ export default {
     },
 
     onDuplicateClicked(row) {
-      this.$set(this.clickedRow, 'duplicate', row);
+      const data = {...row}
+      if(data.id){
+        delete data.id
+      }
+      this.$set(this.clickedRow, 'duplicate', data);
       if (this.inplaceEditMode) {
-        this.duplicateRowInplace(row)
+        this.duplicateRowInplace(data)
       } else {
         this.activeForm = "duplicate";
       }
     },
 
     onDuplicateDeepClicked(row) {
-      this.$set(this.clickedRow, 'duplicatedeep', row);
+      const data = {...row}
+      if(data.id){
+        delete data.id
+      }
+      this.$set(this.clickedRow, 'duplicatedeep', data);
       this.activeForm = "duplicatedeep";
     },
 
