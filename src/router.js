@@ -312,7 +312,7 @@ let routes = [
   }, // 预览可以预览发票信息，万象使用
   {
     path: '/viewpdf2',
-    name: 'viewpdf',
+    name: 'viewpdf2',
     component: ()=>import("@/components/common/viewpdf"),
     // resolve => require(['@/components/common/viewpdf'],resolve) ,
   },  // 预览带有标题但发票内容部分无法解码
@@ -398,7 +398,7 @@ let routes = [
       import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
     children: [
       {
-        path: "edit/:no",
+        path: "editor/:no",
         name: "lowcode-detail",
         meta: {
           isEditor: true,

@@ -105,9 +105,9 @@ export default {
             this.listData = data.data
           }
           if (data?.type === 'heightChange') {
+            console.log('heightChange', data)
             if (this.$refs?.myFrame?.style) {
               this.$refs.myFrame.style.minHeight = data.data + 35 +'px'
-              console.log('min-height', data.data)
             }
           }
           console.log('listener', data)

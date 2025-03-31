@@ -56,6 +56,7 @@
     "v-viewer": "^1.6.4",
     "vue": "2",
     "vue-drag-resize": "^1.5.4",
+    "vue-draggable-plus": "^0.6.0",
     "vue-fragment": "^1.6.0",
     "vue-grid-layout": "^2.4.0",
     "vue-pdf": "^4.3.0",

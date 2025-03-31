@@ -15,8 +15,8 @@ let bx_auth_ticket = "";
   // const ENV = "dev2";
   // const ENV = "wanxiang";
   // const ENV = "dev";
-  // const ENV = "saas";
-  const ENV = "healthProd";
+  const ENV = "saas";
+  // const ENV = "healthProd";
   // const ENV = "gaosu61";
 
 top.env = ENV
