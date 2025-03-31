@@ -4,8 +4,13 @@
     <div class="lowcode-content">
       <!-- <editor-next></editor-next> -->
       <materials-view class="materials-view"></materials-view>
-      <editor-view :components="components" class="editor-view" @change="componentsChange"></editor-view>
-      <property-view class="property-view"></property-view>
+      <editor-view :components="components" class="editor-view" @select="selectComponent" @change="componentsChange"></editor-view>
+      <property-view 
+        class="property-view" 
+        :current-id="currentId" 
+        :components="components"
+        @change="componentsChange"
+      ></property-view>
     </div>
   </div>
 </template>
@@ -28,6 +33,7 @@ export default {
   data() {
     return {
       //
+      currentId:null,
       // 组件数据
       components: [
         {
@@ -218,6 +224,9 @@ export default {
   },
   methods: {
     //
+    selectComponent(id) {
+      this.currentId = id;
+    },
     componentsChange(val) {
       console.log('componentsChange',val); // 
       this.components = val; 

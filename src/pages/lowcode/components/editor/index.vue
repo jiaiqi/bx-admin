@@ -37,7 +37,6 @@ export default {
     // LcContainer,
     // LcContent,
     lcView,
-    draggable,
     VueDraggable,
   },
   props: {
@@ -87,29 +86,39 @@ export default {
     onTap(val) {
       console.log("onTap", val);
       this.currentId = val.id;
+      this.$emit("select", val.id);
     },
-    findComponentById(id,list=[],data) {
+    findComponentById(id, list=[], data) {
       let result = null
-      list.forEach((item) => {
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i];
         if(id && item.id === id){
-          this.$set(item, "children", [data]);
-          result = item
-          return item; // 找到匹配的元素，将其赋值给acc并返回
+          // 检查是否已有children数组
+          if (!item.children) {
+            this.$set(item, "children", []);
+          }
+          item.children.push(data);
+          result = item;
+          break; // 找到后立即退出循环
         }
         if (item.children && item.children.length > 0) {
-         result =  this.findComponentById(id, item.children,data); // 递归查找子元素
+          const found = this.findComponentById(id, item.children, data);
+          if (found) {
+            result = found;
+            break;
+          }
         }
-        return result;
-      });
+      }
+      return result;
     },
     addComponent(val) {
       console.log("addComponent", val);
       if(val?.parentId){
-        let parent = this.findComponentById(val.parentId,this.editorComponents,val);
-        // parent.children = parent.children || [];
-        // parent.children.push(val);
-
-        return; // 退出函数，避免重复添加paren
+        this.findComponentById(val.parentId, this.editorComponents, val);
+        // 触发更新
+        this.$nextTick(() => {
+          this.$emit("change", this.editorComponents);
+        });
       }
     },
   },

@@ -43,7 +43,6 @@ export default {
     lcBlock,
     lcContainer,
     lcContent,
-    draggable,
     VueDraggable,
     lcView: () => import("./view.vue"),
   },

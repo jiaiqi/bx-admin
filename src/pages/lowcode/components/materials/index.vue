@@ -32,6 +32,32 @@ export default {
           component: "el-button", // 组件类型，用于区分组件
           name: "按钮", // 组件名称，用于显示在编辑器中
         },
+        {
+          id: "2",
+          type: "input",
+          component: "el-input",
+          name: "输入框",
+        },
+        {
+          id: "3",
+          type: "select",
+          component: "el-select",
+          name: "下拉选择",
+        },
+        {
+          id: "4",
+          type: "layout",
+          component: "lc-block",
+          subType: "layout-1-2",
+          name: "两列布局",
+        },
+        {
+          id: "5",
+          type: "layout",
+          component: "lc-block",
+          subType: "layout-1-3",
+          name: "三列布局",
+        },
       ],
     };
   },
