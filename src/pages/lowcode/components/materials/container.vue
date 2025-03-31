@@ -93,58 +93,69 @@ export default {
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
-      e.target.classList.remove("drag-over");
-      e.target.classList.remove("drag-not-allowed");
-
+      if (e.target) {
+        e.target.classList.remove("drag-over");
+        e.target.classList.remove("drag-not-allowed");
+      }
+      
       // 获取拖拽数据
       const data = e.dataTransfer.getData("text/plain");
-
+      
       if (data) {
         try {
           const draggedElement = JSON.parse(data);
-
+          
           // 只处理layout类型的组件
           if (draggedElement.type === "layout") {
             draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
             draggedElement.parentId = this.id;
-
+            
             // 根据布局类型创建对应数量的内容组件
             let columnCount = 1; // 默认一列
             if (draggedElement.subType === "layout-1-2") {
               columnCount = 2; // 两列布局
             } else if (draggedElement.subType === "layout-1-3") {
               columnCount = 3; // 三列布局
+            } else if (draggedElement.subType === "layout-1-4") {
+              columnCount = 4; // 四列布局
+            } else if (draggedElement.subType === "layout-2-2-3070" || 
+                       draggedElement.subType === "layout-2-2-7030") {
+              columnCount = 2; // 两列布局(比例不同)
             }
-
+            
             // 创建子内容组件
             if (!draggedElement.children) {
               draggedElement.children = [];
             }
-
+            
             for (let i = 0; i < columnCount; i++) {
               const contentItem = {
                 id: `${draggedElement.id}_content_${i}_${new Date().getTime()}`,
                 type: "content",
                 component: "lc-content",
-                name: `内容${i + 1}`,
-                parentId: draggedElement.id,
+                name: `内容${i+1}`,
+                parentId: draggedElement.id
               };
               draggedElement.children.push(contentItem);
             }
-
+            
             this.$emit("add", draggedElement);
           } else {
             // 不是layout类型，显示不允许放置的反馈
-            e.target.classList.add("drag-not-allowed");
-            setTimeout(() => {
-              e.target.classList.remove("drag-not-allowed");
-            }, 1500);
+            if (e.target) {
+              e.target.classList.add("drag-not-allowed");
+              setTimeout(() => {
+                if (e.target) {
+                  e.target.classList.remove("drag-not-allowed");
+                }
+              }, 1500);
+            }
           }
         } catch (err) {
           console.error("解析拖拽数据失败:", err);
         }
       }
-    },
+    }
   },
 };
 </script>

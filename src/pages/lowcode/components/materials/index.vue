@@ -65,6 +65,28 @@ export default {
           component: "lc-container",
           name: "容器",
         },
+        // 新增布局类型
+        {
+          id: "7",
+          type: "layout",
+          component: "lc-block",
+          subType: "layout-1-4",
+          name: "四列布局",
+        },
+        {
+          id: "8",
+          type: "layout",
+          component: "lc-block",
+          subType: "layout-2-2-3070",
+          name: "两列布局(3:7)",
+        },
+        {
+          id: "9",
+          type: "layout",
+          component: "lc-block",
+          subType: "layout-2-2-7030",
+          name: "两列布局(7:3)",
+        },
       ],
     };
   },

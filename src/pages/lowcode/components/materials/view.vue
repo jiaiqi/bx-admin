@@ -5,6 +5,7 @@
     v-bind="props"
     @click="onTap"
     :currentId="currentId"
+    :isPreview="isPreview"
     @add="addComponent"
     style="position: relative;z-index: 1;"
   >
@@ -14,6 +15,7 @@
         v-bind="item"
         :key="item.id"
         :currentId="currentId"
+        :isPreview="isPreview"
         @click="onTap"
         @add="addComponent"
       ></lc-view>
@@ -23,7 +25,7 @@
         <!-- <el-button type="primary" size="mini" @click="openComponentSelector"
           >添加组件</el-button
         > -->
-        <span class="" style="color: #999;">
+        <span class="" style="color: #999;pointer-events: none;">
         可放置组件区域
 
         </span>
@@ -75,6 +77,10 @@ export default {
       type: String,
       default: "",
     },
+    isPreview: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     props() {
@@ -86,10 +92,14 @@ export default {
       this.$emit("open", this.props);
     },
     onTap(val) {
-      this.$emit("click", val); // 触发父组件的click事件，并传递参数val
+      if (!this.isPreview) {
+        this.$emit("click", val); // 触发父组件的click事件，并传递参数val
+      }
     },
     addComponent(val) {
-      this.$emit("add", val);
+      if (!this.isPreview) {
+        this.$emit("add", val);
+      }
     },
   },
 };

@@ -1,13 +1,15 @@
 <template>
-  <div
-    class="lc-block"
-    :class="[subType]"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-    @drop="handleDrop"
-    @dragend="handleDragEnd"
+  <div 
+    class="lc-block" 
+    :class="[subType, {'preview-mode': isPreview}]"
+    @dragover="!isPreview && handleDragOver"
+    @dragleave="!isPreview && handleDragLeave"
+    @drop="!isPreview && handleDrop"
+    @dragend="!isPreview && handleDragEnd"
   >
+    <!-- 遮罩层 -->
     <div
+      v-if="!isPreview"
       class="overlay"
       @click="$emit('click', props)"
       :class="{ active: currentId && currentId === id }"
@@ -16,7 +18,9 @@
         <i class="el-icon-rank"></i>
       </div> -->
     </div>
-    <slot />
+    
+    <!-- 子组件 -->
+    <slot></slot>
   </div>
 </template>
 
@@ -55,6 +59,10 @@ export default {
       type: String,
       default: "",
     },
+    isPreview: {
+      type: Boolean,
+      default: false,
+    }
   },
   computed: {
     props() {
@@ -225,19 +233,48 @@ export default {
       }
     }
   }
+  &.layout-1-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px;
+  }
+  
+  &.layout-1-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 10px;
+  }
+  
+  &.layout-1-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-gap: 10px;
+  }
+  
+  &.layout-2-2-3070 {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    grid-gap: 10px;
+  }
+  
+  &.layout-2-2-7030 {
+    display: grid;
+    grid-template-columns: 70% 30%;
+    grid-gap: 10px;
+  }
 }
-.layout-1-1 {
-  // 一行一列
-  display: flex;
-}
-.layout-1-2 {
-  // 一行两列
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-.layout-1-3 {
-  // 一行三列
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-}
+// .layout-1-1 {
+//   // 一行一列
+//   display: flex;
+// }
+// .layout-1-2 {
+//   // 一行两列
+//   display: grid;
+//   grid-template-columns: 1fr 1fr;
+// }
+// .layout-1-3 {
+//   // 一行三列
+//   display: grid;
+//   grid-template-columns: 1fr 1fr 1fr;
+// }
 </style>

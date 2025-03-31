@@ -2,20 +2,32 @@
   <div class="header-view">
     <div class="left"></div>
     <div class="center">可视化编辑器</div>
-    <div class="right"></div>
+    <div class="right">
+      <el-button type="primary" size="small" @click="togglePreview">
+        {{ isPreview ? '退出预览' : '预览' }}
+      </el-button>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
   name: "lowcode-header",
+  props: {
+    isPreview: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       //
     };
   },
   methods: {
-    //
+    togglePreview() {
+      this.$emit('toggle-preview');
+    }
   },
 };
 </script>
@@ -34,5 +46,10 @@ export default {
   border-bottom: 1px solid #f1f1f1;
   display: flex;
   justify-content: space-between;
+}
+
+.right {
+  display: flex;
+  align-items: center;
 }
 </style>
