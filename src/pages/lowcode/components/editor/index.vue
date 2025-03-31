@@ -1,5 +1,11 @@
 <template>
-  <div class="editor-view">
+  <div 
+    class="editor-view"
+    @dragover="handleEditorDragOver"
+    @dragleave="handleEditorDragLeave"
+    @drop="handleEditorDrop"
+    @dragend="handleEditorDragEnd"
+  >
     <div class="overlay" @click="clickOutside"></div>
     <VueDraggable
       v-model="editorComponents"
@@ -8,7 +14,7 @@
       @end="onEnd"
       :animation="150"
       handle=".handle"
-      style="width: 100%; display: contents"
+      style="width: 100%;z-index: 1;position: relative;"
     >
       <lc-view
         v-for="item in editorComponents"
@@ -30,6 +36,7 @@
 // import LcContent from "../materials/content-item.vue";
 import lcView from "../materials/view.vue";
 import { VueDraggable } from "vue-draggable-plus";
+import dragStore from '../../store/dragStore';
 export default {
   name: "lowcode-editor",
   components: {
@@ -121,7 +128,82 @@ export default {
         });
       }
     },
-  },
+    // 在methods中添加以下方法
+    handleEditorDragOver(e) {
+      // 获取拖拽元素的类型
+      const draggedType = dragStore.getDragType()
+      
+      // 阻止默认行为以允许放置
+      e.preventDefault();
+      if (draggedType === "container") {
+        // 允许放置容器组件
+        e.dataTransfer.dropEffect = "copy";
+        e.currentTarget.classList.add("editor-drag-over");
+        e.currentTarget.classList.remove("editor-drag-not-allowed");
+      } else {
+        // 不允许放置非容器组件
+        e.dataTransfer.dropEffect = "none";
+        e.currentTarget.classList.remove("editor-drag-over");
+        e.currentTarget.classList.add("editor-drag-not-allowed");
+      }
+    },
+      
+      // 移除调试代码
+      // const componentType = e.dataTransfer.getData("component-type");
+      // console.log("handleEditorDragOver", componentType);
+      // debugger
+    
+    handleEditorDragLeave(e) {
+      e.currentTarget.classList.remove("editor-drag-over");
+      e.currentTarget.classList.remove("editor-drag-not-allowed");
+    },
+    
+    // 添加拖拽结束处理
+    handleEditorDragEnd(e) {
+      // 清除拖拽状态
+      dragStore.clearDragType();
+      
+      // 清除所有拖拽样式
+      document.querySelectorAll('.editor-drag-over, .editor-drag-not-allowed, .drag-over, .drag-not-allowed').forEach(el => {
+        el.classList.remove('editor-drag-over');
+        el.classList.remove('editor-drag-not-allowed');
+        el.classList.remove('drag-over');
+        el.classList.remove('drag-not-allowed');
+      });
+    },
+    handleEditorDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove("editor-drag-over");
+      e.currentTarget.classList.remove("editor-drag-not-allowed");
+      
+      // 获取拖拽数据
+      const data = e.dataTransfer.getData("text/plain");
+      
+      if (data) {
+        try {
+          const draggedElement = JSON.parse(data);
+          
+          // 只处理container类型的组件
+          if (draggedElement.type === "container") {
+            draggedElement.id = `root${new Date().getTime()}`;
+            
+            // 添加到顶层组件
+            this.editorComponents.push(draggedElement);
+            this.$emit("change", this.editorComponents);
+          } else {
+            // 不是container类型，显示不允许放置的反馈
+            let target = e.currentTarget;
+            target.classList.add("editor-drag-not-allowed");
+            setTimeout(() => {
+              target.classList.remove("editor-drag-not-allowed");
+            }, 1500);
+          }
+        } catch (err) {
+          console.error("解析拖拽数据失败:", err);
+        }
+      }
+    }
+  }
 };
 </script>
 
@@ -130,7 +212,40 @@ export default {
   height: 100%;
   width: 100%;
   position: relative;
+  
+  &.editor-drag-over {
+    border: 2px dashed #ff740e;
+    background-color: rgba(255, 116, 14, 0.05);
+    &::before {
+      content: "可放置容器组件";
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 5px 10px;
+      background-color: #ff740e;
+      color: #fff;
+      z-index: 100;
+      border-radius: 4px;
+    }
+  }
+  
+  &.editor-drag-not-allowed {
+    border: 2px dashed #ff0000;
+    background-color: rgba(255, 0, 0, 0.05);
+    &::before {
+      content: "不可放置此组件";
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 5px 10px;
+      background-color: #ff0000;
+      color: #fff;
+      z-index: 100;
+      border-radius: 4px;
+    }
+  }
 }
+
 .overlay {
   position: absolute;
   top: 0;

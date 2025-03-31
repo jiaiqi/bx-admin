@@ -1,5 +1,12 @@
 <template>
-  <div class="lc-block" :class="[subType]">
+  <div
+    class="lc-block"
+    :class="[subType]"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+    @dragend="handleDragEnd"
+  >
     <div
       class="overlay"
       @click="$emit('click', props)"
@@ -14,9 +21,11 @@
 </template>
 
 <script>
+import dragStore from "../../store/dragStore";
+
 export default {
   name: "lc-block",
-  components: {  },
+  components: {},
   props: {
     id: {
       type: [String, Number],
@@ -52,6 +61,81 @@ export default {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
   },
+  methods: {
+    // 修改拖拽相关的事件处理
+    handleDragOver(e) {
+      // 阻止事件冒泡
+      e.stopPropagation();
+
+      // 获取当前拖拽的组件类型
+      const draggedType = dragStore.getDragType();
+
+      // 阻止默认行为以允许放置
+      e.preventDefault();
+
+      if (e.currentTarget) {
+        if (draggedType === 'content') {
+          // 只允许放置内容组件
+          e.dataTransfer.dropEffect = "copy";
+          e.currentTarget.classList.add("drag-over");
+          e.currentTarget.classList.remove("drag-not-allowed");
+        } else {
+          // 不允许放置布局和容器组件
+          e.dataTransfer.dropEffect = "none";
+          e.currentTarget.classList.remove("drag-over");
+          e.currentTarget.classList.add("drag-not-allowed");
+        }
+      }
+    },
+
+    handleDragLeave(e) {
+      // 阻止事件冒泡
+      e.stopPropagation();
+      e.currentTarget.classList.remove("drag-over");
+      e.currentTarget.classList.remove("drag-not-allowed");
+    },
+
+    handleDrop(e) {
+      // 阻止事件冒泡
+      e.stopPropagation();
+      e.preventDefault();
+      e.currentTarget.classList.remove("drag-over");
+      e.currentTarget.classList.remove("drag-not-allowed");
+
+      // 获取拖拽数据
+      const data = e.dataTransfer.getData("text/plain");
+
+      if (data) {
+        try {
+          const draggedElement = JSON.parse(data);
+
+          // 只处理非layout和非container类型的组件
+          if (
+            draggedElement.type !== "layout" &&
+            draggedElement.type !== "container"
+          ) {
+            draggedElement.id = `${this.id}_component_${new Date().getTime()}`;
+            draggedElement.parentId = this.id;
+
+            this.$emit("add", draggedElement);
+          } else {
+            // 不允许放置layout和container类型的组件
+            e.currentTarget.classList.add("drag-not-allowed");
+            setTimeout(() => {
+              e.currentTarget.classList.remove("drag-not-allowed");
+            }, 1500);
+          }
+        } catch (err) {
+          console.error("解析拖拽数据失败:", err);
+        }
+      }
+    },
+
+    handleDragEnd() {
+      // 清除拖拽类型
+      dragStore.clearDragType();
+    },
+  },
 };
 </script>
 
@@ -71,6 +155,39 @@ export default {
   position: relative;
   padding: 10px;
   --primary-color: #2c48ff;
+  border: 1px dashed rgba(44, 72, 255, 0.3); /* 添加浅色虚线边框 */
+
+  &.drag-over {
+    border: 2px dashed var(--primary-color);
+    background-color: rgba(44, 72, 255, 0.05);
+    &::before {
+      content: "可放置组件";
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 2px 5px;
+      background-color: var(--primary-color);
+      color: #fff;
+      transform: translateY(-100%);
+      z-index: 10;
+    }
+  }
+
+  &.drag-not-allowed {
+    border: 2px dashed #ff0000;
+    background-color: rgba(255, 0, 0, 0.05);
+    &::before {
+      content: "不可放置此组件";
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 2px 5px;
+      background-color: #ff0000;
+      color: #fff;
+      transform: translateY(-100%);
+      z-index: 10;
+    }
+  }
 
   > .overlay {
     > .handle {

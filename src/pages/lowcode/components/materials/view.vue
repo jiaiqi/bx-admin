@@ -6,9 +6,9 @@
     @click="onTap"
     :currentId="currentId"
     @add="addComponent"
+    style="position: relative;z-index: 1;"
   >
     <template v-if="children && children.length">
-     
       <lc-view
         v-for="item in children"
         v-bind="item"
@@ -20,9 +20,13 @@
     </template>
     <slot v-else>
       <template v-if="type === 'content'">
-        <el-button type="primary" size="mini" @click="openComponentSelector"
+        <!-- <el-button type="primary" size="mini" @click="openComponentSelector"
           >添加组件</el-button
-        >
+        > -->
+        <span class="" style="color: #999;">
+        可放置组件区域
+
+        </span>
       </template>
       <template v-else>
         {{ name }}

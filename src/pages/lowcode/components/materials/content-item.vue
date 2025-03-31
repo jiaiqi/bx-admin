@@ -19,6 +19,7 @@
 
 <script>
 import { VueDraggable } from "vue-draggable-plus";
+import dragStore from "../../store/dragStore";
 
 export default {
   name: "lc-block",
@@ -61,35 +62,72 @@ export default {
   },
   methods: {
     handleDragLeave(e) {
+      // 阻止事件冒泡
+      e.stopPropagation();
       e.target.classList.remove("drag-over");
+      e.target.classList.remove("drag-not-allowed");
     },
+
     handleDragOver(e) {
-      // console.log("handleDragOver:", e);
-      if (e.target.dataset.allowDrop === "true") {
-        e.preventDefault(); // 必须！否则无法触发 drop 事件
-        e.dataTransfer.dropEffect = "move"; // 可视化反馈（如光标样式）
-        e.target.classList.add("drag-over"); // 可选：添加类名以显示反馈
-      }else{
-        
+      // 阻止事件冒泡
+      e.stopPropagation();
+
+      // 阻止默认行为以允许放置
+      e.preventDefault();
+
+      // 获取拖拽元素的类型
+      const draggedType = dragStore.getDragType();
+
+      if (e.target && this.allowDrop) {
+        if (!['container','layout','content'].includes(draggedType)) {
+          // 允许放置非容器和非布局组件且非 content 组件
+          e.dataTransfer.dropEffect = "copy";
+          e.target.classList.add("drag-over");
+          e.target.classList.remove("drag-not-allowed");
+        } else {
+          // 不允许放置容器和布局组件
+          e.dataTransfer.dropEffect = "none";
+          e.target.classList.remove("drag-over");
+          e.target.classList.add("drag-not-allowed");
+          
+        }
       }
     },
+
     handleDrop(e) {
-      console.log("handleDrop:", e);
+      // 阻止事件冒泡
+      e.stopPropagation();
       e.preventDefault();
       e.target.classList.remove("drag-over");
+      e.target.classList.remove("drag-not-allowed");
+
       // 验证目标元素是否为允许的容器
       if (e.target.dataset.allowDrop === "true") {
         const data = e.dataTransfer.getData("text/plain");
         if (data) {
-          const draggedElement = JSON.parse(data);
-          draggedElement.id = `${this.id}${new Date().getTime()}`;
-          draggedElement.parentId = this.id;
-          // console.log("draggedElement:", draggedElement);
-          // e.target.appendChild(draggedElement); // 将元素移动到目标容器
-          this.$emit("add", draggedElement);
+          try {
+            const draggedElement = JSON.parse(data);
+
+            // 只处理非container和非layout类型的组件
+            if (
+              draggedElement.type !== "container" &&
+              draggedElement.type !== "layout"
+            ) {
+              draggedElement.id = `${this.id}${new Date().getTime()}`;
+              draggedElement.parentId = this.id;
+              this.$emit("add", draggedElement);
+            } else {
+              // 不允许放置container和layout类型的组件
+              e.target.classList.add("drag-not-allowed");
+              setTimeout(() => {
+                e.target.classList.remove("drag-not-allowed");
+              }, 1500);
+            }
+          } catch (err) {
+            console.error("解析拖拽数据失败:", err);
+          }
         }
       }
-      return;
     },
   },
 };
@@ -105,6 +143,8 @@ export default {
   justify-content: center;
   align-items: center;
   --primary-color: #17d57e;
+  border: 1px dashed rgba(23, 213, 126, 0.3); /* 添加浅色虚线边框 */
+
   .content {
     z-index: 1;
     .component {
@@ -147,10 +187,43 @@ export default {
   //     }
   //   }
   // }
-}
-.layout-1 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 10px;
+
+  .layout-1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px;
+  }
+
+  &.drag-over {
+    border: 2px dashed #17d57e;
+    background-color: rgba(23, 213, 126, 0.05);
+    &::before {
+      content: "可放置组件";
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 2px 5px;
+      background-color: #17d57e;
+      color: #fff;
+      transform: translateY(-100%);
+      z-index: 10;
+    }
+  }
+
+  &.drag-not-allowed {
+    border: 2px dashed #ff0000;
+    background-color: rgba(255, 0, 0, 0.05);
+    &::before {
+      content: "不可放置此组件";
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 2px 5px;
+      background-color: #ff0000;
+      color: #fff;
+      transform: translateY(-100%);
+      z-index: 10;
+    }
+  }
 }
 </style>
