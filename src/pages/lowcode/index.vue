@@ -1,17 +1,36 @@
 <template>
   <div class="lowcode-wrapper">
-    <header-view></header-view>
+    <header-view @show-json="jsonVisible = true"></header-view>
     <div class="lowcode-content">
       <!-- <editor-next></editor-next> -->
       <materials-view class="materials-view"></materials-view>
-      <editor-view :components="components" class="editor-view" @select="selectComponent" @change="componentsChange"></editor-view>
-      <property-view 
-        class="property-view" 
-        :current-id="currentId" 
+      <editor-view
+        :components="components"
+        class="editor-view"
+        @select="selectComponent"
+        @change="componentsChange"
+      ></editor-view>
+      <property-view
+        class="property-view"
+        :current-id="currentId"
         :components="components"
         @change="componentsChange"
       ></property-view>
     </div>
+    <el-drawer
+      title="我是标题"
+      :visible.sync="jsonVisible"
+      direction="ltr"
+      size="50%"
+      :with-header="false"
+    >
+      <json-viewer
+        :value="components"
+        expanded
+        :expand-depth="5"
+        :copyable="{copyText: '复制', copiedText: '已复制'}"
+      ></json-viewer>
+    </el-drawer>
   </div>
 </template>
 
@@ -21,6 +40,9 @@ import MaterialsView from "./components/materials";
 import EditorView from "./components/editor";
 import PropertyView from "./components/property";
 import editorNext from "../datav/grid-layout/editor-next.vue";
+import JsonViewer from "vue-json-viewer";
+import "vue-json-viewer/style.css";
+
 export default {
   name: "lowcode-main",
   components: {
@@ -29,16 +51,19 @@ export default {
     EditorView,
     PropertyView,
     editorNext,
+    JsonViewer,
   },
   data() {
     return {
       //
-      currentId:null,
+      currentId: null,
+      structureData: null,
+      jsonVisible: false,
       // 组件数据
       components: [
         // {
         //   id: "1", // 组件ID，唯一标识
-        //   type: "container", 
+        //   type: "container",
         //   component: "lc-container", // 组件类型，用于区分组件
         //   name: "Container", // 组件名称，用于显示在编辑器中
         //   props: {
@@ -77,7 +102,7 @@ export default {
         //               type: "button", // 组件类型，用于区分组件
         //               component: "el-button", // 组件类型，用于区分组件
         //               name: "按钮一", // 组件名称，用于显示在编辑器中
-        //             }, 
+        //             },
         //           ]
         //         },
         //         {
@@ -92,7 +117,7 @@ export default {
         //               type: "button", // 组件类型，用于区分组件
         //               component: "el-button", // 组件类型，用于区分组件
         //               name: "按钮二", // 组件名称，用于显示在编辑器中
-        //             }, 
+        //             },
         //           ]
         //         },
         //       ],
@@ -127,10 +152,9 @@ export default {
         //     },
         //   ],
         // },
-        
         // {
         //   id: "11", // 组件ID，唯一标识
-        //   type: "container", 
+        //   type: "container",
         //   component: "lc-container", // 组件类型，用于区分组件
         //   name: "Container", // 组件名称，用于显示在编辑器中
         //   props: {
@@ -169,7 +193,7 @@ export default {
         //               type: "button", // 组件类型，用于区分组件
         //               component: "el-button", // 组件类型，用于区分组件
         //               name: "按钮三", // 组件名称，用于显示在编辑器中
-        //             }, 
+        //             },
         //           ]
         //         },
         //         {
@@ -184,7 +208,7 @@ export default {
         //               type: "button", // 组件类型，用于区分组件
         //               component: "el-button", // 组件类型，用于区分组件
         //               name: "按钮四", // 组件名称，用于显示在编辑器中
-        //             }, 
+        //             },
         //           ]
         //         },
         //       ],
@@ -228,9 +252,9 @@ export default {
       this.currentId = id;
     },
     componentsChange(val) {
-      console.log('componentsChange',val); // 
-      this.components = val; 
-    }
+      console.log("componentsChange", val); //
+      this.components = val;
+    },
   },
 };
 </script>
@@ -241,10 +265,12 @@ export default {
   width: 100%;
   display: flex;
   flex-direction: column;
+
   .lowcode-content {
     flex: 1;
     display: flex;
     height: 100%;
+
     ::v-deep .customhome-container {
       height: 100%;
     }

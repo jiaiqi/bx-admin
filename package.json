@@ -59,6 +59,7 @@
     "vue-draggable-plus": "^0.6.0",
     "vue-fragment": "^1.6.0",
     "vue-grid-layout": "^2.4.0",
+    "vue-json-viewer": "2",
     "vue-pdf": "^4.3.0",
     "vue-router": "3.0.3",
     "vue-sketch-ruler": "^1.0.3",

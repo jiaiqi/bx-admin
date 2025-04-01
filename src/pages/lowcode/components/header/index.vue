@@ -1,6 +1,8 @@
 <template>
   <div class="header-view">
-    <div class="left"></div>
+    <div class="left">
+      <el-button @click="showJSON" size="mini">页面JSON</el-button>
+    </div>
     <div class="center">可视化编辑器</div>
     <div class="right">
       <el-button type="primary" size="small" @click="togglePreview">
@@ -27,6 +29,9 @@ export default {
   methods: {
     togglePreview() {
       this.$emit('toggle-preview');
+    },
+    showJSON() {
+      this.$emit('show-json');
     }
   },
 };

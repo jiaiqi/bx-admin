@@ -34,6 +34,7 @@
             <el-option label="危险" value="danger"></el-option>
           </el-select>
         </el-form-item>
+        <el-button @click="showStructure">查看页面结构</el-button>
       </template>
     </el-form>
   </div>
@@ -86,6 +87,9 @@ export default {
       }
       this.$set(this.currentComponent.props, 'type', this.buttonType);
       this.$emit('change', this.components);
+    },
+    showStructure() {
+      this.$emit('show-structure', this.components);
     }
   },
   watch: {
