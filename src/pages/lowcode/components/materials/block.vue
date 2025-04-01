@@ -1,7 +1,7 @@
 <template>
   <div 
     class="lc-block" 
-    :class="[subType, {'preview-mode': isPreview}]"
+    :class="[subType]"
     @dragover="!isPreview && handleDragOver"
     @dragleave="!isPreview && handleDragLeave"
     @drop="!isPreview && handleDrop"
@@ -164,7 +164,9 @@ export default {
   padding: 10px;
   --primary-color: #2c48ff;
   border: 1px dashed rgba(44, 72, 255, 0.3); /* 添加浅色虚线边框 */
-
+  &.preview-mode{
+    border-color: transparent;
+  }
   &.drag-over {
     border: 2px dashed var(--primary-color);
     background-color: rgba(44, 72, 255, 0.05);

@@ -7,9 +7,9 @@
     data-drop-effect="move"
     draggable="true"
     :data-id="id"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-    @drop="handleDrop"
+    @dragover="!isPreview && handleDragOver"
+    @dragleave="!isPreview && handleDragLeave"
+    @drop="!isPreview && handleDrop"
   >
     <slot>
       <!-- <el-button type="primary">添加组件</el-button> -->
@@ -51,6 +51,10 @@ export default {
       type: String,
       default: "",
     },
+    isPreview: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     props() {
@@ -79,7 +83,7 @@ export default {
       const draggedType = dragStore.getDragType();
 
       if (e.target && this.allowDrop) {
-        if (!['container','layout','content'].includes(draggedType)) {
+        if (!["container", "layout", "content"].includes(draggedType)) {
           // 允许放置非容器和非布局组件且非 content 组件
           e.dataTransfer.dropEffect = "copy";
           e.target.classList.add("drag-over");
@@ -89,7 +93,6 @@ export default {
           e.dataTransfer.dropEffect = "none";
           e.target.classList.remove("drag-over");
           e.target.classList.add("drag-not-allowed");
-          
         }
       }
     },
@@ -144,7 +147,9 @@ export default {
   align-items: center;
   --primary-color: #17d57e;
   border: 1px dashed rgba(23, 213, 126, 0.3); /* 添加浅色虚线边框 */
-
+  &.preview-mode {
+    border-color: transparent;
+  }
   .content {
     z-index: 1;
     .component {
@@ -153,7 +158,7 @@ export default {
     }
   }
 
-  &:hover,
+  &:hover:not(.preview-mode),
   &.drag-over {
     // cursor: pointer;
     border: 1px dashed #17d57e;

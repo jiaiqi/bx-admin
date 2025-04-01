@@ -7,6 +7,7 @@
     :currentId="currentId"
     :isPreview="isPreview"
     @add="addComponent"
+    :class="{'preview-mode':isPreview}"
     style="position: relative;z-index: 1;"
   >
     <template v-if="children && children.length">

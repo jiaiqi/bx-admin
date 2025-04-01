@@ -1,16 +1,17 @@
 <template>
   <div
     class="row-container"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-    @drop="handleDrop"
-    @dragend="handleDragEnd"
+    @dragover="!isPreview&&handleDragOver"
+    @dragleave="!isPreview&&handleDragLeave"
+    @drop="!isPreview&&handleDrop"
+    @dragend="!isPreview&&handleDragEnd"
   >
     <!-- 遮罩层 -->
     <div
       class="overlay"
       @click="$emit('click', props)"
       :class="{ active: currentId && currentId === id }"
+      v-if="!isPreview"
     >
       <div class="handle">
         <i class="el-icon-rank"></i>
@@ -37,6 +38,10 @@ export default {
       type: [String, Number],
       default: "",
     },
+    isPreview: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     props() {
@@ -45,6 +50,7 @@ export default {
   },
   methods: {
     handleDragLeave(e) {
+      if(this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.target.classList.remove("drag-over");
@@ -52,6 +58,7 @@ export default {
     },
 
     handleDragOver(e) {
+      if(this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       // 阻止默认行为以允许放置
@@ -77,9 +84,9 @@ export default {
 
     // 添加拖拽结束处理
     handleDragEnd() {
+      if(this.isPreview) return;
       // 清除拖拽状态
       dragStore.clearDragType();
-
       // 清除所有拖拽样式
       document
         .querySelectorAll(".drag-over, .drag-not-allowed")
@@ -90,6 +97,8 @@ export default {
     },
 
     handleDrop(e) {
+      if(this.isPreview) return;
+
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
@@ -180,7 +189,9 @@ export default {
   --primary-color: #ff740e;
   $primary-color: #ff740e;
   border: 1px dashed rgba($color:$primary-color, $alpha: 0.3); /* 添加浅色虚线边框 */
-
+  &.preview-mode{
+    border-color: transparent;
+  }
 
   > .overlay {
 

@@ -5,8 +5,8 @@
     </div>
     <div class="center">可视化编辑器</div>
     <div class="right">
-      <el-button type="primary" size="small" @click="togglePreview">
-        {{ isPreview ? '退出预览' : '预览' }}
+      <el-button type="primary" size="mini" @click="showPreview">
+        {{ isPreview ? "退出" : "预览" }}
       </el-button>
     </div>
   </div>
@@ -18,8 +18,12 @@ export default {
   props: {
     isPreview: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    jsonVisible: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -27,18 +31,18 @@ export default {
     };
   },
   methods: {
-    togglePreview() {
-      this.$emit('toggle-preview');
+    showPreview() {
+      this.$emit("update:isPreview", !this.isPreview);
     },
     showJSON() {
-      this.$emit('show-json');
-    }
+      this.$emit("update:jsonVisible", true);
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.header-view{
+.header-view {
   --header-height: 50px;
   --header-background-color: #fff;
   --header-color: #333;
