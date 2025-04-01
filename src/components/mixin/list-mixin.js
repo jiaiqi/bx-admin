@@ -1891,6 +1891,7 @@ export default {
         console.log('sharding_biz_cols:',sharding_biz_cols);
 
         if (sharding_biz_cols?.length) {
+          // 分表查询条件 2025.4.1新增，传到详情页面
           let operate_params = {
             condition: [],
           }
@@ -1902,7 +1903,6 @@ export default {
             }); 
           }
           urlParams += `&operate_params=${encodeURIComponent(JSON.stringify(operate_params))}`;
-          debugger
         }
         var disp_col = operate_item._disp_col;
         var disp_value = row[disp_col]; //详情页面上的标签

@@ -595,6 +595,14 @@ export default {
           }
 
         }
+      }else if (self.name === 'list-duplicate' && this.duplicateData) {
+        let row = this.duplicateData
+        for (let key in row) {
+          let field = this.fields[key];
+          if (field) {
+            field.setSrvVal(row[key]);
+          } 
+        }
       }
     },
 
