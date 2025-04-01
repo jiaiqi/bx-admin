@@ -5,7 +5,7 @@ const formatStyleData = (json) => {
 
   let obj = {};
   for (let key in json) {
-    let _key = key.replace("_", "-");
+    let _key = key.replaceAll("_", "-");
     obj[_key] = json[key];
   }
   if (obj["background-image"]) {

@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { formatStyleData } from "../../common/index.js";
+import { formatStyleData, rpx2px } from "../../common/index.js";
 
 
 export default {
@@ -70,9 +70,9 @@ export default {
 		},
 		height() {
 			if (this.pageItem?.img_ratio) {
-				return `${uni.upx2px(710 * this.pageItem?.img_ratio)}px`
+				return `${350 * this.pageItem?.img_ratio}px`
 			}
-			return `${this.pageItem?.more_config?.swiperHeight || uni.upx2px(300)}px`
+			return `${this.pageItem?.more_config?.swiperHeight || 150}px`
 		},
 		calcStyle() {
 			let obj = {}

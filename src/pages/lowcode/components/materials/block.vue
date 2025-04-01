@@ -2,6 +2,7 @@
   <div 
     class="lc-block" 
     :class="[subType]"
+    :style="[setStyle]"
     @dragover="!isPreview && handleDragOver"
     @dragleave="!isPreview && handleDragLeave"
     @drop="!isPreview && handleDrop"
@@ -25,6 +26,7 @@
 </template>
 
 <script>
+import { formatStyleData } from "@/common/common";
 import dragStore from "../../store/dragStore";
 
 export default {
@@ -67,6 +69,13 @@ export default {
   computed: {
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
+    },
+    setStyle(){
+      let style = {};
+      if(this.props.style_json && typeof this.props.style_json === 'string'){
+        style = JSON.parse(this.props.style_json);
+      }
+      return formatStyleData(style);
     },
   },
   methods: {

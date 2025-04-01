@@ -81,7 +81,7 @@
       :ref="pageItem.com_type"
       :pageParamsModel="pageParamsModel"
       :pageItem="pageItem"
-      :index="layout.i"
+      :index="layout&&layout.i||1"
       :layout="layout"
     ></page-item-chart>
     <List

@@ -1,30 +1,124 @@
 <template>
   <div class="materia-warp">
     <div class="left">
+      <div class="type-list">
+        <div class="active-bg" :style="setStyle"></div>
+        <div
+          class="type-item"
+          :class="{ active: activeIndex === index }"
+          v-for="(item, index) in materialsTree"
+          :key="index"
+          @click="tapComponent(item, index)"
+        >
+          <component size="20" :is="item.icon"></component>
+          <span class="label">{{ item.label }}</span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="sub-type"
+      v-if="current && current.children && current.children.length"
+    >
+      <div
+        class="sub-type-item"
+        :class="{ active: activeSubIndex === 0 }"
+        @click="(activeSubIndex = 0), (activeSubIndex = 0), getList(current)"
+      >
+        所有
+      </div>
+      <div
+        class="sub-type-item"
+        v-for="(item, index) in current.children"
+        :key="index"
+        @click="tapSubType(current, item, index)"
+        :class="{ active: activeSubIndex && activeSubIndex - 1 === index }"
+      >
+        {{ item.label }}
+      </div>
+    </div>
+    <div class="component-list">
+      <div
+        v-for="item in comList"
+        :key="item.id"
+        :id="item.id"
+        class="com-item margin component"
+        :class="[
+          'component-item',
+          `type-${item.type}`,
+          'cursor-move h-50px rounded p-3',
+        ]"
+        @dragstart="handleDragStart($event, item)"
+        draggable="true"
+        unselectable="on"
+      >
+        <img :src="getImagePath(item.preview)" alt="" class="example" />
+        <div class="label">{{ item.comp_label }}</div>
+      </div>
+    </div>
+    <!-- <div class="left">
       <div
         v-for="item in list"
         :key="item.id"
         :id="item.id"
         draggable="true"
         :data-type="item.type"
-        :class="['component-item', `type-${item.type}`, 'cursor-move h-50px rounded p-3']"
+        :class="[
+          'component-item',
+          `type-${item.type}`,
+          'cursor-move h-50px rounded p-3',
+        ]"
         @dragstart="handleDragStart($event, item)"
       >
         {{ item.name }}
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
-import dragStore from '../../store/dragStore';
-
+import dragStore from "../../store/dragStore";
+import { materialsTree } from "./materials";
+import {
+  Card,
+  Chart,
+  Form,
+  Grid,
+  List,
+  Map,
+  Notice,
+  Pic,
+  Tag,
+  Text,
+  Video,
+  NavBar,
+  ExtPage,
+  Layout,
+} from "@/components/icons";
 export default {
   name: "lowcode-materials",
   components: {
+    Card,
+    Chart,
+    Form,
+    Grid,
+    List,
+    Map,
+    Notice,
+    Pic,
+    Tag,
+    IconText: Text,
+    Video,
+    NavBar,
+    ExtPage,
+    Layout,
   },
   data() {
     return {
+      // 物料列表
+      activeIndex: 0,
+      activeSubIndex: 0,
+      materialsTree: materialsTree,
+      comList: [],
       //
       list: [
         {
@@ -90,16 +184,186 @@ export default {
       ],
     };
   },
+  computed: {
+    setStyle() {
+      return `top:${this.activeIndex * 70 + 10}px`;
+    },
+    current() {
+      return this.materialsTree[this.activeIndex];
+    },
+  },
+  created() {
+    this.getList(this.current);
+  },
   mounted() {
     // 添加全局拖拽结束事件监听
-    document.addEventListener('dragend', this.handleGlobalDragEnd);
+    document.addEventListener("dragend", this.handleGlobalDragEnd);
   },
-  
+
   beforeDestroy() {
     // 移除全局事件监听
-    document.removeEventListener('dragend', this.handleGlobalDragEnd);
+    document.removeEventListener("dragend", this.handleGlobalDragEnd);
   },
   methods: {
+    tapSubType(current, item, index) {
+      this.activeSubIndex = index + 1;
+      this.getList(current, item);
+    },
+    tapComponent(item, index) {
+      this.activeIndex = index;
+      this.activeSubIndex = 0;
+      if (!item.children?.length) {
+        this.getList(item);
+      } else {
+        this.getList(item);
+      }
+    },
+    async getList(item, subType) {
+      if (!item) {
+        return;
+      }
+      const url = `${window.backendIpAddr}/config/select/${item.service}`;
+      const req = {
+        serviceName: item.service,
+        colNames: ["*"],
+        condition: [
+          {
+            colName: "sys_option",
+            ruleType: "like",
+            value: "模板",
+          },
+        ],
+        page: { pageNo: 1, rownumber: 10 },
+        use_type: "list",
+        query_source: "list_page",
+      };
+      if (subType?.value) {
+        req.condition = [
+          ...req.condition,
+          {
+            colName: item.cond_col,
+            ruleType: "eq",
+            value: subType.value,
+          },
+        ];
+      }
+      const res = await this.$http.post(url, req);
+      if (res?.data?.state === "SUCCESS") {
+        const list = res.data.data.map((ele) => {
+          let obj = {
+            ...ele,
+            com_type: item.value,
+            component: item.value,
+            comp_label: ele[item.nameCol],
+          };
+          if (item.value === "layout") {
+            if (ele[item.nameCol] === "页面容器") {
+              obj.type = "container";
+              obj.component = "lc-container";
+            } else if (ele[item.nameCol]?.indexOf("布局容器") === 0) {
+              obj.type = "layout";
+              obj.component = "lc-block";
+            }
+          } else {
+            obj.type = "component";
+            obj.component = "normal-component";
+            obj.data = this.initComCfg(obj.com_type, obj);
+          }
+
+          return obj;
+        });
+        this.$emit("set-list", list);
+        this.comList = list;
+      } else {
+        this.$emit("set-list", []);
+      }
+    },
+    initComCfg(type, config) {
+      // 初始化组件配置
+      switch (type) {
+        case "chart":
+          if (config.row_json) {
+            config.chart_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "cardGroup":
+          if (config.row_json) {
+            const cfg = JSON.parse(config.row_json);
+            config.card_group_json = cfg;
+          }
+          break;
+        case "list":
+          if (config.list_json) {
+            const cfg = JSON.parse(config.list_json);
+            config.list_json = cfg;
+            if (cfg.list_type === "卡片") {
+              config.card_group_json = {
+                card_unit_json: cfg.card_unit_json,
+                card_layout_json: cfg.layout_json,
+                interface_json: cfg.interface_json,
+              };
+            }
+            if (cfg?.default_srv_req_json) {
+              config.srv_req_json = cfg?.default_srv_req_json;
+            }
+          }
+          break;
+        case "widget":
+        case "控件":
+          if (config.row_json) {
+            config.widget_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "swiper":
+          debugger
+          if (config.figure_row_json) {
+            try {
+              config.swiper_json = JSON.parse(config.figure_row_json);
+            } catch (error) {}
+          }
+          break;
+        case "map":
+          if (config.row_json) {
+            config.map_json = JSON.parse(config.row_json);
+            if (config.map_json?.srv_req_json) {
+              config.srv_req_json = config.map_json?.srv_req_json;
+            }
+            if (config.map_json?.cols_map_json) {
+              config.cols_map_json = config.map_json?.cols_map_json;
+            }
+            if (config.map_json?.interface_json) {
+              config.interface_json = config.map_json?.interface_json;
+            }
+          }
+          break;
+        case "tabs":
+          if (config.row_json) {
+            config.tabs_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "form":
+          if (config.row_json) {
+            config.form_json = JSON.parse(config.row_json);
+          }
+          break;
+        case "noticeBar":
+          if (config.row_json) {
+            config.notice_bar_json = JSON.parse(config.row_json);
+          }
+          break;
+      }
+      Object.keys(config).forEach((key) => {
+        if (key && config[key] &&key?.includes('_json')  &&key.lastIndexOf("_json") === key.length - 5) {
+          try {
+            config[`${key}_data`] = JSON.parse(config[key]);
+          } catch (e) {
+            //TODO handle the exception
+            console.error("解析JSON数据失败:", e);
+          }
+        }
+      });
+      return JSON.parse(JSON.stringify(config));
+    },
     //
     onEnd(val) {
       console.log("end", val);
@@ -107,84 +371,86 @@ export default {
     handleDragStart(e, item) {
       // 设置拖拽数据
       const dragData = { ...item };
-      
       // 确保布局组件有children属性
       if (item.type === "layout" && !dragData.children) {
         dragData.children = [];
       }
-      
+
       e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
-      
+
       // 设置组件类型到全局状态
       dragStore.setDragType(item.type);
-      
+
       // 设置拖拽效果
       e.dataTransfer.effectAllowed = "copy";
       // 创建自定义拖拽图像（可选）
-      const dragIcon = document.createElement('div');
-      dragIcon.innerHTML = item.name;
-      dragIcon.className = 'drag-icon';
+      const dragIcon = document.createElement("div");
+      dragIcon.innerHTML = item.name || item.comp_label;
+      dragIcon.className = "drag-icon";
       document.body.appendChild(dragIcon);
       e.dataTransfer.setDragImage(dragIcon, 0, 0);
-      
+
       // 延迟移除拖拽图像
       setTimeout(() => {
         document.body.removeChild(dragIcon);
       }, 0);
     },
-    
+
     // 全局拖拽结束处理
     handleGlobalDragEnd() {
       // 清除拖拽状态
       dragStore.clearDragType();
-      
       // 清除所有拖拽样式
-      document.querySelectorAll('.editor-drag-over, .editor-drag-not-allowed, .drag-over, .drag-not-allowed').forEach(el => {
-        el.classList.remove('editor-drag-over');
-        el.classList.remove('editor-drag-not-allowed');
-        el.classList.remove('drag-over');
-        el.classList.remove('drag-not-allowed');
-      });
-    }
+      document
+        .querySelectorAll(
+          ".editor-drag-over, .editor-drag-not-allowed, .drag-over, .drag-not-allowed"
+        )
+        .forEach((el) => {
+          el.classList.remove("editor-drag-over");
+          el.classList.remove("editor-drag-not-allowed");
+          el.classList.remove("drag-over");
+          el.classList.remove("drag-not-allowed");
+        });
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
-.left {
-  width: 200px;
-  height: 100%;
-  border: 1px solid #f0f0f0;
-  border-top: none;
-  padding: 10px;
-}
+// .left {
+//   width: 200px;
+//   height: 100%;
+//   border: 1px solid #f0f0f0;
+//   border-top: none;
+//   padding: 10px;
+// }
 
-.component-item {
-  margin-bottom: 10px;
-  background-color: rgba(128, 128, 128, 0.05);
-  border: 1px solid #eee;
-  border-radius: 4px;
-  transition: all 0.3s;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  &.type-container {
-    border-left: 3px solid #ff740e;
-  }
-  
-  &.type-layout {
-    border-left: 3px solid #2c48ff;
-  }
-  
-  &.type-button,
-  &.type-input,
-  &.type-select {
-    border-left: 3px solid #17d57e;
-  }
-}
+// .component-item {
+//   margin-bottom: 10px;
+//   background-color: rgba(128, 128, 128, 0.05);
+//   border: 1px solid #eee;
+//   border-radius: 4px;
+//   transition: all 0.3s;
+
+//   &:hover {
+//     transform: translateY(-2px);
+//     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+//   }
+
+//   &.type-container {
+//     border-left: 3px solid #ff740e;
+//   }
+
+//   &.type-layout {
+//     border-left: 3px solid #2c48ff;
+//   }
+
+//   &.type-button,
+//   &.type-input,
+//   &.type-select {
+//     border-left: 3px solid #17d57e;
+//   }
+// }
 
 .drag-icon {
   padding: 5px 10px;
@@ -194,5 +460,151 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: absolute;
   top: -1000px;
+}
+
+.materia-warp {
+  height: 100%;
+  display: flex;
+
+  .left {
+    height: 100%;
+  }
+}
+
+.type-list {
+  padding: 10px;
+  border-right: 1px solid #eee;
+  position: relative;
+  display: inline-block;
+  height: 100%;
+
+  .active-bg {
+    position: absolute;
+    left: 10px;
+    width: 60px;
+    height: 60px;
+    background-color: #e6f7ff;
+    border-radius: 6px;
+    top: 0;
+    transition: top 0.3s ease-in-out;
+    z-index: -1;
+  }
+}
+
+.type-item {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  border-radius: 5px;
+  z-index: 1;
+  margin-bottom: 10px;
+  cursor: pointer;
+
+  .label {
+    margin-top: 5px;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  &.active {
+    // background-color: #e6f7ff;
+    &:hover {
+      background-color: unset;
+    }
+
+    color: #007aff;
+  }
+}
+
+.sub-type {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-right: 1px solid #f5f5f5;
+  &-item {
+    font-size: 14px;
+    padding: 3px 5px;
+    text-align: center;
+    margin: 5px 0;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 70px;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+
+    &.active {
+      background-color: #e6f7ff;
+      color: #007aff;
+    }
+  }
+}
+.component-list {
+  // display: flex;
+  // flex-direction: column;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #fff;
+  width: 200px;
+  &::-webkit-scrollbar {
+    width: 4px; /* 设置滚动条的宽度 */
+    height: 4px; /* 设置滚动条的高度 */
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
+    border-radius: 4px; /* 设置滚动条滑块的圆角 */
+  }
+
+  .com-item {
+    display: inline-flex;
+    flex-direction: column;
+    width: calc(100% - 10px);
+    // width: calc(50% - 20px);
+    margin: 5px;
+    min-height: 130px;
+    border-radius: 8px;
+    border: none;
+    overflow: hidden;
+    cursor: unset;
+    // box-shadow:0 2px 6px 0 rgba(0,0,0,.2);
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    cursor: move;
+
+    &[class^="type-"] {
+      border-left: 3px solid #17d57e;
+    }
+    &.type-container {
+      border-left: 3px solid #ff740e;
+    }
+
+    &.type-layout {
+      border-left: 3px solid #2c48ff;
+    }
+
+    .example {
+      flex: 1;
+      background-color: #ccc;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    .label {
+      width: calc(100% - 0px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 5px;
+    }
+  }
 }
 </style>

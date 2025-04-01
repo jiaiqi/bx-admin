@@ -46,7 +46,7 @@ const isJSON = (str) => {
   return false;
 };
 
-function rpx2px(str) {
+ function rpx2px(str) {
   if(!str) return str;
   return str.replace(/(\d+)rpx/g, (match, p1) => {
     return `${parseInt(p1) / 2}px`;

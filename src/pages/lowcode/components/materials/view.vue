@@ -3,17 +3,19 @@
     :is="component"
     v-if="component"
     v-bind="props"
+    :page-item="props.data"
     @click="onTap"
     :currentId="currentId"
     :isPreview="isPreview"
     @add="addComponent"
-    :class="{'preview-mode':isPreview}"
-    style="position: relative;z-index: 1;"
+    :class="{ 'preview-mode': isPreview }"
+    style="position: relative; z-index: 1"
   >
     <template v-if="children && children.length">
       <lc-view
         v-for="item in children"
         v-bind="item"
+        :page-item="item.data"
         :key="item.id"
         :currentId="currentId"
         :isPreview="isPreview"
@@ -26,9 +28,8 @@
         <!-- <el-button type="primary" size="mini" @click="openComponentSelector"
           >添加组件</el-button
         > -->
-        <span class="" style="color: #999;pointer-events: none;">
-        可放置组件区域
-
+        <span class="" style="color: #999; pointer-events: none">
+          可放置组件区域
         </span>
       </template>
       <template v-else>
@@ -42,6 +43,7 @@
 import lcBlock from "./block.vue";
 import lcContainer from "./container.vue";
 import lcContent from "./content-item.vue";
+import normalComponent from "@/pages/datav/component/page-item/page-item.vue";
 import { VueDraggable } from "vue-draggable-plus";
 
 export default {
@@ -51,6 +53,7 @@ export default {
     lcContainer,
     lcContent,
     VueDraggable,
+    normalComponent,
     lcView: () => import("./view.vue"),
   },
   props: {
@@ -80,8 +83,8 @@ export default {
     },
     isPreview: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   computed: {
     props() {

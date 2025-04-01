@@ -132,6 +132,7 @@ export default {
     handleEditorDragOver(e) {
       // 获取拖拽元素的类型
       const draggedType = dragStore.getDragType()
+      console.log("handleEditorDragOver", draggedType);
       
       // 阻止默认行为以允许放置
       e.preventDefault();
@@ -140,7 +141,7 @@ export default {
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("editor-drag-over");
         e.currentTarget.classList.remove("editor-drag-not-allowed");
-      } else {
+      } else if(draggedType){
         // 不允许放置非容器组件
         e.dataTransfer.dropEffect = "none";
         e.currentTarget.classList.remove("editor-drag-over");

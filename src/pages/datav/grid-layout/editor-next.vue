@@ -1778,6 +1778,7 @@ export default {
         mouseInGrid === true &&
         this.layout.findIndex((item) => item.i === "drop") === -1
       ) {
+        debugger
         this.layout.push({
           x: 0,
           y: 0,
@@ -1788,6 +1789,8 @@ export default {
           i: "drop",
           data: o,
         });
+        debugger
+
       }
       let index = this.layout.findIndex((item) => item.i === "drop");
       if (index !== -1) {
@@ -1940,6 +1943,8 @@ export default {
             isLeftBarItem: true,
           };
           obj.data = this.initComCfg(o.com_type, obj.data);
+          console.log("dragend:", obj);
+          debugger
           this.layout.push(obj);
         }
         return;

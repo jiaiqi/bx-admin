@@ -1,10 +1,10 @@
 <template>
   <div
     class="row-container"
-    @dragover="!isPreview&&handleDragOver"
-    @dragleave="!isPreview&&handleDragLeave"
-    @drop="!isPreview&&handleDrop"
-    @dragend="!isPreview&&handleDragEnd"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+    @dragend="handleDragEnd"
   >
     <!-- 遮罩层 -->
     <div
@@ -66,7 +66,7 @@ export default {
 
       // 获取当前拖拽的组件类型
       const draggedType = dragStore.getDragType();
-
+      
       if (e.target) {
         if (draggedType === "layout") {
           // 允许放置布局组件
@@ -130,6 +130,9 @@ export default {
             } else if (draggedElement.subType === "layout-2-2-3070" || 
                        draggedElement.subType === "layout-2-2-7030") {
               columnCount = 2; // 两列布局(比例不同)
+            }
+            if(draggedElement.child_num && typeof draggedElement.child_num === 'number'){
+              columnCount = draggedElement.child_num;
             }
             
             // 创建子内容组件
@@ -246,7 +249,7 @@ export default {
       // cursor: pointer;
       border: 1px dashed #ff740e;
       &::before {
-        content: "整行容器";
+        content: "页面容器";
         position: absolute;
         top: 0;
         left: 0;

@@ -7,9 +7,9 @@
     data-drop-effect="move"
     draggable="true"
     :data-id="id"
-    @dragover="!isPreview && handleDragOver"
-    @dragleave="!isPreview && handleDragLeave"
-    @drop="!isPreview && handleDrop"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
   >
     <slot>
       <!-- <el-button type="primary">添加组件</el-button> -->
@@ -81,7 +81,6 @@ export default {
 
       // 获取拖拽元素的类型
       const draggedType = dragStore.getDragType();
-
       if (e.target && this.allowDrop) {
         if (!["container", "layout", "content"].includes(draggedType)) {
           // 允许放置非容器和非布局组件且非 content 组件
