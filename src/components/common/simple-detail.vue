@@ -384,11 +384,12 @@ export default {
               Array.isArray(this.defaultConditions) &&
               this.defaultConditions.length > 0
             ) {
-              condition = this.defaultConditions.map((item) => {
+              const defaultCondition = this.defaultConditions.map((item) => {
                 item.valueExpr = item.value;
                 item.literalValue = true;
                 return item;
-              });
+              })
+              condition.push(...defaultCondition||[])
             }
             // let divCond = null;
             // if (this.$route.query.divCond) {

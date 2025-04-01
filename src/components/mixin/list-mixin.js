@@ -1887,6 +1887,23 @@ export default {
             )}`;
           }
         }
+        let sharding_biz_cols = this.gridHeader.filter((item) => item.srvcol?.sharding_biz_col === true).map((item) => item.column);
+        console.log('sharding_biz_cols:',sharding_biz_cols);
+
+        if (sharding_biz_cols?.length) {
+          let operate_params = {
+            condition: [],
+          }
+          for (let col of sharding_biz_cols) {
+            operate_params.condition.push({
+              colName: col,
+              ruleType: "eq",
+              value: row[col],
+            }); 
+          }
+          urlParams += `&operate_params=${encodeURIComponent(JSON.stringify(operate_params))}`;
+          debugger
+        }
         var disp_col = operate_item._disp_col;
         var disp_value = row[disp_col]; //详情页面上的标签
         tab_title = tab_title.replace("查询", "");
