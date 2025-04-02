@@ -10,14 +10,14 @@ let baseURL = window.backendIpAddr;
 let bx_auth_ticket = "";
 
 // const ENV = 'healthDev'
-  // const ENV = "gaosu111";
-  // const ENV = "gangu";
-  // const ENV = "dev2";
-  // const ENV = "wanxiang";
-  // const ENV = "dev";
-  const ENV = "saas";
-  // const ENV = "healthProd";
-  // const ENV = "gaosu61";
+// const ENV = "gaosu111";
+// const ENV = "gangu";
+// const ENV = "dev2";
+// const ENV = "wanxiang";
+// const ENV = "dev";
+const ENV = "saas";
+// const ENV = "healthProd";
+// const ENV = "gaosu61";
 
 top.env = ENV
 
@@ -183,3 +183,43 @@ instance.interceptors.response.use(
 );
 
 export const $http = instance;
+
+export async function $selectOne(url, req) {
+  const res = await $http.post(url, req)
+  if (res?.data?.state === 'SUCCESS') {
+    if (res.data?.data?.length > 0) {
+      return {
+        ok: true,
+        data: res.data?.data?.[0],
+      }
+    } else {
+      return {
+        ok: false,
+        data: {},
+        msg: '未查询到数据',
+      }
+    }
+  } else {
+    return {
+      ok: false,
+      data: {},
+      msg: res?.data?.resultMessage || '请求失败',
+    }
+  }
+}
+
+export async function $selectList(url, req) {
+  const res = await $http.post(url, req)
+  if (res?.data?.state === 'SUCCESS') {
+    return {
+      ok: true,
+      data: res.data?.data,
+    }  
+  }else {
+    return {
+      ok: false,
+      data: [],
+      msg: res?.data?.resultMessage || '请求失败',
+    }
+  } 
+}

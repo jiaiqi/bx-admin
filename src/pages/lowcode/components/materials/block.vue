@@ -136,7 +136,7 @@ export default {
           ) {
             draggedElement.id = `${this.id}_component_${new Date().getTime()}`;
             draggedElement.parentId = this.id;
-
+            draggedElement._editType = "add";
             this.$emit("add", draggedElement);
           } else {
             // 不允许放置layout和container类型的组件

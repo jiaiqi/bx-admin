@@ -117,6 +117,7 @@ export default {
           // 只处理layout类型的组件
           if (draggedElement.type === "layout") {
             draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
+            draggedElement._editType = "add";
             draggedElement.parentId = this.id;
             
             // 根据布局类型创建对应数量的内容组件
@@ -145,8 +146,9 @@ export default {
                 id: `${draggedElement.id}_content_${i}_${new Date().getTime()}`,
                 type: "content",
                 component: "lc-content",
-                name: `组件${i+1}`,
-                parentId: draggedElement.id
+                name: `组件容器${i+1}`,
+                parentId: draggedElement.id,
+                _editType:'add',
               };
               draggedElement.children.push(contentItem);
             }

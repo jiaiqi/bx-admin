@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div
     class="editor-view"
     @dragover="handleEditorDragOver"
     @dragleave="handleEditorDragLeave"
@@ -14,7 +14,7 @@
       @end="onEnd"
       :animation="150"
       handle=".handle"
-      style="width: 100%;z-index: 1;position: relative;"
+      style="width: 100%; z-index: 1; position: relative"
     >
       <lc-view
         v-for="item in editorComponents"
@@ -36,7 +36,7 @@
 // import LcContent from "../materials/content-item.vue";
 import lcView from "../materials/view.vue";
 import { VueDraggable } from "vue-draggable-plus";
-import dragStore from '../../store/dragStore';
+import dragStore from "../../store/dragStore";
 export default {
   name: "lowcode-editor",
   components: {
@@ -95,11 +95,11 @@ export default {
       this.currentId = val.id;
       this.$emit("select", val.id);
     },
-    findComponentById(id, list=[], data) {
-      let result = null
+    findComponentById(id, list = [], data) {
+      let result = null;
       for (let i = 0; i < list.length; i++) {
         const item = list[i];
-        if(id && item.id === id){
+        if (id && item.id === id) {
           // 检查是否已有children数组
           if (!item.children) {
             this.$set(item, "children", []);
@@ -120,7 +120,7 @@ export default {
     },
     addComponent(val) {
       console.log("addComponent", val);
-      if(val?.parentId){
+      if (val?.parentId) {
         this.findComponentById(val.parentId, this.editorComponents, val);
         // 触发更新
         this.$nextTick(() => {
@@ -131,9 +131,9 @@ export default {
     // 在methods中添加以下方法
     handleEditorDragOver(e) {
       // 获取拖拽元素的类型
-      const draggedType = dragStore.getDragType()
+      const draggedType = dragStore.getDragType();
       console.log("handleEditorDragOver", draggedType);
-      
+
       // 阻止默认行为以允许放置
       e.preventDefault();
       if (draggedType === "container") {
@@ -141,7 +141,7 @@ export default {
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("editor-drag-over");
         e.currentTarget.classList.remove("editor-drag-not-allowed");
-      } else if(draggedType){
+      } else if (draggedType) {
         // 不允许放置非容器组件
         e.dataTransfer.dropEffect = "none";
         e.currentTarget.classList.remove("editor-drag-over");
@@ -157,29 +157,33 @@ export default {
       // 清除拖拽状态
       dragStore.clearDragType();
       // 清除所有拖拽样式
-      document.querySelectorAll('.editor-drag-over, .editor-drag-not-allowed, .drag-over, .drag-not-allowed').forEach(el => {
-        el.classList.remove('editor-drag-over');
-        el.classList.remove('editor-drag-not-allowed');
-        el.classList.remove('drag-over');
-        el.classList.remove('drag-not-allowed');
-      });
+      document
+        .querySelectorAll(
+          ".editor-drag-over, .editor-drag-not-allowed, .drag-over, .drag-not-allowed"
+        )
+        .forEach((el) => {
+          el.classList.remove("editor-drag-over");
+          el.classList.remove("editor-drag-not-allowed");
+          el.classList.remove("drag-over");
+          el.classList.remove("drag-not-allowed");
+        });
     },
     handleEditorDrop(e) {
       e.preventDefault();
       e.currentTarget.classList.remove("editor-drag-over");
       e.currentTarget.classList.remove("editor-drag-not-allowed");
-      
+
       // 获取拖拽数据
       const data = e.dataTransfer.getData("text/plain");
-      
+
       if (data) {
         try {
           const draggedElement = JSON.parse(data);
-          
           // 只处理container类型的组件
           if (draggedElement.type === "container") {
-            draggedElement.id = `root${new Date().getTime()}`;
-            
+            draggedElement.id = `root_container_${new Date().getTime()}`;
+            draggedElement._editType = "add";
+            draggedElement._seq = (this.editorComponents.length + 1) * 100; // 计算seq
             // 添加到顶层组件
             this.editorComponents.push(draggedElement);
             this.$emit("change", this.editorComponents);
@@ -195,8 +199,8 @@ export default {
           console.error("解析拖拽数据失败:", err);
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -205,7 +209,7 @@ export default {
   height: 100%;
   width: 100%;
   position: relative;
-  
+
   &.editor-drag-over {
     border: 2px dashed #ff740e;
     background-color: rgba(255, 116, 14, 0.05);
@@ -221,7 +225,7 @@ export default {
       border-radius: 4px;
     }
   }
-  
+
   &.editor-drag-not-allowed {
     border: 2px dashed #ff0000;
     background-color: rgba(255, 0, 0, 0.05);
@@ -249,5 +253,4 @@ export default {
   z-index: 0;
   border: 1px dashed #ccc;
 }
-
 </style>

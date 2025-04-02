@@ -398,7 +398,7 @@ let routes = [
       import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
     children: [
       {
-        path: "editor/:no",
+        path: "editor/:pageNo",
         name: "lowcode-detail",
         meta: {
           isEditor: true,
