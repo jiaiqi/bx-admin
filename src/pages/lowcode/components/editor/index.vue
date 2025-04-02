@@ -148,22 +148,14 @@ export default {
         e.currentTarget.classList.add("editor-drag-not-allowed");
       }
     },
-      
-      // 移除调试代码
-      // const componentType = e.dataTransfer.getData("component-type");
-      // console.log("handleEditorDragOver", componentType);
-      // debugger
-    
     handleEditorDragLeave(e) {
       e.currentTarget.classList.remove("editor-drag-over");
       e.currentTarget.classList.remove("editor-drag-not-allowed");
     },
-    
     // 添加拖拽结束处理
     handleEditorDragEnd(e) {
       // 清除拖拽状态
       dragStore.clearDragType();
-      
       // 清除所有拖拽样式
       document.querySelectorAll('.editor-drag-over, .editor-drag-not-allowed, .drag-over, .drag-not-allowed').forEach(el => {
         el.classList.remove('editor-drag-over');
@@ -218,7 +210,7 @@ export default {
     border: 2px dashed #ff740e;
     background-color: rgba(255, 116, 14, 0.05);
     &::before {
-      content: "可放置容器组件";
+      content: "可放置页面容器";
       position: absolute;
       top: 10px;
       left: 10px;
@@ -255,5 +247,7 @@ export default {
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
   z-index: 0;
+  border: 1px dashed #ccc;
 }
+
 </style>

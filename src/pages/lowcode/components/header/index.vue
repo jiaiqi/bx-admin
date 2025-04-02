@@ -2,10 +2,14 @@
   <div class="header-view">
     <div class="left">
       <el-button @click="showJSON" size="mini">页面JSON</el-button>
+      <slot name="left">
+      </slot>
     </div>
-    <div class="center">可视化编辑器</div>
+    <div class="center"><slot name="center"> 可视化编辑器 </slot></div>
     <div class="right">
+      <slot name="right"></slot>
       <el-button type="primary" size="mini" @click="showPreview">
+        <i class="el-icon-view"></i>
         {{ isPreview ? "退出" : "预览" }}
       </el-button>
     </div>

@@ -12,7 +12,6 @@
     @drop="handleDrop"
   >
     <slot>
-      <!-- <el-button type="primary">添加组件</el-button> -->
     </slot>
   </div>
 </template>

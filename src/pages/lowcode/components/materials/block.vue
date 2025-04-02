@@ -1,12 +1,12 @@
 <template>
-  <div 
-    class="lc-block" 
+  <div
+    class="lc-block"
     :class="[subType]"
     :style="[setStyle]"
-    @dragover="!isPreview && handleDragOver"
-    @dragleave="!isPreview && handleDragLeave"
-    @drop="!isPreview && handleDrop"
-    @dragend="!isPreview && handleDragEnd"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+    @dragend="handleDragEnd"
   >
     <!-- 遮罩层 -->
     <div
@@ -19,7 +19,7 @@
         <i class="el-icon-rank"></i>
       </div> -->
     </div>
-    
+
     <!-- 子组件 -->
     <slot></slot>
   </div>
@@ -64,15 +64,15 @@ export default {
     isPreview: {
       type: Boolean,
       default: false,
-    }
+    },
   },
   computed: {
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
-    setStyle(){
+    setStyle() {
       let style = {};
-      if(this.props.style_json && typeof this.props.style_json === 'string'){
+      if (this.props.style_json && typeof this.props.style_json === "string") {
         style = JSON.parse(this.props.style_json);
       }
       return formatStyleData(style);
@@ -81,17 +81,18 @@ export default {
   methods: {
     // 修改拖拽相关的事件处理
     handleDragOver(e) {
+      if(this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
-
+      // 阻止默认行为以允许放置
+      e.preventDefault();
       // 获取当前拖拽的组件类型
       const draggedType = dragStore.getDragType();
 
-      // 阻止默认行为以允许放置
-      e.preventDefault();
-
       if (e.currentTarget) {
-        if (draggedType === 'content') {
+        console.log("handleDragOver-block:", draggedType);
+
+        if (draggedType === "content") {
           // 只允许放置内容组件
           e.dataTransfer.dropEffect = "copy";
           e.currentTarget.classList.add("drag-over");
@@ -106,6 +107,7 @@ export default {
     },
 
     handleDragLeave(e) {
+      if(this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.currentTarget.classList.remove("drag-over");
@@ -113,6 +115,7 @@ export default {
     },
 
     handleDrop(e) {
+      if(this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
@@ -149,6 +152,7 @@ export default {
     },
 
     handleDragEnd() {
+      if(this.isPreview) return;
       // 清除拖拽类型
       dragStore.clearDragType();
     },
@@ -173,7 +177,7 @@ export default {
   padding: 10px;
   --primary-color: #2c48ff;
   border: 1px dashed rgba(44, 72, 255, 0.3); /* 添加浅色虚线边框 */
-  &.preview-mode{
+  &.preview-mode {
     border-color: transparent;
   }
   &.drag-over {
@@ -249,25 +253,25 @@ export default {
     grid-template-columns: 1fr 1fr;
     grid-gap: 10px;
   }
-  
+
   &.layout-1-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-gap: 10px;
   }
-  
+
   &.layout-1-4 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-gap: 10px;
   }
-  
+
   &.layout-2-2-3070 {
     display: grid;
     grid-template-columns: 30% 70%;
     grid-gap: 10px;
   }
-  
+
   &.layout-2-2-7030 {
     display: grid;
     grid-template-columns: 70% 30%;

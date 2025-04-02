@@ -145,7 +145,7 @@ export default {
                 id: `${draggedElement.id}_content_${i}_${new Date().getTime()}`,
                 type: "content",
                 component: "lc-content",
-                name: `内容${i+1}`,
+                name: `组件${i+1}`,
                 parentId: draggedElement.id
               };
               draggedElement.children.push(contentItem);
@@ -202,7 +202,7 @@ export default {
     border: 2px dashed var(--primary-color);
     background-color: rgba(255, 116, 14, 0.3);
     &::before {
-      content: "可放置布局组件";
+      content: "可放置布局容器";
       position: absolute;
       top: 0;
       left: 0;

@@ -24,7 +24,7 @@
       ></lc-view>
     </template>
     <slot v-else>
-      <template v-if="type === 'content'">
+      <template v-if="type === 'content'&&!isPreview">
         <!-- <el-button type="primary" size="mini" @click="openComponentSelector"
           >添加组件</el-button
         > -->

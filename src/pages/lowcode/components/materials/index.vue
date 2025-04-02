@@ -36,17 +36,13 @@
         {{ item.label }}
       </div>
     </div>
-    <div class="component-list">
+    <div class="component-list" v-if="comList&&comList.length">
       <div
         v-for="item in comList"
         :key="item.id"
         :id="item.id"
-        class="com-item margin component"
-        :class="[
-          'component-item',
-          `type-${item.type}`,
-          'cursor-move h-50px rounded p-3',
-        ]"
+        class="com-item margin component cursor-move"
+        :class="[ `type-${item.type}`]"
         @dragstart="handleDragStart($event, item)"
         draggable="true"
         unselectable="on"
@@ -209,7 +205,14 @@ export default {
       this.activeSubIndex = index + 1;
       this.getList(current, item);
     },
+    clearComponent(){
+      this.activeIndex = -1;
+      this.activeSubIndex = 0;
+      this.comList = []
+      this.$emit("set-list", []);
+    },
     tapComponent(item, index) {
+      if(this.activeIndex === index) return this.clearComponent();
       this.activeIndex = index;
       this.activeSubIndex = 0;
       if (!item.children?.length) {
@@ -315,7 +318,7 @@ export default {
           }
           break;
         case "swiper":
-          debugger
+          debugger;
           if (config.figure_row_json) {
             try {
               config.swiper_json = JSON.parse(config.figure_row_json);
@@ -353,7 +356,12 @@ export default {
           break;
       }
       Object.keys(config).forEach((key) => {
-        if (key && config[key] &&key?.includes('_json')  &&key.lastIndexOf("_json") === key.length - 5) {
+        if (
+          key &&
+          config[key] &&
+          key?.includes("_json") &&
+          key.lastIndexOf("_json") === key.length - 5
+        ) {
           try {
             config[`${key}_data`] = JSON.parse(config[key]);
           } catch (e) {
@@ -465,9 +473,11 @@ export default {
 .materia-warp {
   height: 100%;
   display: flex;
+  overflow: hidden;
 
   .left {
     height: 100%;
+    overflow: hidden;
   }
 }
 
@@ -477,7 +487,17 @@ export default {
   position: relative;
   display: inline-block;
   height: 100%;
-
+  overflow-y: auto;
+  // 优化滚动条样式
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 3px;
+    cursor: move;
+  }
   .active-bg {
     position: absolute;
     left: 10px;
@@ -549,11 +569,18 @@ export default {
 .component-list {
   // display: flex;
   // flex-direction: column;
+  padding: 5px;
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
   background-color: #fff;
   width: 200px;
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+  &.hidden{
+    width: 0;
+    overflow: hidden;
+  }
   &::-webkit-scrollbar {
     width: 4px; /* 设置滚动条的宽度 */
     height: 4px; /* 设置滚动条的高度 */
@@ -565,11 +592,10 @@ export default {
   }
 
   .com-item {
+    width: 100%;
     display: inline-flex;
     flex-direction: column;
-    width: calc(100% - 10px);
-    // width: calc(50% - 20px);
-    margin: 5px;
+    margin: 5px 0;
     min-height: 130px;
     border-radius: 8px;
     border: none;
