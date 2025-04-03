@@ -1,7 +1,7 @@
 export const materialsTree = [
   {
     value: "layout",
-    label: "容器",
+    label: "布局",
     icon: "Layout",
     service: "srvpage_cfg_layout_select",
     nameCol: "layout_name",

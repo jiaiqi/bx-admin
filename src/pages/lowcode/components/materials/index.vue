@@ -1,5 +1,12 @@
 <template>
-  <div class="materia-warp">
+  <div class="materia-warp" :class="{ unfold: unfold }">
+    <div
+      class="fold-btn"
+      @click="unfold = !unfold"
+      :title="unfold ? '收起' : '展开'"
+    >
+      <i class="el-icon-d-arrow-right icon"></i>
+    </div>
     <div class="left">
       <div class="type-list">
         <div class="active-bg" :style="setStyle"></div>
@@ -17,7 +24,7 @@
     </div>
     <div
       class="sub-type"
-      v-if="current && current.children && current.children.length"
+      v-if="unfold && current && current.children && current.children.length"
     >
       <div
         class="sub-type-item"
@@ -36,13 +43,13 @@
         {{ item.label }}
       </div>
     </div>
-    <div class="component-list" v-if="comList&&comList.length">
+    <div class="component-list" v-if="unfold && comList && comList.length">
       <div
         v-for="item in comList"
         :key="item.id"
         :id="item.id"
         class="com-item margin component cursor-move"
-        :class="[ `type-${item.type}`]"
+        :class="[`type-${item.type}`]"
         @dragstart="handleDragStart($event, item)"
         draggable="true"
         unselectable="on"
@@ -72,6 +79,7 @@
 </template>
 
 <script>
+import cloneDeep from "lodash/cloneDeep";
 import dragStore from "../../store/dragStore";
 import { materialsTree } from "./materials";
 import {
@@ -110,6 +118,7 @@ export default {
   },
   data() {
     return {
+      unfold: true, // 是否展开
       // 物料列表
       activeIndex: 0,
       activeSubIndex: 0,
@@ -205,14 +214,14 @@ export default {
       this.activeSubIndex = index + 1;
       this.getList(current, item);
     },
-    clearComponent(){
+    clearComponent() {
       this.activeIndex = -1;
       this.activeSubIndex = 0;
-      this.comList = []
+      this.comList = [];
       this.$emit("set-list", []);
     },
     tapComponent(item, index) {
-      if(this.activeIndex === index) return this.clearComponent();
+      if (this.activeIndex === index) return this.clearComponent();
       this.activeIndex = index;
       this.activeSubIndex = 0;
       if (!item.children?.length) {
@@ -263,12 +272,17 @@ export default {
             if (ele[item.nameCol] === "页面容器") {
               obj.type = "container";
               obj.component = "lc-container";
+              obj.layout_party = "页面";
+              obj.com_name = ele[item.nameCol] === "页面容器";
             } else if (ele[item.nameCol]?.indexOf("布局容器") === 0) {
               obj.type = "layout";
               obj.component = "lc-block";
+              obj.layout_party = "布局";
+              obj.com_name = ele[item.nameCol] === "页面容器";
             }
           } else {
             obj.type = "component";
+            obj._type = "component";
             obj.component = "normal-component";
             obj.data = this.initComCfg(obj.com_type, obj);
           }
@@ -283,6 +297,7 @@ export default {
     },
     initComCfg(type, config) {
       // 初始化组件配置
+      config = cloneDeep(config);
       switch (type) {
         case "chart":
           if (config.row_json) {
@@ -368,6 +383,13 @@ export default {
             //TODO handle the exception
             console.error("解析JSON数据失败:", e);
           }
+        }
+      });
+      // 去掉没用的属性
+      const keys = ["component", "type", "_type"];
+      keys.forEach((key) => {
+        if (config[key]) {
+          delete config[key];
         }
       });
       return JSON.parse(JSON.stringify(config));
@@ -473,8 +495,47 @@ export default {
 .materia-warp {
   height: 100%;
   display: flex;
-  overflow: hidden;
-
+  // overflow: hidden;
+  position: relative;
+  // width: 100px;
+  transition: all 0.3s ease-in-out;
+  margin-left: -80px;
+  .fold-btn {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%) translateX(100%);
+    transition: all 0.3s ease-in-out;
+    background: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: none;
+    cursor: pointer;
+    .icon {
+      display: inline-block;
+      transform: rotate(0);
+    }
+  }
+  &:hover {
+    .fold-btn {
+      z-index: 99;
+      display: inline-block;
+    }
+  }
+  &.unfold {
+    overflow: unset;
+    width: unset;
+    margin-left: 0;
+    transform: translateX(0);
+    .fold-btn {
+      transform: translateY(-50%) translateX(0);
+      .icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
   .left {
     height: 100%;
     overflow: hidden;
@@ -577,7 +638,7 @@ export default {
   width: 200px;
   height: 100%;
   transition: width 0.3s ease-in-out;
-  &.hidden{
+  &.hidden {
     width: 0;
     overflow: hidden;
   }

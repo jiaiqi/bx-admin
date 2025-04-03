@@ -4,16 +4,16 @@
     v-if="component"
     v-bind="props"
     :page-item="props.data"
-    @click="onTap"
+    @click.native.stop="onTap()"
     :currentId="currentId"
     :isPreview="isPreview"
     @add="addComponent"
     :class="{ 'preview-mode': isPreview }"
     style="position: relative; z-index: 1"
   >
-    <template v-if="children && children.length">
+    <template v-if="childComponents && childComponents.length">
       <lc-view
-        v-for="item in children"
+        v-for="item in childComponents"
         v-bind="item"
         :page-item="item.data"
         :key="item.id"
@@ -29,7 +29,7 @@
           >添加组件</el-button
         > -->
         <span class="" style="color: #999; pointer-events: none">
-          可放置组件区域
+          {{name || '可放置组件区域'}}
         </span>
       </template>
       <template v-else>
@@ -91,13 +91,31 @@ export default {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
   },
+  data() {
+    return {
+      childComponents: []
+    }
+  },
+  watch: {
+    children: {
+      immediate: true,
+      deep: true,
+      handler(newValue) {
+        if(Array.isArray(newValue)) {
+          this.childComponents = newValue
+         }else{
+          this.childComponents = []
+         } 
+      }
+    }
+  },
   methods: {
     openComponentSelector() {
       this.$emit("open", this.props);
     },
     onTap(val) {
       if (!this.isPreview) {
-        this.$emit("click", val); // 触发父组件的click事件，并传递参数val
+        this.$emit("click", val||this.props); // 触发父组件的click事件，并传递参数val
       }
     },
     addComponent(val) {

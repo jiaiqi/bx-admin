@@ -247,7 +247,7 @@ export default {
         const viewer = this.$refs.viewer.$viewer;
         viewer.show();
       }else{
-        this.$$message.error('只支持预览图片或者pdf文件')
+        this.$message.error('只支持预览图片或者pdf文件')
       }
 
       // window.open(`/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`)

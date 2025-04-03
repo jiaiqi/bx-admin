@@ -67,10 +67,7 @@ export default {
         let data = this.buildValuesFromConf(conf);
         query.data = data ? [data] : [];
       }
-      debugger
-      if(Array.isArray(query.data)){
-        
-      }
+    
       if (
         query?.serviceName?.endsWith("add") ||
         query.serviceName?.endsWith("update")

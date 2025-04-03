@@ -93,13 +93,14 @@ export default {
     onTap(val) {
       console.log("onTap", val);
       this.currentId = val.id;
-      this.$emit("select", val.id);
+      debugger
+      this.$emit("select", val.id,val);
     },
     findComponentById(id, list = [], data) {
       let result = null;
       for (let i = 0; i < list.length; i++) {
         const item = list[i];
-        if (id && item.id === id) {
+        if (id && (item.id === id||item.com_no===id)) {
           // 检查是否已有children数组
           if (!item.children) {
             this.$set(item, "children", []);

@@ -74,6 +74,8 @@ export default {
       let style = {};
       if (this.props.style_json && typeof this.props.style_json === "string") {
         style = JSON.parse(this.props.style_json);
+      } else if (this.props.layout_json?.style_json) {
+        style = this.props.layout_json.style_json;
       }
       return formatStyleData(style);
     },
@@ -81,7 +83,7 @@ export default {
   methods: {
     // 修改拖拽相关的事件处理
     handleDragOver(e) {
-      if(this.isPreview) return;
+      if (this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       // 阻止默认行为以允许放置
@@ -107,7 +109,7 @@ export default {
     },
 
     handleDragLeave(e) {
-      if(this.isPreview) return;
+      if (this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.currentTarget.classList.remove("drag-over");
@@ -115,7 +117,7 @@ export default {
     },
 
     handleDrop(e) {
-      if(this.isPreview) return;
+      if (this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
@@ -152,7 +154,7 @@ export default {
     },
 
     handleDragEnd() {
-      if(this.isPreview) return;
+      if (this.isPreview) return;
       // 清除拖拽类型
       dragStore.clearDragType();
     },

@@ -2,17 +2,17 @@
   <div
     class="content-item drop-zone"
     @click="$emit('click', props)"
-    :class="{ active: currentId && currentId === id }"
+    :class="{ active: isActive }"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
-    draggable="true"
+    draggable="false"
     :data-id="id"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
+    @dragstart="handleDragStart($event, props)"
   >
-    <slot>
-    </slot>
+    <slot> </slot>
   </div>
 </template>
 
@@ -21,7 +21,7 @@ import { VueDraggable } from "vue-draggable-plus";
 import dragStore from "../../store/dragStore";
 
 export default {
-  name: "lc-block",
+  name: "lc-content",
   components: {
     VueDraggable,
   },
@@ -62,9 +62,43 @@ export default {
     allowDrop() {
       return this.type === "content" && !this.children?.length;
     },
+    isActive() {
+      return (
+        this.currentId &&
+        (this.currentId === this.id ||
+          this.$children?.[0]?.$children?.[0]?.pageItem?.id === this.currentId)
+      );
+    },
   },
   methods: {
+    handleDragStart(e, item) {
+      // 设置拖拽数据
+      const dragData = { ...item };
+      // 确保布局组件有children属性
+      if (item.type === "layout" && !dragData.children) {
+        dragData.children = [];
+      }
+
+      e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+      // 设置组件类型到全局状态
+      dragStore.setDragType(item.type);
+
+      // 设置拖拽效果
+      e.dataTransfer.effectAllowed = "copy";
+      // 创建自定义拖拽图像（可选）
+      const dragIcon = document.createElement("div");
+      dragIcon.innerHTML = item.name || item.comp_label;
+      dragIcon.className = "drag-icon";
+      document.body.appendChild(dragIcon);
+      e.dataTransfer.setDragImage(dragIcon, 0, 0);
+
+      // 延迟移除拖拽图像
+      setTimeout(() => {
+        document.body.removeChild(dragIcon);
+      }, 0);
+    },
     handleDragLeave(e) {
+      if (this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.target.classList.remove("drag-over");
@@ -72,6 +106,7 @@ export default {
     },
 
     handleDragOver(e) {
+      if (this.isPreview) return;
       // 阻止事件冒泡
       e.stopPropagation();
 
@@ -80,7 +115,13 @@ export default {
 
       // 获取拖拽元素的类型
       const draggedType = dragStore.getDragType();
-      if (e.target && this.allowDrop) {
+      // console.log('handleDragOver-draggedType:',draggedType);
+
+      if (e.target && this.allowDrop && draggedType) {
+        console.log("draggedType:", draggedType);
+        if (draggedType === "content") {
+          // 只有同一个布局容器内的组件可以互相替换位置
+        }
         if (!["container", "layout", "content"].includes(draggedType)) {
           // 允许放置非容器和非布局组件且非 content 组件
           e.dataTransfer.dropEffect = "copy";
@@ -96,6 +137,8 @@ export default {
     },
 
     handleDrop(e) {
+      if (this.isPreview) return;
+
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
@@ -116,6 +159,7 @@ export default {
             ) {
               draggedElement.id = `${this.id}${new Date().getTime()}`;
               draggedElement.parentId = this.id;
+              draggedElement.parentNo = this.props.com_no;
               this.$emit("add", draggedElement);
             } else {
               // 不允许放置container和layout类型的组件
@@ -172,31 +216,13 @@ export default {
     }
   }
   &.active {
-    border: 1px solid var(--primary-color);
+    border: 2px solid var(--primary-color) !important;
   }
-  // .overlay {
-  //   &:hover {
-  //     // cursor: pointer;
-  //     border: 1px dashed #17d57e;
-  //     &::before {
-  //       content: "内容块";
-  //       position: absolute;
-  //       top: 0;
-  //       left: 0;
-  //       padding: 2px 5px;
-  //       background-color: #17d57e;
-  //       color: #fff;
-  //       transform: translateY(-100%);
-  //     }
-  //   }
-  // }
-
   .layout-1 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: 10px;
   }
-
   &.drag-over {
     border: 2px dashed #17d57e;
     background-color: rgba(23, 213, 126, 0.05);

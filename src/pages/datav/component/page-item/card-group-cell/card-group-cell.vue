@@ -32,9 +32,8 @@
               :value="cellItemData[pageItem._refedCol]"></radio>
           </div> -->
 
-        <div
+        <template
           v-for="(item, n) in cellLayoutJson.parts_json"
-          :key="n"
           :style="item.parts_type == 'iconImg' ? `display: inline-flex;` : ''"
         >
           <div
@@ -136,9 +135,8 @@
             @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
             :style="[buildColStyleJson(item.style_json || null)]"
           >
-            <div
+            <template
               v-for="(subCol, subindex) in item.sub_card_parts_json"
-              :key="subindex"
             >
               <div
                 v-if="
@@ -426,11 +424,10 @@
                       )
                     "
                   >
-                    <div
+                    <template
                       v-for="(
                         sssubCol, sssubindex
                       ) in ssubCol.sub_card_parts_json"
-                      :key="sssubindex"
                     >
                       <div
                         v-if="
@@ -608,11 +605,10 @@
                           )
                         "
                       >
-                        <div
+                        <template
                           v-for="(
                             sssubCol4, sssub4index
                           ) in sssubCol.sub_card_parts_json"
-                          :key="sssub4index"
                         >
                           <div
                             v-if="
@@ -804,15 +800,15 @@
                             "
                             @click="false"
                           ></u-parse> -->
-                        </div>
+                        </template>
                       </div>
-                    </div>
+                    </template>
                   </div>
                 </template>
               </div>
-            </div>
+            </template>
           </div>
-        </div>
+        </template>
         <slot name="footer"></slot>
       </div>
       <!-- <div class="uni-footer text-right flex justify-end flex-wrap" v-if="showRowButtons && !readOnly">
@@ -1024,6 +1020,12 @@ export default {
       let style_json_diy = config.style_json_diy || {};
       if (Object.keys(style_json_diy).indexOf("gap") !== -1) {
         style["gap"] = style_json_diy["gap"];
+      }
+      if (Object.keys(style_json_diy).indexOf("column-gap") !== -1) {
+        style["column-gap"] = style_json_diy["column-gap"];
+      }
+      if (Object.keys(style_json_diy).indexOf("row-gap") !== -1) {
+        style["row-gap"] = style_json_diy["row-gap"];
       }
       style["margin"] = 0;
       return style;
