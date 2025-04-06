@@ -2,7 +2,8 @@
   <div
     class="content-item drop-zone"
     @click="$emit('click', props)"
-    :class="{ active: isActive }"
+    :class="{ active: isActive, 'preview-mode': isPreview }"
+    :style="contentStyle"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
     draggable="false"
@@ -13,6 +14,15 @@
     @dragstart="handleDragStart($event, props)"
   >
     <slot> </slot>
+    
+    <!-- 拖拽调整宽度的手柄 -->
+    <div v-if="!isPreview && isActive" class="resize-handles">
+      <div class="resize-handle resize-handle-e" @mousedown="startResize($event, 'e')"></div>
+      <div class="resize-handle resize-handle-w" @mousedown="startResize($event, 'w')"></div>
+      <!-- <div class="resize-unit-switch" @click.stop="toggleWidthUnit">
+        {{ widthUnit === 'px' ? 'px' : '%' }}
+      </div> -->
+    </div>
   </div>
 </template>
 
@@ -54,6 +64,25 @@ export default {
       type: Boolean,
       default: false,
     },
+    width: {
+      type: [Number, String],
+      default: null
+    },
+    widthUnit: {
+      type: String,
+      default: 'px'
+    }
+  },
+  data() {
+    return {
+      contentWidth: this.width || null,
+      currentWidthUnit: this.widthUnit || 'px',
+      resizing: false,
+      resizeDirection: null,
+      startX: 0,
+      startWidth: 0,
+      parentWidth: 0
+    };
   },
   computed: {
     props() {
@@ -69,8 +98,157 @@ export default {
           this.$children?.[0]?.$children?.[0]?.pageItem?.id === this.currentId)
       );
     },
+    contentStyle() {
+      if (!this.contentWidth) return {};
+      
+      return {
+        width: this.currentWidthUnit === 'px' 
+          ? `${this.contentWidth}px` 
+          : `${this.contentWidth}%`
+      };
+    }
+  },
+  watch: {
+    width(newVal) {
+      if (newVal !== undefined && newVal !== null) {
+        this.contentWidth = newVal;
+      }
+    },
+    widthUnit(newVal) {
+      if (newVal) {
+        this.currentWidthUnit = newVal;
+      }
+    }
+  },
+  mounted() {
+    // 添加全局事件监听
+    document.addEventListener('mousemove', this.onResize);
+    document.addEventListener('mouseup', this.stopResize);
+  },
+  beforeDestroy() {
+    // 移除全局事件监听
+    document.removeEventListener('mousemove', this.onResize);
+    document.removeEventListener('mouseup', this.stopResize);
   },
   methods: {
+    // 切换宽度单位
+    toggleWidthUnit() {
+      // 在px和%之间切换
+      const newUnit = this.currentWidthUnit === 'px' ? '%' : 'px';
+      
+      // 转换宽度值
+      if (this.contentWidth) {
+        if (newUnit === '%') {
+          // 从px转换为%
+          const parentWidth = this.$el.parentElement.offsetWidth;
+          this.contentWidth = Math.round((this.contentWidth / parentWidth) * 100);
+        } else {
+          // 从%转换为px
+          const parentWidth = this.$el.parentElement.offsetWidth;
+          this.contentWidth = Math.round((this.contentWidth / 100) * parentWidth);
+        }
+      } else {
+        // 如果没有设置宽度，设置一个默认值
+        this.contentWidth = newUnit === 'px' ? 200 : 50;
+      }
+      
+      this.currentWidthUnit = newUnit;
+      
+      // 触发宽度变化事件
+      this.$emit('resize', {
+        id: this.id,
+        width: this.contentWidth,
+        widthUnit: this.currentWidthUnit
+      });
+      
+      this.$emit('resize-end', {
+        id: this.id,
+        width: this.contentWidth,
+        widthUnit: this.currentWidthUnit
+      });
+    },
+    
+    // 开始调整宽度
+    startResize(e, direction) {
+      if (this.isPreview) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.resizing = true;
+      this.resizeDirection = direction;
+      this.startX = e.clientX;
+      
+      // 获取当前元素的宽度和父元素的宽度
+      const rect = this.$el.getBoundingClientRect();
+      this.startWidth = this.contentWidth || (this.currentWidthUnit === 'px' ? rect.width : 100);
+      this.parentWidth = this.$el.parentElement.offsetWidth;
+      
+      // 添加调整大小时的样式
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    },
+    
+    // 调整宽度过程
+    onResize(e) {
+      if (!this.resizing) return;
+      
+      const deltaX = e.clientX - this.startX;
+      let newWidth;
+      
+      // 根据拖拽方向计算新宽度
+      if (this.resizeDirection === 'e') {
+        // 向右拖拽增加宽度
+        newWidth = this.startWidth + deltaX;
+      } else if (this.resizeDirection === 'w') {
+        // 向左拖拽减少宽度
+        newWidth = this.startWidth - deltaX;
+      }
+      
+      // 根据单位类型调整粒度
+      if (this.currentWidthUnit === 'px') {
+        // 按20px的粒度调整
+        newWidth = Math.round(newWidth / 20) * 20;
+        // 最小宽度为60px
+        newWidth = Math.max(60, newWidth);
+      } else {
+        // 转换为百分比
+        const percentWidth = (newWidth / this.parentWidth) * 100;
+        // 按1%的粒度调整
+        newWidth = Math.round(percentWidth);
+        // 最小宽度为10%，最大为100%
+        newWidth = Math.max(10, Math.min(100, newWidth));
+      }
+      
+      // 更新宽度
+      if (newWidth !== this.contentWidth) {
+        this.contentWidth = newWidth;
+        
+        // 触发宽度变化事件
+        this.$emit('resize', {
+          id: this.id,
+          width: this.contentWidth,
+          widthUnit: this.currentWidthUnit
+        });
+      }
+    },
+    
+    // 停止调整宽度
+    stopResize() {
+      if (!this.resizing) return;
+      
+      this.resizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      
+      // 触发宽度变化完成事件
+      this.$emit('resize-end', {
+        id: this.id,
+        width: this.contentWidth,
+        widthUnit: this.currentWidthUnit
+      });
+    },
+
     handleDragStart(e, item) {
       // 设置拖拽数据
       const dragData = { ...item };
@@ -189,17 +367,72 @@ export default {
   align-items: center;
   --primary-color: #17d57e;
   border: 1px dashed rgba(23, 213, 126, 0.3); /* 添加浅色虚线边框 */
-  &.preview-mode {
-    border-color: transparent;
-  }
-  .content {
-    z-index: 1;
-    .component {
-      position: relative;
-      z-index: 1; // 确保组件在遮罩层之上;
-    }
+  
+  // 调整宽度的手柄样式
+  .resize-handles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
   }
 
+  .resize-handle {
+    position: absolute;
+    background-color: var(--primary-color);
+    pointer-events: auto;
+    z-index: 11;
+    
+    &:hover {
+      background-color: #0fb96a;
+    }
+    
+    &.resize-handle-e {
+      top: 50%;
+      right: 0;
+      width: 6px;
+      height: 20px;
+      transform: translateY(-50%);
+      cursor: ew-resize;
+    }
+    
+    &.resize-handle-w {
+      top: 50%;
+      left: 0;
+      width: 6px;
+      height: 20px;
+      transform: translateY(-50%);
+      cursor: ew-resize;
+    }
+  }
+  
+  .resize-unit-switch {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 2px 5px;
+    background-color: var(--primary-color);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 11;
+    
+    &:hover {
+      background-color: #0fb96a;
+    }
+  }
+  
+  &.preview-mode {
+    border-color: transparent;
+    
+    .resize-handles {
+      display: none;
+    }
+  }
+  
   &:hover:not(.preview-mode),
   &.drag-over {
     // cursor: pointer;
