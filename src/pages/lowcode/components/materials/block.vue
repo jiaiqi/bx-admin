@@ -2,7 +2,7 @@
   <div
     class="lc-block"
     :class="[subType]"
-    :style="[setStyle]"
+    :style="[setStyle, blockHeightStyle]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -22,6 +22,13 @@
 
     <!-- 子组件 -->
     <slot></slot>
+    
+    <!-- 高度调整手柄 -->
+    <div 
+      v-if="!isPreview && currentId && currentId === id" 
+      class="resize-handle-s"
+      @mousedown="startResize"
+    ></div>
   </div>
 </template>
 
@@ -65,6 +72,18 @@ export default {
       type: Boolean,
       default: false,
     },
+    height: {
+      type: [Number, String],
+      default: null,
+    }
+  },
+  data() {
+    return {
+      blockHeight: this.height || 10, // 默认10vh
+      resizing: false,
+      startY: 0,
+      startHeight: 0,
+    };
   },
   computed: {
     props() {
@@ -79,8 +98,86 @@ export default {
       }
       return formatStyleData(style);
     },
+    blockHeightStyle() {
+      return {
+        height: this.blockHeight ? `${this.blockHeight}vh` : null
+      };
+    }
+  },
+  watch: {
+    height(newVal) {
+      if (newVal) {
+        this.blockHeight = newVal;
+      }
+    }
+  },
+  mounted() {
+    // 添加全局事件监听
+    document.addEventListener('mousemove', this.onResize);
+    document.addEventListener('mouseup', this.stopResize);
+  },
+  beforeDestroy() {
+    // 移除全局事件监听
+    document.removeEventListener('mousemove', this.onResize);
+    document.removeEventListener('mouseup', this.stopResize);
   },
   methods: {
+    // 开始调整高度
+    startResize(e) {
+      if (this.isPreview) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.resizing = true;
+      this.startY = e.clientY;
+      this.startHeight = this.blockHeight;
+      
+      // 添加调整大小时的样式
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+    },
+    
+    // 调整高度过程
+    onResize(e) {
+      if (!this.resizing) return;
+      
+      // 计算移动的距离，转换为vh单位
+      // 视口高度的1%对应的像素值
+      const vh = window.innerHeight / 100;
+      // 移动的vh值，向上取整到最接近的整数
+      const deltaVh = Math.round((e.clientY - this.startY) / vh);
+      
+      // 设置新高度，最小为5vh
+      const newHeight = Math.max(5, this.startHeight + deltaVh);
+      
+      // 只有当高度变化为整数vh时才更新
+      if (newHeight !== this.blockHeight) {
+        this.blockHeight = newHeight;
+        
+        // 触发高度变化事件
+        this.$emit('resize', {
+          id: this.id,
+          height: this.blockHeight
+        });
+      }
+    },
+    
+    // 停止调整高度
+    stopResize() {
+      if (!this.resizing) return;
+      
+      this.resizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      
+      // 触发高度变化完成事件
+      this.$emit('resize-end', {
+        id: this.id,
+        height: this.blockHeight
+      });
+    },
+
     // 修改拖拽相关的事件处理
     handleDragOver(e) {
       if (this.isPreview) return;
@@ -174,14 +271,47 @@ export default {
 }
 .lc-block {
   width: 100%;
-  height: 100%;
+  // height: 100%;
   position: relative;
   padding: 10px;
   --primary-color: #2c48ff;
   border: 1px dashed rgba(44, 72, 255, 0.3); /* 添加浅色虚线边框 */
+  
+  // 高度调整手柄样式
+  .resize-handle-s {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background-color: transparent;
+    cursor: ns-resize;
+    z-index: 10;
+    
+    &:hover, &:active {
+      background-color: rgba(44, 72, 255, 0.3);
+    }
+    
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 2px;
+      background-color: var(--primary-color);
+    }
+  }
+  
   &.preview-mode {
     border-color: transparent;
+    
+    .resize-handle-s {
+      display: none;
+    }
   }
+  
   &.drag-over {
     border: 2px dashed var(--primary-color);
     background-color: rgba(44, 72, 255, 0.05);

@@ -182,7 +182,7 @@ export default {
 .content-item {
   width: 100%;
   height: 100%;
-  height: 100px;
+  min-height: 50px;
   position: relative;
   display: flex;
   justify-content: center;
