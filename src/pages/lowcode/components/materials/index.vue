@@ -1,12 +1,6 @@
 <template>
-  <div class="materia-warp" :class="{ unfold: unfold }">
-    <div
-      class="fold-btn"
-      @click="unfold = !unfold"
-      :title="unfold ? '收起' : '展开'"
-    >
-      <i class="el-icon-d-arrow-right icon"></i>
-    </div>
+  <div class="materia-warp">
+    <!-- 移除旧的折叠按钮 -->
     <div class="left">
       <div class="type-list">
         <div class="active-bg" :style="setStyle"></div>
@@ -24,7 +18,7 @@
     </div>
     <div
       class="sub-type"
-      v-if="unfold && current && current.children && current.children.length"
+      v-if="current && current.children && current.children.length"
     >
       <div
         class="sub-type-item"
@@ -43,7 +37,7 @@
         {{ item.label }}
       </div>
     </div>
-    <div class="component-list" v-if="unfold && comList && comList.length">
+    <div class="component-list" v-if="comList && comList.length">
       <div
         v-for="item in comList"
         :key="item.id"
@@ -58,23 +52,6 @@
         <div class="label">{{ item.comp_label }}</div>
       </div>
     </div>
-    <!-- <div class="left">
-      <div
-        v-for="item in list"
-        :key="item.id"
-        :id="item.id"
-        draggable="true"
-        :data-type="item.type"
-        :class="[
-          'component-item',
-          `type-${item.type}`,
-          'cursor-move h-50px rounded p-3',
-        ]"
-        @dragstart="handleDragStart($event, item)"
-      >
-        {{ item.name }}
-      </div>
-    </div> -->
   </div>
 </template>
 
@@ -118,7 +95,7 @@ export default {
   },
   data() {
     return {
-      unfold: true, // 是否展开
+      // 移除 unfold 属性，由父组件控制
       // 物料列表
       activeIndex: 0,
       activeSubIndex: 0,
@@ -447,95 +424,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
-// .left {
-//   width: 200px;
-//   height: 100%;
-//   border: 1px solid #f0f0f0;
-//   border-top: none;
-//   padding: 10px;
-// }
-
-// .component-item {
-//   margin-bottom: 10px;
-//   background-color: rgba(128, 128, 128, 0.05);
-//   border: 1px solid #eee;
-//   border-radius: 4px;
-//   transition: all 0.3s;
-
-//   &:hover {
-//     transform: translateY(-2px);
-//     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-//   }
-
-//   &.type-container {
-//     border-left: 3px solid #ff740e;
-//   }
-
-//   &.type-layout {
-//     border-left: 3px solid #2c48ff;
-//   }
-
-//   &.type-button,
-//   &.type-input,
-//   &.type-select {
-//     border-left: 3px solid #17d57e;
-//   }
-// }
-
-.drag-icon {
-  padding: 5px 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  top: -1000px;
-}
-
 .materia-warp {
   height: 100%;
   display: flex;
-  // overflow: hidden;
   position: relative;
-  // width: 100px;
-  transition: all 0.3s ease-in-out;
-  margin-left: -80px;
-  .fold-btn {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%) translateX(100%);
-    transition: all 0.3s ease-in-out;
-    background: #fff;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: none;
-    cursor: pointer;
-    .icon {
-      display: inline-block;
-      transform: rotate(0);
-    }
-  }
-  &:hover {
-    .fold-btn {
-      z-index: 99;
-      display: inline-block;
-    }
-  }
-  &.unfold {
-    overflow: unset;
-    width: unset;
-    margin-left: 0;
-    transform: translateX(0);
-    .fold-btn {
-      transform: translateY(-50%) translateX(0);
-      .icon {
-        transform: rotate(180deg);
-      }
-    }
-  }
+  width: 100%;
+  
+  // 移除旧的折叠相关样式
   .left {
     height: 100%;
     overflow: hidden;
@@ -637,19 +532,17 @@ export default {
   background-color: #fff;
   width: 200px;
   height: 100%;
-  transition: width 0.3s ease-in-out;
-  &.hidden {
-    width: 0;
-    overflow: hidden;
-  }
+  
+  // 移除旧的折叠相关样式
+  
   &::-webkit-scrollbar {
-    width: 4px; /* 设置滚动条的宽度 */
-    height: 4px; /* 设置滚动条的高度 */
+    width: 4px;
+    height: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
-    border-radius: 4px; /* 设置滚动条滑块的圆角 */
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
   }
 
   .com-item {
