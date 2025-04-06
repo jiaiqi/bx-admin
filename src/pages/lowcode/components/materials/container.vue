@@ -196,6 +196,7 @@ export default {
   width: 100%;
   min-height: 100px;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   padding: 20px;
   position: relative;

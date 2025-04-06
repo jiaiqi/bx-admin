@@ -2,7 +2,7 @@
   <div
     class="lc-block"
     :class="[subType]"
-    :style="[setStyle, blockHeightStyle]"
+    :style="[setStyle, blockHeightStyle, blockWidthStyle]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -27,8 +27,14 @@
     <div 
       v-if="!isPreview && currentId && currentId === id" 
       class="resize-handle-s"
-      @mousedown="startResize"
+      @mousedown="startResizeHeight"
     ></div>
+    
+    <!-- 宽度调整手柄 -->
+    <div v-if="!isPreview && currentId && currentId === id" class="resize-handles">
+      <div class="resize-handle resize-handle-e" @mousedown="startResizeWidth($event, 'e')"></div>
+      <div class="resize-handle resize-handle-w" @mousedown="startResizeWidth($event, 'w')"></div>
+    </div>
   </div>
 </template>
 
@@ -75,14 +81,24 @@ export default {
     height: {
       type: [Number, String],
       default: null,
+    },
+    width: {
+      type: [Number, String],
+      default: null,
     }
   },
   data() {
     return {
       blockHeight: this.height || 10, // 默认10vh
-      resizing: false,
+      blockWidth: this.width || null, // 默认为null，使用CSS中的宽度
+      resizingHeight: false,
+      resizingWidth: false,
+      resizeDirection: null,
       startY: 0,
+      startX: 0,
       startHeight: 0,
+      startWidth: 0,
+      parentWidth: 0,
     };
   },
   computed: {
@@ -102,12 +118,20 @@ export default {
       return {
         height: this.blockHeight ? `${this.blockHeight}vh` : null
       };
+    },
+    blockWidthStyle() {
+      return this.blockWidth ? { width: `${this.blockWidth}%` } : {};
     }
   },
   watch: {
     height(newVal) {
       if (newVal) {
         this.blockHeight = newVal;
+      }
+    },
+    width(newVal) {
+      if (newVal !== undefined && newVal !== null) {
+        this.blockWidth = newVal;
       }
     }
   },
@@ -123,13 +147,13 @@ export default {
   },
   methods: {
     // 开始调整高度
-    startResize(e) {
+    startResizeHeight(e) {
       if (this.isPreview) return;
       
       e.preventDefault();
       e.stopPropagation();
       
-      this.resizing = true;
+      this.resizingHeight = true;
       this.startY = e.clientY;
       this.startHeight = this.blockHeight;
       
@@ -138,44 +162,111 @@ export default {
       document.body.style.userSelect = 'none';
     },
     
-    // 调整高度过程
+    // 开始调整宽度
+    startResizeWidth(e, direction) {
+      if (this.isPreview) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.resizingWidth = true;
+      this.resizeDirection = direction;
+      this.startX = e.clientX;
+      
+      // 获取当前元素的宽度和父元素的宽度
+      const rect = this.$el.getBoundingClientRect();
+      this.startWidth = this.blockWidth || 100;
+      this.parentWidth = this.$el.parentElement.offsetWidth;
+      
+      // 添加调整大小时的样式
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    },
+    
+    // 调整尺寸过程
     onResize(e) {
-      if (!this.resizing) return;
-      
-      // 计算移动的距离，转换为vh单位
-      // 视口高度的1%对应的像素值
-      const vh = window.innerHeight / 100;
-      // 移动的vh值，向上取整到最接近的整数
-      const deltaVh = Math.round((e.clientY - this.startY) / vh);
-      
-      // 设置新高度，最小为5vh
-      const newHeight = Math.max(5, this.startHeight + deltaVh);
-      
-      // 只有当高度变化为整数vh时才更新
-      if (newHeight !== this.blockHeight) {
-        this.blockHeight = newHeight;
+      // 处理高度调整
+      if (this.resizingHeight) {
+        // 计算移动的距离，转换为vh单位
+        // 视口高度的1%对应的像素值
+        const vh = window.innerHeight / 100;
+        // 移动的vh值，向上取整到最接近的整数
+        const deltaVh = Math.round((e.clientY - this.startY) / vh);
         
-        // 触发高度变化事件
-        this.$emit('resize', {
+        // 设置新高度，最小为5vh
+        const newHeight = Math.max(5, this.startHeight + deltaVh);
+        
+        // 只有当高度变化为整数vh时才更新
+        if (newHeight !== this.blockHeight) {
+          this.blockHeight = newHeight;
+          
+          // 触发高度变化事件
+          this.$emit('resize', {
+            id: this.id,
+            height: this.blockHeight
+          });
+        }
+      }
+      
+      // 处理宽度调整
+      if (this.resizingWidth) {
+        const deltaX = e.clientX - this.startX;
+        let deltaPercent = (deltaX / this.parentWidth) * 100;
+        
+        // 根据拖拽方向计算新宽度
+        let newWidth;
+        if (this.resizeDirection === 'e') {
+          // 向右拖拽增加宽度
+          newWidth = this.startWidth + deltaPercent;
+        } else if (this.resizeDirection === 'w') {
+          // 向左拖拽减少宽度
+          newWidth = this.startWidth - deltaPercent;
+        }
+        
+        // 按1%的粒度调整
+        newWidth = Math.round(newWidth);
+        
+        // 限制最小宽度为10%，最大为100%
+        newWidth = Math.max(10, Math.min(100, newWidth));
+        
+        // 更新宽度
+        if (newWidth !== this.blockWidth) {
+          this.blockWidth = newWidth;
+          
+          // 触发宽度变化事件
+          this.$emit('resize', {
+            id: this.id,
+            width: this.blockWidth
+          });
+        }
+      }
+    },
+    
+    // 停止调整尺寸
+    stopResize() {
+      if (this.resizingHeight) {
+        this.resizingHeight = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        
+        // 触发高度变化完成事件
+        this.$emit('resize-end', {
           id: this.id,
           height: this.blockHeight
         });
       }
-    },
-    
-    // 停止调整高度
-    stopResize() {
-      if (!this.resizing) return;
       
-      this.resizing = false;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      
-      // 触发高度变化完成事件
-      this.$emit('resize-end', {
-        id: this.id,
-        height: this.blockHeight
-      });
+      if (this.resizingWidth) {
+        this.resizingWidth = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        
+        // 触发宽度变化完成事件
+        this.$emit('resize-end', {
+          id: this.id,
+          width: this.blockWidth
+        });
+      }
     },
 
     // 修改拖拽相关的事件处理
@@ -304,10 +395,70 @@ export default {
     }
   }
   
+  // 宽度调整手柄样式
+  .resize-handles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .resize-handle {
+    position: absolute;
+    background-color: transparent;
+    pointer-events: auto;
+    z-index: 11;
+    
+    &:hover, &:active {
+      background-color: rgba(44, 72, 255, 0.3);
+    }
+    
+    &.resize-handle-e {
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      cursor: ew-resize;
+      
+      &::after {
+        content: "";
+        position: absolute;
+        right: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 30px;
+        background-color: var(--primary-color);
+      }
+    }
+    
+    &.resize-handle-w {
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      cursor: ew-resize;
+      
+      &::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 30px;
+        background-color: var(--primary-color);
+      }
+    }
+  }
+  
   &.preview-mode {
     border-color: transparent;
     
-    .resize-handle-s {
+    .resize-handle-s, .resize-handles {
       display: none;
     }
   }
