@@ -15,7 +15,7 @@
             v-if="pageId"
           >
           </simple-update>
-          <simple-add
+          <!-- <simple-add
             :service="pageService"
             :navAfterSubmit="false"
             @executor-complete="onPageUpdate($event, 'add')"
@@ -23,13 +23,19 @@
             @submitted2mem=""
             v-else
           >
-          </simple-add>
+          </simple-add> -->
         </div>
       </el-tab-pane>
       <el-tab-pane
         label="组件"
         name="组件"
-        v-if="componentId || (!componentId && pageId && currentItem)"
+        v-if="
+          componentId ||
+          (!componentId &&
+            pageId &&
+            currentItem &&
+            currentItem._type === 'component')
+        "
         v-loading="componentLoading"
       >
         <simple-update
@@ -612,9 +618,9 @@ export default {
               ...item,
               ...data,
             };
-          }else{
+          } else {
             return {
-             ...item,
+              ...item,
             };
           }
         } else if (Array.isArray(item.children) && item.children.length) {
@@ -625,10 +631,10 @@ export default {
               normalChildren
             ),
           };
-        }else if(item?.type){
+        } else if (item?.type) {
           return {
-            ...item, 
-          }
+            ...item,
+          };
         }
       });
       return result;
@@ -653,46 +659,48 @@ export default {
     },
     buildAddChildren(list) {
       const result = [];
-      let keys = pageCompCols
+      let keys = pageCompCols;
 
       if (Array.isArray(list) && list.length) {
-        return list.filter(item=>!!item).map((item, index) => {
-          let data = {}
-          if(!item){
-            console.log(list);
-            
-            debugger
-          }
-        keys.forEach((key) => {
-          if(item[key]){
-            data[key] = item[key]
-          }
-        })
-          let obj = {
-            serviceName: "srvpage_cfg_page_component_add",
-            condition: [],
-            depend_keys: [
-              {
-                type: "column",
-                add_col: "parent_no",
-                depend_key: "com_no",
-              },
-            ],
-            data: [
-              {
-                ...data,
-                page_no: this.pageConfig.page_no,
-                com_type: item.com_type,
-                com_name: item.com_name || "",
-                com_seq: item.com_seq || item._seq || (index + 1) * 100,
-                child_data_list: item?.children?.length
-                  ? this.buildAddChildren(item.children)
-                  : [],
-              },
-            ],
-          };
-          return obj;
-        });
+        return list
+          .filter((item) => !!item)
+          .map((item, index) => {
+            let data = {};
+            if (!item) {
+              console.log(list);
+
+              debugger;
+            }
+            keys.forEach((key) => {
+              if (item[key]) {
+                data[key] = item[key];
+              }
+            });
+            let obj = {
+              serviceName: "srvpage_cfg_page_component_add",
+              condition: [],
+              depend_keys: [
+                {
+                  type: "column",
+                  add_col: "parent_no",
+                  depend_key: "com_no",
+                },
+              ],
+              data: [
+                {
+                  ...data,
+                  page_no: this.pageConfig.page_no,
+                  com_type: item.com_type,
+                  com_name: item.com_name || item.comp_label || "",
+                  com_seq: item.com_seq || item._seq || (index + 1) * 100,
+                  child_data_list: item?.children?.length
+                    ? this.buildAddChildren(item.children)
+                    : [],
+                },
+              ],
+            };
+            return obj;
+          });
       }
       return result;
     },
@@ -700,14 +708,14 @@ export default {
       if (!list?.length) {
         return [];
       }
-      let keys = pageCompCols
+      let keys = pageCompCols;
       const result = list.map((item, index) => {
-        let data = {}
+        let data = {};
         keys.forEach((key) => {
-          if(item[key]){
-            data[key] = item[key]
+          if (item[key]) {
+            data[key] = item[key];
           }
-        })
+        });
         let obj = {
           ...data,
           page_no: this.pageConfig.page_no,
@@ -720,6 +728,94 @@ export default {
       });
       return result;
     },
+    async onSave() {
+      if (Array.isArray(this.components) && this.components.length) {
+        const oldComponents = cloneDeep(this.components);
+        // 保存页面属性后删除在页面上移除的组件
+        const deleteIds = this.findLayoutComponentsByType(
+          oldComponents,
+          "delete"
+        ).map((item) => item.id);
+        if (deleteIds?.length) {
+          const deleteObj = {
+            serviceName: "srvpage_cfg_page_component_delete",
+          };
+          await this.httpOperate("delete", deleteObj, deleteIds.toString());
+        }
+        const updateList = this.findLayoutComponentsByType(
+          oldComponents,
+          "update"
+        );
+        if (updateList?.length) {
+          //更新页面组件 目前只有组件顺序可以更新
+          const updateKeys = ["com_seq", "layout_height", "layout_width"];
+          const updateObj = []
+          updateList.forEach((item) => {
+            // 组装更新对象
+            const data = {};
+            updateKeys.forEach((key) => {
+              if (item[key]) {
+                data[key] = item[key];
+              }
+            });
+            if(!Object.keys(data).length) {
+              return;
+            }
+            const obj =  {
+              serviceName: "srvpage_cfg_page_component_update",
+              condition: [
+                {
+                  colName: "id",
+                  ruleType: "eq",
+                  value: item.id,
+                },
+              ],
+              data: [data],
+            };
+            updateObj.push(obj);
+          });
+          await this.httpOperate("update", updateObj);
+        }
+        let addList = this.findLayoutComponentsByType(oldComponents, "add");
+        if (addList?.length) {
+          const normalChild = this.findNormalComponents(oldComponents);
+          if (Array.isArray(normalChild) && normalChild.length) {
+            // todo 更新组件
+            //  this.updateComponentNo()
+            const resultComps = await this.insertComponents(
+              this.pageConfig,
+              normalChild
+            );
+            if (
+              Array.isArray(resultComps) &&
+              resultComps.length === normalChild.length
+            ) {
+              addList = this.updateNormalComponents(addList, resultComps);
+            }
+          }
+          const addObj = {
+            serviceName: "srvpage_cfg_page_component_add",
+            data: this.buildAddComponentsReqData(addList),
+          };
+          const addChildRes = await this.httpOperate(
+            "add",
+            addObj,
+            null,
+            false,
+            true
+          );
+          // let normalChild = this.findNormalChild(addChildRes);
+          console.log(addChildRes);
+        }
+        this.$message.success("保存成功");
+        return this.$emit("refresh");
+        const addNormalComponents = this.findNormalComponents(oldComponents);
+        if (addNormalComponents?.length) {
+          // 先创建对应类型的组件 再创建页面组件
+          await this.insertComponents(this.pageConfig, addNormalComponents);
+        }
+      }
+    },
     async onPageUpdate(event, type) {
       console.log("onPageUpdate", event, type);
       if (event?.data?.state === "SUCCESS") {
@@ -727,122 +823,22 @@ export default {
         if (Array.isArray(response) && response.length > 0) {
           const resData = response[0];
           if (type === "add") {
-            const res = null;
-            if (this.useLayout) {
-              res = await this.addPage(resData);
-            } else {
-              res = await this.insertComponents(resData, this.layout);
-            }
-            if (res) {
-              this.$emit("refresh", resData);
-            }
+            // const res = null;
+            // if (this.useLayout) {
+            //   res = await this.addPage(resData);
+            // } else {
+            //   res = await this.insertComponents(resData, this.layout);
+            // }
+            // if (res) {
+            //   this.$emit("refresh", resData);
+            // }
             return;
           } else {
-            if (Array.isArray(this.components) && this.components.length) {
-              const oldComponents = cloneDeep(this.components);
-              // 保存页面属性后删除在页面上移除的组件
-              const deleteIds = this.findLayoutComponentsByType(
-                oldComponents,
-                "delete"
-              ).map((item) => item.id);
-              if (deleteIds?.length) {
-                const deleteObj = {
-                  serviceName: "srvpage_cfg_page_component_delete",
-                };
-                await this.httpOperate(
-                  "delete",
-                  deleteObj,
-                  deleteIds.toString()
-                );
-              }
-              const updateList = this.findLayoutComponentsByType(
-                oldComponents,
-                "update"
-              );
-              if (updateList?.length) {
-                //更新页面组件 目前只有组件顺序可以更新
-                const updateObj = updateList.map((item) => {
-                  return {
-                    serviceName: "srvpage_cfg_page_component_update",
-                    condition: [
-                      {
-                        colName: "id",
-                        ruleType: "eq",
-                        value: item.id,
-                      },
-                    ],
-                    data: [
-                      {
-                        com_seq: item.com_seq,
-                      },
-                    ],
-                  };
-                });
-                await this.httpOperate("update", updateObj);
-              }
-              let addList = this.findLayoutComponentsByType(
-                oldComponents,
-                "add"
-              );
-              debugger;
-              if (addList?.length) {
-                const normalChild = this.findNormalComponents(oldComponents);
-                if (Array.isArray(normalChild) && normalChild.length) {
-                  // todo 更新组件
-                  //  this.updateComponentNo()
-                  const resultComps = await this.insertComponents(
-                    this.pageConfig,
-                    normalChild
-                  );
-                  debugger;
-
-                  if (
-                    Array.isArray(resultComps) &&
-                    resultComps.length === normalChild.length
-                  ) {
-                    debugger;
-                    addList = this.updateNormalComponents(addList, resultComps);
-                    debugger
-                  }
-                }
-                const addObj = {
-                  serviceName: "srvpage_cfg_page_component_add",
-                  data: this.buildAddComponentsReqData(addList),
-                };
-                debugger;
-                const addChildRes = await this.httpOperate(
-                  "add",
-                  addObj,
-                  null,
-                  false,
-                  true
-                );
-                // let normalChild = this.findNormalChild(addChildRes);
-                console.log(addChildRes);
-              }
-              return;
-              const addNormalComponents =
-                this.findNormalComponents(oldComponents);
-              if (addNormalComponents?.length) {
-                // 先创建对应类型的组件 再创建页面组件
-                await this.insertComponents(
-                  this.pageConfig,
-                  addNormalComponents
-                );
-              }
-            }
-            //更新页面属性，同时创建新增的组件
-            const list = this.layout.filter(
-              (item) => item.isLeftBarItem === true
-            );
-            if (list?.length) {
-              debugger;
-              // await this.insertComponents(resData, list);
-            }
+            await this.onSave();
+            this.$emit("refresh", resData);
           }
         }
       }
-      this.$emit("refresh", "page", event);
     },
     // 更新组件的宽高以及定位
     async updateComponent(event) {},
@@ -979,11 +975,6 @@ export default {
         if (!compRes) {
           return false;
         }
-        let addObj = {
-          serviceName: "srvpage_cfg_page_component_add",
-          srvApp: "config",
-          data: [],
-        };
         let componentsLength = 0;
         if (
           pageData.component_json &&
@@ -997,14 +988,6 @@ export default {
         const resultComps = [];
         layout.forEach((item, index) => {
           const comp = compRes[index]?.response?.effect_data?.[0];
-          // const data = {
-          //   com_name: item.data.chart_name,
-          //   // com_preview: item.data.example,
-          //   com_type: item.data.com_type,
-          //   page_no: pageData.page_no,
-          //   com_seq: (index + 1 + componentsLength) * 100,
-          //   parent_no: item.parentNo,
-          // };
           const data = {
             ...item,
           };
@@ -1043,11 +1026,9 @@ export default {
               data.com_case_no = comp?.nav_no;
               break;
           }
-          addObj.data.push(data);
           resultComps.push(data);
         });
         return resultComps;
-        return await this.httpOperate("add", addObj);
       }
     },
     onComponentUpdate(event, type) {
@@ -1058,21 +1039,13 @@ export default {
         const response = event?.data?.response?.[0]?.response?.effect_data;
         if (Array.isArray(response) && response.length > 0) {
           const resData = response[0];
-          if (this.useLayout) {
-            this.addComponent(resData).then((res) => {
-              if (res) {
-                this.$emit("refresh", resData);
-                this.activeTab = "页面";
-              }
-            });
-          } else {
-            this.$emit("refresh", resData);
-            this.activeTab = "页面";
-          }
+          this.$emit("refresh", resData);
+          this.activeTab = "页面";
           return;
         }
+      } else {
+        this.$emit("refresh", "component", event);
       }
-      this.$emit("refresh", "component", event);
     },
     onLayoutUpdate(event) {
       console.log("onLayoutUpdate", event);

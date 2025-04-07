@@ -24,6 +24,8 @@
         @click="onTap"
         @open="openComponentSelector = true"
         @add="addComponent"
+        @delete="deleteComponent"
+        @resize="onResize"
       >
       </lc-view>
     </VueDraggable>
@@ -89,19 +91,18 @@ export default {
     clickOutside() {
       console.log("clickOutside");
       this.currentId = null;
-      this.$emit("select",null,null);
+      this.$emit("select", null, null);
     },
     onTap(val) {
       console.log("onTap", val);
       this.currentId = val.id;
-      debugger
-      this.$emit("select", val.id,val);
+      this.$emit("select", val.id, val);
     },
     findComponentById(id, list = [], data) {
       let result = null;
       for (let i = 0; i < list.length; i++) {
         const item = list[i];
-        if (id && (item.id === id||item.com_no===id)) {
+        if (id && (item.id === id || item.com_no === id)) {
           // 检查是否已有children数组
           if (!item.children) {
             this.$set(item, "children", []);
@@ -120,6 +121,10 @@ export default {
       }
       return result;
     },
+    onResize(val) {
+      console.log("onResize", val);
+      this.$emit("resize", val);
+    },
     addComponent(val) {
       console.log("addComponent", val);
       if (val?.parentId) {
@@ -129,6 +134,10 @@ export default {
           this.$emit("change", this.editorComponents);
         });
       }
+    },
+    deleteComponent(val) {
+      console.log("deleteComponent", val);
+      this.$emit("delete", val);
     },
     // 在methods中添加以下方法
     handleEditorDragOver(e) {
@@ -183,11 +192,13 @@ export default {
           const draggedElement = JSON.parse(data);
           // 只处理container类型的组件
           if (draggedElement.type === "container") {
-            draggedElement.id = `root_container_${new Date().getTime()}`;
-            draggedElement._editType = "add";
-            draggedElement._seq = (this.editorComponents.length + 1) * 100; // 计算seq
-            // 添加到顶层组件
-            this.editorComponents.push(draggedElement);
+            if (!draggedElement._editType) {
+              draggedElement.id = `root_container_${new Date().getTime()}`;
+              draggedElement._editType = "add";
+              draggedElement._seq = (this.editorComponents.length + 1) * 100; // 计算seq
+              // 添加到顶层组件
+              this.editorComponents.push(draggedElement);
+            }
             this.$emit("change", this.editorComponents);
           } else {
             // 不是container类型，显示不允许放置的反馈

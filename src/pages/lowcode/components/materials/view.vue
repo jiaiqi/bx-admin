@@ -4,10 +4,12 @@
     v-if="component"
     v-bind="props"
     :page-item="props.data"
-    @click.native.stop="onTap()"
+    @click.native.capture="onTap()"
     :currentId="currentId"
     :isPreview="isPreview"
     @add="addComponent"
+    @delete="deleteComponent"
+    @resize="onResize"
     :class="{ 'preview-mode': isPreview }"
     style="position: relative; z-index: 1"
   >
@@ -21,15 +23,17 @@
         :isPreview="isPreview"
         @click="onTap"
         @add="addComponent"
+        @delete="deleteComponent"
+        @resize="onResize"
       ></lc-view>
     </template>
     <slot v-else>
-      <template v-if="type === 'content'&&!isPreview">
+      <template v-if="type === 'content' && !isPreview">
         <!-- <el-button type="primary" size="mini" @click="openComponentSelector"
           >添加组件</el-button
         > -->
         <span class="" style="color: #999; pointer-events: none">
-          {{name || '可放置组件区域'}}
+          {{ name || "可放置组件区域" }}
         </span>
       </template>
       <template v-else>
@@ -97,21 +101,21 @@ export default {
   },
   data() {
     return {
-      childComponents: []
-    }
+      childComponents: [],
+    };
   },
   watch: {
     children: {
       immediate: true,
       deep: true,
       handler(newValue) {
-        if(Array.isArray(newValue)) {
-          this.childComponents = newValue
-         }else{
-          this.childComponents = []
-         } 
-      }
-    }
+        if (Array.isArray(newValue)) {
+          this.childComponents = newValue;
+        } else {
+          this.childComponents = [];
+        }
+      },
+    },
   },
   methods: {
     openComponentSelector() {
@@ -119,7 +123,7 @@ export default {
     },
     onTap(val) {
       if (!this.isPreview) {
-        this.$emit("click", val||this.props); // 触发父组件的click事件，并传递参数val
+        this.$emit("click", val || this.props); // 触发父组件的click事件，并传递参数val
       }
     },
     addComponent(val) {
@@ -127,6 +131,17 @@ export default {
         this.$emit("add", val);
       }
     },
+    deleteComponent(val) {
+      if (!this.isPreview) {
+        this.$emit("delete", val);
+      }
+    },
+    onResize(val) {
+      if (!this.isPreview) {
+        console.log("resize", val);
+        this.$emit("resize", val);
+      } 
+    }
   },
 };
 </script>

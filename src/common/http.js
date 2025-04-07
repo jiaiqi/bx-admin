@@ -217,12 +217,49 @@ export async function $selectList(url, req) {
     return {
       ok: true,
       data: res.data?.data,
-    }  
-  }else {
+    }
+  } else {
     return {
       ok: false,
       data: [],
       msg: res?.data?.resultMessage || '请求失败',
     }
-  } 
+  }
+}
+
+export const $delete = async ({ app, service, key = "id", value = "" }) => {
+  if (!value) {
+    return {
+      ok: false,
+      data: {},
+      msg: '删除的数据不能为空',
+    }
+  }
+  if (!service) {
+    return {
+      ok: false,
+      data: {},
+      msg: 'service不能为空',
+    }
+  }
+  if(Array.isArray(value)) {
+    value = value.join(',')
+  }
+  const url = `/${app}/delete/${service}`
+  const req = [{ "serviceName": service, "condition": [{ "colName": key, "ruleType": "in", "value": value }] }]
+  const res = await $http.post(url, req)
+
+  if (res?.data?.state === 'SUCCESS') {
+    return {
+      ok: true,
+      data: res.data?.data,
+      msg: '删除成功',
+    }
+  } else {
+    return {
+      ok: false,
+      data: {},
+      msg: res?.data?.resultMessage || '删除失败',
+    }
+  }
 }

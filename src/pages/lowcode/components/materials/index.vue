@@ -250,12 +250,12 @@ export default {
               obj.type = "container";
               obj.component = "lc-container";
               obj.layout_party = "页面";
-              obj.com_name = ele[item.nameCol] === "页面容器";
+              obj.com_name = ele[item.nameCol] || "页面容器";
             } else if (ele[item.nameCol]?.indexOf("布局容器") === 0) {
               obj.type = "layout";
               obj.component = "lc-block";
               obj.layout_party = "布局";
-              obj.com_name = ele[item.nameCol] === "页面容器";
+              obj.com_name = ele[item.nameCol] || "布局容器";
             }
           } else {
             obj.type = "component";
@@ -310,7 +310,6 @@ export default {
           }
           break;
         case "swiper":
-          debugger;
           if (config.figure_row_json) {
             try {
               config.swiper_json = JSON.parse(config.figure_row_json);
@@ -429,7 +428,7 @@ export default {
   display: flex;
   position: relative;
   width: 100%;
-  
+
   // 移除旧的折叠相关样式
   .left {
     height: 100%;
@@ -532,9 +531,9 @@ export default {
   background-color: #fff;
   width: 200px;
   height: 100%;
-  
+
   // 移除旧的折叠相关样式
-  
+
   &::-webkit-scrollbar {
     width: 4px;
     height: 4px;

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="lc-block"
+    class="lc-block lc-layout"
     :class="[subType]"
     :style="[setStyle, blockHeightStyle, blockWidthStyle]"
     @dragover="handleDragOver"
@@ -12,25 +12,23 @@
     <div
       v-if="!isPreview"
       class="overlay"
-      @click="$emit('click', props)"
       :class="{ active: currentId && currentId === id }"
     >
-      <!-- <div class="handle">
-        <i class="el-icon-rank"></i>
-      </div> -->
+      <!-- 删除按钮 -->
+      <i class="el-icon-close" @click="$emit('delete', props)"></i>
     </div>
 
     <!-- 子组件 -->
     <slot></slot>
-    
+
     <!-- 高度调整手柄 -->
-    <div 
-      v-if="!isPreview && currentId && currentId === id" 
+    <div
+      v-if="!isPreview && currentId && currentId === id"
       class="resize-handle-s"
       title="调整高度"
       @mousedown="startResizeHeight"
     ></div>
-    
+
     <!-- 宽度调整手柄 -->
     <!-- <div v-if="!isPreview && currentId && currentId === id" class="resize-handles">
       <div class="resize-handle resize-handle-e" @mousedown="startResizeWidth($event, 'e')"></div>
@@ -49,6 +47,10 @@ export default {
   props: {
     id: {
       type: [String, Number],
+      default: "",
+    },
+    com_no: {
+      type: String,
       default: "",
     },
     name: {
@@ -86,7 +88,7 @@ export default {
     width: {
       type: [Number, String],
       default: null,
-    }
+    },
   },
   data() {
     return {
@@ -117,14 +119,22 @@ export default {
     },
     blockHeightStyle() {
       return {
-        height: this.blockHeight ? `${this.blockHeight}vh` : null
+        height: this.blockHeight ? `${this.blockHeight}vh` : null,
       };
     },
     blockWidthStyle() {
       return this.blockWidth ? { width: `${this.blockWidth}%` } : {};
-    }
+    },
   },
   watch: {
+    'props.layout_height':{
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.blockHeight = newVal;
+        }
+      },
+    },
     height(newVal) {
       if (newVal) {
         this.blockHeight = newVal;
@@ -134,56 +144,56 @@ export default {
       if (newVal !== undefined && newVal !== null) {
         this.blockWidth = newVal;
       }
-    }
+    },
   },
   mounted() {
     // 添加全局事件监听
-    document.addEventListener('mousemove', this.onResize);
-    document.addEventListener('mouseup', this.stopResize);
+    document.addEventListener("mousemove", this.onResize);
+    document.addEventListener("mouseup", this.stopResize);
   },
   beforeDestroy() {
     // 移除全局事件监听
-    document.removeEventListener('mousemove', this.onResize);
-    document.removeEventListener('mouseup', this.stopResize);
+    document.removeEventListener("mousemove", this.onResize);
+    document.removeEventListener("mouseup", this.stopResize);
   },
   methods: {
     // 开始调整高度
     startResizeHeight(e) {
       if (this.isPreview) return;
-      
+
       e.preventDefault();
       e.stopPropagation();
-      
+
       this.resizingHeight = true;
       this.startY = e.clientY;
       this.startHeight = this.blockHeight;
-      
+
       // 添加调整大小时的样式
-      document.body.style.cursor = 'ns-resize';
-      document.body.style.userSelect = 'none';
+      document.body.style.cursor = "ns-resize";
+      document.body.style.userSelect = "none";
     },
-    
+
     // 开始调整宽度
     startResizeWidth(e, direction) {
       if (this.isPreview) return;
-      
+
       e.preventDefault();
       e.stopPropagation();
-      
+
       this.resizingWidth = true;
       this.resizeDirection = direction;
       this.startX = e.clientX;
-      
+
       // 获取当前元素的宽度和父元素的宽度
       const rect = this.$el.getBoundingClientRect();
       this.startWidth = this.blockWidth || 100;
       this.parentWidth = this.$el.parentElement.offsetWidth;
-      
+
       // 添加调整大小时的样式
-      document.body.style.cursor = 'ew-resize';
-      document.body.style.userSelect = 'none';
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
     },
-    
+
     // 调整尺寸过程
     onResize(e) {
       // 处理高度调整
@@ -193,79 +203,79 @@ export default {
         const vh = window.innerHeight / 100;
         // 移动的vh值，向上取整到最接近的整数
         const deltaVh = Math.round((e.clientY - this.startY) / vh);
-        
+
         // 设置新高度，最小为5vh
         const newHeight = Math.max(5, this.startHeight + deltaVh);
-        
+
         // 只有当高度变化为整数vh时才更新
         if (newHeight !== this.blockHeight) {
           this.blockHeight = newHeight;
-          
+
           // 触发高度变化事件
-          this.$emit('resize', {
+          this.$emit("resize", {
             id: this.id,
-            height: this.blockHeight
+            height: this.blockHeight,
           });
         }
       }
-      
+
       // 处理宽度调整
       if (this.resizingWidth) {
         const deltaX = e.clientX - this.startX;
         let deltaPercent = (deltaX / this.parentWidth) * 100;
-        
+
         // 根据拖拽方向计算新宽度
         let newWidth;
-        if (this.resizeDirection === 'e') {
+        if (this.resizeDirection === "e") {
           // 向右拖拽增加宽度
           newWidth = this.startWidth + deltaPercent;
-        } else if (this.resizeDirection === 'w') {
+        } else if (this.resizeDirection === "w") {
           // 向左拖拽减少宽度
           newWidth = this.startWidth - deltaPercent;
         }
-        
+
         // 按1%的粒度调整
         newWidth = Math.round(newWidth);
-        
+
         // 限制最小宽度为10%，最大为100%
         newWidth = Math.max(10, Math.min(100, newWidth));
-        
+
         // 更新宽度
         if (newWidth !== this.blockWidth) {
           this.blockWidth = newWidth;
-          
+
           // 触发宽度变化事件
-          this.$emit('resize', {
+          this.$emit("resize", {
             id: this.id,
-            width: this.blockWidth
+            width: this.blockWidth,
           });
         }
       }
     },
-    
+
     // 停止调整尺寸
     stopResize() {
       if (this.resizingHeight) {
         this.resizingHeight = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+
         // 触发高度变化完成事件
-        this.$emit('resize-end', {
+        this.$emit("resize-end", {
           id: this.id,
-          height: this.blockHeight
+          height: this.blockHeight,
         });
       }
-      
+
       if (this.resizingWidth) {
         this.resizingWidth = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+
         // 触发宽度变化完成事件
-        this.$emit('resize-end', {
+        this.$emit("resize-end", {
           id: this.id,
-          width: this.blockWidth
+          width: this.blockWidth,
         });
       }
     },
@@ -321,14 +331,16 @@ export default {
           const draggedElement = JSON.parse(data);
 
           // 只处理非layout和非container类型的组件
-          if (
-            draggedElement.type !== "layout" &&
-            draggedElement.type !== "container"
-          ) {
-            draggedElement.id = `${this.id}_component_${new Date().getTime()}`;
+          if (!["layout", "container"].includes(draggedElement.type)) {
             draggedElement.parentId = this.id;
-            draggedElement._editType = "add";
-            this.$emit("add", draggedElement);
+            if (!draggedElement._editType) {
+              draggedElement.id = `${
+                this.id
+              }_component_${new Date().getTime()}`;
+              draggedElement._editType = "add";
+              draggedElement.parent_no = this.com_no;
+              this.$emit("add", draggedElement);
+            }
           } else {
             // 不允许放置layout和container类型的组件
             e.currentTarget.classList.add("drag-not-allowed");
@@ -352,14 +364,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "../../styles/layout.common.scss" as layout;
 .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0);
-  z-index: 0;
+  @include layout.overlay;
 }
 .lc-block {
   width: 100%;
@@ -367,8 +374,9 @@ export default {
   position: relative;
   padding: 10px;
   --primary-color: #2c48ff;
+  $primary-color: #2c48ff;
   border: 1px dashed rgba(44, 72, 255, 0.3); /* 添加浅色虚线边框 */
-  
+
   // 高度调整手柄样式
   .resize-handle-s {
     position: absolute;
@@ -379,11 +387,12 @@ export default {
     background-color: transparent;
     cursor: ns-resize;
     z-index: 10;
-    
-    &:hover, &:active {
+
+    &:hover,
+    &:active {
       background-color: rgba(44, 72, 255, 0.3);
     }
-    
+
     &::after {
       content: "";
       position: absolute;
@@ -392,10 +401,10 @@ export default {
       transform: translateX(-50%);
       width: 30px;
       height: 2px;
-      background-color: var(--primary-color);
+      background-color: $primary-color;
     }
   }
-  
+
   // 宽度调整手柄样式
   .resize-handles {
     position: absolute;
@@ -412,18 +421,19 @@ export default {
     background-color: transparent;
     pointer-events: auto;
     z-index: 11;
-    
-    &:hover, &:active {
+
+    &:hover,
+    &:active {
       background-color: rgba(44, 72, 255, 0.3);
     }
-    
+
     &.resize-handle-e {
       top: 0;
       right: 0;
       width: 6px;
       height: 100%;
       cursor: ew-resize;
-      
+
       &::after {
         content: "";
         position: absolute;
@@ -432,17 +442,17 @@ export default {
         transform: translateY(-50%);
         width: 2px;
         height: 30px;
-        background-color: var(--primary-color);
+        background-color: $primary-color;
       }
     }
-    
+
     &.resize-handle-w {
       top: 0;
       left: 0;
       width: 6px;
       height: 100%;
       cursor: ew-resize;
-      
+
       &::after {
         content: "";
         position: absolute;
@@ -451,21 +461,22 @@ export default {
         transform: translateY(-50%);
         width: 2px;
         height: 30px;
-        background-color: var(--primary-color);
+        background-color: $primary-color;
       }
     }
   }
-  
+
   &.preview-mode {
     border-color: transparent;
-    
-    .resize-handle-s, .resize-handles {
+
+    .resize-handle-s,
+    .resize-handles {
       display: none;
     }
   }
-  
+
   &.drag-over {
-    border: 2px dashed var(--primary-color);
+    border: 2px dashed $primary-color;
     background-color: rgba(44, 72, 255, 0.05);
     &::before {
       content: "可放置组件";
@@ -473,7 +484,7 @@ export default {
       top: 0;
       left: 0;
       padding: 2px 5px;
-      background-color: var(--primary-color);
+      background-color: $primary-color;
       color: #fff;
       transform: translateY(-100%);
       z-index: 10;
@@ -512,8 +523,7 @@ export default {
       }
     }
     &:hover {
-      // cursor: pointer;
-      border: 1px dashed var(--primary-color);
+      border: 1px dashed $primary-color;
       &::before {
         content: "布局容器";
         position: absolute;
@@ -526,7 +536,7 @@ export default {
       }
     }
     &.active {
-      border: 1px solid var(--primary-color);
+      border: 1px solid $primary-color;
       & > .handle {
         display: block;
       }

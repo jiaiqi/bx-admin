@@ -1,6 +1,6 @@
 <template>
   <div
-    class="row-container"
+    class="lc-container lc-layout"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -9,13 +9,16 @@
     <!-- 遮罩层 -->
     <div
       class="overlay"
-      @click="$emit('click', props)"
+      @click.stop="$emit('click', props)"
       :class="{ active: currentId && currentId === id }"
       v-if="!isPreview"
     >
+      <!-- 拖拽排序 -->
       <div class="handle">
         <i class="el-icon-rank"></i>
       </div>
+      <!-- 删除按钮 -->
+      <i class="el-icon-close" @click="$emit('delete', props)"></i>
     </div>
 
     <!-- 子组件 -->
@@ -36,7 +39,7 @@ export default {
     },
     com_no: {
       type: [String, Number],
-      default: "", 
+      default: "",
     },
     currentId: {
       type: [String, Number],
@@ -120,10 +123,13 @@ export default {
 
           // 只处理layout类型的组件
           if (draggedElement.type === "layout") {
-            draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
-            draggedElement._editType = "add";
+            if (!draggedElement._editType) {
+              draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
+              draggedElement._editType = "add";
+            }
             draggedElement.parentId = this.id;
             draggedElement.parent_no = this.com_no;
+            draggedElement.com_seq = (this.props.children.length + 1 )* 100;
             // 根据布局类型创建对应数量的内容组件
             let columnCount = 1; // 默认一列
             if (draggedElement.subType === "layout-1-2") {
@@ -164,7 +170,6 @@ export default {
               };
               draggedElement.children.push(contentItem);
             }
-
             this.$emit("add", draggedElement);
           } else {
             // 不是layout类型，显示不允许放置的反馈
@@ -187,16 +192,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "../../styles/layout.common.scss" as layout;
 .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0);
-  z-index: 0;
+  @include layout.overlay;
 }
-.row-container {
+.lc-container {
   width: 100%;
   min-height: 100px;
   display: flex;
@@ -213,15 +213,15 @@ export default {
 
   > .overlay {
     &.drag-over {
-      border: 2px dashed var(--primary-color);
-      background-color: rgba(255, 116, 14, 0.3);
+      border: 2px dashed $primary-color;
+      background-color: rgba($color: $primary-color, $alpha: 0.3);
       &::before {
         content: "可放置布局容器";
         position: absolute;
         top: 0;
         left: 0;
         padding: 2px 5px;
-        background-color: var(--primary-color);
+        background-color: $primary-color;
         color: #fff;
         transform: translateY(-100%);
         z-index: 10;
