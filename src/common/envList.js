@@ -22,8 +22,8 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "hsprl",
   },
-  wujing: {
-    // 开发环境
+  wujingDev: {
+    // 武警网站开发环境
     gateway_protocol: "http",
     gateway_ip: "192.168.0.25",
     // gateway_ip: "192.168.0.155",
