@@ -34,6 +34,10 @@ export default {
       type: [String, Number],
       default: "",
     },
+    com_no: {
+      type: [String, Number],
+      default: "", 
+    },
     currentId: {
       type: [String, Number],
       default: "",
@@ -119,7 +123,7 @@ export default {
             draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
             draggedElement._editType = "add";
             draggedElement.parentId = this.id;
-
+            draggedElement.parent_no = this.com_no;
             // 根据布局类型创建对应数量的内容组件
             let columnCount = 1; // 默认一列
             if (draggedElement.subType === "layout-1-2") {

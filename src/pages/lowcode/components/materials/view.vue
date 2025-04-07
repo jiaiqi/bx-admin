@@ -61,6 +61,10 @@ export default {
       type: [String, Number],
       default: "",
     },
+    com_no: {
+      type: [String, Number],
+      default: "",
+    },
     currentId: {
       type: [String, Number],
       default: "",

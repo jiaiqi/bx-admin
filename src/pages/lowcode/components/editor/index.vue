@@ -89,6 +89,7 @@ export default {
     clickOutside() {
       console.log("clickOutside");
       this.currentId = null;
+      this.$emit("select",null,null);
     },
     onTap(val) {
       console.log("onTap", val);

@@ -27,14 +27,15 @@
     <div 
       v-if="!isPreview && currentId && currentId === id" 
       class="resize-handle-s"
+      title="调整高度"
       @mousedown="startResizeHeight"
     ></div>
     
     <!-- 宽度调整手柄 -->
-    <div v-if="!isPreview && currentId && currentId === id" class="resize-handles">
+    <!-- <div v-if="!isPreview && currentId && currentId === id" class="resize-handles">
       <div class="resize-handle resize-handle-e" @mousedown="startResizeWidth($event, 'e')"></div>
       <div class="resize-handle resize-handle-w" @mousedown="startResizeWidth($event, 'w')"></div>
-    </div>
+    </div> -->
   </div>
 </template>
 

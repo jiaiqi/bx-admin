@@ -79,7 +79,7 @@
       <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px">
           <el-switch
-            v-model="screentype"
+            v-model="screenType"
             active-text="移动端"
             inactive-text="PC端"
             active-value="mobile"
@@ -121,6 +121,7 @@ import simpleUpdate from "@/components/common/simple-update.vue";
 import simpleAdd from "@/components/common/simple-add.vue";
 import dayjs from "dayjs";
 import cloneDeep from "lodash/cloneDeep";
+import { pageCompCols } from "./columns";
 
 export default {
   components: {
@@ -211,12 +212,12 @@ export default {
     // compServiceCfg() {
 
     // },
-    screentype: {
+    screenType: {
       get() {
         return this.screeType;
       },
       set(val) {
-        this.$emit("screentype", val);
+        this.$emit("screenType", val);
       },
     },
     // 组件类型
@@ -522,7 +523,7 @@ export default {
         return layoutInfo;
       }
     },
-    async httpOperate(type, o, id, returnData,returnChildren) {
+    async httpOperate(type, o, id, returnData, returnChildren) {
       let params = [];
       switch (type) {
         case "add":
@@ -554,8 +555,8 @@ export default {
         if (type === "batch_add") {
           return response.data.response;
         }
-        if(returnChildren){
-          return response.data.response[0].child_data_list
+        if (returnChildren) {
+          return response.data.response[0].child_data_list;
         }
         if (returnData) {
           return response.data.response[0].response.effect_data[0];
@@ -572,14 +573,14 @@ export default {
     toPreview() {
       this.$emit("preview");
     },
-    findNormalChild(list){
+    findNormalChild(list) {
       let result = [];
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {
           let data = item.response.effect_data[0];
-          if(data?.com_type !== "layout"){
+          if (data?.com_type !== "layout") {
             result.push(data);
-          }else if(Array.isArray(item?.child_data_list)){
+          } else if (Array.isArray(item?.child_data_list)) {
             result = result.concat(this.findNormalChild(item?.child_data_list));
           }
         });
@@ -602,6 +603,36 @@ export default {
       }
       return result;
     },
+    updateNormalComponents(list = [], normalChildren = []) {
+      let result = list.map((item) => {
+        if (item?._type === "component") {
+          let data = normalChildren.find((e) => e.id === item.id);
+          if (data) {
+            return {
+              ...item,
+              ...data,
+            };
+          }else{
+            return {
+             ...item,
+            };
+          }
+        } else if (Array.isArray(item.children) && item.children.length) {
+          return {
+            ...item,
+            children: this.updateNormalComponents(
+              item.children,
+              normalChildren
+            ),
+          };
+        }else if(item?.type){
+          return {
+            ...item, 
+          }
+        }
+      });
+      return result;
+    },
     findLayoutComponentsByType(list, type) {
       let result = [];
       if (!type) {
@@ -622,8 +653,21 @@ export default {
     },
     buildAddChildren(list) {
       const result = [];
+      let keys = pageCompCols
+
       if (Array.isArray(list) && list.length) {
-        return list.map((item, index) => {
+        return list.filter(item=>!!item).map((item, index) => {
+          let data = {}
+          if(!item){
+            console.log(list);
+            
+            debugger
+          }
+        keys.forEach((key) => {
+          if(item[key]){
+            data[key] = item[key]
+          }
+        })
           let obj = {
             serviceName: "srvpage_cfg_page_component_add",
             condition: [],
@@ -636,6 +680,7 @@ export default {
             ],
             data: [
               {
+                ...data,
                 page_no: this.pageConfig.page_no,
                 com_type: item.com_type,
                 com_name: item.com_name || "",
@@ -655,11 +700,17 @@ export default {
       if (!list?.length) {
         return [];
       }
+      let keys = pageCompCols
       const result = list.map((item, index) => {
+        let data = {}
+        keys.forEach((key) => {
+          if(item[key]){
+            data[key] = item[key]
+          }
+        })
         let obj = {
+          ...data,
           page_no: this.pageConfig.page_no,
-          com_type: item.com_type,
-          com_name: item.com_name || "",
           com_seq: item.com_seq || item._seq || (index + 1) * 100,
           child_data_list: item?.children?.length
             ? this.buildAddChildren(item.children)
@@ -729,26 +780,47 @@ export default {
                 });
                 await this.httpOperate("update", updateObj);
               }
-              const addList = this.findLayoutComponentsByType(
+              let addList = this.findLayoutComponentsByType(
                 oldComponents,
                 "add"
               );
-         
+              debugger;
               if (addList?.length) {
+                const normalChild = this.findNormalComponents(oldComponents);
+                if (Array.isArray(normalChild) && normalChild.length) {
+                  // todo 更新组件
+                  //  this.updateComponentNo()
+                  const resultComps = await this.insertComponents(
+                    this.pageConfig,
+                    normalChild
+                  );
+                  debugger;
+
+                  if (
+                    Array.isArray(resultComps) &&
+                    resultComps.length === normalChild.length
+                  ) {
+                    debugger;
+                    addList = this.updateNormalComponents(addList, resultComps);
+                    debugger
+                  }
+                }
                 const addObj = {
                   serviceName: "srvpage_cfg_page_component_add",
                   data: this.buildAddComponentsReqData(addList),
                 };
                 debugger;
-                const addChildRes = await this.httpOperate("add", addObj,null,false,true);
+                const addChildRes = await this.httpOperate(
+                  "add",
+                  addObj,
+                  null,
+                  false,
+                  true
+                );
+                // let normalChild = this.findNormalChild(addChildRes);
                 console.log(addChildRes);
-                let normalChild = this.findNormalChild(addChildRes);
-                if(Array.isArray(normalChild) && normalChild.length){
-                  // todo 更新组件
-                //  this.updateComponentNo() 
-                }
               }
-              return
+              return;
               const addNormalComponents =
                 this.findNormalComponents(oldComponents);
               if (addNormalComponents?.length) {
@@ -846,7 +918,10 @@ export default {
             if (data[key] === "" || data[key] === null) {
               delete data[key];
             }
-            if(key?.lastIndexOf('_json_data')>-1&& typeof data[key] === 'object'){
+            if (
+              key?.lastIndexOf("_json_data") > -1 &&
+              typeof data[key] === "object"
+            ) {
               delete data[key];
             }
           });
@@ -919,15 +994,19 @@ export default {
         if (isNaN(componentsLength)) {
           componentsLength = 0;
         }
+        const resultComps = [];
         layout.forEach((item, index) => {
           const comp = compRes[index]?.response?.effect_data?.[0];
+          // const data = {
+          //   com_name: item.data.chart_name,
+          //   // com_preview: item.data.example,
+          //   com_type: item.data.com_type,
+          //   page_no: pageData.page_no,
+          //   com_seq: (index + 1 + componentsLength) * 100,
+          //   parent_no: item.parentNo,
+          // };
           const data = {
-            com_name: item.data.chart_name,
-            // com_preview: item.data.example,
-            com_type: item.data.com_type,
-            page_no: pageData.page_no,
-            com_seq: (index + 1 + componentsLength) * 100,
-            parent_no:item.parentNo
+            ...item,
           };
           switch (item.data.com_type) {
             case "chart":
@@ -965,7 +1044,9 @@ export default {
               break;
           }
           addObj.data.push(data);
+          resultComps.push(data);
         });
+        return resultComps;
         return await this.httpOperate("add", addObj);
       }
     },

@@ -353,6 +353,7 @@ export default {
 
         var operate_params_cfg = butinfo.operate_params;
         var bxRequests = [];
+        debugger
         if (
           (butinfo.select_data == null ||
             butinfo.select_data == undefined ||
