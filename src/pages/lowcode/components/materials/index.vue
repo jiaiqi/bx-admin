@@ -59,6 +59,7 @@
 import cloneDeep from "lodash/cloneDeep";
 import dragStore from "../../store/dragStore";
 import { materialsTree } from "./materials";
+import { pageCompCols } from "../property/columns";
 import {
   Card,
   Chart,
@@ -260,8 +261,14 @@ export default {
           } else {
             obj.type = "component";
             obj._type = "component";
-            obj.component = "normal-component";
+            obj.component = "page-item";
+            
+
             obj.data = this.initComCfg(obj.com_type, obj);
+            if(obj.data.srv_req_type){
+              obj.srv_req_type = obj.data.srv_req_type
+              obj.mock_srv_data_json = JSON.stringify(obj.data.mock_srv_data_json)
+            }
           }
 
           return obj;
@@ -291,6 +298,10 @@ export default {
           if (config.list_json) {
             const cfg = JSON.parse(config.list_json);
             config.list_json = cfg;
+            if(cfg.mock_data_json){
+              config.mock_srv_data_json = cfg.mock_data_json;
+              config.srv_req_type = "模拟数据";
+            }
             if (cfg.list_type === "卡片") {
               config.card_group_json = {
                 card_unit_json: cfg.card_unit_json,
@@ -347,6 +358,9 @@ export default {
           break;
       }
       Object.keys(config).forEach((key) => {
+        if(!pageCompCols.includes(key)){
+          delete config.key
+        }
         if (
           key &&
           config[key] &&
@@ -361,8 +375,9 @@ export default {
           }
         }
       });
+
       // 去掉没用的属性
-      const keys = ["component", "type", "_type"];
+      const keys = ["component", "type", "_type",'id'];
       keys.forEach((key) => {
         if (config[key]) {
           delete config[key];

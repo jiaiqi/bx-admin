@@ -5,6 +5,7 @@
     @dragleave="handleEditorDragLeave"
     @drop="handleEditorDrop"
     @dragend="handleEditorDragEnd"
+    :style="{ '--content-width': contentWidth }"
   >
     <div class="overlay" @click="clickOutside"></div>
     <VueDraggable
@@ -20,6 +21,7 @@
         v-for="item in editorComponents"
         :current-id="currentId"
         :key="item.id"
+        :content-width="contentWidth"
         v-bind="item"
         @click="onTap"
         @open="openComponentSelector = true"
@@ -49,6 +51,10 @@ export default {
     VueDraggable,
   },
   props: {
+    contentWidth: {
+      type: String,
+      default: "1200px",
+    },
     components: {
       type: Array,
       default: () => [],
@@ -264,6 +270,5 @@ export default {
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
   z-index: 0;
-  border: 1px dashed #ccc;
 }
 </style>

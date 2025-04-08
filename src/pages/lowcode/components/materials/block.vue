@@ -370,6 +370,7 @@ export default {
 }
 .lc-block {
   width: 100%;
+  width: var(--content-width);
   // height: 100%;
   position: relative;
   padding: 10px;

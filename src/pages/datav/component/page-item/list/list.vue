@@ -382,7 +382,7 @@ export default {
                 }
               });
             }
-            if(pagePath){
+            if (pagePath) {
               window.open(pagePath);
             }
           }
@@ -493,6 +493,9 @@ export default {
         this.getStatisticData(req);
       });
     }
+    // else if(Array.isArray(this.pageItem.list_json?.mock_data_json)&&this.pageItem.list_json?.mock_data_json.length){
+    //   this.tableData = this.pageItem.list_json?.mock_data_json;
+    // }
   },
   watch: {
     pageParamsModel: {

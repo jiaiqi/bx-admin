@@ -24,13 +24,14 @@
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
-      <div class="editor-container">
+      <div class="editor-container" :class="{ 'in-edit': !isPreview }">
         <editor-view
           :components="components"
           @select="currentChange"
           @change="componentsChange"
           @delete="onDel"
           @resize="onResize"
+          :content-width="contentAreaWidth"
         ></editor-view>
       </div>
       <div
@@ -96,6 +97,7 @@ import lcView from "./components/materials/view.vue";
 import JsonViewer from "vue-json-viewer";
 import "vue-json-viewer/style.css";
 import { $http, $selectOne, $delete } from "@/common/http";
+import { pageCompCols } from "./components/property/columns";
 export default {
   name: "lowcode-main",
   components: {
@@ -105,6 +107,14 @@ export default {
     PropertyView,
     JsonViewer,
     lcView,
+  },
+  computed: {
+    contentAreaWidth() {
+      let width = this.pageConfig?.content_area_width || 1200;
+      return typeof width === "string" && width?.includes("%")
+        ? width
+        : `${parseFloat(width)}px`;
+    },
   },
   data() {
     return {
@@ -123,6 +133,7 @@ export default {
       propertyCollapsed: false,
       // 添加物料面板折叠状态
       materialsCollapsed: false,
+      isPreview: false,
     };
   },
   created() {
@@ -133,8 +144,8 @@ export default {
   },
   methods: {
     openNewTab() {
-      const url = `/vpages/#/lowcode/view/${this.pageNo}`
-      window.open(url, "_blank"); 
+      const url = `/vpages/#/lowcode/view/${this.pageNo}`;
+      window.open(url, "_blank");
     },
     // 切换物料面板
     toggleMaterialsPanel() {
@@ -250,8 +261,17 @@ export default {
                 item.child_num = item.layout_json.child_num;
               }
             } else {
-              item.component = "normal-component";
-              item.data = { ...item };
+              item.component = "page-item";
+              item.data = {};
+              pageCompCols.forEach((col) => {
+                if (item[col]) {
+                  item.data[col] = item[col];
+                }
+              });
+              if (item.id) {
+                item.data.id = item.id;
+              }
+              ;
               const keys = ["component", "type", "_type"];
               keys.forEach((key) => {
                 if (item.data[key]) {
@@ -405,6 +425,11 @@ export default {
     .editor-container {
       flex: 1;
       transition: all 0.3s ease;
+      &.in-edit {
+        overflow-y: auto;
+        padding-bottom: 100px;
+        border: 1px dashed #ccc;
+      }
     }
 
     // 属性面板容器样式保持不变

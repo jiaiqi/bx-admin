@@ -4,6 +4,7 @@
     v-if="component"
     v-bind="props"
     :page-item="props.data"
+    :content-width="contentWidth"
     @click.native.capture="onTap()"
     :currentId="currentId"
     :isPreview="isPreview"
@@ -47,7 +48,7 @@
 import lcBlock from "./block.vue";
 import lcContainer from "./container.vue";
 import lcContent from "./content-item.vue";
-import normalComponent from "@/pages/datav/component/page-item/page-item.vue";
+import pageItem from "@/pages/datav/component/page-item/page-item.vue";
 import { VueDraggable } from "vue-draggable-plus";
 
 export default {
@@ -57,7 +58,7 @@ export default {
     lcContainer,
     lcContent,
     VueDraggable,
-    normalComponent,
+    pageItem,
     lcView: () => import("./view.vue"),
   },
   props: {
@@ -92,6 +93,9 @@ export default {
     isPreview: {
       type: Boolean,
       default: false,
+    },
+    contentWidth: {
+      type: String,
     },
   },
   computed: {
@@ -140,8 +144,8 @@ export default {
       if (!this.isPreview) {
         console.log("resize", val);
         this.$emit("resize", val);
-      } 
-    }
+      }
+    },
   },
 };
 </script>

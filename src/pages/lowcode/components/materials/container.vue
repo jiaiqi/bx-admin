@@ -51,6 +51,9 @@ export default {
     },
   },
   computed: {
+    setStyle() {
+      
+    },
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
@@ -199,6 +202,7 @@ export default {
 .lc-container {
   width: 100%;
   min-height: 100px;
+  min-width: var(--content-width);
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -261,20 +265,20 @@ export default {
     }
     &:hover {
       // cursor: pointer;
-      border: 1px dashed #ff740e;
+      border: 1px dashed $primary-color;
       &::before {
         content: "页面容器";
         position: absolute;
         top: 0;
         left: 0;
         padding: 2px 5px;
-        background-color: #ff740e;
+        background-color: $primary-color;
         color: #fff;
         transform: translateY(-100%);
       }
     }
     &.active {
-      border: 1px solid var(--primary-color);
+      border: 1px solid $primary-color;
     }
   }
 }

@@ -20,7 +20,11 @@
       v-if="!isPreview"
     >
       <!-- 删除按钮 -->
-      <i class="el-icon-close" @click="onDelete" v-if="children&&children.length"></i>
+      <i
+        class="el-icon-close"
+        @click="onDelete"
+        v-if="children && children.length"
+      ></i>
     </div>
 
     <slot> </slot>
@@ -372,11 +376,28 @@ export default {
               draggedElement.parentId = this.id;
               draggedElement.parent_no = this.props.com_no;
               draggedElement.com_seq = (this.props.children.length + 1) * 100;
+              draggedElement._seq = draggedElement.com_seq;
               draggedElement.com_name =
                 draggedElement.comp_label || draggedElement.chart_name;
               if (!draggedElement._editType) {
                 draggedElement.id = `${this.id}${new Date().getTime()}`;
                 draggedElement._editType = "add";
+              }
+              
+              if (draggedElement?.mock_data_json) {
+                try {
+                  // const mock_data_json = JSON.parse(
+                  //   draggedElement?.mock_data_json
+                  // );
+                  // if (Array.isArray(mock_data_json)) {
+                  //   draggedElement.mock_srv_data_json = draggedElement.mock_data_json;
+                  //   draggedElement.srv_req_type === "模拟数据";
+                  //   draggedElement.data.mock_srv_data_json = draggedElement.mock_data_json;
+                  //   draggedElement.data.srv_req_type === "模拟数据";
+                  // }
+                } catch (error) {
+                  console.error(error);
+                }
               }
               this.$emit("add", draggedElement);
             } else {

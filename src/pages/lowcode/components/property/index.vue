@@ -67,7 +67,7 @@
         >
         </simple-add>
       </el-tab-pane>
-      <el-tab-pane
+      <!-- <el-tab-pane
         label="组件配置"
         name="组件配置"
         v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk"
@@ -81,8 +81,8 @@
           @action-complete="onComponentUpdate"
         >
         </simple-update>
-      </el-tab-pane>
-      <el-tab-pane label="布局" name="布局" v-if="useLayout">
+      </el-tab-pane> -->
+      <!-- <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px">
           <el-switch
             v-model="screenType"
@@ -117,7 +117,7 @@
             >预览</el-button
           >
         </div>
-      </el-tab-pane>
+      </el-tab-pane> -->
     </el-tabs>
   </div>
 </template>
@@ -241,7 +241,13 @@ export default {
       );
     },
     addCompDefaultValues() {
+      let keys = pageCompCols
+      let obj = {};
+      keys.forEach((item) => {
+        obj[item] = this.currentItem.data[item]
+      })
       return {
+        ...obj,
         com_type: this.currentItem.com_type,
         page_no: this.pageConfig.page_no,
         com_seq: this.currentItem._seq,
@@ -597,13 +603,13 @@ export default {
       let result = [];
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {
-          if (item?._type === "component") {
+          if (item?._type === "component" && item._editType === 'add') {
             result.push(item);
           } else if (Array.isArray(item.children)) {
-            result = result.concat(
-              result,
-              this.findNormalComponents(item.children)
-            );
+            let arr = this.findNormalComponents(item.children);
+            if (arr.length) {
+              result = result.concat(arr); 
+            }
           }
         });
       }
@@ -669,7 +675,7 @@ export default {
             if (!item) {
               console.log(list);
 
-              debugger;
+              ;
             }
             keys.forEach((key) => {
               if (item[key]) {
@@ -778,7 +784,8 @@ export default {
         }
         let addList = this.findLayoutComponentsByType(oldComponents, "add");
         if (addList?.length) {
-          const normalChild = this.findNormalComponents(oldComponents);
+          const normalChild = this.findNormalComponents(addList);
+          
           if (Array.isArray(normalChild) && normalChild.length) {
             // todo 更新组件
             //  this.updateComponentNo()
@@ -845,6 +852,7 @@ export default {
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
+      
       if (pageData?.id) {
         //创建子组件
         if (layout?.length === 0) {
