@@ -60,6 +60,11 @@ export default {
       default: () => [],
     },
   },
+  computed: {
+    isView() {
+      return this.$route.meta?.isView === true;
+    },
+  },
   watch: {
     components: {
       immediate: true,

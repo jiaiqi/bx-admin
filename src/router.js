@@ -399,14 +399,33 @@ let routes = [
     children: [
       {
         path: "editor/:pageNo",
-        name: "lowcode-detail",
+        name: "lowcode-editor",
         meta: {
           isEditor: true,
         },
         component: () =>
           import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
       },
+      {
+        path: "view/:pageNo",
+        name: "lowcode-detail",
+        meta: {
+          isView: true,
+        },
+        component: () =>
+          import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
+      },
     ],
+  },
+  {
+    path: "/site/:pageNo",
+    name: "website",
+    component: () =>
+      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
+    meta: {
+      isEditor: false,
+      isView: true,
+    }
   },
   {
     path: '/authority',

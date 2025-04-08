@@ -3,6 +3,7 @@
     <header-view
       :is-preview.sync="previewVisible"
       :json-visible.sync="jsonVisible"
+      v-if="!isView"
     >
       <template #right>
         <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
@@ -14,6 +15,7 @@
       <div
         class="materials-panel-container"
         :class="{ collapsed: materialsCollapsed }"
+         v-if="!isView"
       >
         <div class="materials-toggle" @click="toggleMaterialsPanel">
           <i
@@ -24,7 +26,7 @@
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
-      <div class="editor-container" :class="{ 'in-edit': !isPreview }">
+      <div class="editor-container" :class="{ 'in-edit': !isPreview&&!isView }">
         <editor-view
           :components="components"
           @select="currentChange"
@@ -37,6 +39,7 @@
       <div
         class="property-panel-container"
         :class="{ collapsed: propertyCollapsed }"
+         v-if="!isView"
       >
         <div class="property-toggle" @click="togglePropertyPanel">
           <i
@@ -57,7 +60,7 @@
         ></property-view>
       </div>
     </div>
-    <el-dialog title="页面预览" :visible.sync="previewVisible" fullscreen>
+    <el-dialog title="页面预览" :visible.sync="previewVisible" fullscreen  v-if="!isView">
       <div slot="title" class="dialog-title">
         <span>页面预览</span>
         <!-- <el-button size="mini" @click="openNewTab">新标签页打开</el-button> -->
@@ -77,6 +80,7 @@
       direction="ltr"
       size="50%"
       :with-header="false"
+       v-if="!isView"
     >
       <json-viewer
         :value="components"
@@ -109,6 +113,9 @@ export default {
     lcView,
   },
   computed: {
+    isView() {
+      return this.$route.meta?.isView === true;
+    },
     contentAreaWidth() {
       let width = this.pageConfig?.content_area_width || 1200;
       return typeof width === "string" && width?.includes("%")
@@ -271,7 +278,6 @@ export default {
               if (item.id) {
                 item.data.id = item.id;
               }
-              ;
               const keys = ["component", "type", "_type"];
               keys.forEach((key) => {
                 if (item.data[key]) {
