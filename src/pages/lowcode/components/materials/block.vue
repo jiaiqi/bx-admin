@@ -12,9 +12,10 @@
   >
     <!-- 遮罩层 -->
     <div
-      v-if="!isPreview"
       class="overlay"
       :class="{ active: currentId && currentId === id }"
+      v-if="!isPreview && !isView"
+      @click.stop="$emit('click', props)"
     >
       <!-- 删除按钮 -->
       <i class="el-icon-close" @click="$emit('delete', props)"></i>

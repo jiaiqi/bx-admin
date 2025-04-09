@@ -3,6 +3,7 @@
     <header-view
       :is-preview.sync="previewVisible"
       :json-visible.sync="jsonVisible"
+      @click.native="currentChange"
       v-if="!isView"
     >
       <template #right>
@@ -116,6 +117,8 @@ import "vue-json-viewer/style.css";
 import { $http, $selectOne, $delete } from "@/common/http";
 import { pageCompCols } from "./components/property/columns";
 import { Icon } from "@iconify/vue2";
+import clickoutside from "@/pages/datav/common/clickoutside.js";
+
 export default {
   name: "lowcode-main",
   components: {
@@ -126,6 +129,9 @@ export default {
     JsonViewer,
     lcView,
     Icon,
+  },
+  directives: {
+    clickoutside: clickoutside,
   },
   computed: {
     isView() {
@@ -284,22 +290,22 @@ export default {
               }
             } else {
               item.component = "page-item";
-              item.data = {};
-              pageCompCols.forEach((col) => {
-                if (item[col]) {
-                  item.data[col] = item[col];
-                }
-              });
-              if (item.id) {
-                item.data.id = item.id;
-              }
-              const keys = ["component", "type", "_type"];
-              keys.forEach((key) => {
-                if (item.data[key]) {
-                  delete item.data[key];
-                }
-              });
             }
+            item.data = {};
+            pageCompCols.forEach((col) => {
+              if (item[col]) {
+                item.data[col] = item[col];
+              }
+            });
+            if (item.id) {
+              item.data.id = item.id;
+            }
+            const keys = ["component", "type", "_type"];
+            keys.forEach((key) => {
+              if (item.data[key]) {
+                delete item.data[key];
+              }
+            });
 
             return item;
           }

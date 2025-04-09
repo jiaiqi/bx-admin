@@ -5,7 +5,7 @@
     v-bind="props"
     :page-item="props.data"
     :content-width="contentWidth"
-    @click.native.capture="onTap()"
+    @click="onTap"
     :currentId="currentId"
     :isPreview="isPreview"
     :isView="isView"

@@ -21,7 +21,7 @@ const ENV = "wujingDev";
 // const ENV = "healthProd";
 // const ENV = "gaosu61";
 
-top.env = ENV
+window.env = ENV
 
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";

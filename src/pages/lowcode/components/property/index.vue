@@ -34,7 +34,8 @@
           (!componentId &&
             pageId &&
             currentItem &&
-            currentItem._type === 'component')
+            currentItem._type === 'component'
+          )
         "
         v-loading="componentLoading"
       >
@@ -266,8 +267,8 @@ export default {
     },
     componentId() {
       if (
-        this.currentComponent?.id &&
-        this.currentComponent?.com_type !== "layout"
+        this.currentComponent?.id 
+        // && this.currentComponent?.com_type !== "layout"
       ) {
         return this.currentComponent?.id + "";
       } else {

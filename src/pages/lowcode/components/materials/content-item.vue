@@ -159,7 +159,7 @@ export default {
   methods: {
     onTap() {
       if (this.isPreview) return;
-      let val = this.props?.children?.[0]?.id || this.props;
+      let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
       this.$emit("click", val);
     },
     onDelete() {
@@ -387,7 +387,7 @@ export default {
                 draggedElement.id = `${this.id}${new Date().getTime()}`;
                 draggedElement._editType = "add";
               }
-              
+
               if (draggedElement?.mock_data_json) {
                 try {
                   // const mock_data_json = JSON.parse(
@@ -425,6 +425,7 @@ export default {
 @use "../../styles/layout.common.scss" as layout;
 .overlay {
   @include layout.overlay;
+  z-index: 99;
 }
 .lc-content {
   width: 100%;

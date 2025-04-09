@@ -7,7 +7,9 @@
   >
     <div
       class="page-item__label"
-      v-if="inTabs!==true && pageItem.show_label === '是' && pageItem.com_label"
+      v-if="
+        inTabs !== true && pageItem.show_label === '是' && pageItem.com_label
+      "
     >
       <div class="page-item__label-text" :style="[mixTitleStyle]">
         <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
@@ -35,9 +37,7 @@
       :src="getExtPageUrl"
       frameborder="0"
       style="width: 100%; height: 100%; border: none"
-      v-else-if="
-        pageItem.com_type === 'extPage' &&getExtPageUrl
-      "
+      v-else-if="pageItem.com_type === 'extPage' && getExtPageUrl"
     ></iframe>
     <video-card
       :class="{ mobile: screenType === 'mobile' }"
@@ -81,7 +81,7 @@
       :ref="pageItem.com_type"
       :pageParamsModel="pageParamsModel"
       :pageItem="pageItem"
-      :index="layout&&layout.i||1"
+      :index="(layout && layout.i) || 1"
       :layout="layout"
     ></page-item-chart>
     <List
@@ -98,7 +98,6 @@
       :pageParamsModel="pageParamsModel"
       :ref="pageItem.com_type"
       :pageItem="pageItem"
-
     ></tab-list>
     <!-- <mix-list
       v-if="pageItem.com_type === 'list'"
@@ -161,7 +160,7 @@ import cardGroup from "./card-group/card-group.vue";
 import tabList from "./list/tabs-list.vue";
 import gridCard from "./grid-card.vue";
 import formAdd from "./form/add.vue";
-import NavMenu from './nav-menu/nav-menu.vue'
+import NavMenu from "./nav-menu/nav-menu.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 
@@ -183,7 +182,7 @@ export default {
     tabList,
     gridCard,
     formAdd,
-    NavMenu
+    NavMenu,
   },
   props: {
     pageItem: {
@@ -194,14 +193,16 @@ export default {
     },
     screenType: String,
     pageConfig: Object,
-    inTabs:Boolean, // 是否在tabs中
+    inTabs: Boolean, // 是否在tabs中
   },
   computed: {
-    getExtPageUrl(){
-      if(this.pageItem?.ext_page_json?.ext_page_url){
+    getExtPageUrl() {
+      if (this.pageItem?.ext_page_json?.ext_page_url) {
         return this.pageItem?.ext_page_json?.ext_page_url;
-      }else if(this.pageItem?.com_case_json?.ext_page_url){
+      } else if (this.pageItem?.com_case_json?.ext_page_url) {
         return this.pageItem?.com_case_json?.ext_page_url;
+      } else if (this.pageItem?.ext_page_url) {
+        return this.pageItem?.ext_page_url;
       }
     },
     mixTitleIcon() {
@@ -223,12 +224,12 @@ export default {
       } else if (this.pageConfig?.dv_com_style_json_data) {
         style = this.pageConfig?.dv_com_style_json_data;
       }
-      if(this.pageItem.com_type === 'navBar'){
-        if(style.padding){
-          delete style.padding
+      if (this.pageItem.com_type === "navBar") {
+        if (style.padding) {
+          delete style.padding;
         }
-         if(style.border_radius){
-          delete style.border_radius
+        if (style.border_radius) {
+          delete style.border_radius;
         }
       }
       return formatStyleData(style);
@@ -329,6 +330,5 @@ export default {
       // padding: inherit;
     }
   }
-
 }
 </style>
