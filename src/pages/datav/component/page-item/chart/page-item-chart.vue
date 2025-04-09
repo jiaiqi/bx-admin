@@ -1,7 +1,16 @@
 <template>
-  <Chart ref="chartRef" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.1)" class="uni-ec-canvas"
-    :page-item="pageItem" :options="option" :canvasId="canvasId" :chartType="chartType" v-if="option"
-    @click-chart="clickChart"></Chart>
+  <Chart
+    ref="chartRef"
+    v-loading="loading"
+    element-loading-background="rgba(0, 0, 0, 0.1)"
+    class="uni-ec-canvas"
+    :page-item="pageItem"
+    :options="option"
+    :canvasId="canvasId"
+    :chartType="chartType"
+    v-if="option"
+    @click-chart="clickChart"
+  ></Chart>
 </template>
 
 <script setup>
@@ -29,7 +38,7 @@ function deepClone(obj) {
   }
   return newObj;
 }
-const { pageItem } = props;
+const pageItem = props.pageItem;
 
 let timer = null;
 const emit = defineEmits(["clickChart"]);
@@ -119,8 +128,8 @@ onMounted(() => {
     // 使用模拟数据
     cellData.value = pageItem.mock_srv_data_json;
     option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
-  } else if ( chartConfig.value?.more_option?.includes('使用模拟数据') && !pageItem?.srv_req_json && !cellData.value.length) {
-    option.value = useBuildOption(chartType.value, pageItem, chartConfig.value.mock_data_json||[], props.layout);
+  } else if (chartConfig.value?.more_option?.includes('使用模拟数据') && !pageItem?.srv_req_json && !cellData.value.length) {
+    option.value = useBuildOption(chartType.value, pageItem, chartConfig.value.mock_data_json || [], props.layout);
   } else if (!pageItem?.srv_req_type && !cellData.value?.length) {
     option.value = setDefaultChartOption(chartType.value, pageItem, [], props.layout);
   } else {

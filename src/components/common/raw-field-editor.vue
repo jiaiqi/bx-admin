@@ -425,7 +425,9 @@
               :mainMenuBar="false"
               :readOnly="getDisabled"
               mode="text"
-              @change="$emit('field-value-changed', field.info.name, field)"
+              :onChange="(updatedContent)=>{
+                $emit('field-value-changed', field.info.name, field)
+              }"
               @blur="onBlur"
             ></json-editor>
             <radio

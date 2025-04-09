@@ -1035,6 +1035,11 @@ export default {
           }
         }
       }
+      this.$emit('field-value-changed', {
+        fieldName: fieldName,
+        value:this.formModel[fieldName],
+        formModel:this.formModel
+      })
     },
 
     /**

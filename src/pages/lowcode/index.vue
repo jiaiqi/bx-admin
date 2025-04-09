@@ -7,8 +7,16 @@
       v-if="!isView"
     >
       <template #right>
-        <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
-        <el-button type="primary" size="mini" @click="onSave">保存</el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="initPage"
+        >刷新</el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="onSave"
+        >保存</el-button>
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -18,12 +26,12 @@
         :class="{ collapsed: materialsCollapsed }"
         v-if="!isView"
       >
-        <div class="materials-toggle" @click="toggleMaterialsPanel">
-          <i
-            :class="
-              materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
-            "
-          ></i>
+        <div
+          class="materials-toggle"
+          @click="toggleMaterialsPanel"
+        >
+          <i :class="materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
+            "></i>
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
@@ -46,12 +54,12 @@
         :class="{ collapsed: propertyCollapsed }"
         v-if="!isView"
       >
-        <div class="property-toggle" @click="togglePropertyPanel">
-          <i
-            :class="
-              propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
-            "
-          ></i>
+        <div
+          class="property-toggle"
+          @click="togglePropertyPanel"
+        >
+          <i :class="propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
+            "></i>
         </div>
         <property-view
           class="property-view"
@@ -61,6 +69,7 @@
           :components="components"
           ref="propertyRef"
           @change="componentsChange"
+          @page-change="onPageChange"
           @refresh="initPage"
         ></property-view>
       </div>
@@ -71,14 +80,19 @@
       fullscreen
       v-if="!isView"
     >
-      <div slot="title" class="dialog-title flex justify-between px-4">
+      <div
+        slot="title"
+        class="dialog-title flex justify-between px-4"
+      >
         <div class="flex items-center">
           <span class="mr-2">预览</span>
           <Icon icon="mdi-light:eye" />
         </div>
-        <el-button type="primary" size="mini" @click="openNewTab"
-          >页面预览</el-button
-        >
+        <el-button
+          type="primary"
+          size="mini"
+          @click="openNewTab"
+        >页面预览</el-button>
       </div>
       <div class="preview-container">
         <lc-view
@@ -120,7 +134,7 @@ import { pageCompCols } from "./components/property/columns";
 import { Icon } from "@iconify/vue2";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
 import { formatStyleData } from "@/common/common";
-
+import cloneDeep from "lodash/cloneDeep";
 export default {
   name: "lowcode-main",
   components: {
@@ -145,9 +159,9 @@ export default {
         ? width
         : `${parseFloat(width)}px`;
     },
-    setStyle(){
+    setStyle() {
       let style = {}
-      if(this.pageConfig?.page_style_json_data){
+      if (this.pageConfig?.page_style_json_data) {
         style = this.pageConfig?.page_style_json_data
       }
       return formatStyleData(style)
@@ -191,6 +205,28 @@ export default {
     // 切换属性面板
     togglePropertyPanel() {
       this.propertyCollapsed = !this.propertyCollapsed;
+    },
+    findComponentById(components, id) {
+      let result = null;
+      if (!id || !components || !components.length) return result;
+      for (let i = 0; i < components.length; i++) {
+        const component = components[i];
+        if (component.id == id) {
+          result = component;
+          if (result) {
+            break;
+          }
+        } else if (
+          Array.isArray(component.children) &&
+          component.children.length
+        ) {
+          result = this.findComponentById(component.children, id);
+          if (result) {
+            break;
+          }
+        }
+      }
+      return result;
     },
     onResize({ id, width, height }) {
       function findComponentById(components, id) {
@@ -270,75 +306,322 @@ export default {
       };
       const { data, ok, msg } = await $selectOne(url, req);
       if (ok) {
-        Object.keys(data).forEach((key) => {
-          if (key && data[key] && key.indexOf("_json") !== -1) {
-            try {
-              data[`${key}_data`] = JSON.parse(data[key]);
-            } catch (e) {
-              console.error(e);
-            }
-          }
-        });
-        this.pageConfig = data;
-        const component_json = data?.page_row_json_data?.component_json?.map(
-          (item) => {
-            if (item.com_type === "layout") {
-              const layout_party = item?.layout_json?.layout_party;
-              if (layout_party === "页面") {
-                item.type = "container";
-                item.component = "lc-container";
-              } else if (layout_party === "布局") {
-                item.type = "layout";
-                item.component = "lc-block";
-              } else {
-                item.type = "content";
-                item.component = "lc-content";
-              }
-              if (item.layout_json?.child_num) {
-                item.child_num = item.layout_json.child_num;
-              }
-            } else {
-              item.component = "page-item";
-            }
-            item.data = {};
-            pageCompCols.forEach((col) => {
-              if (item[col]) {
-                item.data[col] = item[col];
-              }
-            });
-            if (item.id) {
-              item.data.id = item.id;
-            }
-            const keys = ["component", "type", "_type"];
-            keys.forEach((key) => {
-              if (item.data[key]) {
-                delete item.data[key];
-              }
-            });
-
-            return item;
-          }
-        );
-        if (!Array.isArray(component_json)) {
-          this.components = [];
-          return;
-        }
-        this.components = this.buildComponentsTree(component_json);
-        // component_json.sort((a, b) => a.com_seq - b.com_seq)
-        this.initPageParams(); // 页面参数初始化
+        let newData = this.initPageConfig(data)
+        this.initComponents(newData)
       } else if (msg) {
         this.$message.error(msg);
       } else {
         this.$message.info("无数据！");
       }
     },
-    initPageParams() {},
+    initPageConfig(data) {
+      Object.keys(data).forEach((key) => {
+        if (key && data[key] && key.indexOf("_json") !== -1) {
+          try {
+            data[`${key}_data`] = JSON.parse(data[key]);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      });
+      this.pageConfig = data;
+      return data
+    },
+    initComponents(data) {
+      const component_json = data?.page_row_json_data?.component_json?.map(
+        (item) => {
+          if (item.com_type === "layout") {
+            const layout_party = item?.layout_json?.layout_party;
+            if (layout_party === "页面") {
+              item.type = "container";
+              item.component = "lc-container";
+            } else if (layout_party === "布局") {
+              item.type = "layout";
+              item.component = "lc-block";
+            } else {
+              item.type = "content";
+              item.component = "lc-content";
+            }
+            if (item.layout_json?.child_num) {
+              item.child_num = item.layout_json.child_num;
+            }
+          } else {
+            item.component = "page-item";
+          }
+          item.data = {};
+          pageCompCols.forEach((col) => {
+            if (item[col]) {
+              item.data[col] = item[col];
+            }
+          });
+          if (item.id) {
+            item.data.id = item.id;
+          }
+          const keys = ["component", "type", "_type"];
+          keys.forEach((key) => {
+            if (item.data[key]) {
+              delete item.data[key];
+            }
+          });
+
+          return item;
+        }
+      );
+      if (!Array.isArray(component_json)) {
+        this.components = [];
+        return;
+      }
+      this.components = this.buildComponentsTree(component_json);
+    },
+    initPageParams() { },
     currentChange(id, item) {
       this.currentId = id;
       this.currentItem = item;
     },
     componentsChange(val) {
       this.components = val;
+    },
+ 
+    onPageChange(val, type, compType,compId) {
+      console.log(val, type);
+      if (type === 'page-update') {
+        let data = cloneDeep(val.formModel);
+        this.initPageConfig(data)
+      } else if (type === 'component-update' || type === 'component-add') {
+        let id = val.formModel.id;
+        if (id) {
+          let component = this.findComponentById(this.components, id)
+          if (component) {
+            let value = val.value
+            let key = val.fieldName
+            if (key?.lastIndexOf('_json') === key.length - 5) {
+              try {
+                value = JSON.parse(value)
+              } catch (e) {
+                console.error(e);
+              }
+            }
+            this.$set(component, key, value);
+            if (component.data) {
+              this.$set(component.data, key, value);
+            }
+          }
+        }
+
+      } else if (type === 'component-cfg-update') {
+        // 组件配置
+        let id = compId;
+        if (!id) {
+          return
+        }
+        let row = val.formModel;
+        console.log('compType:', compType);
+        let component = this.findComponentById(this.components, id)
+        if (!component?.data) {
+          return
+        }
+        switch (compType) {
+          case "currentInfo": {
+            this.$set(component.data, 'current_info_json', row);
+            if (row.interface_json) {
+              this.$set(component.data, 'page_com_interface_json', row.interface_json);
+            }
+            // if (row.current_info_json) {
+            // m.current_info_json = JSON.parse(row.current_info_json);
+            // if (m.current_info_json.interface_json) {
+            //   m.page_com_interface_json = m.current_info_json.interface_json;
+            // }
+            // }
+            break;
+          }
+          case "swiper": {
+            this.$set(component.data, 'swiper_json', row);
+
+            // if (row.swiper_json) {
+            //   m.swiper_json = JSON.parse(row.swiper_json);
+            //   if (m.swiper_json.interface_json) {
+            //     m.page_com_interface_json = m.swiper_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "userList": {
+            this.$set(component.data, 'user_list_json', row);
+
+            // if (row.user_list_json) {
+            //   m.user_list_json = JSON.parse(row.user_list_json);
+            //   if (m.user_list_json.interface_json) {
+            //     m.page_com_interface_json = m.user_list_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "noticeBar": {
+            this.$set(component.data, 'notice_bar_json', row);
+
+            // if (row.notice_bar_json) {
+            //   m.notice_bar_json = JSON.parse(row.notice_bar_json);
+            //   if (m.notice_bar_json.interface_json) {
+            //     m.page_com_interface_json = m.notice_bar_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "list": {
+            this.$set(component.data, 'list_json', row);
+
+            // if (row.list_json) {
+            //   m.list_json = JSON.parse(row.list_json);
+            //   if (m.list_json.interface_json) {
+            //     m.page_com_interface_json = m.list_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "grid": {
+            this.$set(component.data, 'grid_json', row);
+
+            // if (row.grid_json) {
+            //   m.grid_json = JSON.parse(row.grid_json);
+            //   if (m.grid_json.interface_json) {
+            //     m.page_com_interface_json = m.grid_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "cardGroup": {
+            this.$set(component.data, 'card_group_json', row);
+
+            // if (row.card_group_json) {
+            //   m.card_group_json = JSON.parse(row.card_group_json);
+            //   if (m.card_group_json.interface_json) {
+            //     m.page_com_interface_json = m.card_group_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "richTextCard": {
+            this.$set(component.data, 'rich_text_card_json', row);
+
+            // if (row.rich_text_card_json) {
+            //   m.rich_text_card_json = JSON.parse(row.rich_text_card_json);
+            //   if (m.rich_text_card_json.interface_json) {
+            //     m.page_com_interface_json = m.rich_text_card_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "videoCard": {
+            this.$set(component.data, 'video_card_json', row);
+
+            // if (row.video_card_json) {
+            //   m.video_card_json = JSON.parse(row.video_card_json);
+            //   if (m.video_card_json.interface_json) {
+            //     m.page_com_interface_json = m.video_card_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "map": {
+            this.$set(component.data, 'map_json', row);
+
+            // if (row.map_json) {
+            //   m.map_json = JSON.parse(row.map_json);
+            //   if (m.map_json.interface_json) {
+            //     m.page_com_interface_json = m.map_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "chart": {
+            this.$set(component.data, 'chart_json', row);
+
+            // if (row.chart_json) {
+            //   m.chart_json = JSON.parse(row.chart_json);
+            //   if (m.chart_json.interface_json) {
+            //     m.page_com_interface_json = m.chart_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "tabs": {
+            this.$set(component.data, 'tabs_json', row);
+
+            // if (row.tabs_json) {
+            //   m.tabs_json = JSON.parse(row.tabs_json);
+            //   if (row.relate_pages_json) {
+            //     m.tabs_json.relate_pages_json = JSON.parse(row.relate_pages_json);
+            //   }
+            //   if (m.tabs_json.interface_json) {
+            //     m.page_com_interface_json = m.tabs_json.interface_json;
+            //   }
+            // } else {
+            //   m.tabs_json = {};
+            //   if (row.relate_pages_json) {
+            //     m.tabs_json.relate_pages_json = JSON.parse(row.relate_pages_json);
+            //   }
+            // }
+
+            break;
+          }
+          case "form": {
+            this.$set(component.data, 'form_json', row);
+
+            // if (row.form_json) {
+            //   m.form_json = JSON.parse(row.form_json);
+            //   if (m.form_json.interface_json) {
+            //     m.page_com_interface_json = m.form_json.interface_json;
+            //   }
+            // }
+            break;
+          }
+          case "steps": {
+            this.$set(component.data, 'steps_json', row);
+
+            // if (row.steps_json) {
+            //   m.steps_json = JSON.parse(row.steps_json);
+            // }
+            break;
+          }
+          case "footer": {
+            this.$set(component.data, 'footer_json', row);
+
+            // if (row.footer_json) {
+            //   m.footer_json = JSON.parse(row.footer_json);
+            // }
+            break;
+          }
+          case "layout": {
+            this.$set(component.data, 'layout_json', row);
+
+            // if (row.layout_json) {
+            //   m.layout_json = JSON.parse(row.layout_json);
+            // }
+            break;
+          }
+          case "控件": {
+            this.$set(component.data, 'widget_json', row);
+
+            // if (row.widget_json) {
+            //   m.widget_json = JSON.parse(row.widget_json);
+            // }
+            break;
+
+          }
+          case "日历":
+            this.$set(component.data, 'calendar_json', row);
+
+            // if (row.calendar_json) {
+            //   m.calendar_json = JSON.parse(row.calendar_json);
+            // }
+            break;
+
+          default:
+            break;
+
+        }
+
+      }
     },
     async deleteComponent(ids = "") {
       if (!ids) return;
@@ -461,6 +744,7 @@ export default {
     .editor-container {
       flex: 1;
       transition: all 0.3s ease;
+
       &.in-edit {
         overflow-y: auto;
         padding-bottom: 100px;
@@ -526,20 +810,25 @@ export default {
   }
 
   .lc-layout {
+
     &.view-mode,
     &.preview-mode {
+
       .resize-handle-s,
       .resize-handles {
         display: none;
       }
     }
+
     &.preview-mode {
       border-color: #f5f7fa;
     }
+
     &.view-mode {
       border-color: transparent;
     }
   }
+
   .preview-container {
     border: 1px dashed #ccc;
   }

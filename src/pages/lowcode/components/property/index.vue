@@ -12,6 +12,7 @@
             pkCol="id"
             @executor-complete="onPageUpdate"
             @form-loaded="pageLoading = false"
+            @field-value-changed="onValueChange($event,'page-update')"
             v-if="pageId"
           >
           </simple-update>
@@ -52,6 +53,7 @@
               (componentLoaded = true),
               setCompServiceCfg()
           "
+          @field-value-changed="onValueChange($event,'component-update')"
           v-if="componentId"
         >
         </simple-update>
@@ -64,11 +66,12 @@
           @form-loaded="componentLoading = false"
           :navAfterSubmit="false"
           @submitted2mem=""
+          @field-value-changed="onValueChange($event,'component-add')"
           v-else-if="showAddComponent"
         >
         </simple-add>
       </el-tab-pane>
-      <!-- <el-tab-pane
+      <el-tab-pane
         label="组件配置"
         name="组件配置"
         v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk"
@@ -80,9 +83,10 @@
           :pk="compServiceCfg.pk"
           :pkCol="compServiceCfg.pkCol"
           @action-complete="onComponentUpdate"
+          @field-value-changed="onValueChange($event,'component-cfg-update',compServiceCfg)"
         >
         </simple-update>
-      </el-tab-pane> -->
+      </el-tab-pane>
       <!-- <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px">
           <el-switch
@@ -308,6 +312,18 @@ export default {
     };
   },
   methods: {
+    onValueChange(value,type){
+      this.$emit('page-change',value,type,this.compType,this.componentId)
+      // switch (type) {
+      //   case 'page-update':
+      //     this.$emit('page-change',value,type)
+      //     break;
+      
+      //   default:
+      //     break;
+      // }
+    },
+
     setCompServiceCfg() {
       if (this.componentLoaded) {
         const obj = {

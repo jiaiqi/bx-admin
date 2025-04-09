@@ -2,102 +2,117 @@
   <div
     class="page-item"
     :class="{ mobile: screenType === 'mobile' }"
-    v-if="pageItem && pageItem.com_type"
+    v-if="pageItemData && pageItemData.com_type"
     :style="[mixCompStyle]"
   >
     <div
       class="page-item__label"
       v-if="
-        inTabs !== true && pageItem.show_label === '是' && pageItem.com_label
+        inTabs !== true && pageItemData.show_label === '是' && pageItemData.com_label
       "
     >
-      <div class="page-item__label-text" :style="[mixTitleStyle]">
-        <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
-        <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
-        <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
+      <div
+        class="page-item__label-text"
+        :style="[mixTitleStyle]"
+      >
+        <span
+          class="icon1"
+          v-if="mixTitleIcon === '竖线'"
+        ></span>
+        <span
+          class="icon2"
+          v-if="mixTitleIcon === '圆形'"
+        ></span>
+        <span
+          class="icon3"
+          v-if="mixTitleIcon === '方块'"
+        ></span>
         <span>
-          {{ pageItem.com_label }}
+          {{ pageItemData.com_label }}
         </span>
-        <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
+        <span
+          v-if="mixTitleIcon === '下划线'"
+          class="under-line"
+        ></span>
       </div>
     </div>
     <nav-menu
       class="nav-menu"
       v-if="
-        pageItem.com_type === 'navBar' &&
-        pageItem.com_case_json &&
-        pageItem.com_case_json.label
+        pageItemData.com_type === 'navBar' &&
+        pageItemData.com_case_json &&
+        pageItemData.com_case_json.label
       "
-      :config="pageItem.com_case_json"
+      :config="pageItemData.com_case_json"
       :page-config="pageConfig"
     >
-      <!-- {{ pageItem.com_case_json.label }} -->
+      <!-- {{ pageItemData.com_case_json.label }} -->
     </nav-menu>
     <iframe
       :src="getExtPageUrl"
       frameborder="0"
       style="width: 100%; height: 100%; border: none"
-      v-else-if="pageItem.com_type === 'extPage' && getExtPageUrl"
+      v-else-if="pageItemData.com_type === 'extPage' && getExtPageUrl"
     ></iframe>
     <video-card
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'videoCard'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'videoCard'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></video-card>
     <current-info
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'currentInfo'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'currentInfo'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></current-info>
     <slide-list
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'swiper'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'swiper'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></slide-list>
     <user-list
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'userList'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'userList'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></user-list>
     <notice-bar
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'noticeBar'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'noticeBar'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></notice-bar>
     <map-card
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'map'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'map'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></map-card>
     <page-item-chart
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'chart'"
-      :ref="pageItem.com_type"
+      v-else-if="pageItemData.com_type === 'chart'"
+      :ref="pageItemData.com_type"
       :pageParamsModel="pageParamsModel"
-      :pageItem="pageItem"
+      :pageItem="pageItemData"
       :index="(layout && layout.i) || 1"
       :layout="layout"
     ></page-item-chart>
     <List
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'list'"
+      v-else-if="pageItemData.com_type === 'list'"
       :pageParamsModel="pageParamsModel"
       @setPageParams="setPageParams"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></List>
     <tab-list
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'tabs'"
+      v-else-if="pageItemData.com_type === 'tabs'"
       :pageParamsModel="pageParamsModel"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></tab-list>
     <!-- <mix-list
       v-if="pageItem.com_type === 'list'"
@@ -106,39 +121,39 @@
     ></mix-list> -->
     <page-widget
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === '控件'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === '控件'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
       :page-no="pageNo"
       @resize="$emit('resize')"
     ></page-widget>
     <card-group
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'cardGroup'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'cardGroup'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></card-group>
     <grid-card
       :class="{ mobile: screenType === 'mobile' }"
-      v-else-if="pageItem.com_type === 'grid'"
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      v-else-if="pageItemData.com_type === 'grid'"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></grid-card>
     <form-add
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="
-        pageItem.com_type === 'form' &&
-        pageItem.form_json &&
-        pageItem.form_json.form_type === '新增'
+        pageItemData.com_type === 'form' &&
+        pageItemData.form_json &&
+        pageItemData.form_json.form_type === '新增'
       "
-      :ref="pageItem.com_type"
-      :pageItem="pageItem"
+      :ref="pageItemData.com_type"
+      :pageItem="pageItemData"
     ></form-add>
     <div
-      v-else-if="pageItem && pageItem.com_label"
+      v-else-if="pageItemData && pageItemData.com_label"
       :class="{ mobile: screenType === 'mobile' }"
     >
-      {{ pageItem.com_label }}
+      {{ pageItemData.com_label }}
     </div>
   </div>
 </template>
@@ -197,21 +212,21 @@ export default {
   },
   computed: {
     getExtPageUrl() {
-      if (this.pageItem?.ext_page_json?.ext_page_url) {
-        return this.pageItem?.ext_page_json?.ext_page_url;
-      } else if (this.pageItem?.com_case_json?.ext_page_url) {
-        return this.pageItem?.com_case_json?.ext_page_url;
-      } else if (this.pageItem?.ext_page_url) {
-        return this.pageItem?.ext_page_url;
+      if (this.pageItemData?.ext_page_json?.ext_page_url) {
+        return this.pageItemData?.ext_page_json?.ext_page_url;
+      } else if (this.pageItemData?.com_case_json?.ext_page_url) {
+        return this.pageItemData?.com_case_json?.ext_page_url;
+      } else if (this.pageItemData?.ext_page_url) {
+        return this.pageItemData?.ext_page_url;
       }
     },
     mixTitleIcon() {
-      return this.pageItem?.com_icon || this.pageConfig?.dv_com_icon;
+      return this.pageItemData?.com_icon || this.pageConfig?.dv_com_icon;
     },
     mixTitleStyle() {
       let style = {};
-      if (this.pageItem?.com_title_style_json) {
-        style = this.pageItem?.com_title_style_json;
+      if (this.pageItemData?.com_title_style_json) {
+        style = this.pageItemData?.com_title_style_json;
       } else if (this.pageConfig?.dv_com_title_style_json_data) {
         style = this.pageConfig?.dv_com_title_style_json_data;
       }
@@ -219,12 +234,14 @@ export default {
     },
     mixCompStyle() {
       let style = {};
-      if (this.pageItem?.style_json) {
-        style = this.pageItem?.style_json;
+      if (this.pageItemData?.style_json) {
+        style = this.pageItemData?.style_json;
+      } else if (this.pageItemData?.com_style_json) {
+        style = this.pageItemData?.com_style_json;
       } else if (this.pageConfig?.dv_com_style_json_data) {
         style = this.pageConfig?.dv_com_style_json_data;
       }
-      if (this.pageItem.com_type === "navBar") {
+      if (this.pageItemData.com_type === "navBar") {
         if (style.padding) {
           delete style.padding;
         }
@@ -236,14 +253,30 @@ export default {
     },
     mixNavStyle() {
       let style = {};
-      if (this.pageItem?.com_case_json?.nav_style_json) {
-        style = formatStyleData(this.pageItem.com_case_json.nav_style_json);
+      if (this.pageItemData?.com_case_json?.nav_style_json) {
+        style = formatStyleData(this.pageItemData.com_case_json.nav_style_json);
       }
       return style;
     },
   },
+  data() {
+    return {
+      pageItemData:{}
+    }
+  },
   mounted() {
     // console.log(this.pageItem)
+  },
+  watch: {
+    pageItem: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        if(newValue!==oldValue){
+          this.pageItemData = newValue ||{}
+        }
+      }
+    }
   },
   methods: {
     onResize(i) {
@@ -277,17 +310,21 @@ export default {
     background-color: #eee;
     border: 1px solid #ccc;
     box-sizing: border-box;
+
     .mobile {
       text-align: center;
     }
   }
+
   .page-item__label {
     display: flex;
   }
+
   .page-item__label-text {
     display: flex;
     flex-direction: column;
     position: relative;
+
     .icon1 {
       left: 0;
       width: 4px;
@@ -297,6 +334,7 @@ export default {
       border-radius: 2px;
       background: currentColor;
     }
+
     .icon2 {
       width: 6px;
       height: 6px;
@@ -307,6 +345,7 @@ export default {
       top: 50%;
       transform: translateY(-50%);
     }
+
     .icon3 {
       width: 8px;
       height: 8px;
@@ -317,6 +356,7 @@ export default {
       top: 50%;
       transform: translateY(-50%);
     }
+
     .under-line {
       position: relative;
       display: flex;
