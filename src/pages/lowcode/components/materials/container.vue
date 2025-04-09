@@ -5,6 +5,7 @@
     @dragleave="handleDragLeave"
     @drop="handleDrop"
     @dragend="handleDragEnd"
+    :style="[setStyle]"
   >
     <!-- 遮罩层 -->
     <div
@@ -28,6 +29,7 @@
 
 <script>
 import dragStore from "../../store/dragStore";
+import { formatStyleData } from "@/common/common";
 
 export default {
   name: "lc-container",
@@ -56,7 +58,22 @@ export default {
   },
   computed: {
     setStyle() {
-      
+      let style = {};
+      if (this.props.style_json && typeof this.props.style_json === "string") {
+        style = JSON.parse(this.props.style_json);
+      } else if (
+        this.props.style_json &&
+        typeof this.props.style_json === "object"
+      ) {
+        style = this.props.style_json;
+      }
+      if (
+        this.props.layout_json?.style_json &&
+        typeof this.props.layout_json.style_json === "object"
+      ) {
+        style = { ...this.props.layout_json.style_json, ...style };
+      }
+      return formatStyleData(style);
     },
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };

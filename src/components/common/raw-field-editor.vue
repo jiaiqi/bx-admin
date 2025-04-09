@@ -415,7 +415,19 @@
               :lang="field.info.lang"
             >
             </code-editor>
-
+            <json-editor
+              v-else-if="field.info.editor === 'json-editor'"
+              ref="editor"
+              v-model="field.model"
+              :stringified="true"
+              :statusBar="false"
+              :navigationBar="false"
+              :mainMenuBar="false"
+              :readOnly="getDisabled"
+              mode="text"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            ></json-editor>
             <radio
               v-else-if="field.info.editor === 'radio'"
               ref="editor"
@@ -761,6 +773,7 @@ import BxInputNumber from "../ui/bx-input-number.vue";
 import Userlist from "../ui/userlist.vue";
 import QrCode from "../ui/qrcode.vue";
 import CodeEditor from "../ui/code-editor.vue";
+import JsonEditor from 'json-editor-vue'
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
@@ -780,6 +793,7 @@ export default {
     Checkbox,
     Radio,
     CodeEditor,
+    JsonEditor,
     Userlist,
     BxInputNumber,
     TreeFinder,
@@ -1260,6 +1274,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+:deep(.jse-main){
+  max-height: 300px;
+}
 .help-tips {
   color: #c0c4cc;
   /* position:absolute; */

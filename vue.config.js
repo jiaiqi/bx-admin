@@ -37,6 +37,28 @@ module.exports = {
           ]
         };
       });
+    config.module
+      .rule('mjs')
+      .test(/\.mjs$/)  // 匹配 .mjs 文件
+      .include
+      .add(/node_modules/)
+      .end()
+      .type('javascript/auto')
+      .use('babel-loader') // 确保为 mjs 文件也使用了 loader
+      .loader('babel-loader')
+      .tap(options => {
+        // 可以在这里修改 babel-loader 的选项，如果需要的话可以和 js 文件使用不同的配置
+        return {
+          ...options,
+          presets: [
+            ['@babel/preset-env', { useBuiltIns: 'entry', corejs: 3 }]
+          ],
+          plugins: [
+            "@babel/plugin-transform-optional-chaining", // 可选链 ?.
+            "@babel/plugin-transform-nullish-coalescing-operator" // 空值合并 ??
+          ]
+        };
+      });
     if (process.env.NODE_ENV === "production") {
       // 只在生产环境中应用此配置
       // 生产环境 删除懒加载模块的 prefetch preload，降低带宽压力
@@ -72,7 +94,7 @@ module.exports = {
     }
   },
   productionSourceMap: true, // 生产环境是否生成 sourceMap 文件
-  transpileDependencies: ["simple-mind-map","@svgdotjs"], // 思维导图
+  transpileDependencies: ["simple-mind-map"  /**  思维导图*/, "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
   publicPath: "/vpages/",
   outputDir: "vpages",

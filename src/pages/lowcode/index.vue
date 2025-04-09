@@ -29,6 +29,7 @@
       </div>
       <div
         class="editor-container"
+        :style="setStyle"
         :class="{ 'in-edit': !isPreview && !isView }"
       >
         <editor-view
@@ -118,6 +119,7 @@ import { $http, $selectOne, $delete } from "@/common/http";
 import { pageCompCols } from "./components/property/columns";
 import { Icon } from "@iconify/vue2";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
+import { formatStyleData } from "@/common/common";
 
 export default {
   name: "lowcode-main",
@@ -143,6 +145,13 @@ export default {
         ? width
         : `${parseFloat(width)}px`;
     },
+    setStyle(){
+      let style = {}
+      if(this.pageConfig?.page_style_json_data){
+        style = this.pageConfig?.page_style_json_data
+      }
+      return formatStyleData(style)
+    }
   },
   data() {
     return {

@@ -319,7 +319,8 @@ export class FieldInfo {
     } else if (this.isNumeric()) {
       this.editor = "input-number";
     } else if (this.type == "Json") {
-      this.editor = "code-editor";
+      // this.editor = "code-editor";
+      this.editor = "json-editor";
       this.lang = "json";
     } else if (this.type == "Sql") {
       this.editor = "code-editor";

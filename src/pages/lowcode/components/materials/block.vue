@@ -2,9 +2,14 @@
   <div
     class="lc-block lc-layout"
     :class="[subType]"
-    :style="[setStyle, blockHeightStyle, blockWidthStyle,{
-      '--content-width':contentWidth
-    }]"
+    :style="[
+      setStyle,
+      blockHeightStyle,
+      blockWidthStyle,
+      {
+        '--content-width': contentWidth,
+      },
+    ]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -123,8 +128,17 @@ export default {
       let style = {};
       if (this.props.style_json && typeof this.props.style_json === "string") {
         style = JSON.parse(this.props.style_json);
-      } else if (this.props.layout_json?.style_json) {
-        style = this.props.layout_json.style_json;
+      } else if (
+        this.props.style_json &&
+        typeof this.props.style_json === "object"
+      ) {
+        style = this.props.style_json;
+      }
+      if (
+        this.props.layout_json?.style_json &&
+        typeof this.props.layout_json.style_json === "object"
+      ) {
+        style = { ...this.props.layout_json.style_json, ...style };
       }
       return formatStyleData(style);
     },
