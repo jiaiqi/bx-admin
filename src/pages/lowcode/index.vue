@@ -70,8 +70,13 @@
       v-if="!isView"
     >
       <div slot="title" class="dialog-title flex justify-between px-4">
-        <span class="">页面预览</span>
-        <el-button type="primary" size="mini" @click="openNewTab">新标签页打开</el-button>
+        <div class="flex items-center">
+          <span class="mr-2">预览</span>
+          <Icon icon="mdi-light:eye" />
+        </div>
+        <el-button type="primary" size="mini" @click="openNewTab"
+          >页面预览</el-button
+        >
       </div>
       <div class="preview-container">
         <lc-view
@@ -110,6 +115,7 @@ import JsonViewer from "vue-json-viewer";
 import "vue-json-viewer/style.css";
 import { $http, $selectOne, $delete } from "@/common/http";
 import { pageCompCols } from "./components/property/columns";
+import { Icon } from "@iconify/vue2";
 export default {
   name: "lowcode-main",
   components: {
@@ -119,6 +125,7 @@ export default {
     PropertyView,
     JsonViewer,
     lcView,
+    Icon,
   },
   computed: {
     isView() {
@@ -518,7 +525,7 @@ export default {
       border-color: transparent;
     }
   }
-  .preview-container{
+  .preview-container {
     border: 1px dashed #ccc;
   }
 }
