@@ -7,11 +7,12 @@
     :content-width="contentWidth"
     @click.native.capture="onTap()"
     :currentId="currentId"
-    :isPreview="isView"
+    :isPreview="isPreview"
+    :isView="isView"
     @add="addComponent"
     @delete="deleteComponent"
     @resize="onResize"
-    :class="{ 'preview-mode': isView }"
+    :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
     style="position: relative; z-index: 1"
   >
     <template v-if="childComponents && childComponents.length">
@@ -21,7 +22,8 @@
         :page-item="item.data"
         :key="item.id"
         :currentId="currentId"
-        :isPreview="isView"
+        :isPreview="isPreview"
+        :isView="isView"
         @click="onTap"
         @add="addComponent"
         @delete="deleteComponent"
@@ -29,10 +31,7 @@
       ></lc-view>
     </template>
     <slot v-else>
-      <template v-if="type === 'content' && !isView">
-        <!-- <el-button type="primary" size="mini" @click="openComponentSelector"
-          >添加组件</el-button
-        > -->
+      <template v-if="type === 'content' && !isView && !isPreview">
         <span class="" style="color: #999; pointer-events: none">
           {{ name || "可放置组件区域" }}
         </span>
@@ -103,7 +102,7 @@ export default {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
     isView() {
-      return this.$route.meta?.isView === true || isPreview;
+      return this.$route.meta?.isView === true;
     },
   },
   data() {

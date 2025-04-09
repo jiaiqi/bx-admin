@@ -2,7 +2,9 @@
   <div
     class="lc-block lc-layout"
     :class="[subType]"
-    :style="[setStyle, blockHeightStyle, blockWidthStyle]"
+    :style="[setStyle, blockHeightStyle, blockWidthStyle,{
+      '--content-width':contentWidth
+    }]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -23,7 +25,7 @@
 
     <!-- 高度调整手柄 -->
     <div
-      v-if="!isPreview && currentId && currentId === id"
+      v-if="!isPreview && !isView && currentId && currentId === id"
       class="resize-handle-s"
       title="调整高度"
       @mousedown="startResizeHeight"
@@ -81,6 +83,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    isView: {
+      type: Boolean,
+      default: false,
+    },
     height: {
       type: [Number, String],
       default: null,
@@ -88,6 +94,10 @@ export default {
     width: {
       type: [Number, String],
       default: null,
+    },
+    contentWidth: {
+      type: String,
+      default: "1200px",
     },
   },
   data() {
@@ -127,7 +137,7 @@ export default {
     },
   },
   watch: {
-    'props.layout_height':{
+    "props.layout_height": {
       immediate: true,
       handler(newVal) {
         if (newVal) {
@@ -467,14 +477,14 @@ export default {
     }
   }
 
-  &.preview-mode {
-    border-color: transparent;
+  // &.preview-mode {
+  //   border-color: transparent;
 
-    .resize-handle-s,
-    .resize-handles {
-      display: none;
-    }
-  }
+  //   .resize-handle-s,
+  //   .resize-handles {
+  //     display: none;
+  //   }
+  // }
 
   &.drag-over {
     border: 2px dashed $primary-color;

@@ -15,7 +15,7 @@
       <div
         class="materials-panel-container"
         :class="{ collapsed: materialsCollapsed }"
-         v-if="!isView"
+        v-if="!isView"
       >
         <div class="materials-toggle" @click="toggleMaterialsPanel">
           <i
@@ -26,7 +26,10 @@
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
-      <div class="editor-container" :class="{ 'in-edit': !isPreview&&!isView }">
+      <div
+        class="editor-container"
+        :class="{ 'in-edit': !isPreview && !isView }"
+      >
         <editor-view
           :components="components"
           @select="currentChange"
@@ -39,7 +42,7 @@
       <div
         class="property-panel-container"
         :class="{ collapsed: propertyCollapsed }"
-         v-if="!isView"
+        v-if="!isView"
       >
         <div class="property-toggle" @click="togglePropertyPanel">
           <i
@@ -60,10 +63,15 @@
         ></property-view>
       </div>
     </div>
-    <el-dialog title="页面预览" :visible.sync="previewVisible" fullscreen  v-if="!isView">
-      <div slot="title" class="dialog-title">
-        <span>页面预览</span>
-        <!-- <el-button size="mini" @click="openNewTab">新标签页打开</el-button> -->
+    <el-dialog
+      title="页面预览"
+      :visible.sync="previewVisible"
+      fullscreen
+      v-if="!isView"
+    >
+      <div slot="title" class="dialog-title flex justify-between px-4">
+        <span class="">页面预览</span>
+        <el-button type="primary" size="mini" @click="openNewTab">新标签页打开</el-button>
       </div>
       <div class="preview-container">
         <lc-view
@@ -80,7 +88,7 @@
       direction="ltr"
       size="50%"
       :with-header="false"
-       v-if="!isView"
+      v-if="!isView"
     >
       <json-viewer
         :value="components"
@@ -364,7 +372,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .lowcode-wrapper {
   height: 100%;
   width: 100%;
@@ -493,6 +501,25 @@ export default {
     ::v-deep .customhome-container {
       height: 100%;
     }
+  }
+
+  .lc-layout {
+    &.view-mode,
+    &.preview-mode {
+      .resize-handle-s,
+      .resize-handles {
+        display: none;
+      }
+    }
+    &.preview-mode {
+      border-color: #f5f7fa;
+    }
+    &.view-mode {
+      border-color: transparent;
+    }
+  }
+  .preview-container{
+    border: 1px dashed #ccc;
   }
 }
 </style>

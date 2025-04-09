@@ -11,7 +11,7 @@
       class="overlay"
       @click.stop="$emit('click', props)"
       :class="{ active: currentId && currentId === id }"
-      v-if="!isPreview"
+      v-if="!isPreview && !isView"
     >
       <!-- 拖拽排序 -->
       <div class="handle">
@@ -49,6 +49,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    isView:{
+      type:Boolean,
+      default:false,
+    }
   },
   computed: {
     setStyle() {
@@ -204,16 +208,16 @@ export default {
   min-height: 100px;
   min-width: var(--content-width);
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
   position: relative;
   --primary-color: #ff740e;
   $primary-color: #ff740e;
   border: 1px dashed rgba($color: $primary-color, $alpha: 0.3); /* 添加浅色虚线边框 */
-  &.preview-mode {
-    border-color: transparent;
-  }
+  // &.preview-mode {
+  //   border-color: transparent;
+  // }
 
   > .overlay {
     &.drag-over {

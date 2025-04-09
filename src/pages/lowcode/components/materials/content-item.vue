@@ -17,7 +17,7 @@
       class="overlay"
       @click.stop="onTap"
       :class="{ active: isActive }"
-      v-if="!isPreview"
+      v-if="!isPreview && !isView"
     >
       <!-- 删除按钮 -->
       <i
@@ -30,19 +30,19 @@
     <slot> </slot>
 
     <!-- 拖拽调整宽度的手柄 -->
-    <div v-if="!isPreview && isActive" class="resize-handles">
-      <!-- <div
+    <!-- <div v-if="!isPreview && !isView && isActive" class="resize-handles">
+      <div
         class="resize-handle resize-handle-e"
         @mousedown="startResize($event, 'e')"
       ></div>
       <div
         class="resize-handle resize-handle-w"
         @mousedown="startResize($event, 'w')"
-      ></div> -->
-      <!-- <div class="resize-unit-switch" @click.stop="toggleWidthUnit">
+      ></div> 
+     <div class="resize-unit-switch" @click.stop="toggleWidthUnit">
         {{ widthUnit === 'px' ? 'px' : '%' }}
-      </div> -->
-    </div>
+      </div>
+    </div> -->
   </div>
 </template>
 
@@ -85,6 +85,10 @@ export default {
       default: "",
     },
     isPreview: {
+      type: Boolean,
+      default: false,
+    },
+    isView: {
       type: Boolean,
       default: false,
     },
@@ -542,12 +546,12 @@ export default {
     }
   }
 
-  &.preview-mode {
-    border-color: transparent;
+  // &.preview-mode {
+  //   border-color: transparent;
 
-    .resize-handles {
-      display: none;
-    }
-  }
+  //   .resize-handles {
+  //     display: none;
+  //   }
+  // }
 }
 </style>
