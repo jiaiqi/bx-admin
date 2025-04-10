@@ -6,6 +6,39 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
   z-index: 0;
+  .delete-bar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 100%;
+    background: rgba($color: #f00, $alpha: 0.7);
+    display: flex;
+    // flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.3s ease-in-out;
+    color: #fff;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 14px;
+    writing-mode: vertical-rl;
+
+    &:hover {
+      font-size: 16px;
+      font-weight: bold;
+    }
+  }
+
+  &:hover {
+    /* 添加浅色虚线边框 */
+    .delete-bar {
+      width: 24px;
+      opacity: 1;
+      z-index: 99;
+      pointer-events: all;
+    }
+  }
   .el-icon-close {
     position: absolute;
     top: 0;

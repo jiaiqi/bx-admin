@@ -37,7 +37,6 @@
       </div>
       <div
         class="editor-container"
-        :style="setStyle"
         :class="{ 'in-edit': !isPreview && !isView }"
       >
         <editor-view
@@ -47,6 +46,7 @@
           @delete="onDel"
           @resize="onResize"
           :content-width="contentAreaWidth"
+          :style="setStyle"
         ></editor-view>
       </div>
       <div
@@ -381,8 +381,8 @@ export default {
     componentsChange(val) {
       this.components = val;
     },
- 
-    onPageChange(val, type, compType,compId) {
+
+    onPageChange(val, type, compType, compId) {
       console.log(val, type);
       if (type === 'page-update') {
         let data = cloneDeep(val.formModel);
@@ -746,9 +746,18 @@ export default {
       transition: all 0.3s ease;
 
       &.in-edit {
-        overflow-y: auto;
-        padding-bottom: 100px;
-        border: 1px dashed #ccc;
+        overflow: auto;
+        padding: 50px;
+        scrollbar-color: rgba(144, 146, 152, .3) transparent;
+        scrollbar-width: thin;
+        background-color: #fafafc;
+        // #18181c 暗色
+        background-size: 15px 15px, 15px 15px;
+        background-image: linear-gradient(#fafafc 14px,transparent 0),linear-gradient(90deg,transparent 14px,#86909c 0);
+        .editor-view {
+          border: 1px dashed #666;
+          min-height: 100vh;
+        }
       }
     }
 

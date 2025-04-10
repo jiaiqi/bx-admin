@@ -23,7 +23,19 @@
       @click.stop="$emit('click', props)"
     >
       <!-- 删除按钮 -->
-      <i class="el-icon-close" @click="$emit('delete', props)"></i>
+      <!-- <i class="el-icon-close" @click="$emit('delete', props)"></i> -->
+      <div
+        @click="$emit('delete', props)"
+        @mousemove.stop.capture=""
+        @mouseenter.stop.capture=""
+        class="delete-bar"
+        title="删除"
+      >
+        <i class="el-icon-delete"></i>
+        <!-- <span>
+          删除
+        </span> -->
+      </div>
     </div>
 
     <!-- 子组件 -->
@@ -359,9 +371,8 @@ export default {
           if (!["layout", "container"].includes(draggedElement.type)) {
             draggedElement.parentId = this.id;
             if (!draggedElement._editType) {
-              draggedElement.id = `${
-                this.id
-              }_component_${new Date().getTime()}`;
+              draggedElement.id = `${this.id
+                }_component_${new Date().getTime()}`;
               draggedElement._editType = "add";
               draggedElement.parent_no = this.com_no;
               this.$emit("add", draggedElement);
@@ -390,9 +401,11 @@ export default {
 
 <style lang="scss" scoped>
 @use "../../styles/layout.common.scss" as layout;
+
 .overlay {
   @include layout.overlay;
 }
+
 .lc-block {
   width: 100%;
   width: var(--content-width);
@@ -401,7 +414,8 @@ export default {
   padding: 10px;
   --primary-color: #2c48ff;
   $primary-color: #2c48ff;
-  border: 1px dashed rgba(44, 72, 255, 0.3); /* 添加浅色虚线边框 */
+  border: 1px dashed rgba(44, 72, 255, 0.3);
+  /* 添加浅色虚线边框 */
 
   // 高度调整手柄样式
   .resize-handle-s {
@@ -504,6 +518,7 @@ export default {
   &.drag-over {
     border: 2px dashed $primary-color;
     background-color: rgba(44, 72, 255, 0.05);
+
     &::before {
       content: "可放置组件";
       position: absolute;
@@ -520,6 +535,7 @@ export default {
   &.drag-not-allowed {
     border: 2px dashed #ff0000;
     background-color: rgba(255, 0, 0, 0.05);
+
     &::before {
       content: "不可放置此组件";
       position: absolute;
@@ -533,8 +549,8 @@ export default {
     }
   }
 
-  > .overlay {
-    > .handle {
+  >.overlay {
+    >.handle {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -542,14 +558,17 @@ export default {
       right: 0;
       display: none;
     }
+
     &:hover {
       .handle {
         display: block;
         cursor: move;
       }
     }
+
     &:hover {
       border: 1px dashed $primary-color;
+
       &::before {
         content: "布局容器";
         position: absolute;
@@ -561,13 +580,16 @@ export default {
         transform: translateY(-100%);
       }
     }
+
     &.active {
       border: 1px solid $primary-color;
-      & > .handle {
+
+      &>.handle {
         display: block;
       }
     }
   }
+
   &.layout-1-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -598,6 +620,7 @@ export default {
     grid-gap: 10px;
   }
 }
+
 // .layout-1-1 {
 //   // 一行一列
 //   display: flex;
@@ -611,5 +634,4 @@ export default {
 //   // 一行三列
 //   display: grid;
 //   grid-template-columns: 1fr 1fr 1fr;
-// }
-</style>
+// }</style>

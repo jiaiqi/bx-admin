@@ -590,6 +590,10 @@ export default {
       background-color: #ccc;
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
+      transition: scale 0.3s ease-in-out;
+      &:hover{
+        scale:1.1;
+      }
     }
 
     .label {

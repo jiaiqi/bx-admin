@@ -19,7 +19,14 @@
         <i class="el-icon-rank"></i>
       </div>
       <!-- 删除按钮 -->
-      <i class="el-icon-close" @click="$emit('delete', props)"></i>
+      <!-- <i class="el-icon-close" @click="$emit('delete', props)"></i> -->
+      <div
+        @click="$emit('delete', props)"
+        class="delete-bar"
+        title="删除"
+      >
+        <i class="el-icon-delete"></i>
+      </div>
     </div>
 
     <!-- 子组件 -->
@@ -51,9 +58,9 @@ export default {
       type: Boolean,
       default: false,
     },
-    isView:{
-      type:Boolean,
-      default:false,
+    isView: {
+      type: Boolean,
+      default: false,
     }
   },
   computed: {
@@ -153,7 +160,7 @@ export default {
             }
             draggedElement.parentId = this.id;
             draggedElement.parent_no = this.com_no;
-            draggedElement.com_seq = (this.props.children.length + 1 )* 100;
+            draggedElement.com_seq = (this.props.children.length + 1) * 100;
             // 根据布局类型创建对应数量的内容组件
             let columnCount = 1; // 默认一列
             if (draggedElement.subType === "layout-1-2") {
@@ -217,9 +224,11 @@ export default {
 
 <style lang="scss" scoped>
 @use "../../styles/layout.common.scss" as layout;
+
 .overlay {
   @include layout.overlay;
 }
+
 .lc-container {
   width: 100%;
   min-height: 100px;
@@ -230,17 +239,19 @@ export default {
   position: relative;
   --primary-color: #ff740e;
   $primary-color: #ff740e;
-  border: 1px dashed rgba($color: $primary-color, $alpha: 0.3); /* 添加浅色虚线边框 */
+  border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
+  /* 添加浅色虚线边框 */
   // &.preview-mode {
   //   border-color: transparent;
   // }
-  margin: 20px 0;
-  padding: 20px 0;
+  margin: 10px 0;
+  padding: 10px;
 
-  > .overlay {
+  >.overlay {
     &.drag-over {
       border: 2px dashed $primary-color;
       background-color: rgba($color: $primary-color, $alpha: 0.3);
+
       &::before {
         content: "可放置布局容器";
         position: absolute;
@@ -259,6 +270,7 @@ export default {
     &.drag-not-allowed {
       border: 2px dashed #ff0000;
       background-color: rgba(255, 0, 0, 0.05);
+
       &::before {
         content: "不可放置此组件";
         position: absolute;
@@ -271,7 +283,8 @@ export default {
         z-index: 10;
       }
     }
-    > .handle {
+
+    >.handle {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -279,15 +292,18 @@ export default {
       right: 0;
       display: none;
     }
+
     &:hover {
       .handle {
         display: block;
         cursor: move;
       }
     }
+
     &:hover {
       // cursor: pointer;
       border: 1px dashed $primary-color;
+
       &::before {
         content: "页面容器";
         position: absolute;
@@ -299,6 +315,7 @@ export default {
         transform: translateY(-100%);
       }
     }
+
     &.active {
       border: 1px solid $primary-color;
     }

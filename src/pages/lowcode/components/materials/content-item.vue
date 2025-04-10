@@ -29,9 +29,9 @@
         @click="onDelete"
         v-if="children && children.length"
         class="delete-bar"
+        title="删除"
       >
         <i class="el-icon-delete"></i>
-        删除
       </div>
     </div>
 
@@ -446,7 +446,6 @@ export default {
   justify-content: center;
   align-items: center;
   $primary-color: #17d57e;
-  border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
 
   /* 添加浅色虚线边框 */
   :deep(.page-item) {
@@ -454,35 +453,9 @@ export default {
   }
 
   .overlay {
-    .delete-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 0;
-      background: rgba($color: #f00, $alpha: 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease-in-out;
-      color: #fff;
-      opacity: 0;
-      cursor: pointer;
-      font-size: 14px;
-      &:hover{
-        font-size: 16px;
-        font-weight: bold;
-      }
-    }
-
+    border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
     &:hover {
-      border: 2px dashed rgba($color: $primary-color, $alpha: 0.3);
-
-      /* 添加浅色虚线边框 */
-      .delete-bar {
-        height: 30px;
-        opacity: 1;
-      }
+      border: 2px dashed rgba($color: $primary-color, $alpha: 1);
     }
 
     &.drag-over {
