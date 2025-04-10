@@ -1007,8 +1007,6 @@ export default {
         //   // console.error(error);
 
         // }
-        console.log(updatedContent,'-updatedContent');
-        
         let json = updatedContent
         let isValid = false
         try {
@@ -1018,6 +1016,7 @@ export default {
           isValid = false
         }
         if (isValid) {
+          debugger
           this.field.model = JSON.stringify(json)
           this.$emit('field-value-changed', this.field.info.name, this.field)
         }

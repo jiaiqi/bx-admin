@@ -234,8 +234,8 @@ export default {
   // &.preview-mode {
   //   border-color: transparent;
   // }
-  margin: 20px;
-  padding: 20px;
+  margin: 20px 0;
+  padding: 20px 0;
 
   > .overlay {
     &.drag-over {

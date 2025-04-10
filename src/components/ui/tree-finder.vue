@@ -13,7 +13,7 @@
     v-else
     :placeholder="field.info.placeholder"
     :options="options"
-    :value="selected"
+    v-model="selected"
     :props="props"
     :change-on-select="unlimited"
     filterable
@@ -85,7 +85,6 @@ export default {
 
         }
       };
-
       return props;
     },
     unlimited: function () {
@@ -464,13 +463,23 @@ export default {
       }
     },
     onChange(val) {
-      console.log(val)
-      if (Array.isArray(val) && val.length) {
-        val = val[val.length - 1]
+      if (Array.isArray(val)) {
+        if (val.length) {
+          val = val[val.length - 1]
+        } else {
+          val = null
+        }
       }
-      this.field.setSrvVal(val)
+      const data = this.$refs?.elCascader?.getCheckedNodes?.()?.[0]?.data;
       if (val !== this.field.getSrvVal()) {
-        this.$emit("field-value-changed", this.field.info.name, this.field);
+        if (data) {
+          this.field.model = data
+        } else {
+          this.field.model = null
+        }
+        this.$nextTick(() => {
+          this.$emit("field-value-changed", this.field.info.name, this.field);
+        })
       }
     },
     onSelectChange(val) {
