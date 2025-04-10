@@ -239,7 +239,7 @@ export default {
   position: relative;
   --primary-color: #ff740e;
   $primary-color: #ff740e;
-  border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
+  // border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
   /* 添加浅色虚线边框 */
   // &.preview-mode {
   //   border-color: transparent;

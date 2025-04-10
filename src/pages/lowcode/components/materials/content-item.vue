@@ -453,7 +453,7 @@ export default {
   }
 
   .overlay {
-    border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
+    // border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
     &:hover {
       border: 2px dashed rgba($color: $primary-color, $alpha: 1);
     }
