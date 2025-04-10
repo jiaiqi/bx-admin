@@ -1007,7 +1007,10 @@ export default {
         //   // console.error(error);
 
         // }
+        console.log(updatedContent,'-updatedContent');
+        
         let json = updatedContent
+        let isValid = false
         try {
           JSON.parse(JSON.stringify(json))
           isValid = true

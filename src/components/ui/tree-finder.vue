@@ -13,6 +13,22 @@
     v-else
     :placeholder="field.info.placeholder"
     :options="options"
+    :value="selected"
+    :props="props"
+    :change-on-select="unlimited"
+    filterable
+    clearable
+    :visible-change="visibleChange"
+    :show-all-levels="field.info.editable"
+    :disabled="!field.info.editable"
+    @change="onChange"
+    ref="elCascader"
+  >
+  </el-cascader>
+  <!-- <el-cascader
+    v-else
+    :placeholder="field.info.placeholder"
+    :options="options"
     v-model="selected"
     :value="selected"
     :props="props"
@@ -27,7 +43,7 @@
     @input.native="inputChange"
     ref="elCascader"
   >
-  </el-cascader>
+  </el-cascader> -->
 </template>
 
 <script>
@@ -51,8 +67,23 @@ export default {
       let props = {
         value: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
-        checkStrictly: top?.env?.includes("health") ? false : true, //只有健康科普资源库后台需要只能选择最后一级节点
-        // checkStrictly:true
+        checkStrictly: top?.env?.includes("health") ? false : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
+        lazy: true,
+        lazyLoad: (node, resolve) => {
+          if (this.dispLoaderV2?.refedCol && node.data?.[this.dispLoaderV2.refedCol]) {
+            this.loadChildren(this.dispLoaderV2, node.data[this.dispLoaderV2.refedCol])
+              .then((list) => {
+                resolve(list)
+              })
+          } else if (!node.data?.[this.dispLoaderV2.refedCol]) {
+            this.loadOptions().then(res => {
+              if (Array.isArray(res)) {
+                resolve(res)
+              }
+            })
+          }
+
+        }
       };
 
       return props;
@@ -142,7 +173,45 @@ export default {
         this.treeLazySelect(loader, null, val);
       }
     }, 500),
+    async loadChildren(loader, parentNo, val, curVal) {
+      let conditions = this.buildConditions(loader);
+      if (Array.isArray(parentNo)) {
+        if (parentNo.length > 0) {
+          parentNo = parentNo[parentNo.length - 1];
+        } else {
+          parentNo = "";
+        }
+      }
+      if (parentNo) {
+        conditions.push({
+          colName: loader.parentCol,
+          ruleType: "eq",
+          value: parentNo
+        });
+      }
+      var params = {
+        serviceName: loader.service,
+        colNames: ["*"],
+        condition: conditions,
+        page: {
+          pageNo: 1,
+          pageSize: 500,
+        },
+      };
+      var url = this.getServiceUrl("select", loader.service);
 
+      const response = await this.$http.post(url, params);
+      if (response?.data?.state == "SUCCESS") {
+        return response.data.data.map(item => {
+          item.children = item.is_leaf === "是" ? null : [];
+          item.leaf = item.is_leaf === "是";
+          return item
+        })
+      } else {
+        console.error("loadChildren error", response.data);
+        return []
+      }
+    },
     /**
      * 树型数据懒加载
      * @param parentNo {string} 点击的节点的编号
@@ -243,10 +312,10 @@ export default {
         condition: conditions,
         relation_condition: relation_condition,
         rdt: "ttd", //2023年11月13日 修改，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据,
-        page: {
-          pageNo: 1,
-          pageSize: 2000,
-        },
+        // page: {
+        //   pageNo: 1,
+        //   pageSize: 2000,
+        // },
       };
       const response = await this.$http.post(url, params);
       this.noData = false;
@@ -256,6 +325,7 @@ export default {
         // }
         let options = response.data.data.map((item) => {
           item.children = item.is_leaf === "是" ? null : [];
+          item.leaf = item.is_leaf === "是";
           return item;
         });
         if (this.needRenameLabel()) {
@@ -279,6 +349,7 @@ export default {
           this.field.model = item;
           this.$emit("field-value-changed", this.field.info.name, this.field);
         }
+        return options
         // if (parentNo && this.options.length > 0) {
         //   this.options = this.setOptionChild(
         //     this.options,
@@ -354,7 +425,7 @@ export default {
       conditions = this.buildConditions(loader);
       if (loader.parentCol) {
         let curVal = this.field.getSrvVal();
-        await this.treeLazySelect(loader, null, null, curVal);
+        return await this.treeLazySelect(loader, null, null, curVal);
         // if (loader.parentCol) {
         //   let curVal = this.field.getSrvVal();
         //   return this.treeLazySelect(loader, null, null, curVal);
@@ -392,7 +463,16 @@ export default {
         option.children.forEach((child) => this.renameLable(child));
       }
     },
-
+    onChange(val) {
+      console.log(val)
+      if (Array.isArray(val) && val.length) {
+        val = val[val.length - 1]
+      }
+      this.field.setSrvVal(val)
+      if (val !== this.field.getSrvVal()) {
+        this.$emit("field-value-changed", this.field.info.name, this.field);
+      }
+    },
     onSelectChange(val) {
       let loader = this.dispLoaderV2;
 
@@ -588,7 +668,7 @@ export default {
     },
   },
 
-  destroyed: function () {},
+  destroyed: function () { },
 
   mounted: function () {
     this.loadOptions().then((_) => {
