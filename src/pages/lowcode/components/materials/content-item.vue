@@ -12,6 +12,9 @@
     @drop="handleDrop"
     @dragstart="handleDragStart($event, props)"
   >
+    <span class="comp-name">
+      {{ com_name || '' }}
+    </span>
     <!-- 遮罩层 -->
     <div
       class="overlay"
@@ -19,6 +22,7 @@
       :class="{ active: isActive }"
       v-if="!isPreview && !isView"
     >
+
       <!-- 删除按钮 -->
       <!-- <i
         class="el-icon-close"
@@ -130,6 +134,11 @@ export default {
     isActive() {
       let childId = this.children?.[0]?.id;
       return this.currentId && [childId, this.id].includes(this.currentId);
+    },
+    com_name() {
+      if (Array.isArray(this.children) && this.children.length) {
+        return this.children[0]?.com_name;
+      }
     },
     contentStyle() {
       if (!this.contentWidth) return {};
@@ -451,6 +460,15 @@ export default {
   /* 添加浅色虚线边框 */
   :deep(.page-item) {
     overflow: unset;
+  }
+
+  .comp-name {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    font-size: 18px;
   }
 
   .overlay {
