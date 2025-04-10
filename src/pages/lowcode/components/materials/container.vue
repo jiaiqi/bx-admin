@@ -227,7 +227,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   position: relative;
   --primary-color: #ff740e;
   $primary-color: #ff740e;
@@ -235,6 +234,8 @@ export default {
   // &.preview-mode {
   //   border-color: transparent;
   // }
+  margin: 20px;
+  padding: 20px;
 
   > .overlay {
     &.drag-over {

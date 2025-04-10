@@ -20,11 +20,19 @@
       v-if="!isPreview && !isView"
     >
       <!-- 删除按钮 -->
-      <i
+      <!-- <i
         class="el-icon-close"
         @click="onDelete"
         v-if="children && children.length"
-      ></i>
+      ></i> -->
+      <div
+        @click="onDelete"
+        v-if="children && children.length"
+        class="delete-bar"
+      >
+        <i class="el-icon-delete"></i>
+        删除
+      </div>
     </div>
 
     <slot> </slot>
@@ -423,10 +431,12 @@ export default {
 
 <style lang="scss" scoped>
 @use "../../styles/layout.common.scss" as layout;
+
 .overlay {
   @include layout.overlay;
   z-index: 99;
 }
+
 .lc-content {
   width: 100%;
   height: 100%;
@@ -436,14 +446,49 @@ export default {
   justify-content: center;
   align-items: center;
   $primary-color: #17d57e;
-  border: 1px dashed rgba($color: $primary-color, $alpha: 0.3); /* 添加浅色虚线边框 */
+  border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
+
+  /* 添加浅色虚线边框 */
   :deep(.page-item) {
     overflow: unset;
   }
+
   .overlay {
+    .delete-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0;
+      background: rgba($color: #f00, $alpha: 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease-in-out;
+      color: #fff;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 14px;
+      &:hover{
+        font-size: 16px;
+        font-weight: bold;
+      }
+    }
+
+    &:hover {
+      border: 2px dashed rgba($color: $primary-color, $alpha: 0.3);
+
+      /* 添加浅色虚线边框 */
+      .delete-bar {
+        height: 30px;
+        opacity: 1;
+      }
+    }
+
     &.drag-over {
       // cursor: pointer;
       border: 1px dashed $primary-color;
+
       &::before {
         content: "组件容器";
         position: absolute;
@@ -455,12 +500,15 @@ export default {
         transform: translateY(-100%);
       }
     }
+
     &.active {
       border: 2px solid $primary-color !important;
     }
+
     &.drag-over {
       border: 2px dashed $primary-color;
       background-color: rgba($color: $primary-color, $alpha: 0.3);
+
       &::before {
         content: "可放置组件";
         position: absolute;
@@ -477,6 +525,7 @@ export default {
     &.drag-not-allowed {
       border: 2px dashed #ff0000;
       background-color: rgba(255, 0, 0, 0.05);
+
       &::before {
         content: "不可放置此组件";
         position: absolute;
@@ -490,6 +539,7 @@ export default {
       }
     }
   }
+
   // 调整宽度的手柄样式
   .resize-handles {
     position: absolute;
