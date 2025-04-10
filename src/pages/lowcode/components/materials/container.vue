@@ -303,6 +303,7 @@ export default {
     &:hover {
       // cursor: pointer;
       border: 1px dashed $primary-color;
+      background-color: rgba($color: $primary-color, $alpha: 0.1);
 
       &::before {
         content: "页面容器";

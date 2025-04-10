@@ -1,7 +1,7 @@
 <template>
   <div
     class="lc-content lc-layout"
-    :class="{ 'preview-mode': isPreview }"
+    :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
     :style="contentStyle"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
@@ -446,6 +446,7 @@ export default {
   justify-content: center;
   align-items: center;
   $primary-color: #17d57e;
+  background-color: #F0F0F0;
 
   /* 添加浅色虚线边框 */
   :deep(.page-item) {
@@ -453,9 +454,11 @@ export default {
   }
 
   .overlay {
+
     // border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
     &:hover {
       border: 2px dashed rgba($color: $primary-color, $alpha: 1);
+      background-color: rgba($color: $primary-color, $alpha: 0.1);
     }
 
     &.drag-over {

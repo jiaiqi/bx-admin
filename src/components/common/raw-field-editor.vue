@@ -506,6 +506,7 @@
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
                 ref="autocompleteInput"
+                :disabled="getDisabled"
                 @change="autocompleteSelected"
                 :field="field"
               ></autocompleteInput>

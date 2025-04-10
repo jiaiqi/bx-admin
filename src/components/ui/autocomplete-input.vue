@@ -1,7 +1,17 @@
 <template>
-  <el-autocomplete class="inline-input" v-model="field.model" clearable :trigger-on-focus="true"
-    :fetch-suggestions="querySearch" placeholder="请输入内容" value-key="label" suffix-icon="el-icon-edit"
-    @select="handleSelect" @clear="handleClear">
+  <el-autocomplete
+    class="inline-input"
+    v-model="field.model"
+    clearable
+    :disabled="disabled"
+    :trigger-on-focus="true"
+    :fetch-suggestions="querySearch"
+    placeholder="请输入内容"
+    value-key="label"
+    suffix-icon="el-icon-edit"
+    @select="handleSelect"
+    @clear="handleClear"
+  >
   </el-autocomplete>
 </template>
 
@@ -9,6 +19,7 @@
 export default {
   props: {
     field: Object,
+    disabled: Boolean,
   },
   mounted() { },
   computed: {

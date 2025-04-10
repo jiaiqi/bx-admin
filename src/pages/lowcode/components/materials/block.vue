@@ -568,6 +568,7 @@ export default {
 
     &:hover {
       border: 1px dashed $primary-color;
+      background-color: rgba($color: $primary-color, $alpha: 0.1);
 
       &::before {
         content: "布局容器";
