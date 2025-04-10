@@ -295,7 +295,7 @@ export default {
           }
 
           if (item.showAllTag && col.value.length == 0) {
-            col.value.unshift("_unlimited_");
+            col.value?.unshift?.("_unlimited_");
           }
 
           model[item.list_tab_no] = col;

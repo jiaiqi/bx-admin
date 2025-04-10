@@ -1,10 +1,12 @@
 /* */
 <template>
-  <div class="raw_field_editor" @blur="onBlur" :style="customInputVar">
+  <div
+    class="raw_field_editor"
+    @blur="onBlur"
+    :style="customInputVar"
+  >
     <el-row>
-      <el-col
-        :span="field.hasHistoryData() || field.getUniqueCheck() ? 22 : 24"
-      >
+      <el-col :span="field.hasHistoryData() || field.getUniqueCheck() ? 22 : 24">
         <!--主体内容-->
 
         <template>
@@ -34,7 +36,7 @@
               :readonly="getDisabled"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
               @onBlur="onBlur"
             >
             </car-no-keyboard>
@@ -99,7 +101,7 @@
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </userlist>
 
@@ -109,7 +111,7 @@
               v-else-if="field.info.editor == 'snote'"
               @field-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </ueditorPlus>
             <wang-editor
@@ -131,7 +133,7 @@
               :field="field"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
               ref="editor"
             ></TinymceEditor>
             <!-- <ueditor
@@ -151,15 +153,14 @@
               v-model="field.model"
               :type="field.info.subtype"
               clearable
-              :format="
-                field.info.subtype == 'year'
-                  ? 'yyyy'
-                  : field.info.subtype == 'month'
+              :format="field.info.subtype == 'year'
+                ? 'yyyy'
+                : field.info.subtype == 'month'
                   ? 'MM'
                   : field.info.subtype == 'date'
-                  ? 'yyyy 年 MM 月 dd 日'
-                  : 'yyyy 年 MM 月 dd 日'
-              "
+                    ? 'yyyy 年 MM 月 dd 日'
+                    : 'yyyy 年 MM 月 dd 日'
+                "
               :disabled="getDisabled"
               :placeholder="field.info.placeholder"
               :picker-options="pickerOptions"
@@ -178,9 +179,8 @@
               :format="field.info.format ? field.info.format : null"
               :value-format="field.info.format ? field.info.format : null"
               :disabled="getDisabled"
-              :placeholder="
-                field.model !== '******' ? field.info.placeholder : field.model
-              "
+              :placeholder="field.model !== '******' ? field.info.placeholder : field.model
+                "
               @change="$emit('field-value-changed', field.info.name, field)"
               @blur="onBlur"
             >
@@ -305,7 +305,7 @@
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </input-range>
 
@@ -317,7 +317,7 @@
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </upload-file>
 
@@ -328,7 +328,7 @@
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </upload-image>
             <!-- 穿梭框 -->
@@ -342,14 +342,13 @@
               :childForeignKey="childForeignkey"
               :mainFormDatas="mainformDatas"
               :form-model="formModel"
-              :$srv-app="
-                field.info.srvCol.option_list_v2 &&
+              :$srv-app="field.info.srvCol.option_list_v2 &&
                 field.info.srvCol.option_list_v2.srv_app
-              "
+                "
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
               @blur="onBlur"
             >
             </transfer-vue>
@@ -363,14 +362,13 @@
               :childForeignkey="childForeignkey"
               :mainformDatas="mainformDatas"
               :form-model="formModel"
-              :$srv-app="
-                field.info.srvCol.option_list_v2 &&
+              :$srv-app="field.info.srvCol.option_list_v2 &&
                 field.info.srvCol.option_list_v2.srv_app
-              "
+                "
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
               @blur="onBlur"
             >
             </finder>
@@ -378,14 +376,13 @@
             <multiFinder
               v-else-if="field.info.editor === 'multifinder'"
               :field="field"
-              :$srv-app="
-                field.info.srvCol.option_list_v2 &&
+              :$srv-app="field.info.srvCol.option_list_v2 &&
                 field.info.srvCol.option_list_v2.srv_app
-              "
+                "
               ref="editor"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
               @blur="onBlur"
             >
             </multiFinder>
@@ -397,7 +394,7 @@
               :$srv-app="field.info.srvCol.option_list_v2.srv_app"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </tree-finder>
 
@@ -415,28 +412,37 @@
               :lang="field.info.lang"
             >
             </code-editor>
-            <json-editor
+            <vue-json-editor
+              v-else-if="field.info.editor === 'json-editor'"
+              :value="getJsonModel"
+              :lang="'zh'"
+              :mode="getDisabled ? 'view' : 'code'"
+              :modes="getDisabled ? ['view'] : ['code', 'tree', 'form', 'view']"
+              :show-btns="false"
+              :expandedOnStart="true"
+              style="margin-bottom: 10px;"
+              @json-change="jsonChange"
+            ></vue-json-editor>
+            <!-- <json-editor
               v-else-if="field.info.editor === 'json-editor'"
               ref="editor"
-              v-model="field.model"
               :stringified="true"
               :statusBar="false"
               :navigationBar="false"
               :mainMenuBar="false"
               :readOnly="getDisabled"
-              mode="text"
-              :onChange="(updatedContent)=>{
-                $emit('field-value-changed', field.info.name, field)
-              }"
+              :value="field.model || ''"
+              :mode="jsonEditorMode"
+              :onChange="jsonChange"
               @blur="onBlur"
-            ></json-editor>
+            ></json-editor> -->
             <radio
               v-else-if="field.info.editor === 'radio'"
               ref="editor"
               :field="field"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </radio>
 
@@ -446,7 +452,7 @@
               :field="field"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
-              "
+                "
             >
             </checkbox>
             <el-input
@@ -465,15 +471,13 @@
               <template
                 slot="append"
                 v-if="field.info.moreConfig && field.info.moreConfig.appendText"
-                >{{ field.info.moreConfig.appendText }}</template
-              >
+              >{{ field.info.moreConfig.appendText }}</template>
               <template
                 slot="prepend"
                 v-if="
                   field.info.moreConfig && field.info.moreConfig.prependText
                 "
-                >{{ field.info.moreConfig.prependText }}</template
-              >
+              >{{ field.info.moreConfig.prependText }}</template>
             </el-input>
 
             <div v-else-if="field.info.editor == 'extend'">
@@ -490,16 +494,15 @@
                 ref="verifyMobile"
                 @change="$emit('field-value-changed', field.info.name, field)"
                 :field="field"
-              ></verifyMobile>
+              >
+              </verifyMobile>
             </div>
-            <div
-              v-else-if="
-                field.info.editor == null &&
-                field.info.type == 'String' &&
-                field.autocompleteInput &&
-                field.isAutocomplete()
-              "
-            >
+            <div v-else-if="
+              field.info.editor == null &&
+              field.info.type == 'String' &&
+              field.autocompleteInput &&
+              field.isAutocomplete()
+            ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
                 ref="autocompleteInput"
@@ -507,14 +510,12 @@
                 :field="field"
               ></autocompleteInput>
             </div>
-            <div
-              v-else-if="
-                field.info.editor == null &&
-                field.info.type == 'String' &&
-                field.info.subType == 'autocomplete' &&
-                (field.autocompleteInput || field.stringAutocompleteInput)
-              "
-            >
+            <div v-else-if="
+              field.info.editor == null &&
+              field.info.type == 'String' &&
+              field.info.subType == 'autocomplete' &&
+              (field.autocompleteInput || field.stringAutocompleteInput)
+            ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
                 ref="autocompleteInput"
@@ -546,7 +547,7 @@
                 v-if="
                   field.info.moreConfig && field.info.moreConfig.prependText
                 "
-                >{{ field.info.moreConfig.prependText }}
+              >{{ field.info.moreConfig.prependText }}
               </template>
             </el-input>
           </div>
@@ -610,15 +611,13 @@
               <template
                 slot="append"
                 v-if="field.info.moreConfig && field.info.moreConfig.appendText"
-                >{{ field.info.moreConfig.appendText }}</template
-              >
+              >{{ field.info.moreConfig.appendText }}</template>
               <template
                 slot="prepend"
                 v-if="
                   field.info.moreConfig && field.info.moreConfig.prependText
                 "
-                >{{ field.info.moreConfig.prependText }}</template
-              >
+              >{{ field.info.moreConfig.prependText }}</template>
             </el-input>
           </template>
         </template>
@@ -632,9 +631,8 @@
         :span="2"
       >
         <el-tooltip
-          :content="
-            field.getUniqueCheckMsg().msg ? field.getUniqueCheckMsg().msg : ''
-          "
+          :content="field.getUniqueCheckMsg().msg ? field.getUniqueCheckMsg().msg : ''
+            "
           placement="top"
         >
           <!-- UniqueCheckNone 未校验  UniqueCheckError 错误 UniqueCheckOk 通过 loading 校验中 -->
@@ -661,7 +659,10 @@
         </el-tooltip>
       </el-col>
       <!-- //v-show="field.hasHistoryData()" -->
-      <el-col v-show="field.hasHistoryData()" :span="2">
+      <el-col
+        v-show="field.hasHistoryData()"
+        :span="2"
+      >
         <!--显示历史数据按钮-->
         <div>
           <el-button
@@ -671,7 +672,10 @@
         </div>
       </el-col>
     </el-row>
-    <el-row slot="error" scope="error">
+    <el-row
+      slot="error"
+      scope="error"
+    >
       <el-col style="display: flex">
         <!-- 显示字段校验错误信息 -->
         <div
@@ -685,19 +689,24 @@
             width="200"
             v-show="field.hasValidateError() || field.hasValidatePrompt()"
             trigger="hover"
-            :content="
-              field.getAnyValidateError()
-                ? field.getAnyValidatePrompt()
-                  ? field.getAnyValidateError() + field.getAnyValidatePrompt()
-                  : field.getAnyValidateError()
-                : field.getAnyValidatePrompt()
+            :content="field.getAnyValidateError()
+              ? field.getAnyValidatePrompt()
+                ? field.getAnyValidateError() + field.getAnyValidatePrompt()
+                : field.getAnyValidateError()
+              : field.getAnyValidatePrompt()
                 ? field.getAnyValidatePrompt()
                 : ''
-            "
+              "
           >
-            <i slot="reference" class="el-icon-warning"></i>
+            <i
+              slot="reference"
+              class="el-icon-warning"
+            ></i>
           </el-popover>
-          <span class="no-nowrap" v-show="field.hasValidateError()">
+          <span
+            class="no-nowrap"
+            v-show="field.hasValidateError()"
+          >
             <!-- v-show="field.hasValidateError()" -->
             {{ field.getAnyValidateError() }}
             {{
@@ -721,11 +730,10 @@
             field.info.moreConfig !== null &&
             getShowHelpTips(field.info)
           "
-          :title="
-            field.info.moreConfig && field.info.moreConfig.help_tips
-              ? field.info.moreConfig.help_tips
-              : ''
-          "
+          :title="field.info.moreConfig && field.info.moreConfig.help_tips
+            ? field.info.moreConfig.help_tips
+            : ''
+            "
           class="help-tips"
         >
           <!-- v-if="(!getDisabled && field.info.moreConfig !== null) && getShowHelpTips(field.info)" -->
@@ -733,11 +741,10 @@
             placement="bottom"
             width="200"
             trigger="hover"
-            :content="
-              field.info.moreConfig && field.info.moreConfig.help_tips
-                ? field.info.moreConfig.help_tips
-                : ''
-            "
+            :content="field.info.moreConfig && field.info.moreConfig.help_tips
+              ? field.info.moreConfig.help_tips
+              : ''
+              "
           >
             <i
               slot="reference"
@@ -753,12 +760,48 @@
               field.info.moreConfig && field.info.moreConfig.help_tips
                 ? field.info.moreConfig.help_tips
                 : ""
-            }}</span
-          >
+            }}</span>
           <!-- --- -->
         </div>
       </el-col>
     </el-row>
+    <!-- <el-switch
+      v-if="field.info.editor === 'json-editor'"
+      style="display: block"
+      v-model="jsonEditorMode"
+      active-color="#13ce66"
+      inactive-color="#3883FA"
+      active-text="tree"
+      inactive-text="text"
+    >
+    </el-switch> -->
+    <!-- <div
+      v-if="field.info.editor === 'json-editor'"
+      class="flex flex-end"
+    >
+      <el-radio-group
+        v-model="jsonEditorMode"
+        size="mini"
+        v-if="isArrayJson"
+      >
+        <el-radio-button label="text">text</el-radio-button>
+        <el-radio-button label="tree">tree</el-radio-button>
+        <el-radio-button label="table">table</el-radio-button>
+      </el-radio-group>
+      <el-switch
+        v-else
+        style="display: block"
+        active-color="#13ce66"
+        inactive-color="#3883FA"
+        active-text="树模式"
+        inactive-text="代码模式"
+        active-value="tree"
+        inactive-value="text"
+        v-model="jsonEditorMode"
+      >
+      </el-switch>
+    </div> -->
+
   </div>
 </template>
 
@@ -775,7 +818,8 @@ import BxInputNumber from "../ui/bx-input-number.vue";
 import Userlist from "../ui/userlist.vue";
 import QrCode from "../ui/qrcode.vue";
 import CodeEditor from "../ui/code-editor.vue";
-import JsonEditor from 'json-editor-vue'
+// import JsonEditor from 'json-editor-vue'
+import vueJsonEditor from 'vue-json-editor-fix-cn'
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
@@ -795,7 +839,8 @@ export default {
     Checkbox,
     Radio,
     CodeEditor,
-    JsonEditor,
+    // JsonEditor,
+    vueJsonEditor,
     Userlist,
     BxInputNumber,
     TreeFinder,
@@ -841,6 +886,8 @@ export default {
   data() {
     return {
       key: null,
+      isTreeJsonEditor: false,
+      jsonEditorMode: 'text',
       finderSelected: "",
       pickerOptions: {
         disabledDate: (time) => {
@@ -852,6 +899,18 @@ export default {
     };
   },
   computed: {
+    getJsonModel() {
+      let val = this.field.model;
+      try {
+        let json = JSON.parse(val);
+        return json;
+      } catch (error) {
+        return null
+      }
+    },
+    isArrayJson() {
+      return this.field.info.editor === "json-editor" && this.field.model && Array.isArray(JSON.parse(this.field.model));
+    },
     uploadLimit() {
       const config = this.field.info?.moreConfig;
       return config?.fileLimit || config?.limit || 100;
@@ -881,7 +940,7 @@ export default {
       if (cfgJson) {
         try {
           cfgJson = JSON.parse(cfgJson);
-        } catch (error) {}
+        } catch (error) { }
       }
       return cfgJson;
     },
@@ -924,9 +983,43 @@ export default {
     this.field.editor = this;
   },
 
-  mounted: function () {},
+  mounted: function () { },
 
   methods: {
+    jsonChange(updatedContent) {
+      if (updatedContent) {
+        // let isValid = true
+        // console.log(updatedContent,'updatedContent');
+        // let json = updatedContent?.json
+        // console.log(json,updatedContent.text,'updatedContent-json');
+        // return console.log(updatedContent);
+
+        // let text = updatedContent?.text || ""
+        // console.log(text, 'text');
+
+        // try {
+        //   let jsonObj = JSON.parse(text)
+        //   if (jsonObj) {
+        //     this.field.model = text
+        //     this.$emit('field-value-changed', this.field.info.name, this.field)
+        //   }
+        // } catch (error) {
+        //   // console.error(error);
+
+        // }
+        let json = updatedContent
+        try {
+          JSON.parse(JSON.stringify(json))
+          isValid = true
+        } catch (error) {
+          isValid = false
+        }
+        if (isValid) {
+          this.field.model = JSON.stringify(json)
+          this.$emit('field-value-changed', this.field.info.name, this.field)
+        }
+      }
+    },
     getShowHelpTips(e) {
       if (e.moreConfig && e.moreConfig.hasOwnProperty("help_tips")) {
         return true;
@@ -1206,14 +1299,14 @@ export default {
           ) {
             min =
               fi._DateMaxMin.min === "" ||
-              fi._DateMaxMin.min === null ||
-              fi._DateMaxMin.min === undefined
+                fi._DateMaxMin.min === null ||
+                fi._DateMaxMin.min === undefined
                 ? "1980-01-01"
                 : new Date(fi._DateMaxMin.min).getTime();
             max =
               fi._DateMaxMin.max === "" ||
-              fi._DateMaxMin.max === null ||
-              fi._DateMaxMin.max === undefined
+                fi._DateMaxMin.max === null ||
+                fi._DateMaxMin.max === undefined
                 ? "2050-12-30"
                 : new Date(fi._DateMaxMin.max).getTime();
             return !(time.getTime() < max && time.getTime() > min);
@@ -1225,14 +1318,14 @@ export default {
             if (fi.moreConfig.hasOwnProperty("maxMin")) {
               min =
                 fi.moreConfig.maxMin.minDate === "" ||
-                fi.moreConfig.maxMin.minDate === null ||
-                fi.moreConfig.maxMin.minDate === undefined
+                  fi.moreConfig.maxMin.minDate === null ||
+                  fi.moreConfig.maxMin.minDate === undefined
                   ? "1970"
                   : fi.moreConfig.maxMin.minDate;
               max =
                 fi.moreConfig.maxMin.maxDate === "" ||
-                fi.moreConfig.maxMin.maxDate === null ||
-                fi.moreConfig.maxMin.maxDate === undefined
+                  fi.moreConfig.maxMin.maxDate === null ||
+                  fi.moreConfig.maxMin.maxDate === undefined
                   ? "2099"
                   : fi.moreConfig.maxMin.maxDate;
               if (min.indexOf("{") !== -1 && min.indexOf("}") !== -1) {
@@ -1276,18 +1369,38 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-:deep(.jse-main){
+:deep(.jse-main) {
   max-height: 300px;
 }
+
+:deep(.jsoneditor-vue) {
+  height: 200px;
+  .jsoneditor{
+    // border-color: #EBEBEB;
+    // .jsoneditor-menu{
+    //   background-color: #EBEBEB;
+    //   border-bottom-color:#EBEBEB ;
+    //   color: #3883fa;
+      .jsoneditor-poweredBy{
+        display: none;
+      }
+    // }
+  }
+}
+
 .help-tips {
   color: #c0c4cc;
   /* position:absolute; */
   top: 18px;
   line-height: 1rem;
-  white-space: nowrap; /*保证文本内容不会自动换行，如果多余的内容会在水平方向撑破单元格*/
-  overflow: hidden; /*隐藏超出单元格的部分*/
-  text-overflow: ellipsis; /*将被隐藏的那部分用省略号代替*/
+  white-space: nowrap;
+  /*保证文本内容不会自动换行，如果多余的内容会在水平方向撑破单元格*/
+  overflow: hidden;
+  /*隐藏超出单元格的部分*/
+  text-overflow: ellipsis;
+  /*将被隐藏的那部分用省略号代替*/
 }
+
 .el-input__suffix {
   line-height: initial;
 }
@@ -1312,6 +1425,7 @@ export default {
 
 .raw_field_editor {
   position: relative;
+
   ::v-deep input {
     /* 配置的字段样式 */
     color: var(--custom-input-color) !important;
@@ -1329,6 +1443,7 @@ export default {
     font-weight: var(--custom-input-font_weight) !important;
     /* line-height:var(--custom-input-line_height,40px)!important; */
   }
+
   ::v-deep .el-input--prefix .el-input__inner {
     padding-left: 30px !important;
   }
@@ -1339,6 +1454,7 @@ export default {
   padding-right: 8px;
   border-width: 0px;
 }
+
 .el-form-item__error {
   padding-top: 2px;
   /* display: flex; */
@@ -1347,14 +1463,20 @@ export default {
   position: relative !important;
   margin-bottom: 5px;
 }
+
 .no-nowrap {
-  white-space: nowrap; /*保证文本内容不会自动换行，如果多余的内容会在水平方向撑破单元格*/
-  overflow: hidden; /*隐藏超出单元格的部分*/
-  text-overflow: ellipsis; /*将被隐藏的那部分用省略号代替*/
+  white-space: nowrap;
+  /*保证文本内容不会自动换行，如果多余的内容会在水平方向撑破单元格*/
+  overflow: hidden;
+  /*隐藏超出单元格的部分*/
+  text-overflow: ellipsis;
+  /*将被隐藏的那部分用省略号代替*/
 }
+
 .el-form-item__prompt {
   width: 10rem;
-  overflow: hidden; /*隐藏超出单元格的部分*/
+  overflow: hidden;
+  /*隐藏超出单元格的部分*/
   color: orange;
   font-size: 12px;
 }
