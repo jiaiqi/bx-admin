@@ -413,7 +413,7 @@ let routes = [
           isView: true,
         },
         component: () =>
-          import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
+          import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
       },
     ],
   },
@@ -421,7 +421,7 @@ let routes = [
     path: "/site/:pageNo",
     name: "website",
     component: () =>
-      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
+      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
     meta: {
       isEditor: false,
       isView: true,
