@@ -1,14 +1,31 @@
 <template>
   <div
     class="editor-view"
+    @click.stop=""
     @dragover="handleEditorDragOver"
     @dragleave="handleEditorDragLeave"
     @drop="handleEditorDrop"
     @dragend="handleEditorDragEnd"
     :style="{ '--content-width': contentWidth }"
   >
-    <div class="overlay" @click="clickOutside"></div>
-    <VueDraggable
+    <div
+      class="overlay"
+      @click="clickOutside"
+    ></div>
+    <lc-view
+      v-for="item in editorComponents"
+      :current-id="currentId"
+      :key="item.id"
+      :content-width="contentWidth"
+      v-bind="item"
+      @click="onTap"
+      @open="openComponentSelector = true"
+      @add="addComponent"
+      @delete="deleteComponent"
+      @resize="onResize"
+    >
+    </lc-view>
+    <!-- <VueDraggable
       v-model="editorComponents"
       @start="onStart"
       @update="onUpdate"
@@ -30,7 +47,7 @@
         @resize="onResize"
       >
       </lc-view>
-    </VueDraggable>
+    </VueDraggable> -->
   </div>
 </template>
 
@@ -51,6 +68,10 @@ export default {
     VueDraggable,
   },
   props: {
+    currentId: {
+      type: [String, Number],
+      default: "",
+    },
     contentWidth: {
       type: String,
       default: "1200px",
@@ -80,7 +101,7 @@ export default {
     return {
       // 组件数据
       editorComponents: [],
-      currentId: null,
+      // currentId: null,
       openComponentSelector: false,
     };
   },
@@ -101,12 +122,12 @@ export default {
     },
     clickOutside() {
       console.log("clickOutside");
-      this.currentId = null;
+      // this.currentId = null;
       this.$emit("select", null, null);
     },
     onTap(val) {
       console.log("onTap", val);
-      this.currentId = val.id;
+      // this.currentId = val.id;
       this.$emit("select", val.id, val);
     },
     findComponentById(id, list = [], data) {
@@ -230,13 +251,14 @@ export default {
 
 <style scoped lang="scss">
 .editor-view {
-  height: 100%;
   width: 100%;
+  min-width: var(--content-width);
   position: relative;
 
   &.editor-drag-over {
     border: 2px dashed #ff740e;
     background-color: rgba(255, 116, 14, 0.05);
+
     &::before {
       content: "可放置页面容器";
       position: absolute;
@@ -253,6 +275,7 @@ export default {
   &.editor-drag-not-allowed {
     border: 2px dashed #ff0000;
     background-color: rgba(255, 0, 0, 0.05);
+
     &::before {
       content: "不可放置此组件";
       position: absolute;

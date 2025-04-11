@@ -6,6 +6,15 @@
       @click.native="currentChange"
       v-if="!isView"
     >
+      <template #left>
+        <div
+          @click="outlineVisible = true"
+          class="handle-btn"
+          title="组件大纲"
+        >
+          <Icon icon="carbon-container-services" />
+        </div>
+      </template>
       <template #right>
         <el-button
           type="primary"
@@ -37,10 +46,14 @@
       </div>
       <div
         class="editor-container"
+        @click="currentChange"
         :class="{ 'in-edit': !isPreview && !isView }"
       >
         <editor-view
+          :page-config="pageConfig"
+          :current-item="currentItem"
           :components="components"
+          :current-id="currentId"
           @select="currentChange"
           @change="componentsChange"
           @delete="onDel"
@@ -118,6 +131,21 @@
         :copyable="{ copyText: '复制', copiedText: '已复制' }"
       ></json-viewer>
     </el-drawer>
+    <el-drawer
+      title="组件大纲"
+      :visible.sync="outlineVisible"
+      direction="ltr"
+      size="300px"
+      :modal="false"
+    >
+      <el-tree
+        :highlight-current="true"
+        :default-expand-all="true"
+        :data="outlineTree"
+        :props="outlineTreeProps"
+        @node-click="clickComponent"
+      ></el-tree>
+    </el-drawer>
   </div>
 </template>
 
@@ -153,6 +181,16 @@ export default {
     isView() {
       return this.$route.meta?.isView === true;
     },
+    outlineTreeProps() {
+      return {
+        label: 'com_name',
+        children: 'children',
+      }
+    },
+    outlineTree() {
+      let list = cloneDeep(this.components);
+      return list
+    },
     contentAreaWidth() {
       let width = this.pageConfig?.content_area_width || 1200;
       return typeof width === "string" && width?.includes("%")
@@ -174,7 +212,8 @@ export default {
       currentId: null,
       currentItem: null,
       structureData: null,
-      jsonVisible: false,
+      jsonVisible: false,//json视图
+      outlineVisible: false,//大纲视图
       previewVisible: false,
       // 组件数据
       components: [],
@@ -374,6 +413,11 @@ export default {
       this.components = this.buildComponentsTree(component_json);
     },
     initPageParams() { },
+    clickComponent(data) {
+      console.log(data);
+      this.currentId = data.id;
+      this.currentItem = data;
+    },
     currentChange(id, item) {
       this.currentId = id;
       this.currentItem = item;
@@ -384,7 +428,7 @@ export default {
 
     onPageChange(val, type, compType, compId) {
       console.log(val, type);
-      if(!val?.fieldName?.includes('style')){
+      if (!val?.fieldName?.includes('style')) {
         return
       }
       if (type === 'page-update') {
@@ -687,6 +731,23 @@ export default {
   display: flex;
   flex-direction: column;
 
+  .handle-btn {
+    display: inline-flex;
+    margin: 0 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #e8e8e8;
+
+    &:hover {
+      background-color: #ECF5FF;
+      border-color: #BFDEFF;
+      color: #007AFF;
+    }
+
+    color: #666;
+  }
+
   .lowcode-content {
     flex: 1;
     display: flex;
@@ -756,7 +817,8 @@ export default {
         background-color: #fafafc;
         // #18181c 暗色
         background-size: 15px 15px, 15px 15px;
-        background-image: linear-gradient(#fafafc 14px,transparent 0),linear-gradient(90deg,transparent 14px,#86909c 0);
+        background-image: linear-gradient(#fafafc 14px, transparent 0), linear-gradient(90deg, transparent 14px, #86909c 0);
+
         .editor-view {
           border: 1px dashed #666;
           min-height: 100vh;

@@ -61,7 +61,7 @@ export default {
   justify-content: space-between;
 }
 
-.right {
+.left,.right {
   display: flex;
   align-items: center;
 }
