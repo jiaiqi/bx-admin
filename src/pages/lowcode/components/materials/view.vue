@@ -31,19 +31,21 @@
       ></lc-view>
     </template>
     <slot v-else>
-      <template v-if="type === 'content' && !isView && !isPreview">
-        <span
-          class=""
-          style="color: #999; pointer-events: none"
-        >
-          {{ name || "可放置组件区域" }}
-        </span>
-      </template>
-      <template v-else-if="type === 'component' && props.com_name">
-        {{ props.com_name }}
-      </template>
-      <template v-else>
-        {{ name }}
+      <template v-if="!isView && !isPreview">
+        <template v-if="type === 'content'">
+          <span
+            class=""
+            style="color: #999; pointer-events: none"
+          >
+            {{ name || "可放置组件区域" }}
+          </span>
+        </template>
+        <template v-else-if="type === 'component' && props.com_name">
+          {{ props.com_name }}
+        </template>
+        <template v-else>
+          {{ name }}
+        </template>
       </template>
     </slot>
   </component>

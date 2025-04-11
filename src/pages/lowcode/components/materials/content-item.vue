@@ -1,8 +1,10 @@
 <template>
   <div
     class="lc-content lc-layout"
-    :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
-    :style="contentStyle"
+    :class="{ 'preview-mode': isPreview, 'view-mode': isView, 'edit-mode': !isPreview && !isView }"
+    :style="[contentStyle, {
+      '--content-name': com_name || '组件容器',
+    }]"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
     draggable="false"
@@ -24,19 +26,19 @@
     >
 
       <!-- 删除按钮 -->
-      <!-- <i
+      <i
         class="el-icon-close"
         @click="onDelete"
         v-if="children && children.length"
-      ></i> -->
-      <div
+      ></i>
+      <!-- <div
         @click="onDelete"
         v-if="children && children.length"
         class="delete-bar"
         title="删除"
       >
         <i class="el-icon-delete"></i>
-      </div>
+      </div> -->
     </div>
 
     <slot> </slot>
@@ -455,7 +457,10 @@ export default {
   justify-content: center;
   align-items: center;
   $primary-color: #17d57e;
-  background-color: #F0F0F0;
+
+  &.edit-mode {
+    background-color: rgba($color: #F0F0F0, $alpha: 0.3);
+  }
 
   /* 添加浅色虚线边框 */
   :deep(.page-item) {
@@ -479,21 +484,21 @@ export default {
       background-color: rgba($color: $primary-color, $alpha: 0.1);
     }
 
-    &.drag-over {
-      // cursor: pointer;
-      border: 1px dashed $primary-color;
+    // &.drag-over {
+    //   // cursor: pointer;
+    //   border: 1px dashed $primary-color;
 
-      &::before {
-        content: "组件容器";
-        position: absolute;
-        top: 0;
-        left: 0;
-        padding: 2px 5px;
-        background-color: $primary-color;
-        color: #fff;
-        transform: translateY(-100%);
-      }
-    }
+    //   &::before {
+    //     content: "组件容器";
+    //     position: absolute;
+    //     top: 0;
+    //     left: 0;
+    //     padding: 2px 5px;
+    //     background-color: $primary-color;
+    //     color: #fff;
+    //     transform: translateY(-100%);
+    //   }
+    // }
 
     &.active {
       border: 2px solid $primary-color !important;

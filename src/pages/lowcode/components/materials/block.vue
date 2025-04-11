@@ -23,8 +23,8 @@
       @click.stop="$emit('click', props)"
     >
       <!-- 删除按钮 -->
-      <!-- <i class="el-icon-close" @click="$emit('delete', props)"></i> -->
-      <div
+      <i class="el-icon-close" @click="$emit('delete', props)"></i>
+      <!-- <div
         @click="$emit('delete', props)"
         @mousemove.stop.capture=""
         @mouseenter.stop.capture=""
@@ -32,10 +32,7 @@
         title="删除"
       >
         <i class="el-icon-delete"></i>
-        <!-- <span>
-          删除
-        </span> -->
-      </div>
+      </div> -->
     </div>
 
     <!-- 子组件 -->
@@ -576,7 +573,7 @@ export default {
         top: 0;
         left: 0;
         padding: 2px 5px;
-        background-color: #2c48ff;
+        background-color: $primary-color;
         color: #fff;
         transform: translateY(-100%);
       }
@@ -584,6 +581,17 @@ export default {
 
     &.active {
       border: 1px solid $primary-color;
+      background-color: rgba($color: $primary-color, $alpha: 0.1);
+      &::before {
+        content: "布局容器";
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 2px 5px;
+        background-color: $primary-color;
+        color: #fff;
+        transform: translateY(-100%);
+      }
 
       &>.handle {
         display: block;

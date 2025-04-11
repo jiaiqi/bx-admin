@@ -384,6 +384,9 @@ export default {
 
     onPageChange(val, type, compType, compId) {
       console.log(val, type);
+      if(!val?.fieldName?.includes('style')){
+        return
+      }
       if (type === 'page-update') {
         let data = cloneDeep(val.formModel);
         this.initPageConfig(data)

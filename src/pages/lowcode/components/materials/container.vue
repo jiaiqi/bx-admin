@@ -248,6 +248,8 @@ export default {
   padding: 10px;
 
   >.overlay {
+    border: 1px dashed rgba($color: $primary-color, $alpha: 1);
+
     &.drag-over {
       border: 2px dashed $primary-color;
       background-color: rgba($color: $primary-color, $alpha: 0.3);
@@ -319,6 +321,19 @@ export default {
 
     &.active {
       border: 1px solid $primary-color;
+      border: 1px dashed $primary-color;
+      background-color: rgba($color: $primary-color, $alpha: 0.1);
+
+      &::before {
+        content: "页面容器";
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 2px 5px;
+        background-color: $primary-color;
+        color: #fff;
+        transform: translateY(-100%);
+      }
     }
   }
 }
