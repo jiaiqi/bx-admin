@@ -814,10 +814,10 @@ export default {
         padding: 50px;
         scrollbar-color: rgba(144, 146, 152, .3) transparent;
         scrollbar-width: thin;
-        background-color: #fafafc;
+        background-color: #F5F5F9;
         // #18181c 暗色
         background-size: 15px 15px, 15px 15px;
-        background-image: linear-gradient(#fafafc 14px, transparent 0), linear-gradient(90deg, transparent 14px, #86909c 0);
+        background-image: linear-gradient(#F5F5F9 14px, transparent 0), linear-gradient(90deg, transparent 14px, #000 0);
 
         .editor-view {
           border: 1px dashed #666;
