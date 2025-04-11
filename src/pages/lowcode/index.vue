@@ -7,25 +7,13 @@
       v-if="!isView"
     >
       <template #left>
-        <div
-          @click="outlineVisible = true"
-          class="handle-btn"
-          title="组件大纲"
-        >
+        <div @click="outlineVisible = true" class="handle-btn" title="组件大纲">
           <Icon icon="carbon-container-services" />
         </div>
       </template>
       <template #right>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="initPage"
-        >刷新</el-button>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="onSave"
-        >保存</el-button>
+        <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
+        <el-button type="primary" size="mini" @click="onSave">保存</el-button>
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -35,12 +23,12 @@
         :class="{ collapsed: materialsCollapsed }"
         v-if="!isView"
       >
-        <div
-          class="materials-toggle"
-          @click="toggleMaterialsPanel"
-        >
-          <i :class="materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
-            "></i>
+        <div class="materials-toggle" @click="toggleMaterialsPanel">
+          <i
+            :class="
+              materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
+            "
+          ></i>
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
@@ -48,7 +36,18 @@
         class="editor-container"
         @click="currentChange"
         :class="{ 'in-edit': !isPreview && !isView }"
+        ref="editorContainer"
+        @mousedown="handleMouseDown"
+        @mousemove="handleMouseMove"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseUp"
+        :style="[
+          editorContainerStyle,
+          { cursor: isSpacePressed ? 'grab' : 'default' },
+        ]"
       >
+        <!-- 添加拖动状态遮罩层 -->
+        <div v-if="isSpacePressed" class="drag-overlay" @click.stop=""></div>
         <editor-view
           :page-config="pageConfig"
           :current-item="currentItem"
@@ -67,12 +66,12 @@
         :class="{ collapsed: propertyCollapsed }"
         v-if="!isView"
       >
-        <div
-          class="property-toggle"
-          @click="togglePropertyPanel"
-        >
-          <i :class="propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
-            "></i>
+        <div class="property-toggle" @click="togglePropertyPanel">
+          <i
+            :class="
+              propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
+            "
+          ></i>
         </div>
         <property-view
           class="property-view"
@@ -93,19 +92,14 @@
       fullscreen
       v-if="!isView"
     >
-      <div
-        slot="title"
-        class="dialog-title flex justify-between px-4"
-      >
+      <div slot="title" class="dialog-title flex justify-between px-4">
         <div class="flex items-center">
           <span class="mr-2">预览</span>
           <Icon icon="mdi-light:eye" />
         </div>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="openNewTab"
-        >页面预览</el-button>
+        <el-button type="primary" size="mini" @click="openNewTab"
+          >页面预览</el-button
+        >
       </div>
       <div class="preview-container">
         <lc-view
@@ -183,13 +177,13 @@ export default {
     },
     outlineTreeProps() {
       return {
-        label: 'com_name',
-        children: 'children',
-      }
+        label: "com_name",
+        children: "children",
+      };
     },
     outlineTree() {
       let list = cloneDeep(this.components);
-      return list
+      return list;
     },
     contentAreaWidth() {
       let width = this.pageConfig?.content_area_width || 1200;
@@ -198,12 +192,12 @@ export default {
         : `${parseFloat(width)}px`;
     },
     setStyle() {
-      let style = {}
+      let style = {};
       if (this.pageConfig?.page_style_json_data) {
-        style = this.pageConfig?.page_style_json_data
+        style = this.pageConfig?.page_style_json_data;
       }
-      return formatStyleData(style)
-    }
+      return formatStyleData(style);
+    },
   },
   data() {
     return {
@@ -212,8 +206,8 @@ export default {
       currentId: null,
       currentItem: null,
       structureData: null,
-      jsonVisible: false,//json视图
-      outlineVisible: false,//大纲视图
+      jsonVisible: false, //json视图
+      outlineVisible: false, //大纲视图
       previewVisible: false,
       // 组件数据
       components: [],
@@ -224,12 +218,32 @@ export default {
       // 添加物料面板折叠状态
       materialsCollapsed: false,
       isPreview: false,
+      // 空格拖动相关
+      isSpacePressed: false,
+      isDragging: false,
+      startX: 0,
+      startY: 0,
+      scrollLeft: 0,
+      scrollTop: 0,
+      editorContainerStyle: {},
     };
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
       this.initPage();
+    }
+    if (!this.isView && !this.isPreview) {
+      // 添加键盘事件监听
+      window.addEventListener("keydown", this.handleKeyDown);
+      window.addEventListener("keyup", this.handleKeyUp);
+    }
+  },
+  beforeDestroy() {
+    if (!this.isView && !this.isPreview) {
+      // 移除键盘事件监听，防止内存泄漏
+      window.removeEventListener("keydown", this.handleKeyDown);
+      window.removeEventListener("keyup", this.handleKeyUp);
     }
   },
   methods: {
@@ -345,8 +359,8 @@ export default {
       };
       const { data, ok, msg } = await $selectOne(url, req);
       if (ok) {
-        let newData = this.initPageConfig(data)
-        this.initComponents(newData)
+        let newData = this.initPageConfig(data);
+        this.initComponents(newData);
       } else if (msg) {
         this.$message.error(msg);
       } else {
@@ -364,7 +378,7 @@ export default {
         }
       });
       this.pageConfig = data;
-      return data
+      return data;
     },
     initComponents(data) {
       const component_json = data?.page_row_json_data?.component_json?.map(
@@ -412,7 +426,7 @@ export default {
       }
       this.components = this.buildComponentsTree(component_json);
     },
-    initPageParams() { },
+    initPageParams() {},
     clickComponent(data) {
       console.log(data);
       this.currentId = data.id;
@@ -428,22 +442,22 @@ export default {
 
     onPageChange(val, type, compType, compId) {
       console.log(val, type);
-      if (!val?.fieldName?.includes('style')) {
-        return
+      if (!val?.fieldName?.includes("style")) {
+        return;
       }
-      if (type === 'page-update') {
+      if (type === "page-update") {
         let data = cloneDeep(val.formModel);
-        this.initPageConfig(data)
-      } else if (type === 'component-update' || type === 'component-add') {
+        this.initPageConfig(data);
+      } else if (type === "component-update" || type === "component-add") {
         let id = val.formModel.id;
         if (id) {
-          let component = this.findComponentById(this.components, id)
+          let component = this.findComponentById(this.components, id);
           if (component) {
-            let value = val.value
-            let key = val.fieldName
-            if (key?.lastIndexOf('_json') === key.length - 5) {
+            let value = val.value;
+            let key = val.fieldName;
+            if (key?.lastIndexOf("_json") === key.length - 5) {
               try {
-                value = JSON.parse(value)
+                value = JSON.parse(value);
               } catch (e) {
                 console.error(e);
               }
@@ -454,24 +468,27 @@ export default {
             }
           }
         }
-
-      } else if (type === 'component-cfg-update') {
+      } else if (type === "component-cfg-update") {
         // 组件配置
         let id = compId;
         if (!id) {
-          return
+          return;
         }
         let row = val.formModel;
-        console.log('compType:', compType);
-        let component = this.findComponentById(this.components, id)
+        console.log("compType:", compType);
+        let component = this.findComponentById(this.components, id);
         if (!component?.data) {
-          return
+          return;
         }
         switch (compType) {
           case "currentInfo": {
-            this.$set(component.data, 'current_info_json', row);
+            this.$set(component.data, "current_info_json", row);
             if (row.interface_json) {
-              this.$set(component.data, 'page_com_interface_json', row.interface_json);
+              this.$set(
+                component.data,
+                "page_com_interface_json",
+                row.interface_json
+              );
             }
             // if (row.current_info_json) {
             // m.current_info_json = JSON.parse(row.current_info_json);
@@ -482,7 +499,7 @@ export default {
             break;
           }
           case "swiper": {
-            this.$set(component.data, 'swiper_json', row);
+            this.$set(component.data, "swiper_json", row);
 
             // if (row.swiper_json) {
             //   m.swiper_json = JSON.parse(row.swiper_json);
@@ -493,7 +510,7 @@ export default {
             break;
           }
           case "userList": {
-            this.$set(component.data, 'user_list_json', row);
+            this.$set(component.data, "user_list_json", row);
 
             // if (row.user_list_json) {
             //   m.user_list_json = JSON.parse(row.user_list_json);
@@ -504,7 +521,7 @@ export default {
             break;
           }
           case "noticeBar": {
-            this.$set(component.data, 'notice_bar_json', row);
+            this.$set(component.data, "notice_bar_json", row);
 
             // if (row.notice_bar_json) {
             //   m.notice_bar_json = JSON.parse(row.notice_bar_json);
@@ -515,7 +532,7 @@ export default {
             break;
           }
           case "list": {
-            this.$set(component.data, 'list_json', row);
+            this.$set(component.data, "list_json", row);
 
             // if (row.list_json) {
             //   m.list_json = JSON.parse(row.list_json);
@@ -526,7 +543,7 @@ export default {
             break;
           }
           case "grid": {
-            this.$set(component.data, 'grid_json', row);
+            this.$set(component.data, "grid_json", row);
 
             // if (row.grid_json) {
             //   m.grid_json = JSON.parse(row.grid_json);
@@ -537,7 +554,7 @@ export default {
             break;
           }
           case "cardGroup": {
-            this.$set(component.data, 'card_group_json', row);
+            this.$set(component.data, "card_group_json", row);
 
             // if (row.card_group_json) {
             //   m.card_group_json = JSON.parse(row.card_group_json);
@@ -548,7 +565,7 @@ export default {
             break;
           }
           case "richTextCard": {
-            this.$set(component.data, 'rich_text_card_json', row);
+            this.$set(component.data, "rich_text_card_json", row);
 
             // if (row.rich_text_card_json) {
             //   m.rich_text_card_json = JSON.parse(row.rich_text_card_json);
@@ -559,7 +576,7 @@ export default {
             break;
           }
           case "videoCard": {
-            this.$set(component.data, 'video_card_json', row);
+            this.$set(component.data, "video_card_json", row);
 
             // if (row.video_card_json) {
             //   m.video_card_json = JSON.parse(row.video_card_json);
@@ -570,7 +587,7 @@ export default {
             break;
           }
           case "map": {
-            this.$set(component.data, 'map_json', row);
+            this.$set(component.data, "map_json", row);
 
             // if (row.map_json) {
             //   m.map_json = JSON.parse(row.map_json);
@@ -581,7 +598,7 @@ export default {
             break;
           }
           case "chart": {
-            this.$set(component.data, 'chart_json', row);
+            this.$set(component.data, "chart_json", row);
 
             // if (row.chart_json) {
             //   m.chart_json = JSON.parse(row.chart_json);
@@ -592,7 +609,7 @@ export default {
             break;
           }
           case "tabs": {
-            this.$set(component.data, 'tabs_json', row);
+            this.$set(component.data, "tabs_json", row);
 
             // if (row.tabs_json) {
             //   m.tabs_json = JSON.parse(row.tabs_json);
@@ -612,7 +629,7 @@ export default {
             break;
           }
           case "form": {
-            this.$set(component.data, 'form_json', row);
+            this.$set(component.data, "form_json", row);
 
             // if (row.form_json) {
             //   m.form_json = JSON.parse(row.form_json);
@@ -623,7 +640,7 @@ export default {
             break;
           }
           case "steps": {
-            this.$set(component.data, 'steps_json', row);
+            this.$set(component.data, "steps_json", row);
 
             // if (row.steps_json) {
             //   m.steps_json = JSON.parse(row.steps_json);
@@ -631,7 +648,7 @@ export default {
             break;
           }
           case "footer": {
-            this.$set(component.data, 'footer_json', row);
+            this.$set(component.data, "footer_json", row);
 
             // if (row.footer_json) {
             //   m.footer_json = JSON.parse(row.footer_json);
@@ -639,7 +656,7 @@ export default {
             break;
           }
           case "layout": {
-            this.$set(component.data, 'layout_json', row);
+            this.$set(component.data, "layout_json", row);
 
             // if (row.layout_json) {
             //   m.layout_json = JSON.parse(row.layout_json);
@@ -647,16 +664,15 @@ export default {
             break;
           }
           case "控件": {
-            this.$set(component.data, 'widget_json', row);
+            this.$set(component.data, "widget_json", row);
 
             // if (row.widget_json) {
             //   m.widget_json = JSON.parse(row.widget_json);
             // }
             break;
-
           }
           case "日历":
-            this.$set(component.data, 'calendar_json', row);
+            this.$set(component.data, "calendar_json", row);
 
             // if (row.calendar_json) {
             //   m.calendar_json = JSON.parse(row.calendar_json);
@@ -665,9 +681,7 @@ export default {
 
           default:
             break;
-
         }
-
       }
     },
     async deleteComponent(ids = "") {
@@ -720,6 +734,75 @@ export default {
       }
       this.components = del(val, this.components);
     },
+    // 键盘事件处理
+    handleKeyDown(e) {
+      if (e.code === "Space") {
+        if (!this.isSpacePressed) {
+          this.isSpacePressed = true;
+        }
+        // 防止空格键触发页面滚动
+        e.preventDefault();
+      }
+    },
+
+    handleKeyUp(e) {
+      if (e.code === "Space") {
+        e.preventDefault();
+        this.isSpacePressed = false;
+        this.isDragging = false;
+      }
+    },
+
+    // 鼠标事件处理
+    handleMouseDown(e) {
+      if (this.isSpacePressed) {
+        this.isDragging = true;
+        this.startX = e.clientX;
+        this.startY = e.clientY;
+
+        const container = this.$refs.editorContainer;
+        if (container) {
+          this.scrollLeft = container.scrollLeft;
+          this.scrollTop = container.scrollTop;
+        }
+
+        // 修改鼠标样式为抓取状态
+        this.editorContainerStyle = { cursor: "grabbing" };
+
+        // 阻止默认行为和事件冒泡
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+
+    handleMouseMove(e) {
+      if (this.isDragging && this.isSpacePressed) {
+        const container = this.$refs.editorContainer;
+        if (container) {
+          // 计算移动距离
+          const dx = this.startX - e.clientX;
+          const dy = this.startY - e.clientY;
+
+          // 设置滚动位置
+          container.scrollLeft = this.scrollLeft + dx;
+          container.scrollTop = this.scrollTop + dy;
+        }
+
+        // 阻止默认行为和事件冒泡
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+
+    handleMouseUp(e) {
+      if (this.isDragging) {
+        this.isDragging = false;
+        // 恢复鼠标样式
+        this.editorContainerStyle = {
+          cursor: this.isSpacePressed ? "grab" : "default",
+        };
+      }
+    },
   },
 };
 </script>
@@ -740,9 +823,9 @@ export default {
     border: 1px solid #e8e8e8;
 
     &:hover {
-      background-color: #ECF5FF;
-      border-color: #BFDEFF;
-      color: #007AFF;
+      background-color: #ecf5ff;
+      border-color: #bfdeff;
+      color: #007aff;
     }
 
     color: #666;
@@ -808,16 +891,30 @@ export default {
     .editor-container {
       flex: 1;
       transition: all 0.3s ease;
+      // position: relative; /* 确保容器是相对定位的 */
 
+      /* 添加拖动遮罩层样式 */
+      .drag-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background-color: transparent;
+        z-index: 1000;
+        background: rgba(100, 100, 100, 0.1);
+        cursor: grabbing;
+      }
       &.in-edit {
         overflow: auto;
-        padding: 50px;
-        scrollbar-color: rgba(144, 146, 152, .3) transparent;
+        padding: 60px;
+        scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
         scrollbar-width: thin;
-        background-color: #F5F5F9;
+        background-color: #f5f5f9;
         // #18181c 暗色
-        background-size: 15px 15px, 15px 15px;
-        background-image: linear-gradient(#F5F5F9 14px, transparent 0), linear-gradient(90deg, transparent 14px, #000 0);
+        background-size: 20px 20px, 20px 20px;
+        background-image: linear-gradient(#f5f5f9 19px, transparent 0),
+          linear-gradient(90deg, transparent 19px, #000 0);
 
         .editor-view {
           border: 1px dashed #666;
@@ -884,10 +981,8 @@ export default {
   }
 
   .lc-layout {
-
     &.view-mode,
     &.preview-mode {
-
       .resize-handle-s,
       .resize-handles {
         display: none;

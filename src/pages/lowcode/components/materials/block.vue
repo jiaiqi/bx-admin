@@ -36,6 +36,20 @@
     </div>
 
     <!-- 子组件 -->
+    <div
+      class="lc-layout__label"
+      v-if="props.show_label === '是' && props.com_label"
+    >
+      <div class="lc-layout__label-text" :style="[mixTitleStyle]">
+        <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
+        <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
+        <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
+        <span>
+          {{ props.com_label }}
+        </span>
+        <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
+      </div>
+    </div>
     <slot></slot>
 
     <!-- 高度调整手柄 -->
@@ -148,6 +162,18 @@ export default {
         typeof this.props.layout_json.style_json === "object"
       ) {
         style = { ...this.props.layout_json.style_json, ...style };
+      }
+      return formatStyleData(style);
+    },
+    mixTitleIcon() {
+      return this.props?.com_icon || this.pageConfig?.dv_com_icon;
+    },
+    mixTitleStyle() {
+      let style = {};
+      if (this.props?.com_title_style_json) {
+        style = this.props?.com_title_style_json;
+      } else if (this.pageConfig?.dv_com_title_style_json_data) {
+        style = this.pageConfig?.dv_com_title_style_json_data;
       }
       return formatStyleData(style);
     },
@@ -368,8 +394,9 @@ export default {
           if (!["layout", "container"].includes(draggedElement.type)) {
             draggedElement.parentId = this.id;
             if (!draggedElement._editType) {
-              draggedElement.id = `${this.id
-                }_component_${new Date().getTime()}`;
+              draggedElement.id = `${
+                this.id
+              }_component_${new Date().getTime()}`;
               draggedElement._editType = "add";
               draggedElement.parent_no = this.com_no;
               this.$emit("add", draggedElement);
@@ -414,6 +441,60 @@ export default {
   // border: 1px dashed rgba(44, 72, 255, 0.3);
   /* 添加浅色虚线边框 */
 
+  .lc-layout__label {
+    display: flex;
+  }
+
+  .lc-layout__label-text {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    .icon1 {
+      left: 0;
+      width: 4px;
+      height: 50%;
+      position: absolute;
+      top: 25%;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .icon2 {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      background: currentColor;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .icon3 {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      position: absolute;
+      background: currentColor;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .under-line {
+      position: relative;
+      display: flex;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: inline-block;
+      height: 4px;
+      border-radius: 2px;
+      background: currentColor;
+      // padding: inherit;
+    }
+  }
   // 高度调整手柄样式
   .resize-handle-s {
     position: absolute;
@@ -546,8 +627,8 @@ export default {
     }
   }
 
-  >.overlay {
-    >.handle {
+  > .overlay {
+    > .handle {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -593,7 +674,7 @@ export default {
         transform: translateY(-100%);
       }
 
-      &>.handle {
+      & > .handle {
         display: block;
       }
     }
@@ -643,4 +724,5 @@ export default {
 //   // 一行三列
 //   display: grid;
 //   grid-template-columns: 1fr 1fr 1fr;
-// }</style>
+// }
+</style>
