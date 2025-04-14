@@ -179,7 +179,7 @@ export default {
     },
     blockHeightStyle() {
       return {
-        height: this.blockHeight ? `${this.blockHeight}vh` : null,
+        minHeight: this.blockHeight ? `${this.blockHeight}vh` : null,
       };
     },
     blockWidthStyle() {

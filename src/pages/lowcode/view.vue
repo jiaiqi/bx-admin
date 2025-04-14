@@ -1,5 +1,5 @@
 <template>
-  <div class="page-wrap">
+  <div class="page-wrap" :style="[setStyle, themeVariable]">
     <lc-view
       v-for="item in components"
       :key="item.id"
@@ -11,8 +11,9 @@
 
 <script>
 import lcView from "./components/materials/view.vue";
-import {  $selectOne } from "@/common/http";
+import { $selectOne } from "@/common/http";
 import { formatStyleData } from "@/common/common";
+import cloneDeep from "lodash/cloneDeep";
 export default {
   name: "page-wrap",
   components: {
@@ -28,9 +29,61 @@ export default {
     setStyle() {
       let style = {};
       if (this.pageConfig?.page_style_json_data) {
-        style = this.pageConfig?.page_style_json_data;
+        style = cloneDeep(this.pageConfig?.page_style_json_data);
+        if (style.theme_list) {
+          delete style.theme_list;
+        }
+        if (style.theme_variable) {
+          delete style.theme_variable;
+        }
+        if (style.theme_name) {
+          delete style.theme_name;
+        }
       }
       return formatStyleData(style);
+    },
+    themeVariable() {
+      // 样式全局配置
+      const config = this.pageConfig?.page_style_json_data;
+      const themeList = config?.theme_list || [];
+      const themeName = sessionStorage.current_theme || config?.current_theme;
+      // 匹配当前主题的配置
+      if (Array.isArray(themeList) && themeList.length) {
+        let theme = themeList.find(
+          (item) => themeName && item.current_theme === themeName
+        );
+        if (!theme) {
+          theme = themeList[0];
+        }
+        config.theme_variable = theme.theme_variable;
+      }
+      const themeVariable = {};
+      if (
+        config?.theme_variable &&
+        typeof config.theme_variable &&
+        Object.keys(config?.theme_variable).length
+      ) {
+        Object.keys(config?.theme_variable).forEach((key) => {
+          themeVariable[`--${key}`] = config?.theme_variable[key];
+        });
+      }
+      return {
+        "--theme-color": themeVariable?.theme_color || "#173808",
+        "--theme-color-light": themeVariable?.theme_color_light || "#173808",
+        "--theme-color-dark": themeVariable?.theme_color_dark || "#173808",
+        "--header-bg-color": themeVariable?.header_bg_color || "#174b3b",
+        "--header-bg-menu-color": themeVariable?.header_menu_color || "#265e4d",
+        "--header-text-color": themeVariable?.header_text_color || "#fff",
+        "--header-active-text-color":
+          themeVariable?.header_active_text_color || "#fff",
+        "--header-active-bg-color":
+          themeVariable?.header_active_bg_color || "#235646",
+        "--header-hover-bg-color":
+          themeVariable?.header_hover_bg_color || "#235646",
+        "--header-hover-text-color":
+          themeVariable?.header_hover_text_color || "#fff",
+        ...themeVariable,
+      };
     },
   },
   data() {
@@ -156,5 +209,4 @@ export default {
 };
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

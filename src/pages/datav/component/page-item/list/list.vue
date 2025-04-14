@@ -113,6 +113,18 @@
         </div>
       </div>
     </div>
+    <div class="pagination-box" v-if="showPagination">
+      <el-pagination
+        background
+        class="el-pagination"
+        @current-change="handleCurrentChange"
+        :current-page="pageInfo.pageNo"
+        :page-size="pageInfo.rownumber"
+        layout="total, prev, pager, next"
+        :total="pageInfo.total"
+      >
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -149,6 +161,7 @@ export default {
       stasticData: [],
       v2Data: null,
       tableData: [],
+      pageInfo: { pageNo: 1, rownumber: 10, total: 0 },
     };
   },
   computed: {
@@ -160,6 +173,9 @@ export default {
     },
     listOptions() {
       return this.listConfig.list_options || {};
+    },
+    showPagination() {
+      return this.listConfig?.list_options?.includes("分页");
     },
     tableColumn() {
       let cols = this.v2Data?.srv_cols || [];
@@ -277,12 +293,25 @@ export default {
       // 接受透传参数
       this.$emit("setPageParams", key, val);
     },
-
+    handleCurrentChange(val) {
+      this.pageInfo.pageNo = val;
+      let itemReqJson = this.pageItem.srv_req_json
+        ? this.bxDeepClone(this.pageItem.srv_req_json)
+        : null;
+      const req = itemReqJson
+        ? this.buildRequestParams(itemReqJson)
+        : itemReqJson;
+      console.log("列表请求", req);
+      this.getListData(req);
+    },
     async getListData(req) {
       const url = `/${req.mapp}/select/${req.serviceName}`;
       const res = await $http.post(url, req);
       if (res.data.state === "SUCCESS") {
         this.tableData = res.data.data;
+        if (res.data.page) {
+          this.pageInfo = res.data.page;
+        }
       }
     },
     async getV2Data(srvCfg) {
@@ -453,6 +482,15 @@ export default {
         }
       }
       e.condition = this.bxDeepClone(condition);
+      if (e.page) {
+        this.pageInfo.pageNo = e.page.pageNo;
+        this.pageInfo.rownumber = e.page.rownumber;
+      } else {
+        e.page = {
+          pageNo: this.pageInfo.pageNo,
+          rownumber: this.pageInfo.rownumber,
+        };
+      }
       // console.log(e.serviceName,condition)
       return e;
     },
@@ -479,6 +517,7 @@ export default {
   mounted() {
     if (this.pageItem?.srv_req_type === "模拟数据") {
       this.tableData = this.pageItem?.mock_srv_data_json || [];
+      this.pageInfo.total = this.tableData.length;
     } else if (this.pageItem?.srv_req_json) {
       let itemReqJson = this.pageItem.srv_req_json
         ? this.bxDeepClone(this.pageItem.srv_req_json)
@@ -587,6 +626,18 @@ export default {
       padding: 0 10px;
       font-size: 14px;
       color: #fff;
+    }
+  }
+}
+
+.pagination-box {
+  text-align: center;
+  padding: 10px;
+  :deep(.el-pagination) {
+    &.is-background {
+      .el-pager li:not(.disabled).active {
+        background-color: var(--theme-color, #1e2750);
+      }
     }
   }
 }

@@ -67,7 +67,7 @@ export default {
         let data = this.buildValuesFromConf(conf);
         query.data = data ? [data] : [];
       }
-    
+
       if (
         query?.serviceName?.endsWith("add") ||
         query.serviceName?.endsWith("update")
@@ -94,7 +94,7 @@ export default {
      */
     buildQuery: function (conf, rtDataCtx) {
       let queries = [];
-      console.log("conf", conf)
+      console.log("conf", conf);
       if (conf.itemsFunc && conf.itemsPolicy === "servicePerItem") {
         let clone = cloneDeep(conf);
         clone.itemsPolicy = "valuePerItem";
@@ -104,6 +104,20 @@ export default {
         });
       } else {
         let query = this.buildSrvQuery(conf, null, rtDataCtx);
+        if (
+          query &&
+          ["duplicatedeep", "duplicate"].includes(this.duplicateType)
+        ) {
+          query["duplicate"] = true;
+        }
+        if (Array.isArray(query?.data) && query.data.length > 0) {
+          query.data = query.data.map((item) => {
+            if (item.id) {
+              delete item.id;
+            }
+            return item;
+          });
+        }
         if (
           query &&
           ["duplicatedeep", "duplicate"].includes(this.duplicateType) &&
@@ -120,7 +134,6 @@ export default {
               },
             ];
           } else if (!conf.dependKeys) {
-            query["duplicate"] = true;
             query["condition"] = [
               ...(query?.condition || []),
               { colName: "id", ruleType: "eq", value: this.duplicateData.id },
@@ -299,8 +312,8 @@ export default {
               }
               return obj;
             });
-          }else{
-            queries = []
+          } else {
+            queries = [];
           }
           if (removeValues?.serviceName && removeValues?.data?.length) {
             const removeQuery = removeValues.data.map((item) => {
@@ -308,7 +321,7 @@ export default {
                 serviceName: removeValues.serviceName,
                 condition: [
                   {
-                    colName: 'id',
+                    colName: "id",
                     ruleType: "eq",
                     value: item.id,
                   },

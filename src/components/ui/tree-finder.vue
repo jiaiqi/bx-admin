@@ -481,6 +481,15 @@ export default {
           this.$emit("field-value-changed", this.field.info.name, this.field);
         })
       }
+      let loader = this.dispLoaderV2;
+      if (loader.parentCol) {
+        console.log(val, "onSelectChange");
+        this.treeLazySelect(loader, val).then(res=>{
+          if(Array.isArray(res) && res.length > 0){
+            this.options = res
+          }
+        });
+      }
     },
     onSelectChange(val) {
       let loader = this.dispLoaderV2;

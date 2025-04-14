@@ -203,9 +203,9 @@ export default {
 
     onDuplicateClicked(row) {
       const data = {...row}
-      if(data.id){
-        delete data.id
-      }
+      // if(data.id){
+      //   delete data.id
+      // }
       this.$set(this.clickedRow, 'duplicate', data);
       if (this.inplaceEditMode) {
         this.duplicateRowInplace(data)
@@ -216,9 +216,9 @@ export default {
 
     onDuplicateDeepClicked(row) {
       const data = {...row}
-      if(data.id){
-        delete data.id
-      }
+      // if(data.id){
+      //   delete data.id
+      // }
       this.$set(this.clickedRow, 'duplicatedeep', data);
       this.activeForm = "duplicatedeep";
     },
