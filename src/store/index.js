@@ -5,6 +5,7 @@ import HotTableData from './modules/hot-table-data'
 import frontTableData from './modules/frontTableData'
 import custActiveRefresh from './modules/custActiveRefresh'
 import customState from "./modules/custom-state";
+import theme from './modules/theme'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -13,7 +14,8 @@ export default new Vuex.Store({
     HotTableData,
     frontTableData,
     custActiveRefresh,
-    customState
+    customState,
+    theme
   },
   strict: false,
 })

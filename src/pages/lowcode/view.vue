@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="page-wrap"
-    :style="[setStyle, themeVariable]"
-  >
+  <div class="page-wrap" :style="[setStyle, themeVariable]">
     <lc-view
       v-for="item in components"
       :key="item.id"
@@ -18,13 +15,15 @@ import { $selectOne } from "@/common/http";
 import { formatStyleData } from "@/common/common";
 import cloneDeep from "lodash/cloneDeep";
 import { pageCompCols } from "./components/property/columns";
-
+import { mapState, mapGetters, mapActions } from "vuex";
 export default {
   name: "page-wrap",
   components: {
     lcView,
   },
   computed: {
+    ...mapState("theme", ["currentTheme"]),
+    ...mapGetters("theme", ["themeList", "themeVariable"]),
     contentAreaWidth() {
       let width = this.pageConfig?.content_area_width || 1200;
       return typeof width === "string" && width?.includes("%")
@@ -39,16 +38,18 @@ export default {
       return formatStyleData(style);
     },
     appConfig() {
-      return this.pageConfig?.app_json_data || {}
+      return this.pageConfig?.app_json_data || {};
     },
     themeList() {
       return this.appConfig?.theme_list || [];
     },
     themeVariable() {
       let style = {};
-      let themeVariable = {}
+      let themeVariable = {};
       if (this.themeList?.length && this.currentTheme) {
-        themeVariable = this.themeList.find((item) => item.name === this.currentTheme)?.variable;
+        themeVariable = this.themeList.find(
+          (item) => item.name === this.currentTheme
+        )?.variable;
       }
       if (themeVariable && typeof themeVariable === "object") {
         Object.keys(themeVariable).forEach((key) => {
@@ -75,6 +76,8 @@ export default {
     }
   },
   methods: {
+    ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+    // 构建组件树
     buildComponentsTree(components) {
       let list = components.filter((item) => !item.parent_no);
       function buildTree(list, parentId) {
@@ -130,12 +133,24 @@ export default {
         }
       });
       this.pageConfig = data;
-      if (data?.app_json_data?.current_theme) {
-        this.currentTheme = data?.app_json_data?.current_theme;
-        if (sessionStorage.theme_name && sessionStorage.theme_name !== this.currentTheme) {
-          this.currentTheme = sessionStorage.theme_name
+      // 使用Vuex初始化主题
+      if (data?.app_json_data) {
+        let currentTheme = data.app_json_data.current_theme;
+        if (
+          sessionStorage.currentTheme &&
+          sessionStorage.getItem("currentTheme") !== currentTheme
+        ) {
+          currentTheme = sessionStorage.getItem("currentTheme");
         }
+        if (!currentTheme && data?.app_json_data?.theme_list) {
+          currentTheme = data.app_json_data.theme_list[0].name;
+        }
+        this.initTheme({
+          currentTheme: data.app_json_data.current_theme,
+          themeList: data.app_json_data.theme_list || [],
+        });
       }
+
       return data;
     },
     initComponents(data) {
