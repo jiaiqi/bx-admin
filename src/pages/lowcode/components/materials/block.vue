@@ -126,7 +126,7 @@ export default {
     },
     contentWidth: {
       type: String,
-      default: "1200px",
+      default: "",
     },
   },
   data() {
@@ -264,8 +264,8 @@ export default {
         // 移动的vh值，向上取整到最接近的整数
         const deltaVh = Math.round((e.clientY - this.startY) / vh);
 
-        // 设置新高度，最小为5vh
-        const newHeight = Math.max(5, this.startHeight + deltaVh);
+        // 设置新高度，最小为2vh
+        const newHeight = Math.max(2, this.startHeight + deltaVh);
 
         // 只有当高度变化为整数vh时才更新
         if (newHeight !== this.blockHeight) {
@@ -431,14 +431,11 @@ export default {
 }
 
 .lc-block {
-  width: 100%;
-  width: var(--content-width);
+  width: var(--content-width,100%);
   // height: 100%;
   position: relative;
   padding: 10px;
   $primary-color: #2c48ff;
-  // border: 1px dashed rgba(44, 72, 255, 0.3);
-  /* 添加浅色虚线边框 */
 
   .lc-layout__label {
     display: flex;

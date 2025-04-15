@@ -636,7 +636,7 @@ export default {
   :deep(.el-pagination) {
     &.is-background {
       .el-pager li:not(.disabled).active {
-        background-color: var(--theme-color, #1e2750);
+        background-color: var(--primary-color, #2196f3);
       }
     }
   }

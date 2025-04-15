@@ -7,25 +7,13 @@
       v-if="!isView"
     >
       <template #left>
-        <div
-          @click="outlineVisible = true"
-          class="handle-btn"
-          title="组件大纲"
-        >
+        <div @click="outlineVisible = true" class="handle-btn" title="组件大纲">
           <Icon icon="carbon-container-services" />
         </div>
       </template>
       <template #right>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="initPage"
-        >刷新</el-button>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="onSave"
-        >保存</el-button>
+        <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
+        <el-button type="primary" size="mini" @click="onSave">保存</el-button>
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -35,12 +23,12 @@
         :class="{ collapsed: materialsCollapsed }"
         v-if="!isView"
       >
-        <div
-          class="materials-toggle"
-          @click="toggleMaterialsPanel"
-        >
-          <i :class="materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
-            "></i>
+        <div class="materials-toggle" @click="toggleMaterialsPanel">
+          <i
+            :class="
+              materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
+            "
+          ></i>
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
@@ -59,11 +47,7 @@
         ]"
       >
         <!-- 添加拖动状态遮罩层 -->
-        <div
-          v-if="isSpacePressed"
-          class="drag-overlay"
-          @click.stop=""
-        ></div>
+        <div v-if="isSpacePressed" class="drag-overlay" @click.stop=""></div>
         <editor-view
           :page-config="pageConfig"
           :current-item="currentItem"
@@ -82,12 +66,12 @@
         :class="{ collapsed: propertyCollapsed }"
         v-if="!isView"
       >
-        <div
-          class="property-toggle"
-          @click="togglePropertyPanel"
-        >
-          <i :class="propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
-            "></i>
+        <div class="property-toggle" @click="togglePropertyPanel">
+          <i
+            :class="
+              propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
+            "
+          ></i>
         </div>
         <property-view
           class="property-view"
@@ -108,19 +92,14 @@
       fullscreen
       v-if="!isView"
     >
-      <div
-        slot="title"
-        class="dialog-title flex justify-between px-4"
-      >
+      <div slot="title" class="dialog-title flex justify-between px-4">
         <div class="flex items-center">
           <span class="mr-2">预览</span>
           <Icon icon="mdi-light:eye" />
         </div>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="openNewTab"
-        >页面预览</el-button>
+        <el-button type="primary" size="mini" @click="openNewTab"
+          >页面预览</el-button
+        >
       </div>
       <div class="preview-container">
         <lc-view
@@ -178,6 +157,7 @@ import { Icon } from "@iconify/vue2";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
 import { formatStyleData } from "@/common/common";
 import cloneDeep from "lodash/cloneDeep";
+import { mapState, mapGetters, mapActions } from "vuex";
 export default {
   name: "lowcode-main",
   components: {
@@ -193,27 +173,13 @@ export default {
     clickoutside: clickoutside,
   },
   computed: {
+    ...mapState("theme", ["currentTheme"]),
+    ...mapGetters("theme", ["themeList", "themeVariable"]),
     isView() {
       return this.$route.meta?.isView === true;
     },
     appConfig() {
-      return this.pageConfig?.app_json_data || {}
-    },
-    themeList() {
-      return this.appConfig?.theme_list || [];
-    },
-    themeVariable() {
-      let style = {};
-      let themeVariable = {}
-      if (this.themeList?.length && this.currentTheme) {
-        themeVariable = this.themeList.find((item) => item.name === this.currentTheme)?.variable;
-      }
-      if (themeVariable && typeof themeVariable === "object") {
-        Object.keys(themeVariable).forEach((key) => {
-          style[`--${key}`] = themeVariable[key];
-        });
-      }
-      return style;
+      return this.pageConfig?.app_json_data || {};
     },
     outlineTreeProps() {
       return {
@@ -243,7 +209,6 @@ export default {
     return {
       //
       pageNo: null,
-      currentTheme: "",
       currentId: null,
       currentItem: null,
       structureData: null,
@@ -288,6 +253,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
     openNewTab() {
       const url = `/vpages/#/lowcode/view/${this.pageNo}`;
       window.open(url, "_blank");
@@ -323,6 +289,7 @@ export default {
       return result;
     },
     onResize({ id, width, height }) {
+      if (!id) return;
       function findComponentById(components, id) {
         let result = null;
         if (!id || !components || !components.length) return result;
@@ -419,12 +386,24 @@ export default {
         }
       });
       this.pageConfig = data;
-      if (data?.app_json_data?.current_theme) {
-        this.currentTheme = data?.app_json_data?.current_theme;
-        if (sessionStorage.theme_name && sessionStorage.theme_name !== this.currentTheme) {
-          this.currentTheme = sessionStorage.theme_name
+      // 使用Vuex初始化主题
+      if (data?.app_json_data) {
+        let currentTheme = data.app_json_data.current_theme;
+        if (
+          localStorage.currentTheme &&
+          localStorage.getItem("currentTheme") !== currentTheme
+        ) {
+          currentTheme = localStorage.getItem("currentTheme");
         }
+        if (!currentTheme && data?.app_json_data?.theme_list) {
+          currentTheme = data.app_json_data.theme_list[0].name;
+        }
+        this.initTheme({
+          currentTheme: currentTheme,
+          themeList: data.app_json_data.theme_list || [],
+        });
       }
+
       return data;
     },
     initComponents(data) {
@@ -473,7 +452,7 @@ export default {
       }
       this.components = this.buildComponentsTree(component_json);
     },
-    initPageParams() { },
+    initPageParams() {},
     clickComponent(data) {
       console.log(data);
       this.currentId = data.id;
@@ -1030,10 +1009,8 @@ export default {
   }
 
   .lc-layout {
-
     &.view-mode,
     &.preview-mode {
-
       .resize-handle-s,
       .resize-handles {
         display: none;

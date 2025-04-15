@@ -14,7 +14,10 @@
     @drop="handleDrop"
     @dragstart="handleDragStart($event, props)"
   >
-    <span class="comp-name">
+    <span
+      class="comp-name"
+      v-if="!isPreview && !isView"
+    >
       {{ com_name || '' }}
     </span>
     <!-- 遮罩层 -->

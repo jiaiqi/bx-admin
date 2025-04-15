@@ -482,7 +482,7 @@ export default {
         })
       }
       let loader = this.dispLoaderV2;
-      if (loader.parentCol) {
+      if (loader.parentCol&&!val) {
         console.log(val, "onSelectChange");
         this.treeLazySelect(loader, val).then(res=>{
           if(Array.isArray(res) && res.length > 0){

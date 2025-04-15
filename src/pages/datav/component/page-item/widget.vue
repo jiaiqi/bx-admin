@@ -1,5 +1,21 @@
 <template>
-  <div v-if="widgetType === '文本'" :style="[widgetStyleJson]">
+  <el-select
+    :value="currentTheme"
+    placeholder="请选择"
+    v-if="widgetType === '下拉切换主题'"
+    class="theme-select"
+    :style="[widgetStyleJson]"
+    @change="handleThemeChange"
+  >
+    <el-option
+      v-for="item in options"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value"
+    >
+    </el-option>
+  </el-select>
+  <div v-else-if="widgetType === '文本'" :style="[widgetStyleJson]">
     <span v-if="pageItem && pageItem.widget_json">{{
       pageItem.widget_json.init_val || ""
     }}</span>
@@ -40,167 +56,218 @@
   </div>
 </template>
 
-<script setup>
-import { computed, ref, defineEmits } from "vue";
+<script>
 import { formatStyleData } from "../../common/index";
 import dateTime from "../widgets/date-time.vue";
-const props = defineProps({
-  pageItem: Object,
-  pageNo: String,
-});
+import { mapState, mapGetters, mapActions } from "vuex";
+export default {
+  name: "widget",
+  components: {
+    dateTime,
+  },
+  props: {
+    pageItem: Object,
+    pageNo: String,
+  },
+  mounted() {
+    // 如果有主题列表但没有当前主题，设置默认主题
+    if (this.themeList?.length && !this.currentTheme) {
+      this.setCurrentTheme(this.themeList[0].name);
+    }
+  },
+  data() {
+    return {
+      isFullScreen: false,
+    };
+  },
+  computed: {
+    ...mapState("theme", ["currentTheme"]),
+    ...mapGetters("theme", ["themeList", "themeVariable"]),
+    options() {
+      if (this.widgetType === "下拉切换主题") {
+        return this.themeList?.map((item) => {
+          return {
+            value: item.name,
+            label: item.name,
+          };
+        }) || [];
+      }
+      return [];
+    },
+    widgetJson() {
+      return this.pageItem?.widget_json || {};
+    },
+    widgetStyleJson() {
+      if (this.widgetJson?.col_text_pub_style_json) {
+        return formatStyleData(this.widgetJson.col_text_pub_style_json);
+      }
+      return {};
+    },
+    initRichText() {
+      return this.widgetJson?.init_mtext || this.widgetJson?.init_val || "";
+    },
+    buttonWidgetJson() {
+      if (this.widgetJson?.button_cfg_json) {
+        return this.widgetJson.button_cfg_json;
+      }
+      return {};
+    },
+    timeWidgetJson() {
+      if (this.widgetJson?.col_type_time_json) {
+        return formatStyleData(this.widgetJson.col_type_time_json);
+      }
+      return {};
+    },
+    showSeconds() {
+      return this.timeWidgetJson &&
+        this.timeWidgetJson["parts-set"] &&
+        this.timeWidgetJson["parts-set"].indexOf("秒")
+        ? true
+        : false;
+    },
+    widgetType() {
+      let type = this.widgetJson?.widget_type;
+      if (type === "系统按钮") {
+        type = this.widgetJson?.button_cfg_json?.sys_button_type;
+      }
+      return type;
+    },
+    widgetColor() {
+      return this.widgetJson?.col_text_pub_style_json?.color;
+    },
+  },
+  created() {
+    if (sessionStorage.theme_name) {
+      this.currentTheme = sessionStorage.theme_name;
+    }
 
-const widgetJson = computed(() => {
-  return props.pageItem?.widget_json || {};
-});
+    // 添加窗口大小变化监听
+    window.addEventListener("resize", this.handleResize);
+  },
+  beforeDestroy() {
+    // 移除窗口大小变化监听
+    window.removeEventListener("resize", this.handleResize);
+  },
+  methods: {
+    ...mapActions("theme", ["setCurrentTheme"]),
+    addTabByUrl(url, tab_title, urlParams, type) {
+      url = url || common_page_path[type] + "?data=" + urlParams;
+      let page = {
+        title: tab_title || "新标页签",
+        url,
+      };
 
-//文本
-const widgetStyleJson = computed(() => {
-  if (widgetJson.value?.col_text_pub_style_json) {
-    return formatStyleData(widgetJson.value.col_text_pub_style_json);
-  }
-});
-
-// 富文本内容
-const initRichText = computed(() => {
-  return widgetJson.value?.init_mtext || widgetJson.value?.init_val || "";
-});
-
-// 按钮
-const buttonWidgetJson = computed(() => {
-  if (widgetJson.value?.button_cfg_json) {
-    return widgetJson.value.button_cfg_json;
-  }
-});
-
-const addTabByUrl = function (url, tab_title, urlParams, type) {
-  url = url || common_page_path[type] + "?data=" + urlParams;
-  let page = {
-    title: tab_title || "新标页签",
-    url,
-  };
-
-  if (window.top.tab && window.top.tab.addTab) {
-    window.top.tab.addTab(page);
-  } else {
-    let strWindowFeatures =
-      "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
-    let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures);
-    newWindow.document.title = tab_title;
-  }
+      if (window.top.tab && window.top.tab.addTab) {
+        window.top.tab.addTab(page);
+      } else {
+        let strWindowFeatures =
+          "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
+        let newWindow = window.open(url, "CNN_WindowName", strWindowFeatures);
+        newWindow.document.title = tab_title;
+      }
+    },
+    navTo() {
+      if (this.widgetJson?.jump_json?.jump_no) {
+        // 使用配置的跳转事件
+        const jumpJson = this.widgetJson.jump_json;
+        if (jumpJson.obj_type === "内部页面" && this.pageNo) {
+          window.open(
+            location.href.replace(this.pageNo, jumpJson.dest_page_no)
+          );
+        }
+      } else if (this.widgetJson?.nav_url) {
+        this.addTabByUrl(this.widgetJson?.nav_url);
+      } else if (this.widgetJson.button_cfg_json?.jump_json) {
+        const jump_json = this.widgetJson.button_cfg_json.jump_json;
+        if (jump_json.dest_page_no && this.pageNo) {
+          window.open(
+            location.href.replace(this.pageNo, jump_json.dest_page_no)
+          );
+        }
+      }
+    },
+    openFullscreen() {
+      this.isFullScreen = !this.isFullScreen;
+      this.toggleFullScreen();
+    },
+    requestFullScreen(element) {
+      //进入全屏状态 判断各种浏览器，找到正确的方法
+      if (!element) {
+        element = document.body;
+      }
+      var requestMethod =
+        element.requestFullScreen || //W3C
+        element.webkitRequestFullScreen || //Chrome等
+        element.mozRequestFullScreen || //FireFox
+        element.msRequestFullScreen; //IE11
+      if (requestMethod) {
+        requestMethod.call(element);
+      } else if (typeof window.ActiveXObject !== "undefined") {
+        //for Internet Explorer
+        var wscript = new ActiveXObject("WScript.Shell");
+        if (wscript !== null) {
+          wscript.SendKeys("{F11}");
+        }
+      }
+    },
+    toggleFullScreen() {
+      //切换全屏状态
+      if (!document.fullscreenElement) {
+        this.requestFullScreen();
+      } else {
+        this.exitFullScreen();
+      }
+    },
+    exitFullScreen() {
+      // 退出全屏状态 判断各种浏览器，找到正确的方法
+      var exitMethod =
+        document.exitFullscreen || //W3C
+        document.mozCancelFullScreen || //FireFox
+        document.webkitExitFullscreen || //Chrome等
+        document.webkitExitFullscreen; //IE11
+      if (exitMethod && document.fullscreenElement) {
+        exitMethod.call(document);
+      } else if (typeof window.ActiveXObject !== "undefined") {
+        //for Internet Explorer
+        var wscript = new ActiveXObject("WScript.Shell");
+        if (wscript !== null) {
+          wscript.SendKeys("{F11}");
+        }
+      }
+    },
+    handleResize() {
+      if (!document.fullscreenElement) {
+        this.isFullScreen = false;
+      } else {
+        this.isFullScreen = true;
+      }
+      this.$emit("resize");
+    },
+    
+    // 处理主题变更
+    handleThemeChange(value) {
+      if (value && value !== this.currentTheme) {
+        this.setCurrentTheme(value);
+        
+        // 应用主题变量到文档根元素
+        this.applyThemeVariables();
+        
+        // 触发主题变更事件，通知其他组件
+        this.$emit("theme-change", value);
+      }
+    },
+    
+    // 应用主题变量到文档根元素
+    applyThemeVariables() {
+      if (this.themeVariable) {
+        const root = document.documentElement;
+        Object.entries(this.themeVariable).forEach(([key, value]) => {
+          root.style.setProperty(`--${key}`, value);
+        });
+      }
+    },
+  },
 };
-const navTo = () => {
-  if(widgetJson.value?.jump_json?.jump_no){
-    // 使用配置的跳转事件
-    const jumpJson = widgetJson.value.jump_json;
-    if (jumpJson.obj_type ==='内部页面' && props.pageNo) {
-      window.open(
-        location.href.replace(props.pageNo, jumpJson.dest_page_no)
-      );
-    }
-  }else if (widgetJson.value?.nav_url) {
-    addTabByUrl(widgetJson.value?.nav_url);
-  } else if (widgetJson.value.button_cfg_json?.jump_json) {
-    const jump_json = widgetJson.value.button_cfg_json.jump_json;
-    if (jump_json.dest_page_no && props.pageNo) {
-      window.open(location.href.replace(props.pageNo, jump_json.dest_page_no));
-    }
-  }
-};
-
-// 时间日期
-const timeWidgetJson = computed(() => {
-  if (widgetJson.value?.col_type_time_json) {
-    return formatStyleData(widgetJson.value.col_type_time_json);
-  }
-});
-
-const showSeconds = computed(() => {
-  return timeWidgetJson.value &&
-    timeWidgetJson.value["parts-set"] &&
-    timeWidgetJson.value["parts-set"].indexOf("秒")
-    ? true
-    : false;
-});
-
-const widgetType = computed(() => {
-  let type = widgetJson.value?.widget_type;
-  if (type === "系统按钮") {
-    type = widgetJson.value?.button_cfg_json?.sys_button_type;
-  }
-  return type;
-});
-
-const widgetColor = computed(() => {
-  return widgetJson.value?.col_text_pub_style_json?.color;
-});
-
-const isFullScreen = ref(false);
-function openFullscreen() {
-  isFullScreen.value = !isFullScreen.value;
-  toggleFullScreen();
-}
-function requestFullScreen(element) {
-  //进入全屏状态 判断各种浏览器，找到正确的方法
-  if (!element) {
-    element = document.body;
-  }
-  var requestMethod =
-    element.requestFullScreen || //W3C
-    element.webkitRequestFullScreen || //Chrome等
-    element.mozRequestFullScreen || //FireFox
-    element.msRequestFullScreen; //IE11
-  if (requestMethod) {
-    requestMethod.call(element);
-  } else if (typeof window.ActiveXObject !== "undefined") {
-    //for Internet Explorer
-    var wscript = new ActiveXObject("WScript.Shell");
-    if (wscript !== null) {
-      wscript.SendKeys("{F11}");
-    }
-  }
-}
-function toggleFullScreen() {
-  //切换全屏状态
-  if (!document.fullscreenElement) {
-    requestFullScreen();
-  } else {
-    exitFullScreen();
-  }
-}
-function exitFullScreen() {
-  // 退出全屏状态 判断各种浏览器，找到正确的方法
-  var exitMethod =
-    document.exitFullscreen || //W3C
-    document.mozCancelFullScreen || //FireFox
-    document.webkitExitFullscreen || //Chrome等
-    document.webkitExitFullscreen; //IE11
-  if (exitMethod && document.fullscreenElement) {
-    exitMethod.call(document);
-  } else if (typeof window.ActiveXObject !== "undefined") {
-    //for Internet Explorer
-    var wscript = new ActiveXObject("WScript.Shell");
-    if (wscript !== null) {
-      wscript.SendKeys("{F11}");
-    }
-  }
-}
-const emit = defineEmits(["resize"]);
-window.addEventListener("resize", () => {
-  if (!document.fullscreenElement) {
-    isFullScreen.value = false;
-  } else {
-    isFullScreen.value = true;
-  }
-  emit("resize");
-});
-// window.onresize = () => {
-//   if (!document.fullscreenElement) {
-//     isFullScreen.value = false
-//   } else {
-//     isFullScreen.value = true
-//   }
-//   emit('resize')
-// };
 </script>
 
 <style lang="scss" scoped>
@@ -220,8 +287,20 @@ window.addEventListener("resize", () => {
   color: #fff;
   border-radius: 8px;
   min-height: 30px;
+
   &:active {
     transform: scale(1.1);
+  }
+}
+
+.theme-select {
+  width: 100px; 
+  :deep(.el-input) {
+    .el-input__inner {
+      border: none;
+      background-color: transparent;
+      color: var(--primary-color, inherit); // 使用主题变量
+    }
   }
 }
 </style>
