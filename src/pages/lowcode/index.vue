@@ -7,13 +7,25 @@
       v-if="!isView"
     >
       <template #left>
-        <div @click="outlineVisible = true" class="handle-btn" title="组件大纲">
+        <div
+          @click="outlineVisible = true"
+          class="handle-btn"
+          title="组件大纲"
+        >
           <Icon icon="carbon-container-services" />
         </div>
       </template>
       <template #right>
-        <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
-        <el-button type="primary" size="mini" @click="onSave">保存</el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="initPage"
+        >刷新</el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="onSave"
+        >保存</el-button>
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -23,12 +35,12 @@
         :class="{ collapsed: materialsCollapsed }"
         v-if="!isView"
       >
-        <div class="materials-toggle" @click="toggleMaterialsPanel">
-          <i
-            :class="
-              materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
-            "
-          ></i>
+        <div
+          class="materials-toggle"
+          @click="toggleMaterialsPanel"
+        >
+          <i :class="materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
+            "></i>
         </div>
         <materials-view class="materials-view"></materials-view>
       </div>
@@ -47,7 +59,11 @@
         ]"
       >
         <!-- 添加拖动状态遮罩层 -->
-        <div v-if="isSpacePressed" class="drag-overlay" @click.stop=""></div>
+        <div
+          v-if="isSpacePressed"
+          class="drag-overlay"
+          @click.stop=""
+        ></div>
         <editor-view
           :page-config="pageConfig"
           :current-item="currentItem"
@@ -66,12 +82,12 @@
         :class="{ collapsed: propertyCollapsed }"
         v-if="!isView"
       >
-        <div class="property-toggle" @click="togglePropertyPanel">
-          <i
-            :class="
-              propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
-            "
-          ></i>
+        <div
+          class="property-toggle"
+          @click="togglePropertyPanel"
+        >
+          <i :class="propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
+            "></i>
         </div>
         <property-view
           class="property-view"
@@ -92,14 +108,19 @@
       fullscreen
       v-if="!isView"
     >
-      <div slot="title" class="dialog-title flex justify-between px-4">
+      <div
+        slot="title"
+        class="dialog-title flex justify-between px-4"
+      >
         <div class="flex items-center">
           <span class="mr-2">预览</span>
           <Icon icon="mdi-light:eye" />
         </div>
-        <el-button type="primary" size="mini" @click="openNewTab"
-          >页面预览</el-button
-        >
+        <el-button
+          type="primary"
+          size="mini"
+          @click="openNewTab"
+        >页面预览</el-button>
       </div>
       <div class="preview-container">
         <lc-view
@@ -175,6 +196,25 @@ export default {
     isView() {
       return this.$route.meta?.isView === true;
     },
+    appConfig() {
+      return this.pageConfig?.app_json_data || {}
+    },
+    themeList() {
+      return this.appConfig?.theme_list || [];
+    },
+    themeVariable() {
+      let style = {};
+      let themeVariable = {}
+      if (this.themeList?.length && this.currentTheme) {
+        themeVariable = this.themeList.find((item) => item.name === this.currentTheme)?.variable;
+      }
+      if (themeVariable && typeof themeVariable === "object") {
+        Object.keys(themeVariable).forEach((key) => {
+          style[`--${key}`] = themeVariable[key];
+        });
+      }
+      return style;
+    },
     outlineTreeProps() {
       return {
         label: "com_name",
@@ -195,66 +235,15 @@ export default {
       let style = {};
       if (this.pageConfig?.page_style_json_data) {
         style = cloneDeep(this.pageConfig?.page_style_json_data);
-        if (style.theme_list) {
-          delete style.theme_list;
-        }
-        if (style.theme_variable) {
-          delete style.theme_variable;
-        }
-        if (style.theme_name) {
-          delete style.theme_name;
-        }
       }
       return formatStyleData(style);
-    },
-    themeVariable() {
-      // 样式全局配置
-      const config = this.pageConfig?.page_style_json_data;
-      const themeList = config?.theme_list || [];
-      const themeName = sessionStorage.theme_name || config?.theme_name;
-      // 匹配当前主题的配置
-      if (Array.isArray(themeList) && themeList.length) {
-        let theme = themeList.find(
-          (item) => themeName && item.theme_name === themeName
-        );
-        if (!theme) {
-          theme = themeList[0];
-        }
-        config.theme_variable = theme.theme_variable;
-      }
-      const themeVariable = {};
-      if (
-        config?.theme_variable &&
-        typeof config.theme_variable &&
-        Object.keys(config?.theme_variable).length
-      ) {
-        Object.keys(config?.theme_variable).forEach((key) => {
-          themeVariable[`--${key}`] = config?.theme_variable[key];
-        });
-      }
-      return {
-        "--theme-color": themeVariable?.theme_color || "#173808",
-        "--theme-color-light": themeVariable?.theme_color_light || "#173808",
-        "--theme-color-dark": themeVariable?.theme_color_dark || "#173808",
-        "--header-bg-color": themeVariable?.header_bg_color || "#174b3b",
-        "--header-bg-menu-color": themeVariable?.header_menu_color || "#265e4d",
-        "--header-text-color": themeVariable?.header_text_color || "#fff",
-        "--header-active-text-color":
-          themeVariable?.header_active_text_color || "#fff",
-        "--header-active-bg-color":
-          themeVariable?.header_active_bg_color || "#235646",
-        "--header-hover-bg-color":
-          themeVariable?.header_hover_bg_color || "#235646",
-        "--header-hover-text-color":
-          themeVariable?.header_hover_text_color || "#fff",
-        ...themeVariable,
-      };
     },
   },
   data() {
     return {
       //
       pageNo: null,
+      currentTheme: "",
       currentId: null,
       currentItem: null,
       structureData: null,
@@ -430,6 +419,12 @@ export default {
         }
       });
       this.pageConfig = data;
+      if (data?.app_json_data?.current_theme) {
+        this.currentTheme = data?.app_json_data?.current_theme;
+        if (sessionStorage.theme_name && sessionStorage.theme_name !== this.currentTheme) {
+          this.currentTheme = sessionStorage.theme_name
+        }
+      }
       return data;
     },
     initComponents(data) {
@@ -478,7 +473,7 @@ export default {
       }
       this.components = this.buildComponentsTree(component_json);
     },
-    initPageParams() {},
+    initPageParams() { },
     clickComponent(data) {
       console.log(data);
       this.currentId = data.id;
@@ -958,6 +953,7 @@ export default {
         background: rgba(100, 100, 100, 0.1);
         cursor: grabbing;
       }
+
       &.in-edit {
         overflow: auto;
         padding: 60px;
@@ -1034,8 +1030,10 @@ export default {
   }
 
   .lc-layout {
+
     &.view-mode,
     &.preview-mode {
+
       .resize-handle-s,
       .resize-handles {
         display: none;

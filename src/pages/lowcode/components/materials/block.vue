@@ -436,7 +436,6 @@ export default {
   // height: 100%;
   position: relative;
   padding: 10px;
-  --primary-color: #2c48ff;
   $primary-color: #2c48ff;
   // border: 1px dashed rgba(44, 72, 255, 0.3);
   /* 添加浅色虚线边框 */
