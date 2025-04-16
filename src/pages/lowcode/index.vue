@@ -7,7 +7,11 @@
       v-if="!isView"
     >
       <template #left>
-        <div @click="outlineVisible = true" class="handle-btn" title="组件大纲">
+        <div
+          @click.stop="outlineVisible = true"
+          class="handle-btn"
+          title="组件大纲"
+        >
           <Icon icon="carbon-container-services" />
         </div>
       </template>
@@ -131,11 +135,13 @@
       direction="ltr"
       size="300px"
       :modal="false"
+      class="outline-container"
     >
       <el-tree
         :highlight-current="true"
         :default-expand-all="true"
         :expand-on-click-node="false"
+        :current-node-key="currentId"
         :data="outlineTree"
         :props="outlineTreeProps"
         @node-click="clickComponent"
@@ -1047,6 +1053,16 @@ export default {
 
   .preview-container {
     border: 1px dashed #ccc;
+  }
+}
+:deep(.outline-container) {
+  .el-tree-node {
+    &.is-current {
+      .el-tree-node__content {
+        background-color: #b3d4fc !important; /* 修改为你想要的背景颜色 */
+        color: #333; /* 修改为你想要的字体颜色 */
+      }
+    }
   }
 }
 </style>

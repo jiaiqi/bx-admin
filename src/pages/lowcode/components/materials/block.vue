@@ -438,7 +438,7 @@ export default {
   width: var(--content-width, 100%);
   // height: 100%;
   position: relative;
-  padding: 10px;
+  // padding: 10px;
   $primary-color: #2c48ff;
 
   .lc-layout__label {

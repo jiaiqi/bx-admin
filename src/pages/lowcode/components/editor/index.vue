@@ -254,7 +254,7 @@ export default {
   width: 100%;
   min-width: var(--content-width);
   position: relative;
-
+  padding-bottom: 50px;
   &.editor-drag-over {
     border: 2px dashed #ff740e;
     background-color: rgba(255, 116, 14, 0.05);

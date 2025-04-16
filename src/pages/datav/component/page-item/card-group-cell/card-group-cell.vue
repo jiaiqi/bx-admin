@@ -1459,7 +1459,7 @@ export default {
     cursor: pointer;
     transition: all 0.3s ease-in-out;
     &:hover {
-      scale: 1.02;
+      scale: 1.01;
     }
   }
   // scrollbar-width: thin; /* 隐藏滚动条 */
@@ -1513,13 +1513,9 @@ export default {
     /* 溢出显示省略号 */
     text-overflow: ellipsis;
     word-break: break-all;
-    // &:after{
-    // 	content:"...";
-    // 	position:relative;
-    // 	right:0;
-    // 	bottom:0;
-    // 	width:1em;
-    // }
+    &:hover{
+      color:var(--primary-color);
+    }
   }
 }
 

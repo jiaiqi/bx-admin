@@ -231,6 +231,7 @@ export default {
   height: 100%;
   cursor: pointer;
   z-index: 99;
+  flex:1;
   .nav-menu-label {
     z-index: 100;
     width: 100%;
@@ -242,9 +243,13 @@ export default {
     color: var(--menu-text-color);
     &:hover {
       background-color: var(--menu-hover-bg-color);
-      color: var(--menu-hover-text-color);
+      color: var(--menu-hover-text-color,inherit);
     }
-    
+    &.active{
+      background-color: var(--menu-active-bg-color);
+      color: var(--menu-hover-active-color,inherit);
+    }
+
     .nav-icon{
       width: 1rem;
       height: 1em;

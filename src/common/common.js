@@ -1,7 +1,16 @@
 // 处理后端返回的样式数据
-const formatStyleData = (json) => {
-  const str = JSON.stringify(json);
-  if (!isJSON(str)) return "";
+
+const formatStyleData = (val) => {
+  let json = val;
+  if (typeof json === 'string') {
+    try {
+      json = JSON.parse(json);
+    } catch (error) {
+      console.error("error：" + str + "!" + e);
+    }
+  }
+  let str = JSON.stringify(json);
+  if (!isJSON(str)) return {};
 
   let obj = {};
   let themeVariableKeys = [
@@ -31,11 +40,17 @@ const formatStyleData = (json) => {
         obj[_key] = `var(--${json[key]}, #409EFF)`;
       }
     }
-    if(json[key]?.includes('bg-color')) {
+    if (json[key]?.includes('bg-color')) {
       obj[_key] = `var(--${json[key]}, #409EFF)`;
     }
-    if(json[key]?.includes('text-color')) {
-      obj[_key] = `var(--${json[key]}, #fff)`; 
+    if (json[key]?.includes('text-color')) {
+      obj[_key] = `var(--${json[key]}, #fff)`;
+    }
+    if (_key === "background-image") {
+      obj[_key] = `url(${getImagePath(json[key])})`;
+    }
+    if (typeof obj[_key] === 'string' && obj[_key].includes('rpx')) {
+      obj[_key] = rpx2px(obj[_key]);
     }
   }
   if (obj["background-image"]) {
@@ -44,7 +59,6 @@ const formatStyleData = (json) => {
 
   return obj;
 };
-
 const isJSON = (str) => {
   if (typeof str == "string") {
     try {

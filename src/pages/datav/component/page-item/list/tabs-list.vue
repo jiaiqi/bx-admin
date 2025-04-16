@@ -187,6 +187,7 @@ export default {
 
 <style lang="scss" scoped>
 .tabs {
+  padding: 10px;
   &.vertical-tabs {
     display: flex;
 

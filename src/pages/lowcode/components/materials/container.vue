@@ -241,8 +241,8 @@ export default {
   // &.preview-mode {
   //   border-color: transparent;
   // }
-  margin: 10px 0;
-  padding: 10px;
+  // margin: 10px 0;
+  // padding: 10px;
 
   >.overlay {
     border: 1px dashed rgba($color: $primary-color, $alpha: 1);
