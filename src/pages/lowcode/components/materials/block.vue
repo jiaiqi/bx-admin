@@ -1,7 +1,7 @@
 <template>
   <div
     class="lc-block lc-layout"
-    :class="[subType]"
+    :class="[subType, {}]"
     :style="[
       setStyle,
       blockHeightStyle,
@@ -431,7 +431,7 @@ export default {
 }
 
 .lc-block {
-  width: var(--content-width,100%);
+  width: var(--content-width, 100%);
   // height: 100%;
   position: relative;
   padding: 10px;
@@ -491,6 +491,7 @@ export default {
       // padding: inherit;
     }
   }
+
   // 高度调整手柄样式
   .resize-handle-s {
     position: absolute;
@@ -580,15 +581,6 @@ export default {
     }
   }
 
-  // &.preview-mode {
-  //   border-color: transparent;
-
-  //   .resize-handle-s,
-  //   .resize-handles {
-  //     display: none;
-  //   }
-  // }
-
   &.drag-over {
     border: 2px dashed $primary-color;
     background-color: rgba(44, 72, 255, 0.05);
@@ -659,6 +651,7 @@ export default {
     &.active {
       border: 1px solid $primary-color;
       background-color: rgba($color: $primary-color, $alpha: 0.1);
+
       &::before {
         content: "布局容器";
         position: absolute;
@@ -675,50 +668,5 @@ export default {
       }
     }
   }
-
-  &.layout-1-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 10px;
-  }
-
-  &.layout-1-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 10px;
-  }
-
-  &.layout-1-4 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-gap: 10px;
-  }
-
-  &.layout-2-2-3070 {
-    display: grid;
-    grid-template-columns: 30% 70%;
-    grid-gap: 10px;
-  }
-
-  &.layout-2-2-7030 {
-    display: grid;
-    grid-template-columns: 70% 30%;
-    grid-gap: 10px;
-  }
 }
-
-// .layout-1-1 {
-//   // 一行一列
-//   display: flex;
-// }
-// .layout-1-2 {
-//   // 一行两列
-//   display: grid;
-//   grid-template-columns: 1fr 1fr;
-// }
-// .layout-1-3 {
-//   // 一行三列
-//   display: grid;
-//   grid-template-columns: 1fr 1fr 1fr;
-// }
 </style>

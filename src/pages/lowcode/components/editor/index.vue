@@ -74,7 +74,7 @@ export default {
     },
     contentWidth: {
       type: String,
-      default: "1200px",
+      default: "",
     },
     components: {
       type: Array,
