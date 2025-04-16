@@ -19,14 +19,14 @@
         <i class="el-icon-rank"></i>
       </div>
       <!-- 删除按钮 -->
-      <!-- <i class="el-icon-close" @click="$emit('delete', props)"></i> -->
-      <div
+      <i class="el-icon-close" @click="$emit('delete', props)"></i>
+      <!-- <div
         @click="$emit('delete', props)"
         class="delete-bar"
         title="删除"
       >
         <i class="el-icon-delete"></i>
-      </div>
+      </div> -->
     </div>
 
     <!-- 子组件 -->

@@ -135,6 +135,7 @@
       <el-tree
         :highlight-current="true"
         :default-expand-all="true"
+        :expand-on-click-node="false"
         :data="outlineTree"
         :props="outlineTreeProps"
         @node-click="clickComponent"

@@ -4,7 +4,7 @@
     :class="{
       'preview-mode': isPreview,
       'view-mode': isView,
-      'edit-mode': !isPreview && !isView,
+      'edit-mode': !isPreview && !isView && !com_name,
     }"
     :style="[
       contentStyle,
