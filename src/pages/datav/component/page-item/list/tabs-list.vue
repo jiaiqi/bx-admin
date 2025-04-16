@@ -220,7 +220,6 @@ export default {
 
     &:not(.button-mode) {
       margin-right: 20px;
-
     }
 
     &.active:not(.button-mode) {
@@ -232,7 +231,7 @@ export default {
       border: 1px solid var(--primary-color, #409EFF);
       border-radius: 0;
       padding: 4px 16px;
-      margin-right: 2px;
+      margin-right: 10px;
     }
 
     &.active.button-mode {

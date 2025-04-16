@@ -1,10 +1,17 @@
 <template>
   <div
     class="lc-content lc-layout"
-    :class="{ 'preview-mode': isPreview, 'view-mode': isView, 'edit-mode': !isPreview && !isView }"
-    :style="[contentStyle, {
-      '--content-name': com_name || '组件容器',
-    }]"
+    :class="{
+      'preview-mode': isPreview,
+      'view-mode': isView,
+      'edit-mode': !isPreview && !isView,
+    }"
+    :style="[
+      contentStyle,
+      {
+        '--content-name': com_name || '组件容器',
+      },
+    ]"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
     draggable="false"
@@ -16,18 +23,20 @@
   >
     <span
       class="comp-name"
-      v-if="!isPreview && !isView"
+      v-if="!isPreview && !isView && props.com_type !== 'layout'"
     >
-      {{ com_name || '' }}
+      {{ com_name || "" }}
     </span>
     <!-- 遮罩层 -->
     <div
       class="overlay"
       @click.stop="onTap"
-      :class="{ active: isActive }"
+      :class="{
+        active: isActive,
+        'child-is-layout': childType === 'layout',
+      }"
       v-if="!isPreview && !isView"
     >
-
       <!-- 删除按钮 -->
       <i
         class="el-icon-close"
@@ -138,7 +147,15 @@ export default {
     },
     isActive() {
       let childId = this.children?.[0]?.id;
+      if (this.props.type == "layout") {
+        return this.currentId && [this.id].includes(this.currentId);
+      }
       return this.currentId && [childId, this.id].includes(this.currentId);
+    },
+    childType() {
+      if (Array.isArray(this.children) && this.children.length) {
+        return this.children[0]?.type;
+      }
     },
     com_name() {
       if (Array.isArray(this.children) && this.children.length) {
@@ -182,6 +199,9 @@ export default {
     onTap() {
       if (this.isPreview) return;
       let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
+      if(this.childType==='layout'){
+        val = this.props;
+      }
       this.$emit("click", val);
     },
     onDelete() {
@@ -364,7 +384,7 @@ export default {
         if (draggedType === "content") {
           // 只有同一个布局容器内的组件可以互相替换位置
         }
-        if (draggedType === "component") {
+        if (draggedType === "component" || draggedType === "layout") {
           // if (!["container", "layout", "content"].includes(draggedType)) {
           // 允许放置非容器和非布局组件且非 content 组件
           e.dataTransfer.dropEffect = "copy";
@@ -387,7 +407,6 @@ export default {
       e.preventDefault();
       e.target.classList.remove("drag-over");
       e.target.classList.remove("drag-not-allowed");
-
       // 验证目标元素是否为允许的容器
       if (this.allowDrop) {
         const data = e.dataTransfer.getData("text/plain");
@@ -395,9 +414,48 @@ export default {
           try {
             const draggedElement = JSON.parse(data);
             // 只处理非container和非layout类型的组件
-            if (
-              draggedElement.type !== "container" &&
-              draggedElement.type !== "layout"
+            if (draggedElement.type === "layout") {
+              // 处理layout类型的组件
+              debugger;
+              if (!draggedElement._editType) {
+                draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
+                draggedElement._editType = "add";
+              }
+              draggedElement.parentId = this.id;
+              draggedElement.parent_no = this.com_no;
+              draggedElement.com_seq = (this.props.children.length + 1) * 100;
+              // 根据布局类型创建对应数量的内容组件
+              let columnCount = 1; // 默认一列
+              if (
+                draggedElement.child_num &&
+                typeof draggedElement.child_num === "number"
+              ) {
+                columnCount = draggedElement.child_num;
+              }
+              // 创建子内容组件
+              if (!draggedElement.children) {
+                draggedElement.children = [];
+              }
+              for (let i = 0; i < columnCount; i++) {
+                const contentItem = {
+                  id: `${
+                    draggedElement.id
+                  }_content_${i}_${new Date().getTime()}`,
+                  type: "content",
+                  component: "lc-content",
+                  com_type: "layout",
+                  name: `可放置组件区域${i + 1}`,
+                  com_name: `组件容器${i + 1}`,
+                  parentId: draggedElement.id,
+                  layout_party: "组件",
+                  _editType: "add",
+                };
+                draggedElement.children.push(contentItem);
+              }
+              this.$emit("add", draggedElement);
+            } else if (
+              draggedElement.type !== "container"
+              // &&draggedElement.type !== "layout"
             ) {
               draggedElement.parentId = this.id;
               draggedElement.parent_no = this.props.com_no;
@@ -449,6 +507,9 @@ export default {
 .overlay {
   @include layout.overlay;
   z-index: 99;
+  &.child-is-layout {
+    z-index: 0;
+  }
 }
 
 .lc-content {
@@ -462,7 +523,7 @@ export default {
   $primary-color: #17d57e;
 
   &.edit-mode {
-    background-color: rgba($color: #F0F0F0, $alpha: 0.3);
+    background-color: rgba($color: #f0f0f0, $alpha: 0.3);
   }
 
   /* 添加浅色虚线边框 */
@@ -480,7 +541,6 @@ export default {
   }
 
   .overlay {
-
     // border: 1px dashed rgba($color: $primary-color, $alpha: 0.3);
     &:hover {
       border: 2px dashed rgba($color: $primary-color, $alpha: 1);
@@ -504,7 +564,7 @@ export default {
     // }
 
     &.active {
-      border: 2px solid $primary-color !important;
+      border: 2px solid $primary-color;
     }
 
     &.drag-over {

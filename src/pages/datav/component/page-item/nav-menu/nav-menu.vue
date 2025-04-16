@@ -238,6 +238,13 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: var(--menu-bg-color);
+    color: var(--menu-text-color);
+    &:hover {
+      background-color: var(--menu-hover-bg-color);
+      color: var(--menu-hover-text-color);
+    }
+    
     .nav-icon{
       width: 1rem;
       height: 1em;

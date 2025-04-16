@@ -301,11 +301,17 @@ export default {
 
 .theme-select {
   width: 100px;
+  color: var(--text-color, inherit); // 使用主题变量
+  background-color: inherit; // 使用主题变量
   :deep(.el-input) {
+    color: var(--text-color, inherit); // 使用主题变量
+    background-color: inherit; // 使用主题变量
+
     .el-input__inner {
       border: none;
       background-color: transparent;
-      color: var(--primary-color, inherit); // 使用主题变量
+      color: var(--text-color, inherit); // 使用主题变量
+      background-color: inherit; // 使用主题变量
     }
   }
 }

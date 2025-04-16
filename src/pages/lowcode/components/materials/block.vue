@@ -7,7 +7,7 @@
       blockHeightStyle,
       blockWidthStyle,
       {
-        '--content-width': contentWidth,
+        '--content-width': useContentWidth && contentWidth||'',
       },
     ]"
     @dragover="handleDragOver"
@@ -144,6 +144,10 @@ export default {
     };
   },
   computed: {
+    useContentWidth() {
+      // 只有当父组件是页面容器的布局容器时，才可以使用contentWidth
+      return this.$parent?.$parent?.$options?.name === "lc-container";
+    },
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
@@ -354,7 +358,7 @@ export default {
         console.log("handleDragOver-block:", draggedType);
 
         if (draggedType === "content") {
-          // 只允许放置内容组件
+          // 只允许放置内容组件或者布局组件
           e.dataTransfer.dropEffect = "copy";
           e.currentTarget.classList.add("drag-over");
           e.currentTarget.classList.remove("drag-not-allowed");
@@ -649,7 +653,7 @@ export default {
     }
 
     &.active {
-      border: 1px solid $primary-color;
+      border: 2px solid $primary-color;
       background-color: rgba($color: $primary-color, $alpha: 0.1);
 
       &::before {

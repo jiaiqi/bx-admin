@@ -4,13 +4,44 @@ const formatStyleData = (json) => {
   if (!isJSON(str)) return "";
 
   let obj = {};
+  let themeVariableKeys = [
+    "primary-color",
+    "text-color",
+    "header-bg-color",
+    "header-text-color",
+    "footer-bg-color",
+    "footer-text-color",
+    "menu-bg-color",
+    "menu-text-color",
+    "menu-active-bg-color",
+    "menu-hover-bg-color",
+    "menu-active-text-color",
+    "menu-hover-text-color",
+  ];
   for (let key in json) {
     let _key = key.replaceAll("_", "-");
     obj[_key] = json[key];
+    // 处理样式变量
+    if (themeVariableKeys.includes(json[key])) {
+      obj[_key] = `var(--${json[key]})`;
+      if (json[key]?.includes('text')) {
+        obj[_key] = `var(--${json[key]}, #fff)`;
+      }
+      if (json[key]?.includes('bg')) {
+        obj[_key] = `var(--${json[key]}, #409EFF)`;
+      }
+    }
+    if(json[key]?.includes('bg-color')) {
+      obj[_key] = `var(--${json[key]}, #409EFF)`;
+    }
+    if(json[key]?.includes('text-color')) {
+      obj[_key] = `var(--${json[key]}, #fff)`; 
+    }
   }
   if (obj["background-image"]) {
     obj["background-size"] = "100% 100%";
   }
+
   return obj;
 };
 
@@ -96,8 +127,8 @@ export const docCookies = {
         document.cookie.replace(
           new RegExp(
             "(?:(?:^|.*;)\\s*" +
-              encodeURIComponent(sKey).replace(/[-.+*]/g, "\\$&") +
-              "\\s*\\=\\s*([^;]*).*$)|^.*$"
+            encodeURIComponent(sKey).replace(/[-.+*]/g, "\\$&") +
+            "\\s*\\=\\s*([^;]*).*$)|^.*$"
           ),
           "$1"
         )
@@ -149,8 +180,8 @@ export const docCookies = {
   hasItem: function (sKey) {
     return new RegExp(
       "(?:^|;\\s*)" +
-        encodeURIComponent(sKey).replace(/[-.+*]/g, "\\$&") +
-        "\\s*\\="
+      encodeURIComponent(sKey).replace(/[-.+*]/g, "\\$&") +
+      "\\s*\\="
     ).test(document.cookie);
   },
   keys: function () {
@@ -165,7 +196,7 @@ export const docCookies = {
   clear: function () {
     var aKeys = this.keys();
     for (var nIdx = 0; nIdx < aKeys.length; nIdx++) {
-      this.removeItem(aKeys[nIdx],'/');
+      this.removeItem(aKeys[nIdx], "/");
       this.removeItem(aKeys[nIdx]);
     }
   },

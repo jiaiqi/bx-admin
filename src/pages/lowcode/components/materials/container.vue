@@ -181,12 +181,10 @@ export default {
             ) {
               columnCount = draggedElement.child_num;
             }
-
             // 创建子内容组件
             if (!draggedElement.children) {
               draggedElement.children = [];
             }
-
             for (let i = 0; i < columnCount; i++) {
               const contentItem = {
                 id: `${draggedElement.id}_content_${i}_${new Date().getTime()}`,
@@ -319,8 +317,7 @@ export default {
     }
 
     &.active {
-      border: 1px solid $primary-color;
-      border: 1px dashed $primary-color;
+      border: 2px solid $primary-color;
       background-color: rgba($color: $primary-color, $alpha: 0.1);
 
       &::before {

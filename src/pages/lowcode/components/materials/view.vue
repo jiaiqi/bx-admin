@@ -37,7 +37,7 @@
             class=""
             style="color: #999; pointer-events: none"
           >
-            {{ name || "可放置组件区域" }}
+            {{ name || "可放置组件/布局容器" }}
           </span>
         </template>
         <template v-else-if="type === 'component' && props.com_name">

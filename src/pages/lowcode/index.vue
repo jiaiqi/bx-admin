@@ -34,7 +34,7 @@
       </div>
       <div
         class="editor-container"
-        @click="currentChange"
+        @click="currentChange()"
         :class="{ 'in-edit': !isPreview && !isView }"
         ref="editorContainer"
         @mousedown="handleMouseDown"
@@ -192,8 +192,9 @@ export default {
       return list;
     },
     contentAreaWidth() {
-      let width = this.pageConfig?.content_area_width || 1200;
-      return typeof width === "string" && width?.includes("%")
+      let width = this.pageConfig?.content_area_width || "100%";
+      return typeof width === "string" &&
+        (width?.includes("%") || width?.includes("vw") || width?.includes("vh"))
         ? width
         : `${parseFloat(width)}px`;
     },
@@ -239,18 +240,33 @@ export default {
     if (this.pageNo) {
       this.initPage();
     }
-    if (!this.isView && !this.isPreview) {
-      // 添加键盘事件监听
-      window.addEventListener("keydown", this.handleKeyDown);
-      window.addEventListener("keyup", this.handleKeyUp);
-    }
+    // this.$nextTick(() => {
+    //   if (!this.isView && !this.isPreview) {
+    //     // 添加键盘事件监听
+    //     document.addEventListener("keydown", this.handleKeyDown);
+    //     document.addEventListener("keyup", this.handleKeyUp);
+    //   }
+    // });
+    // 在组件挂载后，获取editorContainer引用
+    this.$nextTick(() => {
+      if (!this.isView && !this.isPreview && this.$refs.editorContainer) {
+        // 为editorContainer添加键盘事件监听
+        this.$refs.editorContainer.addEventListener(
+          "keydown",
+          this.handleKeyDown
+        );
+        this.$refs.editorContainer.addEventListener("keyup", this.handleKeyUp);
+        // 添加tabindex使div可以接收键盘事件
+        this.$refs.editorContainer.setAttribute("tabindex", "0");
+      }
+    });
   },
   beforeDestroy() {
-    if (!this.isView && !this.isPreview) {
-      // 移除键盘事件监听，防止内存泄漏
-      window.removeEventListener("keydown", this.handleKeyDown);
-      window.removeEventListener("keyup", this.handleKeyUp);
-    }
+    // if (!this.isView && !this.isPreview) {
+    //   // 移除键盘事件监听，防止内存泄漏
+    //   document.removeEventListener("keydown", this.handleKeyDown);
+    //   document.removeEventListener("keyup", this.handleKeyUp);
+    // }
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
@@ -918,8 +934,10 @@ export default {
     .editor-container {
       flex: 1;
       transition: all 0.3s ease;
-      // position: relative; /* 确保容器是相对定位的 */
-
+      // 添加以下样式，使容器可以获得焦点但不显示轮廓
+      &:focus {
+        outline: none;
+      }
       /* 添加拖动遮罩层样式 */
       .drag-overlay {
         position: absolute;
