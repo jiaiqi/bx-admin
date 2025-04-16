@@ -27,7 +27,7 @@ const actions = {
     if (themeList && themeList.length) {
       commit('SET_THEME_LIST', themeList);
     }
-    
+
     if (currentTheme) {
       commit('SET_CURRENT_THEME', currentTheme);
     } else if (state.currentTheme && themeList && themeList.length) {
@@ -47,18 +47,22 @@ const getters = {
   themeVariable: state => {
     let style = {};
     let themeVariable = {};
-    
+
     if (state.themeList.length && state.currentTheme) {
       const theme = state.themeList.find(item => item.name === state.currentTheme);
       themeVariable = theme?.variable || {};
     }
-    
+
     if (themeVariable && typeof themeVariable === "object") {
       Object.keys(themeVariable).forEach(key => {
-        style[`--${key}`] = themeVariable[key];
+        if (key.startsWith('--')) {
+          style[key] = themeVariable[key];
+        } else {
+          style[`--${key}`] = themeVariable[key];
+        }
       });
     }
-    
+
     return style;
   }
 };

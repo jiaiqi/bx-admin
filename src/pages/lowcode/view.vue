@@ -40,30 +40,11 @@ export default {
     appConfig() {
       return this.pageConfig?.app_json_data || {};
     },
-    themeList() {
-      return this.appConfig?.theme_list || [];
-    },
-    themeVariable() {
-      let style = {};
-      let themeVariable = {};
-      if (this.themeList?.length && this.currentTheme) {
-        themeVariable = this.themeList.find(
-          (item) => item.name === this.currentTheme
-        )?.variable;
-      }
-      if (themeVariable && typeof themeVariable === "object") {
-        Object.keys(themeVariable).forEach((key) => {
-          style[`--${key}`] = themeVariable[key];
-        });
-      }
-      return style;
-    },
   },
   data() {
     return {
       //
       pageNo: null,
-      currentTheme: null,
       // 组件数据
       components: [],
       pageConfig: null,

@@ -130,7 +130,7 @@ let routes = [
     component: Add,
   },
   {
-    path:"/frameForm",
+    path: "/frameForm",
     name: "frameForm",
     component: () => import("@/pages/common/inner/form.vue"),
   },
@@ -307,13 +307,13 @@ let routes = [
   {
     path: "/viewpdf",
     name: "viewpdf",
-    component: ()=>import("@/components/common/view-pdf"),
+    component: () => import("@/components/common/view-pdf"),
     //  (resolve) => require(["@/components/common/view-pdf"], resolve),
   }, // 预览可以预览发票信息，万象使用
   {
     path: '/viewpdf2',
     name: 'viewpdf2',
-    component: ()=>import("@/components/common/viewpdf"),
+    component: () => import("@/components/common/viewpdf"),
     // resolve => require(['@/components/common/viewpdf'],resolve) ,
   },  // 预览带有标题但发票内容部分无法解码
 
@@ -392,30 +392,23 @@ let routes = [
     ],
   },
   {
-    path: "/lowcode",
-    name: "lowcode",
+    path: "/lowcode/editor/:pageNo",
+    name: "lowcode-editor",
+    meta: {
+      isEditor: true,
+    },
     component: () =>
       import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
-    children: [
-      {
-        path: "editor/:pageNo",
-        name: "lowcode-editor",
-        meta: {
-          isEditor: true,
-        },
-        component: () =>
-          import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
-      },
-      {
-        path: "view/:pageNo",
-        name: "lowcode-detail",
-        meta: {
-          isView: true,
-        },
-        component: () =>
-          import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
-      },
-    ],
+  },
+  {
+    path: "/lowcode/view/:pageNo",
+    name: "lowcode-view",
+    meta: {
+      isEditor: false,
+      isView: true,
+    },
+    component: () =>
+      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
   },
   {
     path: "/site/:pageNo",
@@ -759,13 +752,13 @@ routes.push(
   }
 )
 
-routes.push( { //专家详情
+routes.push({ //专家详情
   path: "/expert-detail/:id",
   name: "ExpertDetail",
   component: () => import("@/pages/expert/detail.vue")
 })
 
-routes.push( { //网站
+routes.push({ //网站
   path: "/force-login",
   name: "forceLogin",
   component: () => import("@/pages/datav/login/login.vue")

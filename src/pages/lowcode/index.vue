@@ -3,7 +3,7 @@
     <header-view
       :is-preview.sync="previewVisible"
       :json-visible.sync="jsonVisible"
-      @click.native="currentChange"
+      @click.native="currentChange()"
       v-if="!isView"
     >
       <template #left>
@@ -101,7 +101,7 @@
           >页面预览</el-button
         >
       </div>
-      <div class="preview-container">
+      <div class="preview-container" :style="[themeVariable]">
         <lc-view
           v-for="item in components"
           :key="item.id"

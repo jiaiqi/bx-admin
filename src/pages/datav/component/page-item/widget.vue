@@ -85,12 +85,14 @@ export default {
     ...mapGetters("theme", ["themeList", "themeVariable"]),
     options() {
       if (this.widgetType === "下拉切换主题") {
-        return this.themeList?.map((item) => {
-          return {
-            value: item.name,
-            label: item.name,
-          };
-        }) || [];
+        return (
+          this.themeList?.map((item) => {
+            return {
+              value: item.name,
+              label: item.name,
+            };
+          }) || []
+        );
       }
       return [];
     },
@@ -243,26 +245,30 @@ export default {
       }
       this.$emit("resize");
     },
-    
+
     // 处理主题变更
     handleThemeChange(value) {
       if (value && value !== this.currentTheme) {
         this.setCurrentTheme(value);
-        
+
         // 应用主题变量到文档根元素
-        this.applyThemeVariables();
-        
+        // this.applyThemeVariables();
+
         // 触发主题变更事件，通知其他组件
         this.$emit("theme-change", value);
       }
     },
-    
+
     // 应用主题变量到文档根元素
     applyThemeVariables() {
       if (this.themeVariable) {
         const root = document.documentElement;
         Object.entries(this.themeVariable).forEach(([key, value]) => {
-          root.style.setProperty(`--${key}`, value);
+          if (key.startsWith("--")) {
+            root.style.setProperty(`${key}`, value);
+          } else {
+            root.style.setProperty(`--${key}`, value);
+          }
         });
       }
     },
@@ -294,7 +300,7 @@ export default {
 }
 
 .theme-select {
-  width: 100px; 
+  width: 100px;
   :deep(.el-input) {
     .el-input__inner {
       border: none;
