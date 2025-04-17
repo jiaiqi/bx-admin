@@ -20,6 +20,7 @@
         v-for="item in childComponents"
         v-bind="item"
         :page-item="item.data"
+        :content-width="contentWidth"
         :key="item.id"
         :currentId="currentId"
         :isPreview="isPreview"
@@ -33,10 +34,7 @@
     <slot v-else>
       <template v-if="!isView && !isPreview">
         <template v-if="type === 'content'">
-          <span
-            class=""
-            style="color: #999; pointer-events: none"
-          >
+          <span class="" style="color: #999; pointer-events: none">
             {{ name || "可放置组件/布局容器" }}
           </span>
         </template>

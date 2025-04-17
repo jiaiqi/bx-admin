@@ -61,6 +61,10 @@ export default {
     isView: {
       type: Boolean,
       default: false,
+    },
+    contentWidth:{
+      type: [String, Number],
+      default: "",
     }
   },
   computed: {
@@ -229,7 +233,7 @@ export default {
 
 .lc-container {
   width: 100%;
-  min-height: 100px;
+  min-height: 30px;
   min-width: var(--content-width);
   display: flex;
   flex-direction: column;

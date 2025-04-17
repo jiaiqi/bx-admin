@@ -75,7 +75,7 @@ const subMenu = computed(() => {
   if (!Array.isArray(json)) {
     return [];
   }
-  return json;
+  return json.filter((item) => item.disp_flag !== "否");
 });
 const mixHoverStyle = computed(() => {
   let style = {};

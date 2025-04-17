@@ -1,10 +1,6 @@
 <template>
   <div v-if="viewMode === '展开子导航'">
-    <div
-      class="nav-menu"
-      v-for="(item, key) in subMenu"
-      :key="key"
-    >
+    <div class="nav-menu" v-for="(item, key) in subMenu" :key="key">
       <nav-menu
         :config="item"
         :parent-style="navStyle"
@@ -18,19 +14,33 @@
     class="nav-menu"
     :class="{ isHovered: isHovered }"
     v-else-if="label"
-    @mouseenter="isHovered = true;showChild = true"
+    @mouseenter="
+      isHovered = true;
+      showChild = true;
+    "
     @mouseleave="isHovered = false"
     ref="navMenu"
   >
     <div
       class="nav-menu-label"
-      :style="[setLabelStyle,mixNavStyle]"
+      :style="[setLabelStyle, mixNavStyle]"
       @click.stop.capture="navTo(jumpJson)"
     >
       <span>{{ label }}</span>
-      <img class="nav-icon" :src="getImagePath(config.nav_icon_selected)" alt="" v-if="config.nav_icon_selected && isHovered">
-      <img class="nav-icon" :src="getImagePath(config.nav_icon)" alt="" v-else-if="config.nav_icon">
+      <img
+        class="nav-icon"
+        :src="getImagePath(config.nav_icon_selected)"
+        alt=""
+        v-if="config.nav_icon_selected && isHovered"
+      />
+      <img
+        class="nav-icon"
+        :src="getImagePath(config.nav_icon)"
+        alt=""
+        v-else-if="config.nav_icon"
+      />
     </div>
+    <!-- <Teleport to="#content"> -->
     <nav-menu-child
       :config="config"
       :parent-config="parentConfig"
@@ -39,6 +49,8 @@
       :parent-style="parentStyle"
       @leave="showChild = false"
     ></nav-menu-child>
+    <!-- </Teleport> -->
+
     <!-- <div
       class="nav-menu-child"
       :class="{ active: isHovered }"
@@ -60,23 +72,24 @@
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import NavMenuChild from "./nav-menu-list.vue";
 import NavMenu from "./nav-menu.vue";
-
+import Teleport from "vue2-teleport";
 export default {
   name: "NavMenu",
   components: {
     NavMenuChild,
     NavMenu,
+    Teleport,
   },
   props: {
     config: Object,
     parentConfig: Object,
     pageConfig: Object,
-    parentStyle:Object
+    parentStyle: Object,
   },
   data() {
     return {
       isHovered: false,
-      showChild:false,
+      showChild: false,
       position: {
         top: 0,
         left: 0,
@@ -121,7 +134,7 @@ export default {
       if (!Array.isArray(json)) {
         return [];
       }
-      return json;
+      return json.filter((item) => item.disp_flag !== "否");
     },
     mixHoverStyle() {
       let style = {};
@@ -231,7 +244,7 @@ export default {
   height: 100%;
   cursor: pointer;
   z-index: 99;
-  flex:1;
+  flex: 1;
   .nav-menu-label {
     z-index: 100;
     width: 100%;
@@ -243,14 +256,14 @@ export default {
     color: var(--menu-text-color);
     &:hover {
       background-color: var(--menu-hover-bg-color);
-      color: var(--menu-hover-text-color,inherit);
+      color: var(--menu-hover-text-color, inherit);
     }
-    &.active{
+    &.active {
       background-color: var(--menu-active-bg-color);
-      color: var(--menu-hover-active-color,inherit);
+      color: var(--menu-hover-active-color, inherit);
     }
 
-    .nav-icon{
+    .nav-icon {
       width: 1rem;
       height: 1em;
       display: inline-block;

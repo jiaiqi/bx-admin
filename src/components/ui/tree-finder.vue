@@ -70,20 +70,24 @@ export default {
         checkStrictly: top?.env?.includes("health") ? false : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
         lazy: true,
         lazyLoad: (node, resolve) => {
-          if (this.dispLoaderV2?.refedCol && node.data?.[this.dispLoaderV2.refedCol]) {
-            this.loadChildren(this.dispLoaderV2, node.data[this.dispLoaderV2.refedCol])
-              .then((list) => {
-                resolve(list)
-              })
+          if (
+            this.dispLoaderV2?.refedCol &&
+            node.data?.[this.dispLoaderV2.refedCol]
+          ) {
+            this.loadChildren(
+              this.dispLoaderV2,
+              node.data[this.dispLoaderV2.refedCol]
+            ).then((list) => {
+              resolve(list);
+            });
           } else if (!node.data?.[this.dispLoaderV2.refedCol]) {
-            this.loadOptions().then(res => {
+            this.loadOptions().then((res) => {
               if (Array.isArray(res)) {
-                resolve(res)
+                resolve(res);
               }
-            })
+            });
           }
-
-        }
+        },
       };
       return props;
     },
@@ -185,7 +189,7 @@ export default {
         conditions.push({
           colName: loader.parentCol,
           ruleType: "eq",
-          value: parentNo
+          value: parentNo,
         });
       }
       var params = {
@@ -201,14 +205,14 @@ export default {
 
       const response = await this.$http.post(url, params);
       if (response?.data?.state == "SUCCESS") {
-        return response.data.data.map(item => {
+        return response.data.data.map((item) => {
           item.children = item.is_leaf === "是" ? null : [];
           item.leaf = item.is_leaf === "是";
-          return item
-        })
+          return item;
+        });
       } else {
         console.error("loadChildren error", response.data);
-        return []
+        return [];
       }
     },
     /**
@@ -348,7 +352,7 @@ export default {
           this.field.model = item;
           this.$emit("field-value-changed", this.field.info.name, this.field);
         }
-        return options
+        return options;
         // if (parentNo && this.options.length > 0) {
         //   this.options = this.setOptionChild(
         //     this.options,
@@ -465,31 +469,31 @@ export default {
     onChange(val) {
       if (Array.isArray(val)) {
         if (val.length) {
-          val = val[val.length - 1]
+          val = val[val.length - 1];
         } else {
-          val = null
+          val = null;
         }
       }
-      const data = this.$refs?.elCascader?.getCheckedNodes?.()?.[0]?.data;
-      if (val !== this.field.getSrvVal()) {
+      setTimeout(() => {
+        const data = this.$refs?.elCascader?.getCheckedNodes?.()?.[0]?.data;
         if (data) {
-          this.field.model = data
+          this.field.model = data;
         } else {
-          this.field.model = null
+          this.field.model = null;
         }
-        this.$nextTick(() => {
+        if (val !== this.field.getSrvVal()) {
           this.$emit("field-value-changed", this.field.info.name, this.field);
-        })
-      }
-      let loader = this.dispLoaderV2;
-      if (loader.parentCol&&!val) {
-        console.log(val, "onSelectChange");
-        this.treeLazySelect(loader, val).then(res=>{
-          if(Array.isArray(res) && res.length > 0){
-            this.options = res
-          }
-        });
-      }
+        }
+        let loader = this.dispLoaderV2;
+        if (loader.parentCol && !val) {
+          console.log(val, "onSelectChange");
+          this.treeLazySelect(loader, val).then((res) => {
+            if (Array.isArray(res) && res.length > 0) {
+              this.options = res;
+            }
+          });
+        }
+      }, 100);
     },
     onSelectChange(val) {
       let loader = this.dispLoaderV2;
@@ -686,7 +690,7 @@ export default {
     },
   },
 
-  destroyed: function () { },
+  destroyed: function () {},
 
   mounted: function () {
     this.loadOptions().then((_) => {

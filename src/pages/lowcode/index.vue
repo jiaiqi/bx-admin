@@ -110,6 +110,7 @@
           v-for="item in components"
           :key="item.id"
           v-bind="item"
+          :content-width="contentAreaWidth"
           :isPreview="true"
         ></lc-view>
       </div>

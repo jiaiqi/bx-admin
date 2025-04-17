@@ -64,6 +64,7 @@
     "vue-pdf": "^4.3.0",
     "vue-router": "3.0.3",
     "vue-sketch-ruler": "^1.0.3",
+    "vue2-teleport": "^1.1.4",
     "vuedraggable": "^2.24.3",
     "vuex": "3",
     "xlsx": "^0.17.0"

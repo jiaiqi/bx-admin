@@ -12,10 +12,11 @@
             pkCol="id"
             @executor-complete="onPageUpdate"
             @form-loaded="pageLoading = false"
-            @field-value-changed="onValueChange($event,'page-update')"
+            @field-value-changed="onValueChange($event, 'page-update')"
             v-if="pageId"
           >
           </simple-update>
+          <div v-else>请先保存</div>
           <!-- <simple-add
             :service="pageService"
             :navAfterSubmit="false"
@@ -35,8 +36,7 @@
           (!componentId &&
             pageId &&
             currentItem &&
-            currentItem._type === 'component'
-          )
+            currentItem._type === 'component')
         "
         v-loading="componentLoading"
       >
@@ -53,11 +53,13 @@
               (componentLoaded = true),
               setCompServiceCfg()
           "
-          @field-value-changed="onValueChange($event,'component-update')"
+          @field-value-changed="onValueChange($event, 'component-update')"
           v-if="componentId"
         >
         </simple-update>
-        <simple-add
+        <div v-else>请先保存</div>
+
+        <!-- <simple-add
           ref="compForm"
           :pageName="'list-duplicate'"
           :service="componentService"
@@ -66,10 +68,10 @@
           @form-loaded="componentLoading = false"
           :navAfterSubmit="false"
           @submitted2mem=""
-          @field-value-changed="onValueChange($event,'component-add')"
+          @field-value-changed="onValueChange($event, 'component-add')"
           v-else-if="showAddComponent"
         >
-        </simple-add>
+        </simple-add> -->
       </el-tab-pane>
       <el-tab-pane
         label="组件配置"
@@ -83,7 +85,9 @@
           :pk="compServiceCfg.pk"
           :pkCol="compServiceCfg.pkCol"
           @action-complete="onComponentUpdate"
-          @field-value-changed="onValueChange($event,'component-cfg-update',compServiceCfg)"
+          @field-value-changed="
+            onValueChange($event, 'component-cfg-update', compServiceCfg)
+          "
         >
         </simple-update>
       </el-tab-pane>
@@ -167,12 +171,19 @@ export default {
         }
       },
     },
+    currentComponent: {
+      handler(newValue) {
+        if (newValue?.id) {
+          this.componentId = null;
+          this.$nextTick(() => {
+            this.componentId = newValue.id + "";
+          });
+        } else {
+          this.componentId = null;
+        }
+      },
+    },
     componentId(newValue, oldValue) {
-      // if (newValue && !oldValue) {
-      //   this.activeTab = "组件";
-      // } else if (!newValue && oldValue) {
-      //   this.activeTab = "页面";
-      // }
       if (newValue && newValue !== oldValue) {
         this.componentLoading = true;
         this.layoutLoading = true;
@@ -246,11 +257,11 @@ export default {
       );
     },
     addCompDefaultValues() {
-      let keys = pageCompCols
+      let keys = pageCompCols;
       let obj = {};
       keys.forEach((item) => {
-        obj[item] = this.currentItem.data[item]
-      })
+        obj[item] = this.currentItem.data[item];
+      });
       return {
         ...obj,
         com_type: this.currentItem.com_type,
@@ -269,20 +280,21 @@ export default {
     pageService() {
       return this.pageId ? `srvpage_cfg_page_update` : `srvpage_cfg_page_add`;
     },
-    componentId() {
-      if (
-        this.currentComponent?.id 
-        // && this.currentComponent?.com_type !== "layout"
-      ) {
-        return this.currentComponent?.id + "";
-      } else {
-        return false;
-      }
-    },
+    // componentId() {
+    //   if (
+    //     this.currentComponent?.id
+    //     // && this.currentComponent?.com_type !== "layout"
+    //   ) {
+    //     return this.currentComponent?.id + "";
+    //   } else {
+    //     return false;
+    //   }
+    // },
     componentService() {
       if (this.componentId) {
         // update
-        return `srvpage_cfg_page_component_update`;
+        return `srvpage_cfg_page_component_editor_update`;
+        // return `srvpage_cfg_page_component_update`;
       } else {
         // add
         return `srvpage_cfg_page_component_add`;
@@ -309,16 +321,17 @@ export default {
       activeTab: "页面",
       componentLoaded: false,
       compServiceCfg: null,
+      componentId: "",
     };
   },
   methods: {
-    onValueChange(value,type){
-      this.$emit('page-change',value,type,this.compType,this.componentId)
+    onValueChange(value, type) {
+      this.$emit("page-change", value, type, this.compType, this.componentId);
       // switch (type) {
       //   case 'page-update':
       //     this.$emit('page-change',value,type)
       //     break;
-      
+
       //   default:
       //     break;
       // }
@@ -620,12 +633,12 @@ export default {
       let result = [];
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {
-          if (item?._type === "component" && item._editType === 'add') {
+          if (item?._type === "component" && item._editType === "add") {
             result.push(item);
           } else if (Array.isArray(item.children)) {
             let arr = this.findNormalComponents(item.children);
             if (arr.length) {
-              result = result.concat(arr); 
+              result = result.concat(arr);
             }
           }
         });
@@ -691,8 +704,6 @@ export default {
             let data = {};
             if (!item) {
               console.log(list);
-
-              ;
             }
             keys.forEach((key) => {
               if (item[key]) {
@@ -772,7 +783,7 @@ export default {
         if (updateList?.length) {
           //更新页面组件 目前只有组件顺序可以更新
           const updateKeys = ["com_seq", "layout_height", "layout_width"];
-          const updateObj = []
+          const updateObj = [];
           updateList.forEach((item) => {
             // 组装更新对象
             const data = {};
@@ -781,11 +792,12 @@ export default {
                 data[key] = item[key];
               }
             });
-            if(!Object.keys(data).length) {
+            if (!Object.keys(data).length) {
               return;
             }
-            const obj =  {
-              serviceName: "srvpage_cfg_page_component_update",
+            const obj = {
+              // serviceName: "srvpage_cfg_page_component_update",
+              serviceName: "srvpage_cfg_page_component_editor_update",
               condition: [
                 {
                   colName: "id",
@@ -802,7 +814,7 @@ export default {
         let addList = this.findLayoutComponentsByType(oldComponents, "add");
         if (addList?.length) {
           const normalChild = this.findNormalComponents(addList);
-          
+
           if (Array.isArray(normalChild) && normalChild.length) {
             // todo 更新组件
             //  this.updateComponentNo()
@@ -869,7 +881,6 @@ export default {
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
-      
       if (pageData?.id) {
         //创建子组件
         if (layout?.length === 0) {

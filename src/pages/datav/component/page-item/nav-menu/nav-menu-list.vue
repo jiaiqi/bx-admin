@@ -88,7 +88,7 @@ export default {
       if (!Array.isArray(json)) {
         return [];
       }
-      return json;
+      return json.filter((item) => item.disp_flag !== "否");
     },
     mixHoverStyle() {
       let style = {};
@@ -137,7 +137,7 @@ export default {
     },
   },
   mounted() {
-    document.body.querySelector('#content').appendChild(this.$el);
+    // document.body.querySelector('#content').appendChild(this.$el);
     this.setEleSize();
     setTimeout(() => {
       this.setEleSize();
@@ -145,7 +145,7 @@ export default {
     window.addEventListener("scroll", this.listenOnScroll);
   },
   beforeDestroy() {
-    document.body.querySelector('#content').removeChild(this.$el);
+    // document.body.querySelector('#content').removeChild(this.$el);
     window.removeEventListener("scroll", this.listenOnScroll);
   },
   methods: {

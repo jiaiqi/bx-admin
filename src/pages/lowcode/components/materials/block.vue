@@ -1,13 +1,15 @@
 <template>
   <div
     class="lc-block lc-layout"
-    :class="[subType, {}]"
+    :class="[subType, {
+      'use-content-width': useContentWidth,
+    }]"
     :style="[
       setStyle,
       blockHeightStyle,
       blockWidthStyle,
       {
-        '--content-width': useContentWidth && contentWidth||'',
+        '--content-width': (useContentWidth && contentWidth) || '',
       },
     ]"
     @dragover="handleDragOver"
@@ -131,7 +133,7 @@ export default {
   },
   data() {
     return {
-      blockHeight: this.height || 10, // 默认10vh
+      blockHeight: this.height || 2, // 默认2vh
       blockWidth: this.width || null, // 默认为null，使用CSS中的宽度
       resizingHeight: false,
       resizingWidth: false,
@@ -183,7 +185,8 @@ export default {
     },
     blockHeightStyle() {
       return {
-        minHeight: this.blockHeight ? `${this.blockHeight}vh` : null,
+        minHeight: this.blockHeight ? `${this.blockHeight * 10}px` : null,
+        // minHeight: this.blockHeight ? `${this.blockHeight}vh` : null,
       };
     },
     blockWidthStyle() {
@@ -264,7 +267,8 @@ export default {
       if (this.resizingHeight) {
         // 计算移动的距离，转换为vh单位
         // 视口高度的1%对应的像素值
-        const vh = window.innerHeight / 100;
+        // const vh = window.innerHeight / 100;
+        const vh = 10;
         // 移动的vh值，向上取整到最接近的整数
         const deltaVh = Math.round((e.clientY - this.startY) / vh);
 
@@ -435,7 +439,10 @@ export default {
 }
 
 .lc-block {
-  width: var(--content-width, 100%);
+  width:100%;
+  &.use-content-width{
+    width: var(--content-width, 100%);
+  }
   // height: 100%;
   position: relative;
   // padding: 10px;
