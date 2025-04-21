@@ -95,7 +95,7 @@
                       </span> -->
                   </div>
                   <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']) && childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select'].length > 0">
-                      <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']" class="font-weight-bold">
+                      <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" :key="index" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_select']" class="font-weight-bold">
                           <!-- <el-image
                           style="width: 48px; height: 48px"
                           :src="item.index_icon"
@@ -135,7 +135,7 @@
                       </el-col >
                   </el-row> -->
                   <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_course_select']) && childServiceLoadDatas['srvledu_semester_evaluate_course_select'].length > 0">
-                      <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_course_select']" class="font-weight-bold">
+                      <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" :key="index" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_course_select']" class="font-weight-bold">
                           <div style="color:#000;line-height:1.5rem;min-width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{item.index_name}}</div>
                           <div style="padding:8px;text-align:left">
                               <div style="color:#007bff;line-height:1.5rem;    white-space: nowrap;"><span style="font-size:1rem;min-width:3rem;" >{{item.index_cnt}}</span></div>
@@ -154,7 +154,7 @@
                       </span> -->
                   </div>
                   <el-row :gutter="20" class="text item " style="border: 1px solid #eee;border-radius:10px;padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select']) && childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select'].length > 0">
-                      <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select']" class="font-weight-bold">
+                      <el-col :span="6" :style="`padding:4px;display: flex;align-items: center;text-align:center;position: relative;border-left:${index%4 !== 0 ? '1px solid #eee' : '0'};`" :key="index" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_labor_task_tea_select']" class="font-weight-bold">
                           <!-- <el-image
                           style="width: 48px; height: 48px"
                           :src="item.index_icon"
@@ -196,7 +196,7 @@
                           <el-col :span="12" :style="`padding:8px;height:100%;`" >
                               <el-card class="" shadow="never" :style="`border:0px solid #eee;`">
                                   <el-row :gutter="20" class="text item " style="padding:10px;" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']) && childServiceLoadDatas['srvledu_semester_evaluate_task_state_select'].length > 0">
-                                      <el-col :span="24" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:1px solid #eee;justify-content: center;`" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']" class="font-weight-bold">
+                                      <el-col :span="24" :style="`padding:8px;display: flex;align-items: center;text-align:center;position: relative;border-left:1px solid #eee;justify-content: center;`" :key="index" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_evaluate_task_state_select']" class="font-weight-bold">
                                           <div style="color:#000;line-height:1.5rem;width:8rem;font-size:1rem;white-space: nowrap;text-align:left;padding-left:2rem;">{{`${item.task_state}总数量`}}</div>
                                           <div style="padding:8px;text-align:left;width:8rem;">
                                               <div :style="`color:${item.task_state == '未完成' ? 'red' :  '#007bff'};line-height:1.5rem;white-space: nowrap;text-align:right;`">
@@ -260,7 +260,7 @@
                       <span style="border-left:3px solid #409EFF;padding-left:5px;">{{`老师评语`}}</span>
                   </div>
                   <el-row :gutter="20" class="text item " :style="`padding:8px;border-radius: 10px;min-height:150px`" >
-                      <el-col :span="24" :style="`padding:8px;`" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_comment_semester_select']) && childServiceLoadDatas['srvledu_semester_comment_semester_select'].length > 0" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_comment_semester_select']">
+                      <el-col :span="24" :style="`padding:8px;`" v-if="Array.isArray(childServiceLoadDatas['srvledu_semester_comment_semester_select']) && childServiceLoadDatas['srvledu_semester_comment_semester_select'].length > 0" :key="index" v-for="(item,index) in childServiceLoadDatas['srvledu_semester_comment_semester_select']">
                           <div style="text-align:left">
                               <div style="color:#000;line-height:1.5rem;font-size:0.8rem;white-space: nowrap;"class="font-weight-bold">{{item.create_time}}<span style="padding-left:20px;">({{item.create_user_disp}})</span></div>
                               <div style="color:#000;line-height:1.5rem; font-size:0.9rem;"class="font-weight-bold">{{item.evaluate_comment}}

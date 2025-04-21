@@ -1,7 +1,7 @@
 <template>
 	<div class="notice-bar" v-if="pageItem.notice_bar_json && list && list.length">
 		<img :src="getImagePath(pageItem.notice_bar_json.icon)" class="notice-icon" v-if="pageItem.notice_bar_json">
-		<el-alert :title="item" type="warning" v-for="item in list">
+		<el-alert :title="item" :key="item" type="warning" v-for="item in list">
 		</el-alert>
 		<!-- <u-notice-bar class="notice-item" bg-color="#fff" color="#333" font-size="26" padding="9px 0 9px 30px" :mode="mode" :list="list"
 			:volume-icon="false" :more-icon="showLinkIcon" :duration="duration" :speed="speed" :is-circular="false">
