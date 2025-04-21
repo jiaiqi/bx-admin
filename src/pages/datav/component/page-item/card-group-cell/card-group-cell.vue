@@ -1485,25 +1485,24 @@ export default {
   }
 
   // background-color: #eee;
-  > .bx-cell-row {
-    &:first-child {
-      border-left: 0 !important;
-    }
+  // > .bx-cell-row {
+  //   &:first-child {
+  //     border-left: 0 !important;
+  //   }
+  //   &:last-child {
+  //    border-right: 0 !important;
+  //   }
 
-    &:last-child {
-      border-right: 0 !important;
-    }
+  //   > .bx-cell-row {
+  //     &:first-child {
+  //       border-left: 0 !important;
+  //     }
 
-    > .bx-cell-row {
-      &:first-child {
-        border-left: 0 !important;
-      }
-
-      &:last-child {
-        border-right: 0 !important;
-      }
-    }
-  }
+  //     &:last-child {
+  //      border-right: 0 !important;
+  //     }
+  //   }
+  // }
 
   .bx-cell-string {
     text-align: justify;

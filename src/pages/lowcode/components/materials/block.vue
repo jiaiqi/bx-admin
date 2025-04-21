@@ -1,47 +1,24 @@
 <template>
-  <div
-    class="lc-block lc-layout"
-    :class="[subType, {
-      'use-content-width': useContentWidth,
-    }]"
-    :style="[
-      setStyle,
-      blockHeightStyle,
-      blockWidthStyle,
-      {
-        '--content-width': (useContentWidth && contentWidth) || '',
-      },
-    ]"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-    @drop="handleDrop"
-    @dragend="handleDragEnd"
-  >
+  <div class="lc-block lc-layout" :style="[
+    blockHeightStyle,
+    blockWidthStyle,
+    setParentStyle,
+    {
+      '--content-width': (useContentWidth && contentWidth) || '',
+    },
+  ]" :class="[subType, {
+    'use-content-width': useContentWidth,
+    'show-label': props.show_label === '是' && props.com_label,
+  }]" @dragover="handleDragOver" @dragleave="handleDragLeave" @drop="handleDrop" @dragend="handleDragEnd">
     <!-- 遮罩层 -->
-    <div
-      class="overlay"
-      :class="{ active: currentId && currentId === id }"
-      v-if="!isPreview && !isView"
-      @click.stop="$emit('click', props)"
-    >
+    <div class="overlay" :class="{ active: currentId && currentId === id }" v-if="!isPreview && !isView"
+      @click.stop="$emit('click', props)">
       <!-- 删除按钮 -->
       <i class="el-icon-close" @click="$emit('delete', props)"></i>
-      <!-- <div
-        @click="$emit('delete', props)"
-        @mousemove.stop.capture=""
-        @mouseenter.stop.capture=""
-        class="delete-bar"
-        title="删除"
-      >
-        <i class="el-icon-delete"></i>
-      </div> -->
     </div>
 
     <!-- 子组件 -->
-    <div
-      class="lc-layout__label"
-      v-if="props.show_label === '是' && props.com_label"
-    >
+    <div class="lc-layout__label" v-if="props.show_label === '是' && props.com_label">
       <div class="lc-layout__label-text" :style="[mixTitleStyle]">
         <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
         <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
@@ -52,15 +29,15 @@
         <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
       </div>
     </div>
-    <slot></slot>
+    <div class="grid-content" :style="[
+      setGridStyle
+    ]">
+      <slot></slot>
+    </div>
 
     <!-- 高度调整手柄 -->
-    <div
-      v-if="!isPreview && !isView && currentId && currentId === id"
-      class="resize-handle-s"
-      title="调整高度"
-      @mousedown="startResizeHeight"
-    ></div>
+    <div v-if="!isPreview && !isView && currentId && currentId === id" class="resize-handle-s" title="调整高度"
+      @mousedown="startResizeHeight"></div>
 
     <!-- 宽度调整手柄 -->
     <!-- <div v-if="!isPreview && currentId && currentId === id" class="resize-handles">
@@ -73,7 +50,24 @@
 <script>
 import { formatStyleData } from "@/common/common";
 import dragStore from "../../store/dragStore";
-
+const layoutKeys = [
+        "grid-template-columns",
+        "grid-template-rows",
+        "grid-template-areas",
+        "grid-auto-columns",
+        "grid-auto-rows",
+        "grid-auto-flow",
+        "grid-gap",
+        "grid-row-gap",
+        "grid-column-gap",
+        "grid-template",
+        "grid",
+        "display",
+        "flex-direction",
+        "flex-wrap" ,
+        "justify-content",
+        "align-items",
+      ];
 export default {
   name: "lc-block",
   components: {},
@@ -152,6 +146,28 @@ export default {
     },
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
+    },
+    setGridStyle() {
+      let style = {};
+      if (typeof this.setStyle === 'object' && Object.keys(this.setStyle).length > 0) {
+        Object.keys(this.setStyle).forEach((key) => {
+          if (layoutKeys.includes(key)) {
+            style[key] = this.setStyle[key];
+          }
+        })
+      }
+      return style
+    },
+    setParentStyle() {
+      let style = {};
+      if (typeof this.setStyle === 'object' && Object.keys(this.setStyle).length > 0) {
+        Object.keys(this.setStyle).forEach((key) => {
+          if (!layoutKeys.includes(key)) {
+            style[key] = this.setStyle[key];
+          }
+        })
+      }
+      return style;
     },
     setStyle() {
       let style = {};
@@ -402,9 +418,8 @@ export default {
           if (!["layout", "container"].includes(draggedElement.type)) {
             draggedElement.parentId = this.id;
             if (!draggedElement._editType) {
-              draggedElement.id = `${
-                this.id
-              }_component_${new Date().getTime()}`;
+              draggedElement.id = `${this.id
+                }_component_${new Date().getTime()}`;
               draggedElement._editType = "add";
               draggedElement.parent_no = this.com_no;
               this.$emit("add", draggedElement);
@@ -431,7 +446,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 @use "../../styles/layout.common.scss" as layout;
 
 .overlay {
@@ -439,9 +457,15 @@ export default {
 }
 
 .lc-block {
-  width:100%;
-  &.use-content-width{
+  width: 100%;
+  height: 100%;
+  &.use-content-width {
     width: var(--content-width, 100%);
+  }
+  .grid-content{
+    gap:10px;
+    height: 100%;
+    width: 100%;
   }
   // height: 100%;
   position: relative;
@@ -626,8 +650,8 @@ export default {
     }
   }
 
-  > .overlay {
-    > .handle {
+  >.overlay {
+    >.handle {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -674,7 +698,7 @@ export default {
         transform: translateY(-100%);
       }
 
-      & > .handle {
+      &>.handle {
         display: block;
       }
     }
