@@ -29,7 +29,11 @@
     >
     </grid-list>
     <!-- 卡片列表 -->
-    <div class="bx-card-list" v-else-if="listType == '卡片'">
+    <div
+      class="bx-card-list"
+      :style="[styleWidthPictures]"
+      v-else-if="listType == '卡片'"
+    >
       <el-carousel
         trigger="click"
         :height="setSwiperHeight"
@@ -165,6 +169,32 @@ export default {
     };
   },
   computed: {
+    styleWidthPictures() {
+      const o = this.listOptions||{};
+      if (
+        o?.includes("顶部图片") ||
+        o?.includes("底部图片") ||
+        o?.includes("左侧图片") ||
+        o?.includes("右侧图片")
+      ) {
+        let obj = {
+          display: "flex",
+        };
+        if (o?.includes("顶部图片") || o?.includes("底部图片")) {
+          obj["flex-direction"] = "column";
+        }
+        if (o?.includes("底部图片")) {
+          obj["flex-direction"] = "column-reverse";
+        }
+        if (o?.includes("左侧图片") || o?.includes("右侧图片")) {
+          obj["flex-direction"] = "row";
+        }
+        if (o?.includes("右侧图片")) {
+          obj["flex-direction"] = "row-reverse";
+        }
+        return obj;
+      }
+    },
     listConfig() {
       return this.pageItem?.list_json || {};
     },
@@ -271,11 +301,15 @@ export default {
         ? this.setSwiperStyle.height
         : "150px";
     },
+
     setListSwiperImg() {
       if (
         Array.isArray(this.tableData) &&
         typeof this.listOptions === "string" &&
-        this.listOptions?.includes("顶部图片") &&
+        (this.listOptions?.includes("顶部图片") ||
+          this.listOptions?.includes("底部图片") ||
+          this.listOptions?.includes("左侧图片") ||
+          this.listOptions?.includes("右侧图片")) &&
         this.listConfig?.swiper_col
       ) {
         return this.tableData
