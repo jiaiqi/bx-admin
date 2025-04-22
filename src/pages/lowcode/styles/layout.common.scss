@@ -39,14 +39,38 @@
       pointer-events: all;
     }
   }
-  .el-icon-close {
+  .com-name-overlay {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    .name {
+      // background-color: rgba($color: #000, $alpha: 0.5);
+      color: #fff;
+      padding: 2px 5px;
+    }
+    .close-icon{
+      // background-color: rgba($color: #000, $alpha: 0.5);
+      color: #fff;
+      padding: 2px;
+    }
+  }
+  &.active {
+    .com-name-overlay {
+      gap:5px;
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+  .el-icon-close:not(.button) {
     position: absolute;
     top: 0;
     left: 80px;
     padding: 2px 5px;
     background-color: rgba($color: #ff0000, $alpha: 0.7); /* 添加浅色虚线边框 */
     color: #fff;
-    transform: translateY(-100%);
+    transform: translateY(0%);
     z-index: 10;
     cursor: pointer;
     display: none;

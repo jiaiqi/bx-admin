@@ -38,11 +38,17 @@
       v-if="!isPreview && !isView"
     >
       <!-- 删除按钮 -->
-      <i
-        class="el-icon-close"
-        @click="onDelete"
-        v-if="children && children.length"
-      ></i>
+      <div class="com-name-overlay">
+        <span class="name">
+          {{ com_name || "" }}
+        </span>
+        <i
+          class="el-icon-close button close-icon"
+          @click="onDelete"
+          v-if="children && children.length"
+        ></i>
+      </div>
+
       <!-- <div
         @click="onDelete"
         v-if="children && children.length"
@@ -199,7 +205,7 @@ export default {
     onTap() {
       if (this.isPreview) return;
       let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
-      if(this.childType==='layout'){
+      if (this.childType === "layout") {
         val = this.props;
       }
       this.$emit("click", val);
@@ -507,8 +513,15 @@ export default {
 .overlay {
   @include layout.overlay;
   z-index: 99;
+  $primary-color: #17d57e;
   &.child-is-layout {
     z-index: 0;
+  }
+  .name {
+    background-color: rgba($color: $primary-color, $alpha: 0.7);
+  }
+  .close-icon {
+    background-color: rgba($color: $primary-color, $alpha: 0.7);
   }
 }
 
@@ -521,7 +534,6 @@ export default {
   justify-content: center;
   align-items: center;
   $primary-color: #17d57e;
-
   &.edit-mode {
     background-color: rgba($color: #f0f0f0, $alpha: 0.3);
   }

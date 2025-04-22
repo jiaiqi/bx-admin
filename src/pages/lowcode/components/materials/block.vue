@@ -88,6 +88,7 @@ const layoutKeys = [
   "flex-wrap",
   "justify-content",
   "align-items",
+  "gap",
 ];
 export default {
   name: "lc-block",
@@ -496,7 +497,7 @@ export default {
     gap: 10px;
     height: 100%;
     width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
   }
   // height: 100%;
   position: relative;
