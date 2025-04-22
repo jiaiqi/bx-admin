@@ -553,7 +553,7 @@ export default {
 .bx-table {
   color: #fff;
   .table-head {
-    background-color: rgba($color: #fff, $alpha: 0.1);
+    background-color: rgba($color: #999, $alpha: 0.1);
   }
 
   .table-head,

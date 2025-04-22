@@ -1,13 +1,33 @@
 <template>
-  <div v-if="viewMode === '展开子导航'">
-    <div class="nav-menu" v-for="(item, key) in subMenu" :key="key">
-      <nav-menu
-        :config="item"
-        :parent-style="navStyle"
-        :parent-hover-style="mixHoverStyle"
-        :pageConfig="pageConfig"
-        :parent-config="config"
-      ></nav-menu>
+  <div v-if="viewMode === '展开子导航'" class="nav-menu-container">
+    <div class="nav-menu">
+      <div
+        class="nav-menu"
+        v-for="(item, key) in subMenu"
+        :key="key"
+        @click="onTap(item, $event)"
+        ref="navMenuItem"
+      >
+        <div class="nav-menu-label">
+          <span>{{ item.label }}</span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="nav-menu-child-wrap"
+      v-if="current && currentSubMenu && currentSubMenu.length"
+      :class="{ active: current && currentSubMenu && currentSubMenu.length }"
+    >
+      <div class="child-menu-list">
+        <div class="child-menu" v-for="item in currentSubMenu">
+          <div
+            class="child-menu-label"
+            @click.stop.capture="navTo(item.jump_json)"
+          >
+            <span>{{ item.label }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div
@@ -90,6 +110,8 @@ export default {
     return {
       isHovered: false,
       showChild: false,
+      current: null,
+      navMenuWidth: 0,
       position: {
         top: 0,
         left: 0,
@@ -108,6 +130,20 @@ export default {
           return width;
         }
       }
+    },
+    currentSubMenu() {
+      let json = this.current?.sub_json;
+      if (typeof json === "string") {
+        try {
+          json = JSON.parse(json);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      if (!Array.isArray(json)) {
+        return [];
+      }
+      return json.filter((item) => item.disp_flag !== "否");
     },
     viewMode() {
       return this.config?.view_mode;
@@ -186,7 +222,32 @@ export default {
     }, 1000);
   },
   methods: {
+    onTap(item, event) {
+      if (item?.jump_json) {
+        this.navTo(item.jump_json);
+        return;
+      }
+      if (this.current?.nav_no && this.current?.nav_no === item?.nav_no) {
+        this.current = null;
+      } else {
+        if (item?.sub_json && typeof item.sub_json === "string") {
+          item.sub_json = JSON.parse(item.sub_json);
+        }
+        this.current = item;
+      }
+      // 获取当前点击的nav-menu宽度
+      if (event && event.currentTarget) {
+        this.navMenuWidth = event.currentTarget.offsetWidth;
+      }
+    },
     navTo(jumpConfig) {
+      if (typeof jumpConfig === "string") {
+        try {
+          jumpConfig = JSON.parse(jumpConfig);
+        } catch (error) {
+          console.error(error);
+        }
+      }
       if (jumpConfig?.obj_type) {
         switch (jumpConfig.obj_type) {
           case "外部页面":
@@ -237,27 +298,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.nav-menu-container {
+  display: grid;
+  min-height: 100%;
+}
 .nav-menu {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
+  min-height: 30px;
   cursor: pointer;
   z-index: 99;
   flex: 1;
   .nav-menu-label {
     z-index: 100;
     width: 100%;
+    height: 100%;
     text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: var(--menu-bg-color);
     color: var(--menu-text-color);
+
     &:hover {
       background-color: var(--menu-hover-bg-color);
       color: var(--menu-hover-text-color, inherit);
     }
+
     &.active {
       background-color: var(--menu-active-bg-color);
       color: var(--menu-hover-active-color, inherit);
@@ -270,6 +339,7 @@ export default {
       color: currentColor;
     }
   }
+
   .nav-menu-child {
     position: absolute;
     min-width: 100%;
@@ -277,10 +347,50 @@ export default {
     height: 0;
     overflow: hidden;
     z-index: -1;
+
     &.active {
       height: auto;
       overflow: unset;
       z-index: 99;
+    }
+  }
+
+  .nav-menu-child-container {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 200;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 100%;
+    padding: 0;
+  }
+}
+.nav-menu-child-wrap {
+  background-color: #f1f1f1;
+  color: #333;
+  width: 100%;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease-in-out;
+  overflow: hidden;
+  &.active {
+    grid-template-rows: 1fr;
+  }
+  .child-menu-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+  }
+  .child-menu {
+    padding: 2px 10px;
+    min-width: 100px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+      background-color: #ddd;
     }
   }
 }

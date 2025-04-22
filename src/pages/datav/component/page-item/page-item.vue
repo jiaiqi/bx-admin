@@ -37,7 +37,6 @@
       </div>
     </div>
     <nav-menu
-      class="nav-menu"
       v-if="
         pageItemData.com_type === 'navBar' &&
         pageItemData.com_case_json &&

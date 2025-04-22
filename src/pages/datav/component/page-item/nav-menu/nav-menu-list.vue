@@ -121,9 +121,9 @@ export default {
     },
     childPositionStyle() {
       return {
-        top: this.position.height + this.position.top + "px",
-        left: this.position.left + "px",
-        width: this.position.width + "px",
+        // top: this.position.height + this.position.top + "px",
+        // left: this.position.left + "px",
+        // width: this.position.width + "px",
       };
     },
     jumpJson() {
@@ -207,11 +207,13 @@ export default {
 
 <style lang="scss" scoped>
 .nav-menu-child {
-  position: absolute;
+  // position: absolute;
   transition: all 0.3s ease-in-out;
   height: 0;
   overflow: hidden;
   z-index: -1;
+  width: 100%;
+  
   &.active {
     height: auto;
     overflow: unset;

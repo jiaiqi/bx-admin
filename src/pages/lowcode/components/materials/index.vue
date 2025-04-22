@@ -223,7 +223,7 @@ export default {
             value: "模板",
           },
         ],
-        page: { pageNo: 1, rownumber: 10 },
+        page: { pageNo: 1, rownumber: 50 },
         use_type: "list",
         query_source: "list_page",
       };
