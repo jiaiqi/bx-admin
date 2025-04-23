@@ -19,6 +19,7 @@
   
   <script>
   import { ElDialog, ElForm, ElFormItem, ElInput, ElButton } from "element-ui";
+  import { mapGetters,mapActions } from "vuex";
   import { $http } from "../../../common/http";
   export default {
     data() {
@@ -32,6 +33,7 @@
       };
     },
     methods: {
+    ...mapActions("loginInfo", ["initLoginInfo"]),
       listenerStorage(event) {
         if (event.key === "bx_auth_ticket") {
           console.log("bx_auth_ticket变化了");
@@ -113,6 +115,8 @@
           );
           window.user = resData.login_user_info;
           sessionStorage.setItem("logined", true);
+          // debugger
+          // this.initLoginInfo(resData)
           return true;
         } else {
           this.$message.error(res.data.resultMessage);

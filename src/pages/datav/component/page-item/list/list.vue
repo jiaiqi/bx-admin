@@ -1,5 +1,11 @@
 <template>
   <div>
+    <div class="more-btn">
+      <span v-if="showMoreBtn" @click="toMore">
+        更多
+        <i class="el-icon-arrow-right"></i>
+      </span>
+    </div>
     <div class="statistic-box" v-if="stasticData.length">
       <div
         class="statistic-item"
@@ -169,8 +175,14 @@ export default {
     };
   },
   computed: {
+    showMoreBtn() {
+      return (
+        this.listOptions?.includes("更多按钮") &&
+        this.listConfig?.jump_page_json
+      );
+    },
     styleWidthPictures() {
-      const o = this.listOptions||{};
+      const o = this.listOptions || '';
       if (
         o?.includes("顶部图片") ||
         o?.includes("底部图片") ||
@@ -188,9 +200,11 @@ export default {
         }
         if (o?.includes("左侧图片") || o?.includes("右侧图片")) {
           obj["flex-direction"] = "row";
+          obj["align-items"] = "flex-start";
         }
         if (o?.includes("右侧图片")) {
           obj["flex-direction"] = "row-reverse";
+          obj["align-items"] = "flex-start";
         }
         return obj;
       }
@@ -202,7 +216,7 @@ export default {
       return this.listConfig.list_type || "表格";
     },
     listOptions() {
-      return this.listConfig.list_options || {};
+      return this.listConfig.list_options || '';
     },
     showPagination() {
       return this.listConfig?.list_options?.includes("分页");
@@ -322,6 +336,22 @@ export default {
     },
   },
   methods: {
+    toMore() {
+      const { jump_page_json: jumpJson } = this.listConfig || {};
+      if (jumpJson?.obj_type === "内部页面") {
+        let pageNo = jumpJson?.dest_page_no;
+        if (jumpJson?.tmpl_page_json?.file_path) {
+          let url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`;
+          this.$router.push({
+            name: "website",
+            params: {
+              pageNo: pageNo,
+            },
+          });
+        }
+      }
+      this.$emit("toMore", this.listConfig?.jump_page_json);
+    },
     // 透传参数
     setPageParams(key, val) {
       // 接受透传参数
@@ -441,7 +471,10 @@ export default {
                   ["当前数据", "业务", "模型"].includes(item.from_type) &&
                   data?.[item.col_from]
                 ) {
-                  pagePath += `&${item.col_to}=${data[item.col_from]}`;
+                  pagePath?.includes("?")
+                    ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
+                    : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
+                  // pagePath += `&${item.col_to}=${data[item.col_from]}`;
                 }
               });
             }
@@ -584,6 +617,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.more-btn {
+  position: absolute;
+  top: 15px;
+  right: 0;
+  margin: 0 15px;
+  cursor: pointer;
+  color: inherit;
+  // transition: scale 0.3s ease-in-out;
+  &:hover {
+    scale: 1.05;
+    // font-weight: bold;
+    // border-bottom: 1px dashed currentColor;
+  }
+}
 .bx-table {
   color: #fff;
   .table-head {

@@ -6,6 +6,7 @@ import frontTableData from './modules/frontTableData'
 import custActiveRefresh from './modules/custActiveRefresh'
 import customState from "./modules/custom-state";
 import theme from './modules/theme'
+import loginInfo from './modules/loginInfo'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -15,7 +16,8 @@ export default new Vuex.Store({
     frontTableData,
     custActiveRefresh,
     customState,
-    theme
+    theme,
+    loginInfo
   },
   strict: false,
 })

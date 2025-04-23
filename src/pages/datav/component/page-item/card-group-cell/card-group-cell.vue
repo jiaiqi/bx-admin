@@ -38,10 +38,10 @@
         >
           <div
             v-if="
-              item.parts_type == 'string' &&
+              ['string', '时间日期'].includes(item.parts_type) &&
               partsShow(item, comColMap, cellItemData)
             "
-            :class="'bx-cell-' + item.parts_type"
+            class="bx-cell-string"
             @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
             :style="[buildColStyleJson(item.style_json)]"
           >
@@ -135,15 +135,13 @@
             @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
             :style="[buildColStyleJson(item.style_json || null)]"
           >
-            <template
-              v-for="(subCol, subindex) in item.sub_card_parts_json"
-            >
+            <template v-for="(subCol, subindex) in item.sub_card_parts_json">
               <div
                 v-if="
-                  subCol.parts_type == 'string' &&
+                  ['string', '时间日期'].includes(subCol.parts_type) &&
                   partsShow(subCol, comColMap, cellItemData)
                 "
-                :class="'bx-cell-' + subCol.parts_type"
+                class="bx-cell-string"
                 @click.stop="
                   onClickSubBlock(cellItemData, subCol, cellLayoutJson, item)
                 "
@@ -264,10 +262,10 @@
                   <div
                     :key="ssubindex"
                     v-if="
-                      ssubCol.parts_type == 'string' &&
+                      ['string','时间日期'].includes(ssubCol.parts_type) &&
                       partsShow(ssubCol, comColMap, cellItemData)
                     "
-                    :class="'bx-cell-' + ssubCol.parts_type"
+                    class="bx-cell-string"
                     @click.stop="
                       onClickSubBlock(
                         cellItemData,
@@ -334,8 +332,7 @@
                   >
                   </el-image>
                   <el-rate
-                   :key="ssubindex"
-
+                    :key="ssubindex"
                     :disabled="true"
                     v-else-if="ssubCol.parts_type == 'rate'"
                     :count="5"
@@ -346,8 +343,7 @@
                     "
                   ></el-rate>
                   <el-progress
-                   :key="ssubindex"
-
+                    :key="ssubindex"
                     :show-text="false"
                     :style="[buildColStyleJson(ssubCol.style_json || null)]"
                     v-else-if="ssubCol.parts_type == 'progress'"
@@ -369,7 +365,7 @@
                   ></el-progress>
 
                   <div
-                   :key="ssubindex"
+                    :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == '富文本' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -388,7 +384,7 @@
                     @click="false"
                   ></u-parse> -->
                   <i
-                   :key="ssubindex"
+                    :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == 'icon' &&
                       partsShow(ssubCol, comColMap, cellItemData)
@@ -405,7 +401,7 @@
                     "
                   ></i>
                   <div
-                   :key="ssubindex"
+                    :key="ssubindex"
                     :class="'bx-cell-' + ssubCol.parts_type"
                     v-else-if="
                       (ssubCol.parts_type == 'row' ||
@@ -431,10 +427,11 @@
                     >
                       <div
                         v-if="
-                          sssubCol.parts_type == 'string' &&
-                          partsShow(sssubCol, comColMap, cellItemData)
+                          ['string', '时间日期'].includes(
+                            sssubCol.parts_type
+                          ) && partsShow(sssubCol, comColMap, cellItemData)
                         "
-                        :class="'bx-cell-' + sssubCol.parts_type"
+                        class="bx-cell-string"
                         @click.stop="
                           onClickSubBlock(
                             cellItemData,
@@ -612,10 +609,11 @@
                         >
                           <div
                             v-if="
-                              sssubCol4.parts_type == 'string' &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
+                              ['string', '时间日期'].includes(
+                                sssubCol4.parts_type
+                              ) && partsShow(sssubCol4, comColMap, cellItemData)
                             "
-                            :class="'bx-cell-' + sssubCol4.parts_type"
+                            class="bx-cell-string"
                             @click.stop="
                               onClickSubBlock(
                                 cellItemData,
@@ -859,6 +857,8 @@
 var self = null;
 
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
+import dayjs from "dayjs";
+// import { mapGetters, } from "vuex";
 export default {
   components: {
     // cardGroupCellItem
@@ -1053,10 +1053,14 @@ export default {
   },
   methods: {
     recoverFileAddress(val = "") {
-      if(typeof val !== 'string'){
+      if (typeof val !== "string") {
         return val;
       }
-      if(val && typeof val==='string' && val.indexOf('$bxFileAddress$') === -1){
+      if (
+        val &&
+        typeof val === "string" &&
+        val.indexOf("$bxFileAddress$") === -1
+      ) {
         return val;
       }
       // 替换文件前缀
@@ -1066,9 +1070,8 @@ export default {
       const ticketStr = `bx_auth_ticket=${sessionStorage.bx_auth_ticket}`;
       val = val.replace(/(bx_auth_ticket=)[^&]+/gi, ticketStr);
       // console.log('getPartModelData:recoverFileAddress:', val);
-      
-      return val;
 
+      return val;
     },
     paramsBuild(json) {
       if (!json) {
@@ -1189,6 +1192,20 @@ export default {
         // 执行自定义跳转
         // this.jumpAction(subCol?.jump_json, itemData)
         console.log("自定义跳转");
+        // this.$emit('on-click-cell',{
+        //   data: itemData,
+        //   cellsLayout: cellLayoutJson,
+        //   jump_json: subCol?.jump_json
+        // })
+        if (subCol?.jump_json?.click_type === "弹框") {
+          const element = this.$el;
+          const rect = element.getBoundingClientRect();
+          const x = rect.left;
+          const y = rect.top;
+          const width = rect.width;
+          const height = rect.height;
+          console.log("弹框:", x, y, width, height);
+        }
       }
     },
     // onClickSubBlock: throttle(function(itemData, subCol, cellLayoutJson, parentCol, originCol) {
@@ -1404,7 +1421,7 @@ export default {
               itemData[key]
             ) {
               val = itemData[key] || "";
-            } else if (item.parts_type === "string" && item.parts_text) {
+            } else if (['string','时间日期'].includes(item.parts_type)&& item.parts_text) {
               val = this.renderStr(item.parts_text, {
                 data: itemData,
                 ...this.queryOptions,
@@ -1420,7 +1437,7 @@ export default {
           itemData[key]
         ) {
           val = itemData[key];
-        } else if (item.parts_type === "string" && item.parts_text) {
+        } else if (['string','时间日期'].includes(item.parts_type) && item.parts_text) {
           val = this.renderStr(item.parts_text, {
             data: itemData,
             ...this.queryOptions,
@@ -1428,9 +1445,10 @@ export default {
         }
       }
       // console.log('getPartModelData:', itemData,key,val);
-      
+      if(type==='时间日期' && item.date_format_rule){
+        val = dayjs(val).format(item.date_format_rule)
+      }
       return this.recoverFileAddress(val);
-
     },
   },
 };
@@ -1512,8 +1530,8 @@ export default {
     /* 溢出显示省略号 */
     text-overflow: ellipsis;
     word-break: break-all;
-    &:hover{
-      color:var(--primary-color);
+    &:hover {
+      color: var(--primary-color);
     }
   }
 }

@@ -279,7 +279,7 @@ export default {
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
     openNewTab() {
-      const url = `/vpages/#/lowcode/view/${this.pageNo}`;
+      const url = `/vpages/#/site/${this.pageNo}`;
       window.open(url, "_blank");
     },
     // 切换物料面板
@@ -370,7 +370,9 @@ export default {
         return result;
       }
       list = list.map((item) => {
-        item.children = buildTree(components, item.com_no);
+        item.children = buildTree(components, item.com_no)?.sort(
+          (a, b) => a.com_seq - b.com_seq
+        );
         return item;
       });
       return list;
@@ -474,7 +476,9 @@ export default {
         this.components = [];
         return;
       }
-      this.components = this.buildComponentsTree(component_json);
+      this.components = this.buildComponentsTree(component_json)?.sort(
+        (a, b) => a.com_seq - b.com_seq
+      );
     },
     initPageParams() {},
     clickComponent(data) {

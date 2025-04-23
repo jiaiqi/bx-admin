@@ -300,7 +300,7 @@ export default {
 }
 
 .theme-select {
-  width: 100px;
+  width: 90px;
   color: var(--text-color, inherit); // 使用主题变量
   background-color: inherit; // 使用主题变量
   :deep(.el-input) {
@@ -312,6 +312,12 @@ export default {
       background-color: transparent;
       color: var(--text-color, inherit); // 使用主题变量
       background-color: inherit; // 使用主题变量
+      height: unset;
+      line-height: inherit;
+    }
+    .el-input__icon{
+      color: var(--text-color, inherit); // 使用主题变量
+      line-height: inherit;
     }
   }
 }
