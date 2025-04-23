@@ -1,6 +1,6 @@
 <template>
   <div v-if="viewMode === '展开子导航'" class="nav-menu-container">
-    <div class="nav-menu">
+    <div class="nav-menu" :style="{ '--min-height': minHeight + 'px' }">
       <div
         class="nav-menu"
         v-for="(item, key) in subMenu"
@@ -8,8 +8,11 @@
         @click="onTap(item, $event)"
         ref="navMenuItem"
       >
-        <div class="nav-menu-label">
-          <span>{{ item.label }}</span>
+        <div
+          class="nav-menu-label"
+          :style="[formatStyleData(item.nav_style_json)]"
+        >
+          {{ item.label }}
         </div>
       </div>
     </div>
@@ -118,6 +121,8 @@ export default {
         width: 0,
         height: 0,
       },
+      formatStyleData: formatStyleData,
+      minHeight: "20",
     };
   },
   computed: {
@@ -227,6 +232,8 @@ export default {
         this.navTo(item.jump_json);
         return;
       }
+      const ele = event.target.getBoundingClientRect();
+      this.minHeight = ele.height;
       if (this.current?.nav_no && this.current?.nav_no === item?.nav_no) {
         this.current = null;
       } else {
@@ -307,7 +314,7 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100%;
-  min-height: 30px;
+  min-height: var(--min-height, 30px);
   cursor: pointer;
   z-index: 99;
   flex: 1;

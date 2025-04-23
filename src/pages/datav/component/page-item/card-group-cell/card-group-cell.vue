@@ -262,7 +262,7 @@
                   <div
                     :key="ssubindex"
                     v-if="
-                      ['string','时间日期'].includes(ssubCol.parts_type) &&
+                      ['string', '时间日期'].includes(ssubCol.parts_type) &&
                       partsShow(ssubCol, comColMap, cellItemData)
                     "
                     class="bx-cell-string"
@@ -827,6 +827,23 @@
             v-if="updateService&&updateDataVal" />
         </div>
       </uni-popup> -->
+
+    <!-- <teleport to="#app" v-if="dialogVisible">
+
+  </teleport> -->
+    <el-dialog
+      title=""
+      :visible.sync="dialogVisible"
+      append-to-body
+      fullscreen
+      v-if="dialogUrl && dialogVisible"
+    >
+      <iframe
+        :src="dialogUrl"
+        frameborder="0"
+        style="width: 100%; height: 80vh"
+      ></iframe>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -855,12 +872,14 @@
 // import cardGroupCellItem from '@/components/card-group-cell-item/card-group-cell-item.vue'
 // import bxform from '@/views/custom/components/bx-form/bx-form.vue'
 var self = null;
+import Teleport from "vue2-teleport";
 
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
 import dayjs from "dayjs";
 // import { mapGetters, } from "vuex";
 export default {
   components: {
+    Teleport,
     // cardGroupCellItem
     // bxform
     // bxForm: () => import('@/views/custom/components/bx-form/bx-form.vue') //剔除 原小程序form组件
@@ -875,6 +894,9 @@ export default {
       updateDataVal: "",
       updateTitle: "",
       activeMode: null,
+      dialogPosition: null,
+      dialogVisible: false,
+      dialogUrl: "",
     };
   },
   props: {
@@ -1197,14 +1219,54 @@ export default {
         //   cellsLayout: cellLayoutJson,
         //   jump_json: subCol?.jump_json
         // })
-        if (subCol?.jump_json?.click_type === "弹框") {
+        if (
+          subCol?.jump_json?.click_type === "弹框" ||
+          subCol?.jump_json?.click_type === "跳转"
+        ) {
           const element = this.$el;
           const rect = element.getBoundingClientRect();
           const x = rect.left;
           const y = rect.top;
-          const width = rect.width;
-          const height = rect.height;
-          console.log("弹框:", x, y, width, height);
+          const w = rect.width;
+          const h = rect.height;
+          console.log("弹框:", x, y, w, h);
+          const jumpJson = subCol.jump_json;
+          const data = itemData;
+          if (jumpJson.tmpl_page_json?.file_path) {
+            let pagePath = jumpJson.tmpl_page_json.file_path;
+            if (jumpJson.dest_page_no) {
+              pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
+            }
+            if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
+              const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
+              mapJson.forEach((item) => {
+                if (
+                  item.to_type === "URL" &&
+                  ["当前数据", "业务", "模型"].includes(item.from_type) &&
+                  data?.[item.col_from]
+                ) {
+                  pagePath?.includes("?")
+                    ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
+                    : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
+                  // pagePath += `&${item.col_to}=${data[item.col_from]}`;
+                }
+              });
+            }
+            if (pagePath) {
+              if (subCol?.jump_json?.click_type === "弹框") {
+                this.dialogUrl = pagePath;
+                this.dialogPosition = {
+                  x,
+                  y,
+                  w,
+                  h,
+                };
+                this.dialogVisible = true;
+              } else {
+                open(pagePath);
+              }
+            }
+          }
         }
       }
     },
@@ -1421,7 +1483,10 @@ export default {
               itemData[key]
             ) {
               val = itemData[key] || "";
-            } else if (['string','时间日期'].includes(item.parts_type)&& item.parts_text) {
+            } else if (
+              ["string", "时间日期"].includes(item.parts_type) &&
+              item.parts_text
+            ) {
               val = this.renderStr(item.parts_text, {
                 data: itemData,
                 ...this.queryOptions,
@@ -1437,7 +1502,10 @@ export default {
           itemData[key]
         ) {
           val = itemData[key];
-        } else if (['string','时间日期'].includes(item.parts_type) && item.parts_text) {
+        } else if (
+          ["string", "时间日期"].includes(item.parts_type) &&
+          item.parts_text
+        ) {
           val = this.renderStr(item.parts_text, {
             data: itemData,
             ...this.queryOptions,
@@ -1445,8 +1513,8 @@ export default {
         }
       }
       // console.log('getPartModelData:', itemData,key,val);
-      if(type==='时间日期' && item.date_format_rule){
-        val = dayjs(val).format(item.date_format_rule)
+      if (type === "时间日期" && item.date_format_rule) {
+        val = dayjs(val).format(item.date_format_rule);
       }
       return this.recoverFileAddress(val);
     },
