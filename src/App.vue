@@ -22,6 +22,24 @@ export default {
     };
   },
   created() {
+    if (sessionStorage.getItem('theme')) {
+      let theme = sessionStorage.getItem('theme')
+      try {
+        theme = JSON.parse(theme)
+      } catch (error) {
+        console.log('error', error);
+      }
+      if (theme && theme.name) {
+        Object.keys(theme).forEach(key => {
+          if (key == 'name') {
+            return
+          }
+          if (key.includes('-color')) {
+            document.documentElement.style.setProperty(`--${key}`, theme[key])
+          }
+        })
+      }
+    }
     if (this.$route?.query?.bx_auth_ticket) {
       sessionStorage.setItem(
         "bx_auth_ticket",
@@ -159,6 +177,7 @@ body {
   height: 100%;
   color: #2c3e50;
 }
+
 .el-loading-spinner {
   .circular {
     display: inline-block;
@@ -172,22 +191,28 @@ body {
 .el-textarea.is-disabled .el-textarea__inner {
   color: #303133 !important;
 }
+
 // 统一add\update\detail表单在页面跟弹窗中样式，底部按钮固定
 .customDialogClass {
   .el-dialog {
     margin-top: 5vh !important;
   }
+
   .el-dialog__header {
     padding: 10px 20px;
+
     .el-dialog__headerbtn {
       top: 10px;
     }
   }
+
   .el-dialog__body {
     padding: 0px 20px 10px !important;
+
     .form-view-wrapper.el-row {
       max-height: 75vh;
       overflow-y: auto;
+
       // &.plat-child-form{
       //   max-height: unset;
       //   overflow: unset;
@@ -197,19 +222,22 @@ body {
         flex-direction: column;
         width: 100%;
       }
+
       .el-collapse-item {
         display: flex;
         flex-direction: column;
       }
     }
-    .child-form-field{
-      .form-view-wrapper.el-row{
+
+    .child-form-field {
+      .form-view-wrapper.el-row {
         max-height: unset;
         overflow: unset;
       }
     }
   }
 }
+
 // .form-view-wrapper.el-row {
 //   max-height: calc(100vh - 150px);
 //   overflow-y: auto;
@@ -223,9 +251,86 @@ body {
     padding-bottom: unset;
   }
 }
+
+// 主题相关-start
+:root {
+  --primary: var(--primary-color, #409EFF);
+}
+
+
+.el-form .el-form-item span.section-title，
+.el-tabs__item.is-active,
+.el-collapse-item .el-collapse-item__header.is-active {
+  color: var(--primary-color, #409EFF);
+}
+
+.el-tabs__active-bar {
+  background-color: var(--primary-color, #409EFF);
+}
+
+.table-head-btns,
+.cell,
+.el-row,
+.el-dropdown-menu.el-popper,
+.el-pagination,
+.el-radio-group,
+.el-checkbox-group,
+.bx_action {
+
+  .el-pager li.active,
+  a,
+  .el-radio__input.is-checked+.el-radio__label,
+  .el-checkbox__input.is-checked+.el-checkbox__label {
+    color: var(--primary-color, #409EFF);
+  }
+
+  .el-tag {
+    background-color: var(--menu-bg-light-color, #b3d8ff);
+    border-color: var(--menu-light-border-color, #b3d8ff);
+    color: var(--primary-color, #409EFF);
+
+  }
+
+  a:not([href]):not([class]) {
+    color: var(--primary-color, #409EFF) !important;
+  }
+
+  .el-button--primary,
+  .el-radio__input.is-checked .el-radio__inner,
+  .el-checkbox__input.is-checked .el-checkbox__inner {
+    color: #FFF;
+    background-color: var(--menu-bg-color, #409EFF);
+    border-color: var(--menu-bg-color, #409EFF);
+
+    &.is-plain {
+      color: var(--menu-bg-color, #409EFF);
+      background: var(--menu-bg-light-color, #ecf5ff);
+      border-color: var(--menu-light-border-color, #b3d8ff);
+
+      &:hover,
+      &:active,
+      &:focus {
+        background-color: var(--menu-bg-color, #409EFF);
+        color: var(menu-text-color, #409EFF);
+        border-color: unset;
+      }
+    }
+
+    &:focus,
+    &:hover {
+      color: #FFF;
+      background-color: var(--menu-bg-color, #66b1ff);
+      border-color: var(--menu-bg-color, #66b1ff);
+    }
+  }
+}
+
+// 主题相关-end
+
 .is-demo {
+
   // 原型图样式
-  .el-checkbox__input.is-checked + .el-checkbox__label {
+  .el-checkbox__input.is-checked+.el-checkbox__label {
     color: #666;
   }
 
@@ -276,6 +381,8 @@ body {
     color: #666;
   }
 
+
+
   .el-button {
     &.el-button--success {
       background-color: #999;
@@ -317,7 +424,7 @@ body {
       background-color: #8b8b8b;
     }
 
-    th > .cell {
+    th>.cell {
       color: #333;
     }
 
@@ -330,8 +437,8 @@ body {
     }
 
     .hover-row,
-    .hover-row > td,
-    .current-row > td {
+    .hover-row>td,
+    .current-row>td {
       background-color: #ececec !important;
     }
 
@@ -357,6 +464,7 @@ body {
 .tox-tinymce-aux {
   z-index: 99999 !important;
 }
+
 .tinymce.ui.FloatPanel {
   z-index: 99;
 }
@@ -364,11 +472,13 @@ body {
 .field-editor {
   .el-form-item__label {
     margin-bottom: 10px;
+
     label {
       margin-bottom: 0;
     }
   }
 }
+
 .section-title {
   margin-bottom: 10px;
 }
