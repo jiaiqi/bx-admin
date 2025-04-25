@@ -8,34 +8,32 @@
     <div
       class="page-item__label"
       v-if="
-        inTabs !== true && pageItemData.show_label === '是' && pageItemData.com_label
+        inTabs !== true &&
+        pageItemData.show_label === '是' &&
+        pageItemData.com_label
       "
     >
-      <div
-        class="page-item__label-text"
-        :style="[mixTitleStyle]"
-      >
-        <span
-          class="icon1"
-          v-if="mixTitleIcon === '竖线'"
-        ></span>
-        <span
-          class="icon2"
-          v-if="mixTitleIcon === '圆形'"
-        ></span>
-        <span
-          class="icon3"
-          v-if="mixTitleIcon === '方块'"
-        ></span>
+      <div class="page-item__label-text" :style="[mixTitleStyle]">
+        <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
+        <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
+        <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
         <span>
           {{ pageItemData.com_label }}
         </span>
-        <span
-          v-if="mixTitleIcon === '下划线'"
-          class="under-line"
-        ></span>
+        <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
+      </div>
+
+      <div
+        class="more-btn"
+        v-if="showMoreBtn && pageItemData.more_position !== '数据项后'"
+      >
+        <span @click="toMore">
+          {{ pageItemData.more_label || "更多" }}
+          <i class="el-icon-arrow-right"></i>
+        </span>
       </div>
     </div>
+
     <nav-menu
       v-if="
         pageItemData.com_type === 'navBar' &&
@@ -154,6 +152,16 @@
     >
       {{ pageItemData.com_label }}
     </div>
+
+    <div
+      class="more-btn-bottom"
+      v-if="showMoreBtn && pageItemData.more_position === '数据项后'"
+      @click="toMore"
+    >
+      <span class="more-btn">
+        {{ pageItemData.more_label || "更多" }}
+      </span>
+    </div>
   </div>
 </template>
 
@@ -210,6 +218,12 @@ export default {
     inTabs: Boolean, // 是否在tabs中
   },
   computed: {
+    showMoreBtn() {
+      return (
+        this.pageItem?.com_option?.includes("更多") &&
+        this.pageItem?.more_jump_json
+      );
+    },
     getExtPageUrl() {
       if (this.pageItemData?.ext_page_json?.ext_page_url) {
         return this.pageItemData?.ext_page_json?.ext_page_url;
@@ -260,8 +274,8 @@ export default {
   },
   data() {
     return {
-      pageItemData:{}
-    }
+      pageItemData: {},
+    };
   },
   mounted() {
     // console.log(this.pageItem)
@@ -271,13 +285,28 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
-        if(newValue!==oldValue){
-          this.pageItemData = newValue ||{}
+        if (newValue !== oldValue) {
+          this.pageItemData = newValue || {};
         }
-      }
-    }
+      },
+    },
   },
   methods: {
+    toMore() {
+      const { more_jump_json: jumpJson } = this.pageItem || {};
+      if (jumpJson?.obj_type === "内部页面") {
+        let pageNo = jumpJson?.dest_page_no;
+        if (jumpJson?.tmpl_page_json?.file_path) {
+          let url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`;
+          this.$router.push({
+            name: "website",
+            params: {
+              pageNo: pageNo,
+            },
+          });
+        }
+      }
+    },
     onResize(i) {
       // console.log(this.$refs);
       // this.$refs[this.pageItem.com_type].onResize?.();
@@ -314,11 +343,43 @@ export default {
       text-align: center;
     }
   }
-
+  .more-btn-bottom {
+    text-align: center;
+    background: rgba($color: #000000, $alpha: 0.05);
+    margin-top: 4px;
+    &:hover {
+      background: rgba($color: #000000, $alpha: 0.1);
+      cursor: pointer;
+      .more-btn {
+        color: var(--primary-color, #409eff);
+        text-decoration: underline;
+        text-decoration-color: var(--primary-color, #409eff);
+      }
+    }
+    .more-btn {
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      // background-color: var(--primary-color, #409eff);
+      // color: #fff;
+      &:hover {
+        color: var(--primary-color, #409eff);
+        text-decoration: underline;
+        text-decoration-color: var(--primary-color, #409eff);
+      }
+    }
+  }
   .page-item__label {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-
+  .more-btn {
+    cursor: pointer;
+    &:hover {
+      color: var(--primary-color, #409eff);
+    }
+  }
   .page-item__label-text {
     display: flex;
     flex-direction: column;

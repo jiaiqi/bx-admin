@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="more-btn">
+    <!-- <div class="more-btn">
       <span v-if="showMoreBtn" @click="toMore">
         更多
         <i class="el-icon-arrow-right"></i>
       </span>
-    </div>
+    </div> -->
     <div class="statistic-box" v-if="stasticData.length">
       <div
         class="statistic-item"
