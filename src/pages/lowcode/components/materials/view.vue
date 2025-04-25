@@ -4,7 +4,7 @@
     <!-- <img :src="loginBg" v-if="loginBg" class="img" /> -->
     <div class="login-bg" :style="{ backgroundImage: 'url(' + loginBg + ')' }"></div>
     <div class="login-box">
-      <div>登录后才能查看</div>
+      <div>请在登录后进行查看</div>
       <button class="login-btn" @click="toLogin">登录</button>
     </div>
   </div>

@@ -1,8 +1,13 @@
 <template>
+  <video
+    controls
+    :src="widgetJson && widgetJson.init_val"
+    v-if="widgetType === '视频'"
+  ></video>
   <el-select
     :value="currentTheme"
     placeholder="请选择"
-    v-if="widgetType === '下拉切换主题'"
+    v-else-if="widgetType === '下拉切换主题'"
     class="theme-select"
     :style="[widgetStyleJson]"
     @change="handleThemeChange"
@@ -315,7 +320,7 @@ export default {
       height: unset;
       line-height: inherit;
     }
-    .el-input__icon{
+    .el-input__icon {
       color: var(--text-color, inherit); // 使用主题变量
       line-height: inherit;
     }

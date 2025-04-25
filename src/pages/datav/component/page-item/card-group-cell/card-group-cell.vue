@@ -38,6 +38,17 @@
         >
           <div
             v-if="
+              ['视频'].includes(item.parts_type) &&
+              partsShow(item, comColMap, cellItemData)
+            "
+          >
+            <video
+              controls
+              :src="getPartModelData(item, comColMap, cellItemData)"
+            ></video>
+          </div>
+          <div
+            v-else-if="
               ['string', '时间日期'].includes(item.parts_type) &&
               partsShow(item, comColMap, cellItemData)
             "
@@ -136,6 +147,17 @@
             :style="[buildColStyleJson(item.style_json || null)]"
           >
             <template v-for="(subCol, subindex) in item.sub_card_parts_json">
+              <div
+                v-if="
+                  ['视频'].includes(subCol.parts_type) &&
+                  partsShow(subCol, comColMap, cellItemData)
+                "
+              >
+                <video
+                  controls
+                  :src="getPartModelData(subCol, comColMap, cellItemData)"
+                ></video>
+              </div>
               <div
                 v-if="
                   ['string', '时间日期'].includes(subCol.parts_type) &&
@@ -259,6 +281,17 @@
                 <template
                   v-for="(ssubCol, ssubindex) in subCol.sub_card_parts_json"
                 >
+                  <div
+                    v-if="
+                      ['视频'].includes(ssubCol.parts_type) &&
+                      partsShow(ssubCol, comColMap, cellItemData)
+                    "
+                  >
+                    <video
+                      controls
+                      :src="getPartModelData(ssubCol, comColMap, cellItemData)"
+                    ></video>
+                  </div>
                   <div
                     :key="ssubindex"
                     v-if="
@@ -425,6 +458,19 @@
                         sssubCol, sssubindex
                       ) in ssubCol.sub_card_parts_json"
                     >
+                      <div
+                        v-if="
+                          ['视频'].includes(sssubCol.parts_type) &&
+                          partsShow(sssubCol, comColMap, cellItemData)
+                        "
+                      >
+                        <video
+                          controls
+                          :src="
+                            getPartModelData(sssubCol, comColMap, cellItemData)
+                          "
+                        ></video>
+                      </div>
                       <div
                         v-if="
                           ['string', '时间日期'].includes(
@@ -607,6 +653,23 @@
                             sssubCol4, sssub4index
                           ) in sssubCol.sub_card_parts_json"
                         >
+                          <div
+                            v-if="
+                              ['视频'].includes(sssubCol4.parts_type) &&
+                              partsShow(sssubCol4, comColMap, cellItemData)
+                            "
+                          >
+                            <video
+                              controls
+                              :src="
+                                getPartModelData(
+                                  sssubCol4,
+                                  comColMap,
+                                  cellItemData
+                                )
+                              "
+                            ></video>
+                          </div>
                           <div
                             v-if="
                               ['string', '时间日期'].includes(
@@ -1516,6 +1579,11 @@ export default {
       if (type === "时间日期" && item.date_format_rule) {
         val = dayjs(val).format(item.date_format_rule);
       }
+      if(type==='视频'){
+        if(val?.indexOf('http')!==0){
+          val = this.serviceApi()?.downloadFileNo + val
+        }
+      }
       return this.recoverFileAddress(val);
     },
   },
@@ -1533,6 +1601,7 @@ export default {
 
 .bx-card {
   position: relative;
+  height: 100%;
   // display: grid;
   // grid-template-rows: repeat(2, 200rpx);
   // gap:5px ;
@@ -1541,6 +1610,7 @@ export default {
 
 .bx-card-cell {
   // 隐藏滚动条
+  height: 100%;
   &.is-link {
     cursor: pointer;
     transition: all 0.3s ease-in-out;

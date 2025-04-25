@@ -329,6 +329,10 @@ span.section-title {
 .el-checkbox__input.is-indeterminate,
 .bx_action,
 .upload-demo {
+  *::selection {
+    color: #fff;
+    background: var(--primary-color, #007aff);
+  }
   .el-pagination.is-background {
     .el-pager li:not(.disabled):hover {
       color: var(--primary-color, #007aff);
@@ -337,7 +341,6 @@ span.section-title {
       background-color: var(--primary-color, #409eff);
       color: #fff;
     }
-
   }
   .materia-warp {
     .type-item.active {
