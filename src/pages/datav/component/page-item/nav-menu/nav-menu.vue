@@ -6,7 +6,7 @@
           {{ item.label }}
         </div>
       </div> -->
-      <nav-menu-item v-for="item in subMenu" :data="item" @change="onMenuChange"></nav-menu-item>
+      <nav-menu-item v-for="item in subMenu" :data="item" @change="onMenuChange" @on-nav="navTo"></nav-menu-item>
     </div>
     <div class="nav-menu-child-wrap" v-if="current && setCurrentSubMenu && setCurrentSubMenu.length"
       :class="{ active: current && setCurrentSubMenu && setCurrentSubMenu.length }">
@@ -279,7 +279,7 @@ export default {
       }
     },
     navTo(jumpConfig, data) {
-      if (data?._url) {
+      if (data?._url && !jumpConfig) {
         return window.open(data._url)
       }
       if (typeof jumpConfig === "string") {

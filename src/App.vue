@@ -22,22 +22,22 @@ export default {
     };
   },
   created() {
-    if (sessionStorage.getItem('theme')) {
-      let theme = sessionStorage.getItem('theme')
+    if (sessionStorage.getItem("theme")) {
+      let theme = sessionStorage.getItem("theme");
       try {
-        theme = JSON.parse(theme)
+        theme = JSON.parse(theme);
       } catch (error) {
-        console.log('error', error);
+        console.log("error", error);
       }
       if (theme && theme.name) {
-        Object.keys(theme).forEach(key => {
-          if (key == 'name') {
-            return
+        Object.keys(theme).forEach((key) => {
+          if (key == "name") {
+            return;
           }
-          if (key.includes('-color')) {
-            document.documentElement.style.setProperty(`--${key}`, theme[key])
+          if (key.includes("-color")) {
+            document.documentElement.style.setProperty(`--${key}`, theme[key]);
           }
-        })
+        });
       }
     }
     if (this.$route?.query?.bx_auth_ticket) {
@@ -254,30 +254,30 @@ body {
 
 // 主题相关-start
 :root {
-  --primary: var(--primary-color, #409EFF);
+  --primary: var(--primary-color, #409eff);
 }
 
-
 .el-tabs__item.is-active,
+.el-tabs__item:hover,
 .el-collapse-item .el-collapse-item__header.is-active {
-  color: var(--primary-color, #409EFF) !important;
+  color: var(--primary-color, #409eff) !important;
 }
 
 .el-select-dropdown.el-popper {
   .el-select-dropdown__item.selected {
-    color: var(--primary-color, #409EFF) !important;
+    color: var(--primary-color, #409eff) !important;
   }
 }
 
 .el-form-item__label,
 span.section-title {
-  color: var(--primary-color, #409EFF) !important;
+  color: var(--primary-color, #409eff) !important;
 }
 
 .el-upload--picture-card:hover,
 .el-upload:focus {
-  border-color: var(--primary-color, #409EFF) !important;
-  color: var(--primary-color, #409EFF) !important;
+  border-color: var(--primary-color, #409eff) !important;
+  color: var(--primary-color, #409eff) !important;
 }
 
 .el-select .el-input__inner:focus,
@@ -286,7 +286,7 @@ span.section-title {
 .el-select .el-input.is-focus .el-input__inner,
 .el-cascader .el-input .el-input__inner:focus,
 .el-cascader .el-input.is-focus .el-input__inner {
-  border-color: var(--primary-color, #409EFF) !important;
+  border-color: var(--primary-color, #409eff) !important;
 }
 
 // .form-view-wrapper {
@@ -314,11 +314,11 @@ span.section-title {
 //   }
 // }
 
-
 .el-tabs__active-bar {
-  background-color: var(--primary-color, #409EFF);
+  background-color: var(--primary-color, #409eff);
 }
 
+.lowcode-wrapper,
 .table-head-btns,
 .cell,
 .el-row,
@@ -329,65 +329,75 @@ span.section-title {
 .el-checkbox__input.is-indeterminate,
 .bx_action,
 .upload-demo {
+  .el-pagination.is-background {
+    .el-pager li:not(.disabled).active {
+      background-color: var(--primary-color, #409eff);
+      color: #fff;
+    }
+  }
+  .materia-warp {
+    .type-item.active {
+      color: var(--primary-color, #007aff);
+    }
+  }
 
   .el-pager li.active,
   a,
-  .el-radio__input.is-checked+.el-radio__label,
-  .el-checkbox__input.is-checked+.el-checkbox__label {
-    color: var(--primary-color, #409EFF);
+  .el-radio__input.is-checked + .el-radio__label,
+  .el-checkbox__input.is-checked + .el-checkbox__label {
+    color: var(--primary-color, #409eff);
   }
 
   .el-tag {
     background-color: var(--menu-bg-light-color, #b3d8ff);
     border-color: var(--menu-light-border-color, #b3d8ff);
-    color: var(--primary-color, #409EFF);
-
+    color: var(--primary-color, #409eff);
   }
 
   .el-button:focus,
   .el-button:hover {
-    color: var(--primary-color, #409EFF);
+    color: var(--primary-color, #409eff);
     background-color: var(--menu-bg-light-color, #ecf5ff);
     border-color: var(--menu-light-border-color, #c6e2ff);
   }
 
   .el-input.is-active .el-input__inner,
   .el-input__inner:focus {
-    border-color: var(--primary-color, #409EFF);
+    border-color: var(--primary-color, #409eff);
   }
 
   a:not([href]):not([class]) {
-    color: var(--primary-color, #409EFF) !important;
+    color: var(--primary-color, #409eff) !important;
   }
 
   .link-to-detail:hover {
-    color: var(--primary-color, #409EFF);
+    color: var(--primary-color, #409eff);
   }
 
   .el-button--primary,
   .el-radio__input.is-checked .el-radio__inner,
   .el-checkbox__input.is-checked .el-checkbox__inner {
-    color: #FFF;
-    background-color: var(--menu-bg-color, #409EFF);
-    border-color: var(--menu-bg-color, #409EFF);
+    color: #fff;
+    background-color: var(--menu-bg-color, #409eff);
+    border-color: var(--menu-bg-color, #409eff);
 
     &.is-plain {
-      color: var(--menu-bg-color, #409EFF);
+      color: var(--menu-bg-color, #409eff);
       background: var(--menu-bg-light-color, #ecf5ff);
       border-color: var(--menu-light-border-color, #b3d8ff);
 
       &:hover,
       &:active,
       &:focus {
-        background-color: var(--menu-bg-color, #409EFF);
-        color: var(menu-text-color, #409EFF);
+        background-color: var(--menu-bg-color, #409eff);
+        color: var(menu-text-color, #409eff);
         border-color: unset;
       }
     }
 
     &:focus,
     &:hover {
-      color: #FFF;
+      color: #fff;
       background-color: var(--menu-bg-color, #66b1ff);
       border-color: var(--menu-bg-color, #66b1ff);
     }
@@ -397,9 +407,8 @@ span.section-title {
 // 主题相关-end
 
 .is-demo {
-
   // 原型图样式
-  .el-checkbox__input.is-checked+.el-checkbox__label {
+  .el-checkbox__input.is-checked + .el-checkbox__label {
     color: #666;
   }
 
@@ -450,8 +459,6 @@ span.section-title {
     color: #666;
   }
 
-
-
   .el-button {
     &.el-button--success {
       background-color: #999;
@@ -493,7 +500,7 @@ span.section-title {
       background-color: #8b8b8b;
     }
 
-    th>.cell {
+    th > .cell {
       color: #333;
     }
 
@@ -506,8 +513,8 @@ span.section-title {
     }
 
     .hover-row,
-    .hover-row>td,
-    .current-row>td {
+    .hover-row > td,
+    .current-row > td {
       background-color: #ececec !important;
     }
 

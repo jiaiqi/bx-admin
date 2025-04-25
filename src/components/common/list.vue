@@ -763,12 +763,13 @@
       <!-- <el-row type="flex" class="row-bg" justify="center" v-if="!isMem()" -->
       <el-row
         type="flex"
-        class="row-bg py-2 "
+        class="row-bg py-2"
         justify="center"
         v-if="showPagination && setShowPagination"
         v-show="!hidePagination && gridPage.total > 0 && !isDemo"
       >
         <el-pagination
+          background
           @current-change="handleCurrentChange"
           @size-change="handleSizeChange"
           :current-page="gridPage.currentPage"
@@ -1257,7 +1258,7 @@ export default {
       deep: true,
       handler(newValue, oldValue) {
         this.$nextTick(() => {
-          this.setTableMaxHeight()
+          this.setTableMaxHeight();
         });
       },
     },
@@ -1359,7 +1360,7 @@ export default {
         )?.offsetHeight;
         const tableHeight = bodyHeight + headerHeight;
         console.log("tableHeight", tableHeight, parentHeight);
-        
+
         if (tableHeight < parentEle.parentElement.offsetHeight - 50) {
           parentEle.parentElement.style.display = "block";
           this.tableMaxHeight = tableHeight;

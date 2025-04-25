@@ -46,7 +46,8 @@ export default {
         return
       }
       if (item?.jump_json) {
-        this.navTo(item.jump_json);
+        this.$emit('on-nav',item.jump_json)
+        // this.navTo(item.jump_json);
         return;
       }
       const ele = event.target.getBoundingClientRect();
@@ -62,49 +63,6 @@ export default {
       // 获取当前点击的nav-menu宽度
       if (event && event.currentTarget) {
         this.navMenuWidth = event.currentTarget.offsetWidth;
-      }
-    },
-    navTo(jumpConfig) {
-      if (typeof jumpConfig === "string") {
-        try {
-          jumpConfig = JSON.parse(jumpConfig);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      if (jumpConfig?.obj_type) {
-        switch (jumpConfig.obj_type) {
-          case "外部页面":
-            if (jumpConfig.outer_url) {
-              if (jumpConfig.target_type == "原页面") {
-                window.location.href = jumpConfig.outer_url;
-              } else {
-                window.open(jumpConfig.outer_url);
-              }
-            }
-            break;
-          default:
-            if (jumpConfig.dest_page_no) {
-              this.navToPath(jumpConfig);
-            }
-            break;
-        }
-      }
-    },
-    navToPath(jump_json) {
-      let pageNo = jump_json?.dest_page_no;
-      let path = "";
-      if (jump_json?.tmpl_page_json.file_path) {
-        path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
-      } else {
-        path = `/vpages/index.html#/lowcode-grid/view/${pageNo}?srvApp=config`;
-      }
-      if (pageNo) {
-        if (jump_json.target_type == "原页面") {
-          window.location.href = path;
-        } else {
-          window.open(path);
-        }
       }
     },
     async fetchChildData(config) {
