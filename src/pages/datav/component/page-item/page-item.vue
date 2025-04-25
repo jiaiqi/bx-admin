@@ -296,6 +296,25 @@ export default {
       const { more_jump_json: jumpJson } = this.pageItem || {};
       if (jumpJson?.obj_type === "内部页面") {
         let pageNo = jumpJson?.dest_page_no;
+        if (jumpJson?.click_jump_option?.includes("先登录")) {
+          if (this.$store.state?.loginInfo?.logined !== true) {
+            // 您还未登录,需要登录才能进入,点击确认前往登录
+            this.$message
+              .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning",
+              })
+              .then(() => {
+                const currentUrl =
+                  window.location.pathname + window.location.hash;
+                sessionStorage.setItem("login_redirect_url", currentUrl);
+                const loginUrl = window.location.origin + "/main/login.html";
+                window.location.href = loginUrl;
+              });
+            return;
+          }
+        }
         if (jumpJson?.tmpl_page_json?.file_path) {
           let url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`;
           this.$router.push({

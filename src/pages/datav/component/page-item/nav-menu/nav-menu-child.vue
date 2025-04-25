@@ -131,6 +131,24 @@ const jumpJson = computed(() => {
 });
 
 function navTo(jumpConfig) {
+  if (jumpConfig?.click_jump_option?.includes("先登录")) {
+    if (this.$store.state?.loginInfo?.logined !== true) {
+      // 您还未登录,需要登录才能进入,点击确认前往登录
+      this.$message
+        .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+        .then(() => {
+          const currentUrl = window.location.pathname + window.location.hash;
+          sessionStorage.setItem("login_redirect_url", currentUrl);
+          const loginUrl = window.location.origin + "/main/login.html";
+          window.location.href = loginUrl;
+        });
+      return;
+    }
+  }
   if (jumpConfig?.obj_type) {
     switch (jumpConfig.obj_type) {
       case "外部页面":
@@ -153,6 +171,24 @@ function navTo(jumpConfig) {
 function navToPath(jump_json) {
   let pageNo = jump_json?.dest_page_no;
   let path = "";
+  if (jump_json?.click_jump_option?.includes("先登录")) {
+    if (this.$store.state?.loginInfo?.logined !== true) {
+      // 您还未登录,需要登录才能进入,点击确认前往登录
+      this.$message
+        .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+        .then(() => {
+          const currentUrl = window.location.pathname + window.location.hash;
+          sessionStorage.setItem("login_redirect_url", currentUrl);
+          const loginUrl = window.location.origin + "/main/login.html";
+          window.location.href = loginUrl;
+        });
+      return;
+    }
+  }
   if (jump_json?.tmpl_page_json.file_path) {
     path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
   } else {

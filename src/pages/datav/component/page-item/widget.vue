@@ -178,6 +178,29 @@ export default {
         // 使用配置的跳转事件
         const jumpJson = this.widgetJson.jump_json;
         if (jumpJson.obj_type === "内部页面" && this.pageNo) {
+          if (jumpJson?.click_jump_option?.includes("先登录")) {
+            if (this.$store.state?.loginInfo?.logined !== true) {
+              // 您还未登录,需要登录才能进入,点击确认前往登录
+              this.$message
+                .confirm(
+                  "您还未登录,需要登录才能进入,点击确认前往登录",
+                  "提示",
+                  {
+                    confirmButtonText: "确定",
+                    cancelButtonText: "取消",
+                    type: "warning",
+                  }
+                )
+                .then(() => {
+                  const currentUrl =
+                    window.location.pathname + window.location.hash;
+                  sessionStorage.setItem("login_redirect_url", currentUrl);
+                  const loginUrl = window.location.origin + "/main/login.html";
+                  window.location.href = loginUrl;
+                });
+              return;
+            }
+          }
           window.open(
             location.href.replace(this.pageNo, jumpJson.dest_page_no)
           );

@@ -1326,6 +1326,33 @@ export default {
                 };
                 this.dialogVisible = true;
               } else {
+                if (jumpJson?.click_jump_option?.includes("先登录")) {
+                  if (this.$store.state?.loginInfo?.logined !== true) {
+                    // 您还未登录,需要登录才能进入,点击确认前往登录
+                    this.$message
+                      .confirm(
+                        "您还未登录,需要登录才能进入,点击确认前往登录",
+                        "提示",
+                        {
+                          confirmButtonText: "确定",
+                          cancelButtonText: "取消",
+                          type: "warning",
+                        }
+                      )
+                      .then(() => {
+                        const currentUrl =
+                          window.location.pathname + window.location.hash;
+                        sessionStorage.setItem(
+                          "login_redirect_url",
+                          currentUrl
+                        );
+                        const loginUrl =
+                          window.location.origin + "/main/login.html";
+                        window.location.href = loginUrl;
+                      });
+                    return;
+                  }
+                }
                 open(pagePath);
               }
             }
@@ -1579,9 +1606,9 @@ export default {
       if (type === "时间日期" && item.date_format_rule) {
         val = dayjs(val).format(item.date_format_rule);
       }
-      if(type==='视频'){
-        if(val?.indexOf('http')!==0){
-          val = this.serviceApi()?.downloadFileNo + val
+      if (type === "视频") {
+        if (val?.indexOf("http") !== 0) {
+          val = this.serviceApi()?.downloadFileNo + val;
         }
       }
       return this.recoverFileAddress(val);

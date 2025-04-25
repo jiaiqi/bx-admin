@@ -1,37 +1,80 @@
 <template>
   <div v-if="viewMode === '展开子导航'" class="nav-menu-container">
-    <div class="nav-menu" :style="{ '--min-height': minHeight + 'px' }" ref="navMenu">
+    <div
+      class="nav-menu"
+      :style="{ '--min-height': minHeight + 'px' }"
+      ref="navMenu"
+    >
       <!-- <div class="nav-menu" v-for="(item, key) in subMenu" :key="key" @click="onTap(item, $event)" ref="navMenuItem">
         <div class="nav-menu-label" :style="[formatStyleData(item.nav_style_json)]">
           {{ item.label }}
         </div>
       </div> -->
-      <nav-menu-item v-for="item in subMenu" :data="item" @change="onMenuChange" @on-nav="navTo"></nav-menu-item>
+      <nav-menu-item
+        v-for="item in subMenu"
+        :data="item"
+        @change="onMenuChange"
+        @on-nav="navTo"
+      ></nav-menu-item>
     </div>
-    <div class="nav-menu-child-wrap" v-if="current && setCurrentSubMenu && setCurrentSubMenu.length"
-      :class="{ active: current && setCurrentSubMenu && setCurrentSubMenu.length }">
+    <div
+      class="nav-menu-child-wrap"
+      v-if="current && setCurrentSubMenu && setCurrentSubMenu.length"
+      :class="{
+        active: current && setCurrentSubMenu && setCurrentSubMenu.length,
+      }"
+    >
       <div class="child-menu-list">
         <div class="child-menu" v-for="item in setCurrentSubMenu">
-          <div class="child-menu-label" @click.stop.capture="navTo(item.jump_json, item)">
+          <div
+            class="child-menu-label"
+            @click.stop.capture="navTo(item.jump_json, item)"
+          >
             <span>{{ item.label || item._label }}</span>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="nav-menu" :class="{ isHovered: isHovered }" v-else-if="label" @mouseenter="
-    isHovered = true;
-  showChild = true;
-  " @mouseleave="isHovered = false" ref="navMenu">
-    <div class="nav-menu-label" :style="[setLabelStyle, mixNavStyle]" @click.stop.capture="navTo(jumpJson)">
+  <div
+    class="nav-menu"
+    :class="{ isHovered: isHovered }"
+    v-else-if="label"
+    @mouseenter="
+      isHovered = true;
+      showChild = true;
+    "
+    @mouseleave="isHovered = false"
+    ref="navMenu"
+  >
+    <div
+      class="nav-menu-label"
+      :style="[setLabelStyle, mixNavStyle]"
+      @click.stop.capture="navTo(jumpJson)"
+    >
       <span>{{ label }}</span>
-      <img class="nav-icon" :src="getImagePath(config.nav_icon_selected)" alt=""
-        v-if="config.nav_icon_selected && isHovered" />
-      <img class="nav-icon" :src="getImagePath(config.nav_icon)" alt="" v-else-if="config.nav_icon" />
+      <img
+        class="nav-icon"
+        :src="getImagePath(config.nav_icon_selected)"
+        alt=""
+        v-if="config.nav_icon_selected && isHovered"
+      />
+      <img
+        class="nav-icon"
+        :src="getImagePath(config.nav_icon)"
+        alt=""
+        v-else-if="config.nav_icon"
+      />
     </div>
     <!-- <Teleport to="#content"> -->
-    <nav-menu-child :config="config" :parent-config="parentConfig" :pageConfig="pageConfig" :isHovered="showChild"
-      :parent-style="parentStyle" @leave="showChild = false"></nav-menu-child>
+    <nav-menu-child
+      :config="config"
+      :parent-config="parentConfig"
+      :pageConfig="pageConfig"
+      :isHovered="showChild"
+      :parent-style="parentStyle"
+      @leave="showChild = false"
+    ></nav-menu-child>
     <!-- </Teleport> -->
 
     <!-- <div
@@ -102,8 +145,11 @@ export default {
       }
     },
     setCurrentSubMenu() {
-      if (this.current?.child_source === '接口请求' && this.menuChildren?.length) {
-        return this.menuChildren
+      if (
+        this.current?.child_source === "接口请求" &&
+        this.menuChildren?.length
+      ) {
+        return this.menuChildren;
       }
       let json = this.current?.sub_json;
       if (typeof json === "string") {
@@ -198,8 +244,8 @@ export default {
     },
   },
   created() {
-    if (this.config?.child_source === '接口请求') {
-      this.fetchChildData()
+    if (this.config?.child_source === "接口请求") {
+      this.fetchChildData();
     }
   },
   mounted() {
@@ -212,10 +258,10 @@ export default {
     onMenuChange(data) {
       const { children, current, event } = data;
       const eleRect = this.$refs.navMenu?.getBoundingClientRect?.();
-      if(eleRect.height){
+      if (eleRect.height) {
         this.minHeight = eleRect.height;
       }
-      console.log('onMenuChange', data);
+      console.log("onMenuChange", data);
       if (this.current?.nav_no && this.current?.nav_no === current?.nav_no) {
         this.current = null;
         this.menuChildren = [];
@@ -225,39 +271,45 @@ export default {
       }
     },
     async fetchChildData(config) {
-      let requestJson = config
-      if (typeof config === 'string') {
-        requestJson = JSON.parse(config)
+      let requestJson = config;
+      if (typeof config === "string") {
+        requestJson = JSON.parse(config);
       }
       if (requestJson?.serviceName) {
-        console.log('requestJson', requestJson);
+        console.log("requestJson", requestJson);
         const req = {
-          colNames: requestJson.colNames || ['*'],
+          colNames: requestJson.colNames || ["*"],
           condition: requestJson.condition || [],
           serviceName: requestJson.serviceName,
           page: requestJson.page || { pageNo: 1, rownumber: 100 },
-        }
-        const url = `${requestJson.mapp}/${requestJson.srv_type || 'select'}/${req.serviceName}`
-        return await this.$http.post(url, req)
+        };
+        const url = `${requestJson.mapp}/${requestJson.srv_type || "select"}/${
+          req.serviceName
+        }`;
+        return await this.$http.post(url, req);
       }
     },
     onTap(item, event) {
-      console.log('item', item);
-      if (item.child_source === '接口请求') {
-        this.fetchChildData(item.request_json).then(res => {
-          console.log('res', res);
-          if (res.data?.state === 'SUCCESS') {
-            console.log('res.data', res.data.data);
-            this.$set(this.requestSubMenuMap, item.nav_no, res.data.data.map(data => {
-              return {
-                ...data,
-                _label: data[item.label_field],
-                _url: data[item.link_field]
-              }
-            }))
+      console.log("item", item);
+      if (item.child_source === "接口请求") {
+        this.fetchChildData(item.request_json).then((res) => {
+          console.log("res", res);
+          if (res.data?.state === "SUCCESS") {
+            console.log("res.data", res.data.data);
+            this.$set(
+              this.requestSubMenuMap,
+              item.nav_no,
+              res.data.data.map((data) => {
+                return {
+                  ...data,
+                  _label: data[item.label_field],
+                  _url: data[item.link_field],
+                };
+              })
+            );
           }
-        })
-        return
+        });
+        return;
       }
       if (item?.jump_json) {
         this.navTo(item.jump_json);
@@ -280,7 +332,7 @@ export default {
     },
     navTo(jumpConfig, data) {
       if (data?._url && !jumpConfig) {
-        return window.open(data._url)
+        return window.open(data._url);
       }
       if (typeof jumpConfig === "string") {
         try {
@@ -290,6 +342,25 @@ export default {
         }
       }
       if (jumpConfig?.obj_type) {
+        if (jumpJson?.click_jump_option?.includes("先登录")) {
+          if (this.$store.state?.loginInfo?.logined !== true) {
+            // 您还未登录,需要登录才能进入,点击确认前往登录
+            this.$message
+              .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning",
+              })
+              .then(() => {
+                const currentUrl =
+                  window.location.pathname + window.location.hash;
+                sessionStorage.setItem("login_redirect_url", currentUrl);
+                const loginUrl = window.location.origin + "/main/login.html";
+                window.location.href = loginUrl;
+              });
+            return;
+          }
+        }
         switch (jumpConfig.obj_type) {
           case "外部页面":
             if (jumpConfig.outer_url) {
@@ -310,6 +381,25 @@ export default {
     },
     navToPath(jump_json) {
       let pageNo = jump_json?.dest_page_no;
+      if (jump_json?.click_jump_option?.includes("先登录")) {
+        if (this.$store.state?.loginInfo?.logined !== true) {
+          // 您还未登录,需要登录才能进入,点击确认前往登录
+          this.$message
+            .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+            })
+            .then(() => {
+              const currentUrl =
+                window.location.pathname + window.location.hash;
+              sessionStorage.setItem("login_redirect_url", currentUrl);
+              const loginUrl = window.location.origin + "/main/login.html";
+              window.location.href = loginUrl;
+            });
+          return;
+        }
+      }
       let path = "";
       if (jump_json?.tmpl_page_json.file_path) {
         path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
