@@ -330,18 +330,20 @@ span.section-title {
 .bx_action,
 .upload-demo {
   .el-pagination.is-background {
+    .el-pager li:not(.disabled):hover {
+      color: var(--primary-color, #007aff);
+    }
     .el-pager li:not(.disabled).active {
       background-color: var(--primary-color, #409eff);
       color: #fff;
     }
+
   }
   .materia-warp {
     .type-item.active {
       color: var(--primary-color, #007aff);
     }
   }
-
-  .el-pager li.active,
   a,
   .el-radio__input.is-checked + .el-radio__label,
   .el-checkbox__input.is-checked + .el-checkbox__label {

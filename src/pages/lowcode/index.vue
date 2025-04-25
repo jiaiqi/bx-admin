@@ -4,6 +4,7 @@
       :is-preview.sync="previewVisible"
       :json-visible.sync="jsonVisible"
       @click.native="currentChange()"
+      @preview="openNewTab"
       v-if="!isView"
     >
       <template #left>

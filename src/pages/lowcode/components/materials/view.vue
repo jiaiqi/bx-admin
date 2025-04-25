@@ -1,7 +1,16 @@
 <template>
+  <div class="force-login" ref="" v-if="forceLogin">
+    <!-- :style="{ backgroundImage: 'url(' + loginBg + ')' }" -->
+    <!-- <img :src="loginBg" v-if="loginBg" class="img" /> -->
+    <div class="login-bg" :style="{ backgroundImage: 'url(' + loginBg + ')' }"></div>
+    <div class="login-box">
+      <div>登录后才能查看</div>
+      <button class="login-btn" @click="toLogin">登录</button>
+    </div>
+  </div>
   <component
     :is="component"
-    v-if="component"
+    v-else-if="component"
     v-bind="props"
     :page-item="props.data"
     :content-width="contentWidth"
@@ -102,6 +111,12 @@ export default {
     contentWidth: {
       type: String,
     },
+    pageItem: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
   },
   computed: {
     props() {
@@ -109,6 +124,24 @@ export default {
     },
     isView() {
       return this.$route.meta?.isView === true;
+    },
+    forceLogin() {
+      return this.pageItem?.com_option?.includes("强制登录") && this.needLogin;
+    },
+    loginBg() {
+      let imgs = this.pageItem?.login_bg_img_json;
+      if (Array.isArray(imgs) && imgs.length) {
+        const img = imgs[0];
+        if (img?.file_no) {
+          return this.serviceApi().downloadFileNo + img.file_no;
+        }
+        if (img?.fileurl) {
+          return this.serviceApi().downloadFile + img.fileurl;
+        }
+      }
+    },
+    needLogin() {
+      return this.$store.state.loginInfo.logined !== true;
     },
   },
   data() {
@@ -130,6 +163,12 @@ export default {
     },
   },
   methods: {
+    toLogin(){
+      const currentUrl = window.location.pathname  + window.location.hash;
+      sessionStorage.setItem("login_redirect_url", currentUrl);
+      const loginUrl = window.location.origin + "/main/login.html";
+      window.location.href = loginUrl;
+    },
     openComponentSelector() {
       this.$emit("open", this.props);
     },
@@ -158,4 +197,41 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.force-login {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  .login-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    background-image: url("~@/assets/image/login/wj_login.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(10px);
+    z-index: -1;
+  }
+  .login-box {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    flex-direction: column;
+    .login-btn {
+      padding: 10px 20px;
+      border-radius: 5px;
+      background-color: var(--menu-bg-color, #409eff);
+      min-width: 200px;
+      text-align: center;
+      margin-top: 20px;
+    }
+  }
+}
+</style>

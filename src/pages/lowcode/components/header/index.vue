@@ -36,7 +36,8 @@ export default {
   },
   methods: {
     showPreview() {
-      this.$emit("update:isPreview", !this.isPreview);
+      this.$emit("preview");
+      // this.$emit("update:isPreview", !this.isPreview);
     },
     showJSON() {
       this.$emit("update:jsonVisible", true);

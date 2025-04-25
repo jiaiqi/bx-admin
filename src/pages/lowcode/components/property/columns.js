@@ -15,6 +15,8 @@ export const pageCompCols = [
   "display",
   "display_cond",
   "com_option",
+  "login_bg_img",
+  "login_bg_img_json",
   "display_tenant_owner_types",
   "page_layout_no",
   "layout_seq",

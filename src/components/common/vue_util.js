@@ -1831,14 +1831,9 @@ function init_util() {
 
       uploadFile: backendIpAddr + "/file/upload",
       downloadFilePrefix: backendIpAddr + "/file/download",
-      downloadFile: `${backendIpAddr}/file/download?bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}&filePath=`,
+      downloadFile: `${backendIpAddr}/file/download?${sessionStorage.getItem("bx_auth_ticket") ? 'bx_auth_ticket=' + sessionStorage.getItem("bx_auth_ticket") : ''}&filePath=`,
       deleteFile: backendIpAddr + "/file/delete",
-      downloadFileNo:
-        backendIpAddr +
-        "/file/download?" +
-        "bx_auth_ticket=" +
-        sessionStorage.getItem("bx_auth_ticket") +
-        "&fileNo=",
+      downloadFileNo: `${backendIpAddr}/file/download?bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket" || '')}&fileNo=`,
       exportExcel: backendIpAddr + "/" + defaultApp + "/export/exportExcel",
       importExcel: backendIpAddr + "/" + defaultApp + "/bizDataImport",
 
