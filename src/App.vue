@@ -258,11 +258,62 @@ body {
 }
 
 
-.el-form .el-form-item span.section-title，
 .el-tabs__item.is-active,
 .el-collapse-item .el-collapse-item__header.is-active {
-  color: var(--primary-color, #409EFF);
+  color: var(--primary-color, #409EFF) !important;
 }
+
+.el-select-dropdown.el-popper {
+  .el-select-dropdown__item.selected {
+    color: var(--primary-color, #409EFF) !important;
+  }
+}
+
+.el-form-item__label,
+span.section-title {
+  color: var(--primary-color, #409EFF) !important;
+}
+
+.el-upload--picture-card:hover,
+.el-upload:focus {
+  border-color: var(--primary-color, #409EFF) !important;
+  color: var(--primary-color, #409EFF) !important;
+}
+
+.el-select .el-input__inner:focus,
+.el-range-editor.is-active,
+.el-range-editor.is-active:hover,
+.el-select .el-input.is-focus .el-input__inner,
+.el-cascader .el-input .el-input__inner:focus,
+.el-cascader .el-input.is-focus .el-input__inner {
+  border-color: var(--primary-color, #409EFF) !important;
+}
+
+// .form-view-wrapper {
+//   .el-form {
+//     .el-form-item {
+
+//       .el-form-item__label,
+//       span.section-title {
+//         color: var(--primary-color, #409EFF);
+//       }
+
+//       .el-upload--picture-card:hover,
+//       .el-upload:focus {
+//         border-color: var(--primary-color, #409EFF);
+//         color: var(--primary-color, #409EFF);
+//       }
+
+//       .el-select .el-input__inner:focus,
+//       .el-range-editor.is-active,
+//       .el-range-editor.is-active:hover,
+//       .el-select .el-input.is-focus .el-input__inner {
+//         border-color: var(--primary-color, #409EFF);
+//       }
+//     }
+//   }
+// }
+
 
 .el-tabs__active-bar {
   background-color: var(--primary-color, #409EFF);
@@ -275,7 +326,9 @@ body {
 .el-pagination,
 .el-radio-group,
 .el-checkbox-group,
-.bx_action {
+.el-checkbox__input.is-indeterminate,
+.bx_action,
+.upload-demo {
 
   .el-pager li.active,
   a,
@@ -291,8 +344,24 @@ body {
 
   }
 
+  .el-button:focus,
+  .el-button:hover {
+    color: var(--primary-color, #409EFF);
+    background-color: var(--menu-bg-light-color, #ecf5ff);
+    border-color: var(--menu-light-border-color, #c6e2ff);
+  }
+
+  .el-input.is-active .el-input__inner,
+  .el-input__inner:focus {
+    border-color: var(--primary-color, #409EFF);
+  }
+
   a:not([href]):not([class]) {
     color: var(--primary-color, #409EFF) !important;
+  }
+
+  .link-to-detail:hover {
+    color: var(--primary-color, #409EFF);
   }
 
   .el-button--primary,

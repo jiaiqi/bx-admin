@@ -288,7 +288,7 @@ label.required::before {
 }
 
 .el-form label.normal {
-  color: #3f65b1 !important;
+  // color: #3f65b1 !important;
 }
 
 div.el-form-item {

@@ -1,77 +1,37 @@
 <template>
   <div v-if="viewMode === '展开子导航'" class="nav-menu-container">
-    <div class="nav-menu" :style="{ '--min-height': minHeight + 'px' }">
-      <div
-        class="nav-menu"
-        v-for="(item, key) in subMenu"
-        :key="key"
-        @click="onTap(item, $event)"
-        ref="navMenuItem"
-      >
-        <div
-          class="nav-menu-label"
-          :style="[formatStyleData(item.nav_style_json)]"
-        >
+    <div class="nav-menu" :style="{ '--min-height': minHeight + 'px' }" ref="navMenu">
+      <!-- <div class="nav-menu" v-for="(item, key) in subMenu" :key="key" @click="onTap(item, $event)" ref="navMenuItem">
+        <div class="nav-menu-label" :style="[formatStyleData(item.nav_style_json)]">
           {{ item.label }}
         </div>
-      </div>
+      </div> -->
+      <nav-menu-item v-for="item in subMenu" :data="item" @change="onMenuChange"></nav-menu-item>
     </div>
-    <div
-      class="nav-menu-child-wrap"
-      v-if="current && currentSubMenu && currentSubMenu.length"
-      :class="{ active: current && currentSubMenu && currentSubMenu.length }"
-    >
+    <div class="nav-menu-child-wrap" v-if="current && setCurrentSubMenu && setCurrentSubMenu.length"
+      :class="{ active: current && setCurrentSubMenu && setCurrentSubMenu.length }">
       <div class="child-menu-list">
-        <div class="child-menu" v-for="item in currentSubMenu">
-          <div
-            class="child-menu-label"
-            @click.stop.capture="navTo(item.jump_json)"
-          >
-            <span>{{ item.label }}</span>
+        <div class="child-menu" v-for="item in setCurrentSubMenu">
+          <div class="child-menu-label" @click.stop.capture="navTo(item.jump_json, item)">
+            <span>{{ item.label || item._label }}</span>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div
-    class="nav-menu"
-    :class="{ isHovered: isHovered }"
-    v-else-if="label"
-    @mouseenter="
-      isHovered = true;
-      showChild = true;
-    "
-    @mouseleave="isHovered = false"
-    ref="navMenu"
-  >
-    <div
-      class="nav-menu-label"
-      :style="[setLabelStyle, mixNavStyle]"
-      @click.stop.capture="navTo(jumpJson)"
-    >
+  <div class="nav-menu" :class="{ isHovered: isHovered }" v-else-if="label" @mouseenter="
+    isHovered = true;
+  showChild = true;
+  " @mouseleave="isHovered = false" ref="navMenu">
+    <div class="nav-menu-label" :style="[setLabelStyle, mixNavStyle]" @click.stop.capture="navTo(jumpJson)">
       <span>{{ label }}</span>
-      <img
-        class="nav-icon"
-        :src="getImagePath(config.nav_icon_selected)"
-        alt=""
-        v-if="config.nav_icon_selected && isHovered"
-      />
-      <img
-        class="nav-icon"
-        :src="getImagePath(config.nav_icon)"
-        alt=""
-        v-else-if="config.nav_icon"
-      />
+      <img class="nav-icon" :src="getImagePath(config.nav_icon_selected)" alt=""
+        v-if="config.nav_icon_selected && isHovered" />
+      <img class="nav-icon" :src="getImagePath(config.nav_icon)" alt="" v-else-if="config.nav_icon" />
     </div>
     <!-- <Teleport to="#content"> -->
-    <nav-menu-child
-      :config="config"
-      :parent-config="parentConfig"
-      :pageConfig="pageConfig"
-      :isHovered="showChild"
-      :parent-style="parentStyle"
-      @leave="showChild = false"
-    ></nav-menu-child>
+    <nav-menu-child :config="config" :parent-config="parentConfig" :pageConfig="pageConfig" :isHovered="showChild"
+      :parent-style="parentStyle" @leave="showChild = false"></nav-menu-child>
     <!-- </Teleport> -->
 
     <!-- <div
@@ -96,11 +56,13 @@ import { formatStyleData } from "@/pages/datav/common/index.js";
 import NavMenuChild from "./nav-menu-list.vue";
 import NavMenu from "./nav-menu.vue";
 import Teleport from "vue2-teleport";
+import NavMenuItem from "./nav-menu-item.vue";
 export default {
   name: "NavMenu",
   components: {
     NavMenuChild,
     NavMenu,
+    NavMenuItem,
     Teleport,
   },
   props: {
@@ -123,6 +85,9 @@ export default {
       },
       formatStyleData: formatStyleData,
       minHeight: "20",
+      requestSubMenuMap: {},
+      menuChildren: [],
+      currentSubMenu: null,
     };
   },
   computed: {
@@ -136,7 +101,10 @@ export default {
         }
       }
     },
-    currentSubMenu() {
+    setCurrentSubMenu() {
+      if (this.current?.child_source === '接口请求' && this.menuChildren?.length) {
+        return this.menuChildren
+      }
       let json = this.current?.sub_json;
       if (typeof json === "string") {
         try {
@@ -219,15 +187,78 @@ export default {
         }
       }
     },
+    reqJson() {
+      if (this.config.request_json) {
+        try {
+          return JSON.parse(this.config.request_json);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    },
+  },
+  created() {
+    if (this.config?.child_source === '接口请求') {
+      this.fetchChildData()
+    }
   },
   mounted() {
-    this.setEleSize();
-    setTimeout(() => {
-      this.setEleSize();
-    }, 1000);
+    // this.setEleSize();
+    // setTimeout(() => {
+    //   this.setEleSize();
+    // }, 1000);
   },
   methods: {
+    onMenuChange(data) {
+      const { children, current, event } = data;
+      const eleRect = this.$refs.navMenu?.getBoundingClientRect?.();
+      if(eleRect.height){
+        this.minHeight = eleRect.height;
+      }
+      console.log('onMenuChange', data);
+      if (this.current?.nav_no && this.current?.nav_no === current?.nav_no) {
+        this.current = null;
+        this.menuChildren = [];
+      } else if (children && children.length > 0) {
+        this.menuChildren = children;
+        this.current = current;
+      }
+    },
+    async fetchChildData(config) {
+      let requestJson = config
+      if (typeof config === 'string') {
+        requestJson = JSON.parse(config)
+      }
+      if (requestJson?.serviceName) {
+        console.log('requestJson', requestJson);
+        const req = {
+          colNames: requestJson.colNames || ['*'],
+          condition: requestJson.condition || [],
+          serviceName: requestJson.serviceName,
+          page: requestJson.page || { pageNo: 1, rownumber: 100 },
+        }
+        const url = `${requestJson.mapp}/${requestJson.srv_type || 'select'}/${req.serviceName}`
+        return await this.$http.post(url, req)
+      }
+    },
     onTap(item, event) {
+      console.log('item', item);
+      if (item.child_source === '接口请求') {
+        this.fetchChildData(item.request_json).then(res => {
+          console.log('res', res);
+          if (res.data?.state === 'SUCCESS') {
+            console.log('res.data', res.data.data);
+            this.$set(this.requestSubMenuMap, item.nav_no, res.data.data.map(data => {
+              return {
+                ...data,
+                _label: data[item.label_field],
+                _url: data[item.link_field]
+              }
+            }))
+          }
+        })
+        return
+      }
       if (item?.jump_json) {
         this.navTo(item.jump_json);
         return;
@@ -247,7 +278,10 @@ export default {
         this.navMenuWidth = event.currentTarget.offsetWidth;
       }
     },
-    navTo(jumpConfig) {
+    navTo(jumpConfig, data) {
+      if (data?._url) {
+        return window.open(data._url)
+      }
       if (typeof jumpConfig === "string") {
         try {
           jumpConfig = JSON.parse(jumpConfig);
@@ -290,16 +324,6 @@ export default {
         }
       }
     },
-    setEleSize() {
-      const ele = this.$refs.navMenu;
-      if (ele) {
-        const { top, left, width, height } = ele.getBoundingClientRect();
-        this.position.top = top;
-        this.position.left = left;
-        this.position.width = width;
-        this.position.height = height;
-      }
-    },
   },
 };
 </script>
@@ -309,7 +333,8 @@ export default {
   display: grid;
   min-height: 100%;
 }
-.nav-menu {
+
+:deep(.nav-menu) {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -318,6 +343,7 @@ export default {
   cursor: pointer;
   z-index: 99;
   flex: 1;
+
   .nav-menu-label {
     z-index: 100;
     width: 100%;
@@ -373,6 +399,7 @@ export default {
     padding: 0;
   }
 }
+
 .nav-menu-child-wrap {
   background-color: #f1f1f1;
   color: #333;
@@ -381,23 +408,28 @@ export default {
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.3s ease-in-out;
   overflow: hidden;
+
   &.active {
     grid-template-rows: 1fr;
   }
+
   .child-menu-list {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     padding: 10px;
   }
+
   .child-menu {
     padding: 2px 10px;
     min-width: 100px;
     text-align: center;
     border-radius: 4px;
     cursor: pointer;
+
     &:hover {
-      background-color: #ddd;
+      background: var(--menu-hover-bg-color, #f1f1f1);
+      color: var(--menu-hover-text-color, inherit);
     }
   }
 }
