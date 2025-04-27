@@ -46,7 +46,9 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
     }
   }
   baseURL = pathConfig.gateway; // 正式环境
-  top.pathConfig = pathConfig;
+  if (!top.pathConfig) {
+    top.pathConfig = pathConfig;
+  }
 }
 
 if (top?.pathConfig?.gateway) {
@@ -58,7 +60,9 @@ if (pathConfig) {
     pathConfig = JSON.parse(pathConfig);
     if (pathConfig?.gateway) {
       baseURL = pathConfig?.gateway;
-      top.pathConfig = pathConfig;
+      if (!top.pathConfig) {
+        top.pathConfig = pathConfig;
+      }
     }
   } catch (error) { }
 }
@@ -242,7 +246,7 @@ export const $delete = async ({ app, service, key = "id", value = "" }) => {
       msg: 'service不能为空',
     }
   }
-  if(Array.isArray(value)) {
+  if (Array.isArray(value)) {
     value = value.join(',')
   }
   const url = `/${app}/delete/${service}`

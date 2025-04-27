@@ -9,6 +9,7 @@
             :navAfterSubmit="false"
             :service="pageService"
             :pk="pageId"
+            :app-no="appNo"
             pkCol="id"
             @executor-complete="onPageUpdate"
             @form-loaded="pageLoading = false"
@@ -396,6 +397,11 @@ export default {
             obj.service = "srvpage_cfg_page_nav_bar_update";
             obj.col = "com_case_no";
             obj.pkCol = "nav_no";
+            break;
+          case "extPage": //外部页面
+            obj.service = "srvpage_cfg_com_ext_page_update";
+            obj.col = "com_case_no";
+            obj.pkCol = "extp_no";
             break;
         }
         obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol];
@@ -907,6 +913,7 @@ export default {
           "calendar_no",
           "card_layout_no",
           "nav_no",
+          "extp_no",//外部链接
         ];
         const ignoreField = [
           ...componentNoKey,
@@ -1004,6 +1011,9 @@ export default {
             case "navBar":
               compObj.serviceName = "srvpage_cfg_page_nav_bar_add";
               break;
+            case "extPage":
+              compObj.serviceName = "srvpage_cfg_com_ext_page_add";
+              break;
           }
           addCompArr.push(compObj);
         });
@@ -1060,6 +1070,9 @@ export default {
               break;
             case "navBar":
               data.com_case_no = comp?.nav_no;
+              break;
+            case "extPage":
+              data.com_case_no = comp?.extp_no;
               break;
           }
           resultComps.push(data);

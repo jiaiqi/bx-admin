@@ -330,18 +330,18 @@ export default {
         this.navMenuWidth = event.currentTarget.offsetWidth;
       }
     },
-    navTo(jumpConfig, data) {
-      if (data?._url && !jumpConfig) {
+    navTo(jumpJson, data) {
+      if (data?._url && !jumpJson) {
         return window.open(data._url);
       }
-      if (typeof jumpConfig === "string") {
+      if (typeof jumpJson === "string") {
         try {
-          jumpConfig = JSON.parse(jumpConfig);
+          jumpJson = JSON.parse(jumpJson);
         } catch (error) {
           console.error(error);
         }
       }
-      if (jumpConfig?.obj_type) {
+      if (jumpJson?.obj_type) {
         if (jumpJson?.click_jump_option?.includes("先登录")) {
           if (this.$store.state?.loginInfo?.logined !== true) {
             // 您还未登录,需要登录才能进入,点击确认前往登录
@@ -361,19 +361,19 @@ export default {
             return;
           }
         }
-        switch (jumpConfig.obj_type) {
+        switch (jumpJson.obj_type) {
           case "外部页面":
-            if (jumpConfig.outer_url) {
-              if (jumpConfig.target_type == "原页面") {
-                window.location.href = jumpConfig.outer_url;
+            if (jumpJson.outer_url) {
+              if (jumpJson.target_type == "原页面") {
+                window.location.href = jumpJson.outer_url;
               } else {
-                window.open(jumpConfig.outer_url);
+                window.open(jumpJson.outer_url);
               }
             }
             break;
           default:
-            if (jumpConfig.dest_page_no) {
-              this.navToPath(jumpConfig);
+            if (jumpJson.dest_page_no) {
+              this.navToPath(jumpJson);
             }
             break;
         }

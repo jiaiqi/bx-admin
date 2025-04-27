@@ -153,7 +153,9 @@ export default {
   },
   mounted: function () {
     // path config
-    window.pathConfig = window.pathConfig || {};
+    if(!window.pathConfig){
+      window.pathConfig =  {};
+    }
     window.pathConfig.fileServer = this.serviceApi().uploadFile.replace(
       "upload",
       ""
