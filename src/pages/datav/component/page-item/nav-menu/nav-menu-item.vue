@@ -30,45 +30,45 @@ export default {
       const item = this.data;
       if (item?._label && !item.jump_json) {
         // 友情链接表
-        // if (item.is_leaf === "是" && item.no) {
-        // 非叶子节点 有子节点 查找子节点
-        if (Array.isArray(this.children) && this.children.length) {
-          return this.$emit("change", {
+        if (item.is_leaf === "是" && item.no) {
+          // 非叶子节点 有子节点 查找子节点
+          if (Array.isArray(this.children) && this.children.length) {
+            return this.$emit("change", {
+              children: this.children,
+              current: item,
+            });
+          }
+          const requestJson = {
+            colNames: ["*"],
+            mapp: "ws",
+            srv_type: "select",
+            serviceName: "srvcms_friend_links_select",
+            condition: [
+              {
+                colName: "parent_no",
+                ruleType: "eq",
+                value: item.no,
+              },
+            ],
+          };
+          const res = await this.fetchChildData(requestJson);
+          if (res.data?.state === "SUCCESS") {
+            this.children = res.data.data.map((data) => {
+              return {
+                ...data,
+                _label: data[item.label_field] || data.link_name,
+                _url: data[item.link_field] || data.link_url,
+              };
+            });
+          }
+          this.$emit("change", {
             children: this.children,
             current: item,
           });
+        } else if (item._url) {
+          // 没有子节点 继续跳转逻辑
+          this.$emit("on-nav", null, item);
         }
-        const requestJson = {
-          colNames: ["*"],
-          mapp: "ws",
-          srv_type: "select",
-          serviceName: "srvcms_friend_links_select",
-          condition: [
-            // {
-            //   colName: "parent_no",
-            //   ruleType: "eq",
-            //   value: item.no,
-            // },
-          ],
-        };
-        const res = await this.fetchChildData(requestJson);
-        if (res.data?.state === "SUCCESS") {
-          this.children = res.data.data.map((data) => {
-            return {
-              ...data,
-              _label: data[item.label_field] || data.link_name,
-              _url: data[item.link_field] || data.link_url,
-            };
-          });
-        }
-        this.$emit("change", {
-          children: this.children,
-          current: item,
-        });
-        // } else if (item._url) {
-        //   // 没有子节点 继续跳转逻辑
-        //   this.$emit("on-nav", null, item);
-        // }
         return;
       }
       if (item.child_source === "接口请求") {
