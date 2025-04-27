@@ -399,6 +399,9 @@ export default {
           fieldInfo.type == "CarNo"
         ) {
           field.ruleType = "like";
+          if(fieldInfo.editor==='tree-finder'){
+            field.ruleType = "eq";
+          }
         } else if (fieldInfo.type == "Set") {
           field.ruleType = "inset";
         } else {

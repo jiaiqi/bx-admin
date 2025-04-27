@@ -332,6 +332,22 @@ export default {
     },
     navTo(jumpJson, data) {
       if (data?._url && !jumpJson) {
+        if (data?.jump_option?.includes("先登录")) {
+          return this.$confirm(
+            "您还未登录,需要登录才能进入,点击确认前往登录",
+            "提示",
+            {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+            }
+          ).then(() => {
+            const currentUrl = window.location.pathname + window.location.hash;
+            sessionStorage.setItem("login_redirect_url", currentUrl);
+            const loginUrl = window.location.origin + "/main/login.html";
+            window.location.href = loginUrl;
+          });
+        }
         return window.open(data._url);
       }
       if (typeof jumpJson === "string") {
@@ -345,19 +361,21 @@ export default {
         if (jumpJson?.click_jump_option?.includes("先登录")) {
           if (this.$store.state?.loginInfo?.logined !== true) {
             // 您还未登录,需要登录才能进入,点击确认前往登录
-            this.$message
-              .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+            this.$confirm(
+              "您还未登录,需要登录才能进入,点击确认前往登录",
+              "提示",
+              {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",
                 type: "warning",
-              })
-              .then(() => {
-                const currentUrl =
-                  window.location.pathname + window.location.hash;
-                sessionStorage.setItem("login_redirect_url", currentUrl);
-                const loginUrl = window.location.origin + "/main/login.html";
-                window.location.href = loginUrl;
-              });
+              }
+            ).then(() => {
+              const currentUrl =
+                window.location.pathname + window.location.hash;
+              sessionStorage.setItem("login_redirect_url", currentUrl);
+              const loginUrl = window.location.origin + "/main/login.html";
+              window.location.href = loginUrl;
+            });
             return;
           }
         }
@@ -384,19 +402,20 @@ export default {
       if (jump_json?.click_jump_option?.includes("先登录")) {
         if (this.$store.state?.loginInfo?.logined !== true) {
           // 您还未登录,需要登录才能进入,点击确认前往登录
-          this.$message
-            .confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+          this.$confirm(
+            "您还未登录,需要登录才能进入,点击确认前往登录",
+            "提示",
+            {
               confirmButtonText: "确定",
               cancelButtonText: "取消",
               type: "warning",
-            })
-            .then(() => {
-              const currentUrl =
-                window.location.pathname + window.location.hash;
-              sessionStorage.setItem("login_redirect_url", currentUrl);
-              const loginUrl = window.location.origin + "/main/login.html";
-              window.location.href = loginUrl;
-            });
+            }
+          ).then(() => {
+            const currentUrl = window.location.pathname + window.location.hash;
+            sessionStorage.setItem("login_redirect_url", currentUrl);
+            const loginUrl = window.location.origin + "/main/login.html";
+            window.location.href = loginUrl;
+          });
           return;
         }
       }

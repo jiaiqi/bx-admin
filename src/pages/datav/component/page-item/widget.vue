@@ -181,8 +181,7 @@ export default {
           if (jumpJson?.click_jump_option?.includes("先登录")) {
             if (this.$store.state?.loginInfo?.logined !== true) {
               // 您还未登录,需要登录才能进入,点击确认前往登录
-              this.$message
-                .confirm(
+              this.$confirm(
                   "您还未登录,需要登录才能进入,点击确认前往登录",
                   "提示",
                   {
