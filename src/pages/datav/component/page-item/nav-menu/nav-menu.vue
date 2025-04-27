@@ -5,13 +5,13 @@
       :style="{ '--min-height': minHeight + 'px' }"
       ref="navMenu"
     >
-      <!-- <div class="nav-menu" v-for="(item, key) in subMenu" :key="key" @click="onTap(item, $event)" ref="navMenuItem">
+      <!-- <div class="nav-menu" v-for="(item, key) in setSubMenu" :key="key" @click="onTap(item, $event)" ref="navMenuItem">
         <div class="nav-menu-label" :style="[formatStyleData(item.nav_style_json)]">
           {{ item.label }}
         </div>
       </div> -->
       <nav-menu-item
-        v-for="item in subMenu"
+        v-for="item in setSubMenu"
         :data="item"
         @change="onMenuChange"
         @on-nav="navTo"
@@ -81,10 +81,10 @@
       class="nav-menu-child"
       :class="{ active: isHovered }"
       :style="[isHovered ? childPositionStyle : {}]"
-      v-if="subMenu && subMenu.length"
+      v-if="setSubMenu && setSubMenu.length"
     >
       <nav-menu-child
-        v-for="(item, index) in subMenu"
+        v-for="(item, index) in setSubMenu"
         :key="index"
         :config="item"
         :parent-style="navStyle"
@@ -128,6 +128,7 @@ export default {
       },
       formatStyleData: formatStyleData,
       minHeight: "20",
+      subMenu: [],
       requestSubMenuMap: {},
       menuChildren: [],
       currentSubMenu: null,
@@ -145,6 +146,9 @@ export default {
       }
     },
     setCurrentSubMenu() {
+      if (this.current?.link_type) {
+        return this.menuChildren;
+      }
       if (
         this.current?.child_source === "接口请求" &&
         this.menuChildren?.length
@@ -177,7 +181,10 @@ export default {
       }
       return style;
     },
-    subMenu() {
+    setSubMenu() {
+      if (this.config?.child_source === "接口请求") {
+        return this.subMenu;
+      }
       let json = this.config?.sub_json;
       if (json && typeof json === "string") {
         try {
@@ -235,17 +242,33 @@ export default {
     },
     reqJson() {
       if (this.config.request_json) {
-        try {
-          return JSON.parse(this.config.request_json);
-        } catch (error) {
-          console.error(error);
+        if (typeof this.config.request_json === "string") {
+          try {
+            return JSON.parse(this.config.request_json);
+          } catch (error) {
+            console.error(error);
+          }
+        } else if (typeof this.config.request_json === "object") {
+          return this.config.request_json;
         }
       }
     },
   },
   created() {
     if (this.config?.child_source === "接口请求") {
-      this.fetchChildData();
+      this.fetchChildData(this.reqJson).then((res) => {
+        console.log("res", res);
+        if (res.data?.state === "SUCCESS") {
+          console.log("res.data", res.data.data);
+          this.subMenu = res.data.data.map((data) => {
+            return {
+              ...data,
+              _label: data[this.config.label_field],
+              _url: data[this.config.link_field],
+            };
+          });
+        }
+      });
     }
   },
   mounted() {
@@ -263,6 +286,9 @@ export default {
       }
       console.log("onMenuChange", data);
       if (this.current?.nav_no && this.current?.nav_no === current?.nav_no) {
+        this.current = null;
+        this.menuChildren = [];
+      } else if (this.current?.id && this.current.id === current?.id) {
         this.current = null;
         this.menuChildren = [];
       } else if (children && children.length > 0) {
