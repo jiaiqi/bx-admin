@@ -34,7 +34,7 @@
     </el-dialog>
 
     <div
-      style="display: flex; flex-wrap: wrap;"
+      style="display: flex; flex-wrap: wrap"
       class="img-list"
       v-if="isEdit !== false"
       v-loading="loading"
@@ -134,10 +134,15 @@
         :data="uploadParams"
         clearable
         :limit="limit"
-        :disabled="!field.info.editable"
+        :disabled="
+          !field.info.editable || (limit && fileLength && fileLength >= limit)
+        "
         :show-file-list="false"
         list-type="picture-card"
         :style="useFilePicker ? 'display:none;' : ''"
+        v-if="
+          !limit || !fileLength || (limit && fileLength && fileLength < limit)
+        "
       >
         <el-button size="small" type="primary">点击上传</el-button>
         <!-- <div
@@ -686,6 +691,9 @@ export default {
       window.open(file.url);
     },
     async beforeRemove(file, fileList) {
+      if(file?.file_no){
+        file.status = "success"
+      }
       if (file && file.status === "success") {
         //删除
         let fileurl;
@@ -710,7 +718,7 @@ export default {
           this.$message.info(response.body.state);
           return false;
         }
-      } else if (file.indexOf("http") === 0) {
+      } else if (typeof file === "string" && file.indexOf("http") === 0) {
         this.field.model = "";
         this.$emit("change", this.field.model);
         return true;
@@ -875,17 +883,17 @@ export default {
 
 .form-imgs {
   padding: 0;
-  .imgs-item{
+  .imgs-item {
     max-width: 200px;
   }
 }
-.img-list .el-upload-list--picture-card .el-upload-list__item,.preview-img {
-   background-image: 
-    linear-gradient(45deg, #eee 25%, transparent 25%),
+.img-list .el-upload-list--picture-card .el-upload-list__item,
+.preview-img {
+  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
     linear-gradient(-45deg, #eee 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #eee 75%),
-    linear-gradient(-45deg, transparent 75%, #eee 75%)!important;
-  background-size: 20px 20px!important;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px!important;
+    linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
+  background-size: 20px 20px !important;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
 }
 </style>
