@@ -383,7 +383,7 @@ export default {
       const req = itemReqJson
         ? this.buildRequestParams(itemReqJson)
         : itemReqJson;
-      console.log("列表请求", req);
+      // console.log("列表请求", req);
       this.getListData(req);
     },
     async getListData(req) {
@@ -510,7 +510,7 @@ export default {
 
       if (Array.isArray(condition)) {
         for (let cond of condition) {
-          console.log("buildRequestParams", cond.colName, cond.value);
+          // console.log("buildRequestParams", cond.colName, cond.value);
           if (
             cond.value &&
             cond.value.startsWith("${") &&
@@ -610,7 +610,7 @@ export default {
       const req = itemReqJson
         ? this.buildRequestParams(itemReqJson)
         : itemReqJson;
-      console.log("列表请求", req);
+      // console.log("列表请求", req);
 
       this.getListData(req);
       this.getV2Data(req).then((_) => {

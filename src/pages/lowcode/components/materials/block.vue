@@ -299,8 +299,6 @@ export default {
       this.resizeDirection = direction;
       this.startX = e.clientX;
 
-      // 获取当前元素的宽度和父元素的宽度
-      const rect = this.$el.getBoundingClientRect();
       this.startWidth = this.blockWidth || 100;
       this.parentWidth = this.$el.parentElement.offsetWidth;
 
@@ -572,7 +570,7 @@ export default {
 
     &:hover,
     &:active {
-      background-color: rgba(44, 72, 255, 0.3);
+      background-color: rgba($color: $primary-color, $alpha: 0.3);
     }
 
     &::after {
@@ -650,7 +648,7 @@ export default {
 
   &.drag-over {
     border: 2px dashed $primary-color;
-    background-color: rgba(44, 72, 255, 0.05);
+    background-color: rgba($color: $primary-color, $alpha: 0.05);
 
     &::before {
       content: "可放置组件";
@@ -711,7 +709,7 @@ export default {
         padding: 2px 5px;
         background-color: $primary-color;
         color: #fff;
-        transform: translateY(-100%);
+        transform: translateY(0);
       }
     }
 
@@ -727,7 +725,7 @@ export default {
         padding: 2px 5px;
         background-color: $primary-color;
         color: #fff;
-        transform: translateY(-100%);
+        transform: translateY(0);
       }
 
       & > .handle {

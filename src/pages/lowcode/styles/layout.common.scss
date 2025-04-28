@@ -42,8 +42,9 @@
   .com-name-overlay {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    // left: 50%;
+    // transform: translateX(-50%);
     display: none;
     .name {
       // background-color: rgba($color: #000, $alpha: 0.5);
@@ -58,7 +59,7 @@
   }
   &.active {
     .com-name-overlay {
-      gap:5px;
+      gap:1px;
       display: inline-flex;
       align-items: center;
     }
@@ -66,7 +67,7 @@
   .el-icon-close:not(.button) {
     position: absolute;
     top: 0;
-    left: 80px;
+    left: 75px;
     padding: 2px 5px;
     background-color: rgba($color: #ff0000, $alpha: 0.7); /* 添加浅色虚线边框 */
     color: #fff;
@@ -74,10 +75,15 @@
     z-index: 10;
     cursor: pointer;
     display: none;
+    height: 28px;
+    width: 28px;
+    
   }
   &.active {
     .el-icon-close {
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      justify-content: center
     }
   }
   // &:hover {

@@ -48,18 +48,18 @@
           v-if="children && children.length"
         ></i>
       </div>
-
-      <!-- <div
-        @click="onDelete"
-        v-if="children && children.length"
-        class="delete-bar"
-        title="删除"
-      >
-        <i class="el-icon-delete"></i>
-      </div> -->
     </div>
 
-    <slot> </slot>
+    <!-- 子组件插槽 未出现在屏幕可视范围内时不渲染 -->
+    <slot v-if="isVisible"> </slot>
+
+    <!-- 加载遮罩层 -->
+    <div class="loading-overlay" v-if="!isVisible">
+      <div class="loading-spinner">
+        <i class="el-icon-loading"></i>
+        <div class="loading-text">加载中...</div>
+      </div>
+    </div>
 
     <!-- 拖拽调整宽度的手柄 -->
     <!-- <div v-if="!isPreview && !isView && isActive" class="resize-handles">
@@ -79,14 +79,9 @@
 </template>
 
 <script>
-import { VueDraggable } from "vue-draggable-plus";
 import dragStore from "../../store/dragStore";
 
 export default {
-  name: "lc-content",
-  components: {
-    VueDraggable,
-  },
   props: {
     name: {
       type: String,
@@ -142,6 +137,8 @@ export default {
       startX: 0,
       startWidth: 0,
       parentWidth: 0,
+      isVisible: false,
+      observer: null,
     };
   },
   computed: {
@@ -195,11 +192,39 @@ export default {
     // 添加全局事件监听
     document.addEventListener("mousemove", this.onResize);
     document.addEventListener("mouseup", this.stopResize);
+
+    // 创建Intersection Observer来监测组件是否在可视区域内
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        // 如果组件进入可视区域，则设置isVisible为true
+        if (entries[0].isIntersecting) {
+          console.log(
+            "组件进入可视区域,即将进行渲染",
+            this.props.children[0]?.com_name
+          );
+          this.isVisible = true;
+          // 一旦组件被渲染，可以停止观察
+          this.observer.disconnect();
+        }
+      },
+      {
+        // 设置阈值，当组件有10%进入视口时触发回调
+        threshold: 0.1,
+      }
+    );
+
+    // 开始观察当前组件元素
+    this.observer.observe(this.$el);
   },
   beforeDestroy() {
     // 移除全局事件监听
     document.removeEventListener("mousemove", this.onResize);
     document.removeEventListener("mouseup", this.stopResize);
+
+    // 清理Intersection Observer
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   },
   methods: {
     onTap() {
@@ -521,6 +546,11 @@ export default {
     background-color: rgba($color: $primary-color, $alpha: 0.7);
   }
   .close-icon {
+    height: 28px;
+    width: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: rgba($color: $primary-color, $alpha: 0.7);
   }
 }
@@ -536,6 +566,37 @@ export default {
   $primary-color: #17d57e;
   &.edit-mode {
     background-color: rgba($color: #f0f0f0, $alpha: 0.3);
+  }
+
+  /* 加载遮罩层样式 */
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      i.el-icon-loading {
+        font-size: 24px;
+        color: rgba($color: #fff, $alpha: 0.3);
+        margin-bottom: 8px;
+      }
+
+      .loading-text {
+        font-size: 14px;
+        color: rgba($color: #fff, $alpha: 0.3);
+      }
+    }
   }
 
   /* 添加浅色虚线边框 */
