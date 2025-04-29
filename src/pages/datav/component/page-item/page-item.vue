@@ -351,7 +351,8 @@ export default {
   overflow: hidden;
   background-size: 100% 100%;
   color: #333;
-
+  display: flex;
+  flex-direction: column;
   &.mobile {
     background-color: #eee;
     border: 1px solid #ccc;

@@ -1730,7 +1730,8 @@ export default {
 
 .bx-card {
   position: relative;
-  height: 100%;
+  // height: 100%;
+  flex: 1;
   // display: grid;
   // grid-template-rows: repeat(2, 200rpx);
   // gap:5px ;

@@ -178,7 +178,7 @@ instance.interceptors.response.use(
           if (response.data.serviceInfo?.includes('sql语句执行异常')) {
             console.error(response.data.serviceInfo)
           } else if (sessionStorage.getItem("need_login_flag") != "need_login") {
-            Message.error(response.data.resultMessage);
+            // Message.error(response.data.resultMessage);
           }
         }
       }

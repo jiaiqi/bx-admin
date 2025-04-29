@@ -47,6 +47,12 @@ const actions = {
       commit('SET_BX_AUTH_TICKET', loginResponse?.bx_auth_ticket);
       commit('SET_EXPIRE_TIME', loginResponse?.expire_time);
     }
+  },
+  clearLoginInfo({ commit }) {
+    commit('SET_LOGINED', false);
+    commit('SET_LOGIN_USER', {});
+    commit('SET_BX_AUTH_TICKET', '');
+    commit('SET_EXPIRE_TIME', '');
   }
 };
 

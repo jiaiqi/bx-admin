@@ -296,6 +296,13 @@ span.section-title {
 .table-head-btns,
 .cell,
 .el-row,
+.el-message-box__btns,
+.el-message-box__content,
+.el-message-box__headerbtn,
+.el-message-box__input,
+.el-message-box__title,
+.el-message-box__header,
+.el-dialog__header,
 .el-dropdown-menu.el-popper,
 .el-pagination,
 .el-radio-group,
@@ -304,6 +311,7 @@ span.section-title {
 .bx_action,
 .el-table-filter,
 .pagination-box,
+.dialog-footer,
 .upload-demo {
   &.highlight,
   .el-table-filter__bottom button:hover {
