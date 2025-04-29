@@ -19,6 +19,7 @@ function getProdExternals() {
     // "element-ui":"ELEMENT"
   };
 }
+console.log(process.env.VUE_APP_TARGET, process.env.BASE_URL, process.env.NODE_ENV);
 
 module.exports = {
   chainWebpack: (config) => {
@@ -59,6 +60,7 @@ module.exports = {
     //       ]
     //     };
     //   });
+    console.log(process.env.VUE_APP_TARGET, process.env.BASE_URL, process.env.NODE_ENV === "production");
     if (process.env.NODE_ENV === "production") {
       // 只在生产环境中应用此配置
       // 生产环境 删除懒加载模块的 prefetch preload，降低带宽压力
@@ -96,9 +98,8 @@ module.exports = {
   productionSourceMap: true, // 生产环境是否生成 sourceMap 文件
   transpileDependencies: ["simple-mind-map"  /**  思维导图*/, "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
-  publicPath: "/vpages/",
-  outputDir: "vpages",
-  // lintOnSave: false,//在线excel添加
+  publicPath: process.env.VUE_APP_TARGET === 'wj' ? '/web/' : "/vpages/",
+  outputDir: process.env.VUE_APP_TARGET === 'wj' ? 'dist' : "vpages",
   configureWebpack: {
     // externals:  getProdExternals(),
     // externals: process.env.NODE_ENV === "production" ? getProdExternals() : {},

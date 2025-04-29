@@ -190,10 +190,10 @@ export default {
       }
       this.current = e?.detail?.current || e;
       if (this.swiperList[this.current].file_type === "视频") {
-        this.videoContext = uni.createVideoContext(
-          this.swiperList[this.current].store_video_file,
-          this
-        );
+        // this.videoContext = uni.createVideoContext(
+        //   this.swiperList[this.current].store_video_file,
+        //   this
+        // );
       }
     },
     async fetchJumpJson(jump_no) {
@@ -233,33 +233,22 @@ export default {
       }
       let jumpUrl = "";
       if (jumpUrl) {
-        uni.navigateTo({
-          url: jumpUrl,
-        });
+        // uni.navigateTo({
+        //   url: jumpUrl,
+        // });
       } else if (item.mini_program_url) {
-        let url = item.mini_program_url;
-        let data = {
-          userInfo: this.userInfo,
-          bindUserInfo: this.vstoreUser,
-        };
-        url = this.renderStr(url, data);
-
-        if (url && url.indexOf("http") == 0) {
-          url = `/publicPages/webdivPage/webdivPage?webUrl=${encodeURIComponent(
-            url
-          )}`;
-        }
-        uni.navigateTo({
-          url: url,
-        });
-      } else if (item.content_no || item.article_no) {
-        uni.navigateTo({
-          url: `/publicPages/article/article?destApp=health&serviceName=srvdaq_cms_content_select&content_no=${
-            item.content_no || item.article_no
-          }`,
-        });
+        
+      } else if (item.content_no || item.content) {
+        // 跳到文章详情
+        this.$router.push({
+          path: `/site/PG2504171010470001`,
+          query: {
+            content_no: item.content_no || item.article_no || '',
+            id: item.id,
+          }
+        })
       } else {
-        this.toPredivimg(item.url);
+        // this.toPredivimg(item.url);
       }
     },
     async getFilePath(file_no) {

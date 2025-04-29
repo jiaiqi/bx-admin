@@ -341,18 +341,20 @@ export default {
       if (jumpJson?.click_jump_option?.includes("先登录")) {
         if (this.$store.state?.loginInfo?.logined !== true) {
           // 您还未登录,需要登录才能进入,点击确认前往登录
-          this.$confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+          this.$confirm(
+            "您还未登录,需要登录才能进入,点击确认前往登录",
+            "提示",
+            {
               confirmButtonText: "确定",
               cancelButtonText: "取消",
               type: "warning",
-            })
-            .then(() => {
-              const currentUrl =
-                window.location.pathname + window.location.hash;
-              sessionStorage.setItem("login_redirect_url", currentUrl);
-              const loginUrl = window.location.origin + "/main/login.html";
-              window.location.href = loginUrl;
-            });
+            }
+          ).then(() => {
+            const currentUrl = window.location.pathname + window.location.hash;
+            sessionStorage.setItem("login_redirect_url", currentUrl);
+            const loginUrl = window.location.origin + "/main/login.html";
+            window.location.href = loginUrl;
+          });
           return;
         }
       }
@@ -380,6 +382,14 @@ export default {
       let itemReqJson = this.pageItem.srv_req_json
         ? this.bxDeepClone(this.pageItem.srv_req_json)
         : null;
+      if (itemReqJson?.page) {
+        itemReqJson.page.pageNo = val;
+      } else if (itemReqJson) {
+        itemReqJson.page = {
+          pageNo: val,
+          rownumber: this.pageInfo.rownumber || 10,
+        };
+      }
       const req = itemReqJson
         ? this.buildRequestParams(itemReqJson)
         : itemReqJson;

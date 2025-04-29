@@ -15,9 +15,9 @@ let bx_auth_ticket = "";
 // const ENV = "dev2";
 // const ENV = "wanxiang";
 // const ENV = "dev";
-// const ENV = "saas";
+const ENV = "saas";
 // const ENV = "audDev";
-const ENV = "wujingDev";
+// const ENV = "wujingDev";
 // const ENV = "healthProd";
 // const ENV = "gaosu61";
 
@@ -66,6 +66,12 @@ if (pathConfig) {
     }
   } catch (error) { }
 }
+if(window.backendIpAddr){
+  baseURL = window.backendIpAddr
+}
+// if(process.env.BASE_URL){
+//   baseURL = process.env.BASE_URL
+// }
 window.backendIpAddr = baseURL;
 export const backendIpAddr = baseURL;
 

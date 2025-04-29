@@ -303,6 +303,7 @@ span.section-title {
 .el-checkbox__input.is-indeterminate,
 .bx_action,
 .el-table-filter,
+.pagination-box,
 .upload-demo {
   &.highlight,
   .el-table-filter__bottom button:hover {

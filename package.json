@@ -6,6 +6,8 @@
     "dev": "vue-cli-service serve",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "dev:wj":"vue-cli-service serve --mode wj",
+    "build:wj":"vue-cli-service build --mode wj",
     "lint": "vue-cli-service lint",
     "deploy:dev": "deploy-cli-service deploy --mode dev",
     "build-lib": "vue-cli-service build --target lib --name bxhome src/index.js",

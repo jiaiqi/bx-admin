@@ -118,12 +118,25 @@
           <i
             v-else-if="
               item.parts_type == 'icon' &&
-              partsShow(item, comColMap, cellItemData)
+              partsShow(item, comColMap, cellItemData) &&
+              item.parts_text &&
+              item.parts_text.indexOf('el-icon-') !== -1
             "
             :class="item.parts_text"
             :style="[buildColStyleJson(item.style_json || null)]"
             @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
           ></i>
+          <Icon
+            v-else-if="
+              item.parts_type == 'icon' &&
+              partsShow(item, comColMap, cellItemData) &&
+              item.parts_text &&
+              item.parts_text.indexOf('i-') === 0
+            "
+            :icon="item.parts_text"
+            :style="[buildColStyleJson(item.style_json || null)]"
+            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
+          ></Icon>
           <!-- <u-parse v-else-if="item.parts_type == '富文本' && partsShow(item,comColMap,cellItemData)"
               :style="[buildColStyleJson(item.style_json || null)]"
               :html="getPartModelData(item,comColMap,cellItemData)"></u-parse> -->
@@ -238,7 +251,9 @@
               <i
                 v-else-if="
                   subCol.parts_type == 'icon' &&
-                  partsShow(subCol, comColMap, cellItemData)
+                  partsShow(subCol, comColMap, cellItemData) &&
+                  subCol.parts_text &&
+                  subCol.parts_text.indexOf('el-icon-') !== -1
                 "
                 :class="subCol.parts_text"
                 @click.stop="
@@ -247,6 +262,19 @@
                 :style="[buildColStyleJson(subCol.style_json || null)]"
               >
               </i>
+              <Icon
+                v-else-if="
+                  subCol.parts_type == 'icon' &&
+                  partsShow(subCol, comColMap, cellItemData) &&
+                  subCol.parts_text &&
+                  subCol.parts_text.indexOf('i-') === 0
+                "
+                :icon="subCol.parts_text"
+                :style="[buildColStyleJson(subCol.style_json || null)]"
+                @click.stop="
+                  onClickSubBlock(cellItemData, subCol, cellLayoutJson)
+                "
+              ></Icon>
 
               <div
                 v-else-if="
@@ -417,22 +445,37 @@
                     @click="false"
                   ></u-parse> -->
                   <i
-                    :key="ssubindex"
                     v-else-if="
                       ssubCol.parts_type == 'icon' &&
-                      partsShow(ssubCol, comColMap, cellItemData)
+                      partsShow(ssubCol, comColMap, cellItemData) &&
+                      ssubCol.parts_text &&
+                      ssubCol.parts_text.indexOf('el-icon-') !== -1
                     "
                     :class="ssubCol.parts_text"
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
                     @click.stop="
                       onClickSubBlock(
                         cellItemData,
                         ssubCol,
                         cellLayoutJson,
-                        subCol
+                        item
                       )
                     "
-                  ></i>
+                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
+                  >
+                  </i>
+                  <Icon
+                    v-else-if="
+                      ssubCol.parts_type == 'icon' &&
+                      partsShow(ssubCol, comColMap, cellItemData) &&
+                      ssubCol.parts_text &&
+                      ssubCol.parts_text.indexOf('i-') === 0
+                    "
+                    :icon="ssubCol.parts_text"
+                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
+                    @click.stop="
+                      onClickSubBlock(cellItemData, ssubCol, cellLayoutJson)
+                    "
+                  ></Icon>
                   <div
                     :key="ssubindex"
                     :class="'bx-cell-' + ssubCol.parts_type"
@@ -583,7 +626,7 @@
                           ) || 0
                         "
                       ></el-progress>
-                      <i
+                      <!-- <i
                         v-else-if="
                           sssubCol.parts_type == 'icon' &&
                           partsShow(sssubCol, comColMap, cellItemData)
@@ -600,7 +643,47 @@
                             ssubCol
                           )
                         "
-                      ></i>
+                      ></i> -->
+                      <i
+                        v-else-if="
+                          sssubCol.parts_type == 'icon' &&
+                          partsShow(sssubCol, comColMap, cellItemData) &&
+                          sssubCol.parts_text &&
+                          sssubCol.parts_text.indexOf('el-icon-') !== -1
+                        "
+                        :class="sssubCol.parts_text"
+                        @click.stop="
+                          onClickSubBlock(
+                            cellItemData,
+                            sssubCol,
+                            cellLayoutJson,
+                            item
+                          )
+                        "
+                        :style="[
+                          buildColStyleJson(sssubCol.style_json || null),
+                        ]"
+                      >
+                      </i>
+                      <Icon
+                        v-else-if="
+                          sssubCol.parts_type == 'icon' &&
+                          partsShow(sssubCol, comColMap, cellItemData) &&
+                          sssubCol.parts_text &&
+                          sssubCol.parts_text.indexOf('i-') === 0
+                        "
+                        :icon="sssubCol.parts_text"
+                        :style="[
+                          buildColStyleJson(sssubCol.style_json || null),
+                        ]"
+                        @click.stop="
+                          onClickSubBlock(
+                            cellItemData,
+                            sssubCol,
+                            cellLayoutJson
+                          )
+                        "
+                      ></Icon>
                       <div
                         v-else-if="
                           sssubCol.parts_type == '富文本' &&
@@ -806,12 +889,11 @@
                           <i
                             v-else-if="
                               sssubCol4.parts_type == 'icon' &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
+                              partsShow(sssubCol4, comColMap, cellItemData) &&
+                              sssubCol4.parts_text &&
+                              sssubCol4.parts_text.indexOf('el-icon-') !== -1
                             "
                             :class="sssubCol4.parts_text"
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
                             @click.stop="
                               onClickSubBlock(
                                 cellItemData,
@@ -820,7 +902,30 @@
                                 sssubCol
                               )
                             "
-                          ></i>
+                            :style="[
+                              buildColStyleJson(sssubCol4.style_json || null),
+                            ]"
+                          >
+                          </i>
+                          <Icon
+                            v-else-if="
+                              sssubCol4.parts_type == 'icon' &&
+                              partsShow(sssubCol4, comColMap, cellItemData) &&
+                              sssubCol4.parts_text &&
+                              sssubCol4.parts_text.indexOf('i-') === 0
+                            "
+                            :icon="sssubCol4.parts_text"
+                            :style="[
+                              buildColStyleJson(sssubCol4.style_json || null),
+                            ]"
+                            @click.stop="
+                              onClickSubBlock(
+                                cellItemData,
+                                sssubCol4,
+                                cellLayoutJson
+                              )
+                            "
+                          ></Icon>
                           <div
                             v-else-if="
                               sssubCol4.parts_type == '富文本' &&
@@ -936,6 +1041,7 @@
 // import bxform from '@/views/custom/components/bx-form/bx-form.vue'
 var self = null;
 import Teleport from "vue2-teleport";
+import { Icon } from "@iconify/vue2";
 
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
 import dayjs from "dayjs";
@@ -943,6 +1049,7 @@ import dayjs from "dayjs";
 export default {
   components: {
     Teleport,
+    Icon,
     // cardGroupCellItem
     // bxform
     // bxForm: () => import('@/views/custom/components/bx-form/bx-form.vue') //剔除 原小程序form组件
@@ -1330,25 +1437,21 @@ export default {
                   if (this.$store.state?.loginInfo?.logined !== true) {
                     // 您还未登录,需要登录才能进入,点击确认前往登录
                     this.$confirm(
-                        "您还未登录,需要登录才能进入,点击确认前往登录",
-                        "提示",
-                        {
-                          confirmButtonText: "确定",
-                          cancelButtonText: "取消",
-                          type: "warning",
-                        }
-                      )
-                      .then(() => {
-                        const currentUrl =
-                          window.location.pathname + window.location.hash;
-                        sessionStorage.setItem(
-                          "login_redirect_url",
-                          currentUrl
-                        );
-                        const loginUrl =
-                          window.location.origin + "/main/login.html";
-                        window.location.href = loginUrl;
-                      });
+                      "您还未登录,需要登录才能进入,点击确认前往登录",
+                      "提示",
+                      {
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        type: "warning",
+                      }
+                    ).then(() => {
+                      const currentUrl =
+                        window.location.pathname + window.location.hash;
+                      sessionStorage.setItem("login_redirect_url", currentUrl);
+                      const loginUrl =
+                        window.location.origin + "/main/login.html";
+                      window.location.href = loginUrl;
+                    });
                     return;
                   }
                 }

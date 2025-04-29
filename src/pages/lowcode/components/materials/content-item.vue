@@ -198,10 +198,10 @@ export default {
       (entries) => {
         // 如果组件进入可视区域，则设置isVisible为true
         if (entries[0].isIntersecting) {
-          console.log(
-            "组件进入可视区域,即将进行渲染",
-            this.props.children[0]?.com_name
-          );
+          // console.log(
+          //   "组件进入可视区域,即将进行渲染",
+          //   this.props.children[0]?.com_name
+          // );
           this.isVisible = true;
           // 一旦组件被渲染，可以停止观察
           this.observer.disconnect();
