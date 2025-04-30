@@ -1,14 +1,21 @@
 <template>
   <div class="welcome-box flex items-center">
     <img class="avatar" :src="avatar" alt="" />
-    <div v-if="logined">
+    <div v-if="logined" class="flex-1">
       <div class="user-name">{{ loginUser.real_name || "" }}</div>
-      <div class="flex items-center handler">
-        <span class="text-btn primary" @click="openChangePasswordDialog"
-          >修改密码</span
-        >
-        <span class="">|</span>
-        <span class="text-btn" @click="bindKey">绑定key</span>
+      <div class="flex items-center handler justify-between">
+        <div class="flex items-center handler">
+          <span class="text-btn primary" @click="openChangePasswordDialog"
+            >修改密码</span
+          >
+          <span class="">|</span>
+          <span class="text-btn" @click="bindKey">绑定key</span>
+          <span class="">|</span>
+          <span class="text-btn primary" @click="toLogout">退出登录</span>
+        </div>
+        <!-- <div class="flex">
+          <span class="text-btn primary" @click="toLogin">退出登录</span>
+        </div> -->
       </div>
       <change-password-dialog ref="changePasswordDialog" />
     </div>
@@ -48,7 +55,15 @@ export default {
   },
   mounted() {},
   methods: {
+    toLogout() {
+      this.$store.dispatch("loginInfo/logout");
+    },
     toLogin() {
+      if (process.env.NODE_ENV === "development") {
+        return this.$loginRef?.open((res) => {
+          console.log(res);
+        });
+      }
       const currentUrl = window.location.pathname + window.location.hash;
       sessionStorage.setItem("login_redirect_url", currentUrl);
       const loginUrl = window.location.origin + "/main/login.html";
@@ -67,6 +82,7 @@ export default {
 <style lang="scss" scoped>
 .welcome-box {
   gap: 16px;
+  width: 100%;
   .avatar {
     width: 100px;
     height: 100px;

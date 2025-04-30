@@ -296,6 +296,10 @@ span.section-title {
 .table-head-btns,
 .cell,
 .el-row,
+.el-dialog__body,
+.el-dialog__footer,
+.el-dialog__wrapper,
+.el-form,
 .el-message-box__btns,
 .el-message-box__content,
 .el-message-box__headerbtn,
@@ -314,16 +318,16 @@ span.section-title {
 .dialog-footer,
 .upload-demo {
   &.highlight,
-  .el-table-filter__bottom button:hover {
+  .el-table-filter__bottom button:hover,
+  .el-form .el-form-item .el-form-item__label {
     color: var(--primary-color, #007aff);
   }
-  .el-table__cell.descending .caret-wrapper .sort-caret.descending{
+  .el-table__cell.descending .caret-wrapper .sort-caret.descending {
     border-top-color: var(--primary-color, #007aff);
   }
   .el-table__cell.ascending .caret-wrapper .sort-caret.ascending {
     border-bottom-color: var(--primary-color, #007aff);
   }
-
 
   .el-table {
     th.el-table__cell > .cell.highlight {
