@@ -470,7 +470,7 @@ export default {
         layout.forEach((item, i) => {
           addObj.data.push({
             com_name: item.data.chart_name,
-            com_preview: item.data.example,
+            // com_preview: item.data.example,
             com_type: item.data.com_type,
             page_no: pageData.page_no,
             com_seq: (i + 1) * 100,
@@ -559,7 +559,7 @@ export default {
         layout.forEach((item, i) => {
           addObj.data.push({
             com_name: item.data.com_type_name,
-            com_preview: item.data.example,
+            // com_preview: item.data.example,
             page_layout_no: layoutInfo.layout_no,
             com_type: item.data.com_type,
             page_no: pageData.page_no,
@@ -945,6 +945,7 @@ export default {
           "row_json",
           "page_no",
           "image",
+          "preview"
         ];
         layout.forEach((item, i) => {
           const data = { ...item.data };

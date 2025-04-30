@@ -495,7 +495,7 @@ export default {
     gap: 10px;
     height: 100%;
     width: 100%;
-    overflow: hidden;
+    // overflow: hidden;
   }
   // height: 100%;
   position: relative;
