@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import Dialog from "../common/dialog.vue";
 import * as DataUtil from "../../util/DataUtil";
 import { Loading } from "element-ui";
+import { MessageBox } from "element-ui";
 import {
   formatMoney,
   monthEnd,
@@ -2608,6 +2609,275 @@ function init_util() {
       g: parseInt(result[2], 16),
       b: parseInt(result[3], 16)
     } : null;
+  }
+  Vue.prototype.publicLogin = () => {
+    if (process.env.NODE_ENV === "development") {
+      return this.$loginRef?.open((res) => {
+        console.log(res);
+      });
+    }
+    const currentUrl = window.location.pathname + window.location.hash;
+    sessionStorage.setItem("login_redirect_url", currentUrl);
+    const loginUrl = window.location.origin + "/main/login.html";
+    window.location.href = loginUrl;
+  }
+  Vue.prototype.publicLogout = () => {
+    MessageBox.confirm("确认退出登录吗?", "提示", {
+      confirmButtonText: "确认",
+      cancelButtonText: "取消",
+      type: "warning",
+    }).then(() => {
+      Vue.prototype.$store.dispatch("loginInfo/logout");
+    });
+  }
+  // jump 拦截处理权限
+  Vue.prototype.jumpAction = async function (jumpJson, itemData = {}) {
+    let rowData = itemData
+    if (jumpJson?.tmpl_page_json?.file_path) {
+      let path = jumpJson?.tmpl_page_json?.file_path
+      if (path?.indexOf('webview://') === 0) {
+        // if(window?.open){
+        window.open(path.replace('webview://', ''))
+        // }else{
+        // const url = `${this.$api.serverURL?.replace('/bxapi', '')}${path.replace('webview://', '')}`
+        // uni.navigateTo({
+        //   url: `/views/public/webview/webview?src=${encodeURIComponent(url)}`,
+        //   // query:{
+        //   //   src:encodeURIComponent(url)
+        //   // }
+        // })
+        // }
+        return
+      }
+    }
+    if (jumpJson?.before_action_tip) {
+      // 跳转前提示
+      const confirm2next = await new Promise((resolve) => {
+        MessageBox.confirm(jumpJson?.before_action_tip, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          showCancelButton: jumpJson?.dest_page_no ? true : false, //如果有跳转页面，则显示取消按钮，点击取消后不跳转
+        }).then(() => {
+          resolve(true)
+        }).catch(() => {
+          resolve(false)
+        })
+      })
+      if (!confirm2next || !jumpJson?.dest_page_no) {
+        return
+      }
+    }
+    if (jumpJson) {
+      let jumpOptions = ""
+      let isLogin = sessionStorage.getItem('logined')
+      if (jumpJson.click_jump_option) {
+        // grid  item 点击 老代码迁移
+        jumpOptions = jumpJson?.click_jump_option
+        if (jumpOptions?.includes('先登录')) {
+          let loginUserInfo = uni.getStorageSync('current_login_user')
+          try {
+            loginUserInfo = JSON.parse(loginUserInfo)
+          } catch (error) {
+            console.error(error);
+          }
+          if (!isLogin || !loginUserInfo?.mobile) {
+            MessageBox.confirm('请先登录', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning',
+              showCancelButton: true,
+            }).then(() => {
+              Vue.prototype.publicLogin()
+            })
+            // return
+          }
+        }
+
+      }
+      if (jumpJson?.click_type === '扫码') {
+        MessageBox('功能暂未开放', '提示', 'error')
+        // let qrcodeRes = await new Promise((resolve) => {
+        //   uni.scanCode({
+        //     success: function (res) {
+        //       console.log('条码类型：' + res.scanType);
+        //       console.log('条码内容：' + res.result);
+        //       resolve(res.result)
+        //     },
+        //     fail: (err) => {
+        //       resolve(err)
+        //     }
+        //   });
+        // })
+        // if (qrcodeRes && typeof qrcodeRes === 'string') {
+        //   qrcodeRes = decodeURIComponent(qrcodeRes)
+        //   const obj = qrcodeRes.split(';').reduce((pre, cur) => {
+        //     let arr = cur.split(':')
+        //     pre[arr[0]] = arr[1]
+        //     return pre
+        //   }, {})
+        //   if (jumpJson?.srv_req_json?.srv_type === 'add') {
+        //     const url = `/${jumpJson.srv_req_json.mapp}/add/${jumpJson.srv_req_json.serviceName}`
+        //     if (Array.isArray(jumpJson.cols_map_json?.cols_map_detail_json)) {
+        //       const mapJson = jumpJson.cols_map_json?.cols_map_detail_json
+        //       if (mapJson?.length) {
+        //         const data = mapJson.reduce((pre, cur) => {
+        //           if (['当前数据', '业务', '模型'].includes(cur.from_type)) {
+        //             pre[cur.col_to] = obj[cur.col_from]
+        //           } else if (cur.from_type === '页面') {
+        //             pre[cur.col_to] = this.queryOptions[cur.col_from]
+        //           } else if (cur.from_type === '用户') {
+        //             pre[cur.col_to] = this.vloginUser[cur.col_from]
+        //           }
+        //           return pre
+        //         }, {})
+        //         const req = [{
+        //           serviceName: jumpJson.srv_req_json.serviceName,
+        //           data: [data]
+        //         }]
+        //         const res = await this.$http.post(url, req)
+        //         if (res?.data?.state === 'SUCCESS') {
+        //           uni.showModal({
+        //             title: '提示',
+        //             content: jumpJson?.scan_success_tip || res?.data?.resultMessage || '操作成功',
+        //           })
+        //         } else if (res?.data?.resultMessage) {
+        //           uni.showModal({
+        //             title: '提示',
+        //             content: res?.data?.resultMessage,
+        //             showCancel: false
+        //           })
+        //         }
+        //       }
+        //     }
+
+        //   }
+        // }
+        return
+      }
+
+      let pageNo = jumpJson?.dest_page_no
+      let url = '/views/custom/index/index'
+      let authJson = jumpJson.page_auth_json || null
+      if (pageNo) {
+        if (jumpJson?.tmpl_page_json?.file_path) {
+          url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`
+          url = jumpJson?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
+        } else if (pageNo) {
+          url = `/site/${pageNo}`
+        }
+        let id = rowData?.id || ''
+        // url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`
+        if (jumpJson?.cols_map_json?.cols_map_detail_json?.length) {
+          jumpJson?.cols_map_json?.cols_map_detail_json.forEach(item => {
+            if (item.to_type === 'URL') {
+              if (item.from_type == '常量') {
+                url = `${url}&${item.col_to}=${item.col_from}`
+              } else if (item.from_type === '页面') {
+                url = `${url}&${item.col_to}=${this.queryOptions[item.col_from]}`
+              } else if (rowData && rowData[item.col_from]) {
+                url = `${url}&${item.col_to}=${rowData[item.col_from]}`
+              }
+            }
+          })
+        } else if (jumpJson.cols_map_json && jumpJson.cols_map_json.to_type == 'URL') {
+          let maps = jumpJson.cols_map_json.cols_map_json
+          if (maps && rowData) {
+            let parmes = ''
+            for (let key in maps) {
+              if (rowData?.hasOwnProperty(maps[key]) && (rowData[maps[key]] || rowData[maps[key]] == 0)) {
+                parmes = `${parmes}&${key}=${rowData[maps[key]]}`
+              }
+            }
+            // let maps = jump.cols_map_json.cols_map_json
+            url = `${url}${parmes}`
+          }
+        }
+
+        if (!url.includes('id') && id) {
+          url += `&id=${id}`
+        }
+
+      } else {
+
+        console.log('无效的跳转页面')
+      }
+
+
+      let isJumpAuth = false
+      if (authJson) {
+        let type = authJson.in_cond || ''
+        let authRoles = authJson.roles || ''
+        let userRoles = uni.getStorageSync('login_user_info')?.roles
+        if (store?.state?.user?.loginUserInfo?.roles) {
+          userRoles = store?.state?.user?.loginUserInfo?.roles
+        }
+        let noneTipMsg = authJson.tip_msg || '暂无权限访问'
+        if (type.indexOf('有权限时') !== -1 && authRoles) {
+          authRoles = authRoles.split(',')
+
+          let onRoles = userRoles?.filter(role => new Set(authRoles).has(role));
+
+          if (onRoles && onRoles.length > 0) {
+            uni.navigateTo({
+              url: `${url}`
+            })
+          } else if (onRoles && onRoles.length == 0 || !onRoles) {
+            let confirmText = '刷新页面'
+            // 有配置跳转的话点击确认进行跳转
+            const noneAuthJump = authJson.jump_json || null
+            if (noneAuthJump?.dest_page_no) {
+              confirmText = '确认'
+            }
+            MessageBox.confirm(noneTipMsg, '提示', {
+              confirmButtonText: confirmText,
+              cancelButtonText: '取消',
+              type: 'warning',
+            }).then(() => {
+
+            })
+
+          }
+          console.log('authRoles', authRoles, userRoles, onRoles)
+        } else {
+          uni.navigateTo({
+            url: `${url}`
+          })
+        }
+      } else {
+        if (jumpJson?.obj_type === '微信小程序') {
+          if (jumpJson?.wxxcx_json?.path && jumpJson.wxxcx_json?.appid) {
+            let path = jumpJson?.wxxcx_json?.path
+            if (jumpJson?.wxxcx_json?.getCode?.url) {
+              let req = jumpJson?.wxxcx_json?.getCode?.req || {}
+              let rUrl = jumpJson?.wxxcx_json?.getCode?.url
+              const res = await this.$http.post(rUrl, req)
+              if (res?.data?.data) {
+                const data = res.data.data
+                path = this.renderStr(path, {
+                  data,
+                  ...this.queryOptions,
+                })
+              }
+            }
+            MessageBox('功能暂未开放', '提示', 'error')
+          }
+          return
+        } else if (jumpJson?.obj_type === '外部页面') {
+          if (jumpJson.outer_url) {
+            open(jumpJson.outer_url)
+          } else {
+            MessageBox('请配置要打开的页面', '提示', 'error')
+          }
+        } else {
+          this.$router.push(url)
+        }
+        console.log(url);
+      }
+      console.log(jumpJson)
+    } else {
+      console.log('jumpJson 配置错误 或 未获取到有效的 jump_json')
+    }
   }
 }
 

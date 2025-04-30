@@ -10,11 +10,7 @@
       v-else-if="['string', '时间日期'].includes(cellItem.parts_type)"
       class="bx-cell-string"
       :class="{
-        'cursor-pointer':
-          cellItem.sys_fun &&
-          ['拨打电话', '地图导航', '登录', '退出登录'].includes(
-            cellItem.sys_fun
-          ),
+        'cursor-pointer': isLink,
       }"
       @click.stop="onClickSubBlock"
       :style="[buildColStyleJson]"
@@ -23,7 +19,10 @@
     </div>
     <div
       v-else-if="item.parts_type == 'variable'"
-      :class="'bx-cell-' + item.parts_type"
+      class="bx-cell-variable"
+      :class="{
+        'cursor-pointer': isLink,
+      }"
       @click.stop="onClickSubBlock"
       :style="[buildColStyleJson]"
     >
@@ -38,6 +37,9 @@
       :border-radius="buildColStyleJson['border-radius']"
       :src="getImagePath(getPartModelData, 150)"
       class="demo-layout bx-text-cell"
+      :class="{
+        'cursor-pointer': isLink,
+      }"
       :style="[buildColStyleJson]"
       mode="aspectFill"
       img-mode="aspectFill"
@@ -60,22 +62,21 @@
     <i
       v-else-if="
         item.parts_type == 'icon' &&
-        partsShow &&
         item.parts_text &&
         item.parts_text.indexOf('el-icon-') !== -1
       "
-      :class="item.parts_text"
+      :class="[item.parts_text, { 'cursor-pointer': isLink }]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock"
     ></i>
     <Icon
       v-else-if="
         item.parts_type == 'icon' &&
-        partsShow &&
         item.parts_text &&
         item.parts_text.indexOf('i-') === 0
       "
       :icon="item.parts_text"
+      :class="{ 'cursor-pointer': isLink }"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock"
     ></Icon>
@@ -85,7 +86,7 @@
       v-html="getPartModelData"
     ></div>
     <div
-      :class="'bx-cell-' + cellItem.parts_type"
+      :class="['bx-cell-' + cellItem.parts_type, { 'cursor-pointer': isLink }]"
       v-else-if="
         (cellItem.parts_type == 'row' || cellItem.parts_type == 'block') &&
         cellItem.hasOwnProperty('sub_card_parts_json') &&
@@ -168,6 +169,21 @@ export default {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
     item() {
       return this.cellItem;
+    },
+    isLink() {
+      if (this.cellItem.sys_fun) {
+        if (
+          ["拨打电话", "地图导航", "登录", "退出登录"].includes(
+            this.cellItem.sys_fun
+          )
+        ) {
+          return true;
+        }
+      }
+      if (this.cellItem.jump_json) {
+        return true;
+      }
+      return false;
     },
     partsType() {
       return this.cellItem.parts_type;
@@ -387,7 +403,9 @@ export default {
             this.queryOptions[map[item.disp_variable]] ||
             null;
           let dispValue = item.disp_compare_value || null; // 显示值
-          if (dispValue && val) {
+          if (["null", "false"].includes(disp_compare_value)) {
+            show = !val;
+          } else if (dispValue && val) {
             dispValue = dispValue.split(",");
             // console.log('dispValue1',dispValue,val,itemData.target_name)
             if (dispValue.indexOf(val) !== -1) {
@@ -405,7 +423,9 @@ export default {
             this.queryOptions[map[item.disp_variable]] ||
             null;
           let dispValue = item.disp_compare_value || null; // 隐藏值
-          if (dispValue && val) {
+          if (["null", "false"].includes(disp_compare_value)) {
+            show = !!val;
+          } else if (dispValue && val) {
             dispValue = dispValue.split(",");
             if (dispValue.indexOf(val) !== -1) {
               show = false;
