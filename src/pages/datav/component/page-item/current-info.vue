@@ -57,7 +57,13 @@ export default {
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
     toLogout() {
-      this.$store.dispatch("loginInfo/logout");
+      this.$confirm("确认退出登录吗?", "提示", {
+        confirmButtonText: "确认",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        this.$store.dispatch("loginInfo/logout");
+      });
     },
     toLogin() {
       if (process.env.NODE_ENV === "development") {

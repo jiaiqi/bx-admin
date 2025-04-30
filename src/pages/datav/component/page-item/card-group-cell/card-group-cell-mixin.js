@@ -111,11 +111,11 @@ export default {
     partsShow(item, map, itemData) {
       let show = true
       // 根据显示条件判断是否显示 islogin代表是否登录
-      if (item.disp_flag && item?.disp_variable?.toLowerCase === 'islogin') {
+      if (item.disp_flag && item?.disp_variable?.toLowerCase() === 'islogin') {
         if (item.disp_flag === '显示') {
-          return !!this.logined
+          return item.disp_compare_value === '是' ? !!this.logined : !this.logined
         } else if (item.disp_flag === '隐藏') {
-          return !this.logined
+          return item.disp_compare_value === '是' ? !this.logined : !!this.logined
         }
       }
       // console.log('dispValue', item, map, itemData)

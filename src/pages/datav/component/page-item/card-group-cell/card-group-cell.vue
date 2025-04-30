@@ -31,8 +31,18 @@
               :checked="currentRadio===cellItemData[pageItem._refedCol]?true:false"
               :value="cellItemData[pageItem._refedCol]"></radio>
           </div> -->
-
-        <template
+        <template v-for="(item, n) in cellLayoutJson.parts_json">
+          <card-cell-part
+            :comColMap="comColMap"
+            :cellItem="item"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="cellLayoutJson"
+            @on-click-cell="onClickCell"
+          ></card-cell-part>
+        </template>
+        <!-- <template
           v-for="(item, n) in cellLayoutJson.parts_json"
           :style="item.parts_type == 'iconImg' ? `display: inline-flex;` : ''"
         >
@@ -137,9 +147,6 @@
             :style="[buildColStyleJson(item.style_json || null)]"
             @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
           ></Icon>
-          <!-- <u-parse v-else-if="item.parts_type == '富文本' && partsShow(item,comColMap,cellItemData)"
-              :style="[buildColStyleJson(item.style_json || null)]"
-              :html="getPartModelData(item,comColMap,cellItemData)"></u-parse> -->
           <div
             v-else-if="
               item.parts_type == '富文本' &&
@@ -284,14 +291,6 @@
                 :style="[buildColStyleJson(subCol.style_json || null)]"
                 v-html="getPartModelData(subCol, comColMap, cellItemData)"
               ></div>
-              <!-- <u-parse
-                v-else-if="
-                  subCol.parts_type == '富文本' &&
-                  partsShow(subCol, comColMap, cellItemData)
-                "
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-                :html="getPartModelData(subCol, comColMap, cellItemData)"
-              ></u-parse> -->
               <div
                 :class="'bx-cell-' + subCol.parts_type"
                 v-else-if="
@@ -435,15 +434,6 @@
                     v-html="getPartModelData(ssubCol, comColMap, cellItemData)"
                     @click="false"
                   ></div>
-                  <!-- <u-parse
-                    v-else-if="
-                      ssubCol.parts_type == '富文本' &&
-                      partsShow(ssubCol, comColMap, cellItemData)
-                    "
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                    :html="getPartModelData(ssubCol, comColMap, cellItemData)"
-                    @click="false"
-                  ></u-parse> -->
                   <i
                     v-else-if="
                       ssubCol.parts_type == 'icon' &&
@@ -626,24 +616,6 @@
                           ) || 0
                         "
                       ></el-progress>
-                      <!-- <i
-                        v-else-if="
-                          sssubCol.parts_type == 'icon' &&
-                          partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                        :class="sssubCol.parts_text"
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson,
-                            ssubCol
-                          )
-                        "
-                      ></i> -->
                       <i
                         v-else-if="
                           sssubCol.parts_type == 'icon' &&
@@ -698,20 +670,7 @@
                         "
                         @click="false"
                       ></div>
-                      <!-- <u-parse
-                        v-else-if="
-                          sssubCol.parts_type == '富文本' &&
-                          partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                        v-show="partsShow(sssubCol, comColMap, cellItemData)"
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                        :html="
-                          getPartModelData(sssubCol, comColMap, cellItemData)
-                        "
-                        @click="false"
-                      ></u-parse> -->
+                     
                       <div
                         :class="'bx-cell-' + sssubCol.parts_type"
                         v-else-if="
@@ -946,26 +905,7 @@
                             "
                             @click="false"
                           ></div>
-                          <!-- <u-parse
-                            v-else-if="
-                              sssubCol4.parts_type == '富文本' &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            v-show="
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                            :html="
-                              getPartModelData(
-                                sssubCol4,
-                                comColMap,
-                                cellItemData
-                              )
-                            "
-                            @click="false"
-                          ></u-parse> -->
+                         
                         </template>
                       </div>
                     </template>
@@ -974,7 +914,7 @@
               </div>
             </template>
           </div>
-        </template>
+        </template> -->
         <slot name="footer"></slot>
       </div>
       <!-- <div class="uni-footer text-right flex justify-end flex-wrap" v-if="showRowButtons && !readOnly">
@@ -1044,11 +984,13 @@ import Teleport from "vue2-teleport";
 import { Icon, addCollection } from "@iconify/vue2";
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
 import dayjs from "dayjs";
-// import { mapGetters, } from "vuex";
+import { mapGetters, mapActions } from "vuex";
+import cardCellPart from "./card-cell-part.vue";
 export default {
   components: {
     Teleport,
     Icon,
+    cardCellPart,
     // cardGroupCellItem
     // bxform
     // bxForm: () => import('@/views/custom/components/bx-form/bx-form.vue') //剔除 原小程序form组件
@@ -1235,7 +1177,8 @@ export default {
     },
     srvApp() {
       return (
-        this.pageItem?.srv_req_json?.mapp || uni.getStorageSync("activeApp")
+        this.pageItem?.srv_req_json?.mapp ||
+        sessionStorage.getItem("current_app")
       );
     },
   },
@@ -1243,6 +1186,7 @@ export default {
     // self = this
   },
   methods: {
+    ...mapActions("loginInfo", ["initLoginInfo"]),
     recoverFileAddress(val = "") {
       if (typeof val !== "string") {
         return val;
@@ -1361,9 +1305,33 @@ export default {
     //   })
 
     // }, 200, true),
+    toLogin() {
+      if (process.env.NODE_ENV === "development") {
+        return this.$loginRef?.open((res) => {
+          console.log(res);
+          if (res) {
+            this.initLoginInfo(res);
+          }
+        });
+      }
+      const currentUrl = window.location.pathname + window.location.hash;
+      sessionStorage.setItem("login_redirect_url", currentUrl);
+      const loginUrl = window.location.origin + "/main/login.html";
+      window.location.href = loginUrl;
+    },
     onClickSubBlock(itemData, subCol, cellLayoutJson, parentCol, originCol) {
       console.log("onClickSubBlock");
-      if (
+      if (subCol?.sys_fun === "登录") {
+        this.toLogin();
+      } else if (subCol?.sys_fun === "退出登录") {
+        this.$confirm("确认退出登录吗?", "提示", {
+          confirmButtonText: "确认",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then(() => {
+          this.$store.dispatch("loginInfo/logout");
+        });
+      } else if (
         (!subCol?.sys_fun || subCol?.sys_fun === "无") &&
         !subCol?.jump_json
       ) {
