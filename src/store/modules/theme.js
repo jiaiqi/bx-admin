@@ -52,13 +52,13 @@ const getters = {
       const theme = state.themeList.find(item => item.name === state.currentTheme);
       themeVariable = theme?.variable || {};
     }
-    
+
     if (themeVariable && typeof themeVariable === "object") {
       Object.keys(themeVariable).forEach(key => {
         if (key.startsWith('--')) {
-          style[key] = themeVariable[key];
+          style[key] = Vue.prototype.getColor(themeVariable[key]);
         } else {
-          style[`--${key}`] = themeVariable[key];
+          style[`--${key}`] = Vue.prototype.getColor(themeVariable[key]);
         }
       });
     }

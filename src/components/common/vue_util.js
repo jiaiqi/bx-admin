@@ -2575,6 +2575,40 @@ function init_util() {
       console.error(error, ':checkUploadStatus');
     }
   }
+
+  /**
+   * 判断值是rgb还是hex 如果是hex 将其转换成rgb再返回 如果是rgb直接返回
+   * @returns {string} 
+   */
+  Vue.prototype.getColor = (color) => {
+    if (color.startsWith('#')) {
+      const rgb = Vue.prototype.hexToRgb(color);
+      return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+    } else {
+      return color;
+    }
+  }
+
+  Vue.prototype.rgbToHex = (r, g, b) => {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  /**
+   * 将hex颜色代码转换为rgb颜色代码
+   * @param {string} hex - hex颜色代码，如 "#FF0000" 或 "#F00"
+   * @returns {object} - 包含rgb颜色的对象，如 { r: 255, g: 0, b: 0 }
+   */
+  Vue.prototype.hexToRgb = (hex) => {
+    // 扩展简写的hex颜色代码（如 #333 -> #333333）
+    if (hex.length === 4) {
+      hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+    }
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
 }
 
 export default init_util;

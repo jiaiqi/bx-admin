@@ -1,7 +1,33 @@
 <template>
-  <div class="nav-menu" v-if="data" @click="onTap">
+  <div
+    class="nav-menu"
+    v-if="data"
+    @click="onTap"
+    :class="{ 'active-nav-menu': isActive }"
+  >
     <div class="nav-menu-label" :style="[formatStyleData(data.nav_style_json)]">
-      {{ data.label || data._label || "" }}
+      <span>
+        {{ data.label || data._label || "" }}
+      </span>
+      <svg
+        class="arrow"
+        viewBox="0 0 160 160"
+        xmlns="https://www.w3.org/2000/svg"
+        v-if="data.sub_json || data.child_source === '接口请求'"
+      >
+        <polyline class="arrow-polyline" points="20,50 80,110 140,50">
+          <animate
+            class="arrow-animate"
+            ref="arrowAnimate"
+            attributeName="points"
+            dur="0.2s"
+            fill="freeze"
+            restart="whenNotActive"
+            :from="isActive ? '20,50 80,110 140,50' : '20,110 80,50 140,110'"
+            :to="isActive ? '20,110 80,50 140,110' : '20,50 80,110 140,50'"
+          ></animate>
+        </polyline>
+      </svg>
     </div>
   </div>
 </template>
@@ -12,11 +38,22 @@ import { formatStyleData } from "@/pages/datav/common/index.js";
 export default {
   name: "NavMenuItem",
   props: {
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
     data: {
       type: Object,
       default: () => {
         return {};
       },
+    },
+  },
+  watch: {
+    isActive(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        this.$refs.arrowAnimate.beginElement();
+      }
     },
   },
   data() {
@@ -27,6 +64,7 @@ export default {
   },
   methods: {
     async onTap() {
+      debugger;
       const item = this.data;
       if (item?._label && !item.jump_json) {
         // 友情链接表
@@ -70,6 +108,24 @@ export default {
           this.$emit("on-nav", null, item);
         }
         return;
+      }
+      if (item?.sub_json && typeof item.sub_json === "string") {
+        try {
+          item.sub_json = JSON.parse(item.sub_json);
+        } catch (error) {
+          console.log("error", error);
+        }
+      }
+      if (
+        item?.sub_json &&
+        Array.isArray(item.sub_json) &&
+        item.sub_json.length
+      ) {
+        this.children = item.sub_json;
+        return this.$emit("change", {
+          children: item.sub_json,
+          current: item,
+        });
       }
       if (item.child_source === "接口请求") {
         const res = await this.fetchChildData(item.request_json);
@@ -131,4 +187,17 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.arrow {
+  width: 1em;
+  height: 1em;
+  margin-left: 0.25rem;
+  .arrow-polyline {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+</style>

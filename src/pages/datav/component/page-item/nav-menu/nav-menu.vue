@@ -11,8 +11,10 @@
         </div>
       </div> -->
       <nav-menu-item
-        v-for="item in setSubMenu"
+        v-for="(item, index) in setSubMenu"
+        :key="index"
         :data="item"
+        :isActive="isActive(item)"
         @change="onMenuChange"
         @on-nav="navTo"
       ></nav-menu-item>
@@ -278,12 +280,23 @@ export default {
     // }, 1000);
   },
   methods: {
+    isActive(item) {
+      if (this.current) {
+        if (item.nav_no && this.current?.nav_no === item.nav_no) {
+          return true;
+        } else if (item.id && this.current?.id === item.id) {
+          return true;
+        }
+      }
+      return false;
+    },
     onMenuChange(data) {
       const { children, current, event } = data;
       const eleRect = this.$refs.navMenu?.getBoundingClientRect?.();
       if (eleRect.height) {
         this.minHeight = eleRect.height;
       }
+      debugger;
       console.log("onMenuChange", data);
       if (this.current?.nav_no && this.current?.nav_no === current?.nav_no) {
         this.current = null;
@@ -505,6 +518,12 @@ export default {
       height: 1em;
       display: inline-block;
       color: currentColor;
+    }
+  }
+  &.active-nav-menu {
+    .nav-menu-label {
+      background-color: var(--menu-active-bg-color);
+      color: var(--menu-active-text-color, inherit);
     }
   }
 
