@@ -289,7 +289,7 @@ export default {
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
     openNewTab() {
-      const url = `/vpages/#/site/${this.pageNo}`;
+      const url = `/vpages/#/lowcode/view/${this.pageNo}`;
       window.open(url, "_blank");
     },
     // 切换物料面板

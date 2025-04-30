@@ -913,7 +913,7 @@ export default {
           "calendar_no",
           "card_layout_no",
           "nav_no",
-          "extp_no",//外部链接
+          "extp_no", //外部链接
         ];
         const ignoreField = [
           ...componentNoKey,
@@ -964,7 +964,7 @@ export default {
               delete data[key];
             }
           });
-          const compObj = {
+          let compObj = {
             serviceName: "",
             srvApp: "config",
             data: [data],
@@ -1014,6 +1014,17 @@ export default {
             case "extPage":
               compObj.serviceName = "srvpage_cfg_com_ext_page_add";
               break;
+            case "currentInfo":
+              compObj.serviceName = "srvpage_cfg_com_current_info_update";
+              compObj.condition = [
+                {
+                  colName: "current_info_no",
+                  ruleType: "eq",
+                  value: item?.current_info_no,
+                },
+              ];
+              compObj.data = [{}];
+              break;
           }
           addCompArr.push(compObj);
         });
@@ -1037,6 +1048,10 @@ export default {
           const data = {
             ...item,
           };
+          if (!comp) {
+            debugger;
+            return;
+          }
           switch (item.data.com_type) {
             case "chart":
               data.chart_no = comp?.chart_no;

@@ -144,10 +144,13 @@ export const materialsTree = [
     service: "srvpage_cfg_com_map_select",
     nameCol: 'map_name',
   },
-  // {
-  //   value: "currentInfo",
-  //   label: "当前信息卡",
-  // },
+  {
+    value: "currentInfo",
+    label: "个人信息",
+    icon: "Avatar",
+    service: "srvpage_cfg_com_current_info_select",
+    nameCol: 'current_info_name',
+  },
   // {
   //   value: "userList",
   //   label: "用户列表卡",

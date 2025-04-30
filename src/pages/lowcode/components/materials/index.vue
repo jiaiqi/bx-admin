@@ -75,6 +75,7 @@ import {
   NavBar,
   ExtPage,
   Layout,
+  Avatar,
 } from "@/components/icons";
 export default {
   name: "lowcode-materials",
@@ -93,6 +94,7 @@ export default {
     NavBar,
     ExtPage,
     Layout,
+    Avatar,
   },
   data() {
     return {

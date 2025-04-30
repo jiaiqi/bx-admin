@@ -30,7 +30,7 @@
 
 <script>
 import { formatStyleData } from "@/common/common";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import ChangePasswordDialog from "@/components/ui/change-password-dialog/change-password-dialog.vue";
 export default {
   components: {
@@ -55,6 +55,7 @@ export default {
   },
   mounted() {},
   methods: {
+    ...mapActions("loginInfo", ["initLoginInfo"]),
     toLogout() {
       this.$store.dispatch("loginInfo/logout");
     },
@@ -62,6 +63,9 @@ export default {
       if (process.env.NODE_ENV === "development") {
         return this.$loginRef?.open((res) => {
           console.log(res);
+          if (res) {
+            this.initLoginInfo(res);
+          }
         });
       }
       const currentUrl = window.location.pathname + window.location.hash;

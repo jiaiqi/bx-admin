@@ -27,3 +27,5 @@ export { default as NavBar } from "./NavBar.vue";
 export { default as ExtPage } from "./ExtPage.vue";
 
 export { default as Layout } from "./Layout.vue";
+
+export { default as Avatar } from "./Avatar.vue";

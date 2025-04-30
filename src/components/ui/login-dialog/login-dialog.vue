@@ -129,8 +129,15 @@ export default {
         );
         window.user = resData.login_user_info;
         sessionStorage.setItem("logined", true);
+        this.$confirm("登录成功,是否刷新页面", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then(() => {
+          window.location.reload();
+        })
         // debugger
-        this.initLoginInfo(resData)
+        // this.initLoginInfo(resData)
         return true;
       } else {
         this.$message.error(res.data.resultMessage);
