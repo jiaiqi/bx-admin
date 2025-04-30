@@ -1041,8 +1041,7 @@
 // import bxform from '@/views/custom/components/bx-form/bx-form.vue'
 var self = null;
 import Teleport from "vue2-teleport";
-import { Icon } from "@iconify/vue2";
-
+import { Icon, addCollection } from "@iconify/vue2";
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
 import dayjs from "dayjs";
 // import { mapGetters, } from "vuex";

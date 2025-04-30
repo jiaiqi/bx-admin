@@ -4,11 +4,19 @@
     <div v-if="logined">
       <div class="user-name">{{ loginUser.real_name || "" }}</div>
       <div class="flex items-center handler">
-        <span class="text-btn primary" @click="openChangePasswordDialog">修改密码</span>
+        <span class="text-btn primary" @click="openChangePasswordDialog"
+          >修改密码</span
+        >
         <span class="">|</span>
-        <span class="text-btn " @click="bindKey">绑定key</span>
+        <span class="text-btn" @click="bindKey">绑定key</span>
       </div>
       <change-password-dialog ref="changePasswordDialog" />
+    </div>
+    <div v-else>
+      <div class="user-name">未登录</div>
+      <div class="flex items-center handler">
+        <span class="text-btn primary" @click="toLogin">登录</span>
+      </div>
     </div>
   </div>
 </template>
@@ -19,7 +27,7 @@ import { mapGetters } from "vuex";
 import ChangePasswordDialog from "@/components/ui/change-password-dialog/change-password-dialog.vue";
 export default {
   components: {
-    ChangePasswordDialog
+    ChangePasswordDialog,
   },
   props: {
     pageItem: {
@@ -40,6 +48,12 @@ export default {
   },
   mounted() {},
   methods: {
+    toLogin() {
+      const currentUrl = window.location.pathname + window.location.hash;
+      sessionStorage.setItem("login_redirect_url", currentUrl);
+      const loginUrl = window.location.origin + "/main/login.html";
+      window.location.href = loginUrl;
+    },
     bindKey() {
       this.$message.info("功能开发中...");
     },
@@ -54,16 +68,22 @@ export default {
 .welcome-box {
   gap: 16px;
   .avatar {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
+    box-shadow: rgba(134, 156, 178, 0.2) 0px 1px 10px 0px;
+    margin: 10px;
+    border-style: solid;
+    border-width: 4px;
+    border-color: rgb(255, 255, 255);
+    background-color: transparent;
   }
   .user-name {
     font-size: 20px;
     font-weight: 500;
     color: #303133;
   }
-  .handler{
+  .handler {
     gap: 8px;
   }
   .text-btn {

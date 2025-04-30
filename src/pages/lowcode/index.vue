@@ -35,7 +35,7 @@
             "
           ></i>
         </div>
-        <materials-view class="materials-view"></materials-view>
+        <materials-view app-no="config" class="materials-view"></materials-view>
       </div>
       <div
         class="editor-container"
@@ -80,6 +80,7 @@
         </div>
         <property-view
           class="property-view"
+          app-no="config"
           :page-config="pageConfig"
           :current-item="currentItem"
           :current-id="currentId"
@@ -162,7 +163,10 @@ import JsonViewer from "vue-json-viewer";
 import "vue-json-viewer/style.css";
 import { $http, $selectOne, $delete } from "@/common/http";
 import { pageCompCols } from "./components/property/columns";
-import { Icon } from "@iconify/vue2";
+import { Icon, addCollection } from "@iconify/vue2";
+import carbon from "@iconify/json/json/carbon.json";
+import mdiLight from "@iconify/json/json/mdi-light.json";
+import ri from "@iconify/json/json/ri.json";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
 import { formatStyleData } from "@/common/common";
 import cloneDeep from "lodash/cloneDeep";
@@ -243,6 +247,11 @@ export default {
       scrollTop: 0,
       editorContainerStyle: {},
     };
+  },
+  mounted() {
+    addCollection(carbon);
+    addCollection(mdiLight);
+    addCollection(ri);
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;

@@ -17,6 +17,10 @@ import { formatStyleData } from "@/common/common";
 import cloneDeep from "lodash/cloneDeep";
 import { pageCompCols } from "./components/property/columns";
 import { mapState, mapGetters, mapActions } from "vuex";
+import { Icon, addCollection } from "@iconify/vue2";
+import carbon from "@iconify/json/json/carbon.json";
+import mdiLight from "@iconify/json/json/mdi-light.json";
+import ri from "@iconify/json/json/ri.json";
 export default {
   name: "page-wrap",
   components: {
@@ -51,6 +55,11 @@ export default {
       pageConfig: null,
     };
   },
+  mounted() {
+    addCollection(carbon);
+    addCollection(mdiLight);
+    addCollection(ri);
+  },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
@@ -75,7 +84,9 @@ export default {
         return result;
       }
       list = list.map((item) => {
-        item.children = buildTree(components, item.com_no)?.sort((a,b)=>a.com_seq - b.com_seq);;
+        item.children = buildTree(components, item.com_no)?.sort(
+          (a, b) => a.com_seq - b.com_seq
+        );
         return item;
       });
       return list;
@@ -179,7 +190,9 @@ export default {
         this.components = [];
         return;
       }
-      this.components = this.buildComponentsTree(component_json)?.sort((a,b)=>a.com_seq - b.com_seq);
+      this.components = this.buildComponentsTree(component_json)?.sort(
+        (a, b) => a.com_seq - b.com_seq
+      );
     },
   },
 };

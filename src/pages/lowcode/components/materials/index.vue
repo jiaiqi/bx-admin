@@ -212,7 +212,7 @@ export default {
       if (!item) {
         return;
       }
-      const url = `${window.backendIpAddr}/config/select/${item.service}`;
+      const url = `/config/select/${item.service}`;
       const req = {
         serviceName: item.service,
         colNames: ["*"],
