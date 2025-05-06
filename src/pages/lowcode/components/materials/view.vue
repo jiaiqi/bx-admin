@@ -1,8 +1,11 @@
 <template>
-  <div class="force-login" ref="" v-if="forceLogin">
+  <div class="force-login" ref="" v-if="forceLogin" :id="com_name">
     <!-- :style="{ backgroundImage: 'url(' + loginBg + ')' }" -->
     <!-- <img :src="loginBg" v-if="loginBg" class="img" /> -->
-    <div class="login-bg" :style="{ backgroundImage: 'url(' + loginBg + ')' }"></div>
+    <div
+      class="login-bg"
+      :style="{ backgroundImage: 'url(' + loginBg + ')' }"
+    ></div>
     <div class="login-box">
       <div>请在登录后进行查看</div>
       <button class="login-btn" @click="toLogin">登录</button>
@@ -117,6 +120,10 @@ export default {
         return {};
       },
     },
+    com_name: {
+      type: String,
+      default: "",
+    },
   },
   computed: {
     props() {
@@ -163,8 +170,8 @@ export default {
     },
   },
   methods: {
-    toLogin(){
-      const currentUrl = window.location.pathname  + window.location.hash;
+    toLogin() {
+      const currentUrl = window.location.pathname + window.location.hash;
       sessionStorage.setItem("login_redirect_url", currentUrl);
       const loginUrl = window.location.origin + "/main/login.html";
       window.location.href = loginUrl;

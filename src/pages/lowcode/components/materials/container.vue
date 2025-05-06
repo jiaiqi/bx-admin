@@ -6,6 +6,7 @@
     @drop="handleDrop"
     @dragend="handleDragEnd"
     :style="[setStyle]"
+    :id="com_name"
   >
     <!-- 遮罩层 -->
     <div
@@ -65,7 +66,11 @@ export default {
     contentWidth:{
       type: [String, Number],
       default: "",
-    }
+    },
+    com_name: {
+      type: String,
+      default: "",
+    },
   },
   computed: {
     setStyle() {

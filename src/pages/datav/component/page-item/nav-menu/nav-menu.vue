@@ -427,6 +427,17 @@ export default {
                 window.open(jumpJson.outer_url);
               }
             }
+          case "当前页锚点":
+            if (jumpJson.anchor_com_name) {
+              let ele = document.getElementById(jumpJson.anchor_com_name);
+              if (ele) {
+                ele.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                  inline: "nearest",
+                });
+              }
+            }
             break;
           default:
             if (jumpJson.dest_page_no) {

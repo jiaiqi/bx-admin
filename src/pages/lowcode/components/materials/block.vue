@@ -1,6 +1,7 @@
 <template>
   <div
     class="lc-block lc-layout"
+    :id="com_name"
     ref="blockRef"
     :style="[
       blockHeightStyle,
@@ -146,6 +147,10 @@ export default {
       type: String,
       default: "",
     },
+    com_name: {
+      type: String,
+      default: "",
+    }
   },
   data() {
     return {
