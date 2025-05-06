@@ -2,57 +2,74 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <!-- <link rel="icon" href="<%= BASE_URL %>favicon.ico"> -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <!-- <link rel="icon" href="<%= BASE_URL %>favicon.ico"> -->
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/moment.min.js"></script> -->
-    <!-- <script src="./assets/vue.js"></script> -->
+  <!-- <script src="./assets/vue.js"></script> -->
 
-    <!-- <link rel="stylesheet" href="./assets/Luckysheet/plugins/css/pluginsCss.min.css">
+  <!-- <link rel="stylesheet" href="./assets/Luckysheet/plugins/css/pluginsCss.min.css">
       <link rel="stylesheet" href="./assets/Luckysheet/plugins/plugins.css">
       <link rel="stylesheet" href="./assets/Luckysheet/css/luckysheet.css">
       <script src="./assets/Luckysheet/plugins/js/plugin.js"></script>
       <script src="./assets/Luckysheet/luckysheet.umd.js"></script> -->
 
-    <!-- <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet@2.0.0/dist/plugins/css/pluginsCss.css' />
+  <!-- <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet@2.0.0/dist/plugins/css/pluginsCss.css' />
       <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet@2.0.0/dist/plugins/plugins.css' />
       <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet@2.0.0/dist/css/luckysheet.css' />
       <script src="https://cdn.jsdelivr.net/npm/luckysheet@2.0.0/dist/plugins/js/plugin.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/luckysheet@2.0.0/dist/luckysheet.umd.js"></script> -->
 
 
-    <!-- <script src="https://cdnjs.com/libraries/pdf.js"></script> -->
-    <!-- <script src="../js/assets/moment.min.js"></script>
+  <!-- <script src="https://cdnjs.com/libraries/pdf.js"></script> -->
+  <!-- <script src="../js/assets/moment.min.js"></script>
     <script src="../js/assets/lodash.min.js"></script> -->
-   <!-- <script type="text/javascript">window.BMAP_AUTHENTIC_KEY='USER_AK'</script>
+  <!-- <script type="text/javascript">window.BMAP_AUTHENTIC_KEY='USER_AK'</script>
    <script src="http://30.61.1.37:8119/dugis-demo-3d/api/booter.js"></script> -->
-<!--    <script async defer-->
-<!--            src="http://47.119.164.119:8080/api/application/embed?protocol=http&host=47.119.164.119:8080&token=b5705be92c7ef5d9">-->
-<!--    </script>-->
-    <!-- <script src="./assets/ElementUI-2.8.2.js"></script> -->
-    <!-- <link href="./assets/element.css" rel="stylesheet"> -->
+  <!--    <script async defer-->
+  <!--            src="http://47.119.164.119:8080/api/application/embed?protocol=http&host=47.119.164.119:8080&token=b5705be92c7ef5d9">-->
+  <!--    </script>-->
+  <!-- <script src="./assets/ElementUI-2.8.2.js"></script> -->
+  <!-- <link href="./assets/element.css" rel="stylesheet"> -->
 
-     <!-- <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=FC190506b9b4fa8b366db9f78cb5e93e"></script> -->
-     <!-- <script type="text/javascript" src="http://api.map.baidu.com/api?type=webgl&v=2.0&ak=FC190506b9b4fa8b366db9f78cb5e93e"></script> -->
-    <!-- 二次开发引用API，请先声明：-->
-    <!-- <script type="text/javascript">window.BMAP_AUTHENTIC_KEY='USER_AK'</script> -->
-    <!-- <script type="text/javascript" src="http://30.61.1.37:8119/dugis-demo-3d/api/booter.js"></script> -->
-    <script>
-      window.backendIpAddr = 'http://192.168.0.25:8104'
-    </script>
-    <title></title>
+  <!-- <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=FC190506b9b4fa8b366db9f78cb5e93e"></script> -->
+  <!-- <script type="text/javascript" src="http://api.map.baidu.com/api?type=webgl&v=2.0&ak=FC190506b9b4fa8b366db9f78cb5e93e"></script> -->
+  <!-- 二次开发引用API，请先声明：-->
+  <!-- <script type="text/javascript">window.BMAP_AUTHENTIC_KEY='USER_AK'</script> -->
+  <!-- <script type="text/javascript" src="http://30.61.1.37:8119/dugis-demo-3d/api/booter.js"></script> -->
+
+  <script>
+    console.log('env', '<%= NODE_ENV %>' === 'development');
+    if ('<%= VUE_APP_TARGET %>' == 'wj') {
+      top.pathConfig = {
+        "gateway_protocol": "http",
+        "gateway_ip": "18.91.21.147",
+        "port": "8104",
+        "gateway": "http://18.91.21.147:8104",
+        "ws_protocol": "ws",
+        "ws_ip": "18.91.21.147",
+        "ws_port": "55555",
+        "ws_gateway": "",
+        "sso_app": "sso",
+        "application": "config",
+        "app_path": "http://18.91.21.147:8104/config"
+      }
+      sessionStorage.setItem('pathConfig', JSON.stringify(top.pathConfig));
+    }
+  </script>
+  <title></title>
 </head>
 
 <body>
-<noscript>
+  <noscript>
     <strong>We're sorry but bxfront doesn't work properly without JavaScript enabled. Please enable it to
-        continue.</strong>
-</noscript>
-<div id="app"></div>
-<!-- built files will be auto injected -->
+      continue.</strong>
+  </noscript>
+  <div id="app"></div>
+  <!-- built files will be auto injected -->
 </body>
 
 </html>

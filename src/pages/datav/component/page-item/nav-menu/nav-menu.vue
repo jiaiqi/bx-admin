@@ -428,6 +428,7 @@ export default {
               }
             }
           case "当前页锚点":
+          case "当前页面锚点":
             if (jumpJson.anchor_com_name) {
               let ele = document.getElementById(jumpJson.anchor_com_name);
               if (ele) {

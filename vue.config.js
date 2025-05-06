@@ -98,7 +98,8 @@ module.exports = {
   productionSourceMap: true, // 生产环境是否生成 sourceMap 文件
   transpileDependencies: ["simple-mind-map"  /**  思维导图*/, "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
-  publicPath: process.env.VUE_APP_TARGET === 'wj' ? '/web/' : "/vpages/",
+  // publicPath: process.env.VUE_APP_TARGET === 'wj' ? '/web/' : "/vpages/",
+  publicPath:  "/vpages/",
   outputDir: process.env.VUE_APP_TARGET === 'wj' ? 'dist' : "vpages",
   configureWebpack: {
     // externals:  getProdExternals(),
