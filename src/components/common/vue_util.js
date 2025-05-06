@@ -2870,6 +2870,9 @@ function init_util() {
             MessageBox('请配置要打开的页面', '提示', 'error')
           }
         } else {
+          if(url.includes('#')){
+            url = url.split('#')[1]
+          }
           this.$router.push(url)
         }
         console.log(url);

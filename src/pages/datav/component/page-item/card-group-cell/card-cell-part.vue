@@ -3,7 +3,7 @@
     <video
       class="bx-cell-video"
       controls
-      :src="getPartModelData"
+      :src="getImagePath(getPartModelData)"
       v-if="['视频'].includes(partsType)"
     ></video>
     <div

@@ -338,7 +338,11 @@ export default {
   methods: {
     toMore() {
       const { jump_page_json: jumpJson } = this.listConfig || {};
-      if (jumpJson?.click_jump_option?.includes("先登录")) {
+      if (
+        jumpJson?.click_jump_option?.includes("先登录") ||
+        jumpJson.auth_type === "注册用户" ||
+        jumpJson.auth_type === "指定用户"
+      ) {
         if (this.$store.state?.loginInfo?.logined !== true) {
           // 您还未登录,需要登录才能进入,点击确认前往登录
           this.$confirm(

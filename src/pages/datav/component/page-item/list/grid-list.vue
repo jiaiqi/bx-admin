@@ -20,6 +20,7 @@
       <img
         class="grid-item-img"
         :src="getImagePath(item[config.matrix_icon_col])"
+        :style="[iconStyle]"
         alt=""
         v-if="config.matrix_icon_col"
       />
@@ -105,6 +106,14 @@ const hoverStyle = computed(() => {
   let style = {};
   if (config["mouse_hover_style_json"]) {
     style = config["mouse_hover_style_json"];
+  }
+  return formatStyleData(style);
+});
+const iconStyle = computed(() => {
+  const config = props?.config;
+  let style = {};
+  if (config["list_icon_json"]) {
+    style = config["list_icon_json"];
   }
   return formatStyleData(style);
 });
