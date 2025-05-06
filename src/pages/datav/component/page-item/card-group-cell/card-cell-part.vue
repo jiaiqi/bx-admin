@@ -102,7 +102,7 @@
           :cellItemData="cellItemData"
           :readOnly="readOnly"
           :queryOptions="queryOptions"
-          :cellLayoutJson="cellLayoutJson"
+          :cellLayoutJson="subCardPart"
           :parentPart="cellItem"
           @on-click-part="onClickSubBlock"
           @on-click-cell="onClickCell"

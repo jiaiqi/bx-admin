@@ -38,7 +38,7 @@
             :cellItemData="cellItemData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
-            :cellLayoutJson="cellLayoutJson"
+            :cellLayoutJson="item"
             @on-click-cell="onClickCell"
           ></card-cell-part>
         </template>
