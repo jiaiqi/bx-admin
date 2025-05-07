@@ -403,8 +403,8 @@ span.section-title {
       &:active,
       &:focus {
         background-color: var(--menu-bg-color, #409eff);
-        color: var(menu-text-color, #409eff);
-        border-color: unset;
+        color: var(--menu-text-color, #409eff);
+        border-color: var(--menu-light-border-color, unset);
       }
     }
 
