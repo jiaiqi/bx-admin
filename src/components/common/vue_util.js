@@ -2633,6 +2633,7 @@ function init_util() {
   // jump 拦截处理权限
   Vue.prototype.jumpAction = async function (jumpJson, itemData = {}) {
     let rowData = itemData
+    debugger
     if (jumpJson?.tmpl_page_json?.file_path) {
       let path = jumpJson?.tmpl_page_json?.file_path
       if (path?.indexOf('webview://') === 0) {
@@ -2674,6 +2675,7 @@ function init_util() {
       if (jumpJson.click_jump_option) {
         // grid  item 点击 老代码迁移
         jumpOptions = jumpJson?.click_jump_option
+
         if (jumpOptions?.includes('先登录')) {
           let loginUserInfo = uni.getStorageSync('current_login_user')
           try {
@@ -2682,7 +2684,7 @@ function init_util() {
             console.error(error);
           }
           if (!isLogin || !loginUserInfo?.mobile) {
-            MessageBox.confirm('请先登录', '提示', {
+            MessageBox.confirm('您还未登录,需要登录才能进入,点击确认前往登录', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
               type: 'warning',
@@ -2768,15 +2770,18 @@ function init_util() {
         }
         let id = rowData?.id || ''
         // url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`
+        if(url&&!url.includes('?')){
+          url = `${url}?id=${id}`
+        }
         if (jumpJson?.cols_map_json?.cols_map_detail_json?.length) {
           jumpJson?.cols_map_json?.cols_map_detail_json.forEach(item => {
             if (item.to_type === 'URL') {
               if (item.from_type == '常量') {
-                url = `${url}&${item.col_to}=${item.col_from}`
+                url += `&${item.col_to}=${item.col_from}`
               } else if (item.from_type === '页面') {
-                url = `${url}&${item.col_to}=${this.queryOptions[item.col_from]}`
+                url += `&${item.col_to}=${this.queryOptions[item.col_from]}`
               } else if (rowData && rowData[item.col_from]) {
-                url = `${url}&${item.col_to}=${rowData[item.col_from]}`
+                url += `&${item.col_to}=${rowData[item.col_from]}`
               }
             }
           })

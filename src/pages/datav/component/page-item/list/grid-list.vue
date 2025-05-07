@@ -25,16 +25,16 @@
         v-if="config.matrix_icon_col"
       />
       <!-- <span v-if="config.matrix_label_col"> -->
-        {{ item[config.matrix_label_col]||'' }}
+      {{ item[config.matrix_label_col] || "" }}
       <!-- </span> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref,watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
-import {MessageBox} from 'element-ui'
+import { MessageBox } from "element-ui";
 const props = defineProps({
   config: Object,
   list: Array,
@@ -114,21 +114,23 @@ const iconStyle = computed(() => {
   let style = {};
   if (config["list_icon_json"]) {
     style = config["list_icon_json"];
+  } else if (config["list_icon_style_json"]) {
+    style = config["list_icon_style_json"];
   }
   return formatStyleData(style);
 });
 function openUrl(url) {
-  if(props?.pageItem?.com_option?.includes('强制登录')){
-    sessionStorage.setItem('targetPage',url)
-    MessageBox.confirm('需要登录才能继续操作，是否跳转到登录？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(()=>{
-      top.window.location.href = `${location.origin}/vpages/#/lowcode-grid/view/PG2503180001`
-    })
+  if (props?.pageItem?.com_option?.includes("强制登录")) {
+    sessionStorage.setItem("targetPage", url);
+    MessageBox.confirm("需要登录才能继续操作，是否跳转到登录？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }).then(() => {
+      top.window.location.href = `${location.origin}/vpages/#/lowcode-grid/view/PG2503180001`;
+    });
 
-    return
+    return;
   }
   if (url) {
     window.open(url);

@@ -12,7 +12,7 @@
       :class="{
         'cursor-pointer': isLink,
       }"
-      @click.stop="onClickSubBlock"
+      @click.stop="onClickSubBlock()"
       :style="[buildColStyleJson]"
     >
       {{ getPartModelData }}
@@ -23,14 +23,14 @@
       :class="{
         'cursor-pointer': isLink,
       }"
-      @click.stop="onClickSubBlock"
+      @click.stop="onClickSubBlock()"
       :style="[buildColStyleJson]"
     >
       {{ getPartModelData }}
     </div>
     <el-image
       v-else-if="item.parts_type == 'iconImg'"
-      @click.stop="onClickSubBlock"
+      @click.stop="onClickSubBlock()"
       :loading-img="getImagePath(item.parts_img)"
       :height="buildColStyleJson.height || 'auto'"
       :width="buildColStyleJson.width || '100%'"
@@ -67,7 +67,7 @@
       "
       :class="[item.parts_text, { 'cursor-pointer': isLink }]"
       :style="[buildColStyleJson]"
-      @click.stop="onClickSubBlock"
+      @click.stop="onClickSubBlock()"
     ></i>
     <Icon
       v-else-if="
@@ -78,7 +78,7 @@
       :icon="item.parts_text"
       :class="{ 'cursor-pointer': isLink }"
       :style="[buildColStyleJson]"
-      @click.stop="onClickSubBlock"
+      @click.stop="onClickSubBlock()"
     ></Icon>
     <div
       v-else-if="item.parts_type == '富文本'"
@@ -106,6 +106,7 @@
           :parentPart="cellItem"
           @on-click-part="onClickSubBlock"
           @on-click-cell="onClickCell"
+          @show-dialog="showDialog"
         ></card-cell-part>
       </template>
     </div>
@@ -378,10 +379,12 @@ export default {
     partsShow() {
       const item = this.cellItem;
       const itemData = this.cellItemData;
-      const map = this.comColMap || Object.keys(itemData).reduce((acc,key)=>{
-        acc[key] = key;
-        return acc;
-      },{});
+      const map =
+        this.comColMap ||
+        Object.keys(itemData).reduce((acc, key) => {
+          acc[key] = key;
+          return acc;
+        }, {});
       let show = true;
       // 根据显示条件判断是否显示 islogin代表是否登录
       if (item.disp_flag && item?.disp_variable?.toLowerCase() === "islogin") {
@@ -479,7 +482,26 @@ export default {
       return style || {};
     },
     onClickCell(data, layout) {
-      this.$emit("on-click-cell", data, layout);
+      // if((!layout?.sys_fun || layout?.sys_fun === "无") && !layout.jump_json)return
+      this.$emit("onClickSubBlock", data, layout);
+    },
+    toLogin() {
+      if (process.env.NODE_ENV === "development") {
+        return this.$loginRef?.open((res) => {
+          console.log(res);
+          if (res) {
+            this.initLoginInfo(res);
+          }
+        });
+      }
+      const currentUrl = window.location.pathname + window.location.hash;
+      sessionStorage.setItem("login_redirect_url", currentUrl);
+      const loginUrl = window.location.origin + "/main/login.html";
+      window.location.href = loginUrl;
+    },
+    showDialog({ rect, data, jumpJson }) {
+      debugger
+      this.$emit("show-dialog", { rect, data, jumpJson });
     },
     onClickSubBlock: throttle(
       function (itemData, subCol, cellLayoutJson, parentCol, originCol) {
@@ -490,7 +512,17 @@ export default {
         if (this.readOnly) {
           return;
         }
-        if (
+        if (subCol?.sys_fun === "登录") {
+          this.toLogin();
+        } else if (subCol?.sys_fun === "退出登录") {
+          this.$confirm("确认退出登录吗?", "提示", {
+            confirmButtonText: "确认",
+            cancelButtonText: "取消",
+            type: "warning",
+          }).then(() => {
+            this.$store.dispatch("loginInfo/logout");
+          });
+        } else if (
           (!subCol?.sys_fun || subCol?.sys_fun === "无") &&
           !subCol?.jump_json
         ) {
@@ -504,6 +536,10 @@ export default {
               null,
               subCol
             );
+          } else if (this.parentPart?.jump_json) {
+            // 如果父部件配置了跳转 执行跳转
+            this.jumpAction(this.parentPart?.jump_json, itemData);
+            return;
           } else {
             // 没有父部件配置 点击事件传到卡片单元
             this.onClickCell(itemData, cellLayoutJson);
@@ -511,7 +547,17 @@ export default {
           return;
         } else if (subCol?.jump_json) {
           // 执行自定义跳转
-          this.jumpAction(subCol?.jump_json, itemData);
+          if (subCol?.jump_json?.click_type === "弹框") {
+            const element = this.$el;
+            const rect = element.getBoundingClientRect();
+            this.showDialog({
+              rect,
+              data: itemData,
+              jumpJson: subCol.jump_json,
+            });
+          } else {
+            this.jumpAction(subCol?.jump_json, itemData);
+          }
           return;
         }
         let type = "";

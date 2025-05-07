@@ -39,906 +39,14 @@
             :readOnly="readOnly"
             :queryOptions="queryOptions"
             :cellLayoutJson="item"
+            :parent-part="cellLayoutJson"
             @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
           ></card-cell-part>
         </template>
-        <!-- <template
-          v-for="(item, n) in cellLayoutJson.parts_json"
-          :style="item.parts_type == 'iconImg' ? `display: inline-flex;` : ''"
-        >
-          <div
-            v-if="
-              ['视频'].includes(item.parts_type) &&
-              partsShow(item, comColMap, cellItemData)
-            "
-          >
-            <video
-              controls
-              :src="getPartModelData(item, comColMap, cellItemData)"
-            ></video>
-          </div>
-          <div
-            v-else-if="
-              ['string', '时间日期'].includes(item.parts_type) &&
-              partsShow(item, comColMap, cellItemData)
-            "
-            class="bx-cell-string"
-            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
-            :style="[buildColStyleJson(item.style_json)]"
-          >
-            {{ getPartModelData(item, comColMap, cellItemData) }}
-          </div>
-          <div
-            v-else-if="
-              item.parts_type == 'variable' &&
-              partsShow(item, comColMap, cellItemData)
-            "
-            :class="'bx-cell-' + item.parts_type"
-            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
-            :style="[buildColStyleJson(item.style_json)]"
-          >
-            {{ getPartModelData(item, comColMap, cellItemData) }}
-          </div>
-          <el-image
-            v-else-if="
-              item.parts_type == 'iconImg' &&
-              partsShow(item, comColMap, cellItemData)
-            "
-            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
-            :loading-img="getImagePath(item.parts_img)"
-            :height="
-              buildColStyleJson(item.style_json || null).height || 'auto'
-            "
-            :width="buildColStyleJson(item.style_json || null).width || '100%'"
-            :border-radius="
-              buildColStyleJson(item.style_json || null)['border-radius']
-            "
-            :src="
-              getImagePath(getPartModelData(item, comColMap, cellItemData), 150)
-            "
-            class="demo-layout bx-text-cell"
-            :style="[buildColStyleJson(item.style_json || null)]"
-            mode="aspectFill"
-            img-mode="aspectFill"
-          ></el-image>
-          <el-rate
-            :disabled="true"
-            v-else-if="item.parts_type == 'rate'"
-            :count="5"
-            :value="
-              Number(getPartModelData(item, comColMap, cellItemData)) || 0
-            "
-          ></el-rate>
-          <el-progress
-            :show-text="false"
-            :style="[buildColStyleJson(item.style_json || null)]"
-            v-else-if="item.parts_type == 'progress'"
-            :count="5"
-            :define-back-color="
-              buildColStyleJson(item.style_json || null)['background-color'] ||
-              ''
-            "
-            :color="
-              buildColStyleJson(item.style_json || null).color || '#2979ff'
-            "
-            :percentage="
-              Number(getPartModelData(item, comColMap, cellItemData)) || 0
-            "
-          ></el-progress>
-          <i
-            v-else-if="
-              item.parts_type == 'icon' &&
-              partsShow(item, comColMap, cellItemData) &&
-              item.parts_text &&
-              item.parts_text.indexOf('el-icon-') !== -1
-            "
-            :class="item.parts_text"
-            :style="[buildColStyleJson(item.style_json || null)]"
-            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
-          ></i>
-          <Icon
-            v-else-if="
-              item.parts_type == 'icon' &&
-              partsShow(item, comColMap, cellItemData) &&
-              item.parts_text &&
-              item.parts_text.indexOf('i-') === 0
-            "
-            :icon="item.parts_text"
-            :style="[buildColStyleJson(item.style_json || null)]"
-            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
-          ></Icon>
-          <div
-            v-else-if="
-              item.parts_type == '富文本' &&
-              partsShow(item, comColMap, cellItemData)
-            "
-            :style="[buildColStyleJson(item.style_json || null)]"
-            v-html="getPartModelData(item, comColMap, cellItemData)"
-          ></div>
-          <div
-            :class="'bx-cell-' + item.parts_type"
-            v-else-if="
-              (item.parts_type == 'row' || item.parts_type == 'block') &&
-              partsShow(item, comColMap, cellItemData) &&
-              item.hasOwnProperty('sub_card_parts_json') &&
-              item.sub_card_parts_json.length > 0
-            "
-            @click.stop="onClickSubBlock(cellItemData, item, cellLayoutJson)"
-            :style="[buildColStyleJson(item.style_json || null)]"
-          >
-            <template v-for="(subCol, subindex) in item.sub_card_parts_json">
-              <div
-                v-if="
-                  ['视频'].includes(subCol.parts_type) &&
-                  partsShow(subCol, comColMap, cellItemData)
-                "
-              >
-                <video
-                  controls
-                  :src="getPartModelData(subCol, comColMap, cellItemData)"
-                ></video>
-              </div>
-              <div
-                v-if="
-                  ['string', '时间日期'].includes(subCol.parts_type) &&
-                  partsShow(subCol, comColMap, cellItemData)
-                "
-                class="bx-cell-string"
-                @click.stop="
-                  onClickSubBlock(cellItemData, subCol, cellLayoutJson, item)
-                "
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-              >
-                {{ getPartModelData(subCol, comColMap, cellItemData) }}
-              </div>
-              <div
-                v-else-if="
-                  subCol.parts_type == 'variable' &&
-                  partsShow(subCol, comColMap, cellItemData)
-                "
-                :class="'bx-cell-' + subCol.parts_type"
-                @click.stop="
-                  onClickSubBlock(cellItemData, subCol, cellLayoutJson, item)
-                "
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-              >
-                {{ getPartModelData(subCol, comColMap, cellItemData) }}
-              </div>
-              <el-image
-                v-else-if="
-                  subCol.parts_type == 'iconImg' &&
-                  partsShow(subCol, comColMap, cellItemData)
-                "
-                img-mode="aspectFill"
-                @click.stop="
-                  onClickSubBlock(cellItemData, subCol, cellLayoutJson, item)
-                "
-                :loading-img="getImagePath(subCol.parts_img)"
-                :height="
-                  buildColStyleJson(subCol.style_json || null).height || 'auto'
-                "
-                :width="
-                  buildColStyleJson(subCol.style_json || null).width || '100%'
-                "
-                :src="
-                  getImagePath(
-                    getPartModelData(subCol, comColMap, cellItemData),
-                    150
-                  )
-                "
-                class="demo-layout bx-text-cell"
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-              ></el-image>
-              <el-rate
-                :disabled="true"
-                v-else-if="subCol.parts_type == 'rate'"
-                :count="5"
-                :value="
-                  Number(getPartModelData(subCol, comColMap, cellItemData)) || 0
-                "
-              ></el-rate>
-              <el-progress
-                :show-text="false"
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-                v-else-if="subCol.parts_type == 'progress'"
-                :count="5"
-                :define-back-color="
-                  buildColStyleJson(subCol.style_json || null)[
-                    'background-color'
-                  ] || ''
-                "
-                :color="
-                  buildColStyleJson(subCol.style_json || null).color ||
-                  '#2979ff'
-                "
-                :percentage="
-                  Number(getPartModelData(subCol, comColMap, cellItemData)) || 0
-                "
-              ></el-progress>
-              <i
-                v-else-if="
-                  subCol.parts_type == 'icon' &&
-                  partsShow(subCol, comColMap, cellItemData) &&
-                  subCol.parts_text &&
-                  subCol.parts_text.indexOf('el-icon-') !== -1
-                "
-                :class="subCol.parts_text"
-                @click.stop="
-                  onClickSubBlock(cellItemData, subCol, cellLayoutJson, item)
-                "
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-              >
-              </i>
-              <Icon
-                v-else-if="
-                  subCol.parts_type == 'icon' &&
-                  partsShow(subCol, comColMap, cellItemData) &&
-                  subCol.parts_text &&
-                  subCol.parts_text.indexOf('i-') === 0
-                "
-                :icon="subCol.parts_text"
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-                @click.stop="
-                  onClickSubBlock(cellItemData, subCol, cellLayoutJson)
-                "
-              ></Icon>
-
-              <div
-                v-else-if="
-                  subCol.parts_type == '富文本' &&
-                  partsShow(subCol, comColMap, cellItemData)
-                "
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-                v-html="getPartModelData(subCol, comColMap, cellItemData)"
-              ></div>
-              <div
-                :class="'bx-cell-' + subCol.parts_type"
-                v-else-if="
-                  (subCol.parts_type == 'row' ||
-                    subCol.parts_type == 'block') &&
-                  partsShow(subCol, comColMap, cellItemData) &&
-                  subCol.hasOwnProperty('sub_card_parts_json') &&
-                  subCol.sub_card_parts_json.length > 0
-                "
-                @click.stop="
-                  onClickSubBlock(cellItemData, subCol, cellLayoutJson, item)
-                "
-                :style="[buildColStyleJson(subCol.style_json || null)]"
-              >
-                <template
-                  v-for="(ssubCol, ssubindex) in subCol.sub_card_parts_json"
-                >
-                  <div
-                    v-if="
-                      ['视频'].includes(ssubCol.parts_type) &&
-                      partsShow(ssubCol, comColMap, cellItemData)
-                    "
-                  >
-                    <video
-                      controls
-                      :src="getPartModelData(ssubCol, comColMap, cellItemData)"
-                    ></video>
-                  </div>
-                  <div
-                    :key="ssubindex"
-                    v-if="
-                      ['string', '时间日期'].includes(ssubCol.parts_type) &&
-                      partsShow(ssubCol, comColMap, cellItemData)
-                    "
-                    class="bx-cell-string"
-                    @click.stop="
-                      onClickSubBlock(
-                        cellItemData,
-                        ssubCol,
-                        cellLayoutJson,
-                        subCol
-                      )
-                    "
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                  >
-                    {{ getPartModelData(ssubCol, comColMap, cellItemData) }}
-                  </div>
-                  <div
-                    :key="ssubindex"
-                    v-else-if="
-                      ssubCol.parts_type == 'variable' &&
-                      partsShow(ssubCol, comColMap, cellItemData)
-                    "
-                    :class="'bx-cell-' + ssubCol.parts_type"
-                    @click.stop="
-                      onClickSubBlock(
-                        cellItemData,
-                        ssubCol,
-                        cellLayoutJson,
-                        subCol
-                      )
-                    "
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                  >
-                    {{ getPartModelData(ssubCol, comColMap, cellItemData) }}
-                  </div>
-                  <el-image
-                    :key="ssubindex"
-                    v-else-if="
-                      ssubCol.parts_type == 'iconImg' &&
-                      partsShow(ssubCol, comColMap, cellItemData)
-                    "
-                    img-mode="aspectFill"
-                    @click.stop="
-                      onClickSubBlock(
-                        cellItemData,
-                        ssubCol,
-                        cellLayoutJson,
-                        subCol
-                      )
-                    "
-                    :loading-img="getImagePath(ssubCol.parts_img)"
-                    :height="
-                      buildColStyleJson(ssubCol.style_json || null).height ||
-                      'auto'
-                    "
-                    :width="
-                      buildColStyleJson(ssubCol.style_json || null).width ||
-                      '100%'
-                    "
-                    :src="
-                      getImagePath(
-                        getPartModelData(ssubCol, comColMap, cellItemData),
-                        150
-                      )
-                    "
-                    class="demo-layout bx-text-cell"
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                  >
-                  </el-image>
-                  <el-rate
-                    :key="ssubindex"
-                    :disabled="true"
-                    v-else-if="ssubCol.parts_type == 'rate'"
-                    :count="5"
-                    :value="
-                      Number(
-                        getPartModelData(ssubCol, comColMap, cellItemData)
-                      ) || 0
-                    "
-                  ></el-rate>
-                  <el-progress
-                    :key="ssubindex"
-                    :show-text="false"
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                    v-else-if="ssubCol.parts_type == 'progress'"
-                    :count="5"
-                    :define-back-color="
-                      buildColStyleJson(ssubCol.style_json || null)[
-                        'background-color'
-                      ] || ''
-                    "
-                    :color="
-                      buildColStyleJson(ssubCol.style_json || null).color ||
-                      '#2979ff'
-                    "
-                    :percentage="
-                      Number(
-                        getPartModelData(ssubCol, comColMap, cellItemData)
-                      ) || 0
-                    "
-                  ></el-progress>
-
-                  <div
-                    :key="ssubindex"
-                    v-else-if="
-                      ssubCol.parts_type == '富文本' &&
-                      partsShow(ssubCol, comColMap, cellItemData)
-                    "
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                    v-html="getPartModelData(ssubCol, comColMap, cellItemData)"
-                    @click="false"
-                  ></div>
-                  <i
-                    v-else-if="
-                      ssubCol.parts_type == 'icon' &&
-                      partsShow(ssubCol, comColMap, cellItemData) &&
-                      ssubCol.parts_text &&
-                      ssubCol.parts_text.indexOf('el-icon-') !== -1
-                    "
-                    :class="ssubCol.parts_text"
-                    @click.stop="
-                      onClickSubBlock(
-                        cellItemData,
-                        ssubCol,
-                        cellLayoutJson,
-                        item
-                      )
-                    "
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                  >
-                  </i>
-                  <Icon
-                    v-else-if="
-                      ssubCol.parts_type == 'icon' &&
-                      partsShow(ssubCol, comColMap, cellItemData) &&
-                      ssubCol.parts_text &&
-                      ssubCol.parts_text.indexOf('i-') === 0
-                    "
-                    :icon="ssubCol.parts_text"
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                    @click.stop="
-                      onClickSubBlock(cellItemData, ssubCol, cellLayoutJson)
-                    "
-                  ></Icon>
-                  <div
-                    :key="ssubindex"
-                    :class="'bx-cell-' + ssubCol.parts_type"
-                    v-else-if="
-                      (ssubCol.parts_type == 'row' ||
-                        ssubCol.parts_type == 'block') &&
-                      partsShow(ssubCol, comColMap, cellItemData) &&
-                      ssubCol.hasOwnProperty('sub_card_parts_json') &&
-                      ssubCol.sub_card_parts_json.length > 0
-                    "
-                    :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                    @click.stop="
-                      onClickSubBlock(
-                        cellItemData,
-                        ssubCol,
-                        cellLayoutJson,
-                        subCol
-                      )
-                    "
-                  >
-                    <template
-                      v-for="(
-                        sssubCol, sssubindex
-                      ) in ssubCol.sub_card_parts_json"
-                    >
-                      <div
-                        v-if="
-                          ['视频'].includes(sssubCol.parts_type) &&
-                          partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                      >
-                        <video
-                          controls
-                          :src="
-                            getPartModelData(sssubCol, comColMap, cellItemData)
-                          "
-                        ></video>
-                      </div>
-                      <div
-                        v-if="
-                          ['string', '时间日期'].includes(
-                            sssubCol.parts_type
-                          ) && partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                        class="bx-cell-string"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson,
-                            ssubCol
-                          )
-                        "
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                      >
-                        {{
-                          getPartModelData(sssubCol, comColMap, cellItemData)
-                        }}
-                      </div>
-                      <div
-                        v-else-if="
-                          sssubCol.parts_type == 'variable' &&
-                          partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                        :class="'bx-cell-' + sssubCol.parts_type"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson,
-                            ssubCol
-                          )
-                        "
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                      >
-                        {{
-                          getPartModelData(sssubCol, comColMap, cellItemData)
-                        }}
-                      </div>
-                      <el-image
-                        v-else-if="
-                          sssubCol.parts_type == 'iconImg' &&
-                          partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                        img-mode="aspectFill"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson,
-                            ssubCol
-                          )
-                        "
-                        :loading-img="getImagePath(sssubCol.parts_img)"
-                        :height="
-                          buildColStyleJson(sssubCol.style_json || null)
-                            .height || 'auto'
-                        "
-                        :width="
-                          buildColStyleJson(sssubCol.style_json || null)
-                            .width || '100%'
-                        "
-                        :src="
-                          getImagePath(
-                            getPartModelData(sssubCol, comColMap, cellItemData),
-                            150
-                          )
-                        "
-                        class="demo-layout bx-text-cell"
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                      >
-                      </el-image>
-                      <el-rate
-                        :disabled="true"
-                        v-else-if="sssubCol.parts_type == 'rate'"
-                        :count="5"
-                        :value="
-                          Number(
-                            getPartModelData(sssubCol, comColMap, cellItemData)
-                          ) || 0
-                        "
-                      ></el-rate>
-                      <el-progress
-                        :show-text="false"
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                        v-else-if="sssubCol.parts_type == 'progress'"
-                        :count="5"
-                        :define-back-color="
-                          buildColStyleJson(sssubCol.style_json || null)[
-                            'background-color'
-                          ] || ''
-                        "
-                        :color="
-                          buildColStyleJson(sssubCol.style_json || null)
-                            .color || '#2979ff'
-                        "
-                        :percentage="
-                          Number(
-                            getPartModelData(sssubCol, comColMap, cellItemData)
-                          ) || 0
-                        "
-                      ></el-progress>
-                      <i
-                        v-else-if="
-                          sssubCol.parts_type == 'icon' &&
-                          partsShow(sssubCol, comColMap, cellItemData) &&
-                          sssubCol.parts_text &&
-                          sssubCol.parts_text.indexOf('el-icon-') !== -1
-                        "
-                        :class="sssubCol.parts_text"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson,
-                            item
-                          )
-                        "
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                      >
-                      </i>
-                      <Icon
-                        v-else-if="
-                          sssubCol.parts_type == 'icon' &&
-                          partsShow(sssubCol, comColMap, cellItemData) &&
-                          sssubCol.parts_text &&
-                          sssubCol.parts_text.indexOf('i-') === 0
-                        "
-                        :icon="sssubCol.parts_text"
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson
-                          )
-                        "
-                      ></Icon>
-                      <div
-                        v-else-if="
-                          sssubCol.parts_type == '富文本' &&
-                          partsShow(sssubCol, comColMap, cellItemData)
-                        "
-                        v-show="partsShow(sssubCol, comColMap, cellItemData)"
-                        :style="[
-                          buildColStyleJson(sssubCol.style_json || null),
-                        ]"
-                        v-html="
-                          getPartModelData(sssubCol, comColMap, cellItemData)
-                        "
-                        @click="false"
-                      ></div>
-                     
-                      <div
-                        :class="'bx-cell-' + sssubCol.parts_type"
-                        v-else-if="
-                          (sssubCol.parts_type == 'row' ||
-                            sssubCol.parts_type == 'block') &&
-                          partsShow(sssubCol, comColMap, cellItemData) &&
-                          sssubCol.hasOwnProperty('sub_card_parts_json') &&
-                          sssubCol.sub_card_parts_json.length > 0
-                        "
-                        :style="[buildColStyleJson(ssubCol.style_json || null)]"
-                        @click.stop="
-                          onClickSubBlock(
-                            cellItemData,
-                            sssubCol,
-                            cellLayoutJson,
-                            ssubCol
-                          )
-                        "
-                      >
-                        <template
-                          v-for="(
-                            sssubCol4, sssub4index
-                          ) in sssubCol.sub_card_parts_json"
-                        >
-                          <div
-                            v-if="
-                              ['视频'].includes(sssubCol4.parts_type) &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                          >
-                            <video
-                              controls
-                              :src="
-                                getPartModelData(
-                                  sssubCol4,
-                                  comColMap,
-                                  cellItemData
-                                )
-                              "
-                            ></video>
-                          </div>
-                          <div
-                            v-if="
-                              ['string', '时间日期'].includes(
-                                sssubCol4.parts_type
-                              ) && partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            class="bx-cell-string"
-                            @click.stop="
-                              onClickSubBlock(
-                                cellItemData,
-                                sssubCol4,
-                                cellLayoutJson,
-                                sssubCol
-                              )
-                            "
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                          >
-                            {{
-                              getPartModelData(
-                                sssubCol4,
-                                comColMap,
-                                cellItemData
-                              )
-                            }}
-                          </div>
-                          <div
-                            v-else-if="
-                              sssubCol4.parts_type == 'variable' &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            :class="'bx-cell-' + sssubCol4.parts_type"
-                            @click.stop="
-                              onClickSubBlock(
-                                cellItemData,
-                                sssubCol4,
-                                cellLayoutJson,
-                                sssubCol
-                              )
-                            "
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                          >
-                            {{
-                              getPartModelData(
-                                sssubCol4,
-                                comColMap,
-                                cellItemData
-                              )
-                            }}
-                          </div>
-                          <el-image
-                            v-else-if="
-                              sssubCol4.parts_type == 'iconImg' &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            img-mode="aspectFill"
-                            @click.stop="
-                              onClickSubBlock(
-                                cellItemData,
-                                sssubCol4,
-                                cellLayoutJson,
-                                sssubCol
-                              )
-                            "
-                            :loading-img="getImagePath(sssubCol4.parts_img)"
-                            :height="
-                              buildColStyleJson(sssubCol4.style_json || null)
-                                .height || 'auto'
-                            "
-                            :width="
-                              buildColStyleJson(sssubCol4.style_json || null)
-                                .width || '100%'
-                            "
-                            :src="
-                              getImagePath(
-                                getPartModelData(
-                                  sssubCol4,
-                                  comColMap,
-                                  cellItemData
-                                ),
-                                150
-                              )
-                            "
-                            class="demo-layout bx-text-cell"
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                            lazy
-                          >
-                          </el-image>
-                          <el-rate
-                            :disabled="true"
-                            v-else-if="sssubCol4.parts_type == 'rate'"
-                            :count="5"
-                            :value="
-                              Number(
-                                getPartModelData(
-                                  sssubCol4,
-                                  comColMap,
-                                  cellItemData
-                                )
-                              ) || 0
-                            "
-                          ></el-rate>
-                          <el-progress
-                            :show-text="false"
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                            v-else-if="sssubCol4.parts_type == 'progress'"
-                            :count="5"
-                            :define-back-color="
-                              buildColStyleJson(sssubCol4.style_json || null)[
-                                'background-color'
-                              ] || ''
-                            "
-                            :color="
-                              buildColStyleJson(sssubCol4.style_json || null)
-                                .color || '#2979ff'
-                            "
-                            :percentage="
-                              Number(
-                                getPartModelData(
-                                  sssubCol4,
-                                  comColMap,
-                                  cellItemData
-                                )
-                              ) || 0
-                            "
-                          ></el-progress>
-                          <i
-                            v-else-if="
-                              sssubCol4.parts_type == 'icon' &&
-                              partsShow(sssubCol4, comColMap, cellItemData) &&
-                              sssubCol4.parts_text &&
-                              sssubCol4.parts_text.indexOf('el-icon-') !== -1
-                            "
-                            :class="sssubCol4.parts_text"
-                            @click.stop="
-                              onClickSubBlock(
-                                cellItemData,
-                                sssubCol4,
-                                cellLayoutJson,
-                                sssubCol
-                              )
-                            "
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                          >
-                          </i>
-                          <Icon
-                            v-else-if="
-                              sssubCol4.parts_type == 'icon' &&
-                              partsShow(sssubCol4, comColMap, cellItemData) &&
-                              sssubCol4.parts_text &&
-                              sssubCol4.parts_text.indexOf('i-') === 0
-                            "
-                            :icon="sssubCol4.parts_text"
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                            @click.stop="
-                              onClickSubBlock(
-                                cellItemData,
-                                sssubCol4,
-                                cellLayoutJson
-                              )
-                            "
-                          ></Icon>
-                          <div
-                            v-else-if="
-                              sssubCol4.parts_type == '富文本' &&
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            v-show="
-                              partsShow(sssubCol4, comColMap, cellItemData)
-                            "
-                            :style="[
-                              buildColStyleJson(sssubCol4.style_json || null),
-                            ]"
-                            v-html="
-                              getPartModelData(
-                                sssubCol4,
-                                comColMap,
-                                cellItemData
-                              )
-                            "
-                            @click="false"
-                          ></div>
-                         
-                        </template>
-                      </div>
-                    </template>
-                  </div>
-                </template>
-              </div>
-            </template>
-          </div>
-        </template> -->
         <slot name="footer"></slot>
       </div>
-      <!-- <div class="uni-footer text-right flex justify-end flex-wrap" v-if="showRowButtons && !readOnly">
-          <div v-for="(button,ib) in rowButtons" class="padding-right-xs" :key="ib"
-            v-show="getButtonVisible(cellItemData,button,ib)">
-            <button class="mini-btn" type="primary" size="mini"
-              @click.stop="onRowButton({row:cellItemData,button:button,index:index})">{{button.button_name}}</button>
-          </div>
-        </div> -->
     </template>
-    <!-- <uni-popup ref="updateFormPopup" type="bottom" style="z-index: 9999999;">
-        <div class="update-title" v-if="updateTitle">
-          {{updateTitle}}
-        </div>
-        <div class="popup-form-warp">
-          <bxform :backAfterSubmit="false" :serviceName="updateService" :pk="updateDataVal" :pkCol="updateDatakey"
-            type="update" :appName="srvApp" @on-submit="onSubmitForm" @cols-v2-loaded="v2Loaded"
-            v-if="updateService&&updateDataVal" />
-        </div>
-      </uni-popup> -->
-
-    <!-- <teleport to="#app" v-if="dialogVisible">
-
-  </teleport> -->
     <el-dialog
       title=""
       :visible.sync="dialogVisible"
@@ -946,14 +54,94 @@
       fullscreen
       v-if="dialogUrl && dialogVisible"
     >
+      <div v-if="iframeLoading" class="iframe-loading">
+        <el-loading-spinner></el-loading-spinner>
+        <div class="loading-text">
+          <p>加载中<span class="loading-dots"><i>.</i><i>.</i><i>.</i></span></p>
+        </div>
+      </div>
       <iframe
         :src="dialogUrl"
         frameborder="0"
         style="width: 100%; height: 80vh"
+        @load="iframeLoading = false"
       ></iframe>
     </el-dialog>
   </div>
 </template>
+<style>
+.iframe-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.95);
+  z-index: 10;
+  animation: fadeIn 0.5s ease-in-out;
+  backdrop-filter: blur(3px);
+  box-shadow: inset 0 0 15px rgba(64, 158, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.iframe-loading .el-loading-spinner {
+  animation: pulse 1.5s infinite ease-in-out;
+  filter: drop-shadow(0 0 5px rgba(64, 158, 255, 0.5));
+}
+
+.iframe-loading .loading-text {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.iframe-loading p {
+  color: #409EFF;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots i {
+  display: inline-block;
+  opacity: 0;
+  font-style: normal;
+  animation: loadingDots 1.5s infinite;
+}
+
+.loading-dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loadingDots {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
 <script>
 /**
  *
@@ -1008,7 +196,16 @@ export default {
       dialogPosition: null,
       dialogVisible: false,
       dialogUrl: "",
+      iframeLoading: true,
     };
+  },
+  watch: {
+    dialogVisible(val) {
+      if (!val) {
+        // 对话框关闭时重置loading状态
+        this.iframeLoading = true;
+      }
+    },
   },
   props: {
     pageParamsModel: {
@@ -1278,6 +475,9 @@ export default {
       this.$emit("on-row-button-click", e);
     },
     onClickCell(item, cellLayoutJson) {
+      if (this.readOnly) {
+        return;
+      }
       console.log("bx-card-cell");
       // 设置选中数据
       this.$set(this, "activeMode", item);
@@ -1286,25 +486,6 @@ export default {
         cellsLayout: cellLayoutJson,
       });
     },
-    // onClickCell: throttle(function(item, cellLayoutJson) {
-    //   if (this.readOnly) {
-    //     return
-    //   }
-    //   if (this.pageItem?.selectedType === 'fkSelector') {
-    //     this.$emit('on-click-cell', {
-    //       detail: {
-    //         data: item,
-    //         value: item[this.pageItem._refedCol]
-    //       }
-    //     })
-    //     return
-    //   }
-    //   this.$emit('on-click-cell', {
-    //     data: item,
-    //     cellsLayout: cellLayoutJson
-    //   })
-
-    // }, 200, true),
     toLogin() {
       if (process.env.NODE_ENV === "development") {
         return this.$loginRef?.open((res) => {
@@ -1318,6 +499,74 @@ export default {
       sessionStorage.setItem("login_redirect_url", currentUrl);
       const loginUrl = window.location.origin + "/main/login.html";
       window.location.href = loginUrl;
+    },
+    showDialog({ rect, data, jumpJson }) {
+      if (this.readOnly) {
+        return;
+      }
+      if (jumpJson) {
+        const x = rect.left;
+        const y = rect.top;
+        const w = rect.width;
+        const h = rect.height;
+        console.log("弹框:", x, y, w, h);
+        if (jumpJson.tmpl_page_json?.file_path) {
+          let pagePath = jumpJson.tmpl_page_json.file_path;
+          if (jumpJson.dest_page_no) {
+            pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
+          }
+          if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
+            const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
+            mapJson.forEach((item) => {
+              if (
+                item.to_type === "URL" &&
+                ["当前数据", "业务", "模型"].includes(item.from_type) &&
+                data?.[item.col_from]
+              ) {
+                pagePath?.includes("?")
+                  ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
+                  : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
+              }
+            });
+          }
+          if (pagePath) {
+            if (jumpJson?.click_type === "弹框") {
+              this.dialogUrl = pagePath;
+              this.dialogPosition = {
+                x,
+                y,
+                w,
+                h,
+              };
+              this.dialogVisible = true;
+      this.iframeLoading = true;
+            } else {
+              if (jumpJson?.click_jump_option?.includes("先登录")) {
+                if (this.$store.state?.loginInfo?.logined !== true) {
+                  this.$confirm(
+                    "您还未登录,需要登录才能进入,点击确认前往登录",
+                    "提示",
+                    {
+                      confirmButtonText: "确定",
+                      cancelButtonText: "取消",
+                      type: "warning",
+                    }
+                  ).then(() => {
+                    const currentUrl =
+                      window.location.pathname + window.location.hash;
+                    sessionStorage.setItem("login_redirect_url", currentUrl);
+                    const loginUrl =
+                      window.location.origin + "/main/login.html";
+                    window.location.href = loginUrl;
+                  });
+                  return;
+                }
+              }
+              open(pagePath);
+            }
+          }
+        }
+      }
     },
     onClickSubBlock(itemData, subCol, cellLayoutJson, parentCol, originCol) {
       console.log("onClickSubBlock");
@@ -1349,13 +598,7 @@ export default {
         return this.onClickCell(itemData, cellLayoutJson);
       } else if (subCol?.jump_json) {
         // 执行自定义跳转
-        // this.jumpAction(subCol?.jump_json, itemData)
         console.log("自定义跳转");
-        // this.$emit('on-click-cell',{
-        //   data: itemData,
-        //   cellsLayout: cellLayoutJson,
-        //   jump_json: subCol?.jump_json
-        // })
         if (
           subCol?.jump_json?.click_type === "弹框" ||
           subCol?.jump_json?.click_type === "跳转"
@@ -1399,6 +642,7 @@ export default {
                   h,
                 };
                 this.dialogVisible = true;
+      this.iframeLoading = true;
               } else {
                 if (jumpJson?.click_jump_option?.includes("先登录")) {
                   if (this.$store.state?.loginInfo?.logined !== true) {
@@ -1429,83 +673,6 @@ export default {
         }
       }
     },
-    // onClickSubBlock: throttle(function(itemData, subCol, cellLayoutJson, parentCol, originCol) {
-    //   if (this.readOnly) {
-    //     return
-    //   }
-    //   if ((!subCol?.sys_fun || subCol?.sys_fun === '无') && !subCol?.jump_json) {
-    //     // 如果沒有配置系統功能 也没配置跳转 将事件传递到父部件
-    //     if (parentCol) {
-    //       return this.onClickSubBlock(itemData, parentCol, cellLayoutJson, null, subCol)
-    //     }
-    //     // 没有父部件配置 点击事件传到卡片单元
-    //     return this.onClickCell(itemData, cellLayoutJson)
-    //   } else if (subCol?.jump_json) {
-    //     // 执行自定义跳转
-    //     this.jumpAction(subCol?.jump_json, itemData)
-    //   }
-    //   let type = '';
-    //   let optionsType = '';
-    //   let text = '';
-    //   let item = itemData;
-    //   if (subCol) {
-    //     type = subCol.parts_type
-    //     text = subCol.card_parts_name
-    //     if (subCol.hasOwnProperty('sys_fun') && subCol.sys_fun) {
-    //       optionsType = subCol.sys_fun
-    //     }
-    //   }
-    //   let map = this.comColMap
-    //   let val = null
-    //   switch (optionsType) {
-    //     case '拨打电话':
-    //       // val = this.getPartModelData(subCol, map, item)
-    //       val = itemData[subCol.para_phone_col]
-    //       console.log('拨打电话', val)
-    //       if (val) {
-    //         uni.makePhoneCall({
-    //           phoneNumber: val, //仅为示例
-    //           success: () => {},
-    //           fail: (err) => {
-    //             uni.showToast({
-    //               title: '设备拨打电话功能不可用',
-    //               duration: 1000
-    //             });
-    //             console.log('设备拨打电话功能不可用')
-    //           }
-    //         })
-    //       } else {
-    //         uni.showToast({
-    //           title: '未配置电话号码',
-    //           duration: 1000
-    //         });
-    //       }
-
-    //       break;
-    //     case '地图导航':
-    //       val = this.getPartModelData(subCol, map, item)
-    //       console.log('地图导航', val)
-    //       if (val && val.hasOwnProperty('lat') && val.hasOwnProperty('lgt')) {
-    //         uni.openLocation({
-    //           latitude: parseFloat(val.lat),
-    //           longitude: parseFloat(val.lgt),
-    //           success: function() {
-    //             console.log('success');
-    //           }
-    //         });
-    //       }
-    //       break;
-    //     case '表单操作':
-    //       if (subCol?.form_srv) {
-    //         this.openUpdateFormPopup(itemData.id, subCol?.form_srv)
-    //       }
-    //       break;
-    //     default:
-    //       console.log('没有点击事件')
-    //       break;
-    //   }
-    //   console.log('onClickSubBlock', text, type, optionsType, item)
-    // }, 500, true),
     onClickIcon(cellLayoutJson) {
       if (this.readOnly) {
         return;
