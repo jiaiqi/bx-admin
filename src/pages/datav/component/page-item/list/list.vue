@@ -33,16 +33,16 @@
           placeholder="搜索"
           class="search-input mr-2"
           clearable
-          v-model="searchKey"
+          v-model="searchKey" size="mini"
         ></el-input>
-        <el-button type="primary" class="search-btn" @click="onSearch"
+        <el-button type="primary" class="search-btn" @click="onSearch" size="mini"
           >搜索</el-button
         >
         <el-button
           type="primary"
           class="search-btn"
           v-if="addBtn"
-          plain
+          plain size="mini"
           @click="showAddDialog = true"
           >{{ addBtn.button_name }}</el-button
         >
