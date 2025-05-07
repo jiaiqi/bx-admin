@@ -2,7 +2,15 @@
   <Fragment v-if="partsShow">
     <video
       class="bx-cell-video"
-      controls
+      :controls="videoAttribute.controls === true"
+      :muted="videoAttribute.muted === true"
+      :loop="videoAttribute.loop === true"
+      :controlslist="videoAttribute.controlslist"
+      :autoplay="videoAttribute.autoplay === true"
+      :poster="videoPoster"
+      :class="{
+        'cursor-pointer': isLink,
+      }"
       :src="getImagePath(getPartModelData)"
       v-if="['视频'].includes(partsType)"
     ></video>
@@ -188,6 +196,45 @@ export default {
     },
     partsType() {
       return this.cellItem.parts_type;
+    },
+    videoAttribute() {
+      let obj = {
+        autoplay: false,
+        controls: false,
+        muted: false,
+        loop: false,
+        controlslist: "",
+      };
+      // set('自动播放','控制面板','不允许下载','不允许全屏','自动循环播放','默认静音')
+      if (this.cellItem.video_attribute?.includes("自动播放")) {
+        obj.autoplay = true;
+      }
+      if (this.cellItem.video_attribute?.includes("控制面板")) {
+        obj.controls = true;
+      }
+      if (this.cellItem.video_attribute?.includes("不允许下载")) {
+        obj.controlslist = "nodownload";
+      }
+      if (this.cellItem.video_attribute?.includes("不允许全屏")) {
+        obj.controlslist += obj.controlslist ? ",nofullscreen" : "nofullscreen";
+      }
+      if (obj.controlslist) {
+        obj.controls = true;
+      }
+      if (this.cellItem.video_attribute?.includes("自动循环播放")) {
+        obj.loop = true;
+      }
+      if (this.cellItem.video_attribute?.includes("默认静音")) {
+        obj.muted = true;
+      }
+      return obj;
+    },
+    videoPoster() {
+      let poster = this.cellItem.video_default_poster;
+      if (this.cellItem.video_poster_field) {
+        poster = this.cellItemData[this.cellItem.video_poster_field] || poster;
+      }
+      return this.getImagePath(poster);
     },
     resetRichTextHtml() {
       if (this.getPartModelData && typeof this.getPartModelData === "string") {
@@ -500,7 +547,7 @@ export default {
       window.location.href = loginUrl;
     },
     showDialog({ rect, data, jumpJson }) {
-      debugger
+      debugger;
       this.$emit("show-dialog", { rect, data, jumpJson });
     },
     onClickSubBlock: throttle(
@@ -674,6 +721,11 @@ export default {
       color: var(--primary-color, #409eff);
     }
   }
+}
+.bx-cell-video{
+  width: 100%;
+  height: 100%;
+  background-color: #ccc;
 }
 .bx-cell-string {
   text-align: justify;
