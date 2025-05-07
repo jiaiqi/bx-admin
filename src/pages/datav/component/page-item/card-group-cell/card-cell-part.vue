@@ -12,6 +12,7 @@
         'cursor-pointer': isLink,
       }"
       :src="getImagePath(getPartModelData)"
+      :style="[buildColStyleJson]"
       v-if="['视频'].includes(partsType)"
     ></video>
     <div
@@ -726,6 +727,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #ccc;
+  object-fit: cover;
 }
 .bx-cell-string {
   text-align: justify;
