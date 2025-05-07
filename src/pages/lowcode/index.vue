@@ -252,6 +252,11 @@ export default {
     addCollection(carbon);
     addCollection(mdiLight);
     addCollection(ri);
+    const themeVariable = Object.keys(this.themeVariable).reduce((pre, cur) => {
+      pre += `${cur}: ${this.themeVariable[cur]};`;
+      return pre;
+    }, "");
+    document.body.setAttribute("style", themeVariable);
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;

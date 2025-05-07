@@ -1,5 +1,5 @@
 <template>
-  <div class="page-wrap" :style="[setStyle, themeVariable]">
+  <div class="page-wrap" :style="[setStyle]">
     <lc-view
       v-for="item in components"
       :key="item.id"
@@ -59,6 +59,11 @@ export default {
     addCollection(carbon);
     addCollection(mdiLight);
     addCollection(ri);
+    const themeVariable = Object.keys(this.themeVariable).reduce((pre, cur) => {
+      pre += `${cur}: ${this.themeVariable[cur]};`;
+      return pre;
+    }, "");
+    document.body.setAttribute("style", themeVariable);
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;

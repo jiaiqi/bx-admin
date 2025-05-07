@@ -299,6 +299,7 @@ span.section-title {
 .el-dialog__body,
 .el-dialog__footer,
 .el-dialog__wrapper,
+.customDialogClass,
 .el-form,
 .el-message-box__btns,
 .el-message-box__content,

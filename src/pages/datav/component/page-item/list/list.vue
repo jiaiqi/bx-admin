@@ -38,6 +38,14 @@
         <el-button type="primary" class="search-btn" @click="onSearch"
           >搜索</el-button
         >
+        <el-button
+          type="primary"
+          class="search-btn"
+          v-if="addBtn"
+          plain
+          @click="showAddDialog = true"
+          >{{ addBtn.button_name }}</el-button
+        >
       </div>
     </div>
     <!-- 多行列宫格 -->
@@ -150,6 +158,27 @@
       >
       </el-pagination>
     </div>
+
+    <el-dialog
+      class="customDialogClass"
+      title="添加"
+      width="90%"
+      :close-on-click-modal="1 == 2"
+      append-to-body
+      :visible="showAddDialog"
+      @close="showAddDialog = false"
+    >
+      <simple-add
+        v-if="showAddDialog"
+        :service="getAddService"
+        :navAfterSubmit="false"
+        :submit2-db="true"
+        :$srvApp="addBtn.application"
+        @action-complete="onActionComplete"
+        @form-loaded="onFormLoaded"
+      >
+      </simple-add>
+    </el-dialog>
   </div>
 </template>
 
@@ -159,12 +188,14 @@ import { $http } from "@/common/http";
 import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/card-group-cell.vue";
 import { formatStyleData } from "../../../common/index";
 import GridList from "./grid-list.vue";
+import SimpleAdd from "@/components/common/simple-add.vue";
 
 export default {
   name: "data-view-list",
   components: {
     cardGroupCell,
     GridList,
+    SimpleAdd,
   },
   props: {
     pageItem: {
@@ -188,6 +219,7 @@ export default {
       tableData: [],
       pageInfo: { pageNo: 1, rownumber: 10, total: 0 },
       searchKey: "",
+      showAddDialog: false,
     };
   },
   computed: {
@@ -308,6 +340,15 @@ export default {
       }
       return buttons;
     },
+    addBtn() {
+      let btn = this.listV2GridButtons.find(
+        (item) => item.button_type === "add"
+      );
+      return this.listOptions?.includes("添加") && btn;
+    },
+    getAddService() {
+      return this.addBtn?.service_name;
+    },
     colsMapDetailJson() {
       // 组件参数 的map array  接口返回数据格式 无法确定接口时啥样子，小程序 逻辑使用com_para_with_map_json 但没值，改用有值的 page_com_cols_map_json
       let pageComColsMapJson = this.pageItem.page_com_cols_map_json || null;
@@ -358,6 +399,14 @@ export default {
     },
   },
   methods: {
+    onActionComplete(event) {
+      console.log("onActionComplete", event);
+      this.showAddDialog = false;
+      this.onSearch();
+    },
+    onFormLoaded(event) {
+      console.log("onFormLoaded", event);
+    },
     onSearch() {
       this.pageInfo.pageNo = 1;
       let itemReqJson = this.pageItem.srv_req_json
@@ -366,11 +415,13 @@ export default {
       // 组件请求
       if (itemReqJson) {
         itemReqJson.condition = itemReqJson.condition || [];
-        itemReqJson.condition.push({
-          colName: this.listConfig?.filter_cols,
-          ruleType: "like",
-          value: this.searchKey,
-        });
+        if (this.listConfig?.filter_cols && this.searchKey) {
+          itemReqJson.condition.push({
+            colName: this.listConfig?.filter_cols,
+            ruleType: "like",
+            value: this.searchKey,
+          });
+        }
         const req = this.buildRequestParams(itemReqJson);
         this.getListData(req);
       }
