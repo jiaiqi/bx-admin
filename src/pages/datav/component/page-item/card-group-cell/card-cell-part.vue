@@ -377,8 +377,11 @@ export default {
 
     partsShow() {
       const item = this.cellItem;
-      const map = this.comColMap;
       const itemData = this.cellItemData;
+      const map = this.comColMap || Object.keys(itemData).reduce((acc,key)=>{
+        acc[key] = key;
+        return acc;
+      },{});
       let show = true;
       // 根据显示条件判断是否显示 islogin代表是否登录
       if (item.disp_flag && item?.disp_variable?.toLowerCase() === "islogin") {
@@ -403,8 +406,8 @@ export default {
             this.queryOptions[map[item.disp_variable]] ||
             null;
           let dispValue = item.disp_compare_value || null; // 显示值
-          if (["null", "false"].includes(disp_compare_value)) {
-            show = !val;
+          if (dispValue === "notnull") {
+            show = !!val;
           } else if (dispValue && val) {
             dispValue = dispValue.split(",");
             // console.log('dispValue1',dispValue,val,itemData.target_name)
