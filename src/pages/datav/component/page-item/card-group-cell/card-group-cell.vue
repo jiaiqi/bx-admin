@@ -51,7 +51,6 @@
       title=""
       :visible.sync="dialogVisible"
       append-to-body
-      fullscreen
       v-if="dialogUrl && dialogVisible"
     >
       <div v-if="iframeLoading" class="iframe-loading">
