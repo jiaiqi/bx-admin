@@ -26,6 +26,21 @@
         </div>
       </div>
     </div>
+    <div class="handler-bar" v-if="showSearchBar">
+      <div></div>
+      <div class="flex items-center">
+        <el-input
+          placeholder="搜索"
+          class="search-input mr-2"
+          clearable
+          v-model="searchKey"
+        ></el-input>
+        <el-button type="primary" class="search-btn" @click="onSearch"
+          >搜索</el-button
+        >
+      </div>
+    </div>
+    <!-- 多行列宫格 -->
     <grid-list
       class=""
       v-if="'多行列宫格' === listType || '多行列文本' === listType"
@@ -172,6 +187,7 @@ export default {
       v2Data: null,
       tableData: [],
       pageInfo: { pageNo: 1, rownumber: 10, total: 0 },
+      searchKey: "",
     };
   },
   computed: {
@@ -220,6 +236,12 @@ export default {
     },
     showPagination() {
       return this.listConfig?.list_options?.includes("分页");
+    },
+    showSearchBar() {
+      return (
+        this.listConfig?.list_options?.includes("快捷筛选") &&
+        this.listConfig?.filter_cols
+      );
     },
     tableColumn() {
       let cols = this.v2Data?.srv_cols || [];
@@ -336,6 +358,23 @@ export default {
     },
   },
   methods: {
+    onSearch() {
+      this.pageInfo.pageNo = 1;
+      let itemReqJson = this.pageItem.srv_req_json
+        ? this.bxDeepClone(this.pageItem.srv_req_json)
+        : null;
+      // 组件请求
+      if (itemReqJson) {
+        itemReqJson.condition = itemReqJson.condition || [];
+        itemReqJson.condition.push({
+          colName: this.listConfig?.filter_cols,
+          ruleType: "like",
+          value: this.searchKey,
+        });
+        const req = this.buildRequestParams(itemReqJson);
+        this.getListData(req);
+      }
+    },
     toMore() {
       const { jump_page_json: jumpJson } = this.listConfig || {};
       if (
@@ -661,6 +700,16 @@ export default {
     scale: 1.05;
     // font-weight: bold;
     // border-bottom: 1px dashed currentColor;
+  }
+}
+.handler-bar {
+  display: flex;
+  justify-content: space-between;
+  .search-input {
+    min-width: 300px;
+  }
+  .search-btn {
+    min-width: 80px;
   }
 }
 .bx-table {

@@ -474,13 +474,17 @@ export default {
       if (jump_json?.tmpl_page_json.file_path) {
         path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
       } else {
-        path = `/vpages/index.html#/lowcode-grid/view/${pageNo}?srvApp=config`;
+        path = `/vpages/#/lowcode/view/${pageNo}?srvApp=config`;
       }
       if (pageNo) {
         if (jump_json.target_type == "原页面") {
           window.location.href = path;
         } else {
-          window.open(path);
+          if (path.includes("#")) {
+            path = path.split("#")[1];
+          }
+          this.$router.push(path);
+          // window.open(path);
         }
       }
     },

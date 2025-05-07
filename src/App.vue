@@ -316,6 +316,7 @@ span.section-title {
 .el-table-filter,
 .pagination-box,
 .dialog-footer,
+.handler-bar,
 .upload-demo {
   &.highlight,
   .el-table-filter__bottom button:hover,
