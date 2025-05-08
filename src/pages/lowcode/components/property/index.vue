@@ -42,6 +42,7 @@
         v-loading="componentLoading"
       >
         <simple-update
+          :key="compFormKey"
           ref="compFormUpdate"
           name="list-update"
           :service="componentService"
@@ -323,6 +324,7 @@ export default {
       componentLoaded: false,
       compServiceCfg: null,
       componentId: "",
+      compFormKey:new Date().getTime(),
     };
   },
   methods: {
@@ -1111,6 +1113,7 @@ export default {
       } else {
         this.$emit("refresh", "component", event);
       }
+      this.compFormKey = new Date().getTime();
     },
     onLayoutUpdate(event) {
       console.log("onLayoutUpdate", event);

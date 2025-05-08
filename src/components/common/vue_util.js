@@ -2870,15 +2870,23 @@ function init_util() {
           return
         } else if (jumpJson?.obj_type === '外部页面') {
           if (jumpJson.outer_url) {
-            open(jumpJson.outer_url)
+            let url = jumpJson.outer_url
+            if(rowData){
+              url = Vue.prototype.renderStr(url, rowData)
+            }
+            open(url)
           } else {
             MessageBox('请配置要打开的页面', '提示', 'error')
           }
         } else {
-          if(url.includes('#')){
-            url = url.split('#')[1]
+          if(jumpJson.target_type == "原页面"){
+            if(url.includes('#')){
+              url = url.split('#')[1]
+            }
+            this.$router.push(url)
+          }else{
+            window.open(url)
           }
-          this.$router.push(url)
         }
         console.log(url);
       }
