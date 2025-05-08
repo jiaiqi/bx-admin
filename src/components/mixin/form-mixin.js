@@ -289,7 +289,7 @@ export default {
 
       }
 
-      // console.log(sectionsOfFormItems)
+      // console.log('sectionsOfFormItems:',sectionsOfFormItems)
       return sectionsOfFormItems;
     },
     isHistoryRun: function () {

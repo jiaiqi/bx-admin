@@ -63,6 +63,7 @@
             :key="fIndex"
             v-show="!getSectionShow(section)"
             style="display: black"
+            :for="formItem.field.info.name"
           >
             <field-editor
               :field="formItem.field"
@@ -77,7 +78,7 @@
               @field-value-changed="onFieldValueChanged($event)"
               @child-form-loaded="onChildFormLoaded"
               :defaultValues="defaultValues"
-              v-if="formItem.field.info.visible"
+              v-if="formItem.field.info.exist"
               v-show="
                 formItem.field.info.visible &&
                 formItem.field.info.name != referenced_column_name
@@ -118,10 +119,7 @@
         cfgJson && cfgJson.agreement_json && cfgJson.agreement_json.agreement_no
       "
     >
-      <el-col
-        :span="24"
-        style="text-align: center; padding: 20px;"
-      >
+      <el-col :span="24" style="text-align: center; padding: 20px">
         <agreement-box
           :agreementJson="cfgJson.agreement_json"
           :agreementChecked.sync="agreementChecked"
@@ -138,10 +136,7 @@
           !agreementChecked,
       }"
     >
-      <el-col
-        :span="24"
-        style="text-align: center;padding: 20px;"
-      >
+      <el-col :span="24" style="text-align: center; padding: 20px">
         <template v-for="item in actions">
           <template v-if="Array.isArray(item)">
             <action
@@ -297,8 +292,8 @@ export default {
       submitAction.name = "submit";
       submitAction.label = "提交";
       submitAction.confirm = "是否确认提交?";
-      if(this.formV2&&'tbl_options' in this.formV2){
-        if(!this.formV2.tbl_options?.includes('增加确认提示')){
+      if (this.formV2 && "tbl_options" in this.formV2) {
+        if (!this.formV2.tbl_options?.includes("增加确认提示")) {
           // 增加默认不需要提示
           submitAction.confirm = null;
         }
@@ -354,10 +349,10 @@ export default {
       for (let key in this.fields) {
         this.fields[key].reset2Init();
       }
-      if(Array.isArray(this.childForm)&&this.childForm.length){
-        this.childForm.forEach(item=>{
-          item?.$refs?.basicForm?.resetForm()
-        })
+      if (Array.isArray(this.childForm) && this.childForm.length) {
+        this.childForm.forEach((item) => {
+          item?.$refs?.basicForm?.resetForm();
+        });
       }
     },
     /**
@@ -370,8 +365,8 @@ export default {
       submitAction.name = "save_draft"; // e.button_type
       submitAction.label = "保存草稿1";
       submitAction.confirm = "是否确认保存?";
-      if(this.formV2&&'tbl_options' in this.formV2){
-        if(!this.formV2.tbl_options?.includes('增加确认提示')){
+      if (this.formV2 && "tbl_options" in this.formV2) {
+        if (!this.formV2.tbl_options?.includes("增加确认提示")) {
           // 增加默认不需要提示
           submitAction.confirm = null;
         }
@@ -422,8 +417,12 @@ export default {
           let field = this.fields[fieldName];
           let infoObj = new Object();
           infoObj = field.info;
+          field.info.exist = true;
           if (field.info.srvCol.in_add != 1) {
             field.info.visible = false;
+            if (field.info.srvCol.in_add === 0) {
+              field.info.exist = false;
+            }
           } else {
             /**
              * 处理子表默认值 引用主表from

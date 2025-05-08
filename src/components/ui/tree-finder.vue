@@ -476,12 +476,12 @@ export default {
       }
       setTimeout(() => {
         const data = this.$refs?.elCascader?.getCheckedNodes?.()?.[0]?.data;
-        if (data) {
-          this.field.model = data;
-        } else {
-          this.field.model = null;
-        }
         if (val !== this.field.getSrvVal()) {
+          if (data) {
+            this.field.model = data;
+          } else {
+            this.field.model = null;
+          }
           this.$emit("field-value-changed", this.field.info.name, this.field);
         }
         let loader = this.dispLoaderV2;
