@@ -59,11 +59,7 @@ export default {
     addCollection(carbon);
     addCollection(mdiLight);
     addCollection(ri);
-    const themeVariable = Object.keys(this.themeVariable).reduce((pre, cur) => {
-      pre += `${cur}: ${this.themeVariable[cur]};`;
-      return pre;
-    }, "");
-    document.body.setAttribute("style", themeVariable);
+    this.setThemeVariable();
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
@@ -71,8 +67,23 @@ export default {
       this.initPage();
     }
   },
+  watch: {
+    currentTheme(newValue, oldValue) {
+      console.log('currentTheme', newValue);
+      if(newValue !== oldValue) {
+        this.setThemeVariable();
+      }
+    }
+  },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+    setThemeVariable() {
+      const themeVariable = Object.keys(this.themeVariable).reduce((pre, cur) => {
+        pre += `${cur}: ${this.themeVariable[cur]};`;
+        return pre;
+      }, "");
+      document.body.setAttribute("style", themeVariable);
+    },
     // 构建组件树
     buildComponentsTree(components) {
       let list = components.filter((item) => !item.parent_no);
