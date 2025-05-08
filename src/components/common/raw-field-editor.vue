@@ -425,6 +425,7 @@
               :expandedOnStart="true"
               style="margin-bottom: 10px"
               @json-change="jsonChange"
+              @has-error="jsonError"
             ></vue-json-editor>
             <!-- <json-editor
               v-else-if="field.info.editor === 'json-editor'"
@@ -994,27 +995,18 @@ export default {
   mounted: function () {},
 
   methods: {
+    jsonError(e) {
+      if (
+        e?.message?.includes(`Parse error on line 1:
+
+^`)
+      ) {
+        console.log("clear");
+        this.field.model = null;
+      }
+    },
     jsonChange(updatedContent) {
       if (updatedContent) {
-        // let isValid = true
-        // console.log(updatedContent,'updatedContent');
-        // let json = updatedContent?.json
-        // console.log(json,updatedContent.text,'updatedContent-json');
-        // return console.log(updatedContent);
-
-        // let text = updatedContent?.text || ""
-        // console.log(text, 'text');
-
-        // try {
-        //   let jsonObj = JSON.parse(text)
-        //   if (jsonObj) {
-        //     this.field.model = text
-        //     this.$emit('field-value-changed', this.field.info.name, this.field)
-        //   }
-        // } catch (error) {
-        //   // console.error(error);
-
-        // }
         let json = updatedContent;
         let isValid = false;
         try {
@@ -1024,7 +1016,6 @@ export default {
           isValid = false;
         }
         if (isValid) {
-          debugger;
           this.field.model = JSON.stringify(json);
           this.$emit("field-value-changed", this.field.info.name, this.field);
         }
@@ -1392,11 +1383,11 @@ export default {
       background-color: #ebebeb;
       border-bottom-color: #ebebeb;
       color: #3883fa;
-      button.jsoneditor-format{
-        background-position:-168px -0px;
+      button.jsoneditor-format {
+        background-position: -168px -0px;
       }
-      button.jsoneditor-compact{
-        background-position:-192px -0px;
+      button.jsoneditor-compact {
+        background-position: -192px -0px;
       }
       .jsoneditor-poweredBy {
         display: none;
