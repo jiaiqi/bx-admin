@@ -1,5 +1,8 @@
 <template>
-  <div class="page-wrap" :style="[setStyle]">
+  <div
+    class="page-wrap"
+    :style="[setStyle, { '--content-width': contentAreaWidth }]"
+  >
     <lc-view
       v-for="item in components"
       :key="item.id"
