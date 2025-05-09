@@ -64,7 +64,6 @@ export default {
   },
   methods: {
     async onTap() {
-      debugger;
       const item = this.data;
       if (item?._label && !item.jump_json) {
         // 友情链接表

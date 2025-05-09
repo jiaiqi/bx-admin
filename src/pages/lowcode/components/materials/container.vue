@@ -63,7 +63,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    contentWidth:{
+    contentWidth: {
       type: [String, Number],
       default: "",
     },
@@ -253,7 +253,7 @@ export default {
   // margin: 10px 0;
   // padding: 10px;
 
-  >.overlay {
+  > .overlay {
     border: 1px dashed rgba($color: $primary-color, $alpha: 1);
 
     &.drag-over {
@@ -292,7 +292,7 @@ export default {
       }
     }
 
-    >.handle {
+    > .handle {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);

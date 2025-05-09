@@ -430,13 +430,17 @@ export default {
           case "当前页锚点":
           case "当前页面锚点":
             if (jumpJson.anchor_com_name) {
-              let ele = document.getElementById(jumpJson.anchor_com_name);
-              if (ele) {
-                ele.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                  inline: "nearest",
-                });
+              if (jumpJson.target_type === "新页面" && jumpJson.dest_page_no) {
+                this.navToPath(jumpJson);
+              } else {
+                let ele = document.getElementById(jumpJson.anchor_com_name);
+                if (ele) {
+                  ele.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "nearest",
+                  });
+                }
               }
             }
             break;
@@ -474,17 +478,24 @@ export default {
       if (jump_json?.tmpl_page_json.file_path) {
         path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
       } else {
-        path = `/vpages/#/lowcode/view/${pageNo}?srvApp=config`;
+        path = `/vpages/#/site/${pageNo}?srvApp=config`;
+      }
+      if (jump_json?.obj_type?.includes("锚点") && jump_json?.anchor_com_name) {
+        if (path.includes(`/site/${pageNo}`)) {
+          path = path.replace(
+            `/site/${pageNo}`,
+            `/site/${pageNo}/${jump_json.anchor_com_name}`
+          );
+        }
       }
       if (pageNo) {
         if (jump_json.target_type == "原页面") {
-          window.location.href = path;
-        } else {
           if (path.includes("#")) {
             path = path.split("#")[1];
           }
           this.$router.push(path);
-          // window.open(path);
+        } else {
+          window.open(path);
         }
       }
     },

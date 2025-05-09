@@ -53,6 +53,7 @@ export default {
       // 组件数据
       components: [],
       pageConfig: null,
+      anchorName: "",
     };
   },
   mounted() {
@@ -64,24 +65,45 @@ export default {
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
-      this.initPage();
+      this.initPage().then(() => {
+        this.$nextTick(() => {
+          let anchorName =
+            this.$route.query.anchorName || this.$route.params.anchorName;
+          if (anchorName) {
+            this.anchorName = anchorName;
+            let ele = document.getElementById(anchorName);
+            if (ele) {
+              ele.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+                inline: "nearest",
+              });
+            } else {
+              console.error("未找到锚点:", anchorName);
+            }
+          }
+        });
+      });
     }
   },
   watch: {
     currentTheme(newValue, oldValue) {
-      console.log('currentTheme', newValue);
-      if(newValue !== oldValue) {
+      console.log("currentTheme", newValue);
+      if (newValue !== oldValue) {
         this.setThemeVariable();
       }
-    }
+    },
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
     setThemeVariable() {
-      const themeVariable = Object.keys(this.themeVariable).reduce((pre, cur) => {
-        pre += `${cur}: ${this.themeVariable[cur]};`;
-        return pre;
-      }, "");
+      const themeVariable = Object.keys(this.themeVariable).reduce(
+        (pre, cur) => {
+          pre += `${cur}: ${this.themeVariable[cur]};`;
+          return pre;
+        },
+        ""
+      );
       document.body.setAttribute("style", themeVariable);
     },
     // 构建组件树

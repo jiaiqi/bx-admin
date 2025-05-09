@@ -421,6 +421,16 @@ let routes = [
     }
   },
   {
+    path: "/site/:pageNo/:anchorName",
+    name: "websiteWithAnchor",
+    component: () =>
+      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
+    meta: {
+      isEditor: false,
+      isView: true,
+    }
+  },
+  {
     path: '/authority',
     component: () => import('@/pages/authority.vue'),
     name: 'authority'
