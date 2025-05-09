@@ -2768,10 +2768,10 @@ function init_util() {
         } else if (pageNo) {
           url = `/site/${pageNo}`
         }
-        let id = rowData?.id || ''
+        const id = rowData?.id || ''
         // url = `${jumpJson?.tmpl_page_json?.file_path}?page_no=${pageNo}`
-        if(url&&!url.includes('?')){
-          url = `${url}?id=${id}`
+        if (url && !url.includes('?')) {
+          url = `${url}?timestamp=${new Date().getTime()}`
         }
         if (jumpJson?.cols_map_json?.cols_map_detail_json?.length) {
           jumpJson?.cols_map_json?.cols_map_detail_json.forEach(item => {
@@ -2871,20 +2871,27 @@ function init_util() {
         } else if (jumpJson?.obj_type === '外部页面') {
           if (jumpJson.outer_url) {
             let url = jumpJson.outer_url
-            if(rowData){
+            if (rowData) {
               url = Vue.prototype.renderStr(url, rowData)
             }
-            open(url)
+            if (url?.includes(':id')) {
+              url = url.replace(':id', rowData?.id)
+            }
+            if (jumpJson.target_type == "原页面") {
+              open(url)
+            } else {
+              location.href = url
+            }
           } else {
             MessageBox('请配置要打开的页面', '提示', 'error')
           }
         } else {
-          if(jumpJson.target_type == "原页面"){
-            if(url.includes('#')){
+          if (jumpJson.target_type == "原页面") {
+            if (url.includes('#')) {
               url = url.split('#')[1]
             }
             this.$router.push(url)
-          }else{
+          } else {
             window.open(url)
           }
         }
