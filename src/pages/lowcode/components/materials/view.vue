@@ -1,5 +1,5 @@
 <template>
-  <div v-if="hiddenComponentVisible === false && visible == false">
+  <div v-if="hiddenComponentVisible === false && visible == false && type === 'component'">
     组件已隐藏
   </div>
   <div
