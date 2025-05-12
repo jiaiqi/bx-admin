@@ -21,7 +21,7 @@ export default {
     field: Object,
     disabled: Boolean,
   },
-  mounted() { },
+  mounted() {},
   computed: {
     modelValue() {
       let value = this.field.model;
@@ -75,12 +75,16 @@ export default {
           };
           if (item.value?.indexOf("data.") === 0) {
             obj.value = formModel[item.value.replace("data.", "")];
-          } else if (item.value && item.value.startsWith("'") && item.value.endsWith("'")) {
+          } else if (
+            item.value &&
+            item.value.startsWith("'") &&
+            item.value.endsWith("'")
+          ) {
             // /^'.*'$/.test(item.value)
             obj.value = item.value.replace(/'/g, "");
           } else {
             obj.ruleType = "like";
-            obj.value = item.value
+            obj.value = item.value;
           }
           if (obj.value) {
             req.condition.push(obj);
@@ -137,7 +141,7 @@ export default {
       }
     },
     handleSelect(item) {
-      console.log(item);
+      console.log("handleSelect", item);
       this.selected = item;
       if (this.field.stringAutocompleteInput) {
         return;
@@ -170,6 +174,7 @@ export default {
             this.$set(dependField, "model", null);
             this.$emit("change", dependField);
           }
+          this.$emit("field-value-changed", this.field.info.name);
           break;
 
         default:
@@ -196,8 +201,9 @@ export default {
             if (valColumn == this.optionsV2List["key_disp_col"]) {
               result.label = item[this.optionsV2List["key_disp_col"]];
             } else {
-              result.label = `${item[this.optionsV2List["key_disp_col"]]}(${item[this.optionsV2List["refed_col"]]
-                }/${item[this.optionsV2List["key_disp_col"]]})`;
+              result.label = `${item[this.optionsV2List["key_disp_col"]]}(${
+                item[this.optionsV2List["refed_col"]]
+              }/${item[this.optionsV2List["key_disp_col"]]})`;
             }
             return result;
           });

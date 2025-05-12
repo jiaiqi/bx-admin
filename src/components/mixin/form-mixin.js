@@ -98,7 +98,7 @@ export default {
       type: String,
       default: "",
     },
-    isPlatChildForm:{
+    isPlatChildForm: {
       type: Boolean,
       default: false
     }
@@ -150,8 +150,8 @@ export default {
       cfgJson: null,
       sectionsCollapse: {},
       pub_field_map: null, //公共字段映射
-      formV2:null,
-      childForm:[]
+      formV2: null,
+      childForm: []
     }
   },
 
@@ -338,7 +338,7 @@ export default {
 
 
   methods: {
-    onChildFormLoaded(form){
+    onChildFormLoaded(form) {
       this.childForm.push(form)
     },
     onSectionsCollapseChange(key) {
@@ -595,13 +595,13 @@ export default {
           }
 
         }
-      }else if (["duplicatedeep", "duplicate"].includes(this.duplicateType) && this.duplicateData) {
+      } else if (["duplicatedeep", "duplicate"].includes(this.duplicateType) && this.duplicateData) {
         let row = this.duplicateData
         for (let key in row) {
           let field = this.fields[key];
           if (field) {
             field.setSrvVal(row[key]);
-          } 
+          }
         }
       }
     },
@@ -711,7 +711,7 @@ export default {
       // 处理fk字段子表单平铺展示 目前只有add表单支持
       console.log('setSubFormFields:start');
       const useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
-      if (['add', 'detail','update'].includes(useType) && typeof this.allFields === 'object' && Object.keys(this.allFields)?.length) {
+      if (['add', 'detail', 'update'].includes(useType) && typeof this.allFields === 'object' && Object.keys(this.allFields)?.length) {
         const data = this.formModel
         const hasChildFormFields = []
         for (let key in this.allFields) {
@@ -731,12 +731,12 @@ export default {
 
         if (hasChildFormFields?.length) {
           // console.log('hasChildFormFields:',hasChildFormFields);
-          hasChildFormFields.forEach( (key) => {
+          hasChildFormFields.forEach((key) => {
             const field = this.allFields[key]
             field.flatChildForm = true // 平铺显示子表
             // console.log('hasChildFormFields flatChildForm:',field.info.name);
-            
-            this.$set(field,'flatChildForm',true)
+
+            this.$set(field, 'flatChildForm', true)
           })
           for (let key of hasChildFormFields) {
             // const fi = item.fieldInfo
@@ -744,7 +744,7 @@ export default {
             // const field = this.allFields[key]
             // field.flatChildForm = true // 平铺显示子表
             // console.log('hasChildFormFields flatChildForm:',field.info.name);
-            
+
             // this.$set(field,'flatChildForm',true)
             return
             const option_list_v3 = item.option_list_v3
@@ -1024,7 +1024,6 @@ export default {
             }
           }
         }
-        self.handleValidation(fieldName);
         if (self.hasOwnProperty('handleFieldFkRedundant')) {
           self.handleFieldFkRedundant(field, this.fields)
         }
@@ -1034,11 +1033,16 @@ export default {
             self.getColValRequests()
           }
         }
+        this.$nextTick(() => {
+          setTimeout(() => {
+            self.handleValidation(fieldName);
+          }, 100);
+        })
       }
       this.$emit('field-value-changed', {
         fieldName: fieldName,
-        value:this.formModel[fieldName],
-        formModel:this.formModel
+        value: this.formModel[fieldName],
+        formModel: this.formModel
       })
     },
 

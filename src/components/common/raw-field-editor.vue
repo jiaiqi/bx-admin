@@ -516,6 +516,7 @@
                 ref="autocompleteInput"
                 :disabled="getDisabled"
                 @change="autocompleteSelected"
+                @field-value-changed="$emit('field-value-changed', $event)"
                 :field="field"
               ></autocompleteInput>
             </div>

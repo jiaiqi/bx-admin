@@ -283,7 +283,7 @@ export class FieldInfo {
       this.editor = "date-picker";
       this.subtype = "month";
       this.subType = "month";
-    } else if (this.type == "DateTime") {
+    } else if (this.type == "DateTime" || this.type == "datetime") {
       this.editor = "date-time-picker";
       // 利用date elmentUi date 默认 format 设置 日期控件格式
       if (this.moreConfig && this.moreConfig.hasOwnProperty("format")) {
