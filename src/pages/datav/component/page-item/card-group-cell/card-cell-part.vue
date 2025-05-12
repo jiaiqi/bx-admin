@@ -72,7 +72,7 @@
       v-else-if="
         item.parts_type == 'icon' &&
         item.parts_text &&
-        item.parts_text.indexOf('el-icon-') !== -1
+        item.parts_text.indexOf('el-icon-') === 0
       "
       :class="[item.parts_text, { 'cursor-pointer': isLink }]"
       :style="[buildColStyleJson]"
@@ -84,8 +84,9 @@
         item.parts_text &&
         item.parts_text.indexOf('i-') === 0
       "
-      :icon="item.parts_text"
-      :class="{ 'cursor-pointer': isLink }"
+      :icon="item.parts_text.replace('i-', '')"
+      class="bx-cell-icon"
+      :class="[{ 'cursor-pointer': isLink }, item.parts_text]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
     ></Icon>
@@ -124,6 +125,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { Icon } from "@iconify/vue2";
 
 // 节流
 function throttle(func, delay = 300) {
@@ -143,6 +145,7 @@ export default {
   },
   components: {
     cardCellPart: () => import("./card-cell-part.vue"),
+    Icon,
   },
   data() {
     return {
@@ -723,7 +726,7 @@ export default {
     }
   }
 }
-.bx-cell-video{
+.bx-cell-video {
   width: 100%;
   height: 100%;
   background-color: #ccc;
