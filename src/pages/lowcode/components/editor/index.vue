@@ -17,6 +17,7 @@
       :current-id="currentId"
       :key="item.id"
       :content-width="contentWidth"
+      :hiddenComponentVisible="hiddenComponentVisible"
       v-bind="item"
       @click="onTap"
       @open="openComponentSelector = true"
@@ -25,29 +26,6 @@
       @resize="onResize"
     >
     </lc-view>
-    <!-- <VueDraggable
-      v-model="editorComponents"
-      @start="onStart"
-      @update="onUpdate"
-      @end="onEnd"
-      :animation="150"
-      handle=".handle"
-      style="width: 100%; z-index: 1; position: relative"
-    >
-      <lc-view
-        v-for="item in editorComponents"
-        :current-id="currentId"
-        :key="item.id"
-        :content-width="contentWidth"
-        v-bind="item"
-        @click="onTap"
-        @open="openComponentSelector = true"
-        @add="addComponent"
-        @delete="deleteComponent"
-        @resize="onResize"
-      >
-      </lc-view>
-    </VueDraggable> -->
   </div>
 </template>
 
@@ -79,6 +57,10 @@ export default {
     components: {
       type: Array,
       default: () => [],
+    },
+    hiddenComponentVisible: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {

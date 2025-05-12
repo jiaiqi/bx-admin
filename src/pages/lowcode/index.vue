@@ -9,11 +9,26 @@
     >
       <template #left>
         <div
+          @click.stop="jsonVisible = true"
+          class="handle-btn"
+          title="组件json"
+        >
+          <Icon icon="ri-terminal-box-line" />
+        </div>
+        <div
           @click.stop="outlineVisible = true"
           class="handle-btn"
           title="组件大纲"
         >
-          <Icon icon="carbon-container-services" />
+          <Icon icon="ri-node-tree" />
+        </div>
+        <div
+          @click.stop="hiddenComponentVisible = !hiddenComponentVisible"
+          class="handle-btn"
+          :class="{ active: hiddenComponentVisible }"
+          title="显示已隐藏组件"
+        >
+          <Icon icon="ri-dashboard-horizontal-line" />
         </div>
       </template>
       <template #right>
@@ -58,6 +73,7 @@
           :current-item="currentItem"
           :components="components"
           :current-id="currentId"
+          :hidden-component-visible="hiddenComponentVisible"
           @select="currentChange"
           @change="componentsChange"
           @delete="onDel"
@@ -121,7 +137,7 @@
       title="页面JSON预览"
       :visible.sync="jsonVisible"
       direction="ltr"
-      size="50%"
+      size="500px"
       :with-header="false"
       v-if="!isView"
     >
@@ -161,7 +177,7 @@ import PropertyView from "./components/property";
 import lcView from "./components/materials/view.vue";
 import JsonViewer from "vue-json-viewer";
 import "vue-json-viewer/style.css";
-import { $http, $selectOne, $delete } from "@/common/http";
+import { $http, $selectOne, $selectList, $delete } from "@/common/http";
 import { pageCompCols } from "./components/property/columns";
 import { Icon, addCollection } from "@iconify/vue2";
 import carbon from "@iconify/json/json/carbon.json";
@@ -228,6 +244,7 @@ export default {
       structureData: null,
       jsonVisible: false, //json视图
       outlineVisible: false, //大纲视图
+      hiddenComponentVisible: false, //隐藏组件视图
       previewVisible: false,
       // 组件数据
       components: [],
@@ -397,7 +414,18 @@ export default {
       const url = `/config/select/srvpage_cfg_page_guest_select`;
       const req = {
         serviceName: "srvpage_cfg_page_guest_select",
-        colNames: ["*"],
+        // colNames: ["*"],
+        colNames: [
+          "page_title",
+          "page_name",
+          "id",
+          "page_style_no",
+          "srv_req_no",
+          "preview",
+          "page_no",
+          "page_options",
+          "tmpl_page_no",
+        ],
         condition: [
           {
             colName: "page_no",
@@ -409,7 +437,52 @@ export default {
       const { data, ok, msg } = await $selectOne(url, req);
       if (ok) {
         let newData = this.initPageConfig(data);
+        // this.initComponents(newData);
+        // this.getPageComponents().then((list) => {
+        //   if(Array.isArray(list)){
+        //     this.initComponents(list);
+        //   }
+        // });
         this.initComponents(newData);
+      } else if (msg) {
+        this.$message.error(msg);
+      } else {
+        this.$message.info("无数据！");
+      }
+    },
+    async getPageComponents() {
+      const url = `/config/select/srvpage_cfg_page_component_select`;
+      const req = {
+        serviceName: "srvpage_cfg_page_component_select",
+        colNames: ["*"],
+        condition: [
+          {
+            colName: "page_no",
+            ruleType: "eq",
+            value: this.pageNo,
+          },
+        ],
+      };
+      const { data, ok, msg } = await $selectList(url, req);
+      if (ok) {
+        if (Array.isArray(data) && data.length) {
+          let list = [];
+          data.forEach((item) => {
+            if (typeof item.com_json === "string") {
+              try {
+                const json = JSON.parse(item.com_json);
+                list.push({
+                  _raw_data: item,
+                  ...json,
+                });
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          });
+          console.log("getPageComponents", list);
+          return list;
+        }
       } else if (msg) {
         this.$message.error(msg);
       } else {
@@ -447,46 +520,47 @@ export default {
 
       return data;
     },
-    initComponents(data) {
-      const component_json = data?.page_row_json_data?.component_json?.map(
-        (item) => {
-          if (item.com_type === "layout") {
-            const layout_party = item?.layout_json?.layout_party;
-            if (layout_party === "页面") {
-              item.type = "container";
-              item.component = "lc-container";
-            } else if (layout_party === "布局") {
-              item.type = "layout";
-              item.component = "lc-block";
-            } else {
-              item.type = "content";
-              item.component = "lc-content";
-            }
-            if (item.layout_json?.child_num) {
-              item.child_num = item.layout_json.child_num;
-            }
+    async initComponents(data) {
+      const list = await this.getPageComponents();
+      // const component_json = data?.page_row_json_data?.component_json?.map(
+      const component_json = list?.map((item) => {
+        item.visible = item.display !== "否";
+        if (item.com_type === "layout") {
+          const layout_party = item?.layout_json?.layout_party;
+          if (layout_party === "页面") {
+            item.type = "container";
+            item.component = "lc-container";
+          } else if (layout_party === "布局") {
+            item.type = "layout";
+            item.component = "lc-block";
           } else {
-            item.component = "page-item";
+            item.type = "content";
+            item.component = "lc-content";
           }
-          item.data = {};
-          pageCompCols.forEach((col) => {
-            if (item[col]) {
-              item.data[col] = item[col];
-            }
-          });
-          if (item.id) {
-            item.data.id = item.id;
+          if (item.layout_json?.child_num) {
+            item.child_num = item.layout_json.child_num;
           }
-          const keys = ["component", "type", "_type"];
-          keys.forEach((key) => {
-            if (item.data[key]) {
-              delete item.data[key];
-            }
-          });
-
-          return item;
+        } else {
+          item.component = "page-item";
         }
-      );
+        item.data = {};
+        pageCompCols.forEach((col) => {
+          if (item[col]) {
+            item.data[col] = item[col];
+          }
+        });
+        if (item.id) {
+          item.data.id = item.id;
+        }
+        const keys = ["component", "type", "_type"];
+        keys.forEach((key) => {
+          if (item.data[key]) {
+            delete item.data[key];
+          }
+        });
+
+        return item;
+      });
       if (!Array.isArray(component_json)) {
         this.components = [];
         return;
@@ -886,18 +960,22 @@ export default {
 
   .handle-btn {
     display: inline-flex;
-    margin: 0 10px;
+    margin: 0 10px 0 0;
     padding: 4px 8px;
     border-radius: 4px;
     cursor: pointer;
     border: 1px solid #e8e8e8;
 
     &:hover {
-      background-color: #ecf5ff;
-      border-color: #bfdeff;
-      color: #007aff;
+      background-color: var(--menu-bg-light-color, #b3d8ff);
+      border-color: var(--menu-light-border-color, #b3d8ff);
+      color: var(--primary-color, #409eff);
     }
-
+    &.active {
+      background-color: var(--menu-bg-light-color, #b3d8ff);
+      border-color: var(--menu-light-border-color, #b3d8ff);
+      color: var(--primary-color, #409eff);
+    }
     color: #666;
   }
 

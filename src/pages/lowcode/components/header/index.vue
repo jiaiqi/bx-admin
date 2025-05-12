@@ -1,7 +1,7 @@
 <template>
   <div class="header-view">
     <div class="left">
-      <el-button @click="showJSON" size="mini">页面JSON</el-button>
+      <!-- <el-button @click="showJSON" size="mini">页面JSON</el-button> -->
       <slot name="left">
       </slot>
     </div>

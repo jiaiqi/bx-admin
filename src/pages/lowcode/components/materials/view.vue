@@ -1,5 +1,13 @@
 <template>
-  <div class="force-login" ref="" v-if="forceLogin" :id="com_name">
+  <div v-if="hiddenComponentVisible === false && visible == false">
+    组件已隐藏
+  </div>
+  <div
+    class="force-login"
+    ref=""
+    v-else-if="forceLogin && (visible !== false || hiddenComponentVisible === true)"
+    :id="com_name"
+  >
     <!-- :style="{ backgroundImage: 'url(' + loginBg + ')' }" -->
     <!-- <img :src="loginBg" v-if="loginBg" class="img" /> -->
     <div
@@ -13,7 +21,9 @@
   </div>
   <component
     :is="component"
-    v-else-if="component"
+    v-else-if="
+      component && (visible !== false || hiddenComponentVisible === true)
+    "
     v-bind="props"
     :page-item="props.data"
     :content-width="contentWidth"
@@ -37,6 +47,7 @@
         :currentId="currentId"
         :isPreview="isPreview"
         :isView="isView"
+        :hidden-component-visible="hiddenComponentVisible"
         @click="onTap"
         @add="addComponent"
         @delete="deleteComponent"
@@ -123,6 +134,14 @@ export default {
     com_name: {
       type: String,
       default: "",
+    },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
+    hiddenComponentVisible: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
