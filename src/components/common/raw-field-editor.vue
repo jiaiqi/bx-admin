@@ -535,6 +535,31 @@
                 :field="field"
               ></autocompleteInput>
             </div>
+            <div
+              v-else-if="field.info.editor == 'color-picker'"
+              class="color-picker"
+              :class="{
+                focus: inputStatus === 'focus',
+              }"
+            >
+              <input
+                type="color"
+                class="color-picker-input"
+                id="head"
+                name="head"
+                v-model="field.model"
+                @change="$emit('field-value-changed', field.info.name, field)"
+              />
+
+              <input
+                type="text"
+                class="color-picker-text"
+                v-model="field.model"
+                @change="$emit('field-value-changed', field.info.name, field)"
+                @blur="onBlur"
+                @focus="inputStatus = 'focus'"
+              />
+            </div>
             <el-input
               :prefix-icon="elIconPrefix"
               v-else
@@ -837,7 +862,6 @@ import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
 import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 // import transferVue from "../ui/form-widget/transfer.vue";
 import transferVue from "../ui/form-widget/multi-select/index.vue"; // 多选穿梭框组件
-
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 export default {
@@ -902,6 +926,7 @@ export default {
             : this.dealDisabledDate(time);
         },
       },
+      inputStatus: "",
     };
   },
   computed: {
@@ -1107,6 +1132,7 @@ export default {
       }
     },
     onBlur() {
+      this.inputStatus = "";
       // 校验唯一性
       let self = this;
       let isUniqueCheck = this.field.info.isUniqueCheck;
@@ -1401,7 +1427,32 @@ export default {
     }
   }
 }
-
+.color-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 15px;
+  border-radius: 4px;
+  border: 1px solid #dcdfe6;
+  &.focus {
+    border-color: var(--primary-color, #3883fa);
+  }
+  .color-picker-input {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    margin-right: 5px;
+    padding: 0 !important;
+  }
+  .color-picker-text {
+    outline: none;
+    border: none;
+    flex: 1;
+  }
+}
 .help-tips {
   color: #c0c4cc;
   /* position:absolute; */

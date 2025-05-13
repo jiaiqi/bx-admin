@@ -110,8 +110,8 @@ export class FieldInfo {
 
     this.noSearchIcon =
       this.moreConfig !== undefined &&
-      this.moreConfig !== null &&
-      this.moreConfig.noSearchIcon !== undefined
+        this.moreConfig !== null &&
+        this.moreConfig.noSearchIcon !== undefined
         ? this.moreConfig.noSearchIcon
         : false;
 
@@ -253,7 +253,10 @@ export class FieldInfo {
   }
 
   resolveEditor(formType) {
-    if (this.type == "Dept") {
+    // 处理编辑器类型
+    if (this.type === 'color') {
+      this.editor = 'color-picker';
+    } else if (this.type == "Dept") {
       this.editor = "tree-finder";
     } else if (this.type == "Enum" || this.type == "Dict") {
       if (this.srvCol.subtype === "radio") {
@@ -359,7 +362,7 @@ export class FieldInfo {
         this.editor = "date-time-range";
       } else if (this.type == "Enum" || this.type == "Dict") {
         this.editor = "multiselect";
-      } else if (this.isJoinedDisp() || this.isTextual() || (this.isFinder()&&top.env !=='gaosu111')) {
+      } else if (this.isJoinedDisp() || this.isTextual() || (this.isFinder() && top.env !== 'gaosu111')) {
         // 111环境，列表上方查询组件，fk字段使用下拉选择组件,其他环境使用文本输入框
         this.editor = "input";
       }
@@ -401,7 +404,7 @@ export class FieldInfo {
       parentCol: optionListV2.parent_col || optionListV2.parent_no_col || null,
       refedCol: optionListV2.refed_col,
       dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
-      objInfo:optionListV2.obj_info
+      objInfo: optionListV2.obj_info
     };
 
     this.allowInput = optionListV2.allow_input || null;
@@ -468,8 +471,8 @@ export class FieldInfo {
 
   resolveColspan(col_span) {
     this.colspan = {};
-    const groupColType = ['date-range','date-time-range','DateRange']
-    if(this.formType === "filter" && !groupColType.includes(this.editor)){
+    const groupColType = ['date-range', 'date-time-range', 'DateRange']
+    if (this.formType === "filter" && !groupColType.includes(this.editor)) {
       // 列表顶部查询表单 除了时间范围控件 其他都四分之一宽度
       return this.colspan = this.setLayoutColSize(0.25);
     }
