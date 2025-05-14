@@ -14,7 +14,7 @@
     ]"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
-    draggable="false"
+    :draggable="!isPreview && !isView && com_name"
     :data-id="id"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -365,22 +365,49 @@ export default {
     },
 
     handleDragStart(e, item) {
-      // 设置拖拽数据
-      const dragData = { ...item };
-      // 确保布局组件有children属性
-      if (item.type === "layout" && !dragData.children) {
-        dragData.children = [];
+      if (this.isPreview || this.isView) return;
+      // 如果是内容组件且有子组件，则设置拖拽数据为子组件
+      let dragData;
+      if (
+        this.type === "content" &&
+        this.children &&
+        this.children.length > 0
+      ) {
+        dragData = { ...this.children[0] };
+        // 添加源容器ID，用于后续交换逻辑
+        dragData.sourceContentId = this.id;
+      } else {
+        dragData = { ...item };
+        // 确保布局组件有children属性
+        if (item.type === "layout" && !dragData.children) {
+          dragData.children = [];
+        }
+      }
+      // 只有ui组件可以被拖拽
+      if (dragData.component !== "page-item") {
+        return;
+      }
+      e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+      dragStore.setDraggingElement(dragData);
+      console.log("draggingElement:", { ...dragData });
+
+      // 设置组件类型到全局状态
+      dragStore.setDragType(dragData.type);
+      if (
+        this.type === "content" &&
+        this.children &&
+        this.children.length > 0
+      ) {
+        // 如果是内容组件的子组件被拖拽，设置一个特殊标记
+        dragStore.setDragType("content-component");
       }
 
-      e.dataTransfer.setData("text/plain", JSON.stringify(dragData));
-      // 设置组件类型到全局状态
-      dragStore.setDragType(item.type);
-
       // 设置拖拽效果
-      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.effectAllowed = "move";
       // 创建自定义拖拽图像（可选）
       const dragIcon = document.createElement("div");
-      dragIcon.innerHTML = item.name || item.comp_label;
+      dragIcon.innerHTML =
+        dragData.name || dragData.com_name || dragData.comp_label;
       dragIcon.className = "drag-icon";
       document.body.appendChild(dragIcon);
       e.dataTransfer.setDragImage(dragIcon, 0, 0);
@@ -391,32 +418,59 @@ export default {
       }, 0);
     },
     handleDragLeave(e) {
-      if (this.isPreview) return;
+      if (this.isPreview || this.isView) return;
       // 阻止事件冒泡
       e.stopPropagation();
       e.target.classList.remove("drag-over");
       e.target.classList.remove("drag-not-allowed");
+      e.target.classList.remove("drag-swap");
+      e.target.classList.remove("drag-move");
+      e.target.classList.remove("drag-move");
     },
 
     handleDragOver(e) {
-      if (this.isPreview) return;
+      if (this.isPreview || this.isView) return;
       // 阻止事件冒泡
       e.stopPropagation();
 
       // 阻止默认行为以允许放置
       e.preventDefault();
-
       // 获取拖拽元素的类型
       const draggedType = dragStore.getDragType();
       // console.log('handleDragOver-draggedType:',draggedType);
+      const data = dragStore.getDraggingElement();
+      if(this.children && this.children.length){
+        const existingComponent = this.children[0];
+        if (existingComponent.id && existingComponent.id === data.id) {
+          e.dataTransfer.dropEffect = "none";
+          e.target.classList.remove("drag-over");
+          // e.target.classList.add("drag-not-allowed");
+          return;
+        }
+      }
+      // 处理content-component类型（从一个content-item拖到另一个）
+      if (draggedType === "content-component") {
+        // 允许放置到其他content-item中
+        e.dataTransfer.dropEffect = "move";
 
+        // 根据目标容器是否有子组件，显示不同的提示
+        if (this.children && this.children.length > 0) {
+          // 目标容器有组件，显示交换提示
+          e.target.classList.add("drag-swap");
+          e.target.classList.remove("drag-move");
+        } else {
+          // 目标容器没有组件，显示移动提示
+          e.target.classList.add("drag-move");
+          e.target.classList.remove("drag-swap");
+        }
+        e.target.classList.remove("drag-not-allowed");
+        return;
+      }
+
+      // 处理其他类型组件
       if (e.target && this.allowDrop && draggedType) {
         console.log("draggedType:", draggedType);
-        if (draggedType === "content") {
-          // 只有同一个布局容器内的组件可以互相替换位置
-        }
         if (draggedType === "component" || draggedType === "layout") {
-          // if (!["container", "layout", "content"].includes(draggedType)) {
           // 允许放置非容器和非布局组件且非 content 组件
           e.dataTransfer.dropEffect = "copy";
           e.target.classList.add("drag-over");
@@ -431,13 +485,60 @@ export default {
     },
 
     handleDrop(e) {
-      if (this.isPreview) return;
-
+      if (this.isPreview || this.isView) return;
+      console.log("handleDrop");
+      console.log("e.target:", e.target);
+      console.log("this.children:", this.children);
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
       e.target.classList.remove("drag-over");
       e.target.classList.remove("drag-not-allowed");
+      e.target.classList.remove("drag-swap");
+      e.target.classList.remove("drag-move");
+
+      // 获取拖拽元素的类型
+      const draggedType = dragStore.getDragType();
+
+      // 处理组件交换逻辑
+      if (draggedType === "content-component") {
+        const data = e.dataTransfer.getData("text/plain");
+        if (data) {
+          try {
+            const draggedComponent = JSON.parse(data);
+            const sourceContentId = draggedComponent.sourceContentId;
+
+            // 如果目标容器有组件，则交换组件
+            if (this.children && this.children.length > 0) {
+              // 获取目标组件
+              const targetComponent = { ...this.children[0] };
+
+              // 发出交换事件
+              this.$emit("swap-components", {
+                sourceContentId,
+                targetContentId: this.id,
+                draggedComponent,
+                targetComponent,
+              });
+            } else {
+              // 如果目标容器没有组件，则直接移动
+              draggedComponent.parentId = this.id;
+              draggedComponent.parent_no = this.props.com_no;
+
+              // 发出移动事件
+              this.$emit("move-component", {
+                sourceContentId,
+                targetContentId: this.id,
+                component: draggedComponent,
+              });
+            }
+            return;
+          } catch (err) {
+            console.error("解析拖拽数据失败:", err);
+          }
+        }
+      }
+
       // 验证目标元素是否为允许的容器
       if (this.allowDrop) {
         const data = e.dataTransfer.getData("text/plain");
@@ -447,7 +548,6 @@ export default {
             // 只处理非container和非layout类型的组件
             if (draggedElement.type === "layout") {
               // 处理layout类型的组件
-              debugger;
               if (!draggedElement._editType) {
                 draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;
                 draggedElement._editType = "add";
@@ -654,6 +754,40 @@ export default {
         color: #fff;
         transform: translateY(-100%);
         z-index: 10;
+      }
+    }
+
+    &.drag-swap {
+      border: 2px dashed #ff740e;
+      background-color: rgba(255, 116, 14, 0.2);
+
+      &::before {
+        content: "交换组件位置";
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 2px 5px;
+        background-color: #ff740e;
+        color: #fff;
+        transform: translateY(-100%);
+        z-index: 10;
+      }
+    }
+
+    &.drag-move {
+      border: 2px dashed #1890ff;
+      background-color: rgba(24, 144, 255, 0.05);
+
+      &::before {
+        content: "移动组件到此处";
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        background-color: #1890ff;
+        color: #fff;
+        z-index: 100;
+        border-radius: 4px;
       }
     }
 

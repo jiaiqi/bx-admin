@@ -8,10 +8,7 @@
     @dragend="handleEditorDragEnd"
     :style="{ '--content-width': contentWidth }"
   >
-    <div
-      class="overlay"
-      @click="clickOutside"
-    ></div>
+    <div class="overlay" @click="clickOutside"></div>
     <lc-view
       v-for="item in editorComponents"
       :current-id="currentId"
@@ -24,6 +21,8 @@
       @add="addComponent"
       @delete="deleteComponent"
       @resize="onResize"
+      @swap-components="swapComponents"
+      @move-component="moveComponent"
     >
     </lc-view>
   </div>
@@ -111,6 +110,142 @@ export default {
       console.log("onTap", val);
       // this.currentId = val.id;
       this.$emit("select", val.id, val);
+    },
+
+    // 处理组件交换
+    swapComponents(data) {
+      console.log("swapComponents", data);
+      const {
+        sourceContentId,
+        targetContentId,
+        draggedComponent,
+        targetComponent,
+      } = data;
+
+      // 查找源容器和目标容器
+      let sourceContainer = null;
+      let targetContainer = null;
+
+      // 递归查找容器
+      const findContainers = (components) => {
+        for (let i = 0; i < components.length; i++) {
+          const item = components[i];
+          if (item.id === sourceContentId) {
+            sourceContainer = item;
+          }
+          if (item.id === targetContentId) {
+            targetContainer = item;
+          }
+          if (sourceContainer && targetContainer) {
+            return true;
+          }
+          if (item.children && item.children.length > 0) {
+            if (findContainers(item.children)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+
+      findContainers(this.editorComponents);
+
+      if (sourceContainer && targetContainer) {
+        // 交换组件
+        const sourceIndex = sourceContainer.children.findIndex(
+          (item) => item.id === draggedComponent.id
+        );
+        const targetIndex = targetContainer.children.findIndex(
+          (item) => item.id === targetComponent.id
+        );
+
+        if (sourceIndex !== -1 && targetIndex !== -1) {
+          // 更新父容器ID
+          const tempComponent = { ...sourceContainer.children[sourceIndex] };
+          tempComponent.parentId = targetContainer.id;
+          tempComponent.parent_no = targetContainer.com_no;
+          tempComponent.com_seq = targetContainer.com_seq;
+          tempComponent._editType = "update";
+
+          const tempTargetComponent = {
+            ...targetContainer.children[targetIndex],
+          };
+          tempTargetComponent.parentId = sourceContainer.id;
+          tempTargetComponent.parent_no = sourceContainer.com_no;
+          tempTargetComponent.com_seq = sourceContainer.com_seq;
+          tempTargetComponent._editType = "update";
+
+          // 交换组件
+          this.$set(sourceContainer.children, sourceIndex, tempTargetComponent);
+          this.$set(targetContainer.children, targetIndex, tempComponent);
+
+          // 触发更新
+          this.$nextTick(() => {
+            this.$emit("change", this.editorComponents);
+          });
+        }
+      }
+    },
+
+    // 处理组件移动
+    moveComponent(data) {
+      console.log("moveComponent", data);
+      const { sourceContentId, targetContentId, component } = data;
+
+      // 查找源容器和目标容器
+      let sourceContainer = null;
+      let targetContainer = null;
+
+      // 递归查找容器
+      const findContainers = (components) => {
+        for (let i = 0; i < components.length; i++) {
+          const item = components[i];
+          if (item.id === sourceContentId) {
+            sourceContainer = item;
+          }
+          if (item.id === targetContentId) {
+            targetContainer = item;
+          }
+          if (sourceContainer && targetContainer) {
+            return true;
+          }
+          if (item.children && item.children.length > 0) {
+            if (findContainers(item.children)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+
+      findContainers(this.editorComponents);
+
+      if (sourceContainer && targetContainer) {
+        // 从源容器中移除组件
+        const sourceIndex = sourceContainer.children.findIndex(
+          (item) => item.id === component.id
+        );
+
+        if (sourceIndex !== -1) {
+          // 更新父容器ID
+          const tempComponent = { ...sourceContainer.children[sourceIndex] };
+          tempComponent.parentId = targetContainer.id;
+          tempComponent.parent_no = targetContainer.com_no;
+          tempComponent.com_seq = targetContainer.com_seq;
+          tempComponent._editType = "update";
+
+          // 从源容器移除
+          sourceContainer.children.splice(sourceIndex, 1);
+
+          // 添加到目标容器
+          targetContainer.children.push(tempComponent);
+
+          // 触发更新
+          this.$nextTick(() => {
+            this.$emit("change", this.editorComponents);
+          });
+        }
+      }
     },
     findComponentById(id, list = [], data) {
       let result = null;

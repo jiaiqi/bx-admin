@@ -17,7 +17,8 @@ let bx_auth_ticket = "";
 // const ENV = "dev";
 // const ENV = "saas";
 // const ENV = "audDev";
-const ENV = "wujingDev";
+const ENV = "parkDev"; // 延安园区开发环境
+// const ENV = "wujingDev";
 // const ENV = "healthProd";
 // const ENV = "gaosu61";
 

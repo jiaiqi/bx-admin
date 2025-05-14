@@ -34,6 +34,18 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "config",
   },
+  parkDev: {
+    // 延安园区开发环境
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.28",
+    // gateway_ip: "192.168.0.155",
+    port: "8104",
+    // port: "2881",
+    gateway: "http://192.168.0.28:8104",
+    // gateway: "http://192.168.0.155:2881",
+    sso_app: "sso",
+    application: "config",
+  },
   gangu: {
     // 甘谷人大
     gateway_protocol: "https",

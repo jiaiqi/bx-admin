@@ -1,11 +1,19 @@
 <template>
-  <div v-if="hiddenComponentVisible === false && visible == false && type === 'component'">
+  <div
+    v-if="
+      hiddenComponentVisible === false &&
+      visible == false &&
+      type === 'component'
+    "
+  >
     组件已隐藏
   </div>
   <div
     class="force-login"
     ref=""
-    v-else-if="forceLogin && (visible !== false || hiddenComponentVisible === true)"
+    v-else-if="
+      forceLogin && (visible !== false || hiddenComponentVisible === true)
+    "
     :id="com_name"
   >
     <!-- :style="{ backgroundImage: 'url(' + loginBg + ')' }" -->
@@ -34,6 +42,8 @@
     @add="addComponent"
     @delete="deleteComponent"
     @resize="onResize"
+    @swap-components="$emit('swap-components', $event)"
+    @move-component="$emit('move-component', $event)"
     :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
     style="position: relative; z-index: 1"
   >
@@ -52,6 +62,8 @@
         @add="addComponent"
         @delete="deleteComponent"
         @resize="onResize"
+        @swap-components="$emit('swap-components', $event)"
+        @move-component="$emit('move-component', $event)"
       ></lc-view>
     </template>
     <slot v-else>
