@@ -137,7 +137,9 @@ export default {
         //   window.location.reload();
         // })
         // debugger
-        this.initLoginInfo(resData)
+        this.$nextTick(() => {
+          this.initLoginInfo(resData);
+        });
         return true;
       } else {
         this.$message.error(res.data.resultMessage);

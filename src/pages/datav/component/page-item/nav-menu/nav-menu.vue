@@ -2,6 +2,7 @@
   <div v-if="viewMode === '展开子导航'" class="nav-menu-container">
     <div
       class="nav-menu"
+      :class="{ 'follow-theme-color': followThemeColor }"
       :style="{ '--min-height': minHeight + 'px' }"
       ref="navMenu"
     >
@@ -15,6 +16,7 @@
         :key="index"
         :data="item"
         :isActive="isActive(item)"
+        :followThemeColor="followThemeColor"
         @change="onMenuChange"
         @on-nav="navTo"
       ></nav-menu-item>
@@ -115,6 +117,7 @@ export default {
     parentConfig: Object,
     pageConfig: Object,
     parentStyle: Object,
+    followThemeColor: Boolean,
   },
   data() {
     return {
@@ -527,18 +530,6 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--menu-bg-color);
-    color: var(--menu-text-color);
-
-    &:hover {
-      background-color: var(--menu-hover-bg-color);
-      color: var(--menu-hover-text-color, inherit);
-    }
-
-    &.active {
-      background-color: var(--menu-active-bg-color);
-      color: var(--menu-hover-active-color, inherit);
-    }
 
     .nav-icon {
       width: 1rem;
@@ -547,10 +538,26 @@ export default {
       color: currentColor;
     }
   }
-  &.active-nav-menu {
+  &.follow-theme-color {
     .nav-menu-label {
-      background-color: var(--menu-active-bg-color);
-      color: var(--menu-active-text-color, inherit);
+      background-color: var(--menu-bg-color);
+      color: var(--menu-text-color);
+
+      &:hover {
+        background-color: var(--menu-hover-bg-color);
+        color: var(--menu-hover-text-color, inherit);
+      }
+
+      &.active {
+        background-color: var(--menu-active-bg-color);
+        color: var(--menu-hover-active-color, inherit);
+      }
+    }
+    &.active-nav-menu {
+      .nav-menu-label {
+        background-color: var(--menu-active-bg-color);
+        color: var(--menu-active-text-color, inherit);
+      }
     }
   }
 

@@ -393,7 +393,7 @@ span.section-title {
     color: #fff;
     background-color: var(--menu-bg-color, #409eff);
     border-color: var(--menu-bg-color, #409eff);
-
+    color: var(--menu-text-color, #fff);
     &.is-plain {
       color: var(--menu-bg-color, #409eff);
       background: var(--menu-bg-light-color, #ecf5ff);
@@ -410,7 +410,7 @@ span.section-title {
 
     &:focus,
     &:hover {
-      color: #fff;
+      color: var(--menu-text-color, #fff);
       background-color: var(--menu-bg-color, #66b1ff);
       border-color: var(--menu-bg-color, #66b1ff);
     }

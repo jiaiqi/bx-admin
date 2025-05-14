@@ -40,6 +40,7 @@
         pageItemData.com_case_json &&
         pageItemData.com_case_json.label
       "
+      :follow-theme-color="followThemeColor"
       :config="pageItemData.com_case_json"
       :page-config="pageConfig"
     >
@@ -218,6 +219,9 @@ export default {
     inTabs: Boolean, // 是否在tabs中
   },
   computed: {
+    followThemeColor() {
+      return this.pageItemData.com_option?.includes("配色不跟随主题") !== true;
+    },
     showMoreBtn() {
       return (
         this.pageItem?.com_option?.includes("更多") &&
@@ -299,18 +303,21 @@ export default {
         if (jumpJson?.click_jump_option?.includes("先登录")) {
           if (this.$store.state?.loginInfo?.logined !== true) {
             // 您还未登录,需要登录才能进入,点击确认前往登录
-            this.$confirm("您还未登录,需要登录才能进入,点击确认前往登录", "提示", {
+            this.$confirm(
+              "您还未登录,需要登录才能进入,点击确认前往登录",
+              "提示",
+              {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",
                 type: "warning",
-              })
-              .then(() => {
-                const currentUrl =
-                  window.location.pathname + window.location.hash;
-                sessionStorage.setItem("login_redirect_url", currentUrl);
-                const loginUrl = window.location.origin + "/main/login.html";
-                window.location.href = loginUrl;
-              });
+              }
+            ).then(() => {
+              const currentUrl =
+                window.location.pathname + window.location.hash;
+              sessionStorage.setItem("login_redirect_url", currentUrl);
+              const loginUrl = window.location.origin + "/main/login.html";
+              window.location.href = loginUrl;
+            });
             return;
           }
         }
