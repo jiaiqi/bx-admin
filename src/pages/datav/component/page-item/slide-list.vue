@@ -51,43 +51,51 @@
         </div>
       </el-carousel-item>
     </el-carousel>
-    <el-carousel
-      class="screen-swiper item-box rectangle-dot"
-      :style="[tagStylefn(pageItem.swiper_json.style_json)]"
-      easing-function="linear"
-      indicator-active-color="#00aaff"
-      :indicator-dots="true"
-      :circular="true"
-      :autoplay="autoplay"
-      :interval="interval"
-      duration="500"
-      @change="swiperChange"
-      v-else-if="swiperList.length > 1"
-    >
-      <el-carousel-item
-        v-for="(item, index) in swiperList"
-        :key="item.url"
-        :data-id="item.id"
-        :class="current == index ? 'cur' : ''"
-      >
-        <!--   <div class="swiper-item-box" v-if="item.file_type ==='视频'&&current===index">
-          <video :src="item.url" controls :autoplay="true" :id="item.store_video_file" :poster="item.videoPoster"></video>
-        </div> -->
-        <div class="swiper-item-box" @click.stop="toDetail(item)">
-          <img
-            :src="item.videoPoster"
-            mode="scaleToFill"
-            v-if="item.file_type === '视频'"
-          />
-          <img
-            :src="item.url"
-            mode="scaleToFill"
-            v-else-if="!item.store_video_file || item.file_type !== '视频'"
-          />
-          <div class="title" v-if="item._title">{{ item._title }}</div>
-        </div>
-      </el-carousel-item>
-    </el-carousel>
+    <div class="swiper-cot"  v-else-if="swiperList.length > 1" style="height: 100%">
+           <div class="swiper-mian" :style="[{height:(setSwiperBlock?'75%':'100')}]">
+             <el-carousel
+                 ref="carousel"
+                 class="screen-swiper item-box rectangle-dot"
+                 :style="[tagStylefn(pageItem.swiper_json.style_json)]"
+                 easing-function="linear"
+                 indicator-active-color="#00aaff"
+                 :indicator-dots="true"
+                 :circular="true"
+                 :autoplay="autoplay"
+                 :interval="interval"
+                 duration="500"
+                 @change="swiperChange"
+             >
+               <el-carousel-item
+                   v-for="(item, index) in swiperList"
+                   :key="item.url"
+                   :data-id="item.id"
+                   :class="current == index ? 'cur' : ''"
+               >
+                 <!--   <div class="swiper-item-box" v-if="item.file_type ==='视频'&&current===index">
+                   <video :src="item.url" controls :autoplay="true" :id="item.store_video_file" :poster="item.videoPoster"></video>
+                 </div> -->
+                 <div class="swiper-item-box" @click.stop="toDetail(item)">
+                   <img
+                       :src="item.videoPoster"
+                       mode="scaleToFill"
+                       v-if="item.file_type === '视频'"
+                   />
+                   <img
+                       :src="item.url"
+                       mode="scaleToFill"
+                       v-else-if="!item.store_video_file || item.file_type !== '视频'"
+                   />
+                   <div class="title" v-if="item._title">{{ item._title }}</div>
+                 </div>
+               </el-carousel-item>
+             </el-carousel>
+           </div>
+            <div class="thumbnails" v-if="setSwiperBlock">
+                <img v-for="(item, index) in swiperList" :key="item.id" :src="item.url" @click="changeCarousel(index)" alt="" style="width: 100px; margin: 5px; cursor: pointer;">
+         </div>
+    </div>
+
     <div class="single-media" v-else>
       <div
         class="swiper-item-box"
@@ -122,6 +130,10 @@ import { formatStyleData, rpx2px } from "../../common/index.js";
 export default {
   name: "home-swiper-list",
   computed: {
+    //判定是否含有缩略图显示选项
+    setSwiperBlock(){
+      return this.pageItem?.swiper_options
+    },
     swiperStyle() {
       return this.pageItem?.swiper_style || "平铺";
     },
@@ -168,6 +180,7 @@ export default {
   },
   data() {
     return {
+      activeIndex:0,
       storeNo: "",
       current: 0,
       swiperList: [],
@@ -176,9 +189,16 @@ export default {
     };
   },
   mounted() {
+
     this.getSwiperList();
   },
   methods: {
+    handleChange(index) {
+      this.activeIndex = index;
+    },
+    changeCarousel(index) {
+      this.$refs.carousel.setActiveItem(index);
+    },
     tagStylefn(style) {
       if (style) {
         return formatStyleData(style);
@@ -399,5 +419,17 @@ export default {
   // uni-swiper[class*="-dot"] .uni-swiper-dots {
   //   justify-content: flex-start !important;
   // }
+}
+.thumbnails {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px; /* 根据需要调整 */
+}
+.thumbnails div {
+  margin: 0 5px; /* 根据需要调整 */
+  cursor: pointer; /* 鼠标悬停时显示手形图标 */
+}
+.thumbnails div.active img {
+  border: 2px solid blue; /* 当前激活的缩略图样式 */
 }
 </style>

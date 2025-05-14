@@ -148,6 +148,7 @@ export default {
       };
       const { data, ok, msg } = await $selectOne(url, req);
       if (ok) {
+        debugger
         let newData = this.initPageConfig(data);
         this.initComponents(newData);
       } else if (msg) {
