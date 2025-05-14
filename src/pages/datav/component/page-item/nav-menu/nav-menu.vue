@@ -530,7 +530,9 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-
+    &:hover {
+      font-weight: bold;
+    }
     .nav-icon {
       width: 1rem;
       height: 1em;
