@@ -276,6 +276,7 @@ export default {
     },
     addComponent(val) {
       console.log("addComponent", val);
+      debugger
       if (val?.parentId) {
         this.findComponentById(val.parentId, this.editorComponents, val);
         // 触发更新
@@ -293,7 +294,6 @@ export default {
       // 获取拖拽元素的类型
       const draggedType = dragStore.getDragType();
       console.log("handleEditorDragOver", draggedType);
-
       // 阻止默认行为以允许放置
       e.preventDefault();
       if (draggedType === "container") {

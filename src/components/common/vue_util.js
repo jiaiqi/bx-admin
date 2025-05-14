@@ -2633,7 +2633,6 @@ function init_util() {
   // jump 拦截处理权限
   Vue.prototype.jumpAction = async function (jumpJson, itemData = {}) {
     let rowData = itemData
-    debugger
     if (jumpJson?.tmpl_page_json?.file_path) {
       let path = jumpJson?.tmpl_page_json?.file_path
       if (path?.indexOf('webview://') === 0) {

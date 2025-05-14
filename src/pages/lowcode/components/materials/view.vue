@@ -193,6 +193,7 @@ export default {
       deep: true,
       handler(newValue) {
         if (Array.isArray(newValue)) {
+          console.log('--组件',newValue);
           this.childComponents = newValue;
         } else {
           this.childComponents = [];
