@@ -29,6 +29,11 @@ export default {
   components: {
     lcView,
   },
+  provide() {
+    return {
+      getPageConfig: () => this.pageConfig,
+    };
+  },
   computed: {
     ...mapState("theme", ["currentTheme"]),
     ...mapGetters("theme", ["themeList", "themeVariable"]),

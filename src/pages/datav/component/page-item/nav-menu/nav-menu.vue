@@ -1,5 +1,24 @@
 <template>
-  <div v-if="viewMode === '展开子导航'" class="nav-menu-container">
+  <div v-if="viewMode === '面包屑导航'" class="breadcrumb">
+    <div class="home-icon">
+      <router-link :to="homePath" class="link">
+        <Icon icon="ri-home-4-fill"></Icon>
+      </router-link>
+    </div>
+    <div class="breadcrumb-list">
+      <div class="breadcrumb-item">
+        <router-link :to="homePath" class="link"> 首页 </router-link>
+      </div>
+      <div class="breadcrumb-item" v-for="item in breadcrumb">
+        <i class="breadcrumb-separator el-icon-d-arrow-right"></i>
+        <router-link :to="item.path" v-if="item.path" class="link">
+          {{ item.label || "" }}
+        </router-link>
+        <span v-else>{{ item.label || "" }}</span>
+      </div>
+    </div>
+  </div>
+  <div v-else-if="viewMode === '展开子导航'" class="nav-menu-container">
     <div
       class="nav-menu"
       :class="{ 'follow-theme-color': followThemeColor }"
@@ -104,6 +123,8 @@ import NavMenuChild from "./nav-menu-list.vue";
 import NavMenu from "./nav-menu.vue";
 import Teleport from "vue2-teleport";
 import NavMenuItem from "./nav-menu-item.vue";
+import { Icon } from "@iconify/vue2";
+
 export default {
   name: "NavMenu",
   components: {
@@ -111,14 +132,16 @@ export default {
     NavMenu,
     NavMenuItem,
     Teleport,
+    Icon,
   },
   props: {
     config: Object,
     parentConfig: Object,
-    pageConfig: Object,
+    // pageConfig: Object,
     parentStyle: Object,
     followThemeColor: Boolean,
   },
+  inject: ["getPageConfig"],
   data() {
     return {
       isHovered: false,
@@ -140,6 +163,41 @@ export default {
     };
   },
   computed: {
+    pageConfig() {
+      const pageConfig = this.getPageConfig();
+      return pageConfig || {};
+    },
+    appConfig() {
+      return this.pageConfig?.app_json_data || {};
+    },
+    homePath() {
+      const home_page_no = this.appConfig?.home_page_no || "";
+      if (home_page_no) {
+        return `/lowcode/view/${home_page_no}`;
+      }
+    },
+    breadcrumb() {
+      const { path, name_path } = this.pageConfig || {};
+      let res = [];
+      if (path?.includes("/")) {
+        let arr = path.split("/");
+        let nameArr = name_path.split("/");
+        arr.forEach((item, index) => {
+          if (item === "") {
+            return;
+          }
+          res.push({
+            label: nameArr[index],
+            value: item,
+            path:
+              item && item !== this.pageConfig.page_no
+                ? `/lowcode/view/${item}`
+                : "",
+          });
+        });
+      }
+      return res;
+    },
     contentWidth() {
       let width = this.pageConfig?.content_area_width;
       if (width) {
@@ -506,6 +564,62 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.breadcrumb {
+  background-color: transparent;
+  .home-icon {
+    font-size: 24px;
+    width: 42.94px;
+    height: 38px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(
+      151.99deg,
+      rgba(0, 122, 255, 1) 29.59%,
+      rgba(4, 71, 171, 1) 294.82%
+    );
+    color: #fff;
+    clip-path: polygon(0 0, 100% 0, 74% 99%, 0% 100%);
+    padding-right: 5px;
+  }
+  .link {
+    color: inherit;
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 10px;
+    background: linear-gradient(
+      88.74deg,
+      rgba(241, 246, 255, 1) 1.25%,
+      rgba(241, 246, 246, 0) 90.23%
+    );
+    padding-left: 40px;
+    margin-left: -40px;
+    margin-top: 4px;
+    .breadcrumb-separator {
+      margin-right: 6px;
+    }
+    .breadcrumb-item {
+      a {
+        color: inherit;
+        &:hover {
+          text-decoration: none;
+        }
+      }
+    }
+    .breadcrumb-item + .breadcrumb-item {
+      padding-left: 6px;
+    }
+    .breadcrumb-item + .breadcrumb-item::before {
+      content: "";
+    }
+  }
+}
 .nav-menu-container {
   display: grid;
   min-height: 100%;

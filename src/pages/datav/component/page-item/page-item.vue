@@ -38,7 +38,7 @@
       v-if="
         pageItemData.com_type === 'navBar' &&
         pageItemData.com_case_json &&
-        pageItemData.com_case_json.label
+        pageItemData.com_case_json.disp_flag!=='否'
       "
       :follow-theme-color="followThemeColor"
       :config="pageItemData.com_case_json"
