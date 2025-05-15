@@ -127,7 +127,8 @@
 
 <script>
 import { GridLayout, GridItem } from "vue-grid-layout";
-import PageItem from "@/components/page-item/page-item";
+// import PageItem from "@/components/page-item/page-item";
+import PageItem from '@/pages/datav/component/page-item/page-item.vue'
 import { formatStyleData } from "@/common/common.js";
 
 let mouseXY = { x: null, y: null };
