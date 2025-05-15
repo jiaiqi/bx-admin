@@ -714,7 +714,7 @@ export default {
         padding: 2px 5px;
         background-color: $primary-color;
         color: #fff;
-        transform: translateY(0);
+        transform: translateY(-100%);
       }
     }
 
@@ -730,7 +730,7 @@ export default {
         padding: 2px 5px;
         background-color: $primary-color;
         color: #fff;
-        transform: translateY(0);
+        transform: translateY(-100%);
       }
 
       & > .handle {
