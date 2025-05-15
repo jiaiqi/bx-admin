@@ -276,7 +276,7 @@ export default {
           // 没有初始化值得时候 进行
           if (key !== '$') {
             // 表单字段默认折叠配置初始化
-            this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
+            this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 || key?.includes(':折叠')
           } else {
             this.sectionsCollapse['$'] = false
           }
@@ -343,7 +343,7 @@ export default {
     },
     onSectionsCollapseChange(key) {
       let self = this
-      if (key && this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 && key !== '$') {
+      if (key && (this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1||key?.includes(':折叠')) && key !== '$') {
         console.log('0', key, self.sectionsCollapse[key], self.sectionsCollapse)
         self.$set(self.sectionsCollapse, key, !this.sectionsCollapse[key])
         this.$forceUpdate()
@@ -453,7 +453,7 @@ export default {
     },
 
     formatSection: function (section) {
-      return section && isString(section) && section.startsWith('$') ? "" : section;
+      return section && isString(section) && section.startsWith('$') ? "" : section?.includes(':折叠')? section.split(':折叠')[0] : section;
     },
 
     srvValFormModel: function () {

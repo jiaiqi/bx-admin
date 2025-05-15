@@ -34,25 +34,21 @@
             >
               <span
                 class="section-title"
+                :class="{ 'is-collapse': sectionsCollapse[section] }"
                 @click.stop="onSectionsCollapseChange(section)"
-                style="display: flex; justify-content: space-between"
-                >{{ formatSection(section) }}
+              >
+                <span>
+                  {{ formatSection(section) }}
+                </span>
 
-                <template
+                <collapse-arrow
                   v-if="
                     section !== '$' &&
-                    cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
+                    (cfgJsonOptionsType.includes('分组默认折叠') ||
+                      section.includes(':折叠'))
                   "
-                >
-                  <i
-                    class="el-icon-arrow-right"
-                    v-show="sectionsCollapse[section]"
-                  ></i>
-                  <i
-                    class="el-icon-arrow-down"
-                    v-show="!sectionsCollapse[section]"
-                  ></i>
-                </template>
+                  :collapse="sectionsCollapse[section]"
+                />
               </span>
             </div>
           </div>

@@ -34,28 +34,23 @@
               v-if="!!section && formatSection(section)"
               style="margin-bottom: 0"
             >
-              <!-- <span class="section-title">{{formatSection(section)}}</span> -->
               <span
                 class="section-title"
+                :class="{ 'is-collapse': sectionsCollapse[section] }"
                 @click.stop="onSectionsCollapseChange(section)"
-                style="display: flex; justify-content: space-between"
-                >{{ formatSection(section) }}
+              >
+                <span>
+                  {{ formatSection(section) }}
+                </span>
 
-                <template
+                <collapse-arrow
                   v-if="
                     section !== '$' &&
-                    cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
+                    (cfgJsonOptionsType.includes('分组默认折叠') ||
+                      section.includes(':折叠'))
                   "
-                >
-                  <i
-                    class="el-icon-arrow-right"
-                    v-show="sectionsCollapse[section]"
-                  ></i>
-                  <i
-                    class="el-icon-arrow-down"
-                    v-show="!sectionsCollapse[section]"
-                  ></i>
-                </template>
+                  :collapse="sectionsCollapse[section]"
+                />
               </span>
             </div>
           </div>
@@ -111,10 +106,7 @@
         cfgJson && cfgJson.agreement_json && cfgJson.agreement_json.agreement_no
       "
     >
-      <el-col
-        :span="24"
-        style="text-align: center; padding: 20px;"
-      >
+      <el-col :span="24" style="text-align: center; padding: 20px">
         <agreement-box
           :agreementJson="cfgJson.agreement_json"
           :agreementChecked.sync="agreementChecked"
@@ -131,10 +123,7 @@
           !agreementChecked,
       }"
     >
-      <el-col
-        :span="24"
-        style="text-align: center; padding: 20px;"
-      >
+      <el-col :span="24" style="text-align: center; padding: 20px">
         <action
           v-for="item in actions"
           :info="item"
@@ -189,7 +178,7 @@ import { Field } from "../model/Field";
 import agreementBox from "./agreement-box.vue";
 import cloneDeep from "lodash/cloneDeep";
 import bind from "lodash/bind";
-
+import collapseArrow from "../ui/collapse-arrow.vue";
 export default {
   name: "simple-update",
   components: {
@@ -197,6 +186,7 @@ export default {
     action: Action,
     loader: Loader,
     agreementBox,
+    collapseArrow,
   },
   mixins: [FormMixin, CustButtonMinx, FieldRedundantMixin, FormValidateMixin],
   props: {
@@ -289,8 +279,8 @@ export default {
       submitAction.name = "submit";
       submitAction.label = "提交";
       submitAction.confirm = "是否确认提交?";
-      if(this.formV2&&'tbl_options' in this.formV2){
-        if(!this.formV2.tbl_options?.includes('修改确认提示')){
+      if (this.formV2 && "tbl_options" in this.formV2) {
+        if (!this.formV2.tbl_options?.includes("修改确认提示")) {
           // 修改默认不需要提示
           submitAction.confirm = null;
         }
@@ -362,7 +352,7 @@ export default {
       };
       loader.colNames = Object.values(this.fields).map(
         (item) => item.info.name
-      )
+      );
       // loader.colNames = ["*"];
       loader.conditions = this.buildConditions();
     },
@@ -377,8 +367,8 @@ export default {
       submitAction.name = "save_draft"; // e.button_type
       submitAction.label = "保存草稿1";
       submitAction.confirm = "是否确认保存?";
-      if(this.formV2&&'tbl_options' in this.formV2){
-        if(!this.formV2.tbl_options?.includes('修改确认提示')){
+      if (this.formV2 && "tbl_options" in this.formV2) {
+        if (!this.formV2.tbl_options?.includes("修改确认提示")) {
           // 修改默认不需要提示
           submitAction.confirm = null;
         }
@@ -440,10 +430,10 @@ export default {
 
     resetForm: function () {
       this.$refs.loader.run();
-      if(Array.isArray(this.childForm)&&this.childForm.length){
-        this.childForm.forEach(item=>{
-          item?.$refs?.basicForm?.resetForm()
-        })
+      if (Array.isArray(this.childForm) && this.childForm.length) {
+        this.childForm.forEach((item) => {
+          item?.$refs?.basicForm?.resetForm();
+        });
       }
     },
   },
@@ -542,7 +532,7 @@ export default {
         }
       })
       .then(() => {
-        this.setFieldsDefaultValue()
+        this.setFieldsDefaultValue();
         if (this.overrideData) {
           for (let key in this.overrideData) {
             if (this.fields[key]) {

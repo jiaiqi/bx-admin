@@ -567,8 +567,14 @@ span.section-title {
     }
   }
 }
-
-.section-title {
+.form-view-wrapper .el-form span.section-title {
   margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  &.is-collapse {
+    margin-bottom: 0;
+    border-bottom: none;
+  }
 }
 </style>

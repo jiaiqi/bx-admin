@@ -24,29 +24,23 @@
               v-if="!!section && formatSection(section)"
               style="margin-bottom: 0"
             >
-              <!-- <span class="section-title">{{ formatSection(section) }}</span> -->
               <span
                 class="section-title"
+                :class="{ 'is-collapse': sectionsCollapse[section] }"
                 @click.stop="onSectionsCollapseChange(section)"
-                style="display: flex; justify-content: space-between"
-                >{{ formatSection(section) }}
+              >
+                <span>
+                  {{ formatSection(section) }}
+                </span>
 
-                <template
+                <collapse-arrow
                   v-if="
                     section !== '$' &&
-                    formItems.length > 0 &&
-                    cfgJsonOptionsType.indexOf('分组默认折叠') !== -1
+                    (cfgJsonOptionsType.includes('分组默认折叠') ||
+                      section.includes(':折叠'))
                   "
-                >
-                  <i
-                    class="el-icon-arrow-right"
-                    v-show="sectionsCollapse[section]"
-                  ></i>
-                  <i
-                    class="el-icon-arrow-down"
-                    v-show="!sectionsCollapse[section]"
-                  ></i>
-                </template>
+                  :collapse="sectionsCollapse[section]"
+                />
               </span>
             </div>
           </div>
@@ -103,10 +97,7 @@
 
     <el-row v-if="!isPlatChildForm && hasActions(actions)">
       <el-card>
-        <el-col
-          :span="24"
-          style="text-align: center;padding: 20px;"
-        >
+        <el-col :span="24" style="text-align: center; padding: 20px">
           <action
             v-for="item in actions"
             :info="item"
@@ -388,8 +379,8 @@ export default {
                 item.valueExpr = item.value;
                 item.literalValue = true;
                 return item;
-              })
-              condition.push(...defaultCondition||[])
+              });
+              condition.push(...(defaultCondition || []));
             }
             // let divCond = null;
             // if (this.$route.query.divCond) {
@@ -406,7 +397,7 @@ export default {
             });
           })
           .then(() => {
-            this.setSubFormFields()
+            this.setSubFormFields();
           })
           .then((event) => {
             this.formLoaded = true;
