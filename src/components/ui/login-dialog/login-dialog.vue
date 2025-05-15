@@ -87,15 +87,16 @@ export default {
       }
     },
     submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
+      let _this=this
+      _this.$refs[formName].validate((valid) => {
         if (valid) {
           // 提交表单逻辑
           // dialogVisible = false;
-          this.login().then((res) => {
+          _this.login().then((res) => {
             if (res) {
-              this.dialogVisible = false;
-              if (this.cb && typeof this.cb === "function") {
-                this.cb(res);
+              _this.dialogVisible = false;
+              if (_this.cb && typeof _this.cb === "function") {
+                _this.cb(res);
               }
             }
           });

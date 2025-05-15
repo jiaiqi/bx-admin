@@ -145,7 +145,6 @@ export default {
 
     handleDrop(e) {
       if (this.isPreview) return;
-
       // 阻止事件冒泡
       e.stopPropagation();
       e.preventDefault();
