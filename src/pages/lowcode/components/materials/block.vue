@@ -70,7 +70,8 @@
 </template>
 
 <script>
-import { formatStyleData } from "@/common/common";
+import { formatStyleData } from "@/pages/datav/common/index.js";
+
 import dragStore from "../../store/dragStore";
 const layoutKeys = [
   "grid-template-columns",

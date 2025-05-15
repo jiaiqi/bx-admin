@@ -37,7 +37,8 @@
 
 <script>
 import dragStore from "../../store/dragStore";
-import { formatStyleData } from "@/common/common";
+import { formatStyleData } from "@/pages/datav/common/index.js";
+
 
 export default {
   name: "lc-container",

@@ -184,7 +184,7 @@ import carbon from "@iconify/json/json/carbon.json";
 import mdiLight from "@iconify/json/json/mdi-light.json";
 import ri from "@iconify/json/json/ri.json";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
-import { formatStyleData } from "@/common/common";
+import { formatStyleData } from "@/pages/datav/common/index.js";
 import cloneDeep from "lodash/cloneDeep";
 import { mapState, mapGetters, mapActions } from "vuex";
 export default {

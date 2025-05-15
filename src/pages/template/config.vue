@@ -129,7 +129,8 @@
 import { GridLayout, GridItem } from "vue-grid-layout";
 // import PageItem from "@/components/page-item/page-item";
 import PageItem from '@/pages/datav/component/page-item/page-item.vue'
-import { formatStyleData } from "@/common/common.js";
+import { formatStyleData } from "@/pages/datav/common/index.js";
+
 
 let mouseXY = { x: null, y: null };
 let DragPos = { x: null, y: null, w: 1, h: 1, i: null };

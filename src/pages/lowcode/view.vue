@@ -16,7 +16,7 @@
 <script>
 import lcView from "./components/materials/view.vue";
 import { $selectOne } from "@/common/http";
-import { formatStyleData } from "@/common/common";
+import { formatStyleData } from "@/pages/datav/common/index.js";
 import cloneDeep from "lodash/cloneDeep";
 import { pageCompCols } from "./components/property/columns";
 import { mapState, mapGetters, mapActions } from "vuex";
