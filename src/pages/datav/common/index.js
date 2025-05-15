@@ -57,25 +57,35 @@ const formatStyleData = (val) => {
     "menu-active-text-color",
     "menu-hover-text-color",
   ];
+  const needUnitsCssKey = ['width', 'height', 'left', 'right', 'top', 'bottom', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'font-size', 'border-radius', 'border-width',];
   for (let key in json) {
     let _key = key.replaceAll("_", "-");
+    // 宽、高、left、right、top、bottom等属性默认单位为px
+    if (needUnitsCssKey.includes(_key) && (typeof json[key] === 'number' || !isNaN(Number(json[key])))) {
+      json[key] = `${json[key]}px`;
+    }
     obj[_key] = json[key];
-    // 处理样式变量
-    if (themeVariableKeys.includes(json[key])) {
-      obj[_key] = `var(--${json[key]})`;
-      if (json[key]?.includes('text')) {
-        obj[_key] = `var(--${json[key]}, #fff)`;
+    
+    if (typeof json[key] === 'string') {
+      // 处理样式变量
+      if (themeVariableKeys.includes(json[key])) {
+        obj[_key] = `var(--${json[key]})`;
+
+        if (json[key]?.includes('text')) {
+          obj[_key] = `var(--${json[key]}, #fff)`;
+        }
+        if (json[key]?.includes('bg')) {
+          obj[_key] = `var(--${json[key]}, #409EFF)`;
+        }
       }
-      if (json[key]?.includes('bg')) {
+      if (json[key]?.includes('bg-color')) {
         obj[_key] = `var(--${json[key]}, #409EFF)`;
       }
+      if (json[key]?.includes('text-color')) {
+        obj[_key] = `var(--${json[key]}, #fff)`;
+      }
     }
-    if (json[key]?.includes('bg-color')) {
-      obj[_key] = `var(--${json[key]}, #409EFF)`;
-    }
-    if (json[key]?.includes('text-color')) {
-      obj[_key] = `var(--${json[key]}, #fff)`;
-    }
+
     if (_key === "background-image") {
       obj[_key] = `url(${getImagePath(json[key])})`;
     }
