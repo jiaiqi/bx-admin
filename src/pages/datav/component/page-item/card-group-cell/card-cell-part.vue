@@ -551,7 +551,6 @@ export default {
       window.location.href = loginUrl;
     },
     showDialog({ rect, data, jumpJson }) {
-      debugger;
       this.$emit("show-dialog", { rect, data, jumpJson });
     },
     onClickSubBlock: throttle(

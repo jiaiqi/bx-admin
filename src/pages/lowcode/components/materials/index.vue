@@ -201,9 +201,18 @@ export default {
       this.$emit("set-list", []);
     },
     tapComponent(item, index) {
+      // 点击物料列表项
+
       if (this.activeIndex === index) return this.clearComponent();
       this.activeIndex = index;
       this.activeSubIndex = 0;
+      if (!item.service) {
+        // 内置组件,不需要从服务端查
+        if (item.value === "others") {
+          this.comList = [];
+          return;
+        }
+      }
       if (!item.children?.length) {
         this.getList(item);
       } else {
@@ -264,12 +273,13 @@ export default {
             obj.type = "component";
             obj._type = "component";
             obj.component = "page-item";
-            
 
             obj.data = this.initComCfg(obj.com_type, obj);
-            if(obj.data.srv_req_type){
-              obj.srv_req_type = obj.data.srv_req_type
-              obj.mock_srv_data_json = JSON.stringify(obj.data.mock_srv_data_json)
+            if (obj.data.srv_req_type) {
+              obj.srv_req_type = obj.data.srv_req_type;
+              obj.mock_srv_data_json = JSON.stringify(
+                obj.data.mock_srv_data_json
+              );
             }
           }
 
@@ -300,7 +310,7 @@ export default {
           if (config.list_json) {
             const cfg = JSON.parse(config.list_json);
             config.list_json = cfg;
-            if(cfg.mock_data_json){
+            if (cfg.mock_data_json) {
               config.mock_srv_data_json = cfg.mock_data_json;
               config.srv_req_type = "模拟数据";
             }
@@ -360,8 +370,8 @@ export default {
           break;
       }
       Object.keys(config).forEach((key) => {
-        if(!pageCompCols.includes(key)){
-          delete config.key
+        if (!pageCompCols.includes(key)) {
+          delete config.key;
         }
         if (
           key &&
@@ -379,7 +389,7 @@ export default {
       });
 
       // 去掉没用的属性
-      const keys = ["component", "type", "_type",'id'];
+      const keys = ["component", "type", "_type", "id"];
       keys.forEach((key) => {
         if (config[key]) {
           delete config[key];
@@ -593,8 +603,8 @@ export default {
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
       transition: scale 0.3s ease-in-out;
-      &:hover{
-        scale:1.1;
+      &:hover {
+        scale: 1.1;
       }
     }
 
@@ -606,5 +616,8 @@ export default {
       padding: 5px;
     }
   }
+}
+.public-component{
+  width: 100px;
 }
 </style>

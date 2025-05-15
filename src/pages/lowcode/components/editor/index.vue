@@ -276,7 +276,6 @@ export default {
     },
     addComponent(val) {
       console.log("addComponent", val);
-      debugger
       if (val?.parentId) {
         this.findComponentById(val.parentId, this.editorComponents, val);
         // 触发更新

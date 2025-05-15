@@ -467,6 +467,8 @@ export default {
       if (ok) {
         if (Array.isArray(data) && data.length) {
           let list = [];
+          console.log('getPageComponents:',data);
+          
           data.forEach((item) => {
             if (typeof item.com_json === "string") {
               try {

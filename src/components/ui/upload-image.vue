@@ -223,7 +223,7 @@ export default {
       //   return this.field.getAnyValidateError();
       // }
       const fileType = this.field.fileType || "jpg/png/svg";
-      const fileSize = this.fileSize ? this.fileSize / 1024 : 2;
+      const fileSize = this.fileSize ? this.fileSize / 1024 : 10; // 默认10MB
       return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`;
     },
     useFilePicker() {
@@ -252,7 +252,7 @@ export default {
         this.field.info.moreConfig !== null &&
         this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
-          : 2 * 1024,
+          : 10 * 1024, // 默认10MB
       imageDialog: false,
       imageDialogUrl: "",
       uploadFile: this.serviceApi().uploadFile,

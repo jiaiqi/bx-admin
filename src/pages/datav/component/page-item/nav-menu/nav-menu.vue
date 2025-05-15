@@ -299,7 +299,6 @@ export default {
       if (eleRect.height) {
         this.minHeight = eleRect.height;
       }
-      debugger;
       console.log("onMenuChange", data);
       if (this.current?.nav_no && this.current?.nav_no === current?.nav_no) {
         this.current = null;

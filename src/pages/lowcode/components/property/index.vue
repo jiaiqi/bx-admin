@@ -788,7 +788,6 @@ export default {
           oldComponents,
           "update"
         );
-        debugger
         if (updateList?.length) {
           //更新页面组件 目前只有组件顺序可以更新
           const updateKeys = ["com_seq", "layout_height", "layout_width","parent_no"];

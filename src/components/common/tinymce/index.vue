@@ -507,7 +507,6 @@ export default {
       // formData.append('folder', folder)
 
       // 注：此为调用后端上传接口，需根据实际情况进行调整
-      debugger;
       console.log("uploadImg", file);
 
       let uploadUrl = this.serviceApi().uploadFile;
