@@ -439,7 +439,7 @@ export default {
       const draggedType = dragStore.getDragType();
       // console.log('handleDragOver-draggedType:',draggedType);
       const data = dragStore.getDraggingElement();
-      if(this.children && this.children.length){
+      if (this.children && this.children.length) {
         const existingComponent = this.children[0];
         if (existingComponent.id && existingComponent.id === data.id) {
           e.dataTransfer.dropEffect = "none";
@@ -652,6 +652,10 @@ export default {
     justify-content: center;
     align-items: center;
     background-color: rgba($color: $primary-color, $alpha: 0.7);
+    cursor: pointer;
+    &:hover {
+      font-size: 1.2em;
+    }
   }
 }
 
