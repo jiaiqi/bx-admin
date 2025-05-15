@@ -155,4 +155,4 @@ export const docCookies = {
   },
 };
 
-export { blobToBase64, fileToBase64, formatStyleData };
+export { blobToBase64, fileToBase64 };
