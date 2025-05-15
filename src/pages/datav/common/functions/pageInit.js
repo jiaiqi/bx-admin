@@ -9,11 +9,8 @@ import {
   getPageItemVisible
 } from '@/common/utils/page-item_utils.js'
 import paramsModelsMixin from '@/common/paramsModelsMixin.js';
-import {
-  formatStyleData,
-  savePreviousPage
-} from '@/common/common'
-
+import { savePreviousPage } from '@/common/common'
+import { formatStyleData } from "@/pages/datav/common/index.js";
 export default {
   data() {
     return {
@@ -66,7 +63,7 @@ export default {
       // 样式全局配置
       let config = this.pageInfo?.page_style_json_data
       return `
-	  			--home-height:${config?.height||'82px'};
+	  			--home-height:${config?.height || '82px'};
 	    --home-background:${config?.background};
 	    --home-background_color:${config?.background_color};
 	    --home-background_image:${config?.background_image};
@@ -76,8 +73,8 @@ export default {
 	    --home-margin:${config?.margin};
 	    --home-position:${config?.position};
 	    --home-font:${config?.font};
-	    --home-font_size:${config?.font_size||'14px'};
-	    --home-color:${config?.color||'#fff'};
+	    --home-font_size:${config?.font_size || '14px'};
+	    --home-color:${config?.color || '#fff'};
 	  `
     },
     showBackPage() {
@@ -108,7 +105,7 @@ export default {
       }
       return model
     },
-    pageParamType: function() {
+    pageParamType: function () {
       let type = this.tmpl_page_type
       let typeValue = "listMixForm"
       switch (type) {
@@ -123,7 +120,7 @@ export default {
       }
       return typeValue
     },
-    pageParamServiceName: function() {
+    pageParamServiceName: function () {
       let reqList = this.urlSearchParams
       let serviceName = reqList?.serviceName || this?.pageParams?.serviceName
       for (let key in this.pageParams) {
@@ -137,7 +134,7 @@ export default {
       }
       return serviceName
     },
-    pageParamSrvApp: function() {
+    pageParamSrvApp: function () {
       let app = uni.getStorageSync('activeApp')
       for (let key in this.pageParams) {
         switch (key) {
@@ -200,7 +197,7 @@ export default {
           ...urlSearchParams
         }
         const req = JSON.parse(this.renderStr(JSON.stringify(this.pageInfo.srv_req_json_data), params));
-        const url = `/${req.mapp||uni.getStorageSync('activeApp')}/select/${req.serviceName}`
+        const url = `/${req.mapp || uni.getStorageSync('activeApp')}/select/${req.serviceName}`
         const res = await this.$http.post(url, req)
         if (res?.data?.data?.length) {
           const data = res?.data?.data[0]
@@ -224,7 +221,7 @@ export default {
         this.$emit('setDim', {
           [dim_no]: dim_value
         })
-        const url = `/${uni.getStorageSync('activeApp')||'config'}/operate/srvwx_use_dim_set`
+        const url = `/${uni.getStorageSync('activeApp') || 'config'}/operate/srvwx_use_dim_set`
         const req = [{
           "serviceName": "srvwx_use_dim_set",
           "data": [{
@@ -273,7 +270,7 @@ export default {
           if (key && key.indexOf("_json") !== -1) {
             try {
               pageInfo[`${key}_data`] = JSON.parse(pageInfo[key])
-            } catch (e) {}
+            } catch (e) { }
           }
         })
         if (Array.isArray(pageInfo?.interface_json_data) && pageInfo.interface_json_data.length) {
@@ -294,7 +291,7 @@ export default {
         this.$set(this, 'pageInfo', pageInfo)
         await this.getPageInitQueryOptions()
         if (Array.isArray(this.pageInfo?.bottom_nav_json_data?.nav_item_json) && (!Array.isArray(this
-            .tabbarListData) || this.tabbarListData.length === 0)) {
+          .tabbarListData) || this.tabbarListData.length === 0)) {
           this.tabbarListData = this.pageInfo.bottom_nav_json_data.nav_item_json.map(item => {
             item.text = item.label;
             // item['page_no']
@@ -358,11 +355,11 @@ export default {
         }
         return this.initPageParams().then((r) => {
           if (r) {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
               resolve(true)
             })
           } else {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
               resolve(false)
             })
           }
@@ -372,11 +369,11 @@ export default {
         this.$set(this, 'pageInfo', {})
         return this.initPageParams().then((r) => {
           if (r) {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
               resolve(true)
             })
           } else {
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
               resolve(false)
             })
           }
@@ -404,7 +401,7 @@ export default {
     async initPageParams() {
       let self = this
       let getInit = self.getInitParams()
-      return await new Promise(function(resolve, reject) {
+      return await new Promise(function (resolve, reject) {
         //异步操做
         let paraJson = self.pageInfo?.interface_json_data || self.pageInfo?.para_json
         let paraJsonV2 = self.pageInfo?.para_with_map_json_data || null
@@ -492,10 +489,10 @@ export default {
       let colVs = await this.getServiceV2(this.pageParamServiceName, 'list', this.listType === 'proc' ? 'proclist' :
         'list', app);
       colVs?.srv_cols ? colVs.srv_cols = colVs.srv_cols.filter(item => item.in_list === 1 || item
-          .in_list === 2) :
+        .in_list === 2) :
         ''
       this.pageListV2 = colVs;
-      if (Array.isArray(colVs.srv_cols)) {}
+      if (Array.isArray(colVs.srv_cols)) { }
       return colVs;
     },
     getParamsFromUrl(url) {
@@ -560,7 +557,7 @@ export default {
       console.error('-- init pageNo error : pdNo? or page_no? --')
     }
     if (!option.hasOwnProperty('pageInitType') || (option.hasOwnProperty('pageInitType') && option.pageInitType ==
-        'dLoading')) {
+      'dLoading')) {
       this.initLogin().then(() => {
         const login_user_info = uni.getStorageSync('login_user_info')
         this.getWxUserInfo(login_user_info)
@@ -575,20 +572,20 @@ export default {
     let globalData = getApp().globalData;
     this.globalData = globalData;
     let that = this
-    uni.$on('returnData', function(data) {
+    uni.$on('returnData', function (data) {
       console.log('the page is displayed: return data(returnData):', data);
     })
     if (this.pageInstance) {
       console.log('change-pageInstance:', this.pageInstance);
       this.$store.commit('SET_PAGE_INSTANCE', this.pageInstance, this.dimInfo)
     }
-    uni.$on('page-refresh', function(data) {
+    uni.$on('page-refresh', function (data) {
       /**
        * 
        
         data = {
-      	  pageNo:"",
-      	  sourceComNo:""
+          pageNo:"",
+          sourceComNo:""
         }
        
        */
@@ -623,7 +620,7 @@ export default {
       if (refs && Array.isArray(refs) && refs.length > 0) {
         for (let ref of refs) {
           if (ref.hasOwnProperty('refresh') && (ref?.pageItem?.com_type == 'list' || ref?.pageItem?.com_type ==
-              'cardGroup')) {
+            'cardGroup')) {
             ref.refresh()
           } else {
             console.log('组件没有刷新方法', ref.pageItem)
@@ -677,14 +674,14 @@ export default {
     "pageParamsModelRun": {
       deep: true,
       immediate: true,
-      handler: function(newVal, oldVal) {
+      handler: function (newVal, oldVal) {
         console.log('page params updated:', newVal)
       }
     },
     "pageParamsModel": {
       deep: true,
       immediate: true,
-      handler: function(newVal, oldVal) {
+      handler: function (newVal, oldVal) {
         console.log('--page params updated:', newVal)
       }
     }

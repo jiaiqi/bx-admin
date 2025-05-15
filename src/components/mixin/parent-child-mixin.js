@@ -317,7 +317,10 @@ export default {
       return self
         .loadColsV2(self.selectServiceName, "detail", null, this.service)
         .then((response) => {
-          let childrenServices = response.body.data["child_service"];
+          if(!response || !response.data || !response.data.data){
+            return
+          }
+          let childrenServices = response.data.data["child_service"];
 
           let basicForm = self.$refs.basicForm;
           for (var item of childrenServices) {

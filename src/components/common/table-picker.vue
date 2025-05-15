@@ -1,99 +1,45 @@
 <template>
   <div>
-    <el-popover
-      trigger="focus"
-      ref="show_popover"
-      :disabled="disabled"
-      :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }"
-    >
+    <el-popover trigger="focus" ref="show_popover" :disabled="disabled"
+      :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }">
       <template slot="reference">
-        <el-select
-          style="width: 100%"
-          :disabled="disabled"
-          v-model="selected"
-          :value-key="valueCol"
-          popper-class="popper-class"
-          placeholder="请选择"
-          :multiple="isMulti"
-          clearable
-          @remove-tag="removeTag"
-          @clear="clearSelect"
-          @focus="onSearch"
-        >
-          <el-option
-            v-for="item in allData"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          >
+        <el-select style="width: 100%" :disabled="disabled" v-model="selected" :value-key="valueCol"
+          popper-class="popper-class" placeholder="请选择" :multiple="isMulti" clearable @remove-tag="removeTag"
+          @clear="clearSelect" @focus="onSearch">
+          <el-option v-for="item in allData" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </template>
       <div class="picker-view">
         <div class="top-bar">
-          <el-input
-            placeholder="输入查询条件"
-            suffix-icon="el-icon-search"
-            v-model="inputVal"
-            clearable
-            @keyup.enter.native="onSearch"
-          >
+          <el-input placeholder="输入查询条件" suffix-icon="el-icon-search" v-model="inputVal" clearable
+            @keyup.enter.native="onSearch">
           </el-input>
-          <el-button type="primary" icon="el-icon-search" @click="onSearch"
-            >搜索</el-button
-          >
+          <el-button type="primary" icon="el-icon-search" @click="onSearch">搜索</el-button>
         </div>
-        <el-table
-          class="el-table"
-          ref="multipleTable"
-          :data="gridData"
-          row-key="id"
-          lazy
-          :load="loadChild"
-          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-          :highlight-current-row="!isMulti"
-          @row-click="clickRow"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table class="el-table" ref="multipleTable" :data="setGridData" row-key="id" lazy :load="loadChild"
+          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :highlight-current-row="!isMulti"
+          @row-click="clickRow" @selection-change="handleSelectionChange">
           <el-table-column width="120" v-if="isMulti">
             <template #header>
               <div>
-                <el-checkbox
-                  :value="
-                    gridData.every((item) => selected.includes(item[valueCol]))
-                  "
-                  @change="onCheckedAll"
-                ></el-checkbox>
+                <el-checkbox :value="gridData.every((item) => selected.includes(item[valueCol]))
+                  " @change="onCheckedAll"></el-checkbox>
               </div>
             </template>
             <template slot-scope="scope">
-              <el-checkbox
-                :value="selected.includes(scope.row[valueCol])"
-                @change="changeSelected(scope.$index, scope.row)"
-              ></el-checkbox>
+              <el-checkbox :value="selected.includes(scope.row[valueCol])"
+                @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
             </template>
           </el-table-column>
-          <!-- <el-table-column type="selection" width="55" v-if="isMulti">
-          </el-table-column> -->
-          <el-table-column
-            :min-width="flexColumnWidth(item.label, item.column)"
-            :label="item.label"
-            v-for="item in setGridHeader"
-            :key="item.column"
-            v-if="item.srvcol && item.srvcol.in_list == 1"
-            :prop="item.column"
-          ></el-table-column>
+          <el-table-column :min-width="flexColumnWidth(item.label, item.column)" :label="item.label"
+            v-for="item in setGridHeader" :key="item.column" v-if="item.srvcol && item.srvcol.in_list == 1"
+            :prop="item.column"></el-table-column>
         </el-table>
         <div class="bottom-bar">
           <div></div>
-          <el-pagination
-            background
-            layout="prev, pager, next"
-            :total="page.total"
-            :current-page="page.pageNo"
-            :page-size="page.rownumber"
-            @current-change="changePage"
-          >
+          <el-pagination background layout="prev, pager, next" :total="page.total" :current-page="page.pageNo"
+            :page-size="page.rownumber" @current-change="changePage">
           </el-pagination>
         </div>
       </div>
@@ -153,6 +99,13 @@ export default {
     };
   },
   computed: {
+    setGridData() {
+      let list = []
+      if (this.gridData.length > this.page.rownumber && this.listV2?.is_tree === true) {
+        list = this.gridData.slice((this.page.pageNo - 1) * this.page.rownumber, this.page.pageNo * this.page.rownumber);
+      }
+      return list;
+    },
     service() {
       return this.optionListV2?.serviceName || this.field.info?.fmt?.service;
     },
@@ -441,19 +394,36 @@ export default {
           (no) => !this.gridData.find((item) => item[this.valueCol] === no)
         );
         this.gridData.forEach((item) => {
-          this.$set(item, "chcecked", false);
+          if (item.checked) {
+            this.$set(item, "checked", false);
+          }
         });
       } else {
         // 全选
-        this.selected = [
-          ...new Set([
-            ...this.selected,
-            ...this.gridData.map((item) => item[this.valueCol]),
-          ]),
-        ];
-        this.gridData.forEach((item) => {
-          this.$set(item, "chcecked", true);
-        });
+        if (this.listV2?.is_tree === true) {
+          this.selected = [
+            ...new Set([
+              ...this.selected,
+              ...this.setGridData.map((item) => item[this.valueCol]),
+            ]),
+          ];
+          this.gridData.forEach((item) => {
+            if(this.selected.includes(item[this.valueCol])) {
+              this.$set(item, "checked", true);
+            }
+          });
+        } else {
+          this.selected = [
+            ...new Set([
+              ...this.selected,
+              ...this.gridData.map((item) => item[this.valueCol]),
+            ]),
+          ];
+          this.gridData.forEach((item) => {
+            this.$set(item, "checked", true);
+          });
+        }
+
       }
       this.setFieldVal();
     },
@@ -473,7 +443,7 @@ export default {
             .map((item) => item[this.valueCol]);
         }
         if (this.selected.indexOf(row[this.valueCol]) > -1) {
-          this.$set(row, "chcecked", false);
+          this.$set(row, "checked", false);
           this.selected = this.selected.filter(
             (item) => item !== row[this.valueCol]
           );
@@ -483,7 +453,7 @@ export default {
             );
           }
         } else {
-          this.$set(row, "chcecked", true);
+          this.$set(row, "checked", true);
           this.selected.push(row[this.valueCol]);
           if (rowChildren?.length) {
             this.selected = this.selected.concat(rowChildren);
@@ -500,7 +470,11 @@ export default {
     },
     changePage(page) {
       this.page.pageNo = page;
-      this.loadOptions();
+      if (this.listV2?.is_tree === true) {
+
+      } else {
+        this.loadOptions();
+      }
     },
     async buildGridHeader() {
       if (this.fmt && this.fmt.service) {
@@ -522,8 +496,8 @@ export default {
           header.srvcol = serviceCol;
           let more_config =
             serviceCol["more_config"] !== null &&
-            serviceCol["more_config"] !== undefined &&
-            serviceCol["more_config"] !== ""
+              serviceCol["more_config"] !== undefined &&
+              serviceCol["more_config"] !== ""
               ? JSON.parse(serviceCol["more_config"])
               : null;
           let colType = serviceCol["col_type"];
@@ -536,15 +510,15 @@ export default {
           header["list_min_width"] = serviceCol["list_min_width"];
           header["show_option_icon"] =
             serviceCol["more_config"] &&
-            JSON.parse(serviceCol["more_config"]).option_icon &&
-            JSON.parse(serviceCol["more_config"]).option_icon !== null
+              JSON.parse(serviceCol["more_config"]).option_icon &&
+              JSON.parse(serviceCol["more_config"]).option_icon !== null
               ? JSON.parse(serviceCol["more_config"]).option_icon
               : false;
           header["align"] = this.getColAlign(colType);
           header["format"] =
             serviceCol["more_config"] &&
-            JSON.parse(serviceCol["more_config"]).format &&
-            JSON.parse(serviceCol["more_config"]).format !== null
+              JSON.parse(serviceCol["more_config"]).format &&
+              JSON.parse(serviceCol["more_config"]).format !== null
               ? JSON.parse(serviceCol["more_config"]).format
               : null;
           header["more_config"] =
@@ -591,13 +565,15 @@ export default {
         // this.buildGridHeaders(respData[ "srv_cols" ]);
         if (this.disabled !== true) {
           if (this.finderSelected) {
+            console.log("finderSelected", this.finderSelected);
+
             try {
               this.allData = JSON.parse(this.finderSelected).map((item) => {
                 item.label = item[this.labelCol];
                 item.value = item[this.valueCol];
                 return item;
               });
-            } catch (error) {}
+            } catch (error) { }
           }
           this.loadOptions();
         } else if (this.finderSelected) {
@@ -771,7 +747,7 @@ export default {
               if (key) {
                 obj.value = defaultValues[key];
               }
-            } catch (error) {}
+            } catch (error) { }
           }
           queryJson.condition.push(obj);
         }
@@ -835,16 +811,24 @@ export default {
         // 默认选中所有数据 不分页
         delete queryJson.page;
       }
-
+      const loading = self.$loading({
+        lock: self,
+        text: "加载中",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
       return this.selectList(queryJson).then((response) => {
         if (response && response.data && response.data.data) {
-          this.gridData = cloneDeep(response.data.data).map((item) => {
-            if (this.isTree) {
-              item.hasChildren = item.is_leaf === "否";
-            }
-            item.checked = false;
-            return item;
-          });
+          const data = response.data.data;
+          if (Array.isArray(data) && data.length) {
+            this.gridData = data.map((item) => {
+              if (this.isTree) {
+                item.hasChildren = item.is_leaf === "否";
+              }
+              item.checked = false;
+              return item;
+            });
+          }
           let allData = uniqBy(
             [
               ...this.gridData,
@@ -873,14 +857,20 @@ export default {
             }
           }
           this.initTableSelection();
-          if (response.body.page) {
+          if (response.data.page) {
             if (this.listV2?.is_tree === true) {
               this.page.total = response.data.data.length;
             } else {
-              this.page.total = response.body.page.total;
+              this.page.total = response.data.page.total;
             }
           }
         }
+      }).finally(() => {
+        loading.close();
+        //重新计算弹框的位置：
+        this.$nextTick(() => {
+          this.$refs?.show_popover?.updatePopper();
+        });
       });
     },
     getColAlign: function (colType) {
@@ -934,7 +924,7 @@ export default {
   padding: 0 4px !important;
 }
 
-.el-table th > .cell {
+.el-table th>.cell {
   padding: 8px;
 }
 
