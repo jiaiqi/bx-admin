@@ -362,7 +362,7 @@ export default {
       }
       return result;
     },
-    onResize({ id, width, height }) {
+    onResize({ id, width, height, x, y }) {
       if (!id) return;
       function findComponentById(components, id) {
         let result = null;
@@ -387,7 +387,7 @@ export default {
         return result;
       }
       let component = findComponentById(this.components, id);
-      if (component && (width || height)) {
+      if (component && (width || height || x || y)) {
         if (width) {
           component.layout_width = width;
           this.$set(component, "layout_width", width);
@@ -395,6 +395,14 @@ export default {
         if (height) {
           component.layout_height = height;
           this.$set(component, "layout_height", height);
+        }
+        if (x) {
+          component.layout_x = x;
+          this.$set(component, "layout_x", x);
+        }
+        if (y) {
+          component.layout_y = y;
+          this.$set(component, "layout_y", y);
         }
         if (!component._editType) {
           this.$set(component, "_editType", "update");

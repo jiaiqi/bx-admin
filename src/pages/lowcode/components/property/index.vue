@@ -324,7 +324,7 @@ export default {
       componentLoaded: false,
       compServiceCfg: null,
       componentId: "",
-      compFormKey:new Date().getTime(),
+      compFormKey: new Date().getTime(),
     };
   },
   methods: {
@@ -766,9 +766,9 @@ export default {
             ? this.buildAddChildren(item.children)
             : [],
         };
-        if(item?.position?.x&&item?.position?.y){
-          obj.layout_x = item?.position?.x
-          obj.layout_y = item?.position?.y
+        if (item?.position?.x && item?.position?.y) {
+          obj.layout_x = item?.position?.x;
+          obj.layout_y = item?.position?.y;
         }
         return obj;
       });
@@ -793,8 +793,15 @@ export default {
           "update"
         );
         if (updateList?.length) {
-          //更新页面组件 目前只有组件顺序可以更新
-          const updateKeys = ["com_seq", "layout_height", "layout_width","parent_no"];
+          //更新页面组件 目前只有固定的几个key可以更新
+          const updateKeys = [
+            "com_seq",
+            "layout_height",
+            "layout_width",
+            "layout_x",
+            "layout_y",
+            "parent_no",
+          ];
           const updateObj = [];
           updateList.forEach((item) => {
             // 组装更新对象
@@ -951,7 +958,7 @@ export default {
           "row_json",
           "page_no",
           "image",
-          "preview"
+          "preview",
         ];
         layout.forEach((item, i) => {
           const data = { ...item.data };
