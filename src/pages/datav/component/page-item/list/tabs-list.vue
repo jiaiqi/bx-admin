@@ -193,7 +193,6 @@ export default {
 
     .tab-name-box {
       flex-direction: column;
-      padding: 10px 40px;
       gap: 10px;
 
       .tab-name {

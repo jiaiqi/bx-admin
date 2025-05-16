@@ -101,6 +101,10 @@ export default {
     isPlatChildForm: {
       type: Boolean,
       default: false
+    },
+    groupCollapse:{
+      type: Boolean,
+      default: false
     }
   },
 
@@ -161,6 +165,9 @@ export default {
       let json = this.cfgJson
       let options = json && json.hasOwnProperty('options') && json.options ? json.options : ""
       options = options.split(',')
+      if(this.groupCollapse === true){
+        options.push('分组默认折叠')
+      }
       return options
     },
     isVerifyMobile: function () {

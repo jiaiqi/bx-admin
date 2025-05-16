@@ -11,6 +11,7 @@
             :pk="pageId"
             :app-no="appNo"
             pkCol="id"
+            :group-collapse="true"
             @executor-complete="onPageUpdate"
             @form-loaded="pageLoading = false"
             @field-value-changed="onValueChange($event, 'page-update')"
@@ -49,6 +50,7 @@
           :navAfterSubmit="false"
           :pk="componentId"
           pkCol="id"
+          :group-collapse="true"
           @action-complete="onComponentUpdate"
           @form-loaded="
             (componentLoading = false),
@@ -86,6 +88,7 @@
           :navAfterSubmit="false"
           :pk="compServiceCfg.pk"
           :pkCol="compServiceCfg.pkCol"
+          :group-collapse="true"
           @action-complete="onComponentUpdate"
           @field-value-changed="
             onValueChange($event, 'component-cfg-update', compServiceCfg)
