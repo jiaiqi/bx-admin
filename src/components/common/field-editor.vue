@@ -74,10 +74,10 @@
           :visible.sync="dialogVisible"
           width="68%"
           append-to-body
+          center
           destroy-on-close
         >
-          <textarea
-            :value="html"
+          <div
             :rows="15"
             :disabled="true"
             style="
@@ -89,9 +89,8 @@
               margin: 0 auto;
             "
             v-html="html"
-          ></textarea>
+          ></div>
           <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="dialogVisible = false"
               >确 定</el-button
             >
