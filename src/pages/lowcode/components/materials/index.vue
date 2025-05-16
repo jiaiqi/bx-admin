@@ -37,6 +37,33 @@
         {{ item.label }}
       </div>
     </div>
+    <div
+      class="component-list"
+      v-if="current && current.comList && current.comList.length"
+    >
+      <div
+        v-for="item in current.comList"
+        :key="item.value"
+        :id="item.value"
+        class="com-item margin component cursor-move"
+        :class="[`type-${item.type}`]"
+        @dragstart="handleDragStart($event, item)"
+        draggable="true"
+        unselectable="on"
+      >
+        <div class="example" v-if="item.icon">
+          <Icon :icon="item.icon"></Icon>
+        </div>
+        <img
+          :src="getImagePath(item.preview)"
+          alt=""
+          class="example"
+          v-else="item.preview"
+        />
+
+        <div class="label">{{ item.label }}</div>
+      </div>
+    </div>
     <div class="component-list" v-if="comList && comList.length">
       <div
         v-for="item in comList"
@@ -60,6 +87,7 @@ import cloneDeep from "lodash/cloneDeep";
 import dragStore from "../../store/dragStore";
 import { materialsTree } from "./materials";
 import { pageCompCols } from "../property/columns";
+import { Icon } from "@iconify/vue2";
 import {
   Card,
   Chart,
@@ -95,6 +123,7 @@ export default {
     ExtPage,
     Layout,
     Avatar,
+    Icon,
   },
   data() {
     return {
@@ -603,6 +632,10 @@ export default {
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
       transition: scale 0.3s ease-in-out;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
       &:hover {
         scale: 1.1;
       }
@@ -617,7 +650,7 @@ export default {
     }
   }
 }
-.public-component{
+.public-component {
   width: 100px;
 }
 </style>

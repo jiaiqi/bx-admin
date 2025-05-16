@@ -198,6 +198,18 @@ export const materialsTree = [
     service: "srvpage_cfg_com_ext_page_select",
     nameCol: 'extp_name',
   },
+  {
+    value: "others",
+    label: "其它",
+    comList: [
+      {
+        label: "悬浮组件",
+        value: "悬浮组件",
+        icon: "ri-radio-button-fill",
+        type:"悬浮组件"
+      }
+    ],
+  },
   // {
   //   value: "detail",
   //   label: "详情",
