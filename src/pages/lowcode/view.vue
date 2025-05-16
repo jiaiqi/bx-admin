@@ -212,6 +212,9 @@ export default {
             }
           } else {
             item.component = "page-item";
+            if(item.com_option?.includes('悬浮可拖动')){
+              item.component = "float-component";
+            }
           }
           item.data = {};
           pageCompCols.forEach((col) => {

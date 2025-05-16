@@ -210,8 +210,4 @@ export const materialsTree = [
       }
     ],
   },
-  // {
-  //   value: "detail",
-  //   label: "详情",
-  // },
 ]

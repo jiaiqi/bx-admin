@@ -302,7 +302,9 @@ export default {
             obj.type = "component";
             obj._type = "component";
             obj.component = "page-item";
-
+            if(ele.com_option?.includes('悬浮可拖动')){
+              obj.component = "float-component";
+            }
             obj.data = this.initComCfg(obj.com_type, obj);
             if (obj.data.srv_req_type) {
               obj.srv_req_type = obj.data.srv_req_type;
@@ -447,11 +449,11 @@ export default {
       e.dataTransfer.effectAllowed = "copy";
       // 创建自定义拖拽图像（可选）
       const dragIcon = document.createElement("div");
-      dragIcon.innerHTML = item.name || item.comp_label;
+      dragIcon.innerHTML = item.name || item.label || item.comp_label;
       dragIcon.className = "drag-icon";
       document.body.appendChild(dragIcon);
       e.dataTransfer.setDragImage(dragIcon, 0, 0);
-
+      this.$emit("drag-start", item);
       // 延迟移除拖拽图像
       setTimeout(() => {
         document.body.removeChild(dragIcon);
@@ -473,6 +475,7 @@ export default {
           el.classList.remove("drag-over");
           el.classList.remove("drag-not-allowed");
         });
+      this.$emit("drag-end");
     },
   },
 };

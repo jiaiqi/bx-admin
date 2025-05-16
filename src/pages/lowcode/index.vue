@@ -50,7 +50,12 @@
             "
           ></i>
         </div>
-        <materials-view app-no="config" class="materials-view"></materials-view>
+        <materials-view
+          app-no="config"
+          class="materials-view"
+          @drag-start="onDragStart"
+          @drag-end="onDragEnd"
+        ></materials-view>
       </div>
       <div
         class="editor-container"
@@ -74,6 +79,7 @@
           :components="components"
           :current-id="currentId"
           :hidden-component-visible="hiddenComponentVisible"
+          :draggingComponentType="draggingComponentType"
           @select="currentChange"
           @change="componentsChange"
           @delete="onDel"
@@ -268,6 +274,7 @@ export default {
       scrollLeft: 0,
       scrollTop: 0,
       editorContainerStyle: {},
+      draggingComponentType: null,
     };
   },
   mounted() {
@@ -318,6 +325,12 @@ export default {
     openNewTab() {
       const url = `/vpages/#/lowcode/view/${this.pageNo}`;
       window.open(url, "_blank");
+    },
+    onDragStart(data) {
+      this.draggingComponentType = data.type;
+    },
+    onDragEnd() {
+      this.draggingComponentType = null;
     },
     // 切换物料面板
     toggleMaterialsPanel() {
@@ -472,8 +485,8 @@ export default {
       if (ok) {
         if (Array.isArray(data) && data.length) {
           let list = [];
-          console.log('getPageComponents:',data);
-          
+          console.log("getPageComponents:", data);
+
           data.forEach((item) => {
             if (typeof item.com_json === "string") {
               try {
@@ -549,6 +562,9 @@ export default {
           }
         } else {
           item.component = "page-item";
+          if (item.com_option?.includes("悬浮可拖动")) {
+            item.component = "float-component";
+          }
         }
         item.data = {};
         pageCompCols.forEach((col) => {

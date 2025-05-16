@@ -93,7 +93,7 @@ export default {
     },
     id: {
       type: [String, Number],
-      default: "",
+      default: new Date().getTime(),
     },
     com_no: {
       type: String,
@@ -441,7 +441,7 @@ export default {
       const data = dragStore.getDraggingElement();
       if (this.children && this.children.length) {
         const existingComponent = this.children[0];
-        if (existingComponent.id && existingComponent.id === data.id) {
+        if (data && existingComponent.id && existingComponent.id === data.id) {
           e.dataTransfer.dropEffect = "none";
           e.target.classList.remove("drag-over");
           // e.target.classList.add("drag-not-allowed");

@@ -45,7 +45,11 @@
     @swap-components="$emit('swap-components', $event)"
     @move-component="$emit('move-component', $event)"
     :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
-    style="position: relative; z-index: 1"
+    :style="
+      props.com_option && props.com_option.includes('悬浮可拖动')||type==='悬浮组件'
+        ? ''
+        : 'position: relative; z-index: 1'
+    "
   >
     <template v-if="childComponents && childComponents.length">
       <lc-view
@@ -89,6 +93,7 @@ import lcBlock from "./block.vue";
 import lcContainer from "./container.vue";
 import lcContent from "./content-item.vue";
 import pageItem from "@/pages/datav/component/page-item/page-item.vue";
+import floatComponent from "./float-component.vue";
 import { VueDraggable } from "vue-draggable-plus";
 
 export default {
@@ -100,6 +105,7 @@ export default {
     VueDraggable,
     pageItem,
     lcView: () => import("./view.vue"),
+    floatComponent,
   },
   props: {
     id: {

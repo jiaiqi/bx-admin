@@ -1,5 +1,5 @@
 <template>
-  <div v-if="viewMode === '面包屑导航'" class="breadcrumb">
+  <div v-if="viewMode === '面包屑导航'" class="breadcrumb-wrap">
     <div class="home-icon">
       <router-link :to="homePath" class="link">
         <Icon icon="ri-home-4-fill"></Icon>
@@ -564,8 +564,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.breadcrumb {
+.breadcrumb-wrap {
   background-color: transparent;
+  margin: unset;
+  padding: unset;
+  display: flex;
   .home-icon {
     font-size: 24px;
     width: 42.94px;

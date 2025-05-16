@@ -766,6 +766,10 @@ export default {
             ? this.buildAddChildren(item.children)
             : [],
         };
+        if(item?.position?.x&&item?.position?.y){
+          obj.layout_x = item?.position?.x
+          obj.layout_y = item?.position?.y
+        }
         return obj;
       });
       return result;

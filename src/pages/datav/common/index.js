@@ -36,7 +36,7 @@ const formatStyleData = (val) => {
       json[key] = `${json[key]}px`;
     }
     obj[_key] = json[key];
-    
+
     if (typeof json[key] === 'string') {
       // 处理样式变量
       if (themeVariableKeys.includes(json[key])) {
@@ -64,7 +64,7 @@ const formatStyleData = (val) => {
       obj[_key] = rpx2px(obj[_key]);
     }
   }
-  if (obj["background-image"]) {
+  if (obj["background-image"] && !obj["background-size"]) {
     obj["background-size"] = "100% 100%";
   }
 

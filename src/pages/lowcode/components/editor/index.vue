@@ -8,8 +8,17 @@
     @dragend="handleEditorDragEnd"
     :style="{ '--content-width': contentWidth }"
   >
-    <div class="overlay" @click="clickOutside"></div>
+    <div
+      class="overlay"
+      :class="{
+        'on-drag-float-component': draggingComponentType === '悬浮组件',
+      }"
+      @click="clickOutside"
+    ></div>
     <lc-view
+      :style="{
+        'pointer-events': draggingComponentType === '悬浮组件' ? 'none' : '',
+      }"
       v-for="item in editorComponents"
       :current-id="currentId"
       :key="item.id"
@@ -60,6 +69,10 @@ export default {
     hiddenComponentVisible: {
       type: Boolean,
       default: false,
+    },
+    draggingComponentType: {
+      type: String,
+      default: "",
     },
   },
   computed: {
@@ -295,9 +308,17 @@ export default {
       console.log("handleEditorDragOver", draggedType);
       // 阻止默认行为以允许放置
       e.preventDefault();
+      // 检查拖拽元素的类型
+      console.log("draggedType", draggedType);
       if (draggedType === "container") {
         // 允许放置容器组件
         e.dataTransfer.dropEffect = "copy";
+        e.currentTarget.classList.add("editor-drag-over");
+        e.currentTarget.classList.remove("editor-drag-not-allowed");
+      } else if (draggedType === "悬浮组件") {
+        // 允许放置悬浮组件
+        e.dataTransfer.dropEffect = "copy";
+        e.currentTarget.classList.add("on-drag-float-component");
         e.currentTarget.classList.add("editor-drag-over");
         e.currentTarget.classList.remove("editor-drag-not-allowed");
       } else if (draggedType) {
@@ -310,6 +331,7 @@ export default {
     handleEditorDragLeave(e) {
       e.currentTarget.classList.remove("editor-drag-over");
       e.currentTarget.classList.remove("editor-drag-not-allowed");
+      e.currentTarget.classList.remove("on-drag-float-component");
     },
     // 添加拖拽结束处理
     handleEditorDragEnd(e) {
@@ -331,7 +353,7 @@ export default {
       e.preventDefault();
       e.currentTarget.classList.remove("editor-drag-over");
       e.currentTarget.classList.remove("editor-drag-not-allowed");
-
+      e.currentTarget.classList.remove("on-drag-float-component");
       // 获取拖拽数据
       const data = e.dataTransfer.getData("text/plain");
 
@@ -344,6 +366,31 @@ export default {
               draggedElement.id = `root_container_${new Date().getTime()}`;
               draggedElement._editType = "add";
               draggedElement._seq = (this.editorComponents.length + 1) * 100; // 计算seq
+              // 添加到顶层组件
+              this.editorComponents.push(draggedElement);
+            }
+            this.$emit("change", this.editorComponents);
+          } else if (draggedElement.type === "悬浮组件") {
+            // 计算当前放入的点相对于editor-view的位置 单位使用百分比
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+            console.log("xPercent", xPercent, "yPercent", yPercent);
+            draggedElement.position = {
+              x: xPercent,
+              y: yPercent,
+            };
+            draggedElement.com_type = "cardGroup";
+            draggedElement.component = "float-component";
+            if (!draggedElement._editType) {
+              draggedElement.id = `root_container_${new Date().getTime()}`;
+              draggedElement._editType = "add";
+              draggedElement.com_name = "悬浮组件";
+              draggedElement.com_option = "悬浮可拖动";
+              draggedElement._seq =
+                (this.editorComponents.length + 1) * 100 + 10000; // 计算seq
               // 添加到顶层组件
               this.editorComponents.push(draggedElement);
             }
@@ -387,6 +434,21 @@ export default {
       border-radius: 4px;
     }
   }
+  &.on-drag-float-component {
+    background-color: rgba(255, 116, 14, 0.1);
+    &.editor-drag-over {
+      &::before {
+        content: "放置悬浮组件";
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        color: #fff;
+        z-index: 100;
+        border-radius: 4px;
+      }
+    }
+  }
 
   &.editor-drag-not-allowed {
     border: 2px dashed #ff0000;
@@ -414,5 +476,8 @@ export default {
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
   z-index: 0;
+  .on-drag-float-component {
+    z-index: 9999999;
+  }
 }
 </style>
