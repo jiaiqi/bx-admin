@@ -6,11 +6,14 @@
       </router-link>
     </div>
     <div class="breadcrumb-list">
-      <div class="breadcrumb-item">
+      <!-- <div class="breadcrumb-item">
         <router-link :to="homePath" class="link"> 首页 </router-link>
-      </div>
-      <div class="breadcrumb-item" v-for="item in breadcrumb">
-        <i class="breadcrumb-separator el-icon-d-arrow-right"></i>
+      </div> -->
+      <div class="breadcrumb-item" v-for="(item, index) in breadcrumb">
+        <i
+          class="breadcrumb-separator el-icon-d-arrow-right"
+          v-if="index !== 0"
+        ></i>
         <router-link :to="item.path" v-if="item.path" class="link">
           {{ item.label || "" }}
         </router-link>
@@ -601,7 +604,7 @@ export default {
       rgba(241, 246, 255, 1) 1.25%,
       rgba(241, 246, 246, 0) 90.23%
     );
-    padding-left: 40px;
+    padding-left: 50px;
     margin-left: -40px;
     margin-top: 4px;
     .breadcrumb-separator {
