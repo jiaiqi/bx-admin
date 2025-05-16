@@ -259,12 +259,12 @@ export default {
         style = this.pageConfig?.dv_com_style_json_data;
       }
       if (this.pageItemData.com_type === "navBar") {
-        if (style.padding) {
-          delete style.padding;
-        }
-        if (style.border_radius) {
-          delete style.border_radius;
-        }
+        // if (style.padding) {
+        //   delete style.padding;
+        // }
+        // if (style.border_radius) {
+        //   delete style.border_radius;
+        // }
       }
       return formatStyleData(style);
     },
