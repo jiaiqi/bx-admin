@@ -1,45 +1,97 @@
 <template>
   <div>
-    <el-popover trigger="focus" ref="show_popover" :disabled="disabled"
-      :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }">
+    <el-popover
+      trigger="focus"
+      ref="show_popover"
+      :disabled="disabled"
+      :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }"
+    >
       <template slot="reference">
-        <el-select style="width: 100%" :disabled="disabled" v-model="selected" :value-key="valueCol"
-          popper-class="popper-class" placeholder="请选择" :multiple="isMulti" clearable @remove-tag="removeTag"
-          @clear="clearSelect" @focus="onSearch">
-          <el-option v-for="item in allData" :key="item.value" :label="item.label" :value="item.value">
+        <el-select
+          style="width: 100%"
+          :disabled="disabled"
+          v-model="selected"
+          :value-key="valueCol"
+          popper-class="popper-class"
+          placeholder="请选择"
+          :multiple="isMulti"
+          clearable
+          @remove-tag="removeTag"
+          @clear="clearSelect"
+          @focus="onSearch"
+        >
+          <el-option
+            v-for="item in allData"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
           </el-option>
         </el-select>
       </template>
       <div class="picker-view">
         <div class="top-bar">
-          <el-input placeholder="输入查询条件" suffix-icon="el-icon-search" v-model="inputVal" clearable
-            @keyup.enter.native="onSearch">
+          <el-input
+            placeholder="输入查询条件"
+            suffix-icon="el-icon-search"
+            v-model="inputVal"
+            clearable
+            @keyup.enter.native="onSearch"
+          >
           </el-input>
-          <el-button type="primary" icon="el-icon-search" @click="onSearch">搜索</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="onSearch"
+            >搜索</el-button
+          >
         </div>
-        <el-table class="el-table" ref="multipleTable" :data="setGridData" row-key="id" lazy :load="loadChild"
-          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :highlight-current-row="!isMulti"
-          @row-click="clickRow" @selection-change="handleSelectionChange">
+        <el-table
+          class="el-table"
+          ref="multipleTable"
+          :data="setGridData"
+          row-key="id"
+          lazy
+          :load="loadChild"
+          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+          :highlight-current-row="!isMulti"
+          @row-click="clickRow"
+          @selection-change="handleSelectionChange"
+        >
           <el-table-column width="120" v-if="isMulti">
             <template #header>
               <div>
-                <el-checkbox :value="gridData.every((item) => selected.includes(item[valueCol]))
-                  " @change="onCheckedAll"></el-checkbox>
+                <el-checkbox
+                  :value="
+                    gridData.every((item) => selected.includes(item[valueCol]))
+                  "
+                  @change="onCheckedAll"
+                ></el-checkbox>
               </div>
             </template>
             <template slot-scope="scope">
-              <el-checkbox :value="selected.includes(scope.row[valueCol])"
-                @change="changeSelected(scope.$index, scope.row)"></el-checkbox>
+              <el-checkbox
+                :value="selected.includes(scope.row[valueCol])"
+                @change="changeSelected(scope.$index, scope.row)"
+              ></el-checkbox>
             </template>
           </el-table-column>
-          <el-table-column :min-width="flexColumnWidth(item.label, item.column)" :label="item.label"
-            v-for="item in setGridHeader" :key="item.column" v-if="item.srvcol && item.srvcol.in_list == 1"
-            :prop="item.column"></el-table-column>
+          <el-table-column
+            :min-width="flexColumnWidth(item.label, item.column)"
+            :label="item.label"
+            v-for="item in setGridHeader"
+            :key="item.column"
+            v-if="item.srvcol && item.srvcol.in_list == 1"
+            :prop="item.column"
+          ></el-table-column>
         </el-table>
         <div class="bottom-bar">
           <div></div>
-          <el-pagination background layout="prev, pager, next" :total="page.total" :current-page="page.pageNo"
-            :page-size="page.rownumber" @current-change="changePage">
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :total="page.total"
+            :current-page="page.pageNo"
+            :page-size="page.rownumber"
+            @current-change="changePage"
+          >
           </el-pagination>
         </div>
       </div>
@@ -100,9 +152,15 @@ export default {
   },
   computed: {
     setGridData() {
-      let list = []
-      if (this.gridData.length > this.page.rownumber && this.listV2?.is_tree === true) {
-        list = this.gridData.slice((this.page.pageNo - 1) * this.page.rownumber, this.page.pageNo * this.page.rownumber);
+      let list = [];
+      if (
+        this.gridData.length > this.page.rownumber &&
+        this.listV2?.is_tree === true
+      ) {
+        list = this.gridData.slice(
+          (this.page.pageNo - 1) * this.page.rownumber,
+          this.page.pageNo * this.page.rownumber
+        );
       }
       return list;
     },
@@ -186,9 +244,15 @@ export default {
   },
   created() {
     this.initSelected();
-    this.getListV2().then(() => {
-      this.buildGridHeader();
-    });
+    this.getListV2()
+      .then(() => {
+        return this.buildGridHeader();
+      })
+      .then(() => {
+        setTimeout(() => {
+          this.loadOptions();
+        }, 1000);
+      });
   },
   watch: {
     gridData: {
@@ -408,7 +472,7 @@ export default {
             ]),
           ];
           this.gridData.forEach((item) => {
-            if(this.selected.includes(item[this.valueCol])) {
+            if (this.selected.includes(item[this.valueCol])) {
               this.$set(item, "checked", true);
             }
           });
@@ -423,7 +487,6 @@ export default {
             this.$set(item, "checked", true);
           });
         }
-
       }
       this.setFieldVal();
     },
@@ -471,7 +534,6 @@ export default {
     changePage(page) {
       this.page.pageNo = page;
       if (this.listV2?.is_tree === true) {
-
       } else {
         this.loadOptions();
       }
@@ -496,8 +558,8 @@ export default {
           header.srvcol = serviceCol;
           let more_config =
             serviceCol["more_config"] !== null &&
-              serviceCol["more_config"] !== undefined &&
-              serviceCol["more_config"] !== ""
+            serviceCol["more_config"] !== undefined &&
+            serviceCol["more_config"] !== ""
               ? JSON.parse(serviceCol["more_config"])
               : null;
           let colType = serviceCol["col_type"];
@@ -510,15 +572,15 @@ export default {
           header["list_min_width"] = serviceCol["list_min_width"];
           header["show_option_icon"] =
             serviceCol["more_config"] &&
-              JSON.parse(serviceCol["more_config"]).option_icon &&
-              JSON.parse(serviceCol["more_config"]).option_icon !== null
+            JSON.parse(serviceCol["more_config"]).option_icon &&
+            JSON.parse(serviceCol["more_config"]).option_icon !== null
               ? JSON.parse(serviceCol["more_config"]).option_icon
               : false;
           header["align"] = this.getColAlign(colType);
           header["format"] =
             serviceCol["more_config"] &&
-              JSON.parse(serviceCol["more_config"]).format &&
-              JSON.parse(serviceCol["more_config"]).format !== null
+            JSON.parse(serviceCol["more_config"]).format &&
+            JSON.parse(serviceCol["more_config"]).format !== null
               ? JSON.parse(serviceCol["more_config"]).format
               : null;
           header["more_config"] =
@@ -573,9 +635,8 @@ export default {
                 item.value = item[this.valueCol];
                 return item;
               });
-            } catch (error) { }
+            } catch (error) {}
           }
-          this.loadOptions();
         } else if (this.finderSelected) {
           this.gridData = JSON.parse(this.finderSelected).map((item) => {
             item.label = item[this.labelCol];
@@ -747,7 +808,10 @@ export default {
               if (key) {
                 obj.value = defaultValues[key];
               }
-            } catch (error) { }
+              if (!obj.value && this.formModel && this.formModel[key]) {
+                obj.value = this.formModel[key];
+              }
+            } catch (error) {}
           }
           queryJson.condition.push(obj);
         }
@@ -817,61 +881,63 @@ export default {
         spinner: "el-icon-loading",
         background: "rgba(0, 0, 0, 0.7)",
       });
-      return this.selectList(queryJson).then((response) => {
-        if (response && response.data && response.data.data) {
-          const data = response.data.data;
-          if (Array.isArray(data) && data.length) {
-            this.gridData = data.map((item) => {
-              if (this.isTree) {
-                item.hasChildren = item.is_leaf === "否";
-              }
-              item.checked = false;
+      return this.selectList(queryJson)
+        .then((response) => {
+          if (response && response.data && response.data.data) {
+            const data = response.data.data;
+            if (Array.isArray(data) && data.length) {
+              this.gridData = data.map((item) => {
+                if (this.isTree) {
+                  item.hasChildren = item.is_leaf === "否";
+                }
+                item.checked = false;
+                return item;
+              });
+            }
+            let allData = uniqBy(
+              [
+                ...this.gridData,
+                ...this.allData,
+                ...cloneDeep(this.selectedGridData),
+              ],
+              this.valueCol
+            );
+            this.allData = cloneDeep(allData).map((item) => {
+              item.label = item[this.labelCol];
+              item.value = item[this.valueCol];
               return item;
             });
+            if (this.isMulti && this.isAdd) {
+              if (
+                !this.listV2.is_tree &&
+                (this.checkedFirstPage || this.checkedAll) &&
+                !this.isCheckedFirstPage &&
+                this.allData?.length
+              ) {
+                // 默认选中查到的所有数据
+                this.allData.forEach((item) => {
+                  this.clickRow(item);
+                });
+                this.isCheckedFirstPage = true;
+              }
+            }
+            this.initTableSelection();
+            if (response.data.page) {
+              if (this.listV2?.is_tree === true) {
+                this.page.total = response.data.data.length;
+              } else {
+                this.page.total = response.data.page.total;
+              }
+            }
           }
-          let allData = uniqBy(
-            [
-              ...this.gridData,
-              ...this.allData,
-              ...cloneDeep(this.selectedGridData),
-            ],
-            this.valueCol
-          );
-          this.allData = cloneDeep(allData).map((item) => {
-            item.label = item[this.labelCol];
-            item.value = item[this.valueCol];
-            return item;
+        })
+        .finally(() => {
+          loading.close();
+          //重新计算弹框的位置：
+          this.$nextTick(() => {
+            this.$refs?.show_popover?.updatePopper();
           });
-          if (this.isMulti && this.isAdd) {
-            if (
-              !this.listV2.is_tree &&
-              (this.checkedFirstPage || this.checkedAll) &&
-              !this.isCheckedFirstPage &&
-              this.allData?.length
-            ) {
-              // 默认选中查到的所有数据
-              this.allData.forEach((item) => {
-                this.clickRow(item);
-              });
-              this.isCheckedFirstPage = true;
-            }
-          }
-          this.initTableSelection();
-          if (response.data.page) {
-            if (this.listV2?.is_tree === true) {
-              this.page.total = response.data.data.length;
-            } else {
-              this.page.total = response.data.page.total;
-            }
-          }
-        }
-      }).finally(() => {
-        loading.close();
-        //重新计算弹框的位置：
-        this.$nextTick(() => {
-          this.$refs?.show_popover?.updatePopper();
         });
-      });
     },
     getColAlign: function (colType) {
       if (
@@ -924,7 +990,7 @@ export default {
   padding: 0 4px !important;
 }
 
-.el-table th>.cell {
+.el-table th > .cell {
   padding: 8px;
 }
 
