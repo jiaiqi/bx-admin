@@ -198,6 +198,11 @@ export default {
     lcView,
     Icon,
   },
+  provide() {
+    return {
+      getPageConfig: () => this.pageConfig,
+    };
+  },
   directives: {
     clickoutside: clickoutside,
   },
