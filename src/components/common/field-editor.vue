@@ -10,7 +10,10 @@
   >
     <slot name="field-child-prepend"></slot>
     <template v-if="(ignoreVif || field.evalXIf()) && field.flatChildForm">
-      <child-form v-bind="$props" @form-loaded="$emit('child-form-loaded',$event)"></child-form>
+      <child-form
+        v-bind="$props"
+        @form-loaded="$emit('child-form-loaded', $event)"
+      ></child-form>
     </template>
     <el-col
       :xs="field.info.colspan.xs"
@@ -34,7 +37,8 @@
       >
         <!--显示字段label-->
         <template v-slot:label>
-          <label
+          <div class="flex items-center">
+            <label
             :for="field.info.name"
             :title="field.info.label"
             :class="
@@ -51,16 +55,17 @@
             "
           >
             {{ field.info.label }}
-
-            <el-button
-              v-if="field.info.explain !== ''"
-              type="text"
-              @click="showHelpTips(field.info)"
-              style="color: #28d828"
-              slot="reference"
-              icon="el-icon-question"
-            ></el-button>
           </label>
+
+          <el-button
+            v-if="field.info.explain !== ''"
+            type="text"
+            @click="showHelpTips(field.info)"
+            style="color: #28d828"
+            slot="reference"
+            icon="el-icon-question"
+          ></el-button>
+          </div>
         </template>
 
         <!--内容部分-->
@@ -71,17 +76,20 @@
           append-to-body
           destroy-on-close
         >
-          <div
+          <textarea
+            :value="html"
+            :rows="15"
+            :disabled="true"
             style="
+              width: 100%;
               border-radius: 4px;
               padding: 10px;
               border: 1px solid #dcdfe6;
               overflow: auto;
-              max-width: 210mm;
               margin: 0 auto;
             "
             v-html="html"
-          ></div>
+          ></textarea>
           <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="dialogVisible = false"
@@ -312,10 +320,10 @@ div.invalid_form_item {
     flex-direction: column;
     // padding: 10px 0;
     width: 100%;
-    ::v-deep(.child-form){
-      .form-view-wrapper{
-        .el-row{
-          border:none;
+    ::v-deep(.child-form) {
+      .form-view-wrapper {
+        .el-row {
+          border: none;
           padding: 0;
         }
       }
