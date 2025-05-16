@@ -24,6 +24,9 @@
     @change="onChange"
     ref="elCascader"
   >
+    <template slot-scope="{ node, data }">
+      <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
+    </template>
   </el-cascader>
   <!-- <el-cascader
     v-else
@@ -119,7 +122,9 @@ export default {
           dedup: optionListV2.dedup,
           srvApp: optionListV2.srv_app || null,
           parentCol:
-            optionListV2.parent_col || optionListV2.parent_no_col || null,
+            optionListV2.parent_col ||
+            optionListV2.parent_no_col ||
+            "parent_no",
           refedCol: optionListV2.refed_col,
           dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
         };
@@ -152,6 +157,15 @@ export default {
   },
 
   methods: {
+    clickNode(node, data) {
+      console.log(node, data, "clickNode");
+      this.selected = node.path;
+      this.field.model = data;
+      this.$emit("field-value-changed", this.field.info.name, this.field);
+      this.$nextTick(() => {
+        this.$refs.elCascader.dropDownVisible = false;
+      });
+    },
     onClear() {
       this.field.model = null;
       this.$emit("field-value-changed", this.field.info.name, this.field);
@@ -205,11 +219,26 @@ export default {
 
       const response = await this.$http.post(url, params);
       if (response?.data?.state == "SUCCESS") {
-        return response.data.data.map((item) => {
+        function setTreeData(data) {
+          if (!data || data.length === 0) {
+            return;
+          }
+          data.forEach((item) => {
+            item.children = item.is_leaf === "是" ? null : [];
+            item.leaf = item.is_leaf === "是";
+            if (item.children && item.children.length > 0) {
+              setTreeData(item.children);
+            }
+          });
+        }
+
+        const data = response.data.data.map((item) => {
           item.children = item.is_leaf === "是" ? null : [];
           item.leaf = item.is_leaf === "是";
           return item;
         });
+        setTreeData(data);
+        return data;
       } else {
         console.error("loadChildren error", response.data);
         return [];

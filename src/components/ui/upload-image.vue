@@ -134,9 +134,7 @@
         :data="uploadParams"
         clearable
         :limit="limit"
-        :disabled="
-          !field.info.editable || (limit && fileLength && fileLength >= limit)
-        "
+        :disabled="!field.info.editable"
         :show-file-list="false"
         list-type="picture-card"
         :style="useFilePicker ? 'display:none;' : ''"
@@ -215,6 +213,14 @@ export default {
     },
   },
   computed: {
+    getDisabled() {
+      if (!this.field.info.editable) {
+        return true;
+      } else if (this.limit && this.fileLength) {
+        return this.fileLength >= this.limit;
+      }
+      return false;
+    },
     objInfo() {
       return this.field.info?.dispLoader?.objInfo;
     },
@@ -691,8 +697,8 @@ export default {
       window.open(file.url);
     },
     async beforeRemove(file, fileList) {
-      if(file?.file_no){
-        file.status = "success"
+      if (file?.file_no) {
+        file.status = "success";
       }
       if (file && file.status === "success") {
         //删除
