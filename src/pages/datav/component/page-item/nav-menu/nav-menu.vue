@@ -38,7 +38,10 @@
         :key="index"
         :data="item"
         :isActive="isActive(item)"
+        :current-nav="getCurrentNav"
         :followThemeColor="followThemeColor"
+        :nav-style="mixNavStyle"
+        :selected-style="mixHoverStyle"
         @change="onMenuChange"
         @on-nav="navTo"
       ></nav-menu-item>
@@ -288,6 +291,15 @@ export default {
           delete style["height"];
         }
         return style;
+      }
+    },
+    getCurrentNav() {
+      let pageNo = this.$route.params?.pageNo;
+      if (pageNo) {
+        let currentNav = this.setSubMenu.find(
+          (item) => item.page_no === pageNo
+        );
+        return currentNav;
       }
     },
     childPositionStyle() {

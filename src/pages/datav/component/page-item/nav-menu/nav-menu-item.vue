@@ -5,7 +5,15 @@
     @click="onTap"
     :class="{ 'active-nav-menu': isActive }"
   >
-    <div class="nav-menu-label" :style="[formatStyleData(data.nav_style_json)]">
+    <div
+      class="nav-menu-label"
+      :style="[
+        navStyle,
+        isCurrentNav ? selectedStyle : '',
+        data.nav_style_json ? formatStyleData(data.nav_style_json) : '',
+      ]"
+    >
+      <!-- <div class="nav-menu-label" :style="[formatStyleData(data.nav_style_json)]"> -->
       <span>
         {{ data.label || data._label || "" }}
       </span>
@@ -37,6 +45,7 @@ import { formatStyleData } from "@/pages/datav/common/index.js";
 
 export default {
   name: "NavMenuItem",
+  inject: ["getPageConfig"],
   props: {
     isActive: {
       type: Boolean,
@@ -48,12 +57,28 @@ export default {
         return {};
       },
     },
+    navStyle: {
+      type: Object,
+    },
+    selectedStyle: {
+      type: Object,
+    },
+    currentNav: {
+      type: Object,
+    },
   },
   watch: {
     isActive(newValue, oldValue) {
       if (newValue !== oldValue) {
         this.$refs.arrowAnimate.beginElement();
       }
+    },
+  },
+  computed: {
+    isCurrentNav() {
+      return (
+        this.currentNav?.nav_no && this.currentNav?.nav_no === this.data?.nav_no
+      );
     },
   },
   data() {
@@ -65,7 +90,20 @@ export default {
   methods: {
     async onTap() {
       const item = this.data;
-      if (item?._label && !item.jump_json) {
+      if (!item?.jump_json && item?.page_no) {
+        let pageNo = this.data.page_no;
+        let path = `/site/${pageNo}`
+        if(this.data.template_page_json?.file_path){
+          path = this.data.template_page_json.file_path?.replace(':pageNo')
+          if(path.includes('#')){
+            path = path.split('#')[1]
+          }
+        }
+        if(pageNo&&path){
+          this.$router.push(path)
+          return
+        }
+      } else if (item?._label && !item.jump_json) {
         // 友情链接表
         if (item.is_leaf === "是" && item.no) {
           // 非叶子节点 有子节点 查找子节点
