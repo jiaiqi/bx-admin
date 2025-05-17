@@ -126,6 +126,7 @@
 <script>
 import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
+import dayjs from "dayjs";
 
 // 节流
 function throttle(func, delay = 300) {
@@ -383,7 +384,7 @@ export default {
               this.queryOptions[key]
             ) {
               val = this.queryOptions[key] || "";
-            } else if (item.parts_type === "string" && item.parts_text) {
+            } else if (["string", "时间日期"].includes(item.parts_type)&& item.parts_text) {
               val =
                 this.renderStr(item.parts_text, {
                   data: itemData,
@@ -405,7 +406,7 @@ export default {
           this.queryOptions?.[key]
         ) {
           val = this.queryOptions[key] || "";
-        } else if (item.parts_type === "string" && item.parts_text) {
+        } else if (["string", "时间日期"].includes(item.parts_type) && item.parts_text) {
           val =
             this.renderStr(item.parts_text, {
               data: itemData,
@@ -416,6 +417,9 @@ export default {
               ...this.queryOptions,
             }) || "";
         }
+      }
+      if (type === "时间日期" && item.date_format_rule) {
+        val = dayjs(val).format(item.date_format_rule);
       }
       if (val && type === "iconImg" && item?.img_amount_limit === "多张") {
         // 展示多张图片
@@ -533,7 +537,6 @@ export default {
       return style || {};
     },
     onClickCell(data, layout) {
-      // if((!layout?.sys_fun || layout?.sys_fun === "无") && !layout.jump_json)return
       this.$emit("onClickSubBlock", data, layout);
     },
     toLogin() {

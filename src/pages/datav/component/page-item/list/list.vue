@@ -33,16 +33,22 @@
           placeholder="搜索"
           class="search-input mr-2"
           clearable
-          v-model="searchKey" size="mini"
+          v-model="searchKey"
+          size="mini"
         ></el-input>
-        <el-button type="primary" class="search-btn" @click="onSearch" size="mini"
+        <el-button
+          type="primary"
+          class="search-btn"
+          @click="onSearch"
+          size="mini"
           >搜索</el-button
         >
         <el-button
           type="primary"
           class="search-btn"
           v-if="addBtn"
-          plain size="mini"
+          plain
+          size="mini"
           @click="showAddDialog = true"
           >{{ addBtn.button_name }}</el-button
         >
@@ -99,6 +105,7 @@
         ref="cardGroupCell"
         :pageItem="pageItem"
         :cellsLayout="[cardUnitJson]"
+        :active-cell-layout="activeCardJson"
         :cellData="tableData"
         :comColMap="comColMapJson"
         :cardLayout="layoutJson"
@@ -312,6 +319,9 @@ export default {
     cardUnitJson: function () {
       let json = this.listConfig?.card_unit_json || null;
       return json;
+    },
+    activeCardJson() {
+      return this.listConfig?.active_card_list_json || null;
     },
     comColMap: function () {
       let json = this.pageItem?.cols_map_json || null;

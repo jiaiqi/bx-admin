@@ -8,6 +8,41 @@
       v-for="(cellItemData, index) in cellDataRun"
     >
       <div
+        v-if="showActiveCard && index === 0"
+        class="bx-card-cell"
+        :class="{
+          checked:
+            pageItem &&
+            pageItem._refedCol &&
+            currentRadio === cellItemData[pageItem._refedCol],
+          'is-link': activeCellLayout && activeCellLayout.jump_json,
+        }"
+        :style="[
+          activeCellLayout.style_json
+            ? buildColStyleJson(
+                activeCellLayout.style_json,
+                null,
+                activeCellLayout
+              )
+            : buildColStyleJson(null, null, activeCellLayout),
+        ]"
+        @click="onClickCell(cellItemData, activeCellLayout)"
+      >
+        <template v-for="item in activeCellLayout.parts_json">
+          <card-cell-part
+            :comColMap="comColMap"
+            :cellItem="item"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="item"
+            :parent-part="activeCellLayout"
+            @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
+          ></card-cell-part>
+        </template>
+      </div>
+      <div
         v-for="(cellLayoutJson, i) in cellsLayout"
         :key="index + i"
         class="bx-card-cell"
@@ -23,26 +58,22 @@
             ? buildColStyleJson(cellLayoutJson.style_json, null, cellLayoutJson)
             : buildColStyleJson(null, null, cellLayoutJson),
         ]"
-        v-on:click="onClickCell(cellItemData, cellLayoutJson)"
+        @click="onClickCell(cellItemData, cellLayoutJson)"
       >
-        <!-- @click.stop="onClickCell(cellItemData,cellLayoutJson)"  -->
-        <!-- <div class="radio-box" v-if="pageItem&&pageItem.selectedType==='fkSelector'">
-            <radio color="#007AFF" :class="currentRadio===cellItemData[pageItem._refedCol]?'checked blue':'blue'"
-              :checked="currentRadio===cellItemData[pageItem._refedCol]?true:false"
-              :value="cellItemData[pageItem._refedCol]"></radio>
-          </div> -->
-        <template v-for="(item, n) in cellLayoutJson.parts_json">
-          <card-cell-part
-            :comColMap="comColMap"
-            :cellItem="item"
-            :cellItemData="cellItemData"
-            :readOnly="readOnly"
-            :queryOptions="queryOptions"
-            :cellLayoutJson="item"
-            :parent-part="cellLayoutJson"
-            @on-click-cell="onClickCell"
-            @show-dialog="showDialog"
-          ></card-cell-part>
+        <template v-if="!showActiveCard || (showActiveCard && index !== 0)">
+          <template v-for="(item, n) in cellLayoutJson.parts_json">
+            <card-cell-part
+              :comColMap="comColMap"
+              :cellItem="item"
+              :cellItemData="cellItemData"
+              :readOnly="readOnly"
+              :queryOptions="queryOptions"
+              :cellLayoutJson="item"
+              :parent-part="cellLayoutJson"
+              @on-click-cell="onClickCell"
+              @show-dialog="showDialog"
+            ></card-cell-part>
+          </template>
         </template>
         <slot name="footer"></slot>
       </div>
@@ -56,7 +87,9 @@
       <div v-if="iframeLoading" class="iframe-loading">
         <el-loading-spinner></el-loading-spinner>
         <div class="loading-text">
-          <p>加载中<span class="loading-dots"><i>.</i><i>.</i><i>.</i></span></p>
+          <p>
+            加载中<span class="loading-dots"><i>.</i><i>.</i><i>.</i></span>
+          </p>
         </div>
       </div>
       <iframe
@@ -88,14 +121,24 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .iframe-loading .el-loading-spinner {
@@ -109,7 +152,7 @@
 }
 
 .iframe-loading p {
-  color: #409EFF;
+  color: #409eff;
   font-size: 16px;
   font-weight: 500;
   letter-spacing: 1px;
@@ -136,9 +179,15 @@
 }
 
 @keyframes loadingDots {
-  0% { opacity: 0; }
-  50% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>
 <script>
@@ -261,6 +310,9 @@ export default {
     queryOptions: {
       type: Object,
     },
+    activeCellLayout: {
+      type: [Object, null],
+    },
     // cellLayoutRepeat:{
     // 	type:Boolean,
     // 	default:function(){
@@ -269,6 +321,11 @@ export default {
     // }               // repeat：重复布局，配置一个单元布局，其余数据按照该单元循环  static:静态布局，按照配置单元渲染界面，不会重复
   },
   computed: {
+    showActiveCard() {
+      if (this.activeCellLayout?.parts_json?.length) {
+        return true;
+      }
+    },
     showRowButtons() {
       let show = false;
       if (this.pageItem && this.pageItem.com_type == "list") {
@@ -474,6 +531,7 @@ export default {
       this.$emit("on-row-button-click", e);
     },
     onClickCell(item, cellLayoutJson) {
+      debugger
       if (this.readOnly) {
         return;
       }
@@ -538,7 +596,7 @@ export default {
                 h,
               };
               this.dialogVisible = true;
-      this.iframeLoading = true;
+              this.iframeLoading = true;
             } else {
               if (jumpJson?.click_jump_option?.includes("先登录")) {
                 if (this.$store.state?.loginInfo?.logined !== true) {
@@ -567,118 +625,110 @@ export default {
         }
       }
     },
-    onClickSubBlock(itemData, subCol, cellLayoutJson, parentCol, originCol) {
-      console.log("onClickSubBlock");
-      if (subCol?.sys_fun === "登录") {
-        this.toLogin();
-      } else if (subCol?.sys_fun === "退出登录") {
-        this.$confirm("确认退出登录吗?", "提示", {
-          confirmButtonText: "确认",
-          cancelButtonText: "取消",
-          type: "warning",
-        }).then(() => {
-          this.$store.dispatch("loginInfo/logout");
-        });
-      } else if (
-        (!subCol?.sys_fun || subCol?.sys_fun === "无") &&
-        !subCol?.jump_json
-      ) {
-        // 如果沒有配置系統功能 也没配置跳转 将事件传递到父部件
-        if (parentCol) {
-          return this.onClickSubBlock(
-            itemData,
-            parentCol,
-            cellLayoutJson,
-            null,
-            subCol
-          );
-        }
-        // 没有父部件配置 点击事件传到卡片单元
-        return this.onClickCell(itemData, cellLayoutJson);
-      } else if (subCol?.jump_json) {
-        // 执行自定义跳转
-        console.log("自定义跳转");
-        if (
-          subCol?.jump_json?.click_type === "弹框" ||
-          subCol?.jump_json?.click_type === "跳转"
-        ) {
-          const element = this.$el;
-          const rect = element.getBoundingClientRect();
-          const x = rect.left;
-          const y = rect.top;
-          const w = rect.width;
-          const h = rect.height;
-          console.log("弹框:", x, y, w, h);
-          const jumpJson = subCol.jump_json;
-          const data = itemData;
-          if (jumpJson.tmpl_page_json?.file_path) {
-            let pagePath = jumpJson.tmpl_page_json.file_path;
-            if (jumpJson.dest_page_no) {
-              pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
-            }
-            if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
-              const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
-              mapJson.forEach((item) => {
-                if (
-                  item.to_type === "URL" &&
-                  ["当前数据", "业务", "模型"].includes(item.from_type) &&
-                  data?.[item.col_from]
-                ) {
-                  pagePath?.includes("?")
-                    ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
-                    : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
-                  // pagePath += `&${item.col_to}=${data[item.col_from]}`;
-                }
-              });
-            }
-            if (pagePath) {
-              if (subCol?.jump_json?.click_type === "弹框") {
-                this.dialogUrl = pagePath;
-                this.dialogPosition = {
-                  x,
-                  y,
-                  w,
-                  h,
-                };
-                this.dialogVisible = true;
-      this.iframeLoading = true;
-              } else {
-                if (jumpJson?.click_jump_option?.includes("先登录")) {
-                  if (this.$store.state?.loginInfo?.logined !== true) {
-                    // 您还未登录,需要登录才能进入,点击确认前往登录
-                    this.$confirm(
-                      "您还未登录,需要登录才能进入,点击确认前往登录",
-                      "提示",
-                      {
-                        confirmButtonText: "确定",
-                        cancelButtonText: "取消",
-                        type: "warning",
-                      }
-                    ).then(() => {
-                      const currentUrl =
-                        window.location.pathname + window.location.hash;
-                      sessionStorage.setItem("login_redirect_url", currentUrl);
-                      const loginUrl =
-                        window.location.origin + "/main/login.html";
-                      window.location.href = loginUrl;
-                    });
-                    return;
-                  }
-                }
-                open(pagePath);
-              }
-            }
-          }
-        }
-      }
-    },
-    onClickIcon(cellLayoutJson) {
-      if (this.readOnly) {
-        return;
-      }
-      this.$emit("on-click-icon", cellLayoutJson);
-    },
-
+    // onClickSubBlock(itemData, subCol, cellLayoutJson, parentCol, originCol) {
+    //   if (subCol?.sys_fun === "登录") {
+    //     this.toLogin();
+    //   } else if (subCol?.sys_fun === "退出登录") {
+    //     this.$confirm("确认退出登录吗?", "提示", {
+    //       confirmButtonText: "确认",
+    //       cancelButtonText: "取消",
+    //       type: "warning",
+    //     }).then(() => {
+    //       this.$store.dispatch("loginInfo/logout");
+    //     });
+    //   } else if (
+    //     (!subCol?.sys_fun || subCol?.sys_fun === "无") &&
+    //     !subCol?.jump_json
+    //   ) {
+    //     // 如果沒有配置系統功能 也没配置跳转 将事件传递到父部件
+    //     if (parentCol) {
+    //       return this.onClickSubBlock(
+    //         itemData,
+    //         parentCol,
+    //         cellLayoutJson,
+    //         null,
+    //         subCol
+    //       );
+    //     }
+    //     // 没有父部件配置 点击事件传到卡片单元
+    //     return this.onClickCell(itemData, cellLayoutJson);
+    //   } else if (subCol?.jump_json) {
+    //     // 执行自定义跳转
+    //     console.log("自定义跳转");
+    //     if (
+    //       subCol?.jump_json?.click_type === "弹框" ||
+    //       subCol?.jump_json?.click_type === "跳转"
+    //     ) {
+    //       const element = this.$el;
+    //       const rect = element.getBoundingClientRect();
+    //       const x = rect.left;
+    //       const y = rect.top;
+    //       const w = rect.width;
+    //       const h = rect.height;
+    //       console.log("弹框:", x, y, w, h);
+    //       const jumpJson = subCol.jump_json;
+    //       const data = itemData;
+    //       if (jumpJson.tmpl_page_json?.file_path) {
+    //         let pagePath = jumpJson.tmpl_page_json.file_path;
+    //         if (jumpJson.dest_page_no) {
+    //           pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
+    //         }
+    //         if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
+    //           const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
+    //           mapJson.forEach((item) => {
+    //             if (
+    //               item.to_type === "URL" &&
+    //               ["当前数据", "业务", "模型"].includes(item.from_type) &&
+    //               data?.[item.col_from]
+    //             ) {
+    //               pagePath?.includes("?")
+    //                 ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
+    //                 : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
+    //               // pagePath += `&${item.col_to}=${data[item.col_from]}`;
+    //             }
+    //           });
+    //         }
+    //         if (pagePath) {
+    //           if (subCol?.jump_json?.click_type === "弹框") {
+    //             this.dialogUrl = pagePath;
+    //             this.dialogPosition = {
+    //               x,
+    //               y,
+    //               w,
+    //               h,
+    //             };
+    //             this.dialogVisible = true;
+    //             this.iframeLoading = true;
+    //           } else {
+    //             if (jumpJson?.click_jump_option?.includes("先登录")) {
+    //               if (this.$store.state?.loginInfo?.logined !== true) {
+    //                 // 您还未登录,需要登录才能进入,点击确认前往登录
+    //                 this.$confirm(
+    //                   "您还未登录,需要登录才能进入,点击确认前往登录",
+    //                   "提示",
+    //                   {
+    //                     confirmButtonText: "确定",
+    //                     cancelButtonText: "取消",
+    //                     type: "warning",
+    //                   }
+    //                 ).then(() => {
+    //                   const currentUrl =
+    //                     window.location.pathname + window.location.hash;
+    //                   sessionStorage.setItem("login_redirect_url", currentUrl);
+    //                   const loginUrl =
+    //                     window.location.origin + "/main/login.html";
+    //                   window.location.href = loginUrl;
+    //                 });
+    //                 return;
+    //               }
+    //             }
+    //             open(pagePath);
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
     buildColStyleJson(styleJson, cssArr, cellLayoutJson, column) {
       let style = {};
       if (styleJson) {
@@ -735,119 +785,119 @@ export default {
       }
       return style;
     },
-    getPartModelData(item, map, itemData) {
-      // item.variable,comColMap,cellItemData) : item.parts_text
-      let type = item.parts_type;
-      let key = item.variable || null;
-      let val = item.parts_text;
-      switch (type) {
-        case "iconImg":
-          val = item.parts_img;
-          break;
-        default:
-          break;
-      }
-      if (item && itemData && !!map) {
-        let data = itemData;
-        let optionsType = "";
-        if (item.hasOwnProperty("sys_fun") && item?.sys_fun) {
-          optionsType = item?.sys_fun;
-        }
-        switch (optionsType) {
-          case "拨打电话":
-            key = item?.para_phone_col || item.variable;
-            if (
-              key &&
-              map.hasOwnProperty(key) &&
-              itemData.hasOwnProperty(map[key]) &&
-              itemData[map[key]]
-            ) {
-              // val = itemData[map[key]]
-            }
-            break;
-          case "地图导航":
-            let lgtKey = item?.para_map_lon;
-            let latKey = item?.para_map_lat;
-            // key = item?.para_phone_col || item.variable
-            val = null;
-            val = {};
-            if (
-              lgtKey &&
-              map.hasOwnProperty(lgtKey) &&
-              itemData.hasOwnProperty(map[lgtKey]) &&
-              itemData[map[lgtKey]]
-            ) {
-              val["lgt"] = itemData[map[lgtKey]];
-            } else {
-              val = null;
-            }
-            if (
-              latKey &&
-              map.hasOwnProperty(latKey) &&
-              itemData.hasOwnProperty(map[latKey]) &&
-              itemData[map[latKey]]
-            ) {
-              val["lat"] = itemData[map[latKey]];
-            } else {
-              val = null;
-            }
-            break;
-          default:
-            if (
-              item.hasOwnProperty("variable") &&
-              key &&
-              map.hasOwnProperty(key) &&
-              itemData.hasOwnProperty(map[key]) &&
-              itemData[map[key]]
-            ) {
-              val = itemData[map[key]] || "";
-            } else if (
-              item.hasOwnProperty("variable") &&
-              key &&
-              itemData.hasOwnProperty(key) &&
-              itemData[key]
-            ) {
-              val = itemData[key] || "";
-            } else if (
-              ["string", "时间日期"].includes(item.parts_type) &&
-              item.parts_text
-            ) {
-              val = this.renderStr(item.parts_text, {
-                data: itemData,
-                ...this.queryOptions,
-              });
-            }
-            break;
-        }
-      } else if (item && itemData && !map) {
-        if (
-          item.hasOwnProperty("variable") &&
-          key &&
-          itemData.hasOwnProperty(key) &&
-          itemData[key]
-        ) {
-          val = itemData[key];
-        } else if (
-          ["string", "时间日期"].includes(item.parts_type) &&
-          item.parts_text
-        ) {
-          val = this.renderStr(item.parts_text, {
-            data: itemData,
-            ...this.queryOptions,
-          });
-        }
-      }
-      // console.log('getPartModelData:', itemData,key,val);
-      if (type === "时间日期" && item.date_format_rule) {
-        val = dayjs(val).format(item.date_format_rule);
-      }
-      if (type === "视频") {
-        if (val?.indexOf("http") !== 0) {
-          val = this.serviceApi()?.downloadFileNo + val;
-        }
-      }
-      return this.recoverFileAddress(val);
-    },
+    // getPartModelData(item, map, itemData) {
+    //   // item.variable,comColMap,cellItemData) : item.parts_text
+    //   let type = item.parts_type;
+    //   let key = item.variable || null;
+    //   let val = item.parts_text;
+    //   switch (type) {
+    //     case "iconImg":
+    //       val = item.parts_img;
+    //       break;
+    //     default:
+    //       break;
+    //   }
+    //   if (item && itemData && !!map) {
+    //     let data = itemData;
+    //     let optionsType = "";
+    //     if (item.hasOwnProperty("sys_fun") && item?.sys_fun) {
+    //       optionsType = item?.sys_fun;
+    //     }
+    //     switch (optionsType) {
+    //       case "拨打电话":
+    //         key = item?.para_phone_col || item.variable;
+    //         if (
+    //           key &&
+    //           map.hasOwnProperty(key) &&
+    //           itemData.hasOwnProperty(map[key]) &&
+    //           itemData[map[key]]
+    //         ) {
+    //           // val = itemData[map[key]]
+    //         }
+    //         break;
+    //       case "地图导航":
+    //         let lgtKey = item?.para_map_lon;
+    //         let latKey = item?.para_map_lat;
+    //         // key = item?.para_phone_col || item.variable
+    //         val = null;
+    //         val = {};
+    //         if (
+    //           lgtKey &&
+    //           map.hasOwnProperty(lgtKey) &&
+    //           itemData.hasOwnProperty(map[lgtKey]) &&
+    //           itemData[map[lgtKey]]
+    //         ) {
+    //           val["lgt"] = itemData[map[lgtKey]];
+    //         } else {
+    //           val = null;
+    //         }
+    //         if (
+    //           latKey &&
+    //           map.hasOwnProperty(latKey) &&
+    //           itemData.hasOwnProperty(map[latKey]) &&
+    //           itemData[map[latKey]]
+    //         ) {
+    //           val["lat"] = itemData[map[latKey]];
+    //         } else {
+    //           val = null;
+    //         }
+    //         break;
+    //       default:
+    //         if (
+    //           item.hasOwnProperty("variable") &&
+    //           key &&
+    //           map.hasOwnProperty(key) &&
+    //           itemData.hasOwnProperty(map[key]) &&
+    //           itemData[map[key]]
+    //         ) {
+    //           val = itemData[map[key]] || "";
+    //         } else if (
+    //           item.hasOwnProperty("variable") &&
+    //           key &&
+    //           itemData.hasOwnProperty(key) &&
+    //           itemData[key]
+    //         ) {
+    //           val = itemData[key] || "";
+    //         } else if (
+    //           ["string", "时间日期"].includes(item.parts_type) &&
+    //           item.parts_text
+    //         ) {
+    //           val = this.renderStr(item.parts_text, {
+    //             data: itemData,
+    //             ...this.queryOptions,
+    //           });
+    //         }
+    //         break;
+    //     }
+    //   } else if (item && itemData && !map) {
+    //     if (
+    //       item.hasOwnProperty("variable") &&
+    //       key &&
+    //       itemData.hasOwnProperty(key) &&
+    //       itemData[key]
+    //     ) {
+    //       val = itemData[key];
+    //     } else if (
+    //       ["string", "时间日期"].includes(item.parts_type) &&
+    //       item.parts_text
+    //     ) {
+    //       val = this.renderStr(item.parts_text, {
+    //         data: itemData,
+    //         ...this.queryOptions,
+    //       });
+    //     }
+    //   }
+    //   // console.log('getPartModelData:', itemData,key,val);
+    //   if (type === "时间日期" && item.date_format_rule) {
+    //     val = dayjs(val).format(item.date_format_rule);
+    //   }
+    //   if (type === "视频") {
+    //     if (val?.indexOf("http") !== 0) {
+    //       val = this.serviceApi()?.downloadFileNo + val;
+    //     }
+    //   }
+    //   return this.recoverFileAddress(val);
+    // },
   },
 };
 </script>
