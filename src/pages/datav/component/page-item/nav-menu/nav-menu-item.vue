@@ -94,7 +94,7 @@ export default {
         let pageNo = this.data.page_no;
         let path = `/site/${pageNo}`
         if(this.data.template_page_json?.file_path){
-          path = this.data.template_page_json.file_path?.replace(':pageNo')
+          path = this.data.template_page_json.file_path?.replace(':pageNo', pageNo)
           if(path.includes('#')){
             path = path.split('#')[1]
           }
