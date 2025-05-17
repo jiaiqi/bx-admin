@@ -149,7 +149,15 @@
             'font-size': setStyle && setStyle['font-size'],
           }"
         >
-          {{ formatValue(item, col) }}
+          <img
+            class="td-img"
+            :src="getImagePath(formatValue(item, col))"
+            alt=""
+            v-if="col.col_type === 'Image' && formatValue(item, col)"
+          />
+          <span v-else>
+            {{ formatValue(item, col) }}
+          </span>
         </div>
       </div>
     </div>
@@ -796,6 +804,12 @@ export default {
       white-space: nowrap;
       overflow: hidden;
       cursor: pointer;
+      .td-img {
+        width: 100%;
+        height: 100%;
+        min-height: 100px;
+        object-fit: cover;
+      }
     }
   }
 }
