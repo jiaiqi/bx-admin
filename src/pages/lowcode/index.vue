@@ -33,7 +33,7 @@
       </template>
       <template #right>
         <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
-        <el-button type="primary" size="mini" @click="onSave">保存</el-button>
+        <el-button type="primary" size="mini" @click="onSave" :loading="isSaving">保存</el-button>
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -192,6 +192,7 @@ import ri from "@iconify/json/json/ri.json";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import cloneDeep from "lodash/cloneDeep";
+import debounce from "lodash/debounce";
 import { mapState, mapGetters, mapActions } from "vuex";
 export default {
   name: "lowcode-main",
@@ -275,6 +276,8 @@ export default {
       scrollTop: 0,
       editorContainerStyle: {},
       draggingComponentType: null,
+      // 保存按钮状态
+      isSaving: false,
     };
   },
   mounted() {
@@ -409,10 +412,30 @@ export default {
         }
       }
     },
-    onSave() {
+    onSave: debounce(function() {
       // 1. 看页面属性有没有发生变化 有的话先保存页面属性
-      this.$refs?.propertyRef?.onSave();
-    },
+      if (this.isSaving) return; // 如果正在保存，则不重复执行
+      
+      this.isSaving = true;
+      const savePromise = this.$refs?.propertyRef?.onSave();
+      
+      // 检查返回值是否是Promise
+      if (savePromise && typeof savePromise.then === 'function') {
+        savePromise
+          .then(() => {
+            // PropertyView组件内部已经有成功提示，这里不再重复提示
+          })
+          .catch(err => {
+            this.$message.error('保存失败：' + (err?.message || '未知错误'));
+          })
+          .finally(() => {
+            this.isSaving = false;
+          });
+      } else {
+        // 如果不是Promise，直接设置状态为false
+        this.isSaving = false;
+      }
+    }, 500),
     buildComponentsTree(components) {
       let list = components.filter((item) => !item.parent_no);
       function buildTree(list, parentId) {
