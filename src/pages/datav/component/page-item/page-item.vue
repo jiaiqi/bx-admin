@@ -13,10 +13,22 @@
         pageItemData.com_label
       "
     >
-      <div class="page-item__label-text" :style="[mixTitleStyle]">
+      <div
+        class="page-item__label-text"
+        :style="[
+          mixTitleStyle,
+          {
+            flexDirection: mixTitleIcon === '下划线' ? 'column' : 'row',
+          },
+        ]"
+      >
         <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
         <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
         <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
+        <Icon
+          icon="ri-arrow-drop-right-fill"
+          v-if="mixTitleIcon === '三角形'"
+        ></Icon>
         <span>
           {{ pageItemData.com_label }}
         </span>
@@ -38,7 +50,7 @@
       v-if="
         pageItemData.com_type === 'navBar' &&
         pageItemData.com_case_json &&
-        pageItemData.com_case_json.disp_flag!=='否'
+        pageItemData.com_case_json.disp_flag !== '否'
       "
       :follow-theme-color="followThemeColor"
       :config="pageItemData.com_case_json"
@@ -186,7 +198,7 @@ import formAdd from "./form/add.vue";
 import NavMenu from "./nav-menu/nav-menu.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
-
+import { Icon } from "@iconify/vue2";
 export default {
   mixins: [pageItemParams],
   components: {
@@ -206,6 +218,7 @@ export default {
     gridCard,
     formAdd,
     NavMenu,
+    Icon,
   },
   props: {
     pageItem: {
@@ -408,8 +421,8 @@ export default {
   }
   .page-item__label-text {
     display: flex;
-    flex-direction: column;
     position: relative;
+    align-items: center;
 
     .icon1 {
       left: 0;
