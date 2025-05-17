@@ -427,6 +427,14 @@
               @json-change="jsonChange"
               @has-error="jsonError"
             ></vue-json-editor>
+            <json-table-editor
+              v-else-if="field.info.editor === 'json-table-editor'"
+              :field="field"
+              v-model="field.model"
+              @change="
+                $emit('field-value-changed', field.info.name, field)
+              "
+            ></json-table-editor>
             <!-- <json-editor
               v-else-if="field.info.editor === 'json-editor'"
               ref="editor"
@@ -851,6 +859,8 @@ import QrCode from "../ui/qrcode.vue";
 import CodeEditor from "../ui/code-editor.vue";
 // import JsonEditor from 'json-editor-vue'
 import vueJsonEditor from "vue-json-editor-fix-cn";
+import jsonTableEditor from "../ui/json-table-editor/index.vue";
+
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
@@ -871,6 +881,7 @@ export default {
     CodeEditor,
     // JsonEditor,
     vueJsonEditor,
+    jsonTableEditor,
     Userlist,
     BxInputNumber,
     TreeFinder,
