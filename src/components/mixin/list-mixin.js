@@ -75,7 +75,7 @@ export default {
       gridPage: {
         pageSizes: [],
         pageSize:
-          this.listType.indexOf("list") !== -1 &&
+          this.listType?.indexOf("list") !== -1 &&
             this.listType != "list" &&
             this.listType != "treelist" &&
             this.childForeignkey?.show_ui_model !== "tabs"
@@ -2506,7 +2506,7 @@ export default {
                     this.tabsConfig[0].len = page.total || 0;
                   }
 
-                  if (this.listType.indexOf("childlist") !== -1) {
+                  if (this.listType?.indexOf("childlist") !== -1) {
                     // 汇聚子表数据
                     if (this.storageType === "mem" && this.inplaceEdit) {
                       this.gridData.forEach((row) => {
@@ -3709,7 +3709,7 @@ export default {
       if (
         operate_params != "" &&
         operate_params != null &&
-        this.listType.indexOf("childlist") === -1
+        this.listType?.indexOf("childlist") === -1
       ) {
         var operate_Object = JSON.parse(operate_params);
         // this.service_name = operate_Object["serviceName"] ;

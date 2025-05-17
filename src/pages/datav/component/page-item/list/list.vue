@@ -132,6 +132,16 @@
         >
           {{ col.label }}
         </div>
+        <div
+          class="table-column row-button-box"
+          :style="{
+            color: setStyle && setStyle.color,
+            'font-size': setStyle && setStyle['font-size'],
+          }"
+          v-if="showRowButtons"
+        >
+          操作
+        </div>
       </div>
       <div
         class="table-row"
@@ -158,6 +168,15 @@
           <span v-else>
             {{ formatValue(item, col) }}
           </span>
+        </div>
+        <div class="table-column row-button-box" v-if="showRowButtons">
+          <el-button
+            type="primary"
+            size="mini"
+            v-for="btn in setRowButtons"
+            @click="onRowButtonClick(btn, item)"
+            >{{ btn.button_name }}</el-button
+          >
         </div>
       </div>
     </div>
@@ -204,6 +223,7 @@ import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/car
 import { formatStyleData } from "../../../common/index";
 import GridList from "./grid-list.vue";
 import SimpleAdd from "@/components/common/simple-add.vue";
+// import ListMixin from "@/components/mixin/list-mixin"; // 列表js
 
 export default {
   name: "data-view-list",
@@ -212,6 +232,7 @@ export default {
     GridList,
     SimpleAdd,
   },
+  // mixins: [ListMixin],
   props: {
     pageItem: {
       type: Object,
@@ -284,11 +305,25 @@ export default {
     showPagination() {
       return this.listConfig?.list_options?.includes("分页");
     },
+    showRowButtons() {
+      let show = false;
+      if (
+        this.listConfig?.list_options?.includes("单元按钮") &&
+        this.setRowButtons.length > 0
+      ) {
+        show = true;
+      }
+      return show;
+    },
     showSearchBar() {
       return (
         this.listConfig?.list_options?.includes("快捷筛选") &&
         this.listConfig?.filter_cols
       );
+    },
+    setRowButtons() {
+      let buttons = this.listV2RowButtons || [];
+      return buttons.filter((item) => item.permission);
     },
     tableColumn() {
       let cols = this.v2Data?.srv_cols || [];
@@ -809,6 +844,12 @@ export default {
         height: 100%;
         min-height: 100px;
         object-fit: cover;
+      }
+      &.row-button-box {
+        flex: 1.5;
+        .el-button {
+          min-width: 80px;
+        }
       }
     }
   }

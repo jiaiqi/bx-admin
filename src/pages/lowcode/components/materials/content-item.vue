@@ -668,8 +668,10 @@ export default {
   justify-content: center;
   align-items: center;
   $primary-color: #17d57e;
+  overflow: auto;
   &.edit-mode {
     background-color: rgba($color: #f0f0f0, $alpha: 0.3);
+    overflow: unset;
   }
 
   /* 加载遮罩层样式 */
