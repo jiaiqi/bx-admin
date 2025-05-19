@@ -21,6 +21,7 @@
     :visible-change="visibleChange"
     :show-all-levels="field.info.editable"
     :disabled="!field.info.editable"
+    :before-filter="beforeFilter"
     @change="onChange"
     ref="elCascader"
   >
@@ -179,6 +180,49 @@ export default {
     onItemChange(val) {
       if (Array.isArray(val) && val.length > 0) {
         this.onSelectChange(val[val.length - 1]);
+      }
+    },
+    async beforeFilter(value) {
+      console.log("beforeFilter", value);
+      let loader = this.dispLoaderV2 || this.field.info.dispLoader;
+      if (loader.parentCol) {
+        const url = this.getServiceUrl("select", loader.service);
+        const fieldInfo = this.field.info;
+        const relation_condition = {
+          relation: "OR",
+          data: [
+            {
+              colName: fieldInfo.valueCol,
+              ruleType: "like",
+              value: value,
+            },
+            {
+              colName: fieldInfo.dispCol,
+              ruleType: "like",
+              value: value,
+            },
+          ],
+        };
+        let conditions = this.buildConditions(loader);
+        var params = {
+          serviceName: loader.service,
+          colNames: ["*"],
+          condition: conditions,
+          relation_condition: relation_condition,
+          // page: {
+          //   pageNo: 1,
+          //   pageSize: 2000,
+          // },
+        };
+        const response = await this.$http.post(url, params);
+        if (response?.data?.state == "SUCCESS") {
+          let options = response.data.data.map((item) => {
+            item.children = item.is_leaf === "是" ? null : [];
+            item.leaf = item.is_leaf === "是";
+            return item;
+          });
+          this.options = options;
+        }
       }
     },
     inputChange: debounce(function (e) {
@@ -365,7 +409,7 @@ export default {
         }
         if (curVal && response.data.data.length > 0) {
           let item = response.data.data[0];
-          this.selected = [item[this.props.value]]
+          this.selected = [item[this.props.value]];
           // let path = item.path;
           // this.selected = path
           //   .split("/")
@@ -383,10 +427,10 @@ export default {
           this.$emit("field-value-changed", this.field.info.name, this.field);
         }
         // if (!this.options||this.options.length === 0) {
-          // this.options = options;
-          // if(this.selected.length && options.length === 1 && options[0][loader.refedCol] === this.selected[this.selected.length - 1]){
-          //   this.selected = [this.selected[this.selected.length - 1]];
-          // }
+        // this.options = options;
+        // if(this.selected.length && options.length === 1 && options[0][loader.refedCol] === this.selected[this.selected.length - 1]){
+        //   this.selected = [this.selected[this.selected.length - 1]];
+        // }
         // }
         return options;
         // if (parentNo && this.options.length > 0) {
