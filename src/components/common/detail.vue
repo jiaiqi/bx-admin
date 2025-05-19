@@ -20,7 +20,7 @@
       v-if="isCardDetail && cfgJson && cfgJson.detail_card_json"
     >
     </card-detail>
-    <el-card class="box-card detail-box-card" v-else>
+    <el-card class="box-card detail-box-card" v-else :shadow="isPlatChildForm == true?'never':'always '">
       <div
         v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0"
         class="detail-steps"
@@ -35,9 +35,12 @@
         </el-steps>
       </div>
       <template v-if="!hasVisibleChildListTab() && detailshow">
-        <div slot="header" class="clearfix" v-show="is_view_title">
-          <span>{{ tab_view_name }}</span>
-        </div>
+        <template v-if="isPlatChildForm !== true">
+          <div slot="header" class="clearfix" v-show="is_view_title">
+            <span>{{ tab_view_name }}</span>
+          </div>
+        </template>
+
         <div class="text item detail-card" v-if="initLoad">
           <simple-detail
             :divCond="buildDivCond"
@@ -1097,17 +1100,15 @@ export default {
 }
 .box-card {
   height: 100%;
-  &.detail-box-card{
+  &.detail-box-card {
     display: flex;
     flex-direction: column;
-    .el-card__body{
+    .el-card__body {
       flex: 1;
-      .detail-card{
+      .detail-card {
         height: calc(100% - 60px);
         overflow: auto;
       }
-
-
     }
   }
   .el-tabs__content {
