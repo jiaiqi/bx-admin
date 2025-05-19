@@ -365,22 +365,29 @@ export default {
         }
         if (curVal && response.data.data.length > 0) {
           let item = response.data.data[0];
-          let path = item.path;
-          this.selected = path
-            .split("/")
-            .map((val) => {
-              if (
-                typeof item[this.props.value] === "number" &&
-                !isNaN(Number(val))
-              ) {
-                return Number(val);
-              }
-              return val;
-            })
-            .filter((t) => !!t);
+          this.selected = [item[this.props.value]]
+          // let path = item.path;
+          // this.selected = path
+          //   .split("/")
+          //   .map((val) => {
+          //     if (
+          //       typeof item[this.props.value] === "number" &&
+          //       !isNaN(Number(val))
+          //     ) {
+          //       return Number(val);
+          //     }
+          //     return val;
+          //   })
+          //   .filter((t) => !!t);
           this.field.model = item;
           this.$emit("field-value-changed", this.field.info.name, this.field);
         }
+        // if (!this.options||this.options.length === 0) {
+          // this.options = options;
+          // if(this.selected.length && options.length === 1 && options[0][loader.refedCol] === this.selected[this.selected.length - 1]){
+          //   this.selected = [this.selected[this.selected.length - 1]];
+          // }
+        // }
         return options;
         // if (parentNo && this.options.length > 0) {
         //   this.options = this.setOptionChild(
