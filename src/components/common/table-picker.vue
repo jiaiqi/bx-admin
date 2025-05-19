@@ -161,6 +161,8 @@ export default {
           (this.page.pageNo - 1) * this.page.rownumber,
           this.page.pageNo * this.page.rownumber
         );
+      }else{
+        list = this.gridData;
       }
       return list;
     },
@@ -875,8 +877,8 @@ export default {
         // 默认选中所有数据 不分页
         delete queryJson.page;
       }
-      const loading = self.$loading({
-        lock: self,
+      const loading = this.$loading({
+        lock: this,
         text: "加载中",
         spinner: "el-icon-loading",
         background: "rgba(0, 0, 0, 0.7)",
