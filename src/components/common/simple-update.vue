@@ -12,7 +12,7 @@
     <template>
       <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
         <slot>
-          <div v-html="pagePrompt.description"></div>
+          <div v-html="recoverFileAddress4richText(pagePrompt.description)"></div>
         </slot>
       </el-alert>
     </template>

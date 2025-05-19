@@ -137,9 +137,9 @@
               formatValue(scope.row, item) &&
               ['Note', 'RichText'].includes(item.col_type)
             "
-            v-html="formatValue(scope.row, item)"
+            v-html="recoverFileAddress4richText(formatValue(scope.row, item))"
             style="max-height: 10vh; overflow: hidden"
-            @dblclick="openHtml(formatValue(scope.row, item))"
+            @dblclick="openHtmlrecoverFileAddress4richText((formatValue(scope.row, item)))"
           ></p>
           <a
             class="link-to-detail"

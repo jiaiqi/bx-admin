@@ -88,7 +88,7 @@
               overflow: auto;
               margin: 0 auto;
             "
-            v-html="html"
+            v-html="recoverFileAddress4richText(html)"
           ></div>
           <span slot="footer" class="dialog-footer">
             <el-button type="primary" @click="dialogVisible = false"

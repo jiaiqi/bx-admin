@@ -93,7 +93,7 @@
     <div
       v-else-if="item.parts_type == '富文本'"
       :style="[buildColStyleJson]"
-      v-html="getPartModelData"
+      v-html="recoverFileAddress4richText(getPartModelData)"
     ></div>
     <div
       :class="['bx-cell-' + cellItem.parts_type, { 'cursor-pointer': isLink }]"

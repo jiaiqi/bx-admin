@@ -29,7 +29,7 @@
     class="rich-text"
     v-else-if="widgetType === '富文本'"
     :style="[widgetStyleJson]"
-    v-html="initRichText"
+    v-html="recoverFileAddress4richText(initRichText)"
   ></div>
   <div
     v-else-if="widgetType === 'navigate'"

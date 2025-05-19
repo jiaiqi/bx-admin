@@ -106,7 +106,7 @@
           v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')"
           trigger="click"
         >
-          <div v-html="moreConfig.table_explain.desc"></div>
+          <div v-html="recoverFileAddress4richText(moreConfig.table_explain.desc)"></div>
           <div slot="reference" style="color: #525252; padding: 2px 10px">
             列表字段说明<i class="el-icon-question"></i>
           </div>
@@ -419,7 +419,7 @@
                   formatValue(scope.row, item) &&
                   ['Note', 'RichText'].includes(item.col_type)
                 "
-                v-html="formatValue(scope.row, item)"
+                v-html="recoverFileAddress4richText(formatValue(scope.row, item))"
                 style="max-height: 10vh; overflow: hidden"
                 @dblclick="openHtml(formatValue(scope.row, item))"
               ></div>

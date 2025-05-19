@@ -27,7 +27,7 @@
                 class="option-item"
                 @click="selectOption(option)"
               >
-                <span v-html="option.labelFunc(option)"></span>
+                <span v-html="recoverFileAddress4richText(option.labelFunc(option))"></span>
               </div>
               <div v-if="loading" class="loading-wrapper">
                 <el-loading></el-loading>

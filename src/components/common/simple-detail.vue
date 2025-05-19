@@ -3,7 +3,7 @@
   <div>
     <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
       <slot>
-        <div v-html="pagePrompt.description"></div>
+        <div v-html="recoverFileAddress4richText(pagePrompt.description)"></div>
       </slot>
     </el-alert>
     <el-row class="form-view-wrapper">
@@ -180,7 +180,7 @@
                 border: 1px solid #dcdfe6;
                 overflow: auto;
               "
-              v-html="scope.row"
+              v-html="recoverFileAddress4richText(scope.row)"
             ></div>
             <span v-show="!isXhtml">
               {{ scope.row }}

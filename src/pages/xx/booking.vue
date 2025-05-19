@@ -90,7 +90,7 @@
       <div
         class="sub-title_tip"
         v-if="canBookingTime && canBookingTime !== true"
-        v-html="canBookingTime"
+        v-html="recoverFileAddress4richText(canBookingTime)"
       ></div>
     </div>
     <el-calendar @input="dateChange" v-if="form.rsvo_no">

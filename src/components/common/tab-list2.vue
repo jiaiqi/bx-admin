@@ -9,9 +9,11 @@
       "
     >
       <slot>
-        <div v-html="moreConfig.pagePrompt.description">
-          {{ moreConfig.pagePrompt.description }}
-        </div>
+        <div
+          v-html="
+            recoverFileAddress4richText(moreConfig.pagePrompt.description)
+          "
+        ></div>
       </slot>
     </el-alert>
     <filterTabs
@@ -749,7 +751,7 @@ export default {
         response.data.data &&
         response.data.data.tabs
       ) {
-        let tabs = response.data.data.tabs.sort((a,b)=>a.orders - b.orders);
+        let tabs = response.data.data.tabs.sort((a, b) => a.orders - b.orders);
         this.cols = response.data.data.srv_cols;
         if (!tabs || tabs.length == 0) {
           return;

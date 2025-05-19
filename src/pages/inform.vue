@@ -3,7 +3,7 @@
     <div class="title" v-if="content">
       {{ content.title || "" }}
     </div>
-    <div class="content" v-html="content.context || content.content"></div>
+    <div class="content" v-html="recoverFileAddress4richText(content.context || content.content)"></div>
     <div class="attachment" v-if="attachmentList && attachmentList.length">
       <div>附件：</div>
       <div class="attachment-item" v-for="item in attachmentList">

@@ -33,7 +33,7 @@
               v-for="(item, index) in time.list"
               :key="index"
             >
-              <span v-html="setText(item, setList, tIndex)"></span>
+              <span v-html="recoverFileAddress4richText(setText(item, setList, tIndex))"></span>
             </div>
           </div>
         </el-collapse-item>

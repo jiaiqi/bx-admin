@@ -98,7 +98,7 @@
             ></i>
             <div
               class="svg-icon"
-              v-html="item.imgUrlFunc(item)"
+              v-html="recoverFileAddress4richText(item.imgUrlFunc(item))"
               v-else-if="
                 item.imgUrlFunc &&
                 item.imgUrlFunc(item) &&

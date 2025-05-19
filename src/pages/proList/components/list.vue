@@ -40,8 +40,7 @@
         </div>
         <el-popover placement="right" popper-class="table-popover" width="800"
           v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')" trigger="click">
-          <div v-html="moreConfig.table_explain.desc">
-            {{ moreConfig.table_explain.desc }}
+          <div v-html="recoverFileAddress4richText(moreConfig.table_explain.desc)">
           </div>
           <div slot="reference" style="color: #525252; padding: 2px 10px">
             列表字段说明<i class="el-icon-question"></i>

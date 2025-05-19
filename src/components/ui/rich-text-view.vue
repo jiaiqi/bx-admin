@@ -3,7 +3,7 @@
   <div>
 
     <div style="border-radius: 4px; padding:10px; border:1px solid #dcdfe6; overflow: auto;max-width:210mm;margin:0 auto;"
-         v-html="html"></div>
+         v-html="recoverFileAddress4richText(html)"></div>
   </div>
 </template>
 

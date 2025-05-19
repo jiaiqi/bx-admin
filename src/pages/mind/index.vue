@@ -114,7 +114,7 @@
 
                                     <div class="flex" style="flex-wrap: wrap;">
                                         <div v-for="(icon,i) in type.list" :key="i" class="text item" style="padding:4px;">
-                                            <div v-html="icon.icon" style="width:24px;height:24px;" @click="setIcon(type.type,icon.name)"></div>
+                                            <div v-html="recoverFileAddress4richText(icon.icon)" style="width:24px;height:24px;" @click="setIcon(type.type,icon.name)"></div>
                                         </div>
                                     </div>
                                     

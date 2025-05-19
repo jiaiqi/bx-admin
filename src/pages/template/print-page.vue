@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-html="render(pageContent, print_para.para)"></div>
+    <div v-html="recoverFileAddress4richText(render(pageContent, print_para.para))"></div>
   </div>
 </template>
 

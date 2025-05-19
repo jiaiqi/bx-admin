@@ -4,8 +4,7 @@
       :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title : ''" :closable="false" :type="moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
         ">
       <slot>
-        <div v-html="moreConfig.pagePrompt.description">
-          {{ moreConfig.pagePrompt.description }}
+        <div v-html="recoverFileAddress4richText(moreConfig.pagePrompt.description)">
         </div>
       </slot>
     </el-alert>

@@ -1819,7 +1819,7 @@ function init_util() {
       datas.splice(_index, 1);
     }
   };
-
+ 
   Vue.prototype.serviceApi = function (e) {
     let defaultApp = this.resolveDefaultSrvApp();
     var service_api = {
@@ -2900,6 +2900,21 @@ function init_util() {
     } else {
       console.log('jumpJson 配置错误 或 未获取到有效的 jump_json')
     }
+  }
+
+  /**
+   * 将富文本字符串中的文件地址相对路径前缀替换为当前所用的服务端地址前缀
+   * @param {*} val 富文本字符串
+   * @returns 
+   */
+  Vue.prototype.recoverFileAddress4richText = (val = "") => {
+    // 替换文件前缀
+    const prefix = backendIpAddr + "/file/download";
+    val = val?.replaceAll?.("$bxFileAddress$", prefix) || "";
+    // 使用正则表达式来匹配 bx_auth_ticket 的值，并使用sessionStorage.bx_auth_ticket替换它
+    const ticketStr = `bx_auth_ticket=${sessionStorage.bx_auth_ticket}`;
+    val = val.replace(/(bx_auth_ticket=)[^&]+/ig, ticketStr);
+    return val;
   }
 }
 
