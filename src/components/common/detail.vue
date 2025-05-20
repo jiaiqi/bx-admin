@@ -20,7 +20,11 @@
       v-if="isCardDetail && cfgJson && cfgJson.detail_card_json"
     >
     </card-detail>
-    <el-card class="box-card detail-box-card" v-else :shadow="isPlatChildForm == true?'never':'always '">
+    <el-card
+      class="box-card detail-box-card"
+      v-else
+      :shadow="isPlatChildForm == true ? 'never' : 'always '"
+    >
       <div
         v-if="Array.isArray(detailChartDatas) && detailChartDatas.length > 0"
         class="detail-steps"
@@ -760,7 +764,7 @@ export default {
   data() {
     return {
       activeName: 1,
-      id: this.pkid || this.$route.params.id,
+      id: this.pkid || this.isPlatChildForm ? null : this.$route.params.id,
       condcol: this.$route.params.condcol,
       condvalue: this.$route.params.condvalue,
       service_name: this.service || this.$route.params.service_name,
@@ -916,7 +920,6 @@ export default {
           condition = condition.concat(this.custCondition);
         }
       }
-
       let childList = [];
       await this.loadColsV2(
         this.service_name,
