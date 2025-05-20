@@ -67,7 +67,7 @@ if (pathConfig) {
     }
   } catch (error) { }
 }
-if(window.backendIpAddr){
+if (window.backendIpAddr) {
   baseURL = window.backendIpAddr
 }
 // if(process.env.BASE_URL){
@@ -228,6 +228,7 @@ export async function $selectList(url, req) {
     return {
       ok: true,
       data: res.data?.data,
+      page: res.data.page
     }
   } else {
     return {

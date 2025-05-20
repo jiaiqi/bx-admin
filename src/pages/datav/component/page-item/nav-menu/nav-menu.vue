@@ -1,5 +1,53 @@
 <template>
-  <div v-if="viewMode === '面包屑导航'" class="breadcrumb-wrap">
+  <div v-if="viewMode === '文章栏目'" class="catalog">
+    <div v-if="catalogInfo && catalogInfo.name" class="catalog-wrap">
+      <div class="catalog-name">
+        <Icon icon="ri-hotel-fill"></Icon>
+        <span class="ml-2">
+          {{ catalogInfo.name }}
+        </span>
+      </div>
+      <div class="catalog-list">
+        <div
+          :class="{ active: isActiveCatalog(item) }"
+          v-for="item in catalogInfo.children"
+          class="catalog-item"
+          @click="onTapCatalog(item)"
+        >
+          <div class="catalog-item-box">
+            <div class="catalog-item-name">
+              <span>
+                {{ item.name }}
+              </span>
+              <span class="right-icon" :class="{ unfold: currentUnfold }">
+                <i
+                  class="el-icon-arrow-right"
+                  v-if="
+                    item.is_leaf !== '是' && item.child_view_mode !== 'tabs'
+                  "
+                ></i>
+              </span>
+            </div>
+            <catalog-tree
+              class="catalog-tree"
+              :unfold="currentUnfold"
+              :class="{ unfold: currentUnfold }"
+              :data="item.children"
+              ref="catalogTree"
+              @node-click="onTapCatalog($event, false)"
+              v-if="
+                item.children &&
+                item.children.length &&
+                item.child_view_mode === '树形'
+              "
+            ></catalog-tree>
+          </div>
+        </div>
+      </div>
+    </div>
+    <content-wrap :data="current" v-if="current" :key="current.no"></content-wrap>
+  </div>
+  <div v-else-if="viewMode === '面包屑导航'" class="breadcrumb-wrap">
     <div class="home-icon">
       <router-link :to="homePath" class="link">
         <Icon icon="ri-home-4-fill"></Icon>
@@ -21,7 +69,7 @@
       </div>
     </div>
   </div>
-  <div v-else-if="viewMode === '展开子导航'" class="nav-menu-container">
+  <div v-else-if="viewMode === '展开子导航'" class="nav-menu-wrap">
     <div
       class="nav-menu"
       :class="{ 'follow-theme-color': followThemeColor }"
@@ -130,7 +178,10 @@ import NavMenu from "./nav-menu.vue";
 import Teleport from "vue2-teleport";
 import NavMenuItem from "./nav-menu-item.vue";
 import { Icon } from "@iconify/vue2";
-
+import { $selectList } from "@/common/http";
+import catalogTabs from "./catalog/tabs.vue";
+import ContentWrap from "./catalog/content-wrap.vue";
+import catalogTree from "./catalog/tree.vue";
 export default {
   name: "NavMenu",
   components: {
@@ -139,6 +190,9 @@ export default {
     NavMenuItem,
     Teleport,
     Icon,
+    catalogTabs,
+    ContentWrap,
+    catalogTree,
   },
   props: {
     config: Object,
@@ -153,6 +207,7 @@ export default {
       isHovered: false,
       showChild: false,
       current: null,
+      currentUnfold: false, //是否展开
       navMenuWidth: 0,
       position: {
         top: 0,
@@ -166,6 +221,10 @@ export default {
       requestSubMenuMap: {},
       menuChildren: [],
       currentSubMenu: null,
+      catalogNo: "",
+      catalogInfo: null,
+      contentViewMode: "",
+      contentList: [],
     };
   },
   computed: {
@@ -333,6 +392,12 @@ export default {
     },
   },
   created() {
+    if (this.viewMode === "文章栏目") {
+      this.catalogNo = this.config?.catalog;
+      if (this.catalogNo) {
+        return this.fetchCatalogList(this.catalogNo);
+      }
+    }
     if (this.config?.child_source === "接口请求") {
       this.fetchChildData(this.reqJson).then((res) => {
         console.log("res", res);
@@ -348,6 +413,8 @@ export default {
         }
       });
     }
+    if (this.viewMode === "文章栏目") {
+    }
   },
   mounted() {
     // this.setEleSize();
@@ -356,11 +423,114 @@ export default {
     // }, 1000);
   },
   methods: {
+    onTapContentItem(item) {
+      console.log("item", item);
+    },
+    onTapCatalog(item, changeUnfold = true) {
+      console.log("item", item);
+      if (
+        item.children &&
+        item.children.length &&
+        item.child_view_mode === "树形" &&
+        changeUnfold
+      ) {
+        if (
+          (this.currentUnfold && this.current.no == item.no) ||
+          this.current.parent_no == item.no
+        ) {
+          this.currentUnfold = false;
+        } else {
+          this.currentUnfold = true;
+        }
+      }
+      // if (this.currentUnfold === false) {
+      //   var nodes = this.$refs.catalogTree?.[0]?.$refs?.elTree?.store?.nodesMap||[];
+      //   for (var i in nodes) {
+      //     nodes[i].expanded = false;
+      //   }
+      // }
+      this.current = item;
+    },
+    async fetchContentData(catalogNo, pageSize) {
+      const url = `/daq/select/srvdaq_pc_website_content_select`;
+      const req = {
+        serviceName: "srvdaq_pc_website_content_select",
+        colNames: ["*"],
+        condition: [
+          { colName: "category_no", ruleType: "like]", value: catalogNo },
+        ],
+        page: { pageNo: 1, rownumber: pageSize || 1 },
+        order: [],
+      };
+      const { data, ok, msg } = await $selectList(url, req);
+      if (ok) {
+        this.contentList = data;
+      } else {
+        this.$message.error(msg);
+      }
+    },
+    fetchCatalogList() {
+      const url = `/daq/select/srvdaq_pc_website_category_select`;
+      const req = {
+        serviceName: "srvdaq_pc_website_category_select",
+        colNames: ["*"],
+        condition: [
+          { colName: "path", ruleType: "like]", value: `/${this.catalogNo}/` },
+        ],
+        treeData: true,
+        // relation_condition: {},
+        page: { pageNo: 1, rownumber: 50 },
+        // relation_condition: {
+        //   relation: "OR",
+        //   data: [
+        //     {
+        //       colName: "parent_no",
+        //       ruleType: "eq",
+        //       value: this.catalogNo,
+        //     },
+        //     { colName: "no", ruleType: "eq", value: this.catalogNo },
+        //   ],
+        // },
+        // use_type: "treelist",
+      };
+      return this.$http.post(url, req).then((res) => {
+        console.log("fetchCatalogList", res.data.data);
+        if (res.data?.state === "SUCCESS") {
+          if (res.data.data.length) {
+            this.catalogInfo = res.data.data[0];
+            if (this.catalogInfo?.children?.length) {
+              setTimeout(() => {
+                this.$nextTick(() => {
+                  this.onTapCatalog(this.catalogInfo.children[0]);
+                });
+              }, 500);
+            }
+          }
+          // this.subMenu = res.data.data.map((item)=>{
+          //   return {
+          //     ...item,
+          //     _label: item.name,
+          //     _url: item.link_url,
+          //   }
+          // })
+        }
+      });
+    },
     isActive(item) {
       if (this.current) {
         if (item.nav_no && this.current?.nav_no === item.nav_no) {
           return true;
         } else if (item.id && this.current?.id === item.id) {
+          return true;
+        }
+      }
+      return false;
+    },
+    isActiveCatalog(item) {
+      if (this.current) {
+        if (this.current?.no === item?.no) {
+          return true;
+        } else if (this.current?.path?.startsWith(item.path)) {
           return true;
         }
       }
@@ -579,6 +749,75 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.catalog {
+  display: flex;
+  gap: 30px;
+  .catalog-wrap {
+    line-height: 54px;
+    text-align: center;
+    .catalog-name {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .catalog-list {
+      min-width: 250px;
+      border: 1px solid #d5d9e4;
+      background-color: #f8f8f8;
+      .catalog-item {
+        border-top: 1px solid #d5d9e4;
+        border-left: 4px transparent solid;
+        // border-right: 4px transparent solid;
+        cursor: pointer;
+        position: relative;
+        .catalog-tree {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: all 0.3s ease;
+          overflow: hidden;
+          min-height: 0;
+          &.unfold {
+            min-height: 40px;
+            grid-template-rows: 1fr;
+          }
+        }
+        .catalog-item-name {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          position: relative;
+        }
+        .right-icon {
+          position: absolute;
+          right: 5px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 12px;
+          color: #999;
+          transition: all 0.3s ease;
+          &.unfold {
+            transform: translateY(-50%) rotate(90deg);
+          }
+        }
+        &:first-child {
+          border-top: unset;
+        }
+        &:hover,
+        &.active {
+          background-color: #fff;
+          font-weight: bold;
+        }
+        &.active {
+          border-left-color: var(--primary-color, #007aff);
+        }
+      }
+    }
+  }
+}
+
 .breadcrumb-wrap {
   background-color: transparent;
   margin: unset;
@@ -638,7 +877,7 @@ export default {
     }
   }
 }
-.nav-menu-container {
+.nav-menu-wrap {
   display: grid;
   min-height: 100%;
 }

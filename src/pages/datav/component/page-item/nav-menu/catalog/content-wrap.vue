@@ -1,0 +1,322 @@
+<template>
+  <div
+    class="content-wrap"
+    :class="setClassByPath"
+    v-if="contentViewMode !== '空白'"
+  >
+    <div class="title" v-if="data && data.name">
+      <Icon icon="ri-arrow-right-s-fill" class="icon"></Icon>
+      <span class="ml-2 text">
+        {{ data.name || "" }}
+      </span>
+    </div>
+    <template v-if="contentViewMode === '详情'">
+      <div
+        class="content"
+        v-if="contentList && contentList.length"
+        v-html="
+          recoverFileAddress4richText(contentList && contentList[0].content)
+        "
+      ></div>
+      <div v-else>
+        <el-empty description="暂无数据"></el-empty>
+      </div>
+    </template>
+    <template
+      v-else-if="
+        contentViewMode === '列表' && contentList && contentList.length
+      "
+    >
+      <div class="quick-filter"></div>
+      <div class="content-list">
+        <template v-if="listStyle === 'style-1'">
+          <div
+            class="content-item style-1"
+            @click="onTap(item)"
+            v-for="(item, index) in contentList"
+          >
+            <div class="date-box">
+              <div class="year">
+                {{ dayjs(item.release_time).format("YYYY") }}
+              </div>
+              <div class="month">
+                {{ dayjs(item.release_time).format("MM/DD") }}
+              </div>
+            </div>
+            <div class="line"></div>
+            <div class="content-box">
+              <div class="title multi-line-ellipsis">{{ item.title }}</div>
+              <div class="summary multi-line-ellipsis">{{ item.summary }}</div>
+            </div>
+          </div>
+        </template>
+        <template v-if="listStyle === 'style-2'">
+          <div
+            class="content-item style-2"
+            @click="onTap(item)"
+            v-for="(item, index) in contentList"
+          >
+            <img class="img" :src="getImagePath(item.thn_img)" alt="" />
+            <div class="line"></div>
+            <div class="content-box">
+              <div class="title multi-line-ellipsis">{{ item.title }}</div>
+              <div class="summary multi-line-ellipsis">{{ item.summary }}</div>
+              <div class="footer">
+                <span>来源：{{ item.source || "" }}</span>
+                <span class="separator"></span>
+                <span>{{ dayjs(item.release_time).format("YYYY-MM-DD") }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="pagination-box">
+        <el-pagination
+          background
+          class="el-pagination"
+          @current-change="handleCurrentChange"
+          :current-page="pageInfo.pageNo"
+          :page-size="pageInfo.rownumber"
+          layout="total, prev, pager, next"
+          :total="pageInfo.total"
+        >
+        </el-pagination>
+      </div>
+    </template>
+    <catalog-tabs :data="data" v-if="data && data.child_view_mode === 'tabs'">
+    </catalog-tabs>
+  </div>
+</template>
+
+<script>
+import dayjs from "dayjs";
+
+import { Icon } from "@iconify/vue2";
+import catalogTabs from "./tabs.vue";
+
+import { $selectList } from "@/common/http";
+import { getImagePath } from "@/pages/datav/common/http";
+
+export default {
+  components: {
+    Icon,
+    catalogTabs,
+  },
+  computed: {
+    tabs() {
+      return this.data.children || [];
+    },
+    setClassByPath() {
+      let path = this.data.path || "";
+      if (path) {
+        return `level-${path.split("/").filter((item) => !!item).length - 1}`;
+      }
+    },
+    listStyle() {
+      return this.data.list_ui?.includes("风格1") ? "style-1" : "style-2";
+    },
+  },
+  props: {
+    data: {
+      type: Object,
+      default: () => ({}),
+    },
+  },
+  data() {
+    return {
+      dayjs,
+      getImagePath,
+      contentList: [],
+      contentViewMode: null,
+      pageInfo: {
+        pageNo: 1,
+        rownumber: 10,
+        total: 0,
+      },
+    };
+  },
+  methods: {
+    handleCurrentChange(val) {
+      this.pageInfo.pageNo = val;
+      this.fetchContentData(this.data.no, this.pageInfo.rownumber);
+    },
+    onTap(item) {
+      this.$emit("tap", item);
+    },
+    async fetchContentData(catalogNo, pageSize) {
+      const url = `/daq/select/srvdaq_pc_website_content_select`;
+      const req = {
+        serviceName: "srvdaq_pc_website_content_select",
+        colNames: ["*"],
+        condition: [
+          { colName: "category_no", ruleType: "eq", value: catalogNo },
+        ],
+        page: { pageNo: 1, rownumber: pageSize || 1 },
+        order: [],
+      };
+      const { data, ok, msg, page } = await $selectList(url, req);
+      if (ok) {
+        this.contentList = data;
+        this.pageInfo.total = page?.total || 0;
+      } else {
+        this.$message.error(msg);
+      }
+    },
+    init() {
+      if (this.data?.is_leaf === "是") {
+        this.contentViewMode = this.data.content_view_mode;
+        if (this.data.content_view_mode === "详情") {
+          this.fetchContentData(this.data.no);
+        } else if (this.data.content_view_mode === "列表") {
+          this.fetchContentData(this.data.no, 10);
+        }
+      } else {
+      }
+    },
+  },
+  created() {
+    this.init();
+  },
+  // watch: {
+  //   data: {
+  //     immediate: true,
+  //     deep: true,
+  //     handler(newValue, oldValue) {
+  //       this.init()
+  //     }
+  //   }
+  // },
+};
+</script>
+
+<style lang="scss" scoped>
+.content-wrap {
+  flex: 1;
+  &.level-2 {
+    .title {
+      display: none;
+      // .text{
+      //   font-size: 24px;
+      // }
+    }
+  }
+  .title {
+    align-items: center;
+    display: flex;
+    margin-bottom: 20px;
+    .text {
+      line-height: 40px;
+      color: rgba(16, 16, 16, 1);
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .icon {
+      color: var(--primary-color, #007aff);
+    }
+  }
+  .content-list {
+    margin-bottom: 50px;
+    padding: 0 5px;
+    .multi-line-ellipsis {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2; /* 设置行数 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: normal; /* 允许文本换行 */
+    }
+    .content-item {
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      border: 1px solid #eeeeee;
+      margin-bottom: 10px;
+      cursor: pointer;
+      &:hover {
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
+        border-bottom-width: 4px;
+        border-bottom-color: var(--primary-color, #0447ab);
+        .title {
+          color: var(--primary-color, #0447ab);
+        }
+      }
+      .content-box {
+        min-height: 100px;
+        flex: 1;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .title {
+          font-size: 20px;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+        .summary {
+          color: #737373;
+          margin: 5px 0;
+        }
+        .footer {
+          color: #aeaeb2;
+          display: flex;
+          align-items: center;
+          line-height: 24px;
+          .separator {
+            display: inline-block;
+            width: 2px;
+            height: 16px;
+            background-color: #aeaeb2;
+            margin: 0 10px;
+            vertical-align: middle;
+          }
+        }
+      }
+      &.style-1 {
+        .date-box {
+          width: 80px;
+          text-align: center;
+          .year {
+            font-size: 28px;
+            font-weight: 600;
+          }
+          .month {
+            font-size: 24px;
+            font-weight: 600;
+          }
+        }
+        .line {
+          width: 4px;
+          height: 100px;
+          margin: 0 20px 0 10px;
+          background-color: #f5f5f5;
+        }
+      }
+      &.style-2 {
+        display: flex;
+        align-items: center;
+        .img {
+          width: 240px;
+          background-color: #ccc;
+          border-radius: 6px;
+          overflow: hidden;
+          object-fit: cover;
+          margin-right: 20px;
+        }
+        border: none;
+      }
+    }
+  }
+  .pagination-box {
+    text-align: center;
+    padding: 10px;
+    :deep(.el-pagination) {
+      &.is-background {
+        .el-pager li:not(.disabled).active {
+          background-color: var(--primary-color, #0447ab);
+        }
+      }
+    }
+  }
+}
+</style>
