@@ -22,65 +22,107 @@
         <el-empty description="暂无数据"></el-empty>
       </div>
     </template>
-    <template
-      v-else-if="
-        contentViewMode === '列表' && contentList && contentList.length
-      "
-    >
-      <div class="quick-filter"></div>
-      <div class="content-list">
-        <template v-if="listStyle === 'style-1'">
-          <div
-            class="content-item style-1"
-            @click="onTap(item)"
-            v-for="(item, index) in contentList"
-          >
-            <div class="date-box">
-              <div class="year">
-                {{ dayjs(item.release_time).format("YYYY") }}
-              </div>
-              <div class="month">
-                {{ dayjs(item.release_time).format("MM/DD") }}
-              </div>
-            </div>
-            <div class="line"></div>
-            <div class="content-box">
-              <div class="title multi-line-ellipsis">{{ item.title }}</div>
-              <div class="summary multi-line-ellipsis">{{ item.summary }}</div>
-            </div>
-          </div>
-        </template>
-        <template v-if="listStyle === 'style-2'">
-          <div
-            class="content-item style-2"
-            @click="onTap(item)"
-            v-for="(item, index) in contentList"
-          >
-            <img class="img" :src="getImagePath(item.thn_img)" alt="" />
-            <div class="line"></div>
-            <div class="content-box">
-              <div class="title multi-line-ellipsis">{{ item.title }}</div>
-              <div class="summary multi-line-ellipsis">{{ item.summary }}</div>
-              <div class="footer">
-                <span>来源：{{ item.source || "" }}</span>
-                <span class="separator"></span>
-                <span>{{ dayjs(item.release_time).format("YYYY-MM-DD") }}</span>
-              </div>
-            </div>
-          </div>
-        </template>
-      </div>
-      <div class="pagination-box">
-        <el-pagination
-          background
-          class="el-pagination"
-          @current-change="handleCurrentChange"
-          :current-page="pageInfo.pageNo"
-          :page-size="pageInfo.rownumber"
-          layout="total, prev, pager, next"
-          :total="pageInfo.total"
+    <template v-else-if="contentViewMode === '列表'">
+      <div class="quick-filter">
+        <el-button
+          class="filter-btn"
+          size="small"
+          :class="{ primary: dateType === '近一周' }"
+          @click="changeDateType('近一周')"
+          >近一周</el-button
         >
-        </el-pagination>
+        <el-button
+          class="filter-btn"
+          size="small"
+          :class="{ primary: dateType === '近一月' }"
+          @click="changeDateType('近一月')"
+          >近一月</el-button
+        >
+        <el-button
+          class="filter-btn"
+          size="small"
+          :class="{ primary: dateType === '近半年' }"
+          @click="changeDateType('近半年')"
+          >近半年</el-button
+        >
+        <el-date-picker
+          class="date-picker"
+          size="small"
+          v-model="dateRange"
+          format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          @change="dateRangeChange"
+        >
+        </el-date-picker>
+      </div>
+      <template v-if="contentList && contentList.length">
+        <div class="content-list">
+          <template v-if="listStyle === 'style-1'">
+            <div
+              class="content-item style-1"
+              @click="onTap(item)"
+              v-for="(item, index) in contentList"
+            >
+              <div class="date-box">
+                <div class="year">
+                  {{ dayjs(item.release_time).format("YYYY") }}
+                </div>
+                <div class="month">
+                  {{ dayjs(item.release_time).format("MM/DD") }}
+                </div>
+              </div>
+              <div class="line"></div>
+              <div class="content-box">
+                <div class="title multi-line-ellipsis">{{ item.title }}</div>
+                <div class="summary multi-line-ellipsis">
+                  {{ item.summary }}
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-if="listStyle === 'style-2'">
+            <div
+              class="content-item style-2"
+              @click="onTap(item)"
+              v-for="(item, index) in contentList"
+            >
+              <img class="img" :src="getImagePath(item.thn_img)" alt="" />
+              <div class="line"></div>
+              <div class="content-box">
+                <div class="title multi-line-ellipsis">{{ item.title }}</div>
+                <div class="summary multi-line-ellipsis">
+                  {{ item.summary }}
+                </div>
+                <div class="footer">
+                  <span>来源：{{ item.source || "" }}</span>
+                  <span class="separator"></span>
+                  <span>{{
+                    dayjs(item.release_time).format("YYYY-MM-DD")
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="pagination-box">
+          <el-pagination
+            background
+            class="el-pagination"
+            @current-change="handleCurrentChange"
+            :current-page="pageInfo.pageNo"
+            :page-size="pageInfo.rownumber"
+            layout="total, prev, pager, next"
+            :total="pageInfo.total"
+          >
+          </el-pagination>
+        </div>
+      </template>
+      <div v-else>
+        <el-empty description="暂无数据"></el-empty>
       </div>
     </template>
     <catalog-tabs :data="data" v-if="data && data.child_view_mode === 'tabs'">
@@ -133,9 +175,54 @@ export default {
         rownumber: 10,
         total: 0,
       },
+      dateType: "",
+
+      dateRange: null,
     };
   },
   methods: {
+    dateRangeChange(value) {
+      console.log("dateRangeChange", value);
+      if (value && value.length) {
+        this.dateRange = value;
+        this.dateType = null;
+        this.fetchContentData(this.data.no, 10);
+      } else {
+        this.dateType = null;
+        this.dateRange = null;
+      }
+      this.fetchContentData(this.data.no, 10);
+    },
+    changeDateType(type) {
+      if (this.dateType !== type) {
+        this.dateType = type;
+        this.dateRange = null;
+        switch (type) {
+          case "近一周":
+            this.dateRange = [
+              dayjs().subtract(7, "day").format("YYYY-MM-DD 00:00:00"),
+              dayjs().format("YYYY-MM-DD 23:59:59"),
+            ];
+            break;
+          case "近一月":
+            this.dateRange = [
+              dayjs().subtract(1, "month").format("YYYY-MM-DD 00:00:00"),
+              dayjs().format("YYYY-MM-DD 23:59:59"),
+            ];
+            break;
+          case "近半年":
+            this.dateRange = [
+              dayjs().subtract(6, "month").format("YYYY-MM-DD 00:00:00"),
+              dayjs().format("YYYY-MM-DD 23:59:59"),
+            ];
+            break;
+        }
+      } else {
+        this.dateType = null;
+        this.dateRange = null;
+      }
+      this.fetchContentData(this.data.no, 10);
+    },
     handleCurrentChange(val) {
       this.pageInfo.pageNo = val;
       this.fetchContentData(this.data.no, this.pageInfo.rownumber);
@@ -154,6 +241,13 @@ export default {
         page: { pageNo: 1, rownumber: pageSize || 1 },
         order: [],
       };
+      if (this.dateRange && this.dateRange.length) {
+        req.condition.push({
+          colName: "release_time",
+          ruleType: "between",
+          value: this.dateRange,
+        });
+      }
       const { data, ok, msg, page } = await $selectList(url, req);
       if (ok) {
         this.contentList = data;
@@ -192,6 +286,8 @@ export default {
 <style lang="scss" scoped>
 .content-wrap {
   flex: 1;
+  padding: 0 5px;
+
   &.level-2 {
     .title {
       display: none;
@@ -214,9 +310,28 @@ export default {
       color: var(--primary-color, #007aff);
     }
   }
+  .quick-filter {
+    margin-bottom: 20px;
+    .date-picker {
+      margin-left: 10px;
+    }
+    .filter-btn {
+      &.primary {
+        border-color: transparent;
+        background: var(
+          --primary-color,
+          linear-gradient(
+            151.99deg,
+            rgba(0, 122, 255, 1) 29.59%,
+            rgba(4, 71, 171, 1) 294.82%
+          )
+        );
+        color: #fff;
+      }
+    }
+  }
   .content-list {
     margin-bottom: 50px;
-    padding: 0 5px;
     .multi-line-ellipsis {
       display: -webkit-box;
       -webkit-box-orient: vertical;
