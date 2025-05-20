@@ -1,9 +1,6 @@
 <template>
   <div class="tree-grid">
-    <div
-      v-show="selectFormShow"
-      v-if="searchForm"
-    >
+    <div v-show="selectFormShow" v-if="searchForm">
       <simple-filter
         v-if="srv_cols"
         :srv_cols="srv_cols"
@@ -11,11 +8,7 @@
       ></simple-filter>
     </div>
 
-    <el-row
-      type="flex"
-      class="row-bg"
-      justify="space-between"
-    >
+    <el-row type="flex" class="row-bg" justify="space-between">
       <div class="table-head-btns">
         <icon-excel-colorful
           class="svg-icon"
@@ -30,10 +23,11 @@
       <div class="table-head-btns">
         <template v-for="(item, index) in gridButton">
           <el-button
-            :size="item._moreConfig && item._moreConfig.size
-              ? item._moreConfig.size
-              : ''
-              "
+            :size="
+              item._moreConfig && item._moreConfig.size
+                ? item._moreConfig.size
+                : ''
+            "
             :type="!item.button_cls ? 'primary' : item.button_cls"
             :key="index"
             v-if="item.permission"
@@ -70,8 +64,9 @@
         v-for="(item, index) in gridHeader"
         :key="index"
         v-if="item.column == firstColumn"
-        :show-overflow-tooltip="getListShowFileList(item) === true ? false : true
-          "
+        :show-overflow-tooltip="
+          getListShowFileList(item) === true ? false : true
+        "
         :label="item.label"
         :min-width="item.list_min_width"
         show-overflow-tooltip
@@ -81,7 +76,8 @@
             v-for="(space, levelIndex) in scope.row._level"
             :key="levelIndex"
             class="ms-tree-space"
-          >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span
+          >
 
           <span
             class="button is-outlined is-primary is-small"
@@ -99,17 +95,15 @@
               aria-hidden="true"
             ></i>
           </span>
-          <span
-            v-else
-            class="ms-tree-space"
-          >&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <span v-else class="ms-tree-space">&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span :title="scope.row[firstColumn]">
             <a
               class="link-to-detail"
               title="点击查看详情"
               v-if="isDetailLink(item.column, scope.row, scope.$index)"
               @click="toDetail(item.column, scope.row, scope.$index)"
-            >{{ formatValue(scope.row, item) }}</a>
+              >{{ formatValue(scope.row, item) }}</a
+            >
             <span v-else>
               {{ scope.row[firstColumn] }}
             </span>
@@ -124,8 +118,9 @@
         :width="item.width"
         :prop="item.column"
         :min-width="item.list_min_width"
-        :show-overflow-tooltip="getListShowFileList(item) === true ? false : true
-          "
+        :show-overflow-tooltip="
+          getListShowFileList(item) === true ? false : true
+        "
         :label="item.label"
         :filters="item.filters"
         :column-key="item.column"
@@ -139,14 +134,17 @@
             "
             v-html="recoverFileAddress4richText(formatValue(scope.row, item))"
             style="max-height: 10vh; overflow: hidden"
-            @dblclick="openHtmlrecoverFileAddress4richText((formatValue(scope.row, item)))"
+            @dblclick="
+              openHtmlrecoverFileAddress4richText(formatValue(scope.row, item))
+            "
           ></p>
           <a
             class="link-to-detail"
             title="点击查看详情"
             v-else-if="isDetailLink(item.column, scope.row, scope.$index)"
             @click="toDetail(item.column, scope.row, scope.$index)"
-          >{{ formatValue(scope.row, item) }}</a>
+            >{{ formatValue(scope.row, item) }}</a
+          >
           <div
             style="display: flex; flex-wrap: wrap"
             v-else-if="isFkJson(scope.row, item)"
@@ -157,7 +155,7 @@
               :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
               v-for="(tag, tIndex) in getFkJson(scope.row, item)"
               :key="tIndex"
-            >{{ tag || "" }}
+              >{{ tag || "" }}
             </el-tag>
           </div>
           <span v-else>{{ formatValue(scope.row, item) }}</span>
@@ -182,24 +180,28 @@
             :key="index"
             style="margin-right: 10px"
             v-if="getDispExps(button, scope.row) && button.permission"
-            v-show="button.button_type === '_btn_group' ||
+            v-show="
+              button.button_type === '_btn_group' ||
               isRowButtonVisible(button, scope.row, scope.$index)
-              "
+            "
           >
             <el-button
               @click="rowButtonClick(button, scope.row)"
               :size="button._moreConfig.size"
               :type="button._moreConfig.type"
               :icon="button._moreConfig.icon"
-              :round="button._moreConfig.style !== '' &&
+              :round="
+                button._moreConfig.style !== '' &&
                 button._moreConfig.style === 'round'
-                "
-              :plain="button._moreConfig.style !== '' &&
+              "
+              :plain="
+                button._moreConfig.style !== '' &&
                 button._moreConfig.style === 'plain'
-                "
-              :circle="button._moreConfig.style !== '' &&
+              "
+              :circle="
+                button._moreConfig.style !== '' &&
                 button._moreConfig.style === 'circle'
-                "
+              "
               :disabled="button.evalDisable()"
               v-if="
                 button.button_type !== '_btn_group' &&
@@ -208,16 +210,14 @@
             >
               {{ getButtonName(button, scope.row) }}
             </el-button>
-            <el-dropdown v-else-if="
-              button.button_type === '_btn_group' &&
-              button.buttons.length > 0 &&
-              getButtonDispExps(button.buttons, scope.row, scope.$index)
-            ">
-              <el-button
-                :type="button.type"
-                :size="button.size"
-                plain
-              >
+            <el-dropdown
+              v-else-if="
+                button.button_type === '_btn_group' &&
+                button.buttons.length > 0 &&
+                getButtonDispExps(button.buttons, scope.row, scope.$index)
+              "
+            >
+              <el-button :type="button.type" :size="button.size" plain>
                 {{ button.button_name }}
                 <i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
@@ -232,22 +232,27 @@
                     :size="subtns._moreConfig.size"
                     :type="subtns._moreConfig.type"
                     :icon="subtns._moreConfig.icon"
-                    :round="subtns._moreConfig.style !== '' &&
+                    :round="
+                      subtns._moreConfig.style !== '' &&
                       subtns._moreConfig.style === 'round'
-                      "
-                    :plain="subtns._moreConfig.style !== '' &&
+                    "
+                    :plain="
+                      subtns._moreConfig.style !== '' &&
                       subtns._moreConfig.style === 'plain'
-                      "
-                    :circle="subtns._moreConfig.style !== '' &&
+                    "
+                    :circle="
+                      subtns._moreConfig.style !== '' &&
                       subtns._moreConfig.style === 'circle'
-                      "
+                    "
                     :disabled="subtns.evalDisable()"
-                    v-show="isRowButtonVisible(subtns, scope.row, scope.$index) &&
+                    v-show="
+                      isRowButtonVisible(subtns, scope.row, scope.$index) &&
                       getDispExps(subtns, scope.row) &&
                       subtns.permission &&
                       getButtonOptSrv(subtns, scope.row, 'isShow')
-                      "
-                  >{{ subtns.button_name }}</el-button>
+                    "
+                    >{{ subtns.button_name }}</el-button
+                  >
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -269,12 +274,7 @@
       </el-table-column>
     </el-table>
 
-    <el-row
-      v-if="!isMem()"
-      type="flex"
-      class="row-bg"
-      justify="center"
-    >
+    <el-row v-if="!isMem()" type="flex" class="row-bg" justify="center">
       <el-pagination
         @current-change="handleCurrentChange"
         @size-change="handleSizeChange"
@@ -344,8 +344,9 @@
         :submit2-db="!isMem()"
         :default-conditions="getDefaultCondition4Duplicate"
         duplicateType="duplicate"
-        :duplicateData="clickedRow && clickedRow.duplicate ? clickedRow.duplicate : null
-          "
+        :duplicateData="
+          clickedRow && clickedRow.duplicate ? clickedRow.duplicate : null
+        "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded($refs['duplicate-form'])"
         @executor-complete="onAddExecutorComplete($event)"
@@ -367,10 +368,11 @@
         :pageIsDraft="activeTabName"
         :defaultValues="activeData"
         duplicateType="duplicate"
-        :duplicateData="clickedRow && clickedRow.duplicatedeep
-          ? clickedRow.duplicatedeep
-          : null
-          "
+        :duplicateData="
+          clickedRow && clickedRow.duplicatedeep
+            ? clickedRow.duplicatedeep
+            : null
+        "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
@@ -402,8 +404,9 @@
         :parentPageType="listType"
         :haveDraft="isDraft"
         :parentMainFormDatas="listMainFormDatas"
-        :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null
-          "
+        :override-data="
+          clickedRow.update._dirtyFlags ? clickedRow.update : null
+        "
         @action-complete="onUpdateFormActionComplete($event)"
         @form-loaded="onUpdateFormLoaded($refs['update-form'])"
         @submitted2mem="onUpdate2MemSubmitted"
@@ -640,7 +643,7 @@ export default {
       });
     },
     toggleIconShow(record) {
-      return record.is_leaf === "否"
+      return record.is_leaf === "否";
     },
     getDispExps(item, data) {
       var result = true;
@@ -1115,11 +1118,10 @@ export default {
           this.gridHeader = [];
           var column_index = 0;
           for (var serviceCol of listData) {
-            if (serviceCol["columns"] == "id") {
+            if (serviceCol["columns"] == "id" || serviceCol["in_list"] == 0) {
               continue;
             }
             var header = {};
-
             header.srvcol = serviceCol;
             let colType = serviceCol["col_type"];
             header["column"] = serviceCol["columns"];
@@ -1163,13 +1165,13 @@ export default {
       this.condition = [];
       var page = this.isMem()
         ? {
-          pageNo: this.gridPage.currentPage,
-          rownumber: 500,
-        }
+            pageNo: this.gridPage.currentPage,
+            rownumber: 500,
+          }
         : {
-          pageNo: this.gridPage.currentPage,
-          rownumber: this.gridPage.pageSize,
-        };
+            pageNo: this.gridPage.currentPage,
+            rownumber: this.gridPage.pageSize,
+          };
 
       for (var cMap of this.filterCondition) {
         this.condition.push(cMap);
