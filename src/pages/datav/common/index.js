@@ -57,7 +57,7 @@ const formatStyleData = (val) => {
       }
     }
 
-    if (_key === "background-image") {
+    if (_key === "background-image" && json[key] && !json[key]?.includes('url(')) {
       obj[_key] = `url(${getImagePath(json[key])})`;
     }
     if (typeof obj[_key] === 'string' && obj[_key].includes('rpx')) {

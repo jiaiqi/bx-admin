@@ -55,6 +55,8 @@
       :follow-theme-color="followThemeColor"
       :config="pageItemData.com_case_json"
       :page-config="pageConfig"
+      :title-style="mixTitleStyle"
+      :title-icon="mixTitleIcon"
     >
       <!-- {{ pageItemData.com_case_json.label }} -->
     </nav-menu>

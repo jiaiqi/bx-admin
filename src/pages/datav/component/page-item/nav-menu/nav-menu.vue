@@ -1,9 +1,9 @@
 <template>
   <div v-if="viewMode === '文章栏目'" class="catalog">
     <div v-if="catalogInfo && catalogInfo.name" class="catalog-wrap">
-      <div class="catalog-name">
-        <Icon icon="ri-hotel-fill"></Icon>
-        <span class="ml-2">
+      <div class="catalog-name" :style="[setTitleStyle]">
+        <Icon :icon="titleIcon" v-if="titleIcon" class="mr-2"></Icon>
+        <span class="">
           {{ catalogInfo.name }}
         </span>
       </div>
@@ -200,6 +200,8 @@ export default {
     // pageConfig: Object,
     parentStyle: Object,
     followThemeColor: Boolean,
+    titleStyle: Object,
+    titleIcon:String
   },
   inject: ["getPageConfig"],
   data() {
@@ -228,6 +230,13 @@ export default {
     };
   },
   computed: {
+    setTitleStyle() {
+      let style = {};
+      if (this.titleStyle) {
+        style = formatStyleData(this.titleStyle);
+      }
+      return style;
+    },
     pageConfig() {
       const pageConfig = this.getPageConfig();
       return pageConfig || {};

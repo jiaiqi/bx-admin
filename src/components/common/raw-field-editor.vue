@@ -90,6 +90,14 @@
                 :label="item.label"
                 :value="item.value"
               >
+                <div
+                  v-if="item.label && item.label.startsWith('ri-')"
+                  class="flex items-center"
+                  style="width: 100%;height: 100%;font-size: 24px"
+                >
+                  <Icon :icon="item.label" />
+                </div>
+                <span v-else>{{ item.label }}</span>
               </el-option>
             </el-select>
 
@@ -431,9 +439,7 @@
               v-else-if="field.info.editor === 'json-table-editor'"
               :field="field"
               v-model="field.model"
-              @change="
-                $emit('field-value-changed', field.info.name, field)
-              "
+              @change="$emit('field-value-changed', field.info.name, field)"
             ></json-table-editor>
             <!-- <json-editor
               v-else-if="field.info.editor === 'json-editor'"
@@ -874,6 +880,7 @@ import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 import transferVue from "../ui/form-widget/multi-select/index.vue"; // 多选穿梭框组件
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
+import { Icon } from "@iconify/vue2";
 export default {
   components: {
     Checkbox,
@@ -902,6 +909,7 @@ export default {
     autocompleteInput,
     carNoKeyboard,
     transferVue,
+    Icon,
   },
 
   props: {
