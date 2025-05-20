@@ -90,6 +90,18 @@
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
     ></Icon>
+    <Icon
+      v-else-if="
+        item.parts_type == 'icon' &&
+        item.parts_text &&
+        item.parts_text.indexOf('ri') === 0
+      "
+      :icon="item.parts_text"
+      class="bx-cell-icon"
+      :class="[{ 'cursor-pointer': isLink }, item.parts_text]"
+      :style="[buildColStyleJson]"
+      @click.stop="onClickSubBlock()"
+    ></Icon>
     <div
       v-else-if="item.parts_type == '富文本'"
       :style="[buildColStyleJson]"
@@ -384,7 +396,10 @@ export default {
               this.queryOptions[key]
             ) {
               val = this.queryOptions[key] || "";
-            } else if (["string", "时间日期"].includes(item.parts_type)&& item.parts_text) {
+            } else if (
+              ["string", "时间日期"].includes(item.parts_type) &&
+              item.parts_text
+            ) {
               val =
                 this.renderStr(item.parts_text, {
                   data: itemData,
@@ -406,7 +421,10 @@ export default {
           this.queryOptions?.[key]
         ) {
           val = this.queryOptions[key] || "";
-        } else if (["string", "时间日期"].includes(item.parts_type) && item.parts_text) {
+        } else if (
+          ["string", "时间日期"].includes(item.parts_type) &&
+          item.parts_text
+        ) {
           val =
             this.renderStr(item.parts_text, {
               data: itemData,

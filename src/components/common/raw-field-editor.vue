@@ -91,7 +91,7 @@
                 :value="item.value"
               >
                 <div
-                  v-if="item.label && item.label.startsWith('ri-')"
+                  v-if="item.label && (item.label.startsWith('ri-')||item.label.startsWith('ri:'))"
                   class="flex items-center"
                   style="width: 100%;height: 100%;font-size: 24px"
                 >
