@@ -39,6 +39,7 @@
     :currentId="currentId"
     :isPreview="isPreview"
     :isView="isView"
+    :in-edit="inEdit"
     @add="addComponent"
     @delete="deleteComponent"
     @resize="onResize"
@@ -62,6 +63,7 @@
         :isPreview="isPreview"
         :isView="isView"
         :hidden-component-visible="hiddenComponentVisible"
+        :in-edit="inEdit"
         @click="onTap"
         @add="addComponent"
         @delete="deleteComponent"
@@ -158,6 +160,10 @@ export default {
       default: true,
     },
     hiddenComponentVisible: {
+      type: Boolean,
+      default: false,
+    },
+    inEdit: {
       type: Boolean,
       default: false,
     },

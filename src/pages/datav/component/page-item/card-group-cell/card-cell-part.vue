@@ -81,24 +81,24 @@
     <Icon
       v-else-if="
         item.parts_type == 'icon' &&
-        item.parts_text &&
-        item.parts_text.indexOf('i-') === 0
+        getPartModelData &&
+        getPartModelData.indexOf('i-') === 0
       "
-      :icon="item.parts_text.replace('i-', '')"
+      :icon="getPartModelData.replace('i-', '')"
       class="bx-cell-icon"
-      :class="[{ 'cursor-pointer': isLink }, item.parts_text]"
+      :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
     ></Icon>
     <Icon
       v-else-if="
         item.parts_type == 'icon' &&
-        item.parts_text &&
-        item.parts_text.indexOf('ri') === 0
+        getPartModelData &&
+        getPartModelData.indexOf('ri') === 0
       "
-      :icon="item.parts_text"
+      :icon="getPartModelData"
       class="bx-cell-icon"
-      :class="[{ 'cursor-pointer': isLink }, item.parts_text]"
+      :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
     ></Icon>
@@ -318,6 +318,9 @@ export default {
         case "iconImg":
           val = item.parts_img;
           break;
+        case "icon":
+          val = item.parts_icon || val;
+          break;
         default:
           break;
       }
@@ -451,7 +454,7 @@ export default {
 
     partsShow() {
       const item = this.cellItem;
-      const itemData = this.cellItemData||{};
+      const itemData = this.cellItemData || {};
       const map =
         this.comColMap ||
         Object.keys(itemData).reduce((acc, key) => {

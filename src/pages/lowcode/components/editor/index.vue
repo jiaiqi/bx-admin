@@ -25,6 +25,7 @@
       :content-width="contentWidth"
       :hiddenComponentVisible="hiddenComponentVisible"
       v-bind="item"
+      :in-edit="true"
       @click="onTap"
       @open="openComponentSelector = true"
       @add="addComponent"

@@ -35,7 +35,7 @@
         active: isActive,
         'child-is-layout': childType === 'layout',
       }"
-      v-if="!isPreview && !isView"
+      v-if="!isPreview && !isView && !children.length"
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">
@@ -146,6 +146,12 @@ export default {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
     allowDrop() {
+      // 对于cardPart类型组件，允许多个组件拖入
+      // 对于其他类型组件，保持原有逻辑，只允许一个组件
+      const draggedType = dragStore.getDragType();
+      if (draggedType === "cardPart") {
+        return this.type === "content";
+      }
       return this.type === "content" && !this.children?.length;
     },
     isActive() {
@@ -512,8 +518,9 @@ export default {
             const draggedComponent = JSON.parse(data);
             const sourceContentId = draggedComponent.sourceContentId;
 
-            // 如果目标容器有组件，则交换组件
-            if (this.children && this.children.length > 0) {
+            // 如果目标容器有组件且不是cardPart类型，则交换组件
+            // 如果是cardPart类型，则直接添加到容器中
+            if (this.children && this.children.length > 0 && draggedComponent.type !== "cardPart") {
               // 获取目标组件
               const targetComponent = { ...this.children[0] };
 
@@ -549,8 +556,41 @@ export default {
         if (data) {
           try {
             const draggedElement = JSON.parse(data);
+            // 对于cardPart类型组件，允许多个组件拖入
+            // 对于其他类型组件，保持原有逻辑，只允许一个组件
+            if (draggedElement.type === "cardPart" && this.children && this.children.length > 0) {
+              // cardPart类型组件可以多个添加
+              draggedElement.parentId = this.id;
+              draggedElement.parent_no = this.props.com_no;
+              draggedElement.com_seq = (this.props.children.length + 1) * 100;
+              draggedElement._seq = draggedElement.com_seq;
+              draggedElement.com_name = draggedElement.comp_label || draggedElement.chart_name || draggedElement.label;
+              if (!draggedElement._editType) {
+                draggedElement.id = `${this.id}${new Date().getTime()}`;
+                draggedElement._editType = "add";
+              }
+              // 设置卡片部件特有属性
+              draggedElement.com_type = "卡片部件";
+              draggedElement.data = {
+                com_type: "卡片部件",
+                card_parts_name: draggedElement.com_name,
+                parts_text: draggedElement.com_name,
+                parts_type: draggedElement.parts_type,
+              };
+
+              Object.keys(draggedElement).forEach((key) => {
+                if (key.startsWith("_default_")) {
+                  draggedElement.data[key.replace("_default_", "")] = draggedElement[key];
+                }
+              });
+              draggedElement._type = "component";
+              
+              // 发出添加事件，将新组件添加到children数组中
+              this.$emit("add", draggedElement);
+              return;
+            }
             // 只处理非container和非layout类型的组件
-            if (draggedElement.type === "layout") {
+            else if (draggedElement.type === "layout") {
               // 处理layout类型的组件
               if (!draggedElement._editType) {
                 draggedElement.id = `${this.id}_layout_${new Date().getTime()}`;

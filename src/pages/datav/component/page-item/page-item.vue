@@ -5,6 +5,27 @@
     v-if="pageItemData && pageItemData.com_type"
     :style="[mixCompStyle]"
   >
+    <!-- 遮罩层 -->
+    <div
+      class="overlay"
+      @click.stop="onTap"
+      :class="{
+        active: isActive,
+      }"
+      v-if="inEdit"
+    >
+      <!-- 删除按钮 -->
+      <div class="com-name-overlay">
+        <span class="name">
+          {{ pageItem.com_name || "" }}
+        </span>
+        <i
+          class="el-icon-close button close-icon"
+          @click="onDelete"
+        ></i>
+      </div>
+    </div>
+
     <div
       class="page-item__label"
       v-if="
@@ -47,8 +68,8 @@
       </div>
     </div>
     <card-cell-part
-      v-if="pageItemData.com_type==='卡片部件'"
-      :cell-item="pageItemData.card_parts_json||pageItemData"
+      v-if="pageItemData.com_type === '卡片部件'"
+      :cell-item="pageItemData.card_parts_json || pageItemData"
     ></card-cell-part>
     <!-- <card-cell-part
       v-if="pageItem.type === 'cardPart'"
@@ -249,8 +270,15 @@ export default {
     screenType: String,
     pageConfig: Object,
     inTabs: Boolean, // 是否在tabs中
+    inEdit: Boolean,
+    currentId: [String, Number],
   },
   computed: {
+    isActive() {
+      return (
+        this.inEdit && this.currentId && this.currentId === this.pageItem.id
+      );
+    },
     followThemeColor() {
       return this.pageItemData.com_option?.includes("配色不跟随主题") !== true;
     },
@@ -328,6 +356,12 @@ export default {
     },
   },
   methods: {
+    onDelete() {
+      this.$emit("delete", this.pageItem);
+    },
+    onTap() {
+      this.$emit("click", this.$parent.props);
+    },
     toMore() {
       const { more_jump_json: jumpJson } = this.pageItem || {};
       if (jumpJson?.obj_type === "内部页面") {
@@ -384,6 +418,36 @@ export default {
 </script>
 
 <style lang="scss">
+@use "../../../lowcode/styles/layout.common.scss" as layout;
+
+.overlay {
+  @include layout.overlay;
+  z-index: 99;
+  $primary-color: #17d57e;
+  &:hover {
+    border: 2px dashed rgba($color: $primary-color, $alpha: 1);
+    background-color: rgba($color: $primary-color, $alpha: 0.1);
+  }
+  &.active {
+    border: 2px solid $primary-color;
+  }
+  .name {
+    background-color: rgba($color: $primary-color, $alpha: 0.7);
+  }
+  .close-icon {
+    height: 28px;
+    width: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba($color: $primary-color, $alpha: 0.7);
+    cursor: pointer;
+    &:hover {
+      font-size: 1.2em;
+    }
+  }
+}
+
 .page-item {
   width: 100%;
   height: 100%;
