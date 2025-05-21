@@ -59,15 +59,15 @@ export const materialsTree = [
       //   "component": "pageItem",
       //   "icon":"ri-table-2"
       // },
-      {
-        "label": "变量",
-        "value": "variable",
-        "parts_type": "variable",
-        "type": "cardPart",
-        "component": "pageItem",
-        "_default_parts_text": "变量",
-        "icon":"ri-text"
-      },
+      // {
+      //   "label": "变量",
+      //   "value": "variable",
+      //   "parts_type": "variable",
+      //   "type": "cardPart",
+      //   "component": "pageItem",
+      //   "_default_parts_text": "变量",
+      //   "icon":"ri-text"
+      // },
       {
         "label": "星级评分",
         "value": "rate",

@@ -309,8 +309,11 @@ export default {
     },
     getPartModelData() {
       const item = this.cellItem;
-      const map = this.comColMap;
-      const itemData = this.cellItemData;
+      const itemData = this.cellItemData||{};
+      const map = this.comColMap || Object.keys(itemData).reduce((acc, key) => {
+          acc[key] = key;
+          return acc;
+        }, {});;
       let type = item.parts_type;
       let key = item.variable || null;
       let val = item.parts_text;
@@ -346,7 +349,7 @@ export default {
               itemData.hasOwnProperty(map[key]) &&
               itemData[map[key]]
             ) {
-              // val = itemData[map[key]]
+              val = itemData[map[key]]
             }
             break;
           case "地图导航":
@@ -653,11 +656,22 @@ export default {
             val = itemData[subCol.para_phone_col];
             console.log("拨打电话", val);
             if (val) {
-              this.$message.error("功能开发中...");
+              window.location.href = `tel:${val}`;
+              // this.$message.error("功能开发中...");
             } else {
               this.$message.error("未配置电话号码");
             }
-
+            break;
+          case "发短信":
+            // val = this.getPartModelData(subCol, map, item)
+            val = this.getPartModelData;
+            console.log("发短信", val);
+            if (val) {
+              window.location.href = `sms:${val}`;
+              // this.$message.error("功能开发中...");
+            } else {
+              this.$message.error("未配置电话号码");
+            }
             break;
           case "地图导航":
             val = this.getPartModelData;

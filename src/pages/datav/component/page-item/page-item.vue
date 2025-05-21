@@ -1,7 +1,13 @@
 <template>
   <div
     class="page-item"
-    :class="{ mobile: screenType === 'mobile' }"
+    :class="{
+      mobile: screenType === 'mobile',
+      'inline-block':
+        pageItemData &&
+        pageItemData.com_type &&
+        ['卡片部件'].includes(pageItemData.com_type),
+    }"
     v-if="pageItemData && pageItemData.com_type"
     :style="[mixCompStyle]"
   >
@@ -462,6 +468,11 @@ export default {
     .mobile {
       text-align: center;
     }
+  }
+  &.inline-block {
+    width: unset;
+    height: unset;
+    display: inline-block;
   }
   .more-btn-bottom {
     text-align: center;

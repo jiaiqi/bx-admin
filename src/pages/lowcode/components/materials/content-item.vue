@@ -49,6 +49,29 @@
         ></i>
       </div>
     </div>
+    <div
+      class="overlay"
+      style="z-index: -1"
+      @click.stop="onTap"
+      :class="{
+        active: isActive,
+        'child-is-layout': childType === 'layout',
+      }"
+      v-else-if="!isPreview && !isView && children.length"
+    >
+      <!-- 删除按钮 -->
+      <div class="com-name-overlay">
+        <span class="name">
+          {{ props.com_name || "" }}
+          <!-- {{ com_name || "" }} -->
+        </span>
+        <i
+          class="el-icon-close button close-icon"
+          @click="onDelete"
+          v-if="children && children.length"
+        ></i>
+      </div>
+    </div>
 
     <!-- 子组件插槽 未出现在屏幕可视范围内时不渲染 -->
     <slot v-if="isVisible"> </slot>
@@ -155,11 +178,12 @@ export default {
       return this.type === "content" && !this.children?.length;
     },
     isActive() {
-      let childId = this.children?.[0]?.id;
-      if (this.props.type == "layout") {
-        return this.currentId && [this.id].includes(this.currentId);
-      }
-      return this.currentId && [childId, this.id].includes(this.currentId);
+      // let childId = this.children?.[0]?.id;
+      // if (this.props.type == "layout") {
+      //   return this.currentId && [this.id].includes(this.currentId);
+      // }
+      // return this.currentId && [childId, this.id].includes(this.currentId);
+      return this.currentId && [this.id].includes(this.currentId);
     },
     childType() {
       if (Array.isArray(this.children) && this.children.length) {
@@ -235,7 +259,8 @@ export default {
   methods: {
     onTap() {
       if (this.isPreview) return;
-      let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
+      // let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
+      let val = this.props;
       if (this.childType === "layout") {
         val = this.props;
       }
@@ -520,7 +545,11 @@ export default {
 
             // 如果目标容器有组件且不是cardPart类型，则交换组件
             // 如果是cardPart类型，则直接添加到容器中
-            if (this.children && this.children.length > 0 && draggedComponent.type !== "cardPart") {
+            if (
+              this.children &&
+              this.children.length > 0 &&
+              draggedComponent.type !== "cardPart"
+            ) {
               // 获取目标组件
               const targetComponent = { ...this.children[0] };
 
@@ -558,13 +587,20 @@ export default {
             const draggedElement = JSON.parse(data);
             // 对于cardPart类型组件，允许多个组件拖入
             // 对于其他类型组件，保持原有逻辑，只允许一个组件
-            if (draggedElement.type === "cardPart" && this.children && this.children.length > 0) {
+            if (
+              draggedElement.type === "cardPart" &&
+              this.children &&
+              this.children.length > 0
+            ) {
               // cardPart类型组件可以多个添加
               draggedElement.parentId = this.id;
               draggedElement.parent_no = this.props.com_no;
               draggedElement.com_seq = (this.props.children.length + 1) * 100;
               draggedElement._seq = draggedElement.com_seq;
-              draggedElement.com_name = draggedElement.comp_label || draggedElement.chart_name || draggedElement.label;
+              draggedElement.com_name =
+                draggedElement.comp_label ||
+                draggedElement.chart_name ||
+                draggedElement.label;
               if (!draggedElement._editType) {
                 draggedElement.id = `${this.id}${new Date().getTime()}`;
                 draggedElement._editType = "add";
@@ -580,11 +616,12 @@ export default {
 
               Object.keys(draggedElement).forEach((key) => {
                 if (key.startsWith("_default_")) {
-                  draggedElement.data[key.replace("_default_", "")] = draggedElement[key];
+                  draggedElement.data[key.replace("_default_", "")] =
+                    draggedElement[key];
                 }
               });
               draggedElement._type = "component";
-              
+
               // 发出添加事件，将新组件添加到children数组中
               this.$emit("add", draggedElement);
               return;
@@ -730,6 +767,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
   $primary-color: #17d57e;
   overflow: auto;
   &.edit-mode {
