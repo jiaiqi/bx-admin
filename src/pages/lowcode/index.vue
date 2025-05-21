@@ -33,7 +33,13 @@
       </template>
       <template #right>
         <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
-        <el-button type="primary" size="mini" @click="onSave" :loading="isSaving">保存</el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="onSave"
+          :loading="isSaving"
+          >保存</el-button
+        >
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -86,6 +92,7 @@
           @resize="onResize"
           :content-width="contentAreaWidth"
           :style="[setStyle, themeVariable]"
+          ref="editorRef"
         ></editor-view>
       </div>
       <div
@@ -170,7 +177,24 @@
         :data="outlineTree"
         :props="outlineTreeProps"
         @node-click="clickComponent"
-      ></el-tree>
+      >
+        <span
+          class="custom-tree-node"
+          style="width: 100%; display: flex"
+          slot-scope="{ node, data }"
+        >
+          <span style="flex: 1">{{ node.label }}</span>
+          <span class="right-btn">
+            <el-button
+              type="text"
+              size="mini"
+              @click="() => removeComp(node, data)"
+            >
+              删除
+            </el-button>
+          </span>
+        </span>
+      </el-tree>
     </el-drawer>
   </div>
 </template>
@@ -325,6 +349,9 @@ export default {
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+    removeComp(node, data) {
+      this.$refs.editorRef.deleteComponent(data);
+    },
     openNewTab() {
       const url = `/vpages/#/lowcode/view/${this.pageNo}`;
       window.open(url, "_blank");
@@ -412,21 +439,21 @@ export default {
         }
       }
     },
-    onSave: debounce(function() {
+    onSave: debounce(function () {
       // 1. 看页面属性有没有发生变化 有的话先保存页面属性
       if (this.isSaving) return; // 如果正在保存，则不重复执行
-      
+
       this.isSaving = true;
       const savePromise = this.$refs?.propertyRef?.onSave();
-      
+
       // 检查返回值是否是Promise
-      if (savePromise && typeof savePromise.then === 'function') {
+      if (savePromise && typeof savePromise.then === "function") {
         savePromise
           .then(() => {
             // PropertyView组件内部已经有成功提示，这里不再重复提示
           })
-          .catch(err => {
-            this.$message.error('保存失败：' + (err?.message || '未知错误'));
+          .catch((err) => {
+            this.$message.error("保存失败：" + (err?.message || "未知错误"));
           })
           .finally(() => {
             this.isSaving = false;
@@ -1214,6 +1241,18 @@ export default {
         background-color: #b3d4fc !important; /* 修改为你想要的背景颜色 */
         color: #333; /* 修改为你想要的字体颜色 */
       }
+    }
+  }
+}
+.custom-tree-node{
+  display: flex;
+  align-items: center;
+  .right-btn{
+    display: none;
+  }
+  &:hover{
+    .right-btn{
+      display: block;
     }
   }
 }

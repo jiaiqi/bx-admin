@@ -11,7 +11,16 @@
           :key="index"
           @click="tapComponent(item, index)"
         >
-          <component size="20" :is="item.icon"></component>
+          <Icon
+            v-if="item.icon && item.icon.startsWith('ri-')"
+            :icon="item.icon"
+            style="font-size: 20px"
+          ></Icon>
+          <component
+            size="20"
+            :is="item.icon"
+            v-else-if="item.icon"
+          ></component>
           <span class="label">{{ item.label }}</span>
         </div>
       </div>
@@ -46,25 +55,22 @@
         :key="item.value"
         :id="item.value"
         class="com-item margin component cursor-move"
-        :class="[
-          `type-${item.type}`,
-          { 'only-text': !item.icon && !item.preview },
-        ]"
+        :class="[`type-${item.type}`, { 'only-text': !item.preview }]"
         @dragstart="handleDragStart($event, item)"
         draggable="true"
         unselectable="on"
       >
-        <div class="example" v-if="item.icon">
-          <Icon :icon="item.icon"></Icon>
-        </div>
         <img
           :src="getImagePath(item.preview)"
           alt=""
           class="example"
-          v-else-if="item.preview"
+          v-if="item.preview"
         />
 
         <div class="label">{{ item.label }}</div>
+        <div class="icon" v-if="item.icon">
+          <Icon :icon="item.icon"></Icon>
+        </div>
       </div>
     </div>
     <div class="component-list" v-if="comList && comList.length">
@@ -73,7 +79,10 @@
         :key="item.id"
         :id="item.id"
         class="com-item margin component cursor-move"
-        :class="[`type-${item.type}`,{ 'only-text': !item.icon && !item.preview }]"
+        :class="[
+          `type-${item.type}`,
+          { 'only-text': !item.icon && !item.preview },
+        ]"
         @dragstart="handleDragStart($event, item)"
         draggable="true"
         unselectable="on"
@@ -332,7 +341,7 @@ export default {
     initComCfg(type, config) {
       // 初始化组件配置
       config = cloneDeep(config);
-      debugger
+      debugger;
       switch (type) {
         case "chart":
           if (config.row_json) {
@@ -625,26 +634,28 @@ export default {
     border: 1px solid #ccc;
     background-color: #f1f1f1;
     cursor: move;
-    &.only-text{
+    &.only-text {
       height: 50px;
       min-height: 50px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
+      flex-direction: row;
       align-items: center;
+      padding: 0 10px;
     }
     &[class^="type-"] {
-      border:none;
+      border: none;
       border-left: 3px solid #17d57e;
       border-radius: 0;
     }
     &.type-container {
-      border:none;
+      border: none;
       border-left: 3px solid #ff740e;
       border-radius: 0;
     }
 
     &.type-layout {
-      border:none;
+      border: none;
       border-left: 3px solid #2c48ff;
       border-radius: 0;
     }

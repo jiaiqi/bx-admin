@@ -611,15 +611,15 @@ export default {
                   com_type: "卡片部件",
                   card_parts_name: draggedElement.com_name,
                   parts_text: draggedElement.com_name,
-                  parts_type: draggedElement.value,
+                  parts_type: draggedElement.parts_type,
                 };
-                
 
                 Object.keys(draggedElement).forEach((key) => {
-                  if(key.startsWith("_default_")){
-                    draggedElement.data[key.replace("_default_", "")] = draggedElement[key]
+                  if (key.startsWith("_default_")) {
+                    draggedElement.data[key.replace("_default_", "")] =
+                      draggedElement[key];
                   }
-                })
+                });
                 draggedElement._type = "component";
               }
               if (draggedElement?.mock_data_json) {

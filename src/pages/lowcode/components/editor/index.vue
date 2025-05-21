@@ -299,6 +299,7 @@ export default {
     },
     deleteComponent(val) {
       console.log("deleteComponent", val);
+      debugger
       this.$emit("delete", val);
     },
     // 在methods中添加以下方法
