@@ -12,17 +12,14 @@
       :class="{
         active: isActive,
       }"
-      v-if="inEdit"
+      v-if="['卡片部件'].includes(pageItemData.com_type) && inEdit"
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">
         <span class="name">
           {{ pageItem.com_name || "" }}
         </span>
-        <i
-          class="el-icon-close button close-icon"
-          @click="onDelete"
-        ></i>
+        <i class="el-icon-close button close-icon" @click="onDelete"></i>
       </div>
     </div>
 
@@ -69,6 +66,7 @@
     </div>
     <card-cell-part
       v-if="pageItemData.com_type === '卡片部件'"
+      :page-item="pageItemData"
       :cell-item="pageItemData.card_parts_json || pageItemData"
     ></card-cell-part>
     <!-- <card-cell-part
@@ -234,7 +232,7 @@ import tabList from "./list/tabs-list.vue";
 import gridCard from "./grid-card.vue";
 import formAdd from "./form/add.vue";
 import NavMenu from "./nav-menu/nav-menu.vue";
-import CardCellPart from "./card-group-cell/card-cell-part.vue";
+import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import { Icon } from "@iconify/vue2";

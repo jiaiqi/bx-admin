@@ -537,7 +537,6 @@ export default {
       this.$emit("on-row-button-click", e);
     },
     onClickCell(item, cellLayoutJson) {
-      debugger;
       if (this.readOnly) {
         return;
       }
