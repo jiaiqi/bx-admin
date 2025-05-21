@@ -46,7 +46,10 @@
         :key="item.value"
         :id="item.value"
         class="com-item margin component cursor-move"
-        :class="[`type-${item.type}`]"
+        :class="[
+          `type-${item.type}`,
+          { 'only-text': !item.icon && !item.preview },
+        ]"
         @dragstart="handleDragStart($event, item)"
         draggable="true"
         unselectable="on"
@@ -58,7 +61,7 @@
           :src="getImagePath(item.preview)"
           alt=""
           class="example"
-          v-else="item.preview"
+          v-else-if="item.preview"
         />
 
         <div class="label">{{ item.label }}</div>
@@ -70,12 +73,17 @@
         :key="item.id"
         :id="item.id"
         class="com-item margin component cursor-move"
-        :class="[`type-${item.type}`]"
+        :class="[`type-${item.type}`,{ 'only-text': !item.icon && !item.preview }]"
         @dragstart="handleDragStart($event, item)"
         draggable="true"
         unselectable="on"
       >
-        <img :src="getImagePath(item.preview)" alt="" class="example" />
+        <img
+          :src="getImagePath(item.preview)"
+          alt=""
+          class="example"
+          v-if="item.preview"
+        />
         <div class="label">{{ item.comp_label }}</div>
       </div>
     </div>
@@ -231,13 +239,12 @@ export default {
     },
     tapComponent(item, index) {
       // 点击物料列表项
-
       if (this.activeIndex === index) return this.clearComponent();
       this.activeIndex = index;
       this.activeSubIndex = 0;
       if (!item.service) {
         // 内置组件,不需要从服务端查
-        if (item.value === "others") {
+        if (item.value === "others" || item.value === "cardPart") {
           this.comList = [];
           return;
         }
@@ -302,7 +309,7 @@ export default {
             obj.type = "component";
             obj._type = "component";
             obj.component = "page-item";
-            if(ele.com_option?.includes('悬浮可拖动')){
+            if (ele.com_option?.includes("悬浮可拖动")) {
               obj.component = "float-component";
             }
             obj.data = this.initComCfg(obj.com_type, obj);
@@ -325,6 +332,7 @@ export default {
     initComCfg(type, config) {
       // 初始化组件配置
       config = cloneDeep(config);
+      debugger
       switch (type) {
         case "chart":
           if (config.row_json) {
@@ -617,16 +625,28 @@ export default {
     border: 1px solid #ccc;
     background-color: #f1f1f1;
     cursor: move;
-
+    &.only-text{
+      height: 50px;
+      min-height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
     &[class^="type-"] {
+      border:none;
       border-left: 3px solid #17d57e;
+      border-radius: 0;
     }
     &.type-container {
+      border:none;
       border-left: 3px solid #ff740e;
+      border-radius: 0;
     }
 
     &.type-layout {
+      border:none;
       border-left: 3px solid #2c48ff;
+      border-radius: 0;
     }
 
     .example {

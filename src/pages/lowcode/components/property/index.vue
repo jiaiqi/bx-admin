@@ -298,8 +298,8 @@ export default {
     componentService() {
       if (this.componentId) {
         // update
-        return `srvpage_cfg_page_component_editor_update`;
-        // return `srvpage_cfg_page_component_update`;
+        // return `srvpage_cfg_page_component_editor_update`;
+        return `srvpage_cfg_page_component_update`;
       } else {
         // add
         return `srvpage_cfg_page_component_add`;
@@ -407,6 +407,11 @@ export default {
             obj.service = "srvpage_cfg_com_ext_page_update";
             obj.col = "com_case_no";
             obj.pkCol = "extp_no";
+            break;
+          case "卡片部件": 
+            obj.service = "srvpage_cfg_card_parts_update";
+            obj.col = "card_parts_no";
+            obj.pkCol = "card_parts_no";
             break;
         }
         obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol];
@@ -778,6 +783,7 @@ export default {
       return result;
     },
     async onSave() {
+      debugger;
       if (Array.isArray(this.components) && this.components.length) {
         const oldComponents = cloneDeep(this.components);
         // 保存页面属性后删除在页面上移除的组件
@@ -818,8 +824,8 @@ export default {
               return;
             }
             const obj = {
-              // serviceName: "srvpage_cfg_page_component_update",
-              serviceName: "srvpage_cfg_page_component_editor_update",
+              serviceName: "srvpage_cfg_page_component_update",
+              // serviceName: "srvpage_cfg_page_component_editor_update",
               condition: [
                 {
                   colName: "id",
@@ -962,6 +968,9 @@ export default {
           "page_no",
           "image",
           "preview",
+          "cellItem",
+          "parentId",
+          ""
         ];
         layout.forEach((item, i) => {
           const data = { ...item.data };
@@ -981,6 +990,7 @@ export default {
               delete data[key];
             }
           });
+          debugger
           let compObj = {
             serviceName: "",
             srvApp: "config",
@@ -1041,6 +1051,9 @@ export default {
                 },
               ];
               compObj.data = [{}];
+              break;
+            case "卡片部件":
+              compObj.serviceName = "srvpage_cfg_card_parts_add";
               break;
           }
           addCompArr.push(compObj);
@@ -1105,6 +1118,9 @@ export default {
               break;
             case "extPage":
               data.com_case_no = comp?.extp_no;
+              break;
+            case "卡片部件":
+              data.card_parts_no = comp?.card_parts_no;
               break;
           }
           resultComps.push(data);

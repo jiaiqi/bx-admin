@@ -29,10 +29,7 @@
           icon="ri-arrow-drop-right-fill"
           v-if="mixTitleIcon === '三角形'"
         ></Icon>
-        <Icon
-          :icon="mixTitleIcon"
-          v-else-if="mixTitleIcon"
-        ></Icon>
+        <Icon :icon="mixTitleIcon" v-else-if="mixTitleIcon"></Icon>
         <span>
           {{ pageItemData.com_label }}
         </span>
@@ -49,9 +46,23 @@
         </span>
       </div>
     </div>
-
+    <card-cell-part
+      v-if="pageItemData.com_type==='卡片部件'"
+      :cell-item="pageItemData.card_parts_json||pageItemData"
+    ></card-cell-part>
+    <!-- <card-cell-part
+      v-if="pageItem.type === 'cardPart'"
+      :comColMap="comColMap"
+      :cellItem="item"
+      :cellItemData="cellItemData"
+      :readOnly="readOnly"
+      :queryOptions="queryOptions"
+      :cellLayoutJson="item"
+      :parent-part="activeCellLayout"
+      @on-click-cell="onClickCell"
+    ></card-cell-part> -->
     <nav-menu
-      v-if="
+      v-else-if="
         pageItemData.com_type === 'navBar' &&
         pageItemData.com_case_json &&
         pageItemData.com_case_json.disp_flag !== '否'
@@ -202,6 +213,7 @@ import tabList from "./list/tabs-list.vue";
 import gridCard from "./grid-card.vue";
 import formAdd from "./form/add.vue";
 import NavMenu from "./nav-menu/nav-menu.vue";
+import CardCellPart from "./card-group-cell/card-cell-part.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import { Icon } from "@iconify/vue2";
@@ -225,6 +237,7 @@ export default {
     formAdd,
     NavMenu,
     Icon,
+    CardCellPart,
   },
   props: {
     pageItem: {

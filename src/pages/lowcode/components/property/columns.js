@@ -97,6 +97,8 @@ export const pageCompCols = [
   "user_manual",
   "rd_design_note",
   "page_no",
+  "card_parts_no",
+  "card_parts_json",
   // "owner_tabs_no",
   // "is_leaf",
   // "path",

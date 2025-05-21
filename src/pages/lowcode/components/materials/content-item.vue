@@ -470,7 +470,11 @@ export default {
       // 处理其他类型组件
       if (e.target && this.allowDrop && draggedType) {
         console.log("draggedType:", draggedType);
-        if (draggedType === "component" || draggedType === "layout") {
+        if (
+          draggedType === "component" ||
+          draggedType === "cardPart" ||
+          draggedType === "layout"
+        ) {
           // 允许放置非容器和非布局组件且非 content 组件
           e.dataTransfer.dropEffect = "copy";
           e.target.classList.add("drag-over");
@@ -593,12 +597,31 @@ export default {
               draggedElement.com_seq = (this.props.children.length + 1) * 100;
               draggedElement._seq = draggedElement.com_seq;
               draggedElement.com_name =
-                draggedElement.comp_label || draggedElement.chart_name;
+                draggedElement.comp_label ||
+                draggedElement.chart_name ||
+                draggedElement.label;
               if (!draggedElement._editType) {
                 draggedElement.id = `${this.id}${new Date().getTime()}`;
                 draggedElement._editType = "add";
               }
+              if (draggedElement.type === "cardPart") {
+                draggedElement.com_type = "卡片部件";
+                draggedElement.data = {
+                  // ...draggedElement,
+                  com_type: "卡片部件",
+                  card_parts_name: draggedElement.com_name,
+                  parts_text: draggedElement.com_name,
+                  parts_type: draggedElement.value,
+                };
+                
 
+                Object.keys(draggedElement).forEach((key) => {
+                  if(key.startsWith("_default_")){
+                    draggedElement.data[key.replace("_default_", "")] = draggedElement[key]
+                  }
+                })
+                draggedElement._type = "component";
+              }
               if (draggedElement?.mock_data_json) {
                 try {
                   // const mock_data_json = JSON.parse(

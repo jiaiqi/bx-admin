@@ -16,7 +16,7 @@
       v-if="['视频'].includes(partsType)"
     ></video>
     <div
-      v-else-if="['string', '时间日期'].includes(cellItem.parts_type)"
+      v-else-if="['string', '字符串', '时间日期'].includes(cellItem.parts_type)"
       class="bx-cell-string"
       :class="{
         'cursor-pointer': isLink,
@@ -38,7 +38,7 @@
       {{ getPartModelData }}
     </div>
     <el-image
-      v-else-if="item.parts_type == 'iconImg'"
+      v-else-if="['图片', 'iconImg'].includes(item.parts_type)"
       @click.stop="onClickSubBlock()"
       :loading-img="getImagePath(item.parts_img)"
       :height="buildColStyleJson.height || 'auto'"
@@ -55,14 +55,14 @@
     ></el-image>
     <el-rate
       :disabled="true"
-      v-else-if="item.parts_type == 'rate'"
+      v-else-if="['rate', '星级评分'].includes(item.parts_type)"
       :count="5"
       :value="Number(getPartModelData) || 0"
     ></el-rate>
     <el-progress
       :show-text="false"
       :style="[buildColStyleJson]"
-      v-else-if="item.parts_type == 'progress'"
+      v-else-if="['progress', '进度条'].includes(item.parts_type)"
       :count="5"
       :define-back-color="buildColStyleJson['background-color'] || ''"
       :color="buildColStyleJson.color || '#2979ff'"
@@ -451,7 +451,7 @@ export default {
 
     partsShow() {
       const item = this.cellItem;
-      const itemData = this.cellItemData;
+      const itemData = this.cellItemData||{};
       const map =
         this.comColMap ||
         Object.keys(itemData).reduce((acc, key) => {
