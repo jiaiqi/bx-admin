@@ -13,7 +13,7 @@
   >
     <!-- 遮罩层 -->
     <div
-      class="overlay"
+      class="overlay page-item__overlay"
       @click.stop="onTap"
       :class="{
         active: isActive,
@@ -22,9 +22,9 @@
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">
-        <span class="name">
+        <!-- <span class="name">
           {{ pageItem.com_name || "" }}
-        </span>
+        </span> -->
         <i class="el-icon-close button close-icon" @click="onDelete"></i>
       </div>
     </div>
@@ -428,6 +428,18 @@ export default {
   @include layout.overlay;
   z-index: 99;
   $primary-color: #17d57e;
+  &.page-item__overlay {
+    .el-icon-close{
+      // transform: translateX(100%);
+    }
+    // .name,.el-icon-close {
+    //   position: absolute;
+    //   top: 0;
+    //   width: 100%;
+    //   min-width: 50px;
+    //   transform: translateY(-100%);
+    // }
+  }
   &:hover {
     border: 2px dashed rgba($color: $primary-color, $alpha: 1);
     background-color: rgba($color: $primary-color, $alpha: 0.1);
