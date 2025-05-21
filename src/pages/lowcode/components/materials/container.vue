@@ -1,6 +1,7 @@
 <template>
   <div
     class="lc-container lc-layout"
+    :class="{ 'in-edit': !isPreview && !isView }"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -16,9 +17,9 @@
       v-if="!isPreview && !isView"
     >
       <!-- 拖拽排序 -->
-      <div class="handle">
+      <!-- <div class="handle">
         <i class="el-icon-rank"></i>
-      </div>
+      </div> -->
       <!-- 删除按钮 -->
       <i class="el-icon-close" @click="$emit('delete', props)"></i>
       <!-- <div
@@ -38,7 +39,6 @@
 <script>
 import dragStore from "../../store/dragStore";
 import { formatStyleData } from "@/pages/datav/common/index.js";
-
 
 export default {
   name: "lc-container",
@@ -238,7 +238,7 @@ export default {
 
 .lc-container {
   width: 100%;
-  min-height: 30px;
+  // min-height: 30px;
   min-width: var(--content-width);
   display: flex;
   flex-direction: column;
@@ -252,6 +252,9 @@ export default {
   // }
   // margin: 10px 0;
   // padding: 10px;
+  &.in-edit{
+    min-height: 50px;
+  }
 
   > .overlay {
     border: 1px dashed rgba($color: $primary-color, $alpha: 1);

@@ -43,22 +43,22 @@ export const materialsTree = [
       //   "type": "cardPart",
       //   "component":"pageItem"
       // },
-      {
-        "label": "块容器",
-        "value": "block",
-        "parts_type": "block",
-        "type": "cardPart",
-        "component": "pageItem",
-        "icon":"ri-checkbox-blank-line"
-      },
-      {
-        "label": "行容器",
-        "value": "row",
-        "parts_type": "row",
-        "type": "cardPart",
-        "component": "pageItem",
-        "icon":"ri-table-2"
-      },
+      // {
+      //   "label": "块容器",
+      //   "value": "block",
+      //   "parts_type": "block",
+      //   "type": "cardPart",
+      //   "component": "pageItem",
+      //   "icon":"ri-checkbox-blank-line"
+      // },
+      // {
+      //   "label": "行容器",
+      //   "value": "row",
+      //   "parts_type": "row",
+      //   "type": "cardPart",
+      //   "component": "pageItem",
+      //   "icon":"ri-table-2"
+      // },
       {
         "label": "变量",
         "value": "variable",

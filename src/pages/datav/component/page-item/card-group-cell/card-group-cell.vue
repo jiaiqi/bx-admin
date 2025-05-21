@@ -16,6 +16,7 @@
             pageItem._refedCol &&
             currentRadio === cellItemData[pageItem._refedCol],
           'is-link': activeCellLayout && activeCellLayout.jump_json,
+          'list-item': inList,
         }"
         :style="[
           activeCellLayout.style_json
@@ -52,6 +53,8 @@
             pageItem._refedCol &&
             currentRadio === cellItemData[pageItem._refedCol],
           'is-link': cellLayoutJson && cellLayoutJson.jump_json,
+          'list-item': inList,
+
         }"
         :style="[
           cellLayoutJson.style_json
@@ -321,6 +324,9 @@ export default {
     // }               // repeat：重复布局，配置一个单元布局，其余数据按照该单元循环  static:静态布局，按照配置单元渲染界面，不会重复
   },
   computed: {
+    inList() {
+      return this.pageItem?.com_type === "list";
+    },
     showActiveCard() {
       if (this.activeCellLayout?.parts_json?.length) {
         return true;
@@ -531,7 +537,7 @@ export default {
       this.$emit("on-row-button-click", e);
     },
     onClickCell(item, cellLayoutJson) {
-      debugger
+      debugger;
       if (this.readOnly) {
         return;
       }
@@ -929,6 +935,13 @@ export default {
     transition: all 0.3s ease-in-out;
     &:hover {
       scale: 1.01;
+    }
+  }
+  &.list-item {
+    border: 1px solid transparent;
+    &:hover {
+      border: 1px solid #ebeef5;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     }
   }
   // scrollbar-width: thin; /* 隐藏滚动条 */
