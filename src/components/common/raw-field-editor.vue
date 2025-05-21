@@ -1470,6 +1470,7 @@ export default {
     outline: none;
     border: none;
     flex: 1;
+    max-width: 80%;
   }
 }
 .help-tips {
