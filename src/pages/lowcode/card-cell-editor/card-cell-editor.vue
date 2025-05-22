@@ -1,0 +1,549 @@
+<template>
+  <div class="card-cell-editor">
+    <header class="header">
+      <div class="header-left">
+        <h1 class="title">卡片单元编辑</h1>
+      </div>
+      <div class="header-right">
+        <button class="preview-btn" @click="previewCard">预览</button>
+        <button class="save-btn" @click="saveCard">保存</button>
+      </div>
+    </header>
+    <main class="main">
+      <aside class="materials-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">组件</h2>
+        </div>
+        <div class="panel-content">
+          <div class="materials-list">
+            <div
+              v-for="(item, index) in cardParts"
+              :key="index"
+              class="material-item"
+              draggable="true"
+              @dragstart="onDragStart($event, item)"
+            >
+              <div class="material-icon">
+                <Icon :icon="item.icon"></Icon>
+              </div>
+              <div class="material-name">{{ item.label }}</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <section class="editor-area">
+        <div class="editor-container">
+          <div
+            class="editor-content"
+            @dragover.prevent
+            @drop="onDrop($event, null)"
+          >
+            <card-part
+              v-for="(part, index) in partsList"
+              :key="index"
+              :part="part"
+              :index="index"
+              @delete-part="deletePart"
+              @select-part="selectPart"
+            />
+          </div>
+        </div>
+      </section>
+      <aside class="property-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">属性</h2>
+        </div>
+        <div class="panel-content">
+          <div v-if="!selectedPart" class="no-selection">
+            请选择一个卡片部件来编辑属性
+          </div>
+          <div v-else class="property-form">
+            <div class="form-item">
+              <label class="form-label">部件类型</label>
+              <div class="form-control">
+                <span>{{ selectedPart.label }}</span>
+              </div>
+            </div>
+
+            <!-- 图片部件特有属性 -->
+            <div class="form-item" v-if="selectedPart.parts_type === 'iconImg'">
+              <label class="form-label">图片</label>
+              <div class="form-control">
+                <div class="upload-btn">上传</div>
+              </div>
+            </div>
+
+            <!-- 文本部件特有属性 -->
+            <div class="form-item" v-if="selectedPart.parts_type === 'string'">
+              <label class="form-label">文本内容</label>
+              <div class="form-control">
+                <el-input
+                  v-model="selectedPart._default_parts_text"
+                  placeholder="请输入文本内容"
+                  size="small"
+                ></el-input>
+              </div>
+            </div>
+
+            <!-- 图标部件特有属性 -->
+            <div class="form-item" v-if="selectedPart.parts_type === 'icon'">
+              <label class="form-label">图标</label>
+              <div class="form-control">
+                <el-input
+                  v-model="selectedPart._default_parts_icon"
+                  placeholder="请输入图标名称"
+                  size="small"
+                ></el-input>
+              </div>
+            </div>
+
+            <!-- 通用属性 -->
+            <div class="form-item">
+              <label class="form-label">显示设置</label>
+              <div class="form-control">
+                <div class="switch-control"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+</template>
+
+<script>
+import { Icon } from "@iconify/vue2";
+import { materialsTree } from "../components/materials/materials";
+const cardParts = materialsTree.find((item) => item.value === "cardPart");
+import { $http, $selectOne, $selectList, $delete } from "@/common/http";
+import CardPart from "./components/CardPart.vue";
+import cloneDeep from "lodash/cloneDeep";
+
+export default {
+  components: {
+    Icon,
+    CardPart,
+  },
+  data() {
+    return {
+      // cardParts: Object.freeze(cardParts?.comList || []),
+      card_no: "",
+      cardInfo: null,
+      type: "add",
+      partsList: [],
+      selectedPart: null,
+      draggedPart: null,
+    };
+  },
+  computed: {
+    cardParts() {
+      let arr = cloneDeep(cardParts?.comList || []);
+      arr.unshift({
+        label: "row",
+        icon: "ri-rectangle-line",
+        parts_type: "row",
+      });
+      return arr;
+    },
+  },
+  methods: {
+    init() {
+      if (this.$route.query.card_no) {
+        this.type = "edit";
+        this.card_no = this.$route.query.card_no;
+        this.getCardInfo();
+      }
+    },
+    async getCardInfo() {
+      const url = `/config/select/srvpage_cfg_card_unit_select`;
+      const req = {
+        serviceName: "srvpage_cfg_card_unit_select",
+        colNames: ["*"],
+        condition: [
+          {
+            colName: "card_no",
+            ruleType: "eq",
+            value: this.card_no,
+          },
+        ],
+        page: { pageNo: 1, rownumber: 1 },
+      };
+      const { ok, data, msg } = await $selectOne(url, req);
+      if (ok) {
+        this.cardInfo = data;
+        // 如果有卡片数据，解析parts_json字段
+        if (data.parts_json) {
+          try {
+            this.partsList = JSON.parse(data.parts_json);
+          } catch (e) {
+            console.error("解析卡片部件数据失败", e);
+          }
+        }
+      } else if (msg) {
+        this.$message.error(msg);
+      }
+    },
+    // 拖拽开始时触发
+    onDragStart(event, item) {
+      // 将拖拽的部件数据存储到dataTransfer中
+      event.dataTransfer.setData("part", JSON.stringify(item));
+      this.draggedPart = item;
+    },
+    // 拖拽放置时触发
+    onDrop(event, targetPart) {
+      const partData = JSON.parse(event.dataTransfer.getData("part"));
+
+      // 如果目标是null，表示放置到编辑区域的根级
+      if (!targetPart) {
+        // 创建一个新的部件实例，避免引用原始对象
+        const newPart = JSON.parse(JSON.stringify(partData));
+
+        // 如果是row类型，初始化children数组
+        if (newPart.parts_type === "row") {
+          newPart.children = [];
+        }
+        Object.keys(newPart).forEach((key) => {
+          if (key.startsWith("_default_")) {
+            newPart[key.replace('_default_','')] = newPart[key];
+            console.log('newPart',newPart);
+            
+            delete newPart[key];
+          }
+        });
+
+        this.partsList.push(newPart);
+      }
+
+      // 清除拖拽状态
+      this.draggedPart = null;
+    },
+    // 删除部件
+    deletePart(index) {
+      this.partsList.splice(index, 1);
+      if (this.selectedPart) {
+        this.selectedPart = null;
+      }
+    },
+    // 选择部件
+    selectPart(part) {
+      this.selectedPart = part;
+    },
+    // 保存卡片
+    async saveCard() {
+      if (!this.partsList.length) {
+        this.$message.warning("请先添加卡片部件");
+        return;
+      }
+
+      const parts_json = JSON.stringify(this.partsList);
+
+      if (this.type === "edit") {
+        // 更新卡片
+        const url = `/config/update/srvpage_cfg_card_unit_update`;
+        const req = {
+          serviceName: "srvpage_cfg_card_unit_update",
+          data: {
+            card_no: this.card_no,
+            parts_json,
+          },
+        };
+
+        const { ok, msg } = await $http.post(url, req);
+        if (ok) {
+          this.$message.success("保存成功");
+        } else if (msg) {
+          this.$message.error(msg);
+        }
+      } else {
+        // 新增卡片
+        const url = `/config/insert/srvpage_cfg_card_unit_insert`;
+        const req = {
+          serviceName: "srvpage_cfg_card_unit_insert",
+          data: {
+            card_name: "新建卡片", // 可以添加一个输入框让用户输入名称
+            parts_json,
+          },
+        };
+
+        const { ok, data, msg } = await $http.post(url, req);
+        if (ok) {
+          this.$message.success("保存成功");
+          // 跳转到编辑模式
+          this.type = "edit";
+          this.card_no = data.card_no;
+          this.$router.replace({ query: { card_no: data.card_no } });
+        } else if (msg) {
+          this.$message.error(msg);
+        }
+      }
+    },
+    // 预览卡片
+    previewCard() {
+      if (!this.partsList.length) {
+        this.$message.warning("请先添加卡片部件");
+        return;
+      }
+
+      // 这里可以实现预览功能，例如打开一个预览对话框
+      this.$message.success("预览功能待实现");
+    },
+  },
+  created() {
+    this.init();
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.card-cell-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+  padding: 0 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #e8e8e8;
+
+  .header-left {
+    .title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+
+  .header-right {
+    display: flex;
+    gap: 10px;
+
+    button {
+      padding: 5px 15px;
+      border-radius: 4px;
+      border: 1px solid #dcdfe6;
+      background-color: #fff;
+      cursor: pointer;
+
+      &.save-btn {
+        background-color: #409eff;
+        color: #fff;
+        border-color: #409eff;
+      }
+    }
+  }
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.materials-panel,
+.property-panel {
+  width: 260px;
+  background-color: #f5f7fa;
+  border-right: 1px solid #e8e8e8;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-panel {
+  border-right: none;
+  border-left: 1px solid #e8e8e8;
+}
+
+.panel-header {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e8e8e8;
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.materials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.material-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: move;
+
+  .material-icon {
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    // background-color: #e0e0e0;
+    margin-right: 8px;
+    font-size: 20px;
+  }
+
+  .material-name {
+    font-size: 12px;
+    color: #333;
+  }
+}
+
+.editor-area {
+  flex: 1;
+  background-color: #f0f2f5;
+  padding: 20px;
+  overflow: auto;
+}
+
+.editor-container {
+  height: 100%;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: auto;
+  padding: 60px;
+  scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
+  scrollbar-width: thin;
+  background-color: #f5f5f9;
+  background-size: 20px 20px, 20px 20px;
+  background-image: linear-gradient(#f5f5f9 19px, transparent 0),
+    linear-gradient(90deg, transparent 19px, #000 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.editor-content {
+  display: inline-block;
+  padding: 20px;
+  overflow: auto;
+  min-width: 500px;
+  min-height: 500px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  background-color: #fff;
+  position: relative;
+}
+
+.editor-content:empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &:after {
+    content: "拖拽组件到此处";
+    color: #909399;
+    font-size: 14px;
+  }
+}
+
+.placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.image-placeholder {
+  width: 200px;
+  height: 200px;
+  background-color: #f5f5f5;
+  border: 1px dashed #d9d9d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  &:before {
+    content: "+";
+    font-size: 40px;
+    color: #d9d9d9;
+  }
+}
+
+.property-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label {
+  font-size: 12px;
+  color: #606266;
+}
+
+.form-control {
+  display: flex;
+  align-items: center;
+}
+
+.no-selection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: #909399;
+  font-size: 14px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.upload-btn {
+  padding: 5px 10px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  background-color: #fafafa;
+  color: #606266;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.switch-control {
+  width: 40px;
+  height: 20px;
+  background-color: #dcdfe6;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+
+  &:before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #fff;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s;
+  }
+}
+</style>

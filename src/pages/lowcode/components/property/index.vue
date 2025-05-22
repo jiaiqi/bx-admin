@@ -783,7 +783,6 @@ export default {
       return result;
     },
     async onSave() {
-      debugger;
       if (Array.isArray(this.components) && this.components.length) {
         const oldComponents = cloneDeep(this.components);
         // 保存页面属性后删除在页面上移除的组件

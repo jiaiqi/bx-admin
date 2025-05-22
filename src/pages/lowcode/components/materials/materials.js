@@ -17,7 +17,8 @@ export const materialsTree = [
         "parts_type": "string",
         "type": "cardPart",
         "component": "pageItem",
-        "icon":"ri-text"
+        "icon":"ri-text",
+        "_default_parts_text": "字符串",
       },
       {
         "label": "图片",

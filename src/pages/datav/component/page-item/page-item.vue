@@ -46,14 +46,16 @@
           },
         ]"
       >
-        <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
-        <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
-        <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
-        <Icon
-          icon="ri-arrow-drop-right-fill"
-          v-if="mixTitleIcon === '三角形'"
-        ></Icon>
-        <Icon :icon="mixTitleIcon" v-else-if="mixTitleIcon"></Icon>
+        <template v-if="mixTitleIcon && mixTitleIcon !== '无'">
+          <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
+          <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
+          <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
+          <Icon
+            icon="ri-arrow-drop-right-fill"
+            v-if="mixTitleIcon === '三角形'"
+          ></Icon>
+          <Icon :icon="mixTitleIcon" v-else-if="mixTitleIcon"></Icon>
+        </template>
         <span>
           {{ pageItemData.com_label }}
         </span>
@@ -429,7 +431,7 @@ export default {
   z-index: 99;
   $primary-color: #17d57e;
   &.page-item__overlay {
-    .el-icon-close{
+    .el-icon-close {
       // transform: translateX(100%);
     }
     // .name,.el-icon-close {

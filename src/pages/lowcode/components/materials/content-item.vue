@@ -187,12 +187,14 @@ export default {
       return this.type === "content" && !this.children?.length;
     },
     isActive() {
-      // let childId = this.children?.[0]?.id;
-      // if (this.props.type == "layout") {
-      //   return this.currentId && [this.id].includes(this.currentId);
-      // }
-      // return this.currentId && [childId, this.id].includes(this.currentId);
-      return this.currentId && [this.id].includes(this.currentId);
+      if (this.childIsCardPart) {
+        return this.currentId && [this.id].includes(this.currentId);
+      }
+      let childId = this.children?.[0]?.id;
+      if (this.props.type == "layout") {
+        return this.currentId && [this.id].includes(this.currentId);
+      }
+      return this.currentId && [childId, this.id].includes(this.currentId);
     },
     childType() {
       if (Array.isArray(this.children) && this.children.length) {
@@ -289,7 +291,7 @@ export default {
       if (this.isPreview) return;
       // let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
       let val = this.props;
-      if(!this.childIsCardPart){
+      if (!this.childIsCardPart) {
         val = this.children?.[0]?.id ? this.children?.[0] : this.props;
       }
       if (this.childType === "layout") {
