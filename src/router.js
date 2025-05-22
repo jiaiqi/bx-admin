@@ -389,6 +389,12 @@ let routes = [
             /* webpackChunkName: "audit" */ "@/pages/audit/flow-detail.vue"
           ),
       },
+      {
+        //工单派发
+        path: "worker-order",
+        component: () =>
+            import(/* webpackChunkName: "audit" */ "@/pages/audit/workdistribution/work-order.vue")
+      }
     ],
   },
   {

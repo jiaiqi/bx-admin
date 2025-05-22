@@ -96,6 +96,20 @@
         >
         </simple-update>
       </el-tab-pane>
+      <el-tab-pane
+          label="样式配置"
+          name="样式配置"
+          v-if="
+          componentId ||
+          (!componentId &&
+            pageId &&
+            currentItem &&
+            currentItem._type === 'component')
+        "
+          v-loading="componentLoading"
+      >
+        <stylePlugin></stylePlugin>
+      </el-tab-pane>
       <!-- <el-tab-pane label="布局" name="布局" v-if="useLayout">
         <div style="padding: 20px">
           <el-switch
@@ -139,6 +153,7 @@
 <script>
 import simpleUpdate from "@/components/common/simple-update.vue";
 import simpleAdd from "@/components/common/simple-add.vue";
+import stylePlugin from "@/components/common/style-plugin.vue";
 import dayjs from "dayjs";
 import cloneDeep from "lodash/cloneDeep";
 import { pageCompCols } from "./columns";
@@ -147,6 +162,7 @@ export default {
   components: {
     simpleUpdate,
     simpleAdd,
+    stylePlugin,
   },
   props: {
     pageConfig: {
