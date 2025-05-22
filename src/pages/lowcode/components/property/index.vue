@@ -1026,14 +1026,15 @@ export default {
               compObj.serviceName = "srvpage_cfg_com_tabs_add";
               break;
             case "grid": //
-              compObj.serviceName = "srvpage_cfg_com_grid_update";
-              compObj.condition = [
-                {
-                  colName: "grid_no",
-                  ruleType: "eq",
-                  value: data?.grid_no,
-                },
-              ];
+              compObj.serviceName = "srvpage_cfg_com_grid_add";
+              // compObj.serviceName = "srvpage_cfg_com_grid_update";
+              // compObj.condition = [
+              //   {
+              //     colName: "grid_no",
+              //     ruleType: "eq",
+              //     value: data?.grid_no,
+              //   },
+              // ];
               break;
             case "navBar":
               compObj.serviceName = "srvpage_cfg_page_nav_bar_add";

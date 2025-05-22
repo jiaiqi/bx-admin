@@ -180,16 +180,16 @@ export default {
       if (this.com_name?.includes("一行两列")) {
         style = {
           display: "grid",
-          grid_template_columns: "1fr 1fr",
+          "grid-template-columns": "1fr 1fr",
         };
       } else if (this.com_name?.includes("一行1列")) {
         style = {
           gap: "10px",
           display: "grid",
-          grid_template_columns: "1fr",
+          "grid-template-columns": "1fr",
         };
       } else if (this.com_name?.includes("一行3列")) {
-        style = { display: "grid", grid_template_columns: "1fr 1fr 1fr" };
+        style = { display: "grid", "grid-template-columns": "1fr 1fr 1fr" };
       } else if (this.com_name?.includes("一列三行")) {
         style = { display: "grid" };
       } else if (this.com_name?.includes("上下两行")) {

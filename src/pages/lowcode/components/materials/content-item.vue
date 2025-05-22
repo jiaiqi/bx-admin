@@ -103,6 +103,7 @@
 
 <script>
 import dragStore from "../../store/dragStore";
+import { formatStyleData } from "@/pages/datav/common/index.js";
 
 export default {
   props: {
@@ -199,11 +200,30 @@ export default {
       if (!this.contentWidth) return {};
 
       return {
+        ...this.setStyle,
         width:
           this.currentWidthUnit === "px"
             ? `${this.contentWidth}px`
             : `${this.contentWidth}%`,
       };
+    },
+    setStyle() {
+      let style = {};
+      if (this.props.style_json && typeof this.props.style_json === "string") {
+        style = JSON.parse(this.props.style_json);
+      } else if (
+        this.props.style_json &&
+        typeof this.props.style_json === "object"
+      ) {
+        style = this.props.style_json;
+      }
+      if (
+        this.props.layout_json?.style_json &&
+        typeof this.props.layout_json.style_json === "object"
+      ) {
+        style = { ...this.props.layout_json.style_json, ...style };
+      }
+      return formatStyleData(style);
     },
   },
   watch: {
