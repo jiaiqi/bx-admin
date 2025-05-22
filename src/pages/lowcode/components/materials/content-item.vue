@@ -289,6 +289,9 @@ export default {
       if (this.isPreview) return;
       // let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
       let val = this.props;
+      if(!this.childIsCardPart){
+        val = this.children?.[0]?.id ? this.children?.[0] : this.props;
+      }
       if (this.childType === "layout") {
         val = this.props;
       }
