@@ -35,7 +35,7 @@
         active: isActive,
         'child-is-layout': childType === 'layout',
       }"
-      v-if="!isPreview && !isView && !children.length"
+      v-if="!isPreview && !isView && !childIsCardPart"
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">
@@ -68,7 +68,7 @@
         <i
           class="el-icon-close button close-icon"
           @click="onDelete"
-          v-if="children && children.length"
+          v-if="children && children.length && !childIsCardPart"
         ></i>
       </div>
     </div>
@@ -168,6 +168,14 @@ export default {
   computed: {
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
+    },
+    childIsCardPart() {
+      if (Array.isArray(this.children) && this.children.length) {
+        return (
+          this.children[0]?.type === "cardPart" ||
+          this.children[0]?.com_type === "卡片部件"
+        );
+      }
     },
     allowDrop() {
       // 对于cardPart类型组件，允许多个组件拖入
