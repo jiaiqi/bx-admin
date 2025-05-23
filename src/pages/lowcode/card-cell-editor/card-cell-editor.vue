@@ -1,28 +1,28 @@
 <template>
-  <div class="card-cell-editor">
+  <div class="card-cell-editor" :class="{ 'dark-mode': isDarkMode }">
     <header class="header">
       <div class="header-left">
         <h1 class="title">卡片单元编辑</h1>
       </div>
       <div class="header-center">
-        <button
-          class=""
-          size="small"
-          @click="hiddenPartsVisible = !hiddenPartsVisible"
-        >
+        <!-- <button class="" @click="hiddenPartsVisible = !hiddenPartsVisible">
           {{ hiddenPartsVisible ? "隐藏" : "显示" }}已隐藏部件
+        </button> -->
+        <!-- 新增深色模式切换按钮 -->
+        <button
+          class="theme-toggle-btn"
+          @click="isDarkMode = !isDarkMode"
+          title="切换主题模式"
+        >
+          <Icon
+            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
+            class="theme-icon"
+          />
         </button>
       </div>
       <div class="header-right">
-        <button class="preview-btn" size="small" @click="previewCard">
-          预览
-        </button>
-        <button
-          class="save-btn"
-          size="small"
-          @click="saveCard"
-          :loading="onSaving"
-        >
+        <button class="preview-btn" @click="previewCard">预览</button>
+        <button class="save-btn" @click="saveCard" :loading="onSaving">
           保存
         </button>
       </div>
@@ -145,6 +145,7 @@ export default {
       onSaving: false,
       isPreview: false,
       hiddenPartsVisible: false,
+      isDarkMode: false, // 新增深色模式状态
     };
   },
   computed: {
@@ -411,6 +412,124 @@ export default {
   height: 100vh;
   width: 100%;
   overflow: hidden;
+  &.dark-mode {
+    background-color: #1a1a1a;
+
+    .header {
+      background-color: #2d2d2d;
+      border-bottom-color: #444;
+      .title {
+        color: #ffffff;
+      }
+      .header-right,
+      .header-center {
+        button {
+          color: #ffffff;
+          border-color: #444;
+          background-color: #333;
+          &.save-btn {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+          }
+        }
+
+        .theme-toggle-btn {
+          background-color: #333;
+          border-color: #444;
+
+          &:hover {
+            background-color: #444;
+          }
+
+          .theme-icon {
+            color: #ffffff;
+          }
+        }
+      }
+    }
+
+    .main {
+      .materials-panel,
+      .property-panel {
+        background-color: #252525;
+        border-right-color: #444;
+        .panel-header {
+          border-bottom-color: #444;
+          .panel-title {
+            color: #ffffff;
+          }
+        }
+        .panel-content {
+          color: #dddddd;
+          :deep(.property-pane) {
+            background-color: #252525;
+          }
+        }
+        .material-item {
+          background-color: #333;
+          border-color: #444;
+          .material-name {
+            color: #dddddd;
+          }
+        }
+      }
+
+      .editor-area {
+        background-color: #1e1e1e;
+      }
+
+      .editor-content {
+        background-color: #2d2d2d;
+        border-color: #444;
+        .overlay {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+      }
+      .property-panel {
+        border-left-color: #444;
+        background-color: #252525;
+        :deep(.form-view-wrapper) {
+          background-color: #2d2d2d;
+          .raw_field_editor input {
+            --custom-input-color: #ddd;
+          }
+          .el-checkbox,
+          .el-upload__tip {
+            color: #dddddd;
+          }
+          .el-input__inner {
+            background-color: #333;
+            border-color: #444;
+          }
+          .el-upload--picture-card {
+            background-color: #252525;
+            border-color: #444;
+          }
+        }
+      }
+    }
+    :deep(.el-dialog__wrapper) {
+      .el-dialog {
+        background-color: #2d2d2d;
+        .el-dialog__title,
+        .el-dialog__headerbtn,
+        .el-dialog__close {
+          color: #ddd;
+        }
+        .el-dialog__body,
+        .preview-mode {
+          height: 80vh;
+        }
+      }
+    }
+
+    .editor-container,
+    .preview-mode {
+      background-color: #18181c;
+      background-image: linear-gradient(#18181c 19px, transparent 0),
+        linear-gradient(90deg, transparent 19px, #86909c 0);
+    }
+  }
 }
 
 .header {
@@ -427,6 +546,36 @@ export default {
       font-size: 16px;
       font-weight: bold;
       color: #333;
+    }
+  }
+
+  .header-center {
+    display: flex;
+    align-items: center;
+
+    .theme-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid #dcdfe6;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
+
+      &:hover {
+        background-color: #f5f7fa;
+        transform: rotate(15deg);
+      }
+
+      .theme-icon {
+        font-size: 20px;
+        color: #606266;
+        transition: all 0.3s ease;
+      }
     }
   }
 
