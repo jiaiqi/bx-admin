@@ -4,6 +4,15 @@
       <div class="header-left">
         <h1 class="title">卡片单元编辑</h1>
       </div>
+      <div class="header-center">
+        <button
+          class=""
+          size="small"
+          @click="hiddenPartsVisible = !hiddenPartsVisible"
+        >
+          {{ hiddenPartsVisible ? "隐藏" : "显示" }}已隐藏部件
+        </button>
+      </div>
       <div class="header-right">
         <button class="preview-btn" size="small" @click="previewCard">
           预览
@@ -44,6 +53,7 @@
         <div class="editor-container">
           <div
             class="editor-content"
+            :style="[setStyle]"
             @dragover.prevent
             @drop="onDrop($event, null)"
             @dragenter="onDragEnter($event, 'editor')"
@@ -57,6 +67,7 @@
               :part="part"
               :index="index"
               :selected-part="selectedPart"
+              :hiddenPartsVisible="hiddenPartsVisible"
               @delete-part="deletePart"
               @select-part="selectPart"
               @mouseenter="onDragLeave($event, 'editor')"
@@ -87,7 +98,7 @@
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :destroy-on-close="true"
-      width="60%"
+      fullscreen
       :before-close="
         () => {
           this.isPreview = false;
@@ -108,10 +119,13 @@ import { Icon } from "@iconify/vue2";
 import { materialsTree } from "../components/materials/materials";
 const cardParts = materialsTree.find((item) => item.value === "cardPart");
 import { $http, $selectOne, $selectList, $delete } from "@/common/http";
+import { formatStyleData } from "@/pages/datav/common";
+
 import CardPart from "./components/CardPart.vue";
 import propertyEditor from "./components/propertyEditor.vue";
 import cloneDeep from "lodash/cloneDeep";
 import CardCell from "./components/CardCell.vue";
+
 export default {
   components: {
     Icon,
@@ -130,9 +144,13 @@ export default {
       draggedPart: null,
       onSaving: false,
       isPreview: false,
+      hiddenPartsVisible: false,
     };
   },
   computed: {
+    setStyle() {
+      return formatStyleData(this.cardInfo?.style_json);
+    },
     cardParts() {
       let arr = cloneDeep(cardParts?.comList || []);
       arr.unshift({
@@ -149,7 +167,6 @@ export default {
         this.type = "edit";
         this.cardNo = this.$route.params.cardNo;
         this.getCardInfo();
-        this.getCardParts();
       }
     },
     async getCardInfo() {
@@ -170,13 +187,25 @@ export default {
       if (ok) {
         this.cardInfo = data;
         // 如果有卡片数据，解析parts_json字段
+        function buildPartsTree(list) {
+          if (Array.isArray(list) && list.length) {
+            return list.map((item) => {
+              if (item?.sub_card_parts_json?.length) {
+                item.children = buildPartsTree(item.sub_card_parts_json);
+              }
+              return item;
+            });
+          }
+          return list;
+        }
         if (data.parts_json) {
           try {
-            this.partsList = JSON.parse(data.parts_json);
+            this.partsList = buildPartsTree(JSON.parse(data.parts_json));
           } catch (e) {
             console.error("解析卡片部件数据失败", e);
           }
         }
+        this.getCardParts();
       } else if (msg) {
         this.$message.error(msg);
       }
@@ -260,23 +289,25 @@ export default {
     // 删除部件
     deletePart(part, index) {
       // 删除部件
-      if (part?.id) {
+      if (part?.id || part?.card_parts_no) {
         // 从数据库删除
         return this.$confirm("确定要删除吗？", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
         }).then(() => {
-          $delete({
-            app: "config",
+          const params = {
             service: "srvpage_cfg_card_parts_delete",
-            key: "id",
-            value: part.id,
-          })
+            app: "config",
+            key: part.id ? "id" : "card_parts_no",
+            value: part.id || part.card_parts_no,
+          };
+          $delete(params)
             .then(({ ok, msg }) => {
               if (ok) {
                 this.$message.success("删除成功");
-                this.getCardParts();
+                // this.getCardParts();
+                this.getCardInfo();
               } else {
                 this.$message.error(msg || "删除失败");
               }
@@ -299,8 +330,9 @@ export default {
     saved() {
       // 保存成功 刷新数据
       this.$message.success("保存成功");
-      this.getCardParts();
+      // this.getCardParts();
       this.onSaving = false;
+      this.getCardInfo();
     },
     // 保存卡片
     async saveCard() {
@@ -497,11 +529,12 @@ export default {
   background-color: #f0f2f5;
   padding: 20px;
   overflow: auto;
+  scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
+  scrollbar-width: thin;
 }
 
 .editor-container {
   height: 100%;
-  background-color: #fff;
   border-radius: 4px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   overflow: auto;
@@ -516,6 +549,8 @@ export default {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  width: fit-content;
+  min-width: 100%;
 }
 .preview-mode {
   display: flex;
@@ -527,20 +562,19 @@ export default {
   background-size: 20px 20px, 20px 20px;
   background-image: linear-gradient(#f5f5f9 19px, transparent 0),
     linear-gradient(90deg, transparent 19px, #000 0);
-    .preview-content{
-    }
+  .preview-content {
+  }
 }
 .editor-content {
   display: inline-block;
   padding: 10px;
-  overflow: auto;
-  min-width: 500px;
-  min-height: 500px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   border: 1px solid #ddd;
   background-color: #fff;
   position: relative;
   transition: all 0.2s ease;
+  min-width: 300px;
+  min-height: 100px;
   .overlay {
     position: absolute;
     top: 0;

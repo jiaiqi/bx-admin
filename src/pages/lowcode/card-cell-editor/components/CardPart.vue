@@ -13,6 +13,7 @@
     @dragover.stop="onDragOver($event)"
     @dragleave.stop="onDragLeave($event)"
     @mouseover.stop=""
+    v-if="partsShow"
   >
     <div
       class="overlay"
@@ -31,12 +32,13 @@
     <!-- 根据不同类型渲染不同内容 -->
     <template v-if="part.parts_type === 'row'">
       <card-part
-        v-for="(childPart, childIndex) in part.children"
+        v-for="(childPart, childIndex) in part.children || []"
         :key="childIndex"
         :part="childPart"
         :index="childIndex"
         :selected-part="selectedPart"
         :preview="preview"
+        :hiddenPartsVisible="hiddenPartsVisible"
         @mouseenter="$emit('mouseenter')"
         @delete-part="deleteChildPart(childPart, childIndex)"
         @select-part="selectPart"
@@ -79,6 +81,10 @@ export default {
     },
     selectedPart: [Object, null],
     preview: {
+      type: Boolean,
+      default: false,
+    },
+    hiddenPartsVisible: {
       type: Boolean,
       default: false,
     },
@@ -169,6 +175,8 @@ export default {
       // 判断当前部件是否被选中
       if (!this.selectedPart?.id && this.selectPart?._id) {
         return this.selectedPart._id === this.part?._id;
+      } else if (this.part?.card_parts_no) {
+        return this.selectedPart?.card_parts_no === this.part?.card_parts_no;
       } else if (this.selectedPart?.id) {
         return this.selectedPart.id === this.part?.id;
       }
@@ -236,7 +244,7 @@ export default {
     },
     deleteChildPart(part, childIndex) {
       // 删除子部件
-      if (part?.id) {
+      if (part?.id || part?.card_parts_no) {
         console.log("删除子部件", part);
         // 从数据库删除
         return this.$emit("delete-part", part);
@@ -261,8 +269,8 @@ export default {
   // margin: 5px;
   border: 1px dashed #eee;
   border-radius: 4px;
-  background-color: #fff;
-  min-height: 30px;
+  // background-color: #fff;
+  min-height: 20px;
   transition: all 0.3s ease;
   display: inline-block;
   --primary-color: #006cff;
@@ -346,7 +354,7 @@ export default {
 
 .card-part-row {
   padding: 10px;
-  min-height: 50px;
+  min-height: 20px;
   display: block;
   position: relative;
   &.on-drag-over {

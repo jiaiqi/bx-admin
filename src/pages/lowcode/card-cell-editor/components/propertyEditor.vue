@@ -120,6 +120,15 @@ export default {
               ],
               data: [data],
             };
+            if(!item.id&&item.card_parts_no){
+              obj.condition = [
+                {
+                  colName: "card_parts_no",
+                  ruleType: "eq",
+                  value: item.card_parts_no,
+                },
+              ]
+            }
             updateObj.push(obj);
           });
           await this.httpOperate("update", updateObj);
