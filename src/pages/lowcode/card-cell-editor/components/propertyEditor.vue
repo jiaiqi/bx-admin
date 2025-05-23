@@ -120,14 +120,14 @@ export default {
               ],
               data: [data],
             };
-            if(!item.id&&item.card_parts_no){
+            if (!item.id && item.card_parts_no) {
               obj.condition = [
                 {
                   colName: "card_parts_no",
                   ruleType: "eq",
                   value: item.card_parts_no,
                 },
-              ]
+              ];
             }
             updateObj.push(obj);
           });
@@ -145,7 +145,7 @@ export default {
             addObj,
             null,
             true,
-            true
+            false
           );
           console.log("result", result);
           if (result) {

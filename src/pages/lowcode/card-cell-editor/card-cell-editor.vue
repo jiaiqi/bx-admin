@@ -22,6 +22,7 @@
       </div>
       <div class="header-right">
         <button class="preview-btn" @click="previewCard">预览</button>
+        <button class="" @click="refresh" :loading="onSaving">刷新</button>
         <button class="save-btn" @click="saveCard" :loading="onSaving">
           保存
         </button>
@@ -333,6 +334,9 @@ export default {
       this.$message.success("保存成功");
       // this.getCardParts();
       this.onSaving = false;
+      this.getCardInfo();
+    },
+    refresh() {
       this.getCardInfo();
     },
     // 保存卡片
