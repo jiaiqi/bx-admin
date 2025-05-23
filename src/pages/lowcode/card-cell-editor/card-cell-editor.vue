@@ -392,11 +392,11 @@ export default {
         return;
       }
       this.isPreview = !this.isPreview;
-      if (this.isPreview) {
-        this.$message.success("进入预览模式");
-      } else {
-        this.$message.info("退出预览模式");
-      }
+      // if (this.isPreview) {
+      //   this.$message.success("进入预览模式");
+      // } else {
+      //   this.$message.info("退出预览模式");
+      // }
     },
   },
   created() {
