@@ -37,14 +37,20 @@
             class="editor-content"
             @dragover.prevent
             @drop="onDrop($event, null)"
+            @dragenter="onDragEnter($event, 'editor')"
+            @dragleave="onDragLeave($event, 'editor')"
+            @mouseleave="onDragLeave($event, 'editor')"
           >
+            <div class="overlay" @click.stop="selectPart()"></div>
             <card-part
               v-for="(part, index) in partsList"
               :key="index"
               :part="part"
               :index="index"
+              :selected-part="selectedPart"
               @delete-part="deletePart"
               @select-part="selectPart"
+              @mouseenter="onDragLeave($event, 'editor')"
             />
           </div>
         </div>
@@ -202,11 +208,14 @@ export default {
         if (newPart.parts_type === "row") {
           newPart.children = [];
         }
+
+        newPart._id = new Date().getTime();
+
         Object.keys(newPart).forEach((key) => {
           if (key.startsWith("_default_")) {
-            newPart[key.replace('_default_','')] = newPart[key];
-            console.log('newPart',newPart);
-            
+            newPart[key.replace("_default_", "")] = newPart[key];
+            console.log("newPart", newPart);
+
             delete newPart[key];
           }
         });
@@ -216,6 +225,23 @@ export default {
 
       // 清除拖拽状态
       this.draggedPart = null;
+
+      // 移除拖拽悬停效果
+      event?.currentTarget?.classList?.remove("drag-over-editor");
+    },
+
+    // 拖拽进入时触发
+    onDragEnter(event, type) {
+      if (type === "editor") {
+        event?.currentTarget?.classList.add("drag-over-editor");
+      }
+    },
+
+    // 拖拽离开时触发
+    onDragLeave(event, type) {
+      if (type === "editor") {
+        event?.currentTarget?.classList.remove("drag-over-editor");
+      }
     },
     // 删除部件
     deletePart(index) {
@@ -226,6 +252,7 @@ export default {
     },
     // 选择部件
     selectPart(part) {
+      console.log("selectPart", part?._id);
       this.selectedPart = part;
     },
     // 保存卡片
@@ -436,7 +463,7 @@ export default {
 
 .editor-content {
   display: inline-block;
-  padding: 20px;
+  padding: 10px;
   overflow: auto;
   min-width: 500px;
   min-height: 500px;
@@ -444,6 +471,22 @@ export default {
   border: 1px solid #ddd;
   background-color: #fff;
   position: relative;
+  transition: all 0.2s ease;
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+  }
+}
+
+.editor-content.drag-over-editor {
+  >.overlay {
+    background-color: rgba(103, 194, 58, 0.1);
+    border: 2px dashed #67c23a;
+  }
 }
 
 .editor-content:empty {
