@@ -4,8 +4,10 @@
     :class="{
       'card-part-row': part.parts_type === 'row',
       'card-part-selected': isSelected,
-      'on-drag-over': isDraggingOver,
+      'on-drag-over': isDraggingOver && !preview,
+      'card-part-preview': preview,
     }"
+    :style="[setPartStyle]"
     @dragover.prevent
     @drop="onDrop($event, part)"
     @dragover.stop="onDragOver($event)"
@@ -16,8 +18,9 @@
       class="overlay"
       @click.stop="selectPart(part, $event)"
       @mouseenter="$emit('mouseenter')"
+      v-if="!preview"
     >
-      <div class="card-part-header">
+      <div class="card-part-header" v-if="isSelected">
         <span class="part-label">{{ part.label }}</span>
         <i
           class="el-icon-delete"
@@ -27,28 +30,25 @@
     </div>
     <!-- 根据不同类型渲染不同内容 -->
     <template v-if="part.parts_type === 'row'">
-      <!-- <div class="card-part-content"> -->
       <card-part
         v-for="(childPart, childIndex) in part.children"
         :key="childIndex"
         :part="childPart"
         :index="childIndex"
         :selected-part="selectedPart"
+        :preview="preview"
         @mouseenter="$emit('mouseenter')"
         @delete-part="deleteChildPart(childPart, childIndex)"
         @select-part="selectPart"
       />
-      <!-- </div> -->
     </template>
 
     <template v-else>
-      <!-- <div class="card-part-wrapper"> -->
       <card-cell-part-without-card-group
         :cell-item="part"
         :page-item="{}"
         @on-click-cell="handleClickCell"
       />
-      <!-- </div> -->
     </template>
   </div>
 </template>
@@ -56,7 +56,7 @@
 <script>
 import { Icon } from "@iconify/vue2";
 import CardCellPartWithoutCardGroup from "@/pages/datav/component/page-item/card-group-cell/card-cell-part-without-card-group.vue";
-
+import { formatStyleData } from "@/pages/datav/common";
 export default {
   name: "CardPart",
   components: {
@@ -78,17 +78,106 @@ export default {
       required: true,
     },
     selectedPart: [Object, null],
+    preview: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
+    setPartStyle() {
+      const styleJson = this.part?.style_json || {};
+      return formatStyleData(styleJson);
+    },
+    partsShow() {
+      const item = this.part;
+      const itemData = {};
+      const map =
+        this.comColMap ||
+        Object.keys(itemData).reduce((acc, key) => {
+          acc[key] = key;
+          return acc;
+        }, {});
+      let show = true;
+      if (item.disp_flag == "隐藏" && !item.disp_variable) {
+        return false;
+      }
+      // 根据显示条件判断是否显示 islogin代表是否登录
+      if (item.disp_flag && item?.disp_variable?.toLowerCase() === "islogin") {
+        if (item.disp_flag === "显示") {
+          return item.disp_compare_value === "是"
+            ? !!this.logined
+            : !this.logined;
+        } else if (item.disp_flag === "隐藏") {
+          return item.disp_compare_value === "是"
+            ? !this.logined
+            : !!this.logined;
+        }
+      } else if (item && itemData) {
+        if (
+          item.disp_flag == "显示" &&
+          item.disp_variable &&
+          map.hasOwnProperty(item.disp_variable)
+        ) {
+          show = false;
+          let val =
+            itemData[map[item.disp_variable]] ||
+            this.queryOptions[map[item.disp_variable]] ||
+            null;
+          let dispValue = item.disp_compare_value || null; // 显示值
+          if (dispValue === "notnull") {
+            show = !!val;
+          } else if (dispValue && val) {
+            dispValue = dispValue.split(",");
+            // console.log('dispValue1',dispValue,val,itemData.target_name)
+            if (dispValue.indexOf(val) !== -1) {
+              show = true;
+            }
+          }
+        } else if (
+          item.disp_flag == "隐藏" &&
+          item.disp_variable &&
+          map.hasOwnProperty(item.disp_variable)
+        ) {
+          show = true;
+          let val =
+            itemData[map[item.disp_variable]] ||
+            this.queryOptions[map[item.disp_variable]] ||
+            null;
+          let dispValue = item.disp_compare_value || null; // 隐藏值
+          if (["null", "false"].includes(disp_compare_value)) {
+            show = !!val;
+          } else if (dispValue && val) {
+            dispValue = dispValue.split(",");
+            if (dispValue.indexOf(val) !== -1) {
+              show = false;
+            }
+          }
+        }
+      }
+      // console.log('dispValue2',itemData.rent_type,itemData.rent_status,show)
+      if (!show) {
+        console.log(
+          "dispValue2",
+          itemData.rent_type,
+          itemData.rent_status,
+          show
+        );
+      }
+      return show;
+    },
     isSelected() {
       // 判断当前部件是否被选中
-      return this.selectedPart?._id && this.selectedPart._id === this.part?._id;
+      if (!this.selectedPart?.id && this.selectPart?._id) {
+        return this.selectedPart._id === this.part?._id;
+      } else if (this.selectedPart?.id) {
+        return this.selectedPart.id === this.part?.id;
+      }
     },
   },
   methods: {
     selectPart(part, event) {
       event?.stopPropagation?.();
-      console.log("选中", part?._id);
+      console.log("选中", part?._id || part?.id);
       this.$emit("select-part", part || this.part);
     },
     onDrop(event, part) {
@@ -178,6 +267,15 @@ export default {
   display: inline-block;
   --primary-color: #006cff;
   $primary-color: var(--primary-color);
+  &.card-part-preview {
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    min-height: auto;
+    margin: 0;
+    padding: 0;
+  }
   .overlay {
     position: absolute;
     top: 0;
@@ -241,18 +339,6 @@ export default {
     }
   }
 
-  // .el-icon-delete {
-  //   position: absolute;
-  //   top: 5px;
-  //   right: 5px;
-  //   font-size: 16px;
-  //   color: #f56c6c;
-  //   cursor: pointer;
-  //   opacity: 0;
-  //   transition: opacity 0.3s;
-  //   z-index: 10;
-  // }
-
   &:hover .el-icon-delete {
     opacity: 1;
   }
@@ -260,8 +346,6 @@ export default {
 
 .card-part-row {
   padding: 10px;
-  // border: 1px dashed #409eff;
-  // background-color: rgba(64, 158, 255, 0.1);
   min-height: 50px;
   display: block;
   position: relative;
@@ -271,66 +355,6 @@ export default {
       background-color: rgba(64, 158, 255, 0.1);
     }
   }
-  width: 100%;
-  // .card-part-header {
-  //   margin-bottom: 10px;
-  //   padding-bottom: 5px;
-  //   // border-bottom: 1px solid #eee;
-  //   font-weight: bold;
-  //   position: absolute;
-  //   top: 0;
-  //   left: 0;
-  //   right: 0;
-  //   // .part-label {
-  //   //   color: rgba(64, 158, 255, 0.5);
-  //   // }
-  // }
-
-  .card-part-content {
-    display: flex;
-    flex-wrap: wrap;
-    // flex-direction: column;
-  }
-}
-
-.card-part-text,
-.card-part-icon,
-.card-part-image,
-.card-part-rate,
-.card-part-progress,
-.card-part-rich-text,
-.card-part-default,
-.card-part-wrapper {
-  padding: 10px;
-  min-height: 20px;
-  position: relative;
-}
-
-.card-part-image {
-  .image-placeholder {
-    width: 100px;
-    height: 100px;
-    background-color: #f5f5f5;
-    border: 1px dashed #d9d9d9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-
-    &:before {
-      content: "+";
-      font-size: 40px;
-      color: #d9d9d9;
-    }
-  }
-
-  img {
-    max-width: 100%;
-    max-height: 200px;
-  }
-}
-
-.card-part-icon {
-  font-size: 24px;
+  // width: 100%;
 }
 </style>

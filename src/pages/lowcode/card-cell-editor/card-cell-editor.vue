@@ -5,8 +5,15 @@
         <h1 class="title">卡片单元编辑</h1>
       </div>
       <div class="header-right">
-        <button class="preview-btn" @click="previewCard">预览</button>
-        <button class="save-btn" @click="saveCard" :loading="onSaving">
+        <button class="preview-btn" size="small" @click="previewCard">
+          预览
+        </button>
+        <button
+          class="save-btn"
+          size="small"
+          @click="saveCard"
+          :loading="onSaving"
+        >
           保存
         </button>
       </div>
@@ -59,7 +66,9 @@
       </section>
       <aside class="property-panel">
         <div class="panel-header">
-          <h2 class="panel-title">属性</h2>
+          <h2 class="panel-title">
+            {{ selectedPart ? "卡片部件" : "卡片单元" }}属性
+          </h2>
         </div>
         <div class="panel-content">
           <property-editor
@@ -72,6 +81,25 @@
         </div>
       </aside>
     </main>
+    <el-dialog
+      title="预览"
+      :visible.sync="isPreview"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :destroy-on-close="true"
+      width="60%"
+      :before-close="
+        () => {
+          this.isPreview = false;
+        }
+      "
+    >
+      <div class="preview-mode" v-if="isPreview">
+        <div class="preview-content">
+          <card-cell :card-cell="cardInfo"></card-cell>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -83,12 +111,13 @@ import { $http, $selectOne, $selectList, $delete } from "@/common/http";
 import CardPart from "./components/CardPart.vue";
 import propertyEditor from "./components/propertyEditor.vue";
 import cloneDeep from "lodash/cloneDeep";
-
+import CardCell from "./components/CardCell.vue";
 export default {
   components: {
     Icon,
     CardPart,
     propertyEditor,
+    CardCell,
   },
   data() {
     return {
@@ -100,6 +129,7 @@ export default {
       selectedPart: null,
       draggedPart: null,
       onSaving: false,
+      isPreview: false,
     };
   },
   computed: {
@@ -328,9 +358,12 @@ export default {
         this.$message.warning("请先添加卡片部件");
         return;
       }
-
-      // 这里可以实现预览功能，例如打开一个预览对话框
-      this.$message.success("预览功能待实现");
+      this.isPreview = !this.isPreview;
+      if (this.isPreview) {
+        this.$message.success("进入预览模式");
+      } else {
+        this.$message.info("退出预览模式");
+      }
     },
   },
   created() {
@@ -370,16 +403,20 @@ export default {
     gap: 10px;
 
     button {
-      padding: 5px 15px;
+      padding: 4px 15px;
       border-radius: 4px;
       border: 1px solid #dcdfe6;
       background-color: #fff;
       cursor: pointer;
-
+      transition: all 0.2s ease-in-out;
+      min-width: 80px;
+      &:active {
+        transform: scale(0.98);
+      }
       &.save-btn {
-        background-color: #409eff;
+        background-color: var(--primary-color, #409eff);
         color: #fff;
-        border-color: #409eff;
+        border-color: var(--primary-color, #409eff);
       }
     }
   }
@@ -480,7 +517,19 @@ export default {
   align-items: center;
   flex-wrap: wrap;
 }
-
+.preview-mode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  overflow: auto;
+  background-color: #f5f5f9;
+  background-size: 20px 20px, 20px 20px;
+  background-image: linear-gradient(#f5f5f9 19px, transparent 0),
+    linear-gradient(90deg, transparent 19px, #000 0);
+    .preview-content{
+    }
+}
 .editor-content {
   display: inline-block;
   padding: 10px;

@@ -428,7 +428,7 @@ export default {
         return [data];
       } else if (data.length > 0) {
         return data;
-      } else if (this.pageItem.com_type !== "list") {
+      } else if (this.pageItem?.com_type !== "list") {
         return [""];
       } else {
         return data;

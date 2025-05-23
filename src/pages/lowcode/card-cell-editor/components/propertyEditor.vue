@@ -1,5 +1,5 @@
 <template>
-  <div class="property-pane">
+  <div class="property-pane" :key="card_parts_no">
     <simple-update
       name="list-update"
       :defaultValues="cardUnit"
@@ -17,16 +17,16 @@
     </simple-update>
     <simple-update
       name="list-update"
-      :defaultValues="cardUnit"
+      :defaultValues="currentCell"
       :navAfterSubmit="false"
-      :service="cardUnitService.update"
+      :service="cardPartService.update"
       :pk="card_parts_no"
       app-no="config"
       pkCol="card_parts_no"
       :group-collapse="true"
-      @executor-complete="onUnitUpdate"
+      @executor-complete="onPartsUpdate"
       @form-loaded="pageLoading = false"
-      @field-value-changed="onValueChange($event, 'card-unit-update')"
+      @field-value-changed="onValueChange($event, 'card-parts-update')"
       v-else-if="card_parts_no"
     >
     </simple-update>
@@ -139,12 +139,12 @@ export default {
             true
           );
           console.log("result", result);
-          if(result){
-            this.$emit('saved')
+          if (result) {
+            this.$emit("saved");
           }
         }
-        if(!deleteIds?.length && !updateList?.length && !addList?.length){
-          this.$message.error('没有需要保存的内容！')
+        if (!deleteIds?.length && !updateList?.length && !addList?.length) {
+          this.$message.error("没有需要保存的内容！");
         }
       }
     },
@@ -154,6 +154,10 @@ export default {
     onUnitUpdate(event) {
       console.log("卡片单元更新完成", event);
       this.$emit("unit-update");
+    },
+    onPartsUpdate(event) {
+      console.log("卡片单元更新完成", event);
+      this.$emit("parts-update");
     },
     buildAddReqData(list) {
       if (!list?.length) {
