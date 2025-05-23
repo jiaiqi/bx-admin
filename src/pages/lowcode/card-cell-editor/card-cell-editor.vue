@@ -6,7 +6,9 @@
       </div>
       <div class="header-right">
         <button class="preview-btn" @click="previewCard">预览</button>
-        <button class="save-btn" @click="saveCard">保存</button>
+        <button class="save-btn" @click="saveCard" :loading="onSaving">
+          保存
+        </button>
       </div>
     </header>
     <main class="main">
@@ -60,57 +62,13 @@
           <h2 class="panel-title">属性</h2>
         </div>
         <div class="panel-content">
-          <div v-if="!selectedPart" class="no-selection">
-            请选择一个卡片部件来编辑属性
-          </div>
-          <div v-else class="property-form">
-            <div class="form-item">
-              <label class="form-label">部件类型</label>
-              <div class="form-control">
-                <span>{{ selectedPart.label }}</span>
-              </div>
-            </div>
-
-            <!-- 图片部件特有属性 -->
-            <div class="form-item" v-if="selectedPart.parts_type === 'iconImg'">
-              <label class="form-label">图片</label>
-              <div class="form-control">
-                <div class="upload-btn">上传</div>
-              </div>
-            </div>
-
-            <!-- 文本部件特有属性 -->
-            <div class="form-item" v-if="selectedPart.parts_type === 'string'">
-              <label class="form-label">文本内容</label>
-              <div class="form-control">
-                <el-input
-                  v-model="selectedPart._default_parts_text"
-                  placeholder="请输入文本内容"
-                  size="small"
-                ></el-input>
-              </div>
-            </div>
-
-            <!-- 图标部件特有属性 -->
-            <div class="form-item" v-if="selectedPart.parts_type === 'icon'">
-              <label class="form-label">图标</label>
-              <div class="form-control">
-                <el-input
-                  v-model="selectedPart._default_parts_icon"
-                  placeholder="请输入图标名称"
-                  size="small"
-                ></el-input>
-              </div>
-            </div>
-
-            <!-- 通用属性 -->
-            <div class="form-item">
-              <label class="form-label">显示设置</label>
-              <div class="form-control">
-                <div class="switch-control"></div>
-              </div>
-            </div>
-          </div>
+          <property-editor
+            :card-unit="cardInfo"
+            :current-cell="selectedPart"
+            :list="partsList"
+            ref="propertyEditor"
+            @saved="saved"
+          ></property-editor>
         </div>
       </aside>
     </main>
@@ -123,22 +81,25 @@ import { materialsTree } from "../components/materials/materials";
 const cardParts = materialsTree.find((item) => item.value === "cardPart");
 import { $http, $selectOne, $selectList, $delete } from "@/common/http";
 import CardPart from "./components/CardPart.vue";
+import propertyEditor from "./components/propertyEditor.vue";
 import cloneDeep from "lodash/cloneDeep";
 
 export default {
   components: {
     Icon,
     CardPart,
+    propertyEditor,
   },
   data() {
     return {
       // cardParts: Object.freeze(cardParts?.comList || []),
-      card_no: "",
+      cardNo: "",
       cardInfo: null,
       type: "add",
       partsList: [],
       selectedPart: null,
       draggedPart: null,
+      onSaving: false,
     };
   },
   computed: {
@@ -154,10 +115,11 @@ export default {
   },
   methods: {
     init() {
-      if (this.$route.query.card_no) {
+      if (this.$route.params.cardNo) {
         this.type = "edit";
-        this.card_no = this.$route.query.card_no;
+        this.cardNo = this.$route.params.cardNo;
         this.getCardInfo();
+        this.getCardParts();
       }
     },
     async getCardInfo() {
@@ -169,7 +131,7 @@ export default {
           {
             colName: "card_no",
             ruleType: "eq",
-            value: this.card_no,
+            value: this.cardNo,
           },
         ],
         page: { pageNo: 1, rownumber: 1 },
@@ -189,6 +151,28 @@ export default {
         this.$message.error(msg);
       }
     },
+    async getCardParts() {
+      const url = `/config/select/srvpage_cfg_card_parts_select`;
+      const req = {
+        serviceName: "srvpage_cfg_card_parts_select",
+        colNames: ["*"],
+        treeData: true,
+        condition: [
+          {
+            colName: "card_no",
+            ruleType: "eq",
+            value: this.cardNo,
+          },
+        ],
+      };
+      const { ok, data, msg } = await $selectList(url, req);
+      if (ok) {
+        this.partsList = data;
+      } else if (msg) {
+        this.$message.error(msg);
+      }
+    },
+    buildCardParsTree(partsList) {},
     // 拖拽开始时触发
     onDragStart(event, item) {
       // 将拖拽的部件数据存储到dataTransfer中
@@ -210,7 +194,7 @@ export default {
         }
 
         newPart._id = new Date().getTime();
-
+        newPart._editType = "add";
         Object.keys(newPart).forEach((key) => {
           if (key.startsWith("_default_")) {
             newPart[key.replace("_default_", "")] = newPart[key];
@@ -244,7 +228,34 @@ export default {
       }
     },
     // 删除部件
-    deletePart(index) {
+    deletePart(part, index) {
+      // 删除部件
+      if (part?.id) {
+        // 从数据库删除
+        return this.$confirm("确定要删除吗？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then(() => {
+          $delete({
+            app: "config",
+            service: "srvpage_cfg_card_parts_delete",
+            key: "id",
+            value: part.id,
+          })
+            .then(({ ok, msg }) => {
+              if (ok) {
+                this.$message.success("删除成功");
+                this.getCardParts();
+              } else {
+                this.$message.error(msg || "删除失败");
+              }
+            })
+            .catch((err) => {
+              this.$message.error("删除失败");
+            });
+        });
+      }
       this.partsList.splice(index, 1);
       if (this.selectedPart) {
         this.selectedPart = null;
@@ -255,54 +266,61 @@ export default {
       console.log("selectPart", part?._id);
       this.selectedPart = part;
     },
+    saved() {
+      // 保存成功 刷新数据
+      this.$message.success("保存成功");
+      this.getCardParts();
+      this.onSaving = false;
+    },
     // 保存卡片
     async saveCard() {
       if (!this.partsList.length) {
         this.$message.warning("请先添加卡片部件");
         return;
       }
+      this.onSaving = true;
+      this.$refs?.propertyEditor?.onSave();
+      // const parts_json = JSON.stringify(this.partsList);
 
-      const parts_json = JSON.stringify(this.partsList);
+      // if (this.type === "edit") {
+      //   // 更新卡片
+      //   const url = `/config/update/srvpage_cfg_card_unit_update`;
+      //   const req = {
+      //     serviceName: "srvpage_cfg_card_unit_update",
+      //     data: {
+      //       card_no: this.cardNo,
+      //       parts_json,
+      //     },
+      //   };
 
-      if (this.type === "edit") {
-        // 更新卡片
-        const url = `/config/update/srvpage_cfg_card_unit_update`;
-        const req = {
-          serviceName: "srvpage_cfg_card_unit_update",
-          data: {
-            card_no: this.card_no,
-            parts_json,
-          },
-        };
+      //   const { ok, msg } = await $http.post(url, req);
+      //   if (ok) {
+      //     this.$message.success("保存成功");
+      //   } else if (msg) {
+      //     this.$message.error(msg);
+      //   }
+      // } else {
+      //   // 新增卡片
+      //   const url = `/config/insert/srvpage_cfg_card_unit_add`;
+      //   const req = {
+      //     serviceName: "srvpage_cfg_card_unit_add",
+      //     data: {
+      //       card_name: "新建卡片", // 可以添加一个输入框让用户输入名称
+      //       parts_json,
+      //     },
+      //   };
 
-        const { ok, msg } = await $http.post(url, req);
-        if (ok) {
-          this.$message.success("保存成功");
-        } else if (msg) {
-          this.$message.error(msg);
-        }
-      } else {
-        // 新增卡片
-        const url = `/config/insert/srvpage_cfg_card_unit_insert`;
-        const req = {
-          serviceName: "srvpage_cfg_card_unit_insert",
-          data: {
-            card_name: "新建卡片", // 可以添加一个输入框让用户输入名称
-            parts_json,
-          },
-        };
-
-        const { ok, data, msg } = await $http.post(url, req);
-        if (ok) {
-          this.$message.success("保存成功");
-          // 跳转到编辑模式
-          this.type = "edit";
-          this.card_no = data.card_no;
-          this.$router.replace({ query: { card_no: data.card_no } });
-        } else if (msg) {
-          this.$message.error(msg);
-        }
-      }
+      //   const { ok, data, msg } = await $http.post(url, req);
+      //   if (ok) {
+      //     this.$message.success("保存成功");
+      //     // 跳转到编辑模式
+      //     this.type = "edit";
+      //     this.cardNo = data.card_no;
+      //     this.$router.replace({ query: { card_no: data.card_no } });
+      //   } else if (msg) {
+      //     this.$message.error(msg);
+      //   }
+      // }
     },
     // 预览卡片
     previewCard() {
@@ -375,7 +393,8 @@ export default {
 
 .materials-panel,
 .property-panel {
-  width: 260px;
+  width: 200px;
+  padding: 0 10px;
   background-color: #f5f7fa;
   border-right: 1px solid #e8e8e8;
   display: flex;
@@ -383,6 +402,8 @@ export default {
 }
 
 .property-panel {
+  padding: 0;
+  width: 360px;
   border-right: none;
   border-left: 1px solid #e8e8e8;
 }
@@ -401,7 +422,6 @@ export default {
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
 }
 
 .materials-list {
@@ -483,7 +503,7 @@ export default {
 }
 
 .editor-content.drag-over-editor {
-  >.overlay {
+  > .overlay {
     background-color: rgba(103, 194, 58, 0.1);
     border: 2px dashed #67c23a;
   }

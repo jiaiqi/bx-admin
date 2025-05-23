@@ -14,12 +14,15 @@
   >
     <div
       class="overlay"
-      @click.stop="selectPart(part,$event)"
+      @click.stop="selectPart(part, $event)"
       @mouseenter="$emit('mouseenter')"
     >
       <div class="card-part-header">
         <span class="part-label">{{ part.label }}</span>
-        <i class="el-icon-delete" @click.stop="$emit('delete-part', index)"></i>
+        <i
+          class="el-icon-delete"
+          @click.stop="$emit('delete-part', part, index)"
+        ></i>
       </div>
     </div>
     <!-- 根据不同类型渲染不同内容 -->
@@ -32,7 +35,7 @@
         :index="childIndex"
         :selected-part="selectedPart"
         @mouseenter="$emit('mouseenter')"
-        @delete-part="deleteChildPart(childIndex)"
+        @delete-part="deleteChildPart(childPart, childIndex)"
         @select-part="selectPart"
       />
       <!-- </div> -->
@@ -83,7 +86,7 @@ export default {
     },
   },
   methods: {
-    selectPart(part,event) {
+    selectPart(part, event) {
       event?.stopPropagation?.();
       console.log("选中", part?._id);
       this.$emit("select-part", part || this.part);
@@ -106,7 +109,10 @@ export default {
         }
 
         newPart._id = new Date().getTime();
-
+        newPart._editType = "add";
+        if (this.part.card_parts_no) {
+          newPart.parent_no = this.part.card_parts_no;
+        }
         Object.keys(newPart).forEach((key) => {
           if (key.startsWith("_default_")) {
             newPart[key.replace("_default_", "")] = newPart[key];
@@ -139,7 +145,13 @@ export default {
         event?.currentTarget?.classList?.remove("on-drag-over");
       }
     },
-    deleteChildPart(childIndex) {
+    deleteChildPart(part, childIndex) {
+      // 删除子部件
+      if (part?.id) {
+        console.log("删除子部件", part);
+        // 从数据库删除
+        return this.$emit("delete-part", part);
+      }
       if (this.part.children) {
         this.part.children.splice(childIndex, 1);
       }
@@ -184,7 +196,7 @@ export default {
     &:hover {
       opacity: 1;
       border-color: var(--primary-color);
-      >.card-part-header {
+      > .card-part-header {
         opacity: 1;
       }
     }
@@ -192,7 +204,7 @@ export default {
       position: absolute;
       bottom: 0;
       left: 0;
-      transform: translateY(100%);
+      // transform: translateY(100%);
 
       padding: 2px 5px;
       border-radius: 2px;
@@ -254,7 +266,7 @@ export default {
   display: block;
   position: relative;
   &.on-drag-over {
-    >.overlay {
+    > .overlay {
       border: 2px dashed var(--primary-color);
       background-color: rgba(64, 158, 255, 0.1);
     }

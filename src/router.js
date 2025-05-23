@@ -431,7 +431,7 @@ let routes = [
     }
   },
   {
-    path: "/card-cell-editor",
+    path: "/card-cell-editor/:cardNo",
     name: "cardCellEditor",
     component: () =>
       import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/card-cell-editor/card-cell-editor.vue"),
