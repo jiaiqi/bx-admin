@@ -414,7 +414,8 @@ export default {
   overflow: hidden;
   &.dark-mode {
     background-color: #1a1a1a;
-
+    --primary-color: #4a90e2;
+    --menu-bg-color: var(--primary-color);
     .header {
       background-color: #2d2d2d;
       border-bottom-color: #444;
@@ -493,9 +494,24 @@ export default {
           .raw_field_editor input {
             --custom-input-color: #ddd;
           }
+          .el-autocomplete-suggestion {
+            background-color: #2d2d2d;
+            color: #ffffff;
+          }
+          .el-button {
+            background-color: #333;
+            border-color: #444;
+            color: #dddddd;
+            &.el-button--primary {
+            }
+          }
           .el-checkbox,
           .el-upload__tip {
             color: #dddddd;
+          }
+          .el-input-group__append {
+            background-color: #333;
+            border-color: #444;
           }
           .el-input__inner {
             background-color: #333;
