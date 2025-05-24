@@ -79,8 +79,8 @@
           @drag-end="onDragEnd"
         ></materials-view>
         <!-- 添加物料面板拖动调整宽度的分隔线 -->
-        <div 
-          class="materials-resizer" 
+        <div
+          class="materials-resizer"
           @mousedown="handleMaterialsResizerMouseDown"
         ></div>
       </div>
@@ -122,8 +122,8 @@
         v-if="!isView"
       >
         <!-- 添加属性面板拖动调整宽度的分隔线 -->
-        <div 
-          class="property-resizer" 
+        <div
+          class="property-resizer"
           @mousedown="handlePropertyResizerMouseDown"
         ></div>
         <div class="property-toggle" @click="togglePropertyPanel">
@@ -269,8 +269,8 @@ export default {
     // 添加面板宽度CSS变量计算属性
     panelWidthVars() {
       return {
-        '--materials-panel-width': `${this.materialsWidth}px`,
-        '--property-panel-width': `${this.propertyWidth}px`
+        "--materials-panel-width": `${this.materialsWidth}px`,
+        "--property-panel-width": `${this.propertyWidth}px`,
       };
     },
     isView() {
@@ -354,13 +354,14 @@ export default {
       return pre;
     }, "");
     document.body.setAttribute("style", themeVariable);
-    
+
     // 从localStorage中读取面板宽度
     this.loadPanelWidths();
 
-    if(
-      localStorage.getItem('lowcode_dark_mode') === 'true' ||
-      (localStorage.getItem('lowcode_dark_mode') !== 'false' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    if (
+      localStorage.getItem("lowcode_dark_mode") === "true" ||
+      (localStorage.getItem("lowcode_dark_mode") !== "false" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
     ) {
       this.isDarkMode = true;
     } else {
@@ -378,18 +379,15 @@ export default {
     this.$nextTick(() => {
       if (!this.isView && !this.isPreview && this.$refs.editorContainer) {
         // 为editorContainer添加键盘事件监听
-        this.$refs.editorContainer.addEventListener(
-          "keydown",
-          this.handleKeyDown
-        );
-        this.$refs.editorContainer.addEventListener("keyup", this.handleKeyUp);
+        document.addEventListener("keydown", this.handleKeyDown);
+        document.addEventListener("keyup", this.handleKeyUp);
         // 添加tabindex使div可以接收键盘事件
-        this.$refs.editorContainer.setAttribute("tabindex", "0");
+        document.setAttribute("tabindex", "0");
       }
-      
+
       // 添加全局鼠标事件监听，用于处理面板宽度调整
-      document.addEventListener('mousemove', this.handleGlobalMouseMove);
-      document.addEventListener('mouseup', this.handleGlobalMouseUp);
+      document.addEventListener("mousemove", this.handleGlobalMouseMove);
+      document.addEventListener("mouseup", this.handleGlobalMouseUp);
     });
   },
   beforeDestroy() {
@@ -398,10 +396,10 @@ export default {
       document.removeEventListener("keydown", this.handleKeyDown);
       document.removeEventListener("keyup", this.handleKeyUp);
     }
-    
+
     // 移除全局鼠标事件监听
-    document.removeEventListener('mousemove', this.handleGlobalMouseMove);
-    document.removeEventListener('mouseup', this.handleGlobalMouseUp);
+    document.removeEventListener("mousemove", this.handleGlobalMouseMove);
+    document.removeEventListener("mouseup", this.handleGlobalMouseUp);
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
@@ -411,7 +409,7 @@ export default {
       ele.classList.toggle("dark-mode", isDarkMode);
       this.isDarkMode = isDarkMode;
       // 保存主题设置到localStorage
-      localStorage.setItem('lowcode_dark_mode', this.isDarkMode);
+      localStorage.setItem("lowcode_dark_mode", this.isDarkMode);
     },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);
@@ -429,24 +427,26 @@ export default {
     // 加载面板宽度
     loadPanelWidths() {
       // 从localStorage中读取面板宽度
-      const savedMaterialsWidth = localStorage.getItem('lowcode_materials_width');
-      const savedPropertyWidth = localStorage.getItem('lowcode_property_width');
-      
+      const savedMaterialsWidth = localStorage.getItem(
+        "lowcode_materials_width"
+      );
+      const savedPropertyWidth = localStorage.getItem("lowcode_property_width");
+
       if (savedMaterialsWidth) {
         this.materialsWidth = parseInt(savedMaterialsWidth);
       }
-      
+
       if (savedPropertyWidth) {
         this.propertyWidth = parseInt(savedPropertyWidth);
       }
     },
-    
+
     // 保存面板宽度
     savePanelWidths() {
-      localStorage.setItem('lowcode_materials_width', this.materialsWidth);
-      localStorage.setItem('lowcode_property_width', this.propertyWidth);
+      localStorage.setItem("lowcode_materials_width", this.materialsWidth);
+      localStorage.setItem("lowcode_property_width", this.propertyWidth);
     },
-    
+
     // 物料面板宽度调整相关方法
     handleMaterialsResizerMouseDown(e) {
       this.isResizingMaterials = true;
@@ -455,7 +455,7 @@ export default {
       e.preventDefault();
       e.stopPropagation();
     },
-    
+
     // 属性面板宽度调整相关方法
     handlePropertyResizerMouseDown(e) {
       this.isResizingProperty = true;
@@ -464,38 +464,44 @@ export default {
       e.preventDefault();
       e.stopPropagation();
     },
-    
+
     // 全局鼠标移动事件
     handleGlobalMouseMove(e) {
       if (this.isResizingMaterials) {
         // 计算宽度变化
         const deltaX = e.clientX - this.startX;
-        const newWidth = Math.max(150, Math.min(500, this.materialsWidth + deltaX));
-        
+        const newWidth = Math.max(
+          150,
+          Math.min(500, this.materialsWidth + deltaX)
+        );
+
         this.materialsWidth = newWidth;
         this.startX = e.clientX;
-        
+
         // 保存宽度到localStorage
         this.savePanelWidths();
       } else if (this.isResizingProperty) {
         // 计算宽度变化
         const deltaX = this.startX - e.clientX;
-        const newWidth = Math.max(200, Math.min(600, this.propertyWidth + deltaX));
-        
+        const newWidth = Math.max(
+          200,
+          Math.min(600, this.propertyWidth + deltaX)
+        );
+
         this.propertyWidth = newWidth;
         this.startX = e.clientX;
-        
+
         // 保存宽度到localStorage
         this.savePanelWidths();
       }
     },
-    
+
     // 鼠标抬起事件
     handleGlobalMouseUp() {
       this.isResizingMaterials = false;
       this.isResizingProperty = false;
     },
-    
+
     // 切换物料面板
     toggleMaterialsPanel() {
       this.materialsCollapsed = !this.materialsCollapsed;
@@ -504,7 +510,7 @@ export default {
     togglePropertyPanel() {
       this.propertyCollapsed = !this.propertyCollapsed;
     },
-    
+
     findComponentById(components, id) {
       let result = null;
       if (!id || !components || !components.length) return result;
@@ -1241,7 +1247,7 @@ export default {
           .el-form > .el-row {
             border-color: #444;
           }
-          .section-title{
+          .section-title {
             border-bottom-color: #444;
           }
           .raw_field_editor input {
@@ -1429,12 +1435,12 @@ export default {
           transform: translateX(-100%);
           opacity: 0;
         }
-        
+
         .materials-resizer {
           display: none;
         }
       }
-      
+
       // 添加物料面板拖动调整宽度的分隔线样式
       .materials-resizer {
         position: absolute;
@@ -1445,7 +1451,7 @@ export default {
         cursor: col-resize;
         background-color: transparent;
         z-index: 10;
-        
+
         &:hover {
           background-color: rgba(0, 0, 0, 0.1);
         }
@@ -1540,12 +1546,15 @@ export default {
           transform: translateX(100%);
           opacity: 0;
         }
-        
+
         .property-resizer {
           display: none;
         }
       }
-      
+      .el-form-item {
+        display: flex;
+        flex-direction: column;
+      }
       // 添加属性面板拖动调整宽度的分隔线样式
       .property-resizer {
         position: absolute;
@@ -1556,7 +1565,7 @@ export default {
         cursor: col-resize;
         background-color: transparent;
         z-index: 10;
-        
+
         &:hover {
           background-color: rgba(0, 0, 0, 0.1);
         }
