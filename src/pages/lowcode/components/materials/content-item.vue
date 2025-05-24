@@ -35,7 +35,7 @@
         active: isActive,
         'child-is-layout': childType === 'layout',
       }"
-      v-if="!isPreview && !isView && !children.length"
+      v-if="!isPreview && !isView && !childIsCardPart"
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">
@@ -68,7 +68,7 @@
         <i
           class="el-icon-close button close-icon"
           @click="onDelete"
-          v-if="children && children.length"
+          v-if="children && children.length && !childIsCardPart"
         ></i>
       </div>
     </div>
@@ -103,6 +103,7 @@
 
 <script>
 import dragStore from "../../store/dragStore";
+import { formatStyleData } from "@/pages/datav/common/index.js";
 
 export default {
   props: {
@@ -168,6 +169,14 @@ export default {
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
+    childIsCardPart() {
+      if (Array.isArray(this.children) && this.children.length) {
+        return (
+          this.children[0]?.type === "cardPart" ||
+          this.children[0]?.com_type === "卡片部件"
+        );
+      }
+    },
     allowDrop() {
       // 对于cardPart类型组件，允许多个组件拖入
       // 对于其他类型组件，保持原有逻辑，只允许一个组件
@@ -178,12 +187,14 @@ export default {
       return this.type === "content" && !this.children?.length;
     },
     isActive() {
-      // let childId = this.children?.[0]?.id;
-      // if (this.props.type == "layout") {
-      //   return this.currentId && [this.id].includes(this.currentId);
-      // }
-      // return this.currentId && [childId, this.id].includes(this.currentId);
-      return this.currentId && [this.id].includes(this.currentId);
+      if (this.childIsCardPart) {
+        return this.currentId && [this.id].includes(this.currentId);
+      }
+      let childId = this.children?.[0]?.id;
+      if (this.props.type == "layout") {
+        return this.currentId && [this.id].includes(this.currentId);
+      }
+      return this.currentId && [childId, this.id].includes(this.currentId);
     },
     childType() {
       if (Array.isArray(this.children) && this.children.length) {
@@ -199,11 +210,30 @@ export default {
       if (!this.contentWidth) return {};
 
       return {
+        ...this.setStyle,
         width:
           this.currentWidthUnit === "px"
             ? `${this.contentWidth}px`
             : `${this.contentWidth}%`,
       };
+    },
+    setStyle() {
+      let style = {};
+      if (this.props.style_json && typeof this.props.style_json === "string") {
+        style = JSON.parse(this.props.style_json);
+      } else if (
+        this.props.style_json &&
+        typeof this.props.style_json === "object"
+      ) {
+        style = this.props.style_json;
+      }
+      if (
+        this.props.layout_json?.style_json &&
+        typeof this.props.layout_json.style_json === "object"
+      ) {
+        style = { ...this.props.layout_json.style_json, ...style };
+      }
+      return formatStyleData(style);
     },
   },
   watch: {
@@ -261,6 +291,9 @@ export default {
       if (this.isPreview) return;
       // let val = this.children?.[0]?.id ? this.children?.[0] : this.props;
       let val = this.props;
+      if (!this.childIsCardPart) {
+        val = this.children?.[0]?.id ? this.children?.[0] : this.props;
+      }
       if (this.childType === "layout") {
         val = this.props;
       }

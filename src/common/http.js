@@ -198,6 +198,12 @@ instance.interceptors.response.use(
 
 export const $http = instance;
 
+/**
+ * 
+ * @param {*} url 
+ * @param {*} req 
+ * @returns 
+ */
 export async function $selectOne(url, req) {
   const res = await $http.post(url, req)
   if (res?.data?.state === 'SUCCESS') {

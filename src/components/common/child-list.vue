@@ -88,47 +88,6 @@
       @standby-row-added="onStandbyRowAdded"
       v-else-if="foreignKey.view_model == 'mlist'"
     ></tableEdit>
-  
-    <!-- <list
-      ref="list"
-      :key="service"
-      :disabled="updatable === false"
-      v-else
-      :name="name"
-      :mainService="mainService"
-      :pageIsDraft="pageIsDraft"
-      :showPagination="childListConfig.showPagination && showPagination"
-      :list-type="listType"
-      :defaultCondition="defaultCondition"
-      :storage-type="storageType"
-      :service="service"
-      :childForeignkey="foreignKey"
-      :childforeignkey="foreignKey"
-      :def-data-para="defDataPara"
-      :read-only="updatable === false || readOnly"
-      :childforeignvalue="getRefColValue"
-      :default-condition="getDefaultConditions"
-      :inplace-edit="inplaceEdit"
-      :default-inplace-edit-mode="defaultInplaceEditMode"
-      :default-dirty-flags="defaultDirtyFlags"
-      :merge-col="mergeCol"
-      :listMainFormDatas="mainFormDatas"
-      :main-data="mainData"
-      :mem-initdatas-add="initDatas"
-      :$srvApp="$srvApp"
-      :div-cond="divCond"
-      @child-loaded="childDataLoadedRun($event)"
-      @list-loaded="onListLoaded"
-      @inline-list-loaded="onInlineListLoaded"
-      @add-form-loaded="onAddFormLoaded($event)"
-      @update-form-loaded="onUpdateFormLoaded($event)"
-      @duplicate-form-loaded="onAddFormLoaded($event)"
-      @filter-form-loaded="onFilterFormLoaded"
-      @list-data-loaded="listLoaded($event)"
-      @grid-data-changed="$emit('grid-data-changed', $event)"
-      @standby-row-added="onStandbyRowAdded"
-    >
-    </list> -->
     <tab-list
       ref="list"
       :key="service"
@@ -162,7 +121,6 @@
       v-else
     >
     </tab-list>
-    <!--    <custom-frame ref="frameList" :name="item.service_name" :data="item" v-if="item&&item.service_name"></custom-frame>-->
   </div>
 </template>
 
@@ -191,7 +149,7 @@ export default {
     SimpleUpdate,
     SimpleAdd,
     List,
-    TabList:()=>import('./tab-list2.vue'),
+    TabList: () => import("./tab-list2.vue"),
     ListProc,
     tableEdit,
   },
@@ -336,12 +294,12 @@ export default {
     },
 
     innerList: function () {
-      if(this.$refs.list&&this.$refs.list.$refs.list){
-        return this.$refs.list.$refs.list
-      }else{
-        return this.$refs.list
+      if (this.$refs.list && this.$refs.list.$refs.list) {
+        return this.$refs.list.$refs.list;
+      } else {
+        return this.$refs.list;
       }
-      return  this.$refs?.list?.$refs?.list || this.$refs?.list;
+      return this.$refs?.list?.$refs?.list || this.$refs?.list;
     },
 
     gridData: function () {
@@ -413,8 +371,8 @@ export default {
   created: function () {},
 
   methods: {
-    getInnerList(){
-      return this.$refs?.list?.$refs?.list || this.$refs.list
+    getInnerList() {
+      return this.$refs?.list?.$refs?.list || this.$refs.list;
     },
     listLoaded(e) {
       // console.log("list Loaded",e)
@@ -424,7 +382,7 @@ export default {
       }
     },
     childDataLoadedRun(e) {
-      //console.log("child-list",e)
+      console.log("child-list",e)
       this.$emit("child-loaded", e);
     },
     buildRunQuries() {

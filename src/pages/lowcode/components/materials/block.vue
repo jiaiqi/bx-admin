@@ -1,9 +1,9 @@
 <template>
   <div
-      class="lc-block lc-layout"
-      :id="com_name"
-      ref="blockRef"
-      :style="[
+    class="lc-block lc-layout"
+    :id="com_name"
+    ref="blockRef"
+    :style="[
       blockHeightStyle,
       blockWidthStyle,
       setParentStyle,
@@ -11,24 +11,24 @@
         '--content-width': (useContentWidth && contentWidth) || '',
       },
     ]"
-      :class="[
+    :class="[
       subType,
       {
         'use-content-width': useContentWidth,
         'show-label': props.show_label === '是' && props.com_label,
       },
     ]"
-      @dragover="handleDragOver"
-      @dragleave="handleDragLeave"
-      @drop="handleDrop"
-      @dragend="handleDragEnd"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+    @dragend="handleDragEnd"
   >
     <!-- 遮罩层 -->
     <div
-        class="overlay"
-        :class="{ active: currentId && currentId === id }"
-        v-if="!isPreview && !isView"
-        @click.stop="$emit('click', props)"
+      class="overlay"
+      :class="{ active: currentId && currentId === id }"
+      v-if="!isPreview && !isView"
+      @click.stop="$emit('click', props)"
     >
       <!-- 删除按钮 -->
       <i class="el-icon-close" @click="$emit('delete', props)"></i>
@@ -36,8 +36,8 @@
 
     <!-- 子组件 -->
     <div
-        class="lc-layout__label"
-        v-if="props.show_label === '是' && props.com_label"
+      class="lc-layout__label"
+      v-if="props.show_label === '是' && props.com_label"
     >
       <div class="lc-layout__label-text" :style="[mixTitleStyle]">
         <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
@@ -55,10 +55,10 @@
 
     <!-- 高度调整手柄 -->
     <div
-        v-if="!isPreview && !isView && currentId && currentId === id"
-        class="resize-handle-s"
-        title="调整高度"
-        @mousedown="startResizeHeight"
+      v-if="!isPreview && !isView && currentId && currentId === id"
+      class="resize-handle-s"
+      title="调整高度"
+      @mousedown="startResizeHeight"
     ></div>
 
     <!-- 宽度调整手柄 -->
@@ -151,7 +151,7 @@ export default {
     com_name: {
       type: String,
       default: "",
-    }
+    },
   },
   data() {
     return {
@@ -177,9 +177,27 @@ export default {
     },
     setGridStyle() {
       let style = {};
+      if (this.com_name?.includes("一行两列")) {
+        style = {
+          display: "grid",
+          "grid-template-columns": "1fr 1fr",
+        };
+      } else if (this.com_name?.includes("一行1列")) {
+        style = {
+          gap: "10px",
+          display: "grid",
+          "grid-template-columns": "1fr",
+        };
+      } else if (this.com_name?.includes("一行3列")) {
+        style = { display: "grid", "grid-template-columns": "1fr 1fr 1fr" };
+      } else if (this.com_name?.includes("一列三行")) {
+        style = { display: "grid" };
+      } else if (this.com_name?.includes("上下两行")) {
+        style = { display: "grid" };
+      }
       if (
-          typeof this.setStyle === "object" &&
-          Object.keys(this.setStyle).length > 0
+        typeof this.setStyle === "object" &&
+        Object.keys(this.setStyle).length > 0
       ) {
         Object.keys(this.setStyle).forEach((key) => {
           if (layoutKeys.includes(key)) {
@@ -192,8 +210,8 @@ export default {
     setParentStyle() {
       let style = {};
       if (
-          typeof this.setStyle === "object" &&
-          Object.keys(this.setStyle).length > 0
+        typeof this.setStyle === "object" &&
+        Object.keys(this.setStyle).length > 0
       ) {
         Object.keys(this.setStyle).forEach((key) => {
           if (!layoutKeys.includes(key)) {
@@ -208,14 +226,14 @@ export default {
       if (this.props.style_json && typeof this.props.style_json === "string") {
         style = JSON.parse(this.props.style_json);
       } else if (
-          this.props.style_json &&
-          typeof this.props.style_json === "object"
+        this.props.style_json &&
+        typeof this.props.style_json === "object"
       ) {
         style = this.props.style_json;
       }
       if (
-          this.props.layout_json?.style_json &&
-          typeof this.props.layout_json.style_json === "object"
+        this.props.layout_json?.style_json &&
+        typeof this.props.layout_json.style_json === "object"
       ) {
         style = { ...this.props.layout_json.style_json, ...style };
       }
@@ -455,7 +473,7 @@ export default {
             draggedElement.parentId = this.id;
             if (!draggedElement._editType) {
               draggedElement.id = `${
-                  this.id
+                this.id
               }_component_${new Date().getTime()}`;
               draggedElement._editType = "add";
               draggedElement.parent_no = this.com_no;

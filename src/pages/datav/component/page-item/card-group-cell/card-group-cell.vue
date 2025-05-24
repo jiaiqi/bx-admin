@@ -54,7 +54,6 @@
             currentRadio === cellItemData[pageItem._refedCol],
           'is-link': cellLayoutJson && cellLayoutJson.jump_json,
           'list-item': inList,
-
         }"
         :style="[
           cellLayoutJson.style_json
@@ -261,6 +260,9 @@ export default {
   props: {
     pageParamsModel: {
       type: Object,
+      default: () => {
+        return {};
+      },
     },
     readOnly: {
       type: Boolean,
@@ -282,11 +284,15 @@ export default {
     },
     pageItem: {
       type: Object,
-      default: null,
+      default: () => {
+        return {};
+      },
     },
     cellData: {
       type: [Object, Array],
-      default: null,
+      default: () => {
+        return [];
+      },
     },
     comColMap: {
       type: Object,
@@ -300,6 +306,9 @@ export default {
     },
     cardLayout: {
       type: Object,
+      default: () => {
+        return {};
+      },
     },
     selectorMode: {
       type: String,
@@ -312,9 +321,15 @@ export default {
     },
     queryOptions: {
       type: Object,
+      default: () => {
+        return {};
+      },
     },
     activeCellLayout: {
       type: [Object, null],
+      default: () => {
+        return {};
+      },
     },
     // cellLayoutRepeat:{
     // 	type:Boolean,
@@ -428,7 +443,7 @@ export default {
         return [data];
       } else if (data.length > 0) {
         return data;
-      } else if (this.pageItem.com_type !== "list") {
+      } else if (this.pageItem?.com_type !== "list") {
         return [""];
       } else {
         return data;
