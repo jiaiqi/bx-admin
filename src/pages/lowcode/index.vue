@@ -501,6 +501,7 @@ export default {
           "page_no",
           "page_options",
           "tmpl_page_no",
+          "page_style_json",
         ],
         condition: [
           {
