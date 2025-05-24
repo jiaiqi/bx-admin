@@ -379,8 +379,8 @@ export default {
     this.$nextTick(() => {
       if (!this.isView && !this.isPreview && this.$refs.editorContainer) {
         // 为editorContainer添加键盘事件监听
-        document.addEventListener("keydown", this.handleKeyDown);
-        document.addEventListener("keyup", this.handleKeyUp);
+        this.$refs.editorContainer.addEventListener("keydown", this.handleKeyDown);
+        this.$refs.editorContainer.addEventListener("keyup", this.handleKeyUp);
         // 添加tabindex使div可以接收键盘事件
         document.setAttribute("tabindex", "0");
       }
@@ -393,8 +393,8 @@ export default {
   beforeDestroy() {
     if (!this.isView && !this.isPreview) {
       // 移除键盘事件监听，防止内存泄漏
-      document.removeEventListener("keydown", this.handleKeyDown);
-      document.removeEventListener("keyup", this.handleKeyUp);
+      this.$refs.editorContainer.removeEventListener("keydown", this.handleKeyDown);
+      this.$refs.editorContainer.removeEventListener("keyup", this.handleKeyUp);
     }
 
     // 移除全局鼠标事件监听

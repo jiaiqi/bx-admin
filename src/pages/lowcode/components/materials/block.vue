@@ -511,7 +511,10 @@ export default {
 .lc-block {
   width: 100%;
   height: 100%;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  // display: grid;
+  // grid-template-rows: auto 1fr;
   &.use-content-width {
     width: var(--content-width, 100%);
   }

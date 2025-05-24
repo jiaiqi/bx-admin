@@ -17,7 +17,7 @@ export const materialsTree = [
         "parts_type": "string",
         "type": "cardPart",
         "component": "pageItem",
-        "icon":"ri-text",
+        "icon": "ri-text",
         "_default_parts_text": "字符串",
       },
       {
@@ -26,7 +26,7 @@ export const materialsTree = [
         "parts_type": "iconImg",
         "type": "cardPart",
         "component": "pageItem",
-        "icon":"ri-image-fill",
+        "icon": "ri-image-fill",
         // "_default_parts_img": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4QBaRXhpZgAATU0AKgAAAAgABQMBAAUAAAABAAAASgMDAAEAAAABAAAAAFEQAAEAAAABAQAAAFERAAQAAAABAAAAAFESAAQAAAABAAAAAAAAAAAAAYagAACxj//bAQQQACgAKAAoACgAKwAoAC0AMgAyAC0APwBEADwARAA/AF0AVQBOAE4AVQBdAIwAZABsAGQAbABkAIwA1QCFAJsAhQCFAJsAhQDVALwA5AC5AK0AuQDkALwBUgEJAOsA6wEJAVIBhgFIATYBSAGGAdkBpwGnAdkCUwI1AlMDCgMKBBURACgAKAAoACgAKwAoAC0AMgAyAC0APwBEADwARAA/AF0AVQBOAE4AVQBdAIwAZABsAGQAbABkAIwA1QCFAJsAhQCFAJsAhQDVALwA5AC5AK0AuQDkALwBUgEJAOsA6wEJAVIBhgFIATYBSAGGAdkBpwGnAdkCUwI1AlMDCgMKBBX/wgARCAAeAB4DASIAAhEBAxEB/8QAFwABAQEBAAAAAAAAAAAAAAAAAgABBf/aAAgBAQAAAADq7ZPDPClD/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/2gAIAQIQAAAAo//EABUBAQEAAAAAAAAAAAAAAAAAAAEA/9oACAEDEAAAACT/xAAZEAEAAgMAAAAAAAAAAAAAAAABABACETH/2gAIAQEAAT8Agbias5MrCI1jb2f/xAAUEQEAAAAAAAAAAAAAAAAAAAAg/9oACAECAQE/AB//xAAUEQEAAAAAAAAAAAAAAAAAAAAg/9oACAEDAQE/AB//2Q==",
       },
       {
@@ -36,7 +36,7 @@ export const materialsTree = [
         "_default_parts_icon": "ri-image-circle-fill",
         "type": "cardPart",
         "component": "pageItem",
-        "icon":"ri-image-circle-fill"
+        "icon": "ri-image-circle-fill"
       },
       // {
       //   "label": "金额",
@@ -76,7 +76,7 @@ export const materialsTree = [
         "type": "cardPart",
         "component": "pageItem",
         "_default_parts_text": "3",
-        "icon":"ri-star-fill"
+        "icon": "ri-star-fill"
       },
       {
         "label": "进度条",
@@ -85,7 +85,7 @@ export const materialsTree = [
         "type": "cardPart",
         "component": "pageItem",
         "_default_parts_text": "50",
-        "icon":"ri-progress-2-fill"
+        "icon": "ri-progress-2-fill"
 
       },
       {
@@ -95,7 +95,7 @@ export const materialsTree = [
         "type": "cardPart",
         "component": "pageItem",
         "_default_parts_text": "<b>富文本</b>",
-        "icon":"ri-quote-text"
+        "icon": "ri-quote-text"
       },
       // {
       //   "label": "切换按钮",
@@ -119,7 +119,7 @@ export const materialsTree = [
         "type": "cardPart",
         "component": "pageItem",
         "_default_parts_text": new Date().toLocaleString(),
-        "icon":"ri-calendar-schedule-fill"
+        "icon": "ri-calendar-schedule-fill"
       },
       {
         "label": "视频",
@@ -127,7 +127,7 @@ export const materialsTree = [
         "parts_type": "视频",
         "type": "cardPart",
         "component": "pageItem",
-        "icon":"ri-video-fill"
+        "icon": "ri-video-fill"
       },
       {
         "label": "音频",
@@ -135,7 +135,15 @@ export const materialsTree = [
         "parts_type": "音频",
         "type": "cardPart",
         "component": "pageItem",
-        "icon":"ri-volume-up-fill"
+        "icon": "ri-volume-up-fill"
+      },
+      {
+        "label": "水球图",
+        "value": "水球图",
+        "parts_type": "水球图",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri-contrast-drop-2-line"
       }
     ]
   },
