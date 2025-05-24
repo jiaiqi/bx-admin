@@ -34,7 +34,7 @@ export default {
       // 预览数据相关字段
       cellData: [],
       comColMap: null,
-      cardLayout: [],
+      cardLayout: {},
       activeCellLayout: {},
     };
   },

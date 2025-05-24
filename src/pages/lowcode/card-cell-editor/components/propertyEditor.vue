@@ -86,7 +86,6 @@ export default {
         const deleteIds = this.findDataByType(oldList, "delete").map(
           (item) => item.id
         );
-        console.log("deleteIds", deleteIds);
         if (deleteIds?.length) {
           const deleteObj = {
             serviceName: this.cardPartService.delete,
@@ -97,7 +96,12 @@ export default {
         console.log("updateList", updateList);
         if (updateList?.length) {
           const updateObj = [];
-          const updateKeys = ["seq", "style_no", "parent_no"];
+          const updateKeys = [
+            "seq",
+            "style_no",
+            "parent_no",
+            "card_parts_name",
+          ];
           updateList.forEach((item) => {
             // 组装更新对象
             const data = {};
@@ -310,6 +314,26 @@ export default {
               }
             });
             result.push(obj);
+            if(type==='delete'&&Array.isArray(item?.children) && item?.children.length){
+              const flatChildren = (list)=>{
+                let res = [];
+                if(Array.isArray(list) && list.length){
+                  list.forEach((item)=>{
+                    if(item?._editType==='delete'){
+                      res.push(item);
+                    }
+                    if(Array.isArray(item?.children) && item?.children.length){
+                      res = res.concat(flatChildren(item?.children));
+                    }
+                  })
+                }
+                return res;
+              }
+              const children = flatChildren(item?.children);
+              if(children.length){
+                result = result.concat(children);
+              }
+            }
           } else if (Array.isArray(item?.children) && item?.children.length) {
             result = result.concat(this.findDataByType(item?.children, type));
           }

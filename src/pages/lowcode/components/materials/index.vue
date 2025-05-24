@@ -341,7 +341,6 @@ export default {
     initComCfg(type, config) {
       // 初始化组件配置
       config = cloneDeep(config);
-      debugger;
       switch (type) {
         case "chart":
           if (config.row_json) {

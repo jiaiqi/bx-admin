@@ -1,5 +1,10 @@
 <template>
   <Fragment v-if="partsShow">
+    <LiquidFillChart
+      v-if="partsType === '水球图'"
+      :value="getPartModelData"
+      :color="item.wave_color"
+    />
     <video
       class="bx-cell-video"
       :controls="videoAttribute.controls === true"
@@ -139,7 +144,7 @@
 import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
-
+import LiquidFillChart from "../LiquidFillChart.vue";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -159,6 +164,7 @@ export default {
   components: {
     cardCellPart: () => import("./card-cell-part.vue"),
     Icon,
+    LiquidFillChart,
   },
   data() {
     return {
@@ -309,11 +315,13 @@ export default {
     },
     getPartModelData() {
       const item = this.cellItem;
-      const itemData = this.cellItemData||{};
-      const map = this.comColMap || Object.keys(itemData).reduce((acc, key) => {
+      const itemData = this.cellItemData || {};
+      const map =
+        this.comColMap ||
+        Object.keys(itemData).reduce((acc, key) => {
           acc[key] = key;
           return acc;
-        }, {});;
+        }, {});
       let type = item.parts_type;
       let key = item.variable || null;
       let val = item.parts_text;
@@ -349,7 +357,7 @@ export default {
               itemData.hasOwnProperty(map[key]) &&
               itemData[map[key]]
             ) {
-              val = itemData[map[key]]
+              val = itemData[map[key]];
             }
             break;
           case "地图导航":
@@ -451,6 +459,12 @@ export default {
           this.$set(this.fileNoMap, val, null);
           this.getFiles(val, item?.img_dpi);
         }
+      }
+      if (type === "水球图") {
+        if (isNaN(parseFloat(val))) {
+          val = 0;
+        }
+        return parseFloat(val);
       }
       return val;
     },

@@ -1,5 +1,10 @@
 <template>
-  <div class="lowcode-wrapper">
+  <div
+    class="lowcode-wrapper"
+    ref="lowcodeWrapper"
+    :class="{ 'dark-mode': isDarkMode }"
+    :style="panelWidthVars"
+  >
     <header-view
       :is-preview.sync="previewVisible"
       :json-visible.sync="jsonVisible"
@@ -29,6 +34,17 @@
           title="显示已隐藏组件"
         >
           <Icon icon="ri-dashboard-horizontal-line" />
+        </div>
+        <!-- 添加深色模式切换按钮 -->
+        <div
+          @click.stop="setDarkMode(!isDarkMode)"
+          class="handle-btn theme-toggle-btn"
+          title="切换主题模式"
+        >
+          <Icon
+            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
+            class="theme-icon"
+          />
         </div>
       </template>
       <template #right>
@@ -62,6 +78,11 @@
           @drag-start="onDragStart"
           @drag-end="onDragEnd"
         ></materials-view>
+        <!-- 添加物料面板拖动调整宽度的分隔线 -->
+        <div
+          class="materials-resizer"
+          @mousedown="handleMaterialsResizerMouseDown"
+        ></div>
       </div>
       <div
         class="editor-container"
@@ -100,6 +121,11 @@
         :class="{ collapsed: propertyCollapsed }"
         v-if="!isView"
       >
+        <!-- 添加属性面板拖动调整宽度的分隔线 -->
+        <div
+          class="property-resizer"
+          @mousedown="handlePropertyResizerMouseDown"
+        ></div>
         <div class="property-toggle" @click="togglePropertyPanel">
           <i
             :class="
@@ -165,7 +191,7 @@
       title="组件大纲"
       :visible.sync="outlineVisible"
       direction="ltr"
-      size="300px"
+      size="500px"
       :modal="false"
       class="outline-container"
     >
@@ -240,6 +266,13 @@ export default {
   computed: {
     ...mapState("theme", ["currentTheme"]),
     ...mapGetters("theme", ["themeList", "themeVariable"]),
+    // 添加面板宽度CSS变量计算属性
+    panelWidthVars() {
+      return {
+        "--materials-panel-width": `${this.materialsWidth}px`,
+        "--property-panel-width": `${this.propertyWidth}px`,
+      };
+    },
     isView() {
       return this.$route.meta?.isView === true;
     },
@@ -302,6 +335,14 @@ export default {
       draggingComponentType: null,
       // 保存按钮状态
       isSaving: false,
+      // 深色模式状态
+      isDarkMode: false,
+      // 面板宽度
+      materialsWidth: 300,
+      propertyWidth: 300,
+      // 面板调整宽度相关
+      isResizingMaterials: false,
+      isResizingProperty: false,
     };
   },
   mounted() {
@@ -313,42 +354,63 @@ export default {
       return pre;
     }, "");
     document.body.setAttribute("style", themeVariable);
+
+    // 从localStorage中读取面板宽度
+    this.loadPanelWidths();
+
+    if (
+      localStorage.getItem("lowcode_dark_mode") === "true" ||
+      (localStorage.getItem("lowcode_dark_mode") !== "false" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
+      this.isDarkMode = true;
+    } else {
+      this.isDarkMode = false;
+    }
+    // 设置深色模式
+    this.setDarkMode(this.isDarkMode);
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
       this.initPage();
     }
-    // this.$nextTick(() => {
-    //   if (!this.isView && !this.isPreview) {
-    //     // 添加键盘事件监听
-    //     document.addEventListener("keydown", this.handleKeyDown);
-    //     document.addEventListener("keyup", this.handleKeyUp);
-    //   }
-    // });
     // 在组件挂载后，获取editorContainer引用
     this.$nextTick(() => {
       if (!this.isView && !this.isPreview && this.$refs.editorContainer) {
         // 为editorContainer添加键盘事件监听
-        this.$refs.editorContainer.addEventListener(
-          "keydown",
-          this.handleKeyDown
-        );
+        this.$refs.editorContainer.addEventListener("keydown", this.handleKeyDown);
         this.$refs.editorContainer.addEventListener("keyup", this.handleKeyUp);
         // 添加tabindex使div可以接收键盘事件
-        this.$refs.editorContainer.setAttribute("tabindex", "0");
+        document.setAttribute("tabindex", "0");
       }
+
+      // 添加全局鼠标事件监听，用于处理面板宽度调整
+      document.addEventListener("mousemove", this.handleGlobalMouseMove);
+      document.addEventListener("mouseup", this.handleGlobalMouseUp);
     });
   },
   beforeDestroy() {
-    // if (!this.isView && !this.isPreview) {
-    //   // 移除键盘事件监听，防止内存泄漏
-    //   document.removeEventListener("keydown", this.handleKeyDown);
-    //   document.removeEventListener("keyup", this.handleKeyUp);
-    // }
+    if (!this.isView && !this.isPreview) {
+      // 移除键盘事件监听，防止内存泄漏
+      this.$refs.editorContainer.removeEventListener("keydown", this.handleKeyDown);
+      this.$refs.editorContainer.removeEventListener("keyup", this.handleKeyUp);
+    }
+
+    // 移除全局鼠标事件监听
+    document.removeEventListener("mousemove", this.handleGlobalMouseMove);
+    document.removeEventListener("mouseup", this.handleGlobalMouseUp);
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+    // 切换深色主题
+    setDarkMode(isDarkMode) {
+      const ele = this.$refs.lowcodeWrapper;
+      ele.classList.toggle("dark-mode", isDarkMode);
+      this.isDarkMode = isDarkMode;
+      // 保存主题设置到localStorage
+      localStorage.setItem("lowcode_dark_mode", this.isDarkMode);
+    },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);
     },
@@ -362,6 +424,84 @@ export default {
     onDragEnd() {
       this.draggingComponentType = null;
     },
+    // 加载面板宽度
+    loadPanelWidths() {
+      // 从localStorage中读取面板宽度
+      const savedMaterialsWidth = localStorage.getItem(
+        "lowcode_materials_width"
+      );
+      const savedPropertyWidth = localStorage.getItem("lowcode_property_width");
+
+      if (savedMaterialsWidth) {
+        this.materialsWidth = parseInt(savedMaterialsWidth);
+      }
+
+      if (savedPropertyWidth) {
+        this.propertyWidth = parseInt(savedPropertyWidth);
+      }
+    },
+
+    // 保存面板宽度
+    savePanelWidths() {
+      localStorage.setItem("lowcode_materials_width", this.materialsWidth);
+      localStorage.setItem("lowcode_property_width", this.propertyWidth);
+    },
+
+    // 物料面板宽度调整相关方法
+    handleMaterialsResizerMouseDown(e) {
+      this.isResizingMaterials = true;
+      this.startX = e.clientX;
+      // 阻止默认行为和事件冒泡
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
+    // 属性面板宽度调整相关方法
+    handlePropertyResizerMouseDown(e) {
+      this.isResizingProperty = true;
+      this.startX = e.clientX;
+      // 阻止默认行为和事件冒泡
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
+    // 全局鼠标移动事件
+    handleGlobalMouseMove(e) {
+      if (this.isResizingMaterials) {
+        // 计算宽度变化
+        const deltaX = e.clientX - this.startX;
+        const newWidth = Math.max(
+          150,
+          Math.min(500, this.materialsWidth + deltaX)
+        );
+
+        this.materialsWidth = newWidth;
+        this.startX = e.clientX;
+
+        // 保存宽度到localStorage
+        this.savePanelWidths();
+      } else if (this.isResizingProperty) {
+        // 计算宽度变化
+        const deltaX = this.startX - e.clientX;
+        const newWidth = Math.max(
+          200,
+          Math.min(600, this.propertyWidth + deltaX)
+        );
+
+        this.propertyWidth = newWidth;
+        this.startX = e.clientX;
+
+        // 保存宽度到localStorage
+        this.savePanelWidths();
+      }
+    },
+
+    // 鼠标抬起事件
+    handleGlobalMouseUp() {
+      this.isResizingMaterials = false;
+      this.isResizingProperty = false;
+    },
+
     // 切换物料面板
     toggleMaterialsPanel() {
       this.materialsCollapsed = !this.materialsCollapsed;
@@ -370,6 +510,7 @@ export default {
     togglePropertyPanel() {
       this.propertyCollapsed = !this.propertyCollapsed;
     },
+
     findComponentById(components, id) {
       let result = null;
       if (!id || !components || !components.length) return result;
@@ -501,6 +642,7 @@ export default {
           "page_no",
           "page_options",
           "tmpl_page_no",
+          "page_style_json",
         ],
         condition: [
           {
@@ -1033,11 +1175,223 @@ export default {
 </script>
 
 <style lang="scss">
+::view-transition-new(root),
+::view-transition-old(root) {
+  /* 关闭默认动画 */
+  animation: none;
+}
 .lowcode-wrapper {
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
+  --bg-color: #fff;
+  background-color: var(--bg-color);
+
+  &.dark-mode {
+    --bg-color: #1a1a1a;
+    --primary-color: #4a90e2;
+    --menu-bg-color: var(--primary-color);
+    color: #ddd;
+
+    .handle-btn {
+      background-color: #333;
+      border-color: #444;
+      color: #ddd;
+
+      &:hover,
+      &.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+      }
+
+      &.theme-toggle-btn {
+        .theme-icon {
+          color: #fff;
+        }
+      }
+    }
+
+    .header-view {
+      background-color: #2d2d2d;
+      border-bottom-color: #444;
+      color: #fff;
+      ::v-deep .header-title {
+        color: #fff;
+      }
+    }
+
+    .lowcode-content {
+      .materials-panel-container,
+      .property-panel-container {
+        background-color: #252525;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+
+        .materials-toggle,
+        .property-toggle,
+        .tab-content,
+        .el-tabs__header,
+        .el-tab-pane {
+          background-color: #333;
+          border-color: #444;
+          .el-tabs__item.is-active {
+            color: #fff;
+            background-color: #222;
+            border-color: #555;
+          }
+        }
+        .form-view-wrapper {
+          background-color: #2d2d2d;
+          scrollbar-color: #444 #2d2d2d;
+          .el-form > .el-row {
+            border-color: #444;
+          }
+          .section-title {
+            border-bottom-color: #444;
+          }
+          .raw_field_editor input {
+            --custom-input-color: #ddd;
+          }
+          .el-autocomplete-suggestion {
+            background-color: #2d2d2d;
+            color: #ffffff;
+          }
+          .el-button {
+            background-color: #333;
+            border-color: #444;
+            color: #dddddd;
+            &.el-button--primary {
+            }
+          }
+          .el-checkbox,
+          .el-upload__tip {
+            color: #dddddd;
+          }
+          .el-input-group__append {
+            background-color: #333;
+            border-color: #444;
+          }
+          .el-input__inner {
+            background-color: #333;
+            border-color: #444;
+          }
+          .el-upload--picture-card {
+            background-color: #252525;
+            border-color: #444;
+          }
+        }
+      }
+
+      .editor-container.in-edit {
+        // background-color: #1e1e1e;
+        background-color: #18181c;
+        background-image: linear-gradient(#18181c 19px, transparent 0),
+          linear-gradient(90deg, transparent 19px, #86909c 0);
+        .drag-overlay {
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+      }
+
+      ::v-deep .materials-view,
+      ::v-deep .property-view {
+        background-color: #252525;
+        color: #ddd;
+
+        .panel-title,
+        .group-title {
+          color: #fff;
+        }
+
+        .el-form-item__label {
+          color: #ddd;
+        }
+
+        .el-input__inner,
+        .el-textarea__inner {
+          background-color: #333;
+          border-color: #444;
+          color: #ddd;
+        }
+
+        .el-button {
+          background-color: #333;
+          border-color: #444;
+          color: #ddd;
+
+          &.el-button--primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    ::v-deep .el-dialog {
+      background-color: #2d2d2d;
+
+      .el-dialog__title {
+        color: #ddd;
+      }
+
+      .el-dialog__body {
+        color: #ddd;
+      }
+
+      .preview-container {
+        background-color: #1e1e1e;
+      }
+    }
+
+    ::v-deep .el-drawer {
+      background-color: #2d2d2d;
+      color: #ddd;
+
+      .el-tree {
+        background-color: #2d2d2d;
+        color: #ddd;
+
+        .el-tree-node__content {
+          background-color: #2d2d2d;
+
+          &:hover {
+            background-color: #333;
+          }
+        }
+
+        .el-tree-node.is-current > .el-tree-node__content {
+          background-color: #444;
+        }
+      }
+    }
+    .materia-warp,
+    .component-list {
+      background-color: #222;
+      .type-list {
+        scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
+        border-right-color: #000;
+        .type-item {
+          color: #ccc;
+          &:hover {
+            background-color: #333;
+          }
+          &.active {
+            background-color: #444;
+          }
+        }
+      }
+      .com-item {
+        background-color: #2d2d2d;
+      }
+    }
+    .type-item,
+    .sub-type-item {
+      &:hover {
+        background-color: #3d3d3d;
+      }
+    }
+  }
 
   .handle-btn {
     display: inline-flex;
@@ -1068,18 +1422,38 @@ export default {
     // 添加物料面板容器样式
     .materials-panel-container {
       position: relative;
-      // width: 200px;
+      width: var(--materials-panel-width, 300px); // 使用CSS变量控制宽度
       height: 100%;
       transition: all 0.3s ease;
       background-color: #fff;
       box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 
       &.collapsed {
-        width: 0px;
+        width: 0px !important; // 使用!important确保折叠状态下宽度为0
 
         .materials-view {
           transform: translateX(-100%);
           opacity: 0;
+        }
+
+        .materials-resizer {
+          display: none;
+        }
+      }
+
+      // 添加物料面板拖动调整宽度的分隔线样式
+      .materials-resizer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        background-color: transparent;
+        z-index: 10;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.1);
         }
       }
 
@@ -1138,6 +1512,7 @@ export default {
       }
 
       &.in-edit {
+        transition: none;
         overflow: auto;
         padding: 60px;
         scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
@@ -1155,21 +1530,44 @@ export default {
       }
     }
 
-    // 属性面板容器样式保持不变
+    // 属性面板容器样式，使用CSS变量控制宽度
     .property-panel-container {
       position: relative;
-      width: 300px;
+      width: var(--property-panel-width, 300px); // 使用CSS变量控制宽度
       height: 100%;
       transition: all 0.3s ease;
       background-color: #fff;
       box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
 
       &.collapsed {
-        width: 0px;
+        width: 0px !important; // 使用!important确保折叠状态下宽度为0
 
         .property-view {
           transform: translateX(100%);
           opacity: 0;
+        }
+
+        .property-resizer {
+          display: none;
+        }
+      }
+      .el-form-item {
+        display: flex;
+        flex-direction: column;
+      }
+      // 添加属性面板拖动调整宽度的分隔线样式
+      .property-resizer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        cursor: col-resize;
+        background-color: transparent;
+        z-index: 10;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.1);
         }
       }
 
@@ -1244,14 +1642,14 @@ export default {
     }
   }
 }
-.custom-tree-node{
+.custom-tree-node {
   display: flex;
   align-items: center;
-  .right-btn{
+  .right-btn {
     display: none;
   }
-  &:hover{
-    .right-btn{
+  &:hover {
+    .right-btn {
       display: block;
     }
   }

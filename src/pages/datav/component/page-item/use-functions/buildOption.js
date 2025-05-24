@@ -290,6 +290,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           return data?.[dataColName];
         });
         series["smooth"] = true;
+        if(typeof chartJson?.smooth === "number"){
+          series.smooth = chartJson?.smooth;
+        }
         if (chartJson.data_label === "值") {
           series.itemStyle = {
             normal: {
