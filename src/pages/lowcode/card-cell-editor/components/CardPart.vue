@@ -207,6 +207,11 @@ export default {
 
         newPart._id = new Date().getTime();
         newPart._editType = "add";
+        newPart.seq = (part.children.length + 1) * 100;
+        newPart.card_parts_name =
+          part?.label ||
+          part?.parts_type ||
+          `卡片部件${this.part.children.length + 1}`;
         if (this.part.card_parts_no) {
           newPart.parent_no = this.part.card_parts_no;
         }
@@ -272,7 +277,7 @@ export default {
   // background-color: #fff;
   min-height: 20px;
   transition: all 0.3s ease;
-  display: inline-block;
+  // display: inline-block;
   --primary-color: #006cff;
   $primary-color: var(--primary-color);
   &.card-part-preview {

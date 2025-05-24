@@ -1,5 +1,5 @@
 <template>
-  <div class="card-cell-editor" :class="{ 'dark-mode': isDarkMode }">
+  <div class="card-cell-editor" ref="cardCellEditor">
     <header class="header">
       <div class="header-left">
         <h1 class="title">卡片单元编辑</h1>
@@ -11,7 +11,7 @@
         <!-- 新增深色模式切换按钮 -->
         <button
           class="theme-toggle-btn"
-          @click="isDarkMode = !isDarkMode"
+          @click="changeTheme"
           title="切换主题模式"
         >
           <Icon
@@ -21,11 +21,13 @@
         </button>
       </div>
       <div class="header-right">
-        <button class="preview-btn" @click="previewCard">预览</button>
-        <button class="" @click="refresh" :loading="onSaving">刷新</button>
-        <button class="save-btn" @click="saveCard" :loading="onSaving">
+        <el-button class="preview-btn" @click="previewCard">预览</el-button>
+        <el-button class="" @click="refresh" :loading="onSaving"
+          >刷新</el-button
+        >
+        <el-button class="save-btn" @click="saveCard" :loading="onSaving">
           保存
-        </button>
+        </el-button>
       </div>
     </header>
     <main class="main">
@@ -164,6 +166,42 @@ export default {
     },
   },
   methods: {
+    changeTheme(e) {
+      this.isDarkMode = !this.isDarkMode;
+      const ele = this.$refs.cardCellEditor;
+      // document.body.classList.toggle("dark-mode", this.isDarkMode);
+      const transition = document.startViewTransition(() => {
+        // 动画过渡切换主题色
+        ele.classList.toggle("dark-mode");
+      });
+
+      // document.startViewTransition 的 ready 返回一个 Promise
+      transition.ready.then(() => {
+        // 获取鼠标的坐标
+        const { clientX, clientY } = e;
+
+        // 计算最大半径
+        const radius = Math.hypot(
+          Math.max(clientX, innerWidth - clientX),
+          Math.max(clientY, innerHeight - clientY)
+        );
+
+        // 圆形动画扩散开始
+        ele.animate(
+          {
+            clipPath: [
+              `circle(0% at ${clientX}px ${clientY}px)`,
+              `circle(${radius}px at ${clientX}px ${clientY}px)`,
+            ],
+          },
+          // 设置时间，已经目标伪元素
+          {
+            duration: 500,
+            pseudoElement: "::view-transition-new(.card-cell-editor)",
+          }
+        );
+      });
+    },
     init() {
       if (this.$route.params.cardNo) {
         this.type = "edit";
@@ -256,6 +294,11 @@ export default {
 
         newPart._id = new Date().getTime();
         newPart._editType = "add";
+        newPart.seq = (this.partsList.length + 1) * 100;
+        newPart.card_parts_name =
+          newPart?.label ||
+          newPart?.parts_type ||
+          `卡片部件${this.partsList.length + 1}`;
         Object.keys(newPart).forEach((key) => {
           if (key.startsWith("_default_")) {
             newPart[key.replace("_default_", "")] = newPart[key];
@@ -304,6 +347,27 @@ export default {
             key: part.id ? "id" : "card_parts_no",
             value: part.id || part.card_parts_no,
           };
+          debugger;
+          if (part?.children && part?.children?.length) {
+            const flatChildren = (list) => {
+              let res = [];
+              if (Array.isArray(list) && list.length) {
+                list.forEach((item) => {
+                  res.push(item);
+                  if (Array.isArray(item?.children) && item?.children.length) {
+                    res = res.concat(flatChildren(item?.children));
+                  }
+                });
+              }
+              return res;
+            };
+            const children = flatChildren(part?.children);
+            if (children.length) {
+              params.value =
+                `${part.id || part.card_parts_no},` +
+                children.map((item) => item.id || item.card_parts_no).join(",");
+            }
+          }
           $delete(params)
             .then(({ ok, msg }) => {
               if (ok) {
@@ -410,14 +474,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::view-transition-new(root),
+::view-transition-old(root) {
+  /* 关闭默认动画 */
+  animation: none;
+}
 .card-cell-editor {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100%;
   overflow: hidden;
+  --bg-color: #fff;
+  background-color: var(--bg-color);
   &.dark-mode {
-    background-color: #1a1a1a;
+    --bg-color: #1a1a1a;
     --primary-color: #4a90e2;
     --menu-bg-color: var(--primary-color);
     .header {
@@ -558,7 +629,7 @@ export default {
   align-items: center;
   height: 50px;
   padding: 0 20px;
-  background-color: #fff;
+  background-color: var(--bg-color);
   border-bottom: 1px solid #e8e8e8;
 
   .header-left {
@@ -581,7 +652,7 @@ export default {
       height: 36px;
       border-radius: 50%;
       border: 1px solid #dcdfe6;
-      background-color: #fff;
+      background-color: var(--bg-color);
       cursor: pointer;
       transition: all 0.3s ease;
       padding: 0;
@@ -601,13 +672,13 @@ export default {
 
   .header-right {
     display: flex;
-    gap: 10px;
+    // gap: 10px;
 
     button {
-      padding: 4px 15px;
-      border-radius: 4px;
-      border: 1px solid #dcdfe6;
-      background-color: #fff;
+      padding: 8px 15px;
+      // border-radius: 4px;
+      // border: 1px solid #dcdfe6;
+      background-color: var(--bg-color);
       cursor: pointer;
       transition: all 0.2s ease-in-out;
       min-width: 80px;
