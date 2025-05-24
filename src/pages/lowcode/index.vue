@@ -37,7 +37,7 @@
         </div>
         <!-- 添加深色模式切换按钮 -->
         <div
-          @click.stop="changeTheme"
+          @click.stop="setDarkMode(!isDarkMode)"
           class="handle-btn theme-toggle-btn"
           title="切换主题模式"
         >
@@ -357,19 +357,23 @@ export default {
     
     // 从localStorage中读取面板宽度
     this.loadPanelWidths();
+
+    if(
+      localStorage.getItem('lowcode_dark_mode') === 'true' ||
+      (localStorage.getItem('lowcode_dark_mode') !== 'false' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      this.isDarkMode = true;
+    } else {
+      this.isDarkMode = false;
+    }
+    // 设置深色模式
+    this.setDarkMode(this.isDarkMode);
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
       this.initPage();
     }
-    // this.$nextTick(() => {
-    //   if (!this.isView && !this.isPreview) {
-    //     // 添加键盘事件监听
-    //     document.addEventListener("keydown", this.handleKeyDown);
-    //     document.addEventListener("keyup", this.handleKeyUp);
-    //   }
-    // });
     // 在组件挂载后，获取editorContainer引用
     this.$nextTick(() => {
       if (!this.isView && !this.isPreview && this.$refs.editorContainer) {
@@ -389,11 +393,11 @@ export default {
     });
   },
   beforeDestroy() {
-    // if (!this.isView && !this.isPreview) {
-    //   // 移除键盘事件监听，防止内存泄漏
-    //   document.removeEventListener("keydown", this.handleKeyDown);
-    //   document.removeEventListener("keyup", this.handleKeyUp);
-    // }
+    if (!this.isView && !this.isPreview) {
+      // 移除键盘事件监听，防止内存泄漏
+      document.removeEventListener("keydown", this.handleKeyDown);
+      document.removeEventListener("keyup", this.handleKeyUp);
+    }
     
     // 移除全局鼠标事件监听
     document.removeEventListener('mousemove', this.handleGlobalMouseMove);
@@ -402,47 +406,12 @@ export default {
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
     // 切换深色主题
-    changeTheme(e) {
-      this.isDarkMode = !this.isDarkMode;
+    setDarkMode(isDarkMode) {
       const ele = this.$refs.lowcodeWrapper;
-
-      // 使用View Transitions API进行过渡动画
-      if (document.startViewTransition) {
-        const transition = document.startViewTransition(() => {
-          // 动画过渡切换主题色
-          ele.classList.toggle("dark-mode", this.isDarkMode);
-        });
-
-        // document.startViewTransition 的 ready 返回一个 Promise
-        transition.ready.then(() => {
-          // 获取鼠标的坐标
-          const { clientX, clientY } = e;
-
-          // 计算最大半径
-          const radius = Math.hypot(
-            Math.max(clientX, innerWidth - clientX),
-            Math.max(clientY, innerHeight - clientY)
-          );
-
-          // 圆形动画扩散开始
-          ele.animate(
-            {
-              clipPath: [
-                `circle(0% at ${clientX}px ${clientY}px)`,
-                `circle(${radius}px at ${clientX}px ${clientY}px)`,
-              ],
-            },
-            // 设置时间和目标伪元素
-            {
-              duration: 500,
-              pseudoElement: "::view-transition-new(.lowcode-wrapper)",
-            }
-          );
-        });
-      } else {
-        // 如果浏览器不支持View Transitions API，直接切换类名
-        ele.classList.toggle("dark-mode", this.isDarkMode);
-      }
+      ele.classList.toggle("dark-mode", isDarkMode);
+      this.isDarkMode = isDarkMode;
+      // 保存主题设置到localStorage
+      localStorage.setItem('lowcode_dark_mode', this.isDarkMode);
     },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);
