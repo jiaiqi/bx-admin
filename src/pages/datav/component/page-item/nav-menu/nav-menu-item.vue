@@ -7,14 +7,18 @@
   >
     <div
       class="nav-menu-label"
-      :style="[
-        navStyle,
-        isCurrentNav ? selectedStyle : '',
-        data.nav_style_json ? formatStyleData(data.nav_style_json) : '',
-      ]"
+      :style="[setNavStyle]"
+      ref="navMenuLabel"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
     >
-      <!-- <div class="nav-menu-label" :style="[formatStyleData(data.nav_style_json)]"> -->
-      <span>
+      <img
+        class="nav-icon-img"
+        :src="getImagePath(data.nav_icon)"
+        alt=""
+        v-if="data.nav_icon"
+      />
+      <span class="nav-label">
         {{ data.label || data._label || "" }}
       </span>
       <svg
@@ -80,28 +84,56 @@ export default {
         this.currentNav?.nav_no && this.currentNav?.nav_no === this.data?.nav_no
       );
     },
+    setNavStyle() {
+      let style = formatStyleData(this.navStyle || {});
+      if (this.data?.nav_style_json) {
+        style = {
+          ...style,
+          ...formatStyleData(this.data.nav_style_json || {}),
+        };
+      }
+      if ((this.isCurrentNav || this.onMouseenter) && this.selectedStyle) {
+        style = {
+          ...style,
+          ...formatStyleData(this.selectedStyle || {}),
+        };
+      }
+      return style;
+    },
   },
   data() {
     return {
       formatStyleData,
       children: [],
+      onMouseenter: false,
     };
   },
   methods: {
+    onMouseEnter(event) {
+      // 设置高亮样式
+      this.onMouseenter = true;
+    },
+    onMouseLeave(event) {
+      // 移除高亮样式
+      this.onMouseenter = false;
+    },
     async onTap() {
       const item = this.data;
       if (!item?.jump_json && item?.page_no) {
         let pageNo = this.data.page_no;
-        let path = `/site/${pageNo}`
-        if(this.data.template_page_json?.file_path){
-          path = this.data.template_page_json.file_path?.replace(':pageNo', pageNo)
-          if(path.includes('#')){
-            path = path.split('#')[1]
+        let path = `/site/${pageNo}`;
+        if (this.data.template_page_json?.file_path) {
+          path = this.data.template_page_json.file_path?.replace(
+            ":pageNo",
+            pageNo
+          );
+          if (path.includes("#")) {
+            path = path.split("#")[1];
           }
         }
-        if(pageNo&&path){
-          this.$router.push(path)
-          return
+        if (pageNo && path) {
+          this.$router.push(path);
+          return;
         }
       } else if (item?._label && !item.jump_json) {
         // 友情链接表
@@ -235,6 +267,16 @@ export default {
     stroke-width: 12;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+}
+.nav-menu-label {
+  font-size: inherit;
+  .nav-icon-img {
+    font-size: inherit;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.25em;
+    display: inline-block;
   }
 }
 </style>
