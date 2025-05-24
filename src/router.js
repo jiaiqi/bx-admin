@@ -393,7 +393,7 @@ let routes = [
         //工单派发
         path: "worker-order",
         component: () =>
-            import(/* webpackChunkName: "audit" */ "@/pages/audit/workdistribution/work-order.vue")
+            import(/* webpackChunkName: "audit" */ "@/pages/audit/workdistribution/work-home.vue")
       }
     ],
   },

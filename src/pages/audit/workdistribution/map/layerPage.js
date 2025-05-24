@@ -34,7 +34,7 @@ export const markerIcon = (map, url) => {
 export const drwMapMarkers = (map, data, url) => {
     if (!map || !data.length) throw new Error('地图实例不存在或数据异常请检查');
     data.map((item) => {
-        let pt = map.Point(116.417, 39.909);
+        let pt = handleMakePoint(map,item.code[0],item.code[1]);
         let marker = map.Marker(pt, {
             icon: markerIcon(map, url)
         });
@@ -45,6 +45,50 @@ export const drwMapMarkers = (map, data, url) => {
         });
         markerList.push(marker);
     })
+}
+
+export const drawMapMarkersAndLabel = (_map,data) => {
+       markerList=[]
+    // 创建标记点和标签
+    data.forEach(item => {
+        // 创建图标
+        const icon = new BMapGL.Icon(
+            item.icon,
+            new BMapGL.Size(32, 32),
+            {
+                anchor: new BMapGL.Size(16, 16)
+            }
+        );
+
+        // 创建标记点
+        const marker = new BMapGL.Marker(item.point, {
+            icon: icon
+        });
+
+        // 创建标签
+        const label = new BMapGL.Label(item.name, {
+            offset: new BMapGL.Size(0, -40), // 标签偏移量
+            position: item.point
+        });
+
+        // 设置标签样式
+        label.setStyle({
+            color: '#333',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            padding: '5px 10px',
+            borderRadius: '4px',
+            border: '1px solid #ccc'
+        });
+        marker.addEventListener("click",  (e)=> {
+            setMarkerClick(item)
+        });
+        // 添加标记点和标签
+        _map.addOverlay(marker);
+        _map.addOverlay(label);
+
+        markerList.push({ marker, label });
+    });
 }
 
 export const setMarkerClick = (item) => {
@@ -63,15 +107,16 @@ export const removeOverlay = (map) => {
 }
 //清除线图层
 export const handleRemoveLineLayer = (map) => {
-    if (!map || !lineList || lineList.length === 0) throw new Error('不存在需要删除的线图层');
-    lineList.map((item) => {
-        map.removeNormalLayer(item);
-    })
+    if (map&&lineList.length>0){
+        lineList.map((item) => {
+            map.removeNormalLayer(item);
+        })
+    }
 }
 //基础线图层
 export const drwLineLayer = (map, source, stops) => {
     handleRemoveLineLayer(map)
-    let lineLayer = map.LineLayer({
+    let lineLayer = new BMapGL.LineLayer({
         enablePicked: true, //是否允许鼠标点击
         autoSelect: true,  //是否允许鼠标悬浮
         pickWidth: 20, //点击拾取的宽带pX
@@ -101,7 +146,9 @@ export const drwLineLayer = (map, source, stops) => {
 
 export const drwIconLineLayer = (map, source, key,url) => {
     handleRemoveLineLayer(map)
-    let lineLayer = map.LineLayer({
+    // 获取本地图标路径
+    const icon = require(`@/assets/mapIcon/${url}`);
+    let lineLayer = new BMapGL.LineLayer({
         enablePicked: true,
         autoSelect: true,
         pickWidth: 30,
@@ -118,16 +165,45 @@ export const drwIconLineLayer = (map, source, key,url) => {
             strokeLineJoin: 'miter',//描边线连接处类型, 可选'miter', 'round', 'bevel'
             strokeLineCap: 'square',// 描边线端头类型，可选'round', 'butt', 'square'，默认round
             // 填充纹理图片地址，默认是空。图片需要是竖向表达，在填充时会自动横向处理。
-            strokeTextureUrl: ['match', ['get', 'name'], key, url],
+            strokeTextureUrl:icon,
             strokeTextureWidth: ['match', ['get', 'name'], key, 32, 16],
             strokeTextureHeight: ['match', ['get', 'name'], key, 64, 64],
             strokeColor: ['case', ['boolean', ['feature-state', 'picked'], false], '#6704ff', ['match', ['get', 'name'], key, '#ce4848', '#6704ff']],
-            strokeOpacity: .5
+            strokeOpacity: .5,
         }
     });
     map.addNormalLayer(lineLayer);
     lineLayer.setData(source);
     lineList.push(lineLayer)
+}
+// 根据点集合设置视图范围
+export const setViewportByPoints=(_map,points)=> {
+    if (!points || points.length === 0) return;
+
+    // 计算边界
+    let minLat = points[0].lat;
+    let maxLat = points[0].lat;
+    let minLng = points[0].lng;
+    let maxLng = points[0].lng;
+
+    points.forEach(point => {
+        minLat = Math.min(minLat, point.lat);
+        maxLat = Math.max(maxLat, point.lat);
+        minLng = Math.min(minLng, point.lng);
+        maxLng = Math.max(maxLng, point.lng);
+    });
+
+    // 创建边界对象
+    const bounds = new BMapGL.Bounds(
+        new BMapGL.Point(minLng, minLat),
+        new BMapGL.Point(maxLng, maxLat)
+    );
+
+    // 设置视图范围
+    _map.setViewport(bounds, {
+        enableAnimation: true,
+        margins: [50, 50, 50, 50]
+    });
 }
 let driving=null
 let currentRoute = []
@@ -156,7 +232,8 @@ export const setPlanRoute = () => {
              list.map((item) => {
                  currentRoute.push([item.lng, item.lat])
              })
-             resolve(currentRoute)
+             //获取的路径点确实是按照从终点到起点的顺序排列的，这是 API 的设计特点
+             resolve(currentRoute.reverse())
          })
      })
 }
@@ -175,4 +252,17 @@ export const HandleMapClick = (map) => {
 
 export const handleMakePoint=(map,lng,lat)=>{
      return new BMapGL.Point(lng,lat)
+}
+
+export const FlyTo = (_map,point,zoom) => {
+   const viewportOptions ={
+            enableAnimation: true,
+            duration: 1000,
+            delay: 0,
+            zoomFactor: 5
+    }
+    _map.centerAndZoom(point, zoom?zoom:16.5);
+    // _map.panTo(point, {
+    //     ...viewportOptions,
+    // });
 }
