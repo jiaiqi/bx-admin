@@ -207,7 +207,7 @@ export default {
       }
     },
     contentStyle() {
-      if (!this.contentWidth) return {};
+      if (!this.contentWidth) return { ...this.setStyle };
 
       return {
         ...this.setStyle,

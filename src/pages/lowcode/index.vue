@@ -1,5 +1,9 @@
 <template>
-  <div class="lowcode-wrapper">
+  <div
+    class="lowcode-wrapper"
+    ref="lowcodeWrapper"
+    :class="{ 'dark-mode': isDarkMode }"
+  >
     <header-view
       :is-preview.sync="previewVisible"
       :json-visible.sync="jsonVisible"
@@ -29,6 +33,17 @@
           title="显示已隐藏组件"
         >
           <Icon icon="ri-dashboard-horizontal-line" />
+        </div>
+        <!-- 添加深色模式切换按钮 -->
+        <div
+          @click.stop="changeTheme"
+          class="handle-btn theme-toggle-btn"
+          title="切换主题模式"
+        >
+          <Icon
+            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
+            class="theme-icon"
+          />
         </div>
       </template>
       <template #right>
@@ -302,6 +317,8 @@ export default {
       draggingComponentType: null,
       // 保存按钮状态
       isSaving: false,
+      // 深色模式状态
+      isDarkMode: false,
     };
   },
   mounted() {
@@ -349,6 +366,49 @@ export default {
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+    // 切换深色主题
+    changeTheme(e) {
+      this.isDarkMode = !this.isDarkMode;
+      const ele = this.$refs.lowcodeWrapper;
+
+      // 使用View Transitions API进行过渡动画
+      if (document.startViewTransition) {
+        const transition = document.startViewTransition(() => {
+          // 动画过渡切换主题色
+          ele.classList.toggle("dark-mode", this.isDarkMode);
+        });
+
+        // document.startViewTransition 的 ready 返回一个 Promise
+        transition.ready.then(() => {
+          // 获取鼠标的坐标
+          const { clientX, clientY } = e;
+
+          // 计算最大半径
+          const radius = Math.hypot(
+            Math.max(clientX, innerWidth - clientX),
+            Math.max(clientY, innerHeight - clientY)
+          );
+
+          // 圆形动画扩散开始
+          ele.animate(
+            {
+              clipPath: [
+                `circle(0% at ${clientX}px ${clientY}px)`,
+                `circle(${radius}px at ${clientX}px ${clientY}px)`,
+              ],
+            },
+            // 设置时间和目标伪元素
+            {
+              duration: 500,
+              pseudoElement: "::view-transition-new(.lowcode-wrapper)",
+            }
+          );
+        });
+      } else {
+        // 如果浏览器不支持View Transitions API，直接切换类名
+        ele.classList.toggle("dark-mode", this.isDarkMode);
+      }
+    },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);
     },
@@ -1034,11 +1094,223 @@ export default {
 </script>
 
 <style lang="scss">
+::view-transition-new(root),
+::view-transition-old(root) {
+  /* 关闭默认动画 */
+  animation: none;
+}
 .lowcode-wrapper {
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
+  --bg-color: #fff;
+  background-color: var(--bg-color);
+
+  &.dark-mode {
+    --bg-color: #1a1a1a;
+    --primary-color: #4a90e2;
+    --menu-bg-color: var(--primary-color);
+    color: #ddd;
+
+    .handle-btn {
+      background-color: #333;
+      border-color: #444;
+      color: #ddd;
+
+      &:hover,
+      &.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+      }
+
+      &.theme-toggle-btn {
+        .theme-icon {
+          color: #fff;
+        }
+      }
+    }
+
+    .header-view {
+      background-color: #2d2d2d;
+      border-bottom-color: #444;
+      color: #fff;
+      ::v-deep .header-title {
+        color: #fff;
+      }
+    }
+
+    .lowcode-content {
+      .materials-panel-container,
+      .property-panel-container {
+        background-color: #252525;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+
+        .materials-toggle,
+        .property-toggle,
+        .tab-content,
+        .el-tabs__header,
+        .el-tab-pane {
+          background-color: #333;
+          border-color: #444;
+          .el-tabs__item.is-active {
+            color: #fff;
+            background-color: #222;
+            border-color: #555;
+          }
+        }
+        .form-view-wrapper {
+          background-color: #2d2d2d;
+          scrollbar-color: #444 #2d2d2d;
+          .el-form > .el-row {
+            border-color: #444;
+          }
+          .section-title{
+            border-bottom-color: #444;
+          }
+          .raw_field_editor input {
+            --custom-input-color: #ddd;
+          }
+          .el-autocomplete-suggestion {
+            background-color: #2d2d2d;
+            color: #ffffff;
+          }
+          .el-button {
+            background-color: #333;
+            border-color: #444;
+            color: #dddddd;
+            &.el-button--primary {
+            }
+          }
+          .el-checkbox,
+          .el-upload__tip {
+            color: #dddddd;
+          }
+          .el-input-group__append {
+            background-color: #333;
+            border-color: #444;
+          }
+          .el-input__inner {
+            background-color: #333;
+            border-color: #444;
+          }
+          .el-upload--picture-card {
+            background-color: #252525;
+            border-color: #444;
+          }
+        }
+      }
+
+      .editor-container.in-edit {
+        // background-color: #1e1e1e;
+        background-color: #18181c;
+        background-image: linear-gradient(#18181c 19px, transparent 0),
+          linear-gradient(90deg, transparent 19px, #86909c 0);
+        .drag-overlay {
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+      }
+
+      ::v-deep .materials-view,
+      ::v-deep .property-view {
+        background-color: #252525;
+        color: #ddd;
+
+        .panel-title,
+        .group-title {
+          color: #fff;
+        }
+
+        .el-form-item__label {
+          color: #ddd;
+        }
+
+        .el-input__inner,
+        .el-textarea__inner {
+          background-color: #333;
+          border-color: #444;
+          color: #ddd;
+        }
+
+        .el-button {
+          background-color: #333;
+          border-color: #444;
+          color: #ddd;
+
+          &.el-button--primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    ::v-deep .el-dialog {
+      background-color: #2d2d2d;
+
+      .el-dialog__title {
+        color: #ddd;
+      }
+
+      .el-dialog__body {
+        color: #ddd;
+      }
+
+      .preview-container {
+        background-color: #1e1e1e;
+      }
+    }
+
+    ::v-deep .el-drawer {
+      background-color: #2d2d2d;
+      color: #ddd;
+
+      .el-tree {
+        background-color: #2d2d2d;
+        color: #ddd;
+
+        .el-tree-node__content {
+          background-color: #2d2d2d;
+
+          &:hover {
+            background-color: #333;
+          }
+        }
+
+        .el-tree-node.is-current > .el-tree-node__content {
+          background-color: #444;
+        }
+      }
+    }
+    .materia-warp,
+    .component-list {
+      background-color: #222;
+      .type-list {
+        scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
+        border-right-color: #000;
+        .type-item {
+          color: #ccc;
+          &:hover {
+            background-color: #333;
+          }
+          &.active {
+            background-color: #444;
+          }
+        }
+      }
+      .com-item {
+        background-color: #2d2d2d;
+      }
+    }
+    .type-item,
+    .sub-type-item {
+      &:hover {
+        background-color: #3d3d3d;
+      }
+    }
+  }
 
   .handle-btn {
     display: inline-flex;
@@ -1139,6 +1411,7 @@ export default {
       }
 
       &.in-edit {
+        transition: none;
         overflow: auto;
         padding: 60px;
         scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
@@ -1245,14 +1518,14 @@ export default {
     }
   }
 }
-.custom-tree-node{
+.custom-tree-node {
   display: flex;
   align-items: center;
-  .right-btn{
+  .right-btn {
     display: none;
   }
-  &:hover{
-    .right-btn{
+  &:hover {
+    .right-btn {
       display: block;
     }
   }
