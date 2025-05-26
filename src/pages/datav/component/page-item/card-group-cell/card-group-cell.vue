@@ -224,6 +224,7 @@ import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方�
 import dayjs from "dayjs";
 import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
+import { formatStyleData } from "@/pages/datav/common/index.js";
 export default {
   components: {
     Teleport,
@@ -752,34 +753,36 @@ export default {
     buildColStyleJson(styleJson, cssArr, cellLayoutJson, column) {
       let style = {};
       if (styleJson) {
-        // 将rpx转换为px
-        function convertRpxToPx(css) {
-          return css.replace(/\d+rpx/g, (match) => {
-            const value = parseFloat(match);
-            return `${value / 2}px`;
-          });
-        }
-        for (let key in styleJson) {
-          if (
-            typeof styleJson[key] === "string" &&
-            styleJson[key] &&
-            styleJson[key].indexOf("rpx") > -1
-          ) {
-            styleJson[key] = convertRpxToPx(styleJson[key] || "");
-          }
-          if (cssArr && cssArr.length > 0) {
-            let cssArrs = cssArr.split(",");
-            for (let getKey of cssArrs) {
-              if (getKey == key) {
-                style[key.replace(/_/g, "-")] = styleJson[key];
-              }
-            }
-          } else {
-            style[key.replace(/_/g, "-")] = styleJson[key];
-            // console.log('styleJson',key)
-          }
-        }
+        // // 将rpx转换为px
+        // function convertRpxToPx(css) {
+        //   return css.replace(/\d+rpx/g, (match) => {
+        //     const value = parseFloat(match);
+        //     return `${value / 2}px`;
+        //   });
+        // }
+        // for (let key in styleJson) {
+        //   if (
+        //     typeof styleJson[key] === "string" &&
+        //     styleJson[key] &&
+        //     styleJson[key].indexOf("rpx") > -1
+        //   ) {
+        //     styleJson[key] = convertRpxToPx(styleJson[key] || "");
+        //   }
+        //   if (cssArr && cssArr.length > 0) {
+        //     let cssArrs = cssArr.split(",");
+        //     for (let getKey of cssArrs) {
+        //       if (getKey == key) {
+        //         style[key.replace(/_/g, "-")] = styleJson[key];
+        //       }
+        //     }
+        //   } else {
+        //     style[key.replace(/_/g, "-")] = styleJson[key];
+        //     // console.log('styleJson',key)
+        //   }
+        // }
+        style = formatStyleData(styleJson);
       }
+
       let bgImg = cellLayoutJson?.background_image || "";
       if (styleJson && styleJson.background_image) {
         bgImg = styleJson.background_image;
@@ -788,14 +791,14 @@ export default {
         // 单元背景图 补偿样式。
         style["background-image"] = `url(${this.getImagePath(bgImg)})`;
         style["background-size"] = "100% 100%";
-        style["background-repeat"] = "no";
+        style["background-repeat"] = "norepeat";
       }
       if (cellLayoutJson && !style.hasOwnProperty("min-height") && bgImg) {
         style["min-height"] = "60px";
       }
-      if (!style["background-color"]) {
-        style["background-color"] = "transparent";
-      }
+      // if (!style["background-color"]) {
+      //   style["background-color"] = "transparent";
+      // }
       if (!style["overflow"]) {
         // style["overflow"] = "hidden";
       }

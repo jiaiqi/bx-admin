@@ -381,8 +381,6 @@ export default {
         // 为editorContainer添加键盘事件监听
         this.$refs.editorContainer.addEventListener("keydown", this.handleKeyDown);
         this.$refs.editorContainer.addEventListener("keyup", this.handleKeyUp);
-        // 添加tabindex使div可以接收键盘事件
-        document.setAttribute("tabindex", "0");
       }
 
       // 添加全局鼠标事件监听，用于处理面板宽度调整
