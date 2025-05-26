@@ -195,6 +195,10 @@ export const materialsTree = [
         label: "词云图",
         value: "词云图",
       },
+      {
+        label: "水球图",
+        value: "水球图",
+      },
       // {
       //   label: "仪表盘",
       //   value: "仪表盘",

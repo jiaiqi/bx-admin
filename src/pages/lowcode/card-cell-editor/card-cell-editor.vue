@@ -153,7 +153,15 @@ export default {
   },
   computed: {
     setStyle() {
-      return formatStyleData(this.cardInfo?.style_json);
+      let style = {};
+      if (this.cardInfo?.style_json) {
+        style = formatStyleData(this.cardInfo?.style_json);
+      }
+      let backgroundImage = this.cardInfo?.background_image;
+      if (backgroundImage) {
+        style["background-image"] = backgroundImage;
+      }
+      return formatStyleData(style);
     },
     cardParts() {
       let arr = cloneDeep(cardParts?.comList || []);
@@ -347,7 +355,6 @@ export default {
             key: part.id ? "id" : "card_parts_no",
             value: part.id || part.card_parts_no,
           };
-          debugger;
           if (part?.children && part?.children?.length) {
             const flatChildren = (list) => {
               let res = [];
@@ -410,7 +417,9 @@ export default {
         return;
       }
       this.onSaving = true;
-      this.$refs?.propertyEditor?.onSave();
+      this.$refs?.propertyEditor?.onSave().then(_=>{
+        this.onSaving = false;
+      });
       // const parts_json = JSON.stringify(this.partsList);
 
       // if (this.type === "edit") {

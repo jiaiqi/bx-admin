@@ -40,7 +40,7 @@
         :preview="preview"
         :hiddenPartsVisible="hiddenPartsVisible"
         @mouseenter="$emit('mouseenter')"
-        @delete-part="deleteChildPart(childPart, childIndex)"
+        @delete-part="deleteChildPart"
         @select-part="selectPart"
       />
     </template>

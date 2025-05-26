@@ -83,6 +83,9 @@ const chartType = computed(() => {
     case "词云图":
       chartType = "wordcloud";
       break;
+    case "水球图":
+      chartType = "liquidFill";
+      break;
     default:
       chartType = "line";
       break;
