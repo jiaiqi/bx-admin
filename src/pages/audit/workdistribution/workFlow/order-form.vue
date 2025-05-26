@@ -234,7 +234,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="证据是否充足" prop="is_sufficient_evidence">
-            <el-select v-model="ruleForm.is_sufficient_evidence" clearable placeholder="请选择"style="width:84.5%;">
+            <el-select v-model="ruleForm.is_sufficient_evidence" clearable placeholder="请选择" style="width:84.5%;">
               <el-option
                   v-for="item in optionsPage.is_sufficient_evidence"
                   :key="item.value"
@@ -258,7 +258,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否是发起方提交证据" prop="is_initiator_evidence">
-            <el-select v-model="ruleForm.is_initiator_evidence" clearable placeholder="请选择"style="width:84.5%;">
+            <el-select v-model="ruleForm.is_initiator_evidence" clearable placeholder="请选择" style="width:84.5%;">
               <el-option
                   v-for="item in optionsPage.is_initiator_evidence"
                   :key="item.value"
@@ -270,7 +270,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否与发行数据一致" prop="is_match_issue">
-            <el-select v-model="ruleForm.is_match_issue" clearable placeholder="请选择"style="width:84.3%;">
+            <el-select v-model="ruleForm.is_match_issue" clearable placeholder="请选择" style="width:84.3%;">
               <el-option
                   v-for="item in optionsPage.is_match_issue"
                   :key="item.value"
@@ -294,7 +294,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否为大件车辆" prop="isnormel">
-            <el-select v-model="ruleForm.isnormel" clearable placeholder="请选择"style="width:84.3%;">
+            <el-select v-model="ruleForm.isnormel" clearable placeholder="请选择" style="width:84.3%;">
               <el-option
                   v-for="item in optionsPage.isnormel"
                   :key="item.value"
@@ -311,7 +311,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="车辆用户类型" prop="vehicleusertype">
-            <el-select v-model="ruleForm.vehicleusertype" clearable placeholder="请选择"style="width:84.3%;">
+            <el-select v-model="ruleForm.vehicleusertype" clearable placeholder="请选择" style="width:84.3%;">
               <el-option
                   v-for="item in optionsPage.vehicleusertype"
                   :key="item.value"
@@ -323,7 +323,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="车种" prop="vehicleclass">
-            <el-select v-model="ruleForm.vehicleclass" clearable placeholder="请选择"style="width:84.5%">
+            <el-select v-model="ruleForm.vehicleclass" clearable placeholder="请选择" style="width:84.5%">
               <el-option
                   v-for="item in optionsPage.vehicleclass"
                   :key="item.value"
@@ -630,7 +630,7 @@ export default {
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding:1.5625rem 0px;
+  padding:1.5625rem 0;
 }
 </style>
 <style>
@@ -644,7 +644,7 @@ export default {
     width:100% !important;
   }
   .work_flow .el-form-item{
-     margin-left:0px !important;
+     margin-left:0 !important;
      width:100% !important;
   }
   .work_flow .el-form-item .el-select{
