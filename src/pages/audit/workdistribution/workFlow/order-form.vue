@@ -146,6 +146,15 @@
         </el-col>
       </el-row>
       <el-row>
+        <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">嫌疑流水</el-col>
+        <div class="suspected">
+
+          <el-table :data="suspectedData">
+            <el-table-column v-for="column in supColums" :key="column.prop" :prop="column.prop" :label="column.title"></el-table-column>
+          </el-table>
+        </div>
+      </el-row>
+      <el-row>
         <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">发起人信息</el-col>
         <el-col :span="12" style="display: flex;justify-content: space-between;width: 43.5%">
           <el-form-item label="发起人" prop="operator_name">
@@ -201,7 +210,7 @@
         </el-col>
         <el-col :span="12" style="padding-left: 6.42%;">
           <el-form-item label="责任主体" prop="province">
-            <el-select v-model="ruleForm.responsibility" placeholder="请选择" style="width:93.4%;">
+            <el-select v-model="ruleForm.responsibility" clearable placeholder="请选择" style="width:100%;">
               <el-option
                   v-for="item in optionsPage.responsibility"
                   :key="item.value"
@@ -213,7 +222,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否欠费" prop="is_owe_fee">
-            <el-select v-model="ruleForm.is_owe_fee" placeholder="请选择" style="width:84.3%">
+            <el-select v-model="ruleForm.is_owe_fee" clearable placeholder="请选择" style="width:84.3%">
               <el-option
                   v-for="item in optionsPage.is_owe_fee"
                   :key="item.value"
@@ -225,7 +234,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="证据是否充足" prop="is_sufficient_evidence">
-            <el-select v-model="ruleForm.is_sufficient_evidence" placeholder="请选择"style="width:78.7%;">
+            <el-select v-model="ruleForm.is_sufficient_evidence" clearable placeholder="请选择"style="width:84.5%;">
               <el-option
                   v-for="item in optionsPage.is_sufficient_evidence"
                   :key="item.value"
@@ -237,7 +246,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="稽核车型" prop="is_owe_fee">
-            <el-select v-model="ruleForm.vehicle_type" placeholder="请选择" style="width:84.3%">
+            <el-select v-model="ruleForm.vehicle_type" clearable placeholder="请选择" style="width:84.3%">
               <el-option
                   v-for="item in optionsPage.vehicle_type"
                   :key="item.value"
@@ -249,7 +258,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否是发起方提交证据" prop="is_initiator_evidence">
-            <el-select v-model="ruleForm.is_initiator_evidence" placeholder="请选择"style="width:78.7%;">
+            <el-select v-model="ruleForm.is_initiator_evidence" clearable placeholder="请选择"style="width:84.5%;">
               <el-option
                   v-for="item in optionsPage.is_initiator_evidence"
                   :key="item.value"
@@ -261,7 +270,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否与发行数据一致" prop="is_match_issue">
-            <el-select v-model="ruleForm.is_match_issue" placeholder="请选择"style="width:84.3%;">
+            <el-select v-model="ruleForm.is_match_issue" clearable placeholder="请选择"style="width:84.3%;">
               <el-option
                   v-for="item in optionsPage.is_match_issue"
                   :key="item.value"
@@ -273,7 +282,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="欠费类型" prop="owe_fee_type">
-            <el-select v-model="ruleForm.owe_fee_type" placeholder="请选择" style="width:78.7%">
+            <el-select v-model="ruleForm.owe_fee_type" clearable placeholder="请选择" style="width:84.5%">
               <el-option
                   v-for="item in optionsPage.owe_fee_type"
                   :key="item.value"
@@ -285,7 +294,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否为大件车辆" prop="isnormel">
-            <el-select v-model="ruleForm.isnormel" placeholder="请选择"style="width:84.3%;">
+            <el-select v-model="ruleForm.isnormel" clearable placeholder="请选择"style="width:84.3%;">
               <el-option
                   v-for="item in optionsPage.isnormel"
                   :key="item.value"
@@ -297,12 +306,12 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="车轴数" prop="axlecount">
-            <el-input v-model="ruleForm.axlecount" clearable style="width:78.7%" placeholder="请输入..."></el-input>
+            <el-input v-model="ruleForm.axlecount" clearable style="width:84.5%" placeholder="请输入..."></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="车辆用户类型" prop="vehicleusertype">
-            <el-select v-model="ruleForm.vehicleusertype" placeholder="请选择"style="width:84.3%;">
+            <el-select v-model="ruleForm.vehicleusertype" clearable placeholder="请选择"style="width:84.3%;">
               <el-option
                   v-for="item in optionsPage.vehicleusertype"
                   :key="item.value"
@@ -314,7 +323,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="车种" prop="vehicleclass">
-            <el-select v-model="ruleForm.vehicleclass" placeholder="请选择"style="width:78.7%">
+            <el-select v-model="ruleForm.vehicleclass" clearable placeholder="请选择"style="width:84.5%">
               <el-option
                   v-for="item in optionsPage.vehicleclass"
                   :key="item.value"
@@ -331,7 +340,7 @@
         </el-col>
       </el-row>
       <el-row>
-            <el-col :span="24" style="display: flex;justify-content: center">
+            <el-col :span="24" style="display: flex;justify-content: center" class="cl_bts">
               <el-button type="primary" icon="el-icon-check" size="mini">提交</el-button>
               <el-button type="primary" icon="el-icon-refresh-left" size="mini">重置</el-button>
             </el-col>
@@ -344,7 +353,7 @@
 
 <script>
 import {$http} from '@/common/http';
-import {filterListByOption,formDataByGetInfo,formDataByInitText} from './filterList'
+import {filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn} from './filterList'
 import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
 import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-mod.vue";
@@ -357,6 +366,8 @@ export default {
   },
   data() {
     return {
+      supColums:[],
+      suspectedData:[],
       showInsMod:false,
       showModal: false,
       operatorName:[],
@@ -577,6 +588,7 @@ export default {
     },
   },
   mounted() {
+    this.supColums=SuspectedColumn()
     this.getAllOptionsList()
     this.initForm()
     this.initQuerySearch()
@@ -598,5 +610,29 @@ export default {
 <style>
 .work_flow .el-form-item {
   margin-bottom: 0.3125rem !important;
+}
+@media screen and (min-width: 768px) and (max-width: 1250px) {
+  .work_flow .el-col{
+    display: block !important;
+    padding-left:0 !important;
+    width:100% !important;
+  }
+  .work_flow .el-form-item{
+     margin-left:0px !important;
+     width:100% !important;
+  }
+  .work_flow .el-form-item .el-select{
+    width:100% !important;
+  }
+  .work_flow .el-form-item .el-input{
+    width:100% !important;
+  }
+  .work_flow .cl_bts{
+    display: flex !important;
+    justify-content:center !important;
+  }
+}
+@media screen and (min-width: 1250px) and (max-width: 1705px){
+
 }
 </style>

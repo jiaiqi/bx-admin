@@ -3,7 +3,7 @@
     <div class="work_content">
       <MineBaseMap v-if="tabIndex===3"/>
       <OrderForm v-if="tabIndex===1"/>
-      <EntranceInformation v-if="tabIndex===2"/>
+      <EntranceInformation v-if="tabIndex===2" :list="entranceData"/>
     </div>
     <div class="work_tab">
            <div class="work_tab_cot">
@@ -19,16 +19,24 @@ import {ref,onMounted} from 'vue'
 import MineBaseMap from "@/pages/audit/workdistribution/map/BaseMap.vue";
 import EntranceInformation from "@/pages/audit/workdistribution/entrance/entrance-information.vue";
 import OrderForm from "@/pages/audit/workdistribution/workFlow/order-form.vue";
-const  tabs=[{title:"工单信息",code:1},{title:"入口信息",code:2},{title:"路径轨迹",code:3}]
+const  tabs=[{title:"工单信息",code:1},{title:"通行信息",code:2},{title:"路径轨迹",code:3}]
+import {getEntranceData} from "@/pages/audit/workdistribution/entrance/entrance";
+
+const entranceData=ref([]);
 const  activeIndex=ref(0);
 const  tabIndex=ref(1);
 const setTab=(item,index)=>{
      activeIndex.value=index;
      tabIndex.value=item.code;
 }
+
+const getEntranceInfo=()=>{
+    entranceData.value=getEntranceData().data
+}
 onMounted(() => {
   //暂时使用测试tooken
-  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-f09b33af-2657-4c85-80d1-7b865cfbf6dc');
+  getEntranceInfo()
+  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-7c4ccc4e-4ed9-499c-bed6-b9f27424d878');
 })
 </script>
 <style scoped lang="scss">

@@ -1,5 +1,13 @@
 <template>
-  <div class="map_content" id="base_map"></div>
+  <div class="map_content">
+    <div id="base_map" class="map_cot"></div>
+    <div class="driving_tab">
+      <li class="dr_t">
+        <span class="dr_bts" @click="setTabColes"><i class="el-icon-d-arrow-right"></i></span>
+        <span style="display: block;width:80%;text-align:center">路径行驶点</span>
+      </li>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -11,7 +19,7 @@ import {
   makeFeature, makeFeatureCollection,
   setPlanRoute
 } from "@/pages/audit/workdistribution/map/layerPage";
-
+const drivingPath=ref([])
 const userMap = ref(null);
 const handleMap = ref(null);
 const getImgSrc=(name)=> {
@@ -32,6 +40,9 @@ const asyncLoadMap = () => {
       }
     }, 500)
   })
+}
+const setTabColes=()=>{
+  coles
 }
 const initMineMap = () => {
   let options = {
@@ -118,9 +129,41 @@ onBeforeUnmount(()=>{
 
 
 <style scoped lang="scss">
+li{
+  list-style: none;
+}
 .map_content {
   width: 100%;
   height: 100%;
   position: relative;
+  .map_cot{
+    width: 100%;
+    height: 100%;
+  }
+  .driving_tab{
+    width:10%;
+    height:60%;
+    overflow: auto;
+    background: #f6f8f8;
+    position: absolute;
+    top:1%;
+    left:89%;
+    z-index:200;
+    box-shadow:0 0 8px rgba(232,237,250,0.6), 0 2px 4px rgba(232,237,250,0.5);
+    opacity: .9;
+    padding:0.3125rem;
+  }
+  .dr_t{
+    width: 100%;
+    height: 2.1875rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dr_bts{
+    cursor: pointer;
+    color: #0e77ea;
+    font-size:1.125rem;
+  }
 }
 </style>

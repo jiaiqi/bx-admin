@@ -77,6 +77,32 @@ export const formDataByGetInfo = (form, info) => {
 
     return result;
 }
-export const setClums = (name) => {
-
+//嫌疑流水表头
+export const SuspectedColumn= () => {
+      return [
+          {
+              title: '车牌号',
+              prop: 'vehicle_id',
+          },
+          {
+              title: '车型',
+              prop: 'vehicle_type'
+          },
+          {
+              title: '入口站',
+              prop: 'in_type'
+          },
+          {
+              title: '入口站',
+              prop: 'in_time',
+          },
+          {
+              title: '出口站',
+              prop: 'out_type',
+          },
+          {
+              title: '出站时间',
+              prop: 'out_time',
+          }
+      ]
 }
