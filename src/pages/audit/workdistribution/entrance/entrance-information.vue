@@ -1,37 +1,3 @@
-<script setup>
-// 门架信息
-import {ref} from "vue";
-
-const props = defineProps({
-  list: {
-    type: Array,
-    default: () => ([])
-  }
-})
-const reverse = ref(false)
-
-const centerDialogVisible = ref(false);
-const imgSrc = ref(null)
-const showPicture = (item) => {
-  imgSrc.value = getPic(item)
-  centerDialogVisible.value = true
-}
-const getPic = (item, imgtype,enType) => {
-  let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
-  if(enType){
-    url+=`&enextype=${enType}`
-  }
-  if(imgtype){
-    url+=`&imgtype=${imgtype}`
-  }
-  return url
-}
-const hideDialog = () => {
-  centerDialogVisible.value = false
-  imgSrc.value = null
-}
-</script>
-
 <template>
   <div class="door-frame">
     <el-timeline :reverse="reverse">
@@ -54,7 +20,8 @@ const hideDialog = () => {
             计费金额：{{ activity.fee_disp }}
           </div>
           <div v-if="activity.grantry_type==='收费站'">
-            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
+            <el-image style="width:700px;height: 300px"
+                      :src="getPic(activity,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
           </div>
           <div class="button" v-else>
             <el-button type="primary" size="mini" @click="showPicture(activity)"><i class="el-icon-download mr-2"></i>获取图片
@@ -79,7 +46,39 @@ const hideDialog = () => {
     </el-dialog>
   </div>
 </template>
+<script setup>
+// 门架信息
+import {ref} from "vue";
 
+const props = defineProps({
+  list: {
+    type: Array,
+    default: () => ([])
+  }
+})
+const reverse = ref(false)
+
+const centerDialogVisible = ref(false);
+const imgSrc = ref(null)
+const showPicture = (item) => {
+  imgSrc.value = getPic(item)
+  centerDialogVisible.value = true
+}
+const getPic = (item, imgtype, enType) => {
+  let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
+  if (enType) {
+    url += `&enextype=${enType}`
+  }
+  if (imgtype) {
+    url += `&imgtype=${imgtype}`
+  }
+  return url
+}
+const hideDialog = () => {
+  centerDialogVisible.value = false
+  imgSrc.value = null
+}
+</script>
 <style scoped>
 .door-frame {
   padding: 15px;

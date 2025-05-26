@@ -49,6 +49,7 @@ export const drwMapMarkers = (map, data, url) => {
 
 export const drawMapMarkersAndLabel = (_map,data) => {
        markerList=[]
+    removeOverlay(_map)
     // 创建标记点和标签
     data.forEach(item => {
         // 创建图标
@@ -67,7 +68,7 @@ export const drawMapMarkersAndLabel = (_map,data) => {
 
         // 创建标签
         const label = new BMapGL.Label(item.name, {
-            offset: new BMapGL.Size(0, -40), // 标签偏移量
+            offset: new BMapGL.Size(0, -45), // 标签偏移量
             position: item.point
         });
 

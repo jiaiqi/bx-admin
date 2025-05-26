@@ -3,9 +3,17 @@
     <div id="base_map" class="map_cot"></div>
     <div class="driving_tab">
       <li class="dr_t">
-        <span class="dr_bts" @click="setTabColes"><i class="el-icon-d-arrow-right"></i></span>
-        <span style="display: block;width:80%;text-align:center">路径行驶点</span>
+        <span style="display: block;width:80%;text-align:center">路径门架列表</span>
+        <span>
+          <img  style="width:1.5625rem;cursor: pointer" @click="setTabColes" :src="getImgSrc(isColes?'down.png':'top.png')" alt="">
+        </span>
       </li>
+      <div :class="isColes?'dr_list_active':'dr_list'">
+           <li v-for="(item,index) in drivingPoint" :key="index" class="dr_row_info" @click="hanleSetPoint(item)">
+             <span>{{item.name}}</span>
+             <span class="dr_row_index" :style="[{backgroundColor:item.select?'#5fc9c9':'#e0e3e3'}]">{{index+1}}</span>
+           </li>
+      </div>
     </div>
   </div>
 </template>
@@ -17,11 +25,14 @@ import {
   AutoDrivingLineSearch, drawMapMarkersAndLabel, drwIconLineLayer, FlyTo,
   handleMakePoint,
   makeFeature, makeFeatureCollection,
-  setPlanRoute
+  setPlanRoute,
+  HandleMapClick
 } from "@/pages/audit/workdistribution/map/layerPage";
 const drivingPath=ref([])
 const userMap = ref(null);
 const handleMap = ref(null);
+const isColes=ref(false);
+const drivingPoint=ref([])
 const getImgSrc=(name)=> {
   return require(`@/assets/mapIcon/${name}`);
 }
@@ -42,7 +53,7 @@ const asyncLoadMap = () => {
   })
 }
 const setTabColes=()=>{
-  coles
+  isColes.value = !isColes.value
 }
 const initMineMap = () => {
   let options = {
@@ -54,9 +65,6 @@ const initMineMap = () => {
 const initDrawingRoute = async () => {
   let start = handleMakePoint(handleMap.value, 108.93030832876782, 34.2861377065923);
   let end = handleMakePoint(handleMap.value, 108.93522197694989, 34.298609825499)
-  // [108.92899978014819,34.287680060799346]
-  // [108.92881328287827,34.29320166130973]
-  // [108.92970735322832,34.2985474624636]
   let ways = [handleMakePoint(handleMap.value, 108.92899978014819, 34.287680060799346)]
   AutoDrivingLineSearch(handleMap.value, start, end, ways);
 
@@ -70,7 +78,6 @@ const handleDrawLine=(list)=> {
   let features = []
   features.push(makeFeature('LineString', list, {"name": "linIcon"}))
   let source = makeFeatureCollection(features)
-  console.log(source)
   drwIconLineLayer(handleMap.value, source, 'linIcon', 'up-two.png');
   handleDrawMarker(list)
   let code=list[(list.length)/2]
@@ -80,36 +87,92 @@ const handleDrawMarker=(list)=> {
   //数据被反转过一次
   let tep = [
     {
-      name: '起点',
+      select:true,
+      name: '陕西新筑收费站',
       icon: require(`@/assets/mapIcon/start.png`),
       point: handleMakePoint('', list[list.length - 1][0], list[list.length - 1][1])
     },
     {
-      name: '终点',
+      select:true,
+      name: '新筑站-新筑_002车道',
       icon: require(`@/assets/mapIcon/end.png`),
       point: handleMakePoint('', list[0][0], list[0][1])
     },
     {
-      name: '经过点1',
+      select:true,
+      name: '新筑匝道-杏园匝道',
       icon: require(`@/assets/mapIcon/point_ico.png`),
       point: handleMakePoint('', 108.92899978014819, 34.287680060799346),
       info:'这里被拍到了1次'
     },
     {
-      name: '经过点2',
+      select:true,
+      name: '未央立交-汉城立交',
       icon: require(`@/assets/mapIcon/point_ico.png`),
       point: handleMakePoint('', 108.92881328287827, 34.29320166130973),
       info:'这里被拍到了次'
     },
     {
-      name: '经过点3',
+      select:true,
+      name: '陕西经开收费站',
       icon: require(`@/assets/mapIcon/point_ico.png`),
       point: handleMakePoint('', 108.92970735322832, 34.2985474624636),
       info:'这里被拍到了2次'
     }
   ]
-  drawMapMarkersAndLabel(handleMap.value, tep)
+  filterPointList(tep)
 }
+const filterPointList = (list) => {
+  try {
+    if (!Array.isArray(list)) {
+      console.warn('filterPointList: 输入参数必须是数组');
+      return;
+    }
+
+    // 更新主要点位列表
+    drivingPoint.value = list;
+
+    // 定义额外的收费站点位
+    const additionalPoints = [
+      { name: "星火1收费", lng: 108.93138234411674, lat: 34.29239159871275 },
+      { name: '星火2收费', lng: 108.92561761113238, lat: 34.29218558057651 }
+    ];
+
+    // 构建点位配置
+    const pointConfig = {
+      icon: require(`@/assets/mapIcon/point_ico.png`),
+      select: true
+    };
+
+    // 处理额外点位
+    const additionalMarkers = additionalPoints.map(item => ({
+      ...pointConfig,
+      name: item.name,
+      point: handleMakePoint('', item.lng, item.lat)
+    }));
+
+    // 合并所有点位
+    drivingPoint.value = [...drivingPoint.value, ...additionalMarkers];
+
+    // 绘制地图标记
+    drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
+  } catch (error) {
+    console.error('filterPointList 处理失败:', error);
+  }
+}
+const hanleSetPoint=(item)=>{
+   let tep=[]
+  drivingPoint.value.map(d=>{
+     if(d.name===item.name){
+       d.select=!item.select
+      }
+     if(d.select){
+       tep.push(d)
+     }
+   })
+
+   drawMapMarkersAndLabel(handleMap.value, tep)
+ }
 onMounted(()=>{
     asyncLoadMap().then(res => {
      initMineMap();
@@ -142,8 +205,7 @@ li{
   }
   .driving_tab{
     width:10%;
-    height:60%;
-    overflow: auto;
+    max-height:60%;
     background: #f6f8f8;
     position: absolute;
     top:1%;
@@ -158,12 +220,45 @@ li{
     height: 2.1875rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-around;
   }
   .dr_bts{
     cursor: pointer;
     color: #0e77ea;
     font-size:1.125rem;
+  }
+  .dr_list{
+    width:100%;
+    height:18.75rem;
+    max-height:31.25rem;
+    overflow: auto;
+    transition: all .5s;
+  }
+  .dr_list_active{
+    width:100%;
+    height:0;
+    overflow: auto;
+    transition: all .5s;
+  }
+  .dr_row_info{
+    box-sizing: border-box;
+    padding:2px 1px;
+    font-size:0.875rem;
+    border-bottom:1px solid rgba(232,237,250,0.6);
+    display:flex;
+    justify-content: space-between;
+    &:hover{
+      color: #00a0e9;
+    }
+  }
+  .dr_row_index{
+    display: block;
+    width:1.5625rem;
+    height:1.5625rem;
+    border-radius:50%;
+    background:#e0e3e3;
+    text-align: center;
+    line-height:1.5625rem;
   }
 }
 </style>

@@ -159,7 +159,7 @@
         <el-col :span="12" style="display: flex;justify-content: space-between;width: 43.5%">
           <el-form-item label="发起人" prop="operator_name">
              <div style="display: flex">
-               <el-select clear v-model="ruleForm.operator_name" clearable placeholder="请选择" @change="setOperInfo">
+               <el-select clear v-model="ruleForm.operator_name"  clearable placeholder="请选择" @change="setOperInfo">
                  <el-option
                      v-for="item in operatorName"
                      :key="item.id"
@@ -177,7 +177,7 @@
         <el-col :span="12" style="display: flex;padding-left: 6.42%">
           <el-form-item label="机构编号" prop="org_no">
             <div style="display: flex">
-              <el-select v-model="ruleForm.org_no" @clear="getDepSelelctInfo(null)" clearable placeholder="请选择"  @change="setDepOrd">
+              <el-select v-model="ruleForm.org_no"  @clear="getPutOrgAll" clearable placeholder="请选择"  @change="setDepOrd">
                 <el-option
                     v-for="item in optionsPageOrg"
                     :key="item.user_id"
@@ -490,10 +490,10 @@ export default {
           if(k.user_id===this.ruleForm.operator_name&&this.ruleForm.operator_name!==''){
             return k.dept_no
           }else {
-            return []
+            return false
           }
         })
-        this.getDepSelelctInfo(dep)
+        this.getDepSelelctInfo(dep[0])
        if(this.ruleForm.operator_name===''){
          this.ruleForm.org_no=''
          this.ruleForm.org_name=''
@@ -520,7 +520,22 @@ export default {
      * @Author:Eirice
      * @Date: 2025-05-24 18:30:29
      */
+     getPutOrgAll(){
+       let _this=this;
+      orderUtils.getMoirDepList().then(res => {
+        if(res.data.state !== 'SUCCESS') return;
+        let ls = res.data.data
+        _this.ruleForm.org_type=ls[0].org_type?(ls[0].org_type).toString():"";
+        _this.optionsPageOrg = res.data.data
+        if(dep){
+          _this.ruleForm.org_no= _this.optionsPageOrg[0].dept_no;
+        }else {
+          _this.ruleForm.org_no=''
+        }
+        _this.handleFilterPutOrg()
 
+      }).catch(err=>{})
+    },
     /**
      * @Description:根据发起人信息获取的组织代码获取发起人组织信息
      * @Author:Eirice
