@@ -34,7 +34,7 @@ export const formDataByInitText=(form,list,typeKey)=>{
     if (!list) return  form
     const result = {...form};
     list.forEach(item => {
-        if(item?.columns && result.hasOwnProperty(item.columns)&&item?.init_expr) {
+        if(item?.columns && result.hasOwnProperty(item.columns)&&item?.init_expr &&item.columns!=='user_no') {
             result[item.columns] = removeQuotes(item[typeKey]) || '';
         }
     })

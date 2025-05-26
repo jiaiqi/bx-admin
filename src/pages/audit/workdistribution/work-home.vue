@@ -36,7 +36,7 @@ const getEntranceInfo=()=>{
 onMounted(() => {
   //暂时使用测试tooken
   getEntranceInfo()
-  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-463baea9-8219-4120-8636-2e64f21bc262');
+  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-693d3e62-690e-4ea1-9ce8-743ddb9d081c');
 })
 </script>
 <style scoped lang="scss">

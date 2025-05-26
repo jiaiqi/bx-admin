@@ -341,7 +341,7 @@
       </el-row>
       <el-row>
             <el-col :span="24" style="display: flex;justify-content: center" class="cl_bts">
-              <el-button type="primary" icon="el-icon-check" size="mini">提交</el-button>
+              <el-button type="primary" icon="el-icon-check" size="mini" @click="handleSubmit">提交</el-button>
               <el-button type="primary" icon="el-icon-refresh-left" size="mini">重置</el-button>
             </el-col>
       </el-row>
@@ -435,7 +435,7 @@ export default {
         suspicion_id: "",  //嫌疑流水id
         title: "",           //工单标题
         trade_vehicle_type: "",  //稽核车型
-        user_no: "",  //发起人信息
+        // user_no: "",  //发起人信息
         vehicle_id: "",  //人工审核车牌号
         vehicle_type: "",  //稽核车型
         vehicleclass: "",  //车种
@@ -472,6 +472,7 @@ export default {
       let ops = ls.srv_cols
       _this.optionsPage=filterListByOption(ops,_this.optionsPage)
       _this.ruleForm=formDataByInitText(this.ruleForm,ops,'init_expr')
+      console.log('123123',_this.ruleForm.user_no)
     },
     handleSelect(item) {
       this.ruleForm.operator_name=item.user_name;
@@ -488,11 +489,14 @@ export default {
      setOperInfo(){
         let dep=this.operatorName.map(k=>{
           if(k.user_id===this.ruleForm.operator_name&&this.ruleForm.operator_name!==''){
+             this.ruleForm.user_no=k.user_no
+            console.log('这里的user_no',this.ruleForm.user_no)
             return k.dept_no
           }else {
             return false
           }
         })
+
         this.getDepSelelctInfo(dep[0])
        if(this.ruleForm.operator_name===''){
          this.ruleForm.org_no=''
@@ -565,9 +569,11 @@ export default {
           return;
         }
         _this.operatorName = res.data.data;
-        this.ruleForm.operator_name= _this.operatorName[0].user_id;
-        this.ruleForm.operator_id=_this.operatorName[0].user_id;
+        _this.ruleForm.operator_name= _this.operatorName[0].user_id;
+        _this.ruleForm.operator_id=_this.operatorName[0].user_id;
+        _this.ruleForm.user_no=_this.operatorName[0].user_no;
         _this.getDepSelelctInfo(_this.operatorName[0].dept_no)
+        console.log('这里的user_no',this.ruleForm.user_no)
       }).catch(err => {
       });
     },
@@ -576,6 +582,7 @@ export default {
           operate_params=JSON.parse(operate_params).data;
       if(operate_params){
         this.ruleForm=formDataByGetInfo(this.ruleForm,operate_params[0])
+        console.log('这里的user_no3',this.ruleForm.user_no)
         console.log('--',this.ruleForm);
       }
     },
@@ -601,12 +608,16 @@ export default {
       this.ruleForm.org_no= this.optionsPageOrg[0].dept_no;
       this.handleFilterPutOrg();
     },
+    handleSubmit(){
+      console.log('当前表单提交信息',this.ruleForm);
+    }
   },
   mounted() {
     this.supColums=SuspectedColumn()
     this.getAllOptionsList()
     this.initForm()
     this.initQuerySearch()
+    console.log('--22',this.ruleForm);
 
     // 组件挂载后默认调用一次
   }

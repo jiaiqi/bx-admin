@@ -3,28 +3,28 @@
     <el-timeline :reverse="reverse">
       <el-timeline-item
           :hideTimestamp="false"
-          v-for="(activity, index) in list"
+          v-for="(item, index) in list"
           :key="index"
-          :timestamp="activity.transtime">
+          :timestamp="item.transtime">
         <div class="info-item">
           <div class="item-list">
-            门架编号：{{ activity.tollgrantry_id }}
+            门架编号：{{ item.tollgrantry_id }}
           </div>
           <div class="item-list">
-            门架名称：{{ activity.tollgrantry_name }}
+            门架名称：{{ item.tollgrantry_name }}
           </div>
           <div class="item-list">
-            过车时间：{{ activity.transtime }}
+            过车时间：{{ item.transtime }}
           </div>
           <div class="item-list">
-            计费金额：{{ activity.fee_disp }}
+            计费金额：{{ item.fee_disp }}
           </div>
-          <div v-if="activity.grantry_type==='收费站'">
+          <div v-if="item.grantry_type==='收费站'">
             <el-image style="width:700px;height: 300px"
-                      :src="getPic(activity,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
+                      :src="getPic(item,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
           </div>
           <div class="button" v-else>
-            <el-button type="primary" size="mini" @click="showPicture(activity)"><i class="el-icon-download mr-2"></i>获取图片
+            <el-button type="primary" size="mini" @click="showPicture(item)"><i class="el-icon-download mr-2"></i>获取图片
             </el-button>
           </div>
         </div>
