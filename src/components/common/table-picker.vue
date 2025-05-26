@@ -161,7 +161,7 @@ export default {
           (this.page.pageNo - 1) * this.page.rownumber,
           this.page.pageNo * this.page.rownumber
         );
-      }else{
+      } else {
         list = this.gridData;
       }
       return list;
@@ -246,6 +246,9 @@ export default {
   },
   created() {
     this.initSelected();
+    if (this.disabled === true && !this.finderSelected) {
+      return;
+    }
     this.getListV2()
       .then(() => {
         return this.buildGridHeader();
@@ -324,6 +327,13 @@ export default {
         this.$srvApp || this.resolveDefaultSrvApp()
       );
       if (res?.data?.state === "SUCCESS") {
+        if (
+          ["bxsys_table_columns", "bxsys_service"].includes(
+            res.data.data.main_table
+          )
+        ) {
+          res.data.data.is_tree = false;
+        }
         this.listV2 = res.data.data;
       }
       return res;
