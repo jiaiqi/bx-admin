@@ -53,6 +53,7 @@
 
 <script>
 import Vue from "vue";
+import cloneDeep from "lodash/cloneDeep";
 // 引入样式
 import "vue-easytable/libs/theme-default/index.css";
 // 引入组件库
@@ -87,7 +88,7 @@ const ALL_COLUMN_KEYS = [
   "Y",
   "Z",
 ];
-const COLUMN_KEYS = ["A", "B", "C", "D", "E", "F"];
+const COLUMN_KEYS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 export default {
   props: {
     maxHeight: {
@@ -147,7 +148,11 @@ export default {
       // edit option 可控单元格编辑
       editOption: {
         beforeCellValueChange: ({ row, column, changeValue }) => {},
-        afterCellValueChange: ({ row, column, changeValue }) => {},
+        afterCellValueChange: ({ row, column, changeValue }) => {
+          let json = this.tableData2json();
+          this.$emit("input", JSON.stringify(json));
+          this.$emit("change");
+        },
       },
       // contextmenu header option
       contextmenuHeaderOption: {
@@ -305,31 +310,13 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
-        if (newValue && newValue !== oldValue) {
-          this.tableData = this.json2tableData(JSON.parse(newValue));
-        } else if (!newValue) {
-          this.initTableData();
-        }
-      },
-    },
-    getTableData: {
-      immediate: true,
-      deep: true,
-      handler(newValue, oldValue) {
-        // if (newValue !== oldValue) {
-        //   if (newValue) {
-        //     this.$emit("input", JSON.stringify(newValue));
-        //   } else {
-        //     this.$emit("input", "");
-        //   }
-        //   this.$emit("change", newValue);
-        // }
       },
     },
   },
   methods: {
-    tableData2json(data) {
+    tableData2json() {
       // 提取第一行作为 key
+      const data = cloneDeep(this.tableData);
       if (!data || data.length === 0) return [];
       const firstRow = data[0];
       const columns = [];
@@ -355,7 +342,7 @@ export default {
       if (Array.isArray(data) && data.length > 0) {
         const columns = Object.keys(data[0]);
         const firstRow = {
-          rowKey:new Date().getTime(),
+          rowKey: new Date().getTime(),
         };
         columns.forEach((column, index) => {
           firstRow[COLUMN_KEYS[index]] = column;
@@ -444,6 +431,13 @@ export default {
   },
   created() {
     // this.initTableData();
+    if (this.value) {
+      if (JSON.stringify(this.value) !== JSON.stringify(this.tableData)) {
+        this.tableData = this.json2tableData(JSON.parse(this.value));
+      }
+    } else if (!this.value) {
+      this.initTableData();
+    }
   },
 };
 </script>
@@ -459,14 +453,14 @@ export default {
   .ve-table {
     .ve-table-body-td {
       padding: 2px 5px !important;
-      height: unset !important;
-      line-height: unset !important;
+      // height: unset !important;
+      // line-height: unset !important;
       &.first-row {
         background-color: #fafafa !important;
       }
     }
     .ve-table-body-tr {
-      height: unset !important;
+      // height: unset !important;
     }
   }
 }
