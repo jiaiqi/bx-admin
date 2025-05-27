@@ -1,6 +1,6 @@
 <template>
   <div class="property-pane">
-    <el-tabs type="border-card" v-loading="pageLoading" v-model="activeTab">
+    <el-tabs type="border-card" v-model="activeTab">
       <el-tab-pane label="页面" name="页面" v-if="!currentItem">
         <div class="tab-content">
           <simple-update
@@ -13,8 +13,9 @@
             pkCol="id"
             :group-collapse="true"
             @executor-complete="onPageUpdate"
-            @form-loaded="pageLoading = false"
+            @form-loaded="onPageFormLoaded"
             @field-value-changed="onValueChange($event, 'page-update')"
+            ref="pageFormUpdate"
             v-if="pageId"
           >
           </simple-update>
@@ -30,21 +31,59 @@
           </simple-add> -->
         </div>
       </el-tab-pane>
+      <template v-if="!currentItem && pageStyleCols && pageStyleCols.length">
+        <el-tab-pane
+          :label="item.label"
+          :name="item.columns"
+          v-for="item in pageStyleCols"
+          :key="item.columns"
+        >
+          <div class="tab-content">
+            <simple-update
+              name="list-update"
+              :navAfterSubmit="false"
+              :service="item.option_list_v2.update_srv_cfg.srv"
+              :pk="item.value"
+              :app-no="item.option_list_v2.app || appNo"
+              :pkCol="item.option_list_v2.refed_col"
+              :group-collapse="true"
+              @executor-complete="
+                onStyleColUpdate($event, 'page-style-col-update', item)
+              "
+              @field-value-changed="
+                onValueChange($event, 'page-style-col-update', item)
+              "
+              ref="pageStyleColUpdate"
+              v-if="item.value"
+            >
+            </simple-update>
+            <!-- <div v-else>请先保存</div> -->
+            <simple-add
+              :service="item.option_list_v2.add_srv_cfg.srv"
+              :defaultValues="{
+                page_no: pageConfig.page_no,
+                obj_type: '页面',
+              }"
+              :navAfterSubmit="false"
+              @executor-complete="
+                onStyleColUpdate($event, 'page-style-col-add', item)
+              "
+              ref="pageStyleColAdd"
+              v-else
+            >
+            </simple-add>
+          </div>
+        </el-tab-pane>
+      </template>
       <el-tab-pane
         label="组件"
         name="组件"
-        v-if="
-          componentId ||
-          (!componentId &&
-            pageId &&
-            currentItem &&
-            currentItem._type === 'component')
-        "
+        v-if="showPageCompForm"
         v-loading="componentLoading"
       >
         <simple-update
           :key="compFormKey"
-          ref="compFormUpdate"
+          ref="pageCompFormUpdate"
           name="list-update"
           :service="componentService"
           :navAfterSubmit="false"
@@ -52,13 +91,9 @@
           pkCol="id"
           :group-collapse="true"
           @action-complete="onComponentUpdate"
-          @form-loaded="
-            (componentLoading = false),
-              (componentLoaded = true),
-              setCompServiceCfg()
-          "
+          @form-loaded="onPageCompFormLoaded"
           @field-value-changed="onValueChange($event, 'component-update')"
-          v-if="componentId"
+          v-if="componentId && (componentLoaded || activeTab === '组件')"
         >
         </simple-update>
         <div v-else>请先保存</div>
@@ -77,13 +112,11 @@
         >
         </simple-add> -->
       </el-tab-pane>
-      <el-tab-pane
-        label="组件配置"
-        name="组件配置"
-        v-if="compServiceCfg && compServiceCfg.service && compServiceCfg.pk"
-      >
+
+      <el-tab-pane label="组件配置" name="组件配置" v-if="showCompForm">
         <simple-update
           name="list-update"
+          ref="compFormUpdate"
           :service="compServiceCfg.service"
           :navAfterSubmit="false"
           :pk="compServiceCfg.pk"
@@ -93,45 +126,101 @@
           @field-value-changed="
             onValueChange($event, 'component-cfg-update', compServiceCfg)
           "
+          @form-loaded="onCompFormLoaded"
+          v-if="componentCfgLoaded || activeTab === '组件配置'"
         >
         </simple-update>
       </el-tab-pane>
-      <!-- <el-tab-pane label="布局" name="布局" v-if="useLayout">
-        <div style="padding: 20px">
-          <el-switch
-            v-model="screenType"
-            active-text="移动端"
-            inactive-text="PC端"
-            active-value="mobile"
-            inactive-value="PC"
-          >
-          </el-switch>
-        </div>
-        <div
-          style="
-            padding: 20px;
-            height: calc(100% - 80px);
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-          "
+      <template
+        v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length"
+      >
+        <el-tab-pane
+          :label="'组件-' + item.label"
+          :name="item.key"
+          v-for="item in pageCompStyleCols"
+          :key="item.key"
         >
-          <el-button
-            size="mini"
-            type="primary"
-            style="margin-right: 10px"
-            @click="clickSave"
-            >保存</el-button
-          >
-          <el-button
-            size="mini"
-            type="primary"
-            style="margin: 10px 10px 0 0"
-            @click="toPreview"
-            >预览</el-button
-          >
-        </div>
-      </el-tab-pane> -->
+          <div class="tab-content">
+            <simple-update
+              name="list-update"
+              :navAfterSubmit="false"
+              :service="item.option_list_v2.update_srv_cfg.srv"
+              :pk="item.value"
+              :app-no="item.option_list_v2.app || appNo"
+              :pkCol="item.option_list_v2.refed_col"
+              :group-collapse="true"
+              @executor-complete="
+                onStyleColUpdate($event, 'page-comp-style-col-update', item)
+              "
+              @field-value-changed="
+                onValueChange($event, 'page-comp-style-col-update', item)
+              "
+              ref="pageCompStyleColUpdate"
+              v-if="item.value"
+            >
+            </simple-update>
+            <simple-add
+              :service="item.option_list_v2.add_srv_cfg.srv"
+              :navAfterSubmit="false"
+              @executor-complete="
+                onStyleColUpdate($event, 'page-comp-style-col-add', item)
+              "
+              :defaultValues="{
+                page_no: pageConfig.page_no,
+                com_no: currentItem.com_no,
+                obj_type: '组件',
+              }"
+              ref="pageCompStyleColAdd"
+              v-else
+            >
+            </simple-add>
+          </div>
+        </el-tab-pane>
+      </template>
+      <template v-if="showCompForm && compStyleCols && compStyleCols.length">
+        <el-tab-pane
+          :label="'组件配置-' + item.label"
+          :name="item.key"
+          v-for="item in compStyleCols"
+          :key="item.key"
+        >
+          <div class="tab-content">
+            <simple-update
+              name="list-update"
+              :navAfterSubmit="false"
+              :service="item.option_list_v2.update_srv_cfg.srv"
+              :pk="item.value"
+              :app-no="item.option_list_v2.app || appNo"
+              :pkCol="item.option_list_v2.refed_col"
+              :group-collapse="true"
+              @executor-complete="
+                onStyleColUpdate($event, 'comp-style-col-update', item)
+              "
+              @field-value-changed="
+                onValueChange($event, 'comp-style-col-update', item)
+              "
+              ref="compStyleColUpdate"
+              v-if="item.value"
+            >
+            </simple-update>
+            <simple-add
+              :service="item.option_list_v2.add_srv_cfg.srv"
+              :navAfterSubmit="false"
+              @executor-complete="
+                onStyleColUpdate($event, 'comp-style-col-add', item)
+              "
+              :defaultValues="{
+                page_no: pageConfig.page_no,
+                com_no: currentItem.com_no,
+                obj_type: '组件',
+              }"
+              ref="compStyleColAdd"
+              v-else
+            >
+            </simple-add>
+          </div>
+        </el-tab-pane>
+      </template>
     </el-tabs>
   </div>
 </template>
@@ -167,16 +256,21 @@ export default {
   },
   watch: {
     currentItem: {
+      immediate: true,
+      deep: true,
       handler(newValue, oldValue) {
         if (newValue) {
           this.activeTab = "组件";
           this.setCompServiceCfg();
+          this.pageLoading = false;
         } else {
           this.activeTab = "页面";
         }
       },
     },
     currentComponent: {
+      immediate: true,
+      deep: true,
       handler(newValue) {
         if (newValue?.id) {
           this.componentId = null;
@@ -203,13 +297,24 @@ export default {
     },
   },
   computed: {
+    showPageCompForm() {
+      return (
+        !!this.componentId ||
+        (!this.componentId &&
+          this.pageId &&
+          this.currentItem?._type === "component")
+      );
+    },
+    showCompForm() {
+      return this.compServiceCfg?.service && this.compServiceCfg?.pk;
+    },
     strLayoutObj() {
       if (this.strLayout) {
         return JSON.parse(this.strLayout);
       }
     },
     compFormModel() {
-      return this.$refs?.compFormUpdate?.formModel;
+      return this.$refs?.pageCompFormUpdate?.formModel;
     },
     updateList() {
       let oldLayout = JSON.parse(this.strLayout);
@@ -325,22 +430,209 @@ export default {
       layoutLoading: false,
       activeTab: "页面",
       componentLoaded: false,
+      pageLoaded: false,
+      componentCfgLoaded: false,
       compServiceCfg: null,
       componentId: "",
       compFormKey: new Date().getTime(),
+      pageStyleCols: [], // 页面表样式相关字段
+      pageCompStyleCols: [], // 页面组件表样式相关字段
+      compStyleCols: [], // 对应类型组件表样式相关字段
     };
   },
   methods: {
-    onValueChange(value, type) {
-      this.$emit("page-change", value, type, this.compType, this.componentId);
-      // switch (type) {
-      //   case 'page-update':
-      //     this.$emit('page-change',value,type)
-      //     break;
+    onStyleColUpdate(event, type, item) {
+      console.log("onStyleColUpdate", event, type, item);
+      if (event.data.resultCode === "SUCCESS") {
+        const data = event.data.response?.[0]?.response?.effect_data?.[0];
+        const refMap = {
+          "page-style-col-update": this.$refs.pageStyleColUpdate,
+          "page-comp-style-col-update": this.$refs.pageCompStyleColUpdate,
+          "comp-style-col-update": this.$refs.compStyleColUpdate,
+          "page-style-col-add": this.$refs.pageStyleColAdd,
+          "page-comp-style-col-add": this.$refs.pageCompStyleColAdd,
+          "comp-style-col-add": this.$refs.compStyleColAdd,
+        };
 
-      //   default:
-      //     break;
-      // }
+        switch (type) {
+          case "page-style-col-update":
+          case "page-comp-style-col-update":
+          case "comp-style-col-update":
+            // 样式更新 通知页面刷新
+            this.$emit("refresh");
+            break;
+          case "page-style-col-add":
+            // 页面相关样式创建 更新到页面表
+            const { style_no } = data || {};
+            this.updatePage(item.columns, style_no).then((res) => {
+              console.log("updatePage", res);
+              if (res?.effect_rows) {
+                // 参数更新到页面 通知页面刷新
+                this.$emit("refresh");
+              }
+            });
+            break;
+          case "page-comp-style-col-add":
+            // 页面组件相关样式创建 更新到页面组件表
+            this.updatePageComp(item.columns, data.style_no).then((res) => {
+              console.log("updatePageComp", res);
+              if (res?.effect_rows) {
+                // 参数更新到页面 通知页面刷新
+                this.$emit("refresh");
+              }
+            });
+            break;
+          case "comp-style-col-add":
+            // 组件相关样式创建 更新到组件表
+            this.updateComp(item.columns, data.style_no).then((res) => {
+              console.log("updateComp", res);
+              if (res?.effect_rows) {
+                // 参数更新到页面 通知页面刷新
+                this.$emit("refresh");
+              }
+            });
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    async updatePage(col, val) {
+      let updateObj = {
+        serviceName: "srvpage_cfg_page_update",
+        srvApp: "config",
+        condition: [
+          {
+            ruleType: "eq",
+            colName: "id",
+            value: this.pageId,
+          },
+        ],
+        data: [
+          {
+            [col]: val,
+          },
+        ],
+      };
+      console.log("updatePage", updateObj);
+      if (!val) {
+        return;
+      }
+      return await this.httpOperate("update", [updateObj]);
+    },
+    async updatePageComp(col, val) {
+      const updateObj = {
+        serviceName: "srvpage_cfg_page_component_update",
+        srvApp: "config",
+        condition: [
+          {
+            ruleType: "eq",
+            colName: "id",
+            value: this.componentId,
+          },
+        ],
+        data: [
+          {
+            [col]: val,
+          },
+        ],
+      };
+      return await this.httpOperate("update", [updateObj]);
+    },
+    async updateComp(col, val) {
+      const updateObj = {
+        serviceName: this.compServiceCfg.service,
+        srvApp: "config",
+        condition: [
+          {
+            ruleType: "eq",
+            colName: this.compServiceCfg.pkCol,
+            value: this.compServiceCfg.pk,
+          },
+        ],
+        data: [
+          {
+            [col]: val,
+          },
+        ],
+      };
+      return await this.httpOperate("update", [updateObj]);
+    },
+    getStyleColumns(refName = "") {
+      const pageAllFields = this.$refs?.[refName]?.allFields || {};
+      const formModel = this.$refs?.[refName]?.formModel || {};
+      const whiteList = ["page_style_no", "style_no"];
+      const keys = Object.keys(pageAllFields)
+        .filter((item) => item.includes("style_no") && whiteList.includes(item))
+        .filter((key) => {
+          if (pageAllFields[key].vif === true) {
+            if (pageAllFields[key]?.info?.xIf) {
+              let row = formModel;
+              let ret = eval(
+                "var zz=" + pageAllFields[key]?.info?.xIf + "(row); zz"
+              );
+              return !!ret;
+            }
+            return true;
+          }
+        })
+        .map((key) => {
+          let obj = cloneDeep(pageAllFields[key]["info"]["srvCol"]);
+          if (formModel[key]) {
+            obj.value = formModel[key];
+          }
+          obj.key = `${obj.columns}_${dayjs().format("YYYY-MM-DD_HH:mm:ss")}`;
+          obj.label = obj.label.replace("编码", "");
+          return obj;
+        });
+      if (keys.length) {
+        return keys;
+      }
+    },
+    onPageFormLoaded() {
+      this.pageLoading = false;
+      this.pageLoaded = true;
+      this.pageStyleCols = this.getStyleColumns("pageFormUpdate");
+    },
+    onPageCompFormLoaded() {
+      this.componentLoading = false;
+      this.componentLoaded = true;
+      this.setCompServiceCfg();
+      this.pageCompStyleCols = this.getStyleColumns("pageCompFormUpdate");
+    },
+    onCompFormLoaded() {
+      // this.compStyleCols = this.getStyleColumns("compFormUpdate");
+      this.componentCfgLoaded = true;
+    },
+    onValueChange(value, type) {
+      console.log(
+        "onValueChange",
+        value,
+        type,
+        this.compType,
+        this.componentId
+      );
+      this.$emit("page-change", value, type, this.compType, this.componentId);
+
+      // 处理样式更新
+      if (value?.fieldName?.includes("style_no")) {
+        const styleUpdateMap = {
+          "page-update": "pageFormUpdate",
+          "component-update": "pageCompFormUpdate",
+          // "component-cfg-update": "compFormUpdate",
+        };
+
+        const formRef = styleUpdateMap[type];
+        if (formRef) {
+          const styleColsKey = {
+            "page-update": "pageStyleCols",
+            "component-update": "pageCompStyleCols",
+            // "component-cfg-update": "compStyleCols",
+          }[type];
+
+          this[styleColsKey] = this.getStyleColumns(formRef);
+        }
+      }
     },
 
     setCompServiceCfg() {
@@ -408,13 +700,14 @@ export default {
             obj.col = "com_case_no";
             obj.pkCol = "extp_no";
             break;
-          case "卡片部件": 
+          case "卡片部件":
             obj.service = "srvpage_cfg_card_parts_update";
             obj.col = "card_parts_no";
             obj.pkCol = "card_parts_no";
             break;
         }
-        obj.pk = this.$refs.compFormUpdate?.formModel?.[obj.col || obj.pkCol];
+        obj.pk =
+          this.$refs.pageCompFormUpdate?.formModel?.[obj.col || obj.pkCol];
         if (!obj.pk) {
           setTimeout(() => {
             this.setCompServiceCfg();
@@ -870,7 +1163,7 @@ export default {
           // let normalChild = this.findNormalChild(addChildRes);
           console.log(addChildRes);
         }
-        this.$message.success("保存成功");
+        // this.$message.success("保存成功");
         return this.$emit("refresh");
         const addNormalComponents = this.findNormalComponents(oldComponents);
         if (addNormalComponents?.length) {
@@ -969,7 +1262,7 @@ export default {
           "preview",
           "cellItem",
           "parentId",
-          ""
+          "",
         ];
         layout.forEach((item, i) => {
           const data = { ...item.data };
@@ -989,7 +1282,7 @@ export default {
               delete data[key];
             }
           });
-          debugger
+          debugger;
           let compObj = {
             serviceName: "",
             srvApp: "config",

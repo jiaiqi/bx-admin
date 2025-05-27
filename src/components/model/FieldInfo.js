@@ -325,7 +325,7 @@ export class FieldInfo {
       // this.editor = "code-editor";
       this.editor = "json-editor";
       this.lang = "json";
-      if(this.subType==='table'){
+      if(this.subType==='table'||this.subType==='excel'){
         this.editor = "json-table-editor";
       }
     } else if (this.type == "Sql") {

@@ -1,7 +1,7 @@
 <template>
-  <div class="spreadsheet">
-    <div class="flex flex-1 items-center text-sm p-x-2">
-      <div class="flex items-center text-sm p-x-2">
+  <div class="spreadsheet" ref="spreadsheetRef">
+    <div class="flex items-center text-sm p-x-2">
+      <div class="flex items-center text-sm p-2">
         <div class="mr-2">添加</div>
         <el-input-number size="mini" v-model="insertRowNumber" />
         <div class="mx-2">行</div>
@@ -14,6 +14,14 @@
           :disabled="insertRowNumber === 0"
         >
           <i class="el-icon-plus"></i>
+        </el-button>
+        <el-button
+          class="icon-button"
+          :title="isFullScreen ? '退出全屏' : '全屏编辑'"
+          size="mini"
+          @click="fullScreenEdit"
+          :icon="isFullScreen ? 'el-icon-close' : 'el-icon-full-screen'"
+        >
         </el-button>
       </div>
       <!-- <div class="flex items-center text-sm p-x-2 ml-5">
@@ -33,7 +41,7 @@
       </div> -->
     </div>
     <ve-table
-      style="word-break: break-word"
+      style="word-break: break-word; flex: 1"
       :cellStyleOption="cellStyleOption"
       :scroll-width="0"
       :show-header="false"
@@ -108,6 +116,7 @@ export default {
   },
   data() {
     return {
+      isFullScreen: false,
       insertRowNumber: 1,
       insertColumnNumber: 1,
       // start row index
@@ -309,11 +318,28 @@ export default {
     value: {
       immediate: true,
       deep: true,
-      handler(newValue, oldValue) {
-      },
+      handler(newValue, oldValue) {},
     },
   },
   methods: {
+    fullScreenEdit() {
+      console.log("fullScreenEdit");
+      const element = this.$refs.spreadsheetRef;
+      if (element) {
+        // 调用全屏接口
+        if (document.fullscreenElement === null) {
+          console.log("全屏");
+          this.maxHeight = 9999;
+          this.isFullScreen = true;
+          element.requestFullscreen();
+        } else {
+          console.log("退出全屏");
+          this.maxHeight = 300;
+          this.isFullScreen = false;
+          document.exitFullscreen();
+        }
+      }
+    },
     tableData2json() {
       // 提取第一行作为 key
       const data = cloneDeep(this.tableData);
@@ -414,7 +440,7 @@ export default {
     },
     initTableData() {
       let tableData = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 30; i++) {
         let dataItem = {
           rowKey: i,
         };
@@ -447,6 +473,9 @@ export default {
   margin: 0;
   height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
   .el-input.el-input--mini input {
     padding: 0 35px !important;
   }
