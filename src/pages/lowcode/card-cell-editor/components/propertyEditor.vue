@@ -314,23 +314,30 @@ export default {
               }
             });
             result.push(obj);
-            if(type==='delete'&&Array.isArray(item?.children) && item?.children.length){
-              const flatChildren = (list)=>{
+            if (
+              type === "delete" &&
+              Array.isArray(item?.children) &&
+              item?.children.length
+            ) {
+              const flatChildren = (list) => {
                 let res = [];
-                if(Array.isArray(list) && list.length){
-                  list.forEach((item)=>{
-                    if(item?._editType==='delete'){
+                if (Array.isArray(list) && list.length) {
+                  list.forEach((item) => {
+                    if (item?._editType === "delete") {
                       res.push(item);
                     }
-                    if(Array.isArray(item?.children) && item?.children.length){
+                    if (
+                      Array.isArray(item?.children) &&
+                      item?.children.length
+                    ) {
                       res = res.concat(flatChildren(item?.children));
                     }
-                  })
+                  });
                 }
                 return res;
-              }
+              };
               const children = flatChildren(item?.children);
-              if(children.length){
+              if (children.length) {
                 result = result.concat(children);
               }
             }
@@ -348,7 +355,10 @@ export default {
 <style lang="scss" scoped>
 .property-pane {
   background-color: #fff;
-
+  ::v-deep .form-view-wrapper {
+    max-height: calc(100vh - 175px);
+    overflow-y: auto;
+  }
   :deep(.el-form) {
     > .el-row {
       border: none;

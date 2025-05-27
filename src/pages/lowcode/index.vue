@@ -114,6 +114,7 @@
           :content-width="contentAreaWidth"
           :style="[setStyle, themeVariable]"
           ref="editorRef"
+          :key="pageRefreshKey"
         ></editor-view>
       </div>
       <div
@@ -143,7 +144,8 @@
           ref="propertyRef"
           @change="componentsChange"
           @page-change="onPageChange"
-          @refresh="initPage"
+          @refresh="onRefresh"
+          :key="pageRefreshKey"
         ></property-view>
       </div>
     </div>
@@ -307,6 +309,7 @@ export default {
   data() {
     return {
       //
+      pageRefreshKey: new Date().getTime(),
       pageNo: null,
       currentId: null,
       currentItem: null,
@@ -379,7 +382,10 @@ export default {
     this.$nextTick(() => {
       if (!this.isView && !this.isPreview && this.$refs.editorContainer) {
         // 为editorContainer添加键盘事件监听
-        this.$refs.editorContainer.addEventListener("keydown", this.handleKeyDown);
+        this.$refs.editorContainer.addEventListener(
+          "keydown",
+          this.handleKeyDown
+        );
         this.$refs.editorContainer.addEventListener("keyup", this.handleKeyUp);
       }
 
@@ -391,7 +397,10 @@ export default {
   beforeDestroy() {
     if (!this.isView && !this.isPreview) {
       // 移除键盘事件监听，防止内存泄漏
-      this.$refs.editorContainer.removeEventListener("keydown", this.handleKeyDown);
+      this.$refs.editorContainer.removeEventListener(
+        "keydown",
+        this.handleKeyDown
+      );
       this.$refs.editorContainer.removeEventListener("keyup", this.handleKeyUp);
     }
 
@@ -408,6 +417,11 @@ export default {
       this.isDarkMode = isDarkMode;
       // 保存主题设置到localStorage
       localStorage.setItem("lowcode_dark_mode", this.isDarkMode);
+    },
+    onRefresh() {
+      setTimeout(() => {
+        this.initPage();
+      }, 200);
     },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);
@@ -470,7 +484,7 @@ export default {
         const deltaX = e.clientX - this.startX;
         const newWidth = Math.max(
           150,
-          Math.min(500, this.materialsWidth + deltaX)
+          Math.min(800, this.materialsWidth + deltaX)
         );
 
         this.materialsWidth = newWidth;
@@ -483,7 +497,7 @@ export default {
         const deltaX = this.startX - e.clientX;
         const newWidth = Math.max(
           200,
-          Math.min(600, this.propertyWidth + deltaX)
+          Math.min(800, this.propertyWidth + deltaX)
         );
 
         this.propertyWidth = newWidth;
@@ -660,6 +674,7 @@ export default {
         //   }
         // });
         this.initComponents(newData);
+        this.pageRefreshKey = new Date().getTime();
       } else if (msg) {
         this.$message.error(msg);
       } else {
@@ -805,6 +820,7 @@ export default {
     },
 
     onPageChange(val, type, compType, compId) {
+      // this.refresh();
       return;
       console.log(val, type);
       if (!val?.fieldName?.includes("style")) {
