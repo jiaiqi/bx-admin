@@ -135,7 +135,7 @@
         v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length"
       >
         <el-tab-pane
-          :label="'组件-' + item.label"
+          :label="'组件' + item.label"
           :name="item.key"
           v-for="item in pageCompStyleCols"
           :key="item.key"
