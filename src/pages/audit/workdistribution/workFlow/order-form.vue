@@ -339,6 +339,42 @@
         </el-col>
       </el-row>
       <el-row>
+        <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">
+          <span>证据上传</span><span style="font-size: 1.125rem;margin-left:0.5rem;cursor: pointer" @click="setPicMod"><i class="el-icon-upload"></i></span>
+        </el-col>
+        <div class="pic_up" v-if="evidencePic.length>0">
+          <div class="img_list">
+            <!-- 使用element-ui自带样式 -->
+            <ul class="el-upload-list el-upload-list--picture-card">
+              <transition-group style="display: flex; flex-wrap: wrap;width: 100%">
+                <li
+                    v-for="(item, index) in evidencePic"
+                    :key="item.fileurl"
+                    class="el-upload-list__item is-success animated"
+                    style="position: relative"
+                >
+                  <el-image
+                      class="el-upload-list__item-thumbnail pre_pic"
+                      :src="item.url"
+                      :preview-src-list="preList"
+                  >
+                  </el-image>
+                  <div class="img_bts">
+                <span
+                    class="el-upload-list__item-preview"
+                    title="下载"
+                    @click="dowmlaodUrl(item.url)"
+                >
+                  <i class="el-icon-download"></i>
+                </span>
+                  </div>
+                </li>
+              </transition-group>
+            </ul>
+          </div>
+        </div>
+      </el-row>
+      <el-row>
             <el-col :span="24" style="display: flex;justify-content: center" class="cl_bts">
               <el-button type="primary" icon="el-icon-check" size="mini" @click="handleSubmit">提交</el-button>
               <el-button type="primary" icon="el-icon-refresh-left" size="mini">重置</el-button>
@@ -347,6 +383,7 @@
     </el-form>
     <promoterMod ref="proRef" :visible.sync="showModal" @getProMoterRow="getPromoterRow"/>
     <institutionMod :inVisible.sync="showInsMod" @getInsRow="getInsTableRow"/>
+    <uploadPic  :picVisible.sync="showPicMod" :objId="picIds" :files="evidencePic"  @getSavePicInfo="getSavePicInfo"/>
   </div>
 </template>
 
@@ -356,19 +393,23 @@ import {filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColu
 import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
 import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-mod.vue";
+import uploadPic from "@/pages/audit/workdistribution/workFlow/upload-pic.vue";
 const orderUtils = new OrderApi()
 export default {
   name: "order-form",
   components: {
     promoterMod,
     institutionMod,
+    uploadPic
   },
   data() {
     return {
+      evidencePic:[],
       supColums:[],
       suspectedData:[],
       showInsMod:false,
       showModal: false,
+      showPicMod:false,
       operatorName:[],
       optionsPageOrg:[], //机构编号
       optionsPage:{
@@ -413,7 +454,7 @@ export default {
         operator_id:'',                     //发起人id
         operator_name: "",                  //发起人姓名
         order_desc: "",                  //工单描述
-        order_evidence: "",              //证据附件
+        order_evidence: "20250527164213111100",              //证据附件
         order_type: "",                   //工单类型
         org_id:'',                    //发起机构id
         org_name: "",                //发起机构名称
@@ -442,10 +483,16 @@ export default {
         serviceName: "srvaud_ads_workorder_add"
       },
       restaurants:[],
-      resDep:[]
+      resDep:[],
+      prUrl:'',
+      preList:[],
+      picIds:''
     }
   },
   methods: {
+    setPicMod(){
+      this.showPicMod = true
+    },
     /**
      * @Description:获取所有信息下拉数据
      * @Author:Eirice
@@ -602,20 +649,61 @@ export default {
     },
     //机构编码弹窗双击获取数据
     getInsTableRow(row){
-      console.log('机构获取到了',row);
       this.optionsPageOrg=[row];
       this.ruleForm.org_no= this.optionsPageOrg[0].dept_no;
       this.handleFilterPutOrg();
     },
     handleSubmit(){
       console.log('当前表单提交信息',this.ruleForm);
-    }
+    },
+    //获取上传图片信息
+    getPicList(list){
+     console.log('获取到了上传的图',list);
+     // this.evidencePic(list)
+    },
+    /**
+     * @Description:针对保存后的证据图片进行二次获取校验
+     * @Author:Eirice
+     * @Date: 2025-05-27 16:08:43
+     */
+    getSavePicInfo(list){
+      let _this=this;
+      _this.evidencePic=[]
+      _this.picIds='';
+      let fle_no=list?list.effect_data[0].icon_att:_this.ruleForm.order_evidence.length>0?_this.ruleForm.order_evidence:list.effect_data[0].icon_att;
+      _this.picIds=list?list.effect_data[0].id:''
+      if(_this.picIds&&typeof _this.picIds==="number"){
+         _this.picIds=_this.picIds.toString();
+      }
+      let option={
+        relation_condition:{},
+        condition:[{colName: "is_delete", value: "1", ruleType: "eq"},{colName: "file_no", value: fle_no, ruleType: "eq"}]
+      }
+      orderUtils.getCurrentPicInfo(option).then(res => {
+        if(res.data.state!=='SUCCESS') return
+        let ls = res.data.data
+         ls.map(d=>{
+           d.url = _this.prUrl + d.fileurl;
+         })
+        _this.evidencePic=[...ls];
+        _this.evidencePic.map(item=>{_this.preList.push(item.url)})
+        console.log('组装好了',this.preList);
+      }).catch(err=>{});
+    },
+    //下载
+    dowmlaodUrl(item) {
+      window.open(item);
+    },
+  },
+  created(){
+    this.prUrl=orderUtils.dowPicInfoUrl()
   },
   mounted() {
     this.supColums=SuspectedColumn()
     this.getAllOptionsList()
     this.initForm()
     this.initQuerySearch()
+    this.getSavePicInfo(null)
     console.log('--22',this.ruleForm);
 
     // 组件挂载后默认调用一次
@@ -630,6 +718,9 @@ export default {
   height: 100%;
   overflow: auto;
   padding:1.5625rem 0;
+}
+.pic_up{
+  padding:0.625rem;
 }
 </style>
 <style>
@@ -657,5 +748,34 @@ export default {
     justify-content:center !important;
   }
 }
-
+.el-upload-list{
+  border:none !important;
+}
+.el-upload-list__item:hover{
+  .img_bts{
+    display: flex;
+    transition: all .3s;
+  }
+}
+.img_bts{
+  transition:all .3s;
+  opacity: 0;
+  display: none;
+  width: 100%;
+  height:2.1875rem;
+  position: absolute;
+  z-index:20;
+  background: #212122;
+  top: 75%;
+  opacity: .5;
+  color: #fff;
+  font-size: 1.125rem;
+  padding:0 0.625rem;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  >span{
+    margin:0 0.5rem;
+  }
+}
 </style>

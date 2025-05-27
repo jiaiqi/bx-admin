@@ -14,6 +14,7 @@ export default class OrderApi{
       let url=window.APP_CONFIG.API_URL+`/auth/select/srvbms_user_select`
         return await $http.post(url, req)
     }
+
     async postPromoterInfo(dep){
         let url=window.APP_CONFIG.API_URL+`/auth/select/srvauth_dept_workorder_select`
         let req={
@@ -110,4 +111,65 @@ export default class OrderApi{
         }
         return await $http.post(url, req)
     }
+    //图片加载地址
+    dowPicInfoUrl(){
+       return window.APP_CONFIG.API_URL+`/file/download?bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}&filePath=`
+    }
+    //删除删除图片证据
+    async deletePicInfo(params){
+       let url= window.APP_CONFIG.API_URL+`/file/delete`
+       let req= params
+       return $http.post(url, params);
+    }
+    //保存上传图片
+    async savePicInfo(params){
+       let url= window.APP_CONFIG.API_URL+`/file/operate/srvfile_icon_db_add`
+       let req=[
+           {
+               condition:[],
+               serviceName:"srvfile_icon_db_add",
+               data:params
+           }
+       ]
+       return $http.post(url, req)
+    }
+    //根据no获取当前上传图片列表
+    async getCurrentPicInfo(option){
+       let url=window.APP_CONFIG.API_URL+ `/file/select/srvfile_attachment_select?srvfile_attachment_select`
+        let req={
+            colNames: ["*"],
+            serviceName: "srvfile_attachment_select",
+            page: null,
+            relation_condition: option.relation_condition,
+            order: [{colName: "seq", orderType: "asc"}],
+            condition:option.condition
+        }
+       return await $http.post(url, req)
+    }
+    //根据更新指定图片信息
+    async updatePicInfo(option){
+        //
+        let url=window.APP_CONFIG.API_URL+`/file/operate/srvfile_icon_db_update`
+        let req=[
+            {
+                serviceName: "srvfile_icon_db_update",
+                data:option.regInfo,
+                condition:option.condition,
+            }
+        ]
+        return $http.post(url, req)
+    }
+    //根据ids获取指定图片保存信息
+    async getPicInfoById(params){
+      let url=window.APP_CONFIG.API_URL+`/file/select/srvfile_icon_db_select?srvfile_icon_db_select`
+      let req={
+          condition:params.condition,
+          colNames: ["*"],
+          draft: false,
+          hisVer: true,
+          query_source: "detail_page",
+          serviceName: "srvfile_icon_db_select",
+      }
+      return $http.post(url, req)
+   }
 }
