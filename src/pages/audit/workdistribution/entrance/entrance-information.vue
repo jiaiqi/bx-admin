@@ -5,6 +5,7 @@
           :hideTimestamp="false"
           v-for="(item, index) in list"
           :key="index"
+          :color="index===0?'#0bbd87':index===list.length-1?'#e80621':'#3194f6'"
           :timestamp="item.transtime">
         <div class="info-item">
           <div class="item-list">

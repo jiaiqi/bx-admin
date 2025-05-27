@@ -9,7 +9,7 @@
         </span>
       </li>
       <div :class="isColes?'dr_list_active':'dr_list'">
-           <li v-for="(item,index) in drivingPoint" :key="index" class="dr_row_info" @click="hanleSetPoint(item)">
+           <li v-for="(item,index) in drivingPoint" :key="index" class="dr_row_info" @click="handleSetPoint(item)">
              <span>{{item.name}}</span>
              <span class="dr_row_index" :style="[{backgroundColor:item.select?'#5fc9c9':'#e0e3e3'}]">{{index+1}}</span>
            </li>
@@ -160,7 +160,7 @@ const filterPointList = (list) => {
     console.error('filterPointList 处理失败:', error);
   }
 }
-const hanleSetPoint=(item)=>{
+const handleSetPoint=(item)=>{
    let tep=[]
   drivingPoint.value.map(d=>{
      if(d.name===item.name){

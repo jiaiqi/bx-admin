@@ -36,7 +36,7 @@ const getEntranceInfo=()=>{
 onMounted(() => {
   //暂时使用测试tooken
   getEntranceInfo()
-  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-693d3e62-690e-4ea1-9ce8-743ddb9d081c');
+  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-a137f964-af39-4f79-8b2d-194b8c9c0f6d');
 })
 </script>
 <style scoped lang="scss">
@@ -89,5 +89,13 @@ onMounted(() => {
   background:#5391ef;
   cursor:pointer;
   border-radius: 0.1875rem;
+}
+@media screen and (min-width: 768px) and (max-width: 1800px){
+  .tab_row{
+    width:50%;
+  }
+ .act_tab_row{
+   width:50%;
+ }
 }
 </style>

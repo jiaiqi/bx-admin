@@ -13,7 +13,7 @@
 
         <el-col :span="12" style="display: flex">
           <el-form-item label="疑似逃费类型" prop="sus_escape_type">
-            <el-select v-model="ruleForm.sus_escape_type" placeholder="请选择">
+            <el-select v-model="ruleForm.sus_escape_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.sus_escape_type"
                   :key="item.value"
@@ -29,7 +29,7 @@
 
         <el-col :span="12" style="display: flex;width:43.76%;justify-content: space-between">
           <el-form-item label="嫌疑车辆车牌颜色" prop="sus_plate_color">
-            <el-select v-model="ruleForm.sus_plate_color" placeholder="请选择">
+            <el-select v-model="ruleForm.sus_plate_color" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.sus_plate_color"
                   :key="item.value"
@@ -44,7 +44,7 @@
         </el-col>
         <el-col :span="12" style="padding-left:6.28%">
           <el-form-item label="确认逃费类型" prop="escape_type">
-            <el-select v-model="ruleForm.escape_type" placeholder="请选择">
+            <el-select v-model="ruleForm.escape_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.escape_type"
                   :key="item.value"
@@ -61,7 +61,7 @@
         </el-col>
         <el-col :span="12" style="display: flex">
           <el-form-item label="通行介质类型" prop="media_type">
-            <el-select v-model="ruleForm.media_type" placeholder="请选择">
+            <el-select v-model="ruleForm.media_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.media_type"
                   :key="item.value"
@@ -81,7 +81,7 @@
 
         <el-col :span="24" style="display: flex;width: 76%;justify-content: space-between">
           <el-form-item label="工单类型" prop="order_type">
-            <el-select v-model="ruleForm.order_type" placeholder="请选择">
+            <el-select v-model="ruleForm.order_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.order_type"
                   :key="item.value"
@@ -111,7 +111,7 @@
                       maxlength="64"></el-input>
           </el-form-item>
           <el-form-item label="人工审核车牌颜色" prop="plate_color">
-            <el-select v-model="ruleForm.plate_color" placeholder="请选择">
+            <el-select v-model="ruleForm.plate_color" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.plate_color"
                   :key="item.value"
@@ -123,7 +123,7 @@
         </el-col>
         <el-col :span="12" style="display: flex;padding-left: 6.42%">
           <el-form-item label="稽核车型" prop="trade_vehicle_type">
-            <el-select v-model="ruleForm.trade_vehicle_type" placeholder="请选择">
+            <el-select v-model="ruleForm.trade_vehicle_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.trade_vehicle_type"
                   :key="item.value"
@@ -148,7 +148,6 @@
       <el-row>
         <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">嫌疑流水</el-col>
         <div class="suspected">
-
           <el-table :data="suspectedData">
             <el-table-column v-for="column in supColums" :key="column.prop" :prop="column.prop" :label="column.title"></el-table-column>
           </el-table>
@@ -195,7 +194,7 @@
         </el-col>
         <el-col :span="12" style="display: flex;justify-content: space-between; width: 43.5%;">
           <el-form-item label="机构类型" prop="org_type">
-            <el-select v-model="ruleForm.org_type" placeholder="请选择">
+            <el-select v-model="ruleForm.org_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.org_type"
                   :key="item.value"
@@ -658,7 +657,5 @@ export default {
     justify-content:center !important;
   }
 }
-@media screen and (min-width: 1250px) and (max-width: 1705px){
 
-}
 </style>
