@@ -8,7 +8,12 @@
   >
     {{ field.getDispVal4Read() }}
   </a>
-  <!--  <el-input v-else-if="field.getSrvVal()&&noData" clearable @clear="onClear()" :value="field.getSrvVal()"></el-input>-->
+  <el-input
+    v-else-if="field.model && noData"
+    clearable
+    @clear="onClear()"
+    :value="field.model"
+  ></el-input>
   <el-cascader
     v-else
     :placeholder="field.info.placeholder"
@@ -29,25 +34,6 @@
       <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
     </template>
   </el-cascader>
-  <!-- <el-cascader
-    v-else
-    :placeholder="field.info.placeholder"
-    :options="options"
-    v-model="selected"
-    :value="selected"
-    :props="props"
-    :change-on-select="unlimited"
-    filterable
-    clearable
-    :visible-change="visibleChange"
-    :show-all-levels="field.info.editable"
-    :disabled="!field.info.editable"
-    @change="onSelectChange"
-    @active-item-change="onItemChange"
-    @input.native="inputChange"
-    ref="elCascader"
-  >
-  </el-cascader> -->
 </template>
 
 <script>
@@ -396,9 +382,9 @@ export default {
       const response = await this.$http.post(url, params);
       this.noData = false;
       if (response && response.data && response.data.data) {
-        // if(response.data.data.length === 0){
-        //   this.noData = true;
-        // }
+        if(response.data.data.length === 0){
+          this.noData = true;
+        }
         let options = response.data.data.map((item) => {
           item.children = item.is_leaf === "是" ? null : [];
           item.leaf = item.is_leaf === "是";
