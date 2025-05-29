@@ -1,6 +1,6 @@
 <template>
   <div class="door-frame">
-    <el-timeline :reverse="reverse">
+    <el-timeline :reverse="reverse" v-if="list.length>0">
       <el-timeline-item
           :hideTimestamp="false"
           v-for="(item, index) in list"
@@ -73,26 +73,29 @@ const hideDialog = () => {
   centerDialogVisible.value = false
   imgSrc.value = null
 }
+const getTimeLineData = () => {
+  list.value=getEntranceData().data
+}
 onMounted(()=>{
-  list.value=getEntranceData()
+  getTimeLineData()
 })
 </script>
 <style scoped>
 .door-frame {
   padding: 15px;
-  max-height: calc(100vh - 80px);
+  max-height: calc(100vh - 5rem);
   overflow-y: auto;
 }
 
 .info-item {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-column-gap: 10px;
-  grid-row-gap: 10px;
+  grid-column-gap: 0.625rem;
+  grid-row-gap: 0.625rem;
 }
 
 .image-box {
   width: 100%;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 12.5rem);
 }
 </style>

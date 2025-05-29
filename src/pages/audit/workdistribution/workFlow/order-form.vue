@@ -576,15 +576,12 @@ export default {
         let ls = res.data.data
         _this.ruleForm.org_type=ls[0].org_type?(ls[0].org_type).toString():"";
         _this.optionsPageOrg = res.data.data
-        if(dep){
-          _this.ruleForm.org_no= _this.optionsPageOrg[0].dept_no;
-        }else {
-          _this.ruleForm.org_no=''
-        }
+        _this.ruleForm.org_no=''
         _this.handleFilterPutOrg()
 
       }).catch(err=>{})
     },
+
     /**
      * @Description:根据发起人信息获取的组织代码获取发起人组织信息
      * @Author:Eirice

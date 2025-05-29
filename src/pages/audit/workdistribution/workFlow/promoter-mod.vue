@@ -323,4 +323,5 @@ export default {
 .promoter_mod .el-dialog{
   width:75% !important;
 }
+
 </style>

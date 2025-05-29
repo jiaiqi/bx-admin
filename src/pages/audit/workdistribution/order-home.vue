@@ -46,7 +46,7 @@ name: "order-home",
     }
   },
   mounted(){
-    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-e87e1e37-be65-411c-a654-495d2313f342');
+    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-38f7d3f9-6027-4abf-b716-78b09430c910');
     // 只在组件首次挂载时执行
     if (!this._isMounted) {
       console.log('123123')

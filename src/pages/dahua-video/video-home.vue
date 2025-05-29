@@ -6,11 +6,11 @@
       </div>
       <li class="tree_tl">
         <el-input
-          v-model="filterText"
-          placeholder="输入关键字进行快速搜索"
-          size="mini"
-          clearable
-          class="filter-input"
+            v-model="filterText"
+            placeholder="输入关键字进行快速搜索"
+            size="mini"
+            clearable
+            class="filter-input"
         />
         <el-tree
             style="font-size: 0.875rem"
@@ -30,6 +30,7 @@
       </li>
       <div class="playback-controls">
         <div class="control-title">历史回放</div>
+        <div class="divider"></div>
         <div class="control-content">
           <el-switch
               size="mini"
@@ -38,6 +39,7 @@
               active-text="回放模式"
               inactive-text="实时模式"
           />
+          <div class="record-source-title">录像来源:</div>
           <el-radio-group
               size="mini"
               v-model="recordSource"
@@ -70,8 +72,12 @@
             />
           </div>
           <div class="button-group">
-            <el-button size="mini" type="primary" @click="startPlayback" :disabled="!isPlaybackMode || isPlaying || !videoChannel">开始回放</el-button>
-            <el-button size="mini" type="danger" @click="stopPlayback" :disabled="!isPlaying || !videoChannel">停止回放</el-button>
+            <el-button size="mini" type="primary" @click="startPlayback"
+                       :disabled="!isPlaybackMode || isPlaying || !videoChannel">开始回放
+            </el-button>
+            <el-button size="mini" type="danger" @click="stopPlayback" :disabled="!isPlaying || !videoChannel">
+              停止回放
+            </el-button>
           </div>
         </div>
       </div>
@@ -81,19 +87,27 @@
 </template>
 
 <script setup>
-import {ref, onMounted, computed, watch} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import VideoUtil from "@/pages/dahua-video/video";
+
 const Videos = new VideoUtil();
-const  videoTree= ref([]);
+const videoTree = ref([]);
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
-const videoChannel=ref('');
-let myVideoPlayer=null;
-const LoginInfo= {
+const videoChannel = ref('');
+const fieldNames = {
+  children: 'children',
+  label: 'area_name',
+  value: 'area_no'
+}
+const filterText = ref(''); //树节点过滤使用
+const tree = ref(null);
+let myVideoPlayer = null;
+const LoginInfo = {
   host: '124.160.33.135',  // icc 平台ip
   port: '4077',  //icc 平台端口 https 默认 443
-  username:'TEST',  // icc 平台用户名
-  password:'OGR28u6_cc' // icc 平台密码
+  username: 'TEST',  // icc 平台用户名
+  password: 'OGR28u6_cc' // icc 平台密码
 }
 
 // 添加历史回放相关的状态变量
@@ -103,6 +117,8 @@ const isPlaying = ref(false);
 const isPlaybackMode = ref(false);
 const selectedWindow = ref(0);
 const recordSource = ref(2); // 默认选择设备录像
+// 添加收缩状态控制
+const isCollapsed = ref(false);
 // 记录每个窗口的通道信息
 const windowChannels = ref({});
 // 保存回放前的播放器状态
@@ -111,18 +127,15 @@ const previousPlayerState = ref({
   channels: {}
 });
 
-// 添加收缩状态控制
-const isCollapsed = ref(false);
-
 // 切换收缩状态
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
 };
 
-const handleSelect=(selectedKeys,e)=>{
-  let node =e.data?e.data:{};
-  if(node&&node.isChannel){
-    videoChannel.value=node.chnl_no;
+const handleSelect = (selectedKeys, e) => {
+  let node = e.data ? e.data : {};
+  if (node && node.isChannel) {
+    videoChannel.value = node.chnl_no;
     // 重置选择的窗口为第一个
     selectedWindow.value = 0;
     // 使用固定的通道ID
@@ -133,7 +146,7 @@ const handleSelect=(selectedKeys,e)=>{
   }
 }
 //初始化播放器
-const initPlayer=()=>{
+const initPlayer = () => {
   // 如果播放器实例已存在，先销毁它
   if (myVideoPlayer) {
     try {
@@ -149,7 +162,7 @@ const initPlayer=()=>{
     }
   }
 
-  myVideoPlayer= new VideoPlayer({
+  myVideoPlayer = new VideoPlayer({
     videoId: "play_dh",
     windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
     usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
@@ -171,23 +184,31 @@ const initPlayer=()=>{
       console.log(err)
     },
     // 插件公共回调
-    dhPlayerMessage: (info, err) => { },
+    dhPlayerMessage: (info, err) => {
+    },
     // 实时预览成功回调
-    realSuccess: (info) => { },
+    realSuccess: (info) => {
+    },
     // 实时预览失败回调
-    realError: (info, err) => { },
+    realError: (info, err) => {
+    },
     // 对讲成功回调
-    talkSuccess: (info) => { },
+    talkSuccess: (info) => {
+    },
     // 对讲失败回调
-    talkError: (info, err) => { },
+    talkError: (info, err) => {
+    },
     // 录像播放成功回调
-    playbackSuccess: (info) => { },
+    playbackSuccess: (info) => {
+    },
     // 录像播放失败回调
-    playbackError: (info, err) => { },
+    playbackError: (info, err) => {
+    },
     // 录像播放完成回调
-    playbackFinish: (info) => { },
+    playbackFinish: (info) => {
+    },
     // 抓图成功回调
-    snapshotSuccess: ({ base64Url, path }, info) => {
+    snapshotSuccess: ({base64Url, path}, info) => {
       let byteCharacters = atob(
           base64Url.replace(/^data:image\/(png|jpeg|jpg);base64,/, "")
       );
@@ -205,7 +226,8 @@ const initPlayer=()=>{
       aLink.click();
     },
     // 关闭视频窗口回调
-    closeWindowSuccess: ({ isAll, snum, channelList }) => { },
+    closeWindowSuccess: ({isAll, snum, channelList}) => {
+    },
     // 鼠标单击窗口回调
     clickWindow: (snum) => {
       if (isPlaybackMode.value && !isPlaying.value) {
@@ -214,18 +236,22 @@ const initPlayer=()=>{
       }
     },
     // 鼠标双击窗口回调
-    dbClickWindow: (snum) => { },
+    dbClickWindow: (snum) => {
+    },
     // 播放器窗口的数量回调
-    changeDivision: (division) => { },
+    changeDivision: (division) => {
+    },
     // rtsp 流下载录像成功回调
-    downloadRecordSuccess: (info) => { },
+    downloadRecordSuccess: (info) => {
+    },
     // rtsp 流下载录像失败回调
-    downloadRecordError: (info, err) => { }
+    downloadRecordError: (info, err) => {
+    }
   });
 }
 //实时流播放
-const playStartReal=(id, windowIndex = 0)=>{
-  if(!myVideoPlayer){
+const playStartReal = (id, windowIndex = 0) => {
+  if (!myVideoPlayer) {
     console.log('插件未初始化完成');
     return
   }
@@ -379,7 +405,7 @@ const handlePlaybackModeChange = (checked) => {
       // 保存当前播放器状态
       previousPlayerState.value = {
         division: 9,
-        channels: { ...windowChannels.value }
+        channels: {...windowChannels.value}
       };
       // 切换到单窗口模式
       myVideoPlayer.changeDivision(1);
@@ -390,16 +416,10 @@ const handlePlaybackModeChange = (checked) => {
   }
 };
 
-// 修改 fieldNames 对象以适配 Element UI
-const fieldNames = {
-  children: 'children',
-  label: 'area_name',
-  value: 'area_no'
-}
 
 const processTreeData = (data) => {
   return data.map(item => {
-    const newItem = { ...item };
+    const newItem = {...item};
 
     // 处理当前节点的 channels
     if (item.channels && item.channels.length > 0) {
@@ -429,16 +449,14 @@ const processTreeData = (data) => {
 
 const getVideoInfo = () => {
   Videos.getVideoListByArea().then(res => {
-    if(res.data.state !== 'SUCCESS') return;
-    console.log('---',processTreeData(res.data.data))
+    if (res.data.state !== 'SUCCESS') return;
+    console.log('---', processTreeData(res.data.data))
     videoTree.value = processTreeData(res.data.data);
-    console.log(videoTree.value,'videoTree.value');
-  }).catch(err => {});
+    console.log(videoTree.value, 'videoTree.value');
+  }).catch(err => {
+  });
 }
 
-// 在 script setup 部分添加过滤相关的变量和方法
-const filterText = ref('');
-const tree = ref(null);
 
 // 监听过滤文本变化
 watch(filterText, (val) => {
@@ -452,23 +470,25 @@ const filterNode = (value, data) => {
 };
 
 onMounted(() => {
-  sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-7234484c-63bc-4a6b-ad19-756edb074645');
+  sessionStorage.setItem("bx_auth_ticket", 'xabxdzkj-7234484c-63bc-4a6b-ad19-756edb074645');
   getVideoInfo()
   initPlayer()
 })
 </script>
 
 <style scoped lang="less">
-li{
+li {
   list-style: none;
 }
-.video_page{
+
+.video_page {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: space-between;
-  padding:0.625rem;
-  .tree_left{
+  padding: 0.625rem;
+
+  .tree_left {
     width: 11%;
     height: 100%;
     overflow: auto;
@@ -564,11 +584,13 @@ li{
       }
     }
   }
-  .video_cot{
+
+  .video_cot {
     flex: 1;
     height: 100%;
     background: #000;
   }
+
   .tree-node-title {
     display: inline-block;
     max-width: 100%;
@@ -580,6 +602,19 @@ li{
 
 .filter-input {
   margin-bottom: 10px;
+  width: 100%;
+}
+
+.record-source-title {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.divider {
+  height: 1px;
+  background-color: #ebeef5;
+  margin: 0 0 10px 0;
   width: 100%;
 }
 </style>
