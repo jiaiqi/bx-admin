@@ -359,7 +359,7 @@ export default {
   &.card-part-selected {
     > .overlay {
       border-style: solid;
-      border-width: 4px;
+      border-width: 3px;
       border-color: var(--primary-color);
     }
   }

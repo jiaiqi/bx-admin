@@ -69,11 +69,15 @@
               :style="partHeaderStyle"
               v-if="selectedPart && !isPreview"
             >
-              <span class="part-label">{{ selectedPart.label }}</span>
-              <i
-                class="el-icon-delete cursor-pointer"
-                @click.stop="deletePart(selectedPart)"
-              ></i>
+              <span class="part-label">{{
+                selectedPart.label ||
+                selectedPart.card_parts_name ||
+                selectedPart.parts_type ||
+                ""
+              }}</span>
+              <div class="part-delete" @click.stop="deletePart(selectedPart)">
+                <Icon icon="ri:delete-bin-line"></Icon>
+              </div>
             </div>
             <div class="overlay" @click.stop="selectPart()"></div>
             <card-part
@@ -432,9 +436,9 @@ export default {
           const { top: parentTop, left: parentLeft } =
             parentElement.getBoundingClientRect();
           return {
-            top: top - parentTop + "px",
+            top: top - parentTop - 2 + "px",
             left: left - parentLeft + "px",
-            width: width + "px",
+            width: width - 2 + "px",
             // height: height + "px",
           };
         }
@@ -878,15 +882,30 @@ export default {
     top: 0;
     left: 0;
     z-index: 99;
-    background-color: var(--primary-color, #006cff);
-    color: #fff;
-    padding: 5px 10px;
+
     font-size: 12px;
     transform: translateY(-100%);
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     border: none;
+    line-height: 30px;
+    .part-label,
+    .part-delete {
+      background-color: var(--primary-color, #006CFF);
+      color: #fff;
+      margin-left: 4px;
+      display: flex;
+      align-items: center;
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 4px;
+    }
+    .part-delete {
+      cursor: pointer;
+      border-radius: 0;
+      font-size: 18px;
+    }
   }
 }
 
