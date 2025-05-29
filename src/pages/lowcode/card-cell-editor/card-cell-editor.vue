@@ -57,12 +57,24 @@
           <div
             class="editor-content"
             :style="[setStyle]"
+            ref="editorContent"
             @dragover.prevent
             @drop="onDrop($event, null)"
             @dragenter="onDragEnter($event, 'editor')"
             @dragleave="onDragLeave($event, 'editor')"
             @mouseleave="onDragLeave($event, 'editor')"
           >
+            <div
+              class="card-part-header"
+              :style="partHeaderStyle"
+              v-if="selectedPart && !isPreview"
+            >
+              <span class="part-label">{{ selectedPart.label }}</span>
+              <i
+                class="el-icon-delete cursor-pointer"
+                @click.stop="deletePart(selectedPart)"
+              ></i>
+            </div>
             <div class="overlay" @click.stop="selectPart()"></div>
             <card-part
               v-for="(part, index) in partsList"
@@ -149,6 +161,7 @@ export default {
       isPreview: false,
       hiddenPartsVisible: false,
       isDarkMode: false, // 新增深色模式状态
+      partHeaderStyle: {},
     };
   },
   computed: {
@@ -342,6 +355,14 @@ export default {
     // 删除部件
     deletePart(part, index) {
       // 删除部件
+      if (this.selectedPart) {
+        this.selectedPart = null;
+      }
+      if (!index && index !== 0 && part._id) {
+        this.$set(part, "_is_delete", true);
+        return;
+      }
+
       if (part?.id || part?.card_parts_no) {
         // 从数据库删除
         return this.$confirm("确定要删除吗？", "提示", {
@@ -391,14 +412,34 @@ export default {
         });
       }
       this.partsList.splice(index, 1);
-      if (this.selectedPart) {
-        this.selectedPart = null;
-      }
     },
     // 选择部件
     selectPart(part) {
       console.log("selectPart", part?._id);
       this.selectedPart = part;
+      this.partHeaderStyle = this.calcPartHeaderPosition(part);
+    },
+    calcPartHeaderPosition(part) {
+      if (part) {
+        const partElement = document.querySelector(
+          `.card-part[data-part-id="${part._id || part.id}"]`
+        );
+
+        if (partElement) {
+          const parentElement = this.$refs.editorContent;
+          const { top, left, width, height } =
+            partElement.getBoundingClientRect();
+          const { top: parentTop, left: parentLeft } =
+            parentElement.getBoundingClientRect();
+          return {
+            top: top - parentTop + "px",
+            left: left - parentLeft + "px",
+            width: width + "px",
+            // height: height + "px",
+          };
+        }
+      }
+      return null;
     },
     saved() {
       // 保存成功 刷新数据
@@ -417,7 +458,7 @@ export default {
         return;
       }
       this.onSaving = true;
-      this.$refs?.propertyEditor?.onSave().then(_=>{
+      this.$refs?.propertyEditor?.onSave().then((_) => {
         this.onSaving = false;
       });
       // const parts_json = JSON.stringify(this.partsList);
@@ -831,6 +872,21 @@ export default {
     right: 0;
     bottom: 0;
     z-index: 1;
+  }
+  .card-part-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    background-color: var(--primary-color, #006cff);
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 12px;
+    transform: translateY(-100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
   }
 }
 

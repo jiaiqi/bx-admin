@@ -47,6 +47,9 @@
           />
         </div>
       </template>
+      <template #center v-if="pageConfig && pageConfig.page_name">
+        {{ pageConfig.page_name || "" }}
+      </template>
       <template #right>
         <el-button type="primary" size="mini" @click="initPage">刷新</el-button>
         <el-button
@@ -420,8 +423,9 @@ export default {
     },
     onRefresh() {
       setTimeout(() => {
-        this.initPage();
-      }, 200);
+        location.reload();
+        // this.initPage();
+      }, 50);
     },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);
@@ -545,7 +549,7 @@ export default {
       }
       return result;
     },
-    onResize({ id, width, height, x, y }) {
+    onResize({ id = "", width, height, x, y }) {
       if (!id) return;
       function findComponentById(components, id) {
         let result = null;

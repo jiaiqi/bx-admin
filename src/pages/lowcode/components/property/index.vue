@@ -63,6 +63,7 @@
               :defaultValues="{
                 page_no: pageConfig.page_no,
                 obj_type: '页面',
+                owner_no: pageConfig.page_no,
               }"
               :navAfterSubmit="false"
               @executor-complete="
@@ -169,6 +170,7 @@
                 page_no: pageConfig.page_no,
                 com_no: currentItem.com_no,
                 obj_type: '组件',
+                owner_no: currentItem.com_no,
               }"
               ref="pageCompStyleColAdd"
               v-else
@@ -213,6 +215,7 @@
                 page_no: pageConfig.page_no,
                 com_no: currentItem.com_no,
                 obj_type: '组件',
+                owner_no: currentItem.com_no,
               }"
               ref="compStyleColAdd"
               v-else
@@ -221,6 +224,9 @@
           </div>
         </el-tab-pane>
       </template>
+      <!-- <el-tab-pane label="CSS" name="CSS">
+        <css-editor />
+      </el-tab-pane> -->
     </el-tabs>
   </div>
 </template>
@@ -231,11 +237,12 @@ import simpleAdd from "@/components/common/simple-add.vue";
 import dayjs from "dayjs";
 import cloneDeep from "lodash/cloneDeep";
 import { pageCompCols } from "./columns";
-
+import cssEditor from "../cssEditor/index.vue";
 export default {
   components: {
     simpleUpdate,
     simpleAdd,
+    cssEditor,
   },
   props: {
     pageConfig: {

@@ -12,7 +12,7 @@
         :parentPageType="parentPageType"
         :default-conditions="defaultConditions"
         :submit2-db="submit2Db"
-        :default-values="defaultValues"
+        :default-values="setDefaultValues"
         :defaultCondition="defaultCondition"
         :srvval-form-model-decorator="srvvalFormModelDecorator"
         :parentAddMainFormDatas="parentMainFormDatas"
@@ -365,6 +365,7 @@ export default {
       activeName: 0,
       mainFormDatas: null,
       srv_more_config: {},
+      _defaultValues: null,
     };
   },
 
@@ -372,9 +373,24 @@ export default {
     // mainDefaultValues(){
     //   return this.$parant
     // }
+    setDefaultValues() {
+      if (this._defaultValues) {
+        return { ...this._defaultValues };
+      }
+      if (this.defaultValues) {
+        return { ...this.defaultValues };
+      }
+    },
   },
   created() {
     // this.mainFormDatas = this.$emit('main-default-values',this)
+    var operate_params = this.getOperateParams();
+    if (operate_params) {
+      var operate_Object = JSON.parse(operate_params);
+      if (operate_Object?.data?.length > 0) {
+        this._defaultValues = operate_Object.data[0];
+      }
+    }
   },
   methods: {
     onSrvConfigLoaded(e) {
@@ -420,7 +436,10 @@ export default {
       this.$emit("form-loaded", this);
       // console.log("onAddFormLoaded")
       // if itself is submit2mem, no childlist
-      if (this.submit2Db || this.$parent?.getName?.()?.indexOf('childForm') === 0) {
+      if (
+        this.submit2Db ||
+        this.$parent?.getName?.()?.indexOf("childForm") === 0
+      ) {
         this.buildChildrenList(form);
       }
     },

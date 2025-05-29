@@ -65,9 +65,9 @@ import cloneDeep from "lodash/cloneDeep";
 // 引入样式
 import "vue-easytable/libs/theme-default/index.css";
 // 引入组件库
-import VueEasytable from "vue-easytable";
+import VueEasyTable from "vue-easytable";
 
-Vue.use(VueEasytable);
+Vue.use(VueEasyTable);
 const ALL_COLUMN_KEYS = [
   "A",
   "B",
@@ -314,13 +314,13 @@ export default {
       return this.tableData2json(this.tableData);
     },
   },
-  watch: {
-    value: {
-      immediate: true,
-      deep: true,
-      handler(newValue, oldValue) {},
-    },
-  },
+  // watch: {
+  //   value: {
+  //     immediate: true,
+  //     deep: true,
+  //     handler(newValue, oldValue) {},
+  //   },
+  // },
   methods: {
     fullScreenEdit() {
       console.log("fullScreenEdit");
@@ -370,6 +370,7 @@ export default {
         const firstRow = {
           rowKey: new Date().getTime(),
         };
+       
         columns.forEach((column, index) => {
           firstRow[COLUMN_KEYS[index]] = column;
         });
@@ -382,9 +383,18 @@ export default {
           });
           return rowData;
         });
+         COLUMN_KEYS.forEach(key=>{
+          if(!firstRow[key]){
+            firstRow[key] = ""
+          }
+          otherData.forEach(item=>{
+            if(!item[key]){
+              item[key] = ""
+            }
+          })
+        })
         const tableData = [firstRow, ...otherData];
         console.log("json2tableData", tableData);
-
         return tableData;
       }
     },

@@ -7,6 +7,7 @@
       'on-drag-over': isDraggingOver && !preview,
       'card-part-preview': preview,
     }"
+    :data-part-id="part._id || part.id"
     :style="[setPartStyle]"
     @dragover.prevent
     @drop="onDrop($event, part)"
@@ -20,15 +21,14 @@
       @click.stop="selectPart(part, $event)"
       @mouseenter="$emit('mouseenter')"
       v-if="!preview"
-    >
-      <div class="card-part-header" v-if="isSelected">
-        <span class="part-label">{{ part.label }}</span>
-        <i
-          class="el-icon-delete"
-          @click.stop="$emit('delete-part', part, index)"
-        ></i>
-      </div>
-    </div>
+    ></div>
+    <!-- <div class="card-part-header" v-if="isSelected && !preview">
+      <span class="part-label">{{ part.label }}</span>
+      <i
+        class="el-icon-delete"
+        @click.stop="$emit('delete-part', part, index)"
+      ></i>
+    </div> -->
     <!-- 根据不同类型渲染不同内容 -->
     <template v-if="part.parts_type === 'row'">
       <card-part
@@ -96,6 +96,9 @@ export default {
     },
     partsShow() {
       const item = this.part;
+      if (item._is_delete === true) {
+        return false;
+      }
       const itemData = {};
       const map =
         this.comColMap ||
@@ -173,12 +176,20 @@ export default {
     },
     isSelected() {
       // 判断当前部件是否被选中
-      if (!this.selectedPart?.id && this.selectPart?._id) {
-        return this.selectedPart._id === this.part?._id;
-      } else if (this.part?.card_parts_no) {
-        return this.selectedPart?.card_parts_no === this.part?.card_parts_no;
-      } else if (this.selectedPart?.id) {
-        return this.selectedPart.id === this.part?.id;
+      if (!this.selectedPart) {
+        return false;
+      }
+      if (this.selectedPart._id && this.selectedPart._id === this.part?._id) {
+        return true;
+      }
+      if (
+        this.selectedPart.card_parts_no &&
+        this.selectedPart.card_parts_no === this.part.card_parts_no
+      ) {
+        return true;
+      }
+      if (this.selectedPart.id && this.selectedPart.id === this.part?.id) {
+        return true;
       }
     },
   },
@@ -273,7 +284,7 @@ export default {
   position: relative;
   // margin: 5px;
   border: 1px dashed #eee;
-  border-radius: 4px;
+  border-radius: 2px;
   // background-color: #fff;
   min-height: 20px;
   transition: all 0.3s ease;
@@ -311,31 +322,32 @@ export default {
         opacity: 1;
       }
     }
-    .card-part-header {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      // transform: translateY(100%);
-
-      padding: 2px 5px;
-      border-radius: 2px;
-      font-size: 12px;
-      white-space: nowrap;
-      transition: opacity 0.3s;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      background-color: rgba(0, 0, 0, 0.4);
-      color: #fff;
-      opacity: 0;
-      &.selected {
-        opacity: 1;
-        background-color: var(--primary-color);
-      }
-      .el-icon-delete {
-        font-size: 16px;
-        cursor: pointer;
-      }
+  }
+  .card-part-header {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transform: translateY(-100%);
+    background-color: var(--primary-color, #006cff);
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: opacity 0.3s;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    opacity: 0;
+    &.selected {
+      opacity: 1;
+      background-color: var(--primary-color);
+    }
+    .el-icon-delete {
+      font-size: 16px;
+      cursor: pointer;
     }
     .part-label {
       border-right: 1px solid #fff;
@@ -347,7 +359,7 @@ export default {
   &.card-part-selected {
     > .overlay {
       border-style: solid;
-      border-width: 2px;
+      border-width: 4px;
       border-color: var(--primary-color);
     }
   }

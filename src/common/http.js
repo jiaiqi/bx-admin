@@ -117,7 +117,7 @@ instance.interceptors.response.use(
     if (response.data.state == "FAILURE") {
       if (response.data.resultCode == "0011") {
         store && store.commit("clearSrvCols");
-        if (process?.env?.NODE_ENV === "development") {
+        if (process?.env?.NODE_ENV === "development" || window.self === window.top) {
           // 开发环境 调用登录弹窗
           let dialog = null;
           if (!_loginDialog) {

@@ -285,8 +285,7 @@ export default {
       return result;
     },
     onResize(val) {
-      console.log("onResize", val);
-      this.$emit("resize", val);
+      this.$emit("resize", val || {});
     },
     addComponent(val) {
       console.log("addComponent", val);
@@ -300,7 +299,6 @@ export default {
     },
     deleteComponent(val) {
       console.log("deleteComponent", val);
-      debugger
       this.$emit("delete", val);
     },
     // 在methods中添加以下方法

@@ -302,7 +302,7 @@ export default {
       }
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {
-          if (item?._editType === type) {
+          if (item?._editType === type && !item._is_delete) {
             let obj = {};
             Object.keys(item).forEach((key) => {
               if (
