@@ -107,6 +107,8 @@
             :list="partsList"
             ref="propertyEditor"
             @saved="saved"
+            @unit-update="onUnitUpdate"
+            @parts-update="onPartsUpdate"
           ></property-editor>
         </div>
       </aside>
@@ -444,6 +446,13 @@ export default {
         }
       }
       return null;
+    },
+    onUnitUpdate() {
+      this.getCardInfo();
+    },
+    onPartsUpdate() {
+      this.getCardInfo();
+      // this.getCardParts();
     },
     saved() {
       // 保存成功 刷新数据

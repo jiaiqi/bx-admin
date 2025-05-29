@@ -423,9 +423,10 @@ export default {
     },
     onRefresh() {
       setTimeout(() => {
-        location.reload();
-        // this.initPage();
-      }, 50);
+        // location.reload();
+        this.initPage();
+        this.pageRefreshKey = new Date().getTime();
+      }, 150);
     },
     removeComp(node, data) {
       this.$refs.editorRef.deleteComponent(data);

@@ -119,22 +119,16 @@
           icon="el-icon-edit"
           style="margin-left: 5px; height: 38px"
           size="mini"
-          v-if="
-            allowEditAndSelect && (field.getSrvVal())
-          "
-          @click="activePopup = 'update'"
+          v-if="allowEditAndSelect && field.getSrvVal()"
+          @click="showPopup('update')"
         >
         </el-button>
         <el-button
           icon="el-icon-plus"
           style="margin-left: 5px; height: 38px"
           size="mini"
-          v-else-if="
-            !setDisabled &&
-            allowEditAndSelect &&
-            (!field.getSrvVal())
-          "
-          @click="activePopup = 'add'"
+          v-else-if="!setDisabled && allowEditAndSelect && !field.getSrvVal()"
+          @click="showPopup('add')"
         >
         </el-button>
       </div>
@@ -188,6 +182,8 @@
           ]"
           :defaultCondition="evalOptionConditions"
           :defaultValues="field.model || setPopupDefaultValue"
+          :reference-row-data="formModel"
+          :reference-no-column="noFieldColumn"
           @submitted2mem="submitted2mem"
           @executor-complete="onExecutorComplete"
           @form-loaded="onPopupFormLoaded"
@@ -475,16 +471,43 @@ export default {
         return condition;
       }
     },
+    noFieldColumn() {
+      let noField = this.field?.form?.srvCols?.find(
+        (item) => item.bx_col_type === "no" && item.auto_generate
+      );
+      if (noField && noField.columns) {
+        return noField.columns;
+      }
+      return null;
+    },
     setPopupDefaultValue() {
+      let obj = {};
       if (
         Array.isArray(this.evalOptionConditions) &&
         this.evalOptionConditions.length
       ) {
-        return this.evalOptionConditions.reduce((res, cur) => {
-          res[cur.colName] = cur.value;
-          return res;
-        }, {});
+        this.evalOptionConditions.forEach((cur) => {
+          obj[cur.colName] = cur.value;
+        });
       }
+      if (this.addService === "srvpage_cfg_style_add") {
+        if (this.noFieldColumn && this.formModel[this.noFieldColumn]) {
+          obj["owner_no"] = this.formModel[this.noFieldColumn];
+          if (this.noFieldColumn === "page_no") {
+            obj.page_no = obj["owner_no"];
+            obj.obj_type = "页面";
+          } else if (this.noFieldColumn === "com_no") {
+            obj.com_no = obj["owner_no"];
+            obj.obj_type = "组件";
+          } else if (this.noFieldColumn === "card_no") {
+            obj.com_no = obj["owner_no"];
+            obj.obj_type = "卡片单元";
+          } else if (this.noFieldColumn === "card_part_no") {
+            obj.obj_type = "部件";
+          }
+        }
+      }
+      return obj;
     },
     setDisabled() {
       return this.disabled === true || this.field.info.editable === false;
@@ -574,10 +597,23 @@ export default {
     },
   },
   methods: {
+    showPopup(type) {
+      if (this.field.info.srvCol.columns === "style_no") {
+        let noField = this.field?.form?.srvCols?.find(
+          (item) => item.bx_col_type === "no" && item.auto_generate
+        );
+        if (noField?.columns && this.formModel[noField.columns]) {
+          if (type === "update") {
+            // this.referenceRowData = this.formModel;
+          }
+        }
+      }
+      this.activePopup = type;
+    },
     multiTabSelectChange(item, cfg) {
       this.field?.form?.allFields?.[cfg.case_col]?.setSrvVal?.(cfg.case_val);
       this.$nextTick(() => {
-        this.handleSelect(item,cfg);
+        this.handleSelect(item, cfg);
       });
     },
     onClickEdit() {
@@ -825,7 +861,7 @@ export default {
     popupDefaultConditions(loader) {
       let conditions = this.defaultConditions || [];
       let fieldInfo = this.field.info;
-       loader = loader || this.dispLoaderV2;
+      loader = loader || this.dispLoaderV2;
       return conditions.concat(this.buildConditions(loader));
     },
 

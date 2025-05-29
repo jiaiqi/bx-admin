@@ -44,6 +44,8 @@
       ref="executor"
       v-bind.sync="info.executor"
       :defaultValues="info.defaultValues"
+      :gno-column-info="gnoColumnInfo"
+      :reference-no-column-info="referenceNoColumnInfo"
       @executor-complete="$emit('executor-complete', $event)"
     >
     </executor>
@@ -62,16 +64,16 @@ export default {
   mixins: [ExecutorMixin],
   inject: {
     preventNav: {
-      default: false, 
+      default: false,
     },
     isLastStep: {
-      default: false, 
+      default: false,
     },
     inStep: {
       default: false,
     },
   },
-  
+
   // ["preventNav", "isLastStep","inStep"],
   props: {
     info: {
@@ -94,6 +96,8 @@ export default {
     },
     duplicateType: String,
     duplicateData: Object,
+    gnoColumnInfo: Object, // 编辑样式时，gno字段信息
+    referenceNoColumnInfo: Object, // 编辑样式时，参考行的no字段信息
   },
   computed: {
     lastStep() {
@@ -258,11 +262,11 @@ export default {
             self.info.nav2Location &&
             self.$router
           ) {
-            const obj = self.info.nav2Location
-            if(!obj.query){
+            const obj = self.info.nav2Location;
+            if (!obj.query) {
               obj.query = {
-                srvApp:self.resolveDefaultSrvApp()
-              }
+                srvApp: self.resolveDefaultSrvApp(),
+              };
             }
 
             self.$router.push(self.info.nav2Location);

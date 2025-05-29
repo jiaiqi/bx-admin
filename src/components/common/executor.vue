@@ -30,6 +30,8 @@ export default {
     defaultValues: Object,
     duplicateType: String,
     duplicateData: Object,
+    gnoColumnInfo: Object, // 编辑样式时，gno字段信息
+    referenceNoColumnInfo: Object, // 编辑样式时，参考行的no字段信息
   },
 
   data() {
@@ -66,6 +68,22 @@ export default {
       } else {
         let data = this.buildValuesFromConf(conf);
         query.data = data ? [data] : [];
+      }
+
+      if (
+        this.gnoColumnInfo?.value &&
+        this.referenceNoColumnInfo?.value &&
+        this.gnoColumnInfo?.value !== this.referenceNoColumnInfo?.value
+      ) {
+        // 编辑样式时，gno字段的值和引用行的no字段的值不一致 当前数据不数据被引用行 需要将编辑改为创建
+        query.serviceName = conf.service.replace("update", "add");
+        if (query.data?.length) {
+          query.data = query.data.map((item) => {
+            item[this.gnoColumnInfo?.column] =
+              this.referenceNoColumnInfo?.value;
+            return item;
+          });
+        }
       }
 
       if (

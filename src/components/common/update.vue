@@ -24,6 +24,8 @@
           :pk="gotPk()"
           :pk-col="pkCol"
           :init-load="initLoad"
+          :reference-row-data="referenceRowData"
+          :reference-no-column="referenceNoColumn"
           @form-loaded="onBasicFormLoaded"
           @action-complete="$emit('action-complete', $event)"
           @form-model-changed="onInnerFormModelChanged($event)"
@@ -293,6 +295,13 @@ export default {
     mainService: {
       type: String,
       default: "",
+    },
+    // 编辑选择时，参考行的数据
+    referenceRowData: {
+      type: Object,
+    },
+    referenceNoColumn: {
+      type: String,
     },
   },
 

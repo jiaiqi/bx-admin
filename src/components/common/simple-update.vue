@@ -12,7 +12,9 @@
     <template>
       <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
         <slot>
-          <div v-html="recoverFileAddress4richText(pagePrompt.description)"></div>
+          <div
+            v-html="recoverFileAddress4richText(pagePrompt.description)"
+          ></div>
         </slot>
       </el-alert>
     </template>
@@ -132,6 +134,8 @@
           :isDraft="pageIsDraft"
           v-show="item.visibleFunc()"
           :draftDataKey="draftDataKey"
+          :gno-column-info="gnoColumnInfo"
+          :reference-no-column-info="referenceNoColumnInfo"
           @is-data-key="resDataKey($event)"
           @form-is-loaded="onIsLoaded($event)"
           @action-complete="$emit('action-complete', $event)"
@@ -224,6 +228,14 @@ export default {
         localStorage.getItem("activeApp");
       },
     },
+    // 编辑选择时，参考行的数据
+    referenceRowData: {
+      type: Object,
+    },
+    // 编辑选择时，参考行的no字段
+    referenceNoColumn: {
+      type: String,
+    },
   },
   computed: {
     srvValFormModel4Update: function () {
@@ -237,6 +249,25 @@ export default {
       }
 
       return model;
+    },
+    referenceNoColumnInfo() {
+      if (this.referenceRowData && this.referenceNoColumn) {
+        return {
+          column: this.referenceNoColumn,
+          value: this.referenceRowData[this.referenceNoColumn],
+        };
+      }
+    },
+    gnoColumnInfo() {
+      let gnoColumn = this.srvCols.find(
+        (item) => item.col_type === "gno" || item.bx_col_type === "gno"
+      );
+      if (gnoColumn) {
+        return {
+          column: gnoColumn.columns,
+          value: this.formModel[gnoColumn.columns],
+        };
+      }
     },
   },
 
@@ -330,6 +361,18 @@ export default {
 
     createExecutorValueEnableFunc: function (colName) {
       return (value) => {
+        if (
+          this.gnoColumnInfo?.value &&
+          this.referenceNoColumnInfo?.value &&
+          this.gnoColumnInfo?.value !== this.referenceNoColumnInfo?.value
+        ) {
+          let noPerm4Sensi =
+            this.allFields[colName] && this.allFields[colName].noPerm4Sensi;
+          // 编辑样式时，gno字段的值和引用行的no字段的值不一致 当前数据不数据被引用行 需要将编辑改为创建 所以这里都返回true
+          // pkCol默认为no字段，不能重复，所以这里需要排除pkCol
+          let inAdd = this.allFields[colName]?.info?.srvCol?.in_add !== 0;
+          return !!value.value && colName !== this.pkCol && !noPerm4Sensi && inAdd && true;
+        }
         try {
           let rawRow = this.$refs.loader.lastValidResp
             ? this.$refs.loader.lastValidResp[0]
