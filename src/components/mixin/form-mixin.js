@@ -155,7 +155,10 @@ export default {
       sectionsCollapse: {},
       pub_field_map: null, //公共字段映射
       formV2: null,
-      childForm: []
+      childForm: [],
+      header_view_model: null,
+      groupHeaderCols: {},
+      keyValueData: {}
     }
   },
 
@@ -1237,6 +1240,56 @@ export default {
 
       }
       return m
+    },
+    formatValue(row, header) {
+      let key_col = header.column;
+      let value = row.hasOwnProperty(key_col) ? row[key_col] : null;
+      // 西高子表显示 数据没有的列 数字显示无效值问题。
+      // let value = row[key_col] ;
+      // console.log("formatValue",row, key_col)
+      let self = this;
+      let ops = "";
+      if (this.header_view_model == "group" && this.groupHeaderCols[key_col]) {
+        var str = "";
+        var gheaders = this.groupHeaderCols[key_col];
+        if (gheaders.length == 1) {
+          str = value;
+          let resultValue = "";
+          if (
+            header.col_type == "Dict" &&
+            self.keyValueData[header.column] &&
+            value !== null &&
+            value !== ""
+          ) {
+            let keyValueData = self.keyValueData[header.column];
+            if (keyValueData && Array.isArray(keyValueData)) {
+              for (let i = 0; i < keyValueData.length; i++) {
+                if (keyValueData[i].value == value) {
+                  resultValue = keyValueData[i].text;
+                } else {
+                  // resultValue = keyValueData[i].value
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    // 处理proForm的条件组装
+    buildProFormConditions(proForm) {
+      const conditions = [];
+      for (const key in proForm) {
+        const value = proForm[key];
+        if (value !== null && value !== undefined && value !== '') {
+          conditions.push({
+            colName: key,
+            ruleType: 'like',
+            value: value
+          });
+        }
+      }
+      return conditions;
     }
 
   },
