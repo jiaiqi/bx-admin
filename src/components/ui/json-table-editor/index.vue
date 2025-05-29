@@ -355,13 +355,19 @@ export default {
         }
       });
       const otherData = data.slice(1);
-      const jsonData = otherData.map((row) => {
-        const rowData = {};
-        columns.forEach(({ column, key }) => {
-          rowData[column] = row[key];
+      const jsonData = otherData
+        .map((row) => {
+          const rowData = {};
+          columns.forEach(({ column, key }) => {
+            rowData[column] = row[key];
+          });
+          return rowData;
+        })
+        .filter((item) => {
+          return Object.values(item).some(
+            (value) => !!value || value === 0 || value === false
+          );
         });
-        return rowData;
-      });
       return jsonData;
     },
     json2tableData(data) {
@@ -370,7 +376,7 @@ export default {
         const firstRow = {
           rowKey: new Date().getTime(),
         };
-       
+
         columns.forEach((column, index) => {
           firstRow[COLUMN_KEYS[index]] = column;
         });
@@ -383,16 +389,16 @@ export default {
           });
           return rowData;
         });
-         COLUMN_KEYS.forEach(key=>{
-          if(!firstRow[key]){
-            firstRow[key] = ""
+        COLUMN_KEYS.forEach((key) => {
+          if (!firstRow[key]) {
+            firstRow[key] = "";
           }
-          otherData.forEach(item=>{
-            if(!item[key]){
-              item[key] = ""
+          otherData.forEach((item) => {
+            if (!item[key]) {
+              item[key] = "";
             }
-          })
-        })
+          });
+        });
         const tableData = [firstRow, ...otherData];
         console.log("json2tableData", tableData);
         return tableData;
