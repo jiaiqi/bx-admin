@@ -454,7 +454,7 @@ export default {
         operator_id:'',                     //发起人id
         operator_name: "",                  //发起人姓名
         order_desc: "",                  //工单描述
-        order_evidence: "20250527164213111100",              //证据附件
+        order_evidence: "",              //证据附件
         order_type: "",                   //工单类型
         org_id:'',                    //发起机构id
         org_name: "",                //发起机构名称
@@ -480,7 +480,6 @@ export default {
         vehicle_type: "",  //稽核车型
         vehicleclass: "",  //车种
         vehicleusertype: "",  //车辆用户类型
-        serviceName: "srvaud_ads_workorder_add"
       },
       restaurants:[],
       resDep:[],
@@ -653,8 +652,24 @@ export default {
       this.ruleForm.org_no= this.optionsPageOrg[0].dept_no;
       this.handleFilterPutOrg();
     },
+    //参数去空
+    handleSetEmpty(){
+      const result = Object.keys(this.ruleForm).reduce((acc, key) => {
+        if (this.ruleForm[key] !== null && this.ruleForm[key] !== undefined && this.ruleForm[key] !== '') {
+          acc[key] = this.ruleForm[key];
+        }
+        return acc;
+      }, {});
+      return result;
+    },
     handleSubmit(){
-      console.log('当前表单提交信息',this.ruleForm);
+       orderUtils.handleSubmitOrder([this.handleSetEmpty()]).then(res => {
+         if(res.data.state !== 'SUCCESS') return;
+         this.$message.success('工单保存成功');
+       }).catch(err=>{
+         this.$message.error('提交异常，请检查');
+       })
+      console.log('当前表单提交信息',this.handleSetEmpty());
     },
     //获取上传图片信息
     getPicList(list){
@@ -670,7 +685,8 @@ export default {
       let _this=this;
       _this.evidencePic=[]
       _this.picIds='';
-      let fle_no=list?list.effect_data[0].icon_att:_this.ruleForm.order_evidence.length>0?_this.ruleForm.order_evidence:list.effect_data[0].icon_att;
+      let fle_no=list?list.effect_data[0].icon_att:_this.ruleForm.order_evidence.length>0?_this.ruleForm.order_evidence:'';
+      _this.ruleForm.order_evidence=fle_no;
       _this.picIds=list?list.effect_data[0].id:''
       if(_this.picIds&&typeof _this.picIds==="number"){
          _this.picIds=_this.picIds.toString();
@@ -694,6 +710,7 @@ export default {
     dowmlaodUrl(item) {
       window.open(item);
     },
+
   },
   created(){
     this.prUrl=orderUtils.dowPicInfoUrl()

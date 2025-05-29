@@ -30,7 +30,7 @@
 import cloneDeep from "lodash/cloneDeep";
 import cloneDeepWith from "lodash/cloneDeepWith";
 import difference from "lodash/difference";
-// import bxTransfer from "./transfer/src/index.vue";
+// import bxTransfer from "./transfer/src/video-home.vue";
 import bxTransfer from "./transfer/index";
 import uniqBy from "lodash/uniqBy";
 export default {

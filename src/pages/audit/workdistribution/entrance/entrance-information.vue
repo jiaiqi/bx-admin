@@ -21,12 +21,12 @@
             计费金额：{{ item.fee_disp }}
           </div>
           <div v-if="item.grantry_type==='收费站'">
-            <el-image style="width:700px;height: 300px"
+            <el-image style="width:43.75rem;height: 18.75rem"
                       :src="getPic(item,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
           </div>
-          <div class="button" v-else>
-            <el-button type="primary" size="mini" @click="showPicture(item)"><i class="el-icon-download mr-2"></i>获取图片
-            </el-button>
+          <div  v-else>
+            <el-image style="width:43.75rem;height: 18.75rem"
+                      :src="getPic(item,'car','')"></el-image>
           </div>
         </div>
       </el-timeline-item>
@@ -49,16 +49,10 @@
 </template>
 <script setup>
 // 门架信息
-import {ref} from "vue";
-
-const props = defineProps({
-  list: {
-    type: Array,
-    default: () => ([])
-  }
-})
+import {ref,onMounted} from "vue";
+import {getEntranceData} from "@/pages/audit/workdistribution/entrance/entrance";
 const reverse = ref(false)
-
+const list=ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
 const showPicture = (item) => {
@@ -79,6 +73,9 @@ const hideDialog = () => {
   centerDialogVisible.value = false
   imgSrc.value = null
 }
+onMounted(()=>{
+  list.value=getEntranceData()
+})
 </script>
 <style scoped>
 .door-frame {

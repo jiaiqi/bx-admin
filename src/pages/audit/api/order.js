@@ -172,4 +172,17 @@ export default class OrderApi{
       }
       return $http.post(url, req)
    }
+   //发起工单提交
+    async handleSubmitOrder(params){
+       let url= window.APP_CONFIG.API_URL+ `/aud/operate/srvaud_ads_workorder_add`
+       let req=[
+           {
+               serviceName: "srvaud_ads_workorder_add",
+               data:params,
+               condition: []
+           }
+       ]
+       return $http.post(url, req)
+    }
+
 }

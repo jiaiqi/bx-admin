@@ -870,7 +870,7 @@ import jsonTableEditor from "../ui/json-table-editor/index.vue";
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
-// import tiptapEditor from "../ui/tiptap-editor/index.vue";
+// import tiptapEditor from "../ui/tiptap-editor/video-home.vue";
 import wangEditor from "../ui/wang-editor/wang-editor.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码

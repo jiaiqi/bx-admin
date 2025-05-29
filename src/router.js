@@ -389,13 +389,38 @@ let routes = [
             /* webpackChunkName: "audit" */ "@/pages/audit/flow-detail.vue"
           ),
       },
-      {
-        //工单派发
-        path: "worker-order",
-        component: () =>
-            import(/* webpackChunkName: "audit" */ "@/pages/audit/workdistribution/work-home.vue")
-      }
     ],
+  },
+  {
+    //工单派发
+    path: "/order",
+    component:()=> import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/order-home.vue"),
+    children: [
+      {
+        path: "orderform",
+        name: "orderform",
+        component: () =>
+            import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/workFlow/order-form.vue")
+      },
+      {
+        path: "entrance",
+        name: "entrance",
+        component: () =>
+            import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/entrance/entrance-information.vue")
+      },
+      {
+        path: "basemap",
+        name: "basemap",
+        component: () =>
+            import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/map/BaseMap.vue")
+      }
+    ]
+  },
+  {
+    path: "/dhvideo",
+    name: "dhvideo",
+    component: () =>
+        import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
   },
   {
     path: "/lowcode/editor/:pageNo",
