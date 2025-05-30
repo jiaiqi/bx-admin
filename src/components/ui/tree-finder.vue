@@ -31,7 +31,7 @@
     :emitPath="false"
     ref="elCascader"
   >
-    <template slot-scope="{ node, data }" v-if="props.checkStrictly">
+    <template slot-scope="{ node, data }" v-if="props.checkStrictly !== false">
       <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
     </template>
   </el-cascader>
@@ -60,7 +60,8 @@ export default {
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
         checkStrictly:
           top?.env?.includes("health") ||
-          this.optionListV2?.checkStrictly === false
+          this.optionListV2?.checkStrictly === false ||
+          this.optionListV2?.["只能选择叶子节点"] === true
             ? false
             : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
         lazy: this.dispLoaderV2?.lazyLoad === false ? false : true,
@@ -119,7 +120,11 @@ export default {
             "parent_no",
           refedCol: optionListV2.refed_col,
           dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
-          lazyLoad: optionListV2.lazy_load || optionListV2.lazyLoad,
+          lazyLoad:
+            optionListV2.lazy_load ??
+            optionListV2.lazyLoad ??
+            optionListV2["懒加载"] ??
+            true,
         };
       } else {
         return this.field?.info?.dispLoader;

@@ -71,7 +71,6 @@ export default {
       }
 
       if (
-        this.gnoColumnInfo?.value &&
         this.referenceNoColumnInfo?.value &&
         this.gnoColumnInfo?.value !== this.referenceNoColumnInfo?.value
       ) {
