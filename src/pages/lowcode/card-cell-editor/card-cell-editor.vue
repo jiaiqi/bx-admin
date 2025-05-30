@@ -75,8 +75,20 @@
                 selectedPart.parts_type ||
                 ""
               }}</span>
-              <div class="part-delete" @click.stop="deletePart(selectedPart)">
-                <Icon icon="ri:delete-bin-line"></Icon>
+              <div class="part-delete">
+                <i title="复制">
+                  <Icon
+                    icon="ri:file-copy-2-fill"
+                    @click.native="duplicatePart(selectedPart)"
+                  ></Icon>
+                </i>
+
+                <i title="删除">
+                  <Icon
+                    icon="ri:delete-bin-line"
+                    @click.native="deletePart(selectedPart)"
+                  ></Icon>
+                </i>
               </div>
             </div>
             <div class="overlay" @click.stop="selectPart()"></div>
@@ -358,6 +370,91 @@ export default {
         event?.currentTarget?.classList.remove("drag-over-editor");
       }
     },
+    duplicatePart(part) {
+      // 深拷贝当前选中的部件
+      const duplicatedPart = JSON.parse(JSON.stringify(part));
+      duplicatedPart.id = null;
+      duplicatedPart.card_parts_no = null;
+      // 生成新的唯一ID
+      duplicatedPart._id = new Date().getTime();
+      duplicatedPart._editType = "add";
+
+      // 如果部件有子部件，递归处理子部件
+      if (duplicatedPart.children && duplicatedPart.children.length) {
+        const duplicateChildren = (children) => {
+          return children.map((child) => {
+            const newChild = JSON.parse(JSON.stringify(child));
+            newChild.id = null;
+            newChild.card_parts_no = null;
+            newChild._id = new Date().getTime() + Math.random() * 100;
+            newChild._editType = "add";
+            if (newChild.children && newChild.children.length) {
+              newChild.children = duplicateChildren(newChild.children);
+            }
+            return newChild;
+          });
+        };
+        duplicatedPart.children = duplicateChildren(duplicatedPart.children);
+      }
+
+      // 查找父节点
+      const findParentNode = (list, targetPart) => {
+        for (let i = 0; i < list.length; i++) {
+          const item = list[i];
+          if (item.children && item.children.length) {
+            // 检查当前节点的子节点
+            const childIndex = item.children.findIndex(
+              (child) =>
+                (child._id && child._id === targetPart._id) ||
+                (child.id && child.id === targetPart.id)
+            );
+            if (childIndex !== -1) {
+              return {
+                parent: item,
+                isRoot: false,
+              };
+            }
+            // 递归检查子节点的子节点
+            const result = findParentNode(item.children, targetPart);
+            if (result) {
+              return result;
+            }
+          }
+        }
+        // 如果在子节点中没找到，检查根节点
+        const rootIndex = list.findIndex(
+          (item) =>
+            (item._id && item._id === targetPart._id) ||
+            (item.id && item.id === targetPart.id)
+        );
+        if (rootIndex !== -1) {
+          return {
+            parent: list,
+            isRoot: true,
+          };
+        }
+        return null;
+      };
+
+      const parentInfo = findParentNode(this.partsList, part);
+      if (parentInfo) {
+        if (parentInfo.isRoot) {
+          // 如果是根节点，直接添加到partsList末尾
+          this.partsList.push(duplicatedPart);
+        } else {
+          // 如果是子节点，添加到父节点的children数组末尾
+          parentInfo.parent.children.push(duplicatedPart);
+        }
+      } else {
+        // 如果找不到父节点，添加到根节点
+        this.partsList.push(duplicatedPart);
+      }
+
+      // 选中新复制的部件
+      this.$nextTick(() => {
+        this.selectPart(duplicatedPart);
+      });
+    },
     // 删除部件
     deletePart(part, index) {
       // 删除部件
@@ -441,7 +538,7 @@ export default {
             top: top - parentTop - 2 + "px",
             left: left - parentLeft + "px",
             width: width - 2 + "px",
-            // height: height + "px",
+            _height: height,
           };
         }
       }
@@ -460,6 +557,7 @@ export default {
       // this.getCardParts();
       this.onSaving = false;
       this.getCardInfo();
+      this.selectPart();
     },
     refresh() {
       this.getCardInfo();
@@ -901,7 +999,7 @@ export default {
     line-height: 30px;
     .part-label,
     .part-delete {
-      background-color: var(--primary-color, #006CFF);
+      background-color: var(--primary-color, #006cff);
       color: #fff;
       margin-left: 4px;
       display: flex;
@@ -914,6 +1012,15 @@ export default {
       cursor: pointer;
       border-radius: 0;
       font-size: 18px;
+      min-width: 60px;
+      justify-content: center;
+      gap: 5px;
+      .iconify {
+        &:hover {
+          font-weight: bold;
+          font-size: 20px;
+        }
+      }
     }
   }
 }
