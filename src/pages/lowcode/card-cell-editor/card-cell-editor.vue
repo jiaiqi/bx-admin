@@ -9,7 +9,10 @@
           {{ hiddenPartsVisible ? "隐藏" : "显示" }}已隐藏部件
         </button> -->
         <!-- 新增深色模式切换按钮 -->
-        <button
+        <template v-if="cardInfo && cardInfo.card_name">
+          {{ cardInfo.card_name || "" }}
+        </template>
+        <!-- <button
           class="theme-toggle-btn"
           @click="changeTheme"
           title="切换主题模式"
@@ -18,9 +21,19 @@
             :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
             class="theme-icon"
           />
-        </button>
+        </button> -->
       </div>
       <div class="header-right">
+        <div
+          class="theme-toggle-btn"
+          @click="changeTheme"
+          title="切换主题模式"
+        >
+          <Icon
+            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
+            class="theme-icon"
+          />
+        </div>
         <el-button class="preview-btn" @click="previewCard">预览</el-button>
         <el-button class="" @click="refresh" :loading="onSaving"
           >刷新</el-button
@@ -537,7 +550,7 @@ export default {
           return {
             top: top - parentTop - 2 + "px",
             left: left - parentLeft + "px",
-            width: width - 2 + "px",
+            minWidth: width - 2 + "px",
             _height: height,
           };
         }
@@ -565,7 +578,7 @@ export default {
     // 保存卡片
     async saveCard() {
       if (!this.partsList.length) {
-        this.$message.warning("请先添加卡片部件");
+        this.$message.warning("请先添加 片部件");
         return;
       }
       this.onSaving = true;
@@ -794,39 +807,49 @@ export default {
   border-bottom: 1px solid #e8e8e8;
 
   .header-left {
+    flex: 1;
     .title {
       font-size: 16px;
       font-weight: bold;
       color: #333;
     }
   }
-
   .header-center {
+    justify-content: center;
+  }
+  .header-right {
+    justify-content: flex-end;
+  }
+  .header-center,
+  .header-right {
     display: flex;
     align-items: center;
-
+    flex: 1;
     .theme-toggle-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
       border: 1px solid #dcdfe6;
       background-color: var(--bg-color);
       cursor: pointer;
       transition: all 0.3s ease;
       padding: 0;
-
+      margin-right: 10px;
       &:hover {
         background-color: #f5f7fa;
-        transform: rotate(15deg);
+        // transform: rotate(15deg);
       }
 
       .theme-icon {
         font-size: 20px;
         color: #606266;
         transition: all 0.3s ease;
+        &:hover {
+          transform: rotate(15deg);
+        }
       }
     }
   }
@@ -997,28 +1020,31 @@ export default {
     justify-content: flex-end;
     border: none;
     line-height: 30px;
+    gap: 1px;
     .part-label,
     .part-delete {
       background-color: var(--primary-color, #006cff);
       color: #fff;
-      margin-left: 4px;
       display: flex;
       align-items: center;
       height: 30px;
       padding: 0 10px;
-      border-radius: 4px;
+    }
+    .part-label {
+      flex: 1;
+      text-align: left;
+      min-width: max-content;
     }
     .part-delete {
       cursor: pointer;
-      border-radius: 0;
-      font-size: 18px;
+      font-size: 16px;
       min-width: 60px;
       justify-content: center;
       gap: 5px;
       .iconify {
         &:hover {
           font-weight: bold;
-          font-size: 20px;
+          font-size: 18px;
         }
       }
     }
