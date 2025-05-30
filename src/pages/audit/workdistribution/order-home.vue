@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 export default {
 name: "order-home",
   data(){
@@ -46,7 +46,7 @@ name: "order-home",
     }
   },
   mounted(){
-    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-38f7d3f9-6027-4abf-b716-78b09430c910');
+    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-c748aed0-b7e6-44b5-9d38-67cb900b49a3');
     // 只在组件首次挂载时执行
     if (!this._isMounted) {
       console.log('123123')

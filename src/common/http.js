@@ -51,7 +51,6 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
     top.pathConfig = pathConfig;
   }
 }
-
 if (top?.pathConfig?.gateway) {
   baseURL = top?.pathConfig?.gateway;
 }

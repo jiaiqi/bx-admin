@@ -416,7 +416,7 @@ let routes = [
       }
     ]
   },
-  {
+  { //大华视频播放及组织树
     path: "/dhvideo",
     name: "dhvideo",
     component: () =>

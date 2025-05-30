@@ -470,7 +470,6 @@ const filterNode = (value, data) => {
 };
 
 onMounted(() => {
-  sessionStorage.setItem("bx_auth_ticket", 'xabxdzkj-7234484c-63bc-4a6b-ad19-756edb074645');
   getVideoInfo()
   initPlayer()
 })

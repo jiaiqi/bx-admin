@@ -542,7 +542,7 @@ export default {
           }
         })
 
-        this.getDepSelelctInfo(dep[0])
+        this.getDepSelectInfo(dep[0])
        if(this.ruleForm.operator_name===''){
          this.ruleForm.org_no=''
          this.ruleForm.org_name=''
@@ -587,7 +587,7 @@ export default {
      * @Author:Eirice
      * @Date: 2025-05-23 15:54:36
      */
-    getDepSelelctInfo(dep){
+    getDepSelectInfo(dep){
       let _this = this;
        let fnc=this.ruleForm.operator_name!==''?orderUtils.postPromoterInfo(dep):orderUtils.getMoirDepList()
          fnc.then(res => {
@@ -614,7 +614,7 @@ export default {
         _this.ruleForm.operator_name= _this.operatorName[0].user_id;
         _this.ruleForm.operator_id=_this.operatorName[0].user_id;
         _this.ruleForm.user_no=_this.operatorName[0].user_no;
-        _this.getDepSelelctInfo(_this.operatorName[0].dept_no)
+        _this.getDepSelectInfo(_this.operatorName[0].dept_no)
         console.log('这里的user_no',this.ruleForm.user_no)
       }).catch(err => {
       });
@@ -684,10 +684,10 @@ export default {
       _this.picIds='';
       let fle_no=list?list.effect_data[0].icon_att:_this.ruleForm.order_evidence.length>0?_this.ruleForm.order_evidence:'';
       _this.ruleForm.order_evidence=fle_no;
-      _this.picIds=list?list.effect_data[0].id:''
-      if(_this.picIds&&typeof _this.picIds==="number"){
-         _this.picIds=_this.picIds.toString();
-      }
+      // _this.picIds=list?list.effect_data[0].id:''
+      // if(_this.picIds&&typeof _this.picIds==="number"){
+      //    _this.picIds=_this.picIds.toString();
+      // }
       let option={
         relation_condition:{},
         condition:[{colName: "is_delete", value: "1", ruleType: "eq"},{colName: "file_no", value: fle_no, ruleType: "eq"}]

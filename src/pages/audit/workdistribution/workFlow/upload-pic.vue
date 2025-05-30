@@ -2,9 +2,9 @@
   <div class="up_mod">
     <el-dialog title="图片上传" :visible.sync="upVisible" :destroy-on-close="true" :close-on-click-modal="false" @closed="setListInfo">
           <el-form :model="picForm" :rules="rules"  ref="picForm" label-width="auto" class="demo-ruleForm">
-            <el-form-item label="证据说明" prop="icon_title" style="margin:0.9375rem 0">
-              <el-input v-model="picForm.icon_title"></el-input>
-            </el-form-item>
+<!--            <el-form-item label="证据说明" prop="icon_title" style="margin:0.9375rem 0">-->
+<!--              <el-input v-model="picForm.icon_title"></el-input>-->
+<!--            </el-form-item>-->
             <el-form-item label="证据图片" prop="icon_att" style="margin:0.9375rem 0">
               <div class="img_list" v-if="fileLists&&fileLists.length>0">
             <!-- 使用element-ui自带样式 -->
@@ -86,9 +86,9 @@ export default {
       preList:[],
       setFileDesc:'请上传jpg/png格式的图片,大小不超过2MB',
       rules: {
-        icon_title: [
-          { required: true, message: '证据说明不能为空', trigger: 'blur' },
-        ],
+        // icon_title: [
+        //   { required: true, message: '证据说明不能为空', trigger: 'blur' },
+        // ],
         icon_att: [
           { required: true, message: '证据图片不能为空', trigger: 'blur' },
         ],
@@ -96,7 +96,7 @@ export default {
       picForm:{
         icon_type: "图片",
         icon_att:'',  //上传成功后返回的file_no
-        icon_title:'', //图片说明
+        icon_title:'占位图', //图片说明
         serviceName: "srvfile_icon_db_add"
       },
       fileLength:0,
