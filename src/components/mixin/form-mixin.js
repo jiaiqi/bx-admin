@@ -516,7 +516,7 @@ export default {
        * 
        * 解决 从fk字段超链接详情 子表 卡片单元弹出修改使用了 超链接url的外键 conditions 造成 该条件 错误修改了多少数据。 
        */
-      if (operateParams && this.parentPageType !== 'detaillist' && !['dialog'].includes(this.initOrigin)) {
+      if (operateParams && !['detaillist','update'].includes(this.parentPageType) && !['dialog'].includes(this.initOrigin)) {
 
         /**
          * 排除 指定为 dialog  表单使用 url参数输入  && !['dialog'].includes(this.initOrigin)

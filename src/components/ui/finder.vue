@@ -184,6 +184,7 @@
           :defaultValues="field.model || setPopupDefaultValue"
           :reference-row-data="formModel"
           :reference-no-column="noFieldColumn"
+          :parentPageType="formType"
           @submitted2mem="submitted2mem"
           @executor-complete="onExecutorComplete"
           @form-loaded="onPopupFormLoaded"
