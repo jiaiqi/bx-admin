@@ -28,9 +28,10 @@
     :disabled="!field.info.editable"
     :before-filter="beforeFilter"
     @change="onChange"
+    :emitPath="false"
     ref="elCascader"
   >
-    <template slot-scope="{ node, data }">
+    <template slot-scope="{ node, data }" v-if="props.checkStrictly">
       <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
     </template>
   </el-cascader>
@@ -57,8 +58,12 @@ export default {
       let props = {
         value: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
-        checkStrictly: top?.env?.includes("health") ? false : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
-        lazy: true,
+        checkStrictly:
+          top?.env?.includes("health") ||
+          this.optionListV2?.checkStrictly === false
+            ? false
+            : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
+        lazy: this.dispLoaderV2?.lazyLoad === false ? false : true,
         lazyLoad: (node, resolve) => {
           if (
             this.dispLoaderV2?.refedCol &&
@@ -114,6 +119,7 @@ export default {
             "parent_no",
           refedCol: optionListV2.refed_col,
           dispCol: optionListV2.key_disp_col || optionListV2.disp_col,
+          lazyLoad: optionListV2.lazy_load || optionListV2.lazyLoad,
         };
       } else {
         return this.field?.info?.dispLoader;
@@ -145,9 +151,19 @@ export default {
 
   methods: {
     clickNode(node, data) {
+      if (this.props.checkStrictly === false) {
+        if (data.is_leaf !== "是") {
+          // 非叶子节点 只能选择叶子节点
+          return;
+        }
+      }
       console.log(node, data, "clickNode");
-      this.selected = node.path;
       this.field.model = data;
+      // if (this.dispLoaderV2?.lazyLoad === false) {
+      //   this.selected = [data[this.props.value]];
+      // } else {
+      this.selected = node.path;
+      // }
       this.$emit("field-value-changed", this.field.info.name, this.field);
       this.$nextTick(() => {
         this.$refs.elCascader.dropDownVisible = false;
@@ -379,46 +395,62 @@ export default {
         //   pageSize: 2000,
         // },
       };
+      if (loader.lazyLoad === false) {
+        // params.page = {
+        //   pageNo: 1,
+        //   pageSize: 2000,
+        // };
+        delete params.rdt;
+        params.treeData = true;
+        delete params.condition;
+      }
       const response = await this.$http.post(url, params);
       this.noData = false;
       if (response && response.data && response.data.data) {
-        if(response.data.data.length === 0){
+        if (response.data.data.length === 0) {
           this.noData = true;
         }
-        let options = response.data.data.map((item) => {
-          item.children = item.is_leaf === "是" ? null : [];
-          item.leaf = item.is_leaf === "是";
-          return item;
-        });
-        if (this.needRenameLabel()) {
-          options.forEach((option) => this.renameLable(option));
+
+        if (loader.lazyLoad === false) {
+          this.options = response.data.data;
+          // this.selected = this.field.model;
+        } else {
+          let options = response.data.data.map((item) => {
+            item.children = item.is_leaf === "是" ? null : [];
+            item.leaf = item.is_leaf === "是";
+            return item;
+          });
+          if (this.needRenameLabel()) {
+            options.forEach((option) => this.renameLable(option));
+          }
+          if (curVal && response.data.data.length > 0) {
+            let item = response.data.data[0];
+            this.selected = [item[this.props.value]];
+            // let path = item.path;
+            // this.selected = path
+            //   .split("/")
+            //   .map((val) => {
+            //     if (
+            //       typeof item[this.props.value] === "number" &&
+            //       !isNaN(Number(val))
+            //     ) {
+            //       return Number(val);
+            //     }
+            //     return val;
+            //   })
+            //   .filter((t) => !!t);
+            this.field.model = item;
+            this.$emit("field-value-changed", this.field.info.name, this.field);
+          }
+          return options;
         }
-        if (curVal && response.data.data.length > 0) {
-          let item = response.data.data[0];
-          this.selected = [item[this.props.value]];
-          // let path = item.path;
-          // this.selected = path
-          //   .split("/")
-          //   .map((val) => {
-          //     if (
-          //       typeof item[this.props.value] === "number" &&
-          //       !isNaN(Number(val))
-          //     ) {
-          //       return Number(val);
-          //     }
-          //     return val;
-          //   })
-          //   .filter((t) => !!t);
-          this.field.model = item;
-          this.$emit("field-value-changed", this.field.info.name, this.field);
-        }
+
         // if (!this.options||this.options.length === 0) {
         // this.options = options;
         // if(this.selected.length && options.length === 1 && options[0][loader.refedCol] === this.selected[this.selected.length - 1]){
         //   this.selected = [this.selected[this.selected.length - 1]];
         // }
         // }
-        return options;
         // if (parentNo && this.options.length > 0) {
         //   this.options = this.setOptionChild(
         //     this.options,
@@ -486,6 +518,36 @@ export default {
         return item;
       });
       return options;
+    },
+    async loadDetail() {
+      const loader = this.dispLoaderV2;
+      const conditions = [
+        {
+          colName: loader.refedCol,
+          ruleType: "eq",
+          value: this.field.model,
+        },
+      ];
+      const params = {
+        serviceName: loader.service,
+        colNames: ["*"],
+        condition: conditions,
+        page: {
+          pageNo: 1,
+          rownumber: 1,
+        },
+      };
+      const url = this.getServiceUrl("select", loader.service);
+      const response = await this.$http.post(url, params);
+      if (response && response.data && response.data.data) {
+        let options = response.data.data;
+        if (options.length > 0) {
+          this.field.model = options[0];
+          this.selected =
+            options[0]?.path?.split("/").filter((item) => !!item) || [];
+          this.$emit("field-value-changed", this.field.info.name, this.field);
+        }
+      }
     },
     async loadOptions() {
       let fieldInfo = this.field.info;
@@ -759,6 +821,9 @@ export default {
   destroyed: function () {},
 
   mounted: function () {
+    if (this.field.model) {
+      this.loadDetail();
+    }
     this.loadOptions().then((_) => {
       if (this.selected.length == 0 && this.field.model) {
         let value = this.field.model[this.field.info.valueCol];
