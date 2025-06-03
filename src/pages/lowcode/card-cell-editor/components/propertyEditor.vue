@@ -185,21 +185,25 @@ export default {
         "component",
         "_editType",
         "_id",
+        "_is_delete",
       ];
-      const result = list.map((item, index) => {
-        let data = { ...item };
-        ignoreField.forEach((item) => {
-          delete data[item];
+      const result = list
+        .filter((item) => item && !item._is_delete)
+        .map((item, index) => {
+          let data = { ...item };
+          ignoreField.forEach((item) => {
+            delete data[item];
+          });
+          let obj = {
+            ...data,
+            card_no: this.card_no,
+            child_data_list: item?.children?.length
+              ? this.buildAddChildren(item.children)
+              : [],
+          };
+
+          return obj;
         });
-        let obj = {
-          ...data,
-          card_no: this.card_no,
-          child_data_list: item?.children?.length
-            ? this.buildAddChildren(item.children)
-            : [],
-        };
-        return obj;
-      });
       return result;
     },
     buildAddChildren(list) {
@@ -213,10 +217,11 @@ export default {
         "component",
         "_editType",
         "_id",
+        "_is_delete",
       ];
       if (Array.isArray(list) && list.length) {
         return list
-          .filter((item) => !!item)
+          .filter((item) => item && !item._is_delete)
           .map((item, index) => {
             if (!item) {
               console.log(list);

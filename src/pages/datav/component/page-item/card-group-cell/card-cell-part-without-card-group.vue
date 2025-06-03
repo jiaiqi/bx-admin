@@ -35,6 +35,12 @@ export default {
         return {};
       },
     },
+    cellItemData: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
   },
   computed: {
     srvReq() {
@@ -43,7 +49,6 @@ export default {
   },
   methods: {
     onClickCell(cell) {
-      debugger;
       // console.log(cell, "clickCell----------\r\n");
       // if (cell?.cellsLayout?.jump_json?.page_auth_json) {
       //   // 执行自定义跳转
@@ -177,7 +182,11 @@ export default {
   },
   created() {
     this.queryOptions = this.$route.query || {};
-    this.getData();
+    if (this.cellItemData) {
+      this.cellData = this.cellItemData;
+    } else {
+      this.getData();
+    }
   },
 };
 </script>
