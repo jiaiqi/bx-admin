@@ -18,15 +18,18 @@
       v-for="item in markerList"
       :key="item.id"
     >
-      <div class="popover-content" 
+      <transition name="popover-fade">
+        <div
+          class="popover-content"
           v-if="activeMarker && activeMarker.id === item.id"
-      >
-        <card-group-cell
-          :page-item="pageItem"
-          :cellsLayout="[cardUnitJson]"
-          :cell-item-data="activeMarker"
-        ></card-group-cell>
-      </div>
+        >
+          <card-group-cell
+            :page-item="pageItem"
+            :cellsLayout="[cardUnitJson]"
+            :cell-item-data="activeMarker"
+          ></card-group-cell>
+        </div>
+      </transition>
       <img
         :src="getItemIcon(item)"
         class="marker-icon"
@@ -159,7 +162,11 @@ function getItemPosition(item = {}) {
 }
 
 function tapMarker(item) {
-  activeMarker.value = item;
+  if (item?.id && item?.id === activeMarker.value?.id) {
+    activeMarker.value = null;
+  } else {
+    activeMarker.value = item;
+  }
 }
 
 onMounted(() => {
@@ -184,7 +191,7 @@ onMounted(() => {
   .map-marker {
     position: absolute;
     transform: translate(-50%, -50%);
-    &.cursor-pointer{
+    &.cursor-pointer {
       cursor: pointer;
     }
     .marker-icon {
@@ -195,11 +202,12 @@ onMounted(() => {
       position: absolute;
       top: -10px;
       left: 50%;
-      transform: translate(-50%, -100%);
       z-index: 1000;
       border-radius: 5px;
+      transform: translate(-50%, -100%) scale(1);
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-      &:after{
+      opacity: 1;
+      &:after {
         content: "";
         position: absolute;
         top: 100%;
@@ -211,6 +219,22 @@ onMounted(() => {
         border-right: 5px solid transparent;
         border-top: 5px solid #fff;
       }
+    }
+    .popover-fade-enter-active,
+    .popover-fade-leave-active {
+      // transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      // transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .popover-fade-enter,
+    .popover-fade-leave-to {
+      opacity: 0;
+      transform: translate(-50%, -120%) scale(0.8);
+    }
+    .popover-fade-enter-to,
+    .popover-fade-leave {
+      opacity: 1;
+      transform: translate(-50%, -100%) scale(1);
     }
   }
 }
