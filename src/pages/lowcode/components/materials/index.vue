@@ -431,6 +431,9 @@ export default {
           } catch (e) {
             //TODO handle the exception
             console.error("解析JSON数据失败:", e);
+            if (typeof config[key] === "object") {
+              config[`${key}_data`] = config[key];
+            }
           }
         }
       });

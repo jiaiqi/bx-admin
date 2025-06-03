@@ -890,6 +890,7 @@ export default {
               serviceName: o.serviceName,
               srvApp: "config",
               data: o.data,
+              duplicate: true,
             },
           ];
           break;
@@ -907,8 +908,14 @@ export default {
           ];
           break;
       }
-
+      const loading = this.$loading({
+        lock: this,
+        text: "操作中...",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
       const response = await this.operate(params);
+      loading.close();
       if (response.data.state === "SUCCESS") {
         if (type === "batch_add") {
           return response.data.response;
@@ -1159,6 +1166,7 @@ export default {
           const addObj = {
             serviceName: "srvpage_cfg_page_component_add",
             data: this.buildAddComponentsReqData(addList),
+            duplicate: true,
           };
           const addChildRes = await this.httpOperate(
             "add",
@@ -1266,7 +1274,7 @@ export default {
           "row_json",
           "page_no",
           "image",
-          "preview",
+          // "preview",
           "cellItem",
           "parentId",
           "",
@@ -1289,12 +1297,21 @@ export default {
               delete data[key];
             }
           });
-          debugger;
           let compObj = {
             serviceName: "",
             srvApp: "config",
             data: [data],
           };
+          if (item._duplicate_id && typeof item._duplicate_id === "number") {
+            compObj.duplicate = true;
+            compObj.condition = [
+              {
+                colName: "id",
+                ruleType: "eq",
+                value: item._duplicate_id,
+              },
+            ];
+          }
           switch (item.data.com_type) {
             case "chart":
               compObj.serviceName = "srvpage_cfg_com_chart_add";

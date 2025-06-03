@@ -219,7 +219,7 @@
             <el-button
               type="text"
               size="mini"
-              @click="() => removeComp(node, data)"
+              @click.stop="() => removeComp(node, data)"
             >
               删除
             </el-button>
@@ -1073,11 +1073,18 @@ export default {
     async deleteComponent(ids = "") {
       if (!ids) return;
       return await this.$confirm("确定要删除此组件吗？").then(async () => {
+        const loading = this.$loading({
+          lock: this,
+          text: "操作中...",
+          spinner: "el-icon-loading",
+          background: "rgba(0, 0, 0, 0.7)",
+        });
         const { data, ok, msg } = await $delete({
           app: "config",
           service: "srvpage_cfg_page_component_delete",
           value: ids,
         });
+        loading.close();
         if (ok) {
           this.$message.success(msg);
           this.initPage();

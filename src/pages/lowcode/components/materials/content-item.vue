@@ -710,6 +710,9 @@ export default {
                 draggedElement.comp_label ||
                 draggedElement.chart_name ||
                 draggedElement.label;
+              if (draggedElement.id) {
+                draggedElement._duplicate_id = draggedElement.id;
+              }
               if (!draggedElement._editType) {
                 draggedElement.id = `${this.id}${new Date().getTime()}`;
                 draggedElement._editType = "add";
