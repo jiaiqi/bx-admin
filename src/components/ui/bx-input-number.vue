@@ -104,11 +104,11 @@ export default {
     },
     max: {
       type: Number,
-      default: 99999999999,
+      default: Infinity,
     },
     min: {
       type: Number,
-      default: -99999999999,
+      default: -Infinity,
     },
     value: {},
     disabled: Boolean,
