@@ -356,7 +356,6 @@ export default {
       e.currentTarget.classList.remove("on-drag-float-component");
       // 获取拖拽数据
       const data = e.dataTransfer.getData("text/plain");
-
       if (data) {
         try {
           const draggedElement = JSON.parse(data);

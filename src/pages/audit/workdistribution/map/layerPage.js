@@ -53,22 +53,22 @@ export const drawMapMarkersAndLabel = (_map,data) => {
     // 创建标记点和标签
     data.forEach(item => {
         // 创建图标
-        const icon = new BMapGL.Icon(
+        const icon = new BMap.Icon(
             item.icon,
-            new BMapGL.Size(32, 32),
+            new BMap.Size(32, 32),
             {
-                anchor: new BMapGL.Size(16, 16)
+                anchor: new BMap.Size(16, 16)
             }
         );
 
         // 创建标记点
-        const marker = new BMapGL.Marker(item.point, {
+        const marker = new BMap.Marker(item.point, {
             icon: icon
         });
 
         // 创建标签
-        const label = new BMapGL.Label(item.name, {
-            offset: new BMapGL.Size(0, -45), // 标签偏移量
+        const label = new BMap.Label(item.name, {
+            offset: new BMap.Size(0, -45), // 标签偏移量
             position: item.point
         });
 
@@ -117,7 +117,7 @@ export const handleRemoveLineLayer = (map) => {
 //基础线图层
 export const drwLineLayer = (map, source, stops) => {
     handleRemoveLineLayer(map)
-    let lineLayer = new BMapGL.LineLayer({
+    let lineLayer = new BMap.LineLayer({
         enablePicked: true, //是否允许鼠标点击
         autoSelect: true,  //是否允许鼠标悬浮
         pickWidth: 20, //点击拾取的宽带pX
@@ -149,7 +149,7 @@ export const drwIconLineLayer = (map, source, key,url) => {
     handleRemoveLineLayer(map)
     // 获取本地图标路径
     const icon = require(`@/assets/mapIcon/${url}`);
-    let lineLayer = new BMapGL.LineLayer({
+    let lineLayer = new BMap.LineLayer({
         enablePicked: true,
         autoSelect: true,
         pickWidth: 30,
@@ -195,9 +195,9 @@ export const setViewportByPoints=(_map,points)=> {
     });
 
     // 创建边界对象
-    const bounds = new BMapGL.Bounds(
-        new BMapGL.Point(minLng, minLat),
-        new BMapGL.Point(maxLng, maxLat)
+    const bounds = new BMap.Bounds(
+        new BMap.Point(minLng, minLat),
+        new BMap.Point(maxLng, maxLat)
     );
 
     // 设置视图范围
@@ -212,7 +212,7 @@ let currentRoute = []
 export const AutoDrivingLineSearch = (_map, start, end, ways) => {
       let route=[]
       DeleteDriving()
-      driving = new BMapGL.DrivingRouteLine(_map, {
+      driving = new BMap.DrivingRouteLine(_map, {
         renderOptions: {
             // map: _map,
             autoViewport: true,
@@ -252,7 +252,7 @@ export const HandleMapClick = (map) => {
 }
 
 export const handleMakePoint=(map,lng,lat)=>{
-     return new BMapGL.Point(lng,lat)
+     return new BMap.Point(lng,lat)
 }
 
 export const FlyTo = (_map,point,zoom) => {

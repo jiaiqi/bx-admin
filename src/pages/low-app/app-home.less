@@ -1,0 +1,118 @@
+.Flex(@_flex,@_center,@_just){
+ display:@_flex;
+ align-items:@_center;
+ justify-content:@_just;
+}
+.box_ttn{
+  position: absolute;
+  top: 50%;
+  width: 0.9375rem;
+  height: 2.5rem;
+  background-color: #fff;
+  border-radius: 0 4px 4px 0;
+  .Flex(flex,center,center);
+  cursor: pointer;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  &:hover {
+    background-color: #f5f7fa;
+  }
+
+  i {
+    font-size: 12px;
+    color: #909399;
+  }
+}
+li{
+  list-style: none;
+}
+.app_home{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background: #dfe1e1;
+}
+.app_header{
+  width:100%;
+  height:3.4375rem;
+  padding:0.1875rem 0.9375rem;
+  .Flex(flex,center,space-between);
+  border-bottom:1px solid #a9a9ab;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  .app_other{
+    width:30%;
+    height:2.5rem;
+  }
+  .app_name{
+    width:45%;
+    height:2.5rem;
+  }
+  .app_bts{
+    width:22%;
+    height:2.5rem;
+    .Flex(flex,center,flex-end);
+    >li{
+      margin:0 0.3125rem;
+    }
+  }
+}
+.app_content{
+  width:100%;
+  margin-top:0.3125rem;
+  height:calc(100% - 4.375rem);
+  .Flex(flex,center,space-between);
+}
+.app_left{
+  width:20%;
+  height:100%;
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+.app_left_act{
+  width:0;
+  height:100%;
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+.app_center{
+  width:58%;
+  height:100%;
+  background-color: #f5f5f9;
+  background-size: 20px 20px, 20px 20px;
+  background-image: linear-gradient(#f5f5f9 19px, transparent 0), linear-gradient(90deg, transparent 19px, #000 0);
+  .app_edit_main{
+    margin:0 auto;
+    width:40%;
+    height:100%;
+    overflow: auto;
+  }
+}
+.app_right{
+  width:20%;
+  height:100%;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: all .3s ease;
+}
+.app_right_act{
+  width:0;
+  height:100%;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+.materials-toggle{
+  right:-0.9375rem;
+  .box_ttn();
+}
+.property-toggle{
+  left:-0.9375rem;
+  .box_ttn();
+}

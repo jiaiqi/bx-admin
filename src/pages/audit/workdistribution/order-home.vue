@@ -25,33 +25,100 @@ name: "order-home",
         {title:"通行信息",code:2,path:'entrance'},
         {title:"路径轨迹",code:3,path:'basemap'}
       ],
-      activeIndex:0
+      activeIndex:0,
+      setPass_id:'',
+      baseRouterInfo:{},
+      initialRouteInfo: null
     }
   },
   methods:{
     setTab(item,index){
       this.activeIndex = index;
-      this.$router.push({name: item.path});
-    }
+      if(item.code!==1){
+        // 记录当前路由信息
+        const currentQuery = this.$route.query;
+        if (currentQuery && Object.keys(currentQuery).length > 0) {
+          this.initialRouteInfo = JSON.parse(JSON.stringify(currentQuery));
+          console.log('保存路由信息：', this.initialRouteInfo);
+        }
+        // 确保 pass_id 不为空
+        const passId = this.setPass_id || (currentQuery && currentQuery.pass_id) || '';
+        console.log('切换标签时的 pass_id：', passId);
+        this.$router.push({
+          name: item.path,
+          query: {
+            pass_id: passId
+          }
+        });
+      }else {
+        // 如果是返回工单信息页面，使用初始路由信息
+        console.log('当前保存的路由信息：', this.initialRouteInfo);
+        if(this.initialRouteInfo && Object.keys(this.initialRouteInfo).length > 0) {
+          this.$router.push({name: item.path,query:this.initialRouteInfo});
+        } else {
+          const storedInfo = sessionStorage.getItem("oderInfo");
+          console.log('使用sessionStorage信息：', storedInfo);
+          if (storedInfo) {
+            try {
+              const parsedInfo = JSON.parse(storedInfo);
+              this.$router.push({name: item.path,query:{operate_params:storedInfo}});
+            } catch (e) {
+              console.error('解析sessionStorage数据失败：', e);
+              this.$router.push({name: item.path});
+            }
+          } else {
+            this.$router.push({name: item.path});
+          }
+        }
+      }
+    },
+    getRouterInfo(){
+      let operate_params = this.getOperateParams();
+      if (operate_params) {
+        try {
+          sessionStorage.setItem('oderInfo', operate_params);
+          const parsedParams = JSON.parse(operate_params);
+          if (parsedParams && parsedParams.data) {
+            this.setPass_id = parsedParams.data[0]?.pass_id || '';
+            console.log('获取到的 pass_id：', this.setPass_id);
+            // 保存初始路由信息
+            const currentQuery = this.$route.query;
+            if (currentQuery && Object.keys(currentQuery).length > 0) {
+              this.initialRouteInfo = JSON.parse(JSON.stringify(currentQuery));
+              console.log('getRouterInfo中保存的初始路由信息：', this.initialRouteInfo);
+            }
+          }
+        } catch (e) {
+          console.error('处理路由信息时出错：', e);
+        }
+      }
+    },
   },
   watch: {
     '$route': {
       immediate: true,
       handler(to) {
+        console.log('路由变化：', to.name, to.query);
         const index = this.tabs.findIndex(tab => tab.path === to.name);
         if (index !== -1) {
           this.activeIndex = index;
+        }
+        // 只在首次加载时获取路由信息
+        if (!this._isMounted) {
+          this.getRouterInfo();
         }
       }
     }
   },
   mounted(){
-    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-c748aed0-b7e6-44b5-9d38-67cb900b49a3');
-    // 只在组件首次挂载时执行
+    sessionStorage.removeItem('bx_auth_ticket');
+    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-170436b1-1a07-474b-ac09-1fa1edcf3e97');
+    // 移除这里的 getRouterInfo 调用，因为已经在 watch 中处理了
     if (!this._isMounted) {
-      console.log('123123')
       this._isMounted = true;
     }
+  },
+  beforeDestroy(){
   }
 }
 </script>

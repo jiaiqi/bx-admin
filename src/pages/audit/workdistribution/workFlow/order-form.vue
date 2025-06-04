@@ -146,7 +146,7 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">嫌疑流水</el-col>
+        <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">车辆通行流水</el-col>
         <div class="suspected">
           <el-table :data="suspectedData">
             <el-table-column v-for="column in supColums" :key="column.prop" :prop="column.prop" :label="column.title"></el-table-column>
@@ -626,6 +626,7 @@ export default {
         this.ruleForm=formDataByGetInfo(this.ruleForm,operate_params[0])
         console.log('这里的user_no3',this.ruleForm.user_no)
         console.log('--',this.ruleForm);
+        this.getTrafficFlow()
       }
     },
     //打开发起人弹窗
@@ -707,7 +708,22 @@ export default {
     dowmlaodUrl(item) {
       window.open(item);
     },
-
+    /**
+     * @Description:根据携带进入的passid进行车辆通行流水查询
+     * @Author:Eirice
+     * @Date: 2025-05-30 10:32:53
+     */
+    getTrafficFlow(){
+      this.suspectedData=[]
+     let cadn={
+       condition:[{colName: "passid", ruleType: "like", value: this.ruleForm.pass_id}]
+     }
+     orderUtils.getCarWaysInfo(cadn).then(res => {
+       if(res.data.state !== 'SUCCESS') return;
+          this.suspectedData=res.data.data?res.data.data:[]
+          console.log('获取到流水',this.suspectedData)
+     }).catch(err=>{})
+    },
   },
   created(){
     this.prUrl=orderUtils.dowPicInfoUrl()

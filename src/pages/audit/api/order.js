@@ -119,7 +119,7 @@ export default class OrderApi{
     async deletePicInfo(params){
        let url= window.APP_CONFIG.API_URL+`/file/delete`
        let req= params
-       return $http.post(url, params);
+       return await $http.post(url, params);
     }
     //保存上传图片
     async savePicInfo(params){
@@ -131,7 +131,7 @@ export default class OrderApi{
                data:params
            }
        ]
-       return $http.post(url, req)
+       return await $http.post(url, req)
     }
     //根据no获取当前上传图片列表
     async getCurrentPicInfo(option){
@@ -157,7 +157,7 @@ export default class OrderApi{
                 condition:option.condition,
             }
         ]
-        return $http.post(url, req)
+        return await $http.post(url, req)
     }
     //根据ids获取指定图片保存信息
     async getPicInfoById(params){
@@ -170,7 +170,7 @@ export default class OrderApi{
           query_source: "detail_page",
           serviceName: "srvfile_icon_db_select",
       }
-      return $http.post(url, req)
+      return await $http.post(url, req)
    }
    //发起工单提交
     async handleSubmitOrder(params){
@@ -182,7 +182,76 @@ export default class OrderApi{
                condition: []
            }
        ]
-       return $http.post(url, req)
+       return await $http.post(url, req)
     }
-
+   //根据passid获取车辆通行流水
+    async getCarWaysInfo(options){
+       let url = window.APP_CONFIG.API_URL+ `/aud/select/srvaud_susvehpass_select?srvaud_susvehpass_select`
+       let req={
+           colNames: ["*"],
+           draft: false,
+           order: [],
+           query_source: "list_page",
+           serviceName: "srvaud_susvehpass_select",
+           condition:options.condition,
+           relation_condition: {relation: "AND", data: options.condition},
+           page: {pageNo: 1, rownumber: 10}
+       }
+      return await $http.post(url, req)
+    }
+    //根据车辆流水内的出入时间及passid获取通行信息数据（收费站，门架）
+    async getCarPathInfoById(options){
+       let url = window.APP_CONFIG.API_URL+`/aud/select/srvaud_susvehpasspath_select`
+       let req={
+           colNames: ["*"],
+           serviceName: "srvaud_susvehpasspath_select",
+           condition:options.condition,
+           divCond:options.divCond,
+       }
+       return await $http.post(url, req)
+    }
+  //获取车辆通行路径
+    async getCarPathPoint(options){
+       let url= window.APP_CONFIG.API_URL+`/aud/select/srvaud_susvehpasspath_select?srvaud_susvehpasspath_select`
+       let req={
+           colNames: ["*"],
+           serviceName: "srvaud_susvehpasspath_select",
+           draft: false,
+           order: [],
+           page: {pageNo: 1, rownumber: 10},
+           query_source: "list_page",
+           relation_condition: {},
+           divCond:options.divCond,
+           condition:options.condition,
+       }
+       return await $http.post(url, req)
+    }
+    //通行门架信息查询
+    async getAllStations(option){
+       let url = window.APP_CONFIG.API_URL+`/aud/select/srvaud_tollgrantry_station_aud_select`
+       let req={
+           colNames: ["*"],
+           serviceName: "srvaud_tollgrantry_station_aud_select",
+           draft: false,
+           order: [],
+           query_source: "list_page",
+           page: {pageNo: 1, rownumber: 10},
+       }
+       return await $http.post(url, req)
+    }
+    //条件查询门架和收费站
+    async  getAllStationByInfo(options){
+       let url= window.APP_CONFIG.API_URL+`/aud/select/srvaud_tollgrantry_station_aud_select`
+       let req={
+         colNames: ["*"],
+         condition:options.condition,
+         page:options.page,
+         serviceName: "srvaud_tollgrantry_station_aud_select",
+         query_source: "list_page",
+         relation_condition:options.relation_condition,
+         draft: false,
+         order: []
+        }
+      return await $http.post(url, req)
+    }
 }

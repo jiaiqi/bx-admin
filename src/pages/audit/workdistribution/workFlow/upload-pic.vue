@@ -138,7 +138,7 @@ export default {
         this.fileLists = JSON.parse(JSON.stringify(this.files))
         this.handleFilterUrl()
         if(this.objId&&this.objId.length>0){
-          this.initPicByIds()
+          // this.initPicByIds()
         }
       },
       immediate: true,
