@@ -10,6 +10,11 @@
         <script src="./config/config_dev.js"></script>
         <!--大华视频使用勿删除-->
         <script src="./dhvideo/videoPlayer.js"></script>
+
+        <% if (process.env.NODE_ENV === 'production') { %>
+          <!--生产环境加载上一级目录的server.js获取接口前缀等配置-->
+        <script src="../js/server.js"></script>
+        <% } %>
        <!--生产环境地图使用-->
 <!--        <script src="./config/config_build.js"></script>-->
     <!-- <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>

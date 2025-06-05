@@ -38,7 +38,7 @@ export default {
     ...mapState("theme", ["currentTheme"]),
     ...mapGetters("theme", ["themeList", "themeVariable"]),
     contentAreaWidth() {
-      let width = this.pageConfig?.content_area_width || 1200;
+      let width = this.pageConfig?.content_area_width || 1400;
       return typeof width === "string" && width?.includes("%")
         ? width
         : `${parseFloat(width)}px`;

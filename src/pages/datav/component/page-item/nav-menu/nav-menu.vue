@@ -45,7 +45,7 @@
         </div>
       </div>
     </div>
-    <content-wrap :data="current" v-if="current" :key="current.no"></content-wrap>
+    <content-wrap :data="current" v-if="current" :key="current.no" @tap="onTapContentItem"></content-wrap>
   </div>
   <div v-else-if="viewMode === '面包屑导航'" class="breadcrumb-wrap">
     <div class="home-icon">
@@ -434,6 +434,9 @@ export default {
   methods: {
     onTapContentItem(item) {
       console.log("item", item);
+      if(this.config.jump_json){
+        this.navTo(this.config.jump_json,item)
+      }
     },
     onTapCatalog(item, changeUnfold = true) {
       console.log("item", item);
@@ -700,7 +703,7 @@ export default {
             break;
           default:
             if (jumpJson.dest_page_no) {
-              this.navToPath(jumpJson);
+              this.jumpAction(jumpJson,data);
             }
             break;
         }

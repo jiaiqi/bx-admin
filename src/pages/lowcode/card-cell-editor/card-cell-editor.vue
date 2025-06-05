@@ -391,7 +391,9 @@ export default {
       // 生成新的唯一ID
       duplicatedPart._id = new Date().getTime();
       duplicatedPart._editType = "add";
-
+      if (part.id) {
+        duplicatedPart._duplicate_id = part.id;
+      }
       // 如果部件有子部件，递归处理子部件
       if (duplicatedPart.children && duplicatedPart.children.length) {
         const duplicateChildren = (children) => {
@@ -401,6 +403,9 @@ export default {
             newChild.card_parts_no = null;
             newChild._id = new Date().getTime() + Math.random() * 100;
             newChild._editType = "add";
+            if (child.id) {
+              newChild._duplicate_id = child.id;
+            }
             if (newChild.children && newChild.children.length) {
               newChild.children = duplicateChildren(newChild.children);
             }

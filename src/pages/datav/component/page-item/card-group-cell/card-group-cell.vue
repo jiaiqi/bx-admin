@@ -956,6 +956,10 @@ export default {
   }
   &.list-item {
     border: 1px solid transparent;
+    &::marker {
+      display: none;
+      content: "";
+    }
     &:hover {
       border: 1px solid #ebeef5;
       box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);

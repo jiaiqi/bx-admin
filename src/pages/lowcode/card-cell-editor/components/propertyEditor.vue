@@ -144,6 +144,20 @@ export default {
             serviceName: this.cardPartService.add,
             data: this.buildAddReqData(addList),
           };
+          // 后端复制参数主子表同时提交的时候会有bug 等后端处理了再放开
+          // const _duplicate_id = addList.find(
+          //   (item) => item._duplicate_id
+          // )?._duplicate_id;
+          // if (_duplicate_id) {
+          //   addObj.condition = [
+          //     {
+          //       colName: "id",
+          //       ruleType: "eq",
+          //       value: _duplicate_id,
+          //     },
+          //   ];
+          //   addObj.duplicate = true;
+          // }
           const result = await this.httpOperate(
             "add",
             addObj,
@@ -186,6 +200,7 @@ export default {
         "_editType",
         "_id",
         "_is_delete",
+        "_duplicate_id",
       ];
       const result = list
         .filter((item) => item && !item._is_delete)
@@ -218,6 +233,7 @@ export default {
         "_editType",
         "_id",
         "_is_delete",
+        "_duplicate_id",
       ];
       if (Array.isArray(list) && list.length) {
         return list
@@ -251,6 +267,17 @@ export default {
               ],
             };
 
+            if (item._duplicate_id) {
+              obj.condition = [
+                {
+                  colName: "id",
+                  ruleType: "eq",
+                  value: item._duplicate_id,
+                },
+              ];
+              obj.duplicate = true;
+            }
+
             return obj;
           });
       }
@@ -260,13 +287,18 @@ export default {
       let params = [];
       switch (type) {
         case "add":
-          params = [
-            {
-              serviceName: o.serviceName,
-              srvApp: "config",
-              data: o.data,
-            },
-          ];
+          let obj = {
+            serviceName: o.serviceName,
+            srvApp: "config",
+            data: o.data,
+          };
+          if (o.condition) {
+            obj.condition = o.condition;
+          }
+          if (o.duplicate) {
+            obj.duplicate = o.duplicate;
+          }
+          params = [obj];
           break;
         case "update":
         case "batch_add":
@@ -313,7 +345,7 @@ export default {
               if (
                 item[key] &&
                 typeof key === "string" &&
-                !key?.startsWith("_")
+                (!key?.startsWith("_") || key === "_duplicate_id")
               ) {
                 obj[key] = item[key];
               }

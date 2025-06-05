@@ -72,6 +72,7 @@ export default {
 
       if (
         this.referenceNoColumnInfo?.value &&
+        this.gnoColumnInfo?.column &&
         this.gnoColumnInfo?.value !== this.referenceNoColumnInfo?.value
       ) {
         // 编辑样式时，gno字段的值和引用行的no字段的值不一致 当前数据不数据被引用行 需要将编辑改为创建

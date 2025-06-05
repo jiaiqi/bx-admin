@@ -303,7 +303,7 @@ export default {
         style["background-repeat"] = "no";
       }
       if (cellLayoutJson && !style.hasOwnProperty("min-height") && bgImg) {
-        style["min-height"] = "60px";
+        style["min-height"] = "10px";
       }
       if (!style["background-color"]) {
         style["background-color"] = "transparent";
