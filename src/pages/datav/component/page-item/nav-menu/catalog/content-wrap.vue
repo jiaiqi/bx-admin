@@ -90,7 +90,7 @@
               @click="onTap(item)"
               v-for="(item, index) in contentList"
             >
-              <img class="img" :src="getImagePath(item.thn_img)" alt="" />
+              <img class="img" :src="getImagePath(item.thn_img)" alt="" v-if="item.thn_img"/>
               <div class="line"></div>
               <div class="content-box">
                 <div class="title multi-line-ellipsis">{{ item.title }}</div>

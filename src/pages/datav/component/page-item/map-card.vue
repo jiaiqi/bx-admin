@@ -16,51 +16,83 @@
           class="tree-data-item-name"
           :class="{
             active:
-              selectedTreeData && item.id && selectedTreeData.id === item.id,
+              (selectedTreeData &&
+                item.id &&
+                selectedTreeData.id === item.id) ||
+              (selectedTreeData.path &&
+                selectedTreeData.path.startsWith(item.path)),
           }"
           @click="tapTreeData(item)"
         >
-          {{ item.name || item.area_name }}
+          <i
+            class="tree-data-item-name-icon el-icon-caret-right"
+            :class="{ expanded: expandedNodes[item.id] }"
+            @click.stop="toggleExpand(item)"
+          ></i>
+          <span class="tree-data-item-name-text">
+            {{ item.name || item.area_name }}
+          </span>
         </div>
-        <div class="tree-data-item-child">
-          <div
-            class="tree-data-item-child-item"
-            v-for="item in item.children"
-            :key="item.id"
-          >
-            <div class="tree-data-item-child-item-name">
-              {{ item.name || item.area_name }}
-            </div>
+        <transition name="tree-expand">
+          <div class="tree-data-item-child" v-show="expandedNodes[item.id]">
+            <tree-data-item
+              v-for="child in item.children"
+              :key="child.id"
+              :item="child"
+              :selected="selectedTreeData"
+              :level="1"
+              @select="tapTreeData"
+            />
           </div>
-        </div>
+        </transition>
       </div>
     </div>
-    <div
-      class="map-marker"
-      :style="getItemPosition(item)"
-      @click.stop="tapMarker(item)"
-      :class="{ 'cursor-pointer': !!cardUnitJson }"
-      v-for="item in markerList"
-      :key="item.id"
+    <template
+      v-if="mapJson && mapJson.map_type === '标签' && markerList.length"
     >
-      <transition name="popover-fade">
-        <div
-          class="popover-content"
-          v-if="activeMarker && activeMarker.id === item.id"
-        >
-          <card-group-cell
-            :page-item="pageItem"
-            :cellsLayout="[cardUnitJson]"
-            :cell-item-data="activeMarker"
-          ></card-group-cell>
+      <div
+        class="map-marker"
+        :class="{ 'is-active': isActive(marker) }"
+        :style="[
+          { ...setLabelStyle, ...(isActive(marker) ? setLabelActiveStyle : {}) },
+          getItemPosition(marker),
+        ]"
+        v-for="marker in markerList"
+        :key="marker.id"
+      >
+        <div class="map-marker-content">
+          {{ marker[mapJson.col_label] || "" }}
         </div>
-      </transition>
-      <img
-        :src="getItemIcon(item)"
-        class="marker-icon"
-        v-if="getItemIcon(item)"
-      />
-    </div>
+      </div>
+    </template>
+    <template v-else-if="markerList.length">
+      <div
+        class="map-marker"
+        :style="getItemPosition(item)"
+        @click.stop="tapMarker(item)"
+        :class="{ 'cursor-pointer': !!cardUnitJson }"
+        v-for="item in markerList"
+        :key="item.id"
+      >
+        <transition name="popover-fade">
+          <div
+            class="popover-content"
+            v-if="activeMarker && activeMarker.id === item.id"
+          >
+            <card-group-cell
+              :page-item="pageItem"
+              :cellsLayout="[cardUnitJson]"
+              :cell-item-data="activeMarker"
+            ></card-group-cell>
+          </div>
+        </transition>
+        <img
+          :src="getItemIcon(item)"
+          class="marker-icon"
+          v-if="getItemIcon(item)"
+        />
+      </div>
+    </template>
   </div>
 
   <div class="map-view" v-else>
@@ -81,7 +113,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, nextTick, computed } from "vue";
+import { onMounted, ref, nextTick, computed, watch, set } from "vue";
 import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
 import { getImagePath } from "../../common/http";
 import {
@@ -91,27 +123,85 @@ import {
 } from "../../common/functions/mapUtils.js";
 import { $selectList } from "@/common/http";
 import cardGroupCell from "./card-group-cell/card-group-cell.vue";
+import TreeDataItem from "./TreeDataItem.vue";
+import { formatStyleData } from "../../common";
 
 const props = defineProps({
   pageItem: Object,
   treeReq: Object,
 });
-
+function isActive(marker) {
+  if (selectedTreeData.value && marker?.id) {
+    return selectedTreeData.value?.id === marker.id;
+  }
+  return false;
+}
 const mapJson = computed(() => {
   return props.pageItem.map_json || {};
 });
 const mapBaseSupplier = computed(() => {
   return mapJson.value.map_base_supplier || "";
 });
-const baseImage = computed(() => {
-  if (mapBaseSupplier.value === "自定义底图") {
-    if (selectedTreeData.value && mapJson.value.map_base_col) {
-      return getImagePath(selectedTreeData.value[mapJson.value.map_base_col]);
+
+function findParent(data, list) {
+  if (data.parent_no) {
+    if (Array.isArray(list) && list.length) {
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i];
+        if (item.area_no && item.area_no === data.parent_no) {
+          return item;
+        } else if (item.children && item.children.length) {
+          return findParent(item, item.children);
+        }
+      }
     }
-    return getImagePath(mapJson.value.base_image);
-  } else if (mapBaseSupplier.value === "腾讯地图") {
+  }
+  return null;
+}
+
+function findParentWithBaseImage(data, list) {
+  if (!data?.parent_no || !list?.length) return null;
+
+  for (const item of list) {
+    if (item.area_no === data.parent_no) {
+      return item;
+    }
+    if (item.children?.length) {
+      const found = findParentWithBaseImage(data, item.children);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+const baseImage = computed(() => {
+  if (mapBaseSupplier.value !== "自定义底图") {
     return "";
   }
+
+  const baseImageCol = mapJson.value.map_base_col;
+  if (!baseImageCol) {
+    return getImagePath(mapJson.value.base_image);
+  }
+
+  if (selectedTreeData.value?.is_leaf !== "是") {
+    // 检查当前选中项
+    if (selectedTreeData.value?.[baseImageCol]) {
+      return getImagePath(selectedTreeData.value[baseImageCol]);
+    }
+  }
+
+  // 递归查找父级
+  let parent = findParentWithBaseImage(selectedTreeData.value, treeData.value);
+  while (parent) {
+    if (parent[baseImageCol]) {
+      return getImagePath(parent[baseImageCol]);
+    }
+    parent = findParentWithBaseImage(parent, treeData.value);
+  }
+
+  // 如果都没有找到，使用默认底图
+  return getImagePath(mapJson.value.base_image);
 });
 
 const mapInstance = ref(null); // 地图实例
@@ -191,6 +281,23 @@ function getItemPosition(item = {}) {
   }
   return post;
 }
+const setLabelStyle = computed(() => {
+  if (
+    mapJson.value?.map_type === "标签" &&
+    mapJson.value?.col_label_style_json
+  ) {
+    return formatStyleData(mapJson.value?.col_label_style_json);
+  }
+});
+
+const setLabelActiveStyle = computed(() => {
+  if (
+    mapJson.value?.map_type === "标签" &&
+    mapJson.value?.label_active_style_json
+  ) {
+    return formatStyleData(mapJson.value?.label_active_style_json);
+  }
+});
 
 function tapMarker(item) {
   if (item?.id && item?.id === activeMarker.value?.id) {
@@ -201,8 +308,35 @@ function tapMarker(item) {
 }
 const treeData = ref([]);
 const selectedTreeData = ref({});
+const expandedNodes = ref({});
+
+function toggleExpand(item) {
+  console.log("toggleExpand", item);
+  if (!item || !item.id) return;
+
+  set(expandedNodes.value, item.id, !expandedNodes.value[item.id]);
+  console.log("expandedNodes", expandedNodes.value);
+}
+
+watch(
+  () => selectedTreeData.value,
+  (newVal) => {
+    console.log(newVal);
+    if (
+      newVal.children?.length &&
+      mapJson.value?.x_col &&
+      mapJson.value?.y_col
+    ) {
+      markerList.value = newVal.children.filter(
+        (item) => item[mapJson.value?.x_col] && item[mapJson.value?.y_col]
+      );
+    }
+  }
+);
+const emit = defineEmits(["select"]);
 function tapTreeData(item) {
   selectedTreeData.value = item;
+  emit("select", item);
 }
 async function initMapTreeData() {
   const req = props.treeReq;
@@ -260,9 +394,23 @@ onMounted(() => {
       min-width: 175px;
       display: flex;
       justify-content: center;
+      align-items: center;
       position: relative;
       text-align: center;
       cursor: pointer;
+      .tree-data-item-name-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translate(0, -50%);
+        font-size: 16px;
+        transition: transform 0.3s ease;
+        cursor: pointer;
+
+        &.expanded {
+          transform: translate(0, -50%) rotate(90deg);
+        }
+      }
       &.active {
         background: linear-gradient(
           151.99deg,
@@ -270,21 +418,20 @@ onMounted(() => {
           rgba(4, 71, 171, 1) 294.82%
         );
         color: #fff;
-        &::before {
-          content: "";
-          position: absolute;
-          top: 50%;
-          left: 15px;
-          transform: translate(-50%, -50%);
-          width: 0;
-          height: 0;
-          border: 6px solid transparent;
-          border-left: 6px solid #fff;
-        }
+        // &::before {
+        //   content: "";
+        //   position: absolute;
+        //   top: 50%;
+        //   left: 15px;
+        //   transform: translate(-50%, -50%);
+        //   width: 0;
+        //   height: 0;
+        //   border: 6px solid transparent;
+        //   border-left: 6px solid #fff;
+        // }
       }
     }
     .tree-data-item-child {
-      padding-left: 10px;
       .tree-data-item-child-item {
         .tree-data-item-child-item-name {
           border-left: 2px solid transparent;
@@ -298,6 +445,19 @@ onMounted(() => {
   }
 }
 .custom-map {
+  background-color: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  // &:after {
+  //   content: "缺少底图";
+  //   position: absolute;
+  //   top: 50%;
+  //   left: 50%;
+  //   transform: translate(-50%, -50%);
+  //   color: #fff;
+  //   font-size: 16px;
+  //   z-index: -1;
+  // }
   .map-marker {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -378,5 +538,24 @@ onMounted(() => {
     line-height: 30px;
     margin: 0 5px;
   }
+}
+
+.tree-expand-enter-active,
+.tree-expand-leave-active {
+  transition: all 0.3s ease;
+  max-height: 1000px;
+  overflow: hidden;
+}
+
+.tree-expand-enter-from,
+.tree-expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.tree-expand-enter-to,
+.tree-expand-leave-from {
+  max-height: 1000px;
+  opacity: 1;
 }
 </style>

@@ -16,6 +16,7 @@
         :pageItem="{
           map_json: listConfig && listConfig.map_json,
         }"
+        @select="onSelect"
       ></map-card>
     </div>
     <div class="list-container">
@@ -270,6 +271,7 @@ export default {
       tableData: [],
       pageInfo: { pageNo: 1, rownumber: 10, total: 0 },
       searchKey: "",
+      mapSearchKey: "",
       showAddDialog: false,
     };
   },
@@ -470,6 +472,17 @@ export default {
     },
   },
   methods: {
+    onSelect(item) {
+      console.log("onSelect", item);
+      if (
+        this.listConfig?.map_filter_val_field &&
+        item[this.listConfig?.map_filter_val_field]
+      ) {
+        // this.mapSearchKey = item[this.listConfig?.map_filter_val_field];
+        this.mapSearchKey = item.path;
+        this.onSearch();
+      }
+    },
     onActionComplete(event) {
       console.log("onActionComplete", event);
       this.showAddDialog = false;
@@ -491,6 +504,18 @@ export default {
             colName: this.listConfig?.filter_cols,
             ruleType: "like",
             value: this.searchKey,
+          });
+        }
+        if (this.listConfig?.map_filter_field && this.mapSearchKey) {
+          // itemReqJson.condition.push({
+          //   colName: this.listConfig?.map_filter_field,
+          //   ruleType: "eq",
+          //   value: this.mapSearchKey,
+          // });
+          itemReqJson.condition.push({
+            colName: 'path',
+            ruleType: "like]",
+            value: this.mapSearchKey,
           });
         }
         const req = this.buildRequestParams(itemReqJson);
