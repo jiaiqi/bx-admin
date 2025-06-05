@@ -10,6 +10,31 @@
     }"
     @click="tapMarker()"
   >
+    <div class="map-tree-data" v-if="treeData.length">
+      <div class="tree-data-item" v-for="item in treeData" :key="item.id">
+        <div
+          class="tree-data-item-name"
+          :class="{
+            active:
+              selectedTreeData && item.id && selectedTreeData.id === item.id,
+          }"
+          @click="tapTreeData(item)"
+        >
+          {{ item.name || item.area_name }}
+        </div>
+        <div class="tree-data-item-child">
+          <div
+            class="tree-data-item-child-item"
+            v-for="item in item.children"
+            :key="item.id"
+          >
+            <div class="tree-data-item-child-item-name">
+              {{ item.name || item.area_name }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div
       class="map-marker"
       :style="getItemPosition(item)"
@@ -69,6 +94,7 @@ import cardGroupCell from "./card-group-cell/card-group-cell.vue";
 
 const props = defineProps({
   pageItem: Object,
+  treeReq: Object,
 });
 
 const mapJson = computed(() => {
@@ -78,9 +104,14 @@ const mapBaseSupplier = computed(() => {
   return mapJson.value.map_base_supplier || "";
 });
 const baseImage = computed(() => {
-  return mapBaseSupplier.value === "自定义底图"
-    ? getImagePath(mapJson.value.base_image)
-    : "";
+  if (mapBaseSupplier.value === "自定义底图") {
+    if (selectedTreeData.value && mapJson.value.map_base_col) {
+      return getImagePath(selectedTreeData.value[mapJson.value.map_base_col]);
+    }
+    return getImagePath(mapJson.value.base_image);
+  } else if (mapBaseSupplier.value === "腾讯地图") {
+    return "";
+  }
 });
 
 const mapInstance = ref(null); // 地图实例
@@ -168,15 +199,35 @@ function tapMarker(item) {
     activeMarker.value = item;
   }
 }
-
+const treeData = ref([]);
+const selectedTreeData = ref({});
+function tapTreeData(item) {
+  selectedTreeData.value = item;
+}
+async function initMapTreeData() {
+  const req = props.treeReq;
+  req.treeData = true;
+  const url = `/${req.mapp}/select/${req.serviceName}`;
+  const res = await $selectList(url, req);
+  if (res.ok) {
+    treeData.value = res.data;
+    if (res.data.length) {
+      selectedTreeData.value = res.data[0];
+    }
+  }
+}
 onMounted(() => {
   // 实例化地图
   if (mapBaseSupplier.value === "腾讯地图") {
     initTencentMap();
   } else if (mapBaseSupplier.value === "自定义底图") {
-    initCustomMap().then((res) => {
-      markerList.value = res;
-    });
+    if (props.treeReq) {
+      initMapTreeData();
+    } else {
+      initCustomMap().then((res) => {
+        markerList.value = res;
+      });
+    }
   }
 });
 </script>
@@ -186,6 +237,65 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   position: relative;
+}
+.map-tree-data {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 100;
+  background: #fff;
+  .tree-data-item {
+    border-top: 1px solid #e5e5e5;
+    &:first-child {
+      border-top: none;
+    }
+    .tree-data-item-name {
+      border-bottom: 1px solid #e5e5e5;
+      &:last-child {
+        border-bottom: none;
+      }
+      width: 100%;
+      padding: 5px 30px;
+      line-height: 46px;
+      min-width: 175px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      text-align: center;
+      cursor: pointer;
+      &.active {
+        background: linear-gradient(
+          151.99deg,
+          rgba(0, 122, 255, 1) 29.59%,
+          rgba(4, 71, 171, 1) 294.82%
+        );
+        color: #fff;
+        &::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 15px;
+          transform: translate(-50%, -50%);
+          width: 0;
+          height: 0;
+          border: 6px solid transparent;
+          border-left: 6px solid #fff;
+        }
+      }
+    }
+    .tree-data-item-child {
+      padding-left: 10px;
+      .tree-data-item-child-item {
+        .tree-data-item-child-item-name {
+          border-left: 2px solid transparent;
+          width: 100%;
+          padding: 5px 30px;
+          line-height: 46px;
+          cursor: pointer;
+        }
+      }
+    }
+  }
 }
 .custom-map {
   .map-marker {

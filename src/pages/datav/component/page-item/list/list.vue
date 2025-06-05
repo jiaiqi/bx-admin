@@ -1,196 +1,210 @@
 <template>
-  <div>
+  <div class="data-view-list">
     <!-- <div class="more-btn">
       <span v-if="showMoreBtn" @click="toMore">
         更多
         <i class="el-icon-arrow-right"></i>
       </span>
     </div> -->
-    <div class="statistic-box" v-if="stasticData.length">
-      <div
-        class="statistic-item"
-        v-for="(item, index) in stasticData"
-        :key="index"
-      >
-        <div class="label">{{ item.label }}</div>
-        <div class="value">
-          {{ item.value || "0" }}
-          <span
-            v-if="
-              v2Data &&
-              v2Data.cfgJson &&
-              v2Data.cfgJson.statistics_card_col_unit
-            "
-            >{{ v2Data.cfgJson.statistics_card_col_unit }}</span
-          >
-        </div>
-      </div>
-    </div>
-    <div class="handler-bar" v-if="showSearchBar">
-      <div></div>
-      <div class="flex items-center">
-        <el-input
-          placeholder="搜索"
-          class="search-input mr-2"
-          clearable
-          v-model="searchKey"
-          size="mini"
-        ></el-input>
-        <el-button
-          type="primary"
-          class="search-btn"
-          @click="onSearch"
-          size="mini"
-          >搜索</el-button
-        >
-        <el-button
-          type="primary"
-          class="search-btn"
-          v-if="addBtn"
-          plain
-          size="mini"
-          @click="showAddDialog = true"
-          >{{ addBtn.button_name }}</el-button
-        >
-      </div>
-    </div>
-    <!-- 多行列宫格 -->
-    <grid-list
-      class=""
-      v-if="'多行列宫格' === listType || '多行列文本' === listType"
-      :config="listConfig"
-      :list="tableData"
-      :page-item="pageItem"
-    >
-    </grid-list>
-    <!-- 卡片列表 -->
     <div
-      class="bx-card-list"
-      :style="[styleWidthPictures]"
-      v-else-if="listType == '卡片'"
+      class="map-card-container"
+      v-if="listOptions && listOptions.includes('关联地图筛选')"
     >
-      <el-carousel
-        trigger="click"
-        :height="setSwiperHeight"
-        :style="[setSwiperStyle]"
-        v-if="setListSwiperImg && setListSwiperImg.length"
-        class="swiper-container"
-        :autoplay="true"
-      >
-        <el-carousel-item
-          v-for="(item, index) in setListSwiperImg"
+      <map-card
+        class="map-card"
+        :tree-req="listConfig && listConfig.map_tree_req_json"
+        :pageItem="{
+          map_json: listConfig && listConfig.map_json,
+        }"
+      ></map-card>
+    </div>
+    <div class="list-container">
+      <div class="statistic-box" v-if="stasticData.length">
+        <div
+          class="statistic-item"
+          v-for="(item, index) in stasticData"
           :key="index"
         >
-          <img
-            :src="getImagePath(item._img_url)"
-            alt=""
-            style="width: 100%; height: 100%"
-          />
-          <div
-            class="swiper-title"
-            v-if="
-              listConfig &&
-              listConfig.swiper_title_col &&
-              item[listConfig.swiper_title_col]
-            "
-          >
-            {{ item[listConfig.swiper_title_col] }}
+          <div class="label">{{ item.label }}</div>
+          <div class="value">
+            {{ item.value || "0" }}
+            <span
+              v-if="
+                v2Data &&
+                v2Data.cfgJson &&
+                v2Data.cfgJson.statistics_card_col_unit
+              "
+              >{{ v2Data.cfgJson.statistics_card_col_unit }}</span
+            >
           </div>
-        </el-carousel-item>
-      </el-carousel>
-      <cardGroupCell
-        :pageParamsModel="pageParamsModel"
-        :queryOptions="queryOptions"
-        v-if="pageItem && listType == '卡片'"
-        ref="cardGroupCell"
-        :pageItem="pageItem"
-        :cellsLayout="[cardUnitJson]"
-        :active-cell-layout="activeCardJson"
-        :cellData="tableData"
-        :comColMap="comColMapJson"
-        :cardLayout="layoutJson"
-        :rowButtons="listV2RowButtons"
-        @on-click-cell="onClickCell"
-        @on-click-block="onClickBlock"
-        @on-row-button-click="onRowButtonClick"
-        @on-click-icon="onClickBlock"
-        @setPageParams="setPageParams"
-      >
-      </cardGroupCell>
-    </div>
-    <!-- 表格 -->
-    <div class="bx-table" v-else>
-      <div class="table-head">
-        <div
-          class="table-column"
-          v-for="col in tableColumn"
-          :key="col.columns"
-          :style="{
-            color: setStyle && setStyle.color,
-            'font-size': setStyle && setStyle['font-size'],
-          }"
-        >
-          {{ col.label }}
-        </div>
-        <div
-          class="table-column row-button-box"
-          :style="{
-            color: setStyle && setStyle.color,
-            'font-size': setStyle && setStyle['font-size'],
-          }"
-          v-if="showRowButtons"
-        >
-          操作
         </div>
       </div>
-      <div
-        class="table-row"
-        v-for="(item, index) in tableData"
-        :key="index"
-        :class="{ stripe: striped }"
-      >
-        <div
-          class="table-column"
-          v-for="col in tableColumn"
-          :title="formatValue(item, col)"
-          :key="col.columns"
-          :style="{
-            color: setStyle && setStyle.color,
-            'font-size': setStyle && setStyle['font-size'],
-          }"
-        >
-          <img
-            class="td-img"
-            :src="getImagePath(formatValue(item, col))"
-            alt=""
-            v-if="col.col_type === 'Image' && formatValue(item, col)"
-          />
-          <span v-else>
-            {{ formatValue(item, col) }}
-          </span>
-        </div>
-        <div class="table-column row-button-box" v-if="showRowButtons">
+      <div class="handler-bar" v-if="showSearchBar">
+        <div></div>
+        <div class="flex items-center">
+          <el-input
+            placeholder="搜索"
+            class="search-input mr-2"
+            clearable
+            v-model="searchKey"
+            size="mini"
+          ></el-input>
           <el-button
             type="primary"
+            class="search-btn"
+            @click="onSearch"
             size="mini"
-            v-for="btn in setRowButtons"
-            @click="onRowButtonClick(btn, item)"
-            >{{ btn.button_name }}</el-button
+            >搜索</el-button
+          >
+          <el-button
+            type="primary"
+            class="search-btn"
+            v-if="addBtn"
+            plain
+            size="mini"
+            @click="showAddDialog = true"
+            >{{ addBtn.button_name }}</el-button
           >
         </div>
       </div>
-    </div>
-    <div class="pagination-box" v-if="showPagination">
-      <el-pagination
-        background
-        class="el-pagination"
-        @current-change="handleCurrentChange"
-        :current-page="pageInfo.pageNo"
-        :page-size="pageInfo.rownumber"
-        layout="total, prev, pager, next"
-        :total="pageInfo.total"
+      <!-- 多行列宫格 -->
+      <grid-list
+        class=""
+        v-if="'多行列宫格' === listType || '多行列文本' === listType"
+        :config="listConfig"
+        :list="tableData"
+        :page-item="pageItem"
       >
-      </el-pagination>
+      </grid-list>
+      <!-- 卡片列表 -->
+      <div
+        class="bx-card-list"
+        :style="[styleWidthPictures]"
+        v-else-if="listType == '卡片'"
+      >
+        <el-carousel
+          trigger="click"
+          :height="setSwiperHeight"
+          :style="[setSwiperStyle]"
+          v-if="setListSwiperImg && setListSwiperImg.length"
+          class="swiper-container"
+          :autoplay="true"
+        >
+          <el-carousel-item
+            v-for="(item, index) in setListSwiperImg"
+            :key="index"
+          >
+            <img
+              :src="getImagePath(item._img_url)"
+              alt=""
+              style="width: 100%; height: 100%"
+            />
+            <div
+              class="swiper-title"
+              v-if="
+                listConfig &&
+                listConfig.swiper_title_col &&
+                item[listConfig.swiper_title_col]
+              "
+            >
+              {{ item[listConfig.swiper_title_col] }}
+            </div>
+          </el-carousel-item>
+        </el-carousel>
+        <cardGroupCell
+          :pageParamsModel="pageParamsModel"
+          :queryOptions="queryOptions"
+          v-if="pageItem && listType == '卡片'"
+          ref="cardGroupCell"
+          :pageItem="pageItem"
+          :cellsLayout="[cardUnitJson]"
+          :active-cell-layout="activeCardJson"
+          :cellData="tableData"
+          :comColMap="comColMapJson"
+          :cardLayout="layoutJson"
+          :rowButtons="listV2RowButtons"
+          @on-click-cell="onClickCell"
+          @on-click-block="onClickBlock"
+          @on-row-button-click="onRowButtonClick"
+          @on-click-icon="onClickBlock"
+          @setPageParams="setPageParams"
+        >
+        </cardGroupCell>
+      </div>
+      <!-- 表格 -->
+      <div class="bx-table" v-else>
+        <div class="table-head">
+          <div
+            class="table-column"
+            v-for="col in tableColumn"
+            :key="col.columns"
+            :style="{
+              color: setStyle && setStyle.color,
+              'font-size': setStyle && setStyle['font-size'],
+            }"
+          >
+            {{ col.label }}
+          </div>
+          <div
+            class="table-column row-button-box"
+            :style="{
+              color: setStyle && setStyle.color,
+              'font-size': setStyle && setStyle['font-size'],
+            }"
+            v-if="showRowButtons"
+          >
+            操作
+          </div>
+        </div>
+        <div
+          class="table-row"
+          v-for="(item, index) in tableData"
+          :key="index"
+          :class="{ stripe: striped }"
+        >
+          <div
+            class="table-column"
+            v-for="col in tableColumn"
+            :title="formatValue(item, col)"
+            :key="col.columns"
+            :style="{
+              color: setStyle && setStyle.color,
+              'font-size': setStyle && setStyle['font-size'],
+            }"
+          >
+            <img
+              class="td-img"
+              :src="getImagePath(formatValue(item, col))"
+              alt=""
+              v-if="col.col_type === 'Image' && formatValue(item, col)"
+            />
+            <span v-else>
+              {{ formatValue(item, col) }}
+            </span>
+          </div>
+          <div class="table-column row-button-box" v-if="showRowButtons">
+            <el-button
+              type="primary"
+              size="mini"
+              v-for="btn in setRowButtons"
+              @click="onRowButtonClick(btn, item)"
+              >{{ btn.button_name }}</el-button
+            >
+          </div>
+        </div>
+      </div>
+      <div class="pagination-box" v-if="showPagination">
+        <el-pagination
+          background
+          class="el-pagination"
+          @current-change="handleCurrentChange"
+          :current-page="pageInfo.pageNo"
+          :page-size="pageInfo.rownumber"
+          layout="total, prev, pager, next"
+          :total="pageInfo.total"
+        >
+        </el-pagination>
+      </div>
     </div>
 
     <el-dialog
@@ -224,13 +238,14 @@ import { formatStyleData } from "../../../common/index";
 import GridList from "./grid-list.vue";
 import SimpleAdd from "@/components/common/simple-add.vue";
 // import ListMixin from "@/components/mixin/list-mixin"; // 列表js
-
+import MapCard from "../map-card.vue";
 export default {
   name: "data-view-list",
   components: {
     cardGroupCell,
     GridList,
     SimpleAdd,
+    MapCard,
   },
   // mixins: [ListMixin],
   props: {
@@ -259,6 +274,9 @@ export default {
     };
   },
   computed: {
+    // dataViewListStyle() {
+    //   return formatStyleData(this.pageItem?.style_json || {});
+    // },
     showMoreBtn() {
       return (
         this.listOptions?.includes("更多按钮") &&
@@ -792,6 +810,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.data-view-list {
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  .map-card-container {
+    width: 70%;
+  }
+  .list-container {
+    flex: 1;
+  }
+}
 .more-btn {
   position: absolute;
   top: 15px;
