@@ -408,22 +408,6 @@ export default {
         }
       }
     },
-    // 处理组件位置交换
-    swapComponents({ sourceContentId, targetContentId, draggedComponent, targetComponent }) {
-      // 找到源组件和目标组件在editorComponents中的索引
-      const sourceIndex = this.editorComponents.findIndex(comp => comp.id === sourceContentId);
-      const targetIndex = this.editorComponents.findIndex(comp => comp.id === targetContentId);
-      
-      if (sourceIndex !== -1 && targetIndex !== -1) {
-        // 交换seq值
-        const tempSeq = this.editorComponents[sourceIndex]._seq;
-        this.editorComponents[sourceIndex]._seq = this.editorComponents[targetIndex]._seq;
-        this.editorComponents[targetIndex]._seq = tempSeq;
-        
-        // 触发更新
-        this.$emit("change", this.editorComponents);
-      }
-    },
   },
 };
 </script>
