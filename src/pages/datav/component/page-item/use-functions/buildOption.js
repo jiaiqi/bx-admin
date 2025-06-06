@@ -40,12 +40,15 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     // 初始动画延迟
     // animationDelay: function (idx) {
     //   // 越往后的数据延迟越大
-    //   return idx * 100;
+    //   return idx * 1000;
     // },
-    animationDuration: 1000, // 初始动画的时长
+    // animationEasing: "quinticOut",
+    animationEasing: "cubicInOut",
+    animationDelay: 100,
+    animationDuration:1500, // 初始动画的时长
     // animationDuration: function (idx) {
     //   // 越往后的数据时长越大
-    //   return idx * 1000;
+    //   return (idx+1) * 2000;
     // },
     // 更新动画时长
     // animationDurationUpdate: function (idx) {
