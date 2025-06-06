@@ -6,7 +6,10 @@
      <div class="app_name"></div>
      <div class="app_bts">
        <li><el-button type="primary" size="mini" @click="initPage">刷新</el-button></li>
-       <li><el-button type="primary" size="mini" @click="initPage">保存</el-button></li>
+       <li><el-button type="primary" size="mini"
+                      @click="onSave"
+                      :loading="isSaving"
+       >保存</el-button></li>
        <li>
          <el-button type="primary" size="mini" @click="showPreview"><i class="el-icon-view"></i>预览</el-button>
        </li>
@@ -33,7 +36,11 @@
        <div class="app_edit_main">
          <RenderPage
              @componentClick="handleComponentClick"
+             @UpdateComponents="UpdateComponents"
              :components="components"
+             :isPreview="false"
+             ref="editRef"
+             @ComponentsSwapped="ComponentsSwapped"
          />
        </div>
      </div>
@@ -45,6 +52,17 @@
             "
          ></i>
        </div>
+       <property-view
+           class="property-view-app"
+           app-no="config"
+           :page-config="pageConfig"
+           :key="pageRefreshKey"
+           :current-item="currentItem"
+           :current-id="currentId"
+           :components="components"
+           ref="propertyRef"
+           @refresh="onRefresh"
+       />
      </div>
    </div>
  </div>
@@ -56,14 +74,19 @@ import {$selectList, $selectOne} from "@/common/http";
 import {pageCompCols} from "@/pages/lowcode/components/property/columns";
 import RenderPage from "@/pages/low-app/editor-home/render-page.vue";
 import dragStore from "@/pages/low-app/app-materials/store/dragStore";
+import PropertyView from "@/pages/low-app/app-materials/property/index.vue";
+import debounce from "lodash/debounce";
 export default{
   name: "app-home",
   components: {
     MaterialsView,
-    RenderPage
+    RenderPage,
+    PropertyView
   },
   data(){
     return{
+      // 保存按钮状态
+      isSaving: false,
       components:[],
       materialsCollapsed:false,
       propertyCollapsed:false,
@@ -73,6 +96,7 @@ export default{
       pageConfig: null,
       currentId:'',
       currentItem:null,
+      positionChange:[]
     }
   },
   created(){
@@ -82,16 +106,62 @@ export default{
     }
   },
   methods:{
+    //获取被交换位置的组件信息
+    ComponentsSwapped(list){
+     console.log('位置被交换了',list);
+     this.positionChange=list;
+    },
+    //实时刷新
+    onRefresh() {
+      setTimeout(() => {
+        // location.reload();
+        this.initPage();
+        this.pageRefreshKey = new Date().getTime();
+      }, 150);
+    },
+    //实时更新更新组件列表
+    UpdateComponents(newComponents) {
+      this.components = newComponents;
+    },
+    //防抖方式的保存
+    onSave: debounce(function () {
+
+      // 1. 看页面属性有没有发生变化 有的话先保存页面属性
+      if (this.isSaving) return; // 如果正在保存，则不重复执行
+
+      this.isSaving = true;
+
+      const savePromise = this.$refs?.propertyRef?.handleSave();
+
+      // 检查返回值是否是Promise
+      if (savePromise && typeof savePromise.then === "function") {
+        savePromise
+            .then(() => {
+              // PropertyView组件内部已经有成功提示，这里不再重复提示
+            })
+            .catch((err) => {
+              this.$message.error("保存失败：" + (err?.message || "未知错误"));
+            })
+            .finally(() => {
+              this.isSaving = false;
+            });
+      } else {
+        // 如果不是Promise，直接设置状态为false
+        this.isSaving = false;
+      }
+    }, 500),
 
     //组件被点击了
-    handleComponentClick(val){
+    handleComponentClick(list,val){
      console.log('被点击的组件是',val);
-      this.currentId = val.id;
+     console.log('已经加入画布的组件列表',list)
+      this.currentId =val.com_no?val.id:null;
       this.currentItem = val;
     },
     //预览
     showPreview(){
-
+      const url = `/vpages/#/app/preview/${this.pageNo}`;
+      window.open(url, "_blank");
     },
     //容器收缩板
     setToggle(type){
@@ -192,29 +262,6 @@ export default{
       }
       console.log('---获取到的界面信息',this.components)
     },
-    //构建组件树
-    buildComponentsTree(components) {
-      let list = components.filter((item) => !item.parent_no);
-      function buildTree(list, parentId) {
-        const result = [];
-        if (Array.isArray(list) && list.length) {
-          list.forEach((item) => {
-            if (parentId && item.parent_no === parentId) {
-              item.children = buildTree(list, item.com_no);
-              result.push(item);
-            }
-          });
-        }
-        return result;
-      }
-      list = list.map((item) => {
-        item.children = buildTree(components, item.com_no)?.sort(
-            (a, b) => a.com_seq - b.com_seq
-        );
-        return item;
-      });
-      return list;
-    },
     //获取界面组件信息
     async getPageComponents() {
       const url = `/config/select/srvpage_cfg_page_component_select`;
@@ -296,4 +343,5 @@ export default{
 
 <style scoped lang="less">
 @import "app-home.less";
+
 </style>

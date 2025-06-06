@@ -1,8 +1,9 @@
 <template>
   <div 
     class="render-page"
-    @dragover.prevent
-    @drop.prevent
+    :data-preview="isPreview"
+    @dragover.prevent="!isPreview && $event.preventDefault()"
+    @drop.prevent="!isPreview && $event.preventDefault()"
   >
     <div class="component-container">
       <div 
@@ -10,21 +11,21 @@
         :key="item.id || index"
         class="component-wrapper"
         :style="getWrapperStyle(item)"
-        draggable="true"
-        @dragstart="handleDragStart($event, item, index)"
-        @dragover.prevent
-        @dragenter.prevent="handleDragEnter($event, index)"
-        @dragleave.prevent="handleDragLeave($event, index)"
-        @drop.prevent="handleDrop($event, index)"
-        @click="handleComponentClick(item)"
+        :draggable="!isPreview"
+        @dragstart="!isPreview && handleDragStart($event, item, index)"
+        @dragover.prevent="!isPreview && $event.preventDefault()"
+        @dragenter.prevent="!isPreview && handleDragEnter($event, index)"
+        @dragleave.prevent="!isPreview && handleDragLeave($event, index)"
+        @drop.prevent="!isPreview && handleDrop($event, index)"
+        @click="!isPreview && handleComponentClick(item)"
       >
-        <div class="component-header">
+        <div class="component-header" v-if="!isPreview">
           <div class="drag-handle">
             <i class="el-icon-rank"></i>
           </div>
           <div 
             class="delete-btn"
-            @click.stop="handleDeleteComponent(item.id)"
+            @click.stop="handleDeleteComponent(item,item.id)"
             title="删除组件"
           >
             <i class="el-icon-delete"></i>
@@ -40,11 +41,12 @@
             :screenType="screenType"
             :pageConfig="pageConfig"
             :inTabs="false"
-            :inEdit="inEdit"
+            :inEdit="!isPreview"
             :currentId="currentId"
           />
         </div>
-        <div 
+        <div
+          v-if="!isPreview"
           class="resize-handle"
           @mousedown.stop.prevent="startResize($event, item)"
         ></div>
@@ -57,6 +59,7 @@
 import dragStore from '../app-materials/store/dragStore'
 import pageItem from "@/pages/datav/component/page-item/page-item.vue";
 import floatComponent from "./float-component.vue";
+import {$delete} from "@/common/http";
 
 export default {
   name: "render-page",
@@ -67,7 +70,7 @@ export default {
   data() {
     return {
       currentComponents: [], // 存储所有组件
-      screenType: 'pc', // 默认屏幕类型 mobile /pc
+      screenType: 'mobile', // 默认屏幕类型 mobile /pc
       pageConfig: {}, // 页面配置
       inEdit: true, // 是否处于编辑状态
       currentId: null, // 当前选中的组件ID
@@ -77,9 +80,14 @@ export default {
       startHeight: 0, // 开始调整时的高度
       dragIndex: -1, // 当前拖拽的组件索引
       dragOverIndex: -1, // 当前拖拽经过的组件索引
+      swappedComponents: new Set(), // 存储被交换的组件ID
     }
   },
   props:{
+    isPreview:{
+      type: Boolean,
+      default: false
+    },
     components: {
       type: Array,
       default: ()=> []
@@ -91,12 +99,16 @@ export default {
       deep: true,
       handler(newValue) {
         if (newValue && newValue.length > 0) {
-          // 为传入的组件添加拖拽索引
+          // 为传入的组件添加拖拽索引和com_seq值
           const componentsWithIndex = newValue.map((comp, index) => ({
             ...comp,
-            dragIndex: index
+            dragIndex: index,
+            // 如果组件已经有com_seq，则保持原值，否则使用默认计算值
+            com_seq: comp.com_seq || (index + 1) * 100,
+            isPositionChanged: false // 初始化位置变更标识
           }))
-          this.currentComponents = componentsWithIndex
+          // 根据com_seq值排序
+          this.currentComponents = componentsWithIndex.sort((a, b) => a.com_seq - b.com_seq)
           // 更新组件的z-index
           this.rearrangeComponents()
         }
@@ -105,23 +117,90 @@ export default {
   },
   methods: {
     // 处理删除组件
-    handleDeleteComponent(id) {
-      // 找到要删除的组件的索引
-      const index = this.currentComponents.findIndex(comp => comp.id === id)
-      if (index > -1) {
-        // 删除组件
-        this.currentComponents.splice(index, 1)
-        // 重新排列剩余组件
-        this.rearrangeComponents()
+    async handleDeleteComponent(item, id) {
+      try {
+        // 检查必要参数
+        if (!item || !id) {
+          this.$message.warning('删除组件失败：缺少必要参数');
+          return;
+        }
+
+        // 判断是否为数据组件（需要后端删除）
+        if (item?.com_no && item.id) {
+          const confirmed = await this.$confirm('确定要删除此组件吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).catch(() => false);
+
+          if (!confirmed) return;
+
+          const loading = this.$loading({
+            lock: true,
+            text: '正在删除组件...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+
+          try {
+            const { data, ok, msg } = await $delete({
+              app: 'config',
+              service: 'srvpage_cfg_page_component_delete',
+              value: id
+            });
+
+            if (ok) {
+              this.$message.success('组件删除成功');
+              // 从当前组件列表中移除
+              const index = this.currentComponents.findIndex(comp => comp.id === id);
+              if (index > -1) {
+                this.currentComponents.splice(index, 1);
+                this.rearrangeComponents();
+              }
+            } else {
+              this.$message.error(msg || '删除组件失败');
+            }
+          } catch (error) {
+            console.error('删除组件出错:', error);
+            this.$message.error('删除组件时发生错误');
+          } finally {
+            loading.close();
+          }
+        } else {
+          // 本地组件删除
+          const index = this.currentComponents.findIndex(comp => comp.id === id);
+          if (index > -1) {
+            this.currentComponents.splice(index, 1);
+            this.rearrangeComponents();
+            this.$message.success('组件删除成功');
+          }
+        }
+      } catch (error) {
+        console.error('删除组件操作失败:', error);
+        this.$message.error('删除组件操作失败');
       }
     },
 
     // 重新排列组件
-    rearrangeComponents() {
-      // 更新每个组件的z-index和拖拽索引
+    rearrangeComponents(isNewComponent = false) {
+      // 先根据com_seq值排序
+      this.currentComponents.sort((a, b) => a.com_seq - b.com_seq)
+      
+      // 更新每个组件的z-index、拖拽索引和com_seq值
       this.currentComponents.forEach((comp, index) => {
+        const oldSeq = comp.com_seq
+        const newSeq = (index + 1) * 100
+        
         comp.layout_z = index + 1
         comp.dragIndex = index
+        
+        // 只有在非新组件添加的情况下，才更新com_seq和isPositionChanged状态
+        if (!isNewComponent) {
+          comp.com_seq = newSeq
+          if (oldSeq !== newSeq) {
+            comp.isPositionChanged = true
+          }
+        }
       })
     },
 
@@ -168,7 +247,9 @@ export default {
 
     // 处理组件点击事件
     handleComponentClick(item) {
-      this.$emit('componentClick', item)
+      this.$emit('componentClick', this.currentComponents,item)
+      // 触发组件更新事件
+      this.$emit('UpdateComponents', this.currentComponents)
     },
 
     // 添加新组件
@@ -184,11 +265,23 @@ export default {
         ...componentData,
         layout_height: componentData.layout_height || 6.25, // 100px / 16 = 6.25rem
         layout_z: this.currentComponents.length + 1,
-        dragIndex: this.currentComponents.length // 添加拖拽索引
+        dragIndex: this.currentComponents.length, // 添加拖拽索引
+        // 如果组件已经有com_seq，则保持原值，否则使用默认计算值
+        com_seq: componentData.com_seq || (this.currentComponents.length + 1) * 100,
+        isPositionChanged: false, // 新添加的组件默认未变更位置
+        _editType: 'add', // 添加编辑类型标识
+        _duplicate_id:componentData.id?componentData.id:'',
+        ...componentData.data,
+        com_name:componentData.comp_label || componentData.chart_name || componentData.label
       }
 
       // 添加到组件列表末尾
       this.currentComponents.push(newComponent)
+      // 根据com_seq值重新排序
+      this.currentComponents.sort((a, b) => a.com_seq - b.com_seq)
+      // 触发组件更新事件，传入true表示这是新组件添加
+      this.rearrangeComponents(true)
+      this.$emit('UpdateComponents', this.currentComponents)
     },
 
     // 更新组件
@@ -199,6 +292,8 @@ export default {
           ...this.currentComponents[index],
           ...newData
         })
+        // 触发组件更新事件
+        this.$emit('UpdateComponents', this.currentComponents)
       }
     },
 
@@ -208,6 +303,8 @@ export default {
       if (index > -1) {
         this.currentComponents.splice(index, 1)
         this.rearrangeComponents()
+        // 触发组件更新事件
+        this.$emit('UpdateComponents', this.currentComponents)
       }
     },
 
@@ -308,8 +405,26 @@ export default {
       
       if (this.dragIndex === index) return
       
-      // 获取拖拽的组件
+      // 获取拖拽的组件和目标位置的组件
       const draggedItem = this.currentComponents[this.dragIndex]
+      const targetItem = this.currentComponents[index]
+      
+      // 交换两个组件的com_seq值
+      const tempSeq = draggedItem.com_seq
+      draggedItem.com_seq = targetItem.com_seq
+      targetItem.com_seq = tempSeq
+      
+      // 标记两个组件的位置已变更
+      draggedItem.isPositionChanged = true
+      targetItem.isPositionChanged = true
+      
+      // 存储被交换的组件ID（只存储没有_editType的组件，即引入的组件）
+      if (!draggedItem._editType) {
+        this.swappedComponents.add(draggedItem.id)
+      }
+      if (!targetItem._editType) {
+        this.swappedComponents.add(targetItem.id)
+      }
       
       // 创建新的组件数组
       const newComponents = [...this.currentComponents]
@@ -323,13 +438,46 @@ export default {
       // 使用 Vue.set 更新整个数组以确保响应式
       this.$set(this, 'currentComponents', newComponents)
       
+      // 根据com_seq值重新排序
+      this.currentComponents.sort((a, b) => a.com_seq - b.com_seq)
+      
       // 更新组件的z-index和拖拽索引
-      this.rearrangeComponents()
+      this.currentComponents.forEach((comp, index) => {
+        comp.layout_z = index + 1
+        comp.dragIndex = index
+      })
+      
+      // 触发组件更新事件
+      this.$emit('UpdateComponents', this.currentComponents)
+      
+      // 触发组件交换事件，传递被交换的组件信息
+      const swappedComponents = this.getSwappedComponents()
+      if (swappedComponents.length > 0) {
+        this.$emit('ComponentsSwapped', swappedComponents)
+      }
       
       // 重置拖拽状态
       this.dragIndex = -1
       this.dragOverIndex = -1
-    }
+    },
+    
+    // 获取被交换的组件
+    getSwappedComponents() {
+      return this.currentComponents.filter(comp => 
+        this.swappedComponents.has(comp.id)
+      )
+    },
+    
+    // 清除交换记录
+    clearSwapRecord() {
+      this.swappedComponents.clear()
+    },
+    
+    // 获取位置发生变更的组件
+    getPositionChangedComponents() {
+      return this.currentComponents.filter(comp => comp.isPositionChanged)
+    },
+
   },
   mounted() {
     // 监听拖拽结束事件
@@ -344,20 +492,32 @@ export default {
         // 将像素转换为rem（除以16）
         const xRem = x / 16
         const yRem = y / 16
-        
+        if (dragData.type === "cardPart") {
+              dragData.com_name =
+              dragData.comp_label ||
+              dragData.chart_name ||
+              dragData.label;
+            dragData.com_type = "卡片部件";
+            dragData.data = {
+            com_type: "卡片部件",
+            card_parts_name: dragData.com_name,
+            parts_text: dragData.com_name,
+            parts_type: dragData.parts_type,
+          };
+          dragData._type = "component";
+        }
         // 创建新组件数据
         const newComponent = {
           id: `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           type: dragData.type || 'component',
           component: dragData.component || 'page-item',
-          com_type: dragData.com_type || dragData.type,
-          com_label: dragData.comp_label || dragData.label || dragData.name,
           layout_x: xRem,
           layout_y: yRem,
           layout_width: dragData.layout_width || 12.5, // 200px / 16 = 12.5rem
           layout_height: dragData.layout_height || 6.25, // 100px / 16 = 6.25rem
           layout_z: this.currentComponents.length + 1,
-          ...dragData.data
+          _type:dragData._type,
+          ...dragData,
         }
 
         console.log('Adding new component:', newComponent)
@@ -409,7 +569,7 @@ export default {
   min-height: 500px;
   background-color: #000;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  padding: 0.625rem; // 10px / 16 = 0.625rem
+  padding: 0.625rem;
   overflow-y: auto;
 }
 
@@ -481,6 +641,15 @@ export default {
   height: 100%;
   position: relative;
   padding-top: 2rem;
+}
+
+/* 预览模式下移除顶部内边距 */
+[data-preview="true"] .component-content {
+  padding-top: 0;
+}
+
+.component-wrapper:not(:has(.component-header)) .component-content {
+  padding-top: 0;
 }
 
 .delete-btn {

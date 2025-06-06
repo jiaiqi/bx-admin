@@ -953,6 +953,7 @@ export default {
       return result;
     },
     findNormalComponents(list) {
+      debugger
       let result = [];
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {
@@ -1019,7 +1020,6 @@ export default {
     buildAddChildren(list) {
       const result = [];
       let keys = pageCompCols;
-
       if (Array.isArray(list) && list.length) {
         return list
           .filter((item) => !!item)
@@ -1073,6 +1073,7 @@ export default {
             data[key] = item[key];
           }
         });
+        debugger
         let obj = {
           ...data,
           page_no: this.pageConfig.page_no,
@@ -1090,6 +1091,7 @@ export default {
       return result;
     },
     async onSave() {
+      console.log('保存几个组件',this.components)
       if (Array.isArray(this.components) && this.components.length) {
         const oldComponents = cloneDeep(this.components);
         // 保存页面属性后删除在页面上移除的组件
@@ -1178,6 +1180,7 @@ export default {
           // let normalChild = this.findNormalChild(addChildRes);
           console.log(addChildRes);
         }
+        debugger
         // this.$message.success("保存成功");
         return this.$emit("refresh");
         const addNormalComponents = this.findNormalComponents(oldComponents);
@@ -1216,6 +1219,7 @@ export default {
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
+      debugger
       if (pageData?.id) {
         //创建子组件
         if (layout?.length === 0) {
