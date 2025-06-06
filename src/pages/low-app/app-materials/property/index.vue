@@ -305,12 +305,8 @@ export default {
   },
   computed: {
     showPageCompForm() {
-      return (
-        !!this.componentId ||
-        (!this.componentId &&
-          this.pageId &&
-          this.currentItem?._type === "component")
-      );
+      console.log('结果是', !!this.componentId || (!this.componentId && this.pageId && this.currentItem?._type === "component"))
+      return !!this.componentId || (!this.componentId && this.pageId && (this.currentItem?._type === "component"||this.currentItem?.type === "component"));
     },
     showCompForm() {
       return this.compServiceCfg?.service && this.compServiceCfg?.pk;
@@ -890,7 +886,6 @@ export default {
               serviceName: o.serviceName,
               srvApp: "config",
               data: o.data,
-              duplicate: true,
             },
           ];
           break;
@@ -908,14 +903,8 @@ export default {
           ];
           break;
       }
-      const loading = this.$loading({
-        lock: this,
-        text: "操作中...",
-        spinner: "el-icon-loading",
-        background: "rgba(0, 0, 0, 0.7)",
-      });
+
       const response = await this.operate(params);
-      loading.close();
       if (response.data.state === "SUCCESS") {
         if (type === "batch_add") {
           return response.data.response;
@@ -953,7 +942,6 @@ export default {
       return result;
     },
     findNormalComponents(list) {
-      debugger
       let result = [];
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {
@@ -1020,6 +1008,7 @@ export default {
     buildAddChildren(list) {
       const result = [];
       let keys = pageCompCols;
+
       if (Array.isArray(list) && list.length) {
         return list
           .filter((item) => !!item)
@@ -1065,15 +1054,30 @@ export default {
       if (!list?.length) {
         return [];
       }
+      let selJson = [
+        "notice_bar_json",
+        "tabs_json",
+        "form_json",
+        "map_json",
+        "interface_json",
+        "cols_map_json",
+        "swiper_json",
+        "widget_json",
+        "srv_req_json",
+        "list_json",
+        "card_group_json",
+        "sys_option",
+        "chart_json",
+        "row_json"
+      ]
       let keys = pageCompCols;
       const result = list.map((item, index) => {
         let data = {};
         keys.forEach((key) => {
-          if (item[key]) {
+          if (item[key]&&!selJson.includes(key)) {
             data[key] = item[key];
           }
         });
-        debugger
         let obj = {
           ...data,
           page_no: this.pageConfig.page_no,
@@ -1090,77 +1094,29 @@ export default {
       });
       return result;
     },
-    async onSave() {
+    // async handleSave(){
+    //  if(Array.isArray(this.components) && this.components.length) {
+    //    const subComponents = this.components.filter((item) => { return item?._editType === "add" });
+    //    console.log('---',subComponents);
+    //  }
+    // },
+    async handleSave() {
       console.log('保存几个组件',this.components)
       if (Array.isArray(this.components) && this.components.length) {
-        const oldComponents = cloneDeep(this.components);
-        // 保存页面属性后删除在页面上移除的组件
-        const deleteIds = this.findLayoutComponentsByType(
-          oldComponents,
-          "delete"
-        ).map((item) => item.id);
-        if (deleteIds?.length) {
-          const deleteObj = {
-            serviceName: "srvpage_cfg_page_component_delete",
-          };
-          await this.httpOperate("delete", deleteObj, deleteIds.toString());
-        }
-        const updateList = this.findLayoutComponentsByType(
-          oldComponents,
-          "update"
-        );
-        if (updateList?.length) {
-          //更新页面组件 目前只有固定的几个key可以更新
-          const updateKeys = [
-            "com_seq",
-            "layout_height",
-            "layout_width",
-            "layout_x",
-            "layout_y",
-            "parent_no",
-          ];
-          const updateObj = [];
-          updateList.forEach((item) => {
-            // 组装更新对象
-            const data = {};
-            updateKeys.forEach((key) => {
-              if (item[key]) {
-                data[key] = item[key];
-              }
-            });
-            if (!Object.keys(data).length) {
-              return;
-            }
-            const obj = {
-              serviceName: "srvpage_cfg_page_component_update",
-              // serviceName: "srvpage_cfg_page_component_editor_update",
-              condition: [
-                {
-                  colName: "id",
-                  ruleType: "eq",
-                  value: item.id,
-                },
-              ],
-              data: [data],
-            };
-            updateObj.push(obj);
-          });
-          await this.httpOperate("update", updateObj);
-        }
-        let addList = this.findLayoutComponentsByType(oldComponents, "add");
+        const oldComponents = this.components
+        let addList = oldComponents.filter((item) => { return item?._editType === "add" });
         if (addList?.length) {
           const normalChild = this.findNormalComponents(addList);
-
           if (Array.isArray(normalChild) && normalChild.length) {
             // todo 更新组件
             //  this.updateComponentNo()
             const resultComps = await this.insertComponents(
-              this.pageConfig,
-              normalChild
+                this.pageConfig,
+                normalChild
             );
             if (
-              Array.isArray(resultComps) &&
-              resultComps.length === normalChild.length
+                Array.isArray(resultComps) &&
+                resultComps.length === normalChild.length
             ) {
               addList = this.updateNormalComponents(addList, resultComps);
             }
@@ -1168,8 +1124,8 @@ export default {
           const addObj = {
             serviceName: "srvpage_cfg_page_component_add",
             data: this.buildAddComponentsReqData(addList),
-            duplicate: true,
           };
+          debugger
           const addChildRes = await this.httpOperate(
             "add",
             addObj,
@@ -1180,14 +1136,14 @@ export default {
           // let normalChild = this.findNormalChild(addChildRes);
           console.log(addChildRes);
         }
-        debugger
-        // this.$message.success("保存成功");
         return this.$emit("refresh");
+        // this.$message.success("保存成功");
         const addNormalComponents = this.findNormalComponents(oldComponents);
         if (addNormalComponents?.length) {
           // 先创建对应类型的组件 再创建页面组件
           await this.insertComponents(this.pageConfig, addNormalComponents);
         }
+
       }
     },
     async onPageUpdate(event, type) {
@@ -1219,7 +1175,6 @@ export default {
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
-      debugger
       if (pageData?.id) {
         //创建子组件
         if (layout?.length === 0) {
@@ -1295,8 +1250,8 @@ export default {
               delete data[key];
             }
             if (
-              key?.lastIndexOf("_json_data") > -1 &&
-              typeof data[key] === "object"
+                key?.lastIndexOf("_json_data") > -1 &&
+                typeof data[key] === "object"
             ) {
               delete data[key];
             }
@@ -1385,8 +1340,8 @@ export default {
         }
         let componentsLength = 0;
         if (
-          pageData.component_json &&
-          typeof pageData.component_json === "string"
+            pageData.component_json &&
+            typeof pageData.component_json === "string"
         ) {
           componentsLength = JSON.parse(pageData.component_json)?.length;
         }
@@ -1400,7 +1355,6 @@ export default {
             ...item,
           };
           if (!comp) {
-            debugger;
             return;
           }
           switch (item.data.com_type) {
@@ -1482,15 +1436,14 @@ export default {
 
 <style lang="scss" scoped>
 .property-pane {
-  width: 300px;
   ::v-deep .form-view-wrapper {
-    max-height: calc(100vh - 150px);
+    height: calc(100vh - 12.5rem);
     overflow-y: auto;
   }
 }
 .el-tabs {
   width: 100%;
-  height: calc(100vh - 50px);
+  height:100%;
   // padding-bottom: 50px;
   overflow: hidden;
   border: none;
@@ -1507,7 +1460,7 @@ export default {
   }
 
   ::v-deep .el-tabs__content {
-    height: 100%;
+    height: 95%;
     overflow-y: auto;
     padding: 0;
   }

@@ -3,37 +3,58 @@
     <div id="base_map" class="map_cot"></div>
     <div class="driving_tab">
       <li class="dr_t">
-        <span style="display: block;width:80%;text-align:center">路径门架列表</span>
+        <span style="display: block;width:80%;text-align:left;padding-left:2.1875rem">路径门架列表</span>
         <span>
-          <img  style="width:1.5625rem;cursor: pointer" @click="setTabColes" :src="getImgSrc(isColes?'down.png':'top.png')" alt="">
+          <img style="width:1.5625rem;cursor: pointer" @click="setTabColes"
+               :src="getImgSrc(isColes?'down.png':'top.png')" alt="">
         </span>
       </li>
       <div :class="isColes?'dr_list_active':'dr_list'">
-           <li v-for="(item,index) in drivingPoint" :key="index" class="dr_row_info" @click="handleSetPoint(item)">
-             <span>{{item.name}}</span>
-             <span class="dr_row_index" :style="[{backgroundColor:item.select?'#5fc9c9':'#e0e3e3'}]">{{index+1}}</span>
-           </li>
+        <div v-for="(item,index) in drivingPoint" :key="index" :class="item.select?'dr_row_info':'dr_row_info_cl'" @click="handleSetPoint(item)">
+          <li class="hd_btns">
+            <span title="当前位置前加一个" @click="handleSetInfo('up',item)"><i class="el-icon-caret-top"></i></span>
+            <span title="当前位置后加一个" @click="handleSetInfo('dwn',item)"><i class="el-icon-caret-bottom"></i></span>
+          </li>
+          <li class="st_name">{{ item.name }}</li>
+          <li class="st_dl"><span style="font-size: 1.125rem;cursor: pointer" @click="handleDelete(item)"><i
+              class="el-icon-delete"></i></span></li>
+          <li class="dr_row_index" :style="[{backgroundColor:'#e0e3e3'}]">{{ index + 1 }}</li>
+        </div>
+      </div>
+      <div class="hd_bs">
+        <el-button style="width:75%" size="mini" type="primary" plain @click="handleSubmitStation">确认点位修改</el-button>
       </div>
     </div>
+    <StationList :stVisible.sync="listVisible" @getChoseStations="handleFilterStation"/>
   </div>
 </template>
 
 <script setup>
-import {ref,onMounted,onBeforeUnmount} from "vue";
+import {onBeforeUnmount, onMounted, ref} from "vue";
+import {useRoute} from "@/common/vueApi";
 import MapUtils from "@/pages/audit/workdistribution/map/mapUtils";
+import OrderApi from "@/pages/audit/api/order";
+import StationList from "@/pages/audit/workdistribution/map/stationList.vue";
 import {
-  AutoDrivingLineSearch, drawMapMarkersAndLabel, drwIconLineLayer, FlyTo,
+  AutoDrivingLineSearch,
+  drawMapMarkersAndLabel,
+  drwIconLineLayer,
+  FlyTo,
   handleMakePoint,
-  makeFeature, makeFeatureCollection,
-  setPlanRoute,
-  HandleMapClick
+  makeFeature,
+  makeFeatureCollection,
+  setPlanRoute
 } from "@/pages/audit/workdistribution/map/layerPage";
-const drivingPath=ref([])
+
+const orderUtil = new OrderApi();
+const route = useRoute()
+const listVisible=ref(false)
+const drivingPath = ref([])
 const userMap = ref(null);
 const handleMap = ref(null);
-const isColes=ref(false);
-const drivingPoint=ref([])
-const getImgSrc=(name)=> {
+const isColes = ref(false);
+const drivingPoint = ref([])
+const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
 const asyncLoadMap = () => {
@@ -52,7 +73,7 @@ const asyncLoadMap = () => {
     }, 500)
   })
 }
-const setTabColes=()=>{
+const setTabColes = () => {
   isColes.value = !isColes.value
 }
 const initMineMap = () => {
@@ -73,54 +94,18 @@ const initDrawingRoute = async () => {
     handleDrawLine(line)
   }
 }
-const handleDrawLine=(list)=> {
+const handleDrawLine = (list) => {
   if (!list) return;
   let features = []
   features.push(makeFeature('LineString', list, {"name": "linIcon"}))
   let source = makeFeatureCollection(features)
   drwIconLineLayer(handleMap.value, source, 'linIcon', 'up-two.png');
   handleDrawMarker(list)
-  let code=list[(list.length)/2]
-  FlyTo(handleMap.value,handleMakePoint('',code[0],code[1]));
+  let code = list[(list.length) / 2]
+  FlyTo(handleMap.value, handleMakePoint('', code[0], code[1]));
 }
-const handleDrawMarker=(list)=> {
-  //数据被反转过一次
-  let tep = [
-    {
-      select:true,
-      name: '陕西新筑收费站',
-      icon: require(`@/assets/mapIcon/start.png`),
-      point: handleMakePoint('', list[list.length - 1][0], list[list.length - 1][1])
-    },
-    {
-      select:true,
-      name: '新筑站-新筑_002车道',
-      icon: require(`@/assets/mapIcon/end.png`),
-      point: handleMakePoint('', list[0][0], list[0][1])
-    },
-    {
-      select:true,
-      name: '新筑匝道-杏园匝道',
-      icon: require(`@/assets/mapIcon/point_ico.png`),
-      point: handleMakePoint('', 108.92899978014819, 34.287680060799346),
-      info:'这里被拍到了1次'
-    },
-    {
-      select:true,
-      name: '未央立交-汉城立交',
-      icon: require(`@/assets/mapIcon/point_ico.png`),
-      point: handleMakePoint('', 108.92881328287827, 34.29320166130973),
-      info:'这里被拍到了次'
-    },
-    {
-      select:true,
-      name: '陕西经开收费站',
-      icon: require(`@/assets/mapIcon/point_ico.png`),
-      point: handleMakePoint('', 108.92970735322832, 34.2985474624636),
-      info:'这里被拍到了2次'
-    }
-  ]
-  filterPointList(tep)
+const handleDrawMarker = (list) => {
+
 }
 const filterPointList = (list) => {
   try {
@@ -129,30 +114,51 @@ const filterPointList = (list) => {
       return;
     }
 
-    // 更新主要点位列表
-    drivingPoint.value = list;
-
-    // 定义额外的收费站点位
-    const additionalPoints = [
-      { name: "星火1收费", lng: 108.93138234411674, lat: 34.29239159871275 },
-      { name: '星火2收费', lng: 108.92561761113238, lat: 34.29218558057651 }
-    ];
-
     // 构建点位配置
     const pointConfig = {
       icon: require(`@/assets/mapIcon/point_ico.png`),
-      select: true
+      select: true,
+      setUp: false,
+      steDwn: false,
+      isNew:false,
     };
 
-    // 处理额外点位
-    const additionalMarkers = additionalPoints.map(item => ({
+    // 使用 Map 来存储唯一的点位，以 lng,lat 作为键
+    const uniquePoints = new Map();
+
+    // 处理重复点位
+    list.forEach(item => {
+      const key = `${item.lng},${item.lat}`;
+      if (!uniquePoints.has(key)) {
+        uniquePoints.set(key, item);
+      } else {
+        // 如果已存在，且当前项是收费站，则跳过
+        if (item.grantry_type === '收费站') {
+          return;
+        }
+        // 如果已存在项是收费站，则替换为当前项
+        const existingItem = uniquePoints.get(key);
+        if (existingItem.grantry_type === '收费站') {
+          uniquePoints.set(key, item);
+        }
+      }
+    });
+
+    // 转换为数组并排序
+    const sortedPoints = Array.from(uniquePoints.values())
+        .sort((a, b) => (a.seqid || 0) - (b.seqid || 0));
+
+    // 构建最终的点位数组
+    const additionalMarkers = sortedPoints.map((item, index) => ({
       ...pointConfig,
-      name: item.name,
-      point: handleMakePoint('', item.lng, item.lat)
+      name: item.tollgrantry_name,
+      point: handleMakePoint('', item.lng, item.lat),
+      seqid: index + 1,  // 添加 seq 字段，从 1 开始
+      ...item
     }));
 
     // 合并所有点位
-    drivingPoint.value = [...drivingPoint.value, ...additionalMarkers];
+    drivingPoint.value = [...additionalMarkers];
 
     // 绘制地图标记
     drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
@@ -160,30 +166,191 @@ const filterPointList = (list) => {
     console.error('filterPointList 处理失败:', error);
   }
 }
-const handleSetPoint=(item)=>{
-   let tep=[]
-  drivingPoint.value.map(d=>{
-     if(d.name===item.name){
-       d.select=!item.select
-      }
-     if(d.select){
-       tep.push(d)
-     }
-   })
+/**
+ * @Description:根据携带进入的passid进行车辆通行流水查询
+ * @Author:Eirice
+ * @Date: 2025-05-30 10:32:53
+ */
+const getTrafficFlow = (id) => {
+  let cadn = {
+    condition: [{colName: "passid", ruleType: "like", value: id}]
+  }
+  orderUtil.getCarWaysInfo(cadn).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    getTimePoint(res.data.data)
+    console.log('获取到流水', this.suspectedData)
+  }).catch(err => {
+  })
+}
+const getTimePoint = (info) => {
+  let tep = info[0]
+  if (tep) {
+    let cadn = {
+      condition: [
+        {colName: "passid", value: tep.passid, ruleType: "eq"},
+        {colName: "enid", value: tep.enpointid, ruleType: "eq"},
+        {colName: "exid", value: tep.expointid, ruleType: "eq"},
+        {colName: "vtype", value: 1, ruleType: "eq"}
+      ],
+      divCond: [{colName: "transtime", ruleType: "between", value: [tep.entime, tep.extime]}]
+    }
+    orderUtil.getCarPathPoint(cadn).then(res => {
+      if (res.data.state !== 'SUCCESS') return;
+      filterPointList(res.data.data)
+    }).catch(err => {
+    })
+  }
+}
+const handleSetPoint = (item) => {
+  // let tep = []
+  // drivingPoint.value.map(d => {
+  //   if (d.name === item.name) {
+  //     d.select = !item.select
+  //   }
+  //   if (d.select) {
+  //     tep.push(d)
+  //   }
+  // })
 
-   drawMapMarkersAndLabel(handleMap.value, tep)
- }
-onMounted(()=>{
-    asyncLoadMap().then(res => {
-     initMineMap();
+  // drawMapMarkersAndLabel(handleMap.value, tep)
+}
+//从默认列表删除该信息
+const handleDelete = (item) => {
+  let tep = []
+  drivingPoint.value.map(d => {
+    if (d.name === item.name) {
+      d.select = !item.select
+    }
+    if (d.select) {
+      tep.push(d)
+    }
+  })
+
+  drawMapMarkersAndLabel(handleMap.value, tep)
+}
+/**
+ * @Description:获取全量收费站及门架
+ * @Author:Eirice
+ * @Date: 2025-05-30 17:48:35
+ */
+const getStationsAndDoor = (info) => {
+  orderUtil.getAllStations(info).then(res => {
+    if(res.data.state !== 'SUCCESS') return;
+  }).catch(err => {})
+}
+/**
+ * @Description:手动开启向列表中加入一个 type 前，后 ，item 当前节点
+ * @Author:Eirice
+ * @Date: 2025-05-30 18:30:07
+ */
+const handleSetInfo=(type,item)=>{
+  listVisible.value=true;
+  drivingPoint.value.map(k=>{
+    if(k.id===item.id){
+      type==='up'? k.setUp=true : k.steDwn=true
+    }
+  })
+  console.log(item)
+}
+/**
+ * @Description:根据选择的站点数据进行重新过滤组装
+ * @Author:Eirice
+ * @Date: 2025-06-03 10:34:53
+ */
+const handleFilterStation = (list) => {
+  if (!list || list.length === 0) return;
+  
+  // 构建新的点位配置
+  const pointConfig = {
+    icon: require(`@/assets/mapIcon/point_ico.png`),
+    select: true,
+    setUp: false,
+    steDwn: false,
+  };
+
+  // 处理新添加的点位数据
+  const newPoints = list.map(item => ({
+    isNew:true,
+    ...pointConfig,
+    name: item.tollgrantry_name,
+    point: handleMakePoint('', item.lng, item.lat),
+    ...item
+  }));
+
+  // 找到需要插入的位置
+  let insertIndex = -1;
+  let insertType = '';
+  
+  for (let i = 0; i < drivingPoint.value.length; i++) {
+    if (drivingPoint.value[i].setUp) {
+      insertIndex = i;
+      insertType = 'up';
+      break;
+    } else if (drivingPoint.value[i].steDwn) {
+      insertIndex = i;
+      insertType = 'down';
+      break;
+    }
+  }
+
+  // 根据找到的位置插入新数据
+  if (insertIndex !== -1) {
+    if (insertType === 'up') {
+      drivingPoint.value.splice(insertIndex, 0, ...newPoints);
+    } else {
+      drivingPoint.value.splice(insertIndex + 1, 0, ...newPoints);
+    }
+    
+    // 重置标志位并重新分配序号
+    drivingPoint.value.forEach((point, index) => {
+      point.setUp = false;
+      point.steDwn = false;
+      point.seqid = index + 1;  // 重新分配序号，从1开始
+    });
+  }
+  console.log('----',drivingPoint.value);
+  // 重新绘制地图标记
+  drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
+}
+
+const handleSubmitStation=()=>{
+  console.log(drivingPoint.value);
+}
+
+/**
+ * @Description:根据标识符合过滤提交据类型，新增isNew，删除!isNew&&select=false，更新 !isNew&&select=true
+ * @Author:Eirice
+ * @Date: 2025-06-03 14:12:28
+ */
+const handleFilterDetail = () => {
+  let newList = [];
+  let deleteList = [];
+  let UpdateList = [];
+  
+  drivingPoint.value.forEach(item => {
+    if (item.isNew && item.select) {
+      newList.push(item);
+    } else if (!item.isNew && !item.select) {
+      deleteList.push(item);
+    } else if (item.isNew && item.select) {
+      UpdateList.push(item);
+    }
+  });
+}
+onMounted(() => {
+  let passId = route.query.pass_id
+  asyncLoadMap().then(res => {
+    initMineMap();
     handleMap.value = userMap.value.initMap();
     if (handleMap.value) {
+      getTrafficFlow(passId)
+      getStationsAndDoor()
       // HandleMapClick(handleMap.value);
-      initDrawingRoute()
     }
   })
 })
-onBeforeUnmount(()=>{
+
+onBeforeUnmount(() => {
   userMap.value.destroyMap()
   userMap.value = null
   handleMap.value = null
@@ -192,73 +359,133 @@ onBeforeUnmount(()=>{
 
 
 <style scoped lang="scss">
-li{
+li {
   list-style: none;
 }
+
 .map_content {
   width: 100%;
   height: 100%;
   position: relative;
-  .map_cot{
+
+  .map_cot {
     width: 100%;
     height: 100%;
   }
-  .driving_tab{
-    width:10%;
-    max-height:60%;
+
+  .driving_tab {
+    width: 15%;
+    max-height: 60%;
     background: #f6f8f8;
     position: absolute;
-    top:1%;
-    left:89%;
-    z-index:200;
-    box-shadow:0 0 8px rgba(232,237,250,0.6), 0 2px 4px rgba(232,237,250,0.5);
+    top: 1%;
+    left: 84%;
+    z-index: 200;
+    box-shadow: 0 0 8px rgba(232, 237, 250, 0.6), 0 2px 4px rgba(232, 237, 250, 0.5);
     opacity: .9;
-    padding:0.3125rem;
+    padding: 0.3125rem;
   }
-  .dr_t{
+
+  .dr_t {
     width: 100%;
     height: 2.1875rem;
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
   }
-  .dr_bts{
+
+  .dr_bts {
     cursor: pointer;
     color: #0e77ea;
-    font-size:1.125rem;
+    font-size: 1.125rem;
   }
-  .dr_list{
-    width:100%;
-    height:18.75rem;
-    max-height:31.25rem;
+
+  .dr_list {
+    width: 100%;
+    height: 18.75rem;
+    max-height: 31.25rem;
     overflow: auto;
     transition: all .5s;
   }
-  .dr_list_active{
-    width:100%;
-    height:0;
+
+  .dr_list_active {
+    width: 100%;
+    height: 0;
     overflow: auto;
     transition: all .5s;
   }
-  .dr_row_info{
+
+  .dr_row_info {
     box-sizing: border-box;
-    padding:2px 1px;
-    font-size:0.875rem;
-    border-bottom:1px solid rgba(232,237,250,0.6);
-    display:flex;
+    padding: 2px 1px;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(232, 237, 250, 0.6);
+    display: flex;
     justify-content: space-between;
-    &:hover{
-      color: #00a0e9;
+    align-items: center;
+    &:hover {
+      .hd_btns {
+        opacity: 1;
+      }
     }
   }
-  .dr_row_index{
-    display: block;
-    width:1.5625rem;
-    height:1.5625rem;
-    border-radius:50%;
-    background:#e0e3e3;
-    text-align: center;
-    line-height:1.5625rem;
+.dr_row_info_cl{
+  box-sizing: border-box;
+  padding: 2px 1px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid rgba(232, 237, 250, 0.6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background:#fef0f0;
+  color: #f56c6c;
+  &:hover {
+    .hd_btns {
+      opacity: 0;
+    }
   }
+}
+  .dr_row_index {
+    display: block;
+    width: 1.5625rem;
+    height: 1.5625rem;
+    border-radius: 50%;
+    background: #e0e3e3;
+    text-align: center;
+    line-height: 1.5625rem;
+  }
+}
+
+.hd_btns {
+  width: 2.8125rem;
+  display: flex;
+  opacity: 0;
+  flex-direction: column;
+  color: #00a0e9;
+  cursor: pointer;
+
+  > span {
+    display: block;
+    font-size: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.st_name {
+  width: 90%;
+  text-align: left;
+  line-height: 2.25rem;
+}
+
+.st_dl {
+  width: 1.25rem;
+  margin-right: 0.3125rem;
+}
+.hd_bs{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width:100%;
+  height:2.5rem;
 }
 </style>

@@ -356,7 +356,6 @@ export default {
       e.currentTarget.classList.remove("on-drag-float-component");
       // 获取拖拽数据
       const data = e.dataTransfer.getData("text/plain");
-
       if (data) {
         try {
           const draggedElement = JSON.parse(data);
@@ -365,7 +364,8 @@ export default {
             if (!draggedElement._editType) {
               draggedElement.id = `root_container_${new Date().getTime()}`;
               draggedElement._editType = "add";
-              draggedElement._seq = (this.editorComponents.length + 1) * 100; // 计算seq
+              // 计算seq值，使用(当前组件数量+1)*100
+              draggedElement._seq = (this.editorComponents.length + 1) * 100;
               // 添加到顶层组件
               this.editorComponents.push(draggedElement);
             }
@@ -377,7 +377,7 @@ export default {
             const y = e.clientY - rect.top;
             const xPercent = (x / rect.width) * 100;
             const yPercent = (y / rect.height) * 100;
-            console.log("xPercent", xPercent, "yPercent", yPercent);
+            
             draggedElement.position = {
               x: xPercent,
               y: yPercent,
@@ -389,8 +389,8 @@ export default {
               draggedElement._editType = "add";
               draggedElement.com_name = "悬浮组件";
               draggedElement.com_option = "悬浮可拖动";
-              draggedElement._seq =
-                (this.editorComponents.length + 1) * 100 + 10000; // 计算seq
+              // 计算seq值，使用(当前组件数量+1)*100 + 10000
+              draggedElement._seq = (this.editorComponents.length + 1) * 100 + 10000;
               // 添加到顶层组件
               this.editorComponents.push(draggedElement);
             }
@@ -406,6 +406,22 @@ export default {
         } catch (err) {
           console.error("解析拖拽数据失败:", err);
         }
+      }
+    },
+    // 处理组件位置交换
+    swapComponents({ sourceContentId, targetContentId, draggedComponent, targetComponent }) {
+      // 找到源组件和目标组件在editorComponents中的索引
+      const sourceIndex = this.editorComponents.findIndex(comp => comp.id === sourceContentId);
+      const targetIndex = this.editorComponents.findIndex(comp => comp.id === targetContentId);
+      
+      if (sourceIndex !== -1 && targetIndex !== -1) {
+        // 交换seq值
+        const tempSeq = this.editorComponents[sourceIndex]._seq;
+        this.editorComponents[sourceIndex]._seq = this.editorComponents[targetIndex]._seq;
+        this.editorComponents[targetIndex]._seq = tempSeq;
+        
+        // 触发更新
+        this.$emit("change", this.editorComponents);
       }
     },
   },

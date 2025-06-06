@@ -11,7 +11,10 @@ export default class MapUtils {
         this._map = null;
     }
     initMap() {
-        this._map = new BMapGL.Map(this.container);
+        if (!window.BMap && window.BMapGL) {
+            window.BMap = BMapGL
+        }
+        this._map =  new BMap.Map(this.container);
         if(!this._map) return
         this._map.centerAndZoom(new BMapGL.Point(this.center[0], this.center[1]), this.zoom);
         this._map.enableScrollWheelZoom(true)

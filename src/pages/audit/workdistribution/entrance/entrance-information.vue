@@ -24,7 +24,7 @@
             <el-image style="width:43.75rem;height: 18.75rem"
                       :src="getPic(item,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
           </div>
-          <div  v-else>
+          <div v-else>
             <el-image style="width:43.75rem;height: 18.75rem"
                       :src="getPic(item,'car','')"></el-image>
           </div>
@@ -49,10 +49,14 @@
 </template>
 <script setup>
 // 门架信息
-import {ref,onMounted} from "vue";
+import {onMounted, ref} from "vue";
+import {useRoute} from "@/common/vueApi";
 import {getEntranceData} from "@/pages/audit/workdistribution/entrance/entrance";
+import OrderApi from "@/pages/audit/api/order";
+const orderUtil= new OrderApi()
 const reverse = ref(false)
-const list=ref([])
+const route = useRoute()
+const list = ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
 const showPicture = (item) => {
@@ -69,15 +73,61 @@ const getPic = (item, imgtype, enType) => {
   }
   return url
 }
+/**
+ * @Description:根据携带进入的passid进行车辆通行流水查询
+ * @Author:Eirice
+ * @Date: 2025-05-30 10:32:53
+ */
+const getTrafficFlow = (id) => {
+  let cadn = {
+    condition: [{colName: "passid", ruleType: "like", value: id}]
+  }
+  orderUtil.getCarWaysInfo(cadn).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    getCarTimeLine(res.data.data)
+    console.log('获取到流水', this.suspectedData)
+  }).catch(err => {
+  })
+}
+/**
+ * @Description:根据查询到的车辆信息获取车辆通行信息
+ * @Author:Eirice
+ * @Date: 2025-05-30 14:06:57
+ */
+const getCarTimeLine=(info)=>{
+    let tep= info[0]
+   if(tep){
+     let cadn = {
+       condition: [
+         {colName: "passid", value: tep.passid, ruleType: "eq"},
+         {colName: "enid", value: tep.enpointid, ruleType: "eq"},
+         {colName: "exid", value: tep.expointid, ruleType: "eq"},
+         {colName: "vtype", value: 1, ruleType: "eq"}
+       ],
+       divCond:[{colName: "transtime", ruleType: "between", value: [tep.entime, tep.extime]}]
+     }
+     orderUtil.getCarPathInfoById(cadn).then(res=>{
+       if(res.data.state !== 'SUCCESS') return;
+       list.value=res.data.data
+
+     }).catch(err => {})
+   }
+
+
+}
 const hideDialog = () => {
   centerDialogVisible.value = false
   imgSrc.value = null
 }
-const getTimeLineData = () => {
-  list.value=getEntranceData().data
+const getRouteInfo = () => {
+  let passId = route.query.pass_id
+  if (passId) {
+    console.log('---787', passId)
+    getTrafficFlow(passId)
+  }
 }
-onMounted(()=>{
-  getTimeLineData()
+onMounted(() => {
+  getRouteInfo()
 })
 </script>
 <style scoped>

@@ -82,27 +82,27 @@ export const SuspectedColumn= () => {
       return [
           {
               title: '车牌号',
-              prop: 'vehicle_id',
+              prop: 'vehicleplate_no',
           },
           {
               title: '车型',
-              prop: 'vehicle_type'
+              prop: '_vehicletype_disp'
           },
           {
-              title: '入口站',
-              prop: 'in_type'
+              title: '入口名称',
+              prop: 'enstationname'
           },
           {
-              title: '入口站',
-              prop: 'in_time',
+              title: '入站时间',
+              prop: 'entime',
           },
           {
-              title: '出口站',
-              prop: 'out_type',
+              title: '出口名称',
+              prop: 'exstationname',
           },
           {
               title: '出站时间',
-              prop: 'out_time',
+              prop: 'extime',
           }
       ]
 }

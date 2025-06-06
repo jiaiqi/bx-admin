@@ -11,14 +11,14 @@
     v-if="pageItemData && pageItemData.com_type"
     :style="[mixCompStyle]"
   >
-    <!-- 遮罩层 -->
+    <!-- 遮罩层   卡片部件暂时不使用遮罩 -->
     <div
       class="overlay page-item__overlay"
       @click.stop="onTap"
       :class="{
         active: isActive,
       }"
-      v-if="['卡片部件'].includes(pageItemData.com_type) && inEdit"
+      v-if="['卡片部件'].includes(pageItemData.com_type) && inEdit && false"
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">

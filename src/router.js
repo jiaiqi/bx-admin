@@ -441,6 +441,19 @@ let routes = [
     component: () =>
       import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
   },
+  //移动端站点编辑使用
+  {
+    path: "/app/edit/:pageNo",
+    name: "app-edit",
+    meta: {},
+    component: () =>import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-home.vue")
+  },
+  {
+    path: "/app/preview/:pageNo",
+    name: "app-preview",
+    meta: {},
+    component: () =>import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-preview/preview-page.vue")
+  },
   {
     path: "/site/:pageNo",
     name: "website",

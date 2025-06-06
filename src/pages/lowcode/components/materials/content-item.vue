@@ -553,6 +553,7 @@ export default {
     },
 
     handleDrop(e) {
+      debugger
       if (this.isPreview || this.isView) return;
       console.log("handleDrop");
       console.log("e.target:", e.target);
