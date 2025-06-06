@@ -54,7 +54,10 @@
         class="map-marker"
         :class="{ 'is-active': isActive(marker) }"
         :style="[
-          { ...setLabelStyle, ...(isActive(marker) ? setLabelActiveStyle : {}) },
+          {
+            ...setLabelStyle,
+            ...(isActive(marker) ? setLabelActiveStyle : {}),
+          },
           getItemPosition(marker),
         ]"
         v-for="marker in markerList"
@@ -337,6 +340,9 @@ const emit = defineEmits(["select"]);
 function tapTreeData(item) {
   selectedTreeData.value = item;
   emit("select", item);
+  if (item?.id) {
+    set(expandedNodes.value, item.id, !expandedNodes.value[item.id]);
+  }
 }
 async function initMapTreeData() {
   const req = props.treeReq;
@@ -389,7 +395,7 @@ onMounted(() => {
         border-bottom: none;
       }
       width: 100%;
-      padding: 5px 30px;
+      padding: 0px 30px;
       line-height: 46px;
       min-width: 175px;
       display: flex;

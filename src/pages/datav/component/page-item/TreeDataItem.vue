@@ -6,7 +6,7 @@
         active: selected && item.id && selected.id === item.id,
       }"
       :style="{ paddingLeft: `${(level + 1) * 20}px` }"
-      @click="$emit('select', item)"
+      @click="onTap"
     >
       <i
         v-if="item.children && item.children.length"
@@ -41,7 +41,7 @@ export default {
 </script>
 
 <script setup>
-import { ref } from "vue";
+import { ref, defineEmits } from "vue";
 
 const props = defineProps({
   item: {
@@ -63,6 +63,14 @@ const expanded = ref(false);
 function toggleExpand() {
   expanded.value = !expanded.value;
 }
+
+const emit = defineEmits(["select"]);
+function onTap() {
+  if (!expanded.value) {
+    toggleExpand();
+  }
+  emit("select", props.item);
+}
 </script>
 
 <style lang="scss" scoped>
@@ -71,8 +79,12 @@ function toggleExpand() {
     display: flex;
     align-items: center;
     position: relative;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
     border-bottom: 1px solid #e5e5e5;
-    line-height: 45px;
+    background-color: #f8f8f8;
+    line-height: 40px;
+
     &:last-child {
       border-bottom: none;
     }
@@ -103,6 +115,7 @@ function toggleExpand() {
       //   rgba(4, 71, 171, 1) 294.82%
       // );
       border-left: 3px solid #007aff;
+      background-color: #fff;
       // color: #fff;
     }
   }
