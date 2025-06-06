@@ -209,7 +209,7 @@ export default {
       return {
         position: 'relative',
         width: '100%',
-        height: `${item.layout_height || 6.25}rem`,
+        height: item.layout_height ? `${item.layout_height}rem` : 'auto',
         marginBottom: '0.625rem',
         zIndex: item.layout_z || 1
       }
@@ -263,7 +263,6 @@ export default {
       const newComponent = {
         id,
         ...componentData,
-        layout_height: componentData.layout_height || 6.25, // 100px / 16 = 6.25rem
         layout_z: this.currentComponents.length + 1,
         dragIndex: this.currentComponents.length, // 添加拖拽索引
         // 如果组件已经有com_seq，则保持原值，否则使用默认计算值
@@ -514,7 +513,6 @@ export default {
           layout_x: xRem,
           layout_y: yRem,
           layout_width: dragData.layout_width || 12.5, // 200px / 16 = 12.5rem
-          layout_height: dragData.layout_height || 6.25, // 100px / 16 = 6.25rem
           layout_z: this.currentComponents.length + 1,
           _type:dragData._type,
           ...dragData,

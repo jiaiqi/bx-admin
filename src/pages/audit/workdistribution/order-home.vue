@@ -112,7 +112,7 @@ name: "order-home",
   },
   mounted(){
     sessionStorage.removeItem('bx_auth_ticket');
-    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-170436b1-1a07-474b-ac09-1fa1edcf3e97');
+    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-494d9b4e-b1a1-4e95-9376-1a6a4e87ac0c');
     // 移除这里的 getRouterInfo 调用，因为已经在 watch 中处理了
     if (!this._isMounted) {
       this._isMounted = true;
