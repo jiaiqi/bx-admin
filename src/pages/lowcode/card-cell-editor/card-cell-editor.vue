@@ -62,7 +62,7 @@
         </div>
       </aside>
       <section class="editor-area">
-        <div class="editor-container">
+        <div class="editor-container" @click="handleContainerClick">
           <div
             class="editor-content"
             :style="[setStyle]"
@@ -72,6 +72,7 @@
             @dragenter="onDragEnter($event, 'editor')"
             @dragleave="onDragLeave($event, 'editor')"
             @mouseleave="onDragLeave($event, 'editor')"
+            @click.stop="handleEditorClick"
           >
             <div
               class="card-part-header"
@@ -100,7 +101,11 @@
                 </i>
               </div>
             </div>
-            <div class="overlay" @click.stop="selectPart()"></div>
+            <div
+              class="overlay"
+              :class="{ 'overlay--active': isEditorActive }"
+              @click.stop="handleEditorClick"
+            ></div>
             <card-part
               v-for="(part, index) in partsList"
               :key="index"
@@ -285,6 +290,7 @@ export default {
       useSystemClipboard: true,
       saveTimer: null, // 用于防抖的定时器
       partHeaderStyleCache: new Map(), // 用于缓存样式计算结果
+      isEditorActive: false, // 添加编辑器激活状态
     };
   },
   computed: {
@@ -604,8 +610,7 @@ export default {
       // 如果部件有子部件，递归处理子部件
       if (duplicatedPart.children && duplicatedPart.children.length) {
         const duplicateChildren = (children) => {
-
-          return children.map((child,index) => {
+          return children.map((child, index) => {
             const newChild = JSON.parse(JSON.stringify(child));
             newChild.id = null;
             newChild.card_parts_no = null;
@@ -857,7 +862,7 @@ export default {
           try {
             const data = utils.deepClone(this.selectedPart);
             data[CONSTANTS.PART_IDENTIFIER] = true;
-            
+
             if (this.useSystemClipboard) {
               await navigator.clipboard.writeText(JSON.stringify(data));
             } else {
@@ -883,7 +888,10 @@ export default {
           // 查找部件在列表中的索引
           const findPartIndex = (list, targetPart) => {
             for (let i = 0; i < list.length; i++) {
-              if (list[i]._id === targetPart._id || list[i].id === targetPart.id) {
+              if (
+                list[i]._id === targetPart._id ||
+                list[i].id === targetPart.id
+              ) {
                 return { index: i, list };
               }
               if (list[i].children?.length) {
@@ -953,6 +961,35 @@ export default {
     // 新增：清理缓存的方法
     clearCache() {
       this.partHeaderStyleCache.clear();
+    },
+    /**
+     * 处理编辑器点击事件
+     * 优化说明：
+     * 1. 点击空白处时激活编辑器
+     * 2. 清除当前选中的部件
+     * 3. 添加高亮效果
+     */
+    handleEditorClick() {
+      this.isEditorActive = true;
+      this.selectedPart = null;
+
+      // 3秒后自动取消高亮
+      setTimeout(() => {
+        this.isEditorActive = false;
+      }, 3000);
+    },
+    /**
+     * 处理容器点击事件
+     * 优化说明：
+     * 1. 点击容器空白区域时激活编辑器
+     * 2. 阻止事件冒泡
+     * 3. 与editor-content的点击效果保持一致
+     */
+    handleContainerClick(event) {
+      // 如果点击的是容器本身（而不是其子元素）
+      if (event.target === event.currentTarget) {
+        this.handleEditorClick();
+      }
     },
   },
   created() {
@@ -1362,6 +1399,12 @@ export default {
   flex-wrap: wrap;
   width: fit-content;
   min-width: 100%;
+  cursor: pointer; // 添加指针样式
+
+  // 添加悬停效果
+  &:hover {
+    background-color: #f0f0f5;
+  }
 }
 .preview-mode {
   display: flex;
@@ -1381,11 +1424,11 @@ export default {
   padding: 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   border: 1px solid #ddd;
-  // background-color: rgba($color: #fff, $alpha: 0.1);
   position: relative;
   transition: all 0.2s ease;
   min-width: 300px;
   min-height: 100px;
+
   .overlay {
     position: absolute;
     top: 0;
@@ -1393,6 +1436,21 @@ export default {
     right: 0;
     bottom: 0;
     z-index: 1;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+
+    &:hover:not(&--active) {
+      background-color: rgba(103, 194, 58, 0.05);
+      border: 2px dashed #67c23a;
+    }
+
+    // 将选中效果移到overlay上
+    &--active {
+      border: 3px solid #67c23a;
+      box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.2);
+      background-color: rgba(103, 194, 58, 0.1);
+    }
   }
   .card-part-header {
     position: absolute;

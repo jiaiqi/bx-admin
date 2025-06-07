@@ -3,7 +3,6 @@
     class="card-part"
     :class="{
       'card-part-row': part.parts_type === 'row',
-      'card-part-selected': isSelected,
       'on-drag-over': isDraggingOver && !preview,
       'card-part-preview': preview,
     }"
@@ -18,17 +17,12 @@
   >
     <div
       class="overlay"
+      :class="{ 'overlay--active': isSelected }"
       @click.stop="selectPart(part, $event)"
       @mouseenter="$emit('mouseenter')"
       v-if="!preview"
     ></div>
-    <!-- <div class="card-part-header" v-if="isSelected && !preview">
-      <span class="part-label">{{ part.label }}</span>
-      <i
-        class="el-icon-delete"
-        @click.stop="$emit('delete-part', part, index)"
-      ></i>
-    </div> -->
+
     <!-- 根据不同类型渲染不同内容 -->
     <template v-if="part.parts_type === 'row'">
       <card-part
@@ -289,7 +283,7 @@ export default {
   min-height: 20px;
   transition: all 0.3s ease;
   // display: inline-block;
-  --primary-color: #006cff;
+  --primary-color: rgb(0, 108, 255);
   $primary-color: var(--primary-color);
   &.card-part-preview {
     border: none;
@@ -300,27 +294,26 @@ export default {
     margin: 0;
     padding: 0;
   }
-  .overlay {
+  > .overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.3s;
-    z-index: 10;
-    border: 1px dashed transparent;
-    &:active {
-      transform: scale(0.99);
+    z-index: 1;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+
+    &:hover:not(&--active) {
+      background-color: rgba(0, 108, 255, 0.1);
+      border: 2px dashed var(--primary-color);
     }
-    &:hover {
-      opacity: 1;
-      border-color: var(--primary-color);
-      > .card-part-header {
-        opacity: 1;
-      }
+
+    &--active {
+      border: 2px solid var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(0, 108, 255, 0.1);
+      background-color: rgba(0, 108, 255, 0.1);
     }
   }
   .card-part-header {
@@ -353,14 +346,6 @@ export default {
       border-right: 1px solid #fff;
       padding-right: 10px;
       margin-right: 10px;
-    }
-  }
-
-  &.card-part-selected {
-    > .overlay {
-      border-style: solid;
-      border-width: 3px;
-      border-color: var(--primary-color);
     }
   }
 
