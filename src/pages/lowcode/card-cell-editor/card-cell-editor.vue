@@ -177,7 +177,6 @@ export default {
   },
   data() {
     return {
-      // cardParts: Object.freeze(cardParts?.comList || []),
       cardNo: "",
       cardInfo: null,
       type: "add",
@@ -187,10 +186,11 @@ export default {
       onSaving: false,
       isPreview: false,
       hiddenPartsVisible: false,
-      isDarkMode: false, // 新增深色模式状态
+      isDarkMode: false,
       partHeaderStyle: {},
-      clipboardData: null, // 新增：用于存储复制的数据
-      storageKey: 'card_part_clipboard', // 新增：用于localStorage的key
+      clipboardData: null,
+      storageKey: 'card_part_clipboard', // 用于localStorage的key
+      useSystemClipboard: true, // 是否使用系统剪贴板
     };
   },
   computed: {
@@ -643,19 +643,45 @@ export default {
       //   this.$message.info("退出预览模式");
       // }
     },
+    // 新增：检查是否可以使用系统剪贴板
+    async checkClipboardSupport() {
+      if (!navigator.clipboard) {
+        this.useSystemClipboard = false;
+        return;
+      }
+      
+      try {
+        // 尝试写入一个测试数据
+        await navigator.clipboard.writeText('test');
+        this.useSystemClipboard = true;
+      } catch (e) {
+        console.warn('系统剪贴板不可用，将使用localStorage:', e);
+        this.useSystemClipboard = false;
+      }
+    },
+
     // 修改：处理键盘事件
-    handleKeyDown(event) {
+    async handleKeyDown(event) {
       // 处理 Ctrl+C
       if (event.ctrlKey && event.key === 'c') {
         if (this.selectedPart) {
-          this.clipboardData = JSON.parse(JSON.stringify(this.selectedPart));
-          // 存储到localStorage
           try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.clipboardData));
+            const data = JSON.parse(JSON.stringify(this.selectedPart));
+            // 添加标识，用于识别是否是卡片部件数据
+            data._isCardPart = true;
+            
+            if (this.useSystemClipboard) {
+              // 使用系统剪贴板
+              await navigator.clipboard.writeText(JSON.stringify(data));
+            } else {
+              // 使用localStorage
+              this.clipboardData = data;
+              localStorage.setItem(this.storageKey, JSON.stringify(data));
+            }
             this.$message.success('已复制到剪贴板');
           } catch (e) {
-            console.error('存储到localStorage失败:', e);
-            this.$message.error('复制失败，数据太大');
+            console.error('复制失败:', e);
+            this.$message.error('复制失败');
           }
         }
       }
@@ -667,20 +693,38 @@ export default {
     },
 
     // 修改：粘贴部件
-    pastePart() {
+    async pastePart() {
       try {
-        // 尝试从localStorage获取数据
-        const storedData = localStorage.getItem(this.storageKey);
-        if (!storedData) {
-          this.$message.warning('剪贴板为空');
+        let clipboardData;
+        
+        if (this.useSystemClipboard) {
+          // 从系统剪贴板读取数据
+          const clipboardText = await navigator.clipboard.readText();
+          if (!clipboardText) {
+            this.$message.warning('剪贴板为空');
+            return;
+          }
+          clipboardData = JSON.parse(clipboardText);
+        } else {
+          // 从localStorage读取数据
+          const storedData = localStorage.getItem(this.storageKey);
+          if (!storedData) {
+            this.$message.warning('剪贴板为空');
+            return;
+          }
+          clipboardData = JSON.parse(storedData);
+        }
+        
+        // 检查是否是卡片部件数据
+        if (!clipboardData || !clipboardData._isCardPart) {
+          this.$message.warning('剪贴板数据不是有效的卡片部件');
           return;
         }
 
-        const clipboardData = JSON.parse(storedData);
-        if (!clipboardData) return;
-
         // 创建新的部件实例
         const newPart = JSON.parse(JSON.stringify(clipboardData));
+        // 移除标识
+        delete newPart._isCardPart;
         newPart._id = new Date().getTime();
         newPart._editType = "add";
         
@@ -775,17 +819,26 @@ export default {
   created() {
     this.init();
   },
-  mounted() {
+  async mounted() {
+    // 检查剪贴板支持
+    await this.checkClipboardSupport();
+    
     // 添加键盘事件监听
     window.addEventListener('keydown', this.handleKeyDown);
-    // 添加storage事件监听
-    window.addEventListener('storage', this.handleStorageChange);
+    
+    // 如果不使用系统剪贴板，添加storage事件监听
+    if (!this.useSystemClipboard) {
+      window.addEventListener('storage', this.handleStorageChange);
+    }
   },
   beforeDestroy() {
     // 移除键盘事件监听
     window.removeEventListener('keydown', this.handleKeyDown);
-    // 移除storage事件监听
-    window.removeEventListener('storage', this.handleStorageChange);
+    
+    // 如果不使用系统剪贴板，移除storage事件监听
+    if (!this.useSystemClipboard) {
+      window.removeEventListener('storage', this.handleStorageChange);
+    }
   },
 };
 </script>
