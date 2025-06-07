@@ -9,10 +9,10 @@
           :timestamp="item.transtime">
         <div class="info-item">
           <div class="item-list">
-            门架编号：{{ item.tollgrantry_id }}
+            门架编号：{{ item.tradenodeid }}
           </div>
           <div class="item-list">
-            门架名称：{{ item.tollgrantry_name }}
+            门架名称：{{ item.tradenodename }}
           </div>
           <div class="item-list">
             过车时间：{{ item.transtime }}
@@ -63,6 +63,7 @@ const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
 }
+let passId = route.query?.pass_id
 const getPic = (item, imgtype, enType) => {
   let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
   if (enType) {
@@ -84,10 +85,68 @@ const getTrafficFlow = (id) => {
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
-    getCarTimeLine(res.data.data)
+    // getCarTimeLine(res.data.data)
     console.log('获取到流水', this.suspectedData)
   }).catch(err => {
   })
+}
+/**
+ * @Description:初次进入调用远端中心接口查询通行信息
+ * @Author:Eirice
+ * @Date: 2025-06-06 17:45:45
+ */
+const getPointByOriginCenter=()=>{
+  orderUtil.getOriginCenterDetails({passid:passId}).then(res=>{
+    if(res.data.state !== 'SUCCESS') return;
+    handleFilterListInfo(res.data.data)
+  }).catch(err => {})
+}
+/**
+ * @Description:从本地服务中调用获取车辆通行信息
+ * @Author:Eirice
+ * @Date: 2025-06-06 17:48:49
+ */
+const getPointByLocation=()=>{
+  orderUtil.getLocationCenterDetails({passid:passId}).then(res=>{
+    if(res.data.state !== 'SUCCESS') return;
+    if(res.data.data&&res.data.data.length>0){
+
+      handleFilterListInfo(res.data.data)
+    }else {
+      getPointByOriginCenter()
+    }
+  }).catch(err => {})
+}
+/**
+ * @Description:数据过滤去重
+ * @Author:Eirice
+ * @Date: 2025-06-07 17:47:24
+ */
+const handleFilterListInfo = (data) => {
+  // 使用 Map 来存储唯一的点位，以 lng,lat 作为键
+  const uniquePoints = new Map();
+  // 处理重复点位
+  data.forEach(item => {
+    const key = `${item.lng},${item.lat}`;
+    if (!uniquePoints.has(key)) {
+      uniquePoints.set(key, item);
+    } else {
+      // 如果已存在，且当前项是收费站，则跳过
+      if (item.grantry_type === '收费站') {
+        return;
+      }
+      // 如果已存在项是收费站，则替换为当前项
+      const existingItem = uniquePoints.get(key);
+      if (existingItem.grantry_type === '收费站') {
+        uniquePoints.set(key, item);
+      }
+    }
+  });
+
+  // 转换为数组并排序
+  const sortedPoints = Array.from(uniquePoints.values())
+      .sort((a, b) => (a.seq || 0) - (b.seq || 0));
+  list.value=sortedPoints
 }
 /**
  * @Description:根据查询到的车辆信息获取车辆通行信息
@@ -123,7 +182,8 @@ const getRouteInfo = () => {
   let passId = route.query.pass_id
   if (passId) {
     console.log('---787', passId)
-    getTrafficFlow(passId)
+    getTrafficFlow(passId);
+    getPointByLocation()
   }
 }
 onMounted(() => {

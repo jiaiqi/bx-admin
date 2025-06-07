@@ -1,3 +1,5 @@
+import cameraIcon from "@/pages/bmap/assets/icon/camera.png";
+
 let markerList = [] //标记物
 let lineList = []  //线图层
 
@@ -48,8 +50,37 @@ export const drwMapMarkers = (map, data, url) => {
 }
 
 export const drawMapMarkersAndLabel = (_map,data) => {
-       markerList=[]
+    markerList=[]
     removeOverlay(_map)
+    // 创建图标
+    const icon1 = new BMap.Icon(
+        require(`@/assets/mapIcon/start.png`),
+        new BMap.Size(32, 32),
+        {
+            anchor: new BMap.Size(16, 16)
+        }
+    );
+    // 创建图标
+    const icon2 = new BMap.Icon(
+        require(`@/assets/mapIcon/end.png`),
+        new BMap.Size(32, 32),
+        {
+            anchor: new BMap.Size(16, 16)
+        }
+    );
+    //创建起终点标记
+    const startMaker =new BMap.Marker(data[0].point,{
+        icon: icon1,
+    })
+    //end点标记
+    const endMaker =new BMap.Marker(data[data.length-1].point,{
+        icon: icon2,
+    })
+    // 添加标记点和标签
+    _map.addOverlay(startMaker);
+    _map.addOverlay(endMaker);
+    markerList.push(startMaker)
+    markerList.push(endMaker)
     // 创建标记点和标签
     data.forEach(item => {
         // 创建图标
@@ -65,7 +96,6 @@ export const drawMapMarkersAndLabel = (_map,data) => {
         const marker = new BMap.Marker(item.point, {
             icon: icon
         });
-
         // 创建标签
         const label = new BMap.Label(item.name, {
             offset: new BMap.Size(0, -45), // 标签偏移量
@@ -97,10 +127,12 @@ export const setMarkerClick = (item) => {
 }
 //清除marker标记
 export const handleRemoveMarker = (map) => {
-    if (!markerList || markerList.length === 0) throw new Error('地图实例不存或标记物不存在');
-    markerList.map((item) => {
-        item.remove();
-    })
+    if (markerList && markerList.length>0){
+        markerList.map((item) => {
+            item.remove();
+        })
+    }
+
 }
 //清除所有图层
 export const removeOverlay = (map) => {
@@ -176,6 +208,22 @@ export const drwIconLineLayer = (map, source, key,url) => {
     map.addNormalLayer(lineLayer);
     lineLayer.setData(source);
     lineList.push(lineLayer)
+}
+export const setLineLayer = (map, linePoints) => {
+    let polyline=null
+       if(polyline){
+           map.removeOverlay(polyline)
+       }
+      polyline = new BMap.Polyline(
+        linePoints,
+        {
+            strokeColor: '#6704ff',
+            strokeWeight:6,
+            strokeOpacity:.5,
+            strokeStyle: 'solid',
+            enableClicking: true,
+        });
+    map.addOverlay(polyline);
 }
 // 根据点集合设置视图范围
 export const setViewportByPoints=(_map,points)=> {
@@ -262,7 +310,7 @@ export const FlyTo = (_map,point,zoom) => {
             delay: 0,
             zoomFactor: 5
     }
-    _map.centerAndZoom(point, zoom?zoom:16.5);
+    _map.centerAndZoom(point,zoom?zoom:12);
     // _map.panTo(point, {
     //     ...viewportOptions,
     // });

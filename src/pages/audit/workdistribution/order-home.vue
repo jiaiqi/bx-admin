@@ -111,8 +111,10 @@ name: "order-home",
     }
   },
   mounted(){
-    sessionStorage.removeItem('bx_auth_ticket');
-    sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-494d9b4e-b1a1-4e95-9376-1a6a4e87ac0c');
+     this.$nextTick(()=>{
+       sessionStorage.removeItem('bx_auth_ticket');
+       sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-7cb48bb4-a770-4e08-9472-fb2c574b1c8d');
+     })
     // 移除这里的 getRouterInfo 调用，因为已经在 watch 中处理了
     if (!this._isMounted) {
       this._isMounted = true;
