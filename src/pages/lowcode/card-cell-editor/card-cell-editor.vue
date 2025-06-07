@@ -103,7 +103,7 @@
             </div>
             <div
               class="overlay"
-              :class="{ 'overlay--active': isEditorActive }"
+              :class="{ 'overlay--active': isEditorActive && !selectedPart }"
               @click.stop="handleEditorClick"
             ></div>
             <card-part
@@ -320,18 +320,17 @@ export default {
      * 1. 添加缓存机制，避免重复计算
      * 2. 使用Map存储计算结果
      * 3. 当部件ID相同时直接返回缓存结果
-     * 4. 不影响原有功能，只是优化了性能
      */
     optimizedPartHeaderStyle() {
       if (!this.selectedPart) return {};
 
-      const cacheKey = this.selectedPart._id || this.selectedPart.id;
-      if (this.partHeaderStyleCache.has(cacheKey)) {
-        return this.partHeaderStyleCache.get(cacheKey);
-      }
+      // const cacheKey = this.selectedPart._id || this.selectedPart.id;
+      // if (this.partHeaderStyleCache.has(cacheKey)) {
+      //   return this.partHeaderStyleCache.get(cacheKey);
+      // }
 
       const style = this.calcPartHeaderPosition(this.selectedPart);
-      this.partHeaderStyleCache.set(cacheKey, style);
+      // this.partHeaderStyleCache.set(cacheKey, style);
       return style;
     },
   },
@@ -598,6 +597,17 @@ export default {
     },
     duplicatePart(part) {
       // 深拷贝当前选中的部件
+      const ignoreKeys = [
+        "create_user_disp",
+        "create_time",
+        "create_user",
+        "modify_time",
+        "modify_user_disp",
+        "modify_user",
+        "card_parts_no",
+        "del_flag",
+        "is_leaf",
+      ];
       const duplicatedPart = JSON.parse(JSON.stringify(part));
       duplicatedPart.id = null;
       duplicatedPart.card_parts_no = null;
@@ -607,6 +617,9 @@ export default {
       if (part.id) {
         duplicatedPart._duplicate_id = part.id;
       }
+      ignoreKeys.forEach((key) => {
+        delete duplicatedPart[key];
+      });
       // 如果部件有子部件，递归处理子部件
       if (duplicatedPart.children && duplicatedPart.children.length) {
         const duplicateChildren = (children) => {
@@ -622,6 +635,9 @@ export default {
             if (newChild.children && newChild.children.length) {
               newChild.children = duplicateChildren(newChild.children);
             }
+            ignoreKeys.forEach((key) => {
+              delete newChild[key];
+            });
             return newChild;
           });
         };
@@ -757,6 +773,8 @@ export default {
     },
     // 选择部件
     selectPart(part) {
+      // 检查剪贴板支持
+      this.checkClipboardSupport();
       if (this.selectedPart === part) return; // 避免重复选择
 
       this.selectedPart = part;
@@ -857,12 +875,25 @@ export default {
      */
     async handleKeyDown(event) {
       // 处理复制功能
+      const ignoreKeys = [
+        "create_user_disp",
+        "create_time",
+        "create_user",
+        "modify_time",
+        "modify_user_disp",
+        "modify_user",
+        "card_parts_no",
+        "del_flag",
+        "is_leaf",
+      ];
       if (event.ctrlKey && event.key === "c") {
         if (this.selectedPart) {
           try {
             const data = utils.deepClone(this.selectedPart);
             data[CONSTANTS.PART_IDENTIFIER] = true;
-
+            ignoreKeys.forEach((key) => {
+              delete data[key];
+            });
             if (this.useSystemClipboard) {
               await navigator.clipboard.writeText(JSON.stringify(data));
             } else {
@@ -874,6 +905,8 @@ export default {
             console.error("复制失败:", e);
             this.$message.error("复制失败");
           }
+        } else {
+          this.$message.warning("请先选择要复制的部件");
         }
       }
 
@@ -972,11 +1005,8 @@ export default {
     handleEditorClick() {
       this.isEditorActive = true;
       this.selectedPart = null;
-
-      // 3秒后自动取消高亮
-      setTimeout(() => {
-        this.isEditorActive = false;
-      }, 3000);
+      this.partHeaderStyle = null;
+      this.partHeaderStyleCache.clear();
     },
     /**
      * 处理容器点击事件
@@ -988,7 +1018,9 @@ export default {
     handleContainerClick(event) {
       // 如果点击的是容器本身（而不是其子元素）
       if (event.target === event.currentTarget) {
-        this.handleEditorClick();
+        // this.handleEditorClick();
+        this.selectPart();
+        this.isEditorActive = false;
       }
     },
   },
@@ -996,9 +1028,6 @@ export default {
     this.init();
   },
   async mounted() {
-    // 检查剪贴板支持
-    await this.checkClipboardSupport();
-
     // 添加键盘事件监听
     window.addEventListener("keydown", this.handleKeyDown);
 
@@ -1447,7 +1476,7 @@ export default {
 
     // 将选中效果移到overlay上
     &--active {
-      border: 3px solid #67c23a;
+      border: 2px solid #67c23a;
       box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.2);
       background-color: rgba(103, 194, 58, 0.1);
     }
