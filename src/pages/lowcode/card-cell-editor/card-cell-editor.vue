@@ -175,51 +175,50 @@ import CardCell from "./components/CardCell.vue";
 
 /**
  * 常量定义
- * 优化说明：
- * 1. 将魔法字符串和配置值提取为常量，便于维护和修改
- * 2. 避免重复使用字符串字面量，减少拼写错误
- * 3. 集中管理配置，便于后续扩展
+ * @constant {Object} CONSTANTS
  */
 const CONSTANTS = {
-  STORAGE_KEY: "card_part_clipboard", // 用于localStorage的key
-  SAVE_DEBOUNCE_TIME: 300, // 保存操作的防抖时间
-  PART_IDENTIFIER: "_isCardPart", // 用于标识卡片部件数据的字段
+  STORAGE_KEY: "card_part_clipboard",
+  SAVE_DEBOUNCE_TIME: 300,
+  PART_IDENTIFIER: "_isCardPart",
+  IGNORE_KEYS: [
+    "create_user_disp",
+    "create_time",
+    "create_user",
+    "modify_time",
+    "modify_user_disp",
+    "modify_user",
+    "card_parts_no",
+    "del_flag",
+    "is_leaf",
+    "id",
+    "parent_no"
+  ]
 };
 
 /**
  * 工具函数集合
- * 优化说明：
- * 1. 提取公共函数，避免代码重复
- * 2. 统一处理逻辑，确保行为一致
- * 3. 提高代码复用性和可维护性
- * 4. 不影响原有功能，只是重构了实现方式
+ * @constant {Object} utils
  */
 const utils = {
   /**
    * 深拷贝对象
-   * 优化说明：
-   * 1. 统一使用JSON方式实现深拷贝
-   * 2. 替代之前的JSON.parse(JSON.stringify())写法
-   * 3. 保持原有功能不变
+   * @param {Object} obj - 要拷贝的对象
+   * @returns {Object} 拷贝后的新对象
    */
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
 
   /**
    * 生成唯一ID
-   * 优化说明：
-   * 1. 统一ID生成方式
-   * 2. 替代之前直接使用new Date().getTime()的写法
-   * 3. 便于后续扩展其他ID生成策略
+   * @returns {number} 时间戳ID
    */
   generateUniqueId: () => new Date().getTime(),
 
   /**
    * 递归处理子部件
-   * 优化说明：
-   * 1. 将递归逻辑抽取为独立函数
-   * 2. 使用函数式编程方式，提高代码可读性
-   * 3. 支持自定义处理函数，增加灵活性
-   * 4. 替代之前的重复递归代码
+   * @param {Array} children - 子部件数组
+   * @param {Function} processFn - 处理函数
+   * @returns {Array} 处理后的子部件数组
    */
   processChildren: (children, processFn) => {
     if (!Array.isArray(children)) return children;
@@ -234,10 +233,9 @@ const utils = {
 
   /**
    * 查找父节点
-   * 优化说明：
-   * 1. 将查找逻辑抽取为独立函数
-   * 2. 优化代码结构，提高可读性
-   * 3. 保持原有功能不变
+   * @param {Array} list - 部件列表
+   * @param {Object} targetPart - 目标部件
+   * @returns {Object|null} 父节点信息
    */
   findParentNode: (list, targetPart) => {
     for (let i = 0; i < list.length; i++) {
@@ -262,10 +260,57 @@ const utils = {
     );
     return rootIndex !== -1 ? { parent: list, isRoot: true } : null;
   },
+
+  /**
+   * 处理部件数据
+   * @param {Object} part - 部件数据
+   * @returns {Object} 处理后的部件数据
+   */
+  processPartData: (part) => {
+    const newPart = utils.deepClone(part);
+    newPart._editType = "add";
+    newPart._duplicate_id = newPart.id;
+    newPart._id = utils.generateUniqueId();
+    
+    CONSTANTS.IGNORE_KEYS.forEach((key) => {
+      delete newPart[key];
+    });
+
+    if (Array.isArray(newPart.children)) {
+      newPart.children = utils.processChildren(newPart.children, (child) => {
+        child._duplicate_id = child.id;
+        child._id = utils.generateUniqueId();
+        CONSTANTS.IGNORE_KEYS.forEach((key) => {
+          delete child[key];
+        });
+        return child;
+      });
+    }
+
+    return newPart;
+  },
+
+  /**
+   * 设置部件序号和父级信息
+   * @param {Object} part - 部件数据
+   * @param {Object} parent - 父级部件
+   * @param {number} index - 序号
+   * @returns {Object} 处理后的部件数据
+   */
+  setupPartInfo: (part, parent, index) => {
+    part.seq = (index + 1) * 100;
+    if (parent?.card_parts_no) {
+      part.parent_no = parent.card_parts_no;
+    }
+    if (parent?.card_no) {
+      part.card_no = parent.card_no;
+    }
+    return part;
+  }
 };
 
 export default {
-  name: "CardCellEditor", // 添加组件名称，便于调试
+  name: "CardCellEditor",
   components: {
     Icon,
     CardPart,
@@ -286,11 +331,11 @@ export default {
       isDarkMode: false,
       partHeaderStyle: {},
       clipboardData: null,
-      storageKey: CONSTANTS.STORAGE_KEY, // 使用常量
+      storageKey: CONSTANTS.STORAGE_KEY,
       useSystemClipboard: true,
-      saveTimer: null, // 用于防抖的定时器
-      partHeaderStyleCache: new Map(), // 用于缓存样式计算结果
-      isEditorActive: false, // 添加编辑器激活状态
+      saveTimer: null,
+      partHeaderStyleCache: new Map(),
+      isEditorActive: false,
     };
   },
   computed: {
@@ -314,48 +359,18 @@ export default {
       });
       return arr;
     },
-    /**
-     * 优化样式计算
-     * 优化说明：
-     * 1. 添加缓存机制，避免重复计算
-     * 2. 使用Map存储计算结果
-     * 3. 当部件ID相同时直接返回缓存结果
-     */
     optimizedPartHeaderStyle() {
       if (!this.selectedPart) return {};
 
-      // const cacheKey = this.selectedPart._id || this.selectedPart.id;
-      // if (this.partHeaderStyleCache.has(cacheKey)) {
-      //   return this.partHeaderStyleCache.get(cacheKey);
-      // }
-
       const style = this.calcPartHeaderPosition(this.selectedPart);
-      // this.partHeaderStyleCache.set(cacheKey, style);
       return style;
     },
   },
   methods: {
-    /**
-     * 统一的错误处理方法
-     * 优化说明：
-     * 1. 统一错误处理逻辑
-     * 2. 提供默认错误消息
-     * 3. 同时输出到控制台和显示给用户
-     * 4. 便于统一管理和修改错误处理方式
-     */
     handleError(error, message = "操作失败") {
       console.error(message, error);
       this.$message.error(message);
     },
-
-    /**
-     * 加载状态管理
-     * 优化说明：
-     * 1. 统一管理加载状态
-     * 2. 自动处理错误情况
-     * 3. 确保加载状态正确清除
-     * 4. 提供加载提示消息
-     */
     async withLoading(operation, loadingMessage = "加载中...") {
       this.onSaving = true;
       try {
@@ -366,14 +381,6 @@ export default {
         this.onSaving = false;
       }
     },
-
-    /**
-     * 优化保存方法
-     * 优化说明：
-     * 1. 添加防抖处理，避免频繁保存
-     * 2. 使用统一的加载状态管理
-     * 3. 优化错误处理
-     */
     async saveCard() {
       if (!this.partsList.length) {
         this.$message.warning("请先添加卡片部件");
@@ -391,14 +398,6 @@ export default {
         }, "保存中...");
       }, CONSTANTS.SAVE_DEBOUNCE_TIME);
     },
-
-    /**
-     * 优化拖拽体验
-     * 优化说明：
-     * 1. 添加自定义拖拽图像
-     * 2. 设置拖拽效果为复制
-     * 3. 优化视觉反馈
-     */
     onDragStart(event, item) {
       event.dataTransfer.effectAllowed = "copy";
       event.dataTransfer.setData("part", JSON.stringify(item));
@@ -414,14 +413,6 @@ export default {
         document.body.removeChild(dragImage);
       }, 0);
     },
-
-    /**
-     * 优化拖拽放置体验
-     * 优化说明：
-     * 1. 添加放置动画效果
-     * 2. 优化错误处理
-     * 3. 使用工具函数处理数据
-     */
     onDrop(event, targetPart) {
       event.preventDefault();
       event.stopPropagation();
@@ -478,24 +469,18 @@ export default {
     changeTheme(e) {
       this.isDarkMode = !this.isDarkMode;
       const ele = this.$refs.cardCellEditor;
-      // document.body.classList.toggle("dark-mode", this.isDarkMode);
       const transition = document.startViewTransition(() => {
-        // 动画过渡切换主题色
         ele.classList.toggle("dark-mode");
       });
 
-      // document.startViewTransition 的 ready 返回一个 Promise
       transition.ready.then(() => {
-        // 获取鼠标的坐标
         const { clientX, clientY } = e;
 
-        // 计算最大半径
         const radius = Math.hypot(
           Math.max(clientX, innerWidth - clientX),
           Math.max(clientY, innerHeight - clientY)
         );
 
-        // 圆形动画扩散开始
         ele.animate(
           {
             clipPath: [
@@ -503,7 +488,6 @@ export default {
               `circle(${radius}px at ${clientX}px ${clientY}px)`,
             ],
           },
-          // 设置时间，已经目标伪元素
           {
             duration: 500,
             pseudoElement: "::view-transition-new(.card-cell-editor)",
@@ -536,7 +520,6 @@ export default {
       const { ok, data, msg } = await $selectOne(url, req);
       if (ok) {
         this.cardInfo = data;
-        // 如果有卡片数据，解析parts_json字段
         function buildPartsTree(list) {
           if (Array.isArray(list) && list.length) {
             return list.map((item) => {
@@ -582,116 +565,24 @@ export default {
       }
     },
     buildCardParsTree(partsList) {},
-    // 拖拽进入时触发
     onDragEnter(event, type) {
       if (type === "editor") {
         event?.currentTarget?.classList.add("drag-over-editor");
       }
     },
-
-    // 拖拽离开时触发
     onDragLeave(event, type) {
       if (type === "editor") {
         event?.currentTarget?.classList.remove("drag-over-editor");
       }
     },
     duplicatePart(part) {
-      // 深拷贝当前选中的部件
-      
-      const ignoreKeys = [
-        "create_user_disp",
-        "create_time",
-        "create_user",
-        "modify_time",
-        "modify_user_disp",
-        "modify_user",
-        "card_parts_no",
-        "del_flag",
-        "is_leaf",
-      ];
-      const duplicatedPart = JSON.parse(JSON.stringify(part));
-      duplicatedPart.id = null;
-      duplicatedPart.card_parts_no = null;
-      // 生成新的唯一ID
-      duplicatedPart._id = utils.generateUniqueId();
-      duplicatedPart._editType = "add";
-      if (part.id) {
-        duplicatedPart._duplicate_id = part.id;
-      }
-      ignoreKeys.forEach((key) => {
-        delete duplicatedPart[key];
-      });
-      // 如果部件有子部件，递归处理子部件
-      if (duplicatedPart.children && duplicatedPart.children.length) {
-        const duplicateChildren = (children) => {
-          return children.map((child, index) => {
-            const newChild = JSON.parse(JSON.stringify(child));
-            newChild.id = null;
-            newChild.card_parts_no = null;
-            newChild._id = utils.generateUniqueId() + Math.random() * 100;
-            newChild._editType = "add";
-            if (child.id) {
-              newChild._duplicate_id = child.id;
-            }
-            if (newChild.children && newChild.children.length) {
-              newChild.children = duplicateChildren(newChild.children);
-            }
-            ignoreKeys.forEach((key) => {
-              delete newChild[key];
-            });
-            return newChild;
-          });
-        };
-        duplicatedPart.children = duplicateChildren(duplicatedPart.children);
-      }
-
-      // 查找父节点
-      const findParentNode = (list, targetPart) => {
-        for (let i = 0; i < list.length; i++) {
-          const item = list[i];
-          if (item.children && item.children.length) {
-            // 检查当前节点的子节点
-            const childIndex = item.children.findIndex(
-              (child) =>
-                (child._id && child._id === targetPart._id) ||
-                (child.id && child.id === targetPart.id)
-            );
-            if (childIndex !== -1) {
-              return {
-                parent: item,
-                isRoot: false,
-              };
-            }
-            // 递归检查子节点的子节点
-            const result = findParentNode(item.children, targetPart);
-            if (result) {
-              return result;
-            }
-          }
-        }
-        // 如果在子节点中没找到，检查根节点
-        const rootIndex = list.findIndex(
-          (item) =>
-            (item._id && item._id === targetPart._id) ||
-            (item.id && item.id === targetPart.id)
-        );
-        if (rootIndex !== -1) {
-          return {
-            parent: list,
-            isRoot: true,
-          };
-        }
-        return null;
-      };
-
-      const parentInfo = findParentNode(this.partsList, part);
+      const duplicatedPart = utils.processPartData(part);
+      const parentInfo = utils.findParentNode(this.partsList, part);
       if (parentInfo) {
         if (parentInfo.isRoot) {
-          // 如果是根节点，直接添加到partsList末尾
           duplicatedPart.seq = (this.partsList.length + 1) * 100;
           this.partsList.push(duplicatedPart);
         } else {
-          // 如果是子节点，添加到父节点的children数组末尾
           duplicatedPart.seq = (parentInfo.parent.children.length + 1) * 100;
           if (parentInfo.parent.card_parts_no) {
             duplicatedPart.parent_no = parentInfo.parent.card_parts_no;
@@ -703,24 +594,19 @@ export default {
           parentInfo.parent.children.push(duplicatedPart);
         }
       } else {
-        // 如果找不到父节点，添加到根节点
         duplicatedPart.seq = (this.partsList.length + 1) * 100;
         this.partsList.push(duplicatedPart);
       }
 
-      // 选中新复制的部件
       this.$nextTick(() => {
         this.selectPart(duplicatedPart);
       });
     },
-    // 删除部件
     deletePart(part, index) {
-      // 清除相关缓存
       if (part._id || part.id) {
         this.partHeaderStyleCache.delete(part._id || part.id);
       }
 
-      // 原有的删除逻辑
       if (this.selectedPart) {
         this.selectedPart = null;
       }
@@ -730,7 +616,6 @@ export default {
       }
 
       if (part?.id || part?.card_parts_no) {
-        // 从数据库删除
         return this.$confirm("确定要删除吗？", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -766,7 +651,6 @@ export default {
             .then(({ ok, msg }) => {
               if (ok) {
                 this.$message.success("删除成功");
-                // this.getCardParts();
                 this.getCardInfo();
               } else {
                 this.$message.error(msg || "删除失败");
@@ -779,10 +663,8 @@ export default {
       }
       this.partsList.splice(index, 1);
     },
-    // 选择部件
     async selectPart(part) {
-      // 检查剪贴板支持
-      if (this.selectedPart === part) return; // 避免重复选择
+      if (this.selectedPart === part) return;
 
       this.selectedPart = part;
       this.partHeaderStyle = this.optimizedPartHeaderStyle;
@@ -814,28 +696,23 @@ export default {
     },
     onPartsUpdate() {
       this.getCardInfo();
-      // this.getCardParts();
     },
-    saved() {
-      // 保存成功 刷新数据
+    async saved() {
       this.$message.success("保存成功");
-      // this.getCardParts();
       this.onSaving = false;
-      this.getCardInfo();
+      await this.getCardInfo();
       this.selectPart();
     },
     refresh() {
       this.clearCache();
       this.getCardInfo();
     },
-    // 预览卡片
     previewCard() {
       if (!this.partsList.length) {
         this.$message.warning("请先添加卡片部件");
         return;
       }
 
-      // 添加过渡动画
       const transition = document.startViewTransition(() => {
         this.isPreview = !this.isPreview;
       });
@@ -856,7 +733,6 @@ export default {
         }
       });
     },
-    // 新增：检查是否可以使用系统剪贴板
     async checkClipboardSupport() {
       if (!navigator.clipboard) {
         this.useSystemClipboard = false;
@@ -864,7 +740,6 @@ export default {
       }
 
       try {
-        // 尝试写入一个测试数据
         await navigator.clipboard.writeText("test");
         this.useSystemClipboard = true;
       } catch (e) {
@@ -873,56 +748,38 @@ export default {
       }
     },
     async handleCopyPart() {
-      // 处理复制功能
-      const ignoreKeys = [
-        "create_user_disp",
-        "create_time",
-        "create_user",
-        "modify_time",
-        "modify_user_disp",
-        "modify_user",
-        "card_parts_no",
-        "del_flag",
-        "is_leaf",
-      ];
-      if (this.selectedPart) {
-        try {
-          const data = utils.deepClone(this.selectedPart);
-          data[CONSTANTS.PART_IDENTIFIER] = true;
-          ignoreKeys.forEach((key) => {
-            delete data[key];
-          });
-          await this.checkClipboardSupport();
-          if (this.useSystemClipboard) {
-            await navigator.clipboard.writeText(JSON.stringify(data));
-          } else {
-            this.clipboardData = data;
-            localStorage.setItem(this.storageKey, JSON.stringify(data));
-          }
-          this.$message.success("已复制到剪贴板");
-        } catch (e) {
-          console.error("复制失败:", e);
-          this.$message.error("复制失败");
-        }
-      } else {
+      if (!this.selectedPart) {
         this.$message.warning("请先选择要复制的部件");
+        return;
+      }
+
+      try {
+        const data = utils.processPartData(this.selectedPart);
+        data[CONSTANTS.PART_IDENTIFIER] = true;
+        
+        await this.checkClipboardSupport();
+        if (this.useSystemClipboard) {
+          await navigator.clipboard.writeText(JSON.stringify(data));
+        } else {
+          this.clipboardData = data;
+          localStorage.setItem(this.storageKey, JSON.stringify(data));
+        }
+        this.$message.success("已复制到剪贴板");
+      } catch (e) {
+        this.handleError(e, "复制失败");
       }
     },
-
     async handleKeyDown(event) {
       if (event.ctrlKey && event.key === "c") {
         this.handleCopyPart();
       }
 
-      // 处理粘贴功能
       if (event.ctrlKey && event.key === "v") {
         this.pastePart();
       }
 
-      // 处理删除功能
       if (event.key === "Delete" || event.key === "Backspace") {
         if (this.selectedPart) {
-          // 查找部件在列表中的索引
           const findPartIndex = (list, targetPart) => {
             for (let i = 0; i < list.length; i++) {
               if (
@@ -948,147 +805,90 @@ export default {
         }
       }
     },
-
     async pastePart() {
       try {
-        let clipboardData;
+        const clipboardData = await this.getClipboardData();
+        if (!clipboardData) return;
 
-        if (this.useSystemClipboard) {
-          const clipboardText = await navigator.clipboard.readText();
-          if (!clipboardText) {
-            this.$message.warning("剪贴板为空");
-            return;
-          }
-          clipboardData = JSON.parse(clipboardText);
-        } else {
-          const storedData = localStorage.getItem(this.storageKey);
-          if (!storedData) {
-            this.$message.warning("剪贴板为空");
-            return;
-          }
-          clipboardData = JSON.parse(storedData);
-        }
-
-        if (!clipboardData || !clipboardData[CONSTANTS.PART_IDENTIFIER]) {
-          this.$message.warning("剪贴板数据不是有效的卡片部件");
-          return;
-        }
-
-        const newPart = utils.deepClone(clipboardData);
-        newPart._editType = "add";
-        delete newPart[CONSTANTS.PART_IDENTIFIER];
-        const ignoreKeys = [
-          "create_user_disp",
-          "create_time",
-          "create_user",
-          "modify_time",
-          "modify_user_disp",
-          "modify_user",
-          "card_parts_no",
-          "del_flag",
-          "is_leaf",
-          "id",
-          "parent_no",
-        ];
-        newPart._duplicate_id = newPart.id;
-        newPart._id = utils.generateUniqueId();
-        ignoreKeys.forEach((key) => {
-          delete newPart[key];
-        });
+        const newPart = utils.processPartData(clipboardData);
         
-        if (Array.isArray(newPart.children)) {
-          function foreachChildren(list) {
-            if (Array.isArray(list) && list.length) {
-              return list.map((item) => {
-                item._duplicate_id = item.id;
-                item._id = utils.generateUniqueId();
-                ignoreKeys.forEach((key) => {
-                  delete item[key];
-                });
-                if (Array.isArray(item.children)) {
-                  item.children = foreachChildren(item.children);
-                }
-                return item;
-              });
-            }
-          }
-          newPart.children = foreachChildren(newPart.children);
-        }
-        // 如果没有选中部件，直接添加到根级别
         if (!this.selectedPart) {
           return this.duplicatePart(newPart);
         }
-        // 如果被粘贴的组件是当前选中的组件
-        if (
-          (this.selectedPart._id &&
-            this.selectedPart._id === newPart._duplicate_id) ||
-          (this.selectedPart.id &&
-            this.selectedPart.id === newPart._duplicate_id)
-        ) {
-          // 查找父节点
-          const parentInfo = utils.findParentNode(
-            this.partsList,
-            this.selectedPart
-          );
-          if (parentInfo) {
-            if (parentInfo.isRoot) {
-              // 如果是根节点，添加到partsList中
-              newPart.seq = (this.partsList.length + 1) * 100;
-              this.partsList.push(newPart);
-              this.$message.success("粘贴成功");
-            } else {
-              // 如果是子节点，添加到父节点的children中
-              newPart.seq = (parentInfo.parent.children.length + 1) * 100;
-              if (parentInfo.parent.card_parts_no) {
-                newPart.parent_no = parentInfo.parent.card_parts_no;
-              }
-              if (parentInfo.parent.card_no) {
-                newPart.card_no = parentInfo.parent.card_no;
-              }
-              
 
-              parentInfo.parent.children.push(newPart);
-              this.$message.success("粘贴成功");
-            }
-          } else {
-            // 如果找不到父节点，添加到根节点
-            newPart.seq = (this.partsList.length + 1) * 100;
-            this.partsList.push(newPart);
-            this.$message.success("粘贴成功");
-          }
+        if (this.isSamePart(this.selectedPart, newPart)) {
+          await this.pasteToSameLevel(newPart);
         } else {
-          // 如果被粘贴的组件不是当前选中的组件
-          if (this.selectedPart.parts_type === "row") {
-            // 如果选中的是row类型，添加到其children中
-            if (!this.selectedPart.children) {
-              this.$set(this.selectedPart, "children", []);
-            }
-            if (this.selectedPart.card_parts_no) {
-              newPart.parent_no = this.selectedPart.card_parts_no;
-            }
-            if (this.selectedPart.card_no) {
-              newPart.card_no = this.selectedPart.card_no;
-            }
-            newPart.seq = (this.selectedPart.children.length + 1) * 100;
-            this.selectedPart.children.push(newPart);
-            this.$message.success("粘贴成功");
-          } else {
-            this.$message.warning("只能将组件粘贴到类型为row的部件中");
-            return;
-          }
+          await this.pasteToSelectedPart(newPart);
         }
 
-        // 选中新粘贴的部件
         this.$nextTick(() => {
           this.selectPart(newPart);
         });
       } catch (e) {
-        console.error("粘贴失败:", e);
-        this.$message.error("粘贴失败，数据格式错误");
+        this.handleError(e, "粘贴失败，数据格式错误");
       }
     },
+    async getClipboardData() {
+      let clipboardData;
+      if (this.useSystemClipboard) {
+        const clipboardText = await navigator.clipboard.readText();
+        if (!clipboardText) {
+          this.$message.warning("剪贴板为空");
+          return null;
+        }
+        clipboardData = JSON.parse(clipboardText);
+      } else {
+        const storedData = localStorage.getItem(this.storageKey);
+        if (!storedData) {
+          this.$message.warning("剪贴板为空");
+          return null;
+        }
+        clipboardData = JSON.parse(storedData);
+      }
 
-    // 新增：监听storage事件
+      if (!clipboardData || !clipboardData[CONSTANTS.PART_IDENTIFIER]) {
+        this.$message.warning("剪贴板数据不是有效的卡片部件");
+        return null;
+      }
+
+      delete clipboardData[CONSTANTS.PART_IDENTIFIER];
+      return clipboardData;
+    },
+    isSamePart(part1, part2) {
+      return (
+        (part1._id && part1._id === part2._duplicate_id) ||
+        (part1.id && part1.id === part2._duplicate_id)
+      );
+    },
+    async pasteToSameLevel(newPart) {
+      const parentInfo = utils.findParentNode(this.partsList, this.selectedPart);
+      if (parentInfo) {
+        if (parentInfo.isRoot) {
+          utils.setupPartInfo(newPart, null, this.partsList.length);
+          this.partsList.push(newPart);
+        } else {
+          utils.setupPartInfo(newPart, parentInfo.parent, parentInfo.parent.children.length);
+          parentInfo.parent.children.push(newPart);
+        }
+      } else {
+        utils.setupPartInfo(newPart, null, this.partsList.length);
+        this.partsList.push(newPart);
+      }
+      this.$message.success("粘贴成功");
+    },
+    async pasteToSelectedPart(newPart) {
+      if (this.selectedPart.parts_type === "row") {
+        if (!this.selectedPart.children) {
+          this.$set(this.selectedPart, "children", []);
+        }
+        utils.setupPartInfo(newPart, this.selectedPart, this.selectedPart.children.length);
+        this.selectedPart.children.push(newPart);
+        this.$message.success("粘贴成功");
+      } else {
+        this.$message.warning("只能将组件粘贴到类型为row的部件中");
+      }
+    },
     handleStorageChange(event) {
       if (event.key === this.storageKey) {
         try {
@@ -1100,34 +900,17 @@ export default {
         }
       }
     },
-    // 新增：清理缓存的方法
     clearCache() {
       this.partHeaderStyleCache.clear();
     },
-    /**
-     * 处理编辑器点击事件
-     * 优化说明：
-     * 1. 点击空白处时激活编辑器
-     * 2. 清除当前选中的部件
-     * 3. 添加高亮效果
-     */
     handleEditorClick() {
       this.isEditorActive = true;
       this.selectedPart = null;
       this.partHeaderStyle = null;
       this.partHeaderStyleCache.clear();
     },
-    /**
-     * 处理容器点击事件
-     * 优化说明：
-     * 1. 点击容器空白区域时激活编辑器
-     * 2. 阻止事件冒泡
-     * 3. 与editor-content的点击效果保持一致
-     */
     handleContainerClick(event) {
-      // 如果点击的是容器本身（而不是其子元素）
       if (event.target === event.currentTarget) {
-        // this.handleEditorClick();
         this.selectPart();
         this.isEditorActive = false;
       }
@@ -1137,24 +920,19 @@ export default {
     this.init();
   },
   async mounted() {
-    // 添加键盘事件监听
     window.addEventListener("keydown", this.handleKeyDown);
 
-    // 如果不使用系统剪贴板，添加storage事件监听
     if (!this.useSystemClipboard) {
       window.addEventListener("storage", this.handleStorageChange);
     }
   },
   beforeDestroy() {
-    // 清除定时器
     if (this.saveTimer) {
       clearTimeout(this.saveTimer);
     }
 
-    // 清除缓存
     this.clearCache();
 
-    // 移除事件监听
     window.removeEventListener("keydown", this.handleKeyDown);
     if (!this.useSystemClipboard) {
       window.removeEventListener("storage", this.handleStorageChange);
@@ -1164,15 +942,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/**
- * 2025.6.7样式优化说明：
- * 1. 添加拖拽相关样式，提供更好的视觉反馈
- * 2. 添加动画效果，提升用户体验
- * 3. 优化深色模式样式
- * 4. 添加响应式布局支持
- */
-
-// 拖拽相关样式
 .drag-image {
   position: fixed;
   top: -1000px;
@@ -1187,7 +956,6 @@ export default {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-// 动画相关样式
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1212,7 +980,6 @@ export default {
 
 ::view-transition-new(root),
 ::view-transition-old(root) {
-  /* 关闭默认动画 */
   animation: none;
 }
 .card-cell-editor {
@@ -1402,7 +1169,6 @@ export default {
       margin-right: 10px;
       &:hover {
         background-color: #f5f7fa;
-        // transform: rotate(15deg);
       }
 
       .theme-icon {
@@ -1418,12 +1184,9 @@ export default {
 
   .header-right {
     display: flex;
-    // gap: 10px;
 
     button {
       padding: 8px 15px;
-      // border-radius: 4px;
-      // border: 1px solid #dcdfe6;
       background-color: var(--bg-color);
       cursor: pointer;
       transition: all 0.2s ease-in-out;
@@ -1499,7 +1262,6 @@ export default {
     height: 24px;
     line-height: 24px;
     text-align: center;
-    // background-color: #e0e0e0;
     margin-right: 8px;
     font-size: 20px;
   }
@@ -1537,9 +1299,8 @@ export default {
   flex-wrap: wrap;
   width: fit-content;
   min-width: 100%;
-  cursor: pointer; // 添加指针样式
+  cursor: pointer;
 
-  // 添加悬停效果
   &:hover {
     background-color: #f0f0f5;
   }
@@ -1583,7 +1344,6 @@ export default {
       border: 2px dashed #67c23a;
     }
 
-    // 将选中效果移到overlay上
     &--active {
       border: 2px solid #67c23a;
       box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.2);
