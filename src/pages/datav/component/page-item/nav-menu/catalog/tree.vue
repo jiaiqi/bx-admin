@@ -90,6 +90,7 @@ export default {
     font-size: 0.8em;
     position: relative;
     line-height: 36px;
+    justify-content: center;
     .el-icon-arrow-right {
       position: absolute;
       right: 5px;
