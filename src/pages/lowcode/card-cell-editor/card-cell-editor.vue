@@ -843,14 +843,21 @@ export default {
       }
     },
 
-    // 修改：使用工具函数优化复制粘贴功能
+    /**
+     * 修改：使用工具函数优化复制粘贴功能
+     * 优化说明：
+     * 1. 添加Delete键监听，支持删除选中部件
+     * 2. 保持原有的复制粘贴功能
+     * 3. 添加适当的用户提示
+     */
     async handleKeyDown(event) {
+      // 处理复制功能
       if (event.ctrlKey && event.key === "c") {
         if (this.selectedPart) {
           try {
             const data = utils.deepClone(this.selectedPart);
             data[CONSTANTS.PART_IDENTIFIER] = true;
-
+            
             if (this.useSystemClipboard) {
               await navigator.clipboard.writeText(JSON.stringify(data));
             } else {
@@ -865,8 +872,35 @@ export default {
         }
       }
 
+      // 处理粘贴功能
       if (event.ctrlKey && event.key === "v") {
         this.pastePart();
+      }
+
+      // 处理删除功能
+      if (event.key === "Delete" || event.key === "Backspace") {
+        if (this.selectedPart) {
+          // 查找部件在列表中的索引
+          const findPartIndex = (list, targetPart) => {
+            for (let i = 0; i < list.length; i++) {
+              if (list[i]._id === targetPart._id || list[i].id === targetPart.id) {
+                return { index: i, list };
+              }
+              if (list[i].children?.length) {
+                const result = findPartIndex(list[i].children, targetPart);
+                if (result) return result;
+              }
+            }
+            return null;
+          };
+
+          const partInfo = findPartIndex(this.partsList, this.selectedPart);
+          if (partInfo) {
+            this.deletePart(this.selectedPart, partInfo.index);
+          }
+        } else {
+          this.$message.warning("请先选择要删除的部件");
+        }
       }
     },
 
