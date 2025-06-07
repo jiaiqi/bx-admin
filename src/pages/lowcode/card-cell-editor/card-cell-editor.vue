@@ -67,6 +67,7 @@
           ref="editorContainer"
           @click="handleContainerClick"
           tabindex="0"
+          @focus="handleContainerFocus"
         >
           <div
             class="editor-content"
@@ -196,7 +197,6 @@ const CONSTANTS = {
     "card_parts_no",
     "del_flag",
     "is_leaf",
-    "id",
     "parent_no",
   ],
 };
@@ -274,7 +274,7 @@ const utils = {
   processPartData: (part) => {
     const newPart = utils.deepClone(part);
     newPart._editType = "add";
-    newPart._duplicate_id = newPart.id;
+    newPart._duplicate_id = newPart._duplicate_id || newPart.id;
     newPart._id = utils.generateUniqueId();
 
     CONSTANTS.IGNORE_KEYS.forEach((key) => {
@@ -390,6 +390,15 @@ export default {
     },
   },
   methods: {
+    handleContainerFocus() {
+      console.log("handleContainerFocus");
+      this.checkClipboardSupport();
+      if (!this.useSystemClipboard) {
+        window.addEventListener("storage", this.handleStorageChange);
+      } else {
+        window.removeEventListener("storage", this.handleStorageChange);
+      }
+    },
     /**
      * 统一的错误处理方法
      * @param {Error} error - 错误对象
@@ -671,6 +680,7 @@ export default {
      */
     duplicatePart(part) {
       const duplicatedPart = utils.processPartData(part);
+      debugger
       const parentInfo = utils.findParentNode(this.partsList, part);
       if (parentInfo) {
         if (parentInfo.isRoot) {
@@ -879,18 +889,18 @@ export default {
       }
 
       try {
-        await navigator.clipboard.writeText("test");
+        await navigator.clipboard.readText();
         this.useSystemClipboard = true;
       } catch (e) {
         console.warn("系统剪贴板不可用，将使用localStorage:", e);
         this.useSystemClipboard = false;
       }
-      // 如果不使用系统剪贴板，添加storage事件监听
-      if (!this.useSystemClipboard) {
-        window.addEventListener("storage", this.handleStorageChange);
-      } else {
-        window.removeEventListener("storage", this.handleStorageChange);
-      }
+      //  // 如果不使用系统剪贴板，添加storage事件监听
+      // if (!this.useSystemClipboard) {
+      //   window.addEventListener("storage", this.handleStorageChange);
+      // } else {
+      //   window.removeEventListener("storage", this.handleStorageChange);
+      // }
     },
 
     /**
@@ -905,6 +915,7 @@ export default {
 
       try {
         const data = utils.processPartData(this.selectedPart);
+        debugger
         data[CONSTANTS.PART_IDENTIFIER] = true;
 
         await this.checkClipboardSupport();
@@ -925,7 +936,7 @@ export default {
      * @param {KeyboardEvent} event - 键盘事件对象
      */
     async handleKeyDown(event) {
-      console.log("handleKeyDown:", event);
+      // console.log("handleKeyDown:", event);
       if (event.ctrlKey && event.key === "c") {
         this.handleCopyPart();
       }
@@ -958,7 +969,6 @@ export default {
           }
         } else {
           this.$message.warning("请先选择要删除的部件");
-          
         }
       }
     },
@@ -973,6 +983,7 @@ export default {
         if (!clipboardData) return;
 
         const newPart = utils.processPartData(clipboardData);
+        debugger
 
         if (!this.selectedPart) {
           return this.duplicatePart(newPart);
@@ -1137,6 +1148,12 @@ export default {
   async mounted() {
     // 添加键盘事件监听到编辑器容器
     this.$refs.editorContainer.addEventListener("keydown", this.handleKeyDown);
+    // this.checkClipboardSupport();
+    // if (!this.useSystemClipboard) {
+    //   window.addEventListener("storage", this.handleStorageChange);
+    // } else {
+    //   window.removeEventListener("storage", this.handleStorageChange);
+    // }
   },
   beforeDestroy() {
     // 清除定时器

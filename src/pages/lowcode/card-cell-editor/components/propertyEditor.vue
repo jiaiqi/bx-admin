@@ -199,6 +199,7 @@ export default {
         "component",
         "_editType",
         "_id",
+        "id",
         "_is_delete",
         "_duplicate_id",
       ];
@@ -232,6 +233,7 @@ export default {
         "component",
         "_editType",
         "_id",
+        "id",
         "_is_delete",
         "_duplicate_id",
       ];
