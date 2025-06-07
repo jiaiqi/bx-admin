@@ -190,6 +190,7 @@ export default {
       isDarkMode: false, // 新增深色模式状态
       partHeaderStyle: {},
       clipboardData: null, // 新增：用于存储复制的数据
+      storageKey: 'card_part_clipboard', // 新增：用于localStorage的key
     };
   },
   computed: {
@@ -642,104 +643,133 @@ export default {
       //   this.$message.info("退出预览模式");
       // }
     },
-    // 新增：处理键盘事件
+    // 修改：处理键盘事件
     handleKeyDown(event) {
       // 处理 Ctrl+C
       if (event.ctrlKey && event.key === 'c') {
         if (this.selectedPart) {
           this.clipboardData = JSON.parse(JSON.stringify(this.selectedPart));
-          this.$message.success('已复制到剪贴板');
+          // 存储到localStorage
+          try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.clipboardData));
+            this.$message.success('已复制到剪贴板');
+          } catch (e) {
+            console.error('存储到localStorage失败:', e);
+            this.$message.error('复制失败，数据太大');
+          }
         }
       }
       
       // 处理 Ctrl+V
       if (event.ctrlKey && event.key === 'v') {
-        if (this.clipboardData) {
-          this.pastePart();
-        }
+        this.pastePart();
       }
     },
 
-    // 新增：粘贴部件
+    // 修改：粘贴部件
     pastePart() {
-      if (!this.clipboardData) return;
+      try {
+        // 尝试从localStorage获取数据
+        const storedData = localStorage.getItem(this.storageKey);
+        if (!storedData) {
+          this.$message.warning('剪贴板为空');
+          return;
+        }
 
-      // 创建新的部件实例
-      const newPart = JSON.parse(JSON.stringify(this.clipboardData));
-      newPart._id = new Date().getTime();
-      newPart._editType = "add";
-      
-      // 如果部件有子部件，递归处理子部件
-      if (newPart.children && newPart.children.length) {
-        const duplicateChildren = (children) => {
-          return children.map((child) => {
-            const newChild = JSON.parse(JSON.stringify(child));
-            newChild._id = new Date().getTime() + Math.random() * 100;
-            newChild._editType = "add";
-            if (newChild.children && newChild.children.length) {
-              newChild.children = duplicateChildren(newChild.children);
-            }
-            return newChild;
-          });
-        };
-        newPart.children = duplicateChildren(newPart.children);
-      }
+        const clipboardData = JSON.parse(storedData);
+        if (!clipboardData) return;
 
-      // 查找父节点
-      const findParentNode = (list, targetPart) => {
-        for (let i = 0; i < list.length; i++) {
-          const item = list[i];
-          if (item.children && item.children.length) {
-            const childIndex = item.children.findIndex(
-              (child) =>
-                (child._id && child._id === targetPart._id) ||
-                (child.id && child.id === targetPart.id)
-            );
-            if (childIndex !== -1) {
-              return {
-                parent: item,
-                isRoot: false,
-              };
-            }
-            const result = findParentNode(item.children, targetPart);
-            if (result) {
-              return result;
+        // 创建新的部件实例
+        const newPart = JSON.parse(JSON.stringify(clipboardData));
+        newPart._id = new Date().getTime();
+        newPart._editType = "add";
+        
+        // 如果部件有子部件，递归处理子部件
+        if (newPart.children && newPart.children.length) {
+          const duplicateChildren = (children) => {
+            return children.map((child) => {
+              const newChild = JSON.parse(JSON.stringify(child));
+              newChild._id = new Date().getTime() + Math.random() * 100;
+              newChild._editType = "add";
+              if (newChild.children && newChild.children.length) {
+                newChild.children = duplicateChildren(newChild.children);
+              }
+              return newChild;
+            });
+          };
+          newPart.children = duplicateChildren(newPart.children);
+        }
+
+        // 查找父节点
+        const findParentNode = (list, targetPart) => {
+          for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+            if (item.children && item.children.length) {
+              const childIndex = item.children.findIndex(
+                (child) =>
+                  (child._id && child._id === targetPart._id) ||
+                  (child.id && child.id === targetPart.id)
+              );
+              if (childIndex !== -1) {
+                return {
+                  parent: item,
+                  isRoot: false,
+                };
+              }
+              const result = findParentNode(item.children, targetPart);
+              if (result) {
+                return result;
+              }
             }
           }
-        }
-        const rootIndex = list.findIndex(
-          (item) =>
-            (item._id && item._id === targetPart._id) ||
-            (item.id && item.id === targetPart.id)
-        );
-        if (rootIndex !== -1) {
-          return {
-            parent: list,
-            isRoot: true,
-          };
-        }
-        return null;
-      };
+          const rootIndex = list.findIndex(
+            (item) =>
+              (item._id && item._id === targetPart._id) ||
+              (item.id && item.id === targetPart.id)
+          );
+          if (rootIndex !== -1) {
+            return {
+              parent: list,
+              isRoot: true,
+            };
+          }
+          return null;
+        };
 
-      if (this.selectedPart) {
-        const parentInfo = findParentNode(this.partsList, this.selectedPart);
-        if (parentInfo) {
-          if (parentInfo.isRoot) {
-            this.partsList.push(newPart);
+        if (this.selectedPart) {
+          const parentInfo = findParentNode(this.partsList, this.selectedPart);
+          if (parentInfo) {
+            if (parentInfo.isRoot) {
+              this.partsList.push(newPart);
+            } else {
+              parentInfo.parent.children.push(newPart);
+            }
           } else {
-            parentInfo.parent.children.push(newPart);
+            this.partsList.push(newPart);
           }
         } else {
           this.partsList.push(newPart);
         }
-      } else {
-        this.partsList.push(newPart);
-      }
 
-      // 选中新粘贴的部件
-      this.$nextTick(() => {
-        this.selectPart(newPart);
-      });
+        // 选中新粘贴的部件
+        this.$nextTick(() => {
+          this.selectPart(newPart);
+        });
+      } catch (e) {
+        console.error('粘贴失败:', e);
+        this.$message.error('粘贴失败，数据格式错误');
+      }
+    },
+
+    // 新增：监听storage事件
+    handleStorageChange(event) {
+      if (event.key === this.storageKey) {
+        try {
+          this.clipboardData = event.newValue ? JSON.parse(event.newValue) : null;
+        } catch (e) {
+          console.error('解析剪贴板数据失败:', e);
+        }
+      }
     },
   },
   created() {
@@ -748,10 +778,14 @@ export default {
   mounted() {
     // 添加键盘事件监听
     window.addEventListener('keydown', this.handleKeyDown);
+    // 添加storage事件监听
+    window.addEventListener('storage', this.handleStorageChange);
   },
   beforeDestroy() {
     // 移除键盘事件监听
     window.removeEventListener('keydown', this.handleKeyDown);
+    // 移除storage事件监听
+    window.removeEventListener('storage', this.handleStorageChange);
   },
 };
 </script>
