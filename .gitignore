@@ -30,7 +30,6 @@ yarn.lock
 package-lock.json
 src/components/test/spa_mock.js
 /package.json
-/src/components/test/spa_mock.js
 /vue.config.js
 /deploy.config.js
 /dist.zip
@@ -43,7 +42,6 @@ l-pc-front.*
 debug.log
 *vpages
 *vpages.zip
-debug.log
 *-vpages
 *-vpages.zip
 xixiang-vapges
