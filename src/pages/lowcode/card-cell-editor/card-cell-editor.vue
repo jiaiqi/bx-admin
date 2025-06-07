@@ -89,7 +89,7 @@
                 <i title="复制">
                   <Icon
                     icon="ri:file-copy-2-fill"
-                    @click.native="duplicatePart(selectedPart)"
+                    @click.native.stop="handleCopyPart()"
                   ></Icon>
                 </i>
 
@@ -597,6 +597,7 @@ export default {
     },
     duplicatePart(part) {
       // 深拷贝当前选中的部件
+      
       const ignoreKeys = [
         "create_user_disp",
         "create_time",
@@ -692,6 +693,13 @@ export default {
         } else {
           // 如果是子节点，添加到父节点的children数组末尾
           duplicatedPart.seq = (parentInfo.parent.children.length + 1) * 100;
+          if (parentInfo.parent.card_parts_no) {
+            duplicatedPart.parent_no = parentInfo.parent.card_parts_no;
+          }
+          if (parentInfo.parent.card_no) {
+            duplicatedPart.card_no = parentInfo.parent.card_no;
+          }
+          
           parentInfo.parent.children.push(duplicatedPart);
         }
       } else {
@@ -772,9 +780,8 @@ export default {
       this.partsList.splice(index, 1);
     },
     // 选择部件
-    selectPart(part) {
+    async selectPart(part) {
       // 检查剪贴板支持
-      this.checkClipboardSupport();
       if (this.selectedPart === part) return; // 避免重复选择
 
       this.selectedPart = part;
@@ -865,15 +872,7 @@ export default {
         this.useSystemClipboard = false;
       }
     },
-
-    /**
-     * 修改：使用工具函数优化复制粘贴功能
-     * 优化说明：
-     * 1. 添加Delete键监听，支持删除选中部件
-     * 2. 保持原有的复制粘贴功能
-     * 3. 添加适当的用户提示
-     */
-    async handleKeyDown(event) {
+    async handleCopyPart() {
       // 处理复制功能
       const ignoreKeys = [
         "create_user_disp",
@@ -886,28 +885,33 @@ export default {
         "del_flag",
         "is_leaf",
       ];
-      if (event.ctrlKey && event.key === "c") {
-        if (this.selectedPart) {
-          try {
-            const data = utils.deepClone(this.selectedPart);
-            data[CONSTANTS.PART_IDENTIFIER] = true;
-            ignoreKeys.forEach((key) => {
-              delete data[key];
-            });
-            if (this.useSystemClipboard) {
-              await navigator.clipboard.writeText(JSON.stringify(data));
-            } else {
-              this.clipboardData = data;
-              localStorage.setItem(this.storageKey, JSON.stringify(data));
-            }
-            this.$message.success("已复制到剪贴板");
-          } catch (e) {
-            console.error("复制失败:", e);
-            this.$message.error("复制失败");
+      if (this.selectedPart) {
+        try {
+          const data = utils.deepClone(this.selectedPart);
+          data[CONSTANTS.PART_IDENTIFIER] = true;
+          ignoreKeys.forEach((key) => {
+            delete data[key];
+          });
+          await this.checkClipboardSupport();
+          if (this.useSystemClipboard) {
+            await navigator.clipboard.writeText(JSON.stringify(data));
+          } else {
+            this.clipboardData = data;
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
           }
-        } else {
-          this.$message.warning("请先选择要复制的部件");
+          this.$message.success("已复制到剪贴板");
+        } catch (e) {
+          console.error("复制失败:", e);
+          this.$message.error("复制失败");
         }
+      } else {
+        this.$message.warning("请先选择要复制的部件");
+      }
+    },
+
+    async handleKeyDown(event) {
+      if (event.ctrlKey && event.key === "c") {
+        this.handleCopyPart();
       }
 
       // 处理粘贴功能
@@ -971,8 +975,113 @@ export default {
         }
 
         const newPart = utils.deepClone(clipboardData);
+        newPart._editType = "add";
         delete newPart[CONSTANTS.PART_IDENTIFIER];
-        return this.duplicatePart(newPart);
+        const ignoreKeys = [
+          "create_user_disp",
+          "create_time",
+          "create_user",
+          "modify_time",
+          "modify_user_disp",
+          "modify_user",
+          "card_parts_no",
+          "del_flag",
+          "is_leaf",
+          "id",
+          "parent_no",
+        ];
+        newPart._duplicate_id = newPart.id;
+        newPart._id = utils.generateUniqueId();
+        ignoreKeys.forEach((key) => {
+          delete newPart[key];
+        });
+        
+        if (Array.isArray(newPart.children)) {
+          function foreachChildren(list) {
+            if (Array.isArray(list) && list.length) {
+              return list.map((item) => {
+                item._duplicate_id = item.id;
+                item._id = utils.generateUniqueId();
+                ignoreKeys.forEach((key) => {
+                  delete item[key];
+                });
+                if (Array.isArray(item.children)) {
+                  item.children = foreachChildren(item.children);
+                }
+                return item;
+              });
+            }
+          }
+          newPart.children = foreachChildren(newPart.children);
+        }
+        // 如果没有选中部件，直接添加到根级别
+        if (!this.selectedPart) {
+          return this.duplicatePart(newPart);
+        }
+        // 如果被粘贴的组件是当前选中的组件
+        if (
+          (this.selectedPart._id &&
+            this.selectedPart._id === newPart._duplicate_id) ||
+          (this.selectedPart.id &&
+            this.selectedPart.id === newPart._duplicate_id)
+        ) {
+          // 查找父节点
+          const parentInfo = utils.findParentNode(
+            this.partsList,
+            this.selectedPart
+          );
+          if (parentInfo) {
+            if (parentInfo.isRoot) {
+              // 如果是根节点，添加到partsList中
+              newPart.seq = (this.partsList.length + 1) * 100;
+              this.partsList.push(newPart);
+              this.$message.success("粘贴成功");
+            } else {
+              // 如果是子节点，添加到父节点的children中
+              newPart.seq = (parentInfo.parent.children.length + 1) * 100;
+              if (parentInfo.parent.card_parts_no) {
+                newPart.parent_no = parentInfo.parent.card_parts_no;
+              }
+              if (parentInfo.parent.card_no) {
+                newPart.card_no = parentInfo.parent.card_no;
+              }
+              
+
+              parentInfo.parent.children.push(newPart);
+              this.$message.success("粘贴成功");
+            }
+          } else {
+            // 如果找不到父节点，添加到根节点
+            newPart.seq = (this.partsList.length + 1) * 100;
+            this.partsList.push(newPart);
+            this.$message.success("粘贴成功");
+          }
+        } else {
+          // 如果被粘贴的组件不是当前选中的组件
+          if (this.selectedPart.parts_type === "row") {
+            // 如果选中的是row类型，添加到其children中
+            if (!this.selectedPart.children) {
+              this.$set(this.selectedPart, "children", []);
+            }
+            if (this.selectedPart.card_parts_no) {
+              newPart.parent_no = this.selectedPart.card_parts_no;
+            }
+            if (this.selectedPart.card_no) {
+              newPart.card_no = this.selectedPart.card_no;
+            }
+            newPart.seq = (this.selectedPart.children.length + 1) * 100;
+            this.selectedPart.children.push(newPart);
+            this.$message.success("粘贴成功");
+          } else {
+            this.$message.warning("只能将组件粘贴到类型为row的部件中");
+            return;
+          }
+        }
+
+        // 选中新粘贴的部件
+        this.$nextTick(() => {
+          this.selectPart(newPart);
+        });
       } catch (e) {
         console.error("粘贴失败:", e);
         this.$message.error("粘贴失败，数据格式错误");
