@@ -1,11 +1,11 @@
 <template>
   <div class="up_mod">
-    <el-dialog title="图片上传" :visible.sync="upVisible" :destroy-on-close="true" :close-on-click-modal="false" @closed="setListInfo">
+    <el-dialog title="图片上传" :visible.sync="upVisible"  :close-on-click-modal="false" @closed="setListInfo">
           <el-form :model="picForm" :rules="rules"  ref="picForm" label-width="auto" class="demo-ruleForm">
 <!--            <el-form-item label="证据说明" prop="icon_title" style="margin:0.9375rem 0">-->
 <!--              <el-input v-model="picForm.icon_title"></el-input>-->
 <!--            </el-form-item>-->
-            <el-form-item label="证据图片" prop="icon_att" style="margin:0.9375rem 0">
+            <el-form-item label="证据图片" prop="order_evidence" style="margin:0.9375rem 0">
               <div class="img_list" v-if="fileLists&&fileLists.length>0">
             <!-- 使用element-ui自带样式 -->
             <ul class="el-upload-list el-upload-list--picture-card">
@@ -89,13 +89,13 @@ export default {
         // icon_title: [
         //   { required: true, message: '证据说明不能为空', trigger: 'blur' },
         // ],
-        icon_att: [
+        order_evidence: [
           { required: true, message: '证据图片不能为空', trigger: 'blur' },
         ],
       },
       picForm:{
         icon_type: "图片",
-        icon_att:'',  //上传成功后返回的file_no
+        order_evidence:'',  //上传成功后返回的file_no
         icon_title:'占位图', //图片说明
         serviceName: "srvfile_icon_db_add"
       },
@@ -104,10 +104,10 @@ export default {
       uploadParams: {
         serviceName: "srv_bxfile_service",
         interfaceName: "add",
-        app_no:'file',
-        table_name: "bxfile_icon_db",
+        app_no:'aud',
+        table_name: "bxaud_ads_outer_evidence",
         thumbnailType: "fwsu_100",
-        columns: "icon_att",
+        columns: "order_evidence",
       },
       fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
       fileSize:2,
@@ -309,7 +309,7 @@ export default {
       if(this.fileLists&&this.fileLists.length>0){
         this.uploadParams.table_name = this.fileLists[0].table_name || "";
         this.uploadParams.columns = this.fileLists[0].columns || "";
-        this.picForm.icon_att=this.fileLists[0].file_no;
+        this.picForm.order_evidence=this.fileLists[0].file_no;
         this.uploadParams.file_no=this.fileLists[0].file_no
       }
     },
@@ -322,7 +322,7 @@ export default {
     //新增保存使用
     saveByNoIdInfo(){
      let params = {
-       icon_att: this.picForm.icon_att,
+       icon_att: this.picForm.order_evidence,
        icon_title:this.picForm.icon_title,
        icon_type: "图片",
      }
@@ -357,11 +357,11 @@ export default {
     //过滤获取图片地址作为预览使用
     handleFilterUrl(){
       if(this.fileLists.length>0){
-        this.picForm.icon_att=this.fileLists[0].file_no;
+        this.picForm.order_evidence=this.fileLists[0].file_no;
         this.fileLists.map(item=>{this.preList.push(item.url)})
       }else {
         this.preList=[]
-        this.picForm.icon_att=''
+        this.picForm.order_evidence=''
       }
     },
     //下载

@@ -1,5 +1,6 @@
 import {$http} from "@/common/http";
-
+import  axios from 'axios'
+let path = process.env.NODE_ENV === "development"?window.APP_CONFIG.API_URL:window.backendIpAddr
 export default class OrderApi{
 
     //获取进入表单时的发起人信息数据
@@ -9,14 +10,14 @@ export default class OrderApi{
           colNames: ["*"],
           serviceName:"srvbms_user_select",
           queryMethod:"select",
-          condition: [{colName: "user_no", value:'wuhao', ruleType: "eq"}]
+          condition: [{colName: "user_no", value:user, ruleType: "eq"}]
       }
-      let url=window.APP_CONFIG.API_URL+`/auth/select/srvbms_user_select`
+      let url=path+`/auth/select/srvbms_user_select`
         return await $http.post(url, req)
     }
 
     async postPromoterInfo(dep){
-        let url=window.APP_CONFIG.API_URL+`/auth/select/srvauth_dept_workorder_select`
+        let url=path+`/auth/select/srvauth_dept_workorder_select`
         let req={
             colNames: ["*"],
             queryMethod: "select",
@@ -27,7 +28,7 @@ export default class OrderApi{
     }
     //全量模糊机构编号查询
     async getMoirDepList(){
-       let url=window.APP_CONFIG.API_URL+`/auth/select/srvauth_dept_workorder_select`
+       let url=path+`/auth/select/srvauth_dept_workorder_select`
        let req={
            colNames: ["*"],
            condition: [],
@@ -44,7 +45,7 @@ export default class OrderApi{
     }
     //获取发起人弹窗用户类型
     async getModUserOption(){
-       let url = window.APP_CONFIG.API_URL+'/auth/select/srvsys_service_columnex_v2_select?colsel_v2=srvbms_user_select'
+       let url = path+'/auth/select/srvsys_service_columnex_v2_select?colsel_v2=srvbms_user_select'
         let req={
             colNames: ["*"],
             serviceName:"srvsys_service_columnex_v2_select",
@@ -55,7 +56,7 @@ export default class OrderApi{
     }
     //获取机构级联数据
     async getSelectDepCascader(conditions){
-       let url=window.APP_CONFIG.API_URL+`/auth/select/srvauth_dept_select?srvauth_dept_select`
+       let url=path+`/auth/select/srvauth_dept_select?srvauth_dept_select`
        let req={
            colNames: ["*"],
            condition:conditions,
@@ -68,7 +69,7 @@ export default class OrderApi{
     }
     //获取发起人弹窗表格数据
     async getPromoterTable(option){
-       let url=window.APP_CONFIG.API_URL+`/auth/select/srvbms_user_select?srvbms_user_select`
+       let url=path+`/auth/select/srvbms_user_select?srvbms_user_select`
         let req={
             colNames: ["*"],
             serviceName: "srvbms_user_select",
@@ -85,7 +86,7 @@ export default class OrderApi{
 
      //获取机构编号弹窗机构分类
     async getInsSelectList(option){
-       let url=window.APP_CONFIG.API_URL+`/auth/select/srvsys_service_columnex_v2_select?colsel_v2=srvauth_dept_workorder_select`
+       let url=path+`/auth/select/srvsys_service_columnex_v2_select?colsel_v2=srvauth_dept_workorder_select`
         let req={
            colNames: ["*"],
             serviceName: "srvsys_service_columnex_v2_select",
@@ -97,7 +98,7 @@ export default class OrderApi{
 
     //获取机构编号弹窗数据
     async getInsTable(option){
-       let url= window.APP_CONFIG.API_URL+`/auth/select/srvauth_dept_workorder_select?srvauth_dept_workorder_select`
+       let url= path+`/auth/select/srvauth_dept_workorder_select?srvauth_dept_workorder_select`
         let req={
             colNames: ["*"],
             serviceName: "srvauth_dept_workorder_select",
@@ -113,17 +114,17 @@ export default class OrderApi{
     }
     //图片加载地址
     dowPicInfoUrl(){
-       return window.APP_CONFIG.API_URL+`/file/download?bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}&filePath=`
+       return path+`/file/download?bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}&filePath=`
     }
     //删除删除图片证据
     async deletePicInfo(params){
-       let url= window.APP_CONFIG.API_URL+`/file/delete`
+       let url= path+`/file/delete`
        let req= params
        return await $http.post(url, params);
     }
     //保存上传图片
     async savePicInfo(params){
-       let url= window.APP_CONFIG.API_URL+`/file/operate/srvfile_icon_db_add`
+       let url= path+`/file/operate/srvfile_icon_db_add`
        let req=[
            {
                condition:[],
@@ -135,7 +136,7 @@ export default class OrderApi{
     }
     //根据no获取当前上传图片列表
     async getCurrentPicInfo(option){
-       let url=window.APP_CONFIG.API_URL+ `/file/select/srvfile_attachment_select?srvfile_attachment_select`
+       let url=path+ `/file/select/srvfile_attachment_select?srvfile_attachment_select`
         let req={
             colNames: ["*"],
             serviceName: "srvfile_attachment_select",
@@ -149,7 +150,7 @@ export default class OrderApi{
     //根据更新指定图片信息
     async updatePicInfo(option){
         //
-        let url=window.APP_CONFIG.API_URL+`/file/operate/srvfile_icon_db_update`
+        let url=path+`/file/operate/srvfile_icon_db_update`
         let req=[
             {
                 serviceName: "srvfile_icon_db_update",
@@ -161,7 +162,7 @@ export default class OrderApi{
     }
     //根据ids获取指定图片保存信息
     async getPicInfoById(params){
-      let url=window.APP_CONFIG.API_URL+`/file/select/srvfile_icon_db_select?srvfile_icon_db_select`
+      let url=path+`/file/select/srvfile_icon_db_select?srvfile_icon_db_select`
       let req={
           condition:params.condition,
           colNames: ["*"],
@@ -174,7 +175,7 @@ export default class OrderApi{
    }
    //发起工单提交
     async handleSubmitOrder(params){
-       let url= window.APP_CONFIG.API_URL+ `/aud/operate/srvaud_ads_workorder_add`
+       let url= path+ `/aud/operate/srvaud_ads_workorder_add`
        let req=[
            {
                serviceName: "srvaud_ads_workorder_add",
@@ -186,7 +187,7 @@ export default class OrderApi{
     }
    //根据passid获取车辆通行流水
     async getCarWaysInfo(options){
-       let url = window.APP_CONFIG.API_URL+ `/aud/select/srvaud_susvehpass_select?srvaud_susvehpass_select`
+       let url = path+ `/aud/select/srvaud_susvehpass_select?srvaud_susvehpass_select`
        let req={
            colNames: ["*"],
            draft: false,
@@ -201,7 +202,7 @@ export default class OrderApi{
     }
     //根据车辆流水内的出入时间及passid获取通行信息数据（收费站，门架）
     async getCarPathInfoById(options){
-       let url = window.APP_CONFIG.API_URL+`/aud/select/srvaud_susvehpasspath_select`
+       let url = path+`/aud/select/srvaud_susvehpasspath_select`
        let req={
            colNames: ["*"],
            serviceName: "srvaud_susvehpasspath_select",
@@ -212,7 +213,7 @@ export default class OrderApi{
     }
   //获取车辆通行路径
     async getCarPathPoint(options){
-       let url= window.APP_CONFIG.API_URL+`/aud/select/srvaud_susvehpasspath_select?srvaud_susvehpasspath_select`
+       let url= path+`/aud/select/srvaud_susvehpasspath_select?srvaud_susvehpasspath_select`
        let req={
            colNames: ["*"],
            serviceName: "srvaud_susvehpasspath_select",
@@ -228,7 +229,7 @@ export default class OrderApi{
     }
     //通行门架信息查询
     async getAllStations(option){
-       let url = window.APP_CONFIG.API_URL+`/aud/select/srvaud_tollgrantry_station_aud_select`
+       let url = path+`/aud/select/srvaud_tollgrantry_station_aud_select`
        let req={
            colNames: ["*"],
            serviceName: "srvaud_tollgrantry_station_aud_select",
@@ -241,7 +242,7 @@ export default class OrderApi{
     }
     //条件查询门架和收费站
     async  getAllStationByInfo(options){
-       let url= window.APP_CONFIG.API_URL+`/aud/select/srvaud_tollgrantry_station_aud_select`
+       let url= path+`/aud/select/srvaud_tollgrantry_station_aud_select`
        let req={
          colNames: ["*"],
          condition:options.condition,
@@ -253,5 +254,57 @@ export default class OrderApi{
          order: []
         }
       return await $http.post(url, req)
+    }
+    //百度路径规划调用(url包含整个请求的参数，测试环境使用互联网结构)
+    async getBaiduMapRoute (ak,baseUrl,params){
+        return await axios({
+            url: baseUrl,
+            method: 'GET',
+            params: {
+                ...params,
+                ak,
+                output: 'json'
+            }
+        })
+    }
+    //工单提交前检查是否允许提交
+    async handleTestOrder (params){
+       let url= path+`/aud/select/srvaud_workorder_passid_select`
+        let req={
+           colNames: ["*"],
+           serviceName: "srvaud_workorder_passid_select",
+          condition: [{"colName": "pass_id", "ruleType": "eq", value:params.pass_id}]
+
+        }
+      return await $http.post(url, req)
+    }
+    //远端中心调用查询车辆的通行信息接口，在初次进入地图时调用
+    async getOriginCenterDetails(params){
+       let url= path + `/aud/select/srvaud_audit_passconvdetail_ori_select`;
+       let req={
+          colNames: ["*"],
+          serviceName: "srvaud_audit_passconvdetail_ori_select",
+          condition: [{"colName": "passid", "ruleType": "eq", value:params.passid}]
+       }
+       return await $http.post(url, req)
+    }
+    //本地服务中查询车辆通行信息接口（初次进入地图时使用，有数据就用，没有数据使用远端中心接口的返回数据）
+    async getLocationCenterDetails(params){
+        let url= path + `/aud/select/srvaud_audit_passconvdetail_select`;
+        let req={
+            colNames: ["*"],
+            serviceName: "srvaud_audit_passconvdetail_select",
+            condition: [{"colName": "passid", "ruleType": "eq", value:params.passid}]
+        }
+        return await $http.post(url, req)
+    }
+
+    //调用计费查询接口获取根据passid查询获取的费用信息
+    async getDriverFreeDetails(params){
+       let url=path+`/calc/toll/fee`
+       let data={
+           passid:params.pass_id,
+       }
+       return await $http.post(url, data)
     }
 }

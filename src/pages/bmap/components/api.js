@@ -1,5 +1,3 @@
-
- 
 import axios from "axios";
 import {getroute, route_v1_route} from "../assets/mockData";
 
@@ -23,6 +21,7 @@ export function getBaiduMapApi (url,params) {
     method: 'GET'
   })
 }
+
 export function getBxSrv(srv,type,params) {
   // 查询轮播
   
@@ -64,15 +63,6 @@ export const geoconv = async(pointsStr)=>{
 // }
 }
 
-
-
-
-
-
-
-
-
-
 export function getCaseInfo (app,type,srv) {
   // 返回一个promise对象
   // let app = app
@@ -100,6 +90,7 @@ export function getCaseInfo (app,type,srv) {
     data: req
   })
 }
+
 export function getEventInfo () {
   // 返回一个promise对象
   // let app = app
@@ -121,6 +112,7 @@ export function getEventInfo () {
     data: req
   })
 }
+
 export function getFileInfo (no) {
   // 返回一个promise对象
   // let app = app
@@ -153,6 +145,7 @@ export function getFileInfo (no) {
     data: req
   })
 }
+
 export function getPayInfo (req) {
   // 返回一个promise对象
   // let app = app
@@ -163,6 +156,7 @@ export function getPayInfo (req) {
     data: req
   })
 }
+
 export function setRequest (req,type,srv) {
   // 返回一个promise对象
   // let app = app
@@ -173,6 +167,7 @@ export function setRequest (req,type,srv) {
     data: req
   })
 }
+
 export function getCmt (contentNo) {
   // 返回一个promise对象
   // let app = app

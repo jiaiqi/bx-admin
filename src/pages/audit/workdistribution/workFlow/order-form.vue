@@ -133,7 +133,10 @@
             </el-select>
           </el-form-item>
           <el-form-item label="通行收费" prop="orginal_fee">
-            <el-input v-model="ruleForm.orginal_fee" clearable placeholder="请输入..."></el-input>
+             <li style="display: flex">
+               <el-input v-model="ruleForm.orginal_fee" clearable placeholder="请输入..."></el-input>
+               <el-button type="primary" size="mini" icon="el-icon-edit" @click="handleGetCurrentFree">计费查询</el-button>
+             </li>
           </el-form-item>
         </el-col>
         <el-col :span="12" style="display: flex;width:43.5%;justify-content: space-between">
@@ -595,6 +598,7 @@ export default {
         let ls = res.data.data
         _this.ruleForm.org_type=ls[0].org_type?(ls[0].org_type).toString():"";
         _this.optionsPageOrg = res.data.data
+        _this.ruleForm.org_id=ls[0].org_id;
          if(dep){
            _this.ruleForm.org_no= _this.optionsPageOrg[0].dept_no;
          }else {
@@ -660,14 +664,26 @@ export default {
       }, {});
       return result;
     },
-    handleSubmit(){
-       orderUtils.handleSubmitOrder([this.handleSetEmpty()]).then(res => {
-         if(res.data.state !== 'SUCCESS') return;
-         this.$message.success('工单保存成功');
-       }).catch(err=>{
-         this.$message.error('提交异常，请检查');
-       })
-      console.log('当前表单提交信息',this.handleSetEmpty());
+    async handleSubmit(){
+      this.handleTest()
+    },
+    //提交工单前进行通行测试，当返回有数据时不允许提交，无返回数据时可以正常走下一步提交
+    handleTest(){
+      orderUtils.handleTestOrder({pass_id:this.ruleForm.pass_id}).then(res => {
+        if(res.data.state !== 'SUCCESS') return;
+        let ls = res.data.data
+        if(ls&&ls.length===0){
+          orderUtils.handleSubmitOrder([this.handleSetEmpty()]).then(res => {
+            if(res.data.state !== 'SUCCESS') return;
+            this.$message.success('工单保存成功');
+          }).catch(err=>{
+            this.$message.error('提交异常，请检查');
+          })
+        }else {
+          this.$message.error('当前工单已存在提交记录，请无重复提交');
+        }
+        console.log('当前表单提交信息',this.handleSetEmpty());
+      }).catch(err=>{})
     },
     //获取上传图片信息
     getPicList(list){
@@ -723,6 +739,18 @@ export default {
           this.suspectedData=res.data.data?res.data.data:[]
           console.log('获取到流水',this.suspectedData)
      }).catch(err=>{})
+    },
+    /**
+     * @Description:计费查询使用
+     * @Author:Eirice
+     * @Date: 2025-06-06 17:23:48
+     */
+    handleGetCurrentFree(){
+      orderUtils.getDriverFreeDetails({pass_id:this.ruleForm.pass_id}).then(res => {
+        if(res.data.state !== 'SUCCESS') return;
+
+      }).catch(err=>{})
+      console.log('查询计费使用的passid',this.ruleForm.pass_id)
     },
   },
   created(){

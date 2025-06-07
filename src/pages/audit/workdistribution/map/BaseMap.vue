@@ -15,7 +15,7 @@
             <span title="当前位置前加一个" @click="handleSetInfo('up',item)"><i class="el-icon-caret-top"></i></span>
             <span title="当前位置后加一个" @click="handleSetInfo('dwn',item)"><i class="el-icon-caret-bottom"></i></span>
           </li>
-          <li class="st_name">{{ item.name }}</li>
+          <li class="st_name" :title="item.name?item.name:item.tradenodename">{{ item.name?item.name:item.tradenodename }}</li>
           <li class="st_dl"><span style="font-size: 1.125rem;cursor: pointer" @click="handleDelete(item)"><i
               class="el-icon-delete"></i></span></li>
           <li class="dr_row_index" :style="[{backgroundColor:'#e0e3e3'}]">{{ index + 1 }}</li>
@@ -39,6 +39,7 @@ import {
   AutoDrivingLineSearch,
   drawMapMarkersAndLabel,
   drwIconLineLayer,
+  setLineLayer,
   FlyTo,
   handleMakePoint,
   makeFeature,
@@ -48,6 +49,7 @@ import {
 
 const orderUtil = new OrderApi();
 const route = useRoute()
+const passId = route.query?.pass_id
 const listVisible=ref(false)
 const drivingPath = ref([])
 const userMap = ref(null);
@@ -88,21 +90,99 @@ const initDrawingRoute = async () => {
   let end = handleMakePoint(handleMap.value, 108.93522197694989, 34.298609825499)
   let ways = [handleMakePoint(handleMap.value, 108.92899978014819, 34.287680060799346)]
   AutoDrivingLineSearch(handleMap.value, start, end, ways);
-
   let line = await setPlanRoute()
   if (line) {
-    handleDrawLine(line)
+
   }
+}
+
+/**
+ * @Description:获取百度路径规划数据信息
+ * @Author:Eirice
+ * @Date: 2025-06-06 14:29:34
+ */
+const getRoutesByBaiDu= async () =>{
+  let last=drivingPoint.value[drivingPoint.value.length-1]
+  let ways=drivingPoint.value[drivingPoint.value.length/2]
+  let origin=drivingPoint.value[0].lat+","+drivingPoint.value[0].lng; //起点
+  let destination=last.lat+","+last.lng;
+  let ak='tkSgCpN7B73A76l9M7RExhcdu2ip8FEo'
+  let urls=`/baiduApi/direction/v2/driving`;
+  const params = {
+    origin: origin, // 起点坐标
+    destination:destination, // 终点坐标
+    tactics: 0, // 导航策略
+    inputCrs:'wgs84ll',
+    outputCrs:'wgs84ll'
+  }
+ let line= await orderUtil.getBaiduMapRoute(ak,urls,params);
+ let linePoints=[]
+ const lines= handleFilterLine(line)
+  // 开始绘制逻辑
+  if (lines && lines.length > 0) {
+    for (let point of lines) {
+      linePoints.push(new BMap.Point(point.lng, point.lat))
+    }
+  }
+  handleDrawLine(linePoints)
+}
+//路线数据过滤
+const handleFilterLine = (line) => {
+  let routes = []
+  line = line.data || null
+  if (line && line.status === 0) {
+    if (!line.result?.routes && line.result?.steps) {
+      // 专网接口
+      let steps = []
+      for (let step of res.result?.steps) {
+        // let path = step.path.split(';')
+        let path = step.path.split(',')
+        path = path.reduce((pre, cur, index) => {
+          if (index % 2 === 0) {
+            pre.push(cur)
+          } else {
+            pre[pre.length - 1] += `,${cur}`
+          }
+          return pre
+        }, [])
+        path = path.map(item => {
+          let point = {
+            lat: `${item.split(',')[1]}`,
+            lng: `${item.split(',')[0]}`,
+          }
+          return point
+        })
+        steps = steps.concat(path)
+      }
+      routes = routes.concat(steps)
+    } else if (line.result?.routes) {
+      for (let route of line.result.routes) {
+        let steps = []
+        for (let step of route.steps) {
+          let path = step.path.split(';')
+          path = path.map(item => {
+            let point = {
+              lat: `${item.split(',')[1]}`,
+              lng: `${item.split(',')[0]}`,
+            }
+            return point
+          })
+          steps = steps.concat(path)
+        }
+        routes = routes.concat(steps)
+      }
+    }
+   }
+  return routes;
 }
 const handleDrawLine = (list) => {
   if (!list) return;
   let features = []
   features.push(makeFeature('LineString', list, {"name": "linIcon"}))
   let source = makeFeatureCollection(features)
-  drwIconLineLayer(handleMap.value, source, 'linIcon', 'up-two.png');
-  handleDrawMarker(list)
+  setLineLayer(handleMap.value,list);
   let code = list[(list.length) / 2]
-  FlyTo(handleMap.value, handleMakePoint('', code[0], code[1]));
+  // FlyTo(handleMap.value,code);
 }
 const handleDrawMarker = (list) => {
 
@@ -151,7 +231,7 @@ const filterPointList = (list) => {
     // 构建最终的点位数组
     const additionalMarkers = sortedPoints.map((item, index) => ({
       ...pointConfig,
-      name: item.tollgrantry_name,
+      name: item.tollgrantry_name?item.tollgrantry_name:item.tradenodename,
       point: handleMakePoint('', item.lng, item.lat),
       seqid: index + 1,  // 添加 seq 字段，从 1 开始
       ...item
@@ -159,9 +239,10 @@ const filterPointList = (list) => {
 
     // 合并所有点位
     drivingPoint.value = [...additionalMarkers];
-
+    console.log(drivingPoint.value);
     // 绘制地图标记
     drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
+    getRoutesByBaiDu()
   } catch (error) {
     console.error('filterPointList 处理失败:', error);
   }
@@ -177,11 +258,39 @@ const getTrafficFlow = (id) => {
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
-    getTimePoint(res.data.data)
     console.log('获取到流水', this.suspectedData)
   }).catch(err => {
   })
 }
+/**
+ * @Description:初次进入调用远端中心接口查询通行信息
+ * @Author:Eirice
+ * @Date: 2025-06-06 17:45:45
+ */
+const getPointByOriginCenter=()=>{
+  orderUtil.getOriginCenterDetails({passid:passId}).then(res=>{
+    if(res.data.state !== 'SUCCESS') return;
+    filterPointList(res.data.data)
+  }).catch(err => {})
+}
+/**
+ * @Description:从本地服务中调用获取车辆通行信息
+ * @Author:Eirice
+ * @Date: 2025-06-06 17:48:49
+ */
+const getPointByLocation=()=>{
+  orderUtil.getLocationCenterDetails({passid:passId}).then(res=>{
+    if(res.data.state !== 'SUCCESS') return;
+    if(res.data.data&&res.data.data.length>0){
+      //本地存储有数据
+      filterPointList(res.data.data)
+
+    }else {
+      getPointByOriginCenter()
+    }
+  }).catch(err => {})
+}
+
 const getTimePoint = (info) => {
   let tep = info[0]
   if (tep) {
@@ -226,7 +335,8 @@ const handleDelete = (item) => {
     }
   })
 
-  drawMapMarkersAndLabel(handleMap.value, tep)
+  drawMapMarkersAndLabel(handleMap.value, tep);
+  getRoutesByBaiDu()
 }
 /**
  * @Description:获取全量收费站及门架
@@ -259,7 +369,6 @@ const handleSetInfo=(type,item)=>{
  */
 const handleFilterStation = (list) => {
   if (!list || list.length === 0) return;
-  
   // 构建新的点位配置
   const pointConfig = {
     icon: require(`@/assets/mapIcon/point_ico.png`),
@@ -311,6 +420,7 @@ const handleFilterStation = (list) => {
   console.log('----',drivingPoint.value);
   // 重新绘制地图标记
   drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
+  getRoutesByBaiDu()
 }
 
 const handleSubmitStation=()=>{
@@ -337,12 +447,15 @@ const handleFilterDetail = () => {
     }
   });
 }
+
 onMounted(() => {
   let passId = route.query.pass_id
   asyncLoadMap().then(res => {
     initMineMap();
     handleMap.value = userMap.value.initMap();
     if (handleMap.value) {
+      // getPointByOriginCenter();
+      getPointByLocation();
       getTrafficFlow(passId)
       getStationsAndDoor()
       // HandleMapClick(handleMap.value);
@@ -475,6 +588,9 @@ li {
   width: 90%;
   text-align: left;
   line-height: 2.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .st_dl {
