@@ -283,7 +283,7 @@ export default {
 .card-part {
   position: relative;
   // margin: 5px;
-  border: 1px dashed #eee;
+  border: 1px dashed #ccc;
   border-radius: 2px;
   // background-color: #fff;
   min-height: 20px;

@@ -145,19 +145,19 @@ export default {
             data: this.buildAddReqData(addList),
           };
           // 后端复制参数主子表同时提交的时候会有bug 等后端处理了再放开
-          // const _duplicate_id = addList.find(
-          //   (item) => item._duplicate_id
-          // )?._duplicate_id;
-          // if (_duplicate_id) {
-          //   addObj.condition = [
-          //     {
-          //       colName: "id",
-          //       ruleType: "eq",
-          //       value: _duplicate_id,
-          //     },
-          //   ];
-          //   addObj.duplicate = true;
-          // }
+          const _duplicate_id = addList.find(
+            (item) => item._duplicate_id
+          )?._duplicate_id;
+          if (_duplicate_id) {
+            addObj.condition = [
+              {
+                colName: "id",
+                ruleType: "eq",
+                value: _duplicate_id,
+              },
+            ];
+            addObj.duplicate = true;
+          }
           const result = await this.httpOperate(
             "add",
             addObj,
