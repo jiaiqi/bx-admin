@@ -2,7 +2,7 @@
   <div class="card-cell-editor" ref="cardCellEditor">
     <header class="header">
       <div class="header-left">
-        <h1 class="title">卡片单元编辑</h1>
+        <h1 class="title">卡片单元设计器</h1>
       </div>
       <div class="header-center">
         <!-- <button class="" @click="hiddenPartsVisible = !hiddenPartsVisible">
@@ -24,11 +24,7 @@
         </button> -->
       </div>
       <div class="header-right">
-        <div
-          class="theme-toggle-btn"
-          @click="changeTheme"
-          title="切换主题模式"
-        >
+        <div class="theme-toggle-btn" @click="changeTheme" title="切换主题模式">
           <Icon
             :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
             class="theme-icon"
@@ -193,6 +189,7 @@ export default {
       hiddenPartsVisible: false,
       isDarkMode: false, // 新增深色模式状态
       partHeaderStyle: {},
+      clipboardData: null, // 新增：用于存储复制的数据
     };
   },
   computed: {
@@ -645,9 +642,116 @@ export default {
       //   this.$message.info("退出预览模式");
       // }
     },
+    // 新增：处理键盘事件
+    handleKeyDown(event) {
+      // 处理 Ctrl+C
+      if (event.ctrlKey && event.key === 'c') {
+        if (this.selectedPart) {
+          this.clipboardData = JSON.parse(JSON.stringify(this.selectedPart));
+          this.$message.success('已复制到剪贴板');
+        }
+      }
+      
+      // 处理 Ctrl+V
+      if (event.ctrlKey && event.key === 'v') {
+        if (this.clipboardData) {
+          this.pastePart();
+        }
+      }
+    },
+
+    // 新增：粘贴部件
+    pastePart() {
+      if (!this.clipboardData) return;
+
+      // 创建新的部件实例
+      const newPart = JSON.parse(JSON.stringify(this.clipboardData));
+      newPart._id = new Date().getTime();
+      newPart._editType = "add";
+      
+      // 如果部件有子部件，递归处理子部件
+      if (newPart.children && newPart.children.length) {
+        const duplicateChildren = (children) => {
+          return children.map((child) => {
+            const newChild = JSON.parse(JSON.stringify(child));
+            newChild._id = new Date().getTime() + Math.random() * 100;
+            newChild._editType = "add";
+            if (newChild.children && newChild.children.length) {
+              newChild.children = duplicateChildren(newChild.children);
+            }
+            return newChild;
+          });
+        };
+        newPart.children = duplicateChildren(newPart.children);
+      }
+
+      // 查找父节点
+      const findParentNode = (list, targetPart) => {
+        for (let i = 0; i < list.length; i++) {
+          const item = list[i];
+          if (item.children && item.children.length) {
+            const childIndex = item.children.findIndex(
+              (child) =>
+                (child._id && child._id === targetPart._id) ||
+                (child.id && child.id === targetPart.id)
+            );
+            if (childIndex !== -1) {
+              return {
+                parent: item,
+                isRoot: false,
+              };
+            }
+            const result = findParentNode(item.children, targetPart);
+            if (result) {
+              return result;
+            }
+          }
+        }
+        const rootIndex = list.findIndex(
+          (item) =>
+            (item._id && item._id === targetPart._id) ||
+            (item.id && item.id === targetPart.id)
+        );
+        if (rootIndex !== -1) {
+          return {
+            parent: list,
+            isRoot: true,
+          };
+        }
+        return null;
+      };
+
+      if (this.selectedPart) {
+        const parentInfo = findParentNode(this.partsList, this.selectedPart);
+        if (parentInfo) {
+          if (parentInfo.isRoot) {
+            this.partsList.push(newPart);
+          } else {
+            parentInfo.parent.children.push(newPart);
+          }
+        } else {
+          this.partsList.push(newPart);
+        }
+      } else {
+        this.partsList.push(newPart);
+      }
+
+      // 选中新粘贴的部件
+      this.$nextTick(() => {
+        this.selectPart(newPart);
+      });
+    },
   },
   created() {
     this.init();
+  },
+  mounted() {
+    // 添加键盘事件监听
+    window.addEventListener('keydown', this.handleKeyDown);
+  },
+  beforeDestroy() {
+    // 移除键盘事件监听
+    window.removeEventListener('keydown', this.handleKeyDown);
   },
 };
 </script>
