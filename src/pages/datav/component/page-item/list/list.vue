@@ -839,6 +839,7 @@ export default {
   width: 100%;
   display: flex;
   overflow: hidden;
+  flex: 1;
   .map-card-container {
     width: 70%;
   }
