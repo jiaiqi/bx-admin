@@ -98,6 +98,12 @@
                     @click.native.stop="handleCopyPart()"
                   ></Icon>
                 </i>
+                <i title="粘贴">
+                  <Icon
+                    icon="ri:file-copy-2-line"
+                    @click.native.stop="handlePastePart()"
+                  ></Icon>
+                </i>
 
                 <i title="删除">
                   <Icon
@@ -1021,8 +1027,10 @@ export default {
             if (!this.selectedPart) {
               this.duplicatePart(newPart);
             } else if (this.isSamePart(this.selectedPart, newPart)) {
+              // 如果是相同部件，粘贴到同级
               await this.pasteToSameLevel(newPart);
             } else {
+              // 粘贴到选中的部件下
               await this.pasteToSelectedPart(newPart);
             }
           }
@@ -1128,7 +1136,7 @@ export default {
         utils.setupPartInfo(newPart, null, this.partsList.length);
         this.partsList.push(newPart);
       }
-      this.$message.success("粘贴成功");
+      // this.$message.success("粘贴成功");
     },
 
     /**
@@ -1147,7 +1155,7 @@ export default {
           this.selectedPart.children.length
         );
         this.selectedPart.children.push(newPart);
-        this.$message.success("粘贴成功");
+        // this.$message.success("粘贴成功");
       } else {
         this.$message.warning("只能将组件粘贴到类型为row的部件中");
       }
