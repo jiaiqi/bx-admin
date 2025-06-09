@@ -549,14 +549,16 @@ export default {
 <style scoped lang="scss">
 .render-page {
   position: relative;
-  width: 100%;
-  height: 100%;
   min-height: 500px;
   background-color: #000;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   border-radius:0.9375rem;
+  width: 375px;
+  height: 667px;
+  margin: 5vh auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1)
 }
 
 .component-container {
