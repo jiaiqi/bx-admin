@@ -910,8 +910,8 @@ export default {
       if (this.isEditorActive && !this.selectedPart) {
         // 选中卡片单元的情况下 按下复制快捷键 复制所有部件
         const allParts = utils.deepClone(this.partsList);
-        allParts.forEach(part => part[CONSTANTS.PART_IDENTIFIER] = true);
-        
+        allParts.forEach((part) => (part[CONSTANTS.PART_IDENTIFIER] = true));
+
         try {
           await this.checkClipboardSupport();
           if (this.useSystemClipboard) {
@@ -926,7 +926,7 @@ export default {
         }
         return;
       }
-      
+
       if (!this.selectedPart) {
         this.$message.warning("请先选择要复制的部件");
         return;
@@ -955,17 +955,20 @@ export default {
      */
     async handleKeyDown(event) {
       // console.log("handleKeyDown:", event);
-      if (event.ctrlKey && event.key === "c") {
-        this.handleCopyPart();
-      }
-
-      if (event.ctrlKey && event.key === "v") {
-        this.handlePastePart();
-      }
-
-      if (event.ctrlKey && event.key === "a") {
+      // 处理键盘快捷键
+      if (event.ctrlKey) {
         event.preventDefault();
-        this.handleEditorClick();
+        switch (event.key) {
+          case "c":
+            this.handleCopyPart();
+            break;
+          case "v":
+            this.handlePastePart();
+            break;
+          case "a":
+            this.handleEditorClick();
+            break;
+        }
         return;
       }
 
@@ -1064,13 +1067,15 @@ export default {
         }
         clipboardData = JSON.parse(storedData);
       }
-      if(Array.isArray(clipboardData)) {
-        let isParts = clipboardData.every(item => item[CONSTANTS.PART_IDENTIFIER]);
-        if(!isParts) {
+      if (Array.isArray(clipboardData)) {
+        let isParts = clipboardData.every(
+          (item) => item[CONSTANTS.PART_IDENTIFIER]
+        );
+        if (!isParts) {
           this.$message.warning("剪贴板数据不是有效的卡片部件");
           return null;
         }
-      }else if (!clipboardData || !clipboardData[CONSTANTS.PART_IDENTIFIER]) {
+      } else if (!clipboardData || !clipboardData[CONSTANTS.PART_IDENTIFIER]) {
         this.$message.warning("剪贴板数据不是有效的卡片部件");
         return null;
       }
