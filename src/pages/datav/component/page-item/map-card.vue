@@ -384,6 +384,17 @@ onMounted(() => {
   left: 15px;
   z-index: 100;
   background: #fff;
+  max-height: 80%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f5f5f5;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+  }
   .tree-data-item {
     border-top: 1px solid #e5e5e5;
     &:first-child {

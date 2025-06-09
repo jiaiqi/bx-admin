@@ -845,6 +845,18 @@ export default {
   }
   .list-container {
     flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.1) #f1f1f1;
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.1);
+      border-radius: 4px;
+    }
   }
 }
 .more-btn {
