@@ -680,7 +680,6 @@ export default {
      */
     duplicatePart(part) {
       const duplicatedPart = utils.processPartData(part);
-      debugger
       const parentInfo = utils.findParentNode(this.partsList, part);
       if (parentInfo) {
         if (parentInfo.isRoot) {
@@ -908,6 +907,26 @@ export default {
      * @returns {Promise<void>}
      */
     async handleCopyPart() {
+      if (this.isEditorActive && !this.selectedPart) {
+        // 选中卡片单元的情况下 按下复制快捷键 复制所有部件
+        const allParts = utils.deepClone(this.partsList);
+        allParts.forEach(part => part[CONSTANTS.PART_IDENTIFIER] = true);
+        
+        try {
+          await this.checkClipboardSupport();
+          if (this.useSystemClipboard) {
+            await navigator.clipboard.writeText(JSON.stringify(allParts));
+          } else {
+            this.clipboardData = allParts;
+            localStorage.setItem(this.storageKey, JSON.stringify(allParts));
+          }
+          this.$message.success("已复制所有部件到剪贴板");
+        } catch (e) {
+          this.handleError(e, "复制失败");
+        }
+        return;
+      }
+      
       if (!this.selectedPart) {
         this.$message.warning("请先选择要复制的部件");
         return;
@@ -915,7 +934,6 @@ export default {
 
       try {
         const data = utils.processPartData(this.selectedPart);
-        debugger
         data[CONSTANTS.PART_IDENTIFIER] = true;
 
         await this.checkClipboardSupport();
@@ -942,7 +960,7 @@ export default {
       }
 
       if (event.ctrlKey && event.key === "v") {
-        this.pastePart();
+        this.handlePastePart();
       }
 
       if (event.key === "Delete" || event.key === "Backspace") {
@@ -977,14 +995,29 @@ export default {
      * 粘贴部件
      * @returns {Promise<void>}
      */
-    async pastePart() {
+    async handlePastePart() {
       try {
         const clipboardData = await this.getClipboardData();
         if (!clipboardData) return;
 
-        const newPart = utils.processPartData(clipboardData);
-        debugger
+        // 处理多个部件粘贴
+        if (Array.isArray(clipboardData)) {
+          for (const partData of clipboardData) {
+            const newPart = utils.processPartData(partData);
+            if (!this.selectedPart) {
+              this.duplicatePart(newPart);
+            } else if (this.isSamePart(this.selectedPart, newPart)) {
+              await this.pasteToSameLevel(newPart);
+            } else {
+              await this.pasteToSelectedPart(newPart);
+            }
+          }
+          this.$message.success(`已粘贴${clipboardData.length}个部件`);
+          return;
+        }
 
+        // 单个部件粘贴
+        const newPart = utils.processPartData(clipboardData);
         if (!this.selectedPart) {
           return this.duplicatePart(newPart);
         }
@@ -994,6 +1027,7 @@ export default {
         } else {
           await this.pasteToSelectedPart(newPart);
         }
+        this.$message.success("已粘贴部件");
 
         this.$nextTick(() => {
           this.selectPart(newPart);
@@ -1024,8 +1058,13 @@ export default {
         }
         clipboardData = JSON.parse(storedData);
       }
-
-      if (!clipboardData || !clipboardData[CONSTANTS.PART_IDENTIFIER]) {
+      if(Array.isArray(clipboardData)) {
+        let isParts = clipboardData.every(item => item[CONSTANTS.PART_IDENTIFIER]);
+        if(!isParts) {
+          this.$message.warning("剪贴板数据不是有效的卡片部件");
+          return null;
+        }
+      }else if (!clipboardData || !clipboardData[CONSTANTS.PART_IDENTIFIER]) {
         this.$message.warning("剪贴板数据不是有效的卡片部件");
         return null;
       }
