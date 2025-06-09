@@ -963,6 +963,12 @@ export default {
         this.handlePastePart();
       }
 
+      if (event.ctrlKey && event.key === "a") {
+        event.preventDefault();
+        this.handleEditorClick();
+        return;
+      }
+
       if (event.key === "Delete" || event.key === "Backspace") {
         if (this.selectedPart) {
           const findPartIndex = (list, targetPart) => {
