@@ -1,12 +1,4 @@
 <template>
-  <!-- <div v-if="pageItem&&pageItem.com_label"> -->
-  <!-- {{pageItem.com_label}} -->
-  <!--    <el-tabs v-model="activeName" @tab-click="handleClick">-->
-  <!--      <el-tab-pane :label="item.name" :name="item.name" v-for="item in tabs">-->
-  <!--      -->
-  <!--      </el-tab-pane>-->
-  <!--    </el-tabs>-->
-  <!-- </div> -->
   <div
     class="tabs"
     :class="{ 'vertical-tabs': vertical }"
@@ -57,22 +49,6 @@
       </div>
     </div>
   </div>
-  <!-- <el-tabs v-model="activeName">
-    <el-tab-pane
-      :label="item.com_name"
-      :name="item.com_no"
-      :key="item.id"
-      v-for="item in components"
-    >
-      <List :ref="item.com_type" :pageItem="item"></List>
-      <page-item
-        use-layout="false"
-        ref="pageItem"
-        :page-item="item.data"
-        :layout="item"
-      ></page-item>
-    </el-tab-pane>
-  </el-tabs> -->
 </template>
 
 <script>

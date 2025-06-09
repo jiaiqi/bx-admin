@@ -272,29 +272,34 @@ const utils = {
    * @returns {Object} 处理后的部件数据
    */
   processPartData: (part) => {
-    const newPart = utils.deepClone(part);
-    newPart._editType = "add";
-    newPart._duplicate_id = newPart._duplicate_id || newPart.id;
-    newPart._id = utils.generateUniqueId();
-
-    CONSTANTS.IGNORE_KEYS.forEach((key) => {
-      delete newPart[key];
-    });
-
+    const newPart = utils.generatePartData(part);
     if (Array.isArray(newPart.children)) {
       newPart.children = utils.processChildren(newPart.children, (child) => {
-        child._duplicate_id = child.id;
-        child._id = utils.generateUniqueId();
-        CONSTANTS.IGNORE_KEYS.forEach((key) => {
-          delete child[key];
-        });
-        return child;
+        return utils.generatePartData(child);
       });
     }
-
     return newPart;
   },
 
+  /**
+   * 初始化复制/新增的卡片部件数据
+   * @param {Object} part - 部件数据
+   * @returns {Object} 处理后的部件数据
+   */
+  generatePartData(part) {
+    const newPart = utils.deepClone(part);
+    newPart._editType = "add";
+    const _duplicate_id = newPart._duplicate_id || newPart.id;
+    if (_duplicate_id) {
+      newPart._duplicate_id = _duplicate_id;
+    }
+    newPart._id = utils.generateUniqueId();
+    delete newPart.id;
+    CONSTANTS.IGNORE_KEYS.forEach((key) => {
+      delete newPart[key];
+    });
+    return newPart;
+  },
   /**
    * 设置部件序号和父级信息
    * @param {Object} part - 部件数据
