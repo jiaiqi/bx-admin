@@ -128,6 +128,11 @@
               @delete-part="deletePart"
               @select-part="selectPart"
               @mouseenter="onDragLeave($event, 'editor')"
+              @copy-part="handleContextCopyPart"
+              @paste-part="handleContextPastePart"
+              @cut-part="handleCutPart"
+              @move-part="handleMovePart"
+              @show-properties="handleShowProperties"
             />
           </div>
         </div>
@@ -223,7 +228,7 @@ const utils = {
    * 生成唯一ID
    * @returns {number} 时间戳ID
    */
-  generateUniqueId: () => new Date().getTime(),
+  generateUniqueId: () => new Date().getTime() + Math.random() * 1000000,
 
   /**
    * 递归处理子部件
@@ -418,6 +423,100 @@ export default {
     handleError(error, message = "操作失败") {
       console.error(message, error);
       this.$message.error(message);
+    },
+
+    /**
+     * 处理右键菜单复制部件
+     * @param {Object} part - 要复制的部件
+     */
+    handleContextCopyPart(part) {
+      if (part) {
+        this.selectPart(part);
+      }
+      this.handleCopyPart();
+    },
+
+    /**
+     * 处理右键菜单粘贴部件
+     * @param {Object} part - 目标部件
+     */
+    handleContextPastePart(part) {
+      if (part) {
+        this.selectPart(part);
+      }
+      this.handlePastePart();
+    },
+
+    /**
+     * 处理右键菜单剪切部件
+     * @param {Object} part - 要剪切的部件
+     */
+    async handleCutPart(part) {
+      if (part) {
+        this.selectPart(part);
+        await this.handleCopyPart();
+        this.deletePart(part);
+        this.$message.success("已剪切部件");
+      }
+    },
+
+    /**
+     * 处理部件移动
+     * @param {Object} part - 要移动的部件
+     * @param {string} direction - 移动方向 ('up' | 'down')
+     */
+    handleMovePart(part, direction) {
+      const parentInfo = utils.findParentNode(this.partsList, part);
+      if (!parentInfo) return;
+
+      const { parent, isRoot } = parentInfo;
+      const list = isRoot ? this.partsList : parent.children;
+      const currentIndex = list.findIndex(
+        (item) => 
+          (item._id && item._id === part._id) ||
+          (item.id && item.id === part.id)
+      );
+
+      if (currentIndex === -1) return;
+
+      let targetIndex;
+      if (direction === 'up' && currentIndex > 0) {
+        targetIndex = currentIndex - 1;
+      } else if (direction === 'down' && currentIndex < list.length - 1) {
+        targetIndex = currentIndex + 1;
+      } else {
+        this.$message.warning(`无法${direction === 'up' ? '上' : '下'}移`);
+        return;
+      }
+
+      // 交换位置和seq值
+      const temp = list[currentIndex];
+      const tempSeq = list[currentIndex].seq;
+
+      // 交换seq值
+      this.$set(list[currentIndex], 'seq', list[targetIndex].seq);
+      this.$set(list[targetIndex], 'seq', tempSeq);
+      
+      // 交换位置
+      this.$set(list, currentIndex, list[targetIndex]);
+      this.$set(list, targetIndex, temp);
+
+      this.$message.success(`已${direction === 'up' ? '上' : '下'}移部件`);
+    },
+
+    /**
+     * 显示部件属性
+     * @param {Object} part - 要显示属性的部件
+     */
+    handleShowProperties(part) {
+      this.selectPart(part);
+      // 可以在这里添加额外的属性面板聚焦逻辑
+      this.$nextTick(() => {
+        const propertyPanel = document.querySelector('.property-panel');
+        if (propertyPanel) {
+          propertyPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
     },
 
     /**

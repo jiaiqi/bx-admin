@@ -13,6 +13,7 @@
     @dragover.stop="onDragOver($event)"
     @dragleave.stop="onDragLeave($event)"
     @mouseover.stop=""
+    v-context-menu="contextMenuConfig"
     v-if="partsShow"
   >
     <div
@@ -36,6 +37,7 @@
         @mouseenter="$emit('mouseenter')"
         @delete-part="deleteChildPart"
         @select-part="selectPart"
+        @contextmenu-item-click="handleContextMenuItemClick"
       />
     </template>
 
@@ -53,11 +55,16 @@
 import { Icon } from "@iconify/vue2";
 import CardCellPartWithoutCardGroup from "@/pages/datav/component/page-item/card-group-cell/card-cell-part-without-card-group.vue";
 import { formatStyleData } from "@/pages/datav/common";
+import contextMenuDirective from "@/components/common/ContextMenu/context-menu";
+
 export default {
   name: "CardPart",
   components: {
     Icon,
     CardCellPartWithoutCardGroup,
+  },
+  directives: {
+    contextMenu: contextMenuDirective,
   },
   data() {
     return {
@@ -186,6 +193,95 @@ export default {
         return true;
       }
     },
+    contextMenuItems() {
+      return [
+        {
+          label: "复制",
+          icon: "ri:file-copy-2-fill",
+          action: "copy",
+          shortcut: "Ctrl+C",
+        },
+        {
+          label: "粘贴",
+          icon: "ri:file-copy-2-line",
+          action: "paste",
+          shortcut: "Ctrl+V",
+          disabled: !this.hasClipboardData,
+        },
+        // {
+        //   label: "剪切",
+        //   icon: "ri:scissors-cut-line",
+        //   action: "cut",
+        //   shortcut: "Ctrl+X",
+        // },
+        {
+          divider: true,
+        },
+        {
+          label: "删除",
+          icon: "ri:delete-bin-line",
+          action: "delete",
+          shortcut: "Delete",
+        },
+        // {
+        //   divider: true,
+        // },
+        // {
+        //   label: "上移",
+        //   icon: "ri:arrow-up-line",
+        //   action: "moveUp",
+        //   disabled: this.isFirstChild,
+        // },
+        // {
+        //   label: "下移",
+        //   icon: "ri:arrow-down-line",
+        //   action: "moveDown",
+        //   disabled: this.isLastChild,
+        // },
+        // {
+        //   divider: true,
+        // },
+        // {
+        //   label: "属性",
+        //   icon: "ri:settings-3-line",
+        //   action: "properties",
+        // },
+      ];
+    },
+    contextMenuConfig() {
+      return {
+        menuItems: this.contextMenuItems,
+        onItemClick: this.handleContextMenuItemClick,
+        context: this.part,
+        disabled: this.preview,
+        beforeShow: (event, context) => {
+          // 在显示菜单前先选中当前部件
+          this.selectPart(this.part, event);
+          return true;
+        },
+      };
+    },
+    hasClipboardData() {
+      // 检查是否有剪贴板数据
+      try {
+        const clipboardData = localStorage.getItem("card_part_clipboard");
+        return !!clipboardData;
+      } catch (e) {
+        return false;
+      }
+    },
+    isFirstChild() {
+      // 检查是否是第一个子元素
+      return this.index === 0;
+    },
+    isLastChild() {
+      // 检查是否是最后一个子元素
+      // 通过$parent获取父组件的partsList长度
+      if (this.$parent && this.$parent.partsList) {
+        return this.index === this.$parent.partsList.length - 1;
+      }
+      return false;
+    },
   },
   methods: {
     selectPart(part, event) {
@@ -268,6 +364,37 @@ export default {
       console.log("卡片点击事件", cell);
       // 可以在这里添加自定义的点击处理逻辑
       this.$emit("select-part", this.part);
+    },
+    handleContextMenuItemClick(item, context, event, el) {
+      // 处理右键菜单项点击事件
+      console.log("右键菜单项点击:", item.action, context);
+
+      switch (item.action) {
+        case "copy":
+          this.$emit("copy-part", context);
+          break;
+        case "paste":
+          this.$emit("paste-part", context);
+          break;
+        case "cut":
+          this.$emit("cut-part", context);
+          break;
+        case "delete":
+          this.$emit("delete-part", context);
+          break;
+        case "moveUp":
+          this.$emit("move-part", context, "up");
+          break;
+        case "moveDown":
+          this.$emit("move-part", context, "down");
+          break;
+        case "properties":
+          this.$emit("show-properties", context);
+          break;
+        default:
+          console.warn("未知的菜单操作:", item.action);
+      }
+      this.$emit("contextmenu-item-click", item, context, event, el);
     },
   },
 };
