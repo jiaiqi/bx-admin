@@ -1,5 +1,8 @@
 <template>
   <div class="door-frame">
+    <div  v-if="list.length==0">
+      暂无相关数据
+    </div>
     <el-timeline :reverse="reverse" v-if="list.length>0">
       <el-timeline-item
           :hideTimestamp="false"

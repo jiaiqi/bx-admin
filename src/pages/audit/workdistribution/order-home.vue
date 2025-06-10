@@ -113,7 +113,7 @@ name: "order-home",
   mounted(){
      this.$nextTick(()=>{
        sessionStorage.removeItem('bx_auth_ticket');
-       sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-7cb48bb4-a770-4e08-9472-fb2c574b1c8d');
+       sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-854a00e0-29d4-47f8-b189-4b69d5b89158');
      })
     // 移除这里的 getRouterInfo 调用，因为已经在 watch 中处理了
     if (!this._isMounted) {
