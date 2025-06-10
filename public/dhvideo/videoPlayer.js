@@ -1678,14 +1678,28 @@
 
             // 查找空闲窗口的函数
             const findFreeWindow = (channelList, totalWindows) => {
+                // 如果是单窗口模式，直接返回窗口0
+                if (totalWindows === 1) {
+                    return 0;
+                }
+
+                // 多窗口模式下的原有逻辑
+                let freeWindow = -1;
                 for (let i = 0; i < totalWindows; i++) {
-                    // 检查当前窗口号是否在正在播放的列表中
-                    const isWindowBusy = channelList.some(item => item.snum === i);
-                    if (!isWindowBusy) {
-                        return i; // 返回第一个空闲窗口的snum
+                    // 检查当前窗口是否被占用
+                    let isWindowFree = true;
+                    for (let j = 0; j < channelList.length; j++) {
+                        if (channelList[j] && channelList[j].snum === i) {
+                            isWindowFree = false;
+                            break;
+                        }
+                    }
+                    if (isWindowFree) {
+                        freeWindow = i;
+                        break;
                     }
                 }
-                return -1; // 没有找到空闲窗口
+                return freeWindow;
             };
 
             // 切换窗口数

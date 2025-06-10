@@ -1,7 +1,7 @@
 <template>
   <div class="door-frame">
-    <div  v-if="list.length==0">
-      暂无相关数据
+    <div  v-if="list.length==0" class="err_info">
+      <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{passId}}</el-empty>
     </div>
     <el-timeline :reverse="reverse" v-if="list.length>0">
       <el-timeline-item
@@ -21,7 +21,7 @@
             过车时间：{{ item.transtime }}
           </div>
           <div class="item-list">
-            计费金额：{{ item.fee_disp }}
+            计费金额：{{ item.fee_disp?item.fee_disp:item.fee }}
           </div>
           <div v-if="item.grantry_type==='收费站'">
             <el-image style="width:43.75rem;height: 18.75rem"

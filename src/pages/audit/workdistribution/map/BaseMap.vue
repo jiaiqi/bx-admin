@@ -60,6 +60,7 @@ const isColes = ref(false);
 const drivingPoint = ref([])
 const addPass=ref({})
 const addStation=ref({})
+const isFirstSave=ref(false);
 const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
@@ -480,6 +481,7 @@ const handleSubmitDrivingInfo = () => {
         console.warn('保存通行信息失败:', res.data);
         return;
       }
+      isFirstSave.value=true
       console.log('通行信息保存成功');
     }).catch(err => {
       console.error('保存通行信息出错:', err);
@@ -491,7 +493,10 @@ const handleSubmitDrivingInfo = () => {
 
 //用户提交
 const handleSubmitStation=()=>{
-  handleSubmitDrivingInfo();
+  //只有第一保存且成功后就不再保存通行详情
+  if(!isFirstSave.value){
+    handleSubmitDrivingInfo();
+  }
   handleFilterDetail()
 }
 
@@ -620,6 +625,7 @@ const getPublicColNames=(colName,type)=>{
   }).catch(err => {})
 }
 onMounted(() => {
+  isFirstSave.value=false
   let passId = route.query.pass_id
   asyncLoadMap().then(res => {
     initMineMap();

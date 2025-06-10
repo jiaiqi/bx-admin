@@ -2,7 +2,7 @@
   <div class="work_main">
     <div class="work_content">
       <keep-alive>
-        <router-view></router-view>
+        <router-view ref="orderForm"></router-view>
       </keep-alive>
     </div>
     <div class="work_tab">
@@ -32,18 +32,17 @@ name: "order-home",
     }
   },
   methods:{
+    updatePassId(newPassId) {
+      this.setPass_id = newPassId;
+    },
     setTab(item,index){
       this.activeIndex = index;
       if(item.code!==1){
-        // 记录当前路由信息
-        const currentQuery = this.$route.query;
-        if (currentQuery && Object.keys(currentQuery).length > 0) {
-          this.initialRouteInfo = JSON.parse(JSON.stringify(currentQuery));
-          console.log('保存路由信息：', this.initialRouteInfo);
-        }
-        // 确保 pass_id 不为空
-        const passId = this.setPass_id || (currentQuery && currentQuery.pass_id) || '';
-        console.log('切换标签时的 pass_id：', passId);
+        // 从子组件获取最新的pass_id，如果获取不到则使用当前路由中的pass_id
+        const currentPassId = this.$refs.orderForm?.ruleForm?.pass_id;
+        const routePassId = this.$route.query.pass_id;
+        const passId = currentPassId || routePassId || '';
+        console.log('切换标签时使用最新的 pass_id：', passId);
         this.$router.push({
           name: item.path,
           query: {
@@ -57,7 +56,6 @@ name: "order-home",
           this.$router.push({name: item.path,query:this.initialRouteInfo});
         } else {
           const storedInfo = sessionStorage.getItem("oderInfo");
-          console.log('使用sessionStorage信息：', storedInfo);
           if (storedInfo) {
             try {
               const parsedInfo = JSON.parse(storedInfo);
@@ -85,7 +83,6 @@ name: "order-home",
             const currentQuery = this.$route.query;
             if (currentQuery && Object.keys(currentQuery).length > 0) {
               this.initialRouteInfo = JSON.parse(JSON.stringify(currentQuery));
-              console.log('getRouterInfo中保存的初始路由信息：', this.initialRouteInfo);
             }
           }
         } catch (e) {
@@ -113,9 +110,8 @@ name: "order-home",
   mounted(){
      this.$nextTick(()=>{
        sessionStorage.removeItem('bx_auth_ticket');
-       sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-854a00e0-29d4-47f8-b189-4b69d5b89158');
+       sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-6e81d970-aba1-4493-8d22-ec0060909400');
      })
-    // 移除这里的 getRouterInfo 调用，因为已经在 watch 中处理了
     if (!this._isMounted) {
       this._isMounted = true;
     }
