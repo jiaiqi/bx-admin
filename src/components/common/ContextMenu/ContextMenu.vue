@@ -1,31 +1,36 @@
 <template>
-  <div
-    v-if="visible"
-    class="context-menu"
-    :style="{ left: x + 'px', top: y + 'px' }"
-    @click.stop
-    @contextmenu.prevent
-  >
-    <div class="context-menu-content">
-      <div
-        v-for="(item, index) in menuItems"
-        :key="index"
-        class="context-menu-item"
-        :class="{
-          'context-menu-item--disabled': item.disabled,
-          'context-menu-item--divider': item.divider
-        }"
-        @click="handleItemClick(item)"
-      >
-        <template v-if="!item.divider">
-          <div class="context-menu-item-icon" v-if="item.icon">
-            <Icon :icon="item.icon" />
-          </div>
-          <div class="context-menu-item-label">{{ item.label }}</div>
-          <div class="context-menu-item-shortcut" v-if="item.shortcut">
-            {{ item.shortcut }}
-          </div>
-        </template>
+  <div v-if="visible" class="context-menu-wrapper">
+    <!-- 透明遮罩层 -->
+    <div class="context-menu-overlay" @click="handleOverlayClick"></div>
+
+    <!-- 右键菜单 -->
+    <div
+      class="context-menu"
+      :style="{ left: x + 'px', top: y + 'px' }"
+      @click.stop
+      @contextmenu.prevent
+    >
+      <div class="context-menu-content">
+        <div
+          v-for="(item, index) in menuItems"
+          :key="index"
+          class="context-menu-item"
+          :class="{
+            'context-menu-item--disabled': item.disabled,
+            'context-menu-item--divider': item.divider,
+          }"
+          @click="handleItemClick(item)"
+        >
+          <template v-if="!item.divider">
+            <div class="context-menu-item-icon" v-if="item.icon">
+              <Icon :icon="item.icon" />
+            </div>
+            <div class="context-menu-item-label">{{ item.label }}</div>
+            <div class="context-menu-item-shortcut" v-if="item.shortcut">
+              {{ item.shortcut }}
+            </div>
+          </template>
+        </div>
       </div>
     </div>
   </div>
@@ -63,27 +68,22 @@ export default {
       this.$emit("item-click", item);
       this.$emit("close");
     },
+    handleOverlayClick() {
+      // 点击遮罩层时关闭菜单
+      this.$emit("close");
+    },
   },
   mounted() {
-    // 点击外部关闭菜单
-    const handleClickOutside = (e) => {
-      if (!this.$el.contains(e.target)) {
-        this.$emit("close");
-      }
-    };
-    
     // 按ESC键关闭菜单
     const handleKeydown = (e) => {
       if (e.key === "Escape") {
         this.$emit("close");
       }
     };
-    
-    document.addEventListener("click", handleClickOutside);
+
     document.addEventListener("keydown", handleKeydown);
-    
+
     this.$once("hook:beforeDestroy", () => {
-      document.removeEventListener("click", handleClickOutside);
       document.removeEventListener("keydown", handleKeydown);
     });
   },
@@ -91,6 +91,27 @@ export default {
 </script>
 
 <style scoped>
+.context-menu-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+.context-menu-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: auto;
+  z-index: 9998;
+}
+
 .context-menu {
   position: fixed;
   z-index: 9999;
@@ -103,6 +124,7 @@ export default {
   font-size: 14px;
   backdrop-filter: blur(10px);
   animation: contextMenuFadeIn 0.15s ease-out;
+  pointer-events: auto;
 }
 
 @keyframes contextMenuFadeIn {
@@ -131,7 +153,9 @@ export default {
   color: #303133;
 }
 
-.context-menu-item:hover:not(.context-menu-item--disabled):not(.context-menu-item--divider) {
+.context-menu-item:hover:not(.context-menu-item--disabled):not(
+    .context-menu-item--divider
+  ) {
   background: #f5f7fa;
   color: #409eff;
 }
@@ -184,7 +208,10 @@ export default {
   color: #e4e7ed;
 }
 
-.dark .context-menu-item:hover:not(.context-menu-item--disabled):not(.context-menu-item--divider) {
+.dark
+  .context-menu-item:hover:not(.context-menu-item--disabled):not(
+    .context-menu-item--divider
+  ) {
   background: #3a3a3a;
   color: #409eff;
 }

@@ -13,7 +13,6 @@
     @dragover.stop="onDragOver($event)"
     @dragleave.stop="onDragLeave($event)"
     @mouseover.stop=""
-    v-context-menu="contextMenuConfig"
     v-if="partsShow"
   >
     <div
@@ -21,6 +20,7 @@
       :class="{ 'overlay--active': isSelected }"
       @click.stop="selectPart(part, $event)"
       @mouseenter="$emit('mouseenter')"
+      v-context-menu="contextMenuConfig"
       v-if="!preview"
     ></div>
 

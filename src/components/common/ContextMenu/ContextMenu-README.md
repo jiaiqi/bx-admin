@@ -9,6 +9,7 @@
 - **编程式调用**: 支持通过 JavaScript 代码直接调用
 - **位置自适应**: 自动调整菜单位置，防止超出屏幕边界
 - **事件管理**: 统一的全局事件监听和清理
+- **自定义挂载**: 支持自定义挂载到指定的DOM元素
 - **TypeScript 友好**: 提供完整的类型定义
 
 ## 安装和注册
@@ -164,6 +165,7 @@ interface ContextMenuConfig {
   context?: any;                   // 传递给回调的上下文数据
   disabled?: boolean;              // 是否禁用右键菜单
   beforeShow?: Function;           // 菜单显示前的回调
+  mountElement?: HTMLElement;      // 自定义挂载元素，默认为 document.body
 }
 ```
 
@@ -254,6 +256,55 @@ export default {
   }
 };
 </script>
+```
+
+### 自定义挂载元素
+
+```vue
+<template>
+  <div class="container" ref="container">
+    <div v-context-menu="menuConfig">
+      右键菜单将挂载到指定容器中
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  computed: {
+    menuConfig() {
+      return {
+        menuItems: [
+          { label: '选项1', action: 'option1' },
+          { label: '选项2', action: 'option2' }
+        ],
+        onItemClick: this.handleMenuClick,
+        mountElement: this.$refs.container // 挂载到指定容器
+      };
+    }
+  },
+  methods: {
+    handleMenuClick(item) {
+      console.log('点击了:', item.label);
+    }
+  }
+};
+</script>
+```
+
+**编程式调用自定义挂载:**
+
+```javascript
+import { showContextMenu } from '@/directives/context-menu';
+
+// 挂载到指定元素
+showContextMenu({
+  x: event.clientX,
+  y: event.clientY,
+  menuItems: [...],
+  onItemClick: this.handleClick,
+  mountElement: this.$refs.customContainer // 自定义挂载容器
+});
 ```
 
 ## 注意事项

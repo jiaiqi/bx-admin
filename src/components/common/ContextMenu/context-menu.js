@@ -2,7 +2,7 @@ import ContextMenuManager from '@/components/common/ContextMenu/ContextMenuManag
 
 /**
  * 右键菜单自定义指令
- * 使用方式：v-context-menu="{ menuItems: [], onItemClick: handler, context: data }"
+ * 使用方式：v-context-menu="{ menuItems: [], onItemClick: handler, context: data, mountElement: element }"
  */
 const contextMenuDirective = {
   bind(el, binding, vnode) {
@@ -26,7 +26,8 @@ const contextMenuDirective = {
         onItemClick,
         context,
         disabled = false,
-        beforeShow
+        beforeShow,
+        mountElement
       } = value;
       
       // 如果禁用或没有菜单项，则不显示
@@ -51,7 +52,8 @@ const contextMenuDirective = {
             onItemClick(item, ctx, event, el);
           }
         },
-        context
+        context,
+        mountElement: mountElement || document.body
       });
     };
     

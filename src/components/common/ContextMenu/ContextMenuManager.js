@@ -10,6 +10,7 @@ class ContextMenuManager {
     this.instance = null;
     this.vm = null;
     this.container = null;
+    this.mountElement = null; // 记录挂载的DOM元素
   }
 
   /**
@@ -24,16 +25,26 @@ class ContextMenuManager {
 
   /**
    * 初始化右键菜单实例
+   * @param {Element} mountElement - 挂载的DOM元素，默认为document.body
    */
-  init() {
-    if (this.vm) {
+  init(mountElement = document.body) {
+    // 如果已经初始化且挂载元素相同，直接返回
+    if (this.vm && this.mountElement === mountElement) {
       return this.vm;
     }
+
+    // 如果挂载元素不同，先销毁旧实例
+    if (this.vm && this.mountElement !== mountElement) {
+      this.destroy();
+    }
+
+    // 记录挂载元素
+    this.mountElement = mountElement;
 
     // 创建容器
     this.container = document.createElement('div');
     this.container.id = 'global-context-menu-container';
-    document.body.appendChild(this.container);
+    this.mountElement.appendChild(this.container);
 
     // 创建Vue组件实例
     const ContextMenuConstructor = Vue.extend(ContextMenu);
@@ -64,12 +75,14 @@ class ContextMenuManager {
    * @param {Array} options.menuItems - 菜单项
    * @param {Function} options.onItemClick - 菜单项点击回调
    * @param {Object} options.context - 上下文数据
+   * @param {Element} options.mountElement - 挂载的DOM元素，默认为document.body
    */
   show(options) {
-    const { x, y, menuItems, onItemClick, context } = options;
+    const { x, y, menuItems, onItemClick, context, mountElement = document.body } = options;
     
-    if (!this.vm) {
-      this.init();
+    // 初始化或重新初始化（如果挂载元素改变）
+    if (!this.vm || this.mountElement !== mountElement) {
+      this.init(mountElement);
     }
 
     // 存储回调和上下文
