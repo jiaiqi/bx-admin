@@ -1,8 +1,15 @@
 <template>
   <video
     controls
-    :src="widgetJson && widgetJson.init_val"
+    :src="getFileUrl"
     v-if="widgetType === '视频'"
+    :controls="videoAttribute.controls === true"
+    :muted="videoAttribute.muted === true"
+    :loop="videoAttribute.loop === true"
+    :controlslist="videoAttribute.controlslist"
+    :autoplay="videoAttribute.autoplay === true"
+    :poster="videoPoster"
+    :style="[widgetStyleJson]"
   ></video>
   <el-select
     :value="currentTheme"
@@ -142,6 +149,52 @@ export default {
     widgetColor() {
       return this.widgetJson?.col_text_pub_style_json?.color;
     },
+    getFileUrl() {
+      if (this.widgetJson?.attachment) {
+        return this.getImagePath(this.widgetJson?.attachment);
+      } else if (this.widgetJson?.init_val) {
+        return this.getImagePath(this.widgetJson.init_val);
+      }
+      return "";
+    },
+    videoPoster() {
+      if (this.widgetJson?.thumbnail) {
+        return this.getImagePath(this.widgetJson.thumbnail);
+      }
+      return "";
+    },
+    videoAttribute() {
+      let obj = {
+        autoplay: false,
+        controls: false,
+        muted: false,
+        loop: false,
+        controlslist: "",
+      };
+      // set('自动播放','控制面板','不允许下载','不允许全屏','自动循环播放','默认静音')
+      if (this.widgetJson.video_attribute?.includes("自动播放")) {
+        obj.autoplay = true;
+      }
+      if (this.widgetJson.video_attribute?.includes("控制面板")) {
+        obj.controls = true;
+      }
+      if (this.widgetJson.video_attribute?.includes("不允许下载")) {
+        obj.controlslist = "nodownload";
+      }
+      if (this.widgetJson.video_attribute?.includes("不允许全屏")) {
+        obj.controlslist += obj.controlslist ? ",nofullscreen" : "nofullscreen";
+      }
+      if (obj.controlslist) {
+        obj.controls = true;
+      }
+      if (this.widgetJson.video_attribute?.includes("自动循环播放")) {
+        obj.loop = true;
+      }
+      if (this.widgetJson.video_attribute?.includes("默认静音")) {
+        obj.muted = true;
+      }
+      return obj;
+    },
   },
   created() {
     if (sessionStorage.theme_name) {
@@ -182,21 +235,20 @@ export default {
             if (this.$store.state?.loginInfo?.logined !== true) {
               // 您还未登录,需要登录才能进入,点击确认前往登录
               this.$confirm(
-                  "您还未登录,需要登录才能进入,点击确认前往登录",
-                  "提示",
-                  {
-                    confirmButtonText: "确定",
-                    cancelButtonText: "取消",
-                    type: "warning",
-                  }
-                )
-                .then(() => {
-                  const currentUrl =
-                    window.location.pathname + window.location.hash;
-                  sessionStorage.setItem("login_redirect_url", currentUrl);
-                  const loginUrl = window.location.origin + "/main/login.html";
-                  window.location.href = loginUrl;
-                });
+                "您还未登录,需要登录才能进入,点击确认前往登录",
+                "提示",
+                {
+                  confirmButtonText: "确定",
+                  cancelButtonText: "取消",
+                  type: "warning",
+                }
+              ).then(() => {
+                const currentUrl =
+                  window.location.pathname + window.location.hash;
+                sessionStorage.setItem("login_redirect_url", currentUrl);
+                const loginUrl = window.location.origin + "/main/login.html";
+                window.location.href = loginUrl;
+              });
               return;
             }
           }

@@ -30,7 +30,7 @@
             @click.stop="toggleExpand(item)"
           ></i>
           <span class="tree-data-item-name-text">
-            {{ item.name || item.area_name }}
+            {{ getTreeItemLabel(item) }}
           </span>
         </div>
         <transition name="tree-expand">
@@ -146,27 +146,12 @@ const mapBaseSupplier = computed(() => {
   return mapJson.value.map_base_supplier || "";
 });
 
-function findParent(data, list) {
-  if (data.parent_no) {
-    if (Array.isArray(list) && list.length) {
-      for (let i = 0; i < list.length; i++) {
-        const item = list[i];
-        if (item.area_no && item.area_no === data.parent_no) {
-          return item;
-        } else if (item.children && item.children.length) {
-          return findParent(item, item.children);
-        }
-      }
-    }
-  }
-  return null;
-}
-
 function findParentWithBaseImage(data, list) {
   if (!data?.parent_no || !list?.length) return null;
-
+  const valCol = mapJson.value?.map_filter_val_field;
+  if (!valCol) return null;
   for (const item of list) {
-    if (item.area_no === data.parent_no) {
+    if (item[valCol] && item[valCol] === data.parent_no) {
       return item;
     }
     if (item.children?.length) {
@@ -321,6 +306,13 @@ function toggleExpand(item) {
   console.log("expandedNodes", expandedNodes.value);
 }
 
+function getTreeItemLabel(item) {
+  if (item?.[mapJson.value?.map_filter_label_field]) {
+    return item[mapJson.value?.map_filter_label_field];
+  }
+  return item?.area_name || item?.name || "";
+}
+
 watch(
   () => selectedTreeData.value,
   (newVal) => {
@@ -345,7 +337,12 @@ function tapTreeData(item) {
   }
 }
 async function initMapTreeData() {
-  const req = props.treeReq;
+  const req = props.treeReq || mapJson.value?.map_tree_req_json;
+  if (!req) {
+    console.log("没有配置请求");
+
+    return;
+  }
   req.treeData = true;
   const url = `/${req.mapp}/select/${req.serviceName}`;
   const res = await $selectList(url, req);
@@ -361,7 +358,7 @@ onMounted(() => {
   if (mapBaseSupplier.value === "腾讯地图") {
     initTencentMap();
   } else if (mapBaseSupplier.value === "自定义底图") {
-    if (props.treeReq) {
+    if (props.treeReq || mapJson.value?.map_tree_req_json) {
       initMapTreeData();
     } else {
       initCustomMap().then((res) => {
