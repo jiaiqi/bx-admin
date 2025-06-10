@@ -5,23 +5,9 @@
         <h1 class="title">卡片单元设计器</h1>
       </div>
       <div class="header-center">
-        <!-- <button class="" @click="hiddenPartsVisible = !hiddenPartsVisible">
-          {{ hiddenPartsVisible ? "隐藏" : "显示" }}已隐藏部件
-        </button> -->
-        <!-- 新增深色模式切换按钮 -->
         <template v-if="cardInfo && cardInfo.card_name">
           {{ cardInfo.card_name || "" }}
         </template>
-        <!-- <button
-          class="theme-toggle-btn"
-          @click="changeTheme"
-          title="切换主题模式"
-        >
-          <Icon
-            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
-            class="theme-icon"
-          />
-        </button> -->
       </div>
       <div class="header-right">
         <div class="theme-toggle-btn" @click="changeTheme" title="切换主题模式">
