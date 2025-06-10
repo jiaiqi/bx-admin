@@ -132,19 +132,127 @@ const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
 };
 
+// 添加单窗口模式下的通道切换方法
+const switchChannelInSingleWindow = (newChannelId) => {
+  if (!myVideoPlayer) {
+    console.log('插件未初始化完成');
+    return;
+  }
+
+  // 获取当前分屏数
+  const currentDivision = myVideoPlayer.getDivision ? myVideoPlayer.getDivision() : 1;
+  if (currentDivision !== 1) {
+    console.log('当前不是单窗口模式');
+    return;
+  }
+
+  // 先释放当前窗口的通道
+  try {
+    // 停止当前播放
+    if (myVideoPlayer.stopReal) {
+      myVideoPlayer.stopReal();
+    }
+    // 关闭当前窗口
+    if (myVideoPlayer.closeWindow) {
+      myVideoPlayer.closeWindow({
+        isAll: false,
+        snum: 0,
+        channelList: [windowChannels.value[0]]
+      });
+    }
+    // 清空当前窗口的通道信息
+    windowChannels.value[0] = null;
+  } catch (error) {
+    console.error('释放窗口通道时发生错误:', error);
+  }
+
+  // 延迟一下再开始新的通道播放
+  setTimeout(() => {
+    // 更新窗口通道信息
+    windowChannels.value[0] = newChannelId;
+    console.log('切换后的窗口通道信息：', windowChannels.value);
+
+    myVideoPlayer.startReal([{
+      channelId: newChannelId,
+      channelName: '通道名称',
+      snum: 0, // 单窗口模式下固定使用索引0
+      streamType: 1,
+      deviceType: 2,
+      cameraType: '1',
+      capability: '00000000000000000000000000000001'
+    }]);
+  }, 200); // 增加延时确保释放操作完成
+}
+
 const handleSelect = (selectedKeys, e) => {
   let node = e.data ? e.data : {};
   if (node && node.isChannel) {
     videoChannel.value = node.chnl_no;
-    // 重置选择的窗口为第一个
-    selectedWindow.value = 0;
-    // 使用固定的通道ID
+    // 测试使用使用固定的通道ID
     const fixedChannelId = '1002636$1$0$0';
-    // 记录窗口的通道信息
-    windowChannels.value[0] = fixedChannelId;
-    playStartReal(fixedChannelId);
+    videoChannel.value = fixedChannelId;
+    
+    // 获取当前选中的窗口索引
+    const currentWindowIndex = selectedWindow.value;
+    
+    // 记录当前窗口的通道信息
+    windowChannels.value[currentWindowIndex] = videoChannel.value;
+    console.log('当前所有窗口通道信息：', windowChannels.value);
+    
+    // 确保播放器已经初始化
+    if (!myVideoPlayer) {
+      initPlayer();
+    }
+    
+    // 获取当前分屏数
+    const currentDivision = myVideoPlayer.getDivision ? myVideoPlayer.getDivision() : 1;
+    
+    if (currentDivision === 1) {
+      // 单窗口模式下，先停止当前播放
+      try {
+        if (isPlaybackMode.value && isPlaying.value) {
+          // 如果是回放模式且正在播放，先停止回放
+          stopPlayback();
+        } else if (myVideoPlayer.stopReal) {
+          // 如果是实时模式，停止实时播放
+          myVideoPlayer.stopReal();
+        }
+      } catch (error) {
+        console.error('停止当前播放时发生错误:', error);
+      }
+      
+      // 延迟一下再开始新的通道播放
+      setTimeout(() => {
+        if (isPlaybackMode.value && isPlaying.value) {
+          // 如果是回放模式且正在播放，开始新的回放
+          startPlayback();
+        } else {
+          // 否则开始实时播放
+          myVideoPlayer.startReal([{
+            channelId: videoChannel.value,
+            channelName: '通道名称',
+            snum: 0, // 单窗口模式下固定使用索引0
+            streamType: 1,
+            deviceType: 2,
+            cameraType: '1',
+            capability: '00000000000000000000000000000001'
+          }]);
+        }
+      }, 200);
+    } else {
+      // 多窗口模式下使用原有的播放逻辑
+      if (isPlaybackMode.value && isPlaying.value) {
+        stopPlayback();
+        setTimeout(() => {
+          startPlayback();
+        }, 200);
+      } else {
+        playStartReal(videoChannel.value, currentWindowIndex);
+      }
+    }
   }
 }
+
 //初始化播放器
 const initPlayer = () => {
   // 如果播放器实例已存在，先销毁它
@@ -253,13 +361,18 @@ const initPlayer = () => {
 const playStartReal = (id, windowIndex = 0) => {
   if (!myVideoPlayer) {
     console.log('插件未初始化完成');
-    return
+    return;
   }
   // 如果当前是回放模式，先停止回放
   if (isPlaybackMode.value) {
     stopPlayback();
   }
   isPlaybackMode.value = false;
+  
+  // 更新窗口通道信息
+  windowChannels.value[windowIndex] = id;
+  console.log('当前所有窗口通道信息：', windowChannels.value);
+
   myVideoPlayer.startReal([{
     channelId: id, // 通道id 【必传】
     channelName: '通道名称', // 通道名称 (用于本地录像下载)
@@ -288,7 +401,13 @@ const startPlayback = () => {
     return;
   }
 
+  if (!videoChannel.value) {
+    console.log('请选择要回放的通道');
+    return;
+  }
+
   console.log('开始回放，使用窗口：', selectedWindow.value + 1);
+  console.log('回放通道：', videoChannel.value);
 
   isPlaying.value = true;
 
@@ -307,7 +426,7 @@ const startPlayback = () => {
     createSuccess: (versionInfo) => {
       // 开始回放
       myVideoPlayer.startPlayback([{
-        channelId: windowChannels.value[selectedWindow.value],
+        channelId: videoChannel.value, // 使用当前选中的通道
         channelName: '通道名称',
         startTime: playbackStartTime.value,
         endTime: playbackEndTime.value,
@@ -318,6 +437,7 @@ const startPlayback = () => {
     },
     createError: (err) => {
       console.error('创建播放器失败:', err);
+      isPlaying.value = false;
     }
   });
 }
@@ -326,20 +446,72 @@ const startPlayback = () => {
 const stopPlayback = () => {
   if (myVideoPlayer && isPlaying.value) {
     try {
-      if (typeof myVideoPlayer.stopPlayback === 'function') {
-        myVideoPlayer.stopPlayback();
-      } else {
-        console.log('停止回放方法不存在');
-      }
+      // 使用 controlPlayback 方法暂停播放
+      myVideoPlayer.controlPlayback({
+        snum: selectedWindow.value,
+        state: 0  // 0 表示暂停
+      });
       isPlaying.value = false;
+      
+      // 保持当前窗口状态，不销毁播放器实例
+      if (myVideoPlayer.changeDivision) {
+        myVideoPlayer.changeDivision(1); // 保持单窗口模式
+      }
     } catch (error) {
       console.error('停止回放时发生错误:', error);
     }
   }
 }
 
-// 取消回放，切换到实时模式
+// 处理回放模式切换
+const handlePlaybackModeChange = (checked) => {
+  console.log('切换回放模式，当前状态：', {
+    isPlaybackMode: isPlaybackMode.value,
+    checked,
+    windowChannels: windowChannels.value,
+    previousState: previousPlayerState.value
+  });
+
+  if (checked) {
+    // 切换到回放模式
+    if (myVideoPlayer) {
+      // 保存当前所有窗口的通道信息
+      const currentChannels = {};
+      // 遍历所有窗口，获取当前播放的通道信息
+      for (let i = 0; i < 9; i++) {
+        if (windowChannels.value[i]) {
+          currentChannels[i] = windowChannels.value[i];
+        }
+      }
+      
+      // 保存当前播放器状态
+      previousPlayerState.value = {
+        division: myVideoPlayer.getDivision ? myVideoPlayer.getDivision() : 9,
+        channels: currentChannels
+      };
+      
+      console.log('切换到回放模式，保存的实时模式通道信息：', {
+        savedChannels: currentChannels,
+        previousState: previousPlayerState.value
+      });
+      
+      // 切换到单窗口模式
+      myVideoPlayer.changeDivision(1);
+    }
+  } else {
+    // 切换回实时模式
+    cancelPlayback();
+  }
+};
+  //切换回实时播放时的回调业务
 const cancelPlayback = () => {
+  console.log('开始取消回放，当前状态：', {
+    isPlaybackMode: isPlaybackMode.value,
+    isPlaying: isPlaying.value,
+    windowChannels: windowChannels.value,
+    previousState: previousPlayerState.value
+  });
+
   if (myVideoPlayer) {
     try {
       if (isPlaying.value) {
@@ -353,70 +525,108 @@ const cancelPlayback = () => {
       playbackStartTime.value = '';
       playbackEndTime.value = '';
 
-      // 恢复之前的播放器状态
+      // 保存当前播放器实例的引用和通道信息
+      const currentPlayer = myVideoPlayer;
+      const savedChannels = {...previousPlayerState.value.channels};
+      console.log('切换前保存的通道信息：', {
+        savedChannels,
+        previousState: previousPlayerState.value,
+        windowChannels: windowChannels.value
+      });
+      
+      // 创建新的播放器实例
       myVideoPlayer = new VideoPlayer({
         videoId: "play_dh",
         windowType: 0,    // 实时预览模式
         usePluginLogin: true,
         pluginLoginInfo: LoginInfo,
-        division: 9, // 先切换到9宫格
+        division: 9, // 固定使用9宫格
         draggable: false,
         showBar: true,
         shieldClass: ['shield-class', 'select'],
         coverShieldClass: [],
         parentIframeShieldClass: [],
         createSuccess: (versionInfo) => {
+          console.log('播放器创建成功，准备恢复播放');
           // 确保切换到9宫格
           myVideoPlayer.changeDivision(9);
-          // 等待窗口切换完成后再恢复播放
+          
+          // 增加延时确保窗口切换完成
           setTimeout(() => {
-            // 恢复所有通道的播放
-            const channels = previousPlayerState.value.channels;
-            const playbackList = Object.entries(channels).map(([windowIndex, channelId]) => ({
-              channelId: channelId,
-              channelName: '通道名称',
-              snum: parseInt(windowIndex),
-              streamType: 1,
-              deviceType: 2,
-              cameraType: '1',
-              capability: '00000000000000000000000000000001'
-            }));
+            // 使用保存的通道信息
+            console.log('准备恢复的通道信息：', {
+              savedChannels,
+              previousState: previousPlayerState.value,
+              windowChannels: windowChannels.value
+            });
+            
+            const playbackList = Object.entries(savedChannels)
+              .filter(([_, channelId]) => channelId) // 过滤掉空值
+              .map(([windowIndex, channelId]) => {
+                // 确保通道ID格式正确
+                const formattedChannelId = channelId.includes('$') ? channelId : `${channelId}$1$0$0`;
+                console.log(`处理窗口 ${windowIndex} 的通道: ${formattedChannelId}`);
+                return {
+                  channelId: formattedChannelId,
+                  channelName: '通道名称',
+                  snum: parseInt(windowIndex),
+                  streamType: 1,
+                  deviceType: 2,
+                  cameraType: '1',
+                  capability: '00000000000000000000000000000001'
+                };
+              });
 
             if (playbackList.length > 0) {
-              myVideoPlayer.startReal(playbackList);
+              console.log('最终要恢复播放的通道列表：', playbackList);
+              // 确保所有通道都停止后再开始新的播放
+              if (typeof myVideoPlayer.stopReal === 'function') {
+                myVideoPlayer.stopReal();
+              }
+              
+              // 短暂延时后开始新的播放
+              setTimeout(() => {
+                myVideoPlayer.startReal(playbackList);
+                // 更新窗口通道信息
+                windowChannels.value = {...savedChannels};
+                console.log('播放恢复完成，当前窗口通道信息：', {
+                  windowChannels: windowChannels.value,
+                  savedChannels,
+                  previousState: previousPlayerState.value
+                });
+              }, 200);
+            } else {
+              console.log('没有需要恢复的通道，当前状态：', {
+                savedChannels,
+                previousState: previousPlayerState.value,
+                windowChannels: windowChannels.value
+              });
             }
-          }, 100);
+          }, 500); // 增加延时到500ms，确保窗口切换完成
         },
         createError: (err) => {
           console.error('创建播放器失败:', err);
+        },
+        // 添加实时预览成功回调
+        realSuccess: (info) => {
+          console.log('实时预览成功:', info);
+        },
+        // 添加实时预览失败回调
+        realError: (info, err) => {
+          console.error('实时预览失败:', info, err);
         }
       });
+
+      // 销毁旧的播放器实例
+      if (currentPlayer && typeof currentPlayer.destroy === 'function') {
+        currentPlayer.destroy();
+      }
     } catch (error) {
       console.error('取消回放时发生错误:', error);
     }
   }
 }
-
-// 处理回放模式切换
-const handlePlaybackModeChange = (checked) => {
-  if (checked) {
-    // 切换到回放模式
-    if (myVideoPlayer) {
-      // 保存当前播放器状态
-      previousPlayerState.value = {
-        division: 9,
-        channels: {...windowChannels.value}
-      };
-      // 切换到单窗口模式
-      myVideoPlayer.changeDivision(1);
-    }
-  } else {
-    // 切换回实时模式
-    cancelPlayback();
-  }
-};
-
-
+//处理节点数据重新组装
 const processTreeData = (data) => {
   return data.map(item => {
     const newItem = {...item};
@@ -446,7 +656,7 @@ const processTreeData = (data) => {
     return newItem;
   });
 };
-
+//获取视频节点树
 const getVideoInfo = () => {
   Videos.getVideoListByArea().then(res => {
     if (res.data.state !== 'SUCCESS') return;
@@ -472,6 +682,7 @@ const filterNode = (value, data) => {
 onMounted(() => {
   getVideoInfo()
   initPlayer()
+
 })
 </script>
 

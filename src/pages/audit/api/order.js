@@ -175,7 +175,7 @@ export default class OrderApi{
    }
    //发起工单提交
     async handleSubmitOrder(params){
-       let url= path+ `/aud/operate/srvaud_ads_workorder_add`
+       let url= path+ `/aud/add/srvaud_ads_workorder_add`
        let req=[
            {
                serviceName: "srvaud_ads_workorder_add",
@@ -306,5 +306,46 @@ export default class OrderApi{
            passid:params.pass_id,
        }
        return await $http.post(url, data)
+    }
+    //地图界面保存时保存查询到的车辆通行信息
+    async saveDriverDetails(params){
+       let url= path+`/aud/add/srvaud_audit_passconv_add`
+       let req=[{
+           serviceName: "srvaud_audit_passconv_add",
+           data:params,
+           condition: []
+       }]
+      return $http.post(url, req)
+    }
+    //地图界面保存门架收费站信息
+    async handleSubmitDoorAndStationDetails(params){
+        let url= path+`/aud/add/srvaud_audit_passconvdetail_add`
+        let req=[{
+            serviceName: "srvaud_audit_passconvdetail_add",
+            data:params,
+            condition: []
+        }]
+        return $http.post(url, req)
+    }
+    //地图门架收费站删除
+    async handleDeleteStationDetails(params){
+       let url= path+`/aud/delete/srvaud_audit_passconvdetail_delete`
+       let req=[{
+           serviceName: "srvaud_audit_passconvdetail_delete",
+           condition:params,
+       }]
+       return $http.post(url, req)
+    }
+
+    //查询提交参数汇总，传入服务名称
+    async getPublicColName (col){
+       let url= path+`/aud/select/srvsys_service_columnex_v2_select?${col}`
+       let req={
+           colNames: ["*"],
+           serviceName:"srvsys_service_columnex_v2_select",
+           order: [{colName: "seq", orderType: "asc"}],
+           condition: [{colName: "use_type", value: "add", ruleType: "eq"},{colName: "service_name", value:col, ruleType: "eq"}]
+       }
+      return await $http.post(url,req)
     }
 }

@@ -158,7 +158,7 @@ export default {
     }
   },
   created(){
-   this.url= window.APP_CONFIG.API_URL+'/file/upload'
+   this.url= process.env.NODE_ENV === "development" ? window.APP_CONFIG.API_URL+'/file/upload':window.backendIpAddr+'/file/upload'
    this.prUrl=OrderUtil.dowPicInfoUrl();
 
   },
@@ -188,7 +188,7 @@ export default {
      }
       OrderUtil.updatePicInfo(obj).then(res=>{
          if(res.data.state!=='SUCCESS') return;
-        this.$message.success("保存成功！");
+        this.$message.success("证据保存成功！");
         let info=res.data.response[0]?.response;
         this.$emit("getSavePicInfo",info);
         this.setListInfo()
@@ -328,7 +328,7 @@ export default {
      }
      OrderUtil.savePicInfo([params]).then(res => {
        if(res.data.state!=="SUCCESS") return;
-       this.$message.success("保存成功！");
+       this.$message.success("证据保存成功！");
        let info=res.data.response[0]?.response;
        this.$emit("getSavePicInfo",info);
        this.setListInfo()

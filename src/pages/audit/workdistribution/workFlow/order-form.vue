@@ -149,7 +149,13 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">车辆通行流水</el-col>
+        <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">车辆通行流水
+          <el-button
+              style="margin-left:0.9375rem"
+              icon="el-icon-search"
+              type="primary" plain size="mini"
+              @click="getTrafficFlow"
+          >查询</el-button></el-col>
         <div class="suspected">
           <el-table :data="suspectedData">
             <el-table-column v-for="column in supColums" :key="column.prop" :prop="column.prop" :label="column.title"></el-table-column>
@@ -380,7 +386,7 @@
       <el-row>
             <el-col :span="24" style="display: flex;justify-content: center" class="cl_bts">
               <el-button type="primary" icon="el-icon-check" size="mini" @click="handleSubmit">提交</el-button>
-              <el-button type="primary" icon="el-icon-refresh-left" size="mini">重置</el-button>
+              <el-button type="primary" icon="el-icon-refresh-left" size="mini" @click="restForm">重置</el-button>
             </el-col>
       </el-row>
     </el-form>
@@ -628,6 +634,7 @@ export default {
           operate_params=JSON.parse(operate_params).data;
       if(operate_params){
         this.ruleForm=formDataByGetInfo(this.ruleForm,operate_params[0])
+        this.handleChangeFee()
         console.log('这里的user_no3',this.ruleForm.user_no)
         console.log('--',this.ruleForm);
         this.getTrafficFlow()
@@ -656,6 +663,7 @@ export default {
     },
     //参数去空
     handleSetEmpty(){
+      this.handleChangeFee()
       const result = Object.keys(this.ruleForm).reduce((acc, key) => {
         if (this.ruleForm[key] !== null && this.ruleForm[key] !== undefined && this.ruleForm[key] !== '') {
           acc[key] = this.ruleForm[key];
@@ -699,6 +707,7 @@ export default {
       let _this=this;
       _this.evidencePic=[]
       _this.picIds='';
+      _this.preList=[];
       let fle_no=list?list.effect_data[0].icon_att:_this.ruleForm.order_evidence.length>0?_this.ruleForm.order_evidence:'';
       _this.ruleForm.order_evidence=fle_no;
       // _this.picIds=list?list.effect_data[0].id:''
@@ -747,12 +756,50 @@ export default {
      */
     handleGetCurrentFree(){
       orderUtils.getDriverFreeDetails({pass_id:this.ruleForm.pass_id}).then(res => {
-        if(res.data.state !== 'SUCCESS') return;
-
+        if(res.data.code !== 0) return;
+        if(res.data.messageInfo && res.data.messageInfo.tollDetail){
+          let ls=res.data.messageInfo.tollDetail[0]
+          this.ruleForm.orginal_fee=ls.fee?.fee
+          this.handleChangeFee()
+        }
       }).catch(err=>{})
       console.log('查询计费使用的passid',this.ruleForm.pass_id)
     },
+    /**
+     * @Description:计费查询后续处理
+     * @Author:Eirice
+     * @Date: 2025-06-10 09:45:17
+     */
+    handleChangeFee(){
+      // 转换费用为数字类型
+      const originalFee = typeof this.ruleForm.orginal_fee === 'string' ? parseFloat(this.ruleForm.orginal_fee) : this.ruleForm.orginal_fee;
+      const realFee = typeof this.ruleForm.real_fee === 'string' ? parseFloat(this.ruleForm.real_fee) : this.ruleForm.real_fee;
+      
+      // 确保两个费用都是有效的数字
+      if (!isNaN(originalFee) && !isNaN(realFee)) {
+        const diff = originalFee - realFee;
+        this.ruleForm.owe_fee = diff > 0 ? diff : 0;
+      } else {
+        this.ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
+      }
+    },
+    //重置条件
+    restForm(){
+      const sel=['pass_id','real_fee', 'org_id','org_name','org_no', 'org_type','province','operator_name','operator_id']
+      // 遍历ruleForm的所有字段
+      Object.keys(this.ruleForm).forEach(key => {
+        // 如果字段不在sel数组中，则重置为初始值
+        if (!sel.includes(key)) {
+          this.ruleForm[key] = ''
+        }
+      })
+      // 重置图片相关数据
+      this.evidencePic = []
+      this.preList = []
+      this.picIds = ''
+    },
   },
+
   created(){
     this.prUrl=orderUtils.dowPicInfoUrl()
   },
