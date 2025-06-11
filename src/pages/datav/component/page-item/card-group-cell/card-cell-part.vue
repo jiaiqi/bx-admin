@@ -76,14 +76,14 @@
     <i
       v-else-if="
         item.parts_type == 'icon' &&
-        item.parts_text &&
-        item.parts_text.indexOf('el-icon-') === 0
+        getPartModelData &&
+        getPartModelData.indexOf('el-icon-') === 0
       "
-      :class="[item.parts_text, { 'cursor-pointer': isLink }]"
+      :class="[getPartModelData, { 'cursor-pointer': isLink }]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
     ></i>
-    <Icon
+    <!-- <Icon
       v-else-if="
         item.parts_type == 'icon' &&
         getPartModelData &&
@@ -94,14 +94,10 @@
       :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
-    ></Icon>
+    ></Icon> -->
     <Icon
-      v-else-if="
-        item.parts_type == 'icon' &&
-        getPartModelData &&
-        getPartModelData.indexOf('ri') === 0
-      "
-      :icon="getPartModelData"
+      v-else-if="item.parts_type == 'icon' && getIconName"
+      :icon="getIconName"
       class="bx-cell-icon"
       :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
       :style="[buildColStyleJson]"
@@ -112,6 +108,13 @@
       :style="[buildColStyleJson]"
       v-html="recoverFileAddress4richText(getPartModelData)"
     ></div>
+    <qr-code
+      :size="buildColStyleJson.width ? parseInt(buildColStyleJson.width) : 100"
+      :text="getPartModelData || 'https://www.baidu.com'"
+      :color="buildColStyleJson.color || '#000000'"
+      :style="[buildColStyleJson]"
+      v-else-if="cellItem.parts_type == '二维码'"
+    ></qr-code>
     <div
       :class="['bx-cell-' + cellItem.parts_type, { 'cursor-pointer': isLink }]"
       v-else-if="
@@ -145,6 +148,7 @@ import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
 import LiquidFillChart from "../LiquidFillChart.vue";
+import qrCode from "../qr-code/qr-code.vue";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -165,6 +169,7 @@ export default {
     cardCellPart: () => import("./card-cell-part.vue"),
     Icon,
     LiquidFillChart,
+    qrCode,
   },
   data() {
     return {
@@ -199,6 +204,22 @@ export default {
   },
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
+    getIconName() {
+      if (this.cellItem?.parts_type == "icon") {
+        let icon = this.getPartModelData || "";
+        if (icon) {
+          if (icon?.startsWith("i-")) {
+            return icon.replace("i-", "");
+          } else if (icon?.startsWith("ri")) {
+            return icon.replace("ri-", "ri:");
+          } else if (icon?.startsWith("el-icon-")) {
+            return icon.replace("el-icon-", "ep:");
+          } else {
+            return icon;
+          }
+        }
+      }
+    },
     item() {
       return this.cellItem;
     },
