@@ -104,6 +104,7 @@ const getPointByOriginCenter=()=>{
     handleFilterListInfo(res.data.data)
   }).catch(err => {})
 }
+
 /**
  * @Description:从本地服务中调用获取车辆通行信息
  * @Author:Eirice
@@ -120,6 +121,7 @@ const getPointByLocation=()=>{
     }
   }).catch(err => {})
 }
+
 /**
  * @Description:数据过滤去重
  * @Author:Eirice
@@ -148,7 +150,7 @@ const handleFilterListInfo = (data) => {
 
   // 转换为数组并排序
   const sortedPoints = Array.from(uniquePoints.values())
-      .sort((a, b) => (a.seq || 0) - (b.seq || 0));
+      .sort((a, b) => (a.seq_id || 0) - (b.seq_id || 0));
   list.value=sortedPoints
 }
 /**
@@ -174,8 +176,6 @@ const getCarTimeLine=(info)=>{
 
      }).catch(err => {})
    }
-
-
 }
 const hideDialog = () => {
   centerDialogVisible.value = false
