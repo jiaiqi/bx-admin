@@ -45,11 +45,12 @@
             :currentId="currentId"
           />
         </div>
-        <div
-          v-if="!isPreview"
-          class="resize-handle"
-          @mousedown.stop.prevent="startResize($event, item)"
-        ></div>
+          <!--暂时取消对高度的推拽更改-->
+<!--        <div-->
+<!--          v-if="!isPreview"-->
+<!--          class="resize-handle"-->
+<!--          @mousedown.stop.prevent="startResize($event, item)"-->
+<!--        ></div>-->
       </div>
     </div>
   </div>
@@ -344,7 +345,6 @@ export default {
     // 处理调整大小
     handleResize(event) {
       if (!this.resizing || !this.currentResizeItem) return
-
       const deltaY = event.clientY - this.startY
       const deltaYRem = deltaY / 16
       const newHeight = Math.max(6.25, this.startHeight + deltaYRem)
@@ -513,6 +513,7 @@ export default {
           layout_x: xRem,
           layout_y: yRem,
           layout_width: dragData.layout_width || 12.5, // 200px / 16 = 12.5rem
+          layout_height: dragData.layout_height || 6.25, // 添加默认高度
           layout_z: this.currentComponents.length + 1,
           _type:dragData._type,
           ...dragData,

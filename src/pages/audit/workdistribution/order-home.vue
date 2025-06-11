@@ -90,6 +90,23 @@ name: "order-home",
         }
       }
     },
+    asyncLoadMap(){
+      return new Promise(function (resolve, reject) {
+        if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
+        if (typeof (BMap) !== "undefined") {return  resolve(BMap)}
+        var script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
+        script.onerror = reject
+        document.head.appendChild(script)
+        const timer = setInterval(() => {
+          if (BMapGL||BMap) {
+            BMapGL ? resolve(BMapGL) : resolve(BMap)
+            clearInterval(timer)
+          }
+        }, 500)
+      })
+    }
   },
   watch: {
     '$route': {
@@ -107,10 +124,11 @@ name: "order-home",
       }
     }
   },
+
   mounted(){
+    this.asyncLoadMap()
      this.$nextTick(()=>{
-       sessionStorage.removeItem('bx_auth_ticket');
-       sessionStorage.setItem("bx_auth_ticket",'xabxdzkj-6e81d970-aba1-4493-8d22-ec0060909400');
+
      })
     if (!this._isMounted) {
       this._isMounted = true;

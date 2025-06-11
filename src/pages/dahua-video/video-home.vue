@@ -23,8 +23,9 @@
             @node-click="handleSelect"
             ref="tree"
         >
-          <span class="custom-tree-node" slot-scope="{ node, data }">
+          <span class="custom-tree-node" slot-scope="{ node, data }" @click="setNode(data)">
             <span>{{ node.label }}</span>
+            <span :title="data.chnl_online_status" class="is_online" :style="[{color:data.chnl_online_status&&data.chnl_online_status==='在线'?'#67C23A':'#909399'}]" v-if="data.isChannel&&!data.children"><i class="el-icon-s-opportunity"></i></span>
           </span>
         </el-tree>
       </li>
@@ -89,7 +90,8 @@
 <script setup>
 import {onMounted, ref, watch} from 'vue';
 import VideoUtil from "@/pages/dahua-video/video";
-
+import {Message} from 'element-ui';
+import { Notification } from 'element-ui';
 const Videos = new VideoUtil();
 const videoTree = ref([]);
 const expandedKeys = ref([]);
@@ -127,6 +129,9 @@ const previousPlayerState = ref({
   channels: {}
 });
 
+const setNode=(data)=>{
+  console.log('22222222',data);
+}
 // 切换收缩状态
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
@@ -186,7 +191,16 @@ const switchChannelInSingleWindow = (newChannelId) => {
 
 const handleSelect = (selectedKeys, e) => {
   let node = e.data ? e.data : {};
-  if (node && node.isChannel) {
+  if(node && node.isChannel && !node.chnl_online_status || node.chnl_online_status ==='离线')
+  return  Notification({
+       title: '注意!',
+       message: '当前视频离线',
+       type: 'warning',
+       position: 'top-left',
+       showClose: false,
+       duration:2000
+     })
+  if (node && node.isChannel && node.chnl_online_status && node.chnl_online_status ==='在线') {
     videoChannel.value = node.chnl_no;
     // 测试使用使用固定的通道ID
     const fixedChannelId = '1002636$1$0$0';
@@ -662,6 +676,7 @@ const getVideoInfo = () => {
     if (res.data.state !== 'SUCCESS') return;
     console.log('---', processTreeData(res.data.data))
     videoTree.value = processTreeData(res.data.data);
+    console.log('--12videoTree',videoTree.value);
     console.log(videoTree.value, 'videoTree.value');
   }).catch(err => {
   });
@@ -690,7 +705,10 @@ onMounted(() => {
 li {
   list-style: none;
 }
-
+.is_online{
+ font-size:0.75rem;
+ margin-left:0.3125rem;
+}
 .video_page {
   width: 100%;
   height: 100%;

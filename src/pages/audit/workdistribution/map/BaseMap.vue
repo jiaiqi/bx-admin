@@ -64,22 +64,7 @@ const isFirstSave=ref(false);
 const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
-const asyncLoadMap = () => {
-  return new Promise(function (resolve, reject) {
-    if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
-    var script = document.createElement('script')
-    script.type = 'text/javascript'
-    script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
-    script.onerror = reject
-    document.head.appendChild(script)
-    const timer = setInterval(() => {
-      if (BMapGL) {
-        resolve(BMapGL)
-        clearInterval(timer)
-      }
-    }, 500)
-  })
-}
+
 const setTabColes = () => {
   isColes.value = !isColes.value
 }
@@ -627,19 +612,17 @@ const getPublicColNames=(colName,type)=>{
 onMounted(() => {
   isFirstSave.value=false
   let passId = route.query.pass_id
-  asyncLoadMap().then(res => {
-    initMineMap();
-    handleMap.value = userMap.value.initMap();
-    if (handleMap.value) {
-      // getPointByOriginCenter();
-      getPointByLocation();
-      getTrafficFlow(passId)
-      getStationsAndDoor()
-      getPublicColNames('srvaud_audit_passconv_add','pass')
-      getPublicColNames('srvaud_audit_passconvdetail_add','sta')
-      // HandleMapClick(handleMap.value);
-    }
-  })
+  initMineMap();
+  handleMap.value = userMap.value.initMap();
+  if (handleMap.value) {
+    // getPointByOriginCenter();
+    getPointByLocation();
+    getTrafficFlow(passId)
+    getStationsAndDoor()
+    getPublicColNames('srvaud_audit_passconv_add','pass')
+    getPublicColNames('srvaud_audit_passconvdetail_add','sta')
+    // HandleMapClick(handleMap.value);
+  }
 })
 
 onBeforeUnmount(() => {
