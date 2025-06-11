@@ -16,13 +16,13 @@
             class="theme-icon"
           />
         </div>
-        <el-button class="preview-btn" @click="previewCard">预览</el-button>
         <el-button class="" @click="refresh" :loading="onSaving"
           >刷新</el-button
         >
         <el-button class="save-btn" @click="saveCard" :loading="onSaving">
           保存
         </el-button>
+        <el-button class="preview-btn" @click="previewCard">预览</el-button>
       </div>
     </header>
     <main class="main">
@@ -458,7 +458,7 @@ export default {
       const { parent, isRoot } = parentInfo;
       const list = isRoot ? this.partsList : parent.children;
       const currentIndex = list.findIndex(
-        (item) => 
+        (item) =>
           (item._id && item._id === part._id) ||
           (item.id && item.id === part.id)
       );
@@ -466,12 +466,12 @@ export default {
       if (currentIndex === -1) return;
 
       let targetIndex;
-      if (direction === 'up' && currentIndex > 0) {
+      if (direction === "up" && currentIndex > 0) {
         targetIndex = currentIndex - 1;
-      } else if (direction === 'down' && currentIndex < list.length - 1) {
+      } else if (direction === "down" && currentIndex < list.length - 1) {
         targetIndex = currentIndex + 1;
       } else {
-        this.$message.warning(`无法${direction === 'up' ? '上' : '下'}移`);
+        this.$message.warning(`无法${direction === "up" ? "上" : "下"}移`);
         return;
       }
 
@@ -480,14 +480,14 @@ export default {
       const tempSeq = list[currentIndex].seq;
 
       // 交换seq值
-      this.$set(list[currentIndex], 'seq', list[targetIndex].seq);
-      this.$set(list[targetIndex], 'seq', tempSeq);
-      
+      this.$set(list[currentIndex], "seq", list[targetIndex].seq);
+      this.$set(list[targetIndex], "seq", tempSeq);
+
       // 交换位置
       this.$set(list, currentIndex, list[targetIndex]);
       this.$set(list, targetIndex, temp);
 
-      this.$message.success(`已${direction === 'up' ? '上' : '下'}移部件`);
+      this.$message.success(`已${direction === "up" ? "上" : "下"}移部件`);
     },
 
     /**
@@ -498,9 +498,12 @@ export default {
       this.selectPart(part);
       // 可以在这里添加额外的属性面板聚焦逻辑
       this.$nextTick(() => {
-        const propertyPanel = document.querySelector('.property-panel');
+        const propertyPanel = document.querySelector(".property-panel");
         if (propertyPanel) {
-          propertyPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          propertyPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
         }
       });
     },
