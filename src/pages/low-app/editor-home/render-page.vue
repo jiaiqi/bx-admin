@@ -210,7 +210,7 @@ export default {
       return {
         position: 'relative',
         width: '100%',
-        height: item.layout_height ? `${item.layout_height}rem` : 'auto',
+        height: 'auto',
         marginBottom: '0.625rem',
         zIndex: item.layout_z || 1
       }
@@ -402,11 +402,16 @@ export default {
         el.classList.remove('dragging')
       })
       
+      // 如果是新拖入的组件，不进行位置交换
+      if (this.dragIndex === -1) return
+      
       if (this.dragIndex === index) return
       
       // 获取拖拽的组件和目标位置的组件
       const draggedItem = this.currentComponents[this.dragIndex]
       const targetItem = this.currentComponents[index]
+      
+      if (!draggedItem || !targetItem) return
       
       // 交换两个组件的com_seq值
       const tempSeq = draggedItem.com_seq
@@ -485,8 +490,9 @@ export default {
       if (dragData) {
         // 获取鼠标位置
         const rect = this.$el.getBoundingClientRect()
+        const containerRect = this.$el.querySelector('.component-container').getBoundingClientRect()
         const x = e.clientX - rect.left
-        const y = e.clientY - rect.top
+        const y = e.clientY - containerRect.top + this.$el.querySelector('.component-container').scrollTop
         
         // 将像素转换为rem（除以16）
         const xRem = x / 16
@@ -513,9 +519,11 @@ export default {
           layout_x: xRem,
           layout_y: yRem,
           layout_width: dragData.layout_width || 12.5, // 200px / 16 = 12.5rem
-          layout_height: dragData.layout_height || 6.25, // 添加默认高度
           layout_z: this.currentComponents.length + 1,
-          _type:dragData._type,
+          _type: dragData._type,
+          com_seq: (this.currentComponents.length + 1) * 100, // 添加com_seq值
+          dragIndex: this.currentComponents.length, // 添加拖拽索引
+          isPositionChanged: false, // 初始化位置变更标识
           ...dragData,
         }
 
@@ -572,6 +580,8 @@ export default {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 0.625rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .component-wrapper {
@@ -581,6 +591,7 @@ export default {
   transition: all 0.3s ease;
   border-radius: 0.3125rem;
   position: relative;
+  flex-shrink: 0;
   
   &.dragging {
     opacity: 0.5;

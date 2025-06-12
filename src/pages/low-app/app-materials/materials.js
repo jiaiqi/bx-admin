@@ -1,5 +1,12 @@
 export const materialsTree = [
   {
+    value: "layout",
+    label: "布局",
+    icon: "ri-layout-masonry-fill",
+    service: "srvpage_cfg_layout_select",
+    nameCol: "layout_name",
+  },
+  {
     value: "cardPart",
     label: "部件",
     icon: "ri-star-smile-fill",
