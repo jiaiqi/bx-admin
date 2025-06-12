@@ -100,8 +100,6 @@ export default{
     }
   },
   created(){
-    sessionStorage.removeItem('bx_auth_ticket')
-    sessionStorage.setItem('bx_auth_ticket','xabxdzkj-4ba4d9a9-cdef-4e30-8991-bb62f2b2c9f2')
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
       this.initPage();
