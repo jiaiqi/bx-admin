@@ -99,7 +99,10 @@ export const pageCompCols = [
   "page_no",
   "card_parts_no",
   "card_parts_json",
+  "use_enter_animation",
+  "enter_animation_type",
+  "enter_direction",
   // "owner_tabs_no",
   // "is_leaf",
   // "path",
-]
+];

@@ -231,6 +231,7 @@
 </template>
 
 <script>
+import 'animate.css';
 import HeaderView from "./components/header";
 import MaterialsView from "./components/materials";
 import EditorView from "./components/editor";
@@ -424,7 +425,7 @@ export default {
     onRefresh() {
       setTimeout(() => {
         // location.reload();
-        this.initPage();
+        // this.initPage();
         this.pageRefreshKey = new Date().getTime();
       }, 150);
     },

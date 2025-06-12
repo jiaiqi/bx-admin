@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import 'animate.css';
 import lcView from "./components/materials/view.vue";
 import { $selectOne } from "@/common/http";
 import { formatStyleData } from "@/pages/datav/common/index.js";

@@ -74,10 +74,10 @@
     </div>
 
     <!-- 子组件插槽 未出现在屏幕可视范围内时不渲染 -->
-    <slot v-if="isVisible"> </slot>
+    <slot v-if="isVisible || !lazyLoad"> </slot>
 
     <!-- 加载遮罩层 -->
-    <div class="loading-overlay" v-if="!isVisible">
+    <div class="loading-overlay" v-else>
       <div class="loading-spinner">
         <i class="el-icon-loading"></i>
         <div class="loading-text">加载中...</div>
@@ -106,6 +106,7 @@ import dragStore from "../../store/dragStore";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 
 export default {
+  inject: ["getPageConfig"],
   props: {
     name: {
       type: String,
@@ -163,6 +164,7 @@ export default {
       parentWidth: 0,
       isVisible: false,
       observer: null,
+      lazyLoad: false,
     };
   },
   computed: {
@@ -252,29 +254,34 @@ export default {
     // 添加全局事件监听
     document.addEventListener("mousemove", this.onResize);
     document.addEventListener("mouseup", this.stopResize);
-
-    // 创建Intersection Observer来监测组件是否在可视区域内
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        // 如果组件进入可视区域，则设置isVisible为true
-        if (entries[0].isIntersecting) {
-          // console.log(
-          //   "组件进入可视区域,即将进行渲染",
-          //   this.props.children[0]?.com_name
-          // );
-          this.isVisible = true;
-          // 一旦组件被渲染，可以停止观察
-          this.observer.disconnect();
+    const pageConfig = this.pageConfig?.();
+    if (pageConfig?.page_options?.includes("懒加载")) {
+      this.lazyLoad = true;
+    }
+    if (this.lazyLoad) {
+      // 创建Intersection Observer来监测组件是否在可视区域内
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          // 如果组件进入可视区域，则设置isVisible为true
+          if (entries[0].isIntersecting) {
+            // console.log(
+            //   "组件进入可视区域,即将进行渲染",
+            //   this.props.children[0]?.com_name
+            // );
+            this.isVisible = true;
+            // 一旦组件被渲染，可以停止观察
+            this.observer.disconnect();
+          }
+        },
+        {
+          // 设置阈值，当组件有10%进入视口时触发回调
+          threshold: 0.1,
         }
-      },
-      {
-        // 设置阈值，当组件有10%进入视口时触发回调
-        threshold: 0.1,
-      }
-    );
+      );
 
-    // 开始观察当前组件元素
-    this.observer.observe(this.$el);
+      // 开始观察当前组件元素
+      this.observer.observe(this.$el);
+    }
   },
   beforeDestroy() {
     // 移除全局事件监听
@@ -553,7 +560,7 @@ export default {
     },
 
     handleDrop(e) {
-      debugger
+      debugger;
       if (this.isPreview || this.isView) return;
       console.log("handleDrop");
       console.log("e.target:", e.target);

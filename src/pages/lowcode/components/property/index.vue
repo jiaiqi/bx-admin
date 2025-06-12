@@ -20,18 +20,9 @@
           >
           </simple-update>
           <div v-else>请先保存</div>
-          <!-- <simple-add
-            :service="pageService"
-            :navAfterSubmit="false"
-            @executor-complete="onPageUpdate($event, 'add')"
-            @form-loaded="pageLoading = false"
-            @submitted2mem=""
-            v-else
-          >
-          </simple-add> -->
         </div>
       </el-tab-pane>
-      <template v-if="!currentItem && pageStyleCols && pageStyleCols.length">
+      <!-- <template v-if="!currentItem && pageStyleCols && pageStyleCols.length">
         <el-tab-pane
           :label="item.label"
           :name="item.columns"
@@ -57,7 +48,6 @@
               v-if="item.value"
             >
             </simple-update>
-            <!-- <div v-else>请先保存</div> -->
             <simple-add
               :service="item.option_list_v2.add_srv_cfg.srv"
               :defaultValues="{
@@ -75,7 +65,7 @@
             </simple-add>
           </div>
         </el-tab-pane>
-      </template>
+      </template> -->
       <el-tab-pane
         label="组件"
         name="组件"
@@ -98,20 +88,6 @@
         >
         </simple-update>
         <div v-else>请先保存</div>
-
-        <!-- <simple-add
-          ref="compForm"
-          :pageName="'list-duplicate'"
-          :service="componentService"
-          :defaultValues="addCompDefaultValues"
-          @executor-complete="onComponentUpdate($event, 'add')"
-          @form-loaded="componentLoading = false"
-          :navAfterSubmit="false"
-          @submitted2mem=""
-          @field-value-changed="onValueChange($event, 'component-add')"
-          v-else-if="showAddComponent"
-        >
-        </simple-add> -->
       </el-tab-pane>
 
       <el-tab-pane label="组件配置" name="组件配置" v-if="showCompForm">
@@ -132,7 +108,7 @@
         >
         </simple-update>
       </el-tab-pane>
-      <template
+      <!-- <template
         v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length"
       >
         <el-tab-pane
@@ -178,8 +154,8 @@
             </simple-add>
           </div>
         </el-tab-pane>
-      </template>
-      <template v-if="showCompForm && compStyleCols && compStyleCols.length">
+      </template> -->
+      <!-- <template v-if="showCompForm && compStyleCols && compStyleCols.length">
         <el-tab-pane
           :label="'组件配置-' + item.label"
           :name="item.key"
@@ -223,7 +199,7 @@
             </simple-add>
           </div>
         </el-tab-pane>
-      </template>
+      </template> -->
       <!-- <el-tab-pane label="CSS" name="CSS">
         <css-editor />
       </el-tab-pane> -->
