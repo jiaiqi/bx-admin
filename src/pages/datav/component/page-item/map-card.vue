@@ -1,7 +1,64 @@
 <template>
   <div
+    class="map-view building-view"
+    v-if="
+      mapJson && mapJson.map_base_supplier === '自定义底图' && isBuildingView
+    "
+  >
+    <div
+      class="building-tree-data map-tree-data"
+      v-if="isBuildingView && buildingTree && buildingTree.length"
+    >
+      <div class="tree-data-item" v-for="item in buildingTree" :key="item.id">
+        <div
+          class="tree-data-item-name"
+          :class="{
+            active:
+              (floorInfo && item.id && floorInfo.id === item.id) ||
+              (floorInfo.path && floorInfo.path.startsWith(item.path)),
+          }"
+          @click="tapBuildingTreeData(item)"
+        >
+          <i
+            class="tree-data-item-name-icon el-icon-caret-right"
+            :class="{ expanded: expandedBuildingNodes[item.id] }"
+            @click.stop="toggleExpand(item)"
+            v-if="item.children && item.children.length"
+          ></i>
+          <span class="tree-data-item-name-text">
+            {{ getTreeItemLabel(item) }}
+          </span>
+        </div>
+        <transition name="tree-expand">
+          <div
+            class="tree-data-item-child"
+            v-show="expandedBuildingNodes[item.id]"
+          >
+            <tree-data-item
+              v-for="child in item.children"
+              :key="child.id"
+              :item="child"
+              :selected="floorInfo"
+              :level="1"
+              @select="tapBuildingTreeData"
+            />
+          </div>
+        </transition>
+      </div>
+    </div>
+    <div
+      class="map-bg"
+      :style="{
+        backgroundImage: `url(${baseImage})`,
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }"
+    ></div>
+  </div>
+  <div
     class="map-view custom-map"
-    v-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
+    v-else-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
     :style="{
       backgroundImage: `url(${baseImage})`,
       backgroundSize: '100% 100%',
@@ -62,6 +119,7 @@
         ]"
         v-for="marker in markerList"
         :key="marker.id"
+        @click="clickMarker(marker)"
       >
         <div class="map-marker-content">
           {{ marker[mapJson.col_label] || "" }}
@@ -161,7 +219,6 @@ function findParentWithBaseImage(data, list) {
   }
   return null;
 }
-
 const baseImage = computed(() => {
   if (mapBaseSupplier.value !== "自定义底图") {
     return "";
@@ -169,9 +226,18 @@ const baseImage = computed(() => {
 
   const baseImageCol = mapJson.value.map_base_col;
   if (!baseImageCol) {
+    if (floorInfo.value?.[baseImageCol]) {
+      return getImagePath(floorInfo.value[baseImageCol]);
+    }
     return getImagePath(mapJson.value.base_image);
   }
 
+  // 楼视图
+  if (buildingInfo.value?.[baseImageCol]) {
+    return getImagePath(buildingInfo.value[baseImageCol]);
+  }
+
+  // 检查当前选中项是否为叶子节点(没有子节点)
   if (selectedTreeData.value?.is_leaf !== "是") {
     // 检查当前选中项
     if (selectedTreeData.value?.[baseImageCol]) {
@@ -336,6 +402,7 @@ function tapTreeData(item) {
     set(expandedNodes.value, item.id, !expandedNodes.value[item.id]);
   }
 }
+
 async function initMapTreeData() {
   const req = props.treeReq || mapJson.value?.map_tree_req_json;
   if (!req) {
@@ -352,6 +419,55 @@ async function initMapTreeData() {
       selectedTreeData.value = res.data[0];
     }
   }
+}
+const isBuildingView = ref(false);
+const buildingInfo = ref({});
+const buildingTree = ref([]);
+const floorInfo = ref(null);
+const expandedBuildingNodes = ref({});
+
+function tapBuildingTreeData(item) {
+  floorInfo.value = item;
+  if (item?.id) {
+    set(
+      expandedBuildingNodes.value,
+      item.id,
+      !expandedBuildingNodes.value[item.id]
+    );
+  }
+  emit("select", item);
+}
+function clickMarker(marker) {
+  if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
+    const val = marker[mapJson.value?.building_view_col];
+    if (val && mapJson.value?.building_view_val?.includes(val)) {
+      switchToBuildingView(marker);
+    }
+  }
+}
+function switchToBuildingView(marker) {
+  isBuildingView.value = true;
+  buildingInfo.value = marker;
+  buildingTree.value = getBuildingTree(marker);
+  if (buildingTree.value?.length) {
+    floorInfo.value = buildingTree.value[0];
+  }
+}
+function getBuildingTree(marker) {
+  let list = marker?.children || [];
+  let res = [];
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i];
+    if (item?.[mapJson.value?.building_view_col]) {
+      res.push(item);
+    }
+  }
+  return res;
+}
+function getBuildingMakers() {}
+function switchToMarkerView() {
+  isBuildingView.value = false;
+  buildingInfo.value = null;
 }
 onMounted(() => {
   // 实例化地图
@@ -375,6 +491,33 @@ onMounted(() => {
   height: 100%;
   position: relative;
 }
+.building-view {
+  display: grid;
+  
+  grid-template-columns: 150px 1fr;
+  grid-template-rows: 1fr;
+  .building-tree-data {
+    position: unset;
+    height: 100%;
+    overflow-y: auto;
+    display: inline-block;
+    .tree-data-item {
+      .tree-data-item-name {
+        min-width: 100px;
+      }
+    }
+  }
+  .map-bg {
+    display: inline-block;
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+  }
+}
 .map-tree-data {
   position: absolute;
   top: 15px;
@@ -385,6 +528,7 @@ onMounted(() => {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #ccc #f5f5f5;
+
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -432,17 +576,6 @@ onMounted(() => {
           rgba(4, 71, 171, 1) 294.82%
         );
         color: #fff;
-        // &::before {
-        //   content: "";
-        //   position: absolute;
-        //   top: 50%;
-        //   left: 15px;
-        //   transform: translate(-50%, -50%);
-        //   width: 0;
-        //   height: 0;
-        //   border: 6px solid transparent;
-        //   border-left: 6px solid #fff;
-        // }
       }
     }
     .tree-data-item-child {
