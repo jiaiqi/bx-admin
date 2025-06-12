@@ -96,7 +96,7 @@ const getRoutesByBaiDu= async () =>{
   let ways=drivingPoint.value[drivingPoint.value.length/2]
   let origin=drivingPoint.value[0].lat+","+drivingPoint.value[0].lng; //起点
   let destination=last.lat+","+last.lng;
-  let ak=window.APP_CONFIG.RouteAK
+  let ak=window.APP_CONFIG.RouteAK?window.APP_CONFIG.RouteAK:''
   let urls=window.APP_CONFIG.viRoute;
   const params = {
     origin: origin, // 起点坐标

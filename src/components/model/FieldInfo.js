@@ -365,8 +365,7 @@ export class FieldInfo {
         this.editor = "date-time-range";
       } else if (this.type == "Enum" || this.type == "Dict") {
         this.editor = "multiselect";
-      } else if (this.isJoinedDisp() || this.isTextual() ) {
-        // (this.isFinder() && top.env !== 'gaosu111')
+      } else if (this.isJoinedDisp() || this.isTextual() || (this.isFinder() && top.env !== 'gaosu111')) {
         // 111环境，列表上方查询组件，fk字段使用下拉选择组件,其他环境使用文本输入框
         this.editor = "input";
       }
