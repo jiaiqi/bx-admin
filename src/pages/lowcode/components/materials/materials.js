@@ -144,6 +144,14 @@ export const materialsTree = [
         "type": "cardPart",
         "component": "pageItem",
         "icon": "ri-contrast-drop-2-line"
+      },
+      {
+        "label": "二维码",
+        "value": "二维码",
+        "parts_type": "二维码",
+        "type": "qrCode",
+        "component": "pageItem",
+        "icon": "ri-qr-code-fill"
       }
     ]
   },

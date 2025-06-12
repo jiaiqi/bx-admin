@@ -35,8 +35,8 @@ export class FieldInfo {
     // 更多json 配置信息
     this._DateRangeEndColName = null; // 起止日期的 结束字段名
     this.moreConfig = srvCol.more_config
-      ? JSON.parse(srvCol.more_config)
-      : srvCol.more_config;
+        ? JSON.parse(srvCol.more_config)
+        : srvCol.more_config;
     this.fileSize = 2;
     this.isUniqueCheck = {
       state: "none",
@@ -47,13 +47,13 @@ export class FieldInfo {
          * 起止日期配置加载
          */
         if (
-          this.moreConfig.DateRangeConfig.hasOwnProperty(
-            "DateRangeEndColName"
-          ) &&
-          this.moreConfig.DateRangeConfig.hasOwnProperty("DateRangelabel")
+            this.moreConfig.DateRangeConfig.hasOwnProperty(
+                "DateRangeEndColName"
+            ) &&
+            this.moreConfig.DateRangeConfig.hasOwnProperty("DateRangelabel")
         ) {
           this._DateRangeEndColName =
-            this.moreConfig.DateRangeConfig.DateRangeEndColName;
+              this.moreConfig.DateRangeConfig.DateRangeEndColName;
           // this._DateRangeCfg = this.moreConfig.DateRangeConfig
           this.label = this.moreConfig.DateRangeConfig.DateRangelabel;
         }
@@ -105,15 +105,15 @@ export class FieldInfo {
     this.visible = "true";
     this.bodyVisible = true;
     this.editable =
-      srvCol.col_updatable_expr ||
-      (srvCol.updatable !== 0 && srvCol.updatable !== "0");
+        srvCol.col_updatable_expr ||
+        (srvCol.updatable !== 0 && srvCol.updatable !== "0");
 
     this.noSearchIcon =
-      this.moreConfig !== undefined &&
+        this.moreConfig !== undefined &&
         this.moreConfig !== null &&
         this.moreConfig.noSearchIcon !== undefined
-        ? this.moreConfig.noSearchIcon
-        : false;
+            ? this.moreConfig.noSearchIcon
+            : false;
 
     this.rows = 0;
     this.sec = srvCol.section;
@@ -139,11 +139,11 @@ export class FieldInfo {
 
   isFinder() {
     let isFk =
-      this.type &&
-      this.type.indexOf &&
-      (this.type.indexOf("bx") == 0 || this.type.indexOf("fk") == 0);
+        this.type &&
+        this.type.indexOf &&
+        (this.type.indexOf("bx") == 0 || this.type.indexOf("fk") == 0);
     let isBuiltinFk =
-      this.type && ["User", "Dept", "fkjsons"].includes(this.type);
+        this.type && ["User", "Dept", "fkjsons"].includes(this.type);
     return isFk || isBuiltinFk;
   }
 
@@ -197,7 +197,7 @@ export class FieldInfo {
 
   isJoinedDisp() {
     return (
-      this.name && this.name.startsWith("_") && this.name.endsWith("_disp")
+        this.name && this.name.startsWith("_") && this.name.endsWith("_disp")
     );
   }
 
@@ -236,7 +236,7 @@ export class FieldInfo {
     }
 
     return (
-      this.rules.filter((rule) => rule.hasOwnProperty("required")).length > 0
+        this.rules.filter((rule) => rule.hasOwnProperty("required")).length > 0
     );
   }
 
@@ -313,9 +313,9 @@ export class FieldInfo {
     } else if (this.isFinder()) {
       this.editor = "finder";
       if (
-        this.srvCol &&
-        this.srvCol.option_list_v2 &&
-        this.srvCol.option_list_v2.hasOwnProperty("autoSplicDisplay")
+          this.srvCol &&
+          this.srvCol.option_list_v2 &&
+          this.srvCol.option_list_v2.hasOwnProperty("autoSplicDisplay")
       ) {
         this.autoSplicDisplay = this.srvCol.option_list_v2.autoSplicDisplay;
       }
@@ -365,7 +365,8 @@ export class FieldInfo {
         this.editor = "date-time-range";
       } else if (this.type == "Enum" || this.type == "Dict") {
         this.editor = "multiselect";
-      } else if (this.isJoinedDisp() || this.isTextual() || (this.isFinder() && top.env !== 'gaosu111')) {
+      } else if (this.isJoinedDisp() || this.isTextual() ) {
+        // (this.isFinder() && top.env !== 'gaosu111')
         // 111环境，列表上方查询组件，fk字段使用下拉选择组件,其他环境使用文本输入框
         this.editor = "input";
       }
@@ -412,7 +413,7 @@ export class FieldInfo {
 
     this.allowInput = optionListV2.allow_input || null;
     this.parentCol =
-      optionListV2.parent_col || optionListV2.parent_no_col || null;
+        optionListV2.parent_col || optionListV2.parent_no_col || null;
     this.valueCol = optionListV2.refed_col || optionListV2.primary_col;
     this.dispCol = optionListV2.key_disp_col || optionListV2.disp_col;
     if (this.editor === "userlist") {
@@ -483,18 +484,18 @@ export class FieldInfo {
       this.colspan = this.setLayoutColSize(col_span);
     } else {
       if (
-        this.editor == "extend" ||
-        this.editor == "textarea" ||
-        this.editor == "ueditor" ||
-        this.type === "FileList" ||
-        this.editor.startsWith("upload") ||
-        this.isCode()
+          this.editor == "extend" ||
+          this.editor == "textarea" ||
+          this.editor == "ueditor" ||
+          this.type === "FileList" ||
+          this.editor.startsWith("upload") ||
+          this.isCode()
       ) {
         // console.log("整行字段",this.editor)
         this.colspan = this.setLayoutColSize(1);
       } else if (
-        this.editor == "date-range" ||
-        this.editor == "date-time-range"
+          this.editor == "date-range" ||
+          this.editor == "date-time-range"
       ) {
         this.colspan = this.setLayoutColSize(0.5);
       } else if (this.editor == "input-range" || this.editor == "time-range") {
@@ -552,67 +553,67 @@ export class FieldInfo {
 
     // convert validator to map
     srvCol.validators
-      .split(";")
-      .filter((part) => !!part)
-      .forEach((part) => {
-        // 多个校验 时 "js_validate=" 必须配置在最后一项
-        let subparts = part.split("=");
-        let key = subparts[0].trim();
-        key = keyMapper[key] || key;
-        if (key === "js_validate") {
-          subparts = part.split("js_validate=");
-        }
-        if (key === "pattern") {
-          subparts = part.split("ngPattern=");
-        }
-        let val = subparts.length > 1 ? subparts[1].trim() : true;
-        if (key == "min" || key == "max") {
-          val = Number.parseInt(val);
-          if (isNaN(val)) {
-            return;
+        .split(";")
+        .filter((part) => !!part)
+        .forEach((part) => {
+          // 多个校验 时 "js_validate=" 必须配置在最后一项
+          let subparts = part.split("=");
+          let key = subparts[0].trim();
+          key = keyMapper[key] || key;
+          if (key === "js_validate") {
+            subparts = part.split("js_validate=");
           }
-        }
-
-        let rule = { name: key, trigger: "change" };
-        rule[key] = val;
-
-        if (this.isNumeric()) {
-          rule.type = "number";
-        }
-
-        if (!rule.message) {
-          switch (key) {
-            case "required": {
-              rule.message = `${this.label}为必填`;
-              break;
-            }
-            case "min": {
-              rule.message = `${this.label}不能小于${val}`;
-              break;
-            }
-            case "max": {
-              rule.message = `${this.label}不能大于${val}`;
-              break;
-            }
-            case "js_validate": {
-              rule.message = `${this.label}填写有误`;
-              break;
+          if (key === "pattern") {
+            subparts = part.split("ngPattern=");
+          }
+          let val = subparts.length > 1 ? subparts[1].trim() : true;
+          if (key == "min" || key == "max") {
+            val = Number.parseInt(val);
+            if (isNaN(val)) {
+              return;
             }
           }
-        }
 
-        map.set(key, rule);
-      });
+          let rule = { name: key, trigger: "change" };
+          rule[key] = val;
+
+          if (this.isNumeric()) {
+            rule.type = "number";
+          }
+
+          if (!rule.message) {
+            switch (key) {
+              case "required": {
+                rule.message = `${this.label}为必填`;
+                break;
+              }
+              case "min": {
+                rule.message = `${this.label}不能小于${val}`;
+                break;
+              }
+              case "max": {
+                rule.message = `${this.label}不能大于${val}`;
+                break;
+              }
+              case "js_validate": {
+                rule.message = `${this.label}填写有误`;
+                break;
+              }
+            }
+          }
+
+          map.set(key, rule);
+        });
     let editable =
-      srvCol.col_updatable_expr ||
-      (srvCol.updatable !== 0 && srvCol.updatable !== "0");
+        srvCol.col_updatable_expr ||
+        (srvCol.updatable !== 0 && srvCol.updatable !== "0");
     if (this.isFinder() && editable) {
       // finder类型字段 自动加上合法值校验
       // 非自行输入或者不是add表单的时候才加上合法值校验
       // if( this.allowInput !== '自行输入'){
       if (
-        this.allowInput !== "自行输入" ||
-        srvCol?.service_name?.includes("add") === false
+          this.allowInput !== "自行输入" ||
+          srvCol?.service_name?.includes("add") === false
       ) {
         let rule = {
           name: "isValidValue",
@@ -626,20 +627,20 @@ export class FieldInfo {
     // put validator message to map
     if (srvCol.validators_message) {
       srvCol.validators_message
-        .split(";")
-        .filter((part) => !!part)
-        .forEach((part) => {
-          let subparts = part.split("=");
-          let key = subparts[0].trim();
-          key = keyMapper[key] || key;
+          .split(";")
+          .filter((part) => !!part)
+          .forEach((part) => {
+            let subparts = part.split("=");
+            let key = subparts[0].trim();
+            key = keyMapper[key] || key;
 
-          let val = subparts.length > 1 ? subparts[1].trim() : null;
+            let val = subparts.length > 1 ? subparts[1].trim() : null;
 
-          let rule = map.get(key);
-          if (rule) {
-            rule.message = val;
-          }
-        });
+            let rule = map.get(key);
+            if (rule) {
+              rule.message = val;
+            }
+          });
     }
     let subType = this.subType;
     if (subType && (subType == "verifyMobile" || subType == "verifySmsCode")) {
