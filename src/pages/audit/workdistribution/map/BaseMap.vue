@@ -97,11 +97,12 @@ const getRoutesByBaiDu= async () =>{
   let origin=drivingPoint.value[0].lat+","+drivingPoint.value[0].lng; //起点
   let destination=last.lat+","+last.lng;
   let ak=window.APP_CONFIG.RouteAK?window.APP_CONFIG.RouteAK:''
-  let urls=window.APP_CONFIG.viRoute;
+  let urls=window.APP_CONFIG.ROUTE_151?window.APP_CONFIG.ROUTE_151:window.APP_CONFIG.viRoute;
   const params = {
     origin: origin, // 起点坐标
     destination:destination, // 终点坐标
     tactics: 0, // 导航策略
+    waypoints: ways.lat+","+ways.lng,
     inputCrs:'wgs84ll',
     outputCrs:'wgs84ll'
   }

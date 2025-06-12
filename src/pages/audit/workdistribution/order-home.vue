@@ -128,9 +128,8 @@ name: "order-home",
   mounted(){
     this.asyncLoadMap()
      this.$nextTick(()=>{
-       // // xabxdzkj-41664077-b860-410b-ac80-594e5ab8c8c2
-       sessionStorage.removeItem('bx_auth_ticket');
-       sessionStorage.setItem('bx_auth_ticket','xabxdzkj-41664077-b860-410b-ac80-594e5ab8c8c2');
+       // sessionStorage.removeItem('bx_auth_ticket');
+       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-2a742042-25b3-4d69-b546-dd0de84849d3');
      })
     if (!this._isMounted) {
       this._isMounted = true;
