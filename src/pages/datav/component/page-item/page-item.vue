@@ -12,7 +12,7 @@
       enterAnimationClass,
     ]"
     v-if="pageItemData && pageItemData.com_type"
-    :style="[mixCompStyle]"
+    :style="[mixCompStyle, enterAnimationVariables]"
   >
     <!-- 遮罩层   卡片部件暂时不使用遮罩 -->
     <div
@@ -247,6 +247,11 @@ import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vu
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import { Icon } from "@iconify/vue2";
+import {
+  setEnterAnimationClass,
+  setEnterAnimationVariables,
+} from "@/common/common.js";
+
 export default {
   mixins: [pageItemParams],
   components: {
@@ -344,68 +349,11 @@ export default {
       }
       return style;
     },
-    // 计算入场动画class名称
     enterAnimationClass() {
-      if (this.pageItem?.use_enter_animation === "是") {
-        let className = "animate__animated animate__delay-1s ";
-        function buildClass(direction) {
-          switch (direction) {
-            case "由左往右":
-              return "Left";
-            case "由右往左":
-              return "Right";
-            case "由上至下":
-              return "DOwn";
-            case "由下至上":
-              return "Up";
-            /** 仅旋转可用 start*/
-            case "左下":
-              return "DownLeft";
-            case "右下":
-              return "DownRight";
-            case "左上":
-              return "UpLeft";
-            case "右上":
-              return "UpRight";
-            /** 仅旋转可用 end*/
-          }
-        }
-        switch (this.pageItem.enter_animation_type) {
-          case "淡入":
-            className += `animate__fadeIn${buildClass(
-              this.pageItem.enter_direction
-            )}`;
-            break;
-          case "弹入":
-            className += `animate__bounceIn${buildClass(
-              this.pageItem.enter_direction
-            )}`;
-            break;
-          case "划入":
-            className += `animate__slideIn${buildClass(
-              this.pageItem.enter_direction
-            )}`;
-            break;
-          case "旋转":
-            className += `animate__rotateIn${buildClass(
-              this.pageItem.enter_direction
-            )}`;
-            break;
-          case "缩放":
-            className += `animate__zoomIn${buildClass(
-              this.pageItem.enter_direction
-            )}`;
-            break;
-          case "缩放划入":
-            className += `animate__backIn${buildClass(
-              this.pageItem.enter_direction
-            )}`;
-            break;
-          default:
-            break;
-        }
-        return className;
-      }
+      return setEnterAnimationClass(this.pageItemData);
+    },
+    enterAnimationVariables() {
+      return setEnterAnimationVariables(this.pageItemData);
     },
   },
   data() {

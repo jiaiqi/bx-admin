@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import 'animate.css';
+import "animate.css";
 import lcView from "./components/materials/view.vue";
 import { $selectOne } from "@/common/http";
 import { formatStyleData } from "@/pages/datav/common/index.js";
@@ -213,7 +213,7 @@ export default {
             }
           } else {
             item.component = "page-item";
-            if(item.com_option?.includes('悬浮可拖动')){
+            if (item.com_option?.includes("悬浮可拖动")) {
               item.component = "float-component";
             }
           }
@@ -248,4 +248,9 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.animate__animated {
+  animation-delay: var(--animate-delay);
+  animation-iteration-count: var(--animate-repeat);
+}
+</style>

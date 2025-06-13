@@ -95,7 +95,7 @@
 import lcBlock from "./block.vue";
 import lcContainer from "./container.vue";
 import lcContent from "./content-item.vue";
-import pageItem from "@/pages/datav/component/page-item/page-item.vue";
+import PageItem from "@/pages/datav/component/page-item/page-item.vue";
 import floatComponent from "./float-component.vue";
 import { VueDraggable } from "vue-draggable-plus";
 
@@ -106,7 +106,7 @@ export default {
     lcContainer,
     lcContent,
     VueDraggable,
-    pageItem,
+    PageItem,
     lcView: () => import("./view.vue"),
     floatComponent,
   },

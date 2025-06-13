@@ -1,12 +1,12 @@
 <template>
   <div
     class="lc-container lc-layout"
-    :class="{ 'in-edit': !isPreview && !isView }"
+    :class="[{ 'in-edit': !isPreview && !isView }, enterAnimationClass]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
     @dragend="handleDragEnd"
-    :style="[setStyle]"
+    :style="[setStyle, enterAnimationVariables]"
     :id="com_name"
   >
     <!-- 遮罩层 -->
@@ -39,7 +39,10 @@
 <script>
 import dragStore from "../../store/dragStore";
 import { formatStyleData } from "@/pages/datav/common/index.js";
-
+import {
+  setEnterAnimationClass,
+  setEnterAnimationVariables,
+} from "@/common/common";
 export default {
   name: "lc-container",
   components: {},
@@ -72,8 +75,15 @@ export default {
       type: String,
       default: "",
     },
+    pageItem: Object,
   },
   computed: {
+    enterAnimationClass() {
+      return setEnterAnimationClass(this.pageItem);
+    },
+    enterAnimationVariables() {
+      return setEnterAnimationVariables(this.pageItem);
+    },
     setStyle() {
       let style = {};
       if (this.props.style_json && typeof this.props.style_json === "string") {
@@ -252,7 +262,7 @@ export default {
   // }
   // margin: 10px 0;
   // padding: 10px;
-  &.in-edit{
+  &.in-edit {
     min-height: 50px;
   }
 

@@ -10,6 +10,7 @@
       {
         '--content-width': (useContentWidth && contentWidth) || '',
       },
+      enterAnimationVariables,
     ]"
     :class="[
       subType,
@@ -17,6 +18,7 @@
         'use-content-width': useContentWidth,
         'show-label': props.show_label === '是' && props.com_label,
       },
+      enterAnimationClass,
     ]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -71,6 +73,10 @@
 
 <script>
 import { formatStyleData } from "@/pages/datav/common/index.js";
+import {
+  setEnterAnimationClass,
+  setEnterAnimationVariables,
+} from "@/common/common";
 
 import dragStore from "../../store/dragStore";
 const layoutKeys = [
@@ -152,6 +158,7 @@ export default {
       type: String,
       default: "",
     },
+    pageItem: Object,
   },
   data() {
     return {
@@ -259,6 +266,12 @@ export default {
     },
     blockWidthStyle() {
       return this.blockWidth ? { width: `${this.blockWidth}%` } : {};
+    },
+    enterAnimationClass() {
+      return setEnterAnimationClass(this.pageItem);
+    },
+    enterAnimationVariables() {
+      return setEnterAnimationVariables(this.pageItem);
     },
   },
   watch: {

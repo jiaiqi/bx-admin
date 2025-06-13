@@ -1,16 +1,20 @@
 <template>
   <div
     class="lc-content lc-layout"
-    :class="{
-      'preview-mode': isPreview,
-      'view-mode': isView,
-      'edit-mode': !isPreview && !isView && !com_name,
-    }"
+    :class="[
+      {
+        'preview-mode': isPreview,
+        'view-mode': isView,
+        'edit-mode': !isPreview && !isView && !com_name,
+      },
+      enterAnimationClass,
+    ]"
     :style="[
       contentStyle,
       {
         '--content-name': com_name || '组件容器',
       },
+      enterAnimationVariables,
     ]"
     :data-allow-drop="allowDrop"
     data-drop-effect="move"
@@ -104,7 +108,10 @@
 <script>
 import dragStore from "../../store/dragStore";
 import { formatStyleData } from "@/pages/datav/common/index.js";
-
+import {
+  setEnterAnimationClass,
+  setEnterAnimationVariables,
+} from "@/common/common";
 export default {
   inject: ["getPageConfig"],
   props: {
@@ -152,6 +159,7 @@ export default {
       type: String,
       default: "px",
     },
+    pageItem: Object,
   },
   data() {
     return {
@@ -168,6 +176,12 @@ export default {
     };
   },
   computed: {
+    enterAnimationClass() {
+      return setEnterAnimationClass(this.pageItem);
+    },
+    enterAnimationVariables() {
+      return setEnterAnimationVariables(this.pageItem);
+    },
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
     },

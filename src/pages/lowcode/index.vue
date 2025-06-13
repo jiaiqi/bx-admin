@@ -231,7 +231,7 @@
 </template>
 
 <script>
-import 'animate.css';
+import "animate.css";
 import HeaderView from "./components/header";
 import MaterialsView from "./components/materials";
 import EditorView from "./components/editor";
@@ -425,8 +425,9 @@ export default {
     onRefresh() {
       setTimeout(() => {
         // location.reload();
-        // this.initPage();
-        this.pageRefreshKey = new Date().getTime();
+        this.initPage().then(() => {
+          // this.pageRefreshKey = new Date().getTime();
+        });
       }, 150);
     },
     removeComp(node, data) {
@@ -679,7 +680,7 @@ export default {
         //     this.initComponents(list);
         //   }
         // });
-        this.initComponents(newData);
+        await this.initComponents(newData);
         this.pageRefreshKey = new Date().getTime();
       } else if (msg) {
         this.$message.error(msg);
