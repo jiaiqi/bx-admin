@@ -51,6 +51,13 @@
           @click="onDelete"
           v-if="children && children.length"
         ></i>
+        <!-- 编辑按钮 -->
+        <i
+          class="el-icon-edit button close-icon"
+          @click="toEditCard"
+          v-if="cardNo"
+          title="用卡片单元设计器打开"
+        ></i>
       </div>
     </div>
     <div
@@ -251,6 +258,22 @@ export default {
       }
       return formatStyleData(style);
     },
+    childComponent() {
+      if (Array.isArray(this.children) && this.children.length) {
+        return this.children[0];
+      }
+    },
+    /**
+     * 卡片单元编号
+     */
+    cardNo() {
+      if (this.childComponent?.com_type === "cardGroup") {
+        return this.childComponent?.data?.card_group_json?.card_unit_json
+          ?.card_no;
+      } else if (this.childComponent?.com_type === "list") {
+        return this.childComponent?.data?.list_json?.card_unit_json?.card_no;
+      }
+    },
   },
   watch: {
     width(newVal) {
@@ -308,6 +331,11 @@ export default {
     }
   },
   methods: {
+    toEditCard() {
+      if (this.cardNo) {
+        open(`/vpages/#/card-cell-editor/${this.cardNo}`);
+      }
+    },
     onTap() {
       if (this.isPreview) return;
       // let val = this.children?.[0]?.id ? this.children?.[0] : this.props;

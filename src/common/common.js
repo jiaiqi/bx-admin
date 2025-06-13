@@ -308,146 +308,55 @@ export const docCookies = {
 };
 
 /**
- * 根据动画配置生成CSS动画类名
- * @description 基于animate.css库生成进入动画的CSS类名，支持多种动画类型和方向
- * @param {Object} config - 动画配置对象
- * @param {string} config.use_enter_animation - 是否使用进入动画，值为"是"时启用动画
- * @param {string} config.enter_animation_type - 动画类型，可选值："淡入"、"弹入"、"划入"、"旋转"、"缩放"、"缩放划入"
- * @param {string} config.enter_direction - 动画方向，可选值："由左往右"、"由右往左"、"由上至下"、"由下至上"、"左下"、"右下"、"左上"、"右上"
- * @param {number} [config.enter_delay] - 动画延迟时间（秒），可选参数
- * @returns {string|undefined} 返回生成的CSS类名字符串，如果不启用动画则返回undefined
+ * 设置进入动画的CSS类名
+ * @description 根据动画配置参数生成对应的CSS动画类名，用于元素进入时的动画效果
+ * @param {Object} [params={}] - 动画配置参数对象
+ * @param {string} params.use_enter_animation - 是否使用进入动画，值为"是"时启用
+ * @param {string} params.enter_animation_type - 进入动画类型
+ * @param {string} params.enter_direction - 进入动画方向
+ * @returns {string|undefined} 返回动画CSS类名字符串，如果不启用动画则返回undefined
  * @example
- * // 基本用法
- * const className = enterAnimationClass({
+ * // 设置淡入动画
+ * const className = setEnterAnimationClass({
  *   use_enter_animation: "是",
  *   enter_animation_type: "淡入",
- *   enter_direction: "由左往右",
- *   enter_delay: 1
+ *   enter_direction: "由左往右"
  * });
- * // 返回: "animate__animated animate__delay-1s animate__fadeInLeft"
+ * console.log(className); // "animate__animated animate__fadeInLeft"
  * 
- * @example
- * // 不使用动画
- * const className = enterAnimationClass({
- *   use_enter_animation: "否"
- * });
- * // 返回: undefined
+ * @since 1.0.0
  */
 export function setEnterAnimationClass(params = {}) {
   const { use_enter_animation, enter_animation_type, enter_direction } = params
-
   if (use_enter_animation === "是") {
-    // let className = "animate__animated animate__delay-1s ";
-    let className = "animate__animated ";
-    function buildClass(direction) {
-      switch (direction) {
-        case "由左往右":
-          return "Left";
-        case "由右往左":
-          return "Right";
-        case "由上至下":
-          return "Down";
-        case "由下至上":
-          return "Up";
-        /** 淡入可用 start*/
-        case "左上渐显":
-          return "TopLeft";
-        case "右上渐显":
-          return "TopRight";
-        case "左下渐显":
-          return "BottomLeft";
-        case "右下渐显":
-          return "BottomRight";
-        /** 淡入可用 end*/
-        /** 仅旋转可用 start*/
-        case "向下左旋":
-          return "DownLeft";
-        case "向下右旋":
-          return "DownRight";
-        case "向上左旋":
-          return "UpLeft";
-        case "向上右旋":
-          return "UpRight";
-        /** 仅旋转可用 end*/
-      }
-      return ''
-    }
-
-    switch (enter_animation_type) {
-      case "淡入":
-        className += `animate__fadeIn${buildClass(enter_direction)}`;
-        break;
-      case "弹入":
-      case "弹跳进入":
-        className += `animate__bounceIn${buildClass(enter_direction)}`;
-        break;
-      case "划入":
-      case "滑入":
-        className += `animate__slideIn${buildClass(enter_direction)}`;
-        break;
-      case "旋转":
-        className += `animate__rotateIn${buildClass(enter_direction)}`;
-        break;
-      case "缩放":
-      case "放大":
-        className += `animate__zoomIn${buildClass(enter_direction)}`;
-        break;
-      case "缩放划入":
-        className += `animate__backIn${buildClass(enter_direction)}`;
-        break;
-      case "弹跳":
-        className += `animate__bounce`;
-        break;
-      case "闪烁":
-        className += `animate__flash`;
-        break;
-      case "脉冲":
-        className += `animate__pulse`;
-        break;
-      case "橡皮圈":
-        className += `animate__rubberBand`;
-        break;
-      case "横向晃动":
-        className += `animate__shakeX`;
-        break;
-      case "纵向晃动":
-        className += `animate__shakeY`;
-        break;
-      case "摇头":
-        className += `animate__headShake`;
-        break;
-      case "摆动":
-        className += `animate__swing`;
-        break;
-      case "颤动":
-        className += `animate__tada`;
-        break;
-      case "果冻":
-        className += `animate__jello`;
-        break;
-      case "心跳":
-        className += `animate__heartBeat`;
-        break;
-      case "渐显":
-        className += `animate__fadeIn`;
-        break;
-      case "翻转":
-        className += `animate__flip`;
-        break;
-      case "铰链":
-        className += `animate__hinge`;
-        break;
-      case "滚入":
-        className += `animate__rollIn`;
-        break;
-      default:
-        className += `animate__fadeIn${buildClass(enter_direction)}`;
-        break;
-    }
-    return className;
+    return setAnimationClass({
+      type: enter_animation_type,
+      direction: enter_direction,
+    })
   }
 }
 
+/**
+ * 设置进入动画的CSS变量样式
+ * @description 根据动画配置参数生成对应的CSS自定义属性，用于控制动画的延迟、持续时间和重复次数
+ * @param {Object} [params={}] - 动画配置参数对象
+ * @param {string} params.use_enter_animation - 是否使用进入动画，值为"是"时启用
+ * @param {number} params.enter_animation_delay - 动画延迟时间（秒）
+ * @param {number} params.enter_animation_duration - 动画持续时间（秒）
+ * @param {number} params.enter_animation_repeat - 动画重复次数，0表示无限循环
+ * @returns {Object} 返回包含CSS自定义属性的样式对象
+ * @example
+ * // 设置动画样式变量
+ * const style = setEnterAnimationVariables({
+ *   use_enter_animation: "是",
+ *   enter_animation_delay: 0.5,
+ *   enter_animation_duration: 1.0,
+ *   enter_animation_repeat: 2
+ * });
+ * console.log(style); // { "--animate-delay": "0.5s", "--animate-duration": "1.0s", "--animate-repeat": "2" }
+ * 
+ * @since 1.0.0
+ */
 export function setEnterAnimationVariables(params = {}) {
   const {
     use_enter_animation,
@@ -456,17 +365,202 @@ export function setEnterAnimationVariables(params = {}) {
     enter_animation_repeat: repeat } = params
   const style = {}
   if (use_enter_animation === "是") {
-    if (delay) {
-      style["--animate-delay"] = `${delay}s`
-    }
-    if (duration) {
-      style["--animate-duration"] = `${duration}s`
-    }
-    if (repeat) {
-      style["--animate-repeat"] = `${repeat}`
-    } else if (repeat === 0) {
-      style["--animate-repeat"] = `infinite`
-    }
+    return setAnimationStyle({
+      delay,
+      duration,
+      repeat,
+    })
+  }
+  return style
+}
+/**
+ * 根据动画方向构建动画类名后缀
+ * @description 将中文的动画方向描述转换为对应的英文类名后缀，用于构建完整的动画类名
+ * @param {string} direction - 动画方向的中文描述
+ * @returns {string} 返回对应的英文类名后缀，如果方向不匹配则返回空字符串
+ * @example
+ * // 获取左侧进入的类名后缀
+ * const suffix = buildAnimationClass("由左往右");
+ * console.log(suffix); // "Left"
+ * 
+ * @example
+ * // 获取右上角渐显的类名后缀
+ * const suffix = buildAnimationClass("右上渐显");
+ * console.log(suffix); // "TopRight"
+ * 
+ * @since 1.0.0
+ */
+export function buildAnimationClass(direction) {
+  switch (direction) {
+    case "由左往右":
+      return "Left";
+    case "由右往左":
+      return "Right";
+    case "由上至下":
+      return "Down";
+    case "由下至上":
+      return "Up";
+    /** 淡入可用 start*/
+    case "左上渐显":
+      return "TopLeft";
+    case "右上渐显":
+      return "TopRight";
+    case "左下渐显":
+      return "BottomLeft";
+    case "右下渐显":
+      return "BottomRight";
+    /** 淡入可用 end*/
+    /** 仅旋转可用 start*/
+    case "向下左旋":
+      return "DownLeft";
+    case "向下右旋":
+      return "DownRight";
+    case "向上左旋":
+      return "UpLeft";
+    case "向上右旋":
+      return "UpRight";
+    /** 仅旋转可用 end*/
+  }
+  return ''
+}
+/**
+ * 根据动画类型和方向生成完整的动画CSS类名
+ * @description 基于Animate.css库，根据动画类型和方向生成对应的CSS类名字符串
+ * @param {Object} [params={}] - 动画参数对象
+ * @param {string} params.type - 动画类型（如：淡入、弹入、滑入等）
+ * @param {string} params.direction - 动画方向（如：由左往右、由上至下等）
+ * @returns {string} 返回完整的动画CSS类名字符串
+ * @example
+ * // 生成淡入动画类名
+ * const className = setAnimationClass({
+ *   type: "淡入",
+ *   direction: "由左往右"
+ * });
+ * console.log(className); // "animate__animated animate__fadeInLeft"
+ * 
+ * @example
+ * // 生成弹跳动画类名
+ * const className = setAnimationClass({
+ *   type: "弹跳"
+ * });
+ * console.log(className); // "animate__animated animate__bounce"
+ * 
+ * @since 1.0.0
+ */
+export function setAnimationClass(params = {}) {
+  let className = "animate__animated ";
+  const { type, direction } = params
+  switch (type) {
+    case "淡入":
+      className += `animate__fadeIn${buildAnimationClass(direction)}`;
+      break;
+    case "弹入":
+    case "弹跳进入":
+      className += `animate__bounceIn${buildAnimationClass(direction)}`;
+      break;
+    case "划入":
+    case "滑入":
+      className += `animate__slideIn${buildAnimationClass(direction)}`;
+      break;
+    case "旋转":
+      className += `animate__rotateIn${buildAnimationClass(direction)}`;
+      break;
+    case "缩放":
+    case "放大":
+      className += `animate__zoomIn${buildAnimationClass(direction)}`;
+      break;
+    case "缩放划入":
+      className += `animate__backIn${buildAnimationClass(direction)}`;
+      break;
+    case "弹跳":
+      className += `animate__bounce`;
+      break;
+    case "闪烁":
+      className += `animate__flash`;
+      break;
+    case "脉冲":
+      className += `animate__pulse`;
+      break;
+    case "橡皮圈":
+      className += `animate__rubberBand`;
+      break;
+    case "横向晃动":
+      className += `animate__shakeX`;
+      break;
+    case "纵向晃动":
+      className += `animate__shakeY`;
+      break;
+    case "摇头":
+      className += `animate__headShake`;
+      break;
+    case "摆动":
+      className += `animate__swing`;
+      break;
+    case "颤动":
+      className += `animate__tada`;
+      break;
+    case "果冻":
+      className += `animate__jello`;
+      break;
+    case "心跳":
+      className += `animate__heartBeat`;
+      break;
+    case "渐显":
+      className += `animate__fadeIn`;
+      break;
+    case "翻转":
+      className += `animate__flip`;
+      break;
+    case "铰链":
+      className += `animate__hinge`;
+      break;
+    case "滚入":
+      className += `animate__rollIn`;
+      break;
+  }
+  return className
+}
+
+/**
+ * 设置动画的CSS自定义属性样式
+ * @description 根据动画参数生成对应的CSS自定义属性对象，用于控制Animate.css动画的延迟、持续时间和重复次数
+ * @param {Object} [params={}] - 动画样式参数对象
+ * @param {number} params.delay - 动画延迟时间（秒）
+ * @param {number} params.duration - 动画持续时间（秒）
+ * @param {number} params.repeat - 动画重复次数，0表示无限循环
+ * @returns {Object} 返回包含CSS自定义属性的样式对象
+ * @example
+ * // 设置动画样式
+ * const style = setAnimationStyle({
+ *   delay: 0.5,
+ *   duration: 2.0,
+ *   repeat: 3
+ * });
+ * console.log(style); // { "--animate-delay": "0.5s", "--animate-duration": "2.0s", "--animate-repeat": "3" }
+ * 
+ * @example
+ * // 设置无限循环动画
+ * const style = setAnimationStyle({
+ *   duration: 1.0,
+ *   repeat: 0
+ * });
+ * console.log(style); // { "--animate-duration": "1.0s", "--animate-repeat": "infinite" }
+ * 
+ * @since 1.0.0
+ */
+export function setAnimationStyle(params = {}) {
+  const { duration, delay, repeat } = params
+  const style = {}
+  if (delay) {
+    style["--animate-delay"] = `${delay}s`
+  }
+  if (duration) {
+    style["--animate-duration"] = `${duration}s`
+  }
+  if (repeat) {
+    style["--animate-repeat"] = `${repeat}`
+  } else if (repeat === 0) {
+    style["--animate-repeat"] = `infinite`
   }
   return style
 }

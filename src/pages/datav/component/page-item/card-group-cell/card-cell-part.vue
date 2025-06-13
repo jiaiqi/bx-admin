@@ -4,6 +4,7 @@
       v-if="partsType === '水球图'"
       :value="getPartModelData"
       :color="item.wave_color"
+      :ref="partsType"
     />
     <video
       class="bx-cell-video"
@@ -19,15 +20,20 @@
       :src="getImagePath(getPartModelData)"
       :style="[buildColStyleJson]"
       v-if="['视频'].includes(partsType)"
+      :ref="partsType"
     ></video>
     <div
       v-else-if="['string', '字符串', '时间日期'].includes(cellItem.parts_type)"
       class="bx-cell-string"
-      :class="{
-        'cursor-pointer': isLink,
-      }"
+      :class="[
+        {
+          'cursor-pointer': isLink,
+        },
+        animationClass,
+      ]"
       @click.stop="onClickSubBlock()"
-      :style="[buildColStyleJson]"
+      :style="[buildColStyleJson, animationStyle]"
+      :ref="partsType"
     >
       {{ getPartModelData }}
     </div>
@@ -39,6 +45,7 @@
       }"
       @click.stop="onClickSubBlock()"
       :style="[buildColStyleJson]"
+      :ref="partsType"
     >
       {{ getPartModelData }}
     </div>
@@ -57,12 +64,14 @@
       :style="[buildColStyleJson]"
       mode="aspectFill"
       img-mode="aspectFill"
+      :ref="partsType"
     ></el-image>
     <el-rate
       :disabled="true"
       v-else-if="['rate', '星级评分'].includes(item.parts_type)"
       :count="5"
       :value="Number(getPartModelData) || 0"
+      :ref="partsType"
     ></el-rate>
     <el-progress
       :show-text="false"
@@ -72,6 +81,7 @@
       :define-back-color="buildColStyleJson['background-color'] || ''"
       :color="buildColStyleJson.color || '#2979ff'"
       :percentage="Number(getPartModelData) || 0"
+      :ref="partsType"
     ></el-progress>
     <i
       v-else-if="
@@ -82,6 +92,7 @@
       :class="[getPartModelData, { 'cursor-pointer': isLink }]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
+      :ref="partsType"
     ></i>
     <!-- <Icon
       v-else-if="
@@ -102,11 +113,13 @@
       :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
+      :ref="partsType"
     ></Icon>
     <div
       v-else-if="item.parts_type == '富文本'"
       :style="[buildColStyleJson]"
       v-html="recoverFileAddress4richText(getPartModelData)"
+      :ref="partsType"
     ></div>
     <qr-code
       :size="buildColStyleJson.width ? parseInt(buildColStyleJson.width) : 100"
@@ -114,6 +127,7 @@
       :color="buildColStyleJson.color || '#000000'"
       :style="[buildColStyleJson]"
       v-else-if="cellItem.parts_type == '二维码'"
+      :ref="partsType"
     ></qr-code>
     <div
       :class="['bx-cell-' + cellItem.parts_type, { 'cursor-pointer': isLink }]"
@@ -144,12 +158,16 @@
 </template>
 
 <script>
+import "animate.css";
+
 import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
 import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import { formatStyleData } from "@/pages/datav/common";
+import { setAnimationClass, setAnimationStyle } from "@/common/common";
+import { numberAnimationRun } from "@/common/animations";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -205,6 +223,25 @@ export default {
   },
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
+    animationClass() {
+      return setAnimationClass({
+        type: this.cellItem.animation_type,
+        direction: this.cellItem.animation_direction,
+      });
+    },
+    animationStyle() {
+      return setAnimationStyle({
+        duration: this.cellItem.animation_duration,
+        delay: this.cellItem.animation_delay,
+        repeat: this.cellItem.animation_repeat,
+      });
+    },
+    useNumber() {
+      return (
+        this.cellItem?.use_animation === "是" &&
+        this.cellItem.animation_type === "数字滚动"
+      );
+    },
     getIconName() {
       if (this.cellItem?.parts_type == "icon") {
         let icon = this.getPartModelData || "";
@@ -293,10 +330,10 @@ export default {
       const styleJson = this.cellItem?.style_json || {};
       const cellLayoutJson = this.cellLayoutJson;
       let style = {};
-      if(styleJson){
-        style = formatStyleData(styleJson)
+      if (styleJson) {
+        style = formatStyleData(styleJson);
       }
-      
+
       // if (styleJson) {
       //   // 将rpx转换为px
       //   function convertRpxToPx(css) {
@@ -791,6 +828,26 @@ export default {
         this.$set(this.fileNoMap, no, res);
       }
     },
+  },
+  mounted(){
+    if(this.useNumber){
+      // 使用数字滚动特效
+      let ele = this.$refs?.[this.partsType]
+      if(ele?.$el){
+        ele = ele?.$el
+      }
+      if(ele){
+        numberAnimationRun({
+          from: 0,
+          to: Number(this.getPartModelData),
+          duration: 10000,
+          onProgress: (val) => {
+            ele.innerHTML = val
+          },
+          isInteger: true
+        })
+      }
+    }
   },
 };
 </script>
