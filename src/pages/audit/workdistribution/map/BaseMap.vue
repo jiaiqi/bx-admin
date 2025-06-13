@@ -36,6 +36,7 @@ import MapUtils from "@/pages/audit/workdistribution/map/mapUtils";
 import OrderApi from "@/pages/audit/api/order";
 import StationList from "@/pages/audit/workdistribution/map/stationList.vue";
 import { handleFilterCols } from "@/pages/audit/workdistribution/map/filterServiceCol";
+import _ from "lodash";
 import {
   AutoDrivingLineSearch,
   drawMapMarkersAndLabel,
@@ -52,6 +53,8 @@ import { Message } from 'element-ui';
 const orderUtil = new OrderApi();
 const route = useRoute()
 const passId = route.query?.pass_id
+const strTime = route.query?.startTime
+const endTime = route.query?.endTime
 const listVisible=ref(false)
 const drivingInfo = ref([])
 const userMap = ref(null);
@@ -91,31 +94,123 @@ const initDrawingRoute = async () => {
  * @Author:Eirice
  * @Date: 2025-06-06 14:29:34
  */
-const getRoutesByBaiDu= async () =>{
-  let last=drivingPoint.value[drivingPoint.value.length-1]
-  let ways=drivingPoint.value[drivingPoint.value.length/2]
-  let origin=drivingPoint.value[0].lat+","+drivingPoint.value[0].lng; //起点
-  let destination=last.lat+","+last.lng;
+const getRoutesByBaiDu= async (customParams = null) =>{
+  if (!handleMap.value) {
+    console.warn('地图对象未初始化')
+    return []
+  }
+
   let ak=window.APP_CONFIG.RouteAK?window.APP_CONFIG.RouteAK:''
   let urls=window.APP_CONFIG.ROUTE_151?window.APP_CONFIG.ROUTE_151:window.APP_CONFIG.viRoute;
-  const params = {
-    origin: origin, // 起点坐标
-    destination:destination, // 终点坐标
-    tactics: 0, // 导航策略
-    waypoints: ways.lat+","+ways.lng,
-    inputCrs:'wgs84ll',
-    outputCrs:'wgs84ll'
+  
+  // 如果没有传入参数，则从drivingPoint构建参数
+  const params = customParams || {
+    origin: `${drivingPoint.value[0].lat},${drivingPoint.value[0].lng}`,
+    destination: `${drivingPoint.value[drivingPoint.value.length-1].lat},${drivingPoint.value[drivingPoint.value.length-1].lng}`,
+    tactics: 0,
+    waypoints: drivingPoint.value.slice(1, -1).map(point => `${point.lat},${point.lng}`).join(window.APP_CONFIG.splitType),
+    inputCrs: 'wgs84ll',
+    outputCrs: 'wgs84ll'
   }
- let line= await orderUtil.getBaiduMapRoute(ak,urls,params);
- let linePoints=[]
- const lines= handleFilterLine(line)
-  // 开始绘制逻辑
-  if (lines && lines.length > 0) {
-    for (let point of lines) {
-      linePoints.push(new BMap.Point(point.lng, point.lat))
+  
+  let line= await orderUtil.getBaiduMapRoute(ak,urls,params);
+  const lines= handleFilterLine(line)
+  return lines
+}
+//途径点多个分隔及多段路查询
+const handleSpliceWayPoints = async () => {
+  if (!handleMap.value) {
+    console.warn('地图对象未初始化')
+    return
+  }
+
+  const MAX_WAYPOINTS = 5
+  const allPoints = [...drivingPoint.value]
+  const splitInfo = window.APP_CONFIG.splitType
+  
+  // 如果总点数小于等于最大值+2（起点和终点），直接规划
+  if (allPoints.length <= MAX_WAYPOINTS + 2) {
+    // 直接使用getRoutesByBaiDu进行规划，而不是递归调用handleSpliceWayPoints
+    const params = {
+      origin: `${allPoints[0].lat},${allPoints[0].lng}`,
+      destination: `${allPoints[allPoints.length - 1].lat},${allPoints[allPoints.length - 1].lng}`,
+      tactics: 0,
+      waypoints: allPoints.slice(1, -1).map(point => `${point.lat},${point.lng}`).join(splitInfo),
+      inputCrs: 'wgs84ll',
+      outputCrs: 'wgs84ll'
+    }
+    const lines = await getRoutesByBaiDu(params)
+    
+    // 绘制路线
+    if (lines && lines.length > 0) {
+      const linePoints = lines.map(point => new BMap.Point(point.lng, point.lat))
+      handleDrawLine(linePoints)
+    }
+    return
+  }
+
+  const segments = []
+  let currentSegment = []
+  
+  // 将点分组，每个分段最多包含MAX_WAYPOINTS个途径点
+  for (let i = 0; i < allPoints.length; i++) {
+    currentSegment.push(allPoints[i])
+    
+    // 当达到最大途径点数量+2（起点和终点）时，创建新段
+    if (currentSegment.length === MAX_WAYPOINTS + 2) {
+      segments.push([...currentSegment])
+      // 使用当前段的最后一个点作为下一段的起点
+      currentSegment = [allPoints[i]]
     }
   }
-  handleDrawLine(linePoints)
+  
+  // 添加最后一段（如果还有剩余点）
+  if (currentSegment.length > 1) {
+    segments.push(currentSegment)
+  }
+
+  let allRoutes = []
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i]
+    
+    // 处理当前分段的起终点和途径点
+    const segmentStart = segment[0]
+    const segmentEnd = segment[segment.length - 1]
+    const segmentWaypoints = segment.slice(1, -1)
+    
+    let waypointsStr = ''
+    if (segmentWaypoints.length > 0) {
+      waypointsStr = segmentWaypoints.map(point => `${point.lat},${point.lng}`).join(splitInfo)
+    }
+    
+    const params = {
+      origin: `${segmentStart.lat},${segmentStart.lng}`,
+      destination: `${segmentEnd.lat},${segmentEnd.lng}`,
+      tactics: 0,
+      waypoints: waypointsStr,
+      inputCrs: 'wgs84ll',
+      outputCrs: 'wgs84ll'
+    }
+    
+    const lines = await getRoutesByBaiDu(params)
+    
+    if (lines && lines.length > 0) {
+      const currentRoute = lines.map(point => [point.lng, point.lat])
+      
+      // 合并路线（除了最后一段，其他段需要去掉最后一个点，避免重复）
+      if (i < segments.length - 1) {
+        allRoutes = allRoutes.concat(currentRoute.slice(0, -1))
+      } else {
+        allRoutes = allRoutes.concat(currentRoute)
+      }
+    }
+  }
+  
+  // 绘制完整路线
+  if (allRoutes.length > 0) {
+    const linePoints = allRoutes.map(point => new BMap.Point(point[0], point[1]))
+    handleDrawLine(linePoints)
+  }
 }
 //路线数据过滤
 const handleFilterLine = (line) => {
@@ -175,13 +270,24 @@ const handleFilterLine = (line) => {
 }
 //绘制路线
 const handleDrawLine = (list) => {
-  if (!list) return;
-  let features = []
-  features.push(makeFeature('LineString', list, {"name": "linIcon"}))
-  let source = makeFeatureCollection(features)
-  setLineLayer(handleMap.value,list);
-  let code = list[0]
-  FlyTo(handleMap.value,code);
+  if (!list || !handleMap.value) {
+    console.warn('无效的路线数据或地图对象未初始化')
+    return
+  }
+  
+  try {
+    let features = []
+    features.push(makeFeature('LineString', list, {"name": "linIcon"}))
+    let source = makeFeatureCollection(features)
+    setLineLayer(handleMap.value, list)
+    
+    if (list.length > 0) {
+      let code = list[0]
+      FlyTo(handleMap.value, code)
+    }
+  } catch (error) {
+    console.error('绘制路线时发生错误:', error)
+  }
 }
 //点位数据组装
 const filterPointList = (list,type) => {
@@ -240,7 +346,7 @@ const filterPointList = (list,type) => {
     console.log(drivingPoint.value);
     // 绘制地图标记
     drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
-    getRoutesByBaiDu()
+    handleSpliceWayPoints()
   } catch (error) {
     console.error('filterPointList 处理失败:', error);
   }
@@ -252,7 +358,8 @@ const filterPointList = (list,type) => {
  */
 const getTrafficFlow = (id) => {
   let cadn = {
-    condition: [{colName: "passid", ruleType: "like", value: id}]
+    condition:[{colName: "passid", ruleType: "like", value: passId}],
+    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
@@ -267,7 +374,11 @@ const getTrafficFlow = (id) => {
  * @Date: 2025-06-06 17:45:45
  */
 const getPointByOriginCenter=()=>{
-  orderUtil.getOriginCenterDetails({passid:passId}).then(res=>{
+  let cadn = {
+    condition:[{colName: "passid", ruleType: "like", value: passId}],
+    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+  }
+  orderUtil.getOriginCenterDetails(cadn).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
     if(res.data.data&&res.data.data.length>0){
       filterPointList(res.data.data,'ori')
@@ -280,7 +391,11 @@ const getPointByOriginCenter=()=>{
  * @Date: 2025-06-06 17:48:49
  */
 const getPointByLocation=()=>{
-  orderUtil.getLocationCenterDetails({passid:passId}).then(res=>{
+  let cadn = {
+    condition:[{colName: "passid", ruleType: "like", value: passId}],
+    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+  }
+  orderUtil.getLocationCenterDetails(cadn).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
     if(res.data.data&&res.data.data.length>0){
       //本地存储有数据
@@ -305,7 +420,7 @@ const handleDelete = (item) => {
   })
 
   drawMapMarkersAndLabel(handleMap.value, tep);
-  getRoutesByBaiDu()
+  handleSpliceWayPoints()
 }
 const handleSetPoint = (item) => {
   // let tep = []
@@ -406,7 +521,7 @@ const handleFilterStation = (list) => {
   console.log('----',drivingPoint.value);
   // 重新绘制地图标记
   drawMapMarkersAndLabel(handleMap.value, drivingPoint.value);
-  getRoutesByBaiDu()
+  handleSpliceWayPoints()
 }
 
 const filterDataInfo=(info)=>{

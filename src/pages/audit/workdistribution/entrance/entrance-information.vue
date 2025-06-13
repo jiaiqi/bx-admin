@@ -67,6 +67,8 @@ const showPicture = (item) => {
   centerDialogVisible.value = true
 }
 let passId = route.query?.pass_id
+let strTime = route.query?.startTime
+let endTime = route.query?.endTime
 const getPic = (item, imgtype, enType) => {
   let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
   if (enType) {
@@ -84,7 +86,8 @@ const getPic = (item, imgtype, enType) => {
  */
 const getTrafficFlow = (id) => {
   let cadn = {
-    condition: [{colName: "passid", ruleType: "like", value: id}]
+    condition:[{colName: "passid", ruleType: "like", value: passId}],
+    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
@@ -99,7 +102,11 @@ const getTrafficFlow = (id) => {
  * @Date: 2025-06-06 17:45:45
  */
 const getPointByOriginCenter=()=>{
-  orderUtil.getOriginCenterDetails({passid:passId}).then(res=>{
+  let obj={
+    condition:[{colName: "passid", ruleType: "like", value: passId}],
+    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+  }
+  orderUtil.getOriginCenterDetails(obj).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
     handleFilterListInfo(res.data.data)
   }).catch(err => {})
@@ -111,7 +118,11 @@ const getPointByOriginCenter=()=>{
  * @Date: 2025-06-06 17:48:49
  */
 const getPointByLocation=()=>{
-  orderUtil.getLocationCenterDetails({passid:passId}).then(res=>{
+  let obj={
+    condition:[{colName: "passid", ruleType: "like", value: passId}],
+    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+  }
+  orderUtil.getLocationCenterDetails(obj).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
     if(res.data.data&&res.data.data.length>0){
 

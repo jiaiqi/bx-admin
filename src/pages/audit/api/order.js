@@ -195,6 +195,7 @@ export default class OrderApi{
            query_source: "list_page",
            serviceName: "srvaud_susvehpass_select",
            condition:options.condition,
+           divCond:options.divCond,
            relation_condition: {relation: "AND", data: options.condition},
            page: {pageNo: 1, rownumber: 10}
        }
@@ -284,7 +285,8 @@ export default class OrderApi{
        let req={
           colNames: ["*"],
           serviceName: "srvaud_audit_passconvdetail_ori_select",
-          condition: [{"colName": "passid", "ruleType": "eq", value:params.passid}]
+          condition:params.condition,
+          divCond:params.divCond,
        }
        return await $http.post(url, req)
     }
@@ -294,7 +296,8 @@ export default class OrderApi{
         let req={
             colNames: ["*"],
             serviceName: "srvaud_audit_passconvdetail_select",
-            condition: [{"colName": "passid", "ruleType": "eq", value:params.passid}]
+            condition:params.condition,
+            divCond:params.divCond,
         }
         return await $http.post(url, req)
     }

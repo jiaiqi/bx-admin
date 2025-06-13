@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 export default {
 name: "order-home",
   data(){
@@ -28,7 +29,9 @@ name: "order-home",
       activeIndex:0,
       setPass_id:'',
       baseRouterInfo:{},
-      initialRouteInfo: null
+      initialRouteInfo: null,
+      startTime:'',
+      endTime:''
     }
   },
   methods:{
@@ -42,24 +45,29 @@ name: "order-home",
         const currentPassId = this.$refs.orderForm?.ruleForm?.pass_id;
         const routePassId = this.$route.query.pass_id;
         const passId = currentPassId || routePassId || '';
+        // 获取当前路由中的时间参数
+        const currentStartTime = this.$route.query.startTime;
+        const currentEndTime = this.$route.query.endTime;
         console.log('切换标签时使用最新的 pass_id：', passId);
         this.$router.push({
           name: item.path,
           query: {
-            pass_id: passId
+            pass_id: passId,
+            startTime: currentStartTime || this.startTime,
+            endTime: currentEndTime || this.endTime
           }
         });
       }else {
         // 如果是返回工单信息页面，使用初始路由信息
         console.log('当前保存的路由信息：', this.initialRouteInfo);
         if(this.initialRouteInfo && Object.keys(this.initialRouteInfo).length > 0) {
-          this.$router.push({name: item.path,query:this.initialRouteInfo});
+          this.$router.push({name: item.path, query: this.initialRouteInfo});
         } else {
           const storedInfo = sessionStorage.getItem("oderInfo");
           if (storedInfo) {
             try {
               const parsedInfo = JSON.parse(storedInfo);
-              this.$router.push({name: item.path,query:{operate_params:storedInfo}});
+              this.$router.push({name: item.path, query: {operate_params: storedInfo}});
             } catch (e) {
               console.error('解析sessionStorage数据失败：', e);
               this.$router.push({name: item.path});
@@ -79,6 +87,15 @@ name: "order-home",
           if (parsedParams && parsedParams.data) {
             this.setPass_id = parsedParams.data[0]?.pass_id || '';
             console.log('获取到的 pass_id：', this.setPass_id);
+            
+            // 处理时间参数
+            const passTime = parsedParams.data[0]?.pass_time;
+            if (passTime) {
+              this.startTime = moment(passTime).subtract(10, 'days').format('YYYY-MM-DD HH:mm:ss');
+              this.endTime = moment(passTime).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+              console.log('计算的时间范围：', { startTime: this.startTime, endTime: this.endTime });
+            }
+            
             // 保存初始路由信息
             const currentQuery = this.$route.query;
             if (currentQuery && Object.keys(currentQuery).length > 0) {
@@ -129,7 +146,7 @@ name: "order-home",
     this.asyncLoadMap()
      this.$nextTick(()=>{
        // sessionStorage.removeItem('bx_auth_ticket');
-       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-2a742042-25b3-4d69-b546-dd0de84849d3');
+       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-e60bed2f-79b4-4044-9542-7c8fe439c6e1');
      })
     if (!this._isMounted) {
       this._isMounted = true;
