@@ -12,7 +12,7 @@
     v-else-if="field.model && noData"
     clearable
     @clear="onClear()"
-    :value="field.model"
+    :value="field.getSrvVal()"
   ></el-input>
   <el-cascader
     v-else
