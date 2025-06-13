@@ -828,6 +828,11 @@ export default {
   flex-wrap: wrap;
   $primary-color: #17d57e;
   overflow: auto;
+  // &::-webkit-scrollbar {
+  //   width: 0;
+  //   height: 0;
+  // }
+
   &.edit-mode {
     background-color: rgba($color: #f0f0f0, $alpha: 0.3);
     overflow: unset;

@@ -349,18 +349,30 @@ export function setEnterAnimationClass(params = {}) {
           return "Down";
         case "由下至上":
           return "Up";
+        /** 淡入可用 start*/
+        case "左上渐显":
+          return "TopLeft";
+        case "右上渐显":
+          return "TopRight";
+        case "左下渐显":
+          return "BottomLeft";
+        case "右下渐显":
+          return "BottomRight";
+        /** 淡入可用 end*/
         /** 仅旋转可用 start*/
-        case "左下":
+        case "向下左旋":
           return "DownLeft";
-        case "右下":
+        case "向下右旋":
           return "DownRight";
-        case "左上":
+        case "向上左旋":
           return "UpLeft";
-        case "右上":
+        case "向上右旋":
           return "UpRight";
         /** 仅旋转可用 end*/
       }
+      return ''
     }
+
     switch (enter_animation_type) {
       case "淡入":
         className += `animate__fadeIn${buildClass(enter_direction)}`;
@@ -382,6 +394,51 @@ export function setEnterAnimationClass(params = {}) {
         break;
       case "缩放划入":
         className += `animate__backIn${buildClass(enter_direction)}`;
+        break;
+      case "弹跳":
+        className += `animate__bounce`;
+        break;
+      case "闪烁":
+        className += `animate__flash`;
+        break;
+      case "脉冲":
+        className += `animate__pulse`;
+        break;
+      case "橡皮圈":
+        className += `animate__rubberBand`;
+        break;
+      case "横向晃动":
+        className += `animate__shakeX`;
+        break;
+      case "纵向晃动":
+        className += `animate__shakeY`;
+        break;
+      case "摇头":
+        className += `animate__headShake`;
+        break;
+      case "摆动":
+        className += `animate__swing`;
+        break;
+      case "颤动":
+        className += `animate__tada`;
+        break;
+      case "果冻":
+        className += `animate__jello`;
+        break;
+      case "心跳":
+        className += `animate__heartBeat`;
+        break;
+      case "渐显":
+        className += `animate__fadeIn`;
+        break;
+      case "翻转":
+        className += `animate__flip`;
+        break;
+      case "铰链":
+        className += `animate__hinge`;
+        break;
+      case "滚入":
+        className += `animate__rollIn`;
         break;
       default:
         className += `animate__fadeIn${buildClass(enter_direction)}`;
