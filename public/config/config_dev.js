@@ -6,4 +6,5 @@ window.APP_CONFIG = {
     viRoute:`/baiduApi/direction/v2/driving`,
     RouteAK:`tkSgCpN7B73A76l9M7RExhcdu2ip8FEo`,
     // ROUTE_151:`//api.map.baidu.com/direction/v2/driving` 打包151放开
+    splitType:'|'
 };

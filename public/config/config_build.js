@@ -3,4 +3,5 @@ window.APP_CONFIG = {
     serverUrl:`${location.protocol}//30.61.1.37:8119/dugis-demo-3d/api/api.js`,
     API_URL:window.backendIpAddr,
     viRoute:`${location.protocol}//30.61.1.37:8519/route/v1/route&ApiAuthorization=USER_AK`,
+    splitType:';'
 };

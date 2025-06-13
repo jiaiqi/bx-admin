@@ -403,6 +403,7 @@ import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
 import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-mod.vue";
 import uploadPic from "@/pages/audit/workdistribution/workFlow/upload-pic.vue";
+import moment from 'moment'
 const orderUtils = new OrderApi()
 export default {
   name: "order-form",
@@ -494,7 +495,9 @@ export default {
       resDep:[],
       prUrl:'',
       preList:[],
-      picIds:''
+      picIds:'',
+      strTime:'',
+      endTime:'',
     }
   },
   methods: {
@@ -633,6 +636,13 @@ export default {
       let operate_params = this.getOperateParams();
           operate_params=JSON.parse(operate_params).data;
       if(operate_params){
+        // 处理时间参数
+        const passTime = operate_params[0].pass_time;
+        if (passTime) {
+          this.strTime = moment(passTime).subtract(10, 'days').format('YYYY-MM-DD HH:mm:ss');
+          this.endTime = moment(passTime).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+          console.log('计算的时间范围：', { startTime: this.strTime, endTime: this.endTime });
+        }
         this.ruleForm=formDataByGetInfo(this.ruleForm,operate_params[0])
         this.handleChangeFee()
         console.log('这里的user_no3',this.ruleForm.user_no)
@@ -739,9 +749,10 @@ export default {
      * @Date: 2025-05-30 10:32:53
      */
     getTrafficFlow(){
-      this.suspectedData=[]
+     this.suspectedData=[];
      let cadn={
-       condition:[{colName: "passid", ruleType: "like", value: this.ruleForm.pass_id}]
+       condition:[{colName: "passid", ruleType: "like", value: this.ruleForm.pass_id}],
+       divCond:[{colName: "createtime",  ruleType: "between", value: [this.strTime,this.endTime]},]
      }
      orderUtils.getCarWaysInfo(cadn).then(res => {
        if(res.data.state !== 'SUCCESS') return;
