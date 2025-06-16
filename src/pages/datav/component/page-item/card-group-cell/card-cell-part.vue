@@ -184,6 +184,7 @@ function throttle(func, delay = 300) {
     }
   };
 }
+let numberAnimationStop = null;
 export default {
   name: "cardCellPart",
   options: {
@@ -826,7 +827,7 @@ export default {
         ele = ele?.$el;
       }
       if (ele) {
-        numberAnimationRun({
+        numberAnimationStop = numberAnimationRun({
           from: 0,
           to: Number(this.getPartModelData),
           duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
@@ -839,6 +840,10 @@ export default {
         });
       }
     }
+  },
+  beforeUnmount() {
+    numberAnimationStop?.();
+    numberAnimationStop = null;
   },
 };
 </script>
