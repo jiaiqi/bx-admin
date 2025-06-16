@@ -71,11 +71,12 @@ export default {
       }
 
       if (
+        this.service?.includes("srvpage_cfg_style") && //暂时只有样式表这样处理
         this.referenceNoColumnInfo?.value &&
         this.gnoColumnInfo?.column &&
         this.gnoColumnInfo?.value !== this.referenceNoColumnInfo?.value
       ) {
-        // 编辑样式时，gno字段的值和引用行的no字段的值不一致 当前数据不数据被引用行 需要将编辑改为创建
+        // 编辑样式时，gno字段的值和引用行的no字段的值不一致 当前数据不数据被引用行 需要将编辑改为创建，暂时只有样式表这样处理
         query.serviceName = conf.service.replace("update", "add");
         if (query.data?.length) {
           query.data = query.data.map((item) => {
