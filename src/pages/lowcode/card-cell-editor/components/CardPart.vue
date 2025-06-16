@@ -92,8 +92,17 @@ export default {
   },
   computed: {
     setPartStyle() {
-      const styleJson = this.part?.style_json || {};
-      return formatStyleData(styleJson);
+      // const styleJson = this.part?.style_json || {};
+      let styleJson = this.part?.style_json || {};
+      let style = {};
+      style = { ...formatStyleData(styleJson) };
+      const keys = ['padding','margin','background-image','background-color']
+      keys.forEach(key => {
+        if(style?.[key]){
+          delete style[key]
+        }
+      })
+      return style;
     },
     partsShow() {
       const item = this.part;
