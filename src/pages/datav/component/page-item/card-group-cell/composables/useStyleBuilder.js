@@ -1,5 +1,4 @@
 import { formatStyleData } from '@/pages/datav/common'
-
 /**
  * 样式构建组合式函数
  * @returns {Object} 返回样式构建相关的方法
@@ -20,7 +19,6 @@ export function useStyleBuilder() {
       if (styleJson) {
         style = formatStyleData(styleJson)
       }
-
       const bgImg =
         styleJson?.background_image || cellLayoutJson?.background_image || ''
 
@@ -51,9 +49,27 @@ export function useStyleBuilder() {
    * @returns {string} 处理后的图片路径
    */
   const getImagePath = (imagePath) => {
-    // 这里可以根据实际项目的图片处理逻辑来实现
-    // 例如：添加 CDN 前缀、处理相对路径等
-    return imagePath
+    if (imagePath && typeof imagePath === "string") {
+      if (imagePath.indexOf("http://") !== -1 || imagePath.indexOf("https://") !== -1) {
+        return imagePath;
+      }
+      if (imagePath.indexOf("data:image") !== -1 && imagePath.indexOf("base64") !== -1) {
+        return imagePath;
+      }
+      if (imagePath.indexOf("&bx_auth_ticket") !== -1) {
+        imagePath = imagePath.split("&bx_auth_ticket")[0];
+      }
+      const bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
+      let url = `${serviceApi.imageFileNo}${imagePath}&bx_auth_ticket=${bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+        }`;
+      if (location.href?.includes('/lowcode')) {
+        // 可视化编辑页面，图片后缀增加时间戳，避免缓存
+        url += `&t=${new Date().getTime()}`
+      }
+      return url;
+    } else {
+      return "";
+    }
   }
 
   /**
