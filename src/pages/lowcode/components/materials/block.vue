@@ -41,10 +41,26 @@
       class="lc-layout__label"
       v-if="props.show_label === '是' && props.com_label"
     >
-      <div class="lc-layout__label-text" :style="[mixTitleStyle]">
+      <div
+        class="lc-layout__label-text"
+        :style="[
+          mixTitleStyle,
+          {
+            flexDirection: mixTitleIcon === '下划线' ? 'column' : 'row',
+          },
+        ]"
+      >
         <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
         <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
         <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
+        <Icon
+          icon="ri-arrow-drop-right-fill"
+          v-if="mixTitleIcon === '三角形'"
+        ></Icon>
+        <Icon
+          :icon="mixTitleIcon"
+          v-else-if="mixTitleIcon && mixTitleIcon !== '下划线'"
+        ></Icon>
         <span>
           {{ props.com_label }}
         </span>
@@ -77,7 +93,7 @@ import {
   setEnterAnimationClass,
   setEnterAnimationVariables,
 } from "@/common/common";
-
+import { Icon } from "@iconify/vue2";
 import dragStore from "../../store/dragStore";
 const layoutKeys = [
   "grid-template-columns",
@@ -100,7 +116,7 @@ const layoutKeys = [
 ];
 export default {
   name: "lc-block",
-  components: {},
+  components: { Icon },
   props: {
     id: {
       type: [String, Number],

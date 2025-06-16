@@ -57,7 +57,7 @@
             icon="ri-arrow-drop-right-fill"
             v-if="mixTitleIcon === '三角形'"
           ></Icon>
-          <Icon :icon="mixTitleIcon" v-else-if="mixTitleIcon"></Icon>
+          <Icon :icon="mixTitleIcon" v-else-if="mixTitleIcon && mixTitleIcon !== '下划线'"></Icon>
         </template>
         <span>
           {{ pageItemData.com_label }}
