@@ -93,18 +93,20 @@ const {
   changeActiveAccordionSeq,
   pauseAutoPlay,
   resumeAutoPlay,
-  
+
   // 样式构建相关
   buildDynamicClasses,
   buildDynamicStyles,
-  
+
   // 事件处理相关
   onClickCell,
   showDialog,
 } = useCardCell(props, emits);
 
 // 模板中使用的计算属性
-const dynamicClasses = computed(() => buildDynamicClasses(props, { isAccordionMode }));
+const dynamicClasses = computed(() =>
+  buildDynamicClasses(props, { isAccordionMode })
+);
 const dynamicStyles = computed(() => buildDynamicStyles(props));
 </script>
 
@@ -119,7 +121,7 @@ const dynamicStyles = computed(() => buildDynamicStyles(props));
   --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
   --checked-border-color: #007aff;
   --scale-hover: 0.99;
-  --blur-effect: 50px;
+  --blur-effect: 2px;
 
   height: 100%;
   position: relative;

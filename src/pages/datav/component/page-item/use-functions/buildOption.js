@@ -16,6 +16,22 @@ let __colors = [
   "#D0DEEE",
   "#82B6F7",
 ];
+
+function hex2rgb(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  if (alpha) {
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function addAlphaToRGB(rgb, alpha) {
+  const [r, g, b] = rgb.match(/\d+/g);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 // 初始化 必须传入dom节点 建议使用vue的ref获取
 export const initChart = (domRef) => {
   return echarts.init(domRef);
@@ -45,7 +61,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     // animationEasing: "quinticOut",
     animationEasing: "cubicInOut",
     animationDelay: 100,
-    animationDuration:1500, // 初始动画的时长
+    animationDuration: 1500, // 初始动画的时长
     // animationDuration: function (idx) {
     //   // 越往后的数据时长越大
     //   return (idx+1) * 2000;
@@ -67,7 +83,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     legend: {
       data: [],
       itemStyle: {
-        color: pageItem?.style_json?.color || "#848EAC",
+        // color: pageItem?.style_json?.color || "#848EAC",
       },
       textStyle: {
         color: pageItem?.style_json?.color || "#848EAC",
@@ -199,7 +215,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   let sortAxisCol = chartJson?.sort_axis_col || "";
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
-
   switch (type) {
     case "line":
     case "bar":
@@ -293,7 +308,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           return data?.[dataColName];
         });
         series["smooth"] = true;
-        if(typeof chartJson?.smooth === "number"){
+        if (typeof chartJson?.smooth === "number") {
           series.smooth = chartJson?.smooth;
         }
         if (chartJson.data_label === "值") {
@@ -354,6 +369,32 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           ).toFixed(2);
 
           ecOptions.tooltip.trigger = "axis";
+        }
+      }
+      if (chartJson?.more_option?.includes('折线面积图')) {
+        ecOptions.series.forEach((item, index) => {
+          item.areaStyle = {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [{
+                offset: 0, color: __colors[index]  // 0% 处的颜色
+              }, {
+                offset: 0.6, color: hex2rgb(__colors[index], 0.1) // 80% 处的颜色
+              }],
+              global: false // 缺省为 false
+            },
+            shadowColor: 'rgba(0, 0, 0, 0.1)',
+            shadowBlur: 10
+          }
+        })
+        if (chartJson?.more_option?.includes('序列堆叠')) {
+          ecOptions.series.forEach((item, index) => {
+            item.stack = sortAxisCol;
+          })
         }
       }
       // ecOptions["xAxis"]["data"] = [
@@ -907,7 +948,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
     tooltip: {},
     legend: {
       itemStyle: {
-        color: "#E8E8E8",
+        // color: "#E8E8E8",
       },
       textStyle: {
         color: "#E8E8E8",
@@ -928,6 +969,23 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           data: datas,
         },
       ];
+      if (chartJson?.more_option?.includes('折线面积图')) {
+        option.series[0].areaStyle = {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [{
+              offset: 0, color: 'rgba(255, 199, 43, 0.3)' // 0% 处的颜色
+            }, {
+              offset: 1, color: 'rgba(255, 199, 43, 0)' // 100% 处的颜色
+            }],
+            global: false // 缺省为 false
+          }
+        }
+      }
       option.xAxis = {
         data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"],
         axisLine: {
