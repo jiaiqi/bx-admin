@@ -140,7 +140,6 @@
       @click.stop="onClickSubBlock()"
       @mouseenter="onMouseenter"
       @mouseleave="onMouseleave"
-
     >
       <template v-for="(subCardPart, subindex) in cellItem.sub_card_parts_json">
         <card-cell-part
@@ -592,7 +591,7 @@ export default {
   },
   methods: {
     onMouseenter(event) {
-      this.$emit('mouse-enter',event)
+      this.$emit("mouse-enter", event);
     },
     onMouseleave() {
       // this.$emit('update:active-accordion-seq', 0);
@@ -830,7 +829,9 @@ export default {
         numberAnimationRun({
           from: 0,
           to: Number(this.getPartModelData),
-          duration: 10000,
+          duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
+          delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
+          easing: "easeOutExtreme",
           onProgress: (val) => {
             ele.innerHTML = val;
           },
