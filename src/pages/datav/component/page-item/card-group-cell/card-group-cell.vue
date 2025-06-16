@@ -7,78 +7,34 @@
       "
       v-for="(cellItemData, index) in cellDataRun"
     >
-      <div
+      <card-cell-layout
+        :item="activeCellLayout"
+        :cellLayoutJson="activeCellLayout"
+        :pageItem="pageItem"
+        :currentRadio="currentRadio"
+        :cellItemData="cellItemData"
+        :comColMap="comColMap"
+        :readOnly="readOnly"
+        :queryOptions="queryOptions"
+        :showActiveCard="showActiveCard"
+        :inList="inList"
         v-if="showActiveCard && index === 0"
-        class="bx-card-cell"
-        :class="{
-          checked:
-            pageItem &&
-            pageItem._refedCol &&
-            currentRadio === cellItemData[pageItem._refedCol],
-          'is-link': activeCellLayout && activeCellLayout.jump_json,
-          'list-item': inList,
-        }"
-        :style="[
-          activeCellLayout.style_json
-            ? buildColStyleJson(
-                activeCellLayout.style_json,
-                null,
-                activeCellLayout
-              )
-            : buildColStyleJson(null, null, activeCellLayout),
-        ]"
-        @click="onClickCell(cellItemData, activeCellLayout)"
       >
-        <template v-for="item in activeCellLayout.parts_json">
-          <card-cell-part
-            :comColMap="comColMap"
-            :cellItem="item"
-            :cellItemData="cellItemData"
-            :readOnly="readOnly"
-            :queryOptions="queryOptions"
-            :cellLayoutJson="item"
-            :parent-part="activeCellLayout"
-            @on-click-cell="onClickCell"
-            @show-dialog="showDialog"
-          ></card-cell-part>
-        </template>
-      </div>
-      <div
+      </card-cell-layout>
+      <card-cell-layout
         v-for="(cellLayoutJson, i) in cellsLayout"
-        :key="index + i"
-        class="bx-card-cell"
-        :class="{
-          checked:
-            pageItem &&
-            pageItem._refedCol &&
-            currentRadio === cellItemData[pageItem._refedCol],
-          'is-link': cellLayoutJson && cellLayoutJson.jump_json,
-          'list-item': inList,
-        }"
-        :style="[
-          cellLayoutJson.style_json
-            ? buildColStyleJson(cellLayoutJson.style_json, null, cellLayoutJson)
-            : buildColStyleJson(null, null, cellLayoutJson),
-        ]"
-        @click="onClickCell(cellItemData, cellLayoutJson)"
+        :item="cellLayoutJson"
+        :cellLayoutJson="cellLayoutJson"
+        :pageItem="pageItem"
+        :currentRadio="currentRadio"
+        :cellItemData="cellItemData"
+        :comColMap="comColMap"
+        :readOnly="readOnly"
+        :queryOptions="queryOptions"
+        :showActiveCard="showActiveCard"
+        :inList="inList"
       >
-        <template v-if="!showActiveCard || (showActiveCard && index !== 0)">
-          <template v-for="(item, n) in cellLayoutJson.parts_json">
-            <card-cell-part
-              :comColMap="comColMap"
-              :cellItem="item"
-              :cellItemData="cellItemData"
-              :readOnly="readOnly"
-              :queryOptions="queryOptions"
-              :cellLayoutJson="item"
-              :parent-part="cellLayoutJson"
-              @on-click-cell="onClickCell"
-              @show-dialog="showDialog"
-            ></card-cell-part>
-          </template>
-        </template>
-        <slot name="footer"></slot>
-      </div>
+      </card-cell-layout>
     </template>
     <el-dialog
       title=""
@@ -225,11 +181,13 @@ import dayjs from "dayjs";
 import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
+import cardCellLayout from "./card-cell-layout.vue";
 export default {
   components: {
     Teleport,
     Icon,
     cardCellPart,
+    cardCellLayout,
     // cardGroupCellItem
     // bxform
     // bxForm: () => import('@/views/custom/components/bx-form/bx-form.vue') //剔除 原小程序form组件
@@ -248,6 +206,7 @@ export default {
       dialogVisible: false,
       dialogUrl: "",
       iframeLoading: true,
+      currentAccordionSeq: 1,
     };
   },
   watch: {
@@ -646,140 +605,9 @@ export default {
         }
       }
     },
-    // onClickSubBlock(itemData, subCol, cellLayoutJson, parentCol, originCol) {
-    //   if (subCol?.sys_fun === "登录") {
-    //     this.toLogin();
-    //   } else if (subCol?.sys_fun === "退出登录") {
-    //     this.$confirm("确认退出登录吗?", "提示", {
-    //       confirmButtonText: "确认",
-    //       cancelButtonText: "取消",
-    //       type: "warning",
-    //     }).then(() => {
-    //       this.$store.dispatch("loginInfo/logout");
-    //     });
-    //   } else if (
-    //     (!subCol?.sys_fun || subCol?.sys_fun === "无") &&
-    //     !subCol?.jump_json
-    //   ) {
-    //     // 如果沒有配置系統功能 也没配置跳转 将事件传递到父部件
-    //     if (parentCol) {
-    //       return this.onClickSubBlock(
-    //         itemData,
-    //         parentCol,
-    //         cellLayoutJson,
-    //         null,
-    //         subCol
-    //       );
-    //     }
-    //     // 没有父部件配置 点击事件传到卡片单元
-    //     return this.onClickCell(itemData, cellLayoutJson);
-    //   } else if (subCol?.jump_json) {
-    //     // 执行自定义跳转
-    //     console.log("自定义跳转");
-    //     if (
-    //       subCol?.jump_json?.click_type === "弹框" ||
-    //       subCol?.jump_json?.click_type === "跳转"
-    //     ) {
-    //       const element = this.$el;
-    //       const rect = element.getBoundingClientRect();
-    //       const x = rect.left;
-    //       const y = rect.top;
-    //       const w = rect.width;
-    //       const h = rect.height;
-    //       console.log("弹框:", x, y, w, h);
-    //       const jumpJson = subCol.jump_json;
-    //       const data = itemData;
-    //       if (jumpJson.tmpl_page_json?.file_path) {
-    //         let pagePath = jumpJson.tmpl_page_json.file_path;
-    //         if (jumpJson.dest_page_no) {
-    //           pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
-    //         }
-    //         if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
-    //           const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
-    //           mapJson.forEach((item) => {
-    //             if (
-    //               item.to_type === "URL" &&
-    //               ["当前数据", "业务", "模型"].includes(item.from_type) &&
-    //               data?.[item.col_from]
-    //             ) {
-    //               pagePath?.includes("?")
-    //                 ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
-    //                 : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
-    //               // pagePath += `&${item.col_to}=${data[item.col_from]}`;
-    //             }
-    //           });
-    //         }
-    //         if (pagePath) {
-    //           if (subCol?.jump_json?.click_type === "弹框") {
-    //             this.dialogUrl = pagePath;
-    //             this.dialogPosition = {
-    //               x,
-    //               y,
-    //               w,
-    //               h,
-    //             };
-    //             this.dialogVisible = true;
-    //             this.iframeLoading = true;
-    //           } else {
-    //             if (jumpJson?.click_jump_option?.includes("先登录")) {
-    //               if (this.$store.state?.loginInfo?.logined !== true) {
-    //                 // 您还未登录,需要登录才能进入,点击确认前往登录
-    //                 this.$confirm(
-    //                   "您还未登录,需要登录才能进入,点击确认前往登录",
-    //                   "提示",
-    //                   {
-    //                     confirmButtonText: "确定",
-    //                     cancelButtonText: "取消",
-    //                     type: "warning",
-    //                   }
-    //                 ).then(() => {
-    //                   const currentUrl =
-    //                     window.location.pathname + window.location.hash;
-    //                   sessionStorage.setItem("login_redirect_url", currentUrl);
-    //                   const loginUrl =
-    //                     window.location.origin + "/main/login.html";
-    //                   window.location.href = loginUrl;
-    //                 });
-    //                 return;
-    //               }
-    //             }
-    //             open(pagePath);
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // },
     buildColStyleJson(styleJson, cssArr, cellLayoutJson, column) {
       let style = {};
       if (styleJson) {
-        // // 将rpx转换为px
-        // function convertRpxToPx(css) {
-        //   return css.replace(/\d+rpx/g, (match) => {
-        //     const value = parseFloat(match);
-        //     return `${value / 2}px`;
-        //   });
-        // }
-        // for (let key in styleJson) {
-        //   if (
-        //     typeof styleJson[key] === "string" &&
-        //     styleJson[key] &&
-        //     styleJson[key].indexOf("rpx") > -1
-        //   ) {
-        //     styleJson[key] = convertRpxToPx(styleJson[key] || "");
-        //   }
-        //   if (cssArr && cssArr.length > 0) {
-        //     let cssArrs = cssArr.split(",");
-        //     for (let getKey of cssArrs) {
-        //       if (getKey == key) {
-        //         style[key.replace(/_/g, "-")] = styleJson[key];
-        //       }
-        //     }
-        //   } else {
-        //     style[key.replace(/_/g, "-")] = styleJson[key];
-        //     // console.log('styleJson',key)
-        //   }
-        // }
         style = formatStyleData(styleJson);
       }
 
@@ -808,119 +636,6 @@ export default {
       }
       return style;
     },
-    // getPartModelData(item, map, itemData) {
-    //   // item.variable,comColMap,cellItemData) : item.parts_text
-    //   let type = item.parts_type;
-    //   let key = item.variable || null;
-    //   let val = item.parts_text;
-    //   switch (type) {
-    //     case "iconImg":
-    //       val = item.parts_img;
-    //       break;
-    //     default:
-    //       break;
-    //   }
-    //   if (item && itemData && !!map) {
-    //     let data = itemData;
-    //     let optionsType = "";
-    //     if (item.hasOwnProperty("sys_fun") && item?.sys_fun) {
-    //       optionsType = item?.sys_fun;
-    //     }
-    //     switch (optionsType) {
-    //       case "拨打电话":
-    //         key = item?.para_phone_col || item.variable;
-    //         if (
-    //           key &&
-    //           map.hasOwnProperty(key) &&
-    //           itemData.hasOwnProperty(map[key]) &&
-    //           itemData[map[key]]
-    //         ) {
-    //           // val = itemData[map[key]]
-    //         }
-    //         break;
-    //       case "地图导航":
-    //         let lgtKey = item?.para_map_lon;
-    //         let latKey = item?.para_map_lat;
-    //         // key = item?.para_phone_col || item.variable
-    //         val = null;
-    //         val = {};
-    //         if (
-    //           lgtKey &&
-    //           map.hasOwnProperty(lgtKey) &&
-    //           itemData.hasOwnProperty(map[lgtKey]) &&
-    //           itemData[map[lgtKey]]
-    //         ) {
-    //           val["lgt"] = itemData[map[lgtKey]];
-    //         } else {
-    //           val = null;
-    //         }
-    //         if (
-    //           latKey &&
-    //           map.hasOwnProperty(latKey) &&
-    //           itemData.hasOwnProperty(map[latKey]) &&
-    //           itemData[map[latKey]]
-    //         ) {
-    //           val["lat"] = itemData[map[latKey]];
-    //         } else {
-    //           val = null;
-    //         }
-    //         break;
-    //       default:
-    //         if (
-    //           item.hasOwnProperty("variable") &&
-    //           key &&
-    //           map.hasOwnProperty(key) &&
-    //           itemData.hasOwnProperty(map[key]) &&
-    //           itemData[map[key]]
-    //         ) {
-    //           val = itemData[map[key]] || "";
-    //         } else if (
-    //           item.hasOwnProperty("variable") &&
-    //           key &&
-    //           itemData.hasOwnProperty(key) &&
-    //           itemData[key]
-    //         ) {
-    //           val = itemData[key] || "";
-    //         } else if (
-    //           ["string", "时间日期"].includes(item.parts_type) &&
-    //           item.parts_text
-    //         ) {
-    //           val = this.renderStr(item.parts_text, {
-    //             data: itemData,
-    //             ...this.queryOptions,
-    //           });
-    //         }
-    //         break;
-    //     }
-    //   } else if (item && itemData && !map) {
-    //     if (
-    //       item.hasOwnProperty("variable") &&
-    //       key &&
-    //       itemData.hasOwnProperty(key) &&
-    //       itemData[key]
-    //     ) {
-    //       val = itemData[key];
-    //     } else if (
-    //       ["string", "时间日期"].includes(item.parts_type) &&
-    //       item.parts_text
-    //     ) {
-    //       val = this.renderStr(item.parts_text, {
-    //         data: itemData,
-    //         ...this.queryOptions,
-    //       });
-    //     }
-    //   }
-    //   // console.log('getPartModelData:', itemData,key,val);
-    //   if (type === "时间日期" && item.date_format_rule) {
-    //     val = dayjs(val).format(item.date_format_rule);
-    //   }
-    //   if (type === "视频") {
-    //     if (val?.indexOf("http") !== 0) {
-    //       val = this.serviceApi()?.downloadFileNo + val;
-    //     }
-    //   }
-    //   return this.recoverFileAddress(val);
-    // },
   },
 };
 </script>
@@ -936,90 +651,9 @@ export default {
 
 .bx-card {
   position: relative;
-  // height: 100%;
   flex: 1;
-  // display: grid;
-  // grid-template-rows: repeat(2, 200rpx);
-  // gap:5px ;
-  // grid-template-columns: repeat(2, 50%);
 }
 
-.bx-card-cell {
-  // 隐藏滚动条
-  height: 100%;
-  &.is-link {
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    &:hover {
-      scale: 1.01;
-    }
-  }
-  &.list-item {
-    border: 1px solid transparent;
-    &::marker {
-      display: none;
-      content: "";
-    }
-    &:hover {
-      border: 1px solid #ebeef5;
-      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    }
-  }
-  // scrollbar-width: thin; /* 隐藏滚动条 */
-  &::-webkit-scrollbar {
-    width: 4px; /* 设置滚动条的宽度 */
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2); /* 设置滚动条滑块的颜色 */
-    border-radius: 4px; /* 设置滚动条滑块的圆角 */
-  }
-  &.checked {
-    border: 2px solid transparent;
-    border-color: #007aff;
-  }
-
-  position: relative;
-
-  .radio-box {
-    position: absolute;
-    right: 0;
-    top: 0;
-    transform: scale(0.7);
-  }
-
-  // background-color: #eee;
-  // > .bx-cell-row {
-  //   &:first-child {
-  //     border-left: 0 !important;
-  //   }
-  //   &:last-child {
-  //    border-right: 0 !important;
-  //   }
-
-  //   > .bx-cell-row {
-  //     &:first-child {
-  //       border-left: 0 !important;
-  //     }
-
-  //     &:last-child {
-  //      border-right: 0 !important;
-  //     }
-  //   }
-  // }
-
-  .bx-cell-string {
-    text-align: justify;
-    overflow: hidden;
-    /* 溢出隐藏 */
-    overflow: hidden;
-    /* 溢出显示省略号 */
-    text-overflow: ellipsis;
-    word-break: break-all;
-    &:hover {
-      color: var(--primary-color);
-    }
-  }
-}
 
 .update-title {
   background-color: #fff;

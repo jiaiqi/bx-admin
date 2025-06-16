@@ -1695,7 +1695,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 60vh;
+  height: 80vh;
+  min-height: 800px;
   overflow: auto;
   background-color: #f5f5f9;
   background-size: 20px 20px, 20px 20px;

@@ -138,6 +138,9 @@
       "
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
+      @mouseenter="onMouseenter"
+      @mouseleave="onMouseleave"
+
     >
       <template v-for="(subCardPart, subindex) in cellItem.sub_card_parts_json">
         <card-cell-part
@@ -148,6 +151,9 @@
           :queryOptions="queryOptions"
           :cellLayoutJson="subCardPart"
           :parentPart="cellItem"
+          :accordion="accordion"
+          :accordion-seq="accordionSeq"
+          :active-accordion-seq="activeAccordionSeq"
           @on-click-part="onClickSubBlock"
           @on-click-cell="onClickCell"
           @show-dialog="showDialog"
@@ -220,6 +226,9 @@ export default {
       },
     },
     queryOptions: Object,
+    accordion: Boolean, //使用手风琴效果
+    accordionSeq: Number,
+    activeAccordionSeq: Number,
   },
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
@@ -328,52 +337,20 @@ export default {
     },
     buildColStyleJson() {
       const styleJson = this.cellItem?.style_json || {};
-      const cellLayoutJson = this.cellLayoutJson;
       let style = {};
       if (styleJson) {
         style = formatStyleData(styleJson);
       }
-
-      // if (styleJson) {
-      //   // 将rpx转换为px
-      //   function convertRpxToPx(css) {
-      //     return css.replace(/\d+rpx/g, (match) => {
-      //       const value = parseFloat(match);
-      //       return `${value / 2}px`;
-      //     });
-      //   }
-      //   for (let key in styleJson) {
-      //     if (
-      //       typeof styleJson[key] === "string" &&
-      //       styleJson[key] &&
-      //       styleJson[key].indexOf("rpx") > -1
-      //     ) {
-      //       styleJson[key] = convertRpxToPx(styleJson[key] || "");
-      //     }
-
-      //     style[key.replace(/_/g, "-")] = styleJson[key];
-      //     // console.log('styleJson',key)
-      //   }
-      // }
-      // let bgImg = cellLayoutJson?.background_image || "";
-      // if (styleJson && styleJson.background_image) {
-      //   bgImg = styleJson.background_image;
-      // }
-      // if (bgImg) {
-      //   // 单元背景图 补偿样式。
-      //   style["background-image"] = `url(${this.getImagePath(bgImg)})`;
-      //   style["background-size"] = "100% 100%";
-      //   style["background-repeat"] = "no";
-      // }
-      // if (cellLayoutJson && !style.hasOwnProperty("min-height") && bgImg) {
-      //   style["min-height"] = "10px";
-      // }
-      // if (!style["background-color"]) {
-      //   style["background-color"] = "transparent";
-      // }
-      // if (!style["overflow"]) {
-      //   // style["overflow"] = "hidden";
-      // }
+      if (
+        this.accordionSeq === this.activeAccordionSeq &&
+        this.accordion === true &&
+        this.cellItem?.active_style_json
+      ) {
+        style = {
+          ...style,
+          ...formatStyleData(this.cellItem.active_style_json),
+        };
+      }
       return style;
     },
     getPartModelData() {
@@ -542,6 +519,12 @@ export default {
           return acc;
         }, {});
       let show = true;
+      if (
+        item.disp_flag === "显示" &&
+        item?.disp_variable?.includes("手风琴")
+      ) {
+        return this.accordionSeq === this.activeAccordionSeq;
+      }
       // 根据显示条件判断是否显示 islogin代表是否登录
       if (item.disp_flag && item?.disp_variable?.toLowerCase() === "islogin") {
         if (item.disp_flag === "显示") {
@@ -608,6 +591,12 @@ export default {
     },
   },
   methods: {
+    onMouseenter(event) {
+      this.$emit('mouse-enter',event)
+    },
+    onMouseleave() {
+      // this.$emit('update:active-accordion-seq', 0);
+    },
     buildStyleJson(styleJson) {
       const cellLayoutJson = this.cellLayoutJson;
       let style = {};
@@ -659,6 +648,7 @@ export default {
     },
     onClickSubBlock: throttle(
       function (itemData, subCol, cellLayoutJson, parentCol, originCol) {
+        this.$emit("on-click-row", itemData, cellLayoutJson);
         const self = this;
         itemData = itemData || this.cellItemData;
         subCol = subCol || this.cellItem;
@@ -829,23 +819,23 @@ export default {
       }
     },
   },
-  mounted(){
-    if(this.useNumber){
+  mounted() {
+    if (this.useNumber) {
       // 使用数字滚动特效
-      let ele = this.$refs?.[this.partsType]
-      if(ele?.$el){
-        ele = ele?.$el
+      let ele = this.$refs?.[this.partsType];
+      if (ele?.$el) {
+        ele = ele?.$el;
       }
-      if(ele){
+      if (ele) {
         numberAnimationRun({
           from: 0,
           to: Number(this.getPartModelData),
           duration: 10000,
           onProgress: (val) => {
-            ele.innerHTML = val
+            ele.innerHTML = val;
           },
-          isInteger: true
-        })
+          isInteger: true,
+        });
       }
     }
   },
