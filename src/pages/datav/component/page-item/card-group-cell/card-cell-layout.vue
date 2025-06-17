@@ -9,26 +9,24 @@
     @mouseenter="pauseAutoPlay"
     @mouseleave="resumeAutoPlay"
   >
-    <template v-if="!showActiveCard || (showActiveCard && index !== 0)">
-      <card-cell-part
-        :comColMap="comColMap"
-        :cellItem="item"
-        :cellItemData="cellItemData"
-        :readOnly="readOnly"
-        :queryOptions="queryOptions"
-        :cellLayoutJson="item"
-        :parent-part="cellLayoutJson"
-        :accordion="isAccordionMode"
-        :accordion-seq="n"
-        :active-accordion-seq.sync="activeAccordionSeq"
-        @on-click-cell="onClickCell"
-        @show-dialog="showDialog"
-        @on-click-row="changeActiveAccordionSeq(n)"
-        @mouse-enter="changeActiveAccordionSeq(n)"
-        v-for="(item, n) in cellLayoutJson.parts_json"
-        :key="item.id || `part-${n}`"
-      ></card-cell-part>
-    </template>
+    <card-cell-part
+      :comColMap="comColMap"
+      :cellItem="item"
+      :cellItemData="cellItemData"
+      :readOnly="readOnly"
+      :queryOptions="queryOptions"
+      :cellLayoutJson="item"
+      :parent-part="cellLayoutJson"
+      :accordion="isAccordionMode"
+      :accordion-seq="n"
+      :active-accordion-seq.sync="activeAccordionSeq"
+      @on-click-cell="onClickCell"
+      @show-dialog="showDialog"
+      @on-click-row="changeActiveAccordionSeq(n)"
+      @mouse-enter="changeActiveAccordionSeq(n)"
+      v-for="(item, n) in cellLayoutJson.parts_json"
+      :key="item.id || `part-${n}`"
+    ></card-cell-part>
     <slot name="footer"></slot>
   </div>
 </template>

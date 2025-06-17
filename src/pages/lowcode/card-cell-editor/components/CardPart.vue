@@ -99,7 +99,7 @@ export default {
       const keys = [
         "padding",
         "margin",
-        "background-image",
+        // "background-image",
         "background-color",
       ];
       keys.forEach((key) => {

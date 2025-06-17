@@ -62,7 +62,7 @@
         <el-popover
           placement="right"
           width="400"
-          trigger="click"
+          trigger="hover"
           v-else-if="childCardList && childCardList.length"
         >
           <i
@@ -91,12 +91,6 @@
             </div>
           </div>
         </el-popover>
-        <!-- <i
-          class="el-icon-edit button close-icon"
-          @click="toEditCard"
-          v-else-if="childCardList && childCardList.length"
-          title="用卡片单元设计器打开"
-        ></i> -->
       </div>
     </div>
     <div
@@ -222,13 +216,15 @@ export default {
     };
   },
   computed: {
+    tabsComponentData() {
+      return this.childComponent?.com_type === "tabs"
+        ? this.childComponent?.tabs_json?.com_json
+        : [];
+    },
     childCardList() {
       let result = [];
-      if (
-        this.childComponent?.com_type === "tabs" &&
-        this.childComponent?.tabs_json?.com_json?.length
-      ) {
-        const list = this.childComponent?.tabs_json?.com_json;
+      if (this.tabsComponentData?.length) {
+        const list = this.tabsComponentData;
         if (Array.isArray(list) && list.length) {
           list.forEach((item) => {
             try {
@@ -370,8 +366,12 @@ export default {
   },
   mounted() {
     // 添加全局事件监听
-    document.addEventListener("mousemove", this.onResize);
-    document.addEventListener("mouseup", this.stopResize);
+    document.addEventListener("mousemove", this.onResize, {
+      passive: true, // 事件处理程序不会调用 preventDefault()
+    });
+    document.addEventListener("mouseup", this.stopResize, {
+      passive: true, // 事件处理程序不会调用 preventDefault()
+    });
     const pageConfig = this.pageConfig?.();
     if (pageConfig?.page_options?.includes("懒加载")) {
       this.lazyLoad = true;
@@ -394,6 +394,7 @@ export default {
         {
           // 设置阈值，当组件有10%进入视口时触发回调
           threshold: 0.1,
+          rootMargin: "50px", // 添加根边距，提前加载
         }
       );
 
@@ -413,10 +414,16 @@ export default {
   },
   methods: {
     toEditCard(item) {
-      if (this.cardNo) {
-        open(`/vpages/#/card-cell-editor/${this.cardNo}`);
-      } else if (item?.no) {
-        open(`/vpages/#/card-cell-editor/${item.no}`);
+      try {
+        const cardNo = this.cardNo || item?.no;
+        if (!cardNo) {
+          this.$message.warning("未找到卡片编号");
+          return;
+        }
+        open(`/vpages/#/card-cell-editor/${cardNo}`);
+      } catch (error) {
+        console.error("打开卡片编辑器失败:", error);
+        this.$message.error("打开编辑器失败");
       }
     },
     onTap() {
@@ -502,7 +509,7 @@ export default {
 
     // 调整宽度过程
     onResize(e) {
-      if (!this.resizing) return;
+      if (!this.resizing || !this.$el) return;
 
       const deltaX = e.clientX - this.startX;
       let newWidth;
@@ -683,7 +690,6 @@ export default {
         }
       }
     },
-
     handleDrop(e) {
       debugger;
       if (this.isPreview || this.isView) return;
