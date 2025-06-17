@@ -20,7 +20,6 @@ export function useAccordionAutoPlay(props) {
   const accordionAutoPlay = computed( // 是否自动轮播
     () => props.cellLayoutJson?.autoplay === '是' || false
   )
-  debugger
   const autoPlayInterval = computed( // 自动轮播间隔
     () => (props.cellLayoutJson?.autoplay_interval || DEFAULT_AUTOPLAY_INTERVAL) * 1000
   )
@@ -109,7 +108,7 @@ export function useAccordionAutoPlay(props) {
 
   // 生命周期钩子
   onMounted(() => {
-    if (accordionAutoPlay.value && partsLength.value > 1) {
+    if (isAccordionMode.value && accordionAutoPlay.value && partsLength.value > 1) {
       startAutoPlay()
     }
   })
@@ -132,6 +131,7 @@ export function useAccordionAutoPlay(props) {
     autoPlayInterval,
     partsLength,
     isAccordionMode,
+    isMarquee,
 
     // 方法
     changeActiveAccordionSeq,
