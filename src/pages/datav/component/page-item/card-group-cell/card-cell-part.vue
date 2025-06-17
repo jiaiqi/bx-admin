@@ -47,7 +47,7 @@
       :style="[buildColStyleJson]"
       :ref="partsType"
     >
-      {{ getPartModelData }}
+      {{ getPartModelData || "" }}
     </div>
     <el-image
       v-else-if="['图片', 'iconImg'].includes(item.parts_type)"
@@ -141,7 +141,7 @@
       @mouseenter="onMouseenter"
       @mouseleave="onMouseleave"
     >
-      <template v-for="(subCardPart, subindex) in cellItem.sub_card_parts_json">
+      <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
         <card-cell-part
           :cellItem="subCardPart"
           :comColMap="comColMap"
@@ -591,6 +591,14 @@ export default {
     },
   },
   methods: {
+    getSubJson(cellItem) {
+      if (Array.isArray(cellItem?.sub_card_parts_json)) {
+        return cellItem.sub_card_parts_json;
+      }
+      if (Array.isArray(cellItem?.children)) {
+        return cellItem.children;
+      }
+    },
     onMouseenter(event) {
       this.$emit("mouse-enter", event);
     },

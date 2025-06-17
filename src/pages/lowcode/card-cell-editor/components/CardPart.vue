@@ -25,7 +25,7 @@
     ></div>
 
     <!-- 根据不同类型渲染不同内容 -->
-    <template v-if="part.parts_type === 'row'">
+    <template v-if="['block', 'row'].includes(part.parts_type)">
       <card-part
         v-for="(childPart, childIndex) in part.children || []"
         :key="childIndex"
@@ -96,12 +96,17 @@ export default {
       let styleJson = this.part?.style_json || {};
       let style = {};
       style = { ...formatStyleData(styleJson) };
-      const keys = ['padding','margin','background-image','background-color']
-      keys.forEach(key => {
-        if(style?.[key]){
-          delete style[key]
+      const keys = [
+        "padding",
+        "margin",
+        "background-image",
+        "background-color",
+      ];
+      keys.forEach((key) => {
+        if (style?.[key]) {
+          delete style[key];
         }
-      })
+      });
       return style;
     },
     partsShow() {
