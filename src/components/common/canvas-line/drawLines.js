@@ -19,9 +19,9 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     
-    console.log('Canvas dimensions:', canvas.width, canvas.height);
-    console.log('Start point:', startPoint);
-    console.log('End points:', endPoints);
+    console.log('画布边界大小:', canvas.width, canvas.height);
+    console.log('起点坐标:', startPoint);
+    console.log('终点坐标组:', endPoints);
 
     const ctx = canvas.getContext('2d');
     const {

@@ -1,5 +1,10 @@
 <template>
-  <div class="door-frame">
+  <div class="door-frame"
+       v-loading="isLoading"
+       element-loading-text="查询中....."
+       element-loading-spinner="el-icon-loading"
+       element-loading-background="rgba(0, 0, 0, 0.8)"
+  >
     <div  v-if="list.length==0" class="err_info">
       <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{passId}}</el-empty>
     </div>
@@ -56,12 +61,14 @@ import {onMounted, ref} from "vue";
 import {useRoute} from "@/common/vueApi";
 import {getEntranceData} from "@/pages/audit/workdistribution/entrance/entrance";
 import OrderApi from "@/pages/audit/api/order";
+import { Loading } from 'element-ui';
 const orderUtil= new OrderApi()
 const reverse = ref(false)
 const route = useRoute()
 const list = ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
+const isLoading=ref(false)
 const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
@@ -70,7 +77,7 @@ let passId = route.query?.pass_id
 let strTime = route.query?.startTime
 let endTime = route.query?.endTime
 const getPic = (item, imgtype, enType) => {
-  let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
+  let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.grantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
   if (enType) {
     url += `&enextype=${enType}`
   }
@@ -102,12 +109,14 @@ const getTrafficFlow = (id) => {
  * @Date: 2025-06-06 17:45:45
  */
 const getPointByOriginCenter=()=>{
+  isLoading.value=true
   let obj={
     condition:[{colName: "passid", ruleType: "like", value: passId}],
     divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
   }
   orderUtil.getOriginCenterDetails(obj).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
+    isLoading.value=false
     handleFilterListInfo(res.data.data)
   }).catch(err => {})
 }
@@ -118,6 +127,7 @@ const getPointByOriginCenter=()=>{
  * @Date: 2025-06-06 17:48:49
  */
 const getPointByLocation=()=>{
+   isLoading.value=true
   let obj={
     condition:[{colName: "passid", ruleType: "like", value: passId}],
     divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
@@ -125,7 +135,7 @@ const getPointByLocation=()=>{
   orderUtil.getLocationCenterDetails(obj).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
     if(res.data.data&&res.data.data.length>0){
-
+      isLoading.value=false
       handleFilterListInfo(res.data.data)
     }else {
       getPointByOriginCenter()
@@ -158,10 +168,14 @@ const handleFilterListInfo = (data) => {
       }
     }
   });
-
   // 转换为数组并排序
   const sortedPoints = Array.from(uniquePoints.values())
-      .sort((a, b) => (a.seq_id || 0) - (b.seq_id || 0));
+      .sort((a, b) => {
+        // 优先使用seq字段排序
+        const seqA = a.seq || a.seq_id || 0;
+        const seqB = b.seq || b.seq_id || 0;
+        return seqA - seqB;
+      });
   list.value=sortedPoints
 }
 /**

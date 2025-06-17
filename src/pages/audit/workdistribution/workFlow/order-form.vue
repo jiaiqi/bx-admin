@@ -56,12 +56,17 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="经营管理单位" prop="relevant_org">
-            <el-input v-model="ruleForm.relevant_org" clearable placeholder="请输入..." style="width:85%"></el-input>
+            <div class="vant_org">
+              <el-tag v-for="(item,index) in relevantList" :key="item.id" closable size="mini"  @close="handleClose(item)">
+                {{item.organ_name}}
+              </el-tag>
+            </div>
+<!--            <el-input v-model="ruleForm.relevant_org" clearable placeholder="请输入..." style="width:85%"></el-input>-->
           </el-form-item>
         </el-col>
         <el-col :span="12" style="display: flex">
           <el-form-item label="通行介质类型" prop="media_type">
-            <el-select v-model="ruleForm.media_type" placeholder="请选择" clearable>
+            <el-select v-model="ruleForm.media_type" placeholder="请选择" clearable @change="handleSetMedia">
               <el-option
                   v-for="item in optionsPage.media_type"
                   :key="item.value"
@@ -302,7 +307,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="是否为大件车辆" prop="isnormel">
-            <el-select v-model="ruleForm.isnormel" clearable placeholder="请选择" style="width:84.3%;">
+            <el-select v-model="ruleForm.isnormel" clearable placeholder="请选择" style="width:84.3%;" @change="handleSetBigCar">
               <el-option
                   v-for="item in optionsPage.isnormel"
                   :key="item.value"
@@ -317,9 +322,9 @@
             <el-input v-model="ruleForm.axlecount" clearable style="width:84.5%" placeholder="请输入..."></el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="12" v-if="false">
           <el-form-item label="车辆用户类型" prop="vehicleusertype">
-            <el-select v-model="ruleForm.vehicleusertype" clearable placeholder="请选择" style="width:84.3%;">
+            <el-select v-model="ruleForm.vehicleusertype" clearable placeholder="请选择" style="width:84.3%;" disabled>
               <el-option
                   v-for="item in optionsPage.vehicleusertype"
                   :key="item.value"
@@ -329,9 +334,9 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="12" v-if="false">
           <el-form-item label="车种" prop="vehicleclass">
-            <el-select v-model="ruleForm.vehicleclass" clearable placeholder="请选择" style="width:84.5%">
+            <el-select v-model="ruleForm.vehicleclass" clearable placeholder="请选择" style="width:84.5%" disabled>
               <el-option
                   v-for="item in optionsPage.vehicleclass"
                   :key="item.value"
@@ -398,7 +403,7 @@
 
 <script>
 import {$http} from '@/common/http';
-import {filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn} from './filterList'
+import {filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn,createOrderNo} from './filterList'
 import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
 import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-mod.vue";
@@ -463,7 +468,8 @@ export default {
         media_type: "",	                //通行介质类型
         operator_id:'',                     //发起人id
         operator_name: "",                  //发起人姓名
-        order_desc: "",                  //工单描述
+        order_desc: "",
+        order_no:'',//工单描述
         order_evidence: "",              //证据附件
         order_type: "",                   //工单类型
         org_id:'',                    //发起机构id
@@ -498,9 +504,19 @@ export default {
       picIds:'',
       strTime:'',
       endTime:'',
+      relevantList:[]
     }
   },
   methods: {
+    //通行介质变化检测
+    handleSetMedia(){
+      debugger
+      this.initSpecialType()
+    },
+    //大件车辆类型判断
+    handleSetBigCar(){
+      this.initSpecialType()
+    },
     setPicMod(){
       this.showPicMod = true
     },
@@ -613,9 +629,19 @@ export default {
          }else {
            _this.ruleForm.org_no=''
          }
+          _this.ruleForm.order_no = createOrderNo(_this.ruleForm.org_id)
+          console.log('生成的工单编号',_this.ruleForm.order_no)
          _this.handleFilterPutOrg()
 
       }).catch(err=>{})
+    },
+    /**
+     * @Description:生产工单变化信息
+     * @Author:Eirice
+     * @Date: 2025-06-16 10:21:20
+     */
+    initOrderNoInfo(){
+
     },
     initQuerySearch(){
      let _this = this;
@@ -644,6 +670,7 @@ export default {
           console.log('计算的时间范围：', { startTime: this.strTime, endTime: this.endTime });
         }
         this.ruleForm=formDataByGetInfo(this.ruleForm,operate_params[0])
+        this.initSpecialType()
         this.handleChangeFee()
         console.log('这里的user_no3',this.ruleForm.user_no)
         console.log('--',this.ruleForm);
@@ -687,6 +714,7 @@ export default {
     },
     //提交工单前进行通行测试，当返回有数据时不允许提交，无返回数据时可以正常走下一步提交
     handleTest(){
+      console.log('当前表单提交信息',this.handleSetEmpty());
       orderUtils.handleTestOrder({pass_id:this.ruleForm.pass_id}).then(res => {
         if(res.data.state !== 'SUCCESS') return;
         let ls = res.data.data
@@ -794,9 +822,35 @@ export default {
         this.ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
       }
     },
+    //通过通行介质类型及是否为大件车辆设置默认的车辆用户类型及车种
+    initSpecialType(){
+      let eclass=null;
+      let sertype=null
+      let operate_params = this.getOperateParams();
+          operate_params=JSON.parse(operate_params).data;
+      if(operate_params){
+         eclass=operate_params[0]?.vehicleclass
+         sertype=operate_params[0]?.vehicleusertype
+      }
+     if(this.ruleForm.media_type!==''&&this.ruleForm.isnormel!==''){
+        if(this.ruleForm.media_type==='1'&&this.ruleForm.isnormel==='1'){
+           this.ruleForm.vehicleusertype='25';
+        }
+       else if(this.ruleForm.media_type==='2'&&this.ruleForm.isnormel==='1'){
+           this.ruleForm.vehicleclass='25';
+        }
+       else {
+          this.ruleForm.vehicleusertype=sertype?sertype:'0';
+          this.ruleForm.vehicleclass=eclass?eclass:'0';
+        }
+     }else {
+       this.ruleForm.vehicleusertype=sertype?sertype:'0';
+       this.ruleForm.vehicleclass=eclass?eclass:'0';
+     }
+    },
     //重置条件
     restForm(){
-      const sel=['pass_id','real_fee', 'org_id','org_name','org_no', 'org_type','province','operator_name','operator_id']
+      const sel=['pass_id','real_fee', 'org_id','org_name','org_no', 'org_type','province','operator_name','operator_id','order_no']
       // 遍历ruleForm的所有字段
       Object.keys(this.ruleForm).forEach(key => {
         // 如果字段不在sel数组中，则重置为初始值
@@ -809,6 +863,42 @@ export default {
       this.preList = []
       this.picIds = ''
     },
+    //获取经营管理单位列列表数据
+    getRelevantInfo(){
+     let obj={
+       condition: [{colName: "passid", ruleType: "eq", value:this.ruleForm.pass_id}],
+       divCond:[{colName: "create_time", ruleType: "between", value: [this.strTime,this.endTime]}],
+
+     }
+     orderUtils.getRelevantList(obj).then(res => {
+       if(res.data.state!=='SUCCESS') return;
+       let ls =res.data.data;
+       let ids=[]
+       if(ls){
+         ls.map(d=>{
+           d.select=true
+           ids.push(d.id)
+         })
+       }
+       this.relevantList = ls
+       this.ruleForm.relevant_org=ids.join(',')
+       console.log('经营单位id',this.ruleForm.relevant_org)
+
+     }).catch(err=>{})
+    },
+    //经营单位删除后数据更新
+    handleClose(item){
+     this.relevantList.splice(item,1)
+      let ids=[]
+     if(this.relevantList.length===0){
+       this.ruleForm.relevant_org=''
+     }else {
+       this.relevantList.map(k=>{
+         ids.push(k.id)
+       })
+       this.ruleForm.relevant_org=ids.join(',')
+     }
+    }
   },
 
   created(){
@@ -820,7 +910,8 @@ export default {
     this.initForm()
     this.initQuerySearch()
     this.getSavePicInfo(null)
-    console.log('--22',this.ruleForm);
+    this.getRelevantInfo();
+    console.log('--22',this.ruleForm.org_id);
 
     // 组件挂载后默认调用一次
   }
@@ -838,6 +929,11 @@ export default {
 .pic_up{
   padding:0.625rem;
 }
+.vant_org{
+  width:85%;
+  height:4.6875rem;
+  border:1px solid #ace;
+}
 </style>
 <style>
 .work_flow .el-form-item {
@@ -848,6 +944,9 @@ export default {
     display: block !important;
     padding-left:0 !important;
     width:100% !important;
+    .vant_org{
+      width:100%;
+    }
   }
   .work_flow .el-form-item{
      margin-left:0 !important;

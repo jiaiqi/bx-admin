@@ -146,7 +146,7 @@ name: "order-home",
     this.asyncLoadMap()
      this.$nextTick(()=>{
        // sessionStorage.removeItem('bx_auth_ticket');
-       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-e60bed2f-79b4-4044-9542-7c8fe439c6e1');
+       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-4e99ba68-4eb2-457f-a1f4-7ae2a093e148');
      })
     if (!this._isMounted) {
       this._isMounted = true;

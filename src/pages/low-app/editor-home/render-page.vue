@@ -110,6 +110,7 @@ export default {
           }))
           // 根据com_seq值排序
           this.currentComponents = componentsWithIndex.sort((a, b) => a.com_seq - b.com_seq)
+          console.log('this.currentComponents',this.currentComponents)
           // 更新组件的z-index
           this.rearrangeComponents()
         }
@@ -510,6 +511,13 @@ export default {
             parts_type: dragData.parts_type,
           };
           dragData._type = "component";
+        }
+         if (dragData.type === "悬浮组件") {
+           dragData.com_type = "cardGroup";
+           dragData.component = "float-component";
+           dragData._editType = "add";
+           dragData.com_name = "悬浮组件";
+           dragData.com_option = "悬浮可拖动";
         }
         // 创建新组件数据
         const newComponent = {
