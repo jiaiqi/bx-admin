@@ -355,6 +355,7 @@ const filterPointList = (list,type) => {
     console.error('filterPointList 处理失败:', error);
   }
 }
+
 /**
  * @Description:根据携带进入的passid进行车辆通行流水查询
  * @Author:Eirice
@@ -372,6 +373,7 @@ const getTrafficFlow = (id) => {
   }).catch(err => {
   })
 }
+
 /**
  * @Description:初次进入调用远端中心接口查询通行信息
  * @Author:Eirice
@@ -389,6 +391,7 @@ const getPointByOriginCenter=()=>{
     }
   }).catch(err => {})
 }
+
 /**
  * @Description:从本地服务中调用获取车辆通行信息
  * @Author:Eirice

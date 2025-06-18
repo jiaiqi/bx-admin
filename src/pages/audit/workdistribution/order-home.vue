@@ -111,7 +111,7 @@ name: "order-home",
       return new Promise(function (resolve, reject) {
         if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
         if (typeof (BMap) !== "undefined") {return  resolve(BMap)}
-        var script = document.createElement('script')
+        let script = document.createElement('script')
         script.type = 'text/javascript'
         script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
         script.onerror = reject
@@ -146,7 +146,7 @@ name: "order-home",
     this.asyncLoadMap()
      this.$nextTick(()=>{
        // sessionStorage.removeItem('bx_auth_ticket');
-       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-4e99ba68-4eb2-457f-a1f4-7ae2a093e148');
+       // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-097ac141-aec7-4487-b42b-fe6b22f2c7a2');
      })
     if (!this._isMounted) {
       this._isMounted = true;

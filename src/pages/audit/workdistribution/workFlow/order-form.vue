@@ -57,7 +57,7 @@
         <el-col :span="12">
           <el-form-item label="经营管理单位" prop="relevant_org">
             <div class="vant_org">
-              <el-tag v-for="(item,index) in relevantList" :key="item.id" closable size="mini"  @close="handleClose(item)">
+              <el-tag v-for="(item,index) in relevantList" :key="item.id" closable size="mini" style="margin:0 0.1875rem"  @close="handleClose(item)">
                 {{item.organ_name}}
               </el-tag>
             </div>
@@ -258,7 +258,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="稽核车型" prop="is_owe_fee">
+          <el-form-item label="稽核车型" prop="vehicle_type">
             <el-select v-model="ruleForm.vehicle_type" clearable placeholder="请选择" style="width:84.3%">
               <el-option
                   v-for="item in optionsPage.vehicle_type"
@@ -527,25 +527,15 @@ export default {
      */
    async getAllOptionsList(){
      let _this=this;
-      let url=window.APP_CONFIG.API_URL+`/aud/select/srvsys_service_columnex_v2_select?colsel_v2=srvaud_ads_workorder_add`
-      const req = {
-        serviceName:"srvsys_service_columnex_v2_select",
-        colNames: ["*"],
-        condition: [
-           {colName: "service_name", value: "srvaud_ads_workorder_add", ruleType: "eq"},
-           {colName: "use_type", value: "add", ruleType: "eq"}
-        ],
-        order: [{colName: "seq", orderType: "asc"}],
-      };
-      const res = await $http.post(url, req)
-      if(!res || res.data.state !== "SUCCESS") return
-      let ls = res.data.data
-
-      _this.pageNo = ls.vpage_no;
-      let ops = ls.srv_cols
-      _this.optionsPage=filterListByOption(ops,_this.optionsPage)
-      _this.ruleForm=formDataByInitText(this.ruleForm,ops,'init_expr')
-      console.log('123123',_this.ruleForm.user_no)
+      orderUtils.getOrderFormList().then(res=>{
+        if(!res || res.data.state !== "SUCCESS") return
+        let ls = res.data.data
+        _this.pageNo = ls.vpage_no;
+        let ops = ls.srv_cols
+        _this.optionsPage=filterListByOption(ops,_this.optionsPage)
+        _this.ruleForm=formDataByInitText(this.ruleForm,ops,'init_expr')
+        console.log('123123',_this.ruleForm.user_no)
+      }).catch(err=>{})
     },
     handleSelect(item) {
       this.ruleForm.operator_name=item.user_name;
@@ -809,7 +799,7 @@ export default {
      * @Author:Eirice
      * @Date: 2025-06-10 09:45:17
      */
-    handleChangeFee(){
+     handleChangeFee(){
       // 转换费用为数字类型
       const originalFee = typeof this.ruleForm.orginal_fee === 'string' ? parseFloat(this.ruleForm.orginal_fee) : this.ruleForm.orginal_fee;
       const realFee = typeof this.ruleForm.real_fee === 'string' ? parseFloat(this.ruleForm.real_fee) : this.ruleForm.real_fee;
@@ -888,16 +878,19 @@ export default {
     },
     //经营单位删除后数据更新
     handleClose(item){
-     this.relevantList.splice(item,1)
-      let ids=[]
-     if(this.relevantList.length===0){
-       this.ruleForm.relevant_org=''
-     }else {
-       this.relevantList.map(k=>{
-         ids.push(k.id)
-       })
-       this.ruleForm.relevant_org=ids.join(',')
-     }
+      const index = this.relevantList.findIndex(i => i.id === item.id);
+      if (index > -1) {
+        this.relevantList.splice(index, 1);
+      }
+      let ids = [];
+      if(this.relevantList.length === 0){
+        this.ruleForm.relevant_org = '';
+      } else {
+        this.relevantList.map(k => {
+          ids.push(k.id);
+        });
+        this.ruleForm.relevant_org = ids.join(',');
+      }
     }
   },
 

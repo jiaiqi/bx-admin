@@ -80,6 +80,7 @@ const waybill = () =>
 const inForm = () =>
   import(/* webpackChunkName: "inform" */ "@/pages/inform.vue");
 
+
 // pages
 // Vue.use(Router);
 let routes = [
@@ -415,6 +416,13 @@ let routes = [
             import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/map/BaseMap.vue")
       }
     ]
+  },
+  //工单新增快速计费
+  {
+    path: "/quick",
+    name: "quick",
+    component: () =>
+        import(/* webpackChunkName: "quick" */ "@/pages/audit/workdistribution/quickBilling/quick-billing.vue")
   },
   { //大华视频播放及组织树
     path: "/dhvideo",
