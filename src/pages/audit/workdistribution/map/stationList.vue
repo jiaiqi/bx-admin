@@ -212,7 +212,7 @@ li{
   }
 }
 .sta_table{
-  width: 85%;
+  //width: 85%;
 }
 .st_main{
   width:100%;

@@ -274,7 +274,7 @@ export default class OrderApi{
         let req={
            colNames: ["*"],
            serviceName: "srvaud_workorder_passid_select",
-          condition: [{"colName": "pass_id", "ruleType": "eq", value:params.pass_id}]
+           condition: [{"colName": "pass_id", "ruleType": "eq", value:params.pass_id}]
 
         }
       return await $http.post(url, req)
@@ -348,6 +348,35 @@ export default class OrderApi{
            serviceName:"srvsys_service_columnex_v2_select",
            order: [{colName: "seq", orderType: "asc"}],
            condition: [{colName: "use_type", value: "add", ruleType: "eq"},{colName: "service_name", value:col, ruleType: "eq"}]
+       }
+      return await $http.post(url,req)
+    }
+    //获取工单提交信息表单字典
+    async getOrderFormList(){
+        let url= path+`/aud/select/srvsys_service_columnex_v2_select?colsel_v2=srvaud_ads_workorder_add`
+        let req = {
+            serviceName:"srvsys_service_columnex_v2_select",
+            colNames: ["*"],
+            condition: [
+                {colName: "service_name", value: "srvaud_ads_workorder_add", ruleType: "eq"},
+                {colName: "use_type", value: "add", ruleType: "eq"}
+            ],
+            order: [{colName: "seq", orderType: "asc"}],
+        };
+        return $http.post(url, req)
+    }
+    //经营管理单位
+    async getRelevantList(params){
+       let url= path+`/aud/select/srvaud_workorder_organ_select`
+       let req={
+           colNames: ["*"],
+           condition:params.condition,
+           divCond:params.divCond,
+           query_source: "list_page",
+           order:[],
+           page:{pageNo: 1, rownumber: 10},
+           serviceName:"srvaud_workorder_organ_select",
+           draft: false
        }
       return await $http.post(url,req)
     }

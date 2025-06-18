@@ -202,9 +202,9 @@ const handleSelect = (selectedKeys, e) => {
      })
   if (node && node.isChannel && node.chnl_online_status && node.chnl_online_status ==='在线') {
     videoChannel.value = node.chnl_no;
-    // 测试使用使用固定的通道ID
-    const fixedChannelId = '1002636$1$0$0';
-    videoChannel.value = fixedChannelId;
+    // // 测试使用使用固定的通道ID
+    // const fixedChannelId = '1002636$1$0$0';
+    // videoChannel.value = fixedChannelId;
     
     // 获取当前选中的窗口索引
     const currentWindowIndex = selectedWindow.value;

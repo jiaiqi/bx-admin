@@ -330,8 +330,12 @@ const filterPointList = (list,type) => {
 
     // 转换为数组并排序
     const sortedPoints = Array.from(uniquePoints.values())
-        .sort((a, b) => (a.seq_id || 0) - (b.seq_id || 0));
-
+        .sort((a, b) => {
+          // 优先使用seq字段排序
+          const seqA = a.seq || a.seq_id || 0;
+          const seqB = b.seq || b.seq_id || 0;
+          return seqA - seqB;
+        });
     // 构建最终的点位数组
     const additionalMarkers = sortedPoints.map((item, index) => ({
       ...pointConfig,
@@ -351,6 +355,7 @@ const filterPointList = (list,type) => {
     console.error('filterPointList 处理失败:', error);
   }
 }
+
 /**
  * @Description:根据携带进入的passid进行车辆通行流水查询
  * @Author:Eirice
@@ -368,6 +373,7 @@ const getTrafficFlow = (id) => {
   }).catch(err => {
   })
 }
+
 /**
  * @Description:初次进入调用远端中心接口查询通行信息
  * @Author:Eirice
@@ -385,6 +391,7 @@ const getPointByOriginCenter=()=>{
     }
   }).catch(err => {})
 }
+
 /**
  * @Description:从本地服务中调用获取车辆通行信息
  * @Author:Eirice
@@ -484,7 +491,8 @@ const handleFilterStation = (list) => {
     tradenodename:item.tollgrantry_name?item.tollgrantry_name:item.name,
     name: item.tollgrantry_name,
     point: handleMakePoint('', item.lng, item.lat),
-    ...item
+    ...item,
+    grantry_id:item.id
   }));
 
   // 找到需要插入的位置
@@ -567,9 +575,10 @@ const handleSubmitDrivingInfo = () => {
             value !== ' ' && 
             key !== 'id' &&
             key !== 'create_time' &&
-            typeof value === 'string' && 
-            !value.toLowerCase().includes('null') && 
-            !value.toLowerCase().includes('undefined')) {
+            ((typeof value === 'string' &&
+            !value.toLowerCase().includes('null') &&
+            !value.toLowerCase().includes('undefined')) ||
+            typeof value === 'number')) {
           setInfo[key] = value;
         }
       });
@@ -577,6 +586,7 @@ const handleSubmitDrivingInfo = () => {
       console.warn('未获取到标准提交参数');
       return;
     }
+    console.log('这是过滤后的字段的字段',setInfo)
     orderUtil.saveDriverDetails([setInfo]).then(res => {
       if (res.data.state !== 'SUCCESS') {
         console.warn('保存通行信息失败:', res.data);
@@ -665,9 +675,10 @@ const handleAddStations = (list) => {
             value !== ' ' && 
             key !== 'id' &&
             key !== 'create_time' &&
-            typeof value === 'string' && 
-            !value.toLowerCase().includes('null') && 
-            !value.toLowerCase().includes('undefined')) {
+            ((typeof value === 'string' &&
+            !value.toLowerCase().includes('null') &&
+            !value.toLowerCase().includes('undefined')) ||
+            typeof value === 'number')) {
           setInfo[key] = value;
         }
       });

@@ -16,12 +16,11 @@ export default class MapUtils {
         }
         this._map =  new BMap.Map(this.container);
         if(!this._map) return
-        this._map.centerAndZoom(new BMapGL.Point(this.center[0], this.center[1]), this.zoom);
+        this._map.centerAndZoom(new BMap.Point(this.center[0], this.center[1]), this.zoom);
         this._map.enableScrollWheelZoom(true)
-        let scaleCtrl = new BMapGL.ScaleControl();  // 添加比例尺控件
+        let scaleCtrl = new BMap.ScaleControl();  // 添加比例尺控件
         this._map.addControl(scaleCtrl);
-        let zoomCtrl = new BMapGL.ZoomControl();  // 添加缩放控件
-        this._map.addControl(zoomCtrl);
+        this._map.enableScrollWheelZoom(true);
         console.log(this._map)
         return this._map;
     }
