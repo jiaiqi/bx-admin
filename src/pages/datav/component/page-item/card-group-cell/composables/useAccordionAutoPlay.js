@@ -2,7 +2,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, onUnmounted } from 'v
 import debounce from 'lodash/debounce'
 
 // 常量定义
-const DEFAULT_AUTOPLAY_INTERVAL = 3000
+const DEFAULT_AUTOPLAY_INTERVAL = 3 // 自动轮播默认间隔
 const THROTTLE_DELAY = 300
 
 /**
@@ -17,20 +17,25 @@ export function useAccordionAutoPlay(props) {
   const isHovered = ref(false)
 
   // 计算属性
-  const accordionAutoPlay = computed(
-    () => props.cellLayoutJson?.cu_options?.includes('手风琴自动轮播') || false
+  const accordionAutoPlay = computed( // 是否自动轮播
+    () => props.cellLayoutJson?.autoplay === '是' || false
   )
-
-  const autoPlayInterval = computed(
-    () => props.cellLayoutJson?.autoplay_interval || DEFAULT_AUTOPLAY_INTERVAL
+  const autoPlayInterval = computed( // 自动轮播间隔
+    () => (props.cellLayoutJson?.autoplay_interval || DEFAULT_AUTOPLAY_INTERVAL) * 1000
   )
-
+  const autoplayDirection = computed( // 自动轮播方向
+    () => props.cellLayoutJson?.animation_direction || '由左往右'
+  )
   const partsLength = computed(
     () => props.cellLayoutJson?.parts_json?.length || 0
   )
 
   const isAccordionMode = computed(() =>
-    props.cellLayoutJson?.cu_options?.includes('手风琴效果')
+    props.cellLayoutJson?.animation_type === '手风琴'
+  )
+
+  const isMarquee = computed(() =>
+    props.cellLayoutJson?.animation_type === '跑马灯'
   )
 
   // 防抖处理的切换函数
@@ -52,10 +57,15 @@ export function useAccordionAutoPlay(props) {
       stopAutoPlay() // 确保清理之前的定时器
 
       autoPlayTimer.value = setInterval(() => {
+        // 鼠标悬停时暂停
         if (!isHovered.value) {
-          // 鼠标悬停时暂停
-          activeAccordionSeq.value =
-            (activeAccordionSeq.value + 1) % partsLength.value
+          if (autoplayDirection.value === '由左往右' || autoplayDirection.value === '由上至下') {
+            activeAccordionSeq.value =
+              (activeAccordionSeq.value + 1) % partsLength.value
+          } else {
+            activeAccordionSeq.value =
+              (activeAccordionSeq.value - 1 + partsLength.value) % partsLength.value
+          }
         }
       }, autoPlayInterval.value)
     } catch (error) {
@@ -79,7 +89,8 @@ export function useAccordionAutoPlay(props) {
   }
 
   // 监听器
-  watch(accordionAutoPlay, (newVal) => {
+  watch(() => accordionAutoPlay, (newVal) => {
+    debugger
     if (newVal) {
       startAutoPlay()
     } else {
@@ -97,7 +108,7 @@ export function useAccordionAutoPlay(props) {
 
   // 生命周期钩子
   onMounted(() => {
-    if (accordionAutoPlay.value && partsLength.value > 1) {
+    if (isAccordionMode.value && accordionAutoPlay.value && partsLength.value > 1) {
       startAutoPlay()
     }
   })
@@ -114,13 +125,14 @@ export function useAccordionAutoPlay(props) {
     // 响应式数据
     activeAccordionSeq,
     isHovered,
-    
+
     // 计算属性
     accordionAutoPlay,
     autoPlayInterval,
     partsLength,
     isAccordionMode,
-    
+    isMarquee,
+
     // 方法
     changeActiveAccordionSeq,
     startAutoPlay,

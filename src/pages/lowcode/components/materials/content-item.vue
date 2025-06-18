@@ -58,6 +58,39 @@
           v-if="cardNo"
           title="用卡片单元设计器打开"
         ></i>
+        <!-- tabs下的卡片单元 编辑按钮 -->
+        <el-popover
+          placement="right"
+          width="400"
+          trigger="hover"
+          v-else-if="childCardList && childCardList.length"
+        >
+          <i
+            class="el-icon-edit button close-icon"
+            title="用卡片单元设计器打开"
+            slot="reference"
+          ></i>
+          <div class="card-list">
+            <div class="title">
+              <i class="el-icon-edit button close-icon mx-2"></i>
+              <span>选择要编辑的卡片单元 </span>
+              <!-- <span class="tip">（）</span> -->
+            </div>
+            <div
+              class="card-item"
+              v-for="item in childCardList"
+              :key="item.no"
+              @click="toEditCard(item)"
+              :title="'打开' + item.name"
+            >
+              <span>
+                <template v-if="item.parent_name"
+                  >{{ item.parent_name }}/</template
+                >{{ item.name }}
+              </span>
+            </div>
+          </div>
+        </el-popover>
       </div>
     </div>
     <div
@@ -183,6 +216,50 @@ export default {
     };
   },
   computed: {
+    tabsComponentData() {
+      return this.childComponent?.com_type === "tabs"
+        ? this.childComponent?.tabs_json?.com_json
+        : [];
+    },
+    childCardList() {
+      let result = [];
+      if (this.tabsComponentData?.length) {
+        const list = this.tabsComponentData;
+        if (Array.isArray(list) && list.length) {
+          list.forEach((item) => {
+            try {
+              Object.keys(item).forEach((key) => {
+                if (key?.includes("_json")) {
+                  let _json = item[key];
+                  Object.keys(_json).forEach((subKey) => {
+                    if (
+                      subKey?.includes("_json") &&
+                      subKey?.includes("card_")
+                    ) {
+                      const _json2 = _json[subKey];
+                      if (_json2?.card_name && _json2?.card_no) {
+                        if (
+                          !result?.find((data) => data.no === _json2.card_no)
+                        ) {
+                          result.push({
+                            no: _json2.card_no,
+                            name: _json2.card_name,
+                            parent_name: item?.com_name,
+                          });
+                        }
+                      }
+                    }
+                  });
+                }
+              });
+            } catch (error) {
+              console.log(error);
+            }
+          });
+        }
+      }
+      return result;
+    },
     enterAnimationClass() {
       return setEnterAnimationClass(this.pageItem);
     },
@@ -289,8 +366,12 @@ export default {
   },
   mounted() {
     // 添加全局事件监听
-    document.addEventListener("mousemove", this.onResize);
-    document.addEventListener("mouseup", this.stopResize);
+    document.addEventListener("mousemove", this.onResize, {
+      passive: true, // 事件处理程序不会调用 preventDefault()
+    });
+    document.addEventListener("mouseup", this.stopResize, {
+      passive: true, // 事件处理程序不会调用 preventDefault()
+    });
     const pageConfig = this.pageConfig?.();
     if (pageConfig?.page_options?.includes("懒加载")) {
       this.lazyLoad = true;
@@ -313,6 +394,7 @@ export default {
         {
           // 设置阈值，当组件有10%进入视口时触发回调
           threshold: 0.1,
+          rootMargin: "50px", // 添加根边距，提前加载
         }
       );
 
@@ -331,9 +413,17 @@ export default {
     }
   },
   methods: {
-    toEditCard() {
-      if (this.cardNo) {
-        open(`/vpages/#/card-cell-editor/${this.cardNo}`);
+    toEditCard(item) {
+      try {
+        const cardNo = this.cardNo || item?.no;
+        if (!cardNo) {
+          this.$message.warning("未找到卡片编号");
+          return;
+        }
+        open(`/vpages/#/card-cell-editor/${cardNo}`);
+      } catch (error) {
+        console.error("打开卡片编辑器失败:", error);
+        this.$message.error("打开编辑器失败");
       }
     },
     onTap() {
@@ -419,7 +509,7 @@ export default {
 
     // 调整宽度过程
     onResize(e) {
-      if (!this.resizing) return;
+      if (!this.resizing || !this.$el) return;
 
       const deltaX = e.clientX - this.startX;
       let newWidth;
@@ -600,7 +690,6 @@ export default {
         }
       }
     },
-
     handleDrop(e) {
       debugger;
       if (this.isPreview || this.isView) return;
@@ -820,7 +909,31 @@ export default {
 
 <style lang="scss" scoped>
 @use "../../styles/layout.common.scss" as layout;
-
+.card-list {
+  .title {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 10px;
+    .tip {
+      font-size: 12px;
+      font-weight: normal;
+      color: #999;
+    }
+  }
+  .card-item {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    &:hover {
+      background-color: rgba($color: #17d57e, $alpha: 0.1);
+    }
+  }
+}
 .overlay {
   @include layout.overlay;
   z-index: 99;

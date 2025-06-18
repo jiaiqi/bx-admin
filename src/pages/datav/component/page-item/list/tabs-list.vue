@@ -1,14 +1,11 @@
 <template>
-  <div
-    class="tabs"
-    :class="{ 'vertical-tabs': vertical }"
-  >
+  <div class="tabs" :class="{ 'vertical-tabs': vertical }">
     <div
       class="tab-name-box"
       :class="{
         'justify-start': !vertical && leftTab,
         'justify-end': !vertical && rightTab,
-        'justify-center': !vertical && !leftTab && !rightTab
+        'justify-center': !vertical && !leftTab && !rightTab,
       }"
     >
       <div
@@ -16,7 +13,10 @@
         v-for="item in components"
         :key="item.id"
         :style="[activeName === item.com_name ? setActiveStyle : {}]"
-        :class="{ active: activeName === item.com_name, 'button-mode': buttonMode }"
+        :class="{
+          active: activeName === item.com_name,
+          'button-mode': buttonMode,
+        }"
         @click="activeName = item.com_name"
         ref="tabItems"
       >
@@ -30,10 +30,7 @@
       ></div>
     </div>
     <div class="tab-content">
-      <div
-        v-for="item in components"
-        :key="item.id"
-      >
+      <div v-for="item in components" :key="item.id">
         <page-item
           use-layout="false"
           ref="pageItem"
@@ -67,9 +64,9 @@ export default {
       tabs: [],
       // 添加下划线样式数据
       underlineStyle: {
-        width: '0px',
-        transform: 'translateX(0px)',
-      }
+        width: "0px",
+        transform: "translateX(0px)",
+      },
     };
   },
   props: {
@@ -78,6 +75,32 @@ export default {
     },
   },
   computed: {
+    // 获取tabs中所有卡片单元编号+名称的键值对
+    getTabsCardList() {
+      let list = this.components;
+      let result = [];
+      if (Array.isArray(list) && list.length) {
+        list.forEach((item) => {
+          Object.keys(item).forEach((key) => {
+            if (key?.includes("_json")) {
+              let _json = item[key];
+              Object.keys(_json).forEach((subKey) => {
+                if (subKey?.includes("_json") && subKey?.includes("card_")) {
+                  const _json2 = _json[subKey];
+                  if (_json2?.card_name && _json2?.card_no) {
+                    result.push({
+                      no: _json2.card_no,
+                      name: _json2.card_name,
+                    });
+                  }
+                }
+              });
+            }
+          });
+        });
+      }
+      return result;
+    },
     tabsJson() {
       return this.pageItem.tabs_json;
     },
@@ -93,16 +116,16 @@ export default {
       return formatStyleData(this.tabsJson?.active_style_json);
     },
     buttonMode() {
-      return this.tabsJson?.tabs_options?.includes('按钮样式');
+      return this.tabsJson?.tabs_options?.includes("按钮样式");
     },
     vertical() {
-      return this.tabsJson?.tabs_options?.includes('垂直方向')
+      return this.tabsJson?.tabs_options?.includes("垂直方向");
     },
     leftTab() {
-      return this.tabsJson?.tabs_options?.includes('靠左')
+      return this.tabsJson?.tabs_options?.includes("靠左");
     },
     rightTab() {
-      return this.tabsJson?.tabs_options?.includes('靠右')
+      return this.tabsJson?.tabs_options?.includes("靠右");
     },
   },
   created() {
@@ -124,8 +147,8 @@ export default {
           this.updateUnderlinePosition();
         });
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   mounted() {
     // 初始化下划线位置
@@ -137,11 +160,13 @@ export default {
     // 更新下划线位置
     updateUnderlinePosition() {
       if (this.buttonMode) {
-        return
+        return;
       }
       if (!this.$refs.tabItems || !this.$refs.tabItems.length) return;
 
-      const activeIndex = this.components.findIndex(item => item.com_name === this.activeName);
+      const activeIndex = this.components.findIndex(
+        (item) => item.com_name === this.activeName
+      );
       if (activeIndex === -1) return;
 
       const activeTab = this.$refs.tabItems[activeIndex];
@@ -149,15 +174,17 @@ export default {
 
       // 获取选中标签的宽度和位置
       const { width, left } = activeTab.getBoundingClientRect();
-      const parentLeft = this.$el.querySelector('.tab-name-box').getBoundingClientRect().left;
+      const parentLeft = this.$el
+        .querySelector(".tab-name-box")
+        .getBoundingClientRect().left;
 
       // 计算下划线位置
       this.underlineStyle = {
         width: `${width}px`,
-        transform: `translateX(${left - parentLeft}px)`
+        transform: `translateX(${left - parentLeft}px)`,
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -199,12 +226,12 @@ export default {
     }
 
     &.active:not(.button-mode) {
-      color: var(--primary-color, #409EFF);
+      color: var(--primary-color, #409eff);
     }
 
     &.button-mode {
-      color: var(--primary-color, #409EFF);
-      border: 1px solid var(--primary-color, #409EFF);
+      color: var(--primary-color, #409eff);
+      border: 1px solid var(--primary-color, #409eff);
       border-radius: 0;
       padding: 4px 16px;
       margin-right: 10px;
@@ -212,7 +239,7 @@ export default {
 
     &.active.button-mode {
       color: #fff;
-      background-color: var(--primary-color, #409EFF);
+      background-color: var(--primary-color, #409eff);
     }
   }
 
@@ -222,7 +249,7 @@ export default {
     bottom: 0;
     left: 0;
     height: 3px;
-    background-color: var(--primary-color, #409EFF); // 默认颜色
+    background-color: var(--primary-color, #409eff); // 默认颜色
     transition: transform 0.3s ease, width 0.3s ease; // 添加过渡动画
     border-radius: 1px;
   }

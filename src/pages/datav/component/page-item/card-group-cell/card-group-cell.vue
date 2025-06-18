@@ -654,7 +654,6 @@ export default {
   flex: 1;
 }
 
-
 .update-title {
   background-color: #fff;
   text-align: center;

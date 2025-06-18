@@ -47,7 +47,7 @@
       :style="[buildColStyleJson]"
       :ref="partsType"
     >
-      {{ getPartModelData }}
+      {{ getPartModelData || "" }}
     </div>
     <el-image
       v-else-if="['图片', 'iconImg'].includes(item.parts_type)"
@@ -130,33 +130,81 @@
       :ref="partsType"
     ></qr-code>
     <div
-      :class="['bx-cell-' + cellItem.parts_type, { 'cursor-pointer': isLink }]"
+      ref="bxCellContainer"
       v-else-if="
-        (cellItem.parts_type == 'row' || cellItem.parts_type == 'block') &&
+        ['row', 'block'].includes(cellItem.parts_type) &&
         cellItem.hasOwnProperty('sub_card_parts_json') &&
         cellItem.sub_card_parts_json.length > 0
       "
-      :style="[buildColStyleJson]"
-      @click.stop="onClickSubBlock()"
-      @mouseenter="onMouseenter"
-      @mouseleave="onMouseleave"
+      :class="{
+        'marquee-mode': childAnimationType === '跑马灯',
+      }"
+      :style="[childAnimationType === '跑马灯' ? {} : buildColStyleJson]"
     >
-      <template v-for="(subCardPart, subindex) in cellItem.sub_card_parts_json">
-        <card-cell-part
-          :cellItem="subCardPart"
-          :comColMap="comColMap"
-          :cellItemData="cellItemData"
-          :readOnly="readOnly"
-          :queryOptions="queryOptions"
-          :cellLayoutJson="subCardPart"
-          :parentPart="cellItem"
-          :accordion="accordion"
-          :accordion-seq="accordionSeq"
-          :active-accordion-seq="activeAccordionSeq"
-          @on-click-part="onClickSubBlock"
-          @on-click-cell="onClickCell"
-          @show-dialog="showDialog"
-        ></card-cell-part>
+      <div
+        ref="bxCellInnerContainer"
+        :class="[
+          'bx-cell-' + cellItem.parts_type,
+          {
+            'cursor-pointer': isLink,
+          },
+        ]"
+        :style="[
+          buildColStyleJson,
+          {
+            '--child-animation-step': childAnimationConfig.step,
+            '--child-animation-type': childAnimationType,
+            '--child-animation-direction': childAnimationConfig.direction,
+            '--child-animation-delay': childAnimationConfig.delay,
+          },
+          childAnimationType !== '跑马灯'
+            ? {
+                position: 'relative',
+                overflow: 'hidden',
+              }
+            : {},
+        ]"
+        @click.stop="onClickSubBlock()"
+        @mouseenter="onMouseenter"
+        @mouseleave="onMouseleave"
+        v-if="childAnimationType === '跑马灯'"
+      >
+        <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
+          <card-cell-part
+            :cellItem="subCardPart"
+            :comColMap="comColMap"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="subCardPart"
+            :parentPart="cellItem"
+            :accordion="accordion"
+            :accordion-seq="accordionSeq"
+            :active-accordion-seq="activeAccordionSeq"
+            @on-click-part="onClickSubBlock"
+            @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
+          ></card-cell-part>
+        </template>
+      </div>
+      <template v-else>
+        <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
+          <card-cell-part
+            :cellItem="subCardPart"
+            :comColMap="comColMap"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="subCardPart"
+            :parentPart="cellItem"
+            :accordion="accordion"
+            :accordion-seq="accordionSeq"
+            :active-accordion-seq="activeAccordionSeq"
+            @on-click-part="onClickSubBlock"
+            @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
+          ></card-cell-part>
+        </template>
       </template>
     </div>
   </Fragment>
@@ -199,6 +247,11 @@ export default {
   data() {
     return {
       fileNoMap: {},
+      marqueeTimer: null, // 跑马灯定时器
+      marqueeDelayTimer: null, // 延迟启动定时器
+      marqueeOffset: 0, // 当前滚动偏移量
+      marqueeChildrenWidths: [], // 子元素宽度数组
+      marqueeContainerWidth: 0, // 容器总宽度
     };
   },
   props: {
@@ -232,6 +285,29 @@ export default {
   },
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
+    useChildAnimation() {
+      return (
+        ["row", "block"].includes(this.partsType) &&
+        this.cellLayoutJson?.child_use_animation === "是"
+      );
+    },
+    childAnimationType() {
+      return this.cellLayoutJson?.child_animation_type;
+    },
+    childAnimationConfig() {
+      let obj = {};
+      if (this.useChildAnimation) {
+        obj = {
+          type: this.cellLayoutJson?.child_animation_type || "跑马灯",
+          step: this.cellLayoutJson?.child_animation_step || "100",
+          direction:
+            this.cellLayoutJson?.child_animation_direction || "由左往右",
+          interval: (this.cellLayoutJson?.child_animation_interval || 1) * 1000, // 转换为毫秒
+          delay: (this.cellLayoutJson?.child_animation_delay || 0) * 1000, // 转换为毫秒
+        };
+      }
+      return obj;
+    },
     animationClass() {
       return setAnimationClass({
         type: this.cellItem.animation_type,
@@ -590,7 +666,189 @@ export default {
       return show;
     },
   },
+  beforeDestroy() {
+    // 清理定时器
+    this.stopMarqueeAnimation();
+  },
   methods: {
+    // 启动跑马灯动画
+    startMarqueeAnimation() {
+      const config = this.childAnimationConfig;
+      const marqueeElement = this.$refs.bxCellInnerContainer;
+      if (!this.marqueeContainerWidth) {
+        this.marqueeContainerWidth = marqueeElement.offsetWidth;
+      }
+      if (!config || !config.delay === undefined) return;
+
+      // 延迟启动
+      this.marqueeDelayTimer = setTimeout(() => {
+        this.runMarqueeAnimation();
+      }, config.delay);
+    },
+
+    // 执行跑马灯动画
+    runMarqueeAnimation() {
+      const config = this.childAnimationConfig;
+      if (!config) return;
+
+      this.marqueeTimer = setInterval(() => {
+        this.moveMarqueeChildren();
+      }, config.interval);
+    },
+
+    // 移动跑马灯子元素
+    moveMarqueeChildren() {
+      const marqueeElement = this.$refs.bxCellInnerContainer;
+      if (!marqueeElement) return;
+
+      const config = this.childAnimationConfig;
+      const children = Array.from(marqueeElement.children);
+
+      if (!children || children.length === 0) return;
+
+      const isRightDirection = config.direction === "由左往右";
+
+      // 为容器添加过渡动画
+      if (!marqueeElement.style.transition) {
+        marqueeElement.style.transition =
+          "transform 0.5s var(--marquee-transition-timing)";
+      }
+
+      // 计算下一个元素的宽度
+      const nextElementWidth = this.getNextElementWidth(
+        children,
+        isRightDirection
+      );
+
+      if (isRightDirection) {
+        // 向右滚动：向左移动一个元素的宽度
+        this.marqueeOffset += nextElementWidth;
+
+        // 检查是否需要重置位置
+        if (Math.abs(this.marqueeOffset) >= this.marqueeContainerWidth) {
+          this.resetMarqueePosition(marqueeElement);
+        } else {
+          marqueeElement.style.transform = `translateX(${this.marqueeOffset}px)`;
+        }
+      } else {
+        // 向左滚动：向右移动一个元素的宽度
+        this.marqueeOffset -= nextElementWidth;
+
+        // 检查是否需要重置位置
+        if (this.marqueeOffset <= -this.marqueeContainerWidth) {
+          this.resetMarqueePosition(marqueeElement);
+        } else {
+          marqueeElement.style.transform = `translateX(${this.marqueeOffset}px)`;
+        }
+      }
+    },
+
+    // 获取下一个要移动的元素宽度
+    getNextElementWidth(children, isRightDirection) {
+      if (isRightDirection) {
+        // 向右滚动时，获取第一个可见元素的宽度
+        return this.marqueeChildrenWidths[0] || children[0]?.offsetWidth || 0;
+      } else {
+        // 向左滚动时，获取最后一个元素的宽度
+        const lastIndex = children.length - 1;
+        return (
+          this.marqueeChildrenWidths[lastIndex] ||
+          children[lastIndex]?.offsetWidth ||
+          0
+        );
+      }
+    },
+
+    // 重置跑马灯位置
+    resetMarqueePosition(marqueeElement) {
+      // // 临时移除过渡效果
+      // marqueeElement.style.transition = "none";
+
+      // 重置偏移量和位置
+      this.marqueeOffset = 0;
+      marqueeElement.style.transform = "translateX(0px)";
+
+      // 重新启用过渡效果
+      setTimeout(() => {
+        marqueeElement.style.transition =
+          "transform 0.5s var(--marquee-transition-timing)";
+      }, 10);
+    },
+
+    // 计算并缓存子元素宽度
+    cacheChildrenWidths() {
+      const marqueeElement = this.$refs.bxCellInnerContainer;
+      if (!marqueeElement) return;
+
+      const children = Array.from(marqueeElement.children);
+      this.marqueeChildrenWidths = children.map((child) => child.offsetWidth);
+
+      // 计算容器总宽度
+      this.marqueeContainerWidth = marqueeElement.offsetWidth;
+    },
+
+    // 初始化无缝滚动布局
+    async initSeamlessLayout() {
+      const marqueeElement = this.$refs.bxCellInnerContainer;
+      if (!marqueeElement) return;
+
+      const children = marqueeElement.children;
+      if (!children || children.length === 0) return;
+
+      // 为容器设置样式以支持无缝滚动
+      marqueeElement.style.display = "flex";
+      marqueeElement.style.whiteSpace = "nowrap";
+      marqueeElement.style.transition = "transform 0.5s ease-in-out";
+      marqueeElement.style.transform = "translateX(0px)";
+
+      // 保持子元素原有样式，只设置必要的flex属性
+      Array.from(children).forEach((child) => {
+        child.style.flexShrink = "0";
+      });
+
+      // 缓存子元素宽度
+      this.cacheChildrenWidths();
+    },
+
+    // 停止跑马灯动画
+    stopMarqueeAnimation() {
+      if (this.marqueeTimer) {
+        clearInterval(this.marqueeTimer);
+        this.marqueeTimer = null;
+      }
+      if (this.marqueeDelayTimer) {
+        clearTimeout(this.marqueeDelayTimer);
+        this.marqueeDelayTimer = null;
+      }
+
+      // 重置状态
+      this.marqueeOffset = 0;
+      this.marqueeChildrenWidths = [];
+      this.marqueeContainerWidth = 0;
+
+      // 清除容器的动画样式
+      const marqueeElement = this.$refs.bxCellInnerContainer;
+      if (marqueeElement) {
+        marqueeElement.style.display = "";
+        marqueeElement.style.whiteSpace = "";
+        marqueeElement.style.transition = "";
+        marqueeElement.style.transform = "";
+
+        // 清除子元素的flex样式，保持其他样式不变
+        Array.from(marqueeElement.children).forEach((child) => {
+          child.style.flexShrink = "";
+        });
+      }
+    },
+
+    getSubJson(cellItem) {
+      if (Array.isArray(cellItem?.sub_card_parts_json)) {
+        return cellItem.sub_card_parts_json;
+      }
+      if (Array.isArray(cellItem?.children)) {
+        return cellItem.children;
+      }
+    },
     onMouseenter(event) {
       this.$emit("mouse-enter", event);
     },
@@ -840,6 +1098,13 @@ export default {
         });
       }
     }
+    // 启动跑马灯动画
+    if (this.useChildAnimation && this.childAnimationType === "跑马灯") {
+      this.$nextTick(() => {
+        this.initSeamlessLayout();
+        this.startMarqueeAnimation();
+      });
+    }
   },
   beforeUnmount() {
     numberAnimationStop?.();
@@ -855,6 +1120,24 @@ export default {
       color: var(--primary-color, #409eff);
     }
   }
+}
+.marquee-mode {
+  position: relative;
+
+  // 使用 mask 实现自适应渐隐效果
+  --mask: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 5%,
+    rgba(0, 0, 0, 0.6) 10%,
+    rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%,
+    rgba(0, 0, 0, 0.6) 90%,
+    rgba(0, 0, 0, 0.2) 95%,
+    transparent 100%
+  );
+  -webkit-mask: var(--mask);
+  mask: var(--mask);
 }
 .bx-cell-video {
   width: 100%;
