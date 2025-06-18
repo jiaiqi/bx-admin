@@ -52,6 +52,7 @@ export const drwMapMarkers = (map, data, url) => {
 export const drawMapMarkersAndLabel = (_map,data) => {
     markerList=[]
     removeOverlay(_map)
+    if(!data || data.length===0) return
     // 创建图标
     const icon1 = new BMap.Icon(
         require(`@/assets/mapIcon/start.png`),

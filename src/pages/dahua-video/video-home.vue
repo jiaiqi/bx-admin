@@ -105,12 +105,7 @@ const fieldNames = {
 const filterText = ref(''); //树节点过滤使用
 const tree = ref(null);
 let myVideoPlayer = null;
-const LoginInfo = {
-  host: '124.160.33.135',  // icc 平台ip
-  port: '4077',  //icc 平台端口 https 默认 443
-  username: 'TEST',  // icc 平台用户名
-  password: 'OGR28u6_cc' // icc 平台密码
-}
+const LoginInfo = window.APP_CONFIG.videoInfo
 
 // 添加历史回放相关的状态变量
 const playbackStartTime = ref('');
@@ -297,6 +292,7 @@ const initPlayer = () => {
     parentIframeShieldClass: [], // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
     // 创建播放器成功回调
     createSuccess: (versionInfo) => {
+      console.log(LoginInfo)
       // 初始化时默认显示9宫格
       myVideoPlayer.changeDivision(9)
     },
@@ -695,6 +691,8 @@ const filterNode = (value, data) => {
 };
 
 onMounted(() => {
+  // sessionStorage.removeItem('bx_auth_ticket');
+  // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-2eea9383-5e84-4248-9729-6cdca3348323');
   getVideoInfo()
   initPlayer()
 

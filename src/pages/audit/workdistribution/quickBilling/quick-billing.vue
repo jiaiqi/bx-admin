@@ -75,12 +75,12 @@
              <el-row>
                <el-col :span="6">
                  <el-form-item label="门架序列">
-                   <el-input @clear="handleClearGantry" v-model="quickForm.textGantryGroup" size="mini" style="width:100%" clearable placeholder="请输入" @input="debouncedHandleGantryGroupInput"></el-input>
+                   <el-input @clear="handleClearGantry" v-model="quickForm.textGantryGroup" size="mini" style="width:100%" clearable placeholder="输入的多个序列使用|分隔" @input="debouncedHandleGantryGroupInput"></el-input>
                  </el-form-item>
                </el-col>
                <el-col :span="6">
                  <el-form-item label="门架序列(HEX)">
-                   <el-input v-model="quickForm.textGantryHexGroup" size="mini" style="width:100%" clearable placeholder="请输入"></el-input>
+                   <el-input v-model="quickForm.textGantryHexGroup" size="mini" style="width:100%" clearable placeholder="输入的多个hex使用|分隔" @input="debouncedHandleHexGroupInput" @clear="handleClearGantry"></el-input>
                  </el-form-item>
                </el-col>
                <el-col :span="6">
@@ -166,6 +166,7 @@ export default {
       stationList:[],
       debounceTimer: null, // 添加防抖定时器
       debouncedHandleGantryGroupInput: null, // 添加防抖处理后的方法声明
+      debouncedHandleHexGroupInput: null, // 添加hex输入框的防抖处理后的方法声明
       storedGantryGroup: '', // 存储textGantryGroup的值
       quickRules:{
         vehicleType: [
@@ -219,30 +220,6 @@ export default {
       };
     },
 
-    /**
-     * @Description:
-     * @Author:Eirice
-     * @Date: 2025-06-18 15:16:25
-     */
-    handleGetStationByHex(ids){
-      let info={
-        page:{
-          pageNo:1,
-          rownumber:10,
-        },
-        condition:[{colName: "gantryhex", ruleType: "in", value:ids}],
-        relation_condition:{
-          relation: "AND",
-          data:[{colName: "gantryhex", ruleType: "in", value:ids}]
-        }
-      }
-      orderUtils.getAllStationByInfo(info).then(res => {
-        if(res.data.state !== 'SUCCESS') return;
-        let ls = res.data.data;
-
-      }).catch(err => {})
-
-    },
     //门架序列数据处理
     handleGantryGroupInput(value) {
       if (!value) {
@@ -251,6 +228,8 @@ export default {
         this.stationList = this.stationList.filter(station => !gantryIds.includes(station.id.toString()));
         this.stationList = this.handleStationDataSource(this.stationList);
         this.handleDrawMarkers();
+        // 清空hex值
+        this.quickForm.textGantryHexGroup = '';
         return;
       }
       
@@ -261,8 +240,16 @@ export default {
       // 更新输入框的值和存储值
       this.quickForm.textGantryGroup = uniqueGantryArray.join('|');
       this.storedGantryGroup = this.quickForm.textGantryGroup;
+      
+      // 将|替换为英文逗号后传递给handleByTextGantryGroup
       let ids = this.quickForm.textGantryGroup.replace(/\|/g, ',');
-      this.handleByTextGantryGroup(ids)
+      
+      // 先清除之前通过textGantryGroup添加的门架
+      const oldGantryIds = this.storedGantryGroup.split('|').filter(id => id.trim());
+      this.stationList = this.stationList.filter(station => !oldGantryIds.includes(station.id.toString()));
+      
+      // 获取新的门架数据
+      this.handleByTextGantryGroup(ids);
     },
     //门架序列点击清除
     handleClearGantry(){
@@ -273,6 +260,7 @@ export default {
       this.stationList = this.handleStationDataSource(this.stationList);
       this.handleDrawMarkers();
       this.storedGantryGroup = '';
+      this.quickForm.textGantryGroup = '';
     },
     /**
      * @Description:处理门架字段
@@ -368,10 +356,8 @@ export default {
         // 更新地图标记
         this.handleDrawMarkers();
 
-        // 更新gantryHexGroup
-        const hexValues = this.stationList
-          .filter(station => station.gantryhex) // 过滤掉没有gantryhex的数据
-          .map(station => station.gantryhex);
+        // 根据查询返回的数据更新textGantryHexGroup
+        const hexValues = ls.map(item => item.gantryhex).filter(hex => hex);
         this.quickForm.textGantryHexGroup = hexValues.join('|');
       }).catch(err => {})
     },
@@ -395,6 +381,16 @@ export default {
           // 如果存在，则从textGantryGroup中移除该ID
           const updatedIds = gantryIds.filter(id => id !== item.id.toString());
           this.quickForm.textGantryGroup = updatedIds.join('|');
+          this.storedGantryGroup = this.quickForm.textGantryGroup;
+          
+          // 触发查询更新textGantryHexGroup
+          if (this.quickForm.textGantryGroup) {
+            let queryIds = this.quickForm.textGantryGroup.replace(/\|/g, ',');
+            this.handleByTextGantryGroup(queryIds);
+          } else {
+            // 如果textGantryGroup为空，则清空textGantryHexGroup
+            this.quickForm.textGantryHexGroup = '';
+          }
         }
       }
       this.handleDrawMarkers()
@@ -440,10 +436,64 @@ export default {
         }, 500)
       })
     },
+    handleHexGroupInput(value) {
+      if (!value) {
+        // 当输入框被清除时，移除通过textGantryGroup添加的门架
+        const gantryIds = this.storedGantryGroup.split('|').filter(id => id.trim());
+        this.stationList = this.stationList.filter(station => !gantryIds.includes(station.id.toString()));
+        this.stationList = this.handleStationDataSource(this.stationList);
+        this.handleDrawMarkers();
+        // 清空textGantryGroup
+        this.quickForm.textGantryGroup = '';
+        return;
+      }
+      
+      // 使用 | 分割字符串并去重
+      const hexArray = value.split('|').filter(item => item.trim());
+      const uniqueHexArray = [...new Set(hexArray)];
+      
+      // 更新输入框的值
+      this.quickForm.textGantryHexGroup = uniqueHexArray.join('|');
+      
+      // 将|替换为英文逗号后传递给handleGetStationByHex
+      let ids = this.quickForm.textGantryHexGroup.replace(/\|/g, ',');
+      this.handleGetStationByHex(ids);
+    },
+    handleGetStationByHex(ids){
+      let info={
+        page:{
+          pageNo:1,
+          rownumber:10,
+        },
+        condition:[{colName: "gantryhex", ruleType: "in", value:ids}],
+        relation_condition:{
+          relation: "AND",
+          data:[{colName: "gantryhex", ruleType: "in", value:ids}]
+        }
+      }
+      orderUtils.getAllStationByInfo(info).then(res => {
+        if(res.data.state !== 'SUCCESS') return;
+        let ls = res.data.data;
+        
+        // 先清除之前通过textGantryGroup添加的门架
+        const oldGantryIds = this.storedGantryGroup.split('|').filter(id => id.trim());
+        this.stationList = this.stationList.filter(station => !oldGantryIds.includes(station.id.toString()));
+        
+        // 将获取到的门架ID拼接到textGantryGroup
+        const gantryIds = ls.map(item => item.id).filter(id => id);
+        this.quickForm.textGantryGroup = gantryIds.join('|');
+        this.storedGantryGroup = this.quickForm.textGantryGroup;
+        
+        // 触发textGantryGroup的查询操作
+        let queryIds = this.quickForm.textGantryGroup.replace(/\|/g, ',');
+        this.handleByTextGantryGroup(queryIds);
+      }).catch(err => {})
+    },
   },
   created() {
     // 创建防抖处理后的方法
     this.debouncedHandleGantryGroupInput = this.debounce(this.handleGantryGroupInput);
+    this.debouncedHandleHexGroupInput = this.debounce(this.handleHexGroupInput);
   },
   mounted(){
     // sessionStorage.removeItem('bx_auth_ticket');

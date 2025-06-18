@@ -6,5 +6,11 @@ window.APP_CONFIG = {
     viRoute:`/baiduApi/direction/v2/driving`,
     RouteAK:`tkSgCpN7B73A76l9M7RExhcdu2ip8FEo`,
     // ROUTE_151:`//api.map.baidu.com/direction/v2/driving` 打包151放开
-    splitType:'|'
+    splitType:'|',
+    videoInfo:{
+        host: '113.201.21.178',  // icc 平台ip
+        port: '9443',  //icc 平台端口 https 默认 443
+        username: 'admin',  // icc 平台用户名
+        password: 'Admin123' // icc 平台密码
+    }
 };
