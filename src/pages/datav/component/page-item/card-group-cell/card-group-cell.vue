@@ -239,6 +239,7 @@ var self = null;
 import Teleport from "vue2-teleport";
 import { Icon } from "@iconify/vue2";
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
+import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import dayjs from "dayjs";
 import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
@@ -255,7 +256,7 @@ export default {
     // bxForm: () => import('@/views/custom/components/bx-form/bx-form.vue') //剔除 原小程序form组件
   },
   name: "card-group-cell",
-  mixins: [cardGroupCellMxin],
+  mixins: [cardGroupCellMxin, marqueeMixin],
 
   data() {
     return {
@@ -269,12 +270,6 @@ export default {
       dialogUrl: "",
       iframeLoading: true,
       currentAccordionSeq: 1,
-      // 跑马灯相关状态
-      marqueeTimer: null, // 跑马灯定时器
-      marqueeDelayTimer: null, // 延迟启动定时器
-      marqueeOffset: 0, // 当前滚动偏移量
-      marqueeChildrenWidths: [], // 子元素宽度数组
-      marqueeContainerWidth: 0, // 容器总宽度
     };
   },
   watch: {
@@ -517,183 +512,16 @@ export default {
     // 启动跑马灯动画
     if (this.childAnimationType === "跑马灯") {
       this.$nextTick(() => {
-        this.initSeamlessLayout();
-        this.startMarqueeAnimation();
+        this.startMarqueeAnimation(
+          this.childAnimationConfig,
+          "cardInnerContainer"
+        );
       });
     }
   },
-  beforeDestroy() {
-    // 清理定时器
-    this.stopMarqueeAnimation();
-  },
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
-    // 启动跑马灯动画
-    startMarqueeAnimation() {
-      const config = this.childAnimationConfig;
-      const marqueeElement = this.$refs.cardInnerContainer;
-      if (!this.marqueeContainerWidth && marqueeElement) {
-        this.marqueeContainerWidth = marqueeElement.offsetWidth;
-      }
-      if (!config || config.delay === undefined) return;
 
-      // 延迟启动
-      this.marqueeDelayTimer = setTimeout(() => {
-        this.runMarqueeAnimation();
-      }, config.delay);
-    },
-
-    // 执行跑马灯动画
-    runMarqueeAnimation() {
-      const config = this.childAnimationConfig;
-      if (!config) return;
-
-      this.marqueeTimer = setInterval(() => {
-        this.moveMarqueeChildren();
-      }, config.interval);
-    },
-
-    // 移动跑马灯子元素
-    moveMarqueeChildren() {
-      const marqueeElement = this.$refs.cardInnerContainer;
-      if (!marqueeElement) return;
-
-      const config = this.childAnimationConfig;
-      const children = Array.from(marqueeElement.children);
-
-      if (!children || children.length === 0) return;
-
-      const isRightDirection = config.direction === "由左往右";
-
-      // 为容器添加过渡动画
-      if (!marqueeElement.style.transition) {
-        marqueeElement.style.transition =
-          "transform 0.5s var(--marquee-transition-timing)";
-      }
-
-      // 计算下一个元素的宽度
-      const nextElementWidth = this.getNextElementWidth(
-        children,
-        isRightDirection
-      );
-
-      if (isRightDirection) {
-        // 向右滚动：向左移动一个元素的宽度
-        this.marqueeOffset += nextElementWidth;
-
-        // 检查是否需要重置位置
-        if (Math.abs(this.marqueeOffset) >= this.marqueeContainerWidth) {
-          this.resetMarqueePosition(marqueeElement);
-        } else {
-          marqueeElement.style.transform = `translateX(${this.marqueeOffset}px)`;
-        }
-      } else {
-        // 向左滚动：向右移动一个元素的宽度
-        this.marqueeOffset -= nextElementWidth;
-
-        // 检查是否需要重置位置
-        if (this.marqueeOffset <= -this.marqueeContainerWidth) {
-          this.resetMarqueePosition(marqueeElement);
-        } else {
-          marqueeElement.style.transform = `translateX(${this.marqueeOffset}px)`;
-        }
-      }
-    },
-
-    // 获取下一个要移动的元素宽度
-    getNextElementWidth(children, isRightDirection) {
-      if (isRightDirection) {
-        // 向右滚动时，获取第一个可见元素的宽度
-        return this.marqueeChildrenWidths[0] || children[0]?.offsetWidth || 0;
-      } else {
-        // 向左滚动时，获取最后一个元素的宽度
-        const lastIndex = children.length - 1;
-        return (
-          this.marqueeChildrenWidths[lastIndex] ||
-          children[lastIndex]?.offsetWidth ||
-          0
-        );
-      }
-    },
-
-    // 重置跑马灯位置
-    resetMarqueePosition(marqueeElement) {
-      // 重置偏移量和位置
-      this.marqueeOffset = 0;
-      marqueeElement.style.transform = "translateX(0px)";
-
-      // 重新启用过渡效果
-      setTimeout(() => {
-        marqueeElement.style.transition =
-          "transform 0.5s var(--marquee-transition-timing)";
-      }, 10);
-    },
-
-    // 计算并缓存子元素宽度
-    cacheChildrenWidths() {
-      const marqueeElement = this.$refs.cardInnerContainer;
-      if (!marqueeElement) return;
-
-      const children = Array.from(marqueeElement.children);
-      this.marqueeChildrenWidths = children.map((child) => child.offsetWidth);
-
-      // 计算容器总宽度
-      this.marqueeContainerWidth = marqueeElement.offsetWidth;
-    },
-
-    // 初始化无缝滚动布局
-    async initSeamlessLayout() {
-      const marqueeElement = this.$refs.cardInnerContainer;
-      if (!marqueeElement) return;
-
-      const children = marqueeElement.children;
-      if (!children || children.length === 0) return;
-
-      // 为容器设置样式以支持无缝滚动
-      marqueeElement.style.display = "flex";
-      marqueeElement.style.whiteSpace = "nowrap";
-      marqueeElement.style.transition = "transform 0.5s ease-in-out";
-      marqueeElement.style.transform = "translateX(0px)";
-
-      // 保持子元素原有样式，只设置必要的flex属性
-      Array.from(children).forEach((child) => {
-        child.style.flexShrink = "0";
-      });
-
-      // 缓存子元素宽度
-      this.cacheChildrenWidths();
-    },
-
-    // 停止跑马灯动画
-    stopMarqueeAnimation() {
-      if (this.marqueeTimer) {
-        clearInterval(this.marqueeTimer);
-        this.marqueeTimer = null;
-      }
-      if (this.marqueeDelayTimer) {
-        clearTimeout(this.marqueeDelayTimer);
-        this.marqueeDelayTimer = null;
-      }
-
-      // 重置状态
-      this.marqueeOffset = 0;
-      this.marqueeChildrenWidths = [];
-      this.marqueeContainerWidth = 0;
-
-      // 清除容器的动画样式
-      const marqueeElement = this.$refs.cardInnerContainer;
-      if (marqueeElement) {
-        marqueeElement.style.display = "";
-        marqueeElement.style.whiteSpace = "";
-        marqueeElement.style.transition = "";
-        marqueeElement.style.transform = "";
-
-        // 清除子元素的flex样式，保持其他样式不变
-        Array.from(marqueeElement.children).forEach((child) => {
-          child.style.flexShrink = "";
-        });
-      }
-    },
     recoverFileAddress(val = "") {
       if (typeof val !== "string") {
         return val;
@@ -919,10 +747,8 @@ export default {
   overflow: hidden;
   position: relative;
   --marquee-transition-timing: ease-in-out;
-}
 
-/* 跑马灯渐隐效果 - 使用 CSS mask 实现自适应颜色 */
-.marquee-mode .card-inner-container {
+  /* 跑马灯渐隐效果 - 使用 CSS mask 实现自适应颜色 */
   -webkit-mask: linear-gradient(
     to right,
     transparent 0%,
