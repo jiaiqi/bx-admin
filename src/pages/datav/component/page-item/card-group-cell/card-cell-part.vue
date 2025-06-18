@@ -131,51 +131,80 @@
     ></qr-code>
     <div
       ref="bxCellContainer"
-      :class="[
-        'bx-cell-' + cellItem.parts_type,
-        {
-          'cursor-pointer': isLink,
-          'marquee-mode': childAnimationType === '跑马灯',
-        },
-      ]"
       v-else-if="
         ['row', 'block'].includes(cellItem.parts_type) &&
         cellItem.hasOwnProperty('sub_card_parts_json') &&
         cellItem.sub_card_parts_json.length > 0
       "
-      :style="[
-        buildColStyleJson,
-        {
-          '--child-animation-step': childAnimationConfig.step,
-          '--child-animation-type': childAnimationType,
-          '--child-animation-direction': childAnimationConfig.direction,
-          '--child-animation-delay': childAnimationConfig.delay,
-          position: 'relative',
-          overflow: 'hidden',
-          '--marquee-transition-duration': '0.5s',
-          '--marquee-transition-timing': 'ease-in-out',
-        },
-      ]"
-      @click.stop="onClickSubBlock()"
-      @mouseenter="onMouseenter"
-      @mouseleave="onMouseleave"
+      :class="{
+        'marquee-mode': childAnimationType === '跑马灯',
+      }"
+      :style="[childAnimationType === '跑马灯' ? {} : buildColStyleJson]"
     >
-      <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
-        <card-cell-part
-          :cellItem="subCardPart"
-          :comColMap="comColMap"
-          :cellItemData="cellItemData"
-          :readOnly="readOnly"
-          :queryOptions="queryOptions"
-          :cellLayoutJson="subCardPart"
-          :parentPart="cellItem"
-          :accordion="accordion"
-          :accordion-seq="accordionSeq"
-          :active-accordion-seq="activeAccordionSeq"
-          @on-click-part="onClickSubBlock"
-          @on-click-cell="onClickCell"
-          @show-dialog="showDialog"
-        ></card-cell-part>
+      <div
+        ref="bxCellInnerContainer"
+        :class="[
+          'bx-cell-' + cellItem.parts_type,
+          {
+            'cursor-pointer': isLink,
+          },
+        ]"
+        :style="[
+          buildColStyleJson,
+          {
+            '--child-animation-step': childAnimationConfig.step,
+            '--child-animation-type': childAnimationType,
+            '--child-animation-direction': childAnimationConfig.direction,
+            '--child-animation-delay': childAnimationConfig.delay,
+          },
+          childAnimationType !== '跑马灯'
+            ? {
+                position: 'relative',
+                overflow: 'hidden',
+              }
+            : {},
+        ]"
+        @click.stop="onClickSubBlock()"
+        @mouseenter="onMouseenter"
+        @mouseleave="onMouseleave"
+        v-if="childAnimationType === '跑马灯'"
+      >
+        <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
+          <card-cell-part
+            :cellItem="subCardPart"
+            :comColMap="comColMap"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="subCardPart"
+            :parentPart="cellItem"
+            :accordion="accordion"
+            :accordion-seq="accordionSeq"
+            :active-accordion-seq="activeAccordionSeq"
+            @on-click-part="onClickSubBlock"
+            @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
+          ></card-cell-part>
+        </template>
+      </div>
+      <template v-else>
+        <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
+          <card-cell-part
+            :cellItem="subCardPart"
+            :comColMap="comColMap"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="subCardPart"
+            :parentPart="cellItem"
+            :accordion="accordion"
+            :accordion-seq="accordionSeq"
+            :active-accordion-seq="activeAccordionSeq"
+            @on-click-part="onClickSubBlock"
+            @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
+          ></card-cell-part>
+        </template>
       </template>
     </div>
   </Fragment>
@@ -645,7 +674,7 @@ export default {
     // 启动跑马灯动画
     startMarqueeAnimation() {
       const config = this.childAnimationConfig;
-      const marqueeElement = this.$refs.bxCellContainer;
+      const marqueeElement = this.$refs.bxCellInnerContainer;
       if (!this.marqueeContainerWidth) {
         this.marqueeContainerWidth = marqueeElement.offsetWidth;
       }
@@ -669,7 +698,7 @@ export default {
 
     // 移动跑马灯子元素
     moveMarqueeChildren() {
-      const marqueeElement = this.$refs.bxCellContainer;
+      const marqueeElement = this.$refs.bxCellInnerContainer;
       if (!marqueeElement) return;
 
       const config = this.childAnimationConfig;
@@ -748,7 +777,7 @@ export default {
 
     // 计算并缓存子元素宽度
     cacheChildrenWidths() {
-      const marqueeElement = this.$refs.bxCellContainer;
+      const marqueeElement = this.$refs.bxCellInnerContainer;
       if (!marqueeElement) return;
 
       const children = Array.from(marqueeElement.children);
@@ -760,7 +789,7 @@ export default {
 
     // 初始化无缝滚动布局
     async initSeamlessLayout() {
-      const marqueeElement = this.$refs.bxCellContainer;
+      const marqueeElement = this.$refs.bxCellInnerContainer;
       if (!marqueeElement) return;
 
       const children = marqueeElement.children;
@@ -798,7 +827,7 @@ export default {
       this.marqueeContainerWidth = 0;
 
       // 清除容器的动画样式
-      const marqueeElement = this.$refs.bxCellContainer;
+      const marqueeElement = this.$refs.bxCellInnerContainer;
       if (marqueeElement) {
         marqueeElement.style.display = "";
         marqueeElement.style.whiteSpace = "";
@@ -1091,6 +1120,24 @@ export default {
       color: var(--primary-color, #409eff);
     }
   }
+}
+.marquee-mode {
+  position: relative;
+
+  // 使用 mask 实现自适应渐隐效果
+  --mask: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 5%,
+    rgba(0, 0, 0, 0.6) 10%,
+    rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%,
+    rgba(0, 0, 0, 0.6) 90%,
+    rgba(0, 0, 0, 0.2) 95%,
+    transparent 100%
+  );
+  -webkit-mask: var(--mask);
+  mask: var(--mask);
 }
 .bx-cell-video {
   width: 100%;
