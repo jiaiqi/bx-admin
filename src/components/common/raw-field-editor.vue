@@ -81,7 +81,7 @@
               :placeholder="field.info.placeholder"
               clearable
               :disabled="getDisabled"
-              @change="$emit('field-value-changed', field.info.name, field)"
+              @change="selectChange"
               @blur="onBlur"
             >
               <el-option
@@ -91,9 +91,13 @@
                 :value="item.value"
               >
                 <div
-                  v-if="item.label && (item.label.startsWith('ri-')||item.label.startsWith('ri:'))"
+                  v-if="
+                    item.label &&
+                    (item.label.startsWith('ri-') ||
+                      item.label.startsWith('ri:'))
+                  "
                   class="flex items-center"
-                  style="width: 100%;height: 100%;font-size: 24px"
+                  style="width: 100%; height: 100%; font-size: 24px"
                 >
                   <Icon :icon="item.label" />
                 </div>
@@ -1149,6 +1153,12 @@ export default {
           }
         }
       }
+    },
+    selectChange() {
+      if (!this.field.model) {
+        this.field.model = null;
+      }
+      this.$emit("field-value-changed", this.field.info.name, this.field);
     },
     onBlur() {
       this.inputStatus = "";

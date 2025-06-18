@@ -80,6 +80,7 @@
       <!-- 卡片列表 -->
       <div
         class="bx-card-list"
+        ref="cardListRef"
         :style="[styleWidthPictures]"
         v-else-if="listType == '卡片'"
       >
@@ -124,6 +125,7 @@
           :comColMap="comColMapJson"
           :cardLayout="layoutJson"
           :rowButtons="listV2RowButtons"
+          :list-config="listConfig"
           @on-click-cell="onClickCell"
           @on-click-block="onClickBlock"
           @on-row-button-click="onRowButtonClick"
@@ -513,7 +515,7 @@ export default {
           //   value: this.mapSearchKey,
           // });
           itemReqJson.condition.push({
-            colName: 'path',
+            colName: "path",
             ruleType: "like]",
             value: this.mapSearchKey,
           });
@@ -847,14 +849,13 @@ export default {
     flex: 1;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.1) #f1f1f1;
+    scrollbar-color: rgba(0, 0, 0, 0.1) #f1f1f1;
     &::-webkit-scrollbar {
       width: 6px;
       height: 6px;
-
     }
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(0,0,0,0.1);
+      background-color: rgba(0, 0, 0, 0.1);
       border-radius: 4px;
     }
   }
