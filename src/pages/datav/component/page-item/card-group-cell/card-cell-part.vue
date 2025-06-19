@@ -138,8 +138,12 @@
       "
       :class="{
         'marquee-mode': childAnimationType === '跑马灯',
+        'cursor-pointer': isLink && childAnimationType !== '跑马灯',
+        ['bx-cell-' + cellItem.parts_type]: childAnimationType !== '跑马灯',
       }"
       :style="[childAnimationType === '跑马灯' ? {} : buildColStyleJson]"
+      @mouseenter="onMouseenter"
+      @mouseleave="onMouseleave"
     >
       <div
         ref="bxCellInnerContainer"
@@ -165,8 +169,6 @@
             : {},
         ]"
         @click.stop="onClickSubBlock()"
-        @mouseenter="onMouseenter"
-        @mouseleave="onMouseleave"
         v-if="childAnimationType === '跑马灯'"
       >
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
