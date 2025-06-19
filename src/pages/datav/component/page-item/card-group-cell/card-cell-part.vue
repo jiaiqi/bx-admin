@@ -663,18 +663,7 @@ export default {
       return show;
     },
   },
-  mounted() {
-    // 启动跑马灯动画
-    if (this.childAnimationType === "跑马灯") {
-      this.$nextTick(() => {
-        this.startMarqueeAnimation(this.childAnimationConfig, 'bxCellInnerContainer');
-      });
-    }
-  },
   methods: {
-    // 启动跑马灯动画
-
-
     getSubJson(cellItem) {
       if (Array.isArray(cellItem?.sub_card_parts_json)) {
         return cellItem.sub_card_parts_json;
@@ -934,9 +923,10 @@ export default {
     }
     // 启动跑马灯动画
     if (this.useChildAnimation && this.childAnimationType === "跑马灯") {
-      this.$nextTick(() => {
-        this.startMarqueeAnimation(this.childAnimationConfig, 'bxCellInnerContainer');
-      });
+      const config = this.childAnimationConfig;
+      setTimeout(() => {
+        this.startMarqueeAnimation(config, "bxCellInnerContainer");
+      }, 3000);
     }
   },
   beforeUnmount() {

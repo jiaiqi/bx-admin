@@ -505,23 +505,17 @@ export default {
       );
     },
   },
-  created() {
-    // self = this
-  },
   mounted() {
     // 启动跑马灯动画
     if (this.childAnimationType === "跑马灯") {
-      this.$nextTick(() => {
-        this.startMarqueeAnimation(
-          this.childAnimationConfig,
-          "cardInnerContainer"
-        );
-      });
+      const config = this.childAnimationConfig;
+      setTimeout(() => {
+        this.startMarqueeAnimation(config, "cardInnerContainer");
+      }, 3000);
     }
   },
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
-
     recoverFileAddress(val = "") {
       if (typeof val !== "string") {
         return val;
@@ -742,6 +736,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "./marquee.css";
+
 /* 跑马灯模式样式 */
 .marquee-mode {
   overflow: hidden;
