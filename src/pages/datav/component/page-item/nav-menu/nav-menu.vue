@@ -45,7 +45,12 @@
         </div>
       </div>
     </div>
-    <content-wrap :data="current" v-if="current" :key="current.no" @tap="onTapContentItem"></content-wrap>
+    <content-wrap
+      :data="current"
+      v-if="current"
+      :key="current.no"
+      @tap="onTapContentItem"
+    ></content-wrap>
   </div>
   <div v-else-if="viewMode === '面包屑导航'" class="breadcrumb-wrap">
     <div class="home-icon">
@@ -201,7 +206,7 @@ export default {
     parentStyle: Object,
     followThemeColor: Boolean,
     titleStyle: Object,
-    titleIcon:String
+    titleIcon: String,
   },
   inject: ["getPageConfig"],
   data() {
@@ -434,8 +439,8 @@ export default {
   methods: {
     onTapContentItem(item) {
       console.log("item", item);
-      if(this.config.jump_json){
-        this.navTo(this.config.jump_json,item)
+      if (this.config.jump_json) {
+        this.navTo(this.config.jump_json, item);
       }
     },
     onTapCatalog(item, changeUnfold = true) {
@@ -488,6 +493,7 @@ export default {
         colNames: ["*"],
         condition: [
           { colName: "path", ruleType: "like]", value: `/${this.catalogNo}/` },
+          { colName: "is_view", ruleType: "ne", value: "否" },
         ],
         treeData: true,
         // relation_condition: {},
@@ -703,7 +709,7 @@ export default {
             break;
           default:
             if (jumpJson.dest_page_no) {
-              this.jumpAction(jumpJson,data);
+              this.jumpAction(jumpJson, data);
             }
             break;
         }

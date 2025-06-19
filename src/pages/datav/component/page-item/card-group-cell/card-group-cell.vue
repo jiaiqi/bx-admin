@@ -736,72 +736,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "./marquee.css";
-
 /* 跑马灯模式样式 */
-.marquee-mode {
-  overflow: hidden;
-  position: relative;
-  --marquee-transition-timing: ease-in-out;
-
-  /* 跑马灯渐隐效果 - 使用 CSS mask 实现自适应颜色 */
-  -webkit-mask: linear-gradient(
-    to right,
-    transparent 0%,
-    black 5%,
-    black 95%,
-    transparent 100%
-  );
-  mask: linear-gradient(
-    to right,
-    transparent 0%,
-    black 5%,
-    black 95%,
-    transparent 100%
-  );
-}
-
-/* 备用方案：使用 clip-path（现代浏览器支持更好） */
-/* 
-.marquee-mode .card-inner-container {
-  clip-path: polygon(
-    0% 0%, 
-    5% 0%, 
-    95% 0%, 
-    100% 0%, 
-    100% 100%, 
-    95% 100%, 
-    5% 100%, 
-    0% 100%
-  );
-  filter: blur(0px);
-}
-*/
-
-/* 备用方案：使用 filter + backdrop-filter（需要背景支持） */
-/*
-.marquee-mode::before,
-.marquee-mode::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 5%;
-  z-index: 1;
-  pointer-events: none;
-  backdrop-filter: blur(2px);
-}
-
-.marquee-mode::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(255,255,255,1), transparent);
-}
-
-.marquee-mode::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(255,255,255,1), transparent);
-}
-*/
+@import "./marquee.css";
 
 .bx-text-cell {
   // overflow: hidden;

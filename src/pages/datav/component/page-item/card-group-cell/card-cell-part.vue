@@ -946,24 +946,6 @@ export default {
     }
   }
 }
-.marquee-mode {
-  position: relative;
-
-  // 使用 mask 实现自适应渐隐效果
-  --mask: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.2) 5%,
-    rgba(0, 0, 0, 0.6) 10%,
-    rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%,
-    rgba(0, 0, 0, 0.6) 90%,
-    rgba(0, 0, 0, 0.2) 95%,
-    transparent 100%
-  );
-  -webkit-mask: var(--mask);
-  mask: var(--mask);
-}
 .bx-cell-video {
   width: 100%;
   height: 100%;
