@@ -10,7 +10,7 @@
   }
   .quick_map{
     width:100%;
-    height:65%;
+    height:60%;
   }
   .qk_row{
     width:100%;
@@ -19,7 +19,7 @@
   .quick_form{
     margin:0.1875rem 0;
     width:100%;
-    height:34%;
+    height:38%;
     background:#fff;
     border:1px solid #ececef;
     box-shadow: 0 0 8px rgba(232, 237, 250, 0.6), 0 2px 4px rgba(232, 237, 250, 0.5);
@@ -46,13 +46,13 @@
   }
 }
 .qk_row .qk_ruleForm .el-form-item{
-  margin-bottom:0.625rem !important;
+  margin-bottom:0.3125rem !important;
 }
 .qk_row .qk_ruleForm > .el-row{
   border:none !important;
 }
 .qk_row .text_ruleForm .el-form-item{
-  margin-bottom:0.625rem !important;
+  margin-bottom:0.3125rem !important;
 }
 .qk_row .text_ruleForm > .el-row{
   border:none !important;

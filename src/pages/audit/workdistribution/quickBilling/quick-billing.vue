@@ -75,12 +75,12 @@
              <el-row>
                <el-col :span="6">
                  <el-form-item label="门架序列">
-                   <el-input @clear="handleClearGantry" v-model="quickForm.textGantryGroup" size="mini" style="width:100%" clearable placeholder="输入的多个序列使用|分隔" @input="debouncedHandleGantryGroupInput"></el-input>
+                   <el-input type="textarea"  @clear="handleClearGantry" v-model="quickForm.textGantryGroup" size="mini" style="width:100%" clearable placeholder="输入的多个序列使用|分隔" @input="debouncedHandleGantryGroupInput"></el-input>
                  </el-form-item>
                </el-col>
                <el-col :span="6">
                  <el-form-item label="门架序列(HEX)">
-                   <el-input v-model="quickForm.textGantryHexGroup" size="mini" style="width:100%" clearable placeholder="输入的多个hex使用|分隔" @input="debouncedHandleHexGroupInput" @clear="handleClearGantry"></el-input>
+                   <el-input type="textarea" v-model="quickForm.textGantryHexGroup" size="mini" style="width:100%" clearable placeholder="输入的多个hex使用|分隔" @input="debouncedHandleHexGroupInput" @clear="handleClearGantry"></el-input>
                  </el-form-item>
                </el-col>
                <el-col :span="6">
@@ -661,8 +661,8 @@ export default {
     this.debouncedHandleHexGroupInput = this.debounce(this.handleHexGroupInput);
   },
   mounted(){
-    // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-445eba00-79b3-45da-831b-be6e8daa5991');
+    sessionStorage.removeItem('bx_auth_ticket');
+    sessionStorage.setItem('bx_auth_ticket','xabxdzkj-48929a84-efda-494a-a6ad-700ffb40ec58');
     this.getPublicColNames();
     this.asyncLoadMap();
     setTimeout(()=>{this.initMineMap()},500)

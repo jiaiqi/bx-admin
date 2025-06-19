@@ -62,7 +62,6 @@ const props = defineProps({
       height: '100%',
       position: 'fixed',
       zIndex: 1,
-      display:'block',
       left:0,
       top:0,
     })
