@@ -51,8 +51,12 @@
 .qk_row .qk_ruleForm > .el-row{
   border:none !important;
 }
+.qk_row .text_ruleForm .el-form-item{
+  margin-bottom:0.625rem !important;
+}
 .qk_row .text_ruleForm > .el-row{
   border:none !important;
+  padding:0 !important;
 }
 .st_tl_info{
   width:100%;
@@ -187,4 +191,16 @@
   font-size: 14px;
   color: #409EFF;
   font-weight: 600;
+}
+// 重复信息提示样式
+.repeat_info {
+  border-radius: 4px;
+  color: #909399;
+  padding: 8px 16px;
+  margin: 8px 0 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
 }

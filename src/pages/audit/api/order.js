@@ -380,4 +380,12 @@ export default class OrderApi{
        }
       return await $http.post(url,req)
     }
+    //快速计费提交
+    async handleQuickBilling(params){
+       let url = path+'/calc/toll/fee'
+        let req={
+            data:params,
+        }
+       return $http.post(url, req)
+    }
 }
