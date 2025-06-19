@@ -203,7 +203,14 @@ export default {
     }
   },
   methods:{
+    /**
+     * @Description:门架点位地图聚焦
+     * @Author:Eirice
+     * @Date: 2025-06-19 09:06:21
+     */
+      handleFly(item){
 
+     },
     /**
      * @Description:防抖
      * @Author:Eirice
@@ -338,24 +345,20 @@ export default {
        }
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') return;
-        let ls = res.data.data;
-        
-        // 合并现有列表和新获取的数据，并使用id去重
-        const mergedList = [...this.stationList, ...ls];
-        const uniqueMap = new Map();
-        mergedList.forEach(item => {
-          if (!uniqueMap.has(item.id)) {
-            uniqueMap.set(item.id, item);
-          }
+        // 新查回的数据加fromTextGantry: true
+        let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
+        // 只移除通过textGantryGroup查询回来的门架
+        this.stationList = this.stationList.filter(station => !station.fromTextGantry);
+        // 合并新查回的数据和原有的（fromTextGantry: false），用id去重
+        const map = new Map();
+        [...this.stationList, ...ls].forEach(item => {
+          map.set(item.id, item);
         });
-        
-        // 将去重后的数据转换回数组
-        this.stationList = Array.from(uniqueMap.values());
+        this.stationList = Array.from(map.values());
         // 处理数据源
         this.stationList = this.handleStationDataSource(this.stationList);
         // 更新地图标记
         this.handleDrawMarkers();
-
         // 根据查询返回的数据更新textGantryHexGroup
         const hexValues = ls.map(item => item.gantryhex).filter(hex => hex);
         this.quickForm.textGantryHexGroup = hexValues.join('|');
@@ -368,6 +371,7 @@ export default {
       this.handleDrawMarkers()
       console.log('处理后的门架列表：', this.stationList);
     },
+
     //选择的门架子删除
     handleDelete(item){
       const index = this.stationList.findIndex(i => i.id === item.id);
@@ -436,6 +440,8 @@ export default {
         }, 500)
       })
     },
+
+    //门架序列HEX文本变化
     handleHexGroupInput(value) {
       if (!value) {
         // 当输入框被清除时，移除通过textGantryGroup添加的门架
@@ -459,6 +465,7 @@ export default {
       let ids = this.quickForm.textGantryHexGroup.replace(/\|/g, ',');
       this.handleGetStationByHex(ids);
     },
+    //处理携带hex文本进入时查询出对应的门架序列数据
     handleGetStationByHex(ids){
       let info={
         page:{
@@ -496,8 +503,8 @@ export default {
     this.debouncedHandleHexGroupInput = this.debounce(this.handleHexGroupInput);
   },
   mounted(){
-    // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-7cfd91f9-f9b7-4f15-a38f-a6d5d2c9e227');
+    sessionStorage.removeItem('bx_auth_ticket');
+    sessionStorage.setItem('bx_auth_ticket','xabxdzkj-699999f7-e063-4af8-8b90-a6973aad7aac');
     this.getPublicColNames();
     this.asyncLoadMap();
     setTimeout(()=>{this.initMineMap()},500)
@@ -507,196 +514,5 @@ export default {
 
 
 <style scoped lang="scss">
-.quick_content{
-  width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  .quick_row{
-    height:100%;
-    box-shadow: 0 0 8px rgba(232, 237, 250, 0.6), 0 2px 4px rgba(232, 237, 250, 0.5);
-  }
-  .quick_map{
-    width:100%;
-    height:65%;
-  }
-  .qk_row{
-    width:100%;
-    overflow: auto;
-  }
-  .quick_form{
-    margin:0.1875rem 0;
-    width:100%;
-    height:34%;
-    background:#fff;
-    border:1px solid #ececef;
-    box-shadow: 0 0 8px rgba(232, 237, 250, 0.6), 0 2px 4px rgba(232, 237, 250, 0.5);
-    .el-form {
-      height: 100%;
-      overflow-y: auto;
-    }
-  }
-  .qk_tl{
-    text-align: left;
-    width: 100%;
-    height: 2.1875rem;
-    font-size:0.875rem;
-    color: #424242;
-    border-bottom:1px solid #efecec;
-    padding: 0 1rem;
-    margin: 0;
-    box-sizing: border-box;
-    display: block;
-  }
-  .st_list_cot{
-    padding:0.625rem;
-    box-sizing: border-box;
-  }
-}
-</style>
-<style>
-.qk_row .qk_ruleForm .el-form-item{
-  margin-bottom:0.625rem !important;
-}
-.qk_row .qk_ruleForm > .el-row{
-  border:none !important;
-}
-.qk_row .text_ruleForm > .el-row{
-  border:none !important;
-}
-.st_tl_info{
-  width:100%;
-  height:3.125rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom:1px solid rgba(232, 237, 250, 0.6);
-}
-.chose_lise{
-  margin:0.5rem 0;
-  width:100%;
-  height:calc(100% - 4.0625rem);
-  overflow: auto;
-}
-.ch_row{
-  width:100%;
-  height:2.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #f5f7fa;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  padding: 0 10px;
-  box-sizing: border-box;
-  transition: all 0.3s;
-}
-
-.ch_row > div {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  margin: 0 10px;
-  min-width: 0; /* 防止flex子元素溢出 */
-}
-
-.st_title {
-  font-size: 13px;
-  color: #606266;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.st_tran {
-  cursor: move;
-  color: #909399;
-  transition: color 0.3s;
-  flex-shrink: 0;
-  width: 24px;
-  text-align: center;
-}
-
-.st_del {
-  color: #909399;
-  transition: color 0.3s;
-  flex-shrink: 0;
-  width: 24px;
-  text-align: center;
-}
-
-.ch_row:hover {
-  background-color: #ecf5ff;
-  border-color: #409EFF;
-}
-
-.ch_row .st_cl {
-  border-radius: 50%;
-  box-sizing: border-box;
-  padding: 0.3125rem;
-  background: #00b7ee;
-  margin-right: 0.625rem;
-  color: #fff;
-  font-size: 12px;
-  min-width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ch_row span:not(.st_cl):not(.st_tran):not(.st_del) {
-  font-size: 13px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.st_del:hover {
-  color: #F56C6C;
-}
-
-.st_tran:hover {
-  color: #409EFF;
-}
-
-.sortable-ghost {
-  opacity: 0.5;
-  background: #c8ebfb;
-}
-
-.sortable-drag {
-  opacity: 0.8;
-  background: #fff;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-}
-.handle_sub{
-  width:100%;
-  height:2.8125rem;
-  text-align: center;
-}
-
-.des_tl {
-  width: 100%;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  padding: 0 1rem;
-  box-sizing: border-box;
-}
-
-.des_tl span:first-child {
-  font-size: 13px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.des_tl span:last-child {
-  font-size: 14px;
-  color: #409EFF;
-  font-weight: 600;
-}
+@use "./quick";
 </style>
