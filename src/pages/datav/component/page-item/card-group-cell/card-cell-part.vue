@@ -925,7 +925,7 @@ export default {
       const config = this.childAnimationConfig;
       setTimeout(() => {
         this.startMarqueeAnimation(config, "bxCellInnerContainer");
-      }, 3000);
+      }, 200);
     }
   },
   beforeUnmount() {

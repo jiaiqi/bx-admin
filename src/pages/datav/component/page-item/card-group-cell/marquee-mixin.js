@@ -67,7 +67,7 @@ export default {
 
       // 复制子元素实现无缝滚动
       if (children.length > 0 && !marqueeElement._marqueeCloned) {
-        if(isRightDirection){
+        if (isRightDirection) {
           children.forEach(child => {
             const clone = child.cloneNode(true);
             clone.style.width = avgWidth + 'px'
@@ -80,7 +80,7 @@ export default {
             clone.classList.add('marquee-clone');
             marqueeElement.appendChild(clone);
           });
-        }else{
+        } else {
           children.forEach(child => {
             const clone = child.cloneNode(true);
             clone.style.width = avgWidth + 'px'
@@ -94,7 +94,7 @@ export default {
             marqueeElement.prepend(clone);
           });
         }
-     
+
         marqueeElement._marqueeCloned = true;
 
 
@@ -110,6 +110,7 @@ export default {
         clearInterval(marqueeElement._marqueeTimer);
       }
       let position = 0;
+      const timingFunction = 'ease';
       const move = () => {
         if (isRightDirection) {
           position -= step;
@@ -120,9 +121,11 @@ export default {
             position = 0;
             marqueeElement.style.transform = `translateX(0px)`;
             // 强制重绘后恢复过渡效果
-            requestAnimationFrame(() => {
-              marqueeElement.style.transition = `transform ${interval / 1000}s ease`;
-            });
+            setTimeout(() => {
+              requestAnimationFrame(() => {
+                marqueeElement.style.transition = `transform 1s ${timingFunction}`;
+              });
+            }, 100);
           } else {
             marqueeElement.style.transform = `translateX(${position}px)`;
           }
@@ -135,9 +138,11 @@ export default {
             position = 0;
             marqueeElement.style.transform = `translateX(${position}px)`;
             // 强制重绘后恢复过渡效果
-            requestAnimationFrame(() => {
-              marqueeElement.style.transition = `transform ${interval / 1000}s ease`;
-            });
+            setTimeout(() => {
+              requestAnimationFrame(() => {
+                marqueeElement.style.transition = `transform 1s ${timingFunction}`;
+              });
+            }, 100);
           } else {
             marqueeElement.style.transform = `translateX(${position}px)`;
           }
@@ -146,8 +151,8 @@ export default {
       marqueeElement._marqueeTimer = setInterval(move, interval);
       // 初始化位置
       marqueeElement.style.transform = `translateX(0px)`;
-      marqueeElement.style.transition = `transform ${interval / 1000}s ease`;
-      // move()
+      marqueeElement.style.transition = `transform 1s ${timingFunction}`;
+      move()
     },
 
     /**
