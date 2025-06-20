@@ -8,3 +8,8 @@ export const handleFilterCols = (list, col) => {
     });
     return resInfo;
 }
+//数据过滤
+export const handleFilterParams = (key, list, symbol) => {
+  if (!list) return;
+  return list.map(item => item[key]).join(symbol);
+}

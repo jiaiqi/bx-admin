@@ -691,8 +691,8 @@ const filterNode = (value, data) => {
 };
 
 onMounted(() => {
-  // sessionStorage.removeItem('bx_auth_ticket');
-  // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-2eea9383-5e84-4248-9729-6cdca3348323');
+  sessionStorage.removeItem('bx_auth_ticket');
+  sessionStorage.setItem('bx_auth_ticket','xabxdzkj-4354eaa3-1598-47ca-9708-2c2380af20a0');
   getVideoInfo()
   initPlayer()
 
