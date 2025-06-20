@@ -24,21 +24,6 @@
     >
       <template v-for="(cellItemData, index) in cellDataFinal">
         <div class="marquee-item">
-          <!-- <card-cell-layout
-            :item="activeCellLayout"
-            :cellLayoutJson="activeCellLayout"
-            :pageItem="pageItem"
-            :currentRadio="currentRadio"
-            :cellItemData="cellItemData"
-            :comColMap="comColMap"
-            :readOnly="readOnly"
-            :queryOptions="queryOptions"
-            :showActiveCard="showActiveCard"
-            :inList="inList"
-            class="marquee-item"
-            v-if="showActiveCard && index === 0"
-          >
-          </card-cell-layout> -->
           <card-cell-layout
             v-for="(cellLayoutJson, i) in cellsLayout"
             :item="getLayoutJson(cellLayoutJson, index)"
@@ -58,45 +43,23 @@
       </template>
     </div>
     <template v-else>
-      <template v-for="(cellItemData, index) in cellDataRun">
-        <template
-          v-if="
-            ('static' && listOptions.indexOf('分页') !== -1) ||
-            (listOptions.indexOf('分页') == -1 && index < totalMaximum)
-          "
+      <template v-for="(cellItemData, index) in cellDataFinal">
+        <card-cell-layout
+          v-for="(cellLayoutJson, i) in cellsLayout"
+          :item="getLayoutJson(cellLayoutJson, index)"
+          :cellLayoutJson="getLayoutJson(cellLayoutJson, index)"
+          :pageItem="pageItem"
+          :currentRadio="currentRadio"
+          :cellItemData="cellItemData"
+          :comColMap="comColMap"
+          :readOnly="readOnly"
+          :queryOptions="queryOptions"
+          :showActiveCard="showActiveCard"
+          :inList="inList"
+          @mouse-enter="setActiveCardIndex(index)"
+          @mouse-leave="activeCardAutoplay"
         >
-          <!-- <card-cell-layout
-            :item="activeCellLayout"
-            :cellLayoutJson="activeCellLayout"
-            :pageItem="pageItem"
-            :currentRadio="currentRadio"
-            :cellItemData="cellItemData"
-            :comColMap="comColMap"
-            :readOnly="readOnly"
-            :queryOptions="queryOptions"
-            :showActiveCard="showActiveCard"
-            :inList="inList"
-            v-if="showActiveCard && index === 0"
-          >
-          </card-cell-layout> -->
-          <card-cell-layout
-            v-for="(cellLayoutJson, i) in cellsLayout"
-            :item="getLayoutJson(cellLayoutJson, index)"
-            :cellLayoutJson="getLayoutJson(cellLayoutJson, index)"
-            :pageItem="pageItem"
-            :currentRadio="currentRadio"
-            :cellItemData="cellItemData"
-            :comColMap="comColMap"
-            :readOnly="readOnly"
-            :queryOptions="queryOptions"
-            :showActiveCard="showActiveCard"
-            :inList="inList"
-            @mouse-enter="setActiveCardIndex(index)"
-            @mouse-leave="activeCardAutoplay"
-            class="marquee-item"
-          >
-          </card-cell-layout>
-        </template>
+        </card-cell-layout>
       </template>
     </template>
 
@@ -506,7 +469,7 @@ export default {
     },
     cellDataFinal() {
       let res = cloneDeep(this.cellDataRun);
-      let max = this.cardLayout?.rows_max;
+      let max = this.totalMaximum;
       if (max) {
         res = res.slice(0, max);
       }

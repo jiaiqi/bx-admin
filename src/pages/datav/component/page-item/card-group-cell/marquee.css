@@ -10,12 +10,12 @@
   --mask: linear-gradient(
     to right,
     transparent 0%,
-    rgba(0, 0, 0, 0.2) 5%,
-    rgba(0, 0, 0, 0.6) 10%,
-    rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%,
-    rgba(0, 0, 0, 0.6) 90%,
-    rgba(0, 0, 0, 0.2) 95%,
+    rgba(0, 0, 0, 0.2) 2%,
+    rgba(0, 0, 0, 0.6) 4%,
+    rgba(0, 0, 0, 1) 6%,
+    rgba(0, 0, 0, 1) 94%,
+    rgba(0, 0, 0, 0.6) 96%,
+    rgba(0, 0, 0, 0.2) 98%,
     transparent 100%
   );
   -webkit-mask: var(--mask);
@@ -31,10 +31,10 @@
   width:100%; */
   /* display:grid; */
 }
-.marquee-wrap{
-  display:flex;
-  flex-wrap:nowrap;
-  width:max-content;
+.marquee-wrap {
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
 }
 .marquee-item {
   /* width: 100%; */
