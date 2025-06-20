@@ -929,7 +929,6 @@ export default {
       return result;
     },
     findNormalComponents(list) {
-      debugger
       let result = [];
       if (Array.isArray(list) && list.length) {
         list.forEach((item) => {

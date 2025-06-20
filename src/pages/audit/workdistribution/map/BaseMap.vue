@@ -101,7 +101,7 @@ const getRoutesByBaiDu= async (customParams = null) =>{
   }
 
   let ak=window.APP_CONFIG.RouteAK?window.APP_CONFIG.RouteAK:''
-  let urls=window.APP_CONFIG.ROUTE_151?window.APP_CONFIG.ROUTE_151:window.APP_CONFIG.viRoute;
+  let urls=window.APP_CONFIG.viRoute;
   
   // 如果没有传入参数，则从drivingPoint构建参数
   const params = customParams || {
