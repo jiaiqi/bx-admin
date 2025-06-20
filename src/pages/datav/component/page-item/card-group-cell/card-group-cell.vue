@@ -10,7 +10,8 @@
     <div
       ref="cardInnerContainer"
       :style="[
-        gridStyle,
+        { gap: gridStyle && gridStyle.gap },
+        // gridStyle
         {
           '--child-animation-step': childAnimationConfig.step,
           '--child-animation-type': childAnimationType,
@@ -18,7 +19,7 @@
           '--child-animation-delay': childAnimationConfig.delay,
         },
       ]"
-      class="card-inner-container"
+      class="card-inner-container marquee-wrap"
       v-if="childAnimationConfig && childAnimationConfig.type === '跑马灯'"
     >
       <template
@@ -28,34 +29,38 @@
         "
         v-for="(cellItemData, index) in cellDataRun"
       >
-        <card-cell-layout
-          :item="activeCellLayout"
-          :cellLayoutJson="activeCellLayout"
-          :pageItem="pageItem"
-          :currentRadio="currentRadio"
-          :cellItemData="cellItemData"
-          :comColMap="comColMap"
-          :readOnly="readOnly"
-          :queryOptions="queryOptions"
-          :showActiveCard="showActiveCard"
-          :inList="inList"
-          v-if="showActiveCard && index === 0"
-        >
-        </card-cell-layout>
-        <card-cell-layout
-          v-for="(cellLayoutJson, i) in cellsLayout"
-          :item="cellLayoutJson"
-          :cellLayoutJson="cellLayoutJson"
-          :pageItem="pageItem"
-          :currentRadio="currentRadio"
-          :cellItemData="cellItemData"
-          :comColMap="comColMap"
-          :readOnly="readOnly"
-          :queryOptions="queryOptions"
-          :showActiveCard="showActiveCard"
-          :inList="inList"
-        >
-        </card-cell-layout>
+        <div class="marquee-item">
+          <card-cell-layout
+            :item="activeCellLayout"
+            :cellLayoutJson="activeCellLayout"
+            :pageItem="pageItem"
+            :currentRadio="currentRadio"
+            :cellItemData="cellItemData"
+            :comColMap="comColMap"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :showActiveCard="showActiveCard"
+            :inList="inList"
+            class="marquee-item"
+            v-if="showActiveCard && index === 0"
+          >
+          </card-cell-layout>
+          <card-cell-layout
+            v-for="(cellLayoutJson, i) in cellsLayout"
+            :item="cellLayoutJson"
+            :cellLayoutJson="cellLayoutJson"
+            :pageItem="pageItem"
+            :currentRadio="currentRadio"
+            :cellItemData="cellItemData"
+            :comColMap="comColMap"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :showActiveCard="showActiveCard"
+            :inList="inList"
+            class="marquee-item"
+          >
+          </card-cell-layout>
+        </div>
       </template>
     </div>
     <template v-else>

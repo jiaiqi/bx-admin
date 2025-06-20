@@ -45,68 +45,109 @@ export default {
       if (!marqueeElement) return;
 
       // 设置容器样式
-      marqueeElement.style.display = 'flex';
-      marqueeElement.style.whiteSpace = 'nowrap';
-      marqueeElement.style.position = 'relative';
-
-      // 设置子元素样式
-      // Array.from(marqueeElement.children).forEach(child => {
-      // child.style.display = 'inline-block';
-      // child.style.padding = '0 10px';
-      // });
-      const childLength = marqueeElement.children.length;
-      // 计算动画参数
-      let duration = 1 * childLength; // 转换为秒
-      if (config.interval) {
-        duration *= config.interval / 1000;
-      } else if (config.duration) {
-        duration = config.duration / 1000;
+      // marqueeElement.style.display = 'flex';
+      // marqueeElement.style.whiteSpace = 'nowrap';
+      // marqueeElement.style.position = 'relative';
+      // marqueeElement.style.overflow = 'hidden';
+      marqueeElement.style.gridTemplateColumns = `repeat(${marqueeElement.children.length}, 1fr)`;
+      // 复制子元素之前，先计算平均宽度并设置到每个子元素的style上
+      const children = Array.from(marqueeElement.children);
+      let avgWidth = null
+      let totalWidth = 0
+      if (children.length > 0) {
+        // 计算平均宽度
+        totalWidth = children.reduce((sum, c) => sum + c.offsetWidth, 0);
+        avgWidth = totalWidth / children.length;
+        // children.forEach(child => {
+        //   child.style.width = avgWidth + 'px';
+        // });
       }
+
       const isRightDirection = config.direction === '由左往右';
 
-      // 设置CSS变量和样式类
-      this.setMarqueeCSS(marqueeElement, duration, isRightDirection);
-    },
+      // 复制子元素实现无缝滚动
+      if (children.length > 0 && !marqueeElement._marqueeCloned) {
+        if(isRightDirection){
+          children.forEach(child => {
+            const clone = child.cloneNode(true);
+            clone.style.width = avgWidth + 'px'
+            clone.classList.add('marquee-clone');
+            marqueeElement.appendChild(clone);
+          });
+          children.forEach(child => {
+            const clone = child.cloneNode(true);
+            clone.style.width = avgWidth + 'px'
+            clone.classList.add('marquee-clone');
+            marqueeElement.appendChild(clone);
+          });
+        }else{
+          children.forEach(child => {
+            const clone = child.cloneNode(true);
+            clone.style.width = avgWidth + 'px'
+            clone.classList.add('marquee-clone');
+            marqueeElement.prepend(clone);
+          });
+          children.forEach(child => {
+            const clone = child.cloneNode(true);
+            clone.style.width = avgWidth + 'px'
+            clone.classList.add('marquee-clone');
+            marqueeElement.prepend(clone);
+          });
+        }
+     
+        marqueeElement._marqueeCloned = true;
 
-    /**
-     * 设置CSS变量和样式类
-     * @param {HTMLElement} element - 目标元素
-     * @param {number} duration - 动画持续时间（秒）
-     * @param {boolean} isRightDirection - 是否从右到左滚动
-     */
-    setMarqueeCSS(element, duration, isRightDirection = true) {
-      if (!element) return;
 
-      // 设置CSS变量
-      element.style.setProperty('--marquee-duration', `${duration}s`);
-      element.style.setProperty('--marquee-direction', isRightDirection ? 'right-to-left' : 'left-to-right');
-
-      // 添加CSS类
-      element.classList.add('marquee-content');
-
-      // 根据方向添加对应的类
-      if (isRightDirection) {
-        element.classList.add('marquee-right-to-left');
-        element.classList.remove('marquee-left-to-right');
-      } else {
-        element.classList.add('marquee-left-to-right');
-        element.classList.remove('marquee-right-to-left');
+        marqueeElement.style.gridTemplateColumns = `repeat(${marqueeElement.children.length}, 1fr)`;
       }
-    },
 
-    /**
-     * 移除跑马灯CSS样式
-     * @param {HTMLElement} element - 目标元素
-     */
-    removeMarqueeCSS(element) {
-      if (!element) return;
+      // 步进动画参数
+      const step = children[0]?.offsetWidth;
+      const interval = config.interval || 2000;
 
-      // 移除CSS变量
-      element.style.removeProperty('--marquee-duration');
-      element.style.removeProperty('--marquee-direction');
-
-      // 移除CSS类
-      element.classList.remove('marquee-content', 'marquee-right-to-left', 'marquee-left-to-right');
+      // 移除旧定时器
+      if (marqueeElement._marqueeTimer) {
+        clearInterval(marqueeElement._marqueeTimer);
+      }
+      let position = 0;
+      const move = () => {
+        if (isRightDirection) {
+          position -= step;
+          // 当滚动到第一组元素完全消失时，无缝重置到起始位置
+          if (Math.abs(position) > totalWidth * 2) {
+            // 暂时移除过渡效果，实现瞬间重置
+            marqueeElement.style.transition = 'none';
+            position = 0;
+            marqueeElement.style.transform = `translateX(0px)`;
+            // 强制重绘后恢复过渡效果
+            requestAnimationFrame(() => {
+              marqueeElement.style.transition = `transform ${interval / 1000}s ease`;
+            });
+          } else {
+            marqueeElement.style.transform = `translateX(${position}px)`;
+          }
+        } else {
+          position += step;
+          // 当滚动到第一组元素完全消失时，无缝重置到起始位置
+          if (position > totalWidth * 2) {
+            // 暂时移除过渡效果，实现瞬间重置
+            marqueeElement.style.transition = 'none';
+            position = 0;
+            marqueeElement.style.transform = `translateX(${position}px)`;
+            // 强制重绘后恢复过渡效果
+            requestAnimationFrame(() => {
+              marqueeElement.style.transition = `transform ${interval / 1000}s ease`;
+            });
+          } else {
+            marqueeElement.style.transform = `translateX(${position}px)`;
+          }
+        }
+      };
+      marqueeElement._marqueeTimer = setInterval(move, interval);
+      // 初始化位置
+      marqueeElement.style.transform = `translateX(0px)`;
+      marqueeElement.style.transition = `transform ${interval / 1000}s ease`;
+      // move()
     },
 
     /**
@@ -126,19 +167,16 @@ export default {
       // 获取容器元素
       const marqueeElement = this.$refs[containerRef];
       if (marqueeElement) {
-        // 移除CSS样式和变量
-        this.removeMarqueeCSS(marqueeElement);
-
-        // 清除容器的动画样式
-        marqueeElement.style.display = '';
-        marqueeElement.style.whiteSpace = '';
-        marqueeElement.style.position = '';
-
-        // // 清除子元素的样式，保持其他样式不变
-        // Array.from(marqueeElement.children).forEach(child => {
-        //   child.style.display = '';
-        //   child.style.padding = '';
-        // });
+        // 清除定时器
+        if (marqueeElement._marqueeTimer) {
+          clearInterval(marqueeElement._marqueeTimer);
+          marqueeElement._marqueeTimer = null;
+        }
+        // 移除克隆节点
+        if (marqueeElement._marqueeCloned) {
+          Array.from(marqueeElement.querySelectorAll('.marquee-clone')).forEach(clone => clone.remove());
+          marqueeElement._marqueeCloned = false;
+        }
       }
     },
 

@@ -3,6 +3,9 @@
   overflow: hidden;
   white-space: nowrap;
   position: relative;
+  /* display:flex; */
+  /* flex-wrap:nowarp; */
+  /* width:max-content; */
   /* 使用 mask 实现自适应渐隐效果 */
   --mask: linear-gradient(
     to right,
@@ -20,47 +23,22 @@
 }
 /* 基础跑马灯容器样式 */
 .marquee-content {
-  overflow: hidden;
+  /* overflow: hidden;
   white-space: nowrap;
   position: relative;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-duration: var(--marquee-duration, 10s);
+  display:flex;
+  flex-wrap:nowarp;
+  width:100%; */
+  /* display:grid; */
 }
-
-/* 从右到左滚动动画 */
-.marquee-right-to-left {
-  animation-name: marquee-right-to-left;
+.marquee-wrap{
+  display:flex;
+  flex-wrap:nowrap;
+  width:max-content;
 }
-
-@keyframes marquee-right-to-left {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
+.marquee-item {
+  /* width: 100%; */
 }
-
-/* 从左到右滚动动画 */
-.marquee-left-to-right {
-  animation-name: marquee-left-to-right;
-}
-
-@keyframes marquee-left-to-right {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* 鼠标悬停时暂停动画 */
-.marquee-content:hover {
-  animation-play-state: paused;
-}
-
 /* 跑马灯子元素样式 */
 .marquee-content > * {
   /* display: inline-block; */

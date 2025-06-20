@@ -141,52 +141,45 @@
         'cursor-pointer': isLink && childAnimationType !== '跑马灯',
         ['bx-cell-' + cellItem.parts_type]: childAnimationType !== '跑马灯',
       }"
-      :style="[childAnimationType === '跑马灯' ? {} : buildColStyleJson]"
+      :style="[
+        childAnimationType === '跑马灯'
+          ? { width: buildColStyleJson.width }
+          : buildColStyleJson,
+      ]"
       @mouseenter="onMouseenter"
       @mouseleave="onMouseleave"
     >
       <div
         ref="bxCellInnerContainer"
+        class="marquee-wrap"
         :class="[
           'bx-cell-' + cellItem.parts_type,
           {
             'cursor-pointer': isLink,
           },
         ]"
-        :style="[
-          buildColStyleJson,
-          {
-            '--child-animation-step': childAnimationConfig.step,
-            '--child-animation-type': childAnimationType,
-            '--child-animation-direction': childAnimationConfig.direction,
-            '--child-animation-delay': childAnimationConfig.delay,
-          },
-          childAnimationType !== '跑马灯'
-            ? {
-                position: 'relative',
-                overflow: 'hidden',
-              }
-            : {},
-        ]"
         @click.stop="onClickSubBlock()"
         v-if="childAnimationType === '跑马灯'"
       >
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
-          <card-cell-part
-            :cellItem="subCardPart"
-            :comColMap="comColMap"
-            :cellItemData="cellItemData"
-            :readOnly="readOnly"
-            :queryOptions="queryOptions"
-            :cellLayoutJson="subCardPart"
-            :parentPart="cellItem"
-            :accordion="accordion"
-            :accordion-seq="accordionSeq"
-            :active-accordion-seq="activeAccordionSeq"
-            @on-click-part="onClickSubBlock"
-            @on-click-cell="onClickCell"
-            @show-dialog="showDialog"
-          ></card-cell-part>
+          <!-- <div class="marquee-item"> -->
+            <card-cell-part
+              :cellItem="subCardPart"
+              :comColMap="comColMap"
+              :cellItemData="cellItemData"
+              :readOnly="readOnly"
+              :queryOptions="queryOptions"
+              :cellLayoutJson="subCardPart"
+              :parentPart="cellItem"
+              :accordion="accordion"
+              :accordion-seq="accordionSeq"
+              :active-accordion-seq="activeAccordionSeq"
+              @on-click-part="onClickSubBlock"
+              @on-click-cell="onClickCell"
+              @show-dialog="showDialog"
+              class="marquee-item"
+            ></card-cell-part>
+          <!-- </div> -->
         </template>
       </div>
       <template v-else>
@@ -289,6 +282,10 @@ export default {
         ["row", "block"].includes(this.partsType) &&
         this.cellLayoutJson?.child_use_animation === "是"
       );
+    },
+    partsType() {
+      // 新增：确保 partsType 正确反映 cellItem.parts_type
+      return this.cellItem?.parts_type;
     },
     childAnimationType() {
       return this.cellLayoutJson?.child_animation_type;
