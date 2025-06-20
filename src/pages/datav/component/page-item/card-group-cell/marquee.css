@@ -1,5 +1,23 @@
 /* 跑马灯公共样式 */
-
+.marquee-mode {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  /* 使用 mask 实现自适应渐隐效果 */
+  --mask: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 5%,
+    rgba(0, 0, 0, 0.6) 10%,
+    rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%,
+    rgba(0, 0, 0, 0.6) 90%,
+    rgba(0, 0, 0, 0.2) 95%,
+    transparent 100%
+  );
+  -webkit-mask: var(--mask);
+  mask: var(--mask);
+}
 /* 基础跑马灯容器样式 */
 .marquee-content {
   overflow: hidden;
@@ -46,24 +64,12 @@
 /* 跑马灯子元素样式 */
 .marquee-content > * {
   /* display: inline-block; */
-  padding: 0 10px;
+  /* padding: 0 10px; */
 }
 
 /* 响应式支持 */
 @media (max-width: 768px) {
   .marquee-content {
     animation-duration: calc(var(--marquee-duration, 10s) * 0.8);
-  }
-}
-
-/* 可访问性支持 - 用户偏好减少动画时停止跑马灯 */
-@media (prefers-reduced-motion: reduce) {
-  .marquee-content {
-    animation: none;
-  }
-  
-  .marquee-content > * {
-    /* display: inline-block; */
-    white-space: normal;
   }
 }

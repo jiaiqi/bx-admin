@@ -3,8 +3,6 @@
     class="bx-card-cell"
     :class="dynamicClasses"
     :style="dynamicStyles"
-    :role="isAccordionMode ? 'tabpanel' : undefined"
-    :tabindex="isAccordionMode ? 0 : undefined"
     @click="onClickCell(cellItemData, cellLayoutJson)"
     @mouseenter="pauseAutoPlay"
     @mouseleave="resumeAutoPlay"

@@ -138,8 +138,12 @@
       "
       :class="{
         'marquee-mode': childAnimationType === '跑马灯',
+        'cursor-pointer': isLink && childAnimationType !== '跑马灯',
+        ['bx-cell-' + cellItem.parts_type]: childAnimationType !== '跑马灯',
       }"
       :style="[childAnimationType === '跑马灯' ? {} : buildColStyleJson]"
+      @mouseenter="onMouseenter"
+      @mouseleave="onMouseleave"
     >
       <div
         ref="bxCellInnerContainer"
@@ -165,8 +169,6 @@
             : {},
         ]"
         @click.stop="onClickSubBlock()"
-        @mouseenter="onMouseenter"
-        @mouseleave="onMouseleave"
         v-if="childAnimationType === '跑马灯'"
       >
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
@@ -943,24 +945,6 @@ export default {
       color: var(--primary-color, #409eff);
     }
   }
-}
-.marquee-mode {
-  position: relative;
-
-  // 使用 mask 实现自适应渐隐效果
-  --mask: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.2) 5%,
-    rgba(0, 0, 0, 0.6) 10%,
-    rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%,
-    rgba(0, 0, 0, 0.6) 90%,
-    rgba(0, 0, 0, 0.2) 95%,
-    transparent 100%
-  );
-  -webkit-mask: var(--mask);
-  mask: var(--mask);
 }
 .bx-cell-video {
   width: 100%;
