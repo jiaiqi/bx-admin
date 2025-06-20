@@ -4,8 +4,8 @@
     :class="dynamicClasses"
     :style="dynamicStyles"
     @click="onClickCell(cellItemData, cellLayoutJson)"
-    @mouseenter="pauseAutoPlay"
-    @mouseleave="resumeAutoPlay"
+    @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave"
   >
     <card-cell-part
       :comColMap="comColMap"
@@ -79,7 +79,7 @@ const props = defineProps({
 });
 
 // Emits 定义
-const emits = defineEmits(["on-click-cell", "show-dialog"]);
+const emits = defineEmits(["on-click-cell", "show-dialog",'mouse-enter','mouse-leave']);
 
 // 使用组合式函数
 const {
@@ -104,6 +104,15 @@ const dynamicClasses = computed(() =>
   buildDynamicClasses(props, { isAccordionMode })
 );
 const dynamicStyles = computed(() => buildDynamicStyles(props));
+
+const mouseEnter = (event)=>{
+  pauseAutoPlay(event)
+  emits('mouse-enter')
+}
+const mouseLeave = (event)=>{
+  resumeAutoPlay(event)
+  emits('mouse-leave')
+}
 </script>
 
 <style lang="scss" scoped>

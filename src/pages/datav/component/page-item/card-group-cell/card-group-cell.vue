@@ -22,15 +22,9 @@
       class="card-inner-container marquee-wrap"
       v-if="childAnimationConfig && childAnimationConfig.type === '跑马灯'"
     >
-      <template
-        v-if="
-          ('static' && listOptions.indexOf('分页') !== -1) ||
-          (listOptions.indexOf('分页') == -1 && index < totalMaximum)
-        "
-        v-for="(cellItemData, index) in cellDataRun"
-      >
+      <template v-for="(cellItemData, index) in cellDataFinal">
         <div class="marquee-item">
-          <card-cell-layout
+          <!-- <card-cell-layout
             :item="activeCellLayout"
             :cellLayoutJson="activeCellLayout"
             :pageItem="pageItem"
@@ -44,11 +38,11 @@
             class="marquee-item"
             v-if="showActiveCard && index === 0"
           >
-          </card-cell-layout>
+          </card-cell-layout> -->
           <card-cell-layout
             v-for="(cellLayoutJson, i) in cellsLayout"
-            :item="cellLayoutJson"
-            :cellLayoutJson="cellLayoutJson"
+            :item="getLayoutJson(cellLayoutJson, index)"
+            :cellLayoutJson="getLayoutJson(cellLayoutJson, index)"
             :pageItem="pageItem"
             :currentRadio="currentRadio"
             :cellItemData="cellItemData"
@@ -71,7 +65,7 @@
             (listOptions.indexOf('分页') == -1 && index < totalMaximum)
           "
         >
-          <card-cell-layout
+          <!-- <card-cell-layout
             :item="activeCellLayout"
             :cellLayoutJson="activeCellLayout"
             :pageItem="pageItem"
@@ -84,11 +78,11 @@
             :inList="inList"
             v-if="showActiveCard && index === 0"
           >
-          </card-cell-layout>
+          </card-cell-layout> -->
           <card-cell-layout
             v-for="(cellLayoutJson, i) in cellsLayout"
-            :item="cellLayoutJson"
-            :cellLayoutJson="cellLayoutJson"
+            :item="getLayoutJson(cellLayoutJson, index)"
+            :cellLayoutJson="getLayoutJson(cellLayoutJson, index)"
             :pageItem="pageItem"
             :currentRadio="currentRadio"
             :cellItemData="cellItemData"
@@ -97,6 +91,9 @@
             :queryOptions="queryOptions"
             :showActiveCard="showActiveCard"
             :inList="inList"
+            @mouse-enter="setActiveCardIndex(index)"
+            @mouse-leave="activeCardAutoplay"
+            class="marquee-item"
           >
           </card-cell-layout>
         </template>
@@ -250,6 +247,10 @@ import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import cardCellLayout from "./card-cell-layout.vue";
+import cloneDeep from "lodash/cloneDeep.js";
+
+let activeCardTimer = null;
+
 export default {
   components: {
     Teleport,
@@ -275,6 +276,7 @@ export default {
       dialogUrl: "",
       iframeLoading: true,
       currentAccordionSeq: 1,
+      activeCardIndex: 0,
     };
   },
   watch: {
@@ -381,7 +383,6 @@ export default {
     },
     childAnimationConfig() {
       let obj = {};
-
       if (this.listConfig?.use_animation === "是") {
         obj = {
           type: this.listConfig?.animation_type || "跑马灯",
@@ -503,6 +504,14 @@ export default {
         return data;
       }
     },
+    cellDataFinal() {
+      let res = cloneDeep(this.cellDataRun);
+      let max = this.cardLayout?.rows_max;
+      if (max) {
+        res = res.slice(0, max);
+      }
+      return res;
+    },
     srvApp() {
       return (
         this.pageItem?.srv_req_json?.mapp ||
@@ -512,15 +521,54 @@ export default {
   },
   mounted() {
     // 启动跑马灯动画
-    if (this.childAnimationType === "跑马灯") {
+    const animationType = this.childAnimationType;
+    if (!animationType) return;
+    if (animationType === "跑马灯") {
       const config = this.childAnimationConfig;
       setTimeout(() => {
         this.startMarqueeAnimation(config, "cardInnerContainer");
       }, 3000);
+    } else if (
+      this.childAnimationType?.includes("焦点") &&
+      this.childAnimationType?.includes("轮播")
+    ) {
+      this.activeCardIndex = 0;
+      this.activeCardAutoplay();
     }
+  },
+  beforeDestroy() {
+    activeCardTimer && clearInterval(activeCardTimer);
   },
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
+    setActiveCardIndex(index) {
+      clearInterval(activeCardTimer);
+      this.activeCardIndex = index;
+    },
+    activeCardAutoplay() {
+      let direction = this.childAnimationConfig?.direction;
+      if (activeCardTimer) {
+        clearInterval(activeCardTimer);
+      }
+      this.$nextTick(() => {
+        activeCardTimer = setInterval(() => {
+          const listLength = this.cellDataFinal?.length || 0;
+          if (direction === "由上至下") {
+            this.activeCardIndex = (this.activeCardIndex + 1) % listLength;
+          } else if (direction === "由下至上") {
+            this.activeCardIndex =
+              (this.activeCardIndex - 1 + listLength) % listLength;
+          }
+          console.log("activeCardIndex:", this.activeCardIndex);
+        }, this.childAnimationConfig?.interval || 3000);
+      });
+    },
+    getLayoutJson(layout, index) {
+      if (this.showActiveCard && this.activeCardIndex === index) {
+        return this.activeCellLayout;
+      }
+      return layout;
+    },
     recoverFileAddress(val = "") {
       if (typeof val !== "string") {
         return val;
