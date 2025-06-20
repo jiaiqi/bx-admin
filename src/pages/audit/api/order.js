@@ -304,7 +304,7 @@ export default class OrderApi{
 
     //调用计费查询接口获取根据passid查询获取的费用信息
     async getDriverFreeDetails(params){
-       let url=path+`/calc/toll/fee`
+       let url=path+`/aud/calc/toll/fee`
        let data={
            passid:params.pass_id,
        }
@@ -382,10 +382,7 @@ export default class OrderApi{
     }
     //快速计费提交
     async handleQuickBilling(params){
-       let url = path+'/calc/toll/fee'
-        let req={
-            data:params,
-        }
-       return $http.post(url, req)
+       let url = path+'/aud/calc/toll/fee'
+       return $http.post(url, params)
     }
 }

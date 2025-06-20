@@ -160,6 +160,7 @@ import {
 import OrderApi from "@/pages/audit/api/order";
 import draggable from 'vuedraggable'
 import { Message } from 'element-ui';
+import { TransitionGroupItem } from 'vuedraggable'
 let baseMap=null
 let orderUtils = new OrderApi();
 export default {
@@ -249,6 +250,13 @@ export default {
         // 清空hex值
         this.quickForm.textGantryHexGroup = '';
         this.pendingStationList = [];
+        // 当输入为空时，也要清除原有的人工录入门架
+        this.stationList = this.stationList.filter(item => !item.fromTextGantry);
+        this.stationList = this.handleStationDataSource(this.stationList);
+        this.handleDrawMarkers();
+        if(this.stationList.length > 0) {
+          this.handleFly(this.stationList[0]);
+        }
         return;
       }
       
@@ -287,44 +295,86 @@ export default {
     },
     //更新门架按钮点击按钮时触发门架查询
     handleUpdateGantryList() {
-      //  获取非人工录入门架ID
-      const existIds = new Set(this.stationList.filter(item => !item.fromTextGantry).map(item => String(item.id)));
-      //  过滤pendingStationList，找出未重复的
-      const filtered = [];
-      const removedIds = [];
-      this.pendingStationList.forEach(item => {
-        if (!existIds.has(String(item.id))) {
-          filtered.push({ ...item, fromTextGantry: true });
-        } else {
-          removedIds.push(String(item.id));
+      // 如果没有输入门架序列，清除所有人工录入门架
+      if (!this.quickForm.textGantryGroup) {
+        this.stationList = this.stationList.filter(item => !item.fromTextGantry);
+        this.stationList = this.handleStationDataSource(this.stationList);
+        this.handleDrawMarkers();
+        if(this.stationList.length > 0) {
+          this.handleFly(this.stationList[0]);
         }
-      });
-      // 移除原有人工录入门架
-      this.stationList = this.stationList.filter(item => !item.fromTextGantry);
-      this.stationList = [...this.stationList, ...filtered];
-      this.stationList = this.handleStationDataSource(this.stationList);
-      this.handleDrawMarkers();
-      if(this.stationList.length > 0) {
-        this.handleFly(this.stationList[0]);
-      }
-      this.pendingStationList = [];
-      // 同步textGantryGroup
-      if (removedIds.length > 0) {
-        const arr = this.quickForm.textGantryGroup.split('|').filter(id => id && !removedIds.includes(id));
-        this.quickForm.textGantryGroup = arr.join('|');
-        // 同步textGantryHexGroup门架
-        const groupIds = this.quickForm.textGantryGroup.split('|').filter(Boolean);
-        const idToHex = {};
-        this.stationList.forEach(item => {
-          if (item.fromTextGantry) idToHex[String(item.id)] = item.gantryhex;
-        });
-        const hexArr = groupIds.map(id => idToHex[id]).filter(Boolean);
-        this.quickForm.textGantryHexGroup = hexArr.join('|');
-        // 记录重复信息
-        this.repeatedInformation = removedIds.join(',');
-      } else {
+        this.pendingStationList = [];
         this.repeatedInformation = '';
+        return;
       }
+      
+      // 获取非人工录入门架ID
+      const existIds = new Set(this.stationList.filter(item => !item.fromTextGantry).map(item => String(item.id)));
+      
+      // 根据当前的textGantryGroup重新查询数据
+      let ids = this.quickForm.textGantryGroup.replace(/\|/g, ',');
+      let info = {
+        page: {
+          pageNo: 1,
+          rownumber: 10,
+        },
+        condition: [{colName: "id", ruleType: "in", value: ids}],
+        relation_condition: {
+          relation: "AND",
+          data: [{colName: "id", ruleType: "in", value: ids}]
+        }
+      };
+      
+      orderUtils.getAllStationByInfo(info).then(res => {
+        if(res.data.state !== 'SUCCESS') return;
+        
+        // 新查回的数据加fromTextGantry: true
+        let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
+        
+        // 过滤新门架，找出未重复的
+        const filtered = [];
+        const removedIds = [];
+        ls.forEach(item => {
+          if (!existIds.has(String(item.id))) {
+            filtered.push({ ...item, fromTextGantry: true });
+          } else {
+            removedIds.push(String(item.id));
+          }
+        });
+        
+        // 移除原有人工录入门架
+        this.stationList = this.stationList.filter(item => !item.fromTextGantry);
+        this.stationList = [...this.stationList, ...filtered];
+        this.stationList = this.handleStationDataSource(this.stationList);
+        this.handleDrawMarkers();
+        
+        if(this.stationList.length > 0) {
+          this.handleFly(this.stationList[0]);
+        }
+        
+        // 同步textGantryGroup
+        if (removedIds.length > 0) {
+          const arr = this.quickForm.textGantryGroup.split('|').filter(id => id && !removedIds.includes(id));
+          this.quickForm.textGantryGroup = arr.join('|');
+          // 同步textGantryHexGroup门架
+          const groupIds = this.quickForm.textGantryGroup.split('|').filter(Boolean);
+          const idToHex = {};
+          this.stationList.forEach(item => {
+            if (item.fromTextGantry) idToHex[String(item.id)] = item.gantryhex;
+          });
+          const hexArr = groupIds.map(id => idToHex[id]).filter(Boolean);
+          this.quickForm.textGantryHexGroup = hexArr.join('|');
+          // 记录重复信息
+          this.repeatedInformation = removedIds.join(',');
+        } else {
+          this.repeatedInformation = '';
+        }
+        
+        // 更新pendingStationList为空，因为已经处理完了
+        this.pendingStationList = [];
+      }).catch(err => {
+        this.pendingStationList = [];
+      });
     },
     //门架序列点击清除
     handleClearGantry(){
@@ -535,6 +585,13 @@ export default {
         // 清空textGantryGroup
         this.quickForm.textGantryGroup = '';
         this.pendingStationList = [];
+        // 当HEX输入为空时，也要清除原有的人工录入门架
+        this.stationList = this.stationList.filter(item => !item.fromTextGantry);
+        this.stationList = this.handleStationDataSource(this.stationList);
+        this.handleDrawMarkers();
+        if(this.stationList.length > 0) {
+          this.handleFly(this.stationList[0]);
+        }
         return;
       }
       
@@ -661,8 +718,8 @@ export default {
     this.debouncedHandleHexGroupInput = this.debounce(this.handleHexGroupInput);
   },
   mounted(){
-    sessionStorage.removeItem('bx_auth_ticket');
-    sessionStorage.setItem('bx_auth_ticket','xabxdzkj-48929a84-efda-494a-a6ad-700ffb40ec58');
+    // sessionStorage.removeItem('bx_auth_ticket');
+    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-aee503f9-2a8e-4d16-80da-4ed2c90a04e7');
     this.getPublicColNames();
     this.asyncLoadMap();
     setTimeout(()=>{this.initMineMap()},500)
@@ -674,4 +731,17 @@ export default {
 <style scoped lang="scss">
 @use "./quick";
 
+.ch_row {
+  transition: all 0.3s ease;
+}
+
+.sortable-ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+
+.sortable-drag {
+  opacity: 0.8;
+  background: #f8f9fa;
+}
 </style>
