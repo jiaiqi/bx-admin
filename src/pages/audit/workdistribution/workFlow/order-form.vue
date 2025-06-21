@@ -127,7 +127,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="12" style="display: flex;padding-left: 6.42%">
-          <el-form-item label="稽核车型" prop="trade_vehicle_type">
+          <el-form-item label="收费车型" prop="trade_vehicle_type">
             <el-select v-model="ruleForm.trade_vehicle_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.trade_vehicle_type"

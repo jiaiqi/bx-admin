@@ -142,18 +142,24 @@
         {{ widthUnit === 'px' ? 'px' : '%' }}
       </div>
     </div> -->
+   <!--迁徙背景-->
+    <canvasPage v-if="props.animation_type&&props.animation_type.includes('迁徙图')" :info="props.migration_json"/>
   </div>
 </template>
 
 <script>
 import dragStore from "../../store/dragStore";
 import { formatStyleData } from "@/pages/datav/common/index.js";
+import canvasPage from '../../../../components/common/canvas-line/canvasPage.vue'
 import {
   setEnterAnimationClass,
   setEnterAnimationVariables,
 } from "@/common/common";
 export default {
   inject: ["getPageConfig"],
+  components: {
+    canvasPage
+  },
   props: {
     name: {
       type: String,
