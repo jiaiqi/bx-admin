@@ -270,6 +270,11 @@ export default{
         colNames: ["*"],
         condition: [
           {
+            colName:"display",
+            ruleType:"ne",
+            value:"否",
+          },
+          {
             colName: "page_no",
             ruleType: "eq",
             value: this.pageNo,
