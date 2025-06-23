@@ -175,12 +175,20 @@
               'font-size': setStyle && setStyle['font-size'],
             }"
           >
-            <img
+            <el-image
+              class="td-img"
+              :src="getImagePath(formatValue(item, col))"
+              :preview-src-list="[getImagePath(formatValue(item, col))]"
+              v-if="col.col_type === 'Image' && formatValue(item, col)"
+            >
+            </el-image>
+            <!-- <img
               class="td-img"
               :src="getImagePath(formatValue(item, col))"
               alt=""
+              style=""
               v-if="col.col_type === 'Image' && formatValue(item, col)"
-            />
+            /> -->
             <span v-else>
               {{ formatValue(item, col) }}
             </span>
@@ -345,7 +353,10 @@ export default {
     },
     setRowButtons() {
       let buttons = this.listV2RowButtons || [];
-      return buttons.filter((item) => item.permission);
+      const ignoreBtns = ["duplicate", "delete", "edit", "detail"];
+      return buttons.filter(
+        (item) => item.permission && !ignoreBtns.includes(item.button_type)
+      );
     },
     tableColumn() {
       let cols = this.v2Data?.srv_cols || [];
@@ -669,8 +680,34 @@ export default {
     onClickBlock(e) {
       console.log("onClickBlock", e);
     },
-    onRowButtonClick(e) {
-      console.log(e);
+    onRowButtonClick(e, data) {
+      console.log(e, data);
+      if (e?.operate_mode === "跳转") {
+        if (e.operate_type === "URL跳转") {
+          const result = this.pre_data_handle(e, [data]);
+          if (result) {
+            window.open(result);
+          }
+        }
+      }
+    },
+    pre_data_handle(butinfo, operateData) {
+      var me = this;
+      var pre_data_handle = butinfo.pre_data_handle;
+      if (
+        pre_data_handle != undefined &&
+        pre_data_handle != null &&
+        pre_data_handle != ""
+      ) {
+        if (operateData) {
+          if (operateData.length == 0) {
+            operateData = [{}];
+          }
+        }
+        const url = eval("var zz=" + pre_data_handle + "(operateData,me); zz");
+        return url;
+      }
+      return operateData;
     },
     onClickCell(e = {}) {
       console.log("onClickCell", e);
@@ -907,11 +944,15 @@ export default {
       white-space: nowrap;
       overflow: hidden;
       cursor: pointer;
+      display: flex;
+      align-items: center;
       .td-img {
         width: 100%;
         height: 100%;
-        min-height: 100px;
+        min-height: 50px;
         object-fit: cover;
+        width: 120px;
+        border-radius: 8px;
       }
       &.row-button-box {
         flex: 1.5;
