@@ -230,10 +230,10 @@ import pdf from "vue-pdf";
 // import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 import cloneDeep from "lodash/cloneDeep";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
-
+import aSaveBMixin from "../mixin/a-save-b.mixin";
 export default {
   components: { pdf },
-  mixins: [bigFileUploadMixin],
+  mixins: [bigFileUploadMixin, aSaveBMixin],
   props: {
     field: {
       type: Object,
@@ -245,9 +245,6 @@ export default {
     },
   },
   computed: {
-    objInfo() {
-      return this.field.info?.dispLoader?.objInfo;
-    },
     imagesRun: function () {
       let self = this;
       let list = this.fileLists.length > 0 ? this.fileLists : this.notUploaded;
@@ -402,7 +399,7 @@ export default {
   methods: {
     async uploadMethod(params) {
       this.progress = 0;
-      const that = this
+      const that = this;
       const file = params.file;
       const fileSize = file.size / 1024 / 1024; // 单位为MB
       if (this.useSplitChuck && fileSize > 50) {
@@ -423,8 +420,8 @@ export default {
             }
             let event = {
               percent: percentage,
-            }
-            params?.onProgress?.(event)
+            };
+            params?.onProgress?.(event);
           },
           onUploadSuccess: (res) => {
             console.log("onUploadSuccess", res);
@@ -436,7 +433,7 @@ export default {
             //   callback(that.getFileUrl(res.fileurl));
             // }, 1000);
 
-            params?.onSuccess(res,file,this.fileLists)
+            params?.onSuccess(res, file, this.fileLists);
           },
         });
         console.log(url);
@@ -864,7 +861,7 @@ export default {
       this.uploading = false;
       this.$forceUpdate();
       console.log("上传成功", response);
-      if (response&&response.state === undefined) {
+      if (response && response.state === undefined) {
         this.$message.info("上传成功！");
         self.uploadParams.file_no = response.file_no;
         self.$set(self.uploadParams, "file_no", response.file_no);
@@ -883,52 +880,10 @@ export default {
         // self.setSrvVal(response.file_no)
         self.$emit("more-info", self.fileLists);
         this.setObjInfo(fileList);
-      } else if(response) {
+      } else if (response) {
         this.$message.error("上传失败！");
         this.fileLists.splice(this.fileLists.length - 1, 1);
       }
-    },
-    setObjInfo(fileList) {
-      const objInfo = this.objInfo;
-      if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
-        // fk字段值改变后，更新其obj_info中配置的的a_save_b_obj_col
-        const cols = objInfo?.a_save_b_cols.split(",");
-        let obj = [];
-        let objStr = "";
-        if (fileList?.length && cols?.length) {
-          fileList.forEach((fileItem) => {
-            let newValue = cloneDeep(fileItem);
-            if (fileItem?.response?.fileurl) {
-              newValue = { ...newValue?.response };
-            }
-            if (cols?.includes("*") && newValue?.fileurl) {
-              obj.push(cloneDeep(newValue));
-            } else {
-              let objItem = {};
-              cols.forEach((col) => {
-                objItem[col] = newValue[col];
-              });
-              obj.push(objItem);
-            }
-          });
-        }
-        objStr = JSON.stringify(obj);
-        if (objStr === "[]") {
-          objStr = "";
-        }
-        let objCol = {
-          type: "a_save_b_obj",
-          col: objInfo.a_save_b_obj_col,
-          val: objStr,
-        };
-        console.log("更新obj_info", objCol);
-        // 将更新的字段信息保存在_obj_col上，方便在form中获取
-        this.$set(this.field, "_obj_col", objCol);
-      } else if (this.field?._obj_col?.val) {
-        // 清空通过_obj_col保存的值
-        this.$set(this.field["_obj_col"], "val", null);
-      }
-      this.$emit("field-value-changed", this.field.info.name, this.field);
     },
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 ${this.limit}个文件`);
