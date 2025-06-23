@@ -14,4 +14,17 @@ export default class VideoUtil{
 
         return $http.post(url, req)
     }
+    //测试详情
+    async testDetails(params){
+        let url= window.backendIpAddr+`/park/select/srvbu_store_person_apply_review_select`
+        let req={
+            colNames: ["*"],
+            page:{pageNo: 1, rownumber: 10},
+            serviceName:"srvbu_store_person_apply_review_select",
+            mapp: "park",
+            srv_type: "select",
+            mdata: true
+        }
+        return $http.post(url,req)
+    }
 }

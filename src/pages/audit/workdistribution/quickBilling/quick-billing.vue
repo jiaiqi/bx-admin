@@ -20,14 +20,14 @@
               </el-col>
               <el-col :span="6">
                 <el-form-item label="车种" prop="vehicleClass">
-                <el-select v-model="quickForm.vehicleClass" clearable placeholder="请选择" size="mini" style="width: 100%">
-                  <el-option
-                      v-for="item in useOptions.vehicleclass"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value">
-                  </el-option>
-                </el-select>
+                  <el-select v-model="quickForm.vehicleClass" clearable placeholder="请选择" size="mini" style="width: 100%">
+                    <el-option
+                        v-for="item in useOptions.vehicleclass"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                    </el-option>
+                  </el-select>
                 </el-form-item>
               </el-col>
               <el-col :span="6">
@@ -63,7 +63,7 @@
               </el-col>
               <el-col :span="6">
                 <el-form-item label="费率版本号" prop="rateVer">
-                   <el-input v-model="quickForm.rateVer" placeholder="请输入" clearable size="mini"></el-input>
+                  <el-input v-model="quickForm.rateVer" placeholder="请输入" clearable size="mini"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -71,36 +71,36 @@
         </div>
         <div class="qk_row" style="height:48%;margin-top:0.625rem">
           <div class="qk_tl">人工录入门架序列：</div>
-           <el-form label-width="auto" class="text_ruleForm" style="height: auto">
-             <el-row>
-               <el-col :span="6">
-                 <el-form-item label="门架序列">
-                   <el-input type="textarea"  @clear="handleClearGantry" v-model="quickForm.textGantryGroup" size="mini" style="width:100%" clearable placeholder="输入的多个序列使用|分隔" @input="debouncedHandleGantryGroupInput"></el-input>
-                 </el-form-item>
-               </el-col>
-               <el-col :span="6">
-                 <el-form-item label="门架序列(HEX)">
-                   <el-input type="textarea" v-model="quickForm.textGantryHexGroup" size="mini" style="width:100%" clearable placeholder="输入的多个hex使用|分隔" @input="debouncedHandleHexGroupInput" @clear="handleClearGantry"></el-input>
-                 </el-form-item>
-               </el-col>
-               <el-col :span="6">
-                 <el-form-item>
-                   <el-button type="primary" plain size="mini" @click="handleUpdateGantryList">更新门架列表</el-button>
-                 </el-form-item>
-               </el-col>
-             </el-row>
-<!-- 重复信息提示-->
-             <el-row v-if="repeatedInformation.length>0">
-               <div class="repeat_info">
+          <el-form label-width="auto" class="text_ruleForm" style="height: auto">
+            <el-row>
+              <el-col :span="6">
+                <el-form-item label="门架序列">
+                  <el-input type="textarea"  @clear="handleClearGantry" v-model="quickForm.textGantryGroup" size="mini" style="width:100%" clearable placeholder="输入的多个序列使用|分隔" @input="debouncedHandleGantryGroupInput"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="门架序列(HEX)">
+                  <el-input type="textarea" v-model="quickForm.textGantryHexGroup" size="mini" style="width:100%" clearable placeholder="输入的多个hex使用|分隔" @input="debouncedHandleHexGroupInput" @clear="handleClearGantry"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item>
+                  <el-button type="primary" plain size="mini" @click="handleUpdateGantryList">更新门架列表</el-button>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <!-- 重复信息提示-->
+            <el-row v-if="repeatedInformation.length>0">
+              <div class="repeat_info">
                <span>
                  已经去掉重复数据：
                </span>
-                 <span>
+                <span>
                  {{repeatedInformation}}
                </span>
-               </div>
-             </el-row>
-           </el-form>
+              </div>
+            </el-row>
+          </el-form>
         </div>
       </div>
     </div>
@@ -130,15 +130,15 @@
         </div>
         <div class="des_tl">
           <span style="margin-right:0.625rem">应收金额：</span>
-          <span>{{feeInfo.payFee}}</span>
+          <span>{{formatFeeToYuan(feeInfo.payFee)}}元</span>
         </div>
         <div class="des_tl">
           <span style="margin-right:0.625rem">实收金额：</span>
-          <span>{{feeInfo.fee}}</span>
+          <span>{{formatFeeToYuan(feeInfo.fee)}}元</span>
         </div>
         <div class="des_tl">
           <span style="margin-right:0.625rem">优惠金额：</span>
-          <span>{{feeInfo.discountFee}}</span>
+          <span>{{formatFeeToYuan(feeInfo.discountFee)}}元</span>
         </div>
       </div>
     </div>
@@ -224,10 +224,10 @@ export default {
      * @Author:Eirice
      * @Date: 2025-06-19 09:06:21
      */
-      handleFly(item){
+    handleFly(item){
       let code = handleMakePoint('', item.lng, item.lat)
       FlyTo(this.handleMap, code,12.8)
-     },
+    },
     /**
      * @Description:防抖
      * @Author:Eirice
@@ -246,6 +246,7 @@ export default {
 
     //门架序列数据处理
     handleGantryGroupInput(value) {
+
       if (!value) {
         // 清空hex值
         this.quickForm.textGantryHexGroup = '';
@@ -259,38 +260,45 @@ export default {
         }
         return;
       }
-      
+
       // 使用 | 分割字符串并去重
       const gantryArray = value.split('|').filter(item => item.trim());
       const uniqueGantryArray = [...new Set(gantryArray)];
-      
+
       // 更新输入框的值和存储值
       this.quickForm.textGantryGroup = uniqueGantryArray.join('|');
       this.storedGantryGroup = this.quickForm.textGantryGroup;
-      
+
       // 将|替换为英文逗号后传递给handleByTextGantryGroup
       let ids = this.quickForm.textGantryGroup.replace(/\|/g, ',');
-      
+
       // 获取新的门架数据，但只暂存，不直接更新stationList
       let info={
-            page:{
-              pageNo:1,
-              rownumber:10,
-            },
-            condition:[{colName: "id", ruleType: "in", value:ids}],
-            relation_condition:{
-              relation: "AND",
-              data:[{colName: "id", ruleType: "in", value:ids}]
-            }
-       }
+        page:{
+          pageNo:1,
+          rownumber:10,
+        },
+        condition:[{colName: "id", ruleType: "in", value:ids}],
+        relation_condition:{
+          relation: "AND",
+          data:[{colName: "id", ruleType: "in", value:ids}]
+        }
+      }
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') { this.pendingStationList = []; return; }
         // 新查回的数据加fromTextGantry: true
         let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
+        // 按输入顺序排序
+        const inputOrder = uniqueGantryArray.map(x => String(x).trim());
+        console.log('工人录入textGantryGroup:', inputOrder);
+        console.log('排序前的textGantryGroup:', ls.map(x => String(x.id).trim()));
+        ls.sort((a, b) => inputOrder.indexOf(String(a.id).trim()) - inputOrder.indexOf(String(b.id).trim()));
+        console.log('排序后的获数据:', ls.map(x => String(x.id).trim()));
         this.pendingStationList = ls;
         // 根据查询返回的数据更新textGantryHexGroup
         const hexValues = ls.map(item => item.gantryhex).filter(hex => hex);
         this.quickForm.textGantryHexGroup = hexValues.join('|');
+
       }).catch(err => { this.pendingStationList = []; });
     },
     //更新门架按钮点击按钮时触发门架查询
@@ -307,10 +315,10 @@ export default {
         this.repeatedInformation = '';
         return;
       }
-      
+
       // 获取非人工录入门架ID
       const existIds = new Set(this.stationList.filter(item => !item.fromTextGantry).map(item => String(item.id)));
-      
+
       // 根据当前的textGantryGroup重新查询数据
       let ids = this.quickForm.textGantryGroup.replace(/\|/g, ',');
       let info = {
@@ -324,13 +332,13 @@ export default {
           data: [{colName: "id", ruleType: "in", value: ids}]
         }
       };
-      
+
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') return;
-        
+
         // 新查回的数据加fromTextGantry: true
         let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
-        
+
         // 过滤新门架，找出未重复的
         const filtered = [];
         const removedIds = [];
@@ -341,17 +349,23 @@ export default {
             removedIds.push(String(item.id));
           }
         });
-        
+
         // 移除原有人工录入门架
         this.stationList = this.stationList.filter(item => !item.fromTextGantry);
         this.stationList = [...this.stationList, ...filtered];
+        // 对人工录入门架排序，并放在stationList后面
+        const manualList = this.stationList.filter(item => item.fromTextGantry);
+        const otherList = this.stationList.filter(item => !item.fromTextGantry);
+        const inputOrder = this.quickForm.textGantryGroup.split('|').map(x => String(x).trim());
+        manualList.sort((a, b) => inputOrder.indexOf(String(a.id).trim()) - inputOrder.indexOf(String(b.id).trim()));
+        this.stationList = [...otherList, ...manualList];
         this.stationList = this.handleStationDataSource(this.stationList);
         this.handleDrawMarkers();
-        
+
         if(this.stationList.length > 0) {
           this.handleFly(this.stationList[0]);
         }
-        
+
         // 同步textGantryGroup
         if (removedIds.length > 0) {
           const arr = this.quickForm.textGantryGroup.split('|').filter(id => id && !removedIds.includes(id));
@@ -369,7 +383,7 @@ export default {
         } else {
           this.repeatedInformation = '';
         }
-        
+
         // 更新pendingStationList为空，因为已经处理完了
         this.pendingStationList = [];
       }).catch(err => {
@@ -455,16 +469,16 @@ export default {
     //人工录入门架子序列后查询们门架子
     handleByTextGantryGroup(ids){
       let info={
-            page:{
-              pageNo:1,
-              rownumber:10,
-            },
-            condition:[{colName: "id", ruleType: "in", value:ids}],
-            relation_condition:{
-              relation: "AND",
-              data:[{colName: "id", ruleType: "in", value:ids}]
-            }
-       }
+        page:{
+          pageNo:1,
+          rownumber:10,
+        },
+        condition:[{colName: "id", ruleType: "in", value:ids}],
+        relation_condition:{
+          relation: "AND",
+          data:[{colName: "id", ruleType: "in", value:ids}]
+        }
+      }
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') return;
         // 新查回的数据加fromTextGantry: true
@@ -512,7 +526,7 @@ export default {
       if (index > -1) {
         this.stationList.splice(index, 1);
         this.stationList = this.handleStationDataSource(this.stationList);
-        
+
         // 检查删除的门架ID是否存在于textGantryGroup中
         const gantryIds = this.quickForm.textGantryGroup.split('|').filter(id => id.trim());
         if (gantryIds.includes(item.id.toString())) {
@@ -520,7 +534,7 @@ export default {
           const updatedIds = gantryIds.filter(id => id !== item.id.toString());
           this.quickForm.textGantryGroup = updatedIds.join('|');
           this.storedGantryGroup = this.quickForm.textGantryGroup;
-          
+
           // 触发查询更新textGantryHexGroup
           if (this.quickForm.textGantryGroup) {
             let queryIds = this.quickForm.textGantryGroup.replace(/\|/g, ',');
@@ -594,14 +608,14 @@ export default {
         }
         return;
       }
-      
+
       // 使用 | 分割字符串并去重
       const hexArray = value.split('|').filter(item => item.trim());
       const uniqueHexArray = [...new Set(hexArray)];
-      
+
       // 更新输入框的值
       this.quickForm.textGantryHexGroup = uniqueHexArray.join('|');
-      
+
       // 将|替换为英文逗号后传递给handleGetStationByHex
       let ids = this.quickForm.textGantryHexGroup.replace(/\|/g, ',');
       // 查询HEX对应的门架，查回数据只暂存，不直接更新stationList
@@ -619,43 +633,18 @@ export default {
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') { this.pendingStationList = []; return; }
         let ls = res.data.data;
+
+        // 按输入顺序排序
+        const inputOrder = uniqueHexArray.map(x => String(x).trim());
+        console.log('人工录入:', inputOrder);
+        console.log('排序前:', ls.map(x => String(x.gantryhex).trim()));
+        ls.sort((a, b) => inputOrder.indexOf(String(a.gantryhex).trim()) - inputOrder.indexOf(String(b.gantryhex).trim()));
+        console.log('排序后:', ls.map(x => String(x.gantryhex).trim()));
         this.pendingStationList = ls;
         // 将获取到的门架ID拼接到textGantryGroup
         const gantryIds = ls.map(item => item.id).filter(id => id);
         this.quickForm.textGantryGroup = gantryIds.join('|');
       }).catch(err => { this.pendingStationList = []; });
-    },
-
-    //处理携带hex文本进入时查询出对应的门架序列数据
-    handleGetStationByHex(ids){
-      let info={
-        page:{
-          pageNo:1,
-          rownumber:10,
-        },
-        condition:[{colName: "gantryhex", ruleType: "in", value:ids}],
-        relation_condition:{
-          relation: "AND",
-          data:[{colName: "gantryhex", ruleType: "in", value:ids}]
-        }
-      }
-      orderUtils.getAllStationByInfo(info).then(res => {
-        if(res.data.state !== 'SUCCESS') return;
-        let ls = res.data.data;
-        
-        // 先清除之前通过textGantryGroup添加的门架
-        const oldGantryIds = this.storedGantryGroup.split('|').filter(id => id.trim());
-        this.stationList = this.stationList.filter(station => !oldGantryIds.includes(station.id.toString()));
-        
-        // 将获取到的门架ID拼接到textGantryGroup
-        const gantryIds = ls.map(item => item.id).filter(id => id);
-        this.quickForm.textGantryGroup = gantryIds.join('|');
-        this.storedGantryGroup = this.quickForm.textGantryGroup;
-        
-        // 触发textGantryGroup的查询操作
-        let queryIds = this.quickForm.textGantryGroup.replace(/\|/g, ',');
-        this.handleByTextGantryGroup(queryIds);
-      }).catch(err => {})
     },
 
 
@@ -667,21 +656,25 @@ export default {
     handleSubmitQuick(){
       this.$refs.quickForm.validate((valid) => {
         if (valid) {
-        if(this.stationList.length===0) return Message({type:'error',message:'门架不能为空'});
-         let obj={
-           gantryCount:this.stationList.length,
-           gantryGroup:handleFilterParams('id',this.stationList,'|'),
-           gantryHexGroup:handleFilterParams('gantryhex',this.stationList,'|'),
-           dataSource: handleFilterParams('dataSource',this.stationList,'|'),
-           mediaType:this.quickForm.mediaType,
-           vehicleType:this.quickForm.vehicleType,
-           vehicleUserType:this.quickForm.vehicleUserType,
-           vehicleClass:this.quickForm.vehicleClass,
-           rateProgramVer:this.quickForm.rateProgramVer,
-           rateVer:this.quickForm.rateVer,
-         }
-         console.log('这是计费参数',obj)
-         this.quickBillingSubmit(obj)
+          if(this.stationList.length===0) return Message({type:'error',message:'门架不能为空'});
+          const inStation= this.stationList[0];
+          const exStation= this.stationList[this.stationList.length-1];
+          let obj={
+            gantryCount:this.stationList.length,
+            gantryGroup:handleFilterParams('id',this.stationList,'|'),
+            gantryHexGroup:handleFilterParams('gantryhex',this.stationList,'|'),
+            dataSource: handleFilterParams('dataSource',this.stationList,'|'),
+            mediaType:this.quickForm.mediaType,
+            vehicleType:this.quickForm.vehicleType,
+            vehicleUserType:this.quickForm.vehicleUserType,
+            vehicleClass:this.quickForm.vehicleClass,
+            rateProgramVer:this.quickForm.rateProgramVer,
+            rateVer:this.quickForm.rateVer,
+            enStationId:inStation.grantry_type==='收费站'?inStation.id:'',
+            exStationId:exStation.grantry_type==='收费站'?exStation.id:'',
+          }
+          console.log('这是计费参数',obj)
+          this.quickBillingSubmit(obj)
         } else {
           Message({
             type: 'error',
@@ -697,19 +690,25 @@ export default {
      * @Date: 2025-06-19 09:26:20
      */
     quickBillingSubmit(obj){
-     orderUtils.handleQuickBilling(obj).then(res => {
-       if(res.data.code !== 0) return;
-       Message({
-         type: 'success',
-         message: '计费查询成功'
-       });
-       if(res.data.messageInfo && res.data.messageInfo.tollDetail){
-         let ls=res.data.messageInfo.tollDetail[0]
+      orderUtils.handleQuickBilling(obj).then(res => {
+        if(res.data.code !== 0) return;
+        Message({
+          type: 'success',
+          message: '计费查询成功'
+        });
+        if(res.data.messageInfo && res.data.messageInfo.tollDetail){
+          let ls=res.data.messageInfo.tollDetail[0]
           this.feeInfo.fee=ls?.fee;
           this.feeInfo.payFee=ls?.payFee;
           this.feeInfo.discountFee=ls?.discountFee;
-       }
-     }).catch(err => {})
+        }
+      }).catch(err => {})
+    },
+    //费用转成元
+    formatFeeToYuan(fee) {
+      if (fee===0 || fee === null || fee === undefined || isNaN(fee)) return '0';
+      let yuan = fee / 100;
+      return String(yuan).replace(/\.?0+$/, '');
     }
   },
   created() {
@@ -719,7 +718,7 @@ export default {
   },
   mounted(){
     // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-aee503f9-2a8e-4d16-80da-4ed2c90a04e7');
+    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-19111bad-b1e0-468d-b584-6f232cdbef66');
     this.getPublicColNames();
     this.asyncLoadMap();
     setTimeout(()=>{this.initMineMap()},500)
