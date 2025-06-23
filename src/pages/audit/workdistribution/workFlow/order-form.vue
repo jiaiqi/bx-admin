@@ -127,7 +127,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="12" style="display: flex;padding-left: 6.42%">
-          <el-form-item label="稽核车型" prop="trade_vehicle_type">
+          <el-form-item label="收费车型" prop="trade_vehicle_type">
             <el-select v-model="ruleForm.trade_vehicle_type" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.trade_vehicle_type"
@@ -510,7 +510,6 @@ export default {
   methods: {
     //通行介质变化检测
     handleSetMedia(){
-      debugger
       this.initSpecialType()
     },
     //大件车辆类型判断
@@ -784,7 +783,14 @@ export default {
      * @Date: 2025-06-06 17:23:48
      */
     handleGetCurrentFree(){
-      orderUtils.getDriverFreeDetails({pass_id:this.ruleForm.pass_id}).then(res => {
+      let obj={
+        pass_id:this.ruleForm.pass_id,
+        vehicleusertype:this.ruleForm.vehicleusertype,
+        vehicleclass:this.ruleForm.vehicleclass,
+        vehicle_type:this.ruleForm.vehicle_type,
+        axleCount:this.ruleForm.axlecount
+      }
+      orderUtils.getDriverFreeDetails(obj).then(res => {
         if(res.data.code !== 0) return;
         if(res.data.messageInfo && res.data.messageInfo.tollDetail){
           let ls=res.data.messageInfo.tollDetail[0]

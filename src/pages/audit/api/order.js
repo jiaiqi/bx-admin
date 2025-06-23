@@ -302,13 +302,10 @@ export default class OrderApi{
         return await $http.post(url, req)
     }
 
-    //调用计费查询接口获取根据passid查询获取的费用信息
+    //调用计费查询接口获取根据passid及其他信息查询获取的费用信息
     async getDriverFreeDetails(params){
-       let url=path+`/aud/calc/toll/fee`
-       let data={
-           passid:params.pass_id,
-       }
-       return await $http.post(url, data)
+       let url=path+`/aud/work/calc/toll/fee`
+       return await $http.post(url, params)
     }
     //地图界面保存时保存查询到的车辆通行信息
     async saveDriverDetails(params){
@@ -380,6 +377,7 @@ export default class OrderApi{
        }
       return await $http.post(url,req)
     }
+
     //快速计费提交
     async handleQuickBilling(params){
        let url = path+'/aud/calc/toll/fee'

@@ -18,10 +18,33 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
     // 设置 canvas 尺寸
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-    
-    console.log('画布边界大小:', canvas.width, canvas.height);
-    console.log('起点坐标:', startPoint);
-    console.log('终点坐标组:', endPoints);
+
+    // 颜色转换函数：将颜色转换为rgba格式
+    function convertToRgba(color, alpha = 1) {
+        if (!color) return color;
+        
+        // 如果已经是rgba格式，直接返回
+        if (color.startsWith('rgba(')) {
+            return color;
+        }
+        
+        // 如果是rgb格式，转换为rgba
+        if (color.startsWith('rgb(')) {
+            return color.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
+        }
+        
+        // 如果是hex格式，转换为rgba
+        if (color.startsWith('#')) {
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+        
+        // 其他格式直接返回
+        return color;
+    }
 
     const ctx = canvas.getContext('2d');
     const {
@@ -37,45 +60,66 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
         centerPointColor = '#ffffff' // 中心点颜色
     } = options;
 
+    // 转换颜色为rgba格式并添加透明度
+    const convertedColors = {
+        lineColor: convertToRgba(lineColor, 1), // 线条颜色不透明
+        glowColor: convertToRgba(glowColor, 0.5), // 发光效果半透明
+        flowColor: convertToRgba(flowColor, 0.8), // 流动光效较透明
+        pointColor: convertToRgba(pointColor, 1), // 点位基础颜色不透明
+        pointGlowColor: convertToRgba(pointGlowColor, 0.8), // 点位光晕较透明
+        rippleColor: convertToRgba(rippleColor, 0.2), // 水波纹很透明
+        centerPointColor: convertToRgba(centerPointColor, 1) // 中心点不透明
+    };
+
+    // 固定线条宽度
+    const adjustedLineWidth = lineWidth;
+
     // 设置线条样式
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
     // 绘制科技感点位
     function drawTechPoint(x, y, isEndPoint = false) {
+        // 固定基础大小为10px
+        const baseSize = 10;
+        const glowRadius = baseSize; // 光晕半径10px
+        const innerRadius = baseSize * 0.4; // 内圈半径4px
+        const centerRadius = baseSize * 0.15; // 中心点半径1.5px
+        const crossLength = baseSize * 0.6; // 十字线长度6px
+
         // 绘制外圈光晕
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
-        gradient.addColorStop(0, pointGlowColor);
-        gradient.addColorStop(0.5, pointGlowColor.replace('0.8', '0.2'));
-        gradient.addColorStop(1, pointGlowColor.replace('0.8', '0'));
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        gradient.addColorStop(0, convertedColors.pointGlowColor);
+        gradient.addColorStop(0.5, convertedColors.pointGlowColor.replace(/[\d.]+\)$/, '0.2)'));
+        gradient.addColorStop(1, convertedColors.pointGlowColor.replace(/[\d.]+\)$/, '0)'));
 
         ctx.beginPath();
-        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
 
         // 绘制内圈
         ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fillStyle = pointColor;
+        ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
+        ctx.fillStyle = convertedColors.pointColor;
         ctx.fill();
 
         // 绘制中心点
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = centerPointColor;
+        ctx.arc(x, y, centerRadius, 0, Math.PI * 2);
+        ctx.fillStyle = convertedColors.centerPointColor;
         ctx.fill();
 
         // 如果是终点，添加额外的装饰效果
         if (isEndPoint) {
             // 绘制十字线
             ctx.beginPath();
-            ctx.strokeStyle = pointGlowColor.replace('0.8', '0.6');
+            ctx.strokeStyle = convertedColors.pointGlowColor.replace(/[\d.]+\)$/, '0.6)');
             ctx.lineWidth = 1;
-            ctx.moveTo(x - 12, y);
-            ctx.lineTo(x + 12, y);
-            ctx.moveTo(x, y - 12);
-            ctx.lineTo(x, y + 12);
+            ctx.moveTo(x - crossLength, y);
+            ctx.lineTo(x + crossLength, y);
+            ctx.moveTo(x, y - crossLength);
+            ctx.lineTo(x, y + crossLength);
             ctx.stroke();
         }
     }
@@ -87,7 +131,7 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
         
         function draw() {
             rippleTime += 0.05; // 控制水波纹速度
-            flowTime += 0.02; // 控制流动光效速度
+            flowTime += 0.04; // 增加流动光效速度从0.02到0.04
 
             // 清除画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -112,14 +156,14 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
                     endPoint.x, endPoint.y
                 );
                 
-                gradient.addColorStop(0, lineColor.replace(')', ', 0.1)'));
-                gradient.addColorStop(0.5, lineColor.replace(')', ', 0.5)'));
-                gradient.addColorStop(1, lineColor);
+                gradient.addColorStop(0, convertedColors.lineColor.replace(/[\d.]+\)$/, '0.1)'));
+                gradient.addColorStop(0.5, convertedColors.lineColor.replace(/[\d.]+\)$/, '0.5)'));
+                gradient.addColorStop(1, convertedColors.lineColor);
 
-                ctx.shadowColor = glowColor;
-                ctx.shadowBlur = 10;
+                ctx.shadowColor = convertedColors.glowColor;
+                ctx.shadowBlur = 10; // 固定阴影模糊10px
                 ctx.strokeStyle = gradient;
-                ctx.lineWidth = lineWidth;
+                ctx.lineWidth = adjustedLineWidth;
 
                 ctx.beginPath();
                 ctx.moveTo(startPoint.x, startPoint.y);
@@ -134,18 +178,20 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
 
                 // 创建流动的光效
                 const flowOffset = (flowTime % 1); // 确保值在 0-1 之间
-                const flowWidth = 0.2; // 光效宽度
+                const flowWidth = 0.4; // 增加光效宽度从0.2到0.4
 
                 // 确保所有值都在 0-1 范围内
                 const startStop = Math.max(0, flowOffset - flowWidth);
                 const endStop = Math.min(1, flowOffset + flowWidth);
 
                 flowGradient.addColorStop(startStop, 'rgba(0, 255, 255, 0)');
-                flowGradient.addColorStop(flowOffset, flowColor);
+                flowGradient.addColorStop(Math.max(0, flowOffset - flowWidth * 0.3), convertedColors.flowColor);
+                flowGradient.addColorStop(flowOffset, 'rgba(255, 255, 255, 1)'); // 中心添加明亮的白色
+                flowGradient.addColorStop(Math.min(1, flowOffset + flowWidth * 0.3), convertedColors.flowColor);
                 flowGradient.addColorStop(endStop, 'rgba(0, 255, 255, 0)');
 
                 ctx.strokeStyle = flowGradient;
-                ctx.lineWidth = lineWidth * 1.5;
+                ctx.lineWidth = adjustedLineWidth * 2.5; // 增加流动光效宽度从1.5到2.5
                 ctx.beginPath();
                 ctx.moveTo(startPoint.x, startPoint.y);
                 ctx.quadraticCurveTo(controlX, controlY, endPoint.x, endPoint.y);
@@ -158,13 +204,13 @@ export function drawFlightLines(canvasId, startPoint, endPoints, options = {}) {
                 drawTechPoint(endPoint.x, endPoint.y, true);
 
                 // 绘制水波纹效果
-                const rippleRadius = 20 + Math.sin(rippleTime) * 10;
+                const rippleRadius = 10 + Math.sin(rippleTime) * 5; // 调整水波纹大小，基础10px，波动5px
                 const rippleGradient = ctx.createRadialGradient(
                     endPoint.x, endPoint.y, 0,
                     endPoint.x, endPoint.y, rippleRadius
                 );
-                rippleGradient.addColorStop(0, rippleColor);
-                rippleGradient.addColorStop(1, rippleColor.replace('0.2', '0'));
+                rippleGradient.addColorStop(0, convertedColors.rippleColor);
+                rippleGradient.addColorStop(1, convertedColors.rippleColor.replace(/[\d.]+\)$/, '0)'));
 
                 ctx.beginPath();
                 ctx.arc(endPoint.x, endPoint.y, rippleRadius, 0, Math.PI * 2);
