@@ -147,23 +147,11 @@
       <div
         class="map-marker"
         :style="getItemPosition(item)"
-        @click.stop="tapMarker(item)"
+        @click.stop="tapMarker(item, $event)"
         :class="{ 'cursor-pointer': !!cardUnitJson }"
         v-for="item in markerList"
         :key="item.id"
       >
-        <transition name="popover-fade">
-          <div
-            class="popover-content"
-            v-if="activeMarker && activeMarker.id === item.id"
-          >
-            <card-group-cell
-              :page-item="pageItem"
-              :cellsLayout="[cardUnitJson]"
-              :cell-item-data="activeMarker"
-            ></card-group-cell>
-          </div>
-        </transition>
         <img
           :src="getItemIcon(item)"
           class="marker-icon"
@@ -171,6 +159,53 @@
         />
       </div>
     </template>
+    <Teleport to="body">
+      <div
+        class="popover-content-to-body"
+        :style="{
+          left: popoverPosition.x + 'px',
+          top: popoverPosition.y + 'px',
+        }"
+      >
+        <transition name="popover-fade">
+          <div
+            class="popover-content"
+            :class="{ show: activeMarker && activeMarker.id }"
+          >
+            <template v-if="activeMarker && activeMarker.id">
+              <div class="bottom-arrow"></div>
+              <card-group-cell
+                :page-item="pageItem"
+                :cellsLayout="[cardUnitJson]"
+                :cell-item-data="activeMarker"
+                :key="activeMarker.id"
+              ></card-group-cell>
+            </template>
+          </div>
+        </transition>
+      </div>
+    </Teleport>
+    <!-- <Teleport to="body">
+      <transition name="popover-fade">
+        <div
+          class="popover-content-to-body"
+          :style="{
+            left: popoverPosition.x + 'px',
+            top: popoverPosition.y + 'px',
+          }"
+        >
+          <template v-if="activeMarker && activeMarker.id">
+            <div class="bottom-arrow"></div>
+            <card-group-cell
+              :page-item="pageItem"
+              :cellsLayout="[cardUnitJson]"
+              :cell-item-data="activeMarker"
+              :key="activeMarker.id"
+            ></card-group-cell>
+          </template>
+        </div>
+      </transition>
+    </Teleport> -->
   </div>
 
   <div class="map-view" v-else>
@@ -204,6 +239,7 @@ import cardGroupCell from "./card-group-cell/card-group-cell.vue";
 import TreeDataItem from "./TreeDataItem.vue";
 import { formatStyleData } from "../../common";
 import { Icon } from "@iconify/vue2";
+import Teleport from "vue2-teleport";
 
 const props = defineProps({
   pageItem: Object,
@@ -289,6 +325,7 @@ const markerInfo = ref({});
 
 const markerList = ref([]);
 const activeMarker = ref({});
+const popoverPosition = ref({ x: 0, y: 0 });
 const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json);
 
 // const title = ref("");
@@ -377,11 +414,21 @@ const setLabelActiveStyle = computed(() => {
   }
 });
 
-function tapMarker(item) {
+function tapMarker(item, event) {
   if (item?.id && item?.id === activeMarker.value?.id) {
     activeMarker.value = null;
   } else {
     activeMarker.value = item;
+    // 记录点击位置
+    if (event) {
+      console.log(event.currentTarget);
+      const ele = event.currentTarget;
+      const { top, left, width } = ele.getBoundingClientRect();
+      popoverPosition.value = {
+        x: left + width / 2,
+        y: top - 10,
+      };
+    }
   }
 }
 const treeData = ref([]);
@@ -692,45 +739,55 @@ onMounted(() => {
       width: 30px;
       // height: 30px;
     }
-    .popover-content {
-      position: absolute;
-      top: -10px;
-      left: 50%;
-      z-index: 1000;
-      border-radius: 5px;
-      transform: translate(-50%, -100%) scale(1);
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-      opacity: 1;
-      &:after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translate(-50%, 0);
-        width: 0;
-        height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 5px solid #fff;
-      }
-    }
-    .popover-fade-enter-active,
-    .popover-fade-leave-active {
-      // transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
-      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-      // transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .popover-fade-enter,
-    .popover-fade-leave-to {
-      opacity: 0;
-      transform: translate(-50%, -120%) scale(0.8);
-    }
-    .popover-fade-enter-to,
-    .popover-fade-leave {
-      opacity: 1;
-      transform: translate(-50%, -100%) scale(1);
-    }
   }
+}
+:global(.popover-content-to-body) {
+  position: fixed;
+  z-index: 1000;
+  border-radius: 5px;
+  transform: translate(-50%, -100%) scale(1);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  opacity: 1;
+  // background: #fff;
+  width: max-content;
+  height: max-content;
+  &.popover-fade-enter-active,
+  &.popover-fade-leave-active {
+    // transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    // transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  &.popover-fade-enter,
+  &.popover-fade-leave-to {
+    opacity: 0;
+    transform: translate(-50%, -120%) scale(0.8);
+  }
+  &.popover-fade-enter-to,
+  &.popover-fade-leave {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+:global(.popover-content-to-body .popover-content) {
+  opacity: 0;
+  transform:  translate(-50%, -50%) scale(0.8);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+:global(.popover-content-to-body .popover-content.show) {
+  opacity: 1;
+  transform: translate(0%, 0%) scale(1);
+}
+:global(.popover-content-to-body .bottom-arrow) {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #fff;
 }
 .map-container {
   width: 100%;
