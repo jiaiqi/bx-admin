@@ -36,6 +36,7 @@
       class="page-item__label"
       v-if="
         inTabs !== true &&
+        isMapList !== true &&
         pageItemData.show_label === '是' &&
         pageItemData.com_label
       "
@@ -57,7 +58,10 @@
             icon="ri-arrow-drop-right-fill"
             v-if="mixTitleIcon === '三角形'"
           ></Icon>
-          <Icon :icon="mixTitleIcon" v-else-if="mixTitleIcon && mixTitleIcon !== '下划线'"></Icon>
+          <Icon
+            :icon="mixTitleIcon"
+            v-else-if="mixTitleIcon && mixTitleIcon !== '下划线'"
+          ></Icon>
         </template>
         <span>
           {{ pageItemData.com_label }}
@@ -158,6 +162,7 @@
     ></page-item-chart>
     <List
       :class="{ mobile: screenType === 'mobile' }"
+      :is-map-list="isMapList"
       v-else-if="pageItemData.com_type === 'list'"
       :pageParamsModel="pageParamsModel"
       @setPageParams="setPageParams"
@@ -288,6 +293,12 @@ export default {
     currentId: [String, Number],
   },
   computed: {
+    isMapList() {
+      return (
+        this.pageItemData.com_type === "list" &&
+        this.pageItemData.list_json?.list_options?.includes("关联地图筛选")
+      );
+    },
     isActive() {
       return (
         this.inEdit && this.currentId && this.currentId === this.pageItem.id

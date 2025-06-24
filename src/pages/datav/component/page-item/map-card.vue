@@ -56,9 +56,9 @@
       }"
     ></div>
   </div>
+
   <div
     class="map-view custom-map"
-    v-else-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
     :style="{
       backgroundImage: `url(${baseImage})`,
       backgroundSize: '100% 100%',
@@ -66,42 +66,59 @@
       backgroundRepeat: 'no-repeat',
     }"
     @click="tapMarker()"
+    v-else-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
   >
-    <div class="map-tree-data" v-if="treeData.length">
-      <div class="tree-data-item" v-for="item in treeData" :key="item.id">
-        <div
-          class="tree-data-item-name"
-          :class="{
-            active:
-              (selectedTreeData &&
-                item.id &&
-                selectedTreeData.id === item.id) ||
-              (selectedTreeData.path &&
-                selectedTreeData.path.startsWith(item.path)),
-          }"
-          @click="tapTreeData(item)"
-        >
-          <i
-            class="tree-data-item-name-icon el-icon-caret-right"
-            :class="{ expanded: expandedNodes[item.id] }"
-            @click.stop="toggleExpand(item)"
-          ></i>
-          <span class="tree-data-item-name-text">
-            {{ getTreeItemLabel(item) }}
-          </span>
-        </div>
-        <transition name="tree-expand">
-          <div class="tree-data-item-child" v-show="expandedNodes[item.id]">
-            <tree-data-item
-              v-for="child in item.children"
-              :key="child.id"
-              :item="child"
-              :selected="selectedTreeData"
-              :level="1"
-              @select="tapTreeData"
-            />
+    <div
+      class="map-left"
+      :style="{
+        '--left': left + 'px',
+      }"
+      :class="{ collapsed: isCollapsed }"
+    >
+      <div class="map-tree-data" v-if="treeData.length">
+        <div class="tree-data-item" v-for="item in treeData" :key="item.id">
+          <div
+            class="tree-data-item-name"
+            :class="{
+              active:
+                (selectedTreeData &&
+                  item.id &&
+                  selectedTreeData.id === item.id) ||
+                (selectedTreeData.path &&
+                  selectedTreeData.path.startsWith(item.path)),
+            }"
+            @click="tapTreeData(item)"
+          >
+            <i
+              class="tree-data-item-name-icon el-icon-caret-right"
+              :class="{ expanded: expandedNodes[item.id] }"
+              @click.stop="toggleExpand(item)"
+            ></i>
+            <span class="tree-data-item-name-text">
+              {{ getTreeItemLabel(item) }}
+            </span>
           </div>
-        </transition>
+          <transition name="tree-expand">
+            <div class="tree-data-item-child" v-show="expandedNodes[item.id]">
+              <tree-data-item
+                v-for="child in item.children"
+                :key="child.id"
+                :item="child"
+                :selected="selectedTreeData"
+                :level="1"
+                @select="tapTreeData"
+              />
+            </div>
+          </transition>
+        </div>
+      </div>
+      <div
+        class="collapsed-icon"
+        @click="changeCollapsed"
+        v-if="treeData.length"
+        :title="isCollapsed ? '展开' : '收起'"
+      >
+        <Icon icon="material-symbols:arrow-menu-close" class="icon"></Icon>
       </div>
     </div>
     <template
@@ -186,11 +203,18 @@ import { $selectList } from "@/common/http";
 import cardGroupCell from "./card-group-cell/card-group-cell.vue";
 import TreeDataItem from "./TreeDataItem.vue";
 import { formatStyleData } from "../../common";
+import { Icon } from "@iconify/vue2";
 
 const props = defineProps({
   pageItem: Object,
   treeReq: Object,
 });
+
+const isCollapsed = ref(false);
+const left = computed(() => (isCollapsed.value ? -230 : 15));
+const changeCollapsed = () => {
+  isCollapsed.value = !isCollapsed.value;
+};
 function isActive(marker) {
   if (selectedTreeData.value && marker?.id) {
     return selectedTreeData.value?.id === marker.id;
@@ -517,6 +541,59 @@ onMounted(() => {
     width: 100%;
   }
 }
+.map-left {
+  z-index: 100;
+  max-height: 80%;
+  top: 15px;
+  left: var(--left, 15px);
+  display: flex;
+  position: absolute;
+  transition: left cubic-bezier(0.5, -0.5, 0.5, 1) 0.3s;
+  .map-tree-data {
+    position: relative;
+    width: 220px;
+    transform: scale(1);
+    transition: transform cubic-bezier(0.5, -0.5, 0.5, 1) 0.3s;
+  }
+  &.collapsed {
+    .map-tree-data {
+      transform: scale(0);
+    }
+    .collapsed-icon {
+      .icon {
+        rotate: 180deg;
+      }
+    }
+  }
+  .collapsed-icon {
+    position: absolute;
+    // left: calc(var(--left) + 420px + 15px);
+    // padding: 5px;
+    // z-index: 99;
+    cursor: pointer;
+    text-align: center;
+    width: 50px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    right: 0;
+    transform: translateX(100%);
+    .icon {
+      transform: scale(0);
+      rotate: 0;
+    }
+    &:hover {
+      backdrop-filter: blur(1px);
+      .icon {
+        transform: scale(1);
+      }
+    }
+  }
+}
+
 .map-tree-data {
   position: absolute;
   top: 15px;
@@ -525,6 +602,7 @@ onMounted(() => {
   background: #fff;
   max-height: 80%;
   overflow-y: auto;
+  overflow-x: auto;
   scrollbar-width: thin;
   scrollbar-color: #ccc #f5f5f5;
 

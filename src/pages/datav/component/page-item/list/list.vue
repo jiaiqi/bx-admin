@@ -20,6 +20,17 @@
       ></map-card>
     </div>
     <div class="list-container">
+      <div
+        class="list-title"
+        v-if="
+          isMapList &&
+          pageItem &&
+          pageItem.show_label === '是' &&
+          pageItem.com_label
+        "
+      >
+        {{ pageItem.com_label }}
+      </div>
       <div class="statistic-box" v-if="stasticData.length">
         <div
           class="statistic-item"
@@ -68,139 +79,141 @@
           >
         </div>
       </div>
-      <!-- 多行列宫格 -->
-      <grid-list
-        class=""
-        v-if="'多行列宫格' === listType || '多行列文本' === listType"
-        :config="listConfig"
-        :list="tableData"
-        :page-item="pageItem"
-      >
-      </grid-list>
-      <!-- 卡片列表 -->
-      <div
-        class="bx-card-list"
-        ref="cardListRef"
-        :style="[styleWidthPictures]"
-        v-else-if="listType == '卡片'"
-      >
-        <el-carousel
-          trigger="click"
-          :height="setSwiperHeight"
-          :style="[setSwiperStyle]"
-          v-if="setListSwiperImg && setListSwiperImg.length"
-          class="swiper-container"
-          :autoplay="true"
+      <div class="list-view">
+        <!-- 多行列宫格 -->
+        <grid-list
+          class=""
+          v-if="'多行列宫格' === listType || '多行列文本' === listType"
+          :config="listConfig"
+          :list="tableData"
+          :page-item="pageItem"
         >
-          <el-carousel-item
-            v-for="(item, index) in setListSwiperImg"
-            :key="index"
-          >
-            <img
-              :src="getImagePath(item._img_url)"
-              alt=""
-              style="width: 100%; height: 100%"
-            />
-            <div
-              class="swiper-title"
-              v-if="
-                listConfig &&
-                listConfig.swiper_title_col &&
-                item[listConfig.swiper_title_col]
-              "
-            >
-              {{ item[listConfig.swiper_title_col] }}
-            </div>
-          </el-carousel-item>
-        </el-carousel>
-        <cardGroupCell
-          :pageParamsModel="pageParamsModel"
-          :queryOptions="queryOptions"
-          v-if="pageItem && listType == '卡片'"
-          ref="cardGroupCell"
-          :pageItem="pageItem"
-          :cellsLayout="[cardUnitJson]"
-          :active-cell-layout="activeCardJson"
-          :cellData="tableData"
-          :comColMap="comColMapJson"
-          :cardLayout="layoutJson"
-          :rowButtons="listV2RowButtons"
-          :list-config="listConfig"
-          @on-click-cell="onClickCell"
-          @on-click-block="onClickBlock"
-          @on-row-button-click="onRowButtonClick"
-          @on-click-icon="onClickBlock"
-          @setPageParams="setPageParams"
-        >
-        </cardGroupCell>
-      </div>
-      <!-- 表格 -->
-      <div class="bx-table" v-else>
-        <div class="table-head">
-          <div
-            class="table-column"
-            v-for="col in tableColumn"
-            :key="col.columns"
-            :style="{
-              color: setStyle && setStyle.color,
-              'font-size': setStyle && setStyle['font-size'],
-            }"
-          >
-            {{ col.label }}
-          </div>
-          <div
-            class="table-column row-button-box"
-            :style="{
-              color: setStyle && setStyle.color,
-              'font-size': setStyle && setStyle['font-size'],
-            }"
-            v-if="showRowButtons"
-          >
-            操作
-          </div>
-        </div>
+        </grid-list>
+        <!-- 卡片列表 -->
         <div
-          class="table-row"
-          v-for="(item, index) in tableData"
-          :key="index"
-          :class="{ stripe: striped }"
+          class="bx-card-list"
+          ref="cardListRef"
+          :style="[styleWidthPictures]"
+          v-else-if="listType == '卡片'"
         >
-          <div
-            class="table-column"
-            v-for="col in tableColumn"
-            :title="formatValue(item, col)"
-            :key="col.columns"
-            :style="{
-              color: setStyle && setStyle.color,
-              'font-size': setStyle && setStyle['font-size'],
-            }"
+          <el-carousel
+            trigger="click"
+            :height="setSwiperHeight"
+            :style="[setSwiperStyle]"
+            v-if="setListSwiperImg && setListSwiperImg.length"
+            class="swiper-container"
+            :autoplay="true"
           >
-            <el-image
-              class="td-img"
-              :src="getImagePath(formatValue(item, col))"
-              :preview-src-list="[getImagePath(formatValue(item, col))]"
-              v-if="col.col_type === 'Image' && formatValue(item, col)"
+            <el-carousel-item
+              v-for="(item, index) in setListSwiperImg"
+              :key="index"
             >
-            </el-image>
-            <!-- <img
+              <img
+                :src="getImagePath(item._img_url)"
+                alt=""
+                style="width: 100%; height: 100%"
+              />
+              <div
+                class="swiper-title"
+                v-if="
+                  listConfig &&
+                  listConfig.swiper_title_col &&
+                  item[listConfig.swiper_title_col]
+                "
+              >
+                {{ item[listConfig.swiper_title_col] }}
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+          <cardGroupCell
+            :pageParamsModel="pageParamsModel"
+            :queryOptions="queryOptions"
+            v-if="pageItem && listType == '卡片'"
+            ref="cardGroupCell"
+            :pageItem="pageItem"
+            :cellsLayout="[cardUnitJson]"
+            :active-cell-layout="activeCardJson"
+            :cellData="tableData"
+            :comColMap="comColMapJson"
+            :cardLayout="layoutJson"
+            :rowButtons="listV2RowButtons"
+            :list-config="listConfig"
+            @on-click-cell="onClickCell"
+            @on-click-block="onClickBlock"
+            @on-row-button-click="onRowButtonClick"
+            @on-click-icon="onClickBlock"
+            @setPageParams="setPageParams"
+          >
+          </cardGroupCell>
+        </div>
+        <!-- 表格 -->
+        <div class="bx-table" v-else>
+          <div class="table-head">
+            <div
+              class="table-column"
+              v-for="col in tableColumn"
+              :key="col.columns"
+              :style="{
+                color: setStyle && setStyle.color,
+                'font-size': setStyle && setStyle['font-size'],
+              }"
+            >
+              {{ col.label }}
+            </div>
+            <div
+              class="table-column row-button-box"
+              :style="{
+                color: setStyle && setStyle.color,
+                'font-size': setStyle && setStyle['font-size'],
+              }"
+              v-if="showRowButtons"
+            >
+              操作
+            </div>
+          </div>
+          <div
+            class="table-row"
+            v-for="(item, index) in tableData"
+            :key="index"
+            :class="{ stripe: striped }"
+          >
+            <div
+              class="table-column"
+              v-for="col in tableColumn"
+              :title="formatValue(item, col)"
+              :key="col.columns"
+              :style="{
+                color: setStyle && setStyle.color,
+                'font-size': setStyle && setStyle['font-size'],
+              }"
+            >
+              <el-image
+                class="td-img"
+                :src="getImagePath(formatValue(item, col))"
+                :preview-src-list="[getImagePath(formatValue(item, col))]"
+                v-if="col.col_type === 'Image' && formatValue(item, col)"
+              >
+              </el-image>
+              <!-- <img
               class="td-img"
               :src="getImagePath(formatValue(item, col))"
               alt=""
               style=""
               v-if="col.col_type === 'Image' && formatValue(item, col)"
             /> -->
-            <span v-else>
-              {{ formatValue(item, col) }}
-            </span>
-          </div>
-          <div class="table-column row-button-box" v-if="showRowButtons">
-            <el-button
-              type="primary"
-              size="mini"
-              v-for="btn in setRowButtons"
-              @click="onRowButtonClick(btn, item)"
-              >{{ btn.button_name }}</el-button
-            >
+              <span v-else>
+                {{ formatValue(item, col) }}
+              </span>
+            </div>
+            <div class="table-column row-button-box" v-if="showRowButtons">
+              <el-button
+                type="primary"
+                size="mini"
+                v-for="btn in setRowButtons"
+                @click="onRowButtonClick(btn, item)"
+                >{{ btn.button_name }}</el-button
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -272,6 +285,10 @@ export default {
     },
     pageParamsModel: {
       type: Object,
+    },
+    isMapList: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -884,16 +901,28 @@ export default {
   }
   .list-container {
     flex: 1;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.1) #f1f1f1;
-    &::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    display: flex;
+    flex-direction: column;
+
+    .list-title {
+      font-size: 18px;
+      padding: 10px 20px;
+      font-weight: bold;
     }
-    &::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
+    .list-view {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.1) #f1f1f1;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+      }
     }
   }
 }
