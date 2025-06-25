@@ -146,6 +146,8 @@
           ? { width: buildColStyleJson.width }
           : buildColStyleJson,
       ]"
+      :data-jump-json="jumpJson"
+      :data-item-data="itemDataStr"
       @mouseenter="onMouseenter"
       @mouseleave="onMouseleave"
     >
@@ -163,22 +165,22 @@
       >
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
           <!-- <div class="marquee-item"> -->
-            <card-cell-part
-              :cellItem="subCardPart"
-              :comColMap="comColMap"
-              :cellItemData="cellItemData"
-              :readOnly="readOnly"
-              :queryOptions="queryOptions"
-              :cellLayoutJson="subCardPart"
-              :parentPart="cellItem"
-              :accordion="accordion"
-              :accordion-seq="accordionSeq"
-              :active-accordion-seq="activeAccordionSeq"
-              @on-click-part="onClickSubBlock"
-              @on-click-cell="onClickCell"
-              @show-dialog="showDialog"
-              class="marquee-item"
-            ></card-cell-part>
+          <card-cell-part
+            :cellItem="subCardPart"
+            :comColMap="comColMap"
+            :cellItemData="cellItemData"
+            :readOnly="readOnly"
+            :queryOptions="queryOptions"
+            :cellLayoutJson="subCardPart"
+            :parentPart="cellItem"
+            :accordion="accordion"
+            :accordion-seq="accordionSeq"
+            :active-accordion-seq="activeAccordionSeq"
+            @on-click-part="onClickSubBlock"
+            @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
+            class="marquee-item"
+          ></card-cell-part>
           <!-- </div> -->
         </template>
       </div>
@@ -277,6 +279,12 @@ export default {
   },
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
+    jumpJson() {
+      return JSON.stringify(this.cellLayoutJson?.jump_json || null);
+    },
+    itemDataStr(){
+      return JSON.stringify(this.cellItemData || null)
+    },
     useChildAnimation() {
       return (
         ["row", "block"].includes(this.partsType) &&

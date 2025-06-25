@@ -23,7 +23,11 @@
       v-if="childAnimationConfig && childAnimationConfig.type === '跑马灯'"
     >
       <template v-for="(cellItemData, index) in cellDataFinal">
-        <div class="marquee-item">
+        <div
+          class="marquee-item"
+          :data-item-data="getStr(cellItemData, 'item')"
+          :data-jump-json="getStr(cellsLayout, 'jumpJson')"
+        >
           <card-cell-layout
             v-for="(cellLayoutJson, i) in cellsLayout"
             :item="getLayoutJson(cellLayoutJson, index)"
@@ -36,6 +40,7 @@
             :queryOptions="queryOptions"
             :showActiveCard="showActiveCard"
             :inList="inList"
+            @on-click-cell="onClickCell"
             class="marquee-item"
           >
           </card-cell-layout>
@@ -58,6 +63,7 @@
           :inList="inList"
           @mouse-enter="setActiveCardIndex(index)"
           @mouse-leave="activeCardAutoplay"
+          @on-click-cell="onClickCell"
         >
         </card-cell-layout>
       </template>
@@ -504,6 +510,15 @@ export default {
   },
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
+    getStr(json, type) {
+      if (type === "item") {
+        return JSON.stringify(json || null);
+      } else {
+        if (Array.isArray(json) && json.length) {
+          return JSON.stringify(json[0]?.jump_json || null) || "";
+        }
+      }
+    },
     setActiveCardIndex(index) {
       clearInterval(activeCardTimer);
       this.activeCardIndex = index;

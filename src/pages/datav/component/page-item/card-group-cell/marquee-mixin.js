@@ -34,7 +34,25 @@ export default {
         this.marqueeIsRunning = true;
       }, config.delay || 0);
     },
+    addEvent(ele) {
+      ele.addEventListener('click', (ele) => {
+        let jumpJson = ele?.currentTarget?.dataset?.jumpJson
+        let itemData = ele?.currentTarget?.dataset?.itemData
+        try {
+          jumpJson && (jumpJson = JSON.parse(jumpJson))
+        } catch (e) {
+          console.log('jumpJson格式错误', e)
+        }
+        try {
+          itemData && (itemData = JSON.parse(itemData))
+        } catch (e) {
+          console.log('itemData格式错误', e)
+        }
+        console.log('click', jumpJson, itemData)
+        this.jumpAction(jumpJson, itemData);
 
+      })
+    },
     /**
      * 初始化CSS跑马灯布局
      * @param {Object} config - 动画配置
@@ -45,10 +63,6 @@ export default {
       if (!marqueeElement) return;
 
       // 设置容器样式
-      // marqueeElement.style.display = 'flex';
-      // marqueeElement.style.whiteSpace = 'nowrap';
-      // marqueeElement.style.position = 'relative';
-      // marqueeElement.style.overflow = 'hidden';
       marqueeElement.style.gridTemplateColumns = `repeat(${marqueeElement.children.length}, 1fr)`;
       // 复制子元素之前，先计算平均宽度并设置到每个子元素的style上
       const children = Array.from(marqueeElement.children);
@@ -58,9 +72,6 @@ export default {
         // 计算平均宽度
         totalWidth = children.reduce((sum, c) => sum + c.offsetWidth, 0);
         avgWidth = totalWidth / children.length;
-        // children.forEach(child => {
-        //   child.style.width = avgWidth + 'px';
-        // });
       }
 
       const isRightDirection = config.direction === '由左往右';
@@ -72,12 +83,14 @@ export default {
             const clone = child.cloneNode(true);
             clone.style.width = avgWidth + 'px'
             clone.classList.add('marquee-clone');
+            this.addEvent(clone)
             marqueeElement.appendChild(clone);
           });
           children.forEach(child => {
             const clone = child.cloneNode(true);
             clone.style.width = avgWidth + 'px'
             clone.classList.add('marquee-clone');
+            this.addEvent(clone)
             marqueeElement.appendChild(clone);
           });
         } else {
@@ -85,12 +98,14 @@ export default {
             const clone = child.cloneNode(true);
             clone.style.width = avgWidth + 'px'
             clone.classList.add('marquee-clone');
+            this.addEvent(clone)
             marqueeElement.prepend(clone);
           });
           children.forEach(child => {
             const clone = child.cloneNode(true);
             clone.style.width = avgWidth + 'px'
             clone.classList.add('marquee-clone');
+            this.addEvent(clone)
             marqueeElement.prepend(clone);
           });
         }

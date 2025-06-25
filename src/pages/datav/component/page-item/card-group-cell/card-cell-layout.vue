@@ -79,7 +79,18 @@ const props = defineProps({
 });
 
 // Emits 定义
-const emits = defineEmits(["on-click-cell", "show-dialog",'mouse-enter','mouse-leave']);
+const emits = defineEmits([
+  "on-click-cell",
+  "show-dialog",
+  "mouse-enter",
+  "mouse-leave",
+]);
+// jumpJson() {
+//     return JSON.stringify(this.cellLayoutJson?.jump_json || null);
+//   },
+//   itemDataStr(){
+//     return JSON.stringify(this.cellItemData || null)
+//   },
 
 // 使用组合式函数
 const {
@@ -105,14 +116,14 @@ const dynamicClasses = computed(() =>
 );
 const dynamicStyles = computed(() => buildDynamicStyles(props));
 
-const mouseEnter = (event)=>{
-  pauseAutoPlay(event)
-  emits('mouse-enter')
-}
-const mouseLeave = (event)=>{
-  resumeAutoPlay(event)
-  emits('mouse-leave')
-}
+const mouseEnter = (event) => {
+  pauseAutoPlay(event);
+  emits("mouse-enter");
+};
+const mouseLeave = (event) => {
+  resumeAutoPlay(event);
+  emits("mouse-leave");
+};
 </script>
 
 <style lang="scss" scoped>
