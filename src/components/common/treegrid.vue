@@ -1311,7 +1311,26 @@ export default {
           item["_checked"] = is_select;
         }
       }
-      this.setFatherCheck(row);
+      console.log(row);
+      var parent_value = row[this.parentCol];
+      console.log(parent_value);
+      var is_select = row["_checked"];
+      if (!is_select) {
+        this.setFatherCheck(row);
+      }
+      this.setChildrenCheck(row);
+    },
+    setChildrenCheck(row) {
+      var is_select = row["_checked"];
+      var no_value = row[this.noCol];
+      for (var item of this.gridData) {
+        if (item[this.parentCol] == no_value) {
+          item["_checked"] = is_select;
+          if (!item["_level_node"]) {
+            this.setChildrenCheck(item);
+          }
+        }
+      }
     },
     setFatherCheck(row) {
       var is_select = row["_checked"];
