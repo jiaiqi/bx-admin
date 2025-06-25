@@ -6,14 +6,14 @@
 
         <el-col :span="12">
           <el-form-item label="通行标识" prop="pass_id">
-            <el-input v-model="ruleForm.pass_id" show-word-limit maxlength="128" placeholder="请输入..." clearable
+            <el-input disabled v-model="ruleForm.pass_id" show-word-limit maxlength="128" placeholder="请输入..." clearable
                       style="width:85%"></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="12" style="display: flex">
           <el-form-item label="疑似逃费类型" prop="sus_escape_type">
-            <el-select v-model="ruleForm.sus_escape_type" placeholder="请选择" clearable>
+            <el-select v-model="ruleForm.sus_escape_type" placeholder="请选择" clearable disabled>
               <el-option
                   v-for="item in optionsPage.sus_escape_type"
                   :key="item.value"
@@ -23,13 +23,13 @@
             </el-select>
           </el-form-item>
           <el-form-item label="嫌疑车辆ID" prop="sus_vehicle_id">
-            <el-input v-model="ruleForm.sus_vehicle_id" clearable placeholder="请输入..."></el-input>
+            <el-input disabled v-model="ruleForm.sus_vehicle_id" clearable placeholder="请输入..."></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="12" style="display: flex;width:43.76%;justify-content: space-between">
           <el-form-item label="嫌疑车辆车牌颜色" prop="sus_plate_color">
-            <el-select v-model="ruleForm.sus_plate_color" placeholder="请选择" clearable>
+            <el-select disabled v-model="ruleForm.sus_plate_color" placeholder="请选择" clearable>
               <el-option
                   v-for="item in optionsPage.sus_plate_color"
                   :key="item.value"
@@ -39,7 +39,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="交易通行时间" prop="pass_time" style="margin-left: 14%">
-            <el-input v-model="ruleForm.pass_time" clearable placeholder="请输入..."></el-input>
+            <el-input disabled v-model="ruleForm.pass_time" clearable placeholder="请输入..."></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12" style="padding-left:6.28%">
@@ -137,7 +137,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="通行收费" prop="orginal_fee">
+          <el-form-item label="通行收费(元)" prop="orginal_fee">
              <li style="display: flex">
                <el-input v-model="ruleForm.orginal_fee" clearable placeholder="请输入..."></el-input>
                <el-button type="primary" size="mini" icon="el-icon-edit" @click="handleGetCurrentFree">计费查询</el-button>
@@ -145,10 +145,10 @@
           </el-form-item>
         </el-col>
         <el-col :span="12" style="display: flex;width:43.5%;justify-content: space-between">
-          <el-form-item label="实际费用" prop="real_fee">
+          <el-form-item label="实际费用(元)" prop="real_fee">
             <el-input v-model="ruleForm.real_fee" clearable placeholder="请输入..."></el-input>
           </el-form-item>
-          <el-form-item label="补缴费用" prop="owe_fee">
+          <el-form-item label="补缴费用(元)" prop="owe_fee">
             <el-input v-model="ruleForm.owe_fee" clearable placeholder="请输入..."></el-input>
           </el-form-item>
         </el-col>
@@ -347,8 +347,8 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="证据附件" prop="order_evidence">
-            <el-input v-model="ruleForm.order_evidence" clearable style="width:84.3%;" placeholder="请输入..."></el-input>
+          <el-form-item label="证据附件编号" prop="order_evidence">
+            <el-input disabled v-model="ruleForm.order_evidence" clearable style="width:84.3%;" placeholder="请输入..."></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -403,7 +403,7 @@
 
 <script>
 import {$http} from '@/common/http';
-import {filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn,createOrderNo} from './filterList'
+import {filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn,createOrderNo,formatFeeToYuan,formatFeeToFen} from './filterList'
 import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
 import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-mod.vue";
@@ -661,6 +661,9 @@ export default {
         this.ruleForm=formDataByGetInfo(this.ruleForm,operate_params[0])
         this.initSpecialType()
         this.handleChangeFee()
+        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
         console.log('这里的user_no3',this.ruleForm.user_no)
         console.log('--',this.ruleForm);
         this.getTrafficFlow()
@@ -704,11 +707,16 @@ export default {
     //提交工单前进行通行测试，当返回有数据时不允许提交，无返回数据时可以正常走下一步提交
     handleTest(){
       console.log('当前表单提交信息',this.handleSetEmpty());
+      let obj= this.handleSetEmpty()
+      obj.owe_fee = formatFeeToFen(this.ruleForm.owe_fee);
+      obj.orginal_fee = formatFeeToFen(this.ruleForm.orginal_fee)
+      obj.real_fee = formatFeeToFen(this.ruleForm.real_fee);
+      console.log('转换后的表单提交信息',obj);
       orderUtils.handleTestOrder({pass_id:this.ruleForm.pass_id}).then(res => {
         if(res.data.state !== 'SUCCESS') return;
         let ls = res.data.data
         if(ls&&ls.length===0){
-          orderUtils.handleSubmitOrder([this.handleSetEmpty()]).then(res => {
+          orderUtils.handleSubmitOrder([obj]).then(res => {
             if(res.data.state !== 'SUCCESS') return;
             this.$message.success('工单保存成功');
           }).catch(err=>{
@@ -717,7 +725,7 @@ export default {
         }else {
           this.$message.error('当前工单已存在提交记录，请无重复提交');
         }
-        console.log('当前表单提交信息',this.handleSetEmpty());
+        console.log('当前表单提交信息',obj);
       }).catch(err=>{})
     },
     //获取上传图片信息
@@ -794,7 +802,7 @@ export default {
         if(res.data.code !== 0) return;
         if(res.data.messageInfo && res.data.messageInfo.tollDetail){
           let ls=res.data.messageInfo.tollDetail[0]
-          this.ruleForm.orginal_fee=ls.fee?.fee
+          this.ruleForm.orginal_fee=formatFeeToYuan(ls.fee?.fee)
           this.handleChangeFee()
         }
       }).catch(err=>{})
@@ -932,6 +940,7 @@ export default {
   width:85%;
   height:4.6875rem;
   border:1px solid #ace;
+  overflow:auto;
 }
 </style>
 <style>

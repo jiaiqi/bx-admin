@@ -250,8 +250,11 @@ import { formatStyleData } from "@/pages/datav/common/index.js";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import { mapState, mapGetters, mapActions } from "vuex";
+import pageParamsMixin from "@/pages/datav/common/params/page-params-mixin";
+
 export default {
   name: "lowcode-main",
+  mixins:[pageParamsMixin],
   components: {
     HeaderView,
     MaterialsView,
@@ -682,6 +685,8 @@ export default {
         // });
         await this.initComponents(newData);
         this.pageRefreshKey = new Date().getTime();
+        this.initPageParams()
+
       } else if (msg) {
         this.$message.error(msg);
       } else {
@@ -812,7 +817,6 @@ export default {
         (a, b) => a.com_seq - b.com_seq
       );
     },
-    initPageParams() {},
     clickComponent(data) {
       console.log(data);
       this.currentId = data.id;

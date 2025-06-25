@@ -116,11 +116,14 @@ export default {
       // 初始化页面参数
       let self = this;
       let getInit = self.getInitParams();
+      debugger
+
       return await new Promise(function (resolve, reject) {
         //异步操做
+        const pageInfo = self.pageConfig||self.pageInfo;
         let paraJson =
-          self.pageInfo?.interface_json_data || self.pageInfo?.para_json;
-        let paraJsonV2 = self.pageInfo?.para_with_map_json_data || null;
+            pageInfo?.interface_json_data || pageInfo?.para_json;
+        let paraJsonV2 = pageInfo?.para_with_map_json_data || null;
         console.log("new Promise( paraJson", paraJson);
         self.pageParams = {};
         if (

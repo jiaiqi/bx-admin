@@ -211,9 +211,15 @@
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
     ></form-add>
+    <info-details
+    v-if="pageItemData.com_type==='detail'"
+    :pageItem="pageItemData"
+    >
+    </info-details>
     <div
       v-else-if="pageItemData && pageItemData.com_label"
       :class="{ mobile: screenType === 'mobile' }"
+      :pageParamsModel="pageParamsModel"
     >
       {{ pageItemData.com_label }}
     </div>
@@ -249,6 +255,7 @@ import gridCard from "./grid-card.vue";
 import formAdd from "./form/add.vue";
 import NavMenu from "./nav-menu/nav-menu.vue";
 import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
+import InfoDetails from "@/pages/datav/component/page-item/info-details.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import { Icon } from "@iconify/vue2";
@@ -278,6 +285,7 @@ export default {
     NavMenu,
     Icon,
     CardCellPart,
+    InfoDetails
   },
   props: {
     pageItem: {

@@ -862,6 +862,21 @@ export default {
                 draggedElement.id = `${this.id}${new Date().getTime()}`;
                 draggedElement._editType = "add";
               }
+               if(draggedElement.value==='详情组件'){
+                 draggedElement.com_type = "detail";
+                 draggedElement.data = {
+                   // ...draggedElement,
+                   com_type: "detail",
+                 };
+
+                 Object.keys(draggedElement).forEach((key) => {
+                   if (key.startsWith("_default_")) {
+                     draggedElement.data[key.replace("_default_", "")] =
+                         draggedElement[key];
+                   }
+                 });
+                 draggedElement._type = "component";
+               }
               if (draggedElement.type === "cardPart") {
                 draggedElement.com_type = "卡片部件";
                 draggedElement.data = {
