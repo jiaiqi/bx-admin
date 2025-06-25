@@ -2876,7 +2876,7 @@ function init_util() {
             if (url?.includes(':id')) {
               url = url.replace(':id', rowData?.id)
             }
-            if (jumpJson.target_type == "原页面") {
+            if (jumpJson.target_type == "新页面") {
               open(url)
             } else {
               location.href = url
