@@ -35,6 +35,7 @@
         @on-selected="onPickerSelected"
       ></location-picker>
       <table-picker
+        ref="tablePicker"
         v-bind="$props"
         :selectedGridData="multiSelected"
         :finder-selected="field.model"
@@ -247,6 +248,7 @@ import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import isEqual from "lodash/isEqual";
 import multiTabOptionSelect from "./fk-select/multi-tab-option-select.vue";
+import aSaveBMixin from "../mixin/a-save-b.mixin";
 export default {
   components: {
     List: () => import("../common/list.vue"),
@@ -257,6 +259,7 @@ export default {
     multiTabOptionSelect,
     //  () => import("../common/table-picker.vue")
   },
+  mixins: [aSaveBMixin],
   model: {
     prop: "finderSelected",
     event: "change",
@@ -1217,7 +1220,10 @@ export default {
       let objInfo = this.optionListV2?.obj_info;
       if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
         // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
-        const newValue = this.field.model;
+        let newValue = this.field.model;
+        if (this.isFks) {
+          newValue = this.$refs?.tablePicker?.getSelectedData?.();
+        }
         const cols = objInfo?.a_save_b_cols.split(",");
         let obj = {};
         let objStr = "";
@@ -1434,7 +1440,23 @@ export default {
     },
   },
 
-  created: function () {},
+  created: function () {
+    // 获取数据，
+    if (this.objInfo?.a_save_b_obj_col) {
+      const formModel = this.field?.form?.srvValFormModel?.();
+      if (formModel && formModel[this.objInfo?.a_save_b_obj_col]) {
+        try {
+          let values = JSON.parse(formModel[this.objInfo?.a_save_b_obj_col]);
+          if (Array.isArray(files) && files.length) {
+            this.$emit("more-info", values);
+            return;
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+  },
 
   mounted: function () {
     let vm = this;

@@ -274,6 +274,13 @@ export default {
     },
   },
   methods: {
+    getSelectedData(){
+      let result = this.selected;
+      if(this.fieldType === 'fks'){
+        result = this.allData.filter(item=>this.selected.includes(item[this.valueCol]))
+      }
+      return result;
+    },
     /**
      * el-table-column 自适应列宽
      * @param prop_label: 表名

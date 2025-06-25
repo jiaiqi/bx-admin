@@ -1,8 +1,11 @@
+import cloneDeep from "lodash/cloneDeep";
 export default {
   computed: {
     objInfo() {
       return this.field.info?.dispLoader?.objInfo;
     }
+  },
+  created() {
   },
   methods: {
     setObjInfo(fileList) {
@@ -15,10 +18,13 @@ export default {
         if (fileList?.length && cols?.length) {
           fileList.forEach((fileItem) => {
             let newValue = cloneDeep(fileItem);
-            if (fileItem?.response?.fileurl) {
-              newValue = { ...newValue?.response };
+            if (this.uploadFile) {
+              // 文件、图片上传组件 
+              if (fileItem?.response?.fileurl) {
+                newValue = { ...newValue?.response };
+              }
             }
-            if (cols?.includes("*") && newValue?.fileurl) {
+            if (cols?.includes("*")) {
               obj.push(cloneDeep(newValue));
             } else {
               let objItem = {};
