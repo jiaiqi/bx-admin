@@ -149,7 +149,7 @@
 <script>
 import StationList from "@/pages/audit/workdistribution/map/stationList.vue";
 import MapUtils from "@/pages/audit/workdistribution/map/mapUtils";
-import {filterListByOption} from "@/pages/audit/workdistribution/workFlow/filterList";
+import {filterListByOption,formatFeeToYuan} from "@/pages/audit/workdistribution/workFlow/filterList";
 import {handleFilterParams} from '@/pages/audit/workdistribution/map/filterServiceCol'
 import {
   drawMapMarkersAndLabel,
@@ -171,6 +171,7 @@ export default {
   },
   data(){
     return{
+      formatFeeToYuan:formatFeeToYuan,
       repeatedInformation:'',
       feeInfo:{
         fee:0,    // 实收金额
@@ -704,12 +705,6 @@ export default {
         }
       }).catch(err => {})
     },
-    //费用转成元
-    formatFeeToYuan(fee) {
-      if (fee===0 || fee === null || fee === undefined || isNaN(fee)) return '0';
-      let yuan = fee / 100;
-      return String(yuan).replace(/\.?0+$/, '');
-    }
   },
   created() {
     // 创建防抖处理后的方法

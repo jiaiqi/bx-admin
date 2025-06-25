@@ -315,7 +315,7 @@ export default {
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("editor-drag-over");
         e.currentTarget.classList.remove("editor-drag-not-allowed");
-      } else if (draggedType === "悬浮组件") {
+      } else if (draggedType === "悬浮组件"||draggedType==='details') {
         // 允许放置悬浮组件
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("on-drag-float-component");
@@ -395,7 +395,22 @@ export default {
               this.editorComponents.push(draggedElement);
             }
             this.$emit("change", this.editorComponents);
-          } else {
+          }else if(draggedElement.type === "details") {
+            draggedElement.com_type = "details";
+            draggedElement.component = "component";
+            if (!draggedElement._editType) {
+              draggedElement.id = `root_container_${new Date().getTime()}`;
+              draggedElement._editType = "add";
+              draggedElement.com_name = "详情";
+              draggedElement.com_type = "details";
+              // 计算seq值，使用(当前组件数量+1)*100 + 10000
+              draggedElement._seq = (this.editorComponents.length + 1) * 100 + 10000;
+              // 添加到顶层组件
+              this.editorComponents.push(draggedElement);
+            }
+            this.$emit("change", this.editorComponents);
+          }
+          else {
             // 不是container类型，显示不允许放置的反馈
             let target = e.currentTarget;
             target.classList.add("editor-drag-not-allowed");
