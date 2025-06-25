@@ -1,33 +1,50 @@
 <template>
-  <div>
+  <div class="table-picker-wrapper">
     <el-popover
       trigger="focus"
       ref="show_popover"
       :disabled="disabled"
       :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }"
+      @show="visibleChange"
     >
       <template slot="reference">
-        <el-select
-          style="width: 100%"
-          :disabled="disabled"
-          v-model="selected"
-          :value-key="valueCol"
-          popper-class="popper-class"
-          placeholder="请选择"
-          :multiple="isMulti"
-          clearable
-          @remove-tag="removeTag"
-          @clear="clearSelect"
-          @focus="onSearch"
-        >
-          <el-option
-            v-for="item in allData"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+        <div class="">
+          <div class="selected-all inner" v-if="isSelectedAll">全部</div>
+          <el-switch
+            v-model="isSelectedAll"
+            active-color="#409EFF"
+            inactive-color="#CDCDCD"
+            active-text="全选"
+            :active-value="true"
+            :inactive-value="false"
+            class="ml-2"
+            @change="changeSelectedAll"
+            v-if="isSelectedAll"
           >
-          </el-option>
-        </el-select>
+          </el-switch>
+          <el-select
+            style="width: 100%"
+            :disabled="disabled"
+            v-model="selected"
+            :value-key="valueCol"
+            popper-class="popper-class"
+            placeholder="请选择"
+            :multiple="isMulti"
+            clearable
+            @remove-tag="removeTag"
+            @clear="clearSelect"
+            @focus="onSearch"
+            v-else
+          >
+            <el-option
+              v-for="item in allData"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </div>
       </template>
       <div class="picker-view">
         <div class="top-bar">
@@ -83,7 +100,6 @@
           ></el-table-column>
         </el-table>
         <div class="bottom-bar">
-          <div></div>
           <el-pagination
             background
             layout="prev, pager, next"
@@ -96,6 +112,18 @@
         </div>
       </div>
     </el-popover>
+    <!-- <div class="selected-all flex-1" v-else>全部</div> -->
+    <el-switch
+      v-model="isSelectedAll"
+      active-color="#409EFF"
+      inactive-color="#CDCDCD"
+      active-text="全选"
+      :active-value="true"
+      :inactive-value="false"
+      class="ml-2"
+      @change="changeSelectedAll"
+    >
+    </el-switch>
   </div>
 </template>
 
@@ -148,6 +176,7 @@ export default {
       allData: [],
       isCheckedFirstPage: false, //已经将第一页数据默认选中
       listV2: null,
+      isSelectedAll: false,
     };
   },
   computed: {
@@ -274,10 +303,15 @@ export default {
     },
   },
   methods: {
-    getSelectedData(){
+    visibleChange() {
+      this.isSelectedAll = false;
+    },
+    getSelectedData() {
       let result = this.selected;
-      if(this.fieldType === 'fks'){
-        result = this.allData.filter(item=>this.selected.includes(item[this.valueCol]))
+      if (this.fieldType === "fks") {
+        result = this.allData.filter((item) =>
+          this.selected.includes(item[this.valueCol])
+        );
       }
       return result;
     },
@@ -434,13 +468,36 @@ export default {
     onSearch() {
       this.changePage(1);
     },
-
+    changeSelectedAll() {
+      if (this.isSelectedAll) {
+        if (this.fieldType === "fks") {
+          this.$emit("on-selected", "*");
+        } else if (this.fieldType === "fkjson") {
+          this.$emit("on-selected", {
+            label: "全选",
+            value: "*",
+          });
+        } else {
+          this.$emit("on-selected", [
+            {
+              label: "全选",
+              value: "*",
+            },
+          ]);
+        }
+      }
+      this.selected = this.isMulti ? [] : "";
+      this.setFieldVal();
+    },
     clearSelect() {
+      this.selected = this.isMulti ? [] : "";
       this.initTableSelection();
       this.setFieldVal();
     },
     removeTag(e) {
-      if (e) {
+      if (e === "全部") {
+        this.isSelectedAll = false;
+      } else if (e) {
         let val = e;
         // let val = e[ this.valueCol ]
         this.selected = this.selected.filter((item) => item !== val);
@@ -467,6 +524,9 @@ export default {
       // this.setFieldVal();
     },
     onCheckedAll() {
+      if (this.isSelectedAll) {
+        this.isSelectedAll = false;
+      }
       if (
         this.gridData.every((item) =>
           this.selected.includes(item[this.valueCol])
@@ -511,8 +571,6 @@ export default {
     },
     changeSelected(index, row) {
       this.clickRow(row);
-
-      // this.selected = this.allData.filter(item => item[ this.valueCol ] === row[ this.valueCol ])
     },
     clickRow(row) {
       if (this.isMulti) {
@@ -534,6 +592,7 @@ export default {
               (item) => rowChildren.indexOf(item) === -1
             );
           }
+          this.isSelectedAll = false;
         } else {
           this.$set(row, "checked", true);
           this.selected.push(row[this.valueCol]);
@@ -547,7 +606,6 @@ export default {
         this.visible = false;
         this.$refs.show_popover?.doClose();
       }
-
       this.setFieldVal();
     },
     changePage(page) {
@@ -987,7 +1045,53 @@ export default {
 .popper-class {
   display: none;
 }
+.table-picker-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+.selected-all {
+  -webkit-appearance: none;
+  background-color: #fff;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #dcdfe6;
+  box-sizing: border-box;
+  color: #606266;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  outline: 0;
+  padding: 0 15px;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  width: 100%;
+  &.inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(100% - 100px);
+    z-index: 1;
+  }
+}
 
+.is-selected-all {
+  .el-table {
+    position: relative;
+    &::after {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      background-color: rgba($color: #000000, $alpha: 0.5);
+      z-index: 99;
+      content: "全选状态下禁止操作";
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
 .bottom-bar,
 .top-bar {
   display: flex;
