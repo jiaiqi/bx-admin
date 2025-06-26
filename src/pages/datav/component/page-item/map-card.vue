@@ -177,7 +177,7 @@
               <card-group-cell
                 :page-item="pageItem"
                 :cellsLayout="[cardUnitJson]"
-                :cell-item-data="activeMarker"
+                :cell-data="[activeMarker]"
                 :key="activeMarker.id"
               ></card-group-cell>
             </template>
@@ -226,7 +226,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, nextTick, computed, watch, set } from "vue";
+import { onMounted, onUnmounted, ref, nextTick, computed, watch, set } from "vue";
 import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
 import { getImagePath } from "../../common/http";
 import {
@@ -327,6 +327,7 @@ const markerList = ref([]);
 const activeMarker = ref({});
 const popoverPosition = ref({ x: 0, y: 0 });
 const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json);
+const currentMarkerElement = ref(null);
 
 // const title = ref("");
 // const longitude = ref("");
@@ -414,22 +415,53 @@ const setLabelActiveStyle = computed(() => {
   }
 });
 
+function calculatePopoverPosition(element) {
+  if (!element) return;
+  const { top, left, width } = element.getBoundingClientRect();
+  popoverPosition.value = {
+    x: left + width / 2,
+    y: top - 10,
+  };
+}
+
 function tapMarker(item, event) {
   if (item?.id && item?.id === activeMarker.value?.id) {
     activeMarker.value = null;
+    currentMarkerElement.value = null;
+    removeEventListeners();
   } else {
     activeMarker.value = item;
-    // 记录点击位置
+    // 记录点击位置和元素引用
     if (event) {
       console.log(event.currentTarget);
       const ele = event.currentTarget;
-      const { top, left, width } = ele.getBoundingClientRect();
-      popoverPosition.value = {
-        x: left + width / 2,
-        y: top - 10,
-      };
+      currentMarkerElement.value = ele;
+      calculatePopoverPosition(ele);
+      addEventListeners();
     }
   }
+}
+
+function handleResize() {
+  if (currentMarkerElement.value && activeMarker.value?.id) {
+    calculatePopoverPosition(currentMarkerElement.value);
+  }
+}
+
+function handleScroll() {
+  if (currentMarkerElement.value && activeMarker.value?.id) {
+    calculatePopoverPosition(currentMarkerElement.value);
+  }
+}
+
+function addEventListeners() {
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('scroll', handleScroll, true);
+}
+
+function removeEventListeners() {
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('scroll', handleScroll, true);
 }
 const treeData = ref([]);
 const selectedTreeData = ref({});
@@ -553,6 +585,10 @@ onMounted(() => {
       });
     }
   }
+});
+
+onUnmounted(() => {
+  removeEventListeners();
 });
 </script>
 
