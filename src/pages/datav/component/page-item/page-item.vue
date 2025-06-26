@@ -223,7 +223,7 @@
     >
       {{ pageItemData.com_label }}
     </div>
-
+      <canvasPage v-if="pageItemData.animation_type&&pageItemData.animation_type.includes('迁徙图')" :info="pageItemData.migration_json"/>
     <div
       class="more-btn-bottom"
       v-if="showMoreBtn && pageItemData.more_position === '数据项后'"
@@ -258,6 +258,7 @@ import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vu
 import InfoDetails from "@/pages/datav/component/page-item/info-details.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
+import CanvasPage from "@/components/common/canvas-line/canvasPage.vue";
 import { Icon } from "@iconify/vue2";
 import {
   setEnterAnimationClass,
@@ -267,6 +268,7 @@ import {
 export default {
   mixins: [pageItemParams],
   components: {
+    CanvasPage,
     videoCard,
     currentInfo,
     slideList,

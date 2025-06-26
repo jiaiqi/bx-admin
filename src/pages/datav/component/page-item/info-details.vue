@@ -1,6 +1,18 @@
 <template>
   <div class="info_details">
-    11111
+    <div class="del_title">
+      <span class="del_icon"><i class="el-icon-tickets"></i></span>
+      <span>基本信息</span>
+    </div>
+    <div class="del_content" v-if="infoDetails.length>0">
+      <div class="del_rows" v-for="(item,index) in infoDetails" :key="item.code" :style="textStyle">
+        <span>{{item.label+'：'}}</span>
+        <span>{{item.value?item.value:'暂无信息'}}</span>
+      </div>
+    </div>
+    <div v-else class="del_des">
+       暂无数据详情
+    </div>
   </div>
 </template>
 
@@ -42,23 +54,49 @@ export default {
     },
   },
   created(){
-    this.initInfoDetails();
+   let operate_params = this.$route.query;
+   console.log('---当前组件信息',this.pageItem);
+    this.initInfoDetails(operate_params?operate_params:null);
   },
   methods:{
-    initInfoDetails(){
+    initInfoDetails(params){
       if(!this.setDataInfo) return this.infoDetails=[]
       const req = this.setDataInfo ? this.buildRequestParams(this.setDataInfo) : this.setDataInfo;
+      let baseQuery = req.condition?req.condition[0].colName:"";
+      let keys=Object.keys(params);
+      let condition=[]
+      if(keys){
+        let tep=keys.find(item=>item===baseQuery);
+        condition=[{"colName": baseQuery, "ruleType": "eq", value:params[tep]}]
+      }
       let setParams={
         page:req.page,
         serviceName:req.serviceName,
         mdata:true,
         colNames:['*'],
+        condition:condition,
       }
      this.getInfoData(req,setParams)
     },
    async getInfoData (req,params){
       const url = `/${req.mapp}/select/${req.serviceName}`;
       const res = await $http.post(url, params);
+       if(res.data.state!=='SUCCESS') return;
+       let columns=res.data.mdata
+       let rows=res.data.data[0]
+      let ls= this.handleFilterData(columns,rows)
+      this.infoDetails=ls
+   },
+
+    handleFilterData(cl,row){
+      return cl.map(item => {
+        return {
+          label: item.label,
+          code: Object.keys(row).find(key => key === item.columns),
+          value: row[item.columns],
+          desc: item.label || item.columns
+        }
+      }).filter(item => item.code && item.code !== 'id') // 过滤掉不存在于row中的键和code为'id'的项
     },
     buildRequestParams(e){
       // 处理请求中变量 根据参数关系 获取动态值
@@ -131,8 +169,31 @@ export default {
 <style scoped lang="scss">
 .info_details {
   box-sizing: border-box;
-  padding:0.625rem;
   width: 100%;
   height:auto;
+  overflow: auto;
+}
+.del_icon{
+  color: #0e77ea;
+  margin-right:0.625rem;
+  font-size:1.5rem;
+}
+.del_title{
+  width:100%;
+  box-sizing: border-box;
+  padding:0.3125rem 0;
+  font-size:1.125rem;
+  color:#000;
+  font-weight:700;
+  display: flex;
+  align-items: center;
+}
+.del_des{
+  padding:0.9375rem 0;
+  width:100%;
+  text-align:center;
+}
+.del_rows{
+  margin:0.25rem 0;
 }
 </style>

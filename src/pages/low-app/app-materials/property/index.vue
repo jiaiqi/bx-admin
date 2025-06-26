@@ -1125,7 +1125,6 @@ export default {
             serviceName: "srvpage_cfg_page_component_add",
             data: this.buildAddComponentsReqData(addList),
           };
-          debugger
           const addChildRes = await this.httpOperate(
             "add",
             addObj,
@@ -1330,6 +1329,11 @@ export default {
               break;
             case "卡片部件":
               compObj.serviceName = "srvpage_cfg_card_parts_add";
+              break;
+            case "detail":
+              compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
+              compObj.data = [{widget_type:"文本"}];
+
               break;
           }
           addCompArr.push(compObj);

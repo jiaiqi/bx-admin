@@ -791,6 +791,9 @@ export default {
      * @Date: 2025-06-06 17:23:48
      */
     handleGetCurrentFree(){
+      if(this.ruleForm.vehicle_type===''){
+        this.$message.error('请在下方发起人信息栏，选择稽核车型后再进行计费查询！');
+      }
       let obj={
         pass_id:this.ruleForm.pass_id,
         vehicleusertype:this.ruleForm.vehicleusertype,
@@ -802,7 +805,7 @@ export default {
         if(res.data.code !== 0) return;
         if(res.data.messageInfo && res.data.messageInfo.tollDetail){
           let ls=res.data.messageInfo.tollDetail[0]
-          this.ruleForm.orginal_fee=formatFeeToYuan(ls.fee?.fee)
+          this.ruleForm.orginal_fee=formatFeeToYuan(ls.fee)
           this.handleChangeFee()
         }
       }).catch(err=>{})

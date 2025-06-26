@@ -395,7 +395,7 @@ export default {
               this.editorComponents.push(draggedElement);
             }
             this.$emit("change", this.editorComponents);
-          }else if(draggedElement.type === "details") {
+          }else if(draggedElement.value==='详情组件') {
             draggedElement.com_type = "details";
             draggedElement.component = "component";
             if (!draggedElement._editType) {

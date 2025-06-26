@@ -275,7 +275,6 @@ export default class OrderApi{
            colNames: ["*"],
            serviceName: "srvaud_workorder_passid_select",
            condition: [{"colName": "pass_id", "ruleType": "eq", value:params.pass_id}]
-
         }
       return await $http.post(url, req)
     }

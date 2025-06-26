@@ -99,12 +99,14 @@ export const pageCompCols = [
   "page_no",
   "card_parts_no",
   "card_parts_json",
+  // "owner_tabs_no",
+  // "is_leaf",
+  // "path",
   // 入场动画相关
   "use_enter_animation",
   "enter_animation_type",
   "enter_direction",
-  "enter_animation_duration", "enter_animation_delay", "enter_animation_repeat"
-  // "owner_tabs_no",
-  // "is_leaf",
-  // "path",
+  "enter_animation_duration", "enter_animation_delay", "enter_animation_repeat",
+  // 动效相关
+  "migration_json", "animation_type" //前夕图
 ];

@@ -143,7 +143,7 @@
       </div>
     </div> -->
    <!--迁徙背景-->
-    <canvasPage v-if="props.animation_type&&props.animation_type.includes('迁徙图')" :info="props.migration_json"/>
+<!--    <canvasPage v-if="props.animation_type&&props.animation_type.includes('迁徙图')" :info="props.migration_json"/>-->
   </div>
 </template>
 
@@ -697,7 +697,6 @@ export default {
       }
     },
     handleDrop(e) {
-      debugger;
       if (this.isPreview || this.isView) return;
       console.log("handleDrop");
       console.log("e.target:", e.target);

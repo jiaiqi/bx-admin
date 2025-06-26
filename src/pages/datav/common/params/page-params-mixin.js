@@ -116,8 +116,6 @@ export default {
       // 初始化页面参数
       let self = this;
       let getInit = self.getInitParams();
-      debugger
-
       return await new Promise(function (resolve, reject) {
         //异步操做
         const pageInfo = self.pageConfig||self.pageInfo;
