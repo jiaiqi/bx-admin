@@ -254,7 +254,7 @@ import pageParamsMixin from "@/pages/datav/common/params/page-params-mixin";
 
 export default {
   name: "lowcode-main",
-  mixins:[pageParamsMixin],
+  mixins: [pageParamsMixin],
   components: {
     HeaderView,
     MaterialsView,
@@ -353,6 +353,7 @@ export default {
       // 面板调整宽度相关
       isResizingMaterials: false,
       isResizingProperty: false,
+      queryOptions:null,
     };
   },
   mounted() {
@@ -382,6 +383,7 @@ export default {
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
+    this.queryOptions = this.$route.query;
     if (this.pageNo) {
       this.initPage();
     }
@@ -685,8 +687,7 @@ export default {
         // });
         await this.initComponents(newData);
         this.pageRefreshKey = new Date().getTime();
-        this.initPageParams()
-
+        this.initPageParams();
       } else if (msg) {
         this.$message.error(msg);
       } else {

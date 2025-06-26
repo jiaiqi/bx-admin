@@ -305,7 +305,9 @@ export default {
           this.resolveDefaultSrvApp?.() ||
           this.$route.query.srvApp;
         const url = `/${app}/select/${reqJson.serviceName}`;
+        reqJson = JSON.parse(this.renderStr(JSON.stringify(reqJson),{...this.$route.query}))
         const res = await this.$http.post(url, reqJson);
+        debugger
         if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
           this.swiperList = res.data.data.map((item, index) => {
             return {

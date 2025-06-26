@@ -8,6 +8,7 @@
       :key="item.id"
       v-bind="item"
       :content-width="contentAreaWidth"
+      :query-options="queryOptions"
       :isPreview="true"
     ></lc-view>
   </div>
@@ -63,6 +64,7 @@ export default {
       components: [],
       pageConfig: null,
       anchorName: "",
+      queryOptions:null,
     };
   },
   mounted() {
@@ -73,6 +75,7 @@ export default {
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
+    this.queryOptions = this.$route.query
     if (this.pageNo) {
       this.initPage().then(() => {
         this.$nextTick(() => {

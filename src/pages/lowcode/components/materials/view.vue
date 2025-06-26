@@ -34,6 +34,7 @@
     "
     v-bind="props"
     :page-item="props.data"
+    :query-options="queryOptions"
     :content-width="contentWidth"
     @click="onTap"
     :currentId="currentId"
@@ -47,7 +48,8 @@
     @move-component="$emit('move-component', $event)"
     :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
     :style="
-      props.com_option && props.com_option.includes('悬浮可拖动')||type==='悬浮组件'
+      (props.com_option && props.com_option.includes('悬浮可拖动')) ||
+      type === '悬浮组件'
         ? ''
         : 'position: relative; z-index: 1'
     "
@@ -64,6 +66,7 @@
         :isView="isView"
         :hidden-component-visible="hiddenComponentVisible"
         :in-edit="inEdit"
+        :query-options="queryOptions"
         @click="onTap"
         @add="addComponent"
         @delete="deleteComponent"
@@ -89,7 +92,6 @@
     </slot>
   </component>
 </template>
-
 
 <script>
 import lcBlock from "./block.vue";
@@ -168,6 +170,12 @@ export default {
       type: Boolean,
       default: false,
     },
+    queryOptions:{
+      type:Object,
+      default:()=>{
+        return {}
+      }
+    }
   },
   computed: {
     props() {
