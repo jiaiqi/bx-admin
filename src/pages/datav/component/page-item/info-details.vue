@@ -1,9 +1,9 @@
 <template>
   <div class="info_details">
-    <div class="del_title">
-      <span class="del_icon"><i class="el-icon-tickets"></i></span>
-      <span>基本信息</span>
-    </div>
+<!--    <div class="del_title">-->
+<!--      <span class="del_icon"><i class="el-icon-tickets"></i></span>-->
+<!--      <span>基本信息</span>-->
+<!--    </div>-->
     <div class="del_content" v-if="infoDetails.length>0">
       <div class="del_rows" v-for="(item,index) in infoDetails" :key="item.code" :style="textStyle">
         <span>{{item.label+'：'}}</span>
@@ -18,7 +18,6 @@
 
 <script>
 import {$http} from "@/common/http";
-
 export default {
   name: "info-detailsl",
   data() {

@@ -153,6 +153,9 @@ name: "order-home",
     }
   },
   beforeDestroy(){
+   //清除表单存储信息
+    console.log('这是home离开前')
+    // this.$store.commit('orderForm/handleClearOrderForm');
   }
 }
 </script>

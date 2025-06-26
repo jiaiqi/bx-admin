@@ -7,6 +7,7 @@ import custActiveRefresh from './modules/custActiveRefresh'
 import customState from "./modules/custom-state";
 import theme from './modules/theme'
 import loginInfo from './modules/loginInfo'
+import orderForm from './modules/order-form'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -17,7 +18,8 @@ export default new Vuex.Store({
     custActiveRefresh,
     customState,
     theme,
-    loginInfo
+    loginInfo,
+    orderForm
   },
   strict: false,
 })

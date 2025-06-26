@@ -410,6 +410,7 @@ import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-
 import uploadPic from "@/pages/audit/workdistribution/workFlow/upload-pic.vue";
 import moment from 'moment'
 const orderUtils = new OrderApi()
+import { mapGetters } from 'vuex';
 export default {
   name: "order-form",
   components: {
@@ -506,6 +507,11 @@ export default {
       endTime:'',
       relevantList:[]
     }
+  },
+  computed: {
+    ...mapGetters('orderForm', [
+      'getOrderForm'
+    ])
   },
   methods: {
     //通行介质变化检测
@@ -857,7 +863,7 @@ export default {
     },
     //重置条件
     restForm(){
-      const sel=['pass_id','real_fee', 'org_id','org_name','org_no', 'org_type','province','operator_name','operator_id','order_no']
+      const sel=['sus_vehicle_id','sus_escape_type','pass_time','sus_plate_color','pass_id','real_fee', 'org_id','org_name','org_no', 'org_type','province','operator_name','operator_id','order_no']
       // 遍历ruleForm的所有字段
       Object.keys(this.ruleForm).forEach(key => {
         // 如果字段不在sel数组中，则重置为初始值
@@ -921,9 +927,18 @@ export default {
     this.initQuerySearch()
     this.getSavePicInfo(null)
     this.getRelevantInfo();
+    //从如果store有存储，从store 中获取一次填入到表单中
+    let base =this.getOrderForm;
+    if(base){
+       this.ruleForm={...base}
+    }
     console.log('--22',this.ruleForm.org_id);
 
     // 组件挂载后默认调用一次
+  },
+  beforeDestroy(){
+    console.log('这是离开时要存的表单',this.ruleForm);
+    this.$store.commit('orderForm/handleSetOrderForm',this.ruleForm)
   }
 }
 </script>
