@@ -212,7 +212,7 @@
       :pageItem="pageItemData"
     ></form-add>
     <info-details
-    v-if="pageItemData.com_type==='detail'"
+    v-else-if="pageItemData.com_type==='detail'"
     :pageItem="pageItemData"
     >
     </info-details>
