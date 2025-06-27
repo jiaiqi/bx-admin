@@ -49,9 +49,14 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     sort_axis: "某列数据值",
     sort_axis_col: "sort1",
   };
+
   if (chartJson?.legend_color_seq) {
     colors = chartJson?.legend_color_seq.split(",");
   }
+
+  const showLabel = chartJson?.more_option?.includes('隐藏标签') ? false : true;
+  const showLegend = chartJson?.more_option?.includes('隐藏图例') ? false : true;
+
   let ecOptions = {
     // 初始动画延迟
     // animationDelay: function (idx) {
@@ -62,15 +67,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     animationEasing: "cubicInOut",
     animationDelay: 100,
     animationDuration: 1500, // 初始动画的时长
-    // animationDuration: function (idx) {
-    //   // 越往后的数据时长越大
-    //   return (idx+1) * 2000;
-    // },
-    // 更新动画时长
-    // animationDurationUpdate: function (idx) {
-    //   // 越往后的数据时长越大
-    //   return idx * 1000;
-    // },
     color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
@@ -474,6 +470,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             data: [],
           };
         }
+        series.itemStyle.normal.label.show = showLabel;
         for (let data of cellData) {
           // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
@@ -849,6 +846,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       break;
     default:
       break;
+  }
+  if(showLegend === false){
+    ecOptions.legend = {
+      show: false,
+    }
   }
   return ecOptions;
 };
