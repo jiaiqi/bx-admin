@@ -1819,7 +1819,7 @@ function init_util() {
       datas.splice(_index, 1);
     }
   };
- 
+
   Vue.prototype.serviceApi = function (e) {
     let defaultApp = this.resolveDefaultSrvApp();
     var service_api = {
@@ -2876,25 +2876,38 @@ function init_util() {
             if (url?.includes(':id')) {
               url = url.replace(':id', rowData?.id)
             }
-            if (jumpJson.target_type == "新页面") {
-              open(url)
+            if (top.window.addTab) {
+              Vue.prototype.addTabByUrl(url, jumpJson?.jump_page_title || '')
             } else {
-              location.href = url
+              if (jumpJson.target_type == "新页面") {
+                const newPage = open(url)
+                if (jumpJson?.jump_page_title) {
+                  newPage.title = jumpJson?.jump_page_title
+                }
+              } else {
+                location.href = url
+              }
             }
           } else {
             MessageBox('请配置要打开的页面', '提示', 'error')
           }
         } else {
-          if (jumpJson.target_type == "原页面") {
-            if (url.includes('#')) {
-              url = url.split('#')[1]
-            }
-            this.$router.push(url)
+          if (top.window.addTab) {
+            Vue.prototype.addTabByUrl(url, jumpJson?.jump_page_title || '')
           } else {
-            window.open(url)
+            if (jumpJson.target_type == "原页面") {
+              if (url.includes('#')) {
+                url = url.split('#')[1]
+              }
+              this.$router.push(url)
+            } else {
+              const newPage = open(url)
+              if (jumpJson?.jump_page_title) {
+                newPage.title = jumpJson?.jump_page_title
+              }
+            }
           }
         }
-        console.log(url);
       }
       console.log(jumpJson)
     } else {
