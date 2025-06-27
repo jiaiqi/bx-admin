@@ -24,10 +24,6 @@ onMounted(() => {
   // 初始化
   chartObj = initChart(domRef.value);
 
-  if (props.options) {
-    drawOption();
-  }
-
   objResizeObserver = new ResizeObserver(function (entries) {
     const entry = entries[0];
     if (entry?.target === domRef.value) {
@@ -55,27 +51,41 @@ onUnmounted(() => {
 // 监听配置变化
 watch(
   () => props.options,
-  () => drawOption()
+  () =>
+    setTimeout(() => {
+      drawOption();
+    }, 500),
+  {
+    immediate: true,
+  }
 );
 
 //加载图表配置
 const drawOption = () => {
   if (!chartObj) return;
+  chartObj.showLoading({
+    text: '加载中...',
+    color: '#eee',
+    textColor: '#fff',
+    maskColor: 'rgba(0, 0, 0, 0.2)',
+    spinnerRadius: 20,
+  });
   const options = {
     ...props.options,
   };
   if (props.colors?.length) {
     options.color = props.colors;
   }
-  nextTick(() => {
-    setTimeout(() => {
+  setTimeout(() => {
+    nextTick(() => {
       chartObj.setOption(options);
-    }, 1000);
-  });
+      chartObj.hideLoading();
+    });
+  }, 1000);
 };
 </script>
 
 <template>
   <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
-  <div ref="domRef" class="echarts-item" :style="{ width, height }" />
+  <div ref="domRef" class="echarts-item" :style="{ width, height }"></div>
 </template>

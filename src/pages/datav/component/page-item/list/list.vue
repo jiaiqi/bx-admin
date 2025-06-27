@@ -544,7 +544,7 @@ export default {
           // });
           itemReqJson.condition.push({
             colName: "path",
-            ruleType: "like]",
+            ruleType: "[like]",
             value: this.mapSearchKey,
           });
         }

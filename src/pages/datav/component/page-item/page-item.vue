@@ -21,13 +21,13 @@
       :class="{
         active: isActive,
       }"
-      v-if="['卡片部件'].includes(pageItemData.com_type) && inEdit && false"
+      v-if="['卡片部件'].includes(pageItemData.com_type) && inEdit"
     >
       <!-- 删除按钮 -->
       <div class="com-name-overlay">
-        <!-- <span class="name">
+        <span class="name">
           {{ pageItem.com_name || "" }}
-        </span> -->
+        </span>
         <i class="el-icon-close button close-icon" @click="onDelete"></i>
       </div>
     </div>
@@ -84,17 +84,6 @@
       :page-item="pageItemData"
       :cell-item="pageItemData.card_parts_json || pageItemData"
     ></card-cell-part>
-    <!-- <card-cell-part
-      v-if="pageItem.type === 'cardPart'"
-      :comColMap="comColMap"
-      :cellItem="item"
-      :cellItemData="cellItemData"
-      :readOnly="readOnly"
-      :queryOptions="queryOptions"
-      :cellLayoutJson="item"
-      :parent-part="activeCellLayout"
-      @on-click-cell="onClickCell"
-    ></card-cell-part> -->
     <nav-menu
       v-else-if="
         pageItemData.com_type === 'navBar' &&
@@ -401,6 +390,9 @@ export default {
       this.$emit("delete", this.pageItem);
     },
     onTap() {
+      console.log(this.$parent.props,'OnTap');
+      
+      debugger
       this.$emit("click", this.$parent.props);
     },
     toMore() {
