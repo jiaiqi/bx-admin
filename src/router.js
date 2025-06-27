@@ -84,6 +84,12 @@ const inForm = () =>
 // pages
 // Vue.use(Router);
 let routes = [
+   //测试支付使用
+  {
+    path: "/payment",
+    name: "payment",
+    component: () => import("@/components/common/payment/payIndex.vue"),
+  },
   {
     path: "/register",
     name: "register",
@@ -429,6 +435,13 @@ let routes = [
     name: "dhvideo",
     component: () =>
         import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
+  },
+    //hls视频播放
+  {
+    path: "/video-player",
+    name: "video-player",
+    component: () =>
+        import(/* webpackChunkName: "videoplayer" */ "@/pages/play-video/video-player.vue")
   },
   {
     path: "/lowcode/editor/:pageNo",

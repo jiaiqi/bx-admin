@@ -678,12 +678,6 @@ const getVideoInfo = () => {
   });
 }
 
-const getInfo = () => {
-  Videos.testDetails({}).then((res) => {
-    if(res.data.state !== 'SUCCESS') return;
-    debugger
-  }).catch(err => {})
-}
 // 监听过滤文本变化
 watch(filterText, (val) => {
   tree.value?.filter(val);
@@ -698,7 +692,6 @@ const filterNode = (value, data) => {
 onMounted(() => {
   getVideoInfo()
   initPlayer()
-  getInfo()
 
 })
 </script>
