@@ -167,7 +167,7 @@
           <!-- <div class="marquee-item"> -->
           <card-cell-part
             :cellItem="subCardPart"
-            :comColMap="comColMap"
+            :comColMap="setComColMap"
             :cellItemData="cellItemData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
@@ -188,7 +188,7 @@
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
           <card-cell-part
             :cellItem="subCardPart"
-            :comColMap="comColMap"
+            :comColMap="setComColMap"
             :cellItemData="cellItemData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
@@ -279,11 +279,25 @@ export default {
   },
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
+    setComColMap() {
+      let map = this.comColMap || {};
+      if (Object.keys(map).length === 0) {
+        const itemData = this.cellItemData || {};
+        map = Object.keys(itemData).reduce((acc, key) => {
+          acc[key] = key;
+          return acc;
+        }, {});
+      }
+      if (Object.keys(map).length === 0) {
+        map = null;
+      }
+      return map;
+    },
     jumpJson() {
       return JSON.stringify(this.cellLayoutJson?.jump_json || null);
     },
-    itemDataStr(){
-      return JSON.stringify(this.cellItemData || null)
+    itemDataStr() {
+      return JSON.stringify(this.cellItemData || null);
     },
     useChildAnimation() {
       return (
@@ -436,14 +450,13 @@ export default {
     getPartModelData() {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
-      const map =
-        this.comColMap ||
-        Object.keys(itemData).reduce((acc, key) => {
-          acc[key] = key;
-          return acc;
-        }, {});
+
+      let map = this.setComColMap;
       let type = item.parts_type;
       let key = item.variable || null;
+      if (key === "online") {
+        debugger;
+      }
       let val = item.parts_text;
       switch (type) {
         case "iconImg":
@@ -592,12 +605,7 @@ export default {
     partsShow() {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
-      const map =
-        this.comColMap ||
-        Object.keys(itemData).reduce((acc, key) => {
-          acc[key] = key;
-          return acc;
-        }, {});
+      const map = this.setComColMap;
       let show = true;
       if (
         item.disp_flag === "显示" &&
@@ -803,7 +811,7 @@ export default {
             optionsType = subCol.sys_fun;
           }
         }
-        let map = this.comColMap;
+        let map = this.setComColMap;
         let val = null;
         switch (optionsType) {
           case "拨打电话":
@@ -906,35 +914,58 @@ export default {
         this.$set(this.fileNoMap, no, res);
       }
     },
+    setNumberAnimation() {
+      if (this.useNumber) {
+        // 使用数字滚动特效
+        let ele = this.$refs?.[this.partsType];
+        if (ele?.$el) {
+          ele = ele?.$el;
+        }
+        let number = Number(this.getPartModelData);
+        if (isNaN(number)) {
+          debugger;
+          number = 0;
+        }
+        if (ele) {
+          numberAnimationStop = numberAnimationRun({
+            from: 0,
+            to: number,
+            duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
+            delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
+            easing: "easeOutExtreme",
+            onProgress: (val) => {
+              ele.innerHTML = val;
+            },
+            isInteger: true,
+          });
+        }
+      }
+    },
+    initPart() {
+      if (this.useNumber) {
+        // 使用数字滚动特效
+        this.$nextTick(() => {
+          this.setNumberAnimation();
+        });
+      } else if (
+        this.useChildAnimation &&
+        this.childAnimationType === "跑马灯"
+      ) {
+        // 启动跑马灯动画
+        const config = this.childAnimationConfig;
+        setTimeout(() => {
+          this.startMarqueeAnimation(config, "bxCellInnerContainer");
+        }, 200);
+      }
+    },
+  },
+  watch: {
+    getPartModelData() {
+      this.initPart();
+    },
   },
   mounted() {
-    if (this.useNumber) {
-      // 使用数字滚动特效
-      let ele = this.$refs?.[this.partsType];
-      if (ele?.$el) {
-        ele = ele?.$el;
-      }
-      if (ele) {
-        numberAnimationStop = numberAnimationRun({
-          from: 0,
-          to: Number(this.getPartModelData),
-          duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
-          delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
-          easing: "easeOutExtreme",
-          onProgress: (val) => {
-            ele.innerHTML = val;
-          },
-          isInteger: true,
-        });
-      }
-    }
-    // 启动跑马灯动画
-    if (this.useChildAnimation && this.childAnimationType === "跑马灯") {
-      const config = this.childAnimationConfig;
-      setTimeout(() => {
-        this.startMarqueeAnimation(config, "bxCellInnerContainer");
-      }, 200);
-    }
+    this.initPart();
   },
   beforeUnmount() {
     numberAnimationStop?.();

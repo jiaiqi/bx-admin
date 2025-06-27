@@ -77,7 +77,11 @@
             :data-id="item.id"
             :class="current == index ? 'cur' : ''"
           >
-            <div class="swiper-item-box" @click.stop="toDetail(item)">
+            <div
+              class="swiper-item-box"
+              @click.stop="toDetail(item)"
+              :class="{ 'is-vr': item.type === 'vr' && item.vr_no }"
+            >
               <img
                 :src="item.videoPoster"
                 mode="scaleToFill"
@@ -88,6 +92,28 @@
                 mode="scaleToFill"
                 v-else-if="!item.store_video_file || item.file_type !== '视频'"
               />
+              <!-- VR遮罩层 -->
+              <div class="vr-overlay" v-if="item.type === 'vr' && item.vr_no">
+                <a class="vr-icon" target="_blank" :href="getVrUrl(item.vr_no)">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 1024 1024"
+                    width="72"
+                    height="72"
+                    style=""
+                    filter="none"
+                  >
+                    <g>
+                      <path
+                        d="M779.648 429.952l99.648 144.896c-25.856 0-49.408-1.28-72.768 0.448-18.304 1.344-28.8-4.928-38.848-20.352-25.6-39.744-53.44-78.08-80.064-117.12-3.968-5.76-8.128-8.576-15.36-8.32-13.76 0.64-27.52 0.192-42.88 0.192v144.128H548.352c-0.32-3.264-0.832-6.656-0.832-10.048 0-66.688 0.192-133.312-0.256-199.936-0.064-10.88 3.328-13.824 14.08-13.696 63.488 0.448 126.976 0.256 190.464 0.256h9.472c17.728-0.96 30.848-13.824 30.656-29.824a30.592 30.592 0 0 0-30.784-29.696c-32-0.384-63.872-0.128-95.872-0.128H548.544V212.864c4.16-0.256 8.32-0.64 12.544-0.64h248.448c41.6 0 63.296 21.76 63.616 63.36 0.256 30.464 0.448 60.8 0.384 91.136-0.128 39.68-23.808 63.04-63.488 63.232h-30.4zM136.256 212.288c28.8 0 55.68-0.384 82.368 0.448 3.328 0.128 7.872 5.632 9.6 9.6 27.136 65.472 54.144 130.944 80.896 196.608 4.032 9.856 7.424 19.968 12.352 29.376 2.176 4.288 7.232 10.048 10.88 9.92 3.648-0.128 8.896-5.76 10.752-10.24a26795.52 26795.52 0 0 0 94.208-221.76c4.48-10.624 9.536-14.848 21.376-14.336 23.936 1.024 47.872 0.32 73.92 0.32-2.176 5.44-3.52 8.96-5.12 12.416l-140.16 317.696c-11.008 25.216-28.928 40-57.152 39.552-27.52-0.448-45.184-15.296-55.68-40.128-44.608-105.92-89.344-211.84-134.08-317.696-1.408-3.136-2.304-6.464-4.16-11.776z m-55.168 243.712a151.232 151.232 0 0 0-23.104 20.096C29.312 506.176 29.184 544 57.792 574.336c23.68 25.152 53.248 41.6 84.288 55.744 52.48 23.872 108.288 35.712 164.864 44.096 27.776 4.096 73.92 8.96 138.368 14.528V616.896l126.016 109.696-126.016 110.72v-76.672a2250.88 2250.88 0 0 1-108.672-8.96c-87.68-11.52-172.48-33.28-248.384-80.64a347.648 347.648 0 0 1-60.288-49.088C-5.12 588.928-8.704 546.816 16.576 507.52 43.52 465.92 83.84 441.408 129.6 424.832c-16.256 10.24-32.768 20.224-48.576 31.168z m808.32-27.648c42.432 16.64 94.976 36.096 113.728 76.864 18.752 40.832 8.832 83.392-21.696 116.736-32.96 36.032-119.424 109.888-334.336 129.728-36.736 2.048-44.8-59.712-7.872-68.096 72-16.448 221.888-30.08 308.096-108.16 27.84-27.776 26.624-76.48 0-105.792-22.912-23.424-46.912-33.728-57.92-41.28z"
+                        p-id="13112"
+                        fill="rgba(255,255,255,1)"
+                      ></path>
+                    </g>
+                  </svg>
+                </a>
+              </div>
               <div
                 class="title"
                 v-if="item._title && !isTopSwiperBottomContent"
@@ -237,7 +263,6 @@ export default {
   },
   data() {
     return {
-      activeIndex: 0,
       storeNo: "",
       current: 0,
       swiperList: [],
@@ -245,6 +270,7 @@ export default {
       isFirstSwiperList: false,
       scrollPosition: 0,
       maxScrollPosition: 0,
+      isManualScrolling: false, // 标记是否正在手动滚动
     };
   },
   mounted() {
@@ -256,8 +282,8 @@ export default {
     });
   },
   methods: {
-    handleChange(index) {
-      this.activeIndex = index;
+    getVrUrl(no) {
+      return `/VRhome/#/ModView?no=${no}`;
     },
     changeCarousel(index) {
       this.$refs.carousel.setActiveItem(index);
@@ -266,8 +292,12 @@ export default {
       const container = this.$refs.thumbnailsContainer;
       if (!container) return;
 
-      const scrollAmount = 100; // 一个图片的宽度
+      // 设置手动滚动标志
+      this.isManualScrolling = true;
 
+      const thumbnailWidth = 100; // 图片宽度
+      const thumbnailGap = 5; // 图片间距
+      const scrollAmount = thumbnailWidth + thumbnailGap; // 一个图片的宽度
       if (direction === "left") {
         this.scrollPosition = Math.max(0, this.scrollPosition - scrollAmount);
       } else {
@@ -276,11 +306,15 @@ export default {
           this.scrollPosition + scrollAmount
         );
       }
-
       container.scrollTo({
         left: this.scrollPosition,
         behavior: "smooth",
       });
+
+      // 滚动完成后重置标志
+      setTimeout(() => {
+        this.isManualScrolling = false;
+      }, 500); // 500ms后重置，确保滚动动画完成
     },
     updateScrollPosition() {
       const container = this.$refs.thumbnailsContainer;
@@ -292,7 +326,7 @@ export default {
       );
     },
     scrollToActiveThumbnail() {
-      if (!this.useThumbnails) return;
+      if (!this.useThumbnails || this.isManualScrolling) return;
 
       const container = this.$refs.thumbnailsContainer;
       if (!container) return;
@@ -374,7 +408,11 @@ export default {
       }
     },
     async toDetail(item) {
-      if (
+      if (item?.type === "vr" && item.vr_no) {
+        return
+        // const url = `/VRhome/#/ModView?no=${item.vr_no}`;
+        // open(url);
+      } else if (
         this.pageItem?.swiper_json?.img_origin === "接口请求" &&
         item[this.pageItem?.swiper_json?.srv_col_jump_no]
       ) {
@@ -486,6 +524,13 @@ export default {
           }, []);
         }
       }
+      if (swiperJson?.vr_no && swiperJson?.vr_cover) {
+        this.swiperList.unshift({
+          url: this.getImagePath(swiperJson?.vr_cover),
+          type: "vr",
+          vr_no: swiperJson?.vr_no,
+        });
+      }
     },
   },
 };
@@ -569,9 +614,9 @@ export default {
 .thumbnails {
   display: flex;
   overflow-x: hidden;
-  scroll-behavior: smooth;
+  // scroll-behavior: smooth;
   flex: 1;
-  margin: 0 ;
+  margin: 0;
   gap: 5px;
 }
 
@@ -580,27 +625,23 @@ export default {
   height: 60px;
   cursor: pointer;
   object-fit: cover;
-  border: 2px solid transparent;
   border-radius: 4px;
-  transition: border-color 0.3s ease;
+  transition: filter 0.3s ease;
   flex-shrink: 0;
   filter: opacity(0.3);
 }
 
 .thumbnail-img:hover {
-  border-color: #409eff;
-  filter: opacity(1);
+  filter: opacity(0.8);
 }
 
 .thumbnail-img.active {
-  border-color: #409eff;
   filter: opacity(1);
-  box-shadow: 0 0 8px rgba(64, 158, 255, 0.3);
 }
 
 .scroll-btn {
   width: 24px;
-  height: 58px;
+  height: 60px;
   background: #fff;
   border-radius: 4px;
   cursor: pointer;
@@ -633,6 +674,62 @@ export default {
   :deep(.el-carousel) {
     .el-carousel__indicators {
       display: none;
+    }
+  }
+}
+
+// VR遮罩样式
+.vr-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(2px);
+
+  .vr-icon {
+    margin-bottom: 8px;
+    animation: vrPulse 3s infinite;
+    background-color: rgba(16, 16, 16, 0.3);
+    padding: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    svg {
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+  }
+}
+
+// VR图标脉冲动画
+@keyframes vrPulse {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+// VR元素悬停效果
+.swiper-item-box.is-vr:hover {
+  .vr-overlay {
+    background: rgba(0, 0, 0, 0.2);
+
+    .vr-icon {
+      transform: scale(1.2);
+      // &:hover {
+      // animation-play-state: paused;
+      // }
     }
   }
 }
