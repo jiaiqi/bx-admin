@@ -65,8 +65,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     // },
     // animationEasing: "quinticOut",
     animationEasing: "cubicInOut",
-    animationDelay: 100,
-    animationDuration: 1500, // 初始动画的时长
+    animationDelay: 200,
+    animationDuration: 3000, // 初始动画的时长
     color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
