@@ -1172,19 +1172,11 @@ export default {
 }
 .bx-table {
   // overflow: hidden;
-  color: #fff;
-  .table-head {
-    background-color: var(
-      --tbl_head_bg,
-      rgba($color: #999, $alpha: 0.2)
-    );
-  }
-
+  color: var(--cell_color, #fff);
   .table-head,
   .table-row {
     display: flex;
-    background-color: var(--cell_bg, rgba($color: #fff, $alpha: 0.1));
-    color: var(--cell_color);
+    background-color: var(--cell_bg);
     &.stripe {
       background-color: var(--cell_bg2, rgba($color: #fff, $alpha: 0.1));
       color: var(--cell_color2);
@@ -1214,6 +1206,9 @@ export default {
         }
       }
     }
+  }
+  .table-head {
+    background-color: var(--tbl_head_bg, rgba($color: #999, $alpha: 0.2));
   }
 }
 
