@@ -1,5 +1,5 @@
 <template>
-  <div class="rich-editor" v-if="domLoad">
+  <div class="rich-editor" v-if="domLoad" ref="rich-editor">
     <Toolbar
       style="border-bottom: 1px solid #ccc"
       :editor="editor"
@@ -11,15 +11,25 @@
     />
     <Editor
       v-model="innerHtml"
-      style="height: 220px;overflow-y: auto;"
+      style="height: 220px; overflow-y: auto"
       :defaultConfig="editorConfig"
       :disabled="disable"
       :mode="mode"
       @click.stop
       @onCreated="onCreated"
       @customPaste="customPaste"
+      ref="editorRef"
       :key="ticket + 2"
     />
+
+    <el-image
+      style="width: 0; height: 0; display: none; overflow: hidden"
+      :src="previewImage"
+      :preview-src-list="[previewImage]"
+      ref="imagePreview"
+      v-if="previewImage"
+    >
+    </el-image>
   </div>
 </template>
 
@@ -46,15 +56,16 @@ export default {
       toolbarConfig: {},
       editor: null,
       innerHtml: null,
-      domLoad:false,
+      domLoad: false,
+      previewImage: null,
     };
   },
   created() {
     this.ticket = sessionStorage.getItem("bx_auth_ticket");
     this.innerHtml = this.value;
     this.$nextTick(() => {
-      this.domLoad = true
-    })
+      this.domLoad = true;
+    });
   },
   watch: {
     innerHtml(newValue) {
@@ -75,6 +86,19 @@ export default {
     },
   },
   methods: {
+    onDblClick(event) {
+      if (event.target.nodeName === "IMG") {
+        this.previewImage =
+          event.target.currentSrc || event.target.href || null;
+      } else {
+        this.previewImage = null;
+      }
+      if (this.previewImage) {
+        this.$nextTick(() => {
+          this.$refs["imagePreview"].showViewer = true;
+        });
+      }
+    },
     setSrvVal(srvVal) {
       this.innerHtml = srvVal;
     },
@@ -83,12 +107,15 @@ export default {
     },
     onCreated(editor) {
       this.editor = Object.seal(editor); // 【注意】一定要用 Object.seal() 否则会报错
+      this.$refs?.["rich-editor"]
+        ?.querySelector(".w-e-text-container")
+        ?.addEventListener("dblclick", this.onDblClick);
     },
     onInput(event) {
       console.log(event, "oninput");
     },
     onChange(editor) {
-    //   console.log("onChange", editor.getHtml()); // onChange 时获取编辑器最新内容
+      //   console.log("onChange", editor.getHtml()); // onChange 时获取编辑器最新内容
       if (this.innerHtml !== this.field.model) {
         this.$set(this.field, "model", this.innerHtml);
         this.$emit("change", this.field.info.name, this.field);

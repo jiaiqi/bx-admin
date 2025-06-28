@@ -130,13 +130,22 @@
               :field="field"
               v-model="field.model"
               @change="$emit('field-value-changed', field.info.name, field)"
+              v-else-if="field.info.editor === 'ueditor'"
+            >
+            </wang-editor>
+            <!-- <wang-editor
+              ref="editor"
+              :disabled="getDisabled"
+              :field="field"
+              v-model="field.model"
+              @change="$emit('field-value-changed', field.info.name, field)"
               v-else-if="
                 field.info.editor === 'ueditor' &&
                 field.info.moreConfig &&
                 field.info.moreConfig.mode === 'modern'
               "
             >
-            </wang-editor>
+            </wang-editor> -->
             <TinymceEditor
               :disabled="getDisabled"
               v-else-if="field.info.editor === 'ueditor'"

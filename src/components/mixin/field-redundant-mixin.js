@@ -284,8 +284,10 @@ export default {
 
           if (dependentField.info.redundant.trigger === "unchange") {
             //  触发字段数据发生变化，其它字段没有被手动修改的时候，冗余，如果存在手动修改，则不在冗余
+            //  unchange处理调整：当前值为空的时候，即使为unchange，选fk时仍然填写冗余。 25.6.28王总确认
+            const nullVal = [null, undefined, ''] // 定义空值
             if (
-              dependentField.model === null ||
+              nullVal.includes(dependentField.model) ||
               (field.modelOld &&
                 dependentField.getSrvVal &&
                 dependentField.getSrvVal() ===
