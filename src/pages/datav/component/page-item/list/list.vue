@@ -150,6 +150,7 @@
         <div
           class="bx-table"
           v-else
+          :style="setTableStyle"
           :class="{
             'scroll-animation': isVerticalScroll,
           }"
@@ -178,46 +179,48 @@
             </div>
           </div>
           <div
-            class="table-body"
+            class="table-body-wrap"
             :style="{
               height: isVerticalScroll ? `${displayRowLimit * 40}px` : 'auto',
             }"
           >
-            <div
-              class="table-row"
-              v-for="(item, index) in displayTableData"
-              :key="index"
-              :class="{ stripe: striped && index % 2 === 1 }"
-            >
+            <div class="table-body">
               <div
-                class="table-column"
-                v-for="col in tableColumn"
-                :title="formatValue(item, col)"
-                :key="col.columns"
-                :style="{
-                  color: setStyle && setStyle.color,
-                  'font-size': setStyle && setStyle['font-size'],
-                }"
+                class="table-row"
+                v-for="(item, index) in displayTableData"
+                :key="index"
+                :class="{ stripe: striped && index % 2 === 1 }"
               >
-                <el-image
-                  class="td-img"
-                  :src="getImagePath(formatValue(item, col))"
-                  :preview-src-list="[getImagePath(formatValue(item, col))]"
-                  v-if="col.col_type === 'Image' && formatValue(item, col)"
+                <div
+                  class="table-column"
+                  v-for="col in tableColumn"
+                  :title="formatValue(item, col)"
+                  :key="col.columns"
+                  :style="{
+                    color: setStyle && setStyle.color,
+                    'font-size': setStyle && setStyle['font-size'],
+                  }"
                 >
-                </el-image>
-                <span v-else>
-                  {{ formatValue(item, col) }}
-                </span>
-              </div>
-              <div class="table-column row-button-box" v-if="showRowButtons">
-                <el-button
-                  type="primary"
-                  size="mini"
-                  v-for="btn in setRowButtons"
-                  @click="onRowButtonClick(btn, item)"
-                  >{{ btn.button_name }}</el-button
-                >
+                  <el-image
+                    class="td-img"
+                    :src="getImagePath(formatValue(item, col))"
+                    :preview-src-list="[getImagePath(formatValue(item, col))]"
+                    v-if="col.col_type === 'Image' && formatValue(item, col)"
+                  >
+                  </el-image>
+                  <span v-else>
+                    {{ formatValue(item, col) }}
+                  </span>
+                </div>
+                <div class="table-column row-button-box" v-if="showRowButtons">
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    v-for="btn in setRowButtons"
+                    @click="onRowButtonClick(btn, item)"
+                    >{{ btn.button_name }}</el-button
+                  >
+                </div>
               </div>
             </div>
           </div>
@@ -536,6 +539,26 @@ export default {
     displayTableData() {
       // 直接返回原始数据，不进行数据操作
       return this.tableData;
+    },
+    setTableStyle() {
+      return {
+        "--tbl_head_bg":
+          this.listConfig?.tbl_head_bg ||
+          this.setStyle?.["--tbl_head_bg"] ||
+          null,
+        "--cell_bg":
+          this.listConfig?.cell_bg || this.setStyle?.["--cell_bg"] || null,
+        "--cell_color":
+          this.listConfig?.cell_color ||
+          this.setStyle?.["--cell_color"] ||
+          null,
+        "--cell_bg2":
+          this.listConfig?.cell_bg2 || this.setStyle?.["--cell_bg2"] || null,
+        "--cell_color2":
+          this.listConfig?.cell_color2 ||
+          this.setStyle?.["--cell_color2"] ||
+          null,
+      };
     },
   },
   methods: {
@@ -895,50 +918,100 @@ export default {
         }
       }
     },
-    // 开始纵向滚动
+    // 开始纵向滚动 - 性能优化版本
     startVerticalScroll() {
       if (!this.isVerticalScroll) return;
       this.stopVerticalScroll();
-      // 使用animation_interval配置，默认3秒，最小1秒
+
       const interval = Math.max(
-        (this.listConfig.animation_interval || 3) * 1000,
-        1000
+        (this.listConfig.animation_interval ||
+          this.$options.CONSTANTS.DEFAULT_INTERVAL / 1000) * 1000,
+        2000
       );
 
       this.scrollTimer = setInterval(() => {
-        // 通过CSS动画实现滚动效果
-        const tableBody = this.$el.querySelector(".table-body");
-        if (tableBody) {
-          // 添加滚动动画类和方向类
-          tableBody.classList.add("scrolling");
-          tableBody.classList.add(`scroll-${this.scrollDirection}`);
-
-          // 动画结束后移除类并调整位置
-          setTimeout(() => {
-            tableBody.classList.remove("scrolling", "scroll-up", "scroll-down");
-
-            if (this.scrollDirection === "down") {
-              // 向下滚动：将最后一行移到第一行
-              const lastRow = tableBody.lastElementChild;
-              if (lastRow) {
-                tableBody.insertBefore(lastRow, tableBody.firstElementChild);
-              }
-            } else {
-              // 向上滚动：将第一行移到最后
-              const firstRow = tableBody.firstElementChild;
-              if (firstRow) {
-                tableBody.appendChild(firstRow);
-              }
-            }
-          }, 600); // 动画持续时间
-        }
+        this.performScrollStep();
       }, interval);
+    },
+
+    // 执行单步滚动 - 使用transform优化性能
+    performScrollStep() {
+      const tableBody = this.$el?.querySelector(".table-body");
+      if (!tableBody || !tableBody.children.length) return;
+
+      const rows = Array.from(tableBody.children);
+      const rowHeight = rows[0]?.offsetHeight || 0;
+
+      if (rowHeight === 0) return;
+
+      // 使用transform实现平滑滚动，避免DOM重排
+      // 向下滚动时内容向上移动（负值），向上滚动时内容向下移动（正值）
+      const translateY =
+        this.scrollDirection === "down" ? rowHeight : -rowHeight;
+      const ANIMATION_DURATION = this.listConfig?.animation_duration || 2000;
+      // 添加过渡效果
+      tableBody.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.55, -0.55, 0.5, 1.2)`;
+      tableBody.style.transform = `translateY(${translateY}px)`;
+
+      // 动画完成后重置位置并调整DOM结构
+      setTimeout(() => {
+        this.resetScrollPosition(tableBody, rows);
+      }, ANIMATION_DURATION);
+    },
+
+    // 重置滚动位置并调整DOM结构
+    resetScrollPosition(tableBody, rows) {
+      // 移除过渡效果，立即重置transform
+      tableBody.style.transition = "none";
+      tableBody.style.transform = "translateY(0)";
+
+      // 使用DocumentFragment批量操作DOM，减少重排
+      const fragment = document.createDocumentFragment();
+
+      if (this.scrollDirection === "down") {
+        // 向下滚动：将最后一行移到第一行（显示新的内容）
+        const lastRow = rows[rows.length - 1];
+        fragment.appendChild(lastRow);
+        rows.slice(0, -1).forEach((row) => fragment.appendChild(row));
+      } else {
+        // 向上滚动：将第一行移到最后（显示之前的内容）
+        const firstRow = rows[0];
+        rows.slice(1).forEach((row) => fragment.appendChild(row));
+        fragment.appendChild(firstRow);
+      }
+
+      // 一次性更新DOM
+      tableBody.innerHTML = "";
+      tableBody.appendChild(fragment);
     },
     // 停止纵向滚动
     stopVerticalScroll() {
       if (this.scrollTimer) {
         clearInterval(this.scrollTimer);
         this.scrollTimer = null;
+      }
+      // 清理滚动相关样式
+      this.cleanupScrollStyles();
+    },
+
+    // 清理滚动样式，防止内存泄漏
+    cleanupScrollStyles() {
+      const tableBody = this.$el?.querySelector(".table-body");
+      if (tableBody) {
+        tableBody.style.transition = "";
+        tableBody.style.transform = "";
+        tableBody.style.willChange = "auto";
+      }
+    },
+
+    // 错误处理包装器
+    safeExecute(fn, errorMessage = "操作执行失败") {
+      try {
+        return fn();
+      } catch (error) {
+        console.error(errorMessage, error);
+        this.error = errorMessage;
+        return null;
       }
     },
   },
@@ -977,8 +1050,20 @@ export default {
     }
   },
   beforeDestroy() {
-    // 组件销毁前清理定时器
+    // 组件销毁前清理所有资源
     this.stopVerticalScroll();
+    this.cleanupScrollStyles();
+
+    // 清理可能的事件监听器
+    if (this.$el) {
+      const tableBody = this.$el.querySelector(".table-body");
+      if (tableBody) {
+        tableBody.removeEventListener(
+          "transitionend",
+          this.handleTransitionEnd
+        );
+      }
+    }
   },
   watch: {
     pageParamsModel: {
@@ -1086,17 +1171,23 @@ export default {
   }
 }
 .bx-table {
+  // overflow: hidden;
   color: #fff;
   .table-head {
-    background-color: rgba($color: #999, $alpha: 0.2);
+    background-color: var(
+      --tbl_head_bg,
+      rgba($color: #999, $alpha: 0.2)
+    );
   }
 
   .table-head,
   .table-row {
     display: flex;
-
+    background-color: var(--cell_bg, rgba($color: #fff, $alpha: 0.1));
+    color: var(--cell_color);
     &.stripe {
-      background-color: rgba($color: #fff, $alpha: 0.1);
+      background-color: var(--cell_bg2, rgba($color: #fff, $alpha: 0.1));
+      color: var(--cell_color2);
     }
 
     .table-column {
@@ -1191,15 +1282,22 @@ export default {
   }
 }
 
-// 滚动动画样式
+// 滚动动画样式 - 性能优化版本
 .scroll-animation {
-  .table-body {
+  .table-body-wrap {
     overflow: hidden;
+  }
+  .table-body {
     position: relative;
+    // 启用硬件加速
+    transform: translateZ(0);
+    will-change: transform;
 
     .table-row {
-      transition: opacity 0.4s ease-in-out;
+      transition: opacity 0.3s ease-out;
       opacity: 1;
+      // 启用硬件加速
+      transform: translateZ(0);
 
       // 顶部即将滚出视口的元素渐隐效果
       &:first-child {
@@ -1208,10 +1306,6 @@ export default {
 
       &:nth-child(2) {
         opacity: 0.9;
-      }
-
-      &:nth-child(3) {
-        opacity: 1;
       }
 
       // 底部即将滚出视口的元素渐隐效果
@@ -1223,98 +1317,11 @@ export default {
         opacity: 0.9;
       }
 
-      &:nth-last-child(3) {
-        opacity: 1;
-      }
-
-      // 中间完全可见区域
-      &:nth-child(n + 4):nth-last-child(n + 4) {
+      // 中间完全可见区域保持完全不透明
+      &:nth-child(n + 3):nth-last-child(n + 3) {
         opacity: 1;
       }
     }
-
-    &.scrolling {
-      .table-row {
-        // 滚动时重置透明度动画
-        &:first-child {
-          animation: fadeInFromTop 0.6s ease-in-out;
-          opacity: 1 !important;
-        }
-
-        &:nth-child(2) {
-          animation: fadeInFromTop 0.5s ease-in-out 0.1s both;
-        }
-
-        &:last-child {
-          animation: fadeInFromBottom 0.6s ease-in-out;
-          opacity: 1 !important;
-        }
-
-        &:nth-last-child(2) {
-          animation: fadeInFromBottom 0.5s ease-in-out 0.1s both;
-        }
-      }
-
-      &.scroll-up {
-        animation: scrollUpBounce 0.6s ease-in-out;
-      }
-
-      &.scroll-down {
-        animation: scrollDownBounce 0.6s ease-in-out;
-      }
-    }
-  }
-}
-
-@keyframes scrollUpBounce {
-  0% {
-    transform: translateY(0);
-  }
-  80% {
-    transform: translateY(-38px);
-  }
-  90% {
-    transform: translateY(-40px);
-  }
-  100% {
-    transform: translateY(-40px);
-  }
-}
-
-@keyframes scrollDownBounce {
-  0% {
-    transform: translateY(0);
-  }
-  80% {
-    transform: translateY(38px);
-  }
-  90% {
-    transform: translateY(40px);
-  }
-  100% {
-    transform: translateY(40px);
-  }
-}
-
-@keyframes fadeInFromTop {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInFromBottom {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 </style>
