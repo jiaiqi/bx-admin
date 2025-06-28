@@ -174,16 +174,17 @@
               clearable
               :format="
                 field.info.subtype == 'year'
-                  ? 'yyyy'
+                  ? 'yyyy年'
                   : field.info.subtype == 'month'
-                  ? 'MM'
-                  : field.info.subtype == 'date'
-                  ? 'yyyy 年 MM 月 dd 日'
+                  ? 'yyyy 年 MM 月'
+                  : field.info.subtype == 'week'
+                  ? 'yyyy 第 WW 周'
                   : 'yyyy 年 MM 月 dd 日'
               "
               :disabled="getDisabled"
               :placeholder="field.info.placeholder"
               :picker-options="pickerOptions"
+              value-format="yyyy-MM-dd"
               @change="$emit('field-value-changed', field.info.name, field)"
             >
             </el-date-picker>
