@@ -451,7 +451,7 @@ export default {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
 
-      let map = this.setComColMap;
+      let map = this.setComColMap || {};
       let type = item.parts_type;
       let key = item.variable || null;
       if (key === "online") {
@@ -605,7 +605,7 @@ export default {
     partsShow() {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
-      const map = this.setComColMap;
+      const map = this.setComColMap || {};
       let show = true;
       if (
         item.disp_flag === "显示" &&
