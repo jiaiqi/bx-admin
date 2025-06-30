@@ -1567,6 +1567,8 @@ export default {
         self.refresh();
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
+      }else if('pay'===true){
+        this.activeForm='pay';
       } else if ("add" == type) {
         if (operate_type == "页内添加") {
           if (this.list_inner_add) {
@@ -1723,7 +1725,8 @@ export default {
               this.loadTableData();
             });
             // this.customize_add(button, this.multipleSelection);
-          } else {
+          }
+          else {
             button.listservice = this.service;
             this.customizeOperate(button, this.multipleSelection, (e) => {
               // dialog操作完成之后的回调 刷新列表
