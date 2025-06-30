@@ -143,7 +143,9 @@ export default{
       debounceTimer: null, // 防抖定时器,
       order_no:'',
       payTimer:null,
-      keyNames:''
+      keyNames:'',
+      rowKeys:'',
+      ruleTypes:''
     }
   },
   props: {
@@ -165,7 +167,6 @@ export default{
   watch: {
     buttonInfo:{
       handler(newVal) {
-        debugger
         if(newVal && newVal.operate_service ==='srvbank_xa_pay_scode_order') {
           this.payStep = 1;
           this.payWays=[
@@ -189,7 +190,9 @@ export default{
         }
         if (newVal && newVal.operate_params&&typeof(newVal.operate_params) === 'string') {
           let tep = JSON.parse(newVal.operate_params).condition
-          this.keyNames=tep[0].colName
+          this.keyNames=tep[0].colName;
+          this.rowKeys=tep[0].value.value_key;
+          this.ruleTypes=tep[0].ruleType;
         }
       },
       immediate: true,
@@ -199,10 +202,11 @@ export default{
       handler(newVal) {
         if (Array.isArray(newVal) && newVal.length > 0) {
           // 提取 su_order_no 并拼接
-          const orderNos = newVal.map(item => item[this.keyNames]).join(',');
+          const orderNos = newVal.map(item => item[this.rowKeys]).join(',');
           let obj ={
             ids:orderNos,
             keyName:this.keyNames,
+            ruleType:this.ruleTypes
           }
           this.getOrderDetails(obj);
         } else {

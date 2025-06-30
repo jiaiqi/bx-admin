@@ -18,7 +18,7 @@ export default class Payment {
        let req={
            serviceName: "srvbank_xa_order_item_select",
            colNames:["*"],
-           condition:[ {colName: params.keyName, ruleType: "in", value:params.ids}],
+           condition:[ {colName: params.keyName, ruleType:params.ruleType, value:params.ids}],
        }
        return await $http.post(url,req)
     }
