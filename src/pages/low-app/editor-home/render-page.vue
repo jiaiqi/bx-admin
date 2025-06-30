@@ -519,6 +519,15 @@ export default {
            dragData.com_name = "悬浮组件";
            dragData.com_option = "悬浮可拖动";
         }
+         if(dragData.value === "详情组件") {
+           dragData.com_type = "detail";
+           dragData.component = "page-item";
+           if (!dragData._editType) {
+             dragData._editType = "add";
+             dragData.com_name = "详情";
+             dragData.com_type = "detail";
+           }
+         }
         // 创建新组件数据
         const newComponent = {
           id: `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -534,7 +543,6 @@ export default {
           isPositionChanged: false, // 初始化位置变更标识
           ...dragData,
         }
-
         console.log('Adding new component:', newComponent)
         
         // 使用 addComponent 方法添加新组件
