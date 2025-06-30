@@ -140,11 +140,59 @@ export default{
         order_details:[] //支付详情项
       },
       validationError: '', // 验证错误信息
-      debounceTimer: null // 防抖定时器
+      debounceTimer: null, // 防抖定时器,
+      order_no:'',
+      payTimer:null,
 
     }
   },
+  props: {
+    orders:{
+      type:Array,
+      default:[]
+    }
+  },
+  watch: {
+    orders: {
+      handler(newVal) {
+        if (Array.isArray(newVal) && newVal.length > 0) {
+          // 提取 su_order_no 并拼接
+          const orderNos = newVal.map(item => item.su_order_no).join(',');
+          this.getOrderDetails(orderNos);
+        } else {
+          this.orderList = [];
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  },
   methods:{
+
+    keepStatusInfo(){
+      let that = this;
+      if(that.payTimer){
+        clearTimeout(that.payTimer);
+      }
+     this.payTimer=setInterval(()=>{
+       that.handelStatusInfo()
+     },200)
+    },
+    //获取二维码支付后状态信息
+    handelStatusInfo(status){
+      this.showLoading=true
+      payUtils.getPayStatus(this.order_no).then(res => {
+        if(res.data.state!=='SUCCESS') return;
+        this.showLoading=false
+        this.handleStatus=true;
+        let ls =res.data.data[0];
+        this.statusText=ls.state
+        this.stepStatus=ls.state==='已支付'||ls.state==='已退款'?true:ls.state==='支付失败'||ls.state=='待支付'?false:true
+        clearInterval(this.payTimer);
+        this.payTimer=null;
+
+      }).catch(err => {})
+    },
     closePayment(){
       this.$emit('close-dialog')
     },
@@ -264,13 +312,16 @@ export default{
       }).catch((err) => {})
     },
     //获取订单列表信息
-    getOrderDetails(payInfo){
-      let str='MT1002,XF1003'
-      payUtils.getOrderListByNo(str).then(res=>{
+    getOrderDetails(orderNos) {
+      if (!orderNos) {
+        this.orderList = [];
+        return;
+      }
+      payUtils.getOrderListByNo(orderNos).then(res => {
         if(res.data.state!=='SUCCESS') return;
-           this.orderList=res.data.data?res.data.data:[];
+        this.orderList = res.data.data ? res.data.data : [];
         this.handleGetPendingPayAmount();
-      }).catch(err=>{})
+      }).catch(err => {})
     },
     //获取线上支付二维码信息
      getOnlinePayQrcode(payInfoParam){
@@ -285,6 +336,12 @@ export default{
              this.qrcodeInfo.qrCd=ls.qrCd;
              this.qrcodeInfo.transAddnInfo=ls.transAddnInfo;
              this.isShowQrcode=true;
+             this.order_no=ls.order_no;
+             //10s后启动查询
+             setTimeout(()=>{
+               this.keepStatusInfo()
+             },10*1000)
+
            }
       }).catch(err=>{})
      },
@@ -300,9 +357,8 @@ export default{
     }
   },
   mounted() {
-    sessionStorage.removeItem('bx_auth_ticket');
-    sessionStorage.setItem('bx_auth_ticket','xabxdzkj-7942739b-31ef-49ee-9add-a146e6172097');
-   this.getOrderDetails()
+    // sessionStorage.removeItem('bx_auth_ticket');
+    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-7942739b-31ef-49ee-9add-a146e6172097');
   },
   beforeDestroy() {
     // 组件销毁前清除定时器

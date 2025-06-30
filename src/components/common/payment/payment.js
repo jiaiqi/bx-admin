@@ -33,4 +33,19 @@ export default class Payment {
         ]
        return await $http.post(url,req)
     }
+    //查询 二维码支付使用订单支付情况
+    async getPayStatus(params){
+        let url =`/wx/select/srvbank_xa_pay_state_select`
+        let req={
+            "serviceName": "srvbank_xa_pay_state_select",
+            "condition": [
+                {
+                    "colName": "order_no",
+                    "ruleType": "eq",
+                    "value": params
+                }
+            ]
+        }
+       return await $http.post(url,req)
+    }
 }

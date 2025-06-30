@@ -1178,6 +1178,19 @@
         @srv-auth-success="srvAuthSuccess"
       ></srvAuthLogin>
     </el-dialog>
+<!-- PC支付-->
+    <el-dialog
+        class="customDialogClass"
+        title="订单支付"
+        :visible="activeForm==='pay'"
+        @close="closeDialog"
+        width="40%"
+        append-to-body
+        :close-on-click-modal=false
+        :destroy-on-close="true"
+    >
+      <payment-popup :orders="multipleSelection" @close-dialog="closeDialog" v-if="activeForm==='pay'"></payment-popup>
+    </el-dialog>
   </div>
 </template>
 
@@ -1221,9 +1234,11 @@ import { $http } from "@/common/http";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import FileList from "../ui/file-list/file-list.vue";
+import paymentPopup from "@/components/common/payment/payment-popup.vue";
 export default {
   name: "list",
   components: {
+    paymentPopup,
     PopupMemList,
     UploadFile,
     ImportDialog,

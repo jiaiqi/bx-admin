@@ -14,8 +14,8 @@
            </li>
          </div>
          <div class="pay_cots" v-if="!status">
-           <li class="pay_des">支付失败：</li>
-           <li class="pay_des">{{statusText}}</li>
+           <li class="pay_des">支付失败：{{statusText}}</li>
+           <li class="pay_des">{{payAmount+'元'}}</li>
            <li>
              <el-button size="mini" @click="closePayment">取消</el-button>
              <el-button type="primary" size="mini" @click="handleBack">返回支付页面</el-button>
@@ -40,7 +40,7 @@ export default {
       type:String,
     },
     payAmount:{
-      type:Number,
+      type:Number|String,
     }
   },
   methods: {
