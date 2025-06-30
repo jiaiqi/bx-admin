@@ -156,7 +156,11 @@ export default{
     },
     serviceName:{
       type:String,
-    }
+    },
+    buttonInfo:{
+      type:Object,
+    },
+
   },
   watch: {
     buttonInfo:{
@@ -210,7 +214,6 @@ export default{
     }
   },
   methods:{
-
     keepStatusInfo(){
       let that = this;
       if(that.payTimer){
