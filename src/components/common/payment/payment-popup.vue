@@ -188,8 +188,8 @@ export default{
           ]
         }
         if (newVal && newVal.operate_params&&typeof(newVal.operate_params) === 'string') {
-          let tep = JSON.parse(newVal.operate_params)[0]
-          this.keyNames=tep.colName
+          let tep = JSON.parse(newVal.operate_params).condition
+          this.keyNames=tep[0].colName
         }
       },
       immediate: true,
