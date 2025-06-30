@@ -115,7 +115,7 @@ export default{
       showLoading:false,
       loadingText:'支付码生成中....',
       isShowQrcode:false,
-      payStep:1,
+      payStep:2,
       payWays:[
         {
           code:2,
@@ -159,9 +159,11 @@ export default{
     }
   },
   watch: {
-    serviceName:{
+    buttonInfo:{
       handler(newVal) {
-        if(newVal || newVal==='srvbank_xa_pay_scode_order') {
+        debugger
+        if(newVal && newVal.operate_service ==='srvbank_xa_pay_scode_order') {
+          this.payStep = 1;
           this.payWays=[
             {
               code:1,
@@ -169,6 +171,7 @@ export default{
             }
           ]
         }else {
+          this.payStep = 2;
           this.payWays=[
             {
               code:2,
@@ -180,13 +183,8 @@ export default{
             }
           ]
         }
-      }
-    },
-    moreConfig:{
-      handler(newVal) {
-        if (newVal) {
-          // 提取 su_order_no 并拼接
-          let tep = newVal[0]
+        if (newVal && newVal.operate_params&&typeof(newVal.operate_params) === 'string') {
+          let tep = JSON.parse(newVal.operate_params)[0]
           this.keyNames=tep.colName
         }
       },

@@ -1184,12 +1184,12 @@
         title="订单支付"
         :visible="activeForm==='pay'"
         @close="closeDialog"
-        width="40%"
+        width="50%"
         append-to-body
         :close-on-click-modal=false
         :destroy-on-close="true"
     >
-      <payment-popup :moreConfig="moreConfig" :serviceName="service_view_name" :orders="multipleSelection" @close-dialog="closeDialog" v-if="activeForm==='pay'"></payment-popup>
+      <payment-popup :buttonInfo="buttonInfo"  :orders="multipleSelection" @close-dialog="closeDialog" v-if="activeForm ==='pay' && buttonInfo"></payment-popup>
     </el-dialog>
   </div>
 </template>
