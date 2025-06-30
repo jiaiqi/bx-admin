@@ -199,7 +199,7 @@ export default{
       handler(newVal) {
         if (Array.isArray(newVal) && newVal.length > 0) {
           // 提取 su_order_no 并拼接
-          const orderNos = newVal.map(item => item.su_order_no).join(',');
+          const orderNos = newVal.map(item => item[this.keyNames]).join(',');
           let obj ={
             ids:orderNos,
             keyName:this.keyNames,
