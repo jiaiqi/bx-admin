@@ -1189,7 +1189,7 @@
         :close-on-click-modal=false
         :destroy-on-close="true"
     >
-      <payment-popup :orders="multipleSelection" @close-dialog="closeDialog" v-if="activeForm==='pay'"></payment-popup>
+      <payment-popup :moreConfig="moreConfig" :serviceName="service_view_name" :orders="multipleSelection" @close-dialog="closeDialog" v-if="activeForm==='pay'"></payment-popup>
     </el-dialog>
   </div>
 </template>

@@ -118,11 +118,11 @@ export default{
       payStep:1,
       payWays:[
         {
-          code:1,
+          code:2,
           label:"线上支付",
         },
         {
-          code:2,
+          code:1,
           label:"线下支付",
         }
       ],
@@ -143,22 +143,66 @@ export default{
       debounceTimer: null, // 防抖定时器,
       order_no:'',
       payTimer:null,
-
+      keyNames:''
     }
   },
   props: {
     orders:{
       type:Array,
       default:[]
+    },
+    moreConfig:{
+      type:Object,
+    },
+    serviceName:{
+      type:String,
     }
   },
   watch: {
+    serviceName:{
+      handler(newVal) {
+        if(newVal || newVal==='srvbank_xa_pay_scode_order') {
+          this.payWays=[
+            {
+              code:1,
+              label:"线下支付",
+            }
+          ]
+        }else {
+          this.payWays=[
+            {
+              code:2,
+              label:"线上支付",
+            },
+            {
+              code:1,
+              label:"线下支付",
+            }
+          ]
+        }
+      }
+    },
+    moreConfig:{
+      handler(newVal) {
+        if (newVal) {
+          // 提取 su_order_no 并拼接
+          let tep = newVal[0]
+          this.keyNames=tep.colName
+        }
+      },
+      immediate: true,
+      deep: true
+    },
     orders: {
       handler(newVal) {
         if (Array.isArray(newVal) && newVal.length > 0) {
           // 提取 su_order_no 并拼接
           const orderNos = newVal.map(item => item.su_order_no).join(',');
-          this.getOrderDetails(orderNos);
+          let obj ={
+            ids:orderNos,
+            keyName:this.keyNames,
+          }
+          this.getOrderDetails(obj);
         } else {
           this.orderList = [];
         }

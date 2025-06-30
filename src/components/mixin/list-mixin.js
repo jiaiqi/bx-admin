@@ -1567,8 +1567,12 @@ export default {
         self.refresh();
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
-      }else if('pay'===true){
+      }else if(type === 'pay'){
+        debugger
         this.activeForm='pay';
+        let cfg=button.operate_params&&typeof button.operate_params==='string'?JSON.parse(button.operate_params):{}
+        this.moreConfig=cfg;
+        this.service_view_name=button.operate_service?button.operate_service:''
       } else if ("add" == type) {
         if (operate_type == "页内添加") {
           if (this.list_inner_add) {
