@@ -1030,7 +1030,7 @@ export default {
       this.getListData(req);
       if (
         this.listConfig?.list_options?.includes("自定义表头") ||
-        this.list_type !== "表格"
+        this.listType !== "表格"
       ) {
         // 不请求v2
       } else {

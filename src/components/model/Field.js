@@ -270,7 +270,7 @@ export class Field {
           );
         }
       } else {
-        ret = DataUtil.formatDate(ret, temporalType, this.info.format);
+        // ret = DataUtil.formatDate(ret, temporalType, this.info.format);
       }
     } else if (this.info.isFinder()) {
       // 自行输入且为add表单时，直接提交对象
