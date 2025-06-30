@@ -246,13 +246,13 @@ export default {
               console.log("file_picker_callback", file);
               let fileUrl;
               const fileSize = file.size / 1024 / 1024; // 单位为MB
-              if (that.useSplitChuck && fileSize > 50) {
+              if (that.useSplitChuck && fileSize > that.limitSize) {
                 // 大于50M 使用分片上传
                 document.getElementById("myDialog").showModal();
                 that.percentage = 0;
                 const { url } = await that.handelUploadBigFile(file, {
-                  chunkSize: that.fileChunkSize,
-                  maxRequest: that.uploadMaxRequest,
+                  chunkSize: that.fileChunkSize || that.chunkSize,
+                  maxRequest: that.uploadMaxRequest || that.maxRequest || 5,
                   onHashProgress: (percentage) => {
                     that.hashPercentage = percentage;
                   },

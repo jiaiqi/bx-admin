@@ -402,11 +402,11 @@ export default {
       const that = this;
       const file = params.file;
       const fileSize = file.size / 1024 / 1024; // 单位为MB
-      if (this.useSplitChuck && fileSize > 50) {
+      if (this.useSplitChuck && fileSize > this.limitSize) {
         // 大于50MB并且启用分片上传的情况下 使用分片上传
         const { url } = await that.handelUploadBigFile(file, {
-          chunkSize: that.fileChunkSize,
-          maxRequest: that.uploadMaxRequest,
+          chunkSize: that.fileChunkSize || that.chunkSize,
+          maxRequest: that.uploadMaxRequest || that.maxRequest || 5,
           onHashProgress: (percentage) => {
             that.hashPercentage = percentage;
           },

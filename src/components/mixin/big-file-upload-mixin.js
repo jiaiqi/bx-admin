@@ -19,8 +19,9 @@ async function uploadFile(formdata) {
 export default {
   data() {
     return {
-      // 切片大小 20M
-      chunkSize: 20 * 1024 * 1024,
+      useSplitChuck: true, //是否使用分片上传
+      limitSize: 50, // 超过多少兆开启分片上传 默认50M
+      chunkSize: 20 * 1024 * 1024, // 分片大小 默认20M
       // 上传文件列表
       uploadFileList: [],
       // 请求最大并发数
@@ -29,8 +30,31 @@ export default {
       onUploadSuccess: null,
       onHashProgress: null,
       hashPercentage: 0,//hash计算进度
-      useSplitChuck: true, //是否使用分片上传
     }
+  },
+  created() {
+    if (sessionStorage.getItem('useSplitChuck') === '否' || top?.pathConfig?.['useSplitChuck'] === '否') {
+      // 不使用useSplitChuck
+      this.useSplitChuck = false
+    } else if (sessionStorage.getItem('useSplitChuck') === '是' || top?.pathConfig?.['useSplitChuck'] === '是') {
+      // 使用分片上传
+      this.useSplitChuck = true
+    }
+    // 限制超过多少兆开启分片上传
+    if (top?.pathConfig?.['limitSize']) {
+      if (top?.pathConfig?.['limitSize'] && !isNaN(Number(top?.pathConfig?.['limitSize']))) {
+        this.limitSize = Number(top?.pathConfig?.['limitSize'])
+      }
+    }
+    // 分片大小
+    if (top?.pathConfig?.['chunkSize'] && !isNaN(Number(top?.pathConfig?.['chunkSize']))) {
+      this.chunkSize = Number(top?.pathConfig?.['chunkSize']) * 1024 * 1024
+    }
+    // 并发数
+    if (top?.pathConfig?.['maxRequest'] && !isNaN(Number(top?.pathConfig?.['maxRequest']))) {
+      this.maxRequest = Number(top?.pathConfig?.['maxRequest'])
+    }
+
   },
   methods: {
     getFileUrl(url) {
