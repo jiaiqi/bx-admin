@@ -658,7 +658,7 @@ export default {
       //     }
       //   });
       // }
-      sorted = sorted.map((item,index)=>{
+      sorted = sorted.map((item, index) => {
         item._btn_index = index;
         return item
       })
@@ -955,15 +955,15 @@ export default {
       }
       if (type && type == "isShow" && isBtnExpShow) {
         let optionsList = operateList.filter((item) => item.isValid);
-        if(btn.permission){
-          if(!btn.operate_service){
+        if (btn.permission) {
+          if (!btn.operate_service) {
             isBtnOptShow = true;
-          }else if(typeof btn.operate_service === 'string' && btn.operate_service){
+          } else if (typeof btn.operate_service === 'string' && btn.operate_service) {
             isBtnOptShow = true;
-          }else if(Array.isArray(optionsList) && optionsList.length){
+          } else if (Array.isArray(optionsList) && optionsList.length) {
             isBtnOptShow = true;
           }
-        }else{
+        } else {
           isBtnOptShow = false;
         }
         // if (
@@ -1353,8 +1353,8 @@ export default {
       } catch (err) { }
 
       // 使用后端返回的参数控制按钮显示隐藏
-      if(typeof item?._btn_index==='number'&&Array.isArray(data?._buttons)){
-        if(data._buttons[item._btn_index] === 1){
+      if (typeof item?._btn_index === 'number' && Array.isArray(data?._buttons)) {
+        if (data._buttons[item._btn_index] === 1) {
           result = true
         }
       }
@@ -1383,11 +1383,11 @@ export default {
       let isShow = [];
       if (btns.length > 0) {
         for (let item of btns) {
-          if(typeof item._btn_index==='number'&&Array.isArray(data._buttons)){
-            if(data._buttons[item._btn_index] === 1){
+          if (typeof item._btn_index === 'number' && Array.isArray(data._buttons)) {
+            if (data._buttons[item._btn_index] === 1) {
               isShow.push(item);
             }
-          }else if (item["_rowDisp"]) {
+          } else if (item["_rowDisp"]) {
             if (item["_rowDisp"][index] === 1) {
               isShow.push(item);
             }
@@ -1567,12 +1567,12 @@ export default {
         self.refresh();
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
-      }else if(type === 'pay'){
+      } else if (type === 'pay') {
         debugger
-        this.activeForm='pay';
-        let cfg=button.operate_params&&typeof button.operate_params==='string'?JSON.parse(button.operate_params):{}
-        this.moreConfig=cfg;
-        this.service_view_name=button.operate_service?button.operate_service:''
+        this.activeForm = 'pay';
+        let cfg = button.operate_params && typeof button.operate_params === 'string' ? JSON.parse(button.operate_params) : {}
+        this.moreConfig = cfg;
+        this.service_view_name = button.operate_service ? button.operate_service : ''
       } else if ("add" == type) {
         if (operate_type == "页内添加") {
           if (this.list_inner_add) {
@@ -1895,7 +1895,7 @@ export default {
           }
         }
         let sharding_biz_cols = this.gridHeader.filter((item) => item.srvcol?.sharding_biz_col === true).map((item) => item.column);
-        console.log('sharding_biz_cols:',sharding_biz_cols);
+        console.log('sharding_biz_cols:', sharding_biz_cols);
 
         if (sharding_biz_cols?.length) {
           // 分表查询条件 2025.4.1新增，传到详情页面
@@ -1907,7 +1907,7 @@ export default {
               colName: col,
               ruleType: "eq",
               value: row[col],
-            }); 
+            });
           }
           urlParams += `&operate_params=${encodeURIComponent(JSON.stringify(operate_params))}`;
         }
@@ -3133,10 +3133,7 @@ export default {
       if (e && e.length > 0) {
         let batchs = [];
         batchs = e.filter((item) => {
-          if (
-            (item.button_type === "batch_delete" ||
-              item.button_type === "batch_update" ||
-              item.button_type === "batch_approve") &&
+          if (['batch_delete', 'batch_update', 'batch_approve', 'pay'].includes(item.button_type) &&
             item.permission === true
           ) {
             return item;
