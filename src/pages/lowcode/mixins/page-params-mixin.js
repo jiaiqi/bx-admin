@@ -1,6 +1,25 @@
+/**
+ * @fileoverview 页面参数混入器 - 提供页面参数管理、路由参数处理等通用功能
+ * @author jq
+ * @version 1.0.0
+ * @since 2025
+ */
+
 import cloneDeep from 'lodash/cloneDeep'
 
+/**
+ * 页面参数混入器
+ * @mixin PageParamsMixin
+ * @description 为页面提供参数管理、路由参数处理、页面初始化参数等功能
+ */
 export default {
+  /**
+   * 组件数据
+   * @returns {Object} 组件的响应式数据
+   * @property {Object} queryOptions - 路由参数
+   * @property {Object} pageParams - 页面公共参数
+   * @property {Object} pageParamsModel - 页面公共参数模型
+   */
   data() {
     return {
       queryOptions: {}, // 路由参数
@@ -9,6 +28,10 @@ export default {
     };
   },
   computed: {
+    /**
+     * 获取页面信息
+     * @returns {Object} 页面配置信息
+     */
     pageInfo() {
       return this.pageConfig || {};
     }
@@ -19,7 +42,9 @@ export default {
   methods: {
     /**
      * 根据页面配置的请求查询页面全局参数
-     * @returns 
+     * @async
+     * @returns {Object|undefined} 查询到的页面全局参数数据，如果没有配置或查询失败则返回undefined
+     * @description 通过页面配置的服务请求获取全局参数，并更新queryOptions
      */
     async getPageInitQueryOptions() {
       // 页面请求
@@ -57,7 +82,8 @@ export default {
     },
     /**
      * 根据页面配置的接口参数初始化页面参数
-     * @returns 
+     * @returns {Object} 初始化的基础参数模型
+     * @description 获取登录用户信息和路由参数，构建基础参数模型
      */
     getInitParams() {
       // 页面前端运行固定参数
@@ -87,7 +113,9 @@ export default {
 
     /**
      * 初始化页面参数
-     * @returns 
+     * @async
+     * @returns {Promise<boolean>} 初始化完成后返回true
+     * @description 根据页面配置的参数定义初始化页面参数，支持V1和V2两种参数格式
      */
     async initPageParams() {
       let self = this;
@@ -167,8 +195,9 @@ export default {
 
     /**
      * 设置页面参数
-     * @param {*} key 
-     * @param {*} val 
+     * @param {string} key - 参数键名
+     * @param {*} val - 参数值
+     * @description 更新指定键名的页面参数值
      */
     setPageParams(key, val) {
       // 组件输入页面的参数
