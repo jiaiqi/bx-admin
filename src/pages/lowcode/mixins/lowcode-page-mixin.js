@@ -1,3 +1,10 @@
+/**
+ * @fileoverview 低代码页面混入 - 提供页面配置、组件管理、主题设置等通用功能
+ * @author jiaqi
+ * @version 1.0.0
+ * @since 2025
+ */
+
 import { mapState, mapGetters, mapActions } from "vuex";
 
 import cloneDeep from "lodash/cloneDeep";
@@ -14,13 +21,30 @@ import { formatStyleData } from "@/pages/datav/common/index.js";
 import { buildComponentsTree } from "../utils/common";
 import { pageCompCols } from "../components/property/columns";
 
+/**
+ * 低代码页面混入器
+ * @mixin LowcodePageMixin
+ * @description 为低代码页面提供通用的配置管理、组件初始化、主题设置等功能
+ */
 export default {
+  /**
+   * 向子组件提供页面配置和参数的访问方法
+   * @returns {Object} 包含获取页面配置和参数方法的对象
+   */
   provide() {
     return {
       getPageConfig: () => this.pageConfig,
       getPageParams: () => this.pageParams,
     };
   },
+  /**
+   * 组件数据
+   * @returns {Object} 组件的响应式数据
+   * @property {string|null} pageNo - 页面编号
+   * @property {Object|null} pageConfig - 页面配置对象
+   * @property {Array} components - 页面组件列表
+   * @property {string} anchorName - 锚点名称
+   */
   data() {
     return {
       pageNo: null,
@@ -32,12 +56,20 @@ export default {
   computed: {
     ...mapState("theme", ["currentTheme"]),
     ...mapGetters("theme", ["themeList", "themeVariable"]),
+    /**
+     * 计算内容区域宽度
+     * @returns {string} 格式化后的宽度值（px或%）
+     */
     contentAreaWidth() {
       let width = this.pageConfig?.content_area_width || 1400;
       return typeof width === "string" && width?.includes("%")
         ? width
         : `${parseFloat(width)}px`;
     },
+    /**
+     * 获取页面样式配置
+     * @returns {Object} 格式化后的样式对象
+     */
     setStyle() {
       let style = {};
       if (this.pageConfig?.page_style_json_data) {
@@ -45,11 +77,20 @@ export default {
       }
       return formatStyleData(style);
     },
+    /**
+     * 获取应用配置
+     * @returns {Object} 应用配置对象
+     */
     appConfig() {
       return this.pageConfig?.app_json_data || {};
     },
   },
   watch: {
+    /**
+     * 监听当前主题变化
+     * @param {string} newValue - 新主题值
+     * @param {string} oldValue - 旧主题值
+     */
     currentTheme(newValue, oldValue) {
       console.log("currentTheme", newValue);
       if (newValue !== oldValue) {
@@ -89,6 +130,10 @@ export default {
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+    /**
+     * 设置主题变量到DOM
+     * @description 将主题变量转换为CSS样式并应用到body元素
+     */
     setThemeVariable() {
       const themeVariable = Object.keys(this.themeVariable).reduce(
         (pre, cur) => {
@@ -99,6 +144,12 @@ export default {
       );
       document.body.setAttribute("style", themeVariable);
     },
+    /**
+     * 获取页面配置数据
+     * @async
+     * @description 从服务器获取页面配置，并初始化页面组件和参数
+     * @throws {Error} 当请求失败时抛出错误
+     */
     async getPageConfig() {
       console.log("initPage");
       const url = `/config/select/srvpage_cfg_page_guest_select`;
@@ -124,6 +175,12 @@ export default {
         this.$message.info("无数据！");
       }
     },
+    /**
+     * 初始化页面配置
+     * @param {Object} data - 原始页面配置数据
+     * @returns {Object} 处理后的页面配置数据
+     * @description 解析JSON字段，设置页面配置，初始化主题
+     */
     initPageConfig(data) {
       Object.keys(data).forEach((key) => {
         if (key && data[key] && key.indexOf("_json") !== -1) {
@@ -155,6 +212,12 @@ export default {
 
       return data;
     },
+    /**
+     * 初始化页面组件
+     * @async
+     * @param {Object} data - 页面配置数据
+     * @description 处理组件配置，设置组件类型和属性，构建组件树
+     */
     async initComponents(data) {
       let list = data?.page_row_json_data?.component_json
       if (this.getPageComponents && typeof this.getPageComponents === "function") {
