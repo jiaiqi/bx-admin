@@ -102,6 +102,10 @@ export default {
         // "background-image",
         "background-color",
       ];
+      if (style?.["padding"] || style?.["margin"]) {
+        delete style.width;
+        delete style.height;
+      }
       keys.forEach((key) => {
         if (style?.[key]) {
           delete style[key];

@@ -2812,10 +2812,10 @@ function init_util() {
       if (authJson) {
         let type = authJson.in_cond || ''
         let authRoles = authJson.roles || ''
-        let userRoles = uni.getStorageSync('login_user_info')?.roles
-        if (store?.state?.user?.loginUserInfo?.roles) {
-          userRoles = store?.state?.user?.loginUserInfo?.roles
-        }
+        let userRoles = sessionStorage.getItem('current_login_user')?.roles
+        // if (store?.state?.user?.loginUserInfo?.roles) {
+        //   userRoles = store?.state?.user?.loginUserInfo?.roles
+        // }
         let noneTipMsg = authJson.tip_msg || '暂无权限访问'
         if (type.indexOf('有权限时') !== -1 && authRoles) {
           authRoles = authRoles.split(',')
