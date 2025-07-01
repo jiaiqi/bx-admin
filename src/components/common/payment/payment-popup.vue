@@ -118,13 +118,13 @@ export default{
       payStep:2,
       payWays:[
         {
-          code:2,
-          label:"线上支付",
+          code:1,
+          label:"现金支付",
         },
         {
-          code:1,
-          label:"线下支付",
-        }
+          code:2,
+          label:"扫描支付",
+        },
       ],
       qrcodeInfo:{
         qrCd:null,     //二维码地址
@@ -167,25 +167,26 @@ export default{
   watch: {
     buttonInfo:{
       handler(newVal) {
+        debugger
         if(newVal && newVal.operate_service ==='srvbank_xa_pay_scode_order') {
-          this.payStep = 1;
-          this.payWays=[
-            {
-              code:1,
-              label:"线下支付",
-            }
-          ]
-        }else {
           this.payStep = 2;
           this.payWays=[
             {
               code:2,
-              label:"线上支付",
-            },
+              label:"扫码支付",
+            }
+          ]
+        }else {
+          this.payStep = 1;
+          this.payWays=[
             {
               code:1,
-              label:"线下支付",
-            }
+              label:"现金支付",
+            },
+            {
+              code:2,
+              label:"扫码支付",
+            },
           ]
         }
         if (newVal && newVal.operate_params&&typeof(newVal.operate_params) === 'string') {
@@ -336,7 +337,7 @@ export default{
       // 深拷贝 payInfo 并去除 pending_amount 字段
       let payInfoParam = JSON.parse(JSON.stringify(this.payInfo));
       delete payInfoParam.pending_amount;
-      if(this.payStep===1){
+      if(this.payStep===2){
         this.getOnlinePayQrcode(payInfoParam);
       }else {
         this.handlePayCashInfo(payInfoParam)

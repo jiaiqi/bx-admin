@@ -13,7 +13,7 @@
          :close-on-click-modal=false
          :destroy-on-close="true"
      >
-       <payment-popup @close-dialog="closeDialog" v-if="activeForm"></payment-popup>
+       <payment-popup :buttonInfo="buttonInfo"  :orders="multipleSelection" @close-dialog="closeDialog"   v-if="activeForm"></payment-popup>
      </el-dialog>
   </div>
 </template>
@@ -24,6 +24,32 @@ export default{
   name: "payIndex",
   data() {
       return {
+        buttonInfo:{
+          operate_service:"srvbank_xa_pay_scode_order",
+          operate_params:JSON.stringify({
+            condition:[
+              {
+                colName:"su_order_no",
+                value:{
+                  value_key:"su_order_no"
+                }
+              }
+            ]
+          })
+        },
+        multipleSelection:[
+          {
+            "total_fee": 0.01,
+            "item_name": "茅台",
+            "su_order_no": "MT1002"
+          },
+          {
+            "total_fee": 0.01,
+            "item_name": "西风六年",
+            "su_order_no": "XF1003"
+          }
+
+        ],
         activeForm:false,
       }
   },
