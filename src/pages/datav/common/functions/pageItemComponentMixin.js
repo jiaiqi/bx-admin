@@ -181,7 +181,6 @@ export default {
       if (req.hasOwnProperty('condition') && req.condition.length > 0) {
         for (let cond of req.condition) {
           let condModel = this.bxDeepClone(cond)
-
           if (cond && condModel.value && condModel.value.indexOf('${') !== -1 && condModel.value.indexOf('}') !== -
             1 && params) {
             if (this.renderStr(condModel.value, globalParams)&&this.renderStr(condModel.value, globalParams).indexOf('[object')==-1) {

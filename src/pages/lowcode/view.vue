@@ -9,6 +9,9 @@
       v-bind="item"
       :content-width="contentAreaWidth"
       :query-options="queryOptions"
+      :page-params-model="pageParamsModel"
+      :page-no="pageNo"
+      :page-config="pageConfig"
       :isPreview="true"
     ></lc-view>
   </div>
@@ -198,7 +201,6 @@ export default {
     //       themeList: data.app_json_data.theme_list || [],
     //     });
     //   }
-
     //   return data;
     // },
     // initComponents(data) {
@@ -240,7 +242,6 @@ export default {
     //           delete item.data[key];
     //         }
     //       });
-
     //       return item;
     //     }
     //   );

@@ -223,8 +223,7 @@ export default {
         this.cellData = mock_srv_data_json.map((item) => item);
       } else if (req.serviceName) {
         const condition = req.condition;
-        // let res = await this.select('select', req.serviceName, req, req.mapp)
-        let res = await this.select(
+        const res = await this.select(
           req.serviceName,
           condition,
           null,

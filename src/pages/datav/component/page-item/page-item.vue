@@ -183,6 +183,10 @@
       v-else-if="pageItemData.com_type === 'cardGroup'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-no="pageNo"
+      :page-config="pageConfig"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></card-group>
     <grid-card
       :class="{ mobile: screenType === 'mobile' }"

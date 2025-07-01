@@ -160,14 +160,6 @@ export default {
             } else {
               param.value = param.default_val;
             }
-            // for (let key in self.urlSearchParams) {
-            // 	if (key == param.para_name && self.urlSearchParams[key]) {
-            // 		param.value = self.urlSearchParams[key]
-            // 	}else{
-            // 		param.value = param.default_val
-            // 	}
-            // }
-
             self.$set(self.pageParams, keyName, param);
           }
           self.$set(self, "pageParamsModel", self.bxDeepClone(self.pageParams));

@@ -3,10 +3,9 @@ import cloneDeep from 'lodash/cloneDeep'
 export default {
   data() {
     return {
-      queryOptions: {},
-      urlSearchParams: {},
-      pageParams: {},
-      pageParamsModel: {},
+      queryOptions: {}, // 路由参数
+      pageParams: {}, // 页面公共参数
+      pageParamsModel: {}, // 页面公共参数
     };
   },
   computed: {
@@ -16,7 +15,6 @@ export default {
   },
   created() {
     this.queryOptions = this.$route.query
-    this.urlSearchParams = this.$route.query || {}
   },
   methods: {
     /**
@@ -26,9 +24,9 @@ export default {
     async getPageInitQueryOptions() {
       // 页面请求
       if (this.pageInfo.cols_map_json_data && this.pageInfo.srv_req_json_data) {
-        const urlSearchParams = this.urlSearchParams || {};
+        const queryOptions = this.queryOptions || {};
         const params = {
-          ...urlSearchParams,
+          ...queryOptions,
         };
         const req = JSON.parse(
           this.renderStr(
@@ -75,12 +73,12 @@ export default {
           loginUserInfo.otherTenantInfos.length > 0, // 被认证，认证用户
       };
       if (
-        this.urlSearchParams &&
-        Object.keys(this.urlSearchParams).length > 0
+        this.queryOptions &&
+        Object.keys(this.queryOptions).length > 0
       ) {
-        Object.keys(this.urlSearchParams).forEach((key) => {
+        Object.keys(this.queryOptions).forEach((key) => {
           basicParamsModel[key] = {
-            value: this.urlSearchParams[key],
+            value: this.queryOptions[key],
           };
         });
       }
@@ -103,8 +101,8 @@ export default {
         console.log("new Promise( paraJson", paraJson);
         self.pageParams = {};
         if (
-          (!self.urlSearchParams ||
-            Object.keys(self.urlSearchParams).length === 0) &&
+          (!self.queryOptions ||
+            Object.keys(self.queryOptions).length === 0) &&
           Array.isArray(paraJson) &&
           paraJson.length > 0
         ) {
@@ -113,11 +111,11 @@ export default {
           });
           for (let param of paraJson) {
             let keyName = param.para_name || param.para;
-            let urlParamsKeys = self.urlSearchParams
-              ? Object.keys(self.urlSearchParams)
+            let urlParamsKeys = self.queryOptions
+              ? Object.keys(self.queryOptions)
               : [];
             if (urlParamsKeys.indexOf(keyName) !== -1) {
-              param.value = self.urlSearchParams[keyName];
+              param.value = self.queryOptions[keyName];
             } else {
               param.value = param.default_val;
             }
@@ -127,14 +125,14 @@ export default {
           self.$set(self, "pageParamsModel", self.bxDeepClone(self.pageParams));
         } else if (Array.isArray(paraJson) && paraJson && paraJson.length > 0) {
           console.log("-- page paraJson  init SUCCESS --");
-          console.log(paraJson, self.urlSearchParams);
+          console.log(paraJson, self.queryOptions);
           for (let param of paraJson) {
             let keyName = param.para_name || param.para;
-            let urlParamsKeys = self.urlSearchParams
-              ? Object.keys(self.urlSearchParams)
+            let urlParamsKeys = self.queryOptions
+              ? Object.keys(self.queryOptions)
               : [];
             if (urlParamsKeys.indexOf(keyName) !== -1) {
-              param.value = self.urlSearchParams[keyName];
+              param.value = self.queryOptions[keyName];
             } else {
               param.value = param.default_val;
             }
@@ -146,9 +144,9 @@ export default {
           console.log("-- page paraJson V2  init SUCCESS --");
           let Model = {};
           for (let param of paraJsonV2) {
-            for (let key in self.urlSearchParams) {
-              if (key == param.para && self.urlSearchParams[key]) {
-                param["value"] = self.urlSearchParams[key];
+            for (let key in self.queryOptions) {
+              if (key == param.para && self.queryOptions[key]) {
+                param["value"] = self.queryOptions[key];
               } else {
                 param["value"] = param.default_val || "";
               }

@@ -35,6 +35,9 @@
     v-bind="props"
     :page-item="props.data"
     :query-options="queryOptions"
+    :page-params-model="pageParamsModel"
+    :page-no="pageNo"
+    :page-config="pageConfig"
     :content-width="contentWidth"
     @click="onTap"
     :currentId="currentId"
@@ -67,6 +70,9 @@
         :hidden-component-visible="hiddenComponentVisible"
         :in-edit="inEdit"
         :query-options="queryOptions"
+        :page-params-model="pageParamsModel"
+        :page-no="pageNo"
+        :page-config="pageConfig"
         @click="onTap"
         @add="addComponent"
         @delete="deleteComponent"
@@ -170,12 +176,28 @@ export default {
       type: Boolean,
       default: false,
     },
-    queryOptions:{
-      type:Object,
-      default:()=>{
-        return {}
-      }
-    }
+    pageNo: {
+      type: String,
+      default: "",
+    },
+    pageConfig: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
+    queryOptions: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
+    pageParamsModel: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
   },
   computed: {
     props() {

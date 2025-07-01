@@ -454,9 +454,6 @@ export default {
       let map = this.setComColMap || {};
       let type = item.parts_type;
       let key = item.variable || null;
-      if (key === "online") {
-        debugger;
-      }
       let val = item.parts_text;
       switch (type) {
         case "iconImg":
@@ -923,7 +920,6 @@ export default {
         }
         let number = Number(this.getPartModelData);
         if (isNaN(number)) {
-          debugger;
           number = 0;
         }
         if (ele) {

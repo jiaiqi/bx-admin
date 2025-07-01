@@ -5,6 +5,9 @@
         "pageParamsModel":{
           type: Object
         },
+        "queryOptions":{
+          type: Object
+        },
         "pageNo":{
             type: String
         }

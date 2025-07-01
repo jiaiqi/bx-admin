@@ -18,6 +18,7 @@ export default {
   provide() {
     return {
       getPageConfig: () => this.pageConfig,
+      getPageParams: () => this.pageParams,
     };
   },
   data() {
@@ -116,6 +117,7 @@ export default {
       if (ok) {
         let newData = this.initPageConfig(data);
         this.initComponents(newData);
+        this.initPageParams()
       } else if (msg) {
         this.$message.error(msg);
       } else {
