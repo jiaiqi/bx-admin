@@ -527,7 +527,7 @@ export default {
     isVerticalScroll() {
       const displayLimit = this.listConfig.data_disp_limit || 5;
       return (
-        (this.listConfig.animation_type === "纵向滚动" || this.carousel) &&
+        this.listConfig.animation_type === "纵向滚动" &&
         this.tableData.length > displayLimit
       );
     },
@@ -795,32 +795,7 @@ export default {
       const { cellsLayout, data } = e;
       if (data && cellsLayout?.jump_json) {
         const jumpJson = cellsLayout.jump_json;
-        if (jumpJson.click_type === "跳转") {
-          if (jumpJson.tmpl_page_json?.file_path) {
-            let pagePath = jumpJson.tmpl_page_json.file_path;
-            if (jumpJson.dest_page_no) {
-              pagePath = pagePath.replace(":pageNo", jumpJson.dest_page_no);
-            }
-            if (jumpJson.cols_map_json?.cols_map_detail_json?.length) {
-              const mapJson = jumpJson.cols_map_json?.cols_map_detail_json;
-              mapJson.forEach((item) => {
-                if (
-                  item.to_type === "URL" &&
-                  ["当前数据", "业务", "模型"].includes(item.from_type) &&
-                  data?.[item.col_from]
-                ) {
-                  pagePath?.includes("?")
-                    ? (pagePath += `&${item.col_to}=${data[item.col_from]}`)
-                    : (pagePath += `?${item.col_to}=${data[item.col_from]}`);
-                  // pagePath += `&${item.col_to}=${data[item.col_from]}`;
-                }
-              });
-            }
-            if (pagePath) {
-              window.open(pagePath);
-            }
-          }
-        }
+        return this.jumpAction(jumpJson, data);
       }
     },
     buildRequestParams(e) {
