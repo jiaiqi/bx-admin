@@ -1528,6 +1528,9 @@ function init_util() {
   Vue.prototype.evalBxExpr = function (expr, data, vm, defaultValue) {
     try {
       let user = top.user;
+      if (expr === 'new Date()') {
+        return dayjs().format('YYYY-MM-DD HH:mm:ss')
+      }
       return eval(expr);
     } catch (e) {
       return defaultValue || null;

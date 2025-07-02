@@ -184,7 +184,7 @@
               :disabled="getDisabled"
               :placeholder="field.info.placeholder"
               :picker-options="pickerOptions"
-              value-format="yyyy-MM-dd"
+              :value-format="field.info.format ? field.info.format : 'yyyy-MM-dd'"
               @change="$emit('field-value-changed', field.info.name, field)"
             >
             </el-date-picker>
