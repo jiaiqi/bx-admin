@@ -847,6 +847,12 @@ routes.push({ //网站
   path: "/login",
   name: "Login",
   component: () => import("@/pages/login/login.vue")
+},
+{
+  // 会议室预约
+  path:"/mettingRoomBooking",
+  name:"MettingRoomBooking",
+  component: () => import("@/pages/mettingRoomBooking/mettingRoomBooking.vue")
 })
 
 Vue.use(VueRouter);
