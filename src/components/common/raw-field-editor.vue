@@ -181,10 +181,10 @@
                   ? 'yyyy 第 WW 周'
                   : 'yyyy 年 MM 月 dd 日'
               "
+              :value-format="field.info.format ? field.info.format : 'yyyy-MM-dd'"
               :disabled="getDisabled"
               :placeholder="field.info.placeholder"
               :picker-options="pickerOptions"
-              :value-format="field.info.format ? field.info.format : 'yyyy-MM-dd'"
               @change="$emit('field-value-changed', field.info.name, field)"
             >
             </el-date-picker>
@@ -198,7 +198,7 @@
               type="datetime"
               clearable
               :format="field.info.format ? field.info.format : null"
-              :value-format="field.info.format ? field.info.format : null"
+              :value-format="field.info.format ? field.info.format : 'yyyy-MM-dd HH:mm:ss'"
               :disabled="getDisabled"
               :placeholder="
                 field.model !== '******' ? field.info.placeholder : field.model
@@ -247,6 +247,8 @@
             <el-date-picker
               v-else-if="field.info.editor === 'date-range'"
               v-model="field.model"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
               type="daterange"
               range-separator="至"
               start-placeholder="开始时间"
@@ -311,6 +313,8 @@
               v-else-if="field.info.editor === 'date-time-range'"
               v-model="field.model"
               type="datetimerange"
+              format="yyyy-MM-dd HH:mm:ss"
+              value-format="yyyy-MM-dd HH:mm:ss"
               range-separator="至"
               start-placeholder="开始时间"
               end-placeholder="结束时间"
