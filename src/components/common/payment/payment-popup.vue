@@ -167,7 +167,6 @@ export default{
   watch: {
     buttonInfo:{
       handler(newVal) {
-        debugger
         if(newVal && newVal.operate_service ==='srvbank_xa_pay_scode_order') {
           this.payStep = 2;
           this.payWays=[
@@ -226,7 +225,7 @@ export default{
       }
      this.payTimer=setInterval(()=>{
        that.handelStatusInfo()
-     },200)
+     },500)
     },
     //获取二维码支付后状态信息
     handelStatusInfo(status){

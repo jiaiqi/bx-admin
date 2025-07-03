@@ -83,8 +83,7 @@ export default {
        if(res.data.state!=='SUCCESS') return;
        let columns=res.data.mdata
        let rows=res.data.data[0]
-      let ls= this.handleFilterData(columns,rows)
-      this.infoDetails=ls
+      this.infoDetails=this.handleFilterData(columns,rows)
    },
 
     handleFilterData(cl,row){

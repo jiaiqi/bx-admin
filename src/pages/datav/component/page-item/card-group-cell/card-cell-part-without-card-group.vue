@@ -4,6 +4,7 @@
     :cell-item-data="cellData"
     :query-options="queryOptions"
     @on-click-cell="onClickCell"
+    :pageItem="pageItem"
   ></card-cell-part>
 </template>
 

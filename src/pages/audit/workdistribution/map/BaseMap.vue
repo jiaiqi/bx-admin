@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="hd_bs">
-        <el-button style="width:75%" size="mini" type="primary" plain @click="handleSubmitStation">确认修改</el-button>
+        <el-button style="width:75%" size="mini" :disabled="!isEdit" type="primary" plain @click="handleSubmitStation">确认修改</el-button>
       </div>
     </div>
     <StationList :stVisible.sync="listVisible" @getChoseStations="handleFilterStation"/>
@@ -64,6 +64,7 @@ const drivingPoint = ref([])
 const addPass=ref({})
 const addStation=ref({})
 const isFirstSave=ref(false);
+const isEdit=ref(false);
 const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
@@ -387,6 +388,7 @@ const getPointByOriginCenter=()=>{
   orderUtil.getOriginCenterDetails(cadn).then(res=>{
     if(res.data.state !== 'SUCCESS') return;
     if(res.data.data&&res.data.data.length>0){
+      handleCtrlSubmit(true)   //所有从远端中心回来的数据都是可以直接保存的
       filterPointList(res.data.data,'ori')
     }
   }).catch(err => {})
@@ -406,14 +408,17 @@ const getPointByLocation=()=>{
     if(res.data.state !== 'SUCCESS') return;
     if(res.data.data&&res.data.data.length>0){
       //本地存储有数据
+      handleCtrlSubmit(false)  //所有从本地回来的数据都是默认是不可以二次直接点击保存的
       filterPointList(res.data.data,'loca')
     }else {
       getPointByOriginCenter()
     }
   }).catch(err => {})
 }
-
-
+ //控制确认修改按是否可以点击
+  const handleCtrlSubmit=(flag)=>{
+    isEdit.value=flag;
+ }
 //从默认列表删除该信息
 const handleDelete = (item) => {
   let tep = []
@@ -425,7 +430,13 @@ const handleDelete = (item) => {
       tep.push(d)
     }
   })
-
+  let selections= drivingPoint.value.filter(d =>{ return d.select})
+   if(selections.length>0&&selections.length===drivingPoint.value.length){
+     handleCtrlSubmit(false)
+   }else {
+     //删除动作切换按钮状态
+     handleCtrlSubmit(true)
+   }
   drawMapMarkersAndLabel(handleMap.value, tep);
   handleSpliceWayPoints()
 }
@@ -473,6 +484,8 @@ const handleSetInfo=(type,item)=>{
  */
 const handleFilterStation = (list) => {
   if (!list || list.length === 0) return;
+  //删除动作切换按钮状态
+  handleCtrlSubmit(true)
   // 构建新的点位配置
   const pointConfig = {
     icon: require(`@/assets/mapIcon/point_ico.png`),

@@ -85,11 +85,11 @@ const inForm = () =>
 // Vue.use(Router);
 let routes = [
    //测试支付使用
-  // {
-  //   path: "/payment",
-  //   name: "payment",
-  //   component: () => import("@/components/common/payment/payIndex.vue"),
-  // },
+  {
+    path: "/payment",
+    name: "payment",
+    component: () => import("@/components/common/payment/payIndex.vue"),
+  },
   {
     path: "/register",
     name: "register",
