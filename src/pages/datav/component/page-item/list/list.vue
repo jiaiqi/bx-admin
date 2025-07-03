@@ -678,6 +678,15 @@ export default {
     },
     async getListData(req) {
       const url = `/${req.mapp}/select/${req.serviceName}`;
+      if (Array.isArray(req.condition) && req.condition.length) {
+        const data = Object.keys(this.pageParamsModel).reduce((res, key) => {
+          res[key] = this.pageParamsModel[key]?.value;
+          return res;
+        }, {});
+        req.condition.forEach((item) => {
+          item.value = this.renderStr(item.value, data);
+        });
+      }
       const res = await $http.post(url, req);
       if (res.data.state === "SUCCESS") {
         this.tableData = res.data.data;
