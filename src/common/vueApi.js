@@ -25,14 +25,14 @@ import { getCurrentInstance } from 'vue'
  * ```
  */
 export const useStore = () => {
-    const vm = getCurrentInstance()
-    if (!vm) {
-        throw new Error('useStore() must be called in setup()')
-    }
-    if (!vm.proxy.$store) {
-        console.warn('useStore(): $store is not available')
-    }
-    return vm.proxy.$store
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useStore() must be called in setup()')
+  }
+  if (!vm.proxy.$store) {
+    console.warn('useStore(): $store is not available')
+  }
+  return vm.proxy.$store
 }
 
 /**
@@ -53,14 +53,14 @@ export const useStore = () => {
  * ```
  */
 export const useRouter = () => {
-    const vm = getCurrentInstance()
-    if (!vm) {
-        throw new Error('useRouter() must be called in setup()')
-    }
-    if (!vm.proxy.$router) {
-        console.warn('useRouter(): $router is not available')
-    }
-    return vm.proxy.$router
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useRouter() must be called in setup()')
+  }
+  if (!vm.proxy.$router) {
+    console.warn('useRouter(): $router is not available')
+  }
+  return vm.proxy.$router
 }
 
 /**
@@ -81,14 +81,14 @@ export const useRouter = () => {
  * ```
  */
 export const useRoute = () => {
-    const vm = getCurrentInstance()
-    if (!vm) {
-        throw new Error('useRoute() must be called in setup()')
-    }
-    if (!vm.proxy.$route) {
-        console.warn('useRoute(): $route is not available')
-    }
-    return vm.proxy.$route
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useRoute() must be called in setup()')
+  }
+  if (!vm.proxy.$route) {
+    console.warn('useRoute(): $route is not available')
+  }
+  return vm.proxy.$route
 }
 
 /**
@@ -109,14 +109,14 @@ export const useRoute = () => {
  * ```
  */
 export const useHttp = () => {
-    const vm = getCurrentInstance()
-    if (!vm) {
-        throw new Error('useHttp() must be called in setup()')
-    }
-    if (!vm.proxy.$http) {
-        console.warn('useHttp(): $http is not available')
-    }
-    return vm.proxy.$http
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useHttp() must be called in setup()')
+  }
+  if (!vm.proxy.$http) {
+    console.warn('useHttp(): $http is not available')
+  }
+  return vm.proxy.$http
 }
 
 /**
@@ -137,25 +137,42 @@ export const useHttp = () => {
  * ```
  */
 export const useMessage = () => {
-    const vm = getCurrentInstance()
-    if (!vm) {
-        throw new Error('useMessage() must be called in setup()')
-    }
-    if (!vm.proxy.$message) {
-        console.warn('useMessage(): $message is not available')
-    }
-    return vm.proxy.$message
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useMessage() must be called in setup()')
+  }
+  if (!vm.proxy.$message) {
+    console.warn('useMessage(): $message is not available')
+  }
+  return vm.proxy.$message
 }
 
+
+export const useMessageBox = () => {
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useMessageBox() must be called in setup()')
+  }
+  if (!vm.proxy.$msgbox) {
+    console.warn('useMessageBox(): $msgbox is not available')
+  }
+  return vm.proxy.$msgbox
+}
+
+
+
 export const useUtils = () => {
-    const vm = getCurrentInstance()
-    if (!vm) {
-        throw new Error('useUtils() must be called in setup()')
+  const vm = getCurrentInstance()
+  if (!vm) {
+    throw new Error('useUtils() must be called in setup()')
+  }
+  const utilKeys = ['renderStr', 'addTabByUrl']
+  const utils = {}
+  utilKeys.forEach(key => {
+    if (!vm.proxy[key]) {
+      console.warn(`useUtils(): ${key} is not available`)
     }
-    if (!vm.proxy.renderStr) {
-        console.warn('useUtils(): renderStr is not available')
-    }
-    return {
-      renderStr:vm.proxy.renderStr
-    }
+    utils[key] = vm?.proxy?.[key]
+  })
+  return utils
 }

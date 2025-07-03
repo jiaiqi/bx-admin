@@ -20,9 +20,26 @@
             v-model="searchKey"
             placeholder="输入关键词搜索"
             class="search-input"
+            clearable
           />
-          <el-button type="primary" class="search-btn">搜索</el-button>
+          <el-button type="primary" class="search-btn" @click="fetchRoomList"
+            >搜索</el-button
+          >
         </div>
+      </div>
+      <div
+        class="date-header-center"
+        v-if="selectedTime && selectedTime.start_time"
+      >
+        当前选择的是：{{ selectedDate }}
+        <span class="text-blue">
+          {{ selectedTime.rsvo_name }}
+        </span>
+        时间段：
+        <span>
+          {{ formatTime(selectedTime.start_time) }} -
+          {{ formatTime(selectedTime.end_time) }}
+        </span>
       </div>
       <div class="date-header-right">
         <el-button class="history-btn" @click="navigateToHistory">
@@ -43,46 +60,131 @@
     <!-- 会议室时间表格 -->
     <div class="calendar_container">
       <div class="room-schedule">
-        <div v-for="item in roomList" :key="item.rsvo_no" class="room-row">
-          <!-- 会议室信息 -->
-          <div class="room-info">
-            <div class="room-header">
-              <div class="room-header-left">
-                <div class="room-icon">📍</div>
-                <div class="room-details">
-                  <div class="room-name">{{ item.rsvo_name || "" }}</div>
-                  <div class="room-location">{{ item.address || "" }}</div>
+        <template v-for="item in roomList">
+          <div class="room-row" v-if="item.timeList && item.timeList.length">
+            <!-- 会议室信息 -->
+            <div class="room-info">
+              <div class="room-header">
+                <div class="room-header-left">
+                  <div class="room-icon">
+                    <!-- 📍 -->
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                    >
+                      <g fill="none" fill-rule="evenodd">
+                        <path
+                          d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"
+                        />
+                        <path
+                          fill="currentColor"
+                          d="M16 3.77v16.46a1.5 1.5 0 0 1-1.747 1.479l-8.582-1.43A2 2 0 0 1 4 18.306V5.694a2 2 0 0 1 1.671-1.973l8.582-1.43A1.5 1.5 0 0 1 16 3.771ZM18 5a2 2 0 0 1 1.995 1.85L20 7v10a2 2 0 0 1-1.85 1.995L18 19h-1V5zm-6.5 5.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0-3"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                  <div class="room-details">
+                    <div class="room-name">{{ item.rsvo_name || "" }}</div>
+                    <!-- <div class="room-location">{{ item.address || "" }}</div> -->
+                  </div>
+                </div>
+                <div class="room-intro" v-if="item.rsvo_intro">
+                  <el-popover placement="right" width="400" trigger="hover">
+                    <div
+                      v-if="item.rsvo_intro"
+                      v-html="item.rsvo_intro"
+                      style="max-height: 300px; overflow-y: auto"
+                    ></div>
+                    <span slot="reference" class="cursor-pointer"
+                      >介绍<i
+                        class="el-icon-info ml-1"
+                        style="color: oklch(79.5% 0.184 86.047)"
+                      ></i
+                    ></span>
+                  </el-popover>
+                  <!-- <span>信息：</span>
+                <div class="capacity-number">{{ item.max || "" }}</div> -->
                 </div>
               </div>
-              <div class="room-capacity">
-                <span>可容纳人数：</span>
-                <div class="capacity-number">{{ item.max || "" }}</div>
-              </div>
             </div>
-          </div>
 
-          <!-- 时间段网格 -->
-          <div class="time-grid">
-            <div
-              v-for="time in timeSlots"
-              :key="time.slot"
-              class="time-slot"
-              :class="{
-                occupied: isTimeOccupied(item.rsvo_no, time.slot),
-                available: !isTimeOccupied(item.rsvo_no, time.slot),
-                selected: isTimeSelected(item.rsvo_no, time.slot),
-              }"
-              @click="selectTimeSlot(item.rsvo_no, time)"
-            >
-              <div class="time-label">{{ time.label }}</div>
-              <div class="status-label">
-                {{
-                  isTimeOccupied(item.rsvo_no, time.slot) ? "已预约" : "空闲"
-                }}
+            <!-- 时间段网格 -->
+            <div class="time-grid" v-if="item.timeList">
+              <div
+                v-for="time in item.timeList"
+                :key="time.slot"
+                class="time-slot"
+                :class="{
+                  occupied: isTimeOccupied(time),
+                  available: !isTimeOccupied(time),
+                  selected: isTimeSelected(time),
+                }"
+                @click="selectTimeSlot(time)"
+              >
+                <div class="time-label">{{ time.label }}</div>
+                <div class="status-label">
+                  {{ isTimeOccupied(time) ? "已预约" : "空闲" }}
+                </div>
               </div>
             </div>
           </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- 提交相关 -->
+    <div class="submit-container">
+      <div class="submit-left">
+        <div class="form-item">
+          <div class="form-label">
+            <span class="text-red">*</span>
+            联系人
+          </div>
+          <el-input
+            v-model="contacts"
+            placeholder="联系人"
+            class="search-input"
+            clearable
+          />
         </div>
+        <div class="form-item">
+          <div class="form-label">
+            <span class="text-red">*</span>
+            联系方式
+          </div>
+          <el-input
+            v-model="mobilephone"
+            placeholder="联系方式"
+            class="search-input"
+            clearable
+          />
+        </div>
+        <div class="form-item">
+          <div class="form-label">人数</div>
+          <el-input
+            v-model="count"
+            placeholder="人数"
+            class="search-input"
+            clearable
+            type="number"
+          />
+        </div>
+        <div class="form-item">
+          <div class="form-label">备注</div>
+          <el-input
+            v-model="remark"
+            placeholder="备注"
+            class="search-input"
+            clearable
+          />
+        </div>
+      </div>
+      <div class="submit-right">
+        <el-button type="primary" @click="submitReservation">
+          立即预约
+        </el-button>
       </div>
     </div>
   </div>
@@ -90,18 +192,24 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { ElMessage, ElMessageBox } from "element-ui";
-import { useMessage,useHttp } from "@/common/vueApi";
+import { useMessage, useMessageBox, useHttp, useUtils } from "@/common/vueApi";
 import dayjs from "dayjs";
 
-const message = useMessage();
-const $http = useHttp()
+const ElMessage = useMessage();
+const ElMessageBox = useMessageBox();
+const $http = useHttp();
+const { addTabByUrl } = useUtils();
+
 // 响应式数据
 const searchKey = ref("");
+const contacts = ref("");
+const mobilephone = ref("");
+const count = ref(1); // 人数
+const remark = ref("");
+
 const roomList = ref([]);
 const selectedDate = ref(dayjs().format("YYYY-MM-DD"));
 const selectedTime = ref(null);
-const reservationData = ref({});
 
 // 时间段配置
 const timeSlots = ref([
@@ -127,34 +235,33 @@ const handleDateChange = (date) => {
   fetchRoomList();
 };
 
-const selectTimeSlot = (roomNo, time) => {
-  if (isTimeOccupied(roomNo, time.slot)) {
+const selectTimeSlot = (item) => {
+  if (isTimeOccupied(item)) {
     return; // 已被预约的时间段不能选择
   }
-
   selectedTime.value = {
-    roomNo,
-    timeSlot: time.slot,
-    date: selectedDate.value,
+    rsvt_no: item.rsvt_no, // 预约时段编码
+    rsvo_no: item.rsvo_no, // 预约场所编码
+    ...item,
   };
 };
 
-const isTimeOccupied = (roomNo, timeSlot) => {
-  const key = `${roomNo}_${timeSlot}`;
-  return reservationData.value[key] || false;
+const isTimeOccupied = (item = {}) => {
+  return item?.cnty && item.cnty > 0;
 };
 
-const isTimeSelected = (roomNo, timeSlot) => {
+const isTimeSelected = (item = {}) => {
   return (
     selectedTime.value &&
-    selectedTime.value.roomNo === roomNo &&
-    selectedTime.value.timeSlot === timeSlot
+    selectedTime.value.rsvo_no === item.rsvo_no &&
+    selectedTime.value.rsvt_no === item.rsvt_no
   );
 };
 
 const navigateToHistory = () => {
-  // 实际项目中替换为路由导航
-  console.log("导航到历史记录页面");
+  // 导航到历史记录页面
+  const url = `/vpages/index.html#/list/srvreserve_record_select?menuapp=park`;
+  addTabByUrl(url, "预约记录");
 };
 
 const formatTime = (timeStr) => {
@@ -163,8 +270,6 @@ const formatTime = (timeStr) => {
 
 const fetchRoomList = async () => {
   try {
-    // 模拟 API 调用
-    // const res = await mockApiCall();
     const url = `/park/select/srvreserve_obj_select`;
     const req = {
       serviceName: "srvreserve_obj_select",
@@ -176,105 +281,74 @@ const fetchRoomList = async () => {
       },
       query_source: "list_page",
     };
+    if (searchKey.value) {
+      req.condition.push({
+        colName: "rsvo_name",
+        ruleType: "like",
+        value: searchKey.value,
+      });
+    }
+    if (selectedDate.value) {
+      // req.condition.push({
+      //   colName: "datey",
+      //   ruleType: "eq",
+      //   value: selectedDate.value,
+      // })
+    }
     const res = await $http.post(url, req);
     const list = [];
-    debugger
     if (res?.data?.state === "SUCCESS") {
       console.log(res.data.data);
       if (Array.isArray(res.data.data)) {
         for (var index = 0; index < res.data.data.length; index++) {
           const item = res.data.data[index];
-          // if (item.rsvo_no) {
-          //   item.timeList = await this.getTime(item.rsvo_no);
-          //   if (!item.timeList.length) {
-          //     item.timeList = testData.map((data) => {
-          //       data.rsvo_no = item.rsvo_no;
-          //       return data;
-          //     });
-          //   }
-          // }
+          item.timeList = await getTime(item.rsvo_no);
           list.push(item);
         }
       }
     }
 
     roomList.value = list;
-    // 初始化预约数据
-    initReservationData();
   } catch (error) {
-    message.error("获取会议室列表失败: " + error.message);
+    ElMessage.error("获取会议室列表失败: " + error.message);
   }
 };
 
-const initReservationData = () => {
-  // 模拟一些已预约的时间段
-  reservationData.value = {
-    // 会议室001
-    "RSVO250618140010_09:00": true,
-    "RSVO250618140010_12:00": true,
-    "RSVO250618140010_14:00": true,
-    "RSVO250618140010_14:30": true,
-    "RSVO250618140010_15:00": true,
-    "RSVO250618140010_16:30": true,
-    "RSVO250618140010_17:00": true,
-
-    // 会议室002
-    "RSVO250618140011_09:00": true,
-    "RSVO250618140011_12:00": true,
-    "RSVO250618140011_14:00": true,
-    "RSVO250618140011_14:30": true,
-    "RSVO250618140011_15:00": true,
-    "RSVO250618140011_16:30": true,
-    "RSVO250618140011_17:00": true,
-
-    // 会议室003
-    "RSVO250618140012_09:00": true,
-    "RSVO250618140012_10:00": true,
-    "RSVO250618140012_11:00": true,
-    "RSVO250618140012_14:00": true,
-    "RSVO250618140012_15:30": true,
-    "RSVO250618140012_16:00": true,
-
-    // 会议室004
-    "RSVO250618140013_09:30": true,
-    "RSVO250618140013_10:30": true,
-    "RSVO250618140013_11:30": true,
-    "RSVO250618140013_14:30": true,
-    "RSVO250618140013_15:00": true,
-    "RSVO250618140013_17:00": true,
-
-    // 会议室005
-    "RSVO250618140014_09:00": true,
-    "RSVO250618140014_10:30": true,
-    "RSVO250618140014_12:00": true,
-    "RSVO250618140014_15:30": true,
-    "RSVO250618140014_16:30": true,
-
-    // 会议室006
-    "RSVO250618140015_09:30": true,
-    "RSVO250618140015_11:00": true,
-    "RSVO250618140015_14:00": true,
-    "RSVO250618140015_16:00": true,
-    "RSVO250618140015_17:00": true,
-
-    // 会议室007
-    "RSVO250618140016_10:00": true,
-    "RSVO250618140016_11:30": true,
-    "RSVO250618140016_12:00": true,
-    "RSVO250618140016_14:30": true,
-    "RSVO250618140016_15:00": true,
-    "RSVO250618140016_16:30": true,
-
-    // 会议室008
-    "RSVO250618140017_09:00": true,
-    "RSVO250618140017_10:00": true,
-    "RSVO250618140017_11:00": true,
-    "RSVO250618140017_12:00": true,
-    "RSVO250618140017_15:30": true,
-    "RSVO250618140017_16:00": true,
-    "RSVO250618140017_17:00": true,
+async function getTime(rsvo_no) {
+  const url = `/park/select/srvreserve_set_time_div_user_obj_date_select`;
+  const req = {
+    serviceName: "srvreserve_set_time_div_user_obj_date_select",
+    colNames: ["*"],
+    condition: [
+      {
+        colName: "rsvo_no",
+        ruleType: "eq",
+        value: rsvo_no,
+      },
+      {
+        colName: "datey",
+        ruleType: "eq",
+        value: selectedDate.value || dayjs().format("YYYY-MM-DD"),
+      },
+    ],
+    page: {
+      pageNo: 1,
+      rownumber: 100,
+    },
   };
-};
+  const res = await $http.post(url, req);
+  if (res?.data?.state === "SUCCESS") {
+    return res.data.data.map((item) => {
+      item.label = formatTime(item.start_time);
+      return item;
+    });
+  } else {
+    if (res.data.resultMessage) {
+      ElMessage.error(res.data.resultMessage);
+    }
+    return [];
+  }
+}
 
 const submitReservation = async () => {
   if (!selectedTime.value) {
@@ -283,16 +357,44 @@ const submitReservation = async () => {
   }
 
   try {
-    // 模拟预约提交
-    const result = await mockReservationApi(selectedTime.value);
-    ElMessageBox.confirm("预约成功!", "提示", {
-      confirmButtonText: "确定",
-      type: "success",
-      showCancelButton: false,
-    }).then(() => {
-      // 实际项目中替换为路由导航
-      console.log("导航到结果页面", result);
-    });
+    // 预约提交
+    const url = `/park/operate/srvreserve_record_add`;
+    const data = selectedTime.value;
+    if (!data) {
+      ElMessage.warning("请选择预约时间段");
+      return;
+    }
+    const req = [
+      {
+        serviceName: "srvreserve_record_add",
+        condition: [],
+        data: [
+          {
+            rsvo_no: data.rsvo_no,
+            rsvr_date: selectedDate.value || data.datey,
+            start_time: data.start_time,
+            count: 1, // 人数
+            rsvp_no: data.rsvp_no,
+            rsvt_no: data.rsvt_no,
+            contacts: "aaa",
+            mobilephone: "123123",
+            remark: "", //备注
+          },
+        ],
+      },
+    ];
+    const res = await $http.post(url, req);
+    if (res.data?.state === "SUCCESS") {
+      ElMessageBox.confirm("预约成功!", "提示", {
+        confirmButtonText: "确定",
+        type: "success",
+        showCancelButton: false,
+      }).then(() => {
+        // 下一步操作
+      });
+    } else if (res.data?.resultMessage) {
+      ElMessage.error(res.data?.resultMessage);
+    }
   } catch (error) {
     ElMessage.error("预约失败: " + error.message);
   }
@@ -377,6 +479,16 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.el-button--primary {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.history-icon {
+  display: inline-block;
+  font-style: normal;
+}
+
 .calendar_wrapper {
   position: relative;
   display: flex;
@@ -410,15 +522,6 @@ onMounted(() => {
   .date-header-right {
     display: flex;
     align-items: center;
-    .el-button--primary {
-      color: #fff;
-      background-color: #007bff;
-      border-color: #007bff;
-    }
-    .history-icon {
-      display: inline-block;
-      font-style: normal;
-    }
   }
 
   .date-selector {
@@ -430,10 +533,11 @@ onMounted(() => {
       font-size: 16px;
       font-weight: 500;
       color: #333;
+      min-width: 40px;
     }
 
     .date-picker {
-      width: 200px;
+      min-width: 170px;
     }
   }
 
@@ -452,6 +556,26 @@ onMounted(() => {
   }
 }
 
+@media screen and (max-width: 950px) {
+  .date-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    .date-header-left,
+    .date-header-right {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .search-section {
+      .search-input {
+        min-width: 100px;
+      }
+    }
+  }
+}
+
 // 主要内容区域
 .calendar_container {
   flex: 1;
@@ -460,7 +584,7 @@ onMounted(() => {
   padding-bottom: 100px;
   background: #fefefe;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-radius: 0 0 20px 20px;
+  // border-radius: 0 0 20px 20px;
   overflow-y: auto;
   &::-webkit-scrollbar-thumb {
     background: transparent;
@@ -477,7 +601,37 @@ onMounted(() => {
     }
   }
   &::-webkit-scrollbar-track {
-    background: #f0f0f0;
+    background: #fff;
+  }
+}
+
+// 提交预约区域
+.submit-container {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 0 0 20px 20px;
+  border-top: 1px solid #f0f0f0;
+  gap: 20px;
+  .submit-left {
+    flex: 1;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .form-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      .form-label {
+        font-size: 14px;
+        color: #333;
+        .text-red {
+          color: red;
+        }
+      }
+    }
   }
 }
 
@@ -505,13 +659,20 @@ onMounted(() => {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        &-left {
+        .room-header-left {
           display: flex;
           align-items: center;
         }
         .room-icon {
-          font-size: 20px;
-          margin-right: 12px;
+          width: 28px;
+          height: 28px;
+          background-color: rgba(0, 122, 255, 1);
+          border-radius: 8px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: #fff;
+          margin-right: 10px;
         }
 
         .room-details {
@@ -519,7 +680,7 @@ onMounted(() => {
             font-size: 18px;
             font-weight: 600;
             color: #333;
-            margin-bottom: 4px;
+            // margin-bottom: 4px;
           }
 
           .room-location {
@@ -529,7 +690,7 @@ onMounted(() => {
         }
       }
 
-      .room-capacity {
+      .room-intro {
         display: flex;
         align-items: center;
         font-size: 14px;
