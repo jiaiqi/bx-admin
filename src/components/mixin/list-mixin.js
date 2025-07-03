@@ -1289,6 +1289,7 @@ export default {
     singleFormatValue(value, header, key_col, row) {
       // 从方法中那个取到值  res后面可以根据复杂程度改为对象
       value = getUnitData(value, header);
+      const bxColType = header.srvcol?.bx_col_type;
       let userDeptTypes = ["User", "Dept", "bxsys_user", "bxsys_dept"];
       if (this.moneyCols.indexOf(key_col) != -1) {
         return this.formartMoney(value + "");
@@ -1307,7 +1308,7 @@ export default {
           }
         } else if (type === "Boolean") {
           return !!value ? "是" : "否";
-        } else if (type === "Dict" || type === "fk") {
+        } else if (['fk','Dict'].includes(type)||['fk','Dict'].includes(bxColType)) {
           // 增加 支持 fk时 显示 _xx_disp 字段
           let dispColName = `_${header.column}_disp`;
           return !!row[dispColName] ? row[dispColName] : value;

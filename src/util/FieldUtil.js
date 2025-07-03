@@ -3,11 +3,10 @@ export function createLinkUrlFunc(optionListV2, thisColName) {
   let func = function (data) {
     let service = optionListV2.serviceName
     let defaultSrvApp = resolveAppFromService(service);
-    let srvApp = optionListV2.srv_app || defaultSrvApp
-    let url = `/vpages/index.html#/detail/${service}/xxx?srvApp=${srvApp}&operate_params=`;
-
-    let refedCol = optionListV2.refed_col
-    let operateParams = {
+    const srvApp = optionListV2.srv_app || defaultSrvApp || optionListV2?.add_srv_cfg?.app || optionListV2?.update_srv_cfg?.app || ""
+    const url = `/vpages/index.html#/detail/${service}/xxx?srvApp=${srvApp}&operate_params=`;
+    const refedCol = optionListV2.refed_col
+    const operateParams = {
       serviceName: service,
       condition: [{
         colName: refedCol,
