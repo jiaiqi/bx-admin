@@ -207,11 +207,6 @@ export default {
       let type = this.comType
       switch (type) {
         case 'list':
-          // let rowNumber = req.page
-          // self.$set(self.page,'rownumber',rowNumber.rownumber)
-          // console.log('page no',self.page)
-          // req['page'] = page
-
           break;
         default:
           break;

@@ -146,3 +146,16 @@ export const useMessage = () => {
     }
     return vm.proxy.$message
 }
+
+export const useUtils = () => {
+    const vm = getCurrentInstance()
+    if (!vm) {
+        throw new Error('useUtils() must be called in setup()')
+    }
+    if (!vm.proxy.renderStr) {
+        console.warn('useUtils(): renderStr is not available')
+    }
+    return {
+      renderStr:vm.proxy.renderStr
+    }
+}

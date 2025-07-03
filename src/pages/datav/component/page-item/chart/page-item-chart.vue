@@ -17,7 +17,14 @@
 import { computed, watch, onMounted, ref } from "vue";
 import Chart from "./chart.vue";
 import { $select } from "../../../common/http.js";
-import { useBuildOption, setDefaultChartOption } from "../use-functions/buildOption";
+import {
+  useBuildOption,
+  setDefaultChartOption,
+} from "../use-functions/buildOption";
+import { useUtils } from "@/common/vueApi.js";
+import cloneDeep from "lodash/cloneDeep";
+const { renderStr } = useUtils();
+
 const props = defineProps({
   pageItem: Object,
   pageParamsModel: Object,
@@ -94,50 +101,137 @@ const chartType = computed(() => {
 });
 const colsMapDetailJson = computed(() => {
   // 组件参数 的map array  接口返回数据格式 无法确定接口时啥样子，小程序 逻辑使用com_para_with_map_json 但没值，改用有值的 page_com_cols_map_json
-  let pageComColsMapJson = pageItem?.page_com_cols_map_json || null
-  let colsMapDetailJson = null
+  let pageComColsMapJson = pageItem?.page_com_cols_map_json || null;
+  let colsMapDetailJson = null;
   if (pageComColsMapJson) {
     // 识别、处理组件到页面参数联动
-    if (pageComColsMapJson.cols_map_detail_json && Array.isArray(pageComColsMapJson.cols_map_detail_json)) {
-      colsMapDetailJson = pageComColsMapJson.cols_map_detail_json
+    if (
+      pageComColsMapJson.cols_map_detail_json &&
+      Array.isArray(pageComColsMapJson.cols_map_detail_json)
+    ) {
+      colsMapDetailJson = pageComColsMapJson.cols_map_detail_json;
     }
   }
-  return colsMapDetailJson
-})
+  return colsMapDetailJson;
+});
+
+const calcSrvReq = (req) => {
+  let params = {};
+  if (props.pageParamsModel && typeof props.pageParamsModel === "object") {
+    params = {
+      ...props.pageParamsModel,
+    };
+  }
+
+  let conds = [];
+  const globalParams = {
+    ...params,
+    user_no: sessionStorage.getItem("login_user_info")?.user_no,
+    userInfo: sessionStorage.getItem("login_user_info"),
+  };
+
+  if (req.hasOwnProperty("condition") && req.condition.length > 0) {
+    for (let cond of req.condition) {
+      let condModel = cloneDeep(cond);
+      if (
+        cond &&
+        condModel.value &&
+        condModel.value.indexOf("${") !== -1 &&
+        condModel.value.indexOf("}") !== -1 &&
+        params
+      ) {
+        if (
+          renderStr(condModel.value, globalParams) &&
+          renderStr(condModel.value, globalParams).indexOf("[object") == -1
+        ) {
+          condModel.value = renderStr(condModel.value, globalParams);
+        } else {
+          let key = condModel.value;
+          var sreg = new RegExp("\\${", "g");
+          var ereg = new RegExp("\}", "g");
+          key = key.replace(sreg, "");
+          key = key.replace(ereg, "");
+          console.log("--srvReq", params, key);
+          condModel.value =
+            params && params.hasOwnProperty(key) ? params[key] : "";
+          if (condModel.value?.value) {
+            condModel.value = condModel.value.value;
+          }
+        }
+      }
+      conds.push(cloneDeep(condModel));
+    }
+    req.condition = conds.map((item) => item);
+  }
+  return req;
+};
 
 const onSrvReq = async (req = null) => {
   req = req || pageItem?.srv_req_json;
   if (req) {
-    loading.value = true
+    req = calcSrvReq(req);
+    loading.value = true;
     let res = await $select(req, req.mapp);
-    loading.value = false
+    loading.value = false;
     console.log(res);
     if (res.ok && res.data.length > 0) {
       cellData.value = res.data;
     }
     console.log(pageItem);
 
-    option.value = useBuildOption(chartType.value, pageItem, res.data, props.layout);
+    option.value = useBuildOption(
+      chartType.value,
+      pageItem,
+      res.data,
+      props.layout
+    );
   }
 };
 
-watch(() => props.pageParamsModel, (newVal, oldVal) => {
-  paramsLinkage()
-}, { immediate: true, deep: true })
-
+watch(
+  () => props.pageParamsModel,
+  (newVal, oldVal) => {
+    paramsLinkage();
+  },
+  { immediate: true, deep: true }
+);
 
 onMounted(() => {
-  if (pageItem?.srv_req_type === '模拟数据' && pageItem?.mock_srv_data_json?.length) {
+  if (
+    pageItem?.srv_req_type === "模拟数据" &&
+    pageItem?.mock_srv_data_json?.length
+  ) {
     // 使用模拟数据
     cellData.value = pageItem.mock_srv_data_json;
-    option.value = useBuildOption(chartType.value, pageItem, cellData.value, props.layout);
-  } else if (chartConfig.value?.more_option?.includes('使用模拟数据') && !pageItem?.srv_req_json && !cellData.value.length) {
-    option.value = useBuildOption(chartType.value, pageItem, chartConfig.value.mock_data_json || [], props.layout);
+    option.value = useBuildOption(
+      chartType.value,
+      pageItem,
+      cellData.value,
+      props.layout
+    );
+  } else if (
+    chartConfig.value?.more_option?.includes("使用模拟数据") &&
+    !pageItem?.srv_req_json &&
+    !cellData.value.length
+  ) {
+    option.value = useBuildOption(
+      chartType.value,
+      pageItem,
+      chartConfig.value.mock_data_json || [],
+      props.layout
+    );
   } else if (!pageItem?.srv_req_type && !cellData.value?.length) {
-    option.value = setDefaultChartOption(chartType.value, pageItem, [], props.layout);
+    option.value = setDefaultChartOption(
+      chartType.value,
+      pageItem,
+      [],
+      props.layout
+    );
   } else {
-    let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
-    const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson
+    let itemReqJson = pageItem?.srv_req_json
+      ? JSON.parse(JSON.stringify(pageItem.srv_req_json))
+      : null;
+    const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson;
     onSrvReq(req);
     // onSrvReq();
     if (pageItem?.srv_req_json?.cycle_req_timer) {
@@ -145,66 +239,68 @@ onMounted(() => {
       autoRefreshData();
     }
   }
-
 });
-
-
 
 const cellData = ref([]);
 const autoRefreshData = () => {
   const interval = pageItem?.srv_req_json?.cycle_req_timer;
   timer = setInterval(() => {
-    let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
-    const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson
+    let itemReqJson = pageItem?.srv_req_json
+      ? JSON.parse(JSON.stringify(pageItem.srv_req_json))
+      : null;
+    const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson;
     onSrvReq(req);
   }, interval * 1000);
 };
 
 function buildRequestParams(e) {
-  console.log('请求参数====>', e)
-  let condition = deepClone(e.condition)
-  let mapsJonss = colsMapDetailJson.value || []
+  console.log("请求参数====>", e);
+  let condition = deepClone(e.condition);
+  let mapsJonss = colsMapDetailJson.value || [];
   if (Array.isArray(condition)) {
     for (let cond of condition) {
-      console.log('buildRequestParams', cond.colName, cond.value)
-      if (cond.value && cond.value.startsWith("${") && cond.value.endsWith("}")) {
-        console.log('2', cond.value)
+      console.log("buildRequestParams", cond.colName, cond.value);
+      if (
+        cond.value &&
+        cond.value.startsWith("${") &&
+        cond.value.endsWith("}")
+      ) {
+        console.log("2", cond.value);
         let par = cond.value.replace("${", "");
 
         par = par.replace("}", "");
         let params = deepClone(props.pageParamsModel);
         if (params && Object.keys(params).length > 0) {
           for (let key in params) {
-            console.log('key', key, par)
+            console.log("key", key, par);
             if (key === par) {
-              let mapsCol = mapsJonss.filter(item => item.col_to === par || item.col_from === par)
+              let mapsCol = mapsJonss.filter(
+                (item) => item.col_to === par || item.col_from === par
+              );
               if (Array.isArray(mapsCol) && mapsCol.length > 0) {
-                let value = ''
-                let model = null
+                let value = "";
+                let model = null;
                 for (let col of mapsCol) {
                   switch (col.from_type) {
-                    case '页面':
-                      model = params
+                    case "页面":
+                      model = params;
                       switch (col.to_type) {
-                        case '组件':
-                          cond.value = params[key].value
+                        case "组件":
+                          cond.value = params[key].value;
                           // $set(cond,'value',pageParamsModel[key].value)
                           break;
-                        case '页面':
-
+                        case "页面":
                           break;
 
                         default:
                           break;
                       }
                       break;
-                    case '组件':
+                    case "组件":
                       switch (col.to_type) {
-                        case '组件':
-
+                        case "组件":
                           break;
-                        case '页面':
-
+                        case "页面":
                           break;
 
                         default:
@@ -217,41 +313,44 @@ function buildRequestParams(e) {
                   }
                 }
               }
-              console.log('请求参数', e)
+              console.log("请求参数", e);
               //  $set(cond,'value',)
             }
           }
         }
-
       }
     }
-    condition = condition.filter(item => {
-      if (item.ruleType === 'eq' && (item.value === null || item.value === undefined)) {
-        return false
+    condition = condition.filter((item) => {
+      if (
+        item.ruleType === "eq" &&
+        (item.value === null || item.value === undefined)
+      ) {
+        return false;
       } else {
-        return true
+        return true;
       }
-    })
+    });
   }
 
-  e.condition = deepClone(condition)
+  e.condition = deepClone(condition);
   // console.log(e.serviceName,condition)
-  return e
+  return e;
 }
 function paramsLinkage() {
-  let itemReqJson = pageItem?.srv_req_json ? JSON.parse(JSON.stringify(pageItem.srv_req_json)) : null;
-  const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson
-  console.log('图表请求', req, req?.serviceName)
+  let itemReqJson = pageItem?.srv_req_json
+    ? JSON.parse(JSON.stringify(pageItem.srv_req_json))
+    : null;
+  const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson;
+  console.log("图表请求", req, req?.serviceName);
   if (Array.isArray(colsMapDetailJson.value)) {
     for (let p of colsMapDetailJson.value) {
-      if (p.from_type === '页面' && p.trigger_time === '联动') {
+      if (p.from_type === "页面" && p.trigger_time === "联动") {
         if (req?.serviceName) {
           onSrvReq(req);
         }
       }
     }
   }
-
 }
 
 const chartRef = ref(null);
