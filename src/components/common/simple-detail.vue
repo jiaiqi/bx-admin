@@ -235,6 +235,9 @@ export default {
       type: null,
     },
     divCond: Array,
+    detailData: {
+      type: Object,
+    },
   },
   computed: {
     srvValFormModeldetail() {
@@ -391,7 +394,9 @@ export default {
             //     console.error(error);
             //   }
             // }
-
+            // if(this.detailData?.id){
+            //   return [this.detailData]
+            // }
             return loader.run(condition, this.divCond).then((res) => {
               resolve(res);
             });

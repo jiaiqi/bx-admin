@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%">
+  <div style="height: 100%" v-if="id && id !== 'xxx'">
     <card-detail
       :pk-col="pkCol"
       :pk="id"
@@ -60,6 +60,7 @@
             :srvval-form-model-decorator="srvvalFormModelDecorator"
             :pk-col="pkCol"
             :pk="id"
+            :detail-data="detailData"
             @form-loaded="$emit('form-loaded', $event)"
             @action-complete="refreshChildList"
             :isPlatChildForm="isPlatChildForm"
@@ -921,46 +922,45 @@ export default {
         }
       }
       let childList = [];
-      await this.loadColsV2(
+      const response = await this.loadColsV2(
         this.service_name,
         "detail",
         null,
         this.service_name
-      ).then((response) => {
-        this.detail_srv_cols = response.body.data["srv_cols"];
-        childList = response.body.data["child_service"];
-        var temp = response.body.data["service_view_name"];
-        let v2Data = response.body.data;
-        this.v2Data = v2Data;
-        if (v2Data.hasOwnProperty("his_version")) {
-          this.isHistory = v2Data.his_version;
+      );
+      this.detail_srv_cols = response.body.data["srv_cols"];
+      childList = response.body.data["child_service"];
+      var temp = response.body.data["service_view_name"];
+      let v2Data = response.body.data;
+      this.v2Data = v2Data;
+      if (v2Data.hasOwnProperty("his_version")) {
+        this.isHistory = v2Data.his_version;
+      }
+      if (v2Data?.pub_field_map?.id) {
+        this.pkCol = v2Data.pub_field_map?.id;
+        if (condition?.length) {
+          condition.forEach((item) => {
+            if (item.colName == "id") {
+              // id 字段映射
+              item.colName = v2Data.pub_field_map.id;
+            }
+          });
         }
-        if (v2Data?.pub_field_map?.id) {
-          this.pkCol = v2Data.pub_field_map?.id;
-          if (condition?.length) {
-            condition.forEach((item) => {
-              if (item.colName == "id") {
-                // id 字段映射
-                item.colName = v2Data.pub_field_map.id;
-              }
-            });
-          }
+      }
+      if (
+        response.body.data["cfg_json"] &&
+        response.body.data["cfg_json"].indexOf("page_title") > -1
+      ) {
+        // 使用配置的标题
+        const cfg_json = JSON.parse(response.body.data.cfg_json);
+        if (cfg_json?.page_title) {
+          this.tab_view_name = cfg_json?.page_title;
         }
-        if (
-          response.body.data["cfg_json"] &&
-          response.body.data["cfg_json"].indexOf("page_title") > -1
-        ) {
-          // 使用配置的标题
-          const cfg_json = JSON.parse(response.body.data.cfg_json);
-          if (cfg_json?.page_title) {
-            this.tab_view_name = cfg_json?.page_title;
-          }
-        } else if (temp.endsWith("查询")) {
-          this.tab_view_name = temp.substr(0, temp.length - 2) + "详情";
-        } else {
-          this.tab_view_name = response.body.data["service_view_name"] + "详情";
-        }
-      });
+      } else if (temp.endsWith("查询")) {
+        this.tab_view_name = temp.substr(0, temp.length - 2) + "详情";
+      } else {
+        this.tab_view_name = response.body.data["service_view_name"] + "详情";
+      }
       let detailData = null;
       let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${
         this.service_name
@@ -970,7 +970,7 @@ export default {
         srvAuthKey,
         this.$route.query.hasOwnProperty(srvAuthKey)
       );
-      await this.selectOne(
+      const dataResp = await this.selectOne(
         this.service_name,
         condition,
         this.$route.query.isdraft,
@@ -980,39 +980,38 @@ export default {
           : false,
         "detail_page",
         this.buildDivCond || this.$route.query.divCond
-      ).then((response) => {
-        // console.log('srvAuthKey',srvAuthKey,response.body)
-        if (response.body.resultCode == "0111") {
-          console.error("this.service_name", response.body);
-          console.log("response.body", response.body);
-          this.srvAuthLogin = true;
-          this.$message({
-            message: response.data.resultMessage,
-            type: "error",
+      );
+      // console.log('srvAuthKey',srvAuthKey,response.body)
+      if (dataResp.body.resultCode == "0111") {
+        console.error("this.service_name", dataResp.body);
+        console.log("dataResp.body", dataResp.body);
+        this.srvAuthLogin = true;
+        this.$message({
+          message: dataResp.data.resultMessage,
+          type: "error",
+        });
+      } else {
+        console.error("this.service_name2", dataResp.body, dataResp.response);
+        detailData = dataResp.body;
+        this.detailData = dataResp.body;
+        this.mainFormDatas = dataResp.body;
+        this.id = this.detailData[this.pkCol];
+        if (
+          dataResp?.response?.hasOwnProperty("chart_data") &&
+          Array.isArray(dataResp.response.chart_data)
+        ) {
+          this.detailChartDatas = dataResp.response.chart_data.map((item) => {
+            item["status"] =
+              item["state"] == "1"
+                ? "success"
+                : item["state"] == "0"
+                ? "process"
+                : "wait"; //success
+            return item;
           });
-        } else {
-          console.error("this.service_name2", response.body, response.response);
-          detailData = response.body;
-          this.detailData = response.body;
-          this.mainFormDatas = response.body;
-          this.id = this.detailData[this.pkCol];
-          if (
-            response?.response?.hasOwnProperty("chart_data") &&
-            Array.isArray(response.response.chart_data)
-          ) {
-            this.detailChartDatas = response.response.chart_data.map((item) => {
-              item["status"] =
-                item["state"] == "1"
-                  ? "success"
-                  : item["state"] == "0"
-                  ? "process"
-                  : "wait"; //success
-              return item;
-            });
-            console.log("response.body222", response);
-          }
+          console.log("response.body222", dataResp);
         }
-      });
+      }
       for (var item of childList) {
         item.show = true;
         let foreign_key = item.foreign_key;
