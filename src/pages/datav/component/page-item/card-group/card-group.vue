@@ -222,13 +222,13 @@ export default {
         let mock_srv_data_json = this.pageItem?.mock_srv_data_json || [];
         this.cellData = mock_srv_data_json.map((item) => item);
       } else if (req.serviceName) {
-        const condition = req.condition;
+        const {condition,page,order,group} = req;
         const res = await this.select(
           req.serviceName,
           condition,
-          null,
-          null,
-          null,
+          page,
+          order,
+          group,
           null,
           req.mapp
         );
