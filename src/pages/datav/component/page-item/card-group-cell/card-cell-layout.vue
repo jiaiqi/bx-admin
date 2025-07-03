@@ -8,6 +8,7 @@
     @mouseleave="mouseLeave"
   >
     <card-cell-part
+      :pageItem="pageItem"
       :comColMap="comColMap"
       :cellItem="item"
       :cellItemData="cellItemData"

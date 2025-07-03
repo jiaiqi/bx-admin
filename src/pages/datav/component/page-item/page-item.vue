@@ -395,8 +395,7 @@ export default {
     },
     onTap() {
       console.log(this.$parent.props,'OnTap');
-      
-      debugger
+
       this.$emit("click", this.$parent.props);
     },
     toMore() {

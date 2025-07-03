@@ -22,6 +22,13 @@
       v-if="['视频'].includes(partsType)"
       :ref="partsType"
     ></video>
+    <hlsplayer-video
+    v-if="['hls视频'].includes(partsType)"
+    :cellItem="cellItem"
+    :cellItemData="cellItemData"
+    :pageItem="pageItem"
+    >
+    </hlsplayer-video>
     <div
       v-else-if="['string', '字符串', '时间日期'].includes(cellItem.parts_type)"
       class="bx-cell-string"
@@ -219,6 +226,7 @@ import { formatStyleData } from "@/pages/datav/common";
 import { setAnimationClass, setAnimationStyle } from "@/common/common";
 import { numberAnimationRun } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
+import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -242,6 +250,7 @@ export default {
     Icon,
     LiquidFillChart,
     qrCode,
+    HlsplayerVideo,
   },
   data() {
     return {
@@ -249,6 +258,9 @@ export default {
     };
   },
   props: {
+    pageItem:{
+      type:Object,
+    },
     cellItem: {
       type: Object,
     },
@@ -277,6 +289,7 @@ export default {
     accordionSeq: Number,
     activeAccordionSeq: Number,
   },
+
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
     setComColMap() {
@@ -304,10 +317,6 @@ export default {
         ["row", "block"].includes(this.partsType) &&
         this.cellLayoutJson?.child_use_animation === "是"
       );
-    },
-    partsType() {
-      // 新增：确保 partsType 正确反映 cellItem.parts_type
-      return this.cellItem?.parts_type;
     },
     childAnimationType() {
       return this.cellLayoutJson?.child_animation_type;

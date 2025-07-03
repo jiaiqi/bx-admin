@@ -130,6 +130,14 @@ export const materialsTree = [
         "icon": "ri-video-fill"
       },
       {
+        "label": "hls视频",
+        "value": "hls视频",
+        "parts_type": "hls视频",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri-video-fill"
+      },
+      {
         "label": "音频",
         "value": "音频",
         "parts_type": "音频",

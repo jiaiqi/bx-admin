@@ -100,6 +100,9 @@ export default {
       deep: true,
       handler(newValue) {
         if (newValue && newValue.length > 0) {
+          this.$nextTick(() => {
+            this.handleDeleteOverlay()
+          })
           // 为传入的组件添加拖拽索引和com_seq值
           const componentsWithIndex = newValue.map((comp, index) => ({
             ...comp,
@@ -118,6 +121,14 @@ export default {
     },
   },
   methods: {
+
+    //移动端不需要使用遮罩方式，批处理带遮罩的组件
+    handleDeleteOverlay(){
+      let dom = document.getElementsByClassName('page-item__overlay')
+      if(dom && dom.length>0){
+        Array.from(dom).forEach(d=>{d.style.display="none";});
+      }
+    },
     // 处理删除组件
     async handleDeleteComponent(item, id) {
       try {
