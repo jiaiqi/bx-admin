@@ -853,6 +853,18 @@ routes.push({ //网站
   path:"/mettingRoomBooking",
   name:"MettingRoomBooking",
   component: () => import("@/pages/mettingRoomBooking/mettingRoomBooking.vue")
+},
+{
+  // 会议室预约成功页面
+  path:"/bookingSuccess",
+  name:"BookingSuccess",
+  component: () => import("@/pages/mettingRoomBooking/bookingSuccess.vue")
+},
+{
+  // 会议室预约记录页面
+  path:"/bookingHistory",
+  name:"BookingHistory",
+  component: () => import("@/pages/mettingRoomBooking/bookingHistory.vue")
 })
 
 Vue.use(VueRouter);

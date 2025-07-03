@@ -25,22 +25,24 @@
           <el-button type="primary" class="search-btn" @click="fetchRoomList"
             >搜索</el-button
           >
+          <el-button @click="resetSearch">重置</el-button>
         </div>
       </div>
-      <div
+      <!-- <div
         class="date-header-center"
         v-if="selectedTime && selectedTime.start_time"
       >
-        当前选择的是：{{ selectedDate }}
+        当前选择的是：
         <span class="text-blue">
           {{ selectedTime.rsvo_name }}
         </span>
         时间段：
-        <span>
+        <span class="text-blue">
+          {{ selectedDate }}
           {{ formatTime(selectedTime.start_time) }} -
           {{ formatTime(selectedTime.end_time) }}
         </span>
-      </div>
+      </div> -->
       <div class="date-header-right">
         <el-button class="history-btn" @click="navigateToHistory">
           <i class="history-icon">🕐</i>
@@ -131,85 +133,157 @@
             </div>
           </div>
         </template>
+        
+        <!-- 底部加载状态 -->
+        <div class="loading-container" v-if="roomList.length > 0">
+          <div v-if="pageInfo.loading" class="loading-spinner">
+            <i class="el-icon-loading"></i>
+            <span>加载中...</span>
+          </div>
+          <div v-else-if="!pageInfo.hasMore" class="no-more-data">
+            没有更多数据了
+          </div>
+          <div v-else class="load-more-hint">
+            滚动加载更多
+          </div>
+        </div>
+        
+        <!-- 无数据提示 -->
+        <div v-if="roomList.length === 0 && !pageInfo.loading" class="empty-data">
+          <div class="empty-text">暂无会议室数据</div>
+        </div>
       </div>
     </div>
 
-    <!-- 提交相关 -->
-    <div class="submit-container">
-      <div class="submit-left">
-        <div class="form-item">
-          <div class="form-label">
-            <span class="text-red">*</span>
-            联系人
-          </div>
-          <el-input
-            v-model="contacts"
-            placeholder="联系人"
-            class="search-input"
-            clearable
-          />
+    <!-- 预约表单对话框 -->
+    <el-dialog
+      title="填写预约信息"
+      :visible.sync="dialogVisible"
+      width="600px"
+      :before-close="handleDialogClose"
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
+    >
+      <div
+        class="date-header-center"
+        v-if="selectedTime && selectedTime.start_time"
+      >
+        <div class="header-info">
+          <span class="info-label"> 预约地点： </span>
+          <span class="text-blue">
+            {{ selectedTime.rsvo_name }}
+          </span>
         </div>
-        <div class="form-item">
-          <div class="form-label">
-            <span class="text-red">*</span>
-            联系方式
-          </div>
-          <el-input
-            v-model="mobilephone"
-            placeholder="联系方式"
-            class="search-input"
-            clearable
-          />
-        </div>
-        <div class="form-item">
-          <div class="form-label">人数</div>
-          <el-input
-            v-model="count"
-            placeholder="人数"
-            class="search-input"
-            clearable
-            type="number"
-          />
-        </div>
-        <div class="form-item">
-          <div class="form-label">备注</div>
-          <el-input
-            v-model="remark"
-            placeholder="备注"
-            class="search-input"
-            clearable
-          />
+        <div class="header-info">
+          <span class="info-label"> 时间段：</span>
+          <span class="text-blue">
+            {{ selectedDate }}
+            {{ formatTime(selectedTime.start_time) }} -
+            {{ formatTime(selectedTime.end_time) }}
+          </span>
         </div>
       </div>
-      <div class="submit-right">
-        <el-button type="primary" @click="submitReservation">
-          立即预约
-        </el-button>
-      </div>
-    </div>
+      <el-form
+        :model="formData"
+        ref="reservationForm"
+        :rules="formRules"
+        label-width="80px"
+      >
+        <el-form-item label="联系人" prop="contacts">
+          <el-input
+            v-model="formData.contacts"
+            placeholder="请输入联系人姓名"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="联系方式" prop="mobilephone">
+          <el-input
+            v-model="formData.mobilephone"
+            placeholder="请输入联系方式"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="人数" prop="count">
+          <div class="flex items-center justify-between">
+            <el-input-number
+              v-model="formData.count"
+              :min="1"
+              :max="(selectedTime && selectedTime.div_count) || 100"
+            ></el-input-number>
+            <span class="ml-2">
+              <i class="el-icon-info"></i>
+              最大容纳
+              <span class="">{{ selectedTime && selectedTime.div_count }}</span>
+              人</span
+            >
+          </div>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="formData.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注信息"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useMessage, useMessageBox, useHttp, useUtils } from "@/common/vueApi";
+import { ref, onMounted, onUnmounted, reactive } from "vue";
+import {
+  useMessage,
+  useMessageBox,
+  useHttp,
+  useUtils,
+  useRouter,
+} from "@/common/vueApi";
 import dayjs from "dayjs";
 
 const ElMessage = useMessage();
 const ElMessageBox = useMessageBox();
 const $http = useHttp();
 const { addTabByUrl } = useUtils();
+const router = useRouter();
 
 // 响应式数据
 const searchKey = ref("");
-const contacts = ref("");
-const mobilephone = ref("");
-const count = ref(1); // 人数
-const remark = ref("");
-
 const roomList = ref([]);
 const selectedDate = ref(dayjs().format("YYYY-MM-DD"));
 const selectedTime = ref(null);
+
+// 分页相关
+const pageInfo = reactive({
+  pageNo: 1,
+  pageSize: 5,
+  total: 0,
+  hasMore: true,
+  loading: false
+});
+
+// 对话框相关
+const dialogVisible = ref(false);
+const reservationForm = ref(null);
+
+// 表单数据
+const formData = reactive({
+  contacts: "",
+  mobilephone: "",
+  count: 1,
+  remark: "",
+});
+
+// 表单验证规则
+const formRules = {
+  contacts: [{ required: true, message: "请输入联系人姓名", trigger: "blur" }],
+  mobilephone: [{ required: true, message: "请输入联系方式", trigger: "blur" }],
+};
 
 // 时间段配置
 const timeSlots = ref([
@@ -232,7 +306,7 @@ const timeSlots = ref([
 // 方法定义
 const handleDateChange = (date) => {
   selectedDate.value = date;
-  fetchRoomList();
+  fetchRoomList(false);
 };
 
 const selectTimeSlot = (item) => {
@@ -260,27 +334,48 @@ const isTimeSelected = (item = {}) => {
 
 const navigateToHistory = () => {
   // 导航到历史记录页面
-  const url = `/vpages/index.html#/list/srvreserve_record_select?menuapp=park`;
-  addTabByUrl(url, "预约记录");
+  router.push("/bookingHistory");
 };
 
 const formatTime = (timeStr) => {
   return dayjs(`${selectedDate.value} ${timeStr}`).format("HH:mm");
 };
 
-const fetchRoomList = async () => {
+// 重置搜索
+const resetSearch = () => {
+  searchKey.value = "";
+  fetchRoomList(false);
+};
+
+const fetchRoomList = async (isLoadMore = false) => {
   try {
+    // 如果是加载更多，但已经没有更多数据，则直接返回
+    if (isLoadMore && !pageInfo.hasMore) {
+      return;
+    }
+
+    // 设置加载状态
+    pageInfo.loading = true;
+
+    // 如果不是加载更多，则重置列表和分页信息
+    if (!isLoadMore) {
+      roomList.value = [];
+      pageInfo.pageNo = 1;
+      pageInfo.hasMore = true;
+    }
+
     const url = `/park/select/srvreserve_obj_select`;
     const req = {
       serviceName: "srvreserve_obj_select",
       colNames: ["*"],
       condition: [],
       page: {
-        pageNo: 1,
-        rownumber: 100,
+        pageNo: pageInfo.pageNo,
+        rownumber: pageInfo.pageSize,
       },
       query_source: "list_page",
     };
+
     if (searchKey.value) {
       req.condition.push({
         colName: "rsvo_name",
@@ -288,6 +383,7 @@ const fetchRoomList = async () => {
         value: searchKey.value,
       });
     }
+
     if (selectedDate.value) {
       // req.condition.push({
       //   colName: "datey",
@@ -295,22 +391,41 @@ const fetchRoomList = async () => {
       //   value: selectedDate.value,
       // })
     }
+
     const res = await $http.post(url, req);
     const list = [];
+
     if (res?.data?.state === "SUCCESS") {
       console.log(res.data.data);
+      pageInfo.total = res.data.page?.total || 0;
+      
       if (Array.isArray(res.data.data)) {
         for (var index = 0; index < res.data.data.length; index++) {
           const item = res.data.data[index];
           item.timeList = await getTime(item.rsvo_no);
           list.push(item);
         }
+
+        // 判断是否还有更多数据
+        pageInfo.hasMore = list.length > 0 && roomList.value.length + list.length < pageInfo.total;
+        
+        // 如果是加载更多，则追加到现有列表，否则替换列表
+        if (isLoadMore) {
+          roomList.value = [...roomList.value, ...list];
+        } else {
+          roomList.value = list;
+        }
+
+        // 更新页码，为下一次加载做准备
+        if (list.length > 0) {
+          pageInfo.pageNo++;
+        }
       }
     }
-
-    roomList.value = list;
   } catch (error) {
     ElMessage.error("获取会议室列表失败: " + error.message);
+  } finally {
+    pageInfo.loading = false;
   }
 };
 
@@ -339,7 +454,8 @@ async function getTime(rsvo_no) {
   const res = await $http.post(url, req);
   if (res?.data?.state === "SUCCESS") {
     return res.data.data.map((item) => {
-      item.label = formatTime(item.start_time);
+      item.label =
+        formatTime(item.start_time) + " - " + formatTime(item.end_time);
       return item;
     });
   } else {
@@ -350,54 +466,96 @@ async function getTime(rsvo_no) {
   }
 }
 
-const submitReservation = async () => {
+// 打开预约对话框
+const submitReservation = () => {
   if (!selectedTime.value) {
     ElMessage.warning("请选择预约时间段");
     return;
   }
 
-  try {
-    // 预约提交
-    const url = `/park/operate/srvreserve_record_add`;
-    const data = selectedTime.value;
-    if (!data) {
-      ElMessage.warning("请选择预约时间段");
-      return;
-    }
-    const req = [
-      {
-        serviceName: "srvreserve_record_add",
-        condition: [],
-        data: [
-          {
-            rsvo_no: data.rsvo_no,
-            rsvr_date: selectedDate.value || data.datey,
-            start_time: data.start_time,
-            count: 1, // 人数
-            rsvp_no: data.rsvp_no,
-            rsvt_no: data.rsvt_no,
-            contacts: "aaa",
-            mobilephone: "123123",
-            remark: "", //备注
-          },
-        ],
-      },
-    ];
-    const res = await $http.post(url, req);
-    if (res.data?.state === "SUCCESS") {
-      ElMessageBox.confirm("预约成功!", "提示", {
-        confirmButtonText: "确定",
-        type: "success",
-        showCancelButton: false,
-      }).then(() => {
-        // 下一步操作
-      });
-    } else if (res.data?.resultMessage) {
-      ElMessage.error(res.data?.resultMessage);
-    }
-  } catch (error) {
-    ElMessage.error("预约失败: " + error.message);
+  // 重置表单数据
+  formData.contacts = "";
+  formData.mobilephone = "";
+  formData.count = 1;
+  formData.remark = "";
+
+  // 显示对话框
+  dialogVisible.value = true;
+};
+
+// 关闭对话框
+const handleDialogClose = (done) => {
+  if (reservationForm.value) {
+    reservationForm.value.resetFields();
   }
+  done();
+};
+
+// 提交表单
+const submitForm = async () => {
+  if (!reservationForm.value) return;
+
+  reservationForm.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        // 预约提交
+        const url = `/park/operate/srvreserve_record_add`;
+        const data = selectedTime.value;
+        if (!data) {
+          ElMessage.warning("请选择预约时间段");
+          return;
+        }
+        const req = [
+          {
+            serviceName: "srvreserve_record_add",
+            condition: [],
+            data: [
+              {
+                rsvo_no: data.rsvo_no,
+                rsvr_date: selectedDate.value || data.datey,
+                start_time: data.start_time,
+                count: formData.count, // 人数
+                rsvp_no: data.rsvp_no,
+                rsvt_no: data.rsvt_no,
+                contacts: formData.contacts,
+                mobilephone: formData.mobilephone,
+                remark: formData.remark, //备注
+              },
+            ],
+          },
+        ];
+        const res = await $http.post(url, req);
+        if (res.data?.state === "SUCCESS") {
+          dialogVisible.value = false;
+
+          // 跳转到预约成功页面，并传递预约信息
+          router.push({
+            path: "/bookingSuccess",
+            query: {
+              roomName: selectedTime.value.rsvo_name,
+              date: selectedDate.value,
+              timeSlot: `${formatTime(
+                selectedTime.value.start_time
+              )} - ${formatTime(selectedTime.value.end_time)}`,
+              contacts: formData.contacts,
+              mobilephone: formData.mobilephone,
+              count: formData.count,
+              remark: formData.remark,
+            },
+          });
+
+          // 刷新会议室列表
+          fetchRoomList();
+        } else if (res.data?.resultMessage) {
+          ElMessage.error(res.data?.resultMessage);
+        }
+      } catch (error) {
+        ElMessage.error("预约失败: " + error.message);
+      }
+    } else {
+      return false;
+    }
+  });
 };
 
 // 模拟 API
@@ -472,9 +630,39 @@ const mockReservationApi = (timeSlot) => {
   });
 };
 
+// 滚动加载相关
+const handleScroll = () => {
+  const container = document.querySelector('.calendar_container');
+  if (!container) return;
+  
+  // 当滚动到底部时加载更多数据
+  const scrollTop = container.scrollTop;
+  const scrollHeight = container.scrollHeight;
+  const clientHeight = container.clientHeight;
+  
+  // 当距离底部100px时开始加载更多
+  if (scrollHeight - scrollTop - clientHeight < 100 && !pageInfo.loading && pageInfo.hasMore) {
+    fetchRoomList(true);
+  }
+};
+
 // 生命周期钩子
 onMounted(() => {
-  fetchRoomList();
+  fetchRoomList(false);
+  
+  // 添加滚动监听
+  const container = document.querySelector('.calendar_container');
+  if (container) {
+    container.addEventListener('scroll', handleScroll);
+  }
+});
+
+// 组件卸载时移除滚动监听
+onUnmounted(() => {
+  const container = document.querySelector('.calendar_container');
+  if (container) {
+    container.removeEventListener('scroll', handleScroll);
+  }
 });
 </script>
 
@@ -505,6 +693,23 @@ onMounted(() => {
 }
 
 // 顶部日期选择区域
+.date-header-center {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  .header-info {
+    line-height: 40px;
+  }
+  .info-label {
+    // min-width: 80px;
+    display: inline-block;
+  }
+  .text-blue {
+    font-size: 14px;
+    // font-weight: 600;
+    color: #007bff;
+  }
+}
 .date-header {
   background: white;
   padding: 16px 20px;
@@ -519,6 +724,7 @@ onMounted(() => {
     gap: 10px;
     align-items: center;
   }
+
   .date-header-right {
     display: flex;
     align-items: center;
@@ -543,10 +749,10 @@ onMounted(() => {
 
   .search-section {
     display: flex;
-    gap: 12px;
 
     .search-input {
       width: 300px;
+      margin-right: 12px;
     }
 
     .search-btn {
@@ -581,10 +787,9 @@ onMounted(() => {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  padding-bottom: 100px;
   background: #fefefe;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  // border-radius: 0 0 20px 20px;
+  border-radius: 0 0 20px 20px;
   overflow-y: auto;
   &::-webkit-scrollbar-thumb {
     background: transparent;
@@ -605,34 +810,36 @@ onMounted(() => {
   }
 }
 
-// 提交预约区域
-.submit-container {
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 0 0 20px 20px;
-  border-top: 1px solid #f0f0f0;
-  gap: 20px;
-  .submit-left {
-    flex: 1;
-    display: grid;
-    gap: 20px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    .form-item {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      .form-label {
-        font-size: 14px;
-        color: #333;
-        .text-red {
-          color: red;
-        }
-      }
-    }
+// 对话框样式
+.el-dialog {
+  border-radius: 12px;
+  overflow: hidden;
+
+  .el-dialog__header {
+    background-color: #f6f8fa;
+    padding: 15px 20px;
+    margin: 0;
+    border-bottom: 1px solid #e9ecef;
   }
+
+  .el-dialog__body {
+    padding: 20px;
+  }
+
+  .el-dialog__footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+}
+
+.text-red {
+  color: red;
 }
 
 // 会议室时间表格
@@ -707,7 +914,7 @@ onMounted(() => {
     .time-grid {
       padding: 10px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 10px;
 
       .time-slot {
@@ -758,6 +965,43 @@ onMounted(() => {
         }
       }
     }
+  }
+}
+
+// 底部加载状态样式
+.loading-container {
+  padding: 20px 0;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  
+  .loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    
+    i {
+      font-size: 20px;
+      color: #007bff;
+    }
+  }
+  
+  .no-more-data, .load-more-hint {
+    padding: 10px;
+    color: #999;
+  }
+}
+
+// 无数据提示
+.empty-data {
+  padding: 40px 0;
+  text-align: center;
+  color: #999;
+  
+  .empty-text {
+    font-size: 16px;
+    margin-bottom: 20px;
   }
 }
 
