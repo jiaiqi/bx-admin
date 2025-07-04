@@ -84,7 +84,7 @@ const inForm = () =>
 // pages
 // Vue.use(Router);
 let routes = [
-   //测试支付使用
+  //测试支付使用
   {
     path: "/payment",
     name: "payment",
@@ -401,25 +401,25 @@ let routes = [
   {
     //工单派发
     path: "/order",
-    component:()=> import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/order-home.vue"),
+    component: () => import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/order-home.vue"),
     children: [
       {
         path: "orderform",
         name: "orderform",
         component: () =>
-            import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/workFlow/order-form.vue")
+          import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/workFlow/order-form.vue")
       },
       {
         path: "entrance",
         name: "entrance",
         component: () =>
-            import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/entrance/entrance-information.vue")
+          import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/entrance/entrance-information.vue")
       },
       {
         path: "basemap",
         name: "basemap",
         component: () =>
-            import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/map/BaseMap.vue")
+          import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/map/BaseMap.vue")
       }
     ]
   },
@@ -428,13 +428,13 @@ let routes = [
     path: "/quick",
     name: "quick",
     component: () =>
-        import(/* webpackChunkName: "quick" */ "@/pages/audit/workdistribution/quickBilling/quick-billing.vue")
+      import(/* webpackChunkName: "quick" */ "@/pages/audit/workdistribution/quickBilling/quick-billing.vue")
   },
   { //大华视频播放及组织树
     path: "/dhvideo",
     name: "dhvideo",
     component: () =>
-        import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
+      import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
   },
 
   {
@@ -461,13 +461,13 @@ let routes = [
     path: "/app/edit/:pageNo",
     name: "app-edit",
     meta: {},
-    component: () =>import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-home.vue")
+    component: () => import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-home.vue")
   },
   {
     path: "/app/preview/:pageNo",
     name: "app-preview",
     meta: {},
-    component: () =>import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-preview/preview-page.vue")
+    component: () => import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-preview/preview-page.vue")
   },
   {
     path: "/site/:pageNo",
@@ -848,24 +848,24 @@ routes.push({ //网站
   name: "Login",
   component: () => import("@/pages/login/login.vue")
 },
-{
-  // 会议室预约
-  path:"/mettingRoomBooking",
-  name:"MettingRoomBooking",
-  component: () => import("@/pages/mettingRoomBooking/mettingRoomBooking.vue")
-},
-{
-  // 会议室预约成功页面
-  path:"/bookingSuccess",
-  name:"BookingSuccess",
-  component: () => import("@/pages/mettingRoomBooking/bookingSuccess.vue")
-},
-{
-  // 会议室预约记录页面
-  path:"/bookingHistory",
-  name:"BookingHistory",
-  component: () => import("@/pages/mettingRoomBooking/bookingHistory.vue")
-})
+  {
+    // 会议室预约
+    path: "/meetingRoomBooking",
+    name: "MeetingRoomBooking",
+    component: () => import("@/pages/meetingRoomBooking/meetingRoomBooking.vue")
+  },
+  {
+    // 会议室预约成功页面
+    path: "/bookingSuccess",
+    name: "BookingSuccess",
+    component: () => import("@/pages/meetingRoomBooking/bookingSuccess.vue")
+  },
+  {
+    // 会议室预约记录页面
+    path: "/bookingHistory",
+    name: "BookingHistory",
+    component: () => import("@/pages/meetingRoomBooking/bookingHistory.vue")
+  })
 
 Vue.use(VueRouter);
 const router = new VueRouter({
