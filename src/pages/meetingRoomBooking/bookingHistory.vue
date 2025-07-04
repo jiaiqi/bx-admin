@@ -422,7 +422,7 @@ const canCancel = (record) => {
 
   // 根据状态判断是否可以取消
   // 假设状态为1表示已预约，可以取消
-  return record.status === 1 || record.status === "1";
+  return record.review_status === 1 || record.review_status === "1";
 };
 
 // 获取状态类型
