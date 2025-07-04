@@ -41,6 +41,7 @@
              :isPreview="false"
              ref="editRef"
              @ComponentsSwapped="ComponentsSwapped"
+             :key="renderPageKey"
          />
        </div>
      </div>
@@ -91,6 +92,7 @@ export default{
       materialsCollapsed:false,
       propertyCollapsed:false,
       pageRefreshKey: new Date().getTime(),
+      renderPageKey: new Date().getTime(),
       pageNo: null,
       draggingComponentType: null, //拖拽组件类型
       pageConfig: null,
@@ -113,9 +115,13 @@ export default{
     //实时刷新
     onRefresh() {
       setTimeout(() => {
-        // location.reload();
         this.initPage();
         this.pageRefreshKey = new Date().getTime();
+        this.renderPageKey = new Date().getTime();
+        // 通过ref调用RenderPage的刷新方法
+        if (this.$refs.editRef && this.$refs.editRef.refresh) {
+          this.$refs.editRef.refresh(this.components);
+        }
       }, 150);
     },
     //实时更新更新组件列表

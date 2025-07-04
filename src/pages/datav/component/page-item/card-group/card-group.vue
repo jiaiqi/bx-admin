@@ -109,9 +109,11 @@ export default {
   },
   methods: {
     navToPath(path) {
-      uni.navigateTo({
-        url: path,
-      });
+      if(uni){
+        uni.navigateTo({
+          url: path,
+        });
+      }
     },
     onClickCell(cell) {
       console.log(cell, "clickCell----------\r\n");
