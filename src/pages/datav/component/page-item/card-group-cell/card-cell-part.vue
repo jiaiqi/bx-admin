@@ -3,8 +3,8 @@
     <LiquidFillChart
       v-if="partsType === '水球图'"
       :value="getPartModelData"
-      :color="item.wave_color"
       :ref="partsType"
+      :color="setLiquidColor"
     />
     <video
       class="bx-cell-video"
@@ -255,6 +255,7 @@ export default {
   data() {
     return {
       fileNoMap: {},
+      liquidColor:''
     };
   },
   props: {
@@ -455,6 +456,17 @@ export default {
         };
       }
       return style;
+    },
+
+    setLiquidColor(){
+      const styleJson = this.pageItem?.style_json||{}
+      let style = {};
+      if (styleJson) {
+        style = formatStyleData(styleJson);
+      }
+      if(style.color) {
+      }
+      return style.color;
     },
     getPartModelData() {
       const item = this.cellItem;
