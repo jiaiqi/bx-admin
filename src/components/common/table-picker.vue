@@ -9,7 +9,7 @@
     >
       <template slot="reference">
         <div class="">
-          <div class="selected-all inner" v-if="isSelectedAll">全部</div>
+          <!-- <div class="selected-all inner" v-if="isSelectedAll">全部</div>
           <el-switch
             v-model="isSelectedAll"
             active-color="#409EFF"
@@ -21,7 +21,7 @@
             @change="changeSelectedAll"
             v-if="isSelectedAll"
           >
-          </el-switch>
+          </el-switch> -->
           <el-select
             style="width: 100%"
             :disabled="disabled"
@@ -34,7 +34,6 @@
             @remove-tag="removeTag"
             @clear="clearSelect"
             @focus="onSearch"
-            v-else
           >
             <el-option
               v-for="item in allData"
