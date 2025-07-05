@@ -24,6 +24,7 @@
 <script>
 import pageItemComponentMixin from "../../../common/functions/pageItemComponentMixin.js";
 import cardGroupCell from "../card-group-cell/card-group-cell.vue";
+import cardPopup from "./card-popup.vue"
 export default {
   data() {
     return {
@@ -32,6 +33,7 @@ export default {
   },
   components: {
     cardGroupCell,
+    cardPopup
   },
   mixins: [pageItemComponentMixin],
   props: {
