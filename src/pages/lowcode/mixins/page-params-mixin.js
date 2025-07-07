@@ -25,7 +25,16 @@ export default {
       queryOptions: {}, // 路由参数
       pageParams: {}, // 页面公共参数
       pageParamsModel: {}, // 页面公共参数
+      isComponent: false, // 是否低代码组件
     };
+  },
+  props: {
+    lowCodeJson: {
+      type: Object,
+    },
+    lowCodeParams: {
+      type: Object,
+    },
   },
   computed: {
     /**
@@ -37,7 +46,13 @@ export default {
     }
   },
   created() {
-    this.queryOptions = this.$route.query
+    if (this.lowCodeJson?.page_no) {
+      // 低代码页面作为组件
+      this.isComponent = true
+      this.queryOptions = this.lowCodeParams || {}
+    } else {
+      this.queryOptions = this.$route.query
+    }
   },
   methods: {
     /**

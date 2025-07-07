@@ -99,6 +99,17 @@ export default {
     },
   },
   created() {
+    if (this.lowCodeJson?.page_no) {
+      this.pageNo = this.lowCodeJson.page_no
+      this.pageConfig = {
+        ...cloneDeep(this.lowCodeJson),
+        page_row_json: cloneDeep(this.lowCodeJson)
+      }
+      const newData = this.initPageConfig(this.pageConfig);
+      this.initComponents(newData);
+      this.initPageParams()
+      return
+    }
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
     if (this.pageNo) {
       this.getPageConfig().then(() => {
@@ -184,10 +195,14 @@ export default {
     initPageConfig(data) {
       Object.keys(data).forEach((key) => {
         if (key && data[key] && key.indexOf("_json") !== -1) {
-          try {
-            data[`${key}_data`] = JSON.parse(data[key]);
-          } catch (e) {
-            console.error(e);
+          if (typeof data[key] === "object") {
+            data[`${key}_data`] = data[key]
+          } else {
+            try {
+              data[`${key}_data`] = JSON.parse(data[key]);
+            } catch (e) {
+              console.error(e);
+            }
           }
         }
       });

@@ -11,16 +11,24 @@
       </span>
     </div>
     <template v-if="contentViewMode === '详情'">
-      <div
-        class="content"
-        v-if="contentList && contentList.length"
-        v-html="
-          recoverFileAddress4richText(contentList && contentList[0].content)
-        "
-      ></div>
-      <div v-else>
-        <el-empty description="暂无数据"></el-empty>
-      </div>
+      <template v-if="showRichText">
+        <div
+          class="content"
+          v-if="contentList && contentList.length"
+          v-html="
+            recoverFileAddress4richText(contentList && contentList[0].content)
+          "
+        ></div>
+        <div v-else>
+          <el-empty description="暂无数据"></el-empty>
+        </div>
+      </template>
+      <template v-if="showCustomPage && customPageJson">
+        <low-code-view
+          :low-code-json="customPageJson"
+          :low-code-params="contentList[0]"
+        />
+      </template>
     </template>
     <template v-else-if="contentViewMode === '列表'">
       <div class="quick-filter">
@@ -90,7 +98,12 @@
               @click="onTap(item)"
               v-for="(item, index) in contentList"
             >
-              <img class="img" :src="getImagePath(item.thn_img)" alt="" v-if="item.thn_img"/>
+              <img
+                class="img"
+                :src="getImagePath(item.thn_img)"
+                alt=""
+                v-if="item.thn_img"
+              />
               <div class="line"></div>
               <div class="content-box">
                 <div class="title multi-line-ellipsis">{{ item.title }}</div>
@@ -138,11 +151,12 @@ import catalogTabs from "./tabs.vue";
 
 import { $selectList } from "@/common/http";
 import { getImagePath } from "@/pages/datav/common/http";
-
+// import lowCodeView from "@/pages/lowcode/view.vue";
 export default {
   components: {
     Icon,
     catalogTabs,
+    lowCodeView:()=>import("@/pages/lowcode/view.vue")
   },
   computed: {
     tabs() {
@@ -156,6 +170,27 @@ export default {
     },
     listStyle() {
       return this.data.list_ui?.includes("风格1") ? "style-1" : "style-2";
+    },
+    showRichText() {
+      if (this.contentViewMode === "详情") {
+        const content = this.contentList?.[0];
+        if (content) {
+          return !content?.content_show_method || content?.content_show_method?.includes("富文本");
+        }
+      }
+    },
+    showCustomPage() {
+      if (this.contentViewMode === "详情") {
+        const content = this.contentList?.[0];
+        if (content) {
+          return content?.content_show_method?.includes("自定义页面");
+        }
+      }
+    },
+    customPageJson() {
+      if (this.showCustomPage && this.contentList?.[0].related_page_json) {
+        return JSON.parse(this.contentList?.[0].related_page_json);
+      }
     },
   },
   props: {
