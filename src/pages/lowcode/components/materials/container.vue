@@ -76,6 +76,8 @@ export default {
       default: "",
     },
     pageItem: Object,
+    pageParamsModel: Object,
+    queryOptions: Object,
   },
   computed: {
     enterAnimationClass() {

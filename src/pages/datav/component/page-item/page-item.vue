@@ -83,6 +83,8 @@
       v-if="pageItemData.com_type === '卡片部件'"
       :page-item="pageItemData"
       :cell-item="pageItemData.card_parts_json || pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></card-cell-part>
     <nav-menu
       v-else-if="
@@ -95,6 +97,8 @@
       :page-config="pageConfig"
       :title-style="mixTitleStyle"
       :title-icon="mixTitleIcon"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     >
       <!-- {{ pageItemData.com_case_json.label }} -->
     </nav-menu>
@@ -109,42 +113,55 @@
       v-else-if="pageItemData.com_type === 'videoCard'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></video-card>
     <current-info
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'currentInfo'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></current-info>
     <slide-list
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'swiper'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></slide-list>
     <user-list
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'userList'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></user-list>
     <notice-bar
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'noticeBar'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></notice-bar>
     <map-card
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'map'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></map-card>
     <page-item-chart
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'chart'"
       :ref="pageItemData.com_type"
-      :pageParamsModel="pageParamsModel"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
       :pageItem="pageItemData"
       :index="(layout && layout.i) || 1"
       :layout="layout"
@@ -153,7 +170,8 @@
       :class="{ mobile: screenType === 'mobile' }"
       :is-map-list="isMapList"
       v-else-if="pageItemData.com_type === 'list'"
-      :pageParamsModel="pageParamsModel"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
       @setPageParams="setPageParams"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
@@ -161,7 +179,8 @@
     <tab-list
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === 'tabs'"
-      :pageParamsModel="pageParamsModel"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
     ></tab-list>
@@ -175,6 +194,8 @@
       v-else-if="pageItemData.com_type === '控件'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
       :page-no="pageNo"
       @resize="$emit('resize')"
     ></page-widget>
@@ -193,6 +214,8 @@
       v-else-if="pageItemData.com_type === 'grid'"
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></grid-card>
     <form-add
       :class="{ mobile: screenType === 'mobile' }"
@@ -203,20 +226,33 @@
       "
       :ref="pageItemData.com_type"
       :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     ></form-add>
     <info-details
-    v-else-if="pageItemData.com_type==='detail'"
-    :pageItem="pageItemData"
+      v-else-if="pageItemData.com_type === 'detail'"
+      :pageItem="pageItemData"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     >
     </info-details>
     <div
       v-else-if="pageItemData && pageItemData.com_label"
       :class="{ mobile: screenType === 'mobile' }"
-      :pageParamsModel="pageParamsModel"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
     >
       {{ pageItemData.com_label }}
     </div>
-      <canvasPage v-if="pageItemData.animation_type&&pageItemData.animation_type.includes('迁徙图')" :info="pageItemData.migration_json"/>
+    <canvasPage
+      v-if="
+        pageItemData.animation_type &&
+        pageItemData.animation_type.includes('迁徙图')
+      "
+      :info="pageItemData.migration_json"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
+    />
     <div
       class="more-btn-bottom"
       v-if="showMoreBtn && pageItemData.more_position === '数据项后'"
@@ -280,7 +316,7 @@ export default {
     NavMenu,
     Icon,
     CardCellPart,
-    InfoDetails
+    InfoDetails,
   },
   props: {
     pageItem: {
@@ -394,7 +430,7 @@ export default {
       this.$emit("delete", this.pageItem);
     },
     onTap() {
-      console.log(this.$parent.props,'OnTap');
+      console.log(this.$parent.props, "OnTap");
 
       this.$emit("click", this.$parent.props);
     },

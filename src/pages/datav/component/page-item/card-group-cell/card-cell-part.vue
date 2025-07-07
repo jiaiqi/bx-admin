@@ -311,6 +311,7 @@ export default {
       },
     },
     queryOptions: Object,
+    pageParamsModel: Object,
     accordion: Boolean, //使用手风琴效果
     accordionSeq: Number,
     activeAccordionSeq: Number,

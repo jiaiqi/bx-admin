@@ -143,6 +143,15 @@ export default {
         let paraJsonV2 = pageInfo?.para_with_map_json_data || null;
         console.log("new Promise( paraJson", paraJson);
         self.pageParams = {};
+        if (self.lowCodeJson?.page_no && typeof self.lowCodeParams == 'object' && Object.keys(self.lowCodeParams).length) {
+          // 低代码页面作为组件，从父组件传来的全局参数
+          Object.keys(self.lowCodeParams).forEach(key => {
+            const obj = {};
+            obj.value = self.lowCodeParams[key]
+            self.pageParams[key] = obj
+            self.pageParamsModel[key] = obj
+          })
+        }
         if (
           (!self.queryOptions ||
             Object.keys(self.queryOptions).length === 0) &&

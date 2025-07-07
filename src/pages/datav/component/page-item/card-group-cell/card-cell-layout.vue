@@ -13,7 +13,8 @@
       :cellItem="item"
       :cellItemData="cellItemData"
       :readOnly="readOnly"
-      :queryOptions="queryOptions"
+      :query-options="queryOptions"
+      :page-params-model="pageParamsModel"
       :cellLayoutJson="item"
       :parent-part="cellLayoutJson"
       :accordion="isAccordionMode"
@@ -64,6 +65,10 @@ const props = defineProps({
   readOnly: {
     type: Boolean,
     default: false,
+  },
+  pageParamsModel: {
+    type: Object,
+    default: () => {},
   },
   queryOptions: {
     type: Object,
