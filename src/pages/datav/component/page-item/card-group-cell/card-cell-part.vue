@@ -243,7 +243,7 @@ import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import { formatStyleData } from "@/pages/datav/common";
 import { setAnimationClass, setAnimationStyle } from "@/common/common";
-import { numberAnimationRun } from "@/common/animations";
+import { numberAnimationRun, formatNumber } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
@@ -976,11 +976,16 @@ export default {
             to: number,
             duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
             delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
-            easing: "easeOutExtreme",
-            onProgress: (val) => {
-              ele.innerHTML = val;
+            easing: "easeOutStrong",
+            onStart: () => console.log("动画开始"),
+            onProgress: (value) => {
+              ele.textContent = formatNumber(value, {
+                thousands: true,
+                currency: "",
+                precision: 0,
+              });
             },
-            isInteger: true,
+            onComplete: () => console.log("动画完成"),
           });
         }
       }
@@ -992,7 +997,7 @@ export default {
       this.popupCardJson = popup_card_json;
       this.popupPlacement = popup_placement || "下";
       // 获取点击元素的引用
-      this.clickedElement =  event.target;
+      this.clickedElement = event.target;
       this.showCardPopup = true;
     },
     closeCardPopup() {
