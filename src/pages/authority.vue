@@ -26,9 +26,9 @@
       <el-form-item label="权限类型" prop="auth_type">
         <el-checkbox-group v-model="roleModel.auth_type">
           <el-checkbox lable="自定义" true-label="自定义">自定义</el-checkbox>
-          <el-checkbox lable="所有ALL" true-label="所有ALL"
+          <!-- <el-checkbox lable="所有ALL" true-label="所有ALL"
             >所有ALL</el-checkbox
-          >
+          > -->
         </el-checkbox-group>
       </el-form-item>
     </el-form>
@@ -216,6 +216,7 @@ export default {
           },
         ],
       },
+      queryOptions: {},
     };
   },
   computed: {
@@ -503,6 +504,9 @@ export default {
             self.roleData && self.roleData.length > 0
               ? self.roleData[0].remark
               : "";
+          if (!self.roleModel.remark && self.queryOptions.remark) {
+            self.roleModel.remark = self.queryOptions.remark;
+          }
         });
     },
     setRoleAuth() {
@@ -729,6 +733,9 @@ export default {
   created: function () {},
   mounted: function () {
     this.loading = true;
+    if (this.$route.query) {
+      this.queryOptions = this.$route.query;
+    }
     if (this.pageType == "update") {
       this.loadUpdateDefaultData();
     } else if (this.pageType == "add") {

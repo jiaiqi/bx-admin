@@ -645,6 +645,26 @@ export default {
         operateData,
         mainDetailData
       );
+
+      if (back_url && item["operate_params"] && typeof item["operate_params"] === 'string') {
+        var packageData = this.getPackageData(item, operateData);
+        const defaultData = packageData?.data
+        if (typeof defaultData === 'object' && Object.keys(defaultData).length) {
+          const query = []
+          Object.keys(defaultData).forEach(key => {
+            if (defaultData[key]) {
+              query.push(`${key}=${defaultData[key]}`)
+            }
+          })
+          if (query.length) {
+            if (back_url?.includes('?')) {
+              back_url = `${back_url}&${query.join('&')}`
+            } else {
+              back_url = `${back_url}?${query.join('&')}`
+            }
+          }
+        }
+      }
       if (back_url != "") {
         address = back_url;
       } else {
