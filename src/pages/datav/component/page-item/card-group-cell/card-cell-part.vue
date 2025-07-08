@@ -243,7 +243,7 @@ import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import { formatStyleData } from "@/pages/datav/common";
 import { setAnimationClass, setAnimationStyle } from "@/common/common";
-import { numberAnimationRun, formatNumber } from "@/common/animations";
+import { numberAnimationRun, formatNumber, animateNumberWithFormat } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
@@ -380,6 +380,37 @@ export default {
         this.cellItem?.use_animation === "是" &&
         this.cellItem.animation_type === "数字滚动"
       );
+    },
+    // 数字动画格式化配置
+    numberFormatOptions() {
+      return {
+        thousands: true,
+        currency: "",
+        suffix: "",
+        precision: this.cellLayoutJson?.number_precision || 1,
+        autoUnit: true, // 自动单位转换 万、亿
+        showTitle: true // 显示原始值在 title 属性中
+      };
+    },
+    // 数字动画配置
+    numberAnimationOptions() {
+      return {
+        delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
+        easing: this.cellLayoutJson?.animation_easing || "easeOutStrong",
+        onStart: () => console.log("动画开始"),
+        onComplete: () => console.log("动画完成")
+      };
+    },
+    // 数字动画完整配置
+    numberAnimationConfig() {
+      const number = Number(this.getPartModelData);
+      return {
+        from: 0,
+        to: isNaN(number) ? 0 : number,
+        duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
+        formatOptions: this.numberFormatOptions,
+        animationOptions: this.numberAnimationOptions
+      };
     },
     getIconName() {
       if (this.cellItem?.parts_type == "icon") {
@@ -966,26 +997,12 @@ export default {
         if (ele?.$el) {
           ele = ele?.$el;
         }
-        let number = Number(this.getPartModelData);
-        if (isNaN(number)) {
-          number = 0;
-        }
         if (ele) {
-          numberAnimationStop = numberAnimationRun({
-            from: 0,
-            to: number,
-            duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
-            delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
-            easing: "easeOutStrong",
-            onStart: () => console.log("动画开始"),
-            onProgress: (value) => {
-              ele.textContent = formatNumber(value, {
-                thousands: true,
-                currency: "",
-                precision: 0,
-              });
-            },
-            onComplete: () => console.log("动画完成"),
+          // 使用计算属性配置简化代码
+          const config = this.numberAnimationConfig;
+          numberAnimationStop = animateNumberWithFormat({
+            ...config,
+            element: ele
           });
         }
       }

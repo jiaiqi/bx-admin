@@ -237,21 +237,71 @@ export const numberAnimationRun = (config) => {
 };
 
 /**
+ * 默认单位转换配置
+ */
+const DEFAULT_UNIT_CONFIG = [
+  { threshold: 1000000000000, unit: '万亿', divisor: 1000000000000, precision: 1 },
+  { threshold: 100000000, unit: '亿', divisor: 100000000, precision: 1 },
+  { threshold: 10000, unit: '万', divisor: 10000, precision: 1 }
+];
+
+/**
  * 数值格式化工具函数
  * @param {number} value - 要格式化的数值
  * @param {Object} options - 格式化选项
  * @param {boolean} [options.thousands=false] - 是否添加千分位分隔符
  * @param {string} [options.currency] - 货币符号
- * @param {string} [options.suffix] - 后缀
+ * @param {string|Object} [options.suffix] - 后缀，可以是字符串或包含text和fontSize的对象
+ * @param {string} [options.suffix.text] - 后缀文本
+ * @param {number} [options.suffix.fontSize] - 后缀字体大小（em单位）
  * @param {number} [options.precision=2] - 小数位数
- * @returns {string} 格式化后的字符串
+ * @param {boolean} [options.autoUnit=false] - 是否自动转换单位（千、万、亿、万亿）
+ * @param {boolean} [options.showTitle=false] - 是否显示原始值的title提示
+ * @param {Array} [options.customUnits] - 自定义单位配置数组，格式：[{threshold, unit, divisor, precision}]
+ * @returns {string} 格式化后的字符串，如果包含特殊配置则返回HTML字符串
  */
 export const formatNumber = (value, options = {}) => {
-  const { thousands = false, currency, suffix, precision = 2 } = options;
+  const { 
+    thousands = false, 
+    currency, 
+    suffix, 
+    precision = 2, 
+    autoUnit = false,
+    showTitle = false,
+    customUnits
+  } = options;
 
-  let result = Number(value).toFixed(precision);
+  const originalValue = value; // 保存原始值
+  let number = Number(value);
+  let finalSuffix = suffix;
+  let finalPrecision = precision;
+  let finalThousands = thousands;
 
-  if (thousands) {
+  // 使用自定义单位配置或默认配置
+  const unitConfig = customUnits || DEFAULT_UNIT_CONFIG;
+
+  // 自动单位转换逻辑
+  if (autoUnit && typeof number === 'number' && Math.abs(number) >= 1000) {
+    const absNumber = Math.abs(number);
+    const isNegative = number < 0;
+    
+    for (const config of unitConfig) {
+      if (absNumber >= config.threshold) {
+        finalSuffix = {
+          text: config.unit,
+          fontSize: 0.4
+        };
+        finalPrecision = config.precision !== undefined ? config.precision : 1;
+        finalThousands = true;
+        number = number / config.divisor;
+        break;
+      }
+    }
+  }
+
+  let result = Number(number).toFixed(finalPrecision);
+
+  if (finalThousands) {
     result = Number(result).toLocaleString();
   }
 
@@ -259,9 +309,87 @@ export const formatNumber = (value, options = {}) => {
     result = currency + result;
   }
 
-  if (suffix) {
-    result = result + suffix;
+  if (finalSuffix) {
+    if (typeof finalSuffix === 'string') {
+      // 简单字符串后缀
+      result = result + finalSuffix;
+    } else if (typeof finalSuffix === 'object' && finalSuffix.text) {
+      // 对象形式的后缀，支持字体大小控制
+      const suffixText = finalSuffix.text;
+      const fontSize = finalSuffix.fontSize;
+      
+      if (fontSize && typeof fontSize === 'number') {
+        // 返回带样式的HTML字符串
+        result = result + `<span style="font-size: ${fontSize}em;">${suffixText}</span>`;
+      } else {
+        // 没有指定字体大小，直接添加文本
+        result = result + suffixText;
+      }
+    }
+  }
+
+  // 如果需要显示title或者使用了自动单位转换，返回HTML格式
+  if (showTitle || autoUnit || (finalSuffix && typeof finalSuffix === 'object')) {
+    const titleValue = originalValue.toLocaleString();
+    return `<span class="cursor-pointer" title="${titleValue}">${result}</span>`;
   }
 
   return result;
+};
+
+/**
+ * 创建自定义单位配置的便捷函数
+ * @param {string} type - 配置类型：'chinese'(中文)、'english'(英文)、'bytes'(字节)
+ * @returns {Array} 单位配置数组
+ */
+export const createUnitConfig = (type = 'chinese') => {
+  const configs = {
+    chinese: [
+      { threshold: 1000000000000, unit: '万亿', divisor: 1000000000000, precision: 1 },
+      { threshold: 100000000, unit: '亿', divisor: 100000000, precision: 1 },
+      { threshold: 10000, unit: '万', divisor: 10000, precision: 1 },
+      { threshold: 1000, unit: '千', divisor: 1000, precision: 0 }
+    ],
+    english: [
+      { threshold: 1000000000000, unit: 'T', divisor: 1000000000000, precision: 1 },
+      { threshold: 1000000000, unit: 'B', divisor: 1000000000, precision: 1 },
+      { threshold: 1000000, unit: 'M', divisor: 1000000, precision: 1 },
+      { threshold: 1000, unit: 'K', divisor: 1000, precision: 1 }
+    ],
+    bytes: [
+      { threshold: 1099511627776, unit: 'TB', divisor: 1099511627776, precision: 2 },
+      { threshold: 1073741824, unit: 'GB', divisor: 1073741824, precision: 2 },
+      { threshold: 1048576, unit: 'MB', divisor: 1048576, precision: 2 },
+      { threshold: 1024, unit: 'KB', divisor: 1024, precision: 2 }
+    ]
+  };
+  
+  return configs[type] || configs.chinese;
+};
+
+/**
+ * 数值动画与格式化的组合函数
+ * @param {Object} config - 配置对象
+ * @param {number} config.from - 起始值
+ * @param {number} config.to - 目标值
+ * @param {number} config.duration - 动画时长
+ * @param {HTMLElement} config.element - 目标DOM元素
+ * @param {Object} [config.formatOptions] - formatNumber的选项
+ * @param {Object} [config.animationOptions] - numberAnimationRun的其他选项
+ * @returns {Object} 动画控制对象
+ */
+export const animateNumberWithFormat = (config) => {
+  const { from, to, duration, element, formatOptions = {}, animationOptions = {} } = config;
+  
+  return numberAnimationRun({
+    from,
+    to,
+    duration,
+    onProgress: (value) => {
+      if (element) {
+        element.innerHTML = formatNumber(value, formatOptions);
+      }
+    },
+    ...animationOptions
+  });
 };
