@@ -23,10 +23,10 @@
       :ref="partsType"
     ></video>
     <hlsplayer-video
-    v-if="['hls视频'].includes(partsType)"
-    :cellItem="cellItem"
-    :cellItemData="cellItemData"
-    :pageItem="pageItem"
+      v-if="['hls视频'].includes(partsType)"
+      :cellItem="cellItem"
+      :cellItemData="cellItemData"
+      :pageItem="pageItem"
     >
     </hlsplayer-video>
     <div
@@ -155,6 +155,7 @@
       ]"
       :data-jump-json="jumpJson"
       :data-item-data="itemDataStr"
+      @click.stop="onClickSubBlock()"
       @mouseenter="onMouseenter"
       @mouseleave="onMouseleave"
     >
@@ -227,6 +228,7 @@ import { setAnimationClass, setAnimationStyle } from "@/common/common";
 import { numberAnimationRun } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
+import cardPopup from "../card-group/card-popup.vue";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -251,16 +253,22 @@ export default {
     LiquidFillChart,
     qrCode,
     HlsplayerVideo,
+    cardPopup,
   },
   data() {
     return {
       fileNoMap: {},
-      liquidColor:''
+      liquidColor:'',
+      showCardPopup: false,
+      popupCardJson: null,
+      popupPlacement: "下",
+      popupItemData: null,
+      clickedElement: null,
     };
   },
   props: {
-    pageItem:{
-      type:Object,
+    pageItem: {
+      type: Object,
     },
     cellItem: {
       type: Object,
@@ -286,6 +294,7 @@ export default {
       },
     },
     queryOptions: Object,
+    pageParamsModel: Object,
     accordion: Boolean, //使用手风琴效果
     accordionSeq: Number,
     activeAccordionSeq: Number,
@@ -806,13 +815,23 @@ export default {
         } else if (subCol?.jump_json) {
           // 执行自定义跳转
           if (subCol?.jump_json?.click_type === "弹框") {
-            const element = this.$el;
-            const rect = element.getBoundingClientRect();
-            this.showDialog({
-              rect,
-              data: itemData,
-              jumpJson: subCol.jump_json,
-            });
+            if (subCol?.jump_json?.popup_type === "卡片") {
+              const { popup_card_json, popup_placement } = subCol?.jump_json;
+              this.showCardPopupDialog(
+                event,
+                itemData,
+                popup_card_json,
+                popup_placement
+              );
+            } else {
+              const element = this.$el;
+              const rect = element.getBoundingClientRect();
+              this.showDialog({
+                rect,
+                data: itemData,
+                jumpJson: subCol.jump_json,
+              });
+            }
           } else {
             this.jumpAction(subCol?.jump_json, itemData);
           }
@@ -958,6 +977,23 @@ export default {
         }
       }
     },
+    showCardPopupDialog(event, itemData, popup_card_json, popup_placement) {
+      // 设置弹窗数据
+      const element = this.$el;
+      this.popupItemData = itemData;
+      this.popupCardJson = popup_card_json;
+      this.popupPlacement = popup_placement || "下";
+      // 获取点击元素的引用
+      this.clickedElement =  event.target;
+      this.showCardPopup = true;
+    },
+    closeCardPopup() {
+      this.showCardPopup = false;
+      this.popupItemData = null;
+      this.popupCardJson = null;
+      this.popupPlacement = "下";
+      this.clickedElement = null;
+    },
     initPart() {
       if (this.useNumber) {
         // 使用数字滚动特效
@@ -1047,5 +1083,16 @@ export default {
       margin-right: 0 !important;
     }
   }
+}
+
+/* 卡片弹窗样式 */
+.card-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  // background-color: rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
 }
 </style>

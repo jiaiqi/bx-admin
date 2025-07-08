@@ -3,6 +3,7 @@
     :cell-item="cellItem"
     :cell-item-data="cellData"
     :query-options="queryOptions"
+    :page-params-model="pageParamsModel"
     @on-click-cell="onClickCell"
     :pageItem="pageItem"
   ></card-cell-part>
@@ -37,6 +38,18 @@ export default {
       },
     },
     cellItemData: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
+    queryOptions: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
+    pageParamsModel: {
       type: Object,
       default: () => {
         return {};

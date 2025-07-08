@@ -2,7 +2,8 @@
   <!-- <div style="width:100px;height:100px;background:#fff;"> -->
   <cardGroupCell
     :key="pageItem.com_no"
-    :queryOptions="queryOptions"
+    :query-options="queryOptions"
+    :page-params-model="pageParamsModel"
     ref="cardGroupCell"
     :pageItem="pageItem"
     :cellsLayout="cellsLayoutJson"
@@ -24,6 +25,7 @@
 <script>
 import pageItemComponentMixin from "../../../common/functions/pageItemComponentMixin.js";
 import cardGroupCell from "../card-group-cell/card-group-cell.vue";
+import cardPopup from "./card-popup.vue"
 export default {
   data() {
     return {
@@ -32,10 +34,12 @@ export default {
   },
   components: {
     cardGroupCell,
+    cardPopup
   },
   mixins: [pageItemComponentMixin],
   props: {
     queryOptions: Object,
+    pageParamsModel: Object,
     pageItem: {
       type: Object,
       default: function () {

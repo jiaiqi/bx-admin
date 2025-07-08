@@ -37,7 +37,8 @@
             :cellItemData="cellItemData"
             :comColMap="comColMap"
             :readOnly="readOnly"
-            :queryOptions="queryOptions"
+            :query-options="queryOptions"
+            :page-params-model="pageParamsModel"
             :showActiveCard="showActiveCard"
             :inList="inList"
             @on-click-cell="onClickCell"
@@ -58,7 +59,8 @@
           :cellItemData="cellItemData"
           :comColMap="comColMap"
           :readOnly="readOnly"
-          :queryOptions="queryOptions"
+          :query-options="queryOptions"
+          :page-params-model="pageParamsModel"
           :showActiveCard="showActiveCard"
           :inList="inList"
           @mouse-enter="setActiveCardIndex(index)"
@@ -257,12 +259,6 @@ export default {
     },
   },
   props: {
-    pageParamsModel: {
-      type: Object,
-      default: () => {
-        return {};
-      },
-    },
     readOnly: {
       type: Boolean,
       default() {
@@ -317,6 +313,12 @@ export default {
     },
     currentRadio: {
       type: String,
+    },
+    pageParamsModel: {
+      type: Object,
+      default: () => {
+        return {};
+      },
     },
     queryOptions: {
       type: Object,
