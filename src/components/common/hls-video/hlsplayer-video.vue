@@ -50,7 +50,7 @@ export default {
     //设置标签基础宽高样式
     videoStyle(){
       console.log('*****',this.pageItem)
-      let style = this.cellItem.style_json
+      let style = this.cellItem?.style_json
       if(style){
         return{
           width:style.width,

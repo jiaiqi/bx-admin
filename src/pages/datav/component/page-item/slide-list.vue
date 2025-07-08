@@ -73,7 +73,7 @@
         >
           <el-carousel-item
             v-for="(item, index) in swiperList"
-            :key="item.url"
+            :key="item.url?item.url:index"
             :data-id="item.id"
             :class="current == index ? 'cur' : ''"
           >
@@ -134,7 +134,7 @@
           :cell-data="[item]"
           v-for="(item, index) in swiperList"
           v-if="index === current"
-          :key="item.id"
+          :key="item.id?item.id:index"
         ></card-group-cell>
       </div>
       <div class="thumbnails-container" v-else-if="useThumbnails">

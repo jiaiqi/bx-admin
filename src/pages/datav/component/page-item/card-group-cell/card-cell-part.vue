@@ -212,6 +212,22 @@
         </template>
       </template>
     </div>
+    <!-- 卡片弹窗 -->
+    <div
+        class="card-popup-overlay"
+        @click="closeCardPopup"
+        v-if="showCardPopup"
+    >
+      <card-popup
+          v-if="showCardPopup && popupCardJson"
+          :cardUnitJson="popupCardJson"
+          :data="popupItemData"
+          :clickedElement="clickedElement"
+          :placement="popupPlacement"
+          @close="closeCardPopup"
+          @click.stop
+      />
+    </div>
   </Fragment>
 </template>
 

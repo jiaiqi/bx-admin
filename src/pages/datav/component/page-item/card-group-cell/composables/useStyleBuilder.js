@@ -96,11 +96,13 @@ export function useStyleBuilder() {
    * @returns {Array} 返回样式数组
    */
   const buildDynamicStyles = (props) => {
-    return [
-      props.cellLayoutJson.style_json
-        ? buildColStyleJson(props.cellLayoutJson.style_json, null, props.cellLayoutJson)
-        : buildColStyleJson(null, null, props.cellLayoutJson),
-    ]
+    if(props&&props.cellLayoutJson){
+      return [
+        props.cellLayoutJson.style_json
+            ? buildColStyleJson(props.cellLayoutJson.style_json, null, props.cellLayoutJson)
+            : buildColStyleJson(null, null, props.cellLayoutJson),
+      ]
+    }
   }
 
   return {
