@@ -165,7 +165,12 @@
 </template>
 
 <script>
-import { Icon } from "@iconify/vue2";
+// 图标相关
+import { Icon, addCollection } from "@iconify/vue2";
+import carbon from "@iconify/json/json/carbon.json";
+import mdiLight from "@iconify/json/json/mdi-light.json";
+import ri from "@iconify/json/json/ri.json";
+
 import { materialsTree } from "../components/materials/materials";
 const cardParts = materialsTree.find((item) => item.value === "cardPart");
 import { $http, $selectOne, $selectList, $delete } from "@/common/http";
@@ -376,7 +381,7 @@ export default {
       arr.unshift({
         label: "row",
         icon: "ri-rectangle-line",
-        parts_type: "row",
+        parts_type: "行容器",
       });
       return arr;
     },
@@ -1305,6 +1310,11 @@ export default {
     // } else {
     //   window.removeEventListener("storage", this.handleStorageChange);
     // }
+
+    // 添加图标集合
+    addCollection(carbon);
+    addCollection(mdiLight);
+    addCollection(ri);
   },
   beforeDestroy() {
     // 清除定时器

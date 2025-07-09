@@ -250,7 +250,7 @@ const DEFAULT_UNIT_CONFIG = [
  * @param {number} value - 要格式化的数值
  * @param {Object} options - 格式化选项
  * @param {boolean} [options.thousands=false] - 是否添加千分位分隔符
- * @param {string} [options.currency] - 货币符号
+ * @param {string} [options.prefix] - 前缀
  * @param {string|Object} [options.suffix] - 后缀，可以是字符串或包含text和fontSize的对象
  * @param {string} [options.suffix.text] - 后缀文本
  * @param {number} [options.suffix.fontSize] - 后缀字体大小（em单位）
@@ -263,7 +263,7 @@ const DEFAULT_UNIT_CONFIG = [
 export const formatNumber = (value, options = {}) => {
   const { 
     thousands = false, 
-    currency, 
+    prefix, 
     suffix, 
     precision = 2, 
     autoUnit = false,
@@ -287,8 +287,18 @@ export const formatNumber = (value, options = {}) => {
     
     for (const config of unitConfig) {
       if (absNumber >= config.threshold) {
+        // 如果用户传入了suffix，需要将用户的suffix和自动单位合并
+        let combinedSuffixText = config.unit;
+        if (suffix) {
+          if (typeof suffix === 'string') {
+            combinedSuffixText = config.unit + suffix;
+          } else if (typeof suffix === 'object' && suffix.text) {
+            combinedSuffixText = config.unit + suffix.text;
+          }
+        }
+        
         finalSuffix = {
-          text: config.unit,
+          text: combinedSuffixText,
           fontSize: 0.4
         };
         finalPrecision = config.precision !== undefined ? config.precision : 1;
@@ -305,8 +315,8 @@ export const formatNumber = (value, options = {}) => {
     result = Number(result).toLocaleString();
   }
 
-  if (currency) {
-    result = currency + result;
+  if (prefix) {
+    result = prefix + result;
   }
 
   if (finalSuffix) {
@@ -320,7 +330,7 @@ export const formatNumber = (value, options = {}) => {
       
       if (fontSize && typeof fontSize === 'number') {
         // 返回带样式的HTML字符串
-        result = result + `<span style="font-size: ${fontSize}em;">${suffixText}</span>`;
+        result = result + `<span class="suffix-text" style="font-size: ${fontSize}em;">${suffixText}</span>`;
       } else {
         // 没有指定字体大小，直接添加文本
         result = result + suffixText;
@@ -368,15 +378,110 @@ export const createUnitConfig = (type = 'chinese') => {
 };
 
 /**
- * 数值动画与格式化的组合函数
+ * 数字动画与格式化的组合函数
  * @param {Object} config - 配置对象
  * @param {number} config.from - 起始值
- * @param {number} config.to - 目标值
- * @param {number} config.duration - 动画时长
+ * @param {number} config.to - 结束值
+ * @param {number} config.duration - 动画持续时间（毫秒）
  * @param {HTMLElement} config.element - 目标DOM元素
- * @param {Object} [config.formatOptions] - formatNumber的选项
- * @param {Object} [config.animationOptions] - numberAnimationRun的其他选项
- * @returns {Object} 动画控制对象
+ * @param {Object} config.formatOptions - 格式化选项（参考formatNumber函数）
+ * @param {Object} config.animationOptions - 动画选项，包含以下属性：
+ * @param {number} [config.animationOptions.delay=0] - 动画延迟时间（毫秒）
+ * @param {string} [config.animationOptions.easing='linear'] - 缓动函数类型（linear, easeIn, easeOut, easeInOut, easeOutStrong等）
+ * @param {Function} [config.animationOptions.onStart] - 动画开始时的回调函数
+ * @param {Function} [config.animationOptions.onProgress] - 动画进行中的回调函数，接收当前值作为参数
+ * @param {Function} [config.animationOptions.onComplete] - 动画完成时的回调函数
+ * @param {Function} [config.animationOptions.onStop] - 动画停止时的回调函数
+ * @param {number} [config.animationOptions.fps=60] - 动画帧率
+ * @param {boolean} [config.animationOptions.autoStart=true] - 是否自动开始动画
+ * @returns {Function} 停止动画的函数
+ * 
+ * @example
+ * // 基础用法 - 简单的数字滚动
+ * const stopAnimation = animateNumberWithFormat({
+ *   from: 0,
+ *   to: 1000,
+ *   duration: 2000,
+ *   element: document.getElementById('counter')
+ * });
+ * 
+ * @example
+ * // 带格式化的数字动画
+ * animateNumberWithFormat({
+ *   from: 0,
+ *   to: 9876543210,
+ *   duration: 3000,
+ *   element: document.querySelector('.sales-counter'),
+ *   formatOptions: {
+ *     thousands: true,
+ *     autoUnit: true,
+ *     showTitle: true,
+ *     precision: 1
+ *   }
+ * });
+ * 
+ * @example
+ * // 完整配置示例 - 带延迟和回调
+ * const animation = animateNumberWithFormat({
+ *   from: 0,
+ *   to: 500000,
+ *   duration: 2500,
+ *   element: document.getElementById('revenue'),
+ *   formatOptions: {
+ *     thousands: true,
+ *     prefix: '¥',
+ *     autoUnit: true,
+ *     customUnits: createUnitConfig('chinese')
+ *   },
+ *   animationOptions: {
+ *     delay: 1000,
+ *     easing: 'easeOutStrong',
+ *     onStart: () => console.log('收入动画开始'),
+ *     onProgress: (value) => {
+ *       // 可以在这里添加进度相关的逻辑
+ *       if (value > 250000) {
+ *         document.body.classList.add('milestone-reached');
+ *       }
+ *     },
+ *     onComplete: () => {
+ *       console.log('收入动画完成');
+ *       // 触发下一个动画或其他操作
+ *     }
+ *   }
+ * });
+ * 
+ * // 在需要时停止动画
+ * // animation();
+ * 
+ * @example
+ * // Vue组件中的使用
+ * export default {
+ *   mounted() {
+ *     this.startCounterAnimation();
+ *   },
+ *   methods: {
+ *     startCounterAnimation() {
+ *       this.stopCounter = animateNumberWithFormat({
+ *         from: 0,
+ *         to: this.targetValue,
+ *         duration: 2000,
+ *         element: this.$refs.counter,
+ *         formatOptions: {
+ *           autoUnit: true,
+ *           showTitle: true
+ *         },
+ *         animationOptions: {
+ *           easing: 'easeOut',
+ *           onComplete: () => this.$emit('animation-complete')
+ *         }
+ *       });
+ *     }
+ *   },
+ *   beforeUnmount() {
+ *     // 组件销毁前停止动画
+ *     this.stopCounter?.();
+ *   }
+ * }
  */
 export const animateNumberWithFormat = (config) => {
   const { from, to, duration, element, formatOptions = {}, animationOptions = {} } = config;
