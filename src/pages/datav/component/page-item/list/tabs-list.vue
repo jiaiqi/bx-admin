@@ -36,6 +36,8 @@
           ref="pageItem"
           :page-item="item"
           :in-tabs="true"
+          :pageParamsModel="pageParamsModel"
+          :queryOptions="queryOptions"
           v-if="activeName === item.com_name"
         ></page-item>
         <!-- <List
@@ -71,6 +73,12 @@ export default {
   },
   props: {
     pageItem: {
+      type: Object,
+    },
+    pageParamsModel: {
+      type: Object,
+    },
+    queryOptions: {
       type: Object,
     },
   },
