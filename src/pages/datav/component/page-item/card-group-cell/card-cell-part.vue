@@ -30,7 +30,7 @@
     >
     </hlsplayer-video>
     <div
-      v-else-if="['string', '字符串', '时间日期'].includes(cellItem.parts_type)"
+      v-else-if="textPartTypes.includes(cellItem.parts_type)"
       class="bx-cell-string"
       :class="[
         {
@@ -45,7 +45,7 @@
       {{ getPartModelData }}
     </div>
     <div
-      v-else-if="item.parts_type == 'variable'"
+      v-else-if="['variable', '变量'].includes(cellItem.parts_type)"
       class="bx-cell-variable"
       :class="{
         'cursor-pointer': isLink,
@@ -92,7 +92,7 @@
     ></el-progress>
     <i
       v-else-if="
-        item.parts_type == 'icon' &&
+        iconPartTypes.includes(item.parts_type) &&
         getPartModelData &&
         getPartModelData.indexOf('el-icon-') === 0
       "
@@ -101,20 +101,8 @@
       @click.stop="onClickSubBlock()"
       :ref="partsType"
     ></i>
-    <!-- <Icon
-      v-else-if="
-        item.parts_type == 'icon' &&
-        getPartModelData &&
-        getPartModelData.indexOf('i-') === 0
-      "
-      :icon="getPartModelData.replace('i-', '')"
-      class="bx-cell-icon"
-      :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
-      :style="[buildColStyleJson]"
-      @click.stop="onClickSubBlock()"
-    ></Icon> -->
     <Icon
-      v-else-if="item.parts_type == 'icon' && getIconName"
+      v-else-if="iconPartTypes.includes(item.parts_type) && getIconName"
       :icon="getIconName"
       class="bx-cell-icon"
       :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
@@ -139,7 +127,7 @@
     <div
       ref="bxCellContainer"
       v-else-if="
-        ['row', 'block'].includes(cellItem.parts_type) &&
+        containerPartTypes.includes(cellItem.parts_type) &&
         cellItem.hasOwnProperty('sub_card_parts_json') &&
         cellItem.sub_card_parts_json.length > 0
       "
@@ -172,7 +160,6 @@
         v-if="childAnimationType === '跑马灯'"
       >
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
-          <!-- <div class="marquee-item"> -->
           <card-cell-part
             :cellItem="subCardPart"
             :comColMap="setComColMap"
@@ -189,7 +176,6 @@
             @show-dialog="showDialog"
             class="marquee-item"
           ></card-cell-part>
-          <!-- </div> -->
         </template>
       </div>
       <template v-else>
@@ -241,7 +227,11 @@ import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import { formatStyleData } from "@/pages/datav/common";
 import { setAnimationClass, setAnimationStyle } from "@/common/common";
-import { numberAnimationRun, formatNumber } from "@/common/animations";
+import {
+  numberAnimationRun,
+  formatNumber,
+  animateNumberWithFormat,
+} from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
@@ -280,6 +270,12 @@ export default {
       popupPlacement: "下",
       popupItemData: null,
       clickedElement: null,
+      textPartTypes: ["文本", "字符串", "string", "数字", "金额", "时间日期"],
+      numberPartTypes: ["数字", "金额"],
+      datePartTypes: ["时间日期"],
+      imagePartTypes: ["图片", "iconImg"],
+      iconPartTypes: ["icon", "字体图标", "图标"],
+      containerPartTypes: ["块容器", "行容器", "block", "row"],
     };
   },
   props: {
@@ -374,11 +370,45 @@ export default {
         repeat: this.cellItem.animation_repeat,
       });
     },
-    useNumber() {
+    // 是否开启数字滚动动画
+    enableNumberRollAnimation() {
       return (
         this.cellItem?.use_animation === "是" &&
         this.cellItem.animation_type === "数字滚动"
       );
+    },
+    // 数字动画格式化配置
+    numberFormatOptions() {
+      return {
+        thousands:
+          this.cellLayoutJson?.num_option?.includes("千分位分隔符") || false,
+        prefix: this.cellLayoutJson?.num_prefix || "", // 前缀
+        suffix: this.cellLayoutJson?.num_suffix || "", // 单位
+        precision: this.cellLayoutJson?.number_precision || 1,
+        autoUnit:
+          this.cellLayoutJson?.num_option?.includes("自动换算单位") || false, // 自动换算单位 万、亿
+        showTitle: true, // 显示原始值在 title 属性中
+      };
+    },
+    // 数字动画配置
+    numberAnimationOptions() {
+      return {
+        delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
+        easing: this.cellLayoutJson?.animation_easing || "easeOutStrong",
+        onStart: () => console.log("动画开始"),
+        onComplete: () => console.log("动画完成"),
+      };
+    },
+    // 数字动画完整配置
+    numberAnimationConfig() {
+      const number = Number(this.getPartModelData);
+      return {
+        from: 0,
+        to: isNaN(number) ? 0 : number,
+        duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
+        formatOptions: this.numberFormatOptions,
+        animationOptions: this.numberAnimationOptions,
+      };
     },
     getIconName() {
       if (this.cellItem?.parts_type == "icon") {
@@ -967,33 +997,40 @@ export default {
         this.$set(this.fileNoMap, no, res);
       }
     },
+    parseNumberToText() {
+      if (this.numberPartTypes.includes(this.cellItem.parts_type)) {
+        // 数字类型，解析配置，处理千分位、单位换算等
+        const number = Number(this.getPartModelData);
+        if (!isNaN(number)) {
+          // 使用formatNumber函数处理数字格式化
+          const formattedText = formatNumber(number, this.numberFormatOptions);
+          
+          // 更新DOM元素显示格式化后的数字
+          this.$nextTick(() => {
+            let ele = this.$refs?.[this.partsType];
+            if (ele?.$el) {
+              ele = ele?.$el;
+            }
+            if (ele) {
+              ele.innerHTML = formattedText;
+            }
+          });
+        }
+      }
+    },
     setNumberAnimation() {
-      if (this.useNumber) {
+      if (this.enableNumberRollAnimation) {
         // 使用数字滚动特效
         let ele = this.$refs?.[this.partsType];
         if (ele?.$el) {
           ele = ele?.$el;
         }
-        let number = Number(this.getPartModelData);
-        if (isNaN(number)) {
-          number = 0;
-        }
         if (ele) {
-          numberAnimationStop = numberAnimationRun({
-            from: 0,
-            to: number,
-            duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
-            delay: (this.cellLayoutJson?.animation_delay || 0) * 1000,
-            easing: "easeOutStrong",
-            onStart: () => console.log("动画开始"),
-            onProgress: (value) => {
-              ele.textContent = formatNumber(value, {
-                thousands: true,
-                currency: "",
-                precision: 0,
-              });
-            },
-            onComplete: () => console.log("动画完成"),
+          // 使用计算属性配置简化代码
+          const config = this.numberAnimationConfig;
+          numberAnimationStop = animateNumberWithFormat({
+            ...config,
+            element: ele,
           });
         }
       }
@@ -1016,11 +1053,14 @@ export default {
       this.clickedElement = null;
     },
     initPart() {
-      if (this.useNumber) {
+      if (this.enableNumberRollAnimation) {
         // 使用数字滚动特效
         this.$nextTick(() => {
           this.setNumberAnimation();
         });
+      } else if (this.numberPartTypes.includes(this.cellItem.parts_type)) {
+        // 数字类型，解析配置，处理千分位、单位换算等
+        this.parseNumberToText();
       } else if (
         this.useChildAnimation &&
         this.childAnimationType === "跑马灯"

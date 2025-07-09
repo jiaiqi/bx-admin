@@ -21,7 +21,6 @@ export default {
   data() {
     return {
       cellData: null,
-      queryOptions: null,
     };
   },
   props: {
@@ -195,7 +194,6 @@ export default {
     },
   },
   created() {
-    this.queryOptions = this.$route.query || {};
     if (this.cellItemData) {
       this.cellData = this.cellItemData;
     } else {
