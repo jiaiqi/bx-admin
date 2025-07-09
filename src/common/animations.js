@@ -309,7 +309,13 @@ export const formatNumber = (value, options = {}) => {
     }
   }
 
-  let result = Number(number).toFixed(finalPrecision);
+  // 如果数值为0，则不显示小数部分
+  let result;
+  if (number === 0) {
+    result = '0';
+  } else {
+    result = Number(number).toFixed(finalPrecision);
+  }
 
   if (finalThousands) {
     result = Number(result).toLocaleString();
