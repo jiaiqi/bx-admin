@@ -24,7 +24,7 @@
       @show-dialog="showDialog"
       @on-click-row="changeActiveAccordionSeq(n)"
       @mouse-enter="changeActiveAccordionSeq(n)"
-      v-for="(item, n) in cellLayoutJson.parts_json"
+      v-for="(item, n) in cellLayoutJson?.parts_json"
       :key="item.id || `part-${n}`"
     ></card-cell-part>
     <slot name="footer"></slot>

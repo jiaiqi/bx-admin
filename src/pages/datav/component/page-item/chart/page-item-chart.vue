@@ -8,13 +8,20 @@
     :options="option"
     :canvasId="canvasId"
     :chartType="chartType"
-    v-if="option"
+    :cellData="cellData"
+    v-if="option&&chartType!=='liquidFill'"
     @click-chart="clickChart"
   ></Chart>
+   <LiquidFillChart
+       v-else
+       :value="liquidValue"
+       :color="setLiquidColor"
+   ></LiquidFillChart>
 </template>
 
 <script setup>
 import { computed, watch, onMounted, ref } from "vue";
+import LiquidFillChart from "@/pages/datav/component/page-item/LiquidFillChart.vue";
 import Chart from "./chart.vue";
 import { $select } from "../../../common/http.js";
 import {
@@ -23,6 +30,7 @@ import {
 } from "../use-functions/buildOption";
 import { useUtils } from "@/common/vueApi.js";
 import cloneDeep from "lodash/cloneDeep";
+import {formatStyleData} from "@/pages/datav/common";
 const { renderStr } = useUtils();
 
 const props = defineProps({
@@ -56,6 +64,17 @@ const loading = ref(false);
 const clickChart = () => {
   emit("clickChart");
 };
+
+const setLiquidColor=computed(()=>{
+  const styleJson = pageItem?.style_json||{}
+  let style = {};
+  if (styleJson) {
+    style = formatStyleData(styleJson);
+  }
+  if(style.color) {
+  }
+  return style.color;
+})
 const chartConfig = computed(() => {
   return pageItem?.chart_json;
 });
@@ -178,7 +197,8 @@ const onSrvReq = async (req = null) => {
       cellData.value = res.data;
     }
     console.log(pageItem);
-
+    //todo 水球数据只需要传入具体的数字
+    setLiquidData()
     option.value = useBuildOption(
       chartType.value,
       pageItem,
@@ -195,8 +215,15 @@ watch(
   },
   { immediate: true, deep: true }
 );
-
+ const liquidValue=ref(0)
+//手动更新水球图数据
+const setLiquidData=()=>{
+  if(cellData.value.length > 0) {
+    liquidValue.value = cellData.value[0].value==='string'? Number(cellData.value[0].value):cellData.value[0].value;
+  }
+}
 onMounted(() => {
+
   if (
     pageItem?.srv_req_type === "模拟数据" &&
     pageItem?.mock_srv_data_json?.length
@@ -212,7 +239,7 @@ onMounted(() => {
   } else if (
     chartConfig.value?.more_option?.includes("使用模拟数据") &&
     !pageItem?.srv_req_json &&
-    !cellData.value.length
+    !cellData.value.length&&!chartType.value==='liquidFill'
   ) {
     option.value = useBuildOption(
       chartType.value,
@@ -220,7 +247,21 @@ onMounted(() => {
       chartConfig.value.mock_data_json || [],
       props.layout
     );
-  } else if (!pageItem?.srv_req_type && !cellData.value?.length) {
+  }
+  else if(chartConfig.value?.more_option?.includes("使用模拟数据") &&
+      !pageItem?.srv_req_json &&
+      !cellData.value.length&&chartType.value==='liquidFill')
+  {
+    option.value ={
+      chartType:chartType.value,
+      pageItem:pageItem,
+      cellData:chartConfig.value.mock_data_json || [],
+    }
+    cellData.value =chartConfig.value.mock_data_json||[]
+    //todo 水球数据只需要传入具体的数字
+    setLiquidData()
+  }
+  else if (!pageItem?.srv_req_type && !cellData.value?.length) {
     option.value = setDefaultChartOption(
       chartType.value,
       pageItem,

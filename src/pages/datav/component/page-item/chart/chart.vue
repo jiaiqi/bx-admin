@@ -13,6 +13,12 @@ const props = defineProps({
     type: String,
     default: "100%",
   },
+  chartType:{
+    type: String,
+  },
+  cellData:{
+    type: Object||Array,
+  }
 });
 const domRef = ref(null);
 
@@ -62,6 +68,7 @@ watch(
 
 //加载图表配置
 const drawOption = () => {
+  console.log(props.chartType)
   if (!chartObj) return;
   chartObj.showLoading({
     text: '加载中...',

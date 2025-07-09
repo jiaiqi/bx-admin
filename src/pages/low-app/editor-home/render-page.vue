@@ -494,28 +494,36 @@ export default {
       return this.currentComponents.filter(comp => comp.isPositionChanged)
     },
 
-  },
-  mounted() {
-    // 监听拖拽结束事件
-    document.addEventListener('drop', (e) => {
-      const dragData = dragStore.getDraggingElement()
+    // 刷新方法，外部可通过ref调用
+    refresh(newComponents) {
+      if (Array.isArray(newComponents)) {
+        this.currentComponents = newComponents.map((comp, index) => ({
+          ...comp,
+          dragIndex: index,
+          com_seq: comp.com_seq || (index + 1) * 100,
+          isPositionChanged: false
+        })).sort((a, b) => a.com_seq - b.com_seq)
+        this.rearrangeComponents()
+      }
+      this.$forceUpdate(); // 强制刷新视图
+    },
+
+    // 全局drop事件处理
+    handleGlobalDrop(e) {
+      const dragData = dragStore.getDraggingElement();
       if (dragData) {
         // 获取鼠标位置
-        const rect = this.$el.getBoundingClientRect()
-        const containerRect = this.$el.querySelector('.component-container').getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const y = e.clientY - containerRect.top + this.$el.querySelector('.component-container').scrollTop
-        
+        const rect = this.$el.getBoundingClientRect();
+        const containerRect = this.$el.querySelector('.component-container').getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - containerRect.top + this.$el.querySelector('.component-container').scrollTop;
         // 将像素转换为rem（除以16）
-        const xRem = x / 16
-        const yRem = y / 16
+        const xRem = x / 16;
+        const yRem = y / 16;
         if (dragData.type === "cardPart") {
-              dragData.com_name =
-              dragData.comp_label ||
-              dragData.chart_name ||
-              dragData.label;
-            dragData.com_type = "卡片部件";
-            dragData.data = {
+          dragData.com_name = dragData.comp_label || dragData.chart_name || dragData.label;
+          dragData.com_type = "卡片部件";
+          dragData.data = {
             com_type: "卡片部件",
             card_parts_name: dragData.com_name,
             parts_text: dragData.com_name,
@@ -523,22 +531,22 @@ export default {
           };
           dragData._type = "component";
         }
-         if (dragData.type === "悬浮组件") {
-           dragData.com_type = "cardGroup";
-           dragData.component = "float-component";
-           dragData._editType = "add";
-           dragData.com_name = "悬浮组件";
-           dragData.com_option = "悬浮可拖动";
+        if (dragData.type === "悬浮组件") {
+          dragData.com_type = "cardGroup";
+          dragData.component = "float-component";
+          dragData._editType = "add";
+          dragData.com_name = "悬浮组件";
+          dragData.com_option = "悬浮可拖动";
         }
-         if(dragData.value === "详情组件") {
-           dragData.com_type = "detail";
-           dragData.component = "page-item";
-           if (!dragData._editType) {
-             dragData._editType = "add";
-             dragData.com_name = "详情";
-             dragData.com_type = "detail";
-           }
-         }
+        if (dragData.value === "详情组件") {
+          dragData.com_type = "detail";
+          dragData.component = "page-item";
+          if (!dragData._editType) {
+            dragData._editType = "add";
+            dragData.com_name = "详情";
+            dragData.com_type = "detail";
+          }
+        }
         // 创建新组件数据
         const newComponent = {
           id: `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -553,31 +561,35 @@ export default {
           dragIndex: this.currentComponents.length, // 添加拖拽索引
           isPositionChanged: false, // 初始化位置变更标识
           ...dragData,
-        }
-        console.log('Adding new component:', newComponent)
-        
+        };
+        console.log('Adding new component:', newComponent);
         // 使用 addComponent 方法添加新组件
-        this.addComponent(newComponent)
-        
+        this.addComponent(newComponent);
         // 清除拖拽状态
-        dragStore.clearDragType()
-        dragStore.setDraggingElement(null)
+        dragStore.clearDragType();
+        dragStore.setDraggingElement(null);
       }
-    })
-
-    // 添加拖拽结束事件监听
-    document.addEventListener('dragend', () => {
+    },
+    // 全局dragend事件处理
+    handleGlobalDragEnd() {
       // 只在非drop事件时清除状态
       if (!dragStore.getDraggingElement()) {
-        dragStore.clearDragType()
-        dragStore.setDraggingElement(null)
+        dragStore.clearDragType();
+        dragStore.setDraggingElement(null);
       }
-    })
+    },
+  },
+  mounted() {
+    // 监听拖拽结束事件
+    this._onDrop = this.handleGlobalDrop.bind(this);
+    this._onDragEnd = this.handleGlobalDragEnd.bind(this);
+    document.addEventListener('drop', this._onDrop);
+    document.addEventListener('dragend', this._onDragEnd);
   },
   beforeDestroy() {
     // 移除事件监听
-    document.removeEventListener('drop', this.handleDrop)
-    document.removeEventListener('dragend', this.handleDragEnd)
+    document.removeEventListener('drop', this._onDrop);
+    document.removeEventListener('dragend', this._onDragEnd);
   }
 }
 </script>

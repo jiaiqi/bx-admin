@@ -3,8 +3,8 @@
     <LiquidFillChart
       v-if="partsType === '水球图'"
       :value="getPartModelData"
-      :color="item.wave_color"
       :ref="partsType"
+      :color="setLiquidColor"
     />
     <video
       class="bx-cell-video"
@@ -198,21 +198,20 @@
         </template>
       </template>
     </div>
-
     <!-- 卡片弹窗 -->
     <div
-      class="card-popup-overlay"
-      @click="closeCardPopup"
-      v-if="showCardPopup"
+        class="card-popup-overlay"
+        @click="closeCardPopup"
+        v-if="showCardPopup"
     >
       <card-popup
-        v-if="showCardPopup && popupCardJson"
-        :cardUnitJson="popupCardJson"
-        :data="popupItemData"
-        :clickedElement="clickedElement"
-        :placement="popupPlacement"
-        @close="closeCardPopup"
-        @click.stop
+          v-if="showCardPopup && popupCardJson"
+          :cardUnitJson="popupCardJson"
+          :data="popupItemData"
+          :clickedElement="clickedElement"
+          :placement="popupPlacement"
+          @close="closeCardPopup"
+          @click.stop
       />
     </div>
   </Fragment>
@@ -220,7 +219,6 @@
 
 <script>
 import "animate.css";
-import Teleport from "vue2-teleport";
 
 import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
@@ -266,6 +264,7 @@ export default {
   data() {
     return {
       fileNoMap: {},
+      liquidColor:'',
       showCardPopup: false,
       popupCardJson: null,
       popupPlacement: "下",
@@ -512,6 +511,17 @@ export default {
         };
       }
       return style;
+    },
+
+    setLiquidColor(){
+      const styleJson = this.pageItem?.style_json||{}
+      let style = {};
+      if (styleJson) {
+        style = formatStyleData(styleJson);
+      }
+      if(style.color) {
+      }
+      return style.color;
     },
     getPartModelData() {
       const item = this.cellItem;
@@ -786,7 +796,6 @@ export default {
       return style || {};
     },
     onClickCell(data, layout) {
-      debugger;
       this.$emit("onClickSubBlock", data, layout);
     },
     toLogin() {
@@ -809,7 +818,6 @@ export default {
     onClickSubBlock: throttle(
       function (itemData, subCol, cellLayoutJson, parentCol, originCol) {
         this.$emit("on-click-row", itemData, cellLayoutJson);
-        debugger;
         const self = this;
         itemData = itemData || this.cellItemData;
         subCol = subCol || this.cellItem;

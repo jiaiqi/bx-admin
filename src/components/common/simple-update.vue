@@ -389,6 +389,7 @@ export default {
 
     confLoader: function () {
       let loader = this.$refs.loader;
+      if(!loader) return
       loader.enableFunc = (_) => {
         return loader.conditions && loader.conditions.length > 0;
       };
