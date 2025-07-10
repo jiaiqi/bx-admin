@@ -196,6 +196,7 @@ export default {
         pageNo: 1,
       },
       options: [],
+      initOptions: [],
       gridHeader: [],
       gridData: [],
       allData: [],
@@ -330,6 +331,18 @@ export default {
         });
       },
     },
+    optionListV2: {
+      immediate: true,
+      deep: true,
+      handler(newValue, oldValue) {
+        console.log("optionListV2变化了:", newValue, oldValue);
+        if(!this.field.model&&this.selected?.length){
+          this.selected = this.isMulti ? [] : "";
+          this.isSelectedAll = false
+          this.setFieldVal()
+        }
+      },
+    },
   },
   methods: {
     visibleChange() {
@@ -341,6 +354,13 @@ export default {
         result = this.allData.filter((item) =>
           this.selected.includes(item[this.valueCol])
         );
+      }
+      if(this.isSelectedAll&&this.allSelect){
+        return [{
+          checked: true,
+          label: "全部",
+          value: this.allSelect,
+        }]
       }
       return result;
     },
@@ -439,9 +459,23 @@ export default {
             this.selected = this.finderSelected.split(",");
             break;
         }
-        if(this.allSelect&&this.finderSelected===this.allSelect){
-          this.isSelectedAll = true;
+      if (this.optionListV2?.obj_info?.a_save_b_obj_col) {
+        let saveObjData =
+          this.defaultValues?.[this.optionListV2?.obj_info?.a_save_b_obj_col];
+        if (saveObjData) {
+          try {
+            let arr = JSON.parse(saveObjData);
+            this.initOptions = arr;
+            if (this.initOptions?.length) {
+              this.gridData = this.initOptions;
+              this.allData = this.initOptions;
+            }
+          } catch (error) {}
         }
+      }
+      if (this.allSelect && this.finderSelected === this.allSelect) {
+        this.isSelectedAll = true;
+      }
     },
     setFieldVal() {
       let val = "";
@@ -518,7 +552,14 @@ export default {
         //   ]);
         // }
         this.selected = this.isMulti ? [this.allSelect] : this.allSelect;
-      }else{
+        if(!this.allData.find((item) => item.value === this.allSelect)){
+          this.allData.push({
+            checked: true,
+            label: "全部",
+            value: this.allSelect,
+          });
+        }
+      } else {
         this.selected = this.isMulti ? [] : "";
       }
       this.setFieldVal();
@@ -1012,6 +1053,8 @@ export default {
                 item.checked = false;
                 return item;
               });
+            } else if (this.initOptions?.length) {
+              this.gridData = this.initOptions;
             }
             let allData = uniqBy(
               [

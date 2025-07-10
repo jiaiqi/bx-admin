@@ -1449,7 +1449,7 @@ export default {
       if (formModel && formModel[this.objInfo?.a_save_b_obj_col]) {
         try {
           let values = JSON.parse(formModel[this.objInfo?.a_save_b_obj_col]);
-          if (Array.isArray(files) && files.length) {
+          if (Array.isArray(values) && values.length) {
             this.$emit("more-info", values);
             return;
           }
