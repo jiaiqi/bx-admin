@@ -4,7 +4,13 @@
       trigger="focus"
       ref="show_popover"
       :disabled="disabled"
-      :popper-options="{ boundariesElement: 'viewport', removeOnDestroy: true }"
+      :append-to-body="false"
+      :popper-options="{
+        boundariesElement: 'body',
+        gpuAcceleration: true,
+        positionFixed: true,
+        preventOverflow: true,
+      }"
       @show="visibleChange"
     >
       <template slot="reference">
@@ -45,74 +51,88 @@
           </el-select>
         </div>
       </template>
-      <div class="picker-view">
+      <div class="picker-view" :class="{ 'is-selected-all': isSelectedAll }">
         <div class="top-bar">
+          <el-checkbox
+            v-if="allSelect"
+            v-model="isSelectedAll"
+            @change="changeSelectedAll"
+            class="mr-2"
+            >全选</el-checkbox
+          >
           <el-input
             placeholder="输入查询条件"
             suffix-icon="el-icon-search"
             v-model="inputVal"
             clearable
+            :disabled="isSelectedAll === true"
             @keyup.enter.native="onSearch"
           >
           </el-input>
-          <el-button type="primary" icon="el-icon-search" @click="onSearch"
+          <el-button
+            type="primary"
+            icon="el-icon-search"
+            @click="onSearch"
+            :disabled="isSelectedAll === true"
             >搜索</el-button
           >
         </div>
-        <el-table
-          class="el-table"
-          ref="multipleTable"
-          :data="setGridData"
-          row-key="id"
-          lazy
-          :load="loadChild"
-          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-          :highlight-current-row="!isMulti"
-          @row-click="clickRow"
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column width="120" v-if="isMulti">
-            <template #header>
-              <div>
+        <div class="table-container">
+          <el-table
+            class="el-table"
+            ref="multipleTable"
+            :data="setGridData"
+            row-key="id"
+            lazy
+            :load="loadChild"
+            :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+            :highlight-current-row="!isMulti"
+            @row-click="clickRow"
+            @selection-change="handleSelectionChange"
+          >
+            <!-- <el-table-column type="selection" width="55" v-if="isMulti">
+          </el-table-column> -->
+            <el-table-column width="55" v-if="isMulti">
+              <template #header>
                 <el-checkbox
                   :value="
                     gridData.every((item) => selected.includes(item[valueCol]))
                   "
                   @change="onCheckedAll"
                 ></el-checkbox>
-              </div>
-            </template>
-            <template slot-scope="scope">
-              <el-checkbox
-                :value="selected.includes(scope.row[valueCol])"
-                @change="changeSelected(scope.$index, scope.row)"
-              ></el-checkbox>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :min-width="flexColumnWidth(item.label, item.column)"
-            :label="item.label"
-            v-for="item in setGridHeader"
-            :key="item.column"
-            v-if="item.srvcol && item.srvcol.in_list == 1"
-            :prop="item.column"
-          ></el-table-column>
-        </el-table>
-        <div class="bottom-bar">
-          <el-pagination
-            background
-            layout="prev, pager, next"
-            :total="page.total"
-            :current-page="page.pageNo"
-            :page-size="page.rownumber"
-            @current-change="changePage"
-          >
-          </el-pagination>
+              </template>
+              <template slot-scope="scope">
+                <el-checkbox
+                  :value="selected.includes(scope.row[valueCol])"
+                  @change="changeSelected(scope.$index, scope.row)"
+                ></el-checkbox>
+              </template>
+            </el-table-column>
+            <el-table-column
+              :min-width="flexColumnWidth(item.label, item.column)"
+              :label="item.label"
+              v-for="item in setGridHeader"
+              :key="item.column"
+              v-if="item.srvcol && item.srvcol.in_list == 1"
+              :prop="item.column"
+            ></el-table-column>
+          </el-table>
+          <div class="bottom-bar">
+            <el-pagination
+              background
+              layout="prev, pager, next"
+              :total="page.total"
+              :current-page="page.pageNo"
+              :page-size="page.rownumber"
+              @current-change="changePage"
+            >
+            </el-pagination>
+          </div>
         </div>
       </div>
     </el-popover>
     <!-- <div class="selected-all flex-1" v-else>全部</div> -->
-    <el-switch
+    <!-- <el-switch
       v-model="isSelectedAll"
       active-color="#409EFF"
       inactive-color="#CDCDCD"
@@ -122,7 +142,7 @@
       class="ml-2"
       @change="changeSelectedAll"
     >
-    </el-switch>
+    </el-switch> -->
   </div>
 </template>
 
@@ -154,6 +174,12 @@ export default {
     formModel: {
       type: Object,
     },
+    optionListV2: {
+      type: Object,
+    },
+    optionListV3: {
+      type: [Array],
+    },
   },
   // mixins: [
   //   ListMixin
@@ -179,6 +205,9 @@ export default {
     };
   },
   computed: {
+    allSelect() {
+      return this.optionListV2?.allSelect;
+    },
     setGridData() {
       let list = [];
       if (
@@ -197,9 +226,10 @@ export default {
     service() {
       return this.optionListV2?.serviceName || this.field.info?.fmt?.service;
     },
-    optionListV2() {
-      return this.field?.info?.srvCol?.option_list_v2;
-    },
+    // optionListV2() {
+    //   return this.field?.info?.srvCol?.option_list_v2;
+    // },
+
     checkedAll() {
       // 默认选中所有数据 不带分页
       return this.field?.info?.moreConfig?.checkedAll;
@@ -303,7 +333,7 @@ export default {
   },
   methods: {
     visibleChange() {
-      this.isSelectedAll = false;
+      // this.isSelectedAll = false;
     },
     getSelectedData() {
       let result = this.selected;
@@ -409,6 +439,9 @@ export default {
             this.selected = this.finderSelected.split(",");
             break;
         }
+        if(this.allSelect&&this.finderSelected===this.allSelect){
+          this.isSelectedAll = true;
+        }
     },
     setFieldVal() {
       let val = "";
@@ -469,26 +502,29 @@ export default {
     },
     changeSelectedAll() {
       if (this.isSelectedAll) {
-        if (this.fieldType === "fks") {
-          this.$emit("on-selected", "*");
-        } else if (this.fieldType === "fkjson") {
-          this.$emit("on-selected", {
-            label: "全选",
-            value: "*",
-          });
-        } else {
-          this.$emit("on-selected", [
-            {
-              label: "全选",
-              value: "*",
-            },
-          ]);
-        }
+        // if (this.fieldType === "fks") {
+        //   this.$emit("on-selected", "*");
+        // } else if (this.fieldType === "fkjson") {
+        //   this.$emit("on-selected", {
+        //     label: "全选",
+        //     value: "*",
+        //   });
+        // } else {
+        //   this.$emit("on-selected", [
+        //     {
+        //       label: "全选",
+        //       value: "*",
+        //     },
+        //   ]);
+        // }
+        this.selected = this.isMulti ? [this.allSelect] : this.allSelect;
+      }else{
+        this.selected = this.isMulti ? [] : "";
       }
-      this.selected = this.isMulti ? [] : "";
       this.setFieldVal();
     },
     clearSelect() {
+      this.isSelectedAll = false;
       this.selected = this.isMulti ? [] : "";
       this.initTableSelection();
       this.setFieldVal();
@@ -517,7 +553,14 @@ export default {
       }
     },
     handleSelectionChange(val) {
-      console.log(val);
+      console.log("handleSelectionChange:", val);
+      if (Array.isArray(val) && val.length) {
+        val.forEach((row) => {
+          this.clickRow(row);
+        });
+      } else {
+        this.selected = [];
+      }
       // this.setFieldVal();
       // this.selected = val.map((item) => item[this.valueCol]);
       // this.setFieldVal();
@@ -1074,17 +1117,19 @@ export default {
 }
 
 .is-selected-all {
-  .el-table {
+  .table-container {
     position: relative;
     &::after {
       position: absolute;
+      cursor: not-allowed;
       left: 0;
       top: 0;
       height: 100%;
       width: 100%;
-      background-color: rgba($color: #000000, $alpha: 0.5);
+      background-color: rgba($color: #fff, $alpha: 0.8);
       z-index: 99;
       content: "全选状态下禁止操作";
+      color: #999;
       display: flex;
       justify-content: center;
       align-items: center;

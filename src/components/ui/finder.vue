@@ -37,6 +37,8 @@
       <table-picker
         ref="tablePicker"
         v-bind="$props"
+        :optionListV3="optionListV3"
+        :optionListV2="optionListV2"
         :selectedGridData="multiSelected"
         :finder-selected="field.model"
         :defaultValues="defaultValues"
