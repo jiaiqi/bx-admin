@@ -1961,6 +1961,7 @@ export default {
   flex-wrap: wrap;
   max-height: 50px;
   overflow-y: auto;
+  overflow-x: hidden;
   cursor: all-scroll;
   &::-webkit-scrollbar {
     width: 0;
@@ -1986,6 +1987,21 @@ export default {
     &::-webkit-scrollbar-thumb:hover {
       background: #555;
     }
+  }
+  .el-tag.el-tag--warning {
+    background-color: #fdf6ec;
+    border-color: #faecd8;
+    color: #e6a23c;
+  }
+  .el-tag.el-tag--danger {
+    background-color: #fef0f0;
+    border-color: #fde2e2;
+    color: #f56c6c;
+  }
+  .el-tag.el-tag--success {
+    background-color: #f0f9eb;
+    border-color: #e1f3d8;
+    color: #67c23a;
   }
 }
 </style>

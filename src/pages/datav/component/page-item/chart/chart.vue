@@ -13,12 +13,12 @@ const props = defineProps({
     type: String,
     default: "100%",
   },
-  chartType:{
+  chartType: {
     type: String,
   },
-  cellData:{
-    type: Object||Array,
-  }
+  cellData: {
+    type: [Object, Array],
+  },
 });
 const domRef = ref(null);
 
@@ -68,13 +68,13 @@ watch(
 
 //加载图表配置
 const drawOption = () => {
-  console.log(props.chartType)
+  console.log(props.chartType);
   if (!chartObj) return;
   chartObj.showLoading({
-    text: '加载中...',
-    color: '#eee',
-    textColor: '#fff',
-    maskColor: 'rgba(0, 0, 0, 0.2)',
+    text: "加载中...",
+    color: "#eee",
+    textColor: "#fff",
+    maskColor: "rgba(0, 0, 0, 0.2)",
     spinnerRadius: 20,
   });
   const options = {
