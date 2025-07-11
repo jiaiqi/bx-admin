@@ -314,7 +314,7 @@ export const formatNumber = (value, options = {}) => {
   if (number === 0) {
     result = '0';
   } else {
-    result = Number(number).toFixed(finalPrecision);
+    result = Number(Number(number).toFixed(finalPrecision));
   }
 
   if (finalThousands) {

@@ -106,7 +106,9 @@
           v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')"
           trigger="click"
         >
-          <div v-html="recoverFileAddress4richText(moreConfig.table_explain.desc)"></div>
+          <div
+            v-html="recoverFileAddress4richText(moreConfig.table_explain.desc)"
+          ></div>
           <div slot="reference" style="color: #525252; padding: 2px 10px">
             列表字段说明<i class="el-icon-question"></i>
           </div>
@@ -277,32 +279,6 @@
             :sortable="item.sortable && !isMem() ? 'custom' : false"
             :cell-style="cellStyle"
           >
-            <!-- <template slot="header" slot-scope="scope">
-                <div style="display: inline-flex;">
-                  <span>
-                  {{ item.label }}
-                  </span>
-                  <div style="display: flex;flex-direction: column;line-height: unset;">
-                    <span
-                    style="line-height: unset;"
-                    v-for="key in Object.keys(item.backgroundMap)"
-                    v-if="item.backgroundMap"
-                  >
-                    <span
-                      :style="{
-                        background: item.backgroundMap[key],
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '10px',
-                        display: 'inline-block',
-                      }"
-                    ></span>
-                    <span>
-                    </span>
-                  </span>
-                  </div>
-                </div>
-              </template> -->
             <template slot-scope="scope">
               <template v-if="item._obj_info">
                 <file-list
@@ -310,31 +286,45 @@
                   :data="scope.row"
                   :field="item"
                 ></file-list>
-                <div v-else-if="['User'].includes(item.col_type)">
-                  <a
-                    v-if="item.linkUrlFunc"
-                    v-show="scope.row[item.column]"
-                    style="
-                      white-space: nowrap;
-                      color: dodgerblue;
-                      cursor: pointer;
-                    "
+                <template
+                  v-else-if="['fk', 'fks', 'fkjsons'].includes(item.col_type)"
+                >
+                  <div class="fk-tags">
+                    <template
+                      v-for="(tag, tIndex) in getFkJson(scope.row, item)"
+                    >
+                      <el-tag
+                        size="mini"
+                        style="margin-right: 4px; margin-bottom: 2px"
+                        :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+                        @click="onLinkClicked(scope.row, item)"
+                      >
+                        {{ tag || "--" }}
+                      </el-tag>
+                    </template>
+                  </div>
+                </template>
+                <template
+                  v-else-if="['User', 'UserList'].includes(item.col_type)"
+                >
+                  <template
                     v-for="(tag, tIndex) in getUserTags(item, scope.row)"
-                    :key="tIndex"
-                    @click="onLinkClicked(scope.row, item)"
                   >
-                    {{ tag.user_disp || "--" }}
-                  </a>
-                  <!-- <el-tag
-                      size="mini"
-                      style="margin-right: 4px; margin-bottom: 2px"
-                      :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
-                      v-for="(tag, tIndex) in getUserTags(item, scope.row)"
+                    <a
+                      v-if="item.linkUrlFunc"
+                      v-show="scope.row[item.column]"
+                      style="
+                        white-space: nowrap;
+                        color: dodgerblue;
+                        cursor: pointer;
+                      "
+                      :key="tIndex"
                       @click="onLinkClicked(scope.row, item)"
                     >
-                      {{ tag.user_disp || "--" }}
-                    </el-tag> -->
-                </div>
+                      {{ tag || "--" }}
+                    </a>
+                  </template>
+                </template>
               </template>
 
               <!-- 二进制文件 -->
@@ -419,7 +409,9 @@
                   formatValue(scope.row, item) &&
                   ['Note', 'RichText'].includes(item.col_type)
                 "
-                v-html="recoverFileAddress4richText(formatValue(scope.row, item))"
+                v-html="
+                  recoverFileAddress4richText(formatValue(scope.row, item))
+                "
                 style="max-height: 10vh; overflow: hidden"
                 @dblclick="openHtml(formatValue(scope.row, item))"
               ></div>
@@ -1178,18 +1170,23 @@
         @srv-auth-success="srvAuthSuccess"
       ></srvAuthLogin>
     </el-dialog>
-<!-- PC支付-->
+    <!-- PC支付-->
     <el-dialog
-        class="customDialogClass"
-        title="订单支付"
-        :visible="activeForm==='pay'"
-        @close="closeDialog"
-        width="50%"
-        append-to-body
-        :close-on-click-modal=false
-        :destroy-on-close="true"
+      class="customDialogClass"
+      title="订单支付"
+      :visible="activeForm === 'pay'"
+      @close="closeDialog"
+      width="50%"
+      append-to-body
+      :close-on-click-modal="false"
+      :destroy-on-close="true"
     >
-      <payment-popup :buttonInfo="buttonInfo"  :orders="multipleSelection" @close-dialog="closeDialog" v-if="activeForm ==='pay' && buttonInfo"></payment-popup>
+      <payment-popup
+        :buttonInfo="buttonInfo"
+        :orders="multipleSelection"
+        @close-dialog="closeDialog"
+        v-if="activeForm === 'pay' && buttonInfo"
+      ></payment-popup>
     </el-dialog>
   </div>
 </template>
@@ -1412,7 +1409,8 @@ export default {
     },
     getUserTags(column, data) {
       let result = [];
-      if (["User", "UserList"].includes(column?.col_type)) {
+      const fkCols = ["User", "fk", "fks", "fkjsons"];
+      if (fkCols.includes(column?.col_type)) {
         if (
           column?._obj_info?.a_save_b_obj_col &&
           data[column?._obj_info?.a_save_b_obj_col]
@@ -1441,7 +1439,18 @@ export default {
         }
       }
       console.log("result", result);
-
+      result = result.map((item) => {
+        if (column?.col_type === "User") {
+          return item.user_disp;
+        } else if (
+          column?.srvcol?.fmt?.disp_col &&
+          item?.[column?.srvcol?.fmt?.disp_col]
+        ) {
+          return item[column.srvcol.fmt.disp_col];
+        } else {
+          return item.user_disp;
+        }
+      });
       return result;
     },
     onAddChildExecutorComplete(response) {
@@ -1946,5 +1955,53 @@ export default {
   padding: 2px 5px;
   color: #fff;
   border-radius: 2px;
+}
+.fk-tags {
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 50px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  cursor: all-scroll;
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+  &:hover {
+    /* 整个滚动条 */
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    /* 滚动条轨道 */
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    /* 滚动滑块 */
+    &::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    /* 滚动滑块在悬停时的样式 */
+    &::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  }
+  .el-tag.el-tag--warning {
+    background-color: #fdf6ec;
+    border-color: #faecd8;
+    color: #e6a23c;
+  }
+  .el-tag.el-tag--danger {
+    background-color: #fef0f0;
+    border-color: #fde2e2;
+    color: #f56c6c;
+  }
+  .el-tag.el-tag--success {
+    background-color: #f0f9eb;
+    border-color: #e1f3d8;
+    color: #67c23a;
+  }
 }
 </style>

@@ -114,7 +114,7 @@ export default {
       originListData: null,
       listV2Data: null,
       isRefreshed: false,
-      buttonInfo:null
+      buttonInfo: null
     };
   },
 
@@ -1308,7 +1308,7 @@ export default {
           }
         } else if (type === "Boolean") {
           return !!value ? "是" : "否";
-        } else if (['fk','Dict'].includes(type)||['fk','Dict'].includes(bxColType)) {
+        } else if (['fk', 'Dict'].includes(type) || ['fk', 'Dict'].includes(bxColType)) {
           // 增加 支持 fk时 显示 _xx_disp 字段
           let dispColName = `_${header.column}_disp`;
           return !!row[dispColName] ? row[dispColName] : value;
@@ -1569,9 +1569,9 @@ export default {
         self.refresh();
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
-      }else if(type === 'pay'){
-        this.buttonInfo=button
-        this.activeForm='pay';
+      } else if (type === 'pay') {
+        this.buttonInfo = button
+        this.activeForm = 'pay';
       } else if ("add" == type) {
         if (operate_type == "页内添加") {
           if (this.list_inner_add) {
@@ -2950,7 +2950,8 @@ export default {
 
         let header = {};
         header.srvcol = serviceCol;
-        if (["FileList", "Image", "User"].includes(serviceCol["col_type"])) {
+        const fkCols = ["FileList", "Image", "User", "fk", "fks", "fkjsons"]
+        if (fkCols.includes(serviceCol["col_type"])) {
           if (serviceCol?.option_list_v2?.obj_info?.a_save_b_obj_col) {
             header._obj_info = serviceCol?.option_list_v2?.obj_info;
           }
@@ -3443,12 +3444,15 @@ export default {
     },
 
     onLinkClicked(row, header) {
-      let tabTitle =
-        (header.srvcol &&
-          header.srvcol.option_list_v2 &&
-          header.srvcol.option_list_v2.service_label) ||
-        row[header.column] + "详情";
-      this.addTabByUrl(this.getLinkUrl(row, header), tabTitle);
+      const linkUrl = this.getLinkUrl(row, header)
+      if (linkUrl) {
+        let tabTitle =
+          (header.srvcol &&
+            header.srvcol.option_list_v2 &&
+            header.srvcol.option_list_v2.service_label) ||
+          row[header.column] + "详情";
+        this.addTabByUrl(this.getLinkUrl(row, header), tabTitle);
+      }
     },
 
     handleEdit(index, row) {
@@ -3655,28 +3659,49 @@ export default {
       let fmt = col && col.srvcol && col.srvcol.fmt;
       let valueCol = fmt && fmt.primary_col;
       let dispCol = fmt && fmt.disp_col;
-      switch (colType) {
-        case "fks":
-          result = val ? val.split(",") : [];
-          break;
-        case "fkjson":
-          try {
-            result = val ? JSON.parse(val) : {};
-          } catch (error) {
-            console.log(error);
+      if (
+        col?._obj_info?.a_save_b_obj_col &&
+        row[col?._obj_info?.a_save_b_obj_col]
+      ) {
+        let str = row[col?._obj_info?.a_save_b_obj_col];
+        try {
+          let arr = JSON.parse(str);
+          if (Array.isArray(arr)) {
+            result = arr;
+          } else {
+            result = [arr];
           }
-          if (result && result[dispCol]) {
-            result = [result[dispCol] || result[valueCol]];
-          }
-          break;
-        case "fkjsons":
-          try {
-            result = val ? JSON.parse(val) : [];
-          } catch (error) { }
-          if (Array.isArray(result) && result.length > 0) {
-            result = result.map((item) => item[dispCol] || item[valueCol]);
-          }
-          break;
+        } catch (error) {
+          console.log(error);
+        }
+        if(Array.isArray(result)&&result.length>0){
+          result = result.map((item) => item[dispCol] || item[valueCol]);
+        }
+      }
+      if (!result) {
+        switch (colType) {
+          case "fks":
+            result = val ? val.split(",") : [];
+            break;
+          case "fkjson":
+            try {
+              result = val ? JSON.parse(val) : {};
+            } catch (error) {
+              console.log(error);
+            }
+            if (result && result[dispCol]) {
+              result = [result[dispCol] || result[valueCol]];
+            }
+            break;
+          case "fkjsons":
+            try {
+              result = val ? JSON.parse(val) : [];
+            } catch (error) { }
+            if (Array.isArray(result) && result.length > 0) {
+              result = result.map((item) => item[dispCol] || item[valueCol]);
+            }
+            break;
+        }
       }
       return result;
     },
