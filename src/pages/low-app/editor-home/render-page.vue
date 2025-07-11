@@ -113,7 +113,7 @@ export default {
           }))
           // 根据com_seq值排序
           this.currentComponents = componentsWithIndex.sort((a, b) => a.com_seq - b.com_seq)
-          console.log('this.currentComponents',this.currentComponents)
+          console.log('这是当前的组件列',this.currentComponents)
           // 更新组件的z-index
           this.rearrangeComponents()
         }
@@ -510,6 +510,7 @@ export default {
 
     // 全局drop事件处理
     handleGlobalDrop(e) {
+      debugger
       const dragData = dragStore.getDraggingElement();
       if (dragData) {
         // 获取鼠标位置
@@ -529,6 +530,10 @@ export default {
             parts_text: dragData.com_name,
             parts_type: dragData.parts_type,
           };
+          dragData._type = "component";
+        }
+        if(dragData.type==='qrCode'){
+
           dragData._type = "component";
         }
         if (dragData.type === "悬浮组件") {

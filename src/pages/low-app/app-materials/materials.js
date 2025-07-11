@@ -13,17 +13,26 @@ export const materialsTree = [
     comList: [
       {
         "label": "字符串",
-        "value": "string",
-        "parts_type": "string",
+        "value": "文本",
+        "parts_type": "文本",
         "type": "cardPart",
         "component": "pageItem",
         "icon": "ri-text",
         "_default_parts_text": "字符串",
       },
       {
+        "label": "数字",
+        "value": "数字",
+        "parts_type": "数字",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri-text",
+        "_default_parts_text": "数字",
+      },
+      {
         "label": "图片",
-        "value": "iconImg",
-        "parts_type": "iconImg",
+        "value": "图片",
+        "parts_type": "图片",
         "type": "cardPart",
         "component": "pageItem",
         "icon": "ri-image-fill",
@@ -31,8 +40,8 @@ export const materialsTree = [
       },
       {
         "label": "字体图标",
-        "value": "icon",
-        "parts_type": "icon",
+        "value": "字体图标",
+        "parts_type": "字体图标",
         "_default_parts_icon": "ri-image-circle-fill",
         "type": "cardPart",
         "component": "pageItem",
@@ -71,8 +80,8 @@ export const materialsTree = [
       // },
       {
         "label": "星级评分",
-        "value": "rate",
-        "parts_type": "rate",
+        "value": "星级评分",
+        "parts_type": "星级评分",
         "type": "cardPart",
         "component": "pageItem",
         "_default_parts_text": "3",
@@ -80,8 +89,8 @@ export const materialsTree = [
       },
       {
         "label": "进度条",
-        "value": "progress",
-        "parts_type": "progress",
+        "value": "进度条",
+        "parts_type": "进度条",
         "type": "cardPart",
         "component": "pageItem",
         "_default_parts_text": "50",
@@ -97,21 +106,6 @@ export const materialsTree = [
         "_default_parts_text": "<b>富文本</b>",
         "icon": "ri-quote-text"
       },
-      // {
-      //   "label": "切换按钮",
-      //   "value": "切换按钮",
-      //   "type":"switch"
-      // },
-      // {
-      //   "label": "接口多字段显示区",
-      //   "value": "接口多字段显示区",
-      //   "type":"cols"
-      // },
-      // {
-      //   "label": "数据行按钮区",
-      //   "value": "数据行按钮区",
-      //   "type":"rowBtns"
-      // },
       {
         "label": "时间日期",
         "value": "时间日期",
@@ -157,7 +151,7 @@ export const materialsTree = [
         "label": "二维码",
         "value": "二维码",
         "parts_type": "二维码",
-        "type": "qrCode",
+        "type": "cardPart",
         "component": "pageItem",
         "icon": "ri-qr-code-fill"
       }
@@ -378,4 +372,5 @@ export const materialsTree = [
       },
     ],
   },
+
 ]

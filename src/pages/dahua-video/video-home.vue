@@ -236,6 +236,7 @@ const handleSelect = (selectedKeys, e) => {
           // 如果是回放模式且正在播放，开始新的回放
           startPlayback();
         } else {
+          debugger
           // 否则开始实时播放
           myVideoPlayer.startReal([{
             channelId: videoChannel.value,

@@ -49,6 +49,117 @@ export const drwMapMarkers = (map, data, url) => {
     })
 }
 
+export const clearMarkersByKind = (_map,num) => {
+
+    if(markerKinds['markerList'+num]){
+        markerKinds['markerList'+num].map(marker => {
+            _map.removeOverlay(marker);
+        })
+        _map.removeOverlay(markerKinds['start'+num]);
+        _map.removeOverlay(markerKinds['ends'+num]);
+        markerKinds['markerList'+num] = [];
+    }
+    if(colorLayer['colorLine'+num]){
+        _map.removeOverlay(colorLayer['colorLine'+num]);
+    }
+}
+const markerKinds={
+     markerList1:[],
+     markerList2:[],
+     markerList3:[],
+     start1:null,
+     start2:null,
+     start3:null,
+     ends1:null,
+     ends2:null,
+     ends3:null,
+}
+const colorLayer = {
+    colorLine1:null,
+    colorLine2:null,
+    colorLine3:null,
+}
+export const drewMarkerKinds = (_map,data,markerNum)=>{
+    if(markerKinds['markerList'+markerNum]){
+        markerKinds['markerList'+markerNum].map(marker => {
+            _map.removeOverlay(marker);
+        })
+        _map.removeOverlay(markerKinds['start'+markerNum]);
+        _map.removeOverlay(markerKinds['ends'+markerNum]);
+        markerKinds['markerList'+markerNum] = [];
+    }
+    if(colorLayer['colorLine'+markerNum]){
+        _map.removeOverlay(colorLayer['colorLine'+markerNum]);
+    }
+    if(!data || data.length===0) return
+    // 创建图标
+    const icon1 = new BMap.Icon(
+        require(`@/assets/mapIcon/start.png`),
+        new BMap.Size(32, 32),
+        {
+            anchor: new BMap.Size(16, 16)
+        }
+    );
+    // 创建图标
+    const icon2 = new BMap.Icon(
+        require(`@/assets/mapIcon/end.png`),
+        new BMap.Size(32, 32),
+        {
+            anchor: new BMap.Size(16, 16)
+        }
+    );
+    //创建起终点标记
+    markerKinds['start'+markerNum] =new BMap.Marker(data[0].point,{
+        icon: icon1,
+    })
+    //end点标记
+    markerKinds['ends'+markerNum] = new BMap.Marker(data[data.length-1].point,{
+        icon: icon2,
+    })
+    // 添加标记点和标签
+    _map.addOverlay(markerKinds['start'+markerNum]);
+    _map.addOverlay(markerKinds['ends'+markerNum]);
+    // 创建标记点和标签
+    data.forEach(item => {
+        // 创建图标
+        const icon = new BMap.Icon(
+            item.icon,
+            new BMap.Size(32, 32),
+            {
+                anchor: new BMap.Size(16, 16)
+            }
+        );
+
+        // 创建标记点
+        const marker = new BMap.Marker(item.point, {
+            icon: icon
+        });
+        // 创建标签
+        const label = new BMap.Label(item.name, {
+            offset: new BMap.Size(0, -45), // 标签偏移量
+            position: item.point
+        });
+
+        // 设置标签样式
+        label.setStyle({
+            color: '#333',
+            fontSize: '14px',
+            backgroundColor: '#fff',
+            padding: '5px 10px',
+            borderRadius: '4px',
+            border: '1px solid #ccc'
+        });
+        marker.addEventListener("click",  (e)=> {
+            setMarkerClick(item)
+        });
+        // 添加标记点和标签
+        _map.addOverlay(marker);
+        marker.setLabel(label)
+        markerKinds['markerList'+markerNum].push(marker);
+    });
+    console.log(markerKinds);
+}
+
 export const drawMapMarkersAndLabel = (_map,data) => {
     markerList=[]
     removeOverlay(_map)
@@ -225,6 +336,32 @@ export const setLineLayer = (map, linePoints) => {
             enableClicking: true,
         });
     map.addOverlay(polyline);
+}
+
+//分段设置显示带有不同颜色的路径线路
+export const setColorLine=(map,color,linePoints,num) => {
+    if(colorLayer['colorLine'+num]){
+        map.removeOverlay(colorLayer['colorLine'+num]);
+    }
+    colorLayer['colorLine'+num]=new BMap.Polyline(
+        linePoints,
+        {
+            strokeColor: color,
+            strokeWeight:6,
+            strokeOpacity:.8,
+            strokeStyle: 'solid',
+            enableClicking: true,
+            borderColor: 'rgba(0,125,125,1)',
+            borderMask: true, // 是否受内部填充区域掩膜，默认true,如果存在borderWeight小于0，则自动切换false
+            borderWeight: 2, // 描边宽度，可以设置负值
+        });
+    map.addOverlay(colorLayer['colorLine'+num]);
+}
+
+//手动删除分段颜色线路
+export const clearColorLine=(map,layer) => {
+    if(colorLayer[layer])
+    map.removeOverlay(colorLayer[layer]);
 }
 // 根据点集合设置视图范围
 export const setViewportByPoints=(_map,points)=> {
