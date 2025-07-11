@@ -360,6 +360,8 @@ export default {
           checked: true,
           label: "全部",
           value: this.allSelect,
+          [this.valueCol]: this.allSelect,
+          [this.labelCol]: "全部",
         }]
       }
       return result;

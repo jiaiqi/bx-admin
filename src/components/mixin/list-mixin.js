@@ -3675,6 +3675,13 @@ export default {
           console.log(error);
         }
         if(Array.isArray(result)&&result.length>0){
+          result = result.map(item=>{
+            if(!item[dispCol]&&!item[valueCol]&&item.label&&item.value){
+              item[dispCol] = item.label
+              item[valueCol] = item.value
+            }
+            return item
+          })
           result = result.map((item) => item[dispCol] || item[valueCol]);
         }
       }
