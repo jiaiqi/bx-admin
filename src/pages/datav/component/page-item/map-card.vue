@@ -58,14 +58,17 @@
   </div>
 
   <div
-    class="map-view custom-map"
-    :style="{
-      backgroundImage: `url(${baseImage})`,
-      backgroundSize: '100% 100%',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
+    class="map-zoom-container"
+    :class="{
+      'ctrl-pressed': isCtrlPressed,
+      'space-pressed': isSpacePressed && !isDragging,
+      dragging: isDragging,
     }"
+    @wheel="handleWheel"
+    @mousedown="handleMouseDown"
+    @mouseleave="handleMouseUp"
     @click="tapMarker()"
+    tabindex="0"
     v-else-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
   >
     <div
@@ -121,72 +124,70 @@
         <Icon icon="material-symbols:arrow-menu-close" class="icon"></Icon>
       </div>
     </div>
-    <template
-      v-if="mapJson && mapJson.map_type === '标签' && markerList.length"
+    <div
+      class="map-view custom-map"
+      :class="{ 'no-transition': isDragging }"
+      :style="{
+        backgroundImage: `url(${baseImage})`,
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        transform: `translate(${mapPosition.x}px, ${mapPosition.y}px) scale(${zoomScale})`,
+        transformOrigin: 'center center',
+      }"
     >
-      <div
-        class="map-marker"
-        :class="{ 'is-active': isActive(marker) }"
-        :style="[
-          {
-            ...setLabelStyle,
-            ...(isActive(marker) ? setLabelActiveStyle : {}),
-          },
-          getItemPosition(marker),
-        ]"
-        v-for="marker in markerList"
-        :key="marker.id"
-        @click="clickMarker(marker)"
+      <template
+        v-if="mapJson && mapJson.map_type === '标签' && markerList.length"
       >
-        <div class="map-marker-content">
-          {{ marker[mapJson.col_label] || "" }}
-        </div>
-      </div>
-    </template>
-    <template v-else-if="markerList.length">
-      <div
-        class="map-marker"
-        :style="getItemPosition(item)"
-        @click.stop="tapMarker(item, $event)"
-        :class="{ 'cursor-pointer': !!cardUnitJson }"
-        v-for="item in markerList"
-        :key="item.id"
-      >
-        <img
-          :src="getItemIcon(item)"
-          class="marker-icon"
-          v-if="getItemIcon(item)"
-        />
-      </div>
-    </template>
-    <Teleport to="body">
-      <div
-        class="popover-content-to-body"
-        :style="{
-          left: popoverPosition.x + 'px',
-          top: popoverPosition.y + 'px',
-        }"
-      >
-        <transition name="popover-fade">
-          <div
-            class="popover-content"
-            :class="{ show: activeMarker && activeMarker.id }"
-          >
-            <template v-if="activeMarker && activeMarker.id">
-              <div class="bottom-arrow"></div>
-              <card-group-cell
-                :page-item="pageItem"
-                :cellsLayout="[cardUnitJson]"
-                :cell-data="[activeMarker]"
-                :key="activeMarker.id"
-              ></card-group-cell>
-            </template>
+        <div
+          class="map-marker"
+          :class="{ 'is-active': isActive(marker) }"
+          :style="[
+            {
+              ...setLabelStyle,
+              ...(isActive(marker) ? setLabelActiveStyle : {}),
+            },
+            getItemPosition(marker),
+          ]"
+          v-for="marker in markerList"
+          :key="marker.id"
+          @click="clickMarker(marker)"
+        >
+          <div class="map-marker-content">
+            {{ marker[mapJson.col_label] || "" }}
           </div>
-        </transition>
-      </div>
-    </Teleport>
-    <!-- <Teleport to="body">
-      <transition name="popover-fade">
+        </div>
+      </template>
+      <template v-else-if="markerList.length">
+        <div
+          class="map-marker"
+          :style="getItemPosition(item)"
+          @click.stop="tapMarker(item, $event)"
+          :class="{ 'cursor-pointer': !!cardUnitJson }"
+          v-for="item in markerList"
+          :key="item.id"
+        >
+          <img
+            :src="getItemIcon(item)"
+            class="marker-icon"
+            v-if="getItemIcon(item)"
+          />
+        </div>
+      </template>
+    
+    </div>
+    
+    <!-- 一键恢复按钮 -->
+     <div 
+       class="map-reset-btn" 
+       v-show="!isInitialView"
+       @click="resetMapView" 
+       title="恢复初始视图"
+     >
+       <Icon icon="material-symbols:refresh" class="reset-icon"></Icon>
+     </div>
+    
+      <Teleport to="body">
         <div
           class="popover-content-to-body"
           :style="{
@@ -194,18 +195,24 @@
             top: popoverPosition.y + 'px',
           }"
         >
-          <template v-if="activeMarker && activeMarker.id">
-            <div class="bottom-arrow"></div>
-            <card-group-cell
-              :page-item="pageItem"
-              :cellsLayout="[cardUnitJson]"
-              :cell-item-data="activeMarker"
-              :key="activeMarker.id"
-            ></card-group-cell>
-          </template>
+          <transition name="popover-fade">
+            <div
+              class="popover-content"
+              :class="{ show: activeMarker && activeMarker.id }"
+            >
+              <template v-if="activeMarker && activeMarker.id">
+                <div class="bottom-arrow"></div>
+                <card-group-cell
+                  :page-item="pageItem"
+                  :cellsLayout="[cardUnitJson]"
+                  :cell-data="[activeMarker]"
+                  :key="activeMarker.id"
+                ></card-group-cell>
+              </template>
+            </div>
+          </transition>
         </div>
-      </transition>
-    </Teleport> -->
+      </Teleport>
   </div>
 
   <div class="map-view" v-else>
@@ -226,8 +233,16 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, nextTick, computed, watch, set } from "vue";
-import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
+import {
+  onMounted,
+  onUnmounted,
+  ref,
+  nextTick,
+  computed,
+  watch,
+  set,
+} from "vue";
+
 import { getImagePath } from "../../common/http";
 import {
   initMapData,
@@ -250,6 +265,150 @@ const isCollapsed = ref(false);
 const left = computed(() => (isCollapsed.value ? -230 : 15));
 const changeCollapsed = () => {
   isCollapsed.value = !isCollapsed.value;
+};
+
+// 缩放相关
+const zoomScale = ref(1);
+const minZoom = 0.5;
+const maxZoom = 3;
+const zoomStep = 0.1;
+
+// 拖拽相关
+const isDragging = ref(false);
+const dragStart = ref({ x: 0, y: 0 });
+const mapPosition = ref({ x: 0, y: 0 });
+const isSpacePressed = ref(false);
+
+// Ctrl键状态
+const isCtrlPressed = ref(false);
+
+// 处理鼠标滚轮事件
+const handleWheel = (event) => {
+  // 只有按住Ctrl键时才进行缩放
+  if (event.ctrlKey) {
+    event.preventDefault();
+
+    // 缩放时隐藏popover
+    if (activeMarker.value?.id) {
+      activeMarker.value = null;
+      currentMarkerElement.value = null;
+      removeEventListeners();
+    }
+
+    const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
+    const newScale = zoomScale.value + delta;
+
+    // 限制缩放范围
+    if (newScale >= minZoom && newScale <= maxZoom) {
+      zoomScale.value = newScale;
+    }
+  }
+};
+
+// 处理鼠标按下事件
+const handleMouseDown = (event) => {
+  if (isSpacePressed.value) {
+    event.preventDefault();
+    isDragging.value = true;
+    
+    // 拖拽时隐藏popover
+    if (activeMarker.value?.id) {
+      activeMarker.value = null;
+      currentMarkerElement.value = null;
+      removeEventListeners();
+    }
+    
+    dragStart.value = {
+      x: event.clientX - mapPosition.value.x,
+      y: event.clientY - mapPosition.value.y,
+    };
+    updateCursor();
+  }
+};
+
+// 拖拽性能优化
+let animationFrameId = null;
+
+// 处理鼠标移动事件
+const handleMouseMove = (event) => {
+  if (isDragging.value && isSpacePressed.value) {
+    event.preventDefault();
+
+    // 使用requestAnimationFrame优化性能
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+
+    animationFrameId = requestAnimationFrame(() => {
+      mapPosition.value = {
+        x: event.clientX - dragStart.value.x,
+        y: event.clientY - dragStart.value.y,
+      };
+    });
+  }
+};
+
+// 处理鼠标松开事件
+const handleMouseUp = () => {
+  if (isDragging.value) {
+    isDragging.value = false;
+    updateCursor();
+  }
+};
+
+// 处理键盘按下事件
+const handleKeyDown = (event) => {
+  if (event.code === "Space") {
+    event.preventDefault(); // 阻止空格键的默认滚动行为
+    if (!isSpacePressed.value) {
+      isSpacePressed.value = true;
+      updateCursor();
+    }
+  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
+    if (!isCtrlPressed.value) {
+      isCtrlPressed.value = true;
+      updateCursor();
+    }
+  }
+};
+
+// 处理键盘松开事件
+const handleKeyUp = (event) => {
+  if (event.code === "Space") {
+    event.preventDefault(); // 阻止空格键的默认滚动行为
+    isSpacePressed.value = false;
+    updateCursor();
+    if (isDragging.value) {
+      isDragging.value = false;
+    }
+  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
+    isCtrlPressed.value = false;
+    updateCursor();
+  }
+};
+
+// 更新光标样式（现在主要通过CSS类控制，这里作为备用）
+const updateCursor = () => {
+  // 光标样式现在主要通过CSS类控制
+  // 这里保留函数以防需要额外的光标控制逻辑
+};
+
+// 判断是否为初始视图状态
+const isInitialView = computed(() => {
+  return zoomScale.value === 1 && mapPosition.value.x === 0 && mapPosition.value.y === 0;
+});
+
+// 一键恢复地图到初始状态
+const resetMapView = () => {
+  zoomScale.value = 1;
+  mapPosition.value = { x: 0, y: 0 };
+  
+  // 如果有活动的popover，也一并隐藏
+  if (activeMarker.value?.id) {
+    activeMarker.value = null;
+    currentMarkerElement.value = null;
+    removeEventListeners();
+  }
 };
 function isActive(marker) {
   if (selectedTreeData.value && marker?.id) {
@@ -417,12 +576,20 @@ const setLabelActiveStyle = computed(() => {
 
 function calculatePopoverPosition(element) {
   if (!element) return;
-  const { top, left, width } = element.getBoundingClientRect();
+  
+  // 由于popover使用position: fixed定位（相对于视口），
+  // 我们需要获取元素相对于视口的准确位置
+  const elementRect = element.getBoundingClientRect();
+  
+  // 计算popover的位置（相对于视口）
+  // popover的transform是translate(-50%, -100%)，所以需要考虑这个偏移
   popoverPosition.value = {
-    x: left + width / 2,
-    y: top - 10,
+    x: elementRect.left + elementRect.width / 2,
+    y: elementRect.top - 10,
   };
 }
+
+// 注意：现在缩放和拖拽时直接隐藏popover，不再需要重新计算位置
 
 function tapMarker(item, event) {
   if (item?.id && item?.id === activeMarker.value?.id) {
@@ -455,13 +622,13 @@ function handleScroll() {
 }
 
 function addEventListeners() {
-  window.addEventListener('resize', handleResize);
-  window.addEventListener('scroll', handleScroll, true);
+  window.addEventListener("resize", handleResize);
+  window.addEventListener("scroll", handleScroll, true);
 }
 
 function removeEventListeners() {
-  window.removeEventListener('resize', handleResize);
-  window.removeEventListener('scroll', handleScroll, true);
+  window.removeEventListener("resize", handleResize);
+  window.removeEventListener("scroll", handleScroll, true);
 }
 const treeData = ref([]);
 const selectedTreeData = ref({});
@@ -497,6 +664,8 @@ watch(
     }
   }
 );
+
+// 注意：缩放和拖拽时会自动隐藏popover，无需监听位置变化
 const emit = defineEmits(["select"]);
 function tapTreeData(item) {
   selectedTreeData.value = item;
@@ -585,11 +754,45 @@ onMounted(() => {
       });
     }
   }
+
+  // 添加全局事件监听器
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keyup", handleKeyUp);
 });
 
 onUnmounted(() => {
   removeEventListeners();
+
+  // 清理全局事件监听器
+  document.removeEventListener("mousemove", handleMouseMove);
+  document.removeEventListener("mouseup", handleMouseUp);
+  document.removeEventListener("keydown", handleKeyDown);
+  document.removeEventListener("keyup", handleKeyUp);
+
+  // 清理requestAnimationFrame
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+  }
+
+  // 重置光标样式
+  document.body.style.cursor = "";
 });
+
+const vClickoutside = {
+  mounted(el, binding) {
+    el.clickoutsideEvent = (e) => {
+      if (!(el === e.target || el.contains(e.target))) {
+        binding.value(e);
+      }
+    };
+    document.addEventListener("click", el.clickoutsideEvent);
+  },
+  unmounted(el) {
+    document.removeEventListener("click", el.clickoutsideEvent);
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -751,10 +954,66 @@ onUnmounted(() => {
     }
   }
 }
+.map-zoom-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  outline: none;
+  user-select: none;
+  
+  // 可视化编辑器画布背景 - 点状网格
+  background-color: #f8f9fa;
+  background-image: 
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  // Ctrl键按下时的缩放光标样式
+  &.ctrl-pressed {
+    cursor: zoom-in !important;
+
+    * {
+      cursor: zoom-in !important;
+    }
+  }
+
+  // 空格键按下时的拖拽光标样式
+  &.space-pressed {
+    cursor: grab !important;
+
+    * {
+      cursor: grab !important;
+    }
+  }
+
+  // 拖拽中的光标样式
+  &.dragging {
+    cursor: grabbing !important;
+
+    * {
+      cursor: grabbing !important;
+    }
+  }
+}
+
 .custom-map {
   background-color: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease-out;
+
+  // 拖拽时禁用过渡动画以提升性能
+  &.no-transition {
+    transition: none !important;
+  }
+
   // &:after {
   //   content: "缺少底图";
   //   position: absolute;
@@ -806,7 +1065,7 @@ onUnmounted(() => {
 }
 :global(.popover-content-to-body .popover-content) {
   opacity: 0;
-  transform:  translate(-50%, -50%) scale(0.8);
+  transform: translate(-50%, -50%) scale(0.8);
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   background-color: rgba(0, 0, 0, 0.1);
 }
@@ -874,5 +1133,45 @@ onUnmounted(() => {
 .tree-expand-leave-from {
   max-height: 1000px;
   opacity: 1;
+}
+
+// 一键恢复按钮样式
+.map-reset-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .reset-icon {
+    font-size: 18px;
+    color: #666;
+    transition: color 0.2s ease;
+  }
+  
+  &:hover .reset-icon {
+    color: #333;
+  }
 }
 </style>
