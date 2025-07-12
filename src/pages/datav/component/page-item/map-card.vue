@@ -1,6 +1,16 @@
 <template>
   <div
-    class="map-view building-view"
+    class="map-zoom-container"
+    :class="{
+      'ctrl-pressed': isCtrlPressed,
+      'space-pressed': isSpacePressed && !isDragging,
+      dragging: isDragging,
+    }"
+    @wheel="handleWheel"
+    @mousedown="handleMouseDown"
+    @mouseleave="handleMouseUp"
+    @click="tapMarker()"
+    tabindex="0"
     v-if="
       mapJson && mapJson.map_base_supplier === '自定义底图' && isBuildingView
     "
@@ -47,14 +57,29 @@
       </div>
     </div>
     <div
-      class="map-bg"
+      class="map-view building-view"
+      :class="{ 'no-transition': isDragging }"
       :style="{
         backgroundImage: `url(${baseImage})`,
         backgroundSize: '100% 100%',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        transform: `translate(${mapPosition.x}px, ${mapPosition.y}px) scale(${zoomScale})`,
+        transformOrigin: 'center center',
       }"
-    ></div>
+    >
+      <!-- building-view 的标记点内容可以在这里添加 -->
+    </div>
+    
+    <!-- 一键恢复按钮 -->
+    <div 
+      class="map-reset-btn" 
+      v-show="!isInitialView"
+      @click="resetMapView" 
+      title="恢复初始视图"
+    >
+      <Icon icon="material-symbols:refresh" class="reset-icon"></Icon>
+    </div>
   </div>
 
   <div
@@ -1033,6 +1058,32 @@ const vClickoutside = {
     .marker-icon {
       width: 30px;
       // height: 30px;
+    }
+  }
+}
+
+.building-view {
+  background-color: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease-out;
+
+  // 拖拽时禁用过渡动画以提升性能
+  &.no-transition {
+    transition: none !important;
+  }
+
+  // 可以在这里添加building-view特有的样式
+  .building-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    &.cursor-pointer {
+      cursor: pointer;
+    }
+    .marker-icon {
+      width: 30px;
     }
   }
 }
