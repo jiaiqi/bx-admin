@@ -256,8 +256,8 @@ export default {
                 item.labelFunc = (data) => {
                   let result =
                     optionsCfg.showAsPair == true
-                      ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
-                      : data[fieldInfo.dispCol];
+                      ? `${data[optionsCfg.dispCol]}/${data[optionsCfg.valueCol]}`
+                      : data[optionsCfg.dispCol];
                   if (this.inputValue && result.includes(this.inputValue)) {
                     result = result.replace(
                       this.inputValue,
