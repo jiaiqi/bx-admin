@@ -102,6 +102,7 @@
         '--left': left + 'px',
       }"
       :class="{ collapsed: isCollapsed }"
+       v-if="treeData&&treeData.length"
     >
       <div class="map-tree-data" v-if="treeData.length">
         <div class="tree-data-item" v-for="item in treeData" :key="item.id">
@@ -986,6 +987,7 @@ const vClickoutside = {
   position: relative;
   outline: none;
   user-select: none;
+  scrollbar-width: none;
   
   // 可视化编辑器画布背景 - 点状网格
   background-color: #f8f9fa;
