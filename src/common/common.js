@@ -566,8 +566,38 @@ export function setAnimationStyle(params = {}) {
 }
 
 
+/**
+ * 转换颜色格式并设置透明度
+ * 
+ * 支持多种颜色输入格式（十六进制、RGB、RGBA），并可以设置透明度值，
+ * 最终输出为指定格式的带透明度颜色值。
+ * 
+ * @param {string} color - 输入颜色值
+ *   - 十六进制格式：#RGB、#RRGGBB、#RRGGBBAA
+ *   - RGB格式：rgb(r, g, b)
+ *   - RGBA格式：rgba(r, g, b, a)
+ * @param {string|number} opacity - 透明度值
+ *   - 字符串：十六进制透明度值（如 "FF"、"80"）
+ *   - 数字：0-1 范围的透明度值（如 0.5、1.0）
+ * @param {string} [format="hex"] - 输出格式
+ *   - "hex"：输出十六进制格式 #RRGGBBAA
+ *   - "rgba"：输出 rgba(r, g, b, a) 格式
+ * 
+ * @returns {string} 带透明度的颜色值
+ * 
+ * @example
+ * // 十六进制输入，数字透明度
+ * convertColorWithOpacity("#FF0000", 0.5) // "#FF000080"
+ * 
+ * @example
+ * // RGB输入，十六进制透明度，输出rgba格式
+ * convertColorWithOpacity("rgb(255, 0, 0)", "80", "rgba") // "rgba(255, 0, 0, 0.502)"
+ * 
+ * @example
+ * // 短格式十六进制输入
+ * convertColorWithOpacity("#F00", 1.0) // "#FF0000FF"
+ */
 export function convertColorWithOpacity(color, opacity, format = "hex") {
-  // 将颜色转换为指定格式的带透明度颜色
   // 处理透明度参数
   let alphaValue;
   if (typeof opacity === "string" && opacity.length <= 2) {

@@ -24,7 +24,7 @@ export default {
     },
     color: {
       type: String,
-      default: "#FFF",
+      default: "",
     },
     waveColor: {
       type: String,
@@ -37,6 +37,10 @@ export default {
     waveBgColor: {
       type: String,
       default: "",
+    },
+    waveFontSize: {
+      type: String,
+      default: "16",
     },
   },
   data() {
@@ -128,8 +132,8 @@ export default {
               normal: {
                 formatter: Number((this.value * 100).toFixed(2)) + "%",
                 textStyle: {
-                  fontSize: 20,
-                  // color: this.color,
+                  fontSize: Number(this.waveFontSize) || 16,
+                  // color: this.color || undefined,
                 },
               },
               // rich: {
@@ -163,9 +167,8 @@ export default {
           },
         ],
       };
-      console.log('liquidFillChartOption:',option);
+      console.log("liquidFillChartOption:", option);
 
-      
       this.chart.setOption(option);
     },
   },

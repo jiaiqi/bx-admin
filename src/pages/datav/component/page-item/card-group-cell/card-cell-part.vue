@@ -5,10 +5,11 @@
       :value="getPartModelData"
       :ref="partsType"
       :style="[buildColStyleJson]"
-      :color="setLiquidColor.color"
-      :wave-color="setLiquidColor.waveColor"
-      :wave-bg-color="setLiquidColor.waveBgColor"
-      :wave-outline-color="setLiquidColor.waveOutlineColor"
+      :color="setLiquidConfig.color"
+      :wave-color="setLiquidConfig.waveColor"
+      :wave-bg-color="setLiquidConfig.waveBgColor"
+      :wave-outline-color="setLiquidConfig.waveOutlineColor"
+      :wave-font-size="setLiquidConfig.waveFontSize"
     />
     <video
       class="bx-cell-video"
@@ -516,12 +517,11 @@ export default {
       }
       return style;
     },
-    setLiquidColor() {
+    setLiquidConfig() {
       let obj = {};
       if (this.partsType === "水球图") {
-        const styleJson = this.pageItem?.style_json || {};
         let style = {
-          color: styleJson?.color,
+          color: null,
         };
         if (this.cellItem?.style_json?.color) {
           style.color = this.cellItem?.style_json?.color;
@@ -535,17 +535,12 @@ export default {
         if (this.cellItem?.wave_bg_color) {
           obj.waveBgColor = this.cellItem?.wave_bg_color;
         }
+        if(this.cellItem?.wave_font_size){
+          obj.waveFontSize = this.cellItem?.wave_font_size;
+        }
       }
       return obj;
     },
-    // setLiquidColor() {
-    //   if (this.partsType === "水球图") {
-    //     if (this.cellItem?.wave_color) {
-    //       style.color = this.cellItem?.wave_color;
-    //     }
-    //     return style.color;
-    //   }
-    // },
     getPartModelData() {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
