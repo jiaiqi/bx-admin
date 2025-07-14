@@ -4,7 +4,11 @@
       v-if="partsType === '水球图'"
       :value="getPartModelData"
       :ref="partsType"
-      :color="setLiquidColor"
+      :style="[buildColStyleJson]"
+      :color="setLiquidColor.color"
+      :wave-color="setLiquidColor.waveColor"
+      :wave-bg-color="setLiquidColor.waveBgColor"
+      :wave-outline-color="setLiquidColor.waveOutlineColor"
     />
     <video
       class="bx-cell-video"
@@ -200,18 +204,18 @@
     </div>
     <!-- 卡片弹窗 -->
     <div
-        class="card-popup-overlay"
-        @click="closeCardPopup"
-        v-if="showCardPopup"
+      class="card-popup-overlay"
+      @click="closeCardPopup"
+      v-if="showCardPopup"
     >
       <card-popup
-          v-if="showCardPopup && popupCardJson"
-          :cardUnitJson="popupCardJson"
-          :data="popupItemData"
-          :clickedElement="clickedElement"
-          :placement="popupPlacement"
-          @close="closeCardPopup"
-          @click.stop
+        v-if="showCardPopup && popupCardJson"
+        :cardUnitJson="popupCardJson"
+        :data="popupItemData"
+        :clickedElement="clickedElement"
+        :placement="popupPlacement"
+        @close="closeCardPopup"
+        @click.stop
       />
     </div>
   </Fragment>
@@ -264,7 +268,7 @@ export default {
   data() {
     return {
       fileNoMap: {},
-      liquidColor:'',
+      liquidColor: "",
       showCardPopup: false,
       popupCardJson: null,
       popupPlacement: "下",
@@ -512,17 +516,36 @@ export default {
       }
       return style;
     },
-
-    setLiquidColor(){
-      const styleJson = this.pageItem?.style_json||{}
-      let style = {};
-      if (styleJson) {
-        style = formatStyleData(styleJson);
+    setLiquidColor() {
+      let obj = {};
+      if (this.partsType === "水球图") {
+        const styleJson = this.pageItem?.style_json || {};
+        let style = {
+          color: styleJson?.color,
+        };
+        if (this.cellItem?.style_json?.color) {
+          style.color = this.cellItem?.style_json?.color;
+        }
+        if (this.cellItem?.wave_color) {
+          obj.waveColor = this.cellItem?.wave_color;
+        }
+        if (this.cellItem?.wave_outline_color) {
+          obj.waveOutlineColor = this.cellItem?.wave_outline_color;
+        }
+        if (this.cellItem?.wave_bg_color) {
+          obj.waveBgColor = this.cellItem?.wave_bg_color;
+        }
       }
-      if(style.color) {
-      }
-      return style.color;
+      return obj;
     },
+    // setLiquidColor() {
+    //   if (this.partsType === "水球图") {
+    //     if (this.cellItem?.wave_color) {
+    //       style.color = this.cellItem?.wave_color;
+    //     }
+    //     return style.color;
+    //   }
+    // },
     getPartModelData() {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
@@ -1004,7 +1027,7 @@ export default {
         if (!isNaN(number)) {
           // 使用formatNumber函数处理数字格式化
           const formattedText = formatNumber(number, this.numberFormatOptions);
-          
+
           // 更新DOM元素显示格式化后的数字
           this.$nextTick(() => {
             let ele = this.$refs?.[this.partsType];

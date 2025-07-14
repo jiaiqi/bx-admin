@@ -564,3 +564,80 @@ export function setAnimationStyle(params = {}) {
   }
   return style
 }
+
+
+export function convertColorWithOpacity(color, opacity, format = "hex") {
+  // 将颜色转换为指定格式的带透明度颜色
+  // 处理透明度参数
+  let alphaValue;
+  if (typeof opacity === "string" && opacity.length <= 2) {
+    // 如果是十六进制字符串
+    alphaValue = parseInt(opacity, 16);
+  } else if (
+    typeof opacity === "number" &&
+    opacity >= 0 &&
+    opacity <= 1
+  ) {
+    // 如果是0-1的数值
+    alphaValue = Math.round(opacity * 255);
+  } else {
+    // 默认完全不透明
+    alphaValue = 255;
+  }
+
+  // 确保透明度值在有效范围内
+  alphaValue = Math.max(0, Math.min(255, alphaValue));
+
+  let r, g, b;
+
+  if (color.startsWith("#")) {
+    // 处理十六进制颜色
+    let hex = color.slice(1);
+
+    if (hex.length === 3) {
+      // 短格式 #RGB -> #RRGGBB
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    } else if (hex.length === 8) {
+      // 已经包含透明度的格式 #RRGGBBAA，只取RGB部分
+      hex = hex.slice(0, 6);
+    }
+
+    r = parseInt(hex.slice(0, 2), 16);
+    g = parseInt(hex.slice(2, 4), 16);
+    b = parseInt(hex.slice(4, 6), 16);
+  } else if (color.startsWith("rgb")) {
+    // 处理rgb或rgba格式
+    const match = color.match(/\d+/g);
+    if (match && match.length >= 3) {
+      r = parseInt(match[0]);
+      g = parseInt(match[1]);
+      b = parseInt(match[2]);
+    } else {
+      // 解析失败，返回默认颜色
+      return format === "rgba" ? "rgba(0, 0, 0, 1)" : "#000000FF";
+    }
+  } else {
+    // 不支持的格式，返回默认颜色
+    return format === "rgba" ? "rgba(0, 0, 0, 1)" : "#000000FF";
+  }
+
+  // 确保RGB值在有效范围内
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+
+  // 根据指定格式返回结果
+  if (format === "rgba") {
+    // 返回rgba格式，透明度转换为0-1范围
+    const alpha = (alphaValue / 255).toFixed(3);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  } else {
+    // 默认返回十六进制格式
+    const toHex = (value) =>
+      value.toString(16).padStart(2, "0").toUpperCase();
+    const result = `#${toHex(r)}${toHex(g)}${toHex(b)}${toHex(
+      alphaValue
+    )}`;
+    return result;
+  }
+}
