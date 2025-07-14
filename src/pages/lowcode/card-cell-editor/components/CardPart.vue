@@ -2,7 +2,7 @@
   <div
     class="card-part"
     :class="{
-      'card-part-row': part.parts_type === 'row',
+      'card-part-row': ['row', '行容器'].includes(part.parts_type),
       'on-drag-over': isDraggingOver && !preview,
       'card-part-preview': preview,
     }"
@@ -25,7 +25,7 @@
     ></div>
 
     <!-- 根据不同类型渲染不同内容 -->
-    <template v-if="['block', 'row'].includes(part.parts_type)">
+    <template v-if="['block', 'row', '行容器','块容器'].includes(part.parts_type)">
       <card-part
         v-for="(childPart, childIndex) in part.children || []"
         :key="childIndex"
@@ -312,7 +312,7 @@ export default {
       const partData = JSON.parse(event.dataTransfer.getData("part"));
 
       // 如果是拖放到row类型的卡片部件中
-      if (part && part.parts_type === "row") {
+      if (part && ["row", "行容器"].includes(part.parts_type)) {
         if (!part.children) {
           this.$set(part, "children", []);
         }
@@ -320,7 +320,7 @@ export default {
         const newPart = JSON.parse(JSON.stringify(partData));
 
         // 如果拖入的也是row类型，初始化children数组
-        if (newPart.parts_type === "row") {
+        if (["row", "行容器"].includes(newPart.parts_type)) {
           newPart.children = [];
         }
 
@@ -353,7 +353,7 @@ export default {
 
     onDragOver(event) {
       console.log("进入");
-      if (this.part.parts_type === "row") {
+      if (["row", "行容器"].includes(this.part.parts_type)) {
         this.isDraggingOver = true;
         event.currentTarget?.classList?.add("on-drag-over");
       }
@@ -361,7 +361,7 @@ export default {
 
     onDragLeave(event) {
       console.log("离开");
-      if (this.part.parts_type === "row") {
+      if (["row", "行容器"].includes(this.part.parts_type)) {
         this.isDraggingOver = false;
         event?.currentTarget?.classList?.remove("on-drag-over");
       }
@@ -498,12 +498,16 @@ export default {
     opacity: 1;
   }
 }
-
+.card-part-row {
+  display: inline-block;
+  padding: 10px;
+}
 .card-part-row {
   padding: 10px;
   min-height: 20px;
   display: block;
   position: relative;
+  width: 100%;
   &.on-drag-over {
     > .overlay {
       border: 2px dashed var(--primary-color);
