@@ -399,19 +399,6 @@ export default {
 
   },
   mounted() {
-    // if (this.serviceName) {
-    //   this.loading = true
-    //   this.getListV2().then(_ => {
-    //     this.refresh().then(_ => {
-    //       this.loading = false
-    //     })
-    //   });
-    // }
-    // uni.$on('pageItemParamsComponent', (data) => {
-    // 	// this.onRefresh();
-    // 	// 组件参数更新了 
-    // 	console.log('on page item params update')
-    // });
     this.itemParamsBuild()
   },
   watch: {

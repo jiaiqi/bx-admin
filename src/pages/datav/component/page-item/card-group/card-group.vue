@@ -25,7 +25,7 @@
 <script>
 import pageItemComponentMixin from "../../../common/functions/pageItemComponentMixin.js";
 import cardGroupCell from "../card-group-cell/card-group-cell.vue";
-import cardPopup from "./card-popup.vue"
+import cardPopup from "./card-popup.vue";
 export default {
   data() {
     return {
@@ -34,7 +34,7 @@ export default {
   },
   components: {
     cardGroupCell,
-    cardPopup
+    cardPopup,
   },
   mixins: [pageItemComponentMixin],
   props: {
@@ -113,104 +113,21 @@ export default {
   },
   methods: {
     navToPath(path) {
-      if(uni){
-        uni.navigateTo({
-          url: path,
-        });
-      }
+      console.log(path);
     },
     onClickCell(cell) {
       console.log(cell, "clickCell----------\r\n");
-      if (cell?.cellsLayout?.jump_json?.page_auth_json) {
+      if (cell?.cellsLayout?.jump_json?.dest_page_no) {
         // 执行自定义跳转
         this.jumpAction(cell?.cellsLayout?.jump_json, cell.data);
         return;
       }
-      let pageNo = "";
-      if (cell && cell.cellsLayout && cell.cellsLayout.jump_json) {
-        pageNo = cell.cellsLayout?.jump_json?.dest_page_no;
-        let path = "";
-        if (cell.cellsLayout.jump_json?.tmpl_page_json.file_path) {
-          path = `${cell.cellsLayout.jump_json?.tmpl_page_json.file_path}?page_no=${pageNo}`;
-        } else {
-          path = `/views/custom/index/index?page_no=${pageNo}`;
-        }
-        const colsMapJson =
-          cell?.cellsLayout?.jump_json?.cols_map_json?.cols_map_detail_json ||
-          [];
-        if (colsMapJson?.length) {
-          let data = {
-            ...cell?.cellsLayout,
-            ...(cell?.data || []),
-          };
-          colsMapJson.forEach((item) => {
-            if (
-              item.to_type === "URL" &&
-              item.from_type === "当前数据" &&
-              data[item.col_from]
-            ) {
-              path += `&${item.col_to}=${data[item.col_from]}`;
-            } else if (
-              item.to_type === "URL" &&
-              item.from_type === "页面" &&
-              this.componentParamsModels[item.col_from]
-            ) {
-              path += `&${item.col_to}=${
-                this.componentParamsModels[item.col_from]
-              }`;
-            } else if (
-              item.to_type === "URL" &&
-              item.from_type !== "当前数据" &&
-              item.col_from &&
-              item.col_to
-            ) {
-              let val = this.renderStr(item.col_from, {
-                data,
-              });
-              if (val) {
-                path += `&${item.col_to}=${val}`;
-              }
-            }
-          });
-        }
-        if (
-          cell &&
-          cell.hasOwnProperty("data") &&
-          cell.data.hasOwnProperty("id")
-        ) {
-          // 如果有行数据默认携带 id
-          if (path.indexOf("?") == -1) {
-            path = `${path}?id=${cell.data.id}`;
-          } else {
-            path = `${path}&id=${cell.data.id}`;
-          }
-        }
-        if (pageNo) {
-          console.log(path);
-          this.navToPath(path);
-        }
-      }
     },
     onClickBlock(cell) {
-      console.log(cell, "clickBlock----------\r\n");
-      let pageNo = "";
-      if (cell && cell.cellsLayout && cell.cellsLayout.jump_json) {
-        pageNo = cell.cellsLayout?.jump_json?.dest_page_no;
-        let path = cell.cellsLayout.jump_json?.tmpl_page_json
-          ? `${cell.cellsLayout.jump_json?.tmpl_page_json.file_path}?page_no=${pageNo}`
-          : `/views/custom/index/index?page_no=${pageNo}`;
-
-        if (
-          cell &&
-          cell.hasOwnProperty("data") &&
-          cell.data.hasOwnProperty("id")
-        ) {
-          // 如果有行数据默认携带 id
-          path = `${path}?id=${cell.data.id}`;
-        }
-        if (pageNo) {
-          this.navToPath(path);
-        }
+      if (cell?.cellsLayout?.jump_json?.dest_page_no) {
+        // 执行自定义跳转
+        this.jumpAction(cell?.cellsLayout?.jump_json, cell.data);
+        return;
       }
     },
     onDataUpdate() {
@@ -228,7 +145,7 @@ export default {
         let mock_srv_data_json = this.pageItem?.mock_srv_data_json || [];
         this.cellData = mock_srv_data_json.map((item) => item);
       } else if (req.serviceName) {
-        const {condition,page,order,group} = req;
+        const { condition, page, order, group } = req;
         const res = await this.select(
           req.serviceName,
           condition,

@@ -3685,7 +3685,7 @@ export default {
           result = result.map((item) => item[dispCol] || item[valueCol]);
         }
       }
-      if (!result) {
+      if (!result || (result && result.length === 0)) {
         switch (colType) {
           case "fks":
             result = val ? val.split(",") : [];

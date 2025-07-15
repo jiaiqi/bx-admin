@@ -426,9 +426,7 @@ export default {
       }
       let jumpUrl = "";
       if (jumpUrl) {
-        // uni.navigateTo({
-        //   url: jumpUrl,
-        // });
+        open(jumpUrl)
       } else if (item.mini_program_url) {
       } else if (item.content_no || item.content) {
         // 跳到文章详情

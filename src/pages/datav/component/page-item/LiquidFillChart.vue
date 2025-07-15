@@ -7,11 +7,11 @@
 <script>
 import * as echarts from "echarts";
 import "echarts-liquidfill";
-
+import { convertColorWithOpacity } from "@/common/common.js";
 export default {
   props: {
     value: {
-      type: Number|String,
+      type: Number | String,
       default: 0.5,
     },
     title: {
@@ -24,7 +24,23 @@ export default {
     },
     color: {
       type: String,
+      default: "",
+    },
+    waveColor: {
+      type: String,
       default: "#1890FF",
+    },
+    waveOutlineColor: {
+      type: String,
+      default: "#1890FF",
+    },
+    waveBgColor: {
+      type: String,
+      default: "",
+    },
+    waveFontSize: {
+      type: String,
+      default: "16",
     },
   },
   data() {
@@ -33,12 +49,13 @@ export default {
     };
   },
   mounted() {
-    this.initChart();
+    setTimeout(() => {
+      this.initChart();
+    }, 200);
   },
   methods: {
     initChart() {
       this.chart = echarts.init(this.$refs.chart);
-
       const option = {
         series: [
           {
@@ -47,10 +64,7 @@ export default {
             center: ["50%", "50%"],
             data: [this.value, this.value - 0.1, this.value - 0.2],
             backgroundStyle: {
-              // color: "#fff",
-              // borderWidth: 1,
-              // borderColor: "#d9d9d9",
-              color: "transparent",
+              color: this.waveBgColor || "transparent",
             },
             outline: {
               show: true,
@@ -66,11 +80,21 @@ export default {
                   colorStops: [
                     {
                       offset: 0,
-                      color: `${this.color}33`, // 30% opacity
+                      color: convertColorWithOpacity(
+                        `${
+                          this.waveOutlineColor || this.waveColor || this.color
+                        }`,
+                        0.3
+                      ), // 30% opacity
                     },
                     {
                       offset: 1,
-                      color: `${this.color}99`, // 60% opacity
+                      color: convertColorWithOpacity(
+                        `${
+                          this.waveOutlineColor || this.waveColor || this.color
+                        }`,
+                        0.6
+                      ), // 60% opacity
                     },
                   ],
                 },
@@ -83,24 +107,33 @@ export default {
                 y: 0,
                 x2: 0,
                 y2: 1,
-                colorStops: [
-                  {
-                    offset: 0,
-                    color: `${this.color}FF`, // 100% opacity
-                  },
-                  {
-                    offset: 1,
-                    color: `${this.color}99`, // 60% opacity
-                  },
-                ],
+                colorStops:
+                  this.waveColor && this.waveColor.includes(",")
+                    ? this.waveColor.split(",").map((item, index) => {
+                        return {
+                          offset:
+                            index / (this.waveColor.split(",").length - 1),
+                          color: item,
+                        };
+                      })
+                    : [
+                        {
+                          offset: 0,
+                          color: convertColorWithOpacity(this.waveColor, 1), // 100% opacity
+                        },
+                        {
+                          offset: 1,
+                          color: convertColorWithOpacity(this.waveColor, 0.6), // 60% opacity
+                        },
+                      ],
               },
             ],
             label: {
               normal: {
                 formatter: Number((this.value * 100).toFixed(2)) + "%",
                 textStyle: {
-                  fontSize: 20,
-                  color: this.color,
+                  fontSize: Number(this.waveFontSize) || 16,
+                  // color: this.color || undefined,
                 },
               },
               // rich: {
@@ -134,13 +167,18 @@ export default {
           },
         ],
       };
+      console.log("liquidFillChartOption:", option);
 
       this.chart.setOption(option);
     },
   },
   watch: {
     value() {
-      this.initChart();
+      setTimeout(() => {
+        this.$nextTick(() => {
+          this.initChart();
+        });
+      }, 200);
     },
   },
   beforeDestroy() {
@@ -159,8 +197,8 @@ export default {
   .chart {
     width: 100%;
     height: 100%;
-    min-width: 100px;
-    min-height: 100px;
+    min-width: 50px;
+    min-height: 50px;
   }
 }
 </style>

@@ -2701,62 +2701,6 @@ function init_util() {
       }
       if (jumpJson?.click_type === '扫码') {
         MessageBox('功能暂未开放', '提示', 'error')
-        // let qrcodeRes = await new Promise((resolve) => {
-        //   uni.scanCode({
-        //     success: function (res) {
-        //       console.log('条码类型：' + res.scanType);
-        //       console.log('条码内容：' + res.result);
-        //       resolve(res.result)
-        //     },
-        //     fail: (err) => {
-        //       resolve(err)
-        //     }
-        //   });
-        // })
-        // if (qrcodeRes && typeof qrcodeRes === 'string') {
-        //   qrcodeRes = decodeURIComponent(qrcodeRes)
-        //   const obj = qrcodeRes.split(';').reduce((pre, cur) => {
-        //     let arr = cur.split(':')
-        //     pre[arr[0]] = arr[1]
-        //     return pre
-        //   }, {})
-        //   if (jumpJson?.srv_req_json?.srv_type === 'add') {
-        //     const url = `/${jumpJson.srv_req_json.mapp}/add/${jumpJson.srv_req_json.serviceName}`
-        //     if (Array.isArray(jumpJson.cols_map_json?.cols_map_detail_json)) {
-        //       const mapJson = jumpJson.cols_map_json?.cols_map_detail_json
-        //       if (mapJson?.length) {
-        //         const data = mapJson.reduce((pre, cur) => {
-        //           if (['当前数据', '业务', '模型'].includes(cur.from_type)) {
-        //             pre[cur.col_to] = obj[cur.col_from]
-        //           } else if (cur.from_type === '页面') {
-        //             pre[cur.col_to] = this.queryOptions[cur.col_from]
-        //           } else if (cur.from_type === '用户') {
-        //             pre[cur.col_to] = this.vloginUser[cur.col_from]
-        //           }
-        //           return pre
-        //         }, {})
-        //         const req = [{
-        //           serviceName: jumpJson.srv_req_json.serviceName,
-        //           data: [data]
-        //         }]
-        //         const res = await this.$http.post(url, req)
-        //         if (res?.data?.state === 'SUCCESS') {
-        //           uni.showModal({
-        //             title: '提示',
-        //             content: jumpJson?.scan_success_tip || res?.data?.resultMessage || '操作成功',
-        //           })
-        //         } else if (res?.data?.resultMessage) {
-        //           uni.showModal({
-        //             title: '提示',
-        //             content: res?.data?.resultMessage,
-        //             showCancel: false
-        //           })
-        //         }
-        //       }
-        //     }
-
-        //   }
-        // }
         return
       }
 

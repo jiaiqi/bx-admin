@@ -564,3 +564,110 @@ export function setAnimationStyle(params = {}) {
   }
   return style
 }
+
+
+/**
+ * 转换颜色格式并设置透明度
+ * 
+ * 支持多种颜色输入格式（十六进制、RGB、RGBA），并可以设置透明度值，
+ * 最终输出为指定格式的带透明度颜色值。
+ * 
+ * @param {string} color - 输入颜色值
+ *   - 十六进制格式：#RGB、#RRGGBB、#RRGGBBAA
+ *   - RGB格式：rgb(r, g, b)
+ *   - RGBA格式：rgba(r, g, b, a)
+ * @param {string|number} opacity - 透明度值
+ *   - 字符串：十六进制透明度值（如 "FF"、"80"）
+ *   - 数字：0-1 范围的透明度值（如 0.5、1.0）
+ * @param {string} [format="hex"] - 输出格式
+ *   - "hex"：输出十六进制格式 #RRGGBBAA
+ *   - "rgba"：输出 rgba(r, g, b, a) 格式
+ * 
+ * @returns {string} 带透明度的颜色值
+ * 
+ * @example
+ * // 十六进制输入，数字透明度
+ * convertColorWithOpacity("#FF0000", 0.5) // "#FF000080"
+ * 
+ * @example
+ * // RGB输入，十六进制透明度，输出rgba格式
+ * convertColorWithOpacity("rgb(255, 0, 0)", "80", "rgba") // "rgba(255, 0, 0, 0.502)"
+ * 
+ * @example
+ * // 短格式十六进制输入
+ * convertColorWithOpacity("#F00", 1.0) // "#FF0000FF"
+ */
+export function convertColorWithOpacity(color, opacity, format = "hex") {
+  // 处理透明度参数
+  let alphaValue;
+  if (typeof opacity === "string" && opacity.length <= 2) {
+    // 如果是十六进制字符串
+    alphaValue = parseInt(opacity, 16);
+  } else if (
+    typeof opacity === "number" &&
+    opacity >= 0 &&
+    opacity <= 1
+  ) {
+    // 如果是0-1的数值
+    alphaValue = Math.round(opacity * 255);
+  } else {
+    // 默认完全不透明
+    alphaValue = 255;
+  }
+
+  // 确保透明度值在有效范围内
+  alphaValue = Math.max(0, Math.min(255, alphaValue));
+
+  let r, g, b;
+
+  if (color.startsWith("#")) {
+    // 处理十六进制颜色
+    let hex = color.slice(1);
+
+    if (hex.length === 3) {
+      // 短格式 #RGB -> #RRGGBB
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    } else if (hex.length === 8) {
+      // 已经包含透明度的格式 #RRGGBBAA，只取RGB部分
+      hex = hex.slice(0, 6);
+    }
+
+    r = parseInt(hex.slice(0, 2), 16);
+    g = parseInt(hex.slice(2, 4), 16);
+    b = parseInt(hex.slice(4, 6), 16);
+  } else if (color.startsWith("rgb")) {
+    // 处理rgb或rgba格式
+    const match = color.match(/\d+/g);
+    if (match && match.length >= 3) {
+      r = parseInt(match[0]);
+      g = parseInt(match[1]);
+      b = parseInt(match[2]);
+    } else {
+      // 解析失败，返回默认颜色
+      return format === "rgba" ? "rgba(0, 0, 0, 1)" : "#000000FF";
+    }
+  } else {
+    // 不支持的格式，返回默认颜色
+    return format === "rgba" ? "rgba(0, 0, 0, 1)" : "#000000FF";
+  }
+
+  // 确保RGB值在有效范围内
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+
+  // 根据指定格式返回结果
+  if (format === "rgba") {
+    // 返回rgba格式，透明度转换为0-1范围
+    const alpha = (alphaValue / 255).toFixed(3);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  } else {
+    // 默认返回十六进制格式
+    const toHex = (value) =>
+      value.toString(16).padStart(2, "0").toUpperCase();
+    const result = `#${toHex(r)}${toHex(g)}${toHex(b)}${toHex(
+      alphaValue
+    )}`;
+    return result;
+  }
+}

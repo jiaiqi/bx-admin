@@ -4,7 +4,12 @@
       v-if="partsType === '水球图'"
       :value="getPartModelData"
       :ref="partsType"
-      :color="setLiquidColor"
+      :style="[buildColStyleJson]"
+      :color="setLiquidConfig.color"
+      :wave-color="setLiquidConfig.waveColor"
+      :wave-bg-color="setLiquidConfig.waveBgColor"
+      :wave-outline-color="setLiquidConfig.waveOutlineColor"
+      :wave-font-size="setLiquidConfig.waveFontSize"
     />
     <video
       class="bx-cell-video"
@@ -200,18 +205,18 @@
     </div>
     <!-- 卡片弹窗 -->
     <div
-        class="card-popup-overlay"
-        @click="closeCardPopup"
-        v-if="showCardPopup"
+      class="card-popup-overlay"
+      @click="closeCardPopup"
+      v-if="showCardPopup"
     >
       <card-popup
-          v-if="showCardPopup && popupCardJson"
-          :cardUnitJson="popupCardJson"
-          :data="popupItemData"
-          :clickedElement="clickedElement"
-          :placement="popupPlacement"
-          @close="closeCardPopup"
-          @click.stop
+        v-if="showCardPopup && popupCardJson"
+        :cardUnitJson="popupCardJson"
+        :data="popupItemData"
+        :clickedElement="clickedElement"
+        :placement="popupPlacement"
+        @close="closeCardPopup"
+        @click.stop
       />
     </div>
   </Fragment>
@@ -264,7 +269,7 @@ export default {
   data() {
     return {
       fileNoMap: {},
-      liquidColor:'',
+      liquidColor: "",
       showCardPopup: false,
       popupCardJson: null,
       popupPlacement: "下",
@@ -512,16 +517,29 @@ export default {
       }
       return style;
     },
-
-    setLiquidColor(){
-      const styleJson = this.pageItem?.style_json||{}
-      let style = {};
-      if (styleJson) {
-        style = formatStyleData(styleJson);
+    setLiquidConfig() {
+      let obj = {};
+      if (this.partsType === "水球图") {
+        let style = {
+          color: null,
+        };
+        if (this.cellItem?.style_json?.color) {
+          style.color = this.cellItem?.style_json?.color;
+        }
+        if (this.cellItem?.wave_color) {
+          obj.waveColor = this.cellItem?.wave_color;
+        }
+        if (this.cellItem?.wave_outline_color) {
+          obj.waveOutlineColor = this.cellItem?.wave_outline_color;
+        }
+        if (this.cellItem?.wave_bg_color) {
+          obj.waveBgColor = this.cellItem?.wave_bg_color;
+        }
+        if(this.cellItem?.wave_font_size){
+          obj.waveFontSize = this.cellItem?.wave_font_size;
+        }
       }
-      if(style.color) {
-      }
-      return style.color;
+      return obj;
     },
     getPartModelData() {
       const item = this.cellItem;
@@ -1004,7 +1022,7 @@ export default {
         if (!isNaN(number)) {
           // 使用formatNumber函数处理数字格式化
           const formattedText = formatNumber(number, this.numberFormatOptions);
-          
+
           // 更新DOM元素显示格式化后的数字
           this.$nextTick(() => {
             let ele = this.$refs?.[this.partsType];
