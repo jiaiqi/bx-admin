@@ -26,6 +26,7 @@
  */
 -->
 <template>
+  <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
   <div
     class="map-zoom-container"
     :class="{
@@ -40,10 +41,9 @@
     @mouseleave="handleMouseUp"
     @click="tapMarker()"
     tabindex="0"
-    v-if="
-      mapJson && mapJson.map_base_supplier === '自定义底图' && isBuildingView
-    "
+    v-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
   >
+    <!-- 建筑物视图的树形数据 -->
     <div
       class="building-tree-data map-tree-data"
       v-if="isBuildingView && buildingTree && buildingTree.length"
@@ -85,55 +85,15 @@
         </transition>
       </div>
     </div>
-    <div
-      class="map-view building-view"
-      :class="{ 'no-transition': isDragging }"
-      :style="{
-        backgroundImage: `url(${baseImage})`,
-        backgroundSize: '100% 100%',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        transform: `translate(${mapPosition.x}px, ${mapPosition.y}px) scale(${zoomScale})`,
-        transformOrigin: 'center center',
-      }"
-    >
-      <!-- building-view 的标记点内容可以在这里添加 -->
-    </div>
 
-    <!-- 一键恢复按钮 -->
-    <div
-      class="map-reset-btn"
-      v-show="!isInitialView"
-      @click="resetMapView"
-      title="恢复初始视图"
-    >
-      <Icon icon="material-symbols:refresh" class="reset-icon"></Icon>
-    </div>
-  </div>
-
-  <div
-    class="map-zoom-container"
-    :class="{
-      'ctrl-pressed': isCtrlPressed,
-      'space-pressed': isSpacePressed && !isDragging,
-      dragging: isDragging,
-    }"
-    @wheel="handleWheel"
-    @mousedown="handleMouseDown"
-    @mousemove="handleMouseMove"
-    @mouseup="handleMouseUp"
-    @mouseleave="handleMouseUp"
-    @click="tapMarker()"
-    tabindex="0"
-    v-else-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
-  >
+    <!-- 普通视图的侧边栏树形数据 -->
     <div
       class="map-left"
       :style="{
         '--left': left + 'px',
       }"
       :class="{ collapsed: isCollapsed }"
-      v-if="treeData && treeData.length"
+      v-else-if="!isBuildingView && treeData && treeData.length"
     >
       <div class="map-tree-data" v-if="treeData.length">
         <div class="tree-data-item" v-for="item in treeData" :key="item.id">
@@ -181,9 +141,15 @@
         <Icon icon="material-symbols:arrow-menu-close" class="icon"></Icon>
       </div>
     </div>
+
+    <!-- 自定义底图-地图视图区域 -->
     <div
-      class="map-view custom-map"
-      :class="{ 'no-transition': isDragging }"
+      class="map-view"
+      :class="{
+        'building-view': isBuildingView,
+        'custom-map': !isBuildingView,
+        'no-transition': isDragging,
+      }"
       :style="{
         backgroundImage: `url(${baseImage})`,
         backgroundSize: '100% 100%',
@@ -193,43 +159,54 @@
         transformOrigin: 'center center',
       }"
     >
-      <template
-        v-if="mapJson && mapJson.map_type === '标签' && markerList.length"
-      >
-        <div
-          class="map-marker"
-          :class="{ 'is-active': isActive(marker) }"
-          :style="[
-            {
-              ...setLabelStyle,
-              ...(isActive(marker) ? setLabelActiveStyle : {}),
-            },
-            getItemPosition(marker),
-          ]"
-          v-for="marker in markerList"
-          :key="marker.id"
-          @click="clickMarker(marker)"
-        >
-          <div class="map-marker-content">
-            {{ marker[mapJson.col_label] || "" }}
-          </div>
-        </div>
+      <!-- 建筑物视图内容 -->
+      <template v-if="isBuildingView">
+        <!-- building-view 的标记点内容可以在这里添加 -->
       </template>
-      <template v-else-if="markerList.length">
-        <div
-          class="map-marker"
-          :style="getItemPosition(item)"
-          @click.stop="tapMarker(item, $event)"
-          :class="{ 'cursor-pointer': !!cardUnitJson }"
-          v-for="item in markerList"
-          :key="item.id"
+
+      <!-- 普通视图的标记点内容 -->
+      <template v-else>
+        <!-- 标签类型的标记点 -->
+        <template
+          v-if="mapJson && mapJson.map_type === '标签' && markerList.length"
         >
-          <img
-            :src="getItemIcon(item)"
-            class="marker-icon"
-            v-if="getItemIcon(item)"
-          />
-        </div>
+          <div
+            class="map-marker"
+            :class="{ 'is-active': isActive(marker) }"
+            :style="[
+              {
+                ...setLabelStyle,
+                ...(isActive(marker) ? setLabelActiveStyle : {}),
+              },
+              getItemPosition(marker),
+            ]"
+            v-for="marker in markerList"
+            :key="marker.id"
+            @click="clickMarker(marker)"
+          >
+            <div class="map-marker-content">
+              {{ marker[mapJson.col_label] || "" }}
+            </div>
+          </div>
+        </template>
+
+        <!-- 图标类型的标记点 -->
+        <template v-else-if="markerList.length">
+          <div
+            class="map-marker"
+            :style="getItemPosition(item)"
+            @click.stop="tapMarker(item, $event)"
+            :class="{ 'cursor-pointer': !!cardUnitJson }"
+            v-for="item in markerList"
+            :key="item.id"
+          >
+            <img
+              :src="getItemIcon(item)"
+              class="marker-icon"
+              v-if="getItemIcon(item)"
+            />
+          </div>
+        </template>
       </template>
     </div>
 
@@ -243,7 +220,8 @@
       <Icon icon="material-symbols:refresh" class="reset-icon"></Icon>
     </div>
 
-    <Teleport to="body">
+    <!-- 弹窗内容 -->
+    <Teleport to="body" v-if="!isBuildingView">
       <div
         class="popover-content-to-body"
         :style="{
@@ -272,6 +250,7 @@
     </Teleport>
   </div>
 
+  <!-- 腾讯、百度底图等 -->
   <div class="map-view" v-else>
     <!-- 定义地图显示容器 -->
     <div :id="mapId" class="map-container"></div>
@@ -335,7 +314,9 @@ const props = defineProps({
  * 左侧面板折叠状态管理
  */
 const isCollapsed = ref(false); // 是否折叠左侧面板
-const left = computed(() => (isCollapsed.value ? -CONFIG.UI.SIDEBAR_WIDTH : CONFIG.UI.SIDEBAR_MARGIN)); // 计算左侧面板位置
+const left = computed(() =>
+  isCollapsed.value ? -CONFIG.UI.SIDEBAR_WIDTH : CONFIG.UI.SIDEBAR_MARGIN
+); // 计算左侧面板位置
 /**
  * 切换左侧面板折叠状态
  * @function changeCollapsed
@@ -350,23 +331,23 @@ const changeCollapsed = () => {
 const CONFIG = {
   // 缩放相关配置
   ZOOM: {
-    MIN: 0.5,           // 最小缩放比例
-    MAX: 3,             // 最大缩放比例
-    STEP: 0.1,          // 缩放步长
-    DEFAULT: 1,         // 默认缩放比例
+    MIN: 0.5, // 最小缩放比例
+    MAX: 3, // 最大缩放比例
+    STEP: 0.1, // 缩放步长
+    DEFAULT: 1, // 默认缩放比例
   },
-  
+
   // 性能优化配置
   PERFORMANCE: {
-    DEBOUNCE_DELAY: 100,        // 防抖延迟时间（毫秒）
-    TENCENT_MAP_DELAY: 1000,    // 腾讯地图初始化延迟
+    DEBOUNCE_DELAY: 100, // 防抖延迟时间（毫秒）
+    TENCENT_MAP_DELAY: 1000, // 腾讯地图初始化延迟
   },
-  
+
   // UI 配置
   UI: {
-    SIDEBAR_WIDTH: 230,         // 侧边栏宽度
-    SIDEBAR_MARGIN: 15,         // 侧边栏边距
-    POPUP_OFFSET: 10,           // 弹窗偏移距离
+    SIDEBAR_WIDTH: 230, // 侧边栏宽度
+    SIDEBAR_MARGIN: 15, // 侧边栏边距
+    POPUP_OFFSET: 10, // 弹窗偏移距离
   },
 };
 
@@ -478,7 +459,7 @@ let animationFrameId = null;
  * - 使用 requestAnimationFrame 优化性能，避免频繁重绘
  * - 取消之前的动画帧，确保只有最新的移动生效
  * - 根据鼠标位置更新地图位置
- * 
+ *
  * 优化：从全局事件改为组件内事件，提高性能和精确性
  */
 const handleMouseMove = (event) => {
@@ -761,10 +742,10 @@ async function initCustomMap() {
       const reqJson = props.pageItem.srv_req_json;
       const req = props.pageItem.srv_req_json;
       const url = `/${reqJson.mapp}/select/${reqJson.serviceName}`;
-      
+
       console.log("发起API请求:", url, req); // 调试日志
       const res = await $selectList(url, req); // 发起 API 请求
-      
+
       if (res.ok) {
         list = res.data || []; // 获取响应数据，确保返回数组
         console.log("API请求成功，获取数据:", list.length, "条"); // 调试日志
@@ -804,14 +785,14 @@ async function initCustomMap() {
  */
 function getItemIcon(item = {}) {
   // 参数类型检查
-  if (!item || typeof item !== 'object') {
-    console.warn('getItemIcon: 无效的item参数', item);
+  if (!item || typeof item !== "object") {
+    console.warn("getItemIcon: 无效的item参数", item);
     item = {};
   }
 
   const mapConfig = mapJson.value;
   if (!mapConfig) {
-    console.warn('getItemIcon: 地图配置不存在');
+    console.warn("getItemIcon: 地图配置不存在");
     return "";
   }
 
@@ -821,13 +802,13 @@ function getItemIcon(item = {}) {
     if (iconCol && item[iconCol]) {
       return getImagePath(item[iconCol]);
     }
-    
+
     // 使用默认图标
     if (mapConfig.icon_default) {
       return getImagePath(mapConfig.icon_default);
     }
   } catch (error) {
-    console.error('getItemIcon: 获取图标路径失败', error);
+    console.error("getItemIcon: 获取图标路径失败", error);
   }
 
   return ""; // 无图标时返回空字符串
@@ -1299,11 +1280,11 @@ onMounted(() => {
         markerList.value = res;
       });
     }
-  }
 
-  // 添加全局键盘事件监听器，处理快捷键
-  document.addEventListener("keydown", handleKeyDown); // 键盘按下事件
-  document.addEventListener("keyup", handleKeyUp); // 键盘松开事件
+    // 添加全局键盘事件监听器，处理快捷键
+    document.addEventListener("keydown", handleKeyDown); // 键盘按下事件
+    document.addEventListener("keyup", handleKeyUp); // 键盘松开事件
+  }
 });
 
 /**
@@ -1317,26 +1298,28 @@ onMounted(() => {
  * - 重置光标样式
  */
 onUnmounted(() => {
-  removeEventListeners(); // 移除弹窗相关事件监听器
+  if (mapBaseSupplier.value === "自定义底图") {
+    removeEventListeners(); // 移除弹窗相关事件监听器
 
-  // 清理全局键盘事件监听器，防止内存泄漏
-  document.removeEventListener("keydown", handleKeyDown);
-  document.removeEventListener("keyup", handleKeyUp);
+    // 清理全局键盘事件监听器，防止内存泄漏
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("keyup", handleKeyUp);
 
-  // 清理防抖定时器
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-    debounceTimer = null;
+    // 清理防抖定时器
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+
+    // 清理动画帧，防止内存泄漏
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+
+    // 重置光标样式
+    document.body.style.cursor = "";
   }
-
-  // 清理动画帧，防止内存泄漏
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-
-  // 重置光标样式
-  document.body.style.cursor = "";
 });
 </script>
 
