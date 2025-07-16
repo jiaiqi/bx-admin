@@ -272,7 +272,7 @@ import currentInfo from "./current-info.vue";
 import slideList from "./slide-list.vue";
 import userList from "./user-list.vue";
 import noticeBar from "./notice-bar.vue";
-import mapCard from "./map-card.vue";
+import mapCard from "./map-card/index.vue";
 import basicChart from "./chart-basic.vue";
 import pageItemChart from "./chart/page-item-chart.vue";
 import mixList from "./mix-list/list.vue";

@@ -23,7 +23,7 @@ const ENV = "parkProd"; // 延安园区生产环境
 // const ENV = "healthProd";
 // const ENV = "gaosu61";
 
-window.env = ENV
+window.env = ENV;
 
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
@@ -41,10 +41,10 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = 'healthProd'
 
   const pathConfig = pathConfigMap[ENV];
-  if (location.href?.includes?.('menuapp=')) {
-    let app = location.href.split('menuapp=')[1].split(';')[0]
+  if (location.href?.includes?.("menuapp=")) {
+    let app = location.href.split("menuapp=")[1].split(";")[0];
     if (app) {
-      pathConfig.application = app
+      pathConfig.application = app;
     }
   }
   baseURL = pathConfig.gateway; // 正式环境
@@ -65,10 +65,10 @@ if (pathConfig) {
         top.pathConfig = pathConfig;
       }
     }
-  } catch (error) { }
+  } catch (error) {}
 }
 if (window.backendIpAddr) {
-  baseURL = window.backendIpAddr
+  baseURL = window.backendIpAddr;
 }
 // if(process.env.BASE_URL){
 //   baseURL = process.env.BASE_URL
@@ -117,7 +117,10 @@ instance.interceptors.response.use(
     if (response.data.state == "FAILURE") {
       if (response.data.resultCode == "0011") {
         store && store.commit("clearSrvCols");
-        if (process?.env?.NODE_ENV === "development" || window.self === window.top) {
+        if (
+          process?.env?.NODE_ENV === "development" ||
+          window.self === window.top
+        ) {
           // 开发环境 调用登录弹窗
           let dialog = null;
           if (!_loginDialog) {
@@ -148,7 +151,7 @@ instance.interceptors.response.use(
             if (top.getLoginAddress) {
               login_page = "/" + top.getLoginAddress();
             }
-          } catch (exception) { }
+          } catch (exception) {}
           getRootWindow().layer.open({
             title: false,
             type: 2,
@@ -166,7 +169,7 @@ instance.interceptors.response.use(
                 console.info("1");
                 login_page = "/" + top.getMainAddress();
               }
-            } catch (exception) { }
+            } catch (exception) {}
             window.location.href = window.location.origin + login_page;
           }
         }
@@ -176,9 +179,11 @@ instance.interceptors.response.use(
         }
       } else {
         if (response.data.resultCode !== "9998") {
-          if (response.data.serviceInfo?.includes('sql语句执行异常')) {
-            console.error(response.data.serviceInfo)
-          } else if (sessionStorage.getItem("need_login_flag") != "need_login") {
+          if (response.data.serviceInfo?.includes("sql语句执行异常")) {
+            console.error(response.data.serviceInfo);
+          } else if (
+            sessionStorage.getItem("need_login_flag") != "need_login"
+          ) {
             // Message.error(response.data.resultMessage);
           }
         }
@@ -199,49 +204,49 @@ instance.interceptors.response.use(
 export const $http = instance;
 
 /**
- * 
- * @param {*} url 
- * @param {*} req 
- * @returns 
+ *
+ * @param {*} url
+ * @param {*} req
+ * @returns
  */
 export async function $selectOne(url, req) {
-  const res = await $http.post(url, req)
-  if (res?.data?.state === 'SUCCESS') {
+  const res = await $http.post(url, req);
+  if (res?.data?.state === "SUCCESS") {
     if (res.data?.data?.length > 0) {
       return {
         ok: true,
         data: res.data?.data?.[0],
-      }
+      };
     } else {
       return {
         ok: false,
         data: {},
-        msg: '未查询到数据',
-      }
+        msg: "未查询到数据",
+      };
     }
   } else {
     return {
       ok: false,
       data: {},
-      msg: res?.data?.resultMessage || '请求失败',
-    }
+      msg: res?.data?.resultMessage || "请求失败",
+    };
   }
 }
 
 export async function $selectList(url, req) {
-  const res = await $http.post(url, req)
-  if (res?.data?.state === 'SUCCESS') {
+  const res = await $http.post(url, req);
+  if (res?.data?.state === "SUCCESS") {
     return {
       ok: true,
       data: res.data?.data,
-      page: res.data.page
-    }
+      page: res.data.page,
+    };
   } else {
     return {
       ok: false,
       data: [],
-      msg: res?.data?.resultMessage || '请求失败',
-    }
+      msg: res?.data?.resultMessage || "请求失败",
+    };
   }
 }
 
@@ -250,34 +255,64 @@ export const $delete = async ({ app, service, key = "id", value = "" }) => {
     return {
       ok: false,
       data: {},
-      msg: '删除的数据不能为空',
-    }
+      msg: "删除的数据不能为空",
+    };
   }
   if (!service) {
     return {
       ok: false,
       data: {},
-      msg: 'service不能为空',
-    }
+      msg: "service不能为空",
+    };
   }
   if (Array.isArray(value)) {
-    value = value.join(',')
+    value = value.join(",");
   }
-  const url = `/${app}/delete/${service}`
-  const req = [{ "serviceName": service, "condition": [{ "colName": key, "ruleType": "in", "value": value }] }]
-  const res = await $http.post(url, req)
+  const url = `/${app}/delete/${service}`;
+  const req = [
+    {
+      serviceName: service,
+      condition: [{ colName: key, ruleType: "in", value: value }],
+    },
+  ];
+  const res = await $http.post(url, req);
 
-  if (res?.data?.state === 'SUCCESS') {
+  if (res?.data?.state === "SUCCESS") {
     return {
       ok: true,
       data: res.data?.data,
-      msg: '删除成功',
-    }
+      msg: "删除成功",
+    };
   } else {
     return {
       ok: false,
       data: {},
-      msg: res?.data?.resultMessage || '删除失败',
-    }
+      msg: res?.data?.resultMessage || "删除失败",
+    };
   }
-}
+};
+
+// 使用文件编号拼文件路径
+export const getImagePath = (no, notThumb) => {
+  if (no && typeof no === "string") {
+    if (no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1) {
+      return no;
+    }
+    if (no.indexOf("data:image") !== -1 && no.indexOf("base64") !== -1) {
+      return no;
+    }
+    if (no.indexOf("&bx_auth_ticket") !== -1) {
+      no = no.split("&bx_auth_ticket")[0];
+    }
+    let url = `${backendIpAddr}/file/download?fileNo=${no}&bx_auth_ticket=${
+      bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+    }`;
+    if (location.href?.includes("lowcode-grid/editor/")) {
+      // 可视化编辑页面，图片后缀增加时间戳，避免缓存
+      url += `&t=${new Date().getTime()}`;
+    }
+    return url;
+  } else {
+    return "";
+  }
+};

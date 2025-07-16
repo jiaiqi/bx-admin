@@ -1,30 +1,3 @@
-<!--
-/**
- * 地图卡片组件 - 支持自定义底图和在线地图的交互式地图展示组件
- * 
- * @component MapCard
- * @description 
- * 地图展示组件，支持以下特性：
- *
- * @features
- * - 🗺️ 多种地图底图支持（自定义图片、百度地图等）
- * - 🔍 地图缩放功能（Ctrl + 鼠标滚轮）
- * - 🖱️ 地图拖拽功能（Space + 鼠标拖拽）
- * - 📍 标记点展示和交互
- * - 🏢 建筑物视图和楼层切换
- * - 🌳 树形数据结构展示
- * - 💬 标记点弹窗详情展示
- * - 🎨 自定义样式和图标支持
- * - 📱 响应式设计
- * 
- * 
- * @example
- * <map-card 
- *   :page-item="pageItemConfig" 
- *   :tree-req="treeRequestConfig"
- * />
- */
--->
 <template>
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
   <div
@@ -41,7 +14,6 @@
     @mouseleave="handleMouseUp"
     @click="tapMarker()"
     tabindex="0"
-    v-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
   >
     <!-- 建筑物视图的树形数据 -->
     <div
@@ -249,35 +221,38 @@
       </div>
     </Teleport>
   </div>
-
-  <!-- 腾讯、百度底图等 -->
-  <div class="map-view" v-else>
-    <!-- 定义地图显示容器 -->
-    <div :id="mapId" class="map-container"></div>
-
-    <div class="map-legend">
-      <div
-        v-for="item in iconJson"
-        :key="item.legend_label"
-        class="legend-wrap"
-      >
-        <img :src="getImagePath(item.icon)" class="legend-icon" />
-        <span class="legend-text">{{ item.legend_label || "" }}</span>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup>
 /**
- * Vue 3 Composition API 导入
- * 导入必要的 Vue 响应式 API 和生命周期钩子
+ * 自定义底图组件 - 支持建筑物视图和普通视图的交互式地图展示组件
+ *
+ * @component CustomMapView
+ * @description
+ * 自定义底图展示组件，支持以下特性：
+ *
+ * @features
+ * - 🗺️ 自定义图片底图支持
+ * - 🔍 地图缩放功能（Ctrl + 鼠标滚轮）
+ * - 🖱️ 地图拖拽功能（Space + 鼠标拖拽）
+ * - 📍 标记点展示和交互
+ * - 🏢 建筑物视图和楼层切换
+ * - 🌳 树形数据结构展示
+ * - 💬 标记点弹窗详情展示
+ * - 🎨 自定义样式和图标支持
+ * - 📱 响应式设计
+ *
+ * @example
+ * <custom-map-view
+ *   :page-item="pageItemConfig"
+ *   :tree-req="treeRequestConfig"
+ * />
  */
+
 import {
   onMounted,
   onUnmounted,
   ref,
-  nextTick,
   computed,
   watch,
   set,
@@ -286,16 +261,11 @@ import {
 /**
  * 工具函数和组件导入
  */
-import { getImagePath } from "../../common/http"; // 图片路径处理工具
-import {
-  initMapData,
-  generateMapID,
-  initMap,
-} from "../../common/functions/mapUtils.js"; // 地图工具函数
+import { getImagePath } from "@/common/http.js"; // 图片路径处理工具
 import { $selectList } from "@/common/http"; // HTTP 请求工具
-import cardGroupCell from "./card-group-cell/card-group-cell.vue"; // 卡片组单元格组件
-import TreeDataItem from "./TreeDataItem.vue"; // 树形数据项组件
-import { formatStyleData } from "../../common"; // 样式数据格式化工具
+import cardGroupCell from "../card-group-cell/card-group-cell.vue"; // 卡片组单元格组件
+import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
+import { formatStyleData } from "../../../common"; // 样式数据格式化工具
 import { Icon } from "@iconify/vue2"; // 图标组件
 import Teleport from "vue2-teleport"; // Vue 2 传送门组件
 
@@ -311,12 +281,18 @@ const props = defineProps({
 });
 
 /**
+ * 组件事件发射器
+ */
+const emit = defineEmits(["select"]);
+
+/**
  * 左侧面板折叠状态管理
  */
 const isCollapsed = ref(false); // 是否折叠左侧面板
 const left = computed(() =>
   isCollapsed.value ? -CONFIG.UI.SIDEBAR_WIDTH : CONFIG.UI.SIDEBAR_MARGIN
 ); // 计算左侧面板位置
+
 /**
  * 切换左侧面板折叠状态
  * @function changeCollapsed
@@ -340,7 +316,6 @@ const CONFIG = {
   // 性能优化配置
   PERFORMANCE: {
     DEBOUNCE_DELAY: 100, // 防抖延迟时间（毫秒）
-    TENCENT_MAP_DELAY: 1000, // 腾讯地图初始化延迟
   },
 
   // UI 配置
@@ -373,210 +348,36 @@ const isSpacePressed = ref(false); // 空格键是否按下
 const isCtrlPressed = ref(false); // Ctrl键是否按下
 
 /**
- * 处理鼠标滚轮事件 - 地图缩放功能
- * 只有在按住 Ctrl 键时才进行缩放操作，防止误操作
- *
- * @function handleWheel
- * @param {WheelEvent} event - 鼠标滚轮事件对象
- * @description
- * - 检查 Ctrl 键是否按下，只有按下时才允许缩放
- * - 阻止默认滚动行为
- * - 缩放时自动隐藏活动的标记点弹窗
- * - 根据滚轮方向计算缩放增量
- * - 限制缩放范围在 minZoom 和 maxZoom 之间
+ * 地图配置计算属性
  */
-const handleWheel = (event) => {
-  // 只有按住Ctrl键时才进行缩放
-  if (event.ctrlKey) {
-    event.preventDefault(); // 阻止默认滚动行为
-
-    // 缩放时隐藏popover，避免位置错乱
-    if (activeMarker.value?.id) {
-      activeMarker.value = null;
-      currentMarkerElement.value = null;
-      removeEventListeners();
-    }
-
-    // 计算缩放增量：向下滚动缩小，向上滚动放大
-    const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
-    const newScale = zoomScale.value + delta;
-
-    // 限制缩放范围，防止过度缩放
-    if (newScale >= minZoom && newScale <= maxZoom) {
-      zoomScale.value = newScale;
-    }
-  }
-};
-
-/**
- * 处理鼠标按下事件 - 开始拖拽操作
- * 只有在按住 Space 键时才允许拖拽
- *
- * @function handleMouseDown
- * @param {MouseEvent} event - 鼠标按下事件对象
- * @description
- * - 检查 Space 键是否按下，只有按下时才允许拖拽
- * - 阻止默认行为，避免文本选择等
- * - 设置拖拽状态和起始位置
- * - 拖拽时自动隐藏活动的标记点弹窗
- * - 更新光标样式
- */
-const handleMouseDown = (event) => {
-  if (isSpacePressed.value) {
-    event.preventDefault(); // 阻止默认行为
-    isDragging.value = true; // 设置拖拽状态
-
-    // 拖拽时隐藏popover，避免位置错乱
-    if (activeMarker.value?.id) {
-      activeMarker.value = null;
-      currentMarkerElement.value = null;
-      removeEventListeners();
-    }
-
-    // 记录拖拽起始位置，考虑当前地图位置偏移
-    dragStart.value = {
-      x: event.clientX - mapPosition.value.x,
-      y: event.clientY - mapPosition.value.y,
-    };
-    updateCursor(); // 更新光标样式
-  }
-};
-
-/**
- * 拖拽性能优化变量
- * 使用 requestAnimationFrame 优化拖拽性能，避免频繁重绘
- */
-let animationFrameId = null;
-
-/**
- * 处理鼠标移动事件 - 执行拖拽操作（优化版本）
- * 使用 requestAnimationFrame 优化性能，现在绑定在组件容器上
- *
- * @function handleMouseMove
- * @param {MouseEvent} event - 鼠标移动事件对象
- * @description
- * - 检查是否处于拖拽状态且 Space 键按下
- * - 使用 requestAnimationFrame 优化性能，避免频繁重绘
- * - 取消之前的动画帧，确保只有最新的移动生效
- * - 根据鼠标位置更新地图位置
- *
- * 优化：从全局事件改为组件内事件，提高性能和精确性
- */
-const handleMouseMove = (event) => {
-  if (isDragging.value && isSpacePressed.value) {
-    event.preventDefault(); // 阻止默认行为
-
-    // 使用requestAnimationFrame优化性能，避免频繁重绘
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-    }
-
-    animationFrameId = requestAnimationFrame(() => {
-      // 计算新的地图位置
-      mapPosition.value = {
-        x: event.clientX - dragStart.value.x,
-        y: event.clientY - dragStart.value.y,
-      };
-    });
-  }
-};
-
-/**
- * 处理鼠标松开事件 - 结束拖拽操作
- *
- * @function handleMouseUp
- * @description
- * - 检查是否处于拖拽状态
- * - 重置拖拽状态
- * - 更新光标样式
- */
-const handleMouseUp = () => {
-  if (isDragging.value) {
-    isDragging.value = false; // 重置拖拽状态
-    updateCursor(); // 更新光标样式
-  }
-};
-
-/**
- * 处理键盘按下事件 - 快捷键功能
- * 支持 Space 键拖拽和 Ctrl 键缩放
- *
- * @function handleKeyDown
- * @param {KeyboardEvent} event - 键盘按下事件对象
- * @description
- * - Space 键：启用拖拽模式，阻止默认滚动行为
- * - Ctrl 键：启用缩放模式
- * - 更新对应的键盘状态和光标样式
- */
-const handleKeyDown = (event) => {
-  if (event.code === "Space") {
-    event.preventDefault(); // 阻止空格键的默认滚动行为
-    if (!isSpacePressed.value) {
-      isSpacePressed.value = true; // 设置 Space 键状态
-      updateCursor(); // 更新光标样式
-    }
-  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
-    if (!isCtrlPressed.value) {
-      isCtrlPressed.value = true; // 设置 Ctrl 键状态
-      updateCursor(); // 更新光标样式
-    }
-  }
-};
-
-// 处理键盘松开事件
-const handleKeyUp = (event) => {
-  if (event.code === "Space") {
-    event.preventDefault(); // 阻止空格键的默认滚动行为
-    isSpacePressed.value = false;
-    updateCursor();
-    if (isDragging.value) {
-      isDragging.value = false;
-    }
-  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
-    isCtrlPressed.value = false;
-    updateCursor();
-  }
-};
-
-// 更新光标样式（现在主要通过CSS类控制，这里作为备用）
-const updateCursor = () => {
-  // 光标样式现在主要通过CSS类控制
-  // 这里保留函数以防需要额外的光标控制逻辑
-};
-
-// 判断是否为初始视图状态
-const isInitialView = computed(() => {
-  return (
-    zoomScale.value === 1 &&
-    mapPosition.value.x === 0 &&
-    mapPosition.value.y === 0
-  );
-});
-
-// 一键恢复地图到初始状态
-const resetMapView = () => {
-  zoomScale.value = 1;
-  mapPosition.value = { x: 0, y: 0 };
-
-  // 如果有活动的popover，也一并隐藏
-  if (activeMarker.value?.id) {
-    activeMarker.value = null;
-    currentMarkerElement.value = null;
-    removeEventListeners();
-  }
-};
-function isActive(marker) {
-  if (selectedTreeData.value && marker?.id) {
-    return selectedTreeData.value?.id === marker.id;
-  }
-  return false;
-}
 const mapJson = computed(() => {
   return props.pageItem.map_json || {};
 });
-const mapBaseSupplier = computed(() => {
-  return mapJson.value.map_base_supplier || "";
-});
+
+/**
+ * 标记点和弹窗相关状态
+ */
+const markerList = ref([]); // 标记点列表
+const activeMarker = ref({}); // 当前激活的标记点
+const popoverPosition = ref({ x: 0, y: 0 }); // 弹窗位置坐标
+const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json); // 卡片单元配置
+const currentMarkerElement = ref(null); // 当前标记点 DOM 元素引用
+
+/**
+ * 树形数据相关状态
+ */
+const treeData = ref([]); // 树形数据列表
+const selectedTreeData = ref({}); // 当前选中的树形数据项
+const expandedNodes = ref({}); // 展开的节点状态映射
+
+/**
+ * 建筑物视图相关状态
+ */
+const isBuildingView = ref(false); // 是否为建筑物视图模式
+const buildingInfo = ref({}); // 当前建筑物信息
+const buildingTree = ref([]); // 建筑物树形数据
+const floorInfo = ref(null); // 当前楼层信息
+const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
 
 /**
  * 递归查找具有底图的父级节点
@@ -620,10 +421,6 @@ function findParentWithBaseImage(data, list) {
  * 4. 默认底图
  */
 const baseImage = computed(() => {
-  if (mapBaseSupplier.value !== "自定义底图") {
-    return ""; // 非自定义底图时返回空
-  }
-
   const baseImageCol = mapJson.value.map_base_col; // 底图字段配置
   if (!baseImageCol) {
     // 如果没有配置底图字段，检查楼层信息
@@ -660,61 +457,188 @@ const baseImage = computed(() => {
 });
 
 /**
- * 地图相关状态变量
- */
-const mapInstance = ref(null); // 地图实例对象
-const mapId = ref(""); // 地图容器 ID
-const iconJson = ref([]); // 地图图例配置数组
-const markerInfo = ref({}); // 标记点信息对象
-
-/**
- * 标记点和弹窗相关状态
- */
-const markerList = ref([]); // 标记点列表
-const activeMarker = ref({}); // 当前激活的标记点
-const popoverPosition = ref({ x: 0, y: 0 }); // 弹窗位置坐标
-const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json); // 卡片单元配置
-const currentMarkerElement = ref(null); // 当前标记点 DOM 元素引用
-
-/**
- * 初始化腾讯地图
- * 动态加载腾讯地图 API 脚本并初始化地图实例
+ * 处理鼠标滚轮事件 - 地图缩放功能
+ * 只有在按住 Ctrl 键时才进行缩放操作，防止误操作
  *
- * @function initTencentMap
- * @description
- * - 动态创建并加载腾讯地图 API 脚本
- * - 生成唯一的地图容器 ID
- * - 延迟初始化地图实例和数据
- * - 处理地图标记点和图例数据
+ * @function handleWheel
+ * @param {WheelEvent} event - 鼠标滚轮事件对象
  */
-function initTencentMap() {
-  // 动态加载腾讯地图 API 脚本
-  var script = document.createElement("script");
-  script.type = "text/javascript";
-  script.src =
-    "https://map.qq.com/api/gljs?v=1.exp&key=G3VBZ-CKMKB-4CFUZ-JZLSE-676K6-J4FWP";
-  document.head.appendChild(script);
+const handleWheel = (event) => {
+  // 只有按住Ctrl键时才进行缩放
+  if (event.ctrlKey) {
+    event.preventDefault(); // 阻止默认滚动行为
 
-  // 生成唯一的地图容器 ID
-  mapId.value = generateMapID(props.pageItem?.com_no, "map-container");
+    // 缩放时隐藏popover，避免位置错乱
+    if (activeMarker.value?.id) {
+      activeMarker.value = null;
+      currentMarkerElement.value = null;
+      removeEventListeners();
+    }
 
-  // 延迟初始化，确保脚本加载完成
-  setTimeout(() => {
-    nextTick(() => {
-      // 初始化地图实例
-      mapInstance.value = initMap(mapId.value, props.pageItem);
-      // 初始化地图数据
-      initMapData(mapInstance.value, props.pageItem).then((markerData) => {
-        markerInfo.value = markerData;
-        if (markerData.iconJson) {
-          iconJson.value = markerData.iconJson; // 设置图例数据
-        }
-        // 预留：处理标记点数据
-        // if(markerData?.center&&markerData?.markers){
-        // }
-      });
+    // 计算缩放增量：向下滚动缩小，向上滚动放大
+    const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
+    const newScale = zoomScale.value + delta;
+
+    // 限制缩放范围，防止过度缩放
+    if (newScale >= minZoom && newScale <= maxZoom) {
+      zoomScale.value = newScale;
+    }
+  }
+};
+
+/**
+ * 处理鼠标按下事件 - 开始拖拽操作
+ * 只有在按住 Space 键时才允许拖拽
+ *
+ * @function handleMouseDown
+ * @param {MouseEvent} event - 鼠标按下事件对象
+ */
+const handleMouseDown = (event) => {
+  if (isSpacePressed.value) {
+    event.preventDefault(); // 阻止默认行为
+    isDragging.value = true; // 设置拖拽状态
+
+    // 拖拽时隐藏popover，避免位置错乱
+    if (activeMarker.value?.id) {
+      activeMarker.value = null;
+      currentMarkerElement.value = null;
+      removeEventListeners();
+    }
+
+    // 记录拖拽起始位置，考虑当前地图位置偏移
+    dragStart.value = {
+      x: event.clientX - mapPosition.value.x,
+      y: event.clientY - mapPosition.value.y,
+    };
+    updateCursor(); // 更新光标样式
+  }
+};
+
+/**
+ * 拖拽性能优化变量
+ * 使用 requestAnimationFrame 优化拖拽性能，避免频繁重绘
+ */
+let animationFrameId = null;
+
+/**
+ * 处理鼠标移动事件 - 执行拖拽操作（优化版本）
+ * 使用 requestAnimationFrame 优化性能，现在绑定在组件容器上
+ *
+ * @function handleMouseMove
+ * @param {MouseEvent} event - 鼠标移动事件对象
+ */
+const handleMouseMove = (event) => {
+  if (isDragging.value && isSpacePressed.value) {
+    event.preventDefault(); // 阻止默认行为
+
+    // 使用requestAnimationFrame优化性能，避免频繁重绘
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+
+    animationFrameId = requestAnimationFrame(() => {
+      // 计算新的地图位置
+      mapPosition.value = {
+        x: event.clientX - dragStart.value.x,
+        y: event.clientY - dragStart.value.y,
+      };
     });
-  }, 1000);
+  }
+};
+
+/**
+ * 处理鼠标松开事件 - 结束拖拽操作
+ *
+ * @function handleMouseUp
+ */
+const handleMouseUp = () => {
+  if (isDragging.value) {
+    isDragging.value = false; // 重置拖拽状态
+    updateCursor(); // 更新光标样式
+  }
+};
+
+/**
+ * 处理键盘按下事件 - 快捷键功能
+ * 支持 Space 键拖拽和 Ctrl 键缩放
+ *
+ * @function handleKeyDown
+ * @param {KeyboardEvent} event - 键盘按下事件对象
+ */
+const handleKeyDown = (event) => {
+  if (event.code === "Space") {
+    event.preventDefault(); // 阻止空格键的默认滚动行为
+    if (!isSpacePressed.value) {
+      isSpacePressed.value = true; // 设置 Space 键状态
+      updateCursor(); // 更新光标样式
+    }
+  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
+    if (!isCtrlPressed.value) {
+      isCtrlPressed.value = true; // 设置 Ctrl 键状态
+      updateCursor(); // 更新光标样式
+    }
+  }
+};
+
+/**
+ * 处理键盘松开事件
+ */
+const handleKeyUp = (event) => {
+  if (event.code === "Space") {
+    event.preventDefault(); // 阻止空格键的默认滚动行为
+    isSpacePressed.value = false;
+    updateCursor();
+    if (isDragging.value) {
+      isDragging.value = false;
+    }
+  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
+    isCtrlPressed.value = false;
+    updateCursor();
+  }
+};
+
+/**
+ * 更新光标样式（现在主要通过CSS类控制，这里作为备用）
+ */
+const updateCursor = () => {
+  // 光标样式现在主要通过CSS类控制
+  // 这里保留函数以防需要额外的光标控制逻辑
+};
+
+/**
+ * 判断是否为初始视图状态
+ */
+const isInitialView = computed(() => {
+  return (
+    zoomScale.value === 1 &&
+    mapPosition.value.x === 0 &&
+    mapPosition.value.y === 0
+  );
+});
+
+/**
+ * 一键恢复地图到初始状态
+ */
+const resetMapView = () => {
+  zoomScale.value = 1;
+  mapPosition.value = { x: 0, y: 0 };
+
+  // 如果有活动的popover，也一并隐藏
+  if (activeMarker.value?.id) {
+    activeMarker.value = null;
+    currentMarkerElement.value = null;
+    removeEventListeners();
+  }
+};
+
+/**
+ * 判断标记点是否激活
+ */
+function isActive(marker) {
+  if (selectedTreeData.value && marker?.id) {
+    return selectedTreeData.value?.id === marker.id;
+  }
+  return false;
 }
 
 /**
@@ -724,10 +648,6 @@ function initTencentMap() {
  * @async
  * @function initCustomMap
  * @returns {Promise<Array>} 标记点数据列表
- * @description
- * 支持两种数据来源：
- * - 请求数据：通过 API 获取实时数据
- * - 模拟数据：使用预设的模拟数据
  */
 async function initCustomMap() {
   console.log("自定义底图初始化开始"); // 调试日志
@@ -777,11 +697,6 @@ async function initCustomMap() {
  * @function getItemIcon
  * @param {Object} item - 数据项对象，默认为空对象
  * @returns {string} 图标路径，如果没有配置则返回空字符串
- * @description
- * 图标获取优先级：
- * 1. 数据项中配置的自定义图标
- * 2. 地图配置中的默认图标
- * 3. 空字符串（无图标）
  */
 function getItemIcon(item = {}) {
   // 参数类型检查
@@ -821,10 +736,6 @@ function getItemIcon(item = {}) {
  * @function getItemPosition
  * @param {Object} item - 数据项对象，默认为空对象
  * @returns {Object} 位置对象，包含 left 和 top 属性（百分比值）
- * @description
- * - 使用百分比定位，便于响应式布局
- * - 支持 X 轴和 Y 轴坐标配置
- * - 默认位置为 (0, 0)
  */
 function getItemPosition(item = {}) {
   let post = {
@@ -883,11 +794,6 @@ const setLabelActiveStyle = computed(() => {
  *
  * @function calculatePopoverPosition
  * @param {HTMLElement} element - 标记点 DOM 元素
- * @description
- * - 使用 getBoundingClientRect() 获取元素相对于视口的位置
- * - 弹窗使用 position: fixed 定位，相对于视口
- * - 考虑弹窗的 transform 偏移（translate(-50%, -100%)）
- * - 在元素上方居中显示弹窗
  */
 function calculatePopoverPosition(element) {
   if (!element) return; // 检查元素是否存在
@@ -904,8 +810,6 @@ function calculatePopoverPosition(element) {
   };
 }
 
-// 注意：现在缩放和拖拽时直接隐藏popover，不再需要重新计算位置
-
 /**
  * 标记点点击处理函数
  * 处理标记点的点击事件，显示或隐藏弹窗
@@ -913,11 +817,6 @@ function calculatePopoverPosition(element) {
  * @function tapMarker
  * @param {Object} item - 标记点数据对象
  * @param {Event} event - 点击事件对象
- * @description
- * - 如果点击的是当前激活的标记点，则隐藏弹窗
- * - 如果点击的是其他标记点，则显示对应的弹窗
- * - 记录当前标记点元素引用，用于位置计算
- * - 添加窗口事件监听器，处理窗口变化
  */
 function tapMarker(item, event) {
   // 如果点击的是当前激活的标记点，隐藏弹窗
@@ -967,11 +866,6 @@ let debounceTimer = null;
  * 如果在可视区域内则重新计算弹窗位置，否则关闭弹窗
  *
  * @function handleViewportChange
- * @description
- * - 统一处理窗口大小变化和滚动事件
- * - 使用防抖技术优化性能，避免频繁执行
- * - 检查标记点元素的可视性
- * - 智能管理弹窗的显示状态
  */
 function handleViewportChange() {
   // 清除之前的防抖定时器
@@ -1024,9 +918,6 @@ function isElementInViewport(element) {
  * 监听窗口大小变化和滚动事件，智能管理弹窗显示状态
  *
  * @function addEventListeners
- * @description
- * - 监听窗口大小变化，确保弹窗位置正确或在必要时关闭弹窗
- * - 监听滚动事件，检测标记点可视性并相应地更新弹窗状态
  */
 function addEventListeners() {
   window.addEventListener("resize", handleViewportChange); // 监听窗口大小变化
@@ -1043,13 +934,6 @@ function removeEventListeners() {
   window.removeEventListener("resize", handleViewportChange);
   window.removeEventListener("scroll", handleViewportChange, true);
 }
-
-/**
- * 树形数据相关状态
- */
-const treeData = ref([]); // 树形数据列表
-const selectedTreeData = ref({}); // 当前选中的树形数据项
-const expandedNodes = ref({}); // 展开的节点状态映射
 
 /**
  * 切换树形节点展开/折叠状态
@@ -1104,13 +988,6 @@ watch(
   }
 );
 
-// 注意：缩放和拖拽时会自动隐藏popover，无需监听位置变化
-
-/**
- * 组件事件发射器
- */
-const emit = defineEmits(["select"]);
-
 /**
  * 树形数据项点击处理函数
  *
@@ -1132,10 +1009,6 @@ function tapTreeData(item) {
  *
  * @async
  * @function initMapTreeData
- * @description
- * - 从 props 或地图配置中获取请求配置
- * - 发起 API 请求获取树形数据
- * - 设置默认选中第一个数据项
  */
 async function initMapTreeData() {
   const req = props.treeReq || mapJson.value?.map_tree_req_json; // 获取请求配置
@@ -1155,15 +1028,6 @@ async function initMapTreeData() {
     }
   }
 }
-
-/**
- * 建筑物视图相关状态
- */
-const isBuildingView = ref(false); // 是否为建筑物视图模式
-const buildingInfo = ref({}); // 当前建筑物信息
-const buildingTree = ref([]); // 建筑物树形数据
-const floorInfo = ref(null); // 当前楼层信息
-const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
 
 /**
  * 建筑物树形数据项点击处理函数
@@ -1242,84 +1106,50 @@ function getBuildingTree(marker) {
 }
 
 /**
- * 获取建筑物标记点（预留函数）
- *
- * @function getBuildingMakers
- * @todo 实现建筑物标记点获取逻辑
- */
-function getBuildingMakers() {
-  // 预留函数，待实现
-}
-
-/**
- * 切换回标记点视图
- * 退出建筑物视图模式
- *
- * @function switchToMarkerView
- */
-function switchToMarkerView() {
-  isBuildingView.value = false; // 禁用建筑物视图模式
-  buildingInfo.value = null; // 清空建筑物信息
-}
-
-/**
  * 组件挂载生命周期钩子
  * 初始化地图和添加全局事件监听器
  */
 onMounted(() => {
-  // 根据地图供应商类型实例化地图
-  if (mapBaseSupplier.value === "腾讯地图") {
-    initTencentMap(); // 初始化腾讯地图
-  } else if (mapBaseSupplier.value === "自定义底图") {
-    // 检查是否有树形数据配置
-    if (props.treeReq || mapJson.value?.map_tree_req_json) {
-      initMapTreeData(); // 初始化树形数据
-    } else {
-      // 初始化自定义地图数据
-      initCustomMap().then((res) => {
-        markerList.value = res;
-      });
-    }
-
-    // 添加全局键盘事件监听器，处理快捷键
-    document.addEventListener("keydown", handleKeyDown); // 键盘按下事件
-    document.addEventListener("keyup", handleKeyUp); // 键盘松开事件
+  // 检查是否有树形数据配置
+  if (props.treeReq || mapJson.value?.map_tree_req_json) {
+    initMapTreeData(); // 初始化树形数据
+  } else {
+    // 初始化自定义地图数据
+    initCustomMap().then((res) => {
+      markerList.value = res;
+    });
   }
+
+  // 添加全局键盘事件监听器，处理快捷键
+  document.addEventListener("keydown", handleKeyDown); // 键盘按下事件
+  document.addEventListener("keyup", handleKeyUp); // 键盘松开事件
 });
 
 /**
  * 组件卸载生命周期钩子
  * 清理事件监听器、定时器和动画帧，防止内存泄漏
- *
- * @description
- * - 移除全局事件监听器
- * - 清理防抖定时器
- * - 取消动画帧
- * - 重置光标样式
  */
 onUnmounted(() => {
-  if (mapBaseSupplier.value === "自定义底图") {
-    removeEventListeners(); // 移除弹窗相关事件监听器
+  removeEventListeners(); // 移除弹窗相关事件监听器
 
-    // 清理全局键盘事件监听器，防止内存泄漏
-    document.removeEventListener("keydown", handleKeyDown);
-    document.removeEventListener("keyup", handleKeyUp);
+  // 清理全局键盘事件监听器，防止内存泄漏
+  document.removeEventListener("keydown", handleKeyDown);
+  document.removeEventListener("keyup", handleKeyUp);
 
-    // 清理防抖定时器
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-      debounceTimer = null;
-    }
-
-    // 清理动画帧，防止内存泄漏
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    }
-
-    // 重置光标样式
-    document.body.style.cursor = "";
+  // 清理防抖定时器
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
   }
+
+  // 清理动画帧，防止内存泄漏
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  // 重置光标样式
+  document.body.style.cursor = "";
 });
 </script>
 
@@ -1329,6 +1159,7 @@ onUnmounted(() => {
   height: 100%;
   position: relative;
 }
+
 .building-view {
   display: grid;
   grid-template-columns: 150px 1fr;
@@ -1355,6 +1186,7 @@ onUnmounted(() => {
     width: 100%;
   }
 }
+
 .map-left {
   z-index: 100;
   max-height: 80%;
@@ -1381,9 +1213,6 @@ onUnmounted(() => {
   }
   .collapsed-icon {
     position: absolute;
-    // left: calc(var(--left) + 420px + 15px);
-    // padding: 5px;
-    // z-index: 99;
     cursor: pointer;
     text-align: center;
     width: 50px;
@@ -1482,6 +1311,7 @@ onUnmounted(() => {
     }
   }
 }
+
 .map-zoom-container {
   width: 100%;
   height: 100%;
@@ -1546,16 +1376,6 @@ onUnmounted(() => {
     transition: none !important;
   }
 
-  // &:after {
-  //   content: "缺少底图";
-  //   position: absolute;
-  //   top: 50%;
-  //   left: 50%;
-  //   transform: translate(-50%, -50%);
-  //   color: #fff;
-  //   font-size: 16px;
-  //   z-index: -1;
-  // }
   .map-marker {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -1564,7 +1384,6 @@ onUnmounted(() => {
     }
     .marker-icon {
       width: 30px;
-      // height: 30px;
     }
   }
 }
@@ -1594,6 +1413,7 @@ onUnmounted(() => {
     }
   }
 }
+
 :global(.popover-content-to-body) {
   position: fixed;
   z-index: 1000;
@@ -1601,14 +1421,11 @@ onUnmounted(() => {
   transform: translate(-50%, -100%) scale(1);
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   opacity: 1;
-  // background: #fff;
   width: max-content;
   height: max-content;
   &.popover-fade-enter-active,
   &.popover-fade-leave-active {
-    // transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    // transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
   &.popover-fade-enter,
   &.popover-fade-leave-to {
@@ -1621,16 +1438,19 @@ onUnmounted(() => {
     transform: translate(-50%, -100%) scale(1);
   }
 }
+
 :global(.popover-content-to-body .popover-content) {
   opacity: 0;
   transform: translate(-50%, -50%) scale(0.8);
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   background-color: rgba(0, 0, 0, 0.1);
 }
+
 :global(.popover-content-to-body .popover-content.show) {
   opacity: 1;
   transform: translate(0%, 0%) scale(1);
 }
+
 :global(.popover-content-to-body .bottom-arrow) {
   position: absolute;
   top: 100%;
@@ -1641,37 +1461,6 @@ onUnmounted(() => {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 5px solid #fff;
-}
-.map-container {
-  width: 100%;
-  height: 100%;
-}
-
-.map-legend {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: #fff;
-  border-radius: 5px;
-  z-index: 10;
-  .legend-wrap {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-
-  .legend-icon {
-    width: 30px;
-    height: 30px;
-    vertical-align: text-top;
-  }
-
-  .legend-text {
-    color: #202e64;
-    font-size: 14px;
-    line-height: 30px;
-    margin: 0 5px;
-  }
 }
 
 .tree-expand-enter-active,

@@ -1,4 +1,5 @@
 import Vue from "vue";
+let service_api = null
 function init() {
   let backendIpAddr = null;
   if (!window.top.pathConfig?.gateway && sessionStorage.getItem("pathConfig")) {
@@ -148,7 +149,7 @@ function init() {
 
   const defaultApp =  window?.frameElement?.dataset?.["app"] ||  top.window?.pathConfig?.application;
 
-  var service_api = {
+  service_api = {
     selectOne: backendIpAddr + "/" + defaultApp + "/select",
     select: backendIpAddr + "/" + defaultApp + "/select",
     selectByUser: backendIpAddr + "/" + defaultApp + "/select",
@@ -167,5 +168,5 @@ function init() {
   window.serviceApi = service_api;
   Vue.prototype.service_api = service_api;
 }
-
+export const serviceApi = service_api
 export default init;
