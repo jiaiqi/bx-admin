@@ -35,6 +35,8 @@
     }"
     @wheel="handleWheel"
     @mousedown="handleMouseDown"
+    @mousemove="handleMouseMove"
+    @mouseup="handleMouseUp"
     @mouseleave="handleMouseUp"
     @click="tapMarker()"
     tabindex="0"
@@ -118,6 +120,8 @@
     }"
     @wheel="handleWheel"
     @mousedown="handleMouseDown"
+    @mousemove="handleMouseMove"
+    @mouseup="handleMouseUp"
     @mouseleave="handleMouseUp"
     @click="tapMarker()"
     tabindex="0"
@@ -331,7 +335,7 @@ const props = defineProps({
  * 左侧面板折叠状态管理
  */
 const isCollapsed = ref(false); // 是否折叠左侧面板
-const left = computed(() => (isCollapsed.value ? -230 : 15)); // 计算左侧面板位置
+const left = computed(() => (isCollapsed.value ? -CONFIG.UI.SIDEBAR_WIDTH : CONFIG.UI.SIDEBAR_MARGIN)); // 计算左侧面板位置
 /**
  * 切换左侧面板折叠状态
  * @function changeCollapsed
@@ -341,12 +345,38 @@ const changeCollapsed = () => {
 };
 
 /**
+ * 组件配置常量
+ */
+const CONFIG = {
+  // 缩放相关配置
+  ZOOM: {
+    MIN: 0.5,           // 最小缩放比例
+    MAX: 3,             // 最大缩放比例
+    STEP: 0.1,          // 缩放步长
+    DEFAULT: 1,         // 默认缩放比例
+  },
+  
+  // 性能优化配置
+  PERFORMANCE: {
+    DEBOUNCE_DELAY: 100,        // 防抖延迟时间（毫秒）
+    TENCENT_MAP_DELAY: 1000,    // 腾讯地图初始化延迟
+  },
+  
+  // UI 配置
+  UI: {
+    SIDEBAR_WIDTH: 230,         // 侧边栏宽度
+    SIDEBAR_MARGIN: 15,         // 侧边栏边距
+    POPUP_OFFSET: 10,           // 弹窗偏移距离
+  },
+};
+
+/**
  * 地图缩放相关状态和配置
  */
-const zoomScale = ref(1); // 当前缩放比例
-const minZoom = 0.5; // 最小缩放比例
-const maxZoom = 3; // 最大缩放比例
-const zoomStep = 0.1; // 缩放步长
+const zoomScale = ref(CONFIG.ZOOM.DEFAULT); // 当前缩放比例
+const minZoom = CONFIG.ZOOM.MIN; // 最小缩放比例
+const maxZoom = CONFIG.ZOOM.MAX; // 最大缩放比例
+const zoomStep = CONFIG.ZOOM.STEP; // 缩放步长
 
 /**
  * 地图拖拽相关状态
@@ -438,8 +468,8 @@ const handleMouseDown = (event) => {
 let animationFrameId = null;
 
 /**
- * 处理鼠标移动事件 - 执行拖拽操作
- * 使用 requestAnimationFrame 优化性能
+ * 处理鼠标移动事件 - 执行拖拽操作（优化版本）
+ * 使用 requestAnimationFrame 优化性能，现在绑定在组件容器上
  *
  * @function handleMouseMove
  * @param {MouseEvent} event - 鼠标移动事件对象
@@ -448,6 +478,8 @@ let animationFrameId = null;
  * - 使用 requestAnimationFrame 优化性能，避免频繁重绘
  * - 取消之前的动画帧，确保只有最新的移动生效
  * - 根据鼠标位置更新地图位置
+ * 
+ * 优化：从全局事件改为组件内事件，提高性能和精确性
  */
 const handleMouseMove = (event) => {
   if (isDragging.value && isSpacePressed.value) {
@@ -717,27 +749,43 @@ function initTencentMap() {
  * - 模拟数据：使用预设的模拟数据
  */
 async function initCustomMap() {
-  console.log("自定义底图"); // 调试日志
+  console.log("自定义底图初始化开始"); // 调试日志
   let list = [];
 
-  // 处理请求数据类型
-  if (
-    props.pageItem.srv_req_type === "请求数据" &&
-    props.pageItem.srv_req_json
-  ) {
-    const reqJson = props.pageItem.srv_req_json;
-    const req = props.pageItem.srv_req_json;
-    const url = `/${reqJson.mapp}/select/${reqJson.serviceName}`;
-    const res = await $selectList(url, req); // 发起 API 请求
-    if (res.ok) {
-      list = res.data; // 获取响应数据
+  try {
+    // 处理请求数据类型
+    if (
+      props.pageItem.srv_req_type === "请求数据" &&
+      props.pageItem.srv_req_json
+    ) {
+      const reqJson = props.pageItem.srv_req_json;
+      const req = props.pageItem.srv_req_json;
+      const url = `/${reqJson.mapp}/select/${reqJson.serviceName}`;
+      
+      console.log("发起API请求:", url, req); // 调试日志
+      const res = await $selectList(url, req); // 发起 API 请求
+      
+      if (res.ok) {
+        list = res.data || []; // 获取响应数据，确保返回数组
+        console.log("API请求成功，获取数据:", list.length, "条"); // 调试日志
+      } else {
+        console.warn("API请求失败:", res.message || "未知错误");
+        list = []; // 请求失败时返回空数组
+      }
     }
-  }
-  // 处理模拟数据类型
-  else if (props.pageItem.srv_req_type === "模拟数据") {
-    list = props.pageItem.mock_data_json; // 使用模拟数据
+    // 处理模拟数据类型
+    else if (props.pageItem.srv_req_type === "模拟数据") {
+      list = props.pageItem.mock_data_json || []; // 使用模拟数据，确保返回数组
+      console.log("使用模拟数据:", list.length, "条"); // 调试日志
+    } else {
+      console.warn("未配置有效的数据源类型:", props.pageItem.srv_req_type);
+    }
+  } catch (error) {
+    console.error("初始化自定义地图数据失败:", error);
+    list = []; // 发生错误时返回空数组
   }
 
+  console.log("自定义底图初始化完成，返回数据:", list.length, "条"); // 调试日志
   return list;
 }
 
@@ -755,14 +803,33 @@ async function initCustomMap() {
  * 3. 空字符串（无图标）
  */
 function getItemIcon(item = {}) {
-  // 优先使用数据项中的自定义图标
-  if (mapJson.value?.marker_icon_col && item[mapJson.value?.marker_icon_col]) {
-    return getImagePath(item[mapJson.value?.marker_icon_col]);
+  // 参数类型检查
+  if (!item || typeof item !== 'object') {
+    console.warn('getItemIcon: 无效的item参数', item);
+    item = {};
   }
-  // 使用默认图标
-  else if (mapJson.value?.icon_default) {
-    return getImagePath(mapJson.value?.icon_default);
+
+  const mapConfig = mapJson.value;
+  if (!mapConfig) {
+    console.warn('getItemIcon: 地图配置不存在');
+    return "";
   }
+
+  try {
+    // 优先使用数据项中的自定义图标
+    const iconCol = mapConfig.marker_icon_col;
+    if (iconCol && item[iconCol]) {
+      return getImagePath(item[iconCol]);
+    }
+    
+    // 使用默认图标
+    if (mapConfig.icon_default) {
+      return getImagePath(mapConfig.icon_default);
+    }
+  } catch (error) {
+    console.error('getItemIcon: 获取图标路径失败', error);
+  }
+
   return ""; // 无图标时返回空字符串
 }
 
@@ -852,7 +919,7 @@ function calculatePopoverPosition(element) {
   // popover的transform是translate(-50%, -100%)，所以需要考虑这个偏移
   popoverPosition.value = {
     x: elementRect.left + elementRect.width / 2, // 水平居中
-    y: elementRect.top - 10, // 在元素上方，留出10px间距
+    y: elementRect.top - CONFIG.UI.POPUP_OFFSET, // 在元素上方，留出间距
   };
 }
 
@@ -904,28 +971,47 @@ function closePopup() {
 }
 
 /**
- * 视口变化处理函数
+ * 防抖延迟时间（毫秒）
+ */
+const DEBOUNCE_DELAY = CONFIG.PERFORMANCE.DEBOUNCE_DELAY;
+
+/**
+ * 防抖定时器引用
+ */
+let debounceTimer = null;
+
+/**
+ * 视口变化处理函数（防抖优化版本）
  * 当窗口大小变化或页面滚动时，检查标记点是否在可视区域内
  * 如果在可视区域内则重新计算弹窗位置，否则关闭弹窗
  *
  * @function handleViewportChange
  * @description
  * - 统一处理窗口大小变化和滚动事件
+ * - 使用防抖技术优化性能，避免频繁执行
  * - 检查标记点元素的可视性
  * - 智能管理弹窗的显示状态
  */
 function handleViewportChange() {
-  // 检查是否有激活的标记点和对应的DOM元素
-  if (currentMarkerElement.value && activeMarker.value?.id) {
-    // 检查标记点元素是否在可视区域内
-    if (isElementInViewport(currentMarkerElement.value)) {
-      // 在可视区域内，重新计算弹窗位置
-      calculatePopoverPosition(currentMarkerElement.value);
-    } else {
-      // 不在可视区域内，关闭弹窗
-      closePopup();
-    }
+  // 清除之前的防抖定时器
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
   }
+
+  // 设置新的防抖定时器
+  debounceTimer = setTimeout(() => {
+    // 检查是否有激活的标记点和对应的DOM元素
+    if (currentMarkerElement.value && activeMarker.value?.id) {
+      // 检查标记点元素是否在可视区域内
+      if (isElementInViewport(currentMarkerElement.value)) {
+        // 在可视区域内，重新计算弹窗位置
+        calculatePopoverPosition(currentMarkerElement.value);
+      } else {
+        // 不在可视区域内，关闭弹窗
+        closePopup();
+      }
+    }
+  }, DEBOUNCE_DELAY);
 }
 
 /**
@@ -1215,29 +1301,38 @@ onMounted(() => {
     }
   }
 
-  // 添加全局事件监听器，处理地图交互
-  document.addEventListener("mousemove", handleMouseMove); // 鼠标移动事件
-  document.addEventListener("mouseup", handleMouseUp); // 鼠标松开事件
+  // 添加全局键盘事件监听器，处理快捷键
   document.addEventListener("keydown", handleKeyDown); // 键盘按下事件
   document.addEventListener("keyup", handleKeyUp); // 键盘松开事件
 });
 
 /**
  * 组件卸载生命周期钩子
- * 清理事件监听器和资源
+ * 清理事件监听器、定时器和动画帧，防止内存泄漏
+ *
+ * @description
+ * - 移除全局事件监听器
+ * - 清理防抖定时器
+ * - 取消动画帧
+ * - 重置光标样式
  */
 onUnmounted(() => {
   removeEventListeners(); // 移除弹窗相关事件监听器
 
-  // 清理全局事件监听器，防止内存泄漏
-  document.removeEventListener("mousemove", handleMouseMove);
-  document.removeEventListener("mouseup", handleMouseUp);
+  // 清理全局键盘事件监听器，防止内存泄漏
   document.removeEventListener("keydown", handleKeyDown);
   document.removeEventListener("keyup", handleKeyUp);
+
+  // 清理防抖定时器
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
 
   // 清理动画帧，防止内存泄漏
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
   }
 
   // 重置光标样式
