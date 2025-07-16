@@ -1008,7 +1008,7 @@ async function tapTreeData(item) {
  * @function initMapTreeData
  */
 async function initMapTreeData() {
-  const req = props.treeReq || mapJson.value?.map_tree_req_json; // 获取请求配置
+  const req = setTreeReq.value; // 获取请求配置
   if (!req) {
     console.log("没有配置请求");
     return;
@@ -1146,13 +1146,23 @@ function getBuildingTree(marker) {
   return res;
 }
 
+const setTreeReq = computed(() => {
+  let result = false;
+  if (props.treeReq?.serviceName) {
+    result = props.treeReq;
+  } else if (mapJson.value?.map_tree_req_json?.serviceName) {
+    result = mapJson.value?.map_tree_req_json;
+  }
+  return result;
+});
+
 /**
  * 组件挂载生命周期钩子
  * 初始化地图和添加全局事件监听器
  */
 onMounted(() => {
   // 检查是否有树形数据配置
-  if (props.treeReq || mapJson.value?.map_tree_req_json) {
+  if (setTreeReq.value) {
     initMapTreeData(); // 初始化树形数据
   } else {
     // 初始化自定义地图数据
