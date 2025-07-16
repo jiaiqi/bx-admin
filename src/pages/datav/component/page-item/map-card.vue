@@ -121,7 +121,6 @@
     @mouseleave="handleMouseUp"
     @click="tapMarker()"
     tabindex="0"
-    v-clickoutside="closePopup"
     v-else-if="mapJson && mapJson.map_base_supplier === '自定义底图'"
   >
     <div
@@ -247,6 +246,7 @@
           left: popoverPosition.x + 'px',
           top: popoverPosition.y + 'px',
         }"
+        v-clickoutside="closePopup"
       >
         <transition name="popover-fade">
           <div
@@ -904,38 +904,66 @@ function closePopup() {
 }
 
 /**
- * 窗口大小变化处理函数
- * 当窗口大小改变时，重新计算弹窗位置
+ * 视口变化处理函数
+ * 当窗口大小变化或页面滚动时，检查标记点是否在可视区域内
+ * 如果在可视区域内则重新计算弹窗位置，否则关闭弹窗
  *
- * @function handleResize
+ * @function handleViewportChange
+ * @description
+ * - 统一处理窗口大小变化和滚动事件
+ * - 检查标记点元素的可视性
+ * - 智能管理弹窗的显示状态
  */
-function handleResize() {
+function handleViewportChange() {
+  // 检查是否有激活的标记点和对应的DOM元素
   if (currentMarkerElement.value && activeMarker.value?.id) {
-    calculatePopoverPosition(currentMarkerElement.value);
+    // 检查标记点元素是否在可视区域内
+    if (isElementInViewport(currentMarkerElement.value)) {
+      // 在可视区域内，重新计算弹窗位置
+      calculatePopoverPosition(currentMarkerElement.value);
+    } else {
+      // 不在可视区域内，关闭弹窗
+      closePopup();
+    }
   }
 }
 
 /**
- * 页面滚动处理函数
- * 当页面滚动时，重新计算弹窗位置
+ * 检查元素是否在可视区域内
  *
- * @function handleScroll
+ * @function isElementInViewport
+ * @param {HTMLElement} element - 要检查的DOM元素
+ * @returns {boolean} 元素是否在可视区域内
  */
-function handleScroll() {
-  if (currentMarkerElement.value && activeMarker.value?.id) {
-    calculatePopoverPosition(currentMarkerElement.value);
-  }
+function isElementInViewport(element) {
+  if (!element) return false;
+
+  const rect = element.getBoundingClientRect();
+  const windowHeight =
+    window.innerHeight || document.documentElement.clientHeight;
+  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+
+  // 检查元素是否完全在视口外
+  return (
+    rect.top < windowHeight &&
+    rect.bottom > 0 &&
+    rect.left < windowWidth &&
+    rect.right > 0
+  );
 }
 
 /**
  * 添加窗口事件监听器
- * 监听窗口大小变化和滚动事件，确保弹窗位置正确
+ * 监听窗口大小变化和滚动事件，智能管理弹窗显示状态
  *
  * @function addEventListeners
+ * @description
+ * - 监听窗口大小变化，确保弹窗位置正确或在必要时关闭弹窗
+ * - 监听滚动事件，检测标记点可视性并相应地更新弹窗状态
  */
 function addEventListeners() {
-  window.addEventListener("resize", handleResize); // 监听窗口大小变化
-  window.addEventListener("scroll", handleScroll, true); // 监听滚动事件（捕获阶段）
+  window.addEventListener("resize", handleViewportChange); // 监听窗口大小变化
+  window.addEventListener("scroll", handleViewportChange, true); // 监听滚动事件（捕获阶段）
 }
 
 /**
@@ -945,8 +973,8 @@ function addEventListeners() {
  * @function removeEventListeners
  */
 function removeEventListeners() {
-  window.removeEventListener("resize", handleResize);
-  window.removeEventListener("scroll", handleScroll, true);
+  window.removeEventListener("resize", handleViewportChange);
+  window.removeEventListener("scroll", handleViewportChange, true);
 }
 
 /**
