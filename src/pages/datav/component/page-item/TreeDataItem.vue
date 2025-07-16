@@ -9,7 +9,7 @@
       @click="onTap"
     >
       <i
-        v-if="item.children && item.children.length"
+        v-if="(item.children && item.children.length) || item.is_leaf !== '是'"
         class="tree-data-item-name-icon el-icon-caret-right"
         :class="{ expanded: expanded }"
         :style="{ left: `${(level + 1) * 10}px` }"
@@ -27,6 +27,7 @@
           :item="child"
           :selected="selected"
           :level="level + 1"
+          :set-children-func="setChildrenFunc"
           @select="$emit('select', $event)"
         />
       </div>
@@ -56,12 +57,23 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  setChildrenFunc: {
+    type: Function,
+    default: () => {},
+  },
 });
 
 const expanded = ref(false);
 
 function toggleExpand() {
   expanded.value = !expanded.value;
+  if (
+    expanded.value &&
+    props.setChildrenFunc &&
+    typeof props.setChildrenFunc === "function"
+  ) {
+    props.setChildrenFunc(props.item);
+  }
 }
 
 const emit = defineEmits(["select"]);

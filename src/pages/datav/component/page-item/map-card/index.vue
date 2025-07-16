@@ -60,7 +60,6 @@ const props = defineProps({
   },
   treeReq: {
     type: Object,
-    default: () => ({}),
   },
 });
 

@@ -98,6 +98,7 @@
                 :item="child"
                 :selected="selectedTreeData"
                 :level="1"
+                :set-children-func="setChildren"
                 @select="tapTreeData"
               />
             </div>
@@ -249,14 +250,7 @@
  * />
  */
 
-import {
-  onMounted,
-  onUnmounted,
-  ref,
-  computed,
-  watch,
-  set,
-} from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, set } from "vue";
 
 /**
  * 工具函数和组件导入
@@ -268,6 +262,7 @@ import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
 import { formatStyleData } from "../../../common"; // 样式数据格式化工具
 import { Icon } from "@iconify/vue2"; // 图标组件
 import Teleport from "vue2-teleport"; // Vue 2 传送门组件
+import cloneDeep from "lodash/cloneDeep";
 
 /**
  * 组件 Props 定义
@@ -650,9 +645,8 @@ function isActive(marker) {
  * @returns {Promise<Array>} 标记点数据列表
  */
 async function initCustomMap() {
-  console.log("自定义底图初始化开始"); // 调试日志
+  console.log("自定义底图初始化开始");
   let list = [];
-
   try {
     // 处理请求数据类型
     if (
@@ -663,12 +657,12 @@ async function initCustomMap() {
       const req = props.pageItem.srv_req_json;
       const url = `/${reqJson.mapp}/select/${reqJson.serviceName}`;
 
-      console.log("发起API请求:", url, req); // 调试日志
+      console.log("发起API请求:", url, req);
       const res = await $selectList(url, req); // 发起 API 请求
 
       if (res.ok) {
         list = res.data || []; // 获取响应数据，确保返回数组
-        console.log("API请求成功，获取数据:", list.length, "条"); // 调试日志
+        console.log("API请求成功，获取数据:", list.length, "条");
       } else {
         console.warn("API请求失败:", res.message || "未知错误");
         list = []; // 请求失败时返回空数组
@@ -677,7 +671,7 @@ async function initCustomMap() {
     // 处理模拟数据类型
     else if (props.pageItem.srv_req_type === "模拟数据") {
       list = props.pageItem.mock_data_json || []; // 使用模拟数据，确保返回数组
-      console.log("使用模拟数据:", list.length, "条"); // 调试日志
+      console.log("使用模拟数据:", list.length, "条");
     } else {
       console.warn("未配置有效的数据源类型:", props.pageItem.srv_req_type);
     }
@@ -686,7 +680,7 @@ async function initCustomMap() {
     list = []; // 发生错误时返回空数组
   }
 
-  console.log("自定义底图初始化完成，返回数据:", list.length, "条"); // 调试日志
+  console.log("自定义底图初始化完成，返回数据:", list.length, "条");
   return list;
 }
 
@@ -828,7 +822,7 @@ function tapMarker(item, event) {
     activeMarker.value = item; // 设置新的激活标记点
     // 记录点击位置和元素引用
     if (event) {
-      console.log(event.currentTarget); // 调试日志
+      console.log(event.currentTarget);
       const ele = event.currentTarget;
       currentMarkerElement.value = ele; // 保存元素引用
       calculatePopoverPosition(ele); // 计算弹窗位置
@@ -941,13 +935,15 @@ function removeEventListeners() {
  * @function toggleExpand
  * @param {Object} item - 树形数据项
  */
-function toggleExpand(item) {
-  console.log("toggleExpand", item); // 调试日志
+async function toggleExpand(item) {
+  console.log("toggleExpand", item);
   if (!item || !item.id) return; // 检查参数有效性
+  await setChildren(item);
 
   // 切换展开状态
   set(expandedNodes.value, item.id, !expandedNodes.value[item.id]);
-  console.log("expandedNodes", expandedNodes.value); // 调试日志
+
+  console.log("expandedNodes", expandedNodes.value);
 }
 
 /**
@@ -974,7 +970,7 @@ function getTreeItemLabel(item) {
 watch(
   () => selectedTreeData.value,
   (newVal) => {
-    console.log(newVal); // 调试日志
+    console.log(newVal);
     // 如果选中项有子节点且配置了坐标字段，过滤出有坐标的子项作为标记点
     if (
       newVal.children?.length &&
@@ -994,7 +990,8 @@ watch(
  * @function tapTreeData
  * @param {Object} item - 点击的树形数据项
  */
-function tapTreeData(item) {
+async function tapTreeData(item) {
+  await setChildren(item);
   selectedTreeData.value = item; // 设置选中项
   emit("select", item); // 发射选择事件
   // 切换展开状态
@@ -1013,20 +1010,62 @@ function tapTreeData(item) {
 async function initMapTreeData() {
   const req = props.treeReq || mapJson.value?.map_tree_req_json; // 获取请求配置
   if (!req) {
-    console.log("没有配置请求"); // 调试日志
+    console.log("没有配置请求");
     return;
   }
 
-  req.treeData = true; // 标记为树形数据请求
+  // req.treeData = true; // 标记为树形数据请求
   const url = `/${req.mapp}/select/${req.serviceName}`;
   const res = await $selectList(url, req); // 发起 API 请求
 
   if (res.ok) {
-    treeData.value = res.data; // 设置树形数据
     if (res.data.length) {
+      await setChildren(res.data[0]);
       selectedTreeData.value = res.data[0]; // 默认选中第一项
     }
+    treeData.value = res.data;
   }
+}
+
+async function getChildrenData(parent_no) {
+  const req = cloneDeep(props.treeReq || mapJson.value?.map_tree_req_json); // 获取请求配置
+  if (!req) {
+    console.log("没有配置请求");
+    return;
+  }
+  if (!parent_no) {
+    return;
+  }
+
+  if (!req.condition) {
+    req.condition = [];
+  }
+  let condition = req.condition.filter((item) => item.colName !== "parent_no");
+  req.condition = [
+    ...condition,
+    {
+      colName: "parent_no",
+      ruleType: "eq",
+      value: parent_no,
+    },
+  ];
+  const url = `/${req.mapp}/select/${req.serviceName}`;
+  const res = await $selectList(url, req);
+  if (res.ok) {
+    return res.data;
+  } else if (res.msg) {
+    // ElMessage.error(res.msg);
+  }
+  return [];
+}
+
+async function setChildren(item) {
+  const noCol = mapJson.value?.["map_filter_val_field"];
+  if (item.is_leaf !== "是" && !item.children?.length) {
+    const children = await getChildrenData(item[noCol]);
+    set(item, "children", children);
+  }
+  return item;
 }
 
 /**
@@ -1035,7 +1074,9 @@ async function initMapTreeData() {
  * @function tapBuildingTreeData
  * @param {Object} item - 点击的建筑物数据项
  */
-function tapBuildingTreeData(item) {
+async function tapBuildingTreeData(item) {
+  await setChildren(item);
+
   floorInfo.value = item; // 设置当前楼层信息
   // 切换展开状态
   if (item?.id) {
