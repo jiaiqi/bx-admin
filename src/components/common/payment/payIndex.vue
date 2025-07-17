@@ -41,12 +41,12 @@ export default{
           {
             "total_fee": 0.01,
             "item_name": "茅台",
-            "su_order_no": "MT1002"
+            "su_order_no": "ZJ202506240001_2025-05-01"
           },
           {
             "total_fee": 0.01,
             "item_name": "西风六年",
-            "su_order_no": "XF1003"
+            "su_order_no": "WY202506240001_2025-05-01"
           }
 
         ],

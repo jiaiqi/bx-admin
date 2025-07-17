@@ -152,7 +152,12 @@
         </div>
       </div>
     </div>
-    <div class="quick_row st_list_cot" style="width: 19.5%">
+    <div class="quick_row st_list_cot" style="width: 19.5%"
+         v-loading="lineLoading"
+         element-loading-text="路径数据加载中....."
+         element-loading-spinner="el-icon-loading"
+         element-loading-background="rgba(0, 0, 0, 0.8)"
+    >
       <!-- 三个门架列表容器 -->
       <div style="height: 70%; overflow-y: auto;">
         <!-- 序列1组门架列表 -->
@@ -322,6 +327,7 @@ export default {
   },
   data(){
     return{
+      lineLoading:false,
       flowGroup:[
         {
           name:'路径分组1',
@@ -387,8 +393,15 @@ export default {
           { required: true, message: '车辆种类不能为空', trigger: 'change' },
         ],
         vehicleUserType: [
-          { required: true, message: '车辆用户类型', trigger: 'change' },
+          { required: true, message: '车辆用户类型不能为空', trigger: 'change' },
         ],
+        rateProgramVer: [
+          { required: true, message: '计费模块版本号不能为空', trigger: 'blur' },
+        ],
+        rateVer: [
+          { required: true, message: '费率版本号不能为空', trigger: 'blur' },
+        ],
+
       },
       handleMap:null,
       baseForm:{
@@ -529,6 +542,7 @@ export default {
     },
     //途径点多个分隔及多段路查询
    async handleSpliceWayPoints(groupIndex) {
+      this.lineLoading=true
       if (!this.handleMap) {
         console.warn('地图对象未初始化')
         return
@@ -543,7 +557,7 @@ export default {
 
       // 如果总点数小于等于最大值+2（起点和终点），直接规划
       if (allPoints.length <= MAX_WAYPOINTS + 2) {
-        // 直接使用getRoutesByBaiDu进行规划，而不是递归调用handleSpliceWayPoints
+        // 直接使用getRoutesByBaiDu进行规划
         const params = {
           origin: `${allPoints[0].lat},${allPoints[0].lng}`,
           destination: `${allPoints[allPoints.length - 1].lat},${allPoints[allPoints.length - 1].lng}`,
@@ -552,10 +566,12 @@ export default {
           inputCrs: 'wgs84ll',
           outputCrs: 'wgs84ll'
         }
+
         const lines = await this.getRoutesByBaiDu(params)
 
         // 绘制路线
         if (lines && lines.length > 0) {
+          this.lineLoading=false
           const linePoints = lines.map(point => new BMap.Point(point.lng, point.lat))
           this.handleDrawLine(linePoints,groupIndex)
         }
@@ -565,14 +581,13 @@ export default {
       const segments = []
       let currentSegment = []
 
-      // 将点分组，每个分段最多包含MAX_WAYPOINTS个途径点
+      // 将点分组，每个分段最多包含MAX_WAYPOINTS个途径点,由于起点，终点不算在途径点数量中，
+     // 所以步长的总量时途径点+2的数量
       for (let i = 0; i < allPoints.length; i++) {
         currentSegment.push(allPoints[i])
-
-        // 当达到最大途径点数量+2（起点和终点）时，创建新段
         if (currentSegment.length === MAX_WAYPOINTS + 2) {
           segments.push([...currentSegment])
-          // 使用当前段的最后一个点作为下一段的起点
+         //todo 为了保证数据的连续性，使用前一段数据的最后一个点作为下一段数据的起点使用
           currentSegment = [allPoints[i]]
         }
       }
@@ -617,6 +632,10 @@ export default {
             allRoutes = allRoutes.concat(currentRoute)
           }
         }
+        //最后一次并发接受且结果回来后
+        if(i=segments.length-1&&lines){
+          this.lineLoading=false
+        }
       }
 
       // 绘制完整路线
@@ -625,18 +644,7 @@ export default {
         this.handleDrawLine(linePoints,groupIndex)
       }
     },
-    /**
-     * @Description:手动控制路径信息状态
-     * @Author:Eirice
-     * @Date: 2025-07-10 10:15:09
-     */
-    handleSetLineStatus(item){
-     this.flowGroup.map((d)=>{ if(item.code===d.code){
-       d.select=!item.select;
-     }})
-     // 设置当前选中的组索引
-     this.currentGroupIndex = item.code;
-    },
+
     /**
      * @Description:门架点位地图聚焦
      * @Author:Eirice
@@ -960,10 +968,7 @@ export default {
       }
 
       let info={
-        page:{
-          pageNo:1,
-          rownumber:10,
-        },
+        page:{},
         condition:[{colName: "id", ruleType: "in", value:ids}],
         relation_condition:{
           relation: "AND",
@@ -1045,8 +1050,7 @@ export default {
       if (index > -1) {
         this[stationListKey].splice(index, 1);
         this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
-
-        // 检查删除的门架ID是否存在于textGantryGroup中
+        //todo 获取存在于人工序列中的被删除门架序列号
         const gantryIds = this[formKey].textGantryGroup.split('|').filter(id => id.trim());
         if (gantryIds.includes(item.id.toString())) {
           // 如果存在，则从textGantryGroup中移除该ID
@@ -1124,8 +1128,7 @@ export default {
     },
 
 
-    //公共校验检测
-
+    //处理公共校验规则信息
     handlePublicTest(groupIndex){
       // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
@@ -1138,17 +1141,17 @@ export default {
         console.error(`不存在的人工 ${formKey}`);
         return;
       }
-
     },
+
     //处理携带hex文本进入时查询出对应的门架序列数据
     handleHexGroupInput(value, groupIndex = 1) {
       this.handlePublicTest(groupIndex);
       const formKey = `quickForm${groupIndex}`;
       if (!value) {
-        // 清空textGantryGroup
+        // 清空指定列的人工序列
         this[formKey].textGantryGroup = '';
         this.pendingStationList = [];
-        // 当HEX输入为空时，也要清除原有的人工录入门架
+        // 当指定列的HEX被清除时，对应加入到指定列表的数据也需要被清除
         const stationListKey = `stationList${groupIndex}`;
         this[stationListKey] = this[stationListKey].filter(item => !item.fromTextGantry);
         this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
@@ -1328,7 +1331,7 @@ export default {
   },
   mounted(){
     // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-18b418c8-32e8-481b-993a-d34ebd6a2e11');
+    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-15d289bb-a896-4fc4-b2ed-2a47861c8084');
     this.getPublicColNames();
     this.asyncLoadMap();
     setTimeout(()=>{this.initMineMap()},500)
