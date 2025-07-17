@@ -121,27 +121,8 @@ export default {
             }
           }
         }
-
       }
-      // const formModel = this.getFormModel()
-      // if (typeof formModel === 'object' && Object.keys(formModel).length) {
-      //   Object.keys(formModel).forEach((key) => {
-      //     if (key?.includes('_child_form_')) {
-      //       let [fkCol, childCol] = key.split('_child_form_')
-      //       if (typeof row[fkCol] === 'object') {
-      //         row[fkCol][childCol] = formModel[key]
-      //       } else {
-      //         row[fkCol] = {
-      //           [childCol]: formModel[key]
-      //         }
-      //       }
-      //       delete row[key]
-      //     }
-      //   })
-      // }
-      // if(Object.keys(row).length===1&&row.hasOwnProperty('_rtDataCtx')){
-      //   return null;
-      // }
+ 
       return row;
     },
   }

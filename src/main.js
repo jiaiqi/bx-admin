@@ -15,6 +15,10 @@ import bxPlugin from "./plugin/bx-plugin.js";
 import Fragment from "vue-fragment";
 Vue.use(Fragment.Plugin);
 
+// 注册 clickoutside 指令
+import clickoutside from '@/directives/clickoutside.js'
+Vue.directive('clickoutside', clickoutside)
+
 import upperFirst from "lodash/upperFirst";
 import camelCase from "lodash/camelCase";
 const requireComponent = require.context(

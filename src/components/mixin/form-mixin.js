@@ -1,14 +1,15 @@
-import { FieldInfo } from '../model/FieldInfo'
-import { Field } from '../model/Field'
-import Vue, { inject } from 'vue'
+import { FieldInfo } from "../model/FieldInfo";
+import { Field } from "../model/Field";
+import Vue, { inject } from "vue";
 import { ActionInfo } from "../model/ActionInfo";
 import { formatDate } from "../../util/DataUtil";
-import remove from 'lodash/remove'
-import isString from 'lodash/isString'
-import { cloneDeep, get } from 'lodash';
+import remove from "lodash/remove";
+import isString from "lodash/isString";
+import { cloneDeep, get } from "lodash";
+import isEqual from "lodash/isEqual";
 export default {
   created: function () {
-    window.forms = window.forms || {}
+    window.forms = window.forms || {};
     window.forms[this.name] = this;
   },
   provide() {
@@ -21,26 +22,26 @@ export default {
   props: {
     initOrigin: {
       type: String,
-      default: 'none'
+      default: "none",
     },
     name: {
       type: String,
-      default: "main"
+      default: "main",
     },
 
     service: {
-      type: String
+      type: String,
     },
 
     // for update/detail/add, it is loader's condition
     // for filter, it is default condition
     defaultConditions: {
-      type: Array
+      type: Array,
     },
 
     // for update/add, it is form fields default value
     defaultValues: {
-      type: Object
+      type: Object,
     },
 
     navAfterSubmit: {
@@ -58,7 +59,7 @@ export default {
     },
 
     overrideformType: {
-      type: String
+      type: String,
     },
 
     srvvalFormModelDecorator: {
@@ -71,28 +72,28 @@ export default {
     parentAddMainFormDatas: {
       type: Object,
       default: function () {
-        return null
-      }
+        return null;
+      },
     },
     approvalFormMode: {
       type: Object,
       default: function () {
-        return null
-      }
+        return null;
+      },
     },
     pageIsDraft: {
       type: String,
-      default: 'norm',
+      default: "norm",
     },
     pageName: {
       type: String,
-      default: ''
+      default: "",
     },
     isHistory: {
       type: Boolean,
       default() {
-        return false
-      }
+        return false;
+      },
     },
     mainService: {
       type: String,
@@ -100,12 +101,12 @@ export default {
     },
     isPlatChildForm: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    groupCollapse:{
+    groupCollapse: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 
   data() {
@@ -129,19 +130,19 @@ export default {
       srvCols: null,
       isFromLoaded: {
         loaded: false,
-        text: "加载中..."
+        text: "加载中...",
       },
 
       draftDataKey: {
-        colName: 'id',
-        value: null
+        colName: "id",
+        value: null,
       },
       formLoaded: false,
       visible: true,
       pagePrompt: {
-        "title": "",
-        "type": "success",
-        "description": "<div style='color:red'></div>"
+        title: "",
+        type: "success",
+        description: "<div style='color:red'></div>",
       },
       fieldHisotryPopup: false,
       draftConfig: null,
@@ -150,7 +151,7 @@ export default {
       isHistoryUse: false,
       colValChangeRequestCols: [],
       moreConfig: null,
-      initValToCols: [],  //请求赋值col
+      initValToCols: [], //请求赋值col
       cfgJson: null,
       sectionsCollapse: {},
       pub_field_map: null, //公共字段映射
@@ -158,53 +159,63 @@ export default {
       childForm: [],
       header_view_model: null,
       groupHeaderCols: {},
-      keyValueData: {}
-    }
+      keyValueData: {},
+    };
   },
-
 
   computed: {
     cfgJsonOptionsType() {
-      let json = this.cfgJson
-      let options = json && json.hasOwnProperty('options') && json.options ? json.options : ""
-      options = options.split(',')
-      if(this.groupCollapse === true){
-        options.push('分组默认折叠')
+      let json = this.cfgJson;
+      let options =
+        json && json.hasOwnProperty("options") && json.options
+          ? json.options
+          : "";
+      options = options.split(",");
+      if (this.groupCollapse === true) {
+        options.push("分组默认折叠");
       }
-      return options
+      return options;
     },
     isVerifyMobile: function () {
-      let phoneSubKey = 'verifyMobile'
-      let smsCodeSubKey = 'verifySmsCode'
-      let list = this.fields || null
-      let isVerify = false
-      let phoneColName = ''
-      let smsCodeColName = ''
+      let phoneSubKey = "verifyMobile";
+      let smsCodeSubKey = "verifySmsCode";
+      let list = this.fields || null;
+      let isVerify = false;
+      let phoneColName = "";
+      let smsCodeColName = "";
       if (list) {
-        console.log('isVerifyMobile', list)
+        console.log("isVerifyMobile", list);
         for (let key in list) {
-          let feild = list[key]
-          if (feild && feild.info.subType && feild.info.subType == 'verifyMobile') {
-            phoneColName = feild.info.name
+          let feild = list[key];
+          if (
+            feild &&
+            feild.info.subType &&
+            feild.info.subType == "verifyMobile"
+          ) {
+            phoneColName = feild.info.name;
           }
-          if (feild && feild.info.subType && feild.info.subType == 'verifySmsCode') {
-            smsCodeColName = feild.info.name
+          if (
+            feild &&
+            feild.info.subType &&
+            feild.info.subType == "verifySmsCode"
+          ) {
+            smsCodeColName = feild.info.name;
           }
         }
       }
 
       if (phoneColName && smsCodeColName) {
-        return { phoneColName, smsCodeColName }
+        return { phoneColName, smsCodeColName };
       } else {
-        return false
+        return false;
       }
     },
     loaderService: function () {
       if (this.loaderServiceProp) {
         return this.loaderServiceProp;
       } else if (this.mainTable) {
-        let loaderService = this.mainTable.replace('bx', 'srv') + "_select";
-        return loaderService
+        let loaderService = this.mainTable.replace("bx", "srv") + "_select";
+        return loaderService;
       } else {
         return null;
       }
@@ -212,9 +223,8 @@ export default {
 
     sortedFields: function () {
       // return this.sortFields(this.fields);
-      let allFields = this.sortFields(this.allFields)
-      return allFields.filter(item => item.info.srvCol.in_cond == 1)
-
+      let allFields = this.sortFields(this.allFields);
+      return allFields.filter((item) => item.info.srvCol.in_cond == 1);
     },
 
     sortedAllFields: function () {
@@ -250,53 +260,56 @@ export default {
       let hideSections = new Set();
       for (let key in sections) {
         let sectionFields = sections[key];
-        let visibleFields = sectionFields.filter(field => {
-          return (field && field.evalVisible());
-        })
+        let visibleFields = sectionFields.filter((field) => {
+          return field && field.evalVisible();
+        });
 
         if (visibleFields.length == 0) {
-          hideSections.add(key)
+          hideSections.add(key);
         }
       }
 
-      hideSections.forEach(key => delete sections[key])
+      hideSections.forEach((key) => delete sections[key]);
 
       // 把 field 组织成: majorField 和 contentFields， 服务一个form-item 包含多个fields
       let sectionsOfFormItems = {};
       for (let key in sections) {
         let fieldsInSection = sections[key];
-        let isGroupedField = field => field.info.srvCol.group_field;
-        let groupedFields = fieldsInSection.filter(isGroupedField)
+        let isGroupedField = (field) => field.info.srvCol.group_field;
+        let groupedFields = fieldsInSection.filter(isGroupedField);
         remove(fieldsInSection, isGroupedField);
 
-        let formItems = fieldsInSection.map(majorField => {
+        let formItems = fieldsInSection.map((majorField) => {
           let contentFields = [majorField].concat(
-            groupedFields.filter(groupedField => groupedField.info.srvCol.group_field === majorField.info.name)
+            groupedFields.filter(
+              (groupedField) =>
+                groupedField.info.srvCol.group_field === majorField.info.name
+            )
           );
           return {
             field: majorField,
             contentFields: contentFields,
-          }
-        })
+          };
+        });
         sectionsOfFormItems[key] = formItems;
         // if(this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1){
 
         // }
         if (!this.sectionsCollapse.hasOwnProperty(key)) {
           // 没有初始化值得时候 进行
-          if (key !== '$') {
+          if (key !== "$") {
             // 表单字段默认折叠配置初始化
-            this.sectionsCollapse[key] = this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1 || key?.includes(':折叠')
+            this.sectionsCollapse[key] =
+              this.cfgJsonOptionsType.indexOf("分组默认折叠") !== -1 ||
+              key?.includes(":折叠");
           } else {
-            this.sectionsCollapse['$'] = false
+            this.sectionsCollapse["$"] = false;
           }
-          let sectionsKeys = Object.keys(this.sectionsCollapse)
+          let sectionsKeys = Object.keys(this.sectionsCollapse);
           if (sectionsKeys.length > 0) {
-            this.sectionsCollapse[sectionsKeys[0]] = false
+            this.sectionsCollapse[sectionsKeys[0]] = false;
           }
         }
-
-
       }
 
       // console.log('sectionsOfFormItems:',sectionsOfFormItems)
@@ -304,9 +317,9 @@ export default {
     },
     isHistoryRun: function () {
       if (this.isHistory) {
-        return this.isHistory
+        return this.isHistory;
       } else {
-        return this.isHistoryUse
+        return this.isHistoryUse;
       }
     },
     formModel: function () {
@@ -315,191 +328,210 @@ export default {
       for (let key in this.fields) {
         model[key] = this.fields[key].model;
         if (Object.prototype.toString.call(model[key])) {
-          model[key] = this.fields[key].getSrvVal()
-          // 透传子表表单的主表model 
+          model[key] = this.fields[key].getSrvVal();
+          // 透传子表表单的主表model
         }
       }
 
       return model;
     },
-    "colValChangeRequestColsRun": function () {
-      let colValRequest = this.srv_more_config.hasOwnProperty('colValRequest') ? this.srv_more_config.colValRequest : null
-      let reqs = this.bxDeepClone(colValRequest)
+    colValChangeRequestColsRun: function () {
+      let colValRequest = this.srv_more_config.hasOwnProperty("colValRequest")
+        ? this.srv_more_config.colValRequest
+        : null;
+      let reqs = this.bxDeepClone(colValRequest);
 
-
-      let cols = this.colValChangeRequestCols
-      let formModel = this.formModel
+      let cols = this.colValChangeRequestCols;
+      let formModel = this.formModel;
       for (let r of reqs) {
-        let cond = r.condition
+        let cond = r.condition;
         for (let c of cond) {
           for (let col of cols) {
             if (col == c["colName"]) {
-              c.value = formModel[col]
+              c.value = formModel[col];
             }
           }
         }
       }
 
-      return reqs
-    }
-
-
+      return reqs;
+    },
   },
-
 
   methods: {
     onChildFormLoaded(form) {
-      this.childForm.push(form)
+      this.childForm.push(form);
     },
     onSectionsCollapseChange(key) {
-      let self = this
-      if (key && (this.cfgJsonOptionsType.indexOf('分组默认折叠') !== -1||key?.includes(':折叠')) && key !== '$') {
-        console.log('0', key, self.sectionsCollapse[key], self.sectionsCollapse)
-        self.$set(self.sectionsCollapse, key, !this.sectionsCollapse[key])
-        this.$forceUpdate()
-        console.log('1', key, self.sectionsCollapse[key], self.sectionsCollapse)
+      let self = this;
+      if (
+        key &&
+        (this.cfgJsonOptionsType.indexOf("分组默认折叠") !== -1 ||
+          key?.includes(":折叠")) &&
+        key !== "$"
+      ) {
+        console.log(
+          "0",
+          key,
+          self.sectionsCollapse[key],
+          self.sectionsCollapse
+        );
+        self.$set(self.sectionsCollapse, key, !this.sectionsCollapse[key]);
+        this.$forceUpdate();
+        console.log(
+          "1",
+          key,
+          self.sectionsCollapse[key],
+          self.sectionsCollapse
+        );
       }
-
     },
     getSectionShow(key) {
-      return this.sectionsCollapse[key]
+      return this.sectionsCollapse[key];
     },
     initColValRequest() {
-      let self = this
-      let conditionCol = self.colValChangeRequestCols
+      let self = this;
+      let conditionCol = self.colValChangeRequestCols;
 
-      let moreConfig = self.srv_more_config
+      let moreConfig = self.srv_more_config;
 
-      let initValToCols = self.initValToCols
-      if (moreConfig && moreConfig.hasOwnProperty("colValRequest") && moreConfig.colValRequest) {
-        moreConfig = moreConfig.colValRequest
+      let initValToCols = self.initValToCols;
+      if (
+        moreConfig &&
+        moreConfig.hasOwnProperty("colValRequest") &&
+        moreConfig.colValRequest
+      ) {
+        moreConfig = moreConfig.colValRequest;
         // self.initValToCols = moreConfig[0].colNames
         for (let key of moreConfig) {
           for (let ckey of key.condition) {
             if (conditionCol.indexOf(ckey.colName) == -1) {
-              conditionCol.push(ckey.colName)
+              conditionCol.push(ckey.colName);
             }
           }
           for (let c of key.colNames) {
             if (initValToCols.indexOf(c) == -1) {
-              initValToCols.push(c)
+              initValToCols.push(c);
             }
           }
-
         }
         // this.colValRequest(moreConfig.colValRequest)
       }
     },
     getColValRequests() {
-      let self = this
-      let moreConfig = self.srv_more_config ? self.srv_more_config.colValRequest : self.srv_more_config
-      let reqs = this.bxDeepClone(moreConfig[0])
-      let cols = this.colValChangeRequestCols
-      let fieldModel = this.formModel
-      let initReqs = []
-      let fields = this.allFields
-      let valids = []
+      let self = this;
+      let moreConfig = self.srv_more_config
+        ? self.srv_more_config.colValRequest
+        : self.srv_more_config;
+      let reqs = this.bxDeepClone(moreConfig[0]);
+      let cols = this.colValChangeRequestCols;
+      let fieldModel = this.formModel;
+      let initReqs = [];
+      let fields = this.allFields;
+      let valids = [];
       for (let cond of reqs.condition) {
         for (let f in fieldModel) {
           if (cond.colName == f) {
-            cond.value = this.fields[f].getSrvVal()
+            cond.value = this.fields[f].getSrvVal();
           }
         }
       }
       // console.log("valids === ;",cols,valids)
-      console.log("valids === 2;", cols.length, valids.length)
-      delete reqs['srvApp']
-      let url = this.getServiceUrl('select', reqs.serviceName, reqs.srvApp ? reqs.srvApp : null)
+      console.log("valids === 2;", cols.length, valids.length);
+      delete reqs["srvApp"];
+      let url = this.getServiceUrl(
+        "select",
+        reqs.serviceName,
+        reqs.srvApp ? reqs.srvApp : null
+      );
       this.$http.post(url, reqs).then((res) => {
-        console.log(res)
+        console.log(res);
         // let datas = res.data[0]
         if (res) {
-          this.setColValRequestsVal(res)
+          this.setColValRequestsVal(res);
         } else {
-          console.log('colValRequest 发生异常', res)
+          console.log("colValRequest 发生异常", res);
         }
 
-        console.log("getColValRequests", reqs, res)
-      })
-
-
+        console.log("getColValRequests", reqs, res);
+      });
     },
     setColValRequestsVal(e) {
-      let self = this
-      let res = e.data.data[0]
-      let initValToCols = self.initValToCols
-      // let 
-      let moreConfig = self.srv_more_config.colValRequest
-      console.log("setColValRequestsVal", res, moreConfig)
-      let fields = this.fields
+      let self = this;
+      let res = e.data.data[0];
+      let initValToCols = self.initValToCols;
+      // let
+      let moreConfig = self.srv_more_config.colValRequest;
+      console.log("setColValRequestsVal", res, moreConfig);
+      let fields = this.fields;
 
       for (let k of moreConfig) {
         for (let r in res) {
           for (let f in fields) {
             if (r == f) {
-              fields[r].setSrvVal(res[r])
+              fields[r].setSrvVal(res[r]);
             }
           }
-
         }
       }
-
     },
     onFieldHistoryPopup(field) {
-      this.isXhtml = field.info.editor == 'ueditor'
+      this.isXhtml = field.info.editor == "ueditor";
       this.fieldHisotryPopup = true;
       this.fieldWithHistory = field;
     },
     getFormDatas() {
-      return this.formModel
-      // return  this.bxDeepClone(this.srvValFormModel()) 
-
+      return this.formModel;
+      // return  this.bxDeepClone(this.srvValFormModel())
     },
     getParentFormModel() {
-      return this.parentAddMainFormDatas
+      return this.parentAddMainFormDatas;
     },
     evalVisible() {
-      return this.evalVersatileFlagVar(this.visible)
+      return this.evalVersatileFlagVar(this.visible);
     },
 
     formatSection: function (section) {
-      return section && isString(section) && section.startsWith('$') ? "" : section?.includes(':折叠')? section.split(':折叠')[0] : section;
+      return section && isString(section) && section.startsWith("$")
+        ? ""
+        : section?.includes(":折叠")
+        ? section.split(":折叠")[0]
+        : section;
     },
 
     srvValFormModel: function () {
       let model = {};
 
       for (let key in this.fields) {
-        // console.log(this.fields[ key ].getSrvVal())
-        model[key] = this.fields[key].getSrvVal() !== undefined && this.fields[key].getSrvVal() !== null ? this.fields[key].getSrvVal() : null;
-
+        const fieldModel = this.fields[key].getSrvVal();
+        model[key] = fieldModel !== undefined ? fieldModel : null;
       }
 
       if (this.srvvalFormModelDecorator) {
         let decorator = this.srvvalFormModelDecorator;
         decorator(model);
       }
-      this.$emit("form-model-changed", model)
+      
+      this.$emit("form-model-changed", model);
       return model;
     },
-
 
     isLoaded: function () {
       return this.formLoaded;
     },
     onIsLoaded: function (e) {
       // 控制页面加载中
-      let self = this
+      let self = this;
 
-      if (e === 'get') {
-        return self.isFromLoaded
+      if (e === "get") {
+        return self.isFromLoaded;
       } else {
-        self.isFromLoaded = e || self.isFromLoaded
-        return self.isFromLoaded
+        self.isFromLoaded = e || self.isFromLoaded;
+        return self.isFromLoaded;
       }
     },
     resDataKey(e) {
-      self.draftDataKey = e
+      self.draftDataKey = e;
     },
     /**
      * 3 sources of conditions, order from priority high to low
@@ -510,20 +542,23 @@ export default {
       let operateParams = this.getOperateParams();
       /**
        * 2023/09/18 wyh
-       * 表单页面增加 参数 ：initOrigin 缺省值  'none' 
+       * 表单页面增加 参数 ：initOrigin 缺省值  'none'
        * 列表公共编辑弹窗 / 自定义'更新弹出' ：initOrigin 默认值：'dialog'
        * 表单页面 initOrigin 值 等于 'dialog' 时不适用url参数
-       * 
-       * 解决 从fk字段超链接详情 子表 卡片单元弹出修改使用了 超链接url的外键 conditions 造成 该条件 错误修改了多少数据。 
+       *
+       * 解决 从fk字段超链接详情 子表 卡片单元弹出修改使用了 超链接url的外键 conditions 造成 该条件 错误修改了多少数据。
        */
-      if (operateParams && !['detaillist','update'].includes(this.parentPageType) && !['dialog'].includes(this.initOrigin)) {
-
+      if (
+        operateParams &&
+        !["detaillist", "update"].includes(this.parentPageType) &&
+        !["dialog"].includes(this.initOrigin)
+      ) {
         /**
          * 排除 指定为 dialog  表单使用 url参数输入  && !['dialog'].includes(this.initOrigin)
          */
         let params = JSON.parse(operateParams);
         if (params.condition && params.condition.length > 0) {
-          // 修复bug:对于详情子表的数据，删除和修改服务，有时候会出现条件参数不是id的条件去调用服务 
+          // 修复bug:对于详情子表的数据，删除和修改服务，有时候会出现条件参数不是id的条件去调用服务
           let conditions = params.condition;
           let form = this;
           // let onlyCondition = {
@@ -546,13 +581,13 @@ export default {
       } else if (this.pk) {
         let form = this;
         let onlyCondition = {
-          colName: this.pkCol || 'id',
-          ruleType: 'eq',
+          colName: this.pkCol || "id",
+          ruleType: "eq",
           required: true,
-          valueFunc: _ => {
+          valueFunc: (_) => {
             return form.pk || form.$route.params.id;
-          }
-        }
+          },
+        };
 
         return [onlyCondition];
       } else {
@@ -561,7 +596,7 @@ export default {
     },
 
     literalConditions2Conditions(literalConditions) {
-      const conditions = literalConditions.map(a => Object.assign({}, a));
+      const conditions = literalConditions.map((a) => Object.assign({}, a));
       for (let i in conditions) {
         conditions[i].valueExpr = `'${conditions[i].value}'`;
         if (conditions[i].literalValue === true) {
@@ -575,7 +610,7 @@ export default {
      * use url params to change metadata
      */
     setFieldsDefaultValue: function () {
-      let self = this
+      let self = this;
       if (this.isTopComp() && this.getOperateParams()) {
         // if (this.getOperateParams()) {
         let params = JSON.parse(this.getOperateParams());
@@ -592,7 +627,7 @@ export default {
         let row = this.defaultValues;
         for (let key in row) {
           let field = this.fields[key];
-          if (self.name === 'list-duplicate') {
+          if (self.name === "list-duplicate") {
             if (field) {
               field.setSrvVal(row[key]);
             }
@@ -603,10 +638,12 @@ export default {
               field.setSrvVal(row[key]);
             }
           }
-
         }
-      } else if (["duplicatedeep", "duplicate"].includes(this.duplicateType) && this.duplicateData) {
-        let row = this.duplicateData
+      } else if (
+        ["duplicatedeep", "duplicate"].includes(this.duplicateType) &&
+        this.duplicateData
+      ) {
+        let row = this.duplicateData;
         for (let key in row) {
           let field = this.fields[key];
           if (field) {
@@ -618,123 +655,144 @@ export default {
 
     sortFields: function (fields) {
       let fieldList = [];
-      let transferField = null // 穿梭框字段
+      let transferField = null; // 穿梭框字段
       for (let key in fields) {
-        if (this.formType == 'add' && fields[key]?.info?.subType === 'transfer') {
-          transferField = fields[key]
-          transferField.isTransfer = true
-          transferField.info.isTransfer = true
+        if (
+          this.formType == "add" &&
+          fields[key]?.info?.subType === "transfer"
+        ) {
+          transferField = fields[key];
+          transferField.isTransfer = true;
+          transferField.info.isTransfer = true;
           transferField.info.colspan = {
             xs: 24,
             sm: 24,
             md: 24,
             lg: 24,
             xl: 24,
-          }
+          };
         } else {
           fieldList.push(fields[key]);
         }
       }
       fieldList.sort((a, b) => a.info.seq - b.info.seq);
       if (transferField) {
-        fieldList = fieldList.map(item => {
+        fieldList = fieldList.map((item) => {
           if (item.info?.redundant?.dependField === transferField.info.name) {
             // 隐藏掉 依赖transfer的字段
-            item.dependField = transferField.info.name
-            item.evalXIf = () => false
+            item.dependField = transferField.info.name;
+            item.evalXIf = () => false;
           }
-          return item
-        })
-        fieldList.push(transferField)
+          return item;
+        });
+        fieldList.push(transferField);
       }
       return fieldList;
     },
     getSubFormFields: async function (finalOption, useType, f, fi, srvCol) {
-      if (!finalOption?.serviceName) return
-      console.log('getSubFormFields:finalOption', finalOption);
-      let cfg = finalOption[`${useType}_srv_cfg`]
-      if (useType === 'detail') {
+      if (!finalOption?.serviceName) return;
+      console.log("getSubFormFields:finalOption", finalOption);
+      let cfg = finalOption[`${useType}_srv_cfg`];
+      if (useType === "detail") {
         cfg = {
           srv: finalOption.serviceName,
           permission: true,
-          app: finalOption.srv_app || finalOption?.add_srv_cfg?.app || add_srv_cfg?.update_srv_cfg?.app || this.resolveDefaultSrvApp()
-        }
+          app:
+            finalOption.srv_app ||
+            finalOption?.add_srv_cfg?.app ||
+            add_srv_cfg?.update_srv_cfg?.app ||
+            this.resolveDefaultSrvApp(),
+        };
       }
       if (cfg) {
-        let filter = (srvCol) => srvCol[`in_${useType}`] != 0
-        if (useType === 'detail') {
-          filter = (srvCol) => srvCol[`in_detail`] === 1
+        let filter = (srvCol) => srvCol[`in_${useType}`] != 0;
+        if (useType === "detail") {
+          filter = (srvCol) => srvCol[`in_detail`] === 1;
         }
         // 查找字段
-        f.flatChildForm = true // 平铺显示子表
-        return
-        fi.sec = fi.label
-        const app = cfg.app || this.resolveDefaultSrvApp()
+        f.flatChildForm = true; // 平铺显示子表
+        return;
+        fi.sec = fi.label;
+        const app = cfg.app || this.resolveDefaultSrvApp();
         const response2 = await this.loadColsV2(cfg.srv, useType, app);
-        if (Array.isArray(response2.data?.data?.srv_cols) && response2?.data?.data.srv_cols.length > 0) {
-          response2.body.data.srv_cols.forEach(item => {
+        if (
+          Array.isArray(response2.data?.data?.srv_cols) &&
+          response2?.data?.data.srv_cols.length > 0
+        ) {
+          response2.body.data.srv_cols.forEach((item) => {
             // 标记当前字段是子表需要随主表一起提交的字段
-            if (item.columns?.indexOf('_child_form_') === -1) {
-              item.columns = `${fi.name}_child_form_${item.columns}`
+            if (item.columns?.indexOf("_child_form_") === -1) {
+              item.columns = `${fi.name}_child_form_${item.columns}`;
             }
-            item.seq = srvCol.seq + 0.0000001 * item.seq // 让子表单字段在fk字段之后
+            item.seq = srvCol.seq + 0.0000001 * item.seq; // 让子表单字段在fk字段之后
             let cfi = new FieldInfo(item, this.formType);
             let cf = new Field(cfi, this);
-            cf.flatChildFormField = true
-            cf.vif = !(filter && !filter(item))
-            cf.parentField = fi.name
-            if (fi.editor == 'multiselect') {
+            cf.flatChildFormField = true;
+            cf.vif = !(filter && !filter(item));
+            cf.parentField = fi.name;
+            if (fi.editor == "multiselect") {
               f.model = [];
             }
             Vue.set(this.allFields, cfi.name, cf);
-            (cf.vif) && Vue.set(this.fields, cfi.name, cf);
-          })
+            cf.vif && Vue.set(this.fields, cfi.name, cf);
+          });
           if (this.buildDependentFields) {
             this.buildDependentFields(this.fields);
           }
         }
       } else {
-        fi.sec = null
+        fi.sec = null;
         // f.flatChildForm = false // 平铺显示子表
       }
-      return f
+      return f;
     },
-    deleteChildFormFields: async function (key = '') {
+    deleteChildFormFields: async function (key = "") {
       return await new Promise((resolve) => {
-        const keys = Object.keys(this.allFields)
+        const keys = Object.keys(this.allFields);
         Object.keys(this.allFields).forEach((key2, index) => {
           if (key) {
             if (key2.startsWith(`${key}_child_form_`)) {
-              this.$set(this.allFields[key2], 'vif', false)
+              this.$set(this.allFields[key2], "vif", false);
             }
           } else if (key2.includes(`_child_form_`)) {
-            this.$set(this.allFields[key2], 'vif', false)
+            this.$set(this.allFields[key2], "vif", false);
           }
           if (index === keys.length - 1) {
-            this.$forceUpdate()
-            resolve()
+            this.$forceUpdate();
+            resolve();
           }
-        })
-      })
+        });
+      });
     },
     setSubFormFields: async function (newVal, oldVal, onModelChange = false) {
       // 处理fk字段子表单平铺展示 目前只有add表单支持
-      console.log('setSubFormFields:start');
-      const useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
-      if (['add', 'detail', 'update'].includes(useType) && typeof this.allFields === 'object' && Object.keys(this.allFields)?.length) {
-        const data = this.formModel
-        const hasChildFormFields = []
+      console.log("setSubFormFields:start");
+      const useType =
+        this.overrideformType == undefined
+          ? this.formType
+          : this.overrideformType;
+      if (
+        ["add", "detail", "update"].includes(useType) &&
+        typeof this.allFields === "object" &&
+        Object.keys(this.allFields)?.length
+      ) {
+        const data = this.formModel;
+        const hasChildFormFields = [];
         for (let key in this.allFields) {
-          const field = this.allFields[key]
-          const srvCol = field.info.srvCol
+          const field = this.allFields[key];
+          const srvCol = field.info.srvCol;
           const fi = field.info;
-          // if (key.includes('_child_form_')) {
-          //   continue
-          // }
-          if (Array.isArray(srvCol?.option_list_v3) && srvCol?.option_list_v3.length) {
-            const option_list_v3 = srvCol.option_list_v3.filter(item => item.view_model === '平铺显示' && item?.allow_input === '自行输入')
+          if (
+            Array.isArray(srvCol?.option_list_v3) &&
+            srvCol?.option_list_v3.length
+          ) {
+            const option_list_v3 = srvCol.option_list_v3.filter(
+              (item) =>
+                item.view_model === "平铺显示" &&
+                item?.allow_input === "自行输入"
+            );
             if (option_list_v3.length) {
-              hasChildFormFields.push(field.info.name)
+              hasChildFormFields.push(field.info.name);
             }
           }
         }
@@ -742,12 +800,12 @@ export default {
         if (hasChildFormFields?.length) {
           // console.log('hasChildFormFields:',hasChildFormFields);
           hasChildFormFields.forEach((key) => {
-            const field = this.allFields[key]
-            field.flatChildForm = true // 平铺显示子表
+            const field = this.allFields[key];
+            field.flatChildForm = true; // 平铺显示子表
             // console.log('hasChildFormFields flatChildForm:',field.info.name);
 
-            this.$set(field, 'flatChildForm', true)
-          })
+            this.$set(field, "flatChildForm", true);
+          });
           for (let key of hasChildFormFields) {
             // const fi = item.fieldInfo
             // const srvCol = item.srvCol
@@ -756,36 +814,36 @@ export default {
             // console.log('hasChildFormFields flatChildForm:',field.info.name);
 
             // this.$set(field,'flatChildForm',true)
-            return
-            const option_list_v3 = item.option_list_v3
-            const finalOption = option_list_v3.find(item => {
+            return;
+            const option_list_v3 = item.option_list_v3;
+            const finalOption = option_list_v3.find((item) => {
               if (!item.conds?.length) {
-                return true
+                return true;
               } else {
-                const conds = item.conds.filter(cond => {
+                const conds = item.conds.filter((cond) => {
                   if (onModelChange === true) {
                     // 仅在相关字段值变化时触发
-                    return newVal?.[cond.case_col] !== oldVal?.[cond.case_col]
+                    return newVal?.[cond.case_col] !== oldVal?.[cond.case_col];
                   }
-                  return true
-                })
-                if (!conds.length) return false
-                this.deleteChildFormFields(fi.name)
-                return conds.every(cond => {
+                  return true;
+                });
+                if (!conds.length) return false;
+                this.deleteChildFormFields(fi.name);
+                return conds.every((cond) => {
                   // 满足条件外键显示需求
                   if (cond.case_val?.includes?.(data[cond.case_col])) {
-                    return true
+                    return true;
                   } else {
-                    return false
+                    return false;
                   }
-                })
+                });
               }
-            })
-            await this.getSubFormFields(finalOption, useType, f, fi, srvCol)
+            });
+            await this.getSubFormFields(finalOption, useType, f, fi, srvCol);
           }
         }
       }
-      return this.fields
+      return this.fields;
     },
     /**
      * 从后端获取service cols，转换为fields;
@@ -793,35 +851,59 @@ export default {
      */
     createFields: async function (filter, srvCols, app) {
       let srvColsProvided = !!srvCols;
-      let self = this
-      let useType = this.overrideformType == undefined ? this.formType : this.overrideformType;
-      let srvColsP = srvCols ? Promise.resolve({ body: { data: { srv_cols: srvCols } } }) :
-        this.loadColsV2(this.service_name, useType, app, this.mainService);
-      const response = await srvColsP
+      let self = this;
+      let useType =
+        this.overrideformType == undefined
+          ? this.formType
+          : this.overrideformType;
+      let srvColsP = srvCols
+        ? Promise.resolve({ body: { data: { srv_cols: srvCols } } })
+        : this.loadColsV2(this.service_name, useType, app, this.mainService);
+      const response = await srvColsP;
       // .then((response) => {
       let data = response.body.data;
       this.mainTable = data.main_table;
-      this.formV2 = data
+      this.formV2 = data;
       /**
        * pagePrompt 页面配置信息处理
        */
       // console.log(response)
 
-      if (data.more_config !== null && data.more_config !== undefined && data.more_config !== "") {
-        self['srv_more_config'] = JSON.parse(data.more_config)
-        let colValChangeRequestColsDatas = self.srv_more_config.hasOwnProperty("colValRequest") ? self.srv_more_config.colValRequest[0].condition : []
-        self.colValChangeRequestCols = colValChangeRequestColsDatas.map((item) => {
-          return item.colName
-        })
-        self.initValToCols = self['srv_more_config'].hasOwnProperty('colValRequest') ? self['srv_more_config'].colValRequest[0].colNames : []
-        self.isHistoryUse = data.his_version
-        self.pagePrompt = self.srv_more_config.pagePrompt !== undefined ? self.srv_more_config.pagePrompt : null;
-        self.draftConfig = self.srv_more_config.isDraft !== undefined ? Object.assign(self.srv_more_config.isDraft, { isDraft: true }) : { isDraft: false };
+      if (
+        data.more_config !== null &&
+        data.more_config !== undefined &&
+        data.more_config !== ""
+      ) {
+        self["srv_more_config"] = JSON.parse(data.more_config);
+        let colValChangeRequestColsDatas = self.srv_more_config.hasOwnProperty(
+          "colValRequest"
+        )
+          ? self.srv_more_config.colValRequest[0].condition
+          : [];
+        self.colValChangeRequestCols = colValChangeRequestColsDatas.map(
+          (item) => {
+            return item.colName;
+          }
+        );
+        self.initValToCols = self["srv_more_config"].hasOwnProperty(
+          "colValRequest"
+        )
+          ? self["srv_more_config"].colValRequest[0].colNames
+          : [];
+        self.isHistoryUse = data.his_version;
+        self.pagePrompt =
+          self.srv_more_config.pagePrompt !== undefined
+            ? self.srv_more_config.pagePrompt
+            : null;
+        self.draftConfig =
+          self.srv_more_config.isDraft !== undefined
+            ? Object.assign(self.srv_more_config.isDraft, { isDraft: true })
+            : { isDraft: false };
       } else {
-        self.pagePrompt = false
-        self.draftConfig = null
+        self.pagePrompt = false;
+        self.draftConfig = null;
       }
-      this.$emit('srv-config-loaded', self['srv_more_config'])
+      this.$emit("srv-config-loaded", self["srv_more_config"]);
 
       let listData = data.srv_cols;
       this.srvCols = listData;
@@ -833,25 +915,24 @@ export default {
         let srvCol = listData[i];
         let fi = new FieldInfo(srvCol, this.formType);
         let f = new Field(fi, this);
-        f.vif = !(filter && !filter(srvCol))
+        f.vif = !(filter && !filter(srvCol));
         // hack
         // if (fi.name == "id") {
         //   fi.visible = false;
         // }
-        if (fi.editor == 'multiselect') {
+        if (fi.editor == "multiselect") {
           f.model = [];
         }
         Vue.set(this.allFields, fi.name, f);
-        (f.vif) && Vue.set(this.fields, fi.name, f);
+        f.vif && Vue.set(this.fields, fi.name, f);
       }
-
 
       if (data.validators) {
         for (let i in data.validators) {
           this.formValidators.push({
             name: `validator-${i}`,
             js: data.validators[i].in_table_validate,
-          })
+          });
         }
       }
 
@@ -859,21 +940,18 @@ export default {
         this.buildDependentFields(this.fields);
       }
 
-
-      if (data.hasOwnProperty('cfg_no') && data.cfg_no && data.cfg_json) {
-        this.cfgJson = JSON.parse(data.cfg_json)
+      if (data.hasOwnProperty("cfg_no") && data.cfg_no && data.cfg_json) {
+        this.cfgJson = JSON.parse(data.cfg_json);
       }
       return response.body;
       // });
     },
 
-
     createActions: function (formButtons) {
-
-      let form = this
+      let form = this;
       // formButtons = formButtons.filter(item => this.pageIsDraft == 'norm' && item.button_type !== "save_draft" && item.button_type !== 'update_draft')
       for (let i in formButtons) {
-        let button = formButtons[i]
+        let button = formButtons[i];
         if (!button.permission) {
           continue;
         }
@@ -891,71 +969,79 @@ export default {
             actionInfo = this.addSubmitAction(button);
           }
         } else if (buttonType == "refresh") {
-          actionInfo = form.addNav2refreshAction(button)
+          actionInfo = form.addNav2refreshAction(button);
         } else if (buttonType == "save_draft") {
           actionInfo = form.saveDraft(button);
         } else if (buttonType == "update_draft") {
           actionInfo = this.saveDraft(button);
           // 已废弃
         } else if (buttonType == "customize") {
-
-          let operate_params = JSON.parse(button.operate_params)
+          let operate_params = JSON.parse(button.operate_params);
           /**
            * 处理自定义按钮保存草稿
            */
-          if (operate_params && operate_params.draft !== undefined && operate_params.draft) {
-            actionInfo = this.saveDraft(button)
+          if (
+            operate_params &&
+            operate_params.draft !== undefined &&
+            operate_params.draft
+          ) {
+            actionInfo = this.saveDraft(button);
           } else {
-            let customAction = new ActionInfo(button, "form")
+            let customAction = new ActionInfo(button, "form");
             actionInfo = customAction;
-            let actionName = "custom-" + button.id + '-' + button.button_name;
+            let actionName = "custom-" + button.id + "-" + button.button_name;
             Vue.set(this.actions, actionName, customAction);
             let form = this;
-            customAction.name = actionName
+            customAction.name = actionName;
             if (button.more_config) {
-              const btn_more_config = JSON.parse(button.more_config)
+              const btn_more_config = JSON.parse(button.more_config);
               if (btn_more_config.isCheck) {
-                button["isVisibleForm"] = btn_more_config.isCheck
-                customAction.precheckFunc = _ => {
+                button["isVisibleForm"] = btn_more_config.isCheck;
+                customAction.precheckFunc = (_) => {
                   return this.validateForm();
-                }
+                };
               }
             }
-            customAction.invokeFunc = _ => {
+            customAction.invokeFunc = (_) => {
               let callback = null;
-              if (form.formType === 'detail') {
+              if (form.formType === "detail") {
                 callback = () => {
                   // 详情页 刷新页面
-                  form?.$refs?.loader?.run?.()
-                }
+                  form?.$refs?.loader?.run?.();
+                };
               }
               form.customizeOperate(button, [this.srvValFormModel()], callback);
-            }
-
+            };
           }
-
         }
 
         // common handle for  button attribute override
         if (button.action_validate) {
-
           actionInfo.customPrecheckFunc = () => {
-            return this.evalActionValidator(button.action_validate, form.srvValFormModel())
-          }
+            return this.evalActionValidator(
+              button.action_validate,
+              form.srvValFormModel()
+            );
+          };
         }
 
         if (button.disp_exps) {
           actionInfo.visibleFunc = () => {
-            return this.evalBxExpr(button.disp_exps, form.srvValFormModel())
-          }
+            return this.evalBxExpr(button.disp_exps, form.srvValFormModel());
+          };
         }
 
-        if (button.visible === "否" || (form.formType == 'update' && form.parentPageType === 'list' && form.pageIsDraft !== 'draft' && (buttonType == "update_draft" || buttonType == 'save_draft'))) {
+        if (
+          button.visible === "否" ||
+          (form.formType == "update" &&
+            form.parentPageType === "list" &&
+            form.pageIsDraft !== "draft" &&
+            (buttonType == "update_draft" || buttonType == "save_draft"))
+        ) {
           actionInfo.visibleFunc = () => {
-            return false
-          }
+            return false;
+          };
         }
-
 
         actionInfo.seq = button.seq;
         actionInfo.label = button.button_name;
@@ -975,38 +1061,40 @@ export default {
       let form = this;
       for (let i in this.fields) {
         let valueItem = {};
-        let field = this.fields[i]
-        valueItem.colName = field.info.name
-        valueItem.valueFunc = _ => {
+        let field = this.fields[i];
+        valueItem.colName = field.info.name;
+        valueItem.valueFunc = (_) => {
           return form.fields[field.info.name].getSrvVal();
         };
 
         // auto_gen field is not addable or updatable
-        if (field.info && field.info.srvCol && field.info.srvCol.auto_generate) {
-          valueItem.enableFunc = _ => {
-            return false
+        if (
+          field.info &&
+          field.info.srvCol &&
+          field.info.srvCol.auto_generate
+        ) {
+          valueItem.enableFunc = (_) => {
+            return false;
           };
         }
 
-        executor.values.push(valueItem)
+        executor.values.push(valueItem);
       }
     },
 
-
     onFieldValueChanged: function (fieldName) {
       // 子表change 事件监听，回收
-      console.log('onFieldValueChanged')
-      let self = this
+      console.log("onFieldValueChanged");
+      let self = this;
       // console.log('onFieldValueChanged fieldName',this.fields[fieldName].info.label,this.fields[fieldName],this.fields[fieldName].model)
       if (this.formLoaded) {
-
         let field = this.fields[fieldName];
 
-        if (field['_obj_col']?.col) {
+        if (field["_obj_col"]?.col) {
           // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
-          console.log('onFieldValueChanged-_obj_col', field['_obj_col']);
-          if (this.fields[field['_obj_col']?.col]) {
-            this.fields[field['_obj_col']?.col].model = field['_obj_col']?.val
+          console.log("onFieldValueChanged-_obj_col", field["_obj_col"]);
+          if (this.fields[field["_obj_col"]?.col]) {
+            this.fields[field["_obj_col"]?.col].model = field["_obj_col"]?.val;
           }
         }
 
@@ -1023,37 +1111,40 @@ export default {
         /**
          * 处理起止日期值分离同步
          */
-        let DateRangeEndCol = field.info._DateRangeEndColName
+        let DateRangeEndCol = field.info._DateRangeEndColName;
         if (field.info.editor === "DateRange" && DateRangeEndCol !== null) {
-          if (field.hasOwnProperty('_DateRangeModel') && field._DateRangeModel !== null) {
-            field.model = field._DateRangeModel[0]
+          if (
+            field.hasOwnProperty("_DateRangeModel") &&
+            field._DateRangeModel !== null
+          ) {
+            field.model = field._DateRangeModel[0];
             if (DateRangeEndCol !== undefined) {
-              let endCol = this.fields[DateRangeEndCol]
+              let endCol = this.fields[DateRangeEndCol];
 
-              endCol.model = field._DateRangeModel[1]// endCol.model = field._DateRangeModel[1]
+              endCol.model = field._DateRangeModel[1]; // endCol.model = field._DateRangeModel[1]
             }
           }
         }
-        if (self.hasOwnProperty('handleFieldFkRedundant')) {
-          self.handleFieldFkRedundant(field, this.fields)
+        if (self.hasOwnProperty("handleFieldFkRedundant")) {
+          self.handleFieldFkRedundant(field, this.fields);
         }
         // this.handleFieldFkRedundant && this.handleFieldFkRedundant(field, this.fields);
         for (let f of self.colValChangeRequestCols) {
           if (f === fieldName) {
-            self.getColValRequests()
+            self.getColValRequests();
           }
         }
         this.$nextTick(() => {
           setTimeout(() => {
             self.handleValidation(fieldName);
           }, 100);
-        })
+        });
       }
-      this.$emit('field-value-changed', {
+      this.$emit("field-value-changed", {
         fieldName: fieldName,
         value: this.formModel[fieldName],
-        formModel: this.formModel
-      })
+        formModel: this.formModel,
+      });
     },
 
     /**
@@ -1062,37 +1153,41 @@ export default {
     onLoaderComplete: function ({ data, resp }) {
       let listmap = data;
       if (!listmap || !listmap[0]) {
-
-        this.$emit("form-load-nodata")
-        this.$emit("detail-form-load-nodata")
+        this.$emit("form-load-nodata");
+        this.$emit("detail-form-load-nodata");
         return;
       }
 
-      let map = listmap[0]
-      this.encryptedCols = map['_encrypt_cols'] || [] // 数据已加密的字段
+      let map = listmap[0];
+      this.encryptedCols = map["_encrypt_cols"] || []; // 数据已加密的字段
       for (let key in map) {
-
         if (this.fields[key]) {
-          this.fields[key].setSrvVal(map[key])
+          this.fields[key].setSrvVal(map[key]);
         }
-
       }
       for (let k in this.fields) {
-        if (this.fields[k].info.editor === 'DateRange') {
+        if (this.fields[k].info.editor === "DateRange") {
           if (this.fields[k].info._DateRangeEndColName !== null) {
-            this.fields[k]._DateRangeModel = []
-            this.fields[k]._DateRangeModel.push(this.fields[k].model)
-            this.fields[k]._DateRangeModel.push(this.fields[this.fields[k].info._DateRangeEndColName].model)
+            this.fields[k]._DateRangeModel = [];
+            this.fields[k]._DateRangeModel.push(this.fields[k].model);
+            this.fields[k]._DateRangeModel.push(
+              this.fields[this.fields[k].info._DateRangeEndColName].model
+            );
           }
         }
         for (let c in this.encryptedCols) {
-          // 加密字段设置为只读 
+          // 加密字段设置为只读
           if (this.fields[k].info.name === this.encryptedCols[c]) {
-            this.fields[k].info.readonly = true
+            this.fields[k].info.readonly = true;
           }
         }
-        if ((this.fields[k].info.editor === 'upload-file' || this.fields[k].info.editor === 'upload-image') && (this.pageName === 'list-duplicatedeep' || this.pageName == 'list-duplicate')) {
-          this.fields[k].setSrvVal('')
+        if (
+          (this.fields[k].info.editor === "upload-file" ||
+            this.fields[k].info.editor === "upload-image") &&
+          (this.pageName === "list-duplicatedeep" ||
+            this.pageName == "list-duplicate")
+        ) {
+          this.fields[k].setSrvVal("");
         }
       }
       // 把历史数据放到 field
@@ -1103,8 +1198,7 @@ export default {
             .filter(
               (item, index) =>
                 index === 0 ||
-                (Array.isArray(item._diff_cols) &&
-                  item._diff_cols.length > 0)
+                (Array.isArray(item._diff_cols) && item._diff_cols.length > 0)
             )
             .reduce((res, cur) => {
               const index = res.findIndex(
@@ -1122,46 +1216,53 @@ export default {
                 });
               }
               return res;
-            }, [])
+            }, []);
         }
 
-
-        Object.values(this.fields).forEach(field => {
+        Object.values(this.fields).forEach((field) => {
           let hisOfField = historyOfRow
-            .filter(ver => {
-              if (field.info.name === 'biz_path') {
+            .filter((ver) => {
+              if (field.info.name === "biz_path") {
               }
               let firstRow = historyOfRow.indexOf(ver) == 0;
               let changed = ver._diff_cols.includes(field.info.name);
-              return firstRow || changed
+              return firstRow || changed;
             })
-            .map(ver => {
+            .map((ver) => {
               let value = ver[field.info.name];
-              if (field.info.isTemporal() && value !== '******') {
-                value = formatDate(value, field.info.type.toLowerCase(), field.info.format);
+              if (field.info.isTemporal() && value !== "******") {
+                value = formatDate(
+                  value,
+                  field.info.type.toLowerCase(),
+                  field.info.format
+                );
               }
 
               return {
                 value: value,
-                remark: ver._data_desc
-              }
+                remark: ver._data_desc,
+              };
             });
 
           this.$set(field, "historyData", hisOfField);
-        })
-
+        });
       }
 
       if (this.encryptedCols && Array.isArray(this.encryptedCols)) {
         // 老版加密数据处理逻辑，已废弃
         // 如果当前数据为敏感数据，因为值为******, 则没有看的权限，进而不可编辑
         if (map._sensitive_data === true) {
-          this.encryptedCols.forEach(col => this.fields[col] && this.fields[col].setNoPerm4Sensi(true))
+          this.encryptedCols.forEach(
+            (col) => this.fields[col] && this.fields[col].setNoPerm4Sensi(true)
+          );
         }
 
         // 如果_sensitive_data_update === false，则当前行敏感字段不可编辑
         if (map._sensitive_data_update === false) {
-          this.encryptedCols.forEach(col => this.fields[col] && (this.fields[col].info.editable = false))
+          this.encryptedCols.forEach(
+            (col) =>
+              this.fields[col] && (this.fields[col].info.editable = false)
+          );
         }
       }
 
@@ -1173,73 +1274,96 @@ export default {
 
     watchFormModel: function () {
       let form = this;
-      this.$watch(function () {
-        return form.srvValFormModel();
-      },
+      this.$watch(
+        function () {
+          return form.srvValFormModel();
+        },
         function (newVal, oldVal) {
-          if (newVal !== oldVal) {
-            form.handleRedundantOnFormModelChange(newVal, oldVal, this.fields, _ => form.srvValFormModel());
+          if (oldVal !== undefined && !isEqual(newVal, oldVal)) {
+            form.handleRedundantOnFormModelChange(
+              newVal,
+              oldVal,
+              this.fields,
+              (_) => form.srvValFormModel()
+            );
             if (form.formModelChangeHandler) {
               form.formModelChangeHandler(form);
             }
-            this.setSubFormFields(newVal, oldVal, true)
-            form.$emit("form-model-changed", this)
+            this.setSubFormFields(newVal, oldVal, true);
+            form.$emit("form-model-changed", this);
           }
-
-        }, {
-        immediate: true,
-        deep: true
-      })
+        },
+        {
+          immediate: true,
+          deep: true,
+        }
+      );
     },
     getDateRangExpr: function (infoObj, e) {
       /**
-          * 处理子表默认值 引用主表from
-          */
+       * 处理子表默认值 引用主表from
+       */
       let m = {
         min: null,
-        max: null
-      }
-      if (infoObj.hasOwnProperty('moreConfig') && infoObj.editor === "DateRange" && infoObj.moreConfig.hasOwnProperty('DateRangeConfig')) {
-        let mainData = e
-        let cfg = infoObj.moreConfig.DateRangeConfig
-        if (cfg.hasOwnProperty('minDate')) {
-          if (cfg.minDate !== '' && cfg.minDate !== null && cfg.minDate !== undefined) {
-            if (cfg.minDate.indexOf('{') !== -1 && cfg.minDate.indexOf('}') !== -1) {
-              let minexp = cfg.minDate.match(/{(\S*)}/)[1]
-              m.min = eval(minexp)
+        max: null,
+      };
+      if (
+        infoObj.hasOwnProperty("moreConfig") &&
+        infoObj.editor === "DateRange" &&
+        infoObj.moreConfig.hasOwnProperty("DateRangeConfig")
+      ) {
+        let mainData = e;
+        let cfg = infoObj.moreConfig.DateRangeConfig;
+        if (cfg.hasOwnProperty("minDate")) {
+          if (
+            cfg.minDate !== "" &&
+            cfg.minDate !== null &&
+            cfg.minDate !== undefined
+          ) {
+            if (
+              cfg.minDate.indexOf("{") !== -1 &&
+              cfg.minDate.indexOf("}") !== -1
+            ) {
+              let minexp = cfg.minDate.match(/{(\S*)}/)[1];
+              m.min = eval(minexp);
               if (m.min === null || m.min === undefined) {
-                m.min = '1990-01-01'
+                m.min = "1990-01-01";
               }
             } else {
-              m.min = cfg.minDate
+              m.min = cfg.minDate;
             }
           } else {
-            m.min = '1990-01-01'
+            m.min = "1990-01-01";
           }
         } else {
-          m.min = '1990-01-01'
-
+          m.min = "1990-01-01";
         }
-        if (cfg.hasOwnProperty('maxDate')) {
-          if (cfg.maxDate !== '' && cfg.maxDate !== null && cfg.maxDate !== undefined) {
-            if (cfg.maxDate.indexOf('{') !== -1 && cfg.maxDate.indexOf('}') !== -1) {
-              let maxexp = cfg.maxDate.match(/{(\S*)}/)[1]
-              m.max = eval(maxexp)
+        if (cfg.hasOwnProperty("maxDate")) {
+          if (
+            cfg.maxDate !== "" &&
+            cfg.maxDate !== null &&
+            cfg.maxDate !== undefined
+          ) {
+            if (
+              cfg.maxDate.indexOf("{") !== -1 &&
+              cfg.maxDate.indexOf("}") !== -1
+            ) {
+              let maxexp = cfg.maxDate.match(/{(\S*)}/)[1];
+              m.max = eval(maxexp);
               if (m.max === null || m.max === undefined) {
-                m.max = '2050-12-30'
+                m.max = "2050-12-30";
               }
             } else {
-              m.max = cfg.maxDate
+              m.max = cfg.maxDate;
             }
           } else {
-            m.max = '2050-12-30'
+            m.max = "2050-12-30";
           }
         } else {
-          m.max = '2050-12-30'
+          m.max = "2050-12-30";
         }
-
       }
-      return m
+      return m;
     },
     formatValue(row, header) {
       let key_col = header.column;
@@ -1281,24 +1405,23 @@ export default {
       const conditions = [];
       for (const key in proForm) {
         const value = proForm[key];
-        if (value !== null && value !== undefined && value !== '') {
+        if (value !== null && value !== undefined && value !== "") {
           conditions.push({
             colName: key,
-            ruleType: 'like',
-            value: value
+            ruleType: "like",
+            value: value,
           });
         }
       }
       return conditions;
-    }
-
+    },
   },
   watch: {
-    "sectionsCollapse": {
+    sectionsCollapse: {
       deep: true,
       handler: function (n, o) {
-        console.log('sectionsCollapse change ', n)
-      }
-    }
-  }
+        console.log("sectionsCollapse change ", n);
+      },
+    },
+  },
 };

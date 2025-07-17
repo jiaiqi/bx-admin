@@ -269,7 +269,7 @@ import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/car
 import { formatStyleData } from "../../../common/index";
 import GridList from "./grid-list.vue";
 import SimpleAdd from "@/components/common/simple-add.vue";
-import MapCard from "../map-card.vue";
+import MapCard from "../map-card/index.vue";
 export default {
   name: "data-view-list",
   components: {
