@@ -118,6 +118,7 @@ function onTap() {
     .tree-data-item-name-text {
       flex: 1;
       text-align: left;
+      cursor: pointer;
     }
 
     &.active {
