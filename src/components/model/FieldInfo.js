@@ -425,7 +425,7 @@ export class FieldInfo {
       optionListV2.key_disp_col = "user_disp";
     }
 
-    if (optionListV2.is_tree && this.type !== "fkjsons") {
+    if (optionListV2.is_tree && !['fks', 'fkjsons'].includes(this.type)) {
       this.editor = "tree-finder";
     }
   }

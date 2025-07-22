@@ -16,7 +16,10 @@
         @click="onClickEdit"
       >
         <span v-if="field.getDispVal()">{{ field.getDispVal() }}</span>
-        <span v-else class="placeholder">点击进行编辑</span>
+        <span
+          v-else
+          class="placeholder"
+        >点击进行编辑</span>
         <i
           class="el-icon-circle-close close-icon"
           title="清除"
@@ -47,30 +50,31 @@
         @on-selected="onPickerSelected"
         v-else-if="isFks"
       ></table-picker>
-      <div v-else style="display: flex; align-items: center">
+      <div
+        v-else
+        style="display: flex; align-items: center"
+      >
         <multi-tab-option-select
           v-if="useMultiTabOptionSelect === true"
           :placeholder="field.info.placeholder"
           :optionListV3="optionListV3"
           :field="field"
           :disabled="setDisabled"
-          :prefix-icon="
-            (dispLoaderV2 &&
+          :prefix-icon="(dispLoaderV2 &&
               dispLoaderV2.imgType === 'eicon' &&
               field.getSrvVal()) ||
             ''
-          "
+            "
           v-model="selected"
           @select="multiTabSelectChange"
         ></multi-tab-option-select>
         <el-autocomplete
           ref="autocomplete"
-          :prefix-icon="
-            (dispLoaderV2 &&
+          :prefix-icon="(dispLoaderV2 &&
               dispLoaderV2.imgType === 'eicon' &&
               field.getSrvVal()) ||
             ''
-          "
+            "
           :trigger-on-focus="showAutocomplete"
           :fetch-suggestions="loadOptions"
           :value-key="field.info.dispCol"
@@ -383,8 +387,8 @@ export default {
       return service?.includes("add")
         ? "add"
         : service?.includes("update")
-        ? "update"
-        : "detail";
+          ? "update"
+          : "detail";
     },
     submit2Db() {
       if (
@@ -598,7 +602,7 @@ export default {
         this.formType === "add" &&
         this.field.getSrvVal() &&
         this.addedData?.[this.optionListV2?.refed_col] ===
-          this.field.getSrvVal()
+        this.field.getSrvVal()
       );
     },
   },
@@ -692,9 +696,8 @@ export default {
         this.selected =
           loader.showAsPair !== true
             ? this.options[0][fieldInfo.dispCol]
-            : `${this.options[0][fieldInfo.dispCol]}/${
-                this.options[0][fieldInfo.valueCol]
-              }`;
+            : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
+            }`;
         this.hasInit = true;
       } else if (this.field.model && this.finderSelected) {
         this.selected = this.finderSelected;
@@ -780,9 +783,8 @@ export default {
               item.labelFunc = (item) => {
                 if (item[fieldInfo.dispCol]) {
                   if (loader.showAsPair) {
-                    return `${item[fieldInfo.dispCol]}/${
-                      item[fieldInfo.valueCol]
-                    }`;
+                    return `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]
+                      }`;
                   } else {
                     return item[fieldInfo.dispCol];
                   }
@@ -1261,7 +1263,7 @@ export default {
           if (
             this.selected != this.field.getDispVal() &&
             this.selected !=
-              `${this.field.getDispVal()}/${this.field.getSrvVal()}`
+            `${this.field.getDispVal()}/${this.field.getSrvVal()}`
           ) {
             this.field.reset();
           }
@@ -1302,7 +1304,7 @@ export default {
 
       if (["fkjsons", "fkjson", "fks"].includes(fieldInfo.type)) {
         let json = null;
-        if (srvVal) {
+        if (srvVal && typeof srvVal === 'string' && fieldInfo.type !== 'fks') {
           try {
             json = JSON.parse(srvVal);
           } catch (error) {
@@ -1378,9 +1380,8 @@ export default {
               this.selected =
                 loader.showAsPair !== true
                   ? this.field.model[fieldInfo.dispCol]
-                  : `${this.field.model[fieldInfo.dispCol]}/${
-                      this.field.model[fieldInfo.valueCol]
-                    }`;
+                  : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
+                  }`;
             }
             // this.selected = (loader.showAsPair !== false ? `${this.field.model[ fieldInfo.dispCol ]}/${this.field.model[ fieldInfo.valueCol ]}` : this.field.model[ fieldInfo.dispCol ])
           }
@@ -1488,9 +1489,8 @@ export default {
           this.selected =
             loader.showAsPair !== false
               ? this.field.model[fieldInfo.dispCol]
-              : `${this.field.model[fieldInfo.dispCol]}/${
-                  this.field.model[fieldInfo.valueCol]
-                }`;
+              : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
+              }`;
         }
       }
       // this.getOptions(true);
@@ -1550,9 +1550,11 @@ export default {
   -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   cursor: pointer;
+
   .placeholder {
     color: #c8cbd2;
   }
+
   [class*="el-icon-"] {
     position: absolute;
     right: 10px;
@@ -1560,10 +1562,12 @@ export default {
     color: #c0c4cc;
     font-size: 14px;
   }
+
   .close-icon {
     display: none;
     right: 35px;
   }
+
   &:hover {
     .close-icon {
       display: inline-block;
