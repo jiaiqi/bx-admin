@@ -697,7 +697,11 @@ export default {
           this.$set(row, "checked", true);
           this.selected.push(row[this.valueCol]);
           if (rowChildren?.length) {
-            this.selected = this.selected.concat(rowChildren);
+            rowChildren.forEach((item) => {
+              if(!this.selected.includes(item)){
+                this.selected.push(item);
+              }
+            })
           }
         }
       } else {
