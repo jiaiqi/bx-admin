@@ -1988,7 +1988,7 @@ export default {
   .cell {
     padding: 8px 6px;
     display: grid!important;
-    grid-template-columns: repeat(auto-fit,minmax(70px,1fr));
+    grid-template-columns: repeat(auto-fill,minmax(70px,1fr));
     gap: 4px;
   }
 
