@@ -1,5 +1,8 @@
 <template>
-  <div v-show="evalVisible()" class="list-comp-wrap">
+  <div
+    v-show="evalVisible()"
+    class="list-comp-wrap"
+  >
     <div
       class="chart-box"
       v-if="
@@ -10,7 +13,10 @@
       "
     >
       <!-- 图表 -->
-      <vue-chart :config="cfgJson.chart_json" :data="gridDataRun"></vue-chart>
+      <vue-chart
+        :config="cfgJson.chart_json"
+        :data="gridDataRun"
+      ></vue-chart>
     </div>
     <el-tabs
       v-if="isDraft"
@@ -26,7 +32,10 @@
         <span slot="label"> {{ tabItem.label }}({{ tabItem.len }})</span>
       </el-tab-pane>
     </el-tabs>
-    <div v-if="searchForm" v-show="selectFormShow">
+    <div
+      v-if="searchForm"
+      v-show="selectFormShow"
+    >
       <simple-filter
         v-if="srv_cols"
         :srv_cols="srv_cols"
@@ -106,10 +115,11 @@
           v-if="moreConfig && moreConfig.hasOwnProperty('table_explain')"
           trigger="click"
         >
+          <div v-html="recoverFileAddress4richText(moreConfig.table_explain.desc)"></div>
           <div
-            v-html="recoverFileAddress4richText(moreConfig.table_explain.desc)"
-          ></div>
-          <div slot="reference" style="color: #525252; padding: 2px 10px">
+            slot="reference"
+            style="color: #525252; padding: 2px 10px"
+          >
             列表字段说明<i class="el-icon-question"></i>
           </div>
         </el-popover>
@@ -120,30 +130,26 @@
           @click="saveColumnWidth"
           type="primary"
           size="small"
-          >保存列宽
+        >保存列宽
         </el-button>
         <template v-for="(item, index) in sortedGridButtons">
           <el-button
             :key="index"
             :size="item._moreConfig.size"
-            :type="
-              selectFormShow && item.button_type === 'select'
-                ? 'success'
-                : item._moreConfig.type
-            "
+            :type="selectFormShow && item.button_type === 'select'
+              ? 'success'
+              : item._moreConfig.type
+              "
             :icon="item && (item.button_icon || item._moreConfig.icon)"
-            :round="
-              item._moreConfig.style !== '' &&
+            :round="item._moreConfig.style !== '' &&
               item._moreConfig.style === 'round'
-            "
-            :plain="
-              item._moreConfig.style !== '' &&
+              "
+            :plain="item._moreConfig.style !== '' &&
               item._moreConfig.style === 'plain'
-            "
-            :circle="
-              item._moreConfig.style !== '' &&
+              "
+            :circle="item._moreConfig.style !== '' &&
               item._moreConfig.style === 'circle'
-            "
+              "
             v-show="item.evalVisible()"
             :disabled="item.evalDisable()"
             v-if="
@@ -190,7 +196,10 @@
         v-else-if="listStyle === 'card' && cfgJson && cfgJson.card_json"
       >
         <template #footer="{ data }">
-          <div class="footer-btn" v-if="readOnly !== true">
+          <div
+            class="footer-btn"
+            v-if="readOnly !== true"
+          >
             <div
               class="footer-btn-item"
               v-for="(btn, index) in sortedRowButtons"
@@ -200,7 +209,7 @@
                 size="mini"
                 :type="['detail'].includes(btn.button_type) ? 'primary' : ''"
                 @click.stop="rowButtonClick(btn, data)"
-                >{{ btn.button_name }}
+              >{{ btn.button_name }}
               </el-button>
             </div>
           </div>
@@ -250,30 +259,27 @@
             :key="index"
             header-align="center"
             v-if="getGridHeaderDispExps(item, listMainFormDatas)"
-            :width="
-              item.width
-                ? item.width
-                : getListShowFileList(item)
+            :width="item.width
+              ? item.width
+              : getListShowFileList(item)
                 ? item.list_min_width
                   ? item.list_min_width
                   : 180
                 : ''
-            "
+              "
             :filter-method="item.filters ? filterHandler : null"
             :prop="item.column"
             :align="item.align"
             :fixed="item.rowFixed ? true : null"
-            :show-overflow-tooltip="
-              getListShowFileList(item) === true
-                ? false
-                : !listCellsTextDispWarp
-            "
+            :show-overflow-tooltip="getListShowFileList(item) === true
+              ? false
+              : !listCellsTextDispWarp
+              "
             :label="item.label"
-            :min-width="
-              getColumnMinWidth(item)
-                ? getColumnMinWidth(item)
-                : item.list_min_width + 'px'
-            "
+            :min-width="getColumnMinWidth(item)
+              ? getColumnMinWidth(item)
+              : item.list_min_width + 'px'
+              "
             :filters="item.filters"
             :column-key="item.column"
             :sortable="item.sortable && !isMem() ? 'custom' : false"
@@ -286,13 +292,9 @@
                   :data="scope.row"
                   :field="item"
                 ></file-list>
-                <template
-                  v-else-if="['fk', 'fks', 'fkjsons'].includes(item.col_type)"
-                >
+                <template v-else-if="['fk', 'fks', 'fkjsons'].includes(item.col_type)">
                   <div class="fk-tags">
-                    <template
-                      v-for="(tag, tIndex) in getFkJson(scope.row, item)"
-                    >
+                    <template v-for="(tag, tIndex) in getFkJson(scope.row, item)">
                       <el-tag
                         size="mini"
                         style="margin-right: 4px; margin-bottom: 2px"
@@ -304,12 +306,8 @@
                     </template>
                   </div>
                 </template>
-                <template
-                  v-else-if="['User', 'UserList'].includes(item.col_type)"
-                >
-                  <template
-                    v-for="(tag, tIndex) in getUserTags(item, scope.row)"
-                  >
+                <template v-else-if="['User', 'UserList'].includes(item.col_type)">
+                  <template v-for="(tag, tIndex) in getUserTags(item, scope.row)">
                     <a
                       v-if="item.linkUrlFunc"
                       v-show="scope.row[item.column]"
@@ -345,13 +343,11 @@
                 >
                 </el-image>
               </div>
-              <div
-                v-else-if="
-                  item.srvcol &&
-                  item.srvcol.subtype &&
-                  ['progress', 'rate'].includes(item.srvcol.subtype)
-                "
-              >
+              <div v-else-if="
+                item.srvcol &&
+                item.srvcol.subtype &&
+                ['progress', 'rate'].includes(item.srvcol.subtype)
+              ">
                 <el-rate
                   :value="scope.row[item.column]"
                   show-score
@@ -368,15 +364,13 @@
                   v-else-if="item.srvcol.subtype === 'progress'"
                 ></el-progress>
               </div>
-              <div
-                v-else-if="
-                  canInlineEdit &&
-                  onInlineEditing &&
-                  inlineEditCols &&
-                  item.column &&
-                  inlineEditCols[item.column]
-                "
-              >
+              <div v-else-if="
+                canInlineEdit &&
+                onInlineEditing &&
+                inlineEditCols &&
+                item.column &&
+                inlineEditCols[item.column]
+              ">
                 <inline-edit-list
                   :key="item.column"
                   :field="inlineEditCols[item.column]"
@@ -409,19 +403,16 @@
                   formatValue(scope.row, item) &&
                   ['Note', 'RichText'].includes(item.col_type)
                 "
-                v-html="
-                  recoverFileAddress4richText(formatValue(scope.row, item))
-                "
+                v-html="recoverFileAddress4richText(formatValue(scope.row, item))
+                  "
                 style="max-height: 10vh; overflow: hidden"
                 @dblclick="openHtml(formatValue(scope.row, item))"
               ></div>
               <!-- Enum | Dict 根据配置显示图标 -->
-              <div
-                v-else-if="
-                  (item.col_type === 'Enum' || item.col_type === 'Dict') &&
-                  item.show_option_icon !== false
-                "
-              >
+              <div v-else-if="
+                (item.col_type === 'Enum' || item.col_type === 'Dict') &&
+                item.show_option_icon !== false
+              ">
                 <div
                   v-for="(optionIcon, index) in item.show_option_icon"
                   :key="index"
@@ -434,13 +425,15 @@
                   />
                 </div>
               </div>
-              <div v-else-if="item.col_type === 'Image'" class="list-image">
+              <div
+                v-else-if="item.col_type === 'Image'"
+                class="list-image"
+              >
                 <img
                   v-if="scope.row[item.column]"
-                  :src="
-                    serviceApi(scope.row[item.column]).downloadFileNo +
+                  :src="serviceApi(scope.row[item.column]).downloadFileNo +
                     scope.row[item.column]
-                  "
+                    "
                 />
               </div>
 
@@ -460,11 +453,10 @@
                   :key="index"
                 >
                   <i
-                    v-show="
-                      getFileType(fileItem) === 'img' ||
+                    v-show="getFileType(fileItem) === 'img' ||
                       getFileType(fileItem) === 'pdf' ||
                       getFileType(fileItem) === 'ppt'
-                    "
+                      "
                     title="预览"
                     style="cursor: pointer"
                     class="el-icon-view"
@@ -474,24 +466,21 @@
                         index,
                         getListFileDatas(item, scope.row)
                       )
-                    "
+                      "
                   >
                   </i>
                   <el-link
                     @click="getDownloadFile(fileItem)"
                     v-if="getListFileDatas(item, scope.row).length > 0"
                   >
-                    <i
-                      :class="
-                        getFileType(fileItem) === 'img'
-                          ? 'el-icon-picture-outline'
-                          : getFileType(fileItem) === 'doc'
-                          ? 'el-icon-tickets'
-                          : getFileType(fileItem) === 'media'
+                    <i :class="getFileType(fileItem) === 'img'
+                      ? 'el-icon-picture-outline'
+                      : getFileType(fileItem) === 'doc'
+                        ? 'el-icon-tickets'
+                        : getFileType(fileItem) === 'media'
                           ? 'el-icon-picture-outline'
                           : 'el-icon-folder'
-                      "
-                    ></i>
+                      "></i>
                     {{ getStrIntercept(fileItem.src_name, 0) }}
                   </el-link>
                   <!-- <span></span> -->
@@ -499,7 +488,10 @@
               </div>
 
               <template v-else>
-                <div v-if="header_view_model == 'group'" class="group-table">
+                <div
+                  v-if="header_view_model == 'group'"
+                  class="group-table"
+                >
                   <pre>{{ formatValue(scope.row, item) }}</pre>
                 </div>
                 <template v-else>
@@ -525,7 +517,7 @@
                       :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
                       v-for="(tag, tIndex) in getFkJson(scope.row, item)"
                       :key="tIndex"
-                      >{{ tag || "" }}
+                    >{{ tag || "" }}
                     </el-tag>
                   </div>
 
@@ -544,8 +536,7 @@
                       isDetailLink(item.column, scope.row, scope.$index)
                     "
                     @click="toDetail(item.column, scope.row, scope.$index)"
-                    >{{ formatValue(scope.row, item) }}</a
-                  >
+                  >{{ formatValue(scope.row, item) }}</a>
                   <span
                     v-else
                     :class="{
@@ -555,8 +546,7 @@
                         item.backgroundMap['_default'],
                     }"
                     :style="setTdStyle(item, scope.row)"
-                    >{{ formatValue(scope.row, item) }}</span
-                  >
+                  >{{ formatValue(scope.row, item) }}</span>
                 </template>
               </template>
               <div
@@ -568,20 +558,18 @@
                 <el-button
                   type="text"
                   style="padding: 0; margin: 0"
-                  :title="
-                    getButtonName(
-                      showAddChildBtn(scope.row, scope.$index),
-                      scope.row
-                    )
-                  "
+                  :title="getButtonName(
+                    showAddChildBtn(scope.row, scope.$index),
+                    scope.row
+                  )
+                    "
                   @click.stop.native="
                     rowButtonClick(
                       showAddChildBtn(scope.row, scope.$index),
                       scope.row
                     )
-                  "
-                  ><i class="el-icon-plus"></i
-                ></el-button>
+                    "
+                ><i class="el-icon-plus"></i></el-button>
               </div>
             </template>
           </el-table-column>
@@ -589,8 +577,9 @@
           <el-table-column
             label="操作"
             header-align="left"
-            width="240"
+            width="280"
             fixed="right"
+            class-name="handler-button-group"
             v-if="
               !readOnly &&
               listType != 'selectlist' &&
@@ -599,7 +588,10 @@
             "
             style="box-sizing: border-box"
           >
-            <template slot-scope="scope" v-if="getColumnsShow(scope.row)">
+            <template
+              slot-scope="scope"
+              v-if="getColumnsShow(scope.row)"
+            >
               <!-- <el-button v-for="(button, index) in sortedRowButtons"
                             :key="index"
                             @click="rowButtonClick(button,scope.row)"
@@ -614,25 +606,20 @@
                             v-show="isRowButtonVisible(button, scope.row)">
                     {{ getButtonName(button, scope.row) }}
                   </el-button> -->
-              <div style="margin-bottom: -5px">
-                <div
-                  v-for="(button, index) in sortedRowButtons"
-                  :key="index"
-                  style="
-                    margin-right: 5px;
-                    margin-bottom: 5px;
+              <template
+                v-for="(button, index) in sortedRowButtons"
+                style="
                     display: inline-block;
                   "
-                  v-if="
-                    getDispExps(button, scope.row, scope.$index) &&
-                    button.permission
+                v-if="
+                  getDispExps(button, scope.row, scope.$index) &&
+                  button.permission
+                "
+                v-show="button.button_type === '_btn_group' ||
+                  isRowButtonVisible(button, scope.row, scope.$index)
                   "
-                  v-show="
-                    button.button_type === '_btn_group' ||
-                    isRowButtonVisible(button, scope.row, scope.$index)
-                  "
-                >
-                  <!-- <el-button
+              >
+                <!-- <el-button
                     type="text"
                     :title="getButtonName(button, scope.row)"
                     @click.stop.native="rowButtonClick(button, scope.row)"
@@ -644,109 +631,84 @@
                     "
                     ><i class="el-icon-plus"></i
                   ></el-button> -->
+                <el-button
+                  @click="rowButtonClick(button, scope.row)"
+                  :size="button._moreConfig.size"
+                  :type="button._moreConfig.type"
+                  :icon="button && (button.button_icon || button._moreConfig.icon)
+                    "
+                  :round="button._moreConfig.style !== '' &&
+                    button._moreConfig.style === 'round'
+                    "
+                  :plain="button._moreConfig.style !== '' &&
+                    button._moreConfig.style === 'plain'
+                    "
+                  :circle="button._moreConfig.style !== '' &&
+                    button._moreConfig.style === 'circle'
+                    "
+                  :disabled="button.evalDisable()"
+                  v-if="
+                    button.button_type !== 'addchild' &&
+                    button.button_type !== '_btn_group' &&
+                    getButtonOptSrv(button, scope.row, 'isShow')
+                  "
+                >
+                  {{ getButtonName(button, scope.row) }}
+                </el-button>
+                <el-dropdown v-else-if="
+                  button.button_type === '_btn_group' &&
+                  button.buttons.length > 0 &&
+                  getButtonDispExps(button.buttons, scope.row, scope.$index)
+                ">
                   <el-button
-                    @click="rowButtonClick(button, scope.row)"
-                    :size="button._moreConfig.size"
-                    :type="button._moreConfig.type"
-                    :icon="
-                      button && (button.button_icon || button._moreConfig.icon)
-                    "
-                    :round="
-                      button._moreConfig.style !== '' &&
-                      button._moreConfig.style === 'round'
-                    "
-                    :plain="
-                      button._moreConfig.style !== '' &&
-                      button._moreConfig.style === 'plain'
-                    "
-                    :circle="
-                      button._moreConfig.style !== '' &&
-                      button._moreConfig.style === 'circle'
-                    "
-                    :disabled="button.evalDisable()"
-                    v-if="
-                      button.button_type !== 'addchild' &&
-                      button.button_type !== '_btn_group' &&
-                      getButtonOptSrv(button, scope.row, 'isShow')
-                    "
+                    :type="button.type"
+                    :icon="'el-icon-s-operation'"
+                    :size="button.size"
+                    plain
                   >
-                    {{ getButtonName(button, scope.row) }}
+                    {{ button.button_name }}
+                    <i class="el-icon-arrow-down el-icon--right"></i>
                   </el-button>
-                  <el-dropdown
-                    v-else-if="
-                      button.button_type === '_btn_group' &&
-                      button.buttons.length > 0 &&
-                      getButtonDispExps(button.buttons, scope.row, scope.$index)
-                    "
-                  >
-                    <el-button
-                      :type="button.type"
-                      :icon="'el-icon-s-operation'"
-                      :size="button.size"
-                      plain
+
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item
+                      v-for="(subBtn, subIndex) in button.buttons"
+                      :key="subIndex"
                     >
-                      {{ button.button_name }}
-                      <i class="el-icon-arrow-down el-icon--right"></i>
-                    </el-button>
-
-                    <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item
-                        v-for="(subBtn, subIndex) in button.buttons"
-                        :key="subIndex"
+                      <el-button
+                        @click="rowButtonClick(subBtn, scope.row)"
+                        :size="subBtn._moreConfig.size"
+                        :type="subBtn._moreConfig.type"
+                        :icon="subBtn &&
+                          (subBtn.button_icon || subBtn._moreConfig.icon)
+                          "
+                        :round="subBtn._moreConfig.style !== '' &&
+                          subBtn._moreConfig.style === 'round'
+                          "
+                        :plain="subBtn._moreConfig.style !== '' &&
+                          subBtn._moreConfig.style === 'plain'
+                          "
+                        :circle="subBtn._moreConfig.style !== '' &&
+                          subBtn._moreConfig.style === 'circle'
+                          "
+                        :disabled="subBtn.evalDisable()"
+                        v-show="subBtn.button_type !== 'addchild' &&
+                          isRowButtonVisible(
+                            subBtn,
+                            scope.row,
+                            scope.$index
+                          ) &&
+                          getDispExps(subBtn, scope.row) &&
+                          subBtn.permission &&
+                          getButtonOptSrv(subBtn, scope.row, 'isShow')
+                          "
                       >
-                        <el-button
-                          @click="rowButtonClick(subBtn, scope.row)"
-                          :size="subBtn._moreConfig.size"
-                          :type="subBtn._moreConfig.type"
-                          :icon="
-                            subBtn &&
-                            (subBtn.button_icon || subBtn._moreConfig.icon)
-                          "
-                          :round="
-                            subBtn._moreConfig.style !== '' &&
-                            subBtn._moreConfig.style === 'round'
-                          "
-                          :plain="
-                            subBtn._moreConfig.style !== '' &&
-                            subBtn._moreConfig.style === 'plain'
-                          "
-                          :circle="
-                            subBtn._moreConfig.style !== '' &&
-                            subBtn._moreConfig.style === 'circle'
-                          "
-                          :disabled="subBtn.evalDisable()"
-                          v-show="
-                            subBtn.button_type !== 'addchild' &&
-                            isRowButtonVisible(
-                              subBtn,
-                              scope.row,
-                              scope.$index
-                            ) &&
-                            getDispExps(subBtn, scope.row) &&
-                            subBtn.permission &&
-                            getButtonOptSrv(subBtn, scope.row, 'isShow')
-                          "
-                        >
-                          {{ subBtn.button_name }}
-                        </el-button>
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
-                  </el-dropdown>
-                </div>
-              </div>
-
-              <!-- <el-badge  class="table-row-badge" 
-                      v-if="isMem() && isDirtyRow(scope.row)"
-                      :value="getDirtyRowTagText(scope.row)"
-                      :type="getDirtyRowTagType(scope.row)"> 
-                      -->
-              <!-- {{getDirtyRowTagText(scope.row) === '添加' ? 'new' : getDirtyRowTagText(scope.row)}} -->
-              <!-- <el-tag v-if="isMem() && isDirtyRow(scope.row)"
-                          :type="getDirtyRowTagType(scope.row)">
-                    {{getDirtyRowTagText(scope.row) === '添加' ? 'new' : getDirtyRowTagText(scope.row)}}
-                  </el-tag> -->
-
-              <!-- </el-badge> -->
+                        {{ subBtn.button_name }}
+                      </el-button>
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </template>
             </template>
           </el-table-column>
         </el-table>
@@ -868,9 +830,8 @@
         :defaultValues="activeData"
         :parentMainFormDatas="listMainFormDatas"
         duplicateType="duplicate"
-        :duplicateData="
-          clickedRow && clickedRow.duplicate ? clickedRow.duplicate : null
-        "
+        :duplicateData="clickedRow && clickedRow.duplicate ? clickedRow.duplicate : null
+          "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
@@ -901,11 +862,10 @@
         :pageIsDraft="activeTabName"
         :defaultValues="activeData"
         duplicateType="duplicatedeep"
-        :duplicateData="
-          clickedRow && clickedRow.duplicatedeep
-            ? clickedRow.duplicatedeep
-            : null
-        "
+        :duplicateData="clickedRow && clickedRow.duplicatedeep
+          ? clickedRow.duplicatedeep
+          : null
+          "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
@@ -938,9 +898,8 @@
         :parentPageType="listType"
         :haveDraft="isDraft"
         :parentMainFormDatas="listMainFormDatas"
-        :override-data="
-          clickedRow.update._dirtyFlags ? clickedRow.update : null
-        "
+        :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null
+          "
         @action-complete="onUpdateFormActionComplete($event)"
         @form-loaded="onUpdateFormLoaded($refs['update-form'])"
         @submitted2mem="onUpdate2MemSubmitted"
@@ -1045,7 +1004,7 @@
         @action-success="actionSuccess()"
         :approvaList="approvaList"
         :approvalOptions="approvalOptions"
-        >测试
+      >测试
       </batchApprove>
     </el-dialog>
 
@@ -1085,18 +1044,24 @@
     <el-dialog
       class="customDialogClass"
       custom-class="preview-dialog"
-      :title="
-        currentType === 'pdf'
-          ? '第' + currentPage + '页/共' + pageCount + '页'
-          : '预览'
-      "
+      :title="currentType === 'pdf'
+        ? '第' + currentPage + '页/共' + pageCount + '页'
+        : '预览'
+        "
       :visible.sync="centerDialogVisible"
       width="50%"
       lock-scroll
       center
     >
-      <el-row type="flex" align="middle" v-if="currentType === 'pdf'">
-        <el-col :span="2" class="grid-content">
+      <el-row
+        type="flex"
+        align="middle"
+        v-if="currentType === 'pdf'"
+      >
+        <el-col
+          :span="2"
+          class="grid-content"
+        >
           <el-button
             icon="el-icon-arrow-left"
             circle
@@ -1104,14 +1069,15 @@
             @click="changePdfPage('up')"
           ></el-button>
         </el-col>
-        <el-col :span="20" style="">
-          <div
-            style="
+        <el-col
+          :span="20"
+          style=""
+        >
+          <div style="
               text-align: right;
               display: flex;
               justify-content: space-between;
-            "
-          >
+            ">
             <el-button
               icon="el-icon-minus"
               circle
@@ -1126,14 +1092,12 @@
               @click="scaleD"
             ></el-button>
           </div>
-          <div
-            style="
+          <div style="
               text-align: center;
               overflow: auto;
               border: 1px solid #eee;
               height: 735px;
-            "
-          >
+            ">
             <pdf
               ref="wrapper"
               :src="currentUrl"
@@ -1143,7 +1107,11 @@
             </pdf>
           </div>
         </el-col>
-        <el-col :span="2" class="grid-content" style="text-align: right">
+        <el-col
+          :span="2"
+          class="grid-content"
+          style="text-align: right"
+        >
           <el-button
             icon="el-icon-arrow-right"
             circle
@@ -1514,33 +1482,30 @@ export default {
         if (!row[column.column] && column.colorMap?._default) {
           sty = `color:${column.colorMap._default}`;
         } else {
-          sty = `color:${
-            column.colorMap[row[column.column]] ||
+          sty = `color:${column.colorMap[row[column.column]] ||
             column.colorMap?._default ||
             ""
-          }`;
+            }`;
         }
       }
       if (column?.backgroundMap) {
         if (!row[column.column] && column.backgroundMap?._default) {
           sty += `;background-color:${column.backgroundMap._default}`;
         } else {
-          sty += `;background-color:${
-            column.backgroundMap[row[column.column]] ||
+          sty += `;background-color:${column.backgroundMap[row[column.column]] ||
             column.backgroundMap?._default ||
             ""
-          }`;
+            }`;
         }
       }
       if (column?.styleMap) {
         if (!row[column.column] && column.styleMap?._default) {
           sty += `;${column.styleMap._default}`;
         } else {
-          sty += `;${
-            column.styleMap[row[column.column]] ||
+          sty += `;${column.styleMap[row[column.column]] ||
             column.styleMap?._default ||
             ""
-          }`;
+            }`;
         }
       }
       return sty;
@@ -1701,9 +1666,8 @@ export default {
         file.url?.indexOf("https") !== 0
       ) {
         // file.url = file.url.replace("http://",'https://')
-        file.url = `${
-          window.backendIpAddr
-        }/file/forward?targetUrl=${encodeURIComponent(file.url)}`;
+        file.url = `${window.backendIpAddr
+          }/file/forward?targetUrl=${encodeURIComponent(file.url)}`;
       }
       if (fileType === "ppt" && file.url) {
         const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
@@ -1802,10 +1766,10 @@ export default {
 </style>
 <style lang="scss">
 #app {
-  > div {
-    > .el-row {
-      > .isFixed.el-table {
-        > .el-table__header-wrapper {
+  >div {
+    >.el-row {
+      >.isFixed.el-table {
+        >.el-table__header-wrapper {
           position: fixed;
           top: 0;
           z-index: 3;
@@ -1819,8 +1783,8 @@ export default {
           // overflow: hidden;
           right: 0.5rem;
 
-          > table {
-            > thead {
+          >table {
+            >thead {
               tr {
                 background-color: transparent;
 
@@ -1838,8 +1802,7 @@ export default {
               }
             }
 
-            > tbody {
-            }
+            >tbody {}
           }
         }
       }
@@ -1851,20 +1814,22 @@ export default {
     line-height: 23px;
   }
 
-  .el-table__expand-icon > .el-icon {
+  .el-table__expand-icon>.el-icon {
     position: inherit;
     margin-left: 0;
     margin-top: 0;
     left: 0;
     top: 0;
   }
-  .cell.el-tooltip {
-  }
+
+  .cell.el-tooltip {}
+
   .el-table td.is-right,
   .el-table th.is-right {
     .cell.el-tooltip {
       justify-content: flex-end;
       width: 100% !important;
+
       .el-progress-bar {
         min-width: 50px;
       }
@@ -1906,7 +1871,7 @@ export default {
   }
 }
 
-.el-table .cell > div.list-image {
+.el-table .cell>div.list-image {
   text-overflow: -o-ellipsis-lastline;
   /* overflow: hidden; */
   /* text-overflow: ellipsis; */
@@ -1956,6 +1921,7 @@ export default {
   color: #fff;
   border-radius: 2px;
 }
+
 .fk-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1963,10 +1929,13 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   cursor: all-scroll;
+
   &::-webkit-scrollbar {
     width: 0;
   }
+
   &:hover {
+
     /* 整个滚动条 */
     &::-webkit-scrollbar {
       width: 4px;
@@ -1988,20 +1957,48 @@ export default {
       background: #555;
     }
   }
+
   .el-tag.el-tag--warning {
     background-color: #fdf6ec;
     border-color: #faecd8;
     color: #e6a23c;
   }
+
   .el-tag.el-tag--danger {
     background-color: #fef0f0;
     border-color: #fde2e2;
     color: #f56c6c;
   }
+
   .el-tag.el-tag--success {
     background-color: #f0f9eb;
     border-color: #e1f3d8;
     color: #67c23a;
+  }
+}
+
+.el-table__cell.handler-button-group {
+
+  .el-button+.el-button,
+  .el-checkbox.is-bordered+.el-checkbox.is-bordered,
+  .el-button+.el-dropdown {
+    margin-left: 0;
+  }
+
+  .cell {
+    padding: 8px 6px;
+    display: grid!important;
+    grid-template-columns: repeat(auto-fill,minmax(70px,1fr));
+    gap: 4px;
+  }
+
+  .el-button--mini,
+  .el-button--mini.is-round {
+    padding: 8px;
+  }
+
+  .el-button [class*=el-icon-]+span {
+    margin-left: 0;
   }
 }
 </style>

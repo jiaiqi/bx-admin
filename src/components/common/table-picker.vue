@@ -51,15 +51,17 @@
           </el-select>
         </div>
       </template>
-      <div class="picker-view" :class="{ 'is-selected-all': isSelectedAll }">
+      <div
+        class="picker-view"
+        :class="{ 'is-selected-all': isSelectedAll }"
+      >
         <div class="top-bar">
           <el-checkbox
             v-if="allSelect"
             v-model="isSelectedAll"
             @change="changeSelectedAll"
             class="mr-2"
-            >全选</el-checkbox
-          >
+          >全选</el-checkbox>
           <el-input
             placeholder="输入查询条件"
             suffix-icon="el-icon-search"
@@ -74,8 +76,7 @@
             icon="el-icon-search"
             @click="onSearch"
             :disabled="isSelectedAll === true"
-            >搜索</el-button
-          >
+          >搜索</el-button>
         </div>
         <div class="table-container">
           <el-table
@@ -87,24 +88,28 @@
             :load="loadChild"
             :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
             :highlight-current-row="!isMulti"
-            @row-click="clickRow"
+            @row-click="clickRow($event)"
             @selection-change="handleSelectionChange"
+            @expand-change="handleExpandChange"
           >
             <!-- <el-table-column type="selection" width="55" v-if="isMulti">
           </el-table-column> -->
-            <el-table-column width="55" v-if="isMulti">
+            <el-table-column
+              width="120"
+              v-if="isMulti"
+            >
               <template #header>
                 <el-checkbox
-                  :value="
-                    gridData.every((item) => selected.includes(item[valueCol]))
-                  "
+                  :value="gridData.every((item) => selected.includes(item[valueCol]))
+                    "
                   @change="onCheckedAll"
                 ></el-checkbox>
               </template>
               <template slot-scope="scope">
                 <el-checkbox
                   :value="selected.includes(scope.row[valueCol])"
-                  @change="changeSelected(scope.$index, scope.row)"
+                  @click.native.stop=""
+                  @change="changeSelected(scope.$index, scope.row, scope)"
                 ></el-checkbox>
               </template>
             </el-table-column>
@@ -113,7 +118,7 @@
               :label="item.label"
               v-for="item in setGridHeader"
               :key="item.column"
-              v-if="item.srvcol && item.srvcol.in_list == 1"
+              v-if="item.srvcol && (item.srvcol.in_list === 1 || item.srvcol.in_detail === 1)"
               :prop="item.column"
             ></el-table-column>
           </el-table>
@@ -150,6 +155,7 @@
 // import ListMixin from "../mixin/list-mixin"; // 列表js
 import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
 import cloneDeep from "lodash/cloneDeep";
+import isEqual from "lodash/isEqual";
 import uniqBy from "lodash/uniqBy";
 export default {
   props: {
@@ -335,8 +341,11 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
+        if (isEqual(newValue, oldValue)) {
+          return
+        }
         console.log("optionListV2变化了:", newValue, oldValue);
-        if(!this.field.model&&this.selected?.length){
+        if (!this.field.model && this.selected?.length) {
           this.selected = this.isMulti ? [] : "";
           this.isSelectedAll = false
           this.setFieldVal()
@@ -355,7 +364,7 @@ export default {
           this.selected.includes(item[this.valueCol])
         );
       }
-      if(this.isSelectedAll&&this.allSelect){
+      if (this.isSelectedAll && this.allSelect) {
         return [{
           checked: true,
           label: "全部",
@@ -472,7 +481,7 @@ export default {
               this.gridData = this.initOptions;
               this.allData = this.initOptions;
             }
-          } catch (error) {}
+          } catch (error) { }
         }
       }
       if (this.allSelect && this.finderSelected === this.allSelect) {
@@ -554,7 +563,7 @@ export default {
         //   ]);
         // }
         this.selected = this.isMulti ? [this.allSelect] : this.allSelect;
-        if(!this.allData.find((item) => item.value === this.allSelect)){
+        if (!this.allData.find((item) => item.value === this.allSelect)) {
           this.allData.push({
             checked: true,
             label: "全部",
@@ -594,6 +603,10 @@ export default {
           return item;
         });
       }
+    },
+    handleExpandChange(row, expanded) {
+      console.log("handleExpandChange:", row, expanded);
+      this.$set(row, '_expanded', expanded)
     },
     handleSelectionChange(val) {
       console.log("handleSelectionChange:", val);
@@ -654,15 +667,17 @@ export default {
       }
       this.setFieldVal();
     },
-    changeSelected(index, row) {
-      this.clickRow(row);
+    changeSelected(index, row, scope) {
+      console.log('changeSelected:', scope);
+
+      this.clickRow(row, scope);
     },
-    clickRow(row) {
+    clickRow(row, scope) {
       if (this.isMulti) {
         // 多选模式
         let parent_no_col = this.listV2?.parent_no_col;
         let rowChildren = [];
-        if (parent_no_col) {
+        if (parent_no_col && scope?.row?._expanded !== false) {
           rowChildren = this.allData
             .filter((item) => item[parent_no_col] === row[this.valueCol])
             .map((item) => item[this.valueCol]);
@@ -682,7 +697,11 @@ export default {
           this.$set(row, "checked", true);
           this.selected.push(row[this.valueCol]);
           if (rowChildren?.length) {
-            this.selected = this.selected.concat(rowChildren);
+            rowChildren.forEach((item) => {
+              if(!this.selected.includes(item)){
+                this.selected.push(item);
+              }
+            })
           }
         }
       } else {
@@ -720,8 +739,8 @@ export default {
           header.srvcol = serviceCol;
           let more_config =
             serviceCol["more_config"] !== null &&
-            serviceCol["more_config"] !== undefined &&
-            serviceCol["more_config"] !== ""
+              serviceCol["more_config"] !== undefined &&
+              serviceCol["more_config"] !== ""
               ? JSON.parse(serviceCol["more_config"])
               : null;
           let colType = serviceCol["col_type"];
@@ -734,15 +753,15 @@ export default {
           header["list_min_width"] = serviceCol["list_min_width"];
           header["show_option_icon"] =
             serviceCol["more_config"] &&
-            JSON.parse(serviceCol["more_config"]).option_icon &&
-            JSON.parse(serviceCol["more_config"]).option_icon !== null
+              JSON.parse(serviceCol["more_config"]).option_icon &&
+              JSON.parse(serviceCol["more_config"]).option_icon !== null
               ? JSON.parse(serviceCol["more_config"]).option_icon
               : false;
           header["align"] = this.getColAlign(colType);
           header["format"] =
             serviceCol["more_config"] &&
-            JSON.parse(serviceCol["more_config"]).format &&
-            JSON.parse(serviceCol["more_config"]).format !== null
+              JSON.parse(serviceCol["more_config"]).format &&
+              JSON.parse(serviceCol["more_config"]).format !== null
               ? JSON.parse(serviceCol["more_config"]).format
               : null;
           header["more_config"] =
@@ -797,7 +816,7 @@ export default {
                 item.value = item[this.valueCol];
                 return item;
               });
-            } catch (error) {}
+            } catch (error) { }
           }
         } else if (this.finderSelected) {
           this.gridData = JSON.parse(this.finderSelected).map((item) => {
@@ -973,7 +992,7 @@ export default {
               if (!obj.value && this.formModel && this.formModel[key]) {
                 obj.value = this.formModel[key];
               }
-            } catch (error) {}
+            } catch (error) { }
           }
           queryJson.condition.push(obj);
         }
@@ -1132,11 +1151,13 @@ export default {
 .popper-class {
   display: none;
 }
+
 .table-picker-wrapper {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
 }
+
 .selected-all {
   -webkit-appearance: none;
   background-color: #fff;
@@ -1152,6 +1173,7 @@ export default {
   padding: 0 15px;
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   width: 100%;
+
   &.inner {
     position: absolute;
     left: 0;
@@ -1164,6 +1186,7 @@ export default {
 .is-selected-all {
   .table-container {
     position: relative;
+
     &::after {
       position: absolute;
       cursor: not-allowed;
@@ -1181,6 +1204,7 @@ export default {
     }
   }
 }
+
 .bottom-bar,
 .top-bar {
   display: flex;
@@ -1202,7 +1226,7 @@ export default {
   padding: 0 4px !important;
 }
 
-.el-table th > .cell {
+.el-table th>.cell {
   padding: 8px;
 }
 
