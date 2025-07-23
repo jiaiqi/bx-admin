@@ -477,34 +477,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
         };
         if (type === "ring") {
-
-
-          series = {
-            name: "",
-            type: "pie",
-            clockWise: false,
-            radius: ["50%", "55%"],
-            hoverAnimation: false,
-            itemStyle: {
-              normal: {
-                label: {
-                  show: true,
-                  position: "outside",
-                  // color: "#ddd",
-                  formatter: `{b}\r\n {c}${chartJson?.y1_unit || ""}`,
-
-                  rich: rich,
-                },
-
-                labelLine: {
-                  length: 10,
-                  length2: 20,
-                  show: true,
-                },
-              },
-            },
-            data: [],
-          };
+          series.radius = ["45%", "60%"]
         }
         series.itemStyle.normal.label.show = showLabel;
         for (let data of cellData) {
