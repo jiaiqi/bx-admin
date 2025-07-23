@@ -27,7 +27,7 @@ import { $select } from "../../../common/http.js";
 import {
   useBuildOption,
   setDefaultChartOption,
-} from "../use-functions/buildOption";
+} from "../use-functions/buildOption.js";
 import { useUtils } from "@/common/vueApi.js";
 import cloneDeep from "lodash/cloneDeep";
 import { formatStyleData } from "@/pages/datav/common";
@@ -246,7 +246,7 @@ onMounted(() => {
     chartConfig.value?.more_option?.includes("使用模拟数据") &&
     !pageItem?.srv_req_json &&
     !cellData.value.length &&
-    !chartType.value === "liquidFill"
+    chartType.value !== "liquidFill"
   ) {
     option.value = useBuildOption(
       chartType.value,

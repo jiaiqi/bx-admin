@@ -49,7 +49,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     sort_axis: "某列数据值",
     sort_axis_col: "sort1",
   };
-
+  
   if (chartJson?.legend_color_seq) {
     colors = chartJson?.legend_color_seq.split(",");
   }
@@ -158,7 +158,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     echarts
   );
   ecOptions = { ...defaultOptions, ...ecOptions };
-
+  
   if (
     chartJson?.more_option &&
     chartJson.more_option.indexOf("副坐标轴") > -1
@@ -534,7 +534,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             return cur.value + prev;
           }, 0),
           left: "center",
-          top: "30%",
+          top: "center",
           padding: [24, 0],
           subtext: title,
           subtextStyle: {
