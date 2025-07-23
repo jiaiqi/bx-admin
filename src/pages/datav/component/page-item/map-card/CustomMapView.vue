@@ -1,8 +1,7 @@
 <template>
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
-  <zoom-drag-container
-    class="map-zoom-container"
-    :show-tips="true"
+  <div
+    class="map-view-container"
   >
     <!-- 建筑物视图的树形数据 -->
     <div
@@ -122,67 +121,72 @@
     </div>
 
     <!-- 自定义底图-地图视图区域 -->
-    <div
+    <zoom-drag-container
       class="map-view"
-      :class="{
-        'building-view': isBuildingView,
-        'custom-map': !isBuildingView,
-      }"
-      :style="{
-        backgroundImage: `url(${baseImage})`,
-        backgroundSize: '100% 100%',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }"
+      :show-tips="true"
     >
-      <!-- 建筑物视图内容 -->
-      <template v-if="isBuildingView">
-        <!-- building-view 的标记点内容可以在这里添加 -->
-      </template>
+      <div
+        class="map-view"
+        :class="{
+          'building-view': isBuildingView,
+          'custom-map': !isBuildingView,
+        }"
+        :style="{
+          backgroundImage: `url(${baseImage})`,
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }"
+      >
+        <!-- 建筑物视图内容 -->
+        <template v-if="isBuildingView">
+          <!-- building-view 的标记点内容可以在这里添加 -->
+        </template>
 
-      <!-- 普通视图的标记点内容 -->
-      <template v-else>
-        <!-- 标签类型的标记点 -->
-        <template v-if="mapJson && mapJson.map_type === '标签' && markerList.length">
-          <div
-            class="map-marker"
-            :class="{ 'is-active': isActive(marker) }"
-            :style="[
-              {
-                ...setLabelStyle,
-                ...(isActive(marker) ? setLabelActiveStyle : {}),
-              },
-              getItemPosition(marker),
-            ]"
-            v-for="marker in markerList"
-            :key="marker.id"
-            @click="clickMarker(marker)"
-          >
-            <div class="map-marker-content">
-              {{ marker[mapJson.col_label] || "" }}
+        <!-- 普通视图的标记点内容 -->
+        <template v-else>
+          <!-- 标签类型的标记点 -->
+          <template v-if="mapJson && mapJson.map_type === '标签' && markerList.length">
+            <div
+              class="map-marker"
+              :class="{ 'is-active': isActive(marker) }"
+              :style="[
+                {
+                  ...setLabelStyle,
+                  ...(isActive(marker) ? setLabelActiveStyle : {}),
+                },
+                getItemPosition(marker),
+              ]"
+              v-for="marker in markerList"
+              :key="marker.id"
+              @click="clickMarker(marker)"
+            >
+              <div class="map-marker-content">
+                {{ marker[mapJson.col_label] || "" }}
+              </div>
             </div>
-          </div>
-        </template>
+          </template>
 
-        <!-- 图标类型的标记点 -->
-        <template v-else-if="markerList.length">
-          <div
-            class="map-marker"
-            :style="getItemPosition(item)"
-            @click.stop="tapMarker(item, $event)"
-            :class="{ 'cursor-pointer': !!cardUnitJson }"
-            v-for="item in markerList"
-            :key="item.id"
-          >
-            <img
-              :src="getItemIcon(item)"
-              class="marker-icon"
-              v-if="getItemIcon(item)"
-            />
-          </div>
+          <!-- 图标类型的标记点 -->
+          <template v-else-if="markerList.length">
+            <div
+              class="map-marker"
+              :style="getItemPosition(item)"
+              @click.stop="tapMarker(item, $event)"
+              :class="{ 'cursor-pointer': !!cardUnitJson }"
+              v-for="item in markerList"
+              :key="item.id"
+            >
+              <img
+                :src="getItemIcon(item)"
+                class="marker-icon"
+                v-if="getItemIcon(item)"
+              />
+            </div>
+          </template>
         </template>
-      </template>
-    </div>
+      </div>
+    </zoom-drag-container>
 
     <!-- 弹窗内容 -->
     <Teleport
@@ -215,7 +219,7 @@
         </transition>
       </div>
     </Teleport>
-  </zoom-drag-container>
+  </div>
 </template>
 
 <script setup>
@@ -981,6 +985,16 @@ onUnmounted(() => {
   lang="scss"
   scoped
 >
+.map-view-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  outline: none;
+  user-select: none;
+  scrollbar-width: none;
+}
+
 .map-view {
   width: 100%;
   height: 100%;
