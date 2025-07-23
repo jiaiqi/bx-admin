@@ -236,6 +236,14 @@
       :query-options="queryOptions"
     >
     </info-details>
+    <chat-entrance
+        v-else-if="pageItemData.com_type === '咨询入口'"
+        :pageItem="pageItemData"
+        :page-params-model="pageParamsModel"
+        :query-options="queryOptions"
+        @setOpenChat="setOpenChat"
+    >
+    </chat-entrance>
     <div
       v-else-if="pageItemData && pageItemData.com_label"
       :class="{ mobile: screenType === 'mobile' }"
@@ -262,6 +270,7 @@
         {{ pageItemData.more_label || "更多" }}
       </span>
     </div>
+    <ChatBox :visible.sync="isOpenChat" :chatItem="chatItem"/>
   </div>
 </template>
 
@@ -288,6 +297,8 @@ import InfoDetails from "@/pages/datav/component/page-item/info-details.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import CanvasPage from "@/components/common/canvas-line/canvasPage.vue";
+import ChatEntrance from "@/pages/datav/component/page-item/chat/chat-entrance.vue";
+import ChatBox from "@/pages/datav/component/page-item/chat/chat-box.vue";
 import { Icon } from "@iconify/vue2";
 import {
   setEnterAnimationClass,
@@ -297,6 +308,7 @@ import {
 export default {
   mixins: [pageItemParams],
   components: {
+    ChatBox,
     CanvasPage,
     videoCard,
     currentInfo,
@@ -317,6 +329,7 @@ export default {
     Icon,
     CardCellPart,
     InfoDetails,
+    ChatEntrance
   },
   props: {
     pageItem: {
@@ -332,26 +345,31 @@ export default {
     currentId: [String, Number],
   },
   computed: {
+
     isMapList() {
       return (
         this.pageItemData.com_type === "list" &&
         this.pageItemData.list_json?.list_options?.includes("关联地图筛选")
       );
     },
+
     isActive() {
       return (
         this.inEdit && this.currentId && this.currentId === this.pageItem.id
       );
     },
+
     followThemeColor() {
       return this.pageItemData.com_option?.includes("配色不跟随主题") !== true;
     },
+
     showMoreBtn() {
       return (
         this.pageItem?.com_option?.includes("更多") &&
         this.pageItem?.more_jump_json
       );
     },
+
     getExtPageUrl() {
       if (this.pageItemData?.ext_page_json?.ext_page_url) {
         return this.pageItemData?.ext_page_json?.ext_page_url;
@@ -361,9 +379,11 @@ export default {
         return this.pageItemData?.ext_page_url;
       }
     },
+
     mixTitleIcon() {
       return this.pageItemData?.com_icon || this.pageConfig?.dv_com_icon;
     },
+
     mixTitleStyle() {
       let style = {};
       if (this.pageItemData?.com_title_style_json) {
@@ -373,6 +393,7 @@ export default {
       }
       return formatStyleData(style);
     },
+
     mixCompStyle() {
       let style = {};
       if (this.pageItemData?.style_json) {
@@ -392,6 +413,7 @@ export default {
       }
       return formatStyleData(style);
     },
+
     mixNavStyle() {
       let style = {};
       if (this.pageItemData?.com_case_json?.nav_style_json) {
@@ -399,16 +421,20 @@ export default {
       }
       return style;
     },
+
     enterAnimationClass() {
       return setEnterAnimationClass(this.pageItemData);
     },
+
     enterAnimationVariables() {
       return setEnterAnimationVariables(this.pageItemData);
     },
   },
   data() {
     return {
+      isOpenChat:false,
       pageItemData: {},
+      chatItem:null,
     };
   },
   mounted() {
@@ -426,6 +452,12 @@ export default {
     },
   },
   methods: {
+    //打开指定的在线咨询框
+    setOpenChat(item){
+      this.isOpenChat=true;
+      this.chatItem=item;
+     console.log('这是打开的聊天框',item)
+    },
     onDelete() {
       this.$emit("delete", this.pageItem);
     },

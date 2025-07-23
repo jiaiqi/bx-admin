@@ -409,6 +409,20 @@ export default {
               this.editorComponents.push(draggedElement);
             }
             this.$emit("change", this.editorComponents);
+          }else if(draggedElement.value==='咨询入口') {
+            draggedElement.com_type = "咨询入口";
+            draggedElement.component = "component";
+            if (!draggedElement._editType) {
+              draggedElement.id = `root_container_${new Date().getTime()}`;
+              draggedElement._editType = "add";
+              draggedElement.com_name = "咨询入口";
+              draggedElement.com_type = "咨询入口";
+              // 计算seq值，使用(当前组件数量+1)*100 + 10000
+              draggedElement._seq = (this.editorComponents.length + 1) * 100 + 10000;
+              // 添加到顶层组件
+              this.editorComponents.push(draggedElement);
+            }
+            this.$emit("change", this.editorComponents);
           }
           else {
             // 不是container类型，显示不允许放置的反馈
