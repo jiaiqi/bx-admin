@@ -97,6 +97,7 @@ instance.interceptors.request.use(
     bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
     if (bx_auth_ticket) {
       config.headers.set("bx_auth_ticket", bx_auth_ticket);
+      config.headers.set("bx-auth-ticket", bx_auth_ticket);
     }
     return config;
   },
