@@ -173,7 +173,6 @@ export default {
         beforeCellValueChange: ({ row, column, changeValue }) => { },
         afterCellValueChange: ({ row, column, changeValue }) => {
           this.onTableChange()
-          console.log('afterCellValueChange:', json);
         },
       },
       // 剪贴板配置
