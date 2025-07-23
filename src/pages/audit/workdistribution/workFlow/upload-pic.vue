@@ -1,76 +1,114 @@
 <template>
   <div class="up_mod">
-    <el-dialog title="图片上传" :visible.sync="upVisible"  :close-on-click-modal="false" @closed="setListInfo">
-          <el-form :model="picForm" :rules="rules"  ref="picForm" label-width="auto" class="demo-ruleForm">
-<!--            <el-form-item label="证据说明" prop="icon_title" style="margin:0.9375rem 0">-->
-<!--              <el-input v-model="picForm.icon_title"></el-input>-->
-<!--            </el-form-item>-->
-            <el-form-item label="证据图片" prop="order_evidence" style="margin:0.9375rem 0">
-              <div class="img_list" v-if="fileLists&&fileLists.length>0">
+    <el-dialog
+      title="图片上传"
+      :visible.sync="upVisible"
+      :close-on-click-modal="false"
+      @closed="setListInfo"
+    >
+      <el-form
+        :model="picForm"
+        :rules="rules"
+        ref="picForm"
+        label-width="auto"
+        class="demo-ruleForm"
+      >
+        <!--            <el-form-item label="证据说明" prop="icon_title" style="margin:0.9375rem 0">-->
+        <!--              <el-input v-model="picForm.icon_title"></el-input>-->
+        <!--            </el-form-item>-->
+        <el-form-item
+          label="证据图片"
+          prop="order_evidence"
+          style="margin:0.9375rem 0"
+        >
+          <div
+            class="img_list"
+            v-if="fileLists && fileLists.length > 0"
+          >
             <!-- 使用element-ui自带样式 -->
             <ul class="el-upload-list el-upload-list--picture-card">
               <transition-group style="display: flex; flex-wrap: wrap">
                 <li
-                    v-for="(item, index) in fileLists"
-                    :key="item.fileurl"
-                    class="el-upload-list__item is-success animated"
-                    style="position: relative"
+                  v-for="(item, index) in fileLists"
+                  :key="item.fileurl"
+                  class="el-upload-list__item is-success animated"
+                  style="position: relative"
                 >
                   <el-image
-                      class="el-upload-list__item-thumbnail pre_pic"
-                      :src="item.url"
-                      :preview-src-list="preList"
-                     >
+                    class="el-upload-list__item-thumbnail pre_pic"
+                    :src="item.url"
+                    :preview-src-list="preList"
+                  >
                   </el-image>
-              <div class="img_bts">
-                <span
-                    class="el-upload-list__item-preview"
-                    title="下载"
-                    @click="dowmlaodUrl(item.url)"
-                >
-                  <i class="el-icon-download"></i>
-                </span>
-                <span
-                    class="el-upload-list__item-preview"
-                    title="删除"
-                    @click="handleRemoveFileDetail(item, fileLists,index)"
-                >
-                  <i class="el-icon-delete"></i>
-                </span>
-              </div>
+                  <div class="img_bts">
+                    <span
+                      class="el-upload-list__item-preview"
+                      title="下载"
+                      @click="dowmlaodUrl(item.url)"
+                    >
+                      <i class="el-icon-download"></i>
+                    </span>
+                    <span
+                      class="el-upload-list__item-preview"
+                      title="删除"
+                      @click="handleRemoveFileDetail(item, fileLists, index)"
+                    >
+                      <i class="el-icon-delete"></i>
+                    </span>
+                  </div>
                 </li>
               </transition-group>
             </ul>
           </div>
           <el-upload
-              ref="upload"
-              class="upload-demo"
-              :action="url"
-              :with-credentials="true"
-              :headers="getHeaders()"
-              :on-preview="handlePreview"
-              :before-upload="beforeAvatarUpload"
-              :on-success="handleSuccess"
-              :on-remove="handleRemove"
-              :before-remove="beforeRemove"
-              :file-list="fileLists"
-              :data="uploadParams"
-              clearable
-              :show-file-list="false"
-              list-type="picture-card"
+            ref="upload"
+            class="upload-demo"
+            :action="url"
+            :with-credentials="true"
+            :headers="getHeaders()"
+            :on-preview="handlePreview"
+            :before-upload="beforeAvatarUpload"
+            :on-success="handleSuccess"
+            :on-remove="handleRemove"
+            :before-remove="beforeRemove"
+            :file-list="fileLists"
+            :data="uploadParams"
+            clearable
+            :show-file-list="false"
+            list-type="picture-card"
           >
-            <el-button size="small" type="primary">点击上传</el-button>
+            <el-button
+              size="small"
+              type="primary"
+            >点击上传</el-button>
           </el-upload>
-          <div class="el-upload__tip w-full" style="margin-top: 0">
+          <div
+            class="el-upload__tip w-full"
+            style="margin-top: 0"
+          >
             {{ setFileDesc }}
           </div>
         </el-form-item>
-            <el-row>
-              <el-col :span="24" style="display: flex;justify-content: center" class="cl_bts">
-                <el-button type="primary" icon="el-icon-check" size="mini" @click="handleSubmitPic">提交</el-button>
-                <el-button type="primary" icon="el-icon-refresh-left" size="mini" @click="resetForm">取消</el-button>
-              </el-col>
-            </el-row>
+        <el-row>
+          <el-col
+            :span="24"
+            style="display: flex;justify-content: center"
+            class="cl_bts"
+          >
+            <el-button
+              type="primary"
+              icon="el-icon-check"
+              size="mini"
+              @click="handleSubmitPic"
+            >提交</el-button>
+            <el-button
+              type="primary"
+              icon="el-icon-refresh-left"
+              size="mini"
+              @click="resetForm"
+            >取消</el-button>
+          </el-col>
+        </el-row>
       </el-form>
     </el-dialog>
   </div>
@@ -78,13 +116,13 @@
 
 <script>
 import OrderApi from "@/pages/audit/api/order";
-const OrderUtil= new OrderApi();
+const OrderUtil = new OrderApi();
 export default {
   name: "upload-pic",
-  data(){
-    return{
-      preList:[],
-      setFileDesc:'请上传jpg/png格式的图片,大小不超过2MB',
+  data() {
+    return {
+      preList: [],
+      setFileDesc: '请上传jpg/png格式的图片,大小不超过2MB',
       rules: {
         // icon_title: [
         //   { required: true, message: '证据说明不能为空', trigger: 'blur' },
@@ -93,41 +131,41 @@ export default {
           { required: true, message: '证据图片不能为空', trigger: 'blur' },
         ],
       },
-      picForm:{
+      picForm: {
         icon_type: "图片",
-        order_evidence:'',  //上传成功后返回的file_no
-        icon_title:'占位图', //图片说明
+        order_evidence: '',  //上传成功后返回的file_no
+        icon_title: '占位图', //图片说明
         serviceName: "srvfile_icon_db_add"
       },
-      fileLength:0,
-      url:'',
+      fileLength: 0,
+      url: '',
       uploadParams: {
         serviceName: "srv_bxfile_service",
         interfaceName: "add",
-        app_no:'aud',
+        app_no: 'aud',
         table_name: "bxaud_ads_outer_evidence",
         thumbnailType: "fwsu_100",
         columns: "order_evidence",
       },
       fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
-      fileSize:2,
-      limit:8,
+      fileSize: 2,
+      limit: 8,
       fileLists: [],
-      prUrl:'',
-      initFileList:[],
-      infoId:'',
+      prUrl: '',
+      initFileList: [],
+      infoId: '',
     }
   },
   props: {
-    objId:{
-      type:String,
-      default:''
+    objId: {
+      type: String,
+      default: ''
     },
     picVisible: {
       type: Boolean,
       default: false
     },
-    files:{
+    files: {
       type: Array,
       default: () => []
     }
@@ -137,7 +175,7 @@ export default {
       handler(newVal) {
         this.fileLists = JSON.parse(JSON.stringify(this.files))
         this.handleFilterUrl()
-        if(this.objId&&this.objId.length>0){
+        if (this.objId && this.objId.length > 0) {
           // this.initPicByIds()
         }
       },
@@ -147,7 +185,7 @@ export default {
   computed: {
     upVisible: {
       get() {
-        if(this.picVisible){
+        if (this.picVisible) {
           this.getInitList()
         }
         return this.picVisible;
@@ -157,42 +195,42 @@ export default {
       }
     }
   },
-  created(){
-   this.url= process.env.NODE_ENV === "development" ? window.APP_CONFIG.API_URL+'/file/upload':window.backendIpAddr+'/file/upload'
-   this.prUrl=OrderUtil.dowPicInfoUrl();
+  created() {
+    this.url = process.env.NODE_ENV === "development" ? window.APP_CONFIG.API_URL + '/file/upload' : window.backendIpAddr + '/file/upload'
+    this.prUrl = OrderUtil.dowPicInfoUrl();
 
   },
-  methods:{
+  methods: {
     //初始单条化图片信息使用
-     initPicByIds(){
-       let _this= this;
-       let info={
-         condition:[{colName: "id", value:this.objId, ruleType: "eq"}]
-       }
-       OrderUtil.getPicInfoById(info).then(res=>{
-        if(res.data.state!=='SUCCESS') return;
-        let ls=res.data.data[0];
-         _this.infoId=ls.id;
-         _this.picForm.icon_title=ls.icon_title
-       }).catch(err=>{
+    initPicByIds() {
+      let _this = this;
+      let info = {
+        condition: [{ colName: "id", value: this.objId, ruleType: "eq" }]
+      }
+      OrderUtil.getPicInfoById(info).then(res => {
+        if (res.data.state !== 'SUCCESS') return;
+        let ls = res.data.data[0];
+        _this.infoId = ls.id;
+        _this.picForm.icon_title = ls.icon_title
+      }).catch(err => {
       })
-     },
+    },
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 ${this.limit}个文件`);
     },
     //保存判断有数据id时使用数据id更新保存不走新增
-    handleUpdateById(){
-     let obj={
-       condition:[{colName: "id", ruleType: "eq", value: this.objId}],
-       regInfo:[{icon_title: this.picForm.icon_title}]
-     }
-      OrderUtil.updatePicInfo(obj).then(res=>{
-         if(res.data.state!=='SUCCESS') return;
+    handleUpdateById() {
+      let obj = {
+        condition: [{ colName: "id", ruleType: "eq", value: this.objId }],
+        regInfo: [{ icon_title: this.picForm.icon_title }]
+      }
+      OrderUtil.updatePicInfo(obj).then(res => {
+        if (res.data.state !== 'SUCCESS') return;
         this.$message.success("证据保存成功！");
-        let info=res.data.response[0]?.response;
-        this.$emit("getSavePicInfo",info);
+        let info = res.data.response[0]?.response;
+        this.$emit("getSavePicInfo", info);
         this.setListInfo()
-      }).catch(err=>{
+      }).catch(err => {
 
       })
     },
@@ -214,7 +252,7 @@ export default {
         this.uploadParams.file_no = response.file_no;
         response.url = this.prUrl + response.fileurl;
         if (response.fileurl?.indexOf("http") === 0) {
-          response.url = this.prUrl+response.fileurl;
+          response.url = this.prUrl + response.fileurl;
         }
         this.fileLists.push(response);
         if (response.fileurl?.indexOf("http") === 0) {
@@ -230,7 +268,7 @@ export default {
       this.loading = false;
       this.handleFilterUrl();
     },
-     //删除前调用
+    //删除前调用
     async beforeRemove(file, fileList) {
       if (file?.file_no) {
         file.status = "success";
@@ -276,7 +314,7 @@ export default {
     handlePreview(file) {
       if (file.url == null) {
         //如果是新上传的文件需要获取url
-        file.url =this.prUrl + file.response.fileurl;
+        file.url = this.prUrl + file.response.fileurl;
       }
       window.open(file.url);
     },
@@ -285,11 +323,12 @@ export default {
       let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
       return {
         bx_auth_ticket: bx_auth_ticket,
+        "bx-auth-ticket": bx_auth_ticket,
       };
     },
     beforeAvatarUpload(file) {
       const isLt2M = file.size / 1024 / 1024 < 2;
-      let   type = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
+      let type = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
       let flag = false;
       if (!isLt2M) {
         this.$message.error('上传文件大小不能超过 2MB!');
@@ -304,44 +343,44 @@ export default {
       }
     },
     //获取原始传入的数据
-    getInitList(){
-      this.initFileList=[];
-      if(this.fileLists&&this.fileLists.length>0){
+    getInitList() {
+      this.initFileList = [];
+      if (this.fileLists && this.fileLists.length > 0) {
         this.uploadParams.table_name = this.fileLists[0].table_name || "";
         this.uploadParams.columns = this.fileLists[0].columns || "";
-        this.picForm.order_evidence=this.fileLists[0].file_no;
-        this.uploadParams.file_no=this.fileLists[0].file_no
+        this.picForm.order_evidence = this.fileLists[0].file_no;
+        this.uploadParams.file_no = this.fileLists[0].file_no
       }
     },
     //将上传的图片列表暴露
-    setListInfo(){
-     this.fileLists=[];
-     this.handleFilterUrl()
-     this.upVisible=false;
+    setListInfo() {
+      this.fileLists = [];
+      this.handleFilterUrl()
+      this.upVisible = false;
     },
     //新增保存使用
-    saveByNoIdInfo(){
-     let params = {
-       icon_att: this.picForm.order_evidence,
-       icon_title:this.picForm.icon_title,
-       icon_type: "图片",
-     }
-     OrderUtil.savePicInfo([params]).then(res => {
-       if(res.data.state!=="SUCCESS") return;
-       this.$message.success("证据保存成功！");
-       let info=res.data.response[0]?.response;
-       this.$emit("getSavePicInfo",info);
-       this.setListInfo()
-     }).catch(err => {})
+    saveByNoIdInfo() {
+      let params = {
+        icon_att: this.picForm.order_evidence,
+        icon_title: this.picForm.icon_title,
+        icon_type: "图片",
+      }
+      OrderUtil.savePicInfo([params]).then(res => {
+        if (res.data.state !== "SUCCESS") return;
+        this.$message.success("证据保存成功！");
+        let info = res.data.response[0]?.response;
+        this.$emit("getSavePicInfo", info);
+        this.setListInfo()
+      }).catch(err => { })
     },
     //执行提交信息
-    handleSubmitPic(){
+    handleSubmitPic() {
       let _this = this;
       _this.$refs.picForm.validate((valid) => {
         if (valid) {
-          if(this.objId&&this.objId.length>0){
+          if (this.objId && this.objId.length > 0) {
             _this.handleUpdateById()
-          }else {
+          } else {
             _this.saveByNoIdInfo()
           }
         } else {
@@ -352,16 +391,16 @@ export default {
     },
     //重置
     resetForm(formName) {
-      this.upVisible=false;
+      this.upVisible = false;
     },
     //过滤获取图片地址作为预览使用
-    handleFilterUrl(){
-      if(this.fileLists.length>0){
-        this.picForm.order_evidence=this.fileLists[0].file_no;
-        this.fileLists.map(item=>{this.preList.push(item.url)})
-      }else {
-        this.preList=[]
-        this.picForm.order_evidence=''
+    handleFilterUrl() {
+      if (this.fileLists.length > 0) {
+        this.picForm.order_evidence = this.fileLists[0].file_no;
+        this.fileLists.map(item => { this.preList.push(item.url) })
+      } else {
+        this.preList = []
+        this.picForm.order_evidence = ''
       }
     },
     //下载
@@ -373,7 +412,7 @@ export default {
       const isDelete = await this.beforeRemove(file, fileList);
       if (isDelete) {
         this.fileLists.splice(index, 1);
-        console.log(this.fileLists,'2121');
+        console.log(this.fileLists, '2121');
         this.handleFilterUrl()
         this.handleRemove(file, fileList);
       }
@@ -385,35 +424,38 @@ export default {
 }
 </script>
 
-<style >
-.el-upload-list{
-  border:none !important;
+<style>
+.el-upload-list {
+  border: none !important;
 }
-.el-upload-list__item:hover{
-  .img_bts{
-   display: flex;
-   transition: all .3s;
+
+.el-upload-list__item:hover {
+  .img_bts {
+    display: flex;
+    transition: all .3s;
   }
 }
-.img_bts{
-  transition:all .3s;
+
+.img_bts {
+  transition: all .3s;
   opacity: 0;
   display: none;
   width: 100%;
-  height:2.1875rem;
+  height: 2.1875rem;
   position: absolute;
-  z-index:20;
+  z-index: 20;
   background: #212122;
   top: 75%;
   opacity: .5;
   color: #fff;
   font-size: 1.125rem;
-  padding:0 0.625rem;
+  padding: 0 0.625rem;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  >span{
-    margin:0 0.5rem;
+
+  >span {
+    margin: 0 0.5rem;
   }
 }
 </style>

@@ -792,6 +792,7 @@ function init_util() {
       return this.$http.post(url, query, {
         headers: {
           bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
+          "bx-auth-ticket": sessionStorage.getItem("bx_auth_ticket"),
           bx_srv_auth_ticket: bx_srv_auth_ticket,
         },
       });
@@ -936,6 +937,7 @@ function init_util() {
         .post(url, params, {
           headers: {
             bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
+            "bx-auth-ticket": sessionStorage.getItem("bx_auth_ticket"),
             bx_srv_auth_ticket: bx_srv_auth_ticket,
           },
         })
@@ -952,6 +954,7 @@ function init_util() {
         .post(url, params, {
           headers: {
             bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
+            "bx-auth-ticket": sessionStorage.getItem("bx_auth_ticket"),
             bx_srv_auth_ticket: bx_srv_auth_ticket,
           },
         })

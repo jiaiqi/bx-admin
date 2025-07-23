@@ -1,12 +1,21 @@
 <template>
   <div style="padding-bottom: 30px">
     <template v-if="isEdit === false">
-      <div v-for="(file, index) in moreFileRun" :key="index">
-        <span @click="handlePreview(file)" class="file-name">
-          <i class="el-icon-download"></i>
-          {{ file.name }}</span
+      <div
+        v-for="(file, index) in moreFileRun"
+        :key="index"
+      >
+        <span
+          @click="handlePreview(file)"
+          class="file-name"
         >
-        <el-button type="text" class="" @click="onPreView(file, index)">
+          <i class="el-icon-download"></i>
+          {{ file.name }}</span>
+        <el-button
+          type="text"
+          class=""
+          @click="onPreView(file, index)"
+        >
           <i class="el-icon-picture-outline"></i>
           预览
         </el-button>
@@ -87,8 +96,14 @@
           :key="index"
         />
       </viewer>
-      <el-button size="small" type="primary">点击上传</el-button>
-      <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
+      <el-button
+        size="small"
+        type="primary"
+      >点击上传</el-button>
+      <div
+        slot="tip"
+        class="el-upload__tip"
+      >{{ fileDesc }}</div>
       <div
         slot="tip"
         class="el-upload__tip error"
@@ -153,33 +168,39 @@
     </el-upload> -->
     <el-dialog
       custom-class="preview-dialog"
-      :title="
-        currentType === 'pdf'
+      :title="currentType === 'pdf'
           ? '第' + currentPage + '页/共' + pageCount + '页'
           : '预览'
-      "
+        "
       :visible.sync="centerDialogVisible"
       width="50%"
       lock-scroll
       center
     >
-      <el-row type="flex" align="middle" v-if="currentType === 'pdf'">
-        <el-col :span="2" class="grid-content">
+      <el-row
+        type="flex"
+        align="middle"
+        v-if="currentType === 'pdf'"
+      >
+        <el-col
+          :span="2"
+          class="grid-content"
+        >
           <el-button
             icon="el-icon-arrow-left"
             circle
             :disabled="currentPage === 1"
             @click="changePdfPage('up')"
-          ></el-button
-        ></el-col>
-        <el-col :span="20" style="">
-          <div
-            style="
+          ></el-button></el-col>
+        <el-col
+          :span="20"
+          style=""
+        >
+          <div style="
               text-align: right;
               display: flex;
               justify-content: space-between;
-            "
-          >
+            ">
             <el-button
               icon="el-icon-minus"
               circle
@@ -194,14 +215,12 @@
               @click="scaleD"
             ></el-button>
           </div>
-          <div
-            style="
+          <div style="
               text-align: center;
               overflow: auto;
               border: 1px solid #eee;
               height: 735px;
-            "
-          >
+            ">
             <pdf
               ref="wrapper"
               :src="currentUrl"
@@ -211,7 +230,11 @@
             </pdf>
           </div>
         </el-col>
-        <el-col :span="2" class="grid-content" style="text-align: right">
+        <el-col
+          :span="2"
+          class="grid-content"
+          style="text-align: right"
+        >
           <el-button
             icon="el-icon-arrow-right"
             circle
@@ -320,8 +343,8 @@ export default {
     noneFileType: function () {
       let filterType =
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileType
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileType
           ? this.field.info.moreConfig.fileType
           : "";
       if (filterType) {
@@ -339,17 +362,17 @@ export default {
       uploadFile: this.serviceApi().uploadFile,
       fileDesc:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? "请上传文件,大小不超过" +
-            this.field.info.moreConfig.fileMaxSize +
-            "MB"
+          this.field.info.moreConfig.fileMaxSize +
+          "MB"
           : "请上传文件,大小不超过200MB",
       fileType: "",
       fileSize:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 200 * 1024,
       uploadParams: {
@@ -466,6 +489,7 @@ export default {
       let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
       return {
         bx_auth_ticket: bx_auth_ticket,
+        "bx-auth-ticket": bx_auth_ticket,
       };
     },
     submitUpload() {
@@ -504,6 +528,7 @@ export default {
           headers: {
             "Content-Type": "multipart/form-data",
             bx_auth_ticket: sessionStorage.getItem("bx_auth_ticket"),
+            "bx-auth-ticket": sessionStorage.getItem("bx_auth_ticket"),
           },
           // uploadProgressEvent: uploadProgressEvent,
           onUploadProgress: uploadProgressEvent,
@@ -848,7 +873,7 @@ export default {
           if (res.message) {
             this.$set(this, "fileError", res.message);
           }
-        } catch (error) {}
+        } catch (error) { }
       }
     },
     handleProgress(event, file, fileList) {
@@ -954,7 +979,7 @@ export default {
 }
 </style>
 <style>
-.image-list > img {
+.image-list>img {
   height: 5rem;
   width: 5rem !important;
 }

@@ -2,14 +2,20 @@
   <div>
     <template v-if="isEdit === false">
       <ul class="form-imgs">
-        <li v-for="(o, index) in fileLists" :key="index" class="imgs-item">
-          <div
-            v-on:click="
-              imageDialogUrl = o.url;
-              imageDialog = true;
-            "
-          >
-            <img :src="o.url" min-width="70" height="70" />
+        <li
+          v-for="(o, index) in fileLists"
+          :key="index"
+          class="imgs-item"
+        >
+          <div v-on:click="
+            imageDialogUrl = o.url;
+          imageDialog = true;
+          ">
+            <img
+              :src="o.url"
+              min-width="70"
+              height="70"
+            />
           </div>
         </li>
       </ul>
@@ -29,8 +35,14 @@
         style="margin: 0 auto"
         class="preview-img"
       /><br />
-      <el-button type="primary" @click="imageDialog = false">确 定</el-button>
-      <el-button type="primary" @click="dowmlaodUrl()">下载</el-button>
+      <el-button
+        type="primary"
+        @click="imageDialog = false"
+      >确 定</el-button>
+      <el-button
+        type="primary"
+        @click="dowmlaodUrl()"
+      >下载</el-button>
     </el-dialog>
 
     <div
@@ -41,7 +53,11 @@
     >
       <!-- 使用element-ui自带样式 -->
       <ul class="el-upload-list el-upload-list--picture-card">
-        <draggable v-model="fileLists" @end="onDragEnd" animation="300">
+        <draggable
+          v-model="fileLists"
+          @end="onDragEnd"
+          animation="300"
+        >
           <transition-group style="display: flex; flex-wrap: wrap">
             <li
               v-for="(item, index) in fileLists"
@@ -106,7 +122,10 @@
           class="custom-upload"
           @click="showFilePicker = true"
         >
-          <i class="el-icon-plus" style="font-size: 28px; color: #8c939d"></i>
+          <i
+            class="el-icon-plus"
+            style="font-size: 28px; color: #8c939d"
+          ></i>
         </div>
         <file-picker
           v-if="showFilePicker"
@@ -142,7 +161,10 @@
           !limit || !fileLength || (limit && fileLength && fileLength < limit)
         "
       >
-        <el-button size="small" type="primary">点击上传</el-button>
+        <el-button
+          size="small"
+          type="primary"
+        >点击上传</el-button>
         <!-- <div
           slot="tip"
           class="el-upload__tip"
@@ -246,17 +268,17 @@ export default {
       fileLength: 0,
       fileDesc:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? "请上传jpg/png/svg格式的图片,大小不超过" +
-            this.field.info.moreConfig.fileMaxSize +
-            "MB"
+          this.field.info.moreConfig.fileMaxSize +
+          "MB"
           : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
       fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
       fileSize:
         this.field.info.moreConfig &&
-        this.field.info.moreConfig !== null &&
-        this.field.info.moreConfig.fileMaxSize
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 10 * 1024, // 默认10MB
       imageDialog: false,
@@ -590,6 +612,7 @@ export default {
       let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
       return {
         bx_auth_ticket: bx_auth_ticket,
+        "bx-auth-ticket": bx_auth_ticket,
       };
     },
 
@@ -783,7 +806,10 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
+<style
+  scoped
+  lang="scss"
+>
 ::v-deep .el-upload-list {
   border: none !important;
 }
@@ -847,10 +873,12 @@ export default {
 
 .form-imgs {
   padding: 0;
+
   .imgs-item {
     max-width: 200px;
   }
 }
+
 .img-list .el-upload-list--picture-card .el-upload-list__item,
 .preview-img {
   background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
