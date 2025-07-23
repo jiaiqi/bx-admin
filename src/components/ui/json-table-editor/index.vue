@@ -169,35 +169,23 @@ export default {
       editOption: {
         beforeStartCellEditing: ({ row, column, changeValue }) => {
           console.log('beforeStartCellEditing:', row, column, changeValue);
-
         },
         beforeCellValueChange: ({ row, column, changeValue }) => { },
         afterCellValueChange: ({ row, column, changeValue }) => {
           this.onTableChange()
           console.log('afterCellValueChange:', json);
-
         },
       },
       // 剪贴板配置
       clipboardOption: {
         beforePaste: ({ data, selectionRangeIndexes, selectionRangeKeys }) => {
           console.log('beforePaste:', selectionRangeIndexes);
-          // if (Array.isArray(data) && data?.length) {
-          //   let isValid = true;
-          //   return false;
-          // }
         },
         afterPaste: ({ data, selectionRangeIndexes, selectionRangeKeys }) => {
           console.log('afterPaste:', selectionRangeIndexes);
           this.onTableChange()
-
-          //selectionRangeIndexes ：拷贝区域的索引信息
-          // this.triggerEditCell(selectionRangeIndexes,'afterPaste');
-          // return false
         },
         afterCut: ({ selectionRangeIndexes }) => {
-          const { startRowIndex, endRowIndex, startColIndex, endColIndex } =
-            selectionRangeIndexes;
           console.log('afterCut:', selectionRangeIndexes);
           this.onTableChange()
         },
@@ -366,7 +354,6 @@ export default {
       this.$emit("input", JSON.stringify(json));
       this.$emit("change");
       console.log('onTableChange:', json);
-
     },
     fullScreenEdit() {
       console.log("fullScreenEdit");
