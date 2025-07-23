@@ -62,6 +62,7 @@
       :edit-option="editOption"
       :row-style-option="rowStyleOption"
       :column-width-resize-option="columnWidthResizeOption"
+      ref="tableRef"
       @change="onTableChange"
     />
   </div>
@@ -347,6 +348,19 @@ export default {
   //     handler(newValue, oldValue) {},
   //   },
   // },
+  watch: {
+    tableData: {
+      deep: true,
+      handler(newValue, oldValue) {
+        const currentSelection = this.$refs?.tableRef?.getRangeCellSelection();
+        const startRowIndex =
+          currentSelection?.selectionRangeIndexes?.startRowIndex;
+        if (typeof startRowIndex === "number" && startRowIndex >= 0) {
+          this.onTableChange()
+        }
+      },
+    },
+  },
   methods: {
     onTableChange() {
       const json = this.tableData2json();
