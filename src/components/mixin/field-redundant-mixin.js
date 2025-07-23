@@ -90,7 +90,7 @@ export default {
             !(diffFields.size == 1 && diffFields.has(fieldName)) &&
             diffFields.size > 0
           ) {
-            let vm = self; 
+            let vm = self;
             let calc_trigger_col = fieldInfo?.srvCol.calc_trigger_col; // 计算触发列配置
             // 过滤掉当前字段名，避免自触发
             if (Array.isArray(calc_trigger_col)) {
@@ -117,9 +117,9 @@ export default {
             }
           }
         }
-        
+
         // 处理主子表冗余逻辑
-        if (fieldInfo.mainSubRedundant) {
+        if (fieldInfo.mainSubRedundant && !fieldInfo?.redundant?.dependField) {
           // 主子表冗余
           let mainData = self.parentAddMainFormDatas; // 获取主表数据
           let subMainRedundant = fieldInfo.mainSubRedundant; // 主子表冗余配置
@@ -174,11 +174,11 @@ export default {
         // console.log('handleRedundantViaJs row',row,func)
         // 执行计算函数，使用 eval 动态执行字符串形式的函数
         let ret = eval("var zz=" + func + "(row, vm, field); zz");
-        
+
         // 获取计算规则配置
         const calc_rule = fieldInfo.redundant.calc_rule;
         const calcType = calc_rule?.type; // 计算类型（求和、计数等）
-        
+
         // 处理子表求和、计数类型的特殊逻辑
         if (
           ["求和", "计数"]?.includes(calcType) &&
@@ -206,7 +206,7 @@ export default {
         }
 
         let update = false; // 是否需要更新字段值的标志
-        
+
         // 根据触发条件判断是否需要更新
         if (fieldInfo.redundant.trigger == "isnull" && field.isEmpty()) {
           // 仅当字段为空时才更新
@@ -218,7 +218,7 @@ export default {
           // 默认或"always"触发条件，总是更新
           update = true;
         }
-        
+
         // 执行字段值更新
         if (
           update &&
@@ -270,7 +270,7 @@ export default {
         const field = fields[fieldName];
         // 获取字段的显示加载器条件配置
         const conditions = field?.info?.dispLoader?.conditions || [];
-        
+
         // 处理基于条件的字段依赖关系
         if (Array.isArray(conditions) && conditions.length > 0) {
           // 查找包含数据引用的条件项
@@ -287,7 +287,7 @@ export default {
             for (let fieldName2 in fields) {
               const field2 = fields[fieldName2];
               const field2Name = field2?.info?.name;
-              
+
               // 检查当前字段是否被条件引用
               if (
                 field2Name &&
@@ -301,7 +301,7 @@ export default {
             }
           }
         }
-        
+
         // 标记冗余依赖的字段
         const dependFieldName = field.info?.redundant?.dependField; // 获取冗余依赖字段名
         if (dependFieldName) {
@@ -364,7 +364,7 @@ export default {
           const dependentField = fields[dependentFieldName]; // 获取依赖字段实例
           const refedCol = dependentField.info.redundant.refedCol; // 获取引用列名
           let sync = true; // 是否需要同步的标志
-          
+
           // 根据触发条件判断是否需要同步
           if (dependentField.info.redundant.trigger === "isnull") {
             // 触发字段数据发生变化，其它字段为null的时候冗余
@@ -400,7 +400,7 @@ export default {
               // 表单自动冗余操作，如果字段是autocomplete且本身有值，不进行冗余
               return;
             }
-            
+
             // 根据当前字段值设置依赖字段值
             if (
               field.model && // 当前字段有值
