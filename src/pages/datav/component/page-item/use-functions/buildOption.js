@@ -70,7 +70,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
-      top: 25,
+      top: 40,
       left: 10,
       right: 10,
       bottom: 0,
