@@ -32,7 +32,7 @@
     <!-- 交互提示 -->
     <transition name="tips-fade">
       <div
-        v-if="showInteractionTips"
+        v-if="showInteractionTips && shouldShowTips"
         class="interaction-tips"
       >
         <div class="tips-item">
@@ -84,7 +84,7 @@
               width="32"
               height="32"
               viewBox="0 0 24 24"
-            ><!-- Icon from Remix Icon by Remix Design - https://github.com/Remix-Design/RemixIcon/blob/master/License -->
+            >
               <path
                 fill="currentColor"
                 d="m12 22l-4-4h8zm0-20l4 4H8zm0 12a2 2 0 1 1 0-4a2 2 0 0 1 0 4M2 12l4-4v8zm20 0l-4 4V8z"
@@ -95,6 +95,11 @@
             <kbd>Space</kbd> + 拖拽移动
           </div>
         </div>
+        <span
+          v-if="countdown > 0"
+          class="countdown-text"
+        >{{ countdown }}s后自动关闭</span>
+
         <button
           class="tips-close"
           @click="hideTips"
@@ -134,24 +139,14 @@
       title="恢复初始视图"
     >
       <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
       >
         <path
-          d="M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C9.61305 21 7.3262 19.9289 5.63604 18.364"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M3 16L5.636 18.364L8 16"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          fill="currentColor"
+          d="M2 12a9 9 0 0 0 9 9c2.39 0 4.68-.94 6.4-2.6l-1.5-1.5A6.7 6.7 0 0 1 11 19c-6.24 0-9.36-7.54-4.95-11.95S18 5.77 18 12h-3l4 4h.1l3.9-4h-3a9 9 0 0 0-18 0"
         />
       </svg>
     </button>
@@ -174,6 +169,16 @@ const props = defineProps({
   tipsDelay: {
     type: Number,
     default: 3000
+  },
+  // 手动关闭多少次后不再显示提示，0表示永远显示
+  maxCloseCount: {
+    type: Number,
+    default: 1
+  },
+  // 本地存储的键名，用于记录关闭次数
+  storageKey: {
+    type: String,
+    default: 'zoom-drag-tips-close-count'
   }
 });
 
@@ -199,6 +204,40 @@ const isCtrlPressed = ref(false);
 const showInteractionTips = ref(false);
 let animationFrameId = null;
 let tipsTimer = null;
+
+// 倒计时相关
+const countdown = ref(0);
+let countdownTimer = null;
+
+// 关闭次数管理
+const closeCount = ref(0);
+
+// 从本地存储获取关闭次数
+const getCloseCount = () => {
+  try {
+    const stored = localStorage.getItem(props.storageKey);
+    return stored ? parseInt(stored, 10) : 0;
+  } catch (error) {
+    console.warn('无法读取本地存储:', error);
+    return 0;
+  }
+};
+
+// 保存关闭次数到本地存储
+const saveCloseCount = (count) => {
+  try {
+    localStorage.setItem(props.storageKey, count.toString());
+  } catch (error) {
+    console.warn('无法保存到本地存储:', error);
+  }
+};
+
+// 检查是否应该显示提示
+const shouldShowTips = computed(() => {
+  if (!props.showTips) return false;
+  if (props.maxCloseCount === 0) return true; // 0表示永远显示
+  return closeCount.value < props.maxCloseCount;
+});
 
 const isInitialView = computed(() => zoomScale.value === 1 && mapPosition.value.x === 0 && mapPosition.value.y === 0);
 
@@ -278,24 +317,59 @@ const resetView = () => {
 };
 
 const showTips = () => {
-  if (!props.showTips) return;
+  if (!shouldShowTips.value) return;
 
   if (tipsTimer) clearTimeout(tipsTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+
   showInteractionTips.value = true;
 
   if (props.autoHideTips) {
-    tipsTimer = setTimeout(() => {
-      showInteractionTips.value = false;
-    }, props.tipsDelay);
+    // 初始化倒计时
+    countdown.value = Math.ceil(props.tipsDelay / 1000);
+
+    // 启动倒计时
+    countdownTimer = setInterval(() => {
+      countdown.value -= 1;
+      if (countdown.value <= 0) {
+        clearInterval(countdownTimer);
+        showInteractionTips.value = false;
+        countdown.value = 0;
+      }
+    }, 1000);
   }
 };
 
 const hideTips = () => {
   if (tipsTimer) clearTimeout(tipsTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+
   showInteractionTips.value = false;
+  countdown.value = 0;
+
+  // 增加关闭次数
+  closeCount.value += 1;
+  saveCloseCount(closeCount.value);
 };
 
+// 重置关闭次数，重新允许显示提示
+const resetCloseCount = () => {
+  closeCount.value = 0;
+  saveCloseCount(0);
+};
+
+// 暴露方法给父组件
+defineExpose({
+  resetView,
+  resetCloseCount,
+  scale,
+  position
+});
+
 onMounted(() => {
+  // 初始化关闭次数
+  closeCount.value = getCloseCount();
+
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
 });
@@ -304,6 +378,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('keyup', handleKeyUp);
   if (tipsTimer) clearTimeout(tipsTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
 });
 </script>
 
@@ -379,7 +454,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 20px;
   right: 20px;
-  transform: translate(0, -100%);
+  /* transform: translate(0, -100%); */
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -427,6 +502,25 @@ onUnmounted(() => {
     }
   }
 
+  .countdown-text {
+    display: inline-block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    translate: -50% 0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #666;
+    font-size: 10px;
+    scale: 0.8;
+    padding: 2px 4px;
+    border-radius: 4px 4px 0 0;
+    min-width: 20px;
+    text-align: center;
+    line-height: 1;
+    /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); */
+    /* animation: countdown-pulse 1s ease-in-out infinite; */
+  }
+
   .tips-close {
     position: absolute;
     top: 8px;
@@ -442,6 +536,8 @@ onUnmounted(() => {
     justify-content: center;
     color: #999;
     transition: all 0.2s ease;
+
+
 
     &:hover {
       background: rgba(0, 0, 0, 0.05);
@@ -464,6 +560,21 @@ onUnmounted(() => {
 .tips-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px) scale(0.95);
+}
+
+// 倒计时脉冲动画
+@keyframes countdown-pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }
 
 // 一键恢复按钮样式

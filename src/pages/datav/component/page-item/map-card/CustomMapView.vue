@@ -1,26 +1,19 @@
 <template>
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
-  <div
+  <zoom-drag-container
     class="map-zoom-container"
-    :class="{
-      'ctrl-pressed': isCtrlPressed,
-      'space-pressed': isSpacePressed && !isDragging,
-      dragging: isDragging,
-    }"
-    @wheel="handleWheel"
-    @mousedown="handleMouseDown"
-    @mousemove="handleMouseMove"
-    @mouseup="handleMouseUp"
-    @mouseleave="handleMouseUp"
-    @click="tapMarker()"
-    tabindex="0"
+    :show-tips="true"
   >
     <!-- 建筑物视图的树形数据 -->
     <div
       class="building-tree-data map-tree-data"
       v-if="isBuildingView && buildingTree && buildingTree.length"
     >
-      <div class="tree-data-item" v-for="item in buildingTree" :key="item.id">
+      <div
+        class="tree-data-item"
+        v-for="item in buildingTree"
+        :key="item.id"
+      >
         <div
           class="tree-data-item-name"
           :class="{
@@ -67,8 +60,15 @@
       :class="{ collapsed: isCollapsed }"
       v-else-if="!isBuildingView && treeData && treeData.length"
     >
-      <div class="map-tree-data" v-if="treeData.length">
-        <div class="tree-data-item" v-for="item in treeData" :key="item.id">
+      <div
+        class="map-tree-data"
+        v-if="treeData.length"
+      >
+        <div
+          class="tree-data-item"
+          v-for="item in treeData"
+          :key="item.id"
+        >
           <div
             class="tree-data-item-name"
             :class="{
@@ -91,7 +91,10 @@
             </span>
           </div>
           <transition name="tree-expand">
-            <div class="tree-data-item-child" v-show="expandedNodes[item.id]">
+            <div
+              class="tree-data-item-child"
+              v-show="expandedNodes[item.id]"
+            >
               <tree-data-item
                 v-for="child in item.children"
                 :key="child.id"
@@ -111,7 +114,10 @@
         v-if="treeData.length"
         :title="isCollapsed ? '展开' : '收起'"
       >
-        <Icon icon="material-symbols:arrow-menu-close" class="icon"></Icon>
+        <Icon
+          icon="material-symbols:arrow-menu-close"
+          class="icon"
+        ></Icon>
       </div>
     </div>
 
@@ -121,15 +127,12 @@
       :class="{
         'building-view': isBuildingView,
         'custom-map': !isBuildingView,
-        'no-transition': isDragging,
       }"
       :style="{
         backgroundImage: `url(${baseImage})`,
         backgroundSize: '100% 100%',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        transform: `translate(${mapPosition.x}px, ${mapPosition.y}px) scale(${zoomScale})`,
-        transformOrigin: 'center center',
       }"
     >
       <!-- 建筑物视图内容 -->
@@ -140,9 +143,7 @@
       <!-- 普通视图的标记点内容 -->
       <template v-else>
         <!-- 标签类型的标记点 -->
-        <template
-          v-if="mapJson && mapJson.map_type === '标签' && markerList.length"
-        >
+        <template v-if="mapJson && mapJson.map_type === '标签' && markerList.length">
           <div
             class="map-marker"
             :class="{ 'is-active': isActive(marker) }"
@@ -183,18 +184,11 @@
       </template>
     </div>
 
-    <!-- 一键恢复按钮 -->
-    <div
-      class="map-reset-btn"
-      v-show="!isInitialView"
-      @click="resetMapView"
-      title="恢复初始视图"
-    >
-      <Icon icon="material-symbols:refresh" class="reset-icon"></Icon>
-    </div>
-
     <!-- 弹窗内容 -->
-    <Teleport to="body" v-if="!isBuildingView">
+    <Teleport
+      to="body"
+      v-if="!isBuildingView"
+    >
       <div
         class="popover-content-to-body"
         :style="{
@@ -221,7 +215,7 @@
         </transition>
       </div>
     </Teleport>
-  </div>
+  </zoom-drag-container>
 </template>
 
 <script setup>
@@ -263,6 +257,7 @@ import { formatStyleData } from "../../../common"; // 样式数据格式化工�
 import { Icon } from "@iconify/vue2"; // 图标组件
 import Teleport from "vue2-teleport"; // Vue 2 传送门组件
 import cloneDeep from "lodash/cloneDeep";
+import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
 
 /**
  * 组件 Props 定义
@@ -300,47 +295,17 @@ const changeCollapsed = () => {
  * 组件配置常量
  */
 const CONFIG = {
-  // 缩放相关配置
-  ZOOM: {
-    MIN: 0.5, // 最小缩放比例
-    MAX: 3, // 最大缩放比例
-    STEP: 0.1, // 缩放步长
-    DEFAULT: 1, // 默认缩放比例
-  },
-
-  // 性能优化配置
-  PERFORMANCE: {
-    DEBOUNCE_DELAY: 100, // 防抖延迟时间（毫秒）
-  },
-
   // UI 配置
   UI: {
     SIDEBAR_WIDTH: 230, // 侧边栏宽度
     SIDEBAR_MARGIN: 15, // 侧边栏边距
     POPUP_OFFSET: 10, // 弹窗偏移距离
   },
+  // 性能优化配置
+  PERFORMANCE: {
+    DEBOUNCE_DELAY: 100, // 防抖延迟时间（毫秒）
+  },
 };
-
-/**
- * 地图缩放相关状态和配置
- */
-const zoomScale = ref(CONFIG.ZOOM.DEFAULT); // 当前缩放比例
-const minZoom = CONFIG.ZOOM.MIN; // 最小缩放比例
-const maxZoom = CONFIG.ZOOM.MAX; // 最大缩放比例
-const zoomStep = CONFIG.ZOOM.STEP; // 缩放步长
-
-/**
- * 地图拖拽相关状态
- */
-const isDragging = ref(false); // 是否正在拖拽
-const dragStart = ref({ x: 0, y: 0 }); // 拖拽起始位置
-const mapPosition = ref({ x: 0, y: 0 }); // 地图当前位置
-const isSpacePressed = ref(false); // 空格键是否按下
-
-/**
- * 键盘状态管理
- */
-const isCtrlPressed = ref(false); // Ctrl键是否按下
 
 /**
  * 地图配置计算属性
@@ -450,181 +415,6 @@ const baseImage = computed(() => {
   // 如果都没有找到，使用默认底图
   return getImagePath(mapJson.value.base_image);
 });
-
-/**
- * 处理鼠标滚轮事件 - 地图缩放功能
- * 只有在按住 Ctrl 键时才进行缩放操作，防止误操作
- *
- * @function handleWheel
- * @param {WheelEvent} event - 鼠标滚轮事件对象
- */
-const handleWheel = (event) => {
-  // 只有按住Ctrl键时才进行缩放
-  if (event.ctrlKey) {
-    event.preventDefault(); // 阻止默认滚动行为
-
-    // 缩放时隐藏popover，避免位置错乱
-    if (activeMarker.value?.id) {
-      activeMarker.value = null;
-      currentMarkerElement.value = null;
-      removeEventListeners();
-    }
-
-    // 计算缩放增量：向下滚动缩小，向上滚动放大
-    const delta = event.deltaY > 0 ? -zoomStep : zoomStep;
-    const newScale = zoomScale.value + delta;
-
-    // 限制缩放范围，防止过度缩放
-    if (newScale >= minZoom && newScale <= maxZoom) {
-      zoomScale.value = newScale;
-    }
-  }
-};
-
-/**
- * 处理鼠标按下事件 - 开始拖拽操作
- * 只有在按住 Space 键时才允许拖拽
- *
- * @function handleMouseDown
- * @param {MouseEvent} event - 鼠标按下事件对象
- */
-const handleMouseDown = (event) => {
-  if (isSpacePressed.value) {
-    event.preventDefault(); // 阻止默认行为
-    isDragging.value = true; // 设置拖拽状态
-
-    // 拖拽时隐藏popover，避免位置错乱
-    if (activeMarker.value?.id) {
-      activeMarker.value = null;
-      currentMarkerElement.value = null;
-      removeEventListeners();
-    }
-
-    // 记录拖拽起始位置，考虑当前地图位置偏移
-    dragStart.value = {
-      x: event.clientX - mapPosition.value.x,
-      y: event.clientY - mapPosition.value.y,
-    };
-    updateCursor(); // 更新光标样式
-  }
-};
-
-/**
- * 拖拽性能优化变量
- * 使用 requestAnimationFrame 优化拖拽性能，避免频繁重绘
- */
-let animationFrameId = null;
-
-/**
- * 处理鼠标移动事件 - 执行拖拽操作（优化版本）
- * 使用 requestAnimationFrame 优化性能，现在绑定在组件容器上
- *
- * @function handleMouseMove
- * @param {MouseEvent} event - 鼠标移动事件对象
- */
-const handleMouseMove = (event) => {
-  if (isDragging.value && isSpacePressed.value) {
-    event.preventDefault(); // 阻止默认行为
-
-    // 使用requestAnimationFrame优化性能，避免频繁重绘
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-    }
-
-    animationFrameId = requestAnimationFrame(() => {
-      // 计算新的地图位置
-      mapPosition.value = {
-        x: event.clientX - dragStart.value.x,
-        y: event.clientY - dragStart.value.y,
-      };
-    });
-  }
-};
-
-/**
- * 处理鼠标松开事件 - 结束拖拽操作
- *
- * @function handleMouseUp
- */
-const handleMouseUp = () => {
-  if (isDragging.value) {
-    isDragging.value = false; // 重置拖拽状态
-    updateCursor(); // 更新光标样式
-  }
-};
-
-/**
- * 处理键盘按下事件 - 快捷键功能
- * 支持 Space 键拖拽和 Ctrl 键缩放
- *
- * @function handleKeyDown
- * @param {KeyboardEvent} event - 键盘按下事件对象
- */
-const handleKeyDown = (event) => {
-  if (event.code === "Space") {
-    event.preventDefault(); // 阻止空格键的默认滚动行为
-    if (!isSpacePressed.value) {
-      isSpacePressed.value = true; // 设置 Space 键状态
-      updateCursor(); // 更新光标样式
-    }
-  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
-    if (!isCtrlPressed.value) {
-      isCtrlPressed.value = true; // 设置 Ctrl 键状态
-      updateCursor(); // 更新光标样式
-    }
-  }
-};
-
-/**
- * 处理键盘松开事件
- */
-const handleKeyUp = (event) => {
-  if (event.code === "Space") {
-    event.preventDefault(); // 阻止空格键的默认滚动行为
-    isSpacePressed.value = false;
-    updateCursor();
-    if (isDragging.value) {
-      isDragging.value = false;
-    }
-  } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
-    isCtrlPressed.value = false;
-    updateCursor();
-  }
-};
-
-/**
- * 更新光标样式（现在主要通过CSS类控制，这里作为备用）
- */
-const updateCursor = () => {
-  // 光标样式现在主要通过CSS类控制
-  // 这里保留函数以防需要额外的光标控制逻辑
-};
-
-/**
- * 判断是否为初始视图状态
- */
-const isInitialView = computed(() => {
-  return (
-    zoomScale.value === 1 &&
-    mapPosition.value.x === 0 &&
-    mapPosition.value.y === 0
-  );
-});
-
-/**
- * 一键恢复地图到初始状态
- */
-const resetMapView = () => {
-  zoomScale.value = 1;
-  mapPosition.value = { x: 0, y: 0 };
-
-  // 如果有活动的popover，也一并隐藏
-  if (activeMarker.value?.id) {
-    activeMarker.value = null;
-    currentMarkerElement.value = null;
-    removeEventListeners();
-  }
-};
 
 /**
  * 判断标记点是否激活
@@ -1158,7 +948,7 @@ const setTreeReq = computed(() => {
 
 /**
  * 组件挂载生命周期钩子
- * 初始化地图和添加全局事件监听器
+ * 初始化地图
  */
 onMounted(() => {
   // 检查是否有树形数据配置
@@ -1170,41 +960,27 @@ onMounted(() => {
       markerList.value = res;
     });
   }
-
-  // 添加全局键盘事件监听器，处理快捷键
-  document.addEventListener("keydown", handleKeyDown); // 键盘按下事件
-  document.addEventListener("keyup", handleKeyUp); // 键盘松开事件
 });
 
 /**
  * 组件卸载生命周期钩子
- * 清理事件监听器、定时器和动画帧，防止内存泄漏
+ * 清理事件监听器和定时器，防止内存泄漏
  */
 onUnmounted(() => {
   removeEventListeners(); // 移除弹窗相关事件监听器
-
-  // 清理全局键盘事件监听器，防止内存泄漏
-  document.removeEventListener("keydown", handleKeyDown);
-  document.removeEventListener("keyup", handleKeyUp);
 
   // 清理防抖定时器
   if (debounceTimer) {
     clearTimeout(debounceTimer);
     debounceTimer = null;
   }
-
-  // 清理动画帧，防止内存泄漏
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-
-  // 重置光标样式
-  document.body.style.cursor = "";
 });
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 .map-view {
   width: 100%;
   height: 100%;
@@ -1215,17 +991,20 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 150px 1fr;
   grid-template-rows: 1fr;
+
   .building-tree-data {
     position: unset;
     height: 100%;
     overflow-y: auto;
     display: inline-block;
+
     .tree-data-item {
       .tree-data-item-name {
         min-width: 100px;
       }
     }
   }
+
   .map-bg {
     display: inline-block;
     flex: 1;
@@ -1246,22 +1025,26 @@ onUnmounted(() => {
   display: flex;
   position: absolute;
   transition: left cubic-bezier(0.5, -0.5, 0.5, 1) 0.3s;
+
   .map-tree-data {
     position: relative;
     width: 220px;
     transform: scale(1);
     transition: transform cubic-bezier(0.5, -0.5, 0.5, 1) 0.3s;
   }
+
   &.collapsed {
     .map-tree-data {
       transform: scale(0);
     }
+
     .collapsed-icon {
       .icon {
         rotate: 180deg;
       }
     }
   }
+
   .collapsed-icon {
     position: absolute;
     cursor: pointer;
@@ -1275,12 +1058,15 @@ onUnmounted(() => {
     font-size: 24px;
     right: 0;
     transform: translateX(100%);
+
     .icon {
       transform: scale(0);
       rotate: 0;
     }
+
     &:hover {
       backdrop-filter: blur(1px);
+
       .icon {
         transform: scale(1);
       }
@@ -1303,20 +1089,26 @@ onUnmounted(() => {
   &::-webkit-scrollbar {
     width: 6px;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 3px;
   }
+
   .tree-data-item {
     border-top: 1px solid #e5e5e5;
+
     &:first-child {
       border-top: none;
     }
+
     .tree-data-item-name {
       border-bottom: 1px solid #e5e5e5;
+
       &:last-child {
         border-bottom: none;
       }
+
       width: 100%;
       padding: 0px 30px;
       line-height: 46px;
@@ -1327,6 +1119,7 @@ onUnmounted(() => {
       position: relative;
       text-align: center;
       cursor: pointer;
+
       .tree-data-item-name-icon {
         position: absolute;
         left: 10px;
@@ -1340,15 +1133,15 @@ onUnmounted(() => {
           transform: translate(0, -50%) rotate(90deg);
         }
       }
+
       &.active {
-        background: linear-gradient(
-          151.99deg,
-          rgba(0, 122, 255, 1) 29.59%,
-          rgba(4, 71, 171, 1) 294.82%
-        );
+        background: linear-gradient(151.99deg,
+            rgba(0, 122, 255, 1) 29.59%,
+            rgba(4, 71, 171, 1) 294.82%);
         color: #fff;
       }
     }
+
     .tree-data-item-child {
       .tree-data-item-child-item {
         .tree-data-item-child-item-name {
@@ -1363,76 +1156,21 @@ onUnmounted(() => {
   }
 }
 
-.map-zoom-container {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  outline: none;
-  user-select: none;
-  scrollbar-width: none;
-
-  // 可视化编辑器画布背景 - 点状网格
-  background-color: #f8f9fa;
-  background-image: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0.15) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  background-position: 0 0;
-
-  &:focus {
-    outline: none;
-  }
-
-  // Ctrl键按下时的缩放光标样式
-  &.ctrl-pressed {
-    cursor: zoom-in !important;
-
-    * {
-      cursor: zoom-in !important;
-    }
-  }
-
-  // 空格键按下时的拖拽光标样式
-  &.space-pressed {
-    cursor: grab !important;
-
-    * {
-      cursor: grab !important;
-    }
-  }
-
-  // 拖拽中的光标样式
-  &.dragging {
-    cursor: grabbing !important;
-
-    * {
-      cursor: grabbing !important;
-    }
-  }
-}
-
 .custom-map {
   background-color: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.2s ease-out;
-
-  // 拖拽时禁用过渡动画以提升性能
-  &.no-transition {
-    transition: none !important;
-  }
 
   .map-marker {
     position: absolute;
     transform: translate(-50%, -50%);
+
     &.cursor-pointer {
       cursor: pointer;
     }
+
     .marker-icon {
       width: 30px;
     }
@@ -1456,9 +1194,11 @@ onUnmounted(() => {
   .building-marker {
     position: absolute;
     transform: translate(-50%, -50%);
+
     &.cursor-pointer {
       cursor: pointer;
     }
+
     .marker-icon {
       width: 30px;
     }
@@ -1474,15 +1214,18 @@ onUnmounted(() => {
   opacity: 1;
   width: max-content;
   height: max-content;
+
   &.popover-fade-enter-active,
   &.popover-fade-leave-active {
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   }
+
   &.popover-fade-enter,
   &.popover-fade-leave-to {
     opacity: 0;
     transform: translate(-50%, -120%) scale(0.8);
   }
+
   &.popover-fade-enter-to,
   &.popover-fade-leave {
     opacity: 1;
@@ -1531,45 +1274,5 @@ onUnmounted(() => {
 .tree-expand-leave-from {
   max-height: 1000px;
   opacity: 1;
-}
-
-// 一键恢复按钮样式
-.map-reset-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .reset-icon {
-    font-size: 18px;
-    color: #666;
-    transition: color 0.2s ease;
-  }
-
-  &:hover .reset-icon {
-    color: #333;
-  }
 }
 </style>
