@@ -416,7 +416,7 @@ export default {
       };
     },
     getIconName() {
-      if (this.cellItem?.parts_type == "icon") {
+      if (this.iconPartTypes.includes(this.cellItem?.parts_type)) {
         let icon = this.getPartModelData || "";
         if (icon) {
           if (icon?.startsWith("i-")) {
@@ -535,7 +535,7 @@ export default {
         if (this.cellItem?.wave_bg_color) {
           obj.waveBgColor = this.cellItem?.wave_bg_color;
         }
-        if(this.cellItem?.wave_font_size){
+        if (this.cellItem?.wave_font_size) {
           obj.waveFontSize = this.cellItem?.wave_font_size;
         }
       }
@@ -551,9 +551,11 @@ export default {
       let val = item.parts_text;
       switch (type) {
         case "iconImg":
+        case "图片":
           val = item.parts_img;
           break;
         case "icon":
+        case "字体图标":
           val = item.parts_icon || val;
           break;
         default:
@@ -988,9 +990,8 @@ export default {
       } else if (url?.indexOf("data:image") === 0) {
         return url;
       } else {
-        return `${
-          this.serviceApi().downloadFile
-        }${url}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+        return `${this.serviceApi().downloadFile
+          }${url}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
       }
     },
     async getFiles(no, size) {
@@ -1106,7 +1107,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 [class^="bx-cell-"] {
   &.cursor-pointer {
     &:hover {
@@ -1114,12 +1118,14 @@ export default {
     }
   }
 }
+
 .bx-cell-video {
   width: 100%;
   height: 100%;
   background-color: #ccc;
   object-fit: cover;
 }
+
 .bx-cell-string {
   text-align: justify;
   overflow: hidden;
