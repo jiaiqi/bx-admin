@@ -876,6 +876,19 @@ export default {
                  });
                  draggedElement._type = "component";
                }
+              if(draggedElement.value==='咨询入口'){
+                draggedElement.com_type = "咨询入口";
+                draggedElement.data = {
+                  com_type: "咨询入口",
+                };
+                Object.keys(draggedElement).forEach((key) => {
+                  if (key.startsWith("_default_")) {
+                    draggedElement.data[key.replace("_default_", "")] =
+                        draggedElement[key];
+                  }
+                });
+                draggedElement._type = "component";
+              }
               if (draggedElement.type === "cardPart") {
                 draggedElement.com_type = "卡片部件";
                 draggedElement.data = {

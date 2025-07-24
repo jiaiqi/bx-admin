@@ -19,5 +19,7 @@ window.APP_CONFIG = {
         port: '443',  //icc 平台端口 https 默认 443
         username: 'admin',  // icc 平台用户名
         password: 'Admin123' // icc 平台密码
-    }
+    },
+    sock:"ws://113.201.21.178:9002/im", //在线咨询使用
+    chatUrl:'http://192.168.0.191:8083/#/chart-info'
 };

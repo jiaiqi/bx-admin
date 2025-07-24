@@ -1368,6 +1368,10 @@ export default {
               compObj.data = [{ widget_type: "文本" }];
 
               break;
+            case "咨询入口":
+              compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
+              compObj.data = [{widget_type:"文本"}];
+              break;
 
           }
           addCompArr.push(compObj);

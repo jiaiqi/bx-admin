@@ -29,7 +29,7 @@
            </div>
            <div class="info_row_pay" v-if="orderList.length>0">
              <div class="pay_col" v-for="(item,index) in orderList" :key="item.su_order_no">
-               <span class="des_pay">{{item.item_name}}</span>
+               <span class="des_pay" :title="item.item_name">{{item.item_name}}</span>
                <span class="count_pay">{{item.total_fee}}</span>
              </div>
            </div>
@@ -38,9 +38,9 @@
      </el-row>
      <el-row :gutter="20" style="margin:5px 0">
        <el-col :span="6" style="text-align: right;"><span class="col_t">待支付金额：</span></el-col>
-       <el-col :span="16"><span class="ped_pay">{{'￥'+payInfo.pending_amount}}</span></el-col>
+       <el-col :span="16"><span class="ped_pay">{{'￥'+formatAmount(payInfo.pending_amount)}}</span></el-col>
      </el-row>
-     <el-row :gutter="20" style="margin:5px 0">
+     <el-row :gutter="20" style="margin:5px 0" v-if="payStep!==2">
        <el-col :span="6" style="text-align: right;"><span class="col_t">确认支付金额：</span></el-col>
        <el-col :span="16">
        <span>
@@ -403,11 +403,23 @@ export default{
     },
     handleBack(){
       this.handleStatus=false;
+    },
+
+    /**
+     * @Description:金额千分位格式化，保留小数点后数字
+     * @Author:Eirice
+     * @Date: 2025-07-17 14:23:36
+     */
+    formatAmount(amount) {
+      if (amount === null || amount === undefined || amount === '') return '';
+      const parts = amount.toString().split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts.join('.');
     }
   },
   mounted() {
     // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-7942739b-31ef-49ee-9add-a146e6172097');
+    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-a30cecf0-903f-4625-9f5e-c3a93dcfc9f5');
   },
   beforeDestroy() {
     // 组件销毁前清除定时器

@@ -456,7 +456,7 @@ export default {
       pageNo:'',
       ruleForm: {
         owe_fee:'',                         //补缴费用
-        axlecount: "",                     //车轴数
+        axlecount:0,                     //车轴数
         escape_type: "",	               // 确认逃费类型
         is_initiator_evidence: "",       //是否是发起方提交证据
         is_match_issue: "",             //是否与发行数据一致
@@ -797,6 +797,7 @@ export default {
      * @Date: 2025-06-06 17:23:48
      */
     handleGetCurrentFree(){
+
       if(this.ruleForm.vehicle_type===''){
         this.$message.error('请在下方发起人信息栏，选择稽核车型后再进行计费查询！');
       }
@@ -817,6 +818,7 @@ export default {
       }).catch(err=>{})
       console.log('查询计费使用的passid',this.ruleForm.pass_id)
     },
+
     /**
      * @Description:计费查询后续处理
      * @Author:Eirice
@@ -869,6 +871,9 @@ export default {
         // 如果字段不在sel数组中，则重置为初始值
         if (!sel.includes(key)) {
           this.ruleForm[key] = ''
+        }
+        if(key==='axlecount'){
+          this.ruleForm[key] = 0
         }
       })
       // 重置图片相关数据

@@ -8,6 +8,7 @@ import customState from "./modules/custom-state";
 import theme from './modules/theme'
 import loginInfo from './modules/loginInfo'
 import orderForm from './modules/order-form'
+import chatInfo from "./modules/chatInfo";
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -19,7 +20,8 @@ export default new Vuex.Store({
     customState,
     theme,
     loginInfo,
-    orderForm
+    orderForm,
+    chatInfo
   },
   strict: false,
 })
