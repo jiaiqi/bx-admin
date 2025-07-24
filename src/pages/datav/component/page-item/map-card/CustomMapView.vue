@@ -1,8 +1,6 @@
 <template>
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
-  <div
-    class="map-view-container"
-  >
+  <div class="map-view-container">
     <!-- 建筑物视图的树形数据 -->
     <div
       class="building-tree-data map-tree-data"
@@ -121,21 +119,15 @@
     </div>
 
     <!-- 自定义底图-地图视图区域 -->
-    <zoom-drag-container
-      class="map-view"
-      :show-tips="true"
-    >
+    <zoom-drag-container :show-tips="true">
       <div
-        class="map-view"
+        class="map-view base-image"
         :class="{
           'building-view': isBuildingView,
           'custom-map': !isBuildingView,
         }"
         :style="{
           backgroundImage: `url(${baseImage})`,
-          backgroundSize: '100% 100%',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
         }"
       >
         <!-- 建筑物视图内容 -->
@@ -187,7 +179,11 @@
         </template>
       </div>
     </zoom-drag-container>
-
+    <multi-source-markers
+      :map-json="mapJson"
+      v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物')"
+      :marker-list.sync="markerList"
+    ></multi-source-markers>
     <!-- 弹窗内容 -->
     <Teleport
       to="body"
@@ -262,7 +258,7 @@ import { Icon } from "@iconify/vue2"; // 图标组件
 import Teleport from "vue2-teleport"; // Vue 2 传送门组件
 import cloneDeep from "lodash/cloneDeep";
 import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
-
+import MultiSourceMarkers from "./MultiSourceMarkers.vue";
 /**
  * 组件 Props 定义
  * @typedef {Object} Props
@@ -420,6 +416,8 @@ const baseImage = computed(() => {
   return getImagePath(mapJson.value.base_image);
 });
 
+
+
 /**
  * 判断标记点是否激活
  */
@@ -530,7 +528,7 @@ function getItemPosition(item = {}) {
     left: 0,
     top: 0,
   };
-
+  debugger
   // 设置 X 轴位置（左右位置）
   if (mapJson.value?.x_col && item[mapJson.value?.x_col]) {
     post.left = item[mapJson.value?.x_col] + "%";
@@ -981,10 +979,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style
-  lang="scss"
-  scoped
->
+<style lang="scss" scoped>
 .map-view-container {
   width: 100%;
   height: 100%;
@@ -999,6 +994,14 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   position: relative;
+
+}
+
+.base-image {
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+
 }
 
 .building-view {
