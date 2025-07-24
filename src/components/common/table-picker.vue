@@ -6,50 +6,39 @@
       :disabled="disabled"
       :append-to-body="false"
       :popper-options="{
-        boundariesElement: 'body',
+        boundariesElement: 'viewport',
         gpuAcceleration: true,
         positionFixed: true,
-        preventOverflow: true,
+        preventOverflow: {
+          options: {
+            boundary: 'viewport',
+          }
+        },
       }"
       @show="visibleChange"
     >
       <template slot="reference">
-        <div class="">
-          <!-- <div class="selected-all inner" v-if="isSelectedAll">全部</div>
-          <el-switch
-            v-model="isSelectedAll"
-            active-color="#409EFF"
-            inactive-color="#CDCDCD"
-            active-text="全选"
-            :active-value="true"
-            :inactive-value="false"
-            class="ml-2"
-            @change="changeSelectedAll"
-            v-if="isSelectedAll"
+        <el-select
+          style="width: 100%"
+          :disabled="disabled"
+          v-model="selected"
+          :value-key="valueCol"
+          popper-class="popper-class"
+          placeholder="请选择"
+          :multiple="isMulti"
+          clearable
+          @remove-tag="removeTag"
+          @clear="clearSelect"
+          @focus="onSearch"
+        >
+          <el-option
+            v-for="item in allData"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
           >
-          </el-switch> -->
-          <el-select
-            style="width: 100%"
-            :disabled="disabled"
-            v-model="selected"
-            :value-key="valueCol"
-            popper-class="popper-class"
-            placeholder="请选择"
-            :multiple="isMulti"
-            clearable
-            @remove-tag="removeTag"
-            @clear="clearSelect"
-            @focus="onSearch"
-          >
-            <el-option
-              v-for="item in allData"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
-        </div>
+          </el-option>
+        </el-select>
       </template>
       <div
         class="picker-view"
@@ -153,10 +142,12 @@
 
 <script>
 // import ListMixin from "../mixin/list-mixin"; // 列表js
+import { placements } from "@popperjs/core";
 import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import uniqBy from "lodash/uniqBy";
+import { options } from "less";
 export default {
   props: {
     field: {
@@ -333,7 +324,7 @@ export default {
         // this.$refs?.show_popover?.dispatchEvent(new MouseEvent('click'));
         //重新计算弹框的位置：
         this.$nextTick(() => {
-          this.$refs.show_popover.updatePopper();
+          this.$refs.show_popover?.updatePopper();
         });
       },
     },
@@ -698,7 +689,7 @@ export default {
           this.selected.push(row[this.valueCol]);
           if (rowChildren?.length) {
             rowChildren.forEach((item) => {
-              if(!this.selected.includes(item)){
+              if (!this.selected.includes(item)) {
                 this.selected.push(item);
               }
             })
