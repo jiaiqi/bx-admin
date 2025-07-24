@@ -236,14 +236,14 @@
       :query-options="queryOptions"
     >
     </info-details>
-    <chat-entrance
-        v-else-if="pageItemData.com_type === '咨询入口'"
-        :pageItem="pageItemData"
-        :page-params-model="pageParamsModel"
-        :query-options="queryOptions"
-        @setOpenChat="setOpenChat"
-    >
-    </chat-entrance>
+<!--    <chat-entrance-->
+<!--        v-else-if="pageItemData.com_type === '咨询入口'"-->
+<!--        :pageItem="pageItemData"-->
+<!--        :page-params-model="pageParamsModel"-->
+<!--        :query-options="queryOptions"-->
+<!--        @setOpenChat="setOpenChat"-->
+<!--    >-->
+<!--    </chat-entrance>-->
     <div
       v-else-if="pageItemData && pageItemData.com_label"
       :class="{ mobile: screenType === 'mobile' }"
@@ -270,8 +270,6 @@
         {{ pageItemData.more_label || "更多" }}
       </span>
     </div>
-    <!-- 在线咨询对话框-->
-    <ChatBox :visible.sync="isOpenChat" :chatItem="chatItem"/>
   </div>
 </template>
 
@@ -298,8 +296,6 @@ import InfoDetails from "@/pages/datav/component/page-item/info-details.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import CanvasPage from "@/components/common/canvas-line/canvasPage.vue";
-import ChatEntrance from "@/pages/datav/component/page-item/chat/chat-entrance.vue";
-import ChatBox from "@/pages/datav/component/page-item/chat/chat-box.vue";
 import { Icon } from "@iconify/vue2";
 import {
   setEnterAnimationClass,
@@ -309,7 +305,6 @@ import {
 export default {
   mixins: [pageItemParams],
   components: {
-    ChatBox,
     CanvasPage,
     videoCard,
     currentInfo,
@@ -330,7 +325,6 @@ export default {
     Icon,
     CardCellPart,
     InfoDetails,
-    ChatEntrance
   },
   props: {
     pageItem: {
@@ -433,9 +427,7 @@ export default {
   },
   data() {
     return {
-      isOpenChat:false,
       pageItemData: {},
-      chatItem:null,
     };
   },
   mounted() {
@@ -454,12 +446,6 @@ export default {
     },
   },
   methods: {
-    //打开指定的在线咨询框
-    setOpenChat(item){
-      this.isOpenChat=true;
-      this.chatItem=item;
-     console.log('这是打开的聊天框',item)
-    },
     onDelete() {
       this.$emit("delete", this.pageItem);
     },

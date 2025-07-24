@@ -11,13 +11,13 @@
     <div
       class="overlay"
       :class="{
-        'on-drag-float-component': draggingComponentType === '悬浮组件',
+        'on-drag-float-component': draggingComponentType === '悬浮组件'|| draggingComponentType === '咨询入口',
       }"
       @click="clickOutside"
     ></div>
     <lc-view
       :style="{
-        'pointer-events': draggingComponentType === '悬浮组件' ? 'none' : '',
+        'pointer-events': draggingComponentType === '悬浮组件' || draggingComponentType === '咨询入口'? 'none' : '',
       }"
       v-for="item in editorComponents"
       :current-id="currentId"
@@ -315,7 +315,7 @@ export default {
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("editor-drag-over");
         e.currentTarget.classList.remove("editor-drag-not-allowed");
-      } else if (draggedType === "悬浮组件"||draggedType==='details') {
+      } else if (draggedType === "悬浮组件"||draggedType==='咨询入口') {
         // 允许放置悬浮组件
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("on-drag-float-component");
@@ -350,6 +350,7 @@ export default {
         });
     },
     handleEditorDrop(e) {
+      debugger
       e.preventDefault();
       e.currentTarget.classList.remove("editor-drag-over");
       e.currentTarget.classList.remove("editor-drag-not-allowed");
@@ -410,13 +411,24 @@ export default {
             }
             this.$emit("change", this.editorComponents);
           }else if(draggedElement.value==='咨询入口') {
-            draggedElement.com_type = "咨询入口";
-            draggedElement.component = "component";
+            // 计算当前放入的点相对于editor-view的位置 单位使用百分比
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+
+            draggedElement.position = {
+              x: xPercent,
+              y: yPercent,
+            };
+            draggedElement.com_type = "cardGroup";
+            draggedElement.component = "chat-entrance";
+            draggedElement.com_option = "悬浮可拖动";
             if (!draggedElement._editType) {
               draggedElement.id = `root_container_${new Date().getTime()}`;
               draggedElement._editType = "add";
               draggedElement.com_name = "咨询入口";
-              draggedElement.com_type = "咨询入口";
               // 计算seq值，使用(当前组件数量+1)*100 + 10000
               draggedElement._seq = (this.editorComponents.length + 1) * 100 + 10000;
               // 添加到顶层组件

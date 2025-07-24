@@ -27,6 +27,10 @@
       <button class="login-btn" @click="toLogin">登录</button>
     </div>
   </div>
+    <!-- 在线咨询对话框-->
+    <div v-else-if="com_name === '咨询入口'&& isOpenChat">
+      <ChatBox :visible.sync="isOpenChat" :chatItem="chatItem" />
+    </div>
   <component
     :is="component"
     v-else-if="
@@ -47,6 +51,7 @@
     @add="addComponent"
     @delete="deleteComponent"
     @resize="onResize"
+    @setOpenChat="setOpenChat"
     @swap-components="$emit('swap-components', $event)"
     @move-component="$emit('move-component', $event)"
     :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
@@ -77,6 +82,7 @@
         @add="addComponent"
         @delete="deleteComponent"
         @resize="onResize"
+        @setOpenChat="setOpenChat"
         @swap-components="$emit('swap-components', $event)"
         @move-component="$emit('move-component', $event)"
       ></lc-view>
@@ -106,10 +112,13 @@ import lcContent from "./content-item.vue";
 import PageItem from "@/pages/datav/component/page-item/page-item.vue";
 import floatComponent from "./float-component.vue";
 import { VueDraggable } from "vue-draggable-plus";
+import chatEntrance from "@/pages/datav/component/page-item/chat/chat-entrance.vue";
+import ChatBox from "@/pages/datav/component/page-item/chat/chat-box.vue";
 
 export default {
   name: "lc-view",
   components: {
+    ChatBox,
     lcBlock,
     lcContainer,
     lcContent,
@@ -117,6 +126,7 @@ export default {
     PageItem,
     lcView: () => import("./view.vue"),
     floatComponent,
+    chatEntrance
   },
   props: {
     id: {
@@ -201,6 +211,7 @@ export default {
   },
   computed: {
     props() {
+      console.log("components0as0as00as", this.$props);
       return { ...this.$props, ...(this.$attrs || {}) };
     },
     isView() {
@@ -228,6 +239,8 @@ export default {
   data() {
     return {
       childComponents: [],
+      chatItem:null,
+      isOpenChat:false,
     };
   },
   watch: {
@@ -244,6 +257,13 @@ export default {
     },
   },
   methods: {
+    //打开指定的在线咨询框
+    setOpenChat(item){
+      this.isOpenChat=true;
+      this.chatItem=item;
+      console.log(this.com_name)
+      console.log('这是打开的聊天框',item)
+    },
     toLogin() {
       const currentUrl = window.location.pathname + window.location.hash;
       sessionStorage.setItem("login_redirect_url", currentUrl);

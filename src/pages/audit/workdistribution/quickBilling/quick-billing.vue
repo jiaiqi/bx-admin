@@ -409,8 +409,8 @@ export default {
         vehicleType:'',//稽核车型
         vehicleUserType:'', //车辆用户类型
         vehicleClass:'', //车种
-        rateProgramVer:'', //计费模块版本号
-        rateVer:'' // 费率版本号
+        rateProgramVer:0, //计费模块版本号
+        rateVer:0 // 费率版本号
       },
       quickForm1:{
         textGantryGroup:'', //人录入门架序列
