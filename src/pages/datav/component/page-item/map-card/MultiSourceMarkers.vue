@@ -1,68 +1,210 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { MessageBox } from 'element-ui'
+import { $http } from '@/common/http'
 
-import { $http } from '@/common/http';
-
-
+// 组件属性定义
 const props = defineProps({
   mapJson: {
     type: Object,
-    default: () => { },
+    default: () => ({}),
   },
   markerList: {
     type: Array,
-    default: () => { },
+    default: () => [],
   }
-});
+})
+
+// 事件定义
+const emit = defineEmits(['update:markerList'])
+
+// 响应式数据
+const markers = ref([])
+const loading = ref(false)
+const error = ref(null)
+
+// 计算属性：获取多源POI配置
 const sourceJson = computed(() => {
-  return props.mapJson.multi_src_poi_json || [];
-});
-const markers = ref()
+  return props.mapJson?.multi_src_poi_json || []
+})
+
+/**
+ * 获取标记点数据
+ * @param {Object} params - 请求参数
+ * @param {Object} params.srv_req_json - 服务请求配置
+ * @param {string} params.poi_name - POI名称
+ * @param {string} params.poi_type - POI类型
+ * @param {Object} params.col_map - 列映射配置
+ */
 async function getMarkers(params = {}) {
-  const { srv_req_json: p, poi_name, poi_type,col_map } = params
-  if (p) {
-    const url = `/${p.mapp}/select/${p.serviceName}`;
+  const { srv_req_json: p, poi_name, poi_type, col_map } = params
+  
+  // 参数验证
+  if (!p || !p.mapp || !p.serviceName) {
+    console.warn('获取标记点数据：缺少必要的服务配置参数', params)
+    return
+  }
+
+  try {
+    const url = `/${p.mapp}/select/${p.serviceName}`
     const res = await $http.post(url, p)
+    
     if (res?.data?.state === 'SUCCESS') {
-      const list = res.data.data.map(item => {
-        item._poi_info = {
+      const data = res.data.data
+      
+      // 数据验证
+      if (!Array.isArray(data)) {
+        console.warn('获取标记点数据：返回数据格式不正确', data)
+        return
+      }
+
+      // 处理数据，添加POI信息和列映射
+      const list = data.map(item => ({
+        ...item,
+        _poi_info: {
+          poi_name,
+          poi_type,
           ...params
-        }
-        item._col_map = col_map
-        return item
-      })
+        },
+        _col_map: col_map || {}
+      }))
+      
+      // 添加到标记点列表
       markers.value.push(...list)
-    } else if (res?.data?.resultMessage) {
-      MessageBox.error(res?.data?.resultMessage)
+      
+    } else {
+      const errorMsg = res?.data?.resultMessage || '获取标记点数据失败'
+      console.error('获取标记点数据失败：', errorMsg)
+      MessageBox.error(errorMsg)
+      error.value = errorMsg
     }
+  } catch (err) {
+    const errorMsg = `获取标记点数据异常：${err.message}`
+    console.error(errorMsg, err)
+    MessageBox.error(errorMsg)
+    error.value = errorMsg
   }
 }
 
-watch(() => sourceJson.value, async (newVal, oldVal) => {
-  if (newVal.length) {
+/**
+ * 批量获取所有数据源的标记点
+ */
+async function fetchAllMarkers() {
+  if (!sourceJson.value.length) {
     markers.value = []
-    newVal.forEach(item => {
-      getMarkers(item)
-    })
+    return
   }
-}, {
-  immediate: true
-})
 
-const emit = defineEmits(['update:markers'])
-watch(() => markers.value, (newVal, oldVal) => {
-  // debugger
-  // markerList.value = buildMarkerList()
-  debugger
-  emit('update:markerList', newVal)
-}, {
-  deep: true,
+  loading.value = true
+  error.value = null
+  markers.value = []
+
+  try {
+    // 并发请求所有数据源
+    const promises = sourceJson.value.map(item => getMarkers(item))
+    await Promise.allSettled(promises)
+  } catch (err) {
+    console.error('批量获取标记点数据失败：', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 监听数据源配置变化
+watch(
+  () => sourceJson.value,
+  async (newVal, oldVal) => {
+    // 深度比较，避免不必要的重新请求
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      await nextTick()
+      await fetchAllMarkers()
+    }
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
+
+// 监听标记点数据变化，向父组件发送更新事件
+watch(
+  () => markers.value,
+  (newVal) => {
+    emit('update:markerList', newVal || [])
+  },
+  {
+    deep: true,
+    immediate: true
+  }
+)
+
+// 暴露给父组件的方法
+defineExpose({
+  fetchAllMarkers,
+  markers,
+  loading,
+  error
 })
 </script>
-<template>
-  <div>
 
+<template>
+  <div class="multi-source-markers">
+    <!-- 加载状态指示器 -->
+    <div v-if="loading" class="loading-indicator">
+      <i class="el-icon-loading"></i>
+      <span>正在加载标记点数据...</span>
+    </div>
+    
+    <!-- 错误信息显示 -->
+    <div v-if="error && !loading" class="error-message">
+      <i class="el-icon-warning"></i>
+      <span>{{ error }}</span>
+    </div>
+    
+    <!-- 数据统计信息 -->
+    <div v-if="!loading && !error" class="marker-stats">
+      <span>已加载 {{ markers.length }} 个标记点</span>
+    </div>
   </div>
 </template>
-<style lang="scss" scoped></style>
+
+<style lang="scss" scoped>
+.multi-source-markers {
+  .loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    color: #409eff;
+    font-size: 14px;
+    
+    i {
+      font-size: 16px;
+    }
+  }
+  
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    color: #f56c6c;
+    font-size: 14px;
+    background-color: #fef0f0;
+    border: 1px solid #fbc4c4;
+    border-radius: 4px;
+    
+    i {
+      font-size: 16px;
+    }
+  }
+  
+  .marker-stats {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #909399;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+  }
+}
+</style>

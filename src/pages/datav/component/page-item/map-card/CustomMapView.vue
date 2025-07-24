@@ -490,6 +490,16 @@ function getItemIcon(item = {}) {
     console.warn("getItemIcon: 无效的item参数", item);
     item = {};
   }
+  if (item?.col_map?.customized_icon) {
+    // 自定义图标
+    return getImagePath(item[item.col_map.customized_icon])
+  } else if (item?._poi_info?.poi_type_icon) {
+    // 默认图标
+    return getImagePath(item._poi_info.poi_type_icon)
+  } else if (item?._poi_info?.icon) {
+    // 默认图标
+    return getImagePath(item._poi_info.icon)
+  }
 
   const mapConfig = mapJson.value;
   if (!mapConfig) {
@@ -524,22 +534,31 @@ function getItemIcon(item = {}) {
  * @returns {Object} 位置对象，包含 left 和 top 属性（百分比值）
  */
 function getItemPosition(item = {}) {
-  let post = {
+  let pos = {
     left: 0,
     top: 0,
   };
-  debugger
-  // 设置 X 轴位置（左右位置）
-  if (mapJson.value?.x_col && item[mapJson.value?.x_col]) {
-    post.left = item[mapJson.value?.x_col] + "%";
+  if (mapJson.value?.x_col && mapJson.value?.y_col) {
+    // 设置 X 轴位置（左右位置）
+    if (item[mapJson.value?.x_col]) {
+      pos.left = item[mapJson.value?.x_col] + "%";
+    }
+    // 设置 Y 轴位置（上下位置）
+    if (item[mapJson.value?.y_col]) {
+      pos.top = item[mapJson.value?.y_col] + "%";
+    }
+  } else if (item?._col_map) {
+    const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
+    pos.label = item[col_label]
+    pos.left = item[col_x] + "%";
+    pos.top = item[col_y] + "%";
+    pos.width = (col_x_width || 30) + 'px';
+    pos.height = (col_y_width || 30) + 'px';
+    pos.icon = customized_icon
+    pos.value = item[col_no]
   }
 
-  // 设置 Y 轴位置（上下位置）
-  if (mapJson.value?.y_col && item[mapJson.value?.y_col]) {
-    post.top = item[mapJson.value?.y_col] + "%";
-  }
-
-  return post;
+  return pos;
 }
 
 /**
