@@ -151,7 +151,7 @@
               ]"
               v-for="marker in markerList"
               :key="marker.id"
-              @click="clickMarker(marker)"
+              @click="clickMarker(marker, $event)"
             >
               <div class="map-marker-content">
                 {{ marker[mapJson.col_label] || "" }}
@@ -203,7 +203,21 @@
             :class="{ show: activeMarker && activeMarker.id }"
           >
             <template v-if="activeMarker && activeMarker.id">
-              <div class="bottom-arrow"></div>
+              <!-- 动态箭头方向和位置 -->
+              <div 
+                :class="[
+                  'popover-arrow',
+                  popoverPosition.arrowDirection || 'bottom'
+                ]"
+                :style="{
+                  left: (popoverPosition.arrowDirection === 'top' || popoverPosition.arrowDirection === 'bottom') 
+                    ? (popoverPosition.arrowPosition || 50) + '%' 
+                    : undefined,
+                  top: (popoverPosition.arrowDirection === 'left' || popoverPosition.arrowDirection === 'right') 
+                    ? (popoverPosition.arrowPosition || 50) + '%' 
+                    : undefined
+                }"
+              ></div>
               <card-group-cell
                 :page-item="pageItem"
                 :cellsLayout="[cardUnitJson]"
@@ -594,8 +608,33 @@ const setLabelActiveStyle = computed(() => {
 });
 
 /**
+ * 获取弹窗实际尺寸
+ * 通过查询DOM元素获取弹窗的实际宽高
+ *
+ * @function getPopoverDimensions
+ * @returns {Object} 包含width和height的对象
+ */
+function getPopoverDimensions() {
+  const popoverElement = document.querySelector('.popover-content-to-body .popover-content');
+  
+  if (popoverElement) {
+    const rect = popoverElement.getBoundingClientRect();
+    return {
+      width: rect.width || 300, // 如果获取失败，使用默认值
+      height: rect.height || 200
+    };
+  }
+  
+  // 如果无法获取实际尺寸，返回估算值
+  return {
+    width: 300,
+    height: 200
+  };
+}
+
+/**
  * 计算弹窗位置
- * 根据标记点元素的位置计算弹窗的显示位置
+ * 根据标记点元素的位置计算弹窗的显示位置，智能检测视口边界并调整位置和箭头方向
  *
  * @function calculatePopoverPosition
  * @param {HTMLElement} element - 标记点 DOM 元素
@@ -603,16 +642,92 @@ const setLabelActiveStyle = computed(() => {
 function calculatePopoverPosition(element) {
   if (!element) return; // 检查元素是否存在
 
-  // 由于popover使用position: fixed定位（相对于视口），
-  // 我们需要获取元素相对于视口的准确位置
+  // 获取元素相对于视口的位置
   const elementRect = element.getBoundingClientRect();
-
-  // 计算popover的位置（相对于视口）
-  // popover的transform是translate(-50%, -100%)，所以需要考虑这个偏移
-  popoverPosition.value = {
-    x: elementRect.left + elementRect.width / 2, // 水平居中
-    y: elementRect.top - CONFIG.UI.POPUP_OFFSET, // 在元素上方，留出间距
-  };
+  
+  // 获取视口尺寸
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  
+  // 获取弹窗实际尺寸或使用估算值
+  const popoverDimensions = getPopoverDimensions();
+  const popoverWidth = popoverDimensions.width;
+  const popoverHeight = popoverDimensions.height;
+  const padding = 50; // 距离视口边缘的最小间距
+  
+  // 标记点中心位置
+  const markerCenterX = elementRect.left + elementRect.width / 2;
+  const markerCenterY = elementRect.top + elementRect.height / 2;
+  
+  // 计算初始位置（默认在元素上方居中）
+  let x = markerCenterX;
+  let y = elementRect.top - CONFIG.UI.POPUP_OFFSET;
+  let arrowDirection = 'bottom'; // 默认箭头指向下方（弹窗在上方）
+  let arrowPosition = 50; // 箭头在弹窗中的位置百分比（默认居中）
+  
+  // 水平位置调整和箭头水平位置计算
+  const popoverLeft = x - popoverWidth / 2;
+  const popoverRight = x + popoverWidth / 2;
+  
+  if (popoverLeft < padding) {
+    // 左边界溢出，调整弹窗到左对齐
+    const newX = padding + popoverWidth / 2;
+    // 计算箭头相对于弹窗的位置百分比
+    arrowPosition = Math.max(10, Math.min(90, ((markerCenterX - (padding + popoverWidth / 2)) / popoverWidth + 0.5) * 100));
+    x = newX;
+  } else if (popoverRight > viewportWidth - padding) {
+    // 右边界溢出，调整弹窗到右对齐
+    const newX = viewportWidth - padding - popoverWidth / 2;
+    // 计算箭头相对于弹窗的位置百分比
+    arrowPosition = Math.max(10, Math.min(90, ((markerCenterX - newX) / popoverWidth + 0.5) * 100));
+    x = newX;
+  }
+  
+  // 垂直位置调整和箭头方向计算
+  const popoverTop = y - popoverHeight; // 考虑transform: translate(-50%, -100%)
+  const popoverBottom = y;
+  
+  if (popoverTop < padding) {
+    // 上边界溢出，将弹窗显示在元素下方
+    y = elementRect.bottom + CONFIG.UI.POPUP_OFFSET + popoverHeight;
+    arrowDirection = 'top'; // 箭头指向上方（弹窗在下方）
+    
+    // 检查下方是否也会溢出
+    if (y > viewportHeight - padding) {
+      // 上下都会溢出，选择空间较大的一侧
+      const spaceAbove = elementRect.top;
+      const spaceBelow = viewportHeight - elementRect.bottom;
+      
+      if (spaceAbove > spaceBelow) {
+        // 上方空间更大，显示在上方但调整位置
+        y = Math.max(padding + popoverHeight, elementRect.top - CONFIG.UI.POPUP_OFFSET);
+        arrowDirection = 'bottom'; // 箭头指向下方（弹窗在上方）
+      } else {
+        // 下方空间更大，显示在下方但调整位置
+        y = Math.min(viewportHeight - padding, elementRect.bottom + CONFIG.UI.POPUP_OFFSET + popoverHeight);
+        arrowDirection = 'top'; // 箭头指向上方（弹窗在下方）
+      }
+    }
+  } else if (popoverBottom > viewportHeight - padding) {
+    // 下边界溢出（这种情况在默认上方显示时不太可能发生，但为了完整性保留）
+    y = viewportHeight - padding;
+    arrowDirection = 'bottom'; // 保持箭头指向下方
+  }
+  
+  // 更新弹窗位置、箭头方向和箭头位置
+  popoverPosition.value = { x, y, arrowDirection, arrowPosition };
+  
+  // 可选：添加调试信息
+  console.log('弹窗位置计算:', {
+    element: { x: elementRect.left, y: elementRect.top, width: elementRect.width, height: elementRect.height },
+    marker: { centerX: markerCenterX, centerY: markerCenterY },
+    viewport: { width: viewportWidth, height: viewportHeight },
+    popover: { x, y, width: popoverWidth, height: popoverHeight, arrowDirection, arrowPosition },
+    adjustments: {
+      horizontalOverflow: popoverLeft < padding || popoverRight > viewportWidth - padding,
+      verticalOverflow: popoverTop < padding || popoverBottom > viewportHeight - padding
+    }
+  });
 }
 
 /**
@@ -636,8 +751,22 @@ function tapMarker(item, event) {
       console.log(event.currentTarget);
       const ele = event.currentTarget;
       currentMarkerElement.value = ele; // 保存元素引用
-      calculatePopoverPosition(ele); // 计算弹窗位置
+      calculatePopoverPosition(ele); // 初始位置计算
       addEventListeners(); // 添加事件监听器
+      
+      // 延迟重新计算位置，确保弹窗内容已渲染
+      setTimeout(() => {
+        if (currentMarkerElement.value && activeMarker.value?.id) {
+          calculatePopoverPosition(currentMarkerElement.value);
+        }
+      }, 100); // 100ms延迟，可根据实际情况调整
+      
+      // 再次延迟计算，处理可能的异步内容加载
+      setTimeout(() => {
+        if (currentMarkerElement.value && activeMarker.value?.id) {
+          calculatePopoverPosition(currentMarkerElement.value);
+        }
+      }, 300); // 300ms延迟，处理异步内容
     }
   }
 }
@@ -901,19 +1030,55 @@ async function tapBuildingTreeData(item) {
 }
 
 /**
- * 标记点点击处理函数（建筑物视图）
- * 检查是否需要切换到建筑物视图
+ * 标记点点击处理函数（标签类型和建筑物视图）
+ * 处理标签类型标记点的弹窗显示和建筑物视图切换
  *
  * @function clickMarker
  * @param {Object} marker - 点击的标记点数据
+ * @param {Event} event - 点击事件对象（可选）
  */
-function clickMarker(marker) {
+function clickMarker(marker, event) {
   // 检查是否配置了建筑物视图切换条件
   if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
     const val = marker[mapJson.value?.building_view_col]; // 获取标记点的建筑物视图字段值
     // 如果值匹配建筑物视图条件，切换到建筑物视图
     if (val && mapJson.value?.building_view_val?.includes(val)) {
       switchToBuildingView(marker);
+      return; // 切换到建筑物视图后直接返回
+    }
+  }
+  
+  // 处理标签类型标记点的弹窗显示（如果配置了弹窗）
+  if (cardUnitJson.value && marker) {
+    // 如果点击的是当前激活的标记点，隐藏弹窗
+    if (marker?.id && marker?.id === activeMarker.value?.id) {
+      activeMarker.value = null;
+      currentMarkerElement.value = null;
+      removeEventListeners(); // 移除事件监听器
+    } else {
+      activeMarker.value = marker; // 设置新的激活标记点
+      
+      // 如果有事件对象，记录点击位置和元素引用
+      if (event && event.currentTarget) {
+        const ele = event.currentTarget;
+        currentMarkerElement.value = ele; // 保存元素引用
+        calculatePopoverPosition(ele); // 初始位置计算
+        addEventListeners(); // 添加事件监听器
+        
+        // 延迟重新计算位置，确保弹窗内容已渲染
+        setTimeout(() => {
+          if (currentMarkerElement.value && activeMarker.value?.id) {
+            calculatePopoverPosition(currentMarkerElement.value);
+          }
+        }, 100); // 100ms延迟，可根据实际情况调整
+        
+        // 再次延迟计算，处理可能的异步内容加载
+        setTimeout(() => {
+          if (currentMarkerElement.value && activeMarker.value?.id) {
+            calculatePopoverPosition(currentMarkerElement.value);
+          }
+        }, 300); // 300ms延迟，处理异步内容
+      }
     }
   }
 }
@@ -1281,16 +1446,52 @@ onUnmounted(() => {
   transform: translate(0%, 0%) scale(1);
 }
 
-:global(.popover-content-to-body .bottom-arrow) {
+:global(.popover-content-to-body .popover-arrow) {
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, 0);
   width: 0;
   height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #fff;
+  z-index: 1001;
+}
+
+/* 箭头指向下方（弹窗在标记物上方） */
+:global(.popover-content-to-body .popover-arrow.bottom) {
+  top: 100%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #fff;
+}
+
+/* 箭头指向上方（弹窗在标记物下方） */
+:global(.popover-content-to-body .popover-arrow.top) {
+  bottom: 100%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #fff;
+}
+
+/* 箭头指向左侧（弹窗在标记物右侧） */
+:global(.popover-content-to-body .popover-arrow.left) {
+  right: 100%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #fff;
+}
+
+/* 箭头指向右侧（弹窗在标记物左侧） */
+:global(.popover-content-to-body .popover-arrow.right) {
+  left: 100%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid #fff;
+}
+
+/* 移除旧的箭头样式 */
+:global(.popover-content-to-body .bottom-arrow) {
+  display: none;
 }
 
 .tree-expand-enter-active,
