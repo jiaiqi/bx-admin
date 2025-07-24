@@ -257,8 +257,12 @@ export default {
             }
           } else {
             item.component = "page-item";
-            if (item.com_option?.includes("悬浮可拖动")) {
+            if (item.com_name!=='咨询入口'&&item.com_option?.includes("悬浮可拖动")) {
               item.component = "float-component";
+            }
+            //在线咨询特别处理
+            if(item.com_name==='咨询入口'&&item.com_option?.includes("悬浮可拖动")){
+              item.component = "chat-entrance";
             }
           }
           item.data = {};

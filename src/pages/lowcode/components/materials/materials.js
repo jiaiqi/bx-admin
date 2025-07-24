@@ -374,7 +374,7 @@ export const materialsTree = [
         label: "咨询入口",
         value: "咨询入口",
         icon: "ri-radio-button-fill",
-        type: "component"
+        type: "咨询入口"
       }
     ],
   },

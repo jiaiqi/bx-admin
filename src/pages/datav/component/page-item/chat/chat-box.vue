@@ -53,7 +53,6 @@ export default{
       externalUrl:null,
       showIframe: false,
       iframeKey: 0,
-      setChatList:[]
     }
   },
   props: {
@@ -84,6 +83,10 @@ export default{
     },
     safeChatItem() {
       return this.chatItem || { chat_type: '在线咨询', code: 2 };
+    },
+    // 从store中获取setChatList
+    setChatList() {
+      return this.$store.state.chatInfo.setChatList;
     }
   },
   watch: {
@@ -140,12 +143,8 @@ export default{
              groupId:Number(ids)
          }
          //将目前打开过的所有的会话都重新进行记录一次返回的group_id
-         let existingIndex = this.setChatList.findIndex(item => item.setId === obj.setId);
-         if (existingIndex !== -1) {
-           this.setChatList[existingIndex].groupId = obj.groupId;
-         } else {
-           this.setChatList.push(obj);
-         }
+         this.$store.commit('chatInfo/handleUpdateChatListItem', obj);
+         // 同时更新原有的chatList用于其他地方使用
          this.$store.commit('chatInfo/handleSetChatList',this.setChatList)
          // 创建新的iframe
          this.createIframe();
@@ -191,11 +190,14 @@ export default{
       console.log('iframe加载完成');
     },
     closeDialog(){
-      // 完全销毁iframe和相关状态
+      // 执行关闭时的清理逻辑
       this.destroyIframe();
-      this.$store.commit('chatInfo/handleSetChatCount',0)
+      this.externalUrl = null;
+      this.initClientSkt();
+      // 通知父组件关闭弹窗
       this.activeChat = false;
-      this.closeSkt();
+      // 重置消息计数
+      this.$store.commit('chatInfo/handleSetChatCount',0)
     }
   },
 }
