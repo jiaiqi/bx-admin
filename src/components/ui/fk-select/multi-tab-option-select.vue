@@ -13,7 +13,10 @@
       <!-- 下拉面板部分 -->
       <div class="dropdown-panel">
         <!-- Tab切换部分 -->
-        <el-tabs v-model="currentTab" @tab-click="handleClick">
+        <el-tabs
+          v-model="currentTab"
+          @tab-click="handleClick"
+        >
           <el-tab-pane
             :label="item.label"
             :name="item.label"
@@ -29,10 +32,16 @@
               >
                 <span v-html="recoverFileAddress4richText(option.labelFunc(option))"></span>
               </div>
-              <div v-if="loading" class="loading-wrapper">
+              <div
+                v-if="loading"
+                class="loading-wrapper"
+              >
                 <el-loading></el-loading>
               </div>
-              <div v-else-if="currentOptions.length === 0" class="no-data">
+              <div
+                v-else-if="currentOptions.length === 0"
+                class="no-data"
+              >
                 暂无数据
               </div>
             </div>
@@ -51,7 +60,10 @@
         slot="reference"
       >
         <template #suffix>
-          <i class="el-icon-arrow-down" :class="{ 'is-reverse': visible }"></i>
+          <i
+            class="el-icon-arrow-down"
+            :class="{ 'is-reverse': visible }"
+          ></i>
         </template>
         <template #append>
           <el-button
@@ -301,7 +313,7 @@ export default {
     this.loadOptions = debounce(this.loadOptions, 300);
     this.tabs = this.optionListV3.map((item) => {
       return {
-        label: item.conds[0].case_val || item.section_name,
+        label: item.section_name || item.conds[0].case_val,
         value: item.conds[0].case_val,
         case_val: item.conds[0].case_val,
         case_col: item.conds[0].case_col,
@@ -336,16 +348,20 @@ export default {
 <style lang="scss">
 .fk-select-dropdown {
   width: 100%;
+
   .el-input {
     width: 100%;
+
     .el-input__suffix-inner {
       display: inline-block;
       height: 100%;
       line-height: 1;
       display: flex;
       align-items: center;
+
       .el-icon-arrow-down {
         transition: all 0.3s ease-in-out;
+
         &.is-reverse {
           transform: rotate(-180deg);
         }
@@ -353,25 +369,31 @@ export default {
     }
   }
 }
+
 .el-popper.fk-select-dropdown-popover {
   padding: 0;
 
   .dropdown-panel {
     padding: 10px;
+
     .el-tabs__header {
       margin-bottom: 10px;
     }
+
     .loading-wrapper {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100px;
     }
+
     .option-list {
+
       // padding: 20px;
       .option-item {
         padding: 5px 10px;
         cursor: pointer;
+
         &:hover {
           background-color: #f5f7fa;
           color: var(--blue);
