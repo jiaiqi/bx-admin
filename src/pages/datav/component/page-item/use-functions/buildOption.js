@@ -409,7 +409,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         var rich = {
           yellow: {
             color: "#ffc72b",
-            fontSize: 14 * scale,
+            fontSize: 12 * scale,
             padding: [5, 4],
             align: 'center'
           },
@@ -421,12 +421,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           white: {
             color: "#fff",
             align: 'center',
-            fontSize: 14 * scale,
+            fontSize: 12 * scale,
             padding: [21, 0]
           },
           blue: {
             color: '#49dff0',
-            fontSize: 16 * scale,
+            fontSize: 12 * scale,
             align: 'center'
           },
           hr: {
@@ -463,7 +463,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                     }
                   });
                   percent = ((params.value / total) * 100).toFixed(1);
-                  return '{yellow|' + params.name + '}\n{blue|' + percent + '%}';
+                  return '{yellow|' + params.name + '}{blue|' + percent + '%}';
                 },
                 rich: rich,
               },
@@ -473,6 +473,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 length2: 15,
               },
             },
+          },
+          tooltip: {
+            trigger: 'item',
+            formatter: `{b}<br/>{c}${chartJson?.y1_unit || ""} ({d}%)`
           },
           data: [],
         };
