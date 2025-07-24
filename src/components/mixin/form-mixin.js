@@ -495,8 +495,8 @@ export default {
       return section && isString(section) && section.startsWith("$")
         ? ""
         : section?.includes(":折叠")
-        ? section.split(":折叠")[0]
-        : section;
+          ? section.split(":折叠")[0]
+          : section;
     },
 
     srvValFormModel: function () {
@@ -511,7 +511,7 @@ export default {
         let decorator = this.srvvalFormModelDecorator;
         decorator(model);
       }
-      
+
       this.$emit("form-model-changed", model);
       return model;
     },
@@ -787,9 +787,25 @@ export default {
             srvCol?.option_list_v3.length
           ) {
             const option_list_v3 = srvCol.option_list_v3.filter(
-              (item) =>
-                item.view_model === "平铺显示" &&
-                item?.allow_input === "自行输入"
+              (item) => {
+                if (item.view_model === "平铺显示" &&
+                  item?.allow_input === "自行输入") {
+                  if (Array.isArray(item.conds) && item.conds.length) {
+                    // 满足条件外键显示的条件
+                    return item.conds.every((cond) => {
+                      if (cond.case_val && data[cond.case_col]) {
+                        const pass =
+                          data[cond.case_col]?.includes?.(cond.case_val) ||
+                          cond.case_val?.includes?.(data[cond.case_col]);
+                        console.log("pass", pass);
+                        return pass;
+                      }
+                    });
+                  }
+                  return true
+                }
+              }
+
             );
             if (option_list_v3.length) {
               hasChildFormFields.push(field.info.name);
@@ -807,20 +823,21 @@ export default {
             this.$set(field, "flatChildForm", true);
           });
           for (let key of hasChildFormFields) {
-            // const fi = item.fieldInfo
-            // const srvCol = item.srvCol
-            // const field = this.allFields[key]
-            // field.flatChildForm = true // 平铺显示子表
+            return
+            const field = this.allFields[key];
+            const fi = field.info
+            const srvCol = field.info.srvCol
+            field.flatChildForm = true // 平铺显示子表
             // console.log('hasChildFormFields flatChildForm:',field.info.name);
 
-            // this.$set(field,'flatChildForm',true)
-            return;
-            const option_list_v3 = item.option_list_v3;
-            const finalOption = option_list_v3.find((item) => {
-              if (!item.conds?.length) {
+            this.$set(field, 'flatChildForm', true)
+            // return;
+            const option_list_v3 = srvCol.option_list_v3;
+            const finalOption = option_list_v3.find((opt) => {
+              if (!opt.conds?.length) {
                 return true;
               } else {
-                const conds = item.conds.filter((cond) => {
+                const conds = opt.conds.filter((cond) => {
                   if (onModelChange === true) {
                     // 仅在相关字段值变化时触发
                     return newVal?.[cond.case_col] !== oldVal?.[cond.case_col];
@@ -839,7 +856,7 @@ export default {
                 });
               }
             });
-            await this.getSubFormFields(finalOption, useType, f, fi, srvCol);
+            await this.getSubFormFields(finalOption, useType, field, fi, srvCol);
           }
         }
       }
