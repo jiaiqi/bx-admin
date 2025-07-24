@@ -166,7 +166,7 @@ export default{
     //预览
     showPreview(){
 
-      const url = process.env.NODE_ENV === "development"?`http://192.168.0.28/xmp/views/custom/index/index?page_no=${this.pageNo}`:`/xmp/views/custom/index/index?page_no=${this.pageNo}`;
+      const url = process.env.NODE_ENV === "development"?`http://113.201.21.178:880/xmp/views/custom/index/index?page_no=${this.pageNo}`:`/xmp/views/custom/index/index?page_no=${this.pageNo}`;
       window.open(url, "_blank");
     },
     //容器收缩板

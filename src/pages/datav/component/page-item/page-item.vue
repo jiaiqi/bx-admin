@@ -270,6 +270,7 @@
         {{ pageItemData.more_label || "更多" }}
       </span>
     </div>
+    <!-- 在线咨询对话框-->
     <ChatBox :visible.sync="isOpenChat" :chatItem="chatItem"/>
   </div>
 </template>
@@ -445,6 +446,7 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
+        console.log('---这是什么设备',this.screenType)
         if (newValue !== oldValue) {
           this.pageItemData = newValue || {};
         }
