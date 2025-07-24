@@ -8,8 +8,7 @@
             v-for="(item, index) in formConfig.importType.options"
             :key="index"
             :label="item.value"
-            >{{ item.label }}</el-radio
-          >
+          >{{ item.label }}</el-radio>
         </el-radio-group>
       </el-row>
       <!-- <el-row v-show="importType === 'update'">
@@ -39,20 +38,35 @@
           :on-success="handleSuccess"
           :on-error="handleError"
         >
-          <el-button size="small" type="primary" style="text-align: right">
+          <el-button
+            size="small"
+            type="primary"
+            style="text-align: right"
+          >
             选择上传文件
           </el-button>
 
-          <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
+          <div
+            slot="tip"
+            class="el-upload__tip"
+          >{{ fileDesc }}</div>
         </el-upload>
       </el-row>
       <el-row style="margin-top: 10px; text-align: left">
-        <el-button type="text" style="color: red" @click="downloadImportFail">{{
+        <el-button
+          type="text"
+          style="color: red"
+          @click="downloadImportFail"
+        >{{
           message
         }}</el-button>
       </el-row>
       <el-row style="margin-top: 10px; text-align: center">
-        <el-button size="small" type="primary" @click="onImportExcelClose">
+        <el-button
+          size="small"
+          type="primary"
+          @click="onImportExcelClose"
+        >
           关闭
         </el-button>
 
@@ -86,10 +100,17 @@
           :on-success="handleSuccess"
           :on-error="handleError"
         >
-          <el-button size="small" type="primary" style="text-align: right">
+          <el-button
+            size="small"
+            type="primary"
+            style="text-align: right"
+          >
             选择上传文件
           </el-button>
-          <div slot="tip" class="el-upload__tip">{{ fileDesc }}</div>
+          <div
+            slot="tip"
+            class="el-upload__tip"
+          >{{ fileDesc }}</div>
         </el-upload>
       </el-row>
     </div>
@@ -226,6 +247,7 @@ export default {
       let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket");
       return {
         bx_auth_ticket: bx_auth_ticket,
+        "bx-auth-ticket": bx_auth_ticket,
       };
     },
 

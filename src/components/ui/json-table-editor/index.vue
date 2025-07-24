@@ -1,9 +1,15 @@
 <template>
-  <div class="spreadsheet" ref="spreadsheetRef">
+  <div
+    class="spreadsheet"
+    ref="spreadsheetRef"
+  >
     <div class="flex items-center text-sm p-x-2">
       <div class="flex items-center text-sm p-2">
         <div class="mr-2">添加</div>
-        <el-input-number size="mini" v-model="insertRowNumber" />
+        <el-input-number
+          size="mini"
+          v-model="insertRowNumber"
+        />
         <div class="mx-2">行</div>
         <el-button
           class="icon-button"
@@ -52,9 +58,12 @@
       row-key-field-name="rowKey"
       :virtual-scroll-option="virtualScrollOption"
       :cell-autofill-option="cellAutofillOption"
+      :clipboard-option="clipboardOption"
       :edit-option="editOption"
       :row-style-option="rowStyleOption"
       :column-width-resize-option="columnWidthResizeOption"
+      ref="tableRef"
+      @change="onTableChange"
     />
   </div>
 </template>
@@ -145,22 +154,40 @@ export default {
           targetSelectionRangeIndexes,
           sourceSelectionData,
           targetSelectionData,
-        }) => {},
+        }) => {
+        },
         afterAutofill: ({
           direction,
           sourceSelectionRangeIndexes,
           targetSelectionRangeIndexes,
           sourceSelectionData,
           targetSelectionData,
-        }) => {},
+        }) => {
+          this.onTableChange()
+        },
       },
       // edit option 可控单元格编辑
       editOption: {
-        beforeCellValueChange: ({ row, column, changeValue }) => {},
+        beforeStartCellEditing: ({ row, column, changeValue }) => {
+          console.log('beforeStartCellEditing:', row, column, changeValue);
+        },
+        beforeCellValueChange: ({ row, column, changeValue }) => { },
         afterCellValueChange: ({ row, column, changeValue }) => {
-          let json = this.tableData2json();
-          this.$emit("input", JSON.stringify(json));
-          this.$emit("change");
+          this.onTableChange()
+        },
+      },
+      // 剪贴板配置
+      clipboardOption: {
+        beforePaste: ({ data, selectionRangeIndexes, selectionRangeKeys }) => {
+          console.log('beforePaste:', selectionRangeIndexes);
+        },
+        afterPaste: ({ data, selectionRangeIndexes, selectionRangeKeys }) => {
+          console.log('afterPaste:', selectionRangeIndexes);
+          this.onTableChange()
+        },
+        afterCut: ({ selectionRangeIndexes }) => {
+          console.log('afterCut:', selectionRangeIndexes);
+          this.onTableChange()
         },
       },
       // contextmenu header option
@@ -321,7 +348,26 @@ export default {
   //     handler(newValue, oldValue) {},
   //   },
   // },
+  watch: {
+    tableData: {
+      deep: true,
+      handler(newValue, oldValue) {
+        const currentSelection = this.$refs?.tableRef?.getRangeCellSelection();
+        const startRowIndex =
+          currentSelection?.selectionRangeIndexes?.startRowIndex;
+        if (typeof startRowIndex === "number" && startRowIndex >= 0) {
+          this.onTableChange()
+        }
+      },
+    },
+  },
   methods: {
+    onTableChange() {
+      const json = this.tableData2json();
+      this.$emit("input", JSON.stringify(json));
+      this.$emit("change");
+      console.log('onTableChange:', json);
+    },
     fullScreenEdit() {
       console.log("fullScreenEdit");
       const element = this.$refs.spreadsheetRef;
@@ -492,18 +538,22 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: #fff;
+
   .el-input.el-input--mini input {
     padding: 0 35px !important;
   }
+
   .ve-table {
     .ve-table-body-td {
       padding: 2px 5px !important;
+
       // height: unset !important;
       // line-height: unset !important;
       &.first-row {
         background-color: #fafafa !important;
       }
     }
+
     .ve-table-body-tr {
       // height: unset !important;
     }

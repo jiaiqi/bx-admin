@@ -47,20 +47,24 @@
           />
         </div>
       </template>
-      <template #center v-if="pageConfig && pageConfig.page_name">
+      <template
+        #center
+        v-if="pageConfig && pageConfig.page_name"
+      >
         {{ pageConfig.page_name || "" }}
       </template>
       <template #right>
-        <el-button type="primary" size="mini" @click="getPageConfig"
-          >刷新</el-button
-        >
+        <el-button
+          type="primary"
+          size="mini"
+          @click="getPageConfig"
+        >刷新</el-button>
         <el-button
           type="primary"
           size="mini"
           @click="onSave"
           :loading="isSaving"
-          >保存</el-button
-        >
+        >保存</el-button>
       </template>
     </header-view>
     <div class="lowcode-content">
@@ -70,12 +74,12 @@
         :class="{ collapsed: materialsCollapsed }"
         v-if="!isView"
       >
-        <div class="materials-toggle" @click="toggleMaterialsPanel">
-          <i
-            :class="
-              materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
-            "
-          ></i>
+        <div
+          class="materials-toggle"
+          @click="toggleMaterialsPanel"
+        >
+          <i :class="materialsCollapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-left'
+            "></i>
         </div>
         <materials-view
           app-no="config"
@@ -104,7 +108,11 @@
         ]"
       >
         <!-- 添加拖动状态遮罩层 -->
-        <div v-if="isSpacePressed" class="drag-overlay" @click.stop=""></div>
+        <div
+          v-if="isSpacePressed"
+          class="drag-overlay"
+          @click.stop=""
+        ></div>
         <editor-view
           :page-config="pageConfig"
           :current-item="currentItem"
@@ -132,12 +140,12 @@
           class="property-resizer"
           @mousedown="handlePropertyResizerMouseDown"
         ></div>
-        <div class="property-toggle" @click="togglePropertyPanel">
-          <i
-            :class="
-              propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
-            "
-          ></i>
+        <div
+          class="property-toggle"
+          @click="togglePropertyPanel"
+        >
+          <i :class="propertyCollapsed ? 'el-icon-arrow-left' : 'el-icon-arrow-right'
+            "></i>
         </div>
         <property-view
           class="property-view"
@@ -160,16 +168,24 @@
       fullscreen
       v-if="!isView"
     >
-      <div slot="title" class="dialog-title flex justify-between px-4">
+      <div
+        slot="title"
+        class="dialog-title flex justify-between px-4"
+      >
         <div class="flex items-center">
           <span class="mr-2">预览</span>
           <Icon icon="mdi-light:eye" />
         </div>
-        <el-button type="primary" size="mini" @click="openNewTab"
-          >页面预览</el-button
-        >
+        <el-button
+          type="primary"
+          size="mini"
+          @click="openNewTab"
+        >页面预览</el-button>
       </div>
-      <div class="preview-container" :style="[themeVariable]">
+      <div
+        class="preview-container"
+        :style="[themeVariable]"
+      >
         <lc-view
           v-for="item in components"
           :key="item.id"
@@ -233,21 +249,28 @@
 </template>
 
 <script>
-import HeaderView from "./components/header";
-import MaterialsView from "./components/materials";
-import EditorView from "./components/editor";
-import PropertyView from "./components/property";
-import lcView from "./components/materials/view.vue";
+// 外部js
 import JsonViewer from "vue-json-viewer";
 import "vue-json-viewer/style.css";
-import { $http, $selectOne, $selectList, $delete } from "@/common/http";
-import { Icon } from "@iconify/vue2";
-
-import clickoutside from "@/pages/datav/common/clickoutside.js";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
+// 外部组件
+import { Icon } from "@iconify/vue2";
+
+// 内部js
+import { $http, $selectOne, $selectList, $delete } from "@/common/http";
+import clickoutside from "@/pages/datav/common/clickoutside.js";
+
+// mixin
 import lowCodePageMixin from "./mixins/lowcode-page-mixin";
 import pageParamsMixin from "./mixins/page-params-mixin";
+
+// 内部组件
+import HeaderView from "./components/header/index.vue";
+import MaterialsView from "./components/materials/index.vue";
+import EditorView from "./components/editor/index.vue";
+import PropertyView from "./components/property/index.vue";
+import lcView from "./components/materials/view.vue";
 
 export default {
   name: "lowCodeEditor",
@@ -1062,6 +1085,7 @@ export default {
   /* 关闭默认动画 */
   animation: none;
 }
+
 .lowcode-wrapper {
   height: 100%;
   width: 100%;
@@ -1099,12 +1123,14 @@ export default {
       background-color: #2d2d2d;
       border-bottom-color: #444;
       color: #fff;
+
       ::v-deep .header-title {
         color: #fff;
       }
     }
 
     .lowcode-content {
+
       .materials-panel-container,
       .property-panel-container {
         background-color: #252525;
@@ -1117,47 +1143,58 @@ export default {
         .el-tab-pane {
           background-color: #333;
           border-color: #444;
+
           .el-tabs__item.is-active {
             color: #fff;
             background-color: #222;
             border-color: #555;
           }
         }
+
         .form-view-wrapper {
           background-color: #2d2d2d;
           scrollbar-color: #444 #2d2d2d;
-          .el-form > .el-row {
+
+          .el-form>.el-row {
             border-color: #444;
           }
+
           .section-title {
             border-bottom-color: #444;
           }
+
           .raw_field_editor input {
             --custom-input-color: #ddd;
           }
+
           .el-autocomplete-suggestion {
             background-color: #2d2d2d;
             color: #ffffff;
           }
+
           .el-button {
             background-color: #333;
             border-color: #444;
             color: #dddddd;
-            &.el-button--primary {
-            }
+
+            &.el-button--primary {}
           }
+
           .el-checkbox,
           .el-upload__tip {
             color: #dddddd;
           }
+
           .el-input-group__append {
             background-color: #333;
             border-color: #444;
           }
+
           .el-input__inner {
             background-color: #333;
             border-color: #444;
           }
+
           .el-upload--picture-card {
             background-color: #252525;
             border-color: #444;
@@ -1170,6 +1207,7 @@ export default {
         background-color: #18181c;
         background-image: linear-gradient(#18181c 19px, transparent 0),
           linear-gradient(90deg, transparent 19px, #86909c 0);
+
         .drag-overlay {
           background-color: rgba(0, 0, 0, 0.2);
         }
@@ -1242,31 +1280,38 @@ export default {
           }
         }
 
-        .el-tree-node.is-current > .el-tree-node__content {
+        .el-tree-node.is-current>.el-tree-node__content {
           background-color: #444;
         }
       }
     }
+
     .materia-warp,
     .component-list {
       background-color: #222;
+
       .type-list {
         scrollbar-color: rgba(144, 146, 152, 0.3) transparent;
         border-right-color: #000;
+
         .type-item {
           color: #ccc;
+
           &:hover {
             background-color: #333;
           }
+
           &.active {
             background-color: #444;
           }
         }
       }
+
       .com-item {
         background-color: #2d2d2d;
       }
     }
+
     .type-item,
     .sub-type-item {
       &:hover {
@@ -1288,11 +1333,13 @@ export default {
       border-color: var(--menu-light-border-color, #b3d8ff);
       color: var(--primary-color, #409eff);
     }
+
     &.active {
       background-color: var(--menu-bg-light-color, #b3d8ff);
       border-color: var(--menu-light-border-color, #b3d8ff);
       color: var(--primary-color, #409eff);
     }
+
     color: #666;
   }
 
@@ -1376,10 +1423,12 @@ export default {
     .editor-container {
       flex: 1;
       transition: all 0.3s ease;
+
       // 添加以下样式，使容器可以获得焦点但不显示轮廓
       &:focus {
         outline: none;
       }
+
       /* 添加拖动遮罩层样式 */
       .drag-overlay {
         position: absolute;
@@ -1433,10 +1482,12 @@ export default {
           display: none;
         }
       }
+
       .el-form-item {
         display: flex;
         flex-direction: column;
       }
+
       // 添加属性面板拖动调整宽度的分隔线样式
       .property-resizer {
         position: absolute;
@@ -1493,8 +1544,10 @@ export default {
   }
 
   .lc-layout {
+
     &.view-mode,
     &.preview-mode {
+
       .resize-handle-s,
       .resize-handles {
         display: none;
@@ -1514,22 +1567,28 @@ export default {
     border: 1px dashed #ccc;
   }
 }
+
 :deep(.outline-container) {
   .el-tree-node {
     &.is-current {
       .el-tree-node__content {
-        background-color: #b3d4fc !important; /* 修改为你想要的背景颜色 */
-        color: #333; /* 修改为你想要的字体颜色 */
+        background-color: #b3d4fc !important;
+        /* 修改为你想要的背景颜色 */
+        color: #333;
+        /* 修改为你想要的字体颜色 */
       }
     }
   }
 }
+
 .custom-tree-node {
   display: flex;
   align-items: center;
+
   .right-btn {
     display: none;
   }
+
   &:hover {
     .right-btn {
       display: block;

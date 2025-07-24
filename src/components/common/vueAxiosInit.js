@@ -19,6 +19,7 @@ export default function () {
         // request.headers.set('bx_auth_ticket', sessionStorage.getItem("bx_auth_ticket"))
         let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket")
         config.headers.set('bx_auth_ticket', bx_auth_ticket)
+        config.headers.set('bx-auth-ticket', bx_auth_ticket)
         return config;
     }, function (error) {
         // 对请求错误做些什么
@@ -123,6 +124,7 @@ export default function () {
         // request.headers.set('bx_auth_ticket', sessionStorage.getItem("bx_auth_ticket"))
         let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket")
         config.headers.set('bx_auth_ticket', bx_auth_ticket)
+        config.headers.set('bx-auth-ticket', bx_auth_ticket)
         return config;
     }, function (error) {
         // 对请求错误做些什么
@@ -227,6 +229,8 @@ export default function () {
         // request.headers.set('bx_auth_ticket', sessionStorage.getItem("bx_auth_ticket"))
         let bx_auth_ticket = sessionStorage.getItem("bx_auth_ticket")
         config.headers.set('bx_auth_ticket', bx_auth_ticket)
+        config.headers.set('bx-auth-ticket', bx_auth_ticket)
+
         return config;
     }, function (error) {
         // 对请求错误做些什么
@@ -327,4 +331,3 @@ export default function () {
 
 
 // console.log(Vue.$http2,"---------------------------------------------------")
-

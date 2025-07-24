@@ -1,7 +1,14 @@
 <template>
   <div class="property-pane">
-    <el-tabs type="border-card" v-model="activeTab">
-      <el-tab-pane label="页面" name="页面" v-if="!currentItem">
+    <el-tabs
+      type="border-card"
+      v-model="activeTab"
+    >
+      <el-tab-pane
+        label="页面"
+        name="页面"
+        v-if="!currentItem"
+      >
         <div class="tab-content">
           <simple-update
             name="list-update"
@@ -80,6 +87,7 @@
           :navAfterSubmit="false"
           :pk="componentId"
           pkCol="id"
+          :app-no="appNo"
           :group-collapse="true"
           @action-complete="onComponentUpdate"
           @form-loaded="onPageCompFormLoaded"
@@ -90,7 +98,11 @@
         <div v-else>请先保存</div>
       </el-tab-pane>
 
-      <el-tab-pane label="组件配置" name="组件配置" v-if="showCompForm">
+      <el-tab-pane
+        label="组件配置"
+        name="组件配置"
+        v-if="showCompForm"
+      >
         <simple-update
           name="list-update"
           ref="compFormUpdate"
@@ -99,10 +111,11 @@
           :pk="compServiceCfg.pk"
           :pkCol="compServiceCfg.pkCol"
           :group-collapse="true"
+          :app-no="appNo"
           @action-complete="onComponentUpdate"
           @field-value-changed="
             onValueChange($event, 'component-cfg-update', compServiceCfg)
-          "
+            "
           @form-loaded="onCompFormLoaded"
           v-if="componentCfgLoaded || activeTab === '组件配置'"
         >
@@ -805,9 +818,8 @@ export default {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutInfo.layout_no,
-            layout_name: `${item?.data?.com_type_name}_${
-              i + 1
-            }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
+            layout_name: `${item?.data?.com_type_name}_${i + 1
+              }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
             seq: item.timestamp || i + 1, //改用时间戳做关联 相对更可靠
             pos_x: item.x,
             pos_y: item.y,
@@ -1066,7 +1078,7 @@ export default {
       return result;
     },
     async onSave() {
-      console.log('保存几个组件',this.components)
+      console.log('保存几个组件', this.components)
       if (Array.isArray(this.components) && this.components.length) {
         const oldComponents = cloneDeep(this.components);
         // 保存页面属性后删除在页面上移除的组件
@@ -1190,7 +1202,7 @@ export default {
       }
     },
     // 更新组件的宽高以及定位
-    async updateComponent(event) {},
+    async updateComponent(event) { },
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
@@ -1351,9 +1363,9 @@ export default {
             case "卡片部件":
               compObj.serviceName = "srvpage_cfg_card_parts_add";
               break;
-              case "detail":
+            case "detail":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
-                compObj.data = [{widget_type:"文本"}];
+              compObj.data = [{ widget_type: "文本" }];
 
               break;
             case "咨询入口":
@@ -1465,14 +1477,19 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 .property-pane {
   width: 300px;
+
   ::v-deep .form-view-wrapper {
     max-height: calc(100vh - 150px);
     overflow-y: auto;
   }
 }
+
 .el-tabs {
   width: 100%;
   height: calc(100vh - 50px);
@@ -1488,8 +1505,7 @@ export default {
     height: 100%;
   }
 
-  ::v-deep .el-tabs--border-card {
-  }
+  ::v-deep .el-tabs--border-card {}
 
   ::v-deep .el-tabs__content {
     height: 100%;

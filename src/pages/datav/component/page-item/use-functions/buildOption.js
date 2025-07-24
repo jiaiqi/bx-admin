@@ -70,7 +70,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
-      top: 25,
+      top: 40,
       left: 10,
       right: 10,
       bottom: 0,
@@ -405,7 +405,39 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "pie":
     case "ring":
       for (let sIndex in seriesName) {
+        var scale = 1
+        var rich = {
+          yellow: {
+            color: "#ffc72b",
+            fontSize: 14 * scale,
+            padding: [5, 4],
+            align: 'center'
+          },
+          total: {
+            color: "#ffc72b",
+            fontSize: 18 * scale,
+            align: 'center'
+          },
+          white: {
+            color: "#fff",
+            align: 'center',
+            fontSize: 14 * scale,
+            padding: [21, 0]
+          },
+          blue: {
+            color: '#49dff0',
+            fontSize: 16 * scale,
+            align: 'center'
+          },
+          hr: {
+            borderColor: '#0b5263',
+            width: '100%',
+            borderWidth: 1,
+            height: 0,
+          }
+        }
         let dataColName = seriesValueCols[sIndex];
+
         let series = {
           name: "", // 名称
           type: "pie", // 类型 饼图
@@ -419,8 +451,21 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 position: "outside",
                 alignTo: "labelLine",
                 show: true,
-                formatter: `{b} \r\n {c}${chartJson?.y1_unit || ""}`,
+                // formatter: `{b} \r\n {c}${chartJson?.y1_unit || ""}`,
                 // bleedMargin: 3,
+                formatter: function (params, ticket, callback) {
+                  var total = 0; //考生总数量
+                  var percent = 0; //考生占比
+                  cellData.forEach(function (value, index, array) {
+                    const num = value[chartJson.series_value_cols || 'value'];
+                    if (!isNaN(Number(num))) {
+                      total += Number(num)
+                    }
+                  });
+                  percent = ((params.value / total) * 100).toFixed(1);
+                  return '{yellow|' + params.name + '}\n{blue|' + percent + '%}';
+                },
+                rich: rich,
               },
               labelLine: {
                 show: true,
@@ -432,43 +477,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
         };
         if (type === "ring") {
-          var rich = {
-            total: {
-              color: "#ffc72b",
-              fontSize: 40 * 1,
-              align: "center",
-            },
-            white: {
-              color: "#ddd",
-              align: "center",
-              padding: [3, 0],
-            },
-          };
-
-          series = {
-            name: "",
-            type: "pie",
-            clockWise: false,
-            radius: ["50%", "55%"],
-            hoverAnimation: false,
-            itemStyle: {
-              normal: {
-                label: {
-                  show: true,
-                  position: "outside",
-                  // color: "#ddd",
-                  formatter: `{b}\r\n {c}${chartJson?.y1_unit || ""}`,
-                  rich: rich,
-                },
-                labelLine: {
-                  length: 10,
-                  length2: 20,
-                  show: true,
-                },
-              },
-            },
-            data: [],
-          };
+          series.radius = ["45%", "60%"]
         }
         series.itemStyle.normal.label.show = showLabel;
         for (let data of cellData) {
@@ -534,7 +543,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             return cur.value + prev;
           }, 0),
           left: "center",
-          top: "30%",
+          top: "center",
           padding: [24, 0],
           subtext: title,
           subtextStyle: {
@@ -847,7 +856,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     default:
       break;
   }
-  if(showLegend === false){
+  if (showLegend === false) {
     ecOptions.legend = {
       show: false,
     }
