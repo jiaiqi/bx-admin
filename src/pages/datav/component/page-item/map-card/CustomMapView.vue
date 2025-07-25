@@ -120,7 +120,6 @@
 
     <!-- 自定义底图-地图视图区域 -->
     <zoom-drag-container
-      ref="zoomDragContainerRef"
       :show-tips="true"
       :ignore-scale-classes="'map-marker'"
     >
@@ -129,11 +128,23 @@
         :class="{
           'building-view': isBuildingView,
           'custom-map': !isBuildingView,
+          'image-loading': imageLoading,
+          'image-loaded': imageLoaded,
         }"
         :style="{
-          backgroundImage: `url(${baseImage})`,
+          backgroundImage: `url(${currentImageSrc})`,
         }"
       >
+        <!-- 图片加载动画 -->
+        <div class="image-loading-overlay" v-if="imageLoading">
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="loading-text">底图加载中...</div>
+          </div>
+        </div>
+
         <!-- 建筑物视图内容 -->
         <template v-if="isBuildingView">
           <!-- building-view 的标记点内容可以在这里添加 -->
@@ -169,8 +180,9 @@
               class="map-marker"
               :style="getItemPosition(item)"
               @click.stop="handleMarkerClick(item, $event)"
-              :class="{ 'cursor-pointer': !!cardUnitJson }"
+              :class="{ 'cursor-pointer': allowClick(item) }"
               v-for="item in markerList"
+              :title="getMarkerTitle(item)"
               :key="item.id"
             >
               <img
@@ -226,14 +238,13 @@
  * />
  */
 
-import { onMounted, onUnmounted, ref, computed, watch, set } from "vue";
+import { onMounted, ref, computed, watch, set } from "vue";
 
 /**
  * 工具函数和组件导入
  */
-import { getImagePath } from "@/common/http.js"; // 图片路径处理工具
+import { $http, getImagePath } from "@/common/http.js"; // 图片路径处理工具
 import { $selectList } from "@/common/http"; // HTTP 请求工具
-import cardGroupCell from "../card-group-cell/card-group-cell.vue"; // 卡片组单元格组件
 import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
 import { formatStyleData } from "../../../common"; // 样式数据格式化工具
 import { Icon } from "@iconify/vue2"; // 图标组件
@@ -241,6 +252,7 @@ import cloneDeep from "lodash/cloneDeep";
 import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
 import MultiSourceMarkers from "./MultiSourceMarkers.vue";
 import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
+import { useUtils } from "@/common/vueApi";
 /**
  * 组件 Props 定义
  * @typedef {Object} Props
@@ -252,9 +264,6 @@ const props = defineProps({
   treeReq: Object, // 树形数据请求配置
 });
 
-/**
- * 组件事件发射器
- */
 const emit = defineEmits(["select"]);
 
 /**
@@ -289,12 +298,17 @@ const CONFIG = {
   },
 };
 
+const mapUndoRedo = ref([])
+
 /**
- * 地图配置计算属性
+ * 地图配置
  */
-const mapJson = computed(() => {
-  return props.pageItem.map_json || {};
-});
+const mapJson = ref(null)
+if (props.pageItem.map_json) {
+  mapJson.value = props.pageItem.map_json
+}
+
+const baseIamgeByReq = ref("")
 
 /**
  * 标记点和弹窗相关状态
@@ -320,10 +334,13 @@ const buildingTree = ref([]); // 建筑物树形数据
 const floorInfo = ref(null); // 当前楼层信息
 const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
 
+
 /**
- * 缩放容器相关状态
+ * 图片加载状态管理
  */
-const zoomDragContainerRef = ref(null); // ZoomDragContainer组件引用
+const imageLoading = ref(false); // 图片是否正在加载
+const imageLoaded = ref(true); // 图片是否已加载完成
+const currentImageSrc = ref(''); // 当前显示的图片路径
 
 /**
  * 递归查找具有底图的父级节点
@@ -367,6 +384,9 @@ function findParentWithBaseImage(data, list) {
  * 4. 默认底图
  */
 const baseImage = computed(() => {
+  if(baseIamgeByReq.value){
+    return getImagePath(baseIamgeByReq.value)
+  }
   const baseImageCol = mapJson.value.map_base_col; // 底图字段配置
   if (!baseImageCol) {
     // 如果没有配置底图字段，检查楼层信息
@@ -401,6 +421,61 @@ const baseImage = computed(() => {
   // 如果都没有找到，使用默认底图
   return getImagePath(mapJson.value.base_image);
 });
+
+/**
+ * 预加载图片并处理过渡效果
+ * @param {string} imageSrc - 图片路径
+ * @returns {Promise} 图片加载Promise
+ */
+function preloadImage(imageSrc) {
+  return new Promise((resolve, reject) => {
+    if (!imageSrc) {
+      resolve();
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${imageSrc}`));
+    img.src = imageSrc;
+  });
+}
+
+/**
+ * 处理图片切换的平滑过渡
+ * @param {string} newImageSrc - 新的图片路径
+ */
+async function handleImageTransition(newImageSrc) {
+  // 如果新图片路径与当前相同，不需要切换
+  if (newImageSrc === currentImageSrc.value) {
+    return;
+  }
+
+  try {
+    // 设置加载状态
+    imageLoading.value = true;
+
+    // 预加载新图片
+    await preloadImage(newImageSrc);
+
+    // 图片加载完成后，开始过渡
+    imageLoaded.value = false;
+
+    // 短暂延迟后切换图片并显示
+    setTimeout(() => {
+      currentImageSrc.value = newImageSrc;
+      imageLoaded.value = true;
+      imageLoading.value = false;
+    }, 150); // 150ms的淡出时间
+
+  } catch (error) {
+    console.warn('图片加载失败:', error);
+    // 即使加载失败也要更新状态
+    currentImageSrc.value = newImageSrc;
+    imageLoaded.value = true;
+    imageLoading.value = false;
+  }
+}
 
 
 
@@ -579,6 +654,14 @@ const setLabelActiveStyle = computed(() => {
   }
 });
 
+function allowClick(marker) {
+  if (marker?._poi_info?.onclick) {
+    return true
+  } else if (marker && cardUnitJson.value && mapJson.value.onclick === '弹出卡片') {
+    return true
+  }
+}
+
 /**
  * 统一的标记点点击处理函数
  * 处理所有类型标记点的点击事件，包括弹窗显示和建筑物视图切换
@@ -589,35 +672,146 @@ const setLabelActiveStyle = computed(() => {
  */
 function handleMarkerClick(marker, event) {
   console.log('点击标记点', marker, mapJson.value.onclick);
+  if (marker?._poi_info?.onclick) {
+    // 多标记物点击事件处理
+    switch (marker._poi_info.onclick) {
+      case '弹出卡片':
 
-  // 检查是否配置了建筑物视图切换条件
-  if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
+        break;
+      case '跳转':
+
+        break;
+
+      case '下钻':
+        drillDown(marker._poi_info, marker)
+        break;
+      case '设置变量':
+
+        break;
+    }
+    return
+  } else if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
+    // 检查是否配置了建筑物视图切换条件
     const val = marker[mapJson.value?.building_view_col]; // 获取标记点的建筑物视图字段值
     // 如果值匹配建筑物视图条件，切换到建筑物视图
     if (val && mapJson.value?.building_view_val?.includes(val)) {
       switchToBuildingView(marker);
       return; // 切换到建筑物视图后直接返回
     }
-  }
-
-  // 检查是否需要显示弹窗
-  const shouldShowPopover = marker && cardUnitJson.value && mapJson.value.onclick === '弹出卡片'; // 图标类型的条件
-
-  if (shouldShowPopover) {
-    // 如果点击的是当前激活的标记点，隐藏弹窗
-    if (marker?.id && marker?.id === activeMarker.value?.id) {
-      activeMarker.value = null;
-      activeMarkerElement.value = null;
-    } else {
-      activeMarker.value = marker; // 设置新的激活标记点
-
-      // 记录标记点元素引用
-      if (event && event.currentTarget) {
-        console.log('标记点元素:', event.currentTarget);
-        activeMarkerElement.value = event.currentTarget; // 保存元素引用
+  } else if (marker && cardUnitJson.value) {
+    // 检查是否需要显示弹窗
+    const shouldShowPopover = mapJson.value.onclick === '弹出卡片';
+    if (shouldShowPopover) {
+      // 如果点击的是当前激活的标记点，隐藏弹窗
+      if (marker?.id && marker?.id === activeMarker.value?.id) {
+        activeMarker.value = null;
+        activeMarkerElement.value = null;
+      } else {
+        activeMarker.value = marker; // 设置新的激活标记点
+        // 记录标记点元素引用
+        if (event && event.currentTarget) {
+          console.log('标记点元素:', event.currentTarget);
+          activeMarkerElement.value = event.currentTarget; // 保存元素引用
+        }
       }
     }
   }
+
+
+}
+
+/**
+ * 地图下钻
+ * @param params 
+ */
+async function drillDown(config, data) {
+  const { drill_down } = config
+  if (drill_down['jump_map_json']) {
+    // 下钻前先保存原始地图配置
+    mapUndoRedo.value.push({
+      map_json: cloneDeep(mapJson.value),
+      markerList: cloneDeep(markerList.value),
+    })
+    resetMapState()
+    mapJson.value = drill_down['jump_map_json']
+    if (mapJson.value?.image_source_type === '接口请求') {
+      // 底图从接口请求查找
+      if (mapJson.value?.base_image_srv_req_json) {
+        if (config?.col_map?.col_no) {
+          data.noVal = data[config.col_map.col_no]
+        }
+        const baseImageData = await getMapBaseImageWithReq(mapJson.value?.base_image_srv_req_json, data)
+        if (mapJson?.value?.map_base_col) {
+          const baseImageNo = baseImageData[mapJson.value.map_base_col]
+          baseIamgeByReq.value = baseImageNo
+        }
+      }
+    }
+    // // 下钻后保存新地图配置
+    // mapUndoRedo.value.push({
+    //   map_json: cloneDeep(drill_down['jump_map_json']),
+    //   data: data,
+    // })
+  }
+}
+const { renderStr } = useUtils()
+async function getMapBaseImageWithReq(reqJson, data) {
+  debugger
+  let req = {}
+  if (reqJson) {
+    req = { ...reqJson }
+    if (Array.isArray(reqJson?.condition) && reqJson.condition.length) {
+      req.condition = reqJson.condition.map(item => {
+        return {
+          ...item,
+          value: renderStr(item.value, data)
+        }
+      })
+    }
+    const url = `${req.mapp}/select/${req.serviceName}`
+    const res = await $http.post(url, req)
+    debugger
+    if (res.data.data?.length) {
+      const baseImageInfo = res.data.data[0]
+      return baseImageInfo
+    }
+  }
+}
+
+
+function getMarkerTitle(marker) {
+  if (marker?._col_map?.col_label) {
+    return marker[marker._col_map.col_label]
+  }
+}
+
+/**
+ * 重置地图状态
+ * 重置地图配置、标记点列表、激活标记点等状态
+ *
+ * @function resetMapState
+ */
+async function resetMapState() {
+  isCollapsed.value = false;
+  mapJson.value = null
+  markerList.value = []
+  activeMarker.value = null
+  activeMarkerElement.value = null
+
+  treeData.value = []
+  selectedTreeData.value = null
+  expandedNodes.value = {}
+
+  isBuildingView.value = false;
+  buildingInfo.value = null
+  buildingTree.value = []
+  floorInfo.value = null
+  expandedBuildingNodes.value = {}
+
+  imageLoading.value = false;
+  imageLoaded.value = true;
+  currentImageSrc.value = ""
+
 }
 
 /**
@@ -676,7 +870,7 @@ watch(
     console.log(newVal);
     // 如果选中项有子节点且配置了坐标字段，过滤出有坐标的子项作为标记点
     if (
-      newVal.children?.length &&
+      newVal?.children?.length &&
       mapJson.value?.x_col &&
       mapJson.value?.y_col
     ) {
@@ -842,6 +1036,17 @@ const setTreeReq = computed(() => {
 });
 
 /**
+ * 监听baseImage变化，触发平滑过渡
+ */
+watch(
+  () => baseImage.value,
+  (newImageSrc) => {
+    handleImageTransition(newImageSrc);
+  },
+  { immediate: true }
+);
+
+/**
  * 组件挂载生命周期钩子
  * 初始化地图
  */
@@ -881,7 +1086,114 @@ onMounted(() => {
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
 
+  /* 图片加载状态样式 */
+  &.image-loading {
+    opacity: 0.7;
+    backdrop-filter: blur(20px);
+  }
+
+  &.image-loaded {
+    opacity: 1;
+  }
+
+  /* 图片切换时的过渡效果 */
+  &:not(.image-loaded) {
+    backdrop-filter: blur(20px);
+  }
+}
+
+/* 图片加载动画样式 */
+.image-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid transparent;
+  border-top: 3px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: absolute;
+}
+
+.spinner-ring:nth-child(1) {
+  width: 40px;
+  height: 40px;
+  animation-delay: 0s;
+}
+
+.spinner-ring:nth-child(2) {
+  width: 60px;
+  height: 60px;
+  border-top-color: #4a90e2;
+  animation-delay: -0.3s;
+  animation-duration: 1.5s;
+}
+
+.spinner-ring:nth-child(3) {
+  width: 80px;
+  height: 80px;
+  border-top-color: #87ceeb;
+  animation-delay: -0.6s;
+  animation-duration: 2s;
+}
+
+.loading-text {
+  margin-top: 120px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 动画关键帧 */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .building-view {
