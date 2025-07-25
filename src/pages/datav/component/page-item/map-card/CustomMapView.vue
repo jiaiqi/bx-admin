@@ -155,7 +155,7 @@
               ]"
               v-for="marker in markerList"
               :key="marker.id"
-              @click="clickMarker(marker, $event)"
+              @click="handleMarkerClick(marker, $event)"
             >
               <div class="map-marker-content">
                 {{ marker[mapJson.col_label] || "" }}
@@ -168,7 +168,7 @@
             <div
               class="map-marker"
               :style="getItemPosition(item)"
-              @click.stop="tapMarker(item, $event)"
+              @click.stop="handleMarkerClick(item, $event)"
               :class="{ 'cursor-pointer': !!cardUnitJson }"
               v-for="item in markerList"
               :key="item.id"
@@ -188,10 +188,10 @@
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物')"
       :marker-list.sync="markerList"
     ></multi-source-markers>
-    <!-- 地图弹窗组件 -->
-    <MapPopover
+    <!-- 地图标记点弹窗 -->
+    <map-popover
       :active-marker="activeMarker"
-      :popover-position="popoverPosition"
+      :marker-element="activeMarkerElement"
       :page-item="pageItem"
       :card-unit-json="cardUnitJson"
       :is-building-view="isBuildingView"
@@ -301,9 +301,8 @@ const mapJson = computed(() => {
  */
 const markerList = ref([]); // 标记点列表
 const activeMarker = ref({}); // 当前激活的标记点
-const popoverPosition = ref({ x: 0, y: 0 }); // 弹窗位置坐标
+const activeMarkerElement = ref(null); // 当前激活标记点的 DOM 元素引用
 const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json); // 卡片单元配置
-const currentMarkerElement = ref(null); // 当前标记点 DOM 元素引用
 
 /**
  * 树形数据相关状态
@@ -581,156 +580,41 @@ const setLabelActiveStyle = computed(() => {
 });
 
 /**
- * 获取弹窗实际尺寸
- * 通过查询DOM元素获取弹窗的实际宽高
+ * 统一的标记点点击处理函数
+ * 处理所有类型标记点的点击事件，包括弹窗显示和建筑物视图切换
  *
- * @function getPopoverDimensions
- * @returns {Object} 包含width和height的对象
- */
-function getPopoverDimensions() {
-  const popoverElement = document.querySelector('.popover-content-to-body .popover-content');
-
-  if (popoverElement) {
-    const rect = popoverElement.getBoundingClientRect();
-    return {
-      width: rect.width || 300, // 如果获取失败，使用默认值
-      height: rect.height || 200
-    };
-  }
-
-  // 如果无法获取实际尺寸，返回估算值
-  return {
-    width: 300,
-    height: 200
-  };
-}
-
-/**
- * 计算弹窗位置
- * 根据标记点元素的位置计算弹窗的显示位置，智能检测视口边界并调整位置和箭头方向
- *
- * @function calculatePopoverPosition
- * @param {HTMLElement} element - 标记点 DOM 元素
- */
-function calculatePopoverPosition(element) {
-  if (!element) return; // 检查元素是否存在
-
-  // 获取元素相对于视口的位置
-  const elementRect = element.getBoundingClientRect();
-
-  // 获取视口尺寸
-  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-
-  // 获取弹窗实际尺寸或使用估算值
-  const popoverDimensions = getPopoverDimensions();
-  const popoverWidth = popoverDimensions.width;
-  const popoverHeight = popoverDimensions.height;
-  const padding = 50; // 距离视口边缘的最小间距
-
-  // 标记点中心位置
-  const markerCenterX = elementRect.left + elementRect.width / 2;
-  const markerCenterY = elementRect.top + elementRect.height / 2;
-
-  // 计算初始位置（默认在元素上方居中）
-  let x = markerCenterX;
-  let y = elementRect.top - CONFIG.UI.POPUP_OFFSET;
-
-  // 水平位置调整
-  const popoverLeft = x - popoverWidth / 2;
-  const popoverRight = x + popoverWidth / 2;
-
-  if (popoverLeft < padding) {
-    // 左边界溢出，调整弹窗到左对齐
-    x = padding + popoverWidth / 2;
-  } else if (popoverRight > viewportWidth - padding) {
-    // 右边界溢出，调整弹窗到右对齐
-    x = viewportWidth - padding - popoverWidth / 2;
-  }
-
-  // 垂直位置调整
-  const popoverTop = y - popoverHeight; // 考虑transform: translate(-50%, -100%)
-  const popoverBottom = y;
-
-  if (popoverTop < padding) {
-    // 上边界溢出，将弹窗显示在元素下方
-    y = elementRect.bottom + CONFIG.UI.POPUP_OFFSET + popoverHeight;
-
-    // 检查下方是否也会溢出
-    if (y > viewportHeight - padding) {
-      // 上下都会溢出，选择空间较大的一侧
-      const spaceAbove = elementRect.top;
-      const spaceBelow = viewportHeight - elementRect.bottom;
-
-      if (spaceAbove > spaceBelow) {
-        // 上方空间更大，显示在上方但调整位置
-        y = Math.max(padding + popoverHeight, elementRect.top - CONFIG.UI.POPUP_OFFSET);
-      } else {
-        // 下方空间更大，显示在下方但调整位置
-        y = Math.min(viewportHeight - padding, elementRect.bottom + CONFIG.UI.POPUP_OFFSET + popoverHeight);
-      }
-    }
-  } else if (popoverBottom > viewportHeight - padding) {
-    // 下边界溢出（这种情况在默认上方显示时不太可能发生，但为了完整性保留）
-    y = viewportHeight - padding;
-  }
-
-  // 更新弹窗位置（移除箭头相关属性）
-  popoverPosition.value = { x, y };
-
-  // 可选：添加调试信息
-  console.log('弹窗位置计算:', {
-    element: { x: elementRect.left, y: elementRect.top, width: elementRect.width, height: elementRect.height },
-    marker: { centerX: markerCenterX, centerY: markerCenterY },
-    viewport: { width: viewportWidth, height: viewportHeight },
-    popover: { x, y, width: popoverWidth, height: popoverHeight },
-    adjustments: {
-      horizontalOverflow: popoverLeft < padding || popoverRight > viewportWidth - padding,
-      verticalOverflow: popoverTop < padding || popoverBottom > viewportHeight - padding
-    }
-  });
-}
-
-/**
- * 标记点点击处理函数
- * 处理标记点的点击事件，显示或隐藏弹窗
- *
- * @function tapMarker
- * @param {Object} item - 标记点数据对象
+ * @function handleMarkerClick
+ * @param {Object} marker - 标记点数据对象
  * @param {Event} event - 点击事件对象
  */
-function tapMarker(item, event) {
-  console.log('点击标记点', item, mapJson.value.onclick);
+function handleMarkerClick(marker, event) {
+  console.log('点击标记点', marker, mapJson.value.onclick);
 
-  if (mapJson.value.tips_card_unit_json && mapJson.value.onclick === '弹出卡片') {
+  // 检查是否配置了建筑物视图切换条件
+  if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
+    const val = marker[mapJson.value?.building_view_col]; // 获取标记点的建筑物视图字段值
+    // 如果值匹配建筑物视图条件，切换到建筑物视图
+    if (val && mapJson.value?.building_view_val?.includes(val)) {
+      switchToBuildingView(marker);
+      return; // 切换到建筑物视图后直接返回
+    }
+  }
+
+  // 检查是否需要显示弹窗
+  const shouldShowPopover = marker && cardUnitJson.value && mapJson.value.onclick === '弹出卡片'; // 图标类型的条件
+
+  if (shouldShowPopover) {
     // 如果点击的是当前激活的标记点，隐藏弹窗
-    if (item?.id && item?.id === activeMarker.value?.id) {
+    if (marker?.id && marker?.id === activeMarker.value?.id) {
       activeMarker.value = null;
-      currentMarkerElement.value = null;
-      removeEventListeners(); // 移除事件监听器
+      activeMarkerElement.value = null;
     } else {
-      activeMarker.value = item; // 设置新的激活标记点
-      // 记录点击位置和元素引用
-      if (event) {
-        console.log(event.currentTarget);
-        const ele = event.currentTarget;
-        currentMarkerElement.value = ele; // 保存元素引用
-        calculatePopoverPosition(ele); // 初始位置计算
-        addEventListeners(); // 添加事件监听器
+      activeMarker.value = marker; // 设置新的激活标记点
 
-        // 延迟重新计算位置，确保弹窗内容已渲染
-        setTimeout(() => {
-          if (currentMarkerElement.value && activeMarker.value?.id) {
-            calculatePopoverPosition(currentMarkerElement.value);
-          }
-        }, 100); // 100ms延迟，可根据实际情况调整
-
-        // 再次延迟计算，处理可能的异步内容加载
-        setTimeout(() => {
-          if (currentMarkerElement.value && activeMarker.value?.id) {
-            calculatePopoverPosition(currentMarkerElement.value);
-          }
-        }, 300); // 300ms延迟，处理异步内容
+      // 记录标记点元素引用
+      if (event && event.currentTarget) {
+        console.log('标记点元素:', event.currentTarget);
+        activeMarkerElement.value = event.currentTarget; // 保存元素引用
       }
     }
   }
@@ -744,95 +628,9 @@ function tapMarker(item, event) {
  */
 function closePopup() {
   activeMarker.value = null;
-  currentMarkerElement.value = null;
-  removeEventListeners(); // 移除事件监听器
-  calculatePopoverPosition(); // 计算弹窗位置
+  activeMarkerElement.value = null;
 }
 
-/**
- * 防抖延迟时间（毫秒）
- */
-const DEBOUNCE_DELAY = CONFIG.PERFORMANCE.DEBOUNCE_DELAY;
-
-/**
- * 防抖定时器引用
- */
-let debounceTimer = null;
-
-/**
- * 视口变化处理函数（防抖优化版本）
- * 当窗口大小变化或页面滚动时，检查标记点是否在可视区域内
- * 如果在可视区域内则重新计算弹窗位置，否则关闭弹窗
- *
- * @function handleViewportChange
- */
-function handleViewportChange() {
-  // 清除之前的防抖定时器
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
-
-  // 设置新的防抖定时器
-  debounceTimer = setTimeout(() => {
-    // 检查是否有激活的标记点和对应的DOM元素
-    if (currentMarkerElement.value && activeMarker.value?.id) {
-      // 检查标记点元素是否在可视区域内
-      if (isElementInViewport(currentMarkerElement.value)) {
-        // 在可视区域内，重新计算弹窗位置
-        calculatePopoverPosition(currentMarkerElement.value);
-      } else {
-        // 不在可视区域内，关闭弹窗
-        closePopup();
-      }
-    }
-  }, DEBOUNCE_DELAY);
-}
-
-/**
- * 检查元素是否在可视区域内
- *
- * @function isElementInViewport
- * @param {HTMLElement} element - 要检查的DOM元素
- * @returns {boolean} 元素是否在可视区域内
- */
-function isElementInViewport(element) {
-  if (!element) return false;
-
-  const rect = element.getBoundingClientRect();
-  const windowHeight =
-    window.innerHeight || document.documentElement.clientHeight;
-  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
-
-  // 检查元素是否完全在视口外
-  return (
-    rect.top < windowHeight &&
-    rect.bottom > 0 &&
-    rect.left < windowWidth &&
-    rect.right > 0
-  );
-}
-
-/**
- * 添加窗口事件监听器
- * 监听窗口大小变化和滚动事件，智能管理弹窗显示状态
- *
- * @function addEventListeners
- */
-function addEventListeners() {
-  window.addEventListener("resize", handleViewportChange); // 监听窗口大小变化
-  window.addEventListener("scroll", handleViewportChange, true); // 监听滚动事件（捕获阶段）
-}
-
-/**
- * 移除窗口事件监听器
- * 清理事件监听器，防止内存泄漏
- *
- * @function removeEventListeners
- */
-function removeEventListeners() {
-  window.removeEventListener("resize", handleViewportChange);
-  window.removeEventListener("scroll", handleViewportChange, true);
-}
 
 /**
  * 切换树形节点展开/折叠状态
@@ -995,60 +793,6 @@ async function tapBuildingTreeData(item) {
 }
 
 /**
- * 标记点点击处理函数（标签类型和建筑物视图）
- * 处理标签类型标记点的弹窗显示和建筑物视图切换
- *
- * @function clickMarker
- * @param {Object} marker - 点击的标记点数据
- * @param {Event} event - 点击事件对象（可选）
- */
-function clickMarker(marker, event) {
-  // 检查是否配置了建筑物视图切换条件
-  if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
-    const val = marker[mapJson.value?.building_view_col]; // 获取标记点的建筑物视图字段值
-    // 如果值匹配建筑物视图条件，切换到建筑物视图
-    if (val && mapJson.value?.building_view_val?.includes(val)) {
-      switchToBuildingView(marker);
-      return; // 切换到建筑物视图后直接返回
-    }
-  }
-
-  // 处理标签类型标记点的弹窗显示（如果配置了弹窗）
-  if (cardUnitJson.value && marker) {
-    // 如果点击的是当前激活的标记点，隐藏弹窗
-    if (marker?.id && marker?.id === activeMarker.value?.id) {
-      activeMarker.value = null;
-      currentMarkerElement.value = null;
-      removeEventListeners(); // 移除事件监听器
-    } else {
-      activeMarker.value = marker; // 设置新的激活标记点
-
-      // 如果有事件对象，记录点击位置和元素引用
-      if (event && event.currentTarget) {
-        const ele = event.currentTarget;
-        currentMarkerElement.value = ele; // 保存元素引用
-        calculatePopoverPosition(ele); // 初始位置计算
-        addEventListeners(); // 添加事件监听器
-
-        // 延迟重新计算位置，确保弹窗内容已渲染
-        setTimeout(() => {
-          if (currentMarkerElement.value && activeMarker.value?.id) {
-            calculatePopoverPosition(currentMarkerElement.value);
-          }
-        }, 100); // 100ms延迟，可根据实际情况调整
-
-        // 再次延迟计算，处理可能的异步内容加载
-        setTimeout(() => {
-          if (currentMarkerElement.value && activeMarker.value?.id) {
-            calculatePopoverPosition(currentMarkerElement.value);
-          }
-        }, 300); // 300ms延迟，处理异步内容
-      }
-    }
-  }
-}
-
-/**
  * 切换到建筑物视图
  *
  * @function switchToBuildingView
@@ -1113,19 +857,6 @@ onMounted(() => {
   }
 });
 
-/**
- * 组件卸载生命周期钩子
- * 清理事件监听器和定时器，防止内存泄漏
- */
-onUnmounted(() => {
-  removeEventListeners(); // 移除弹窗相关事件监听器
-
-  // 清理防抖定时器
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-    debounceTimer = null;
-  }
-});
 </script>
 
 <style lang="scss" scoped>
