@@ -82,7 +82,6 @@ export default {
       return {}
     },
     chatStyleJson() {
-      // 安全检查：确保pageItem存在且有style_json属性
       if (!this.pageItem || !this.pageItem.style_json) {
         return {};
       }
@@ -101,7 +100,6 @@ export default {
         console.warn('处理样式时出错:', error);
         return {};
       }
-     debugger
       return style || {};
     },
   },
@@ -139,20 +137,15 @@ export default {
       this.currentX = this.pageItem.layout_x !== undefined ? parseFloat(this.pageItem.layout_x) : null
       this.currentY = this.pageItem.layout_y !== undefined ? parseFloat(this.pageItem.layout_y) : null
     }
-
-    // 如果没有设置初始位置，使用默认位置（右下角）
     if (this.currentX === null || this.currentY === null) {
       this.$nextTick(() => {
         this.setDefaultPosition()
       })
     }
-
-    // 添加全局事件监听
     document.addEventListener('mousemove', this.handleMouseMove)
     document.addEventListener('mouseup', this.handleMouseUp)
   },
   beforeDestroy() {
-    // 移除全局事件监听
     document.removeEventListener('mousemove', this.handleMouseMove)
     document.removeEventListener('mouseup', this.handleMouseUp)
   },
@@ -164,89 +157,48 @@ export default {
         event.stopPropagation()
         return
       }
-
       if (!this.inEdit) {
-        // 在预览模式下，可以添加实际的聊天功能
         console.log('打开在线咨询');
-        // 这里可以添加打开聊天窗口的逻辑
       }
     },
     handleMouseDown(event) {
       // 只在编辑模式下允许拖动
       if (!this.inEdit) return
-
       const container = document.getElementById('mobile_container')
       if (!container || !this.$refs.chatMobile) return
-
       const containerRect = container.getBoundingClientRect()
       const elementRect = this.$refs.chatMobile.getBoundingClientRect()
-
-      // 计算鼠标相对于元素的偏移量
       this.offsetX = event.clientX - elementRect.left
       this.offsetY = event.clientY - elementRect.top
-
       this.isDragging = true
       this.elementStartX = this.currentX || 0
       this.elementStartY = this.currentY || 0
-
       event.preventDefault()
       event.stopPropagation()
     },
     handleMouseMove(event) {
       if (!this.isDragging) return
-
       // 获取容器边界限制
       const container = document.getElementById('mobile_container')
       if (!container || !this.$refs.chatMobile) return
-
       const containerRect = container.getBoundingClientRect()
-
-      // 计算新位置：鼠标位置减去偏移量，再转换为相对于容器的坐标
       let newX = event.clientX - this.offsetX - containerRect.left
       let newY = event.clientY - this.offsetY - containerRect.top
-
-      // 获取组件的实际尺寸（固定值，避免动画影响）
-      const elementWidth = 56  // 3.5rem = 56px
-      const elementHeight = 56 // 3.5rem = 56px
-
-      // 考虑控制按钮的额外空间
-      // 控制按钮位于 right: -0.5rem, top: -0.5rem
-      // 按钮宽度 1.5rem + gap 0.25rem + 两个按钮 = 约 3.25rem = 52px
-      // 但实际上按钮从 -0.5rem 开始，所以额外宽度约为 0.5rem + 3.25rem = 3.75rem = 60px
-      const extraWidth = this.inEdit ? 32 : 0  // 编辑模式下考虑按钮额外空间，约2rem
-      const extraHeight = this.inEdit ? 8 : 0  // 编辑模式下考虑按钮额外空间，约0.5rem
-
+      const elementWidth = 56
+      const elementHeight = 56
+      const extraWidth = this.inEdit ? 32 : 0
+      const extraHeight = this.inEdit ? 8 : 0
       // 获取容器的计算样式，考虑padding
       const containerStyle = window.getComputedStyle(container)
       const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0
       const paddingTop = parseFloat(containerStyle.paddingTop) || 0
       const paddingRight = parseFloat(containerStyle.paddingRight) || 0
       const paddingBottom = parseFloat(containerStyle.paddingBottom) || 0
-
-      // 计算实际可用空间（减去padding）
       const availableWidth = containerRect.width - paddingLeft - paddingRight
       const availableHeight = containerRect.height - paddingTop - paddingBottom
-
-      // 调试信息
-      console.log('容器尺寸:', containerRect.width, containerRect.height)
-      console.log('Padding:', paddingLeft, paddingTop, paddingRight, paddingBottom)
-      console.log('可用空间:', availableWidth, availableHeight)
-      console.log('组件尺寸:', elementWidth, elementHeight)
-      console.log('额外空间:', extraWidth, extraHeight)
-      console.log('计算位置:', newX, newY)
-      console.log('最大X位置:', paddingLeft + availableWidth - elementWidth - extraWidth)
-      console.log('最大Y位置:', paddingTop + availableHeight - elementHeight - extraHeight)
-
-      // 边界限制：确保组件完全在可用空间内（包括控制按钮）
-      // 左边界：最小为paddingLeft
-      // 右边界：最大为paddingLeft + 可用宽度 - 组件宽度 - 额外宽度
-      // 上边界：最小为paddingTop
-      // 下边界：最大为paddingTop + 可用高度 - 组件高度 - 额外高度
       newX = Math.max(paddingLeft, Math.min(newX, paddingLeft + availableWidth - elementWidth - extraWidth))
       newY = Math.max(paddingTop, Math.min(newY, paddingTop + availableHeight - elementHeight - extraHeight))
-
       console.log('限制后位置:', newX, newY)
-
       this.currentX = newX
       this.currentY = newY
     },
@@ -270,32 +222,20 @@ export default {
       const container = document.getElementById('mobile_container')
       if (container && this.$refs.chatMobile) {
         const containerRect = container.getBoundingClientRect()
-
-        // 获取容器的计算样式，考虑padding
         const containerStyle = window.getComputedStyle(container)
         const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0
         const paddingTop = parseFloat(containerStyle.paddingTop) || 0
         const paddingRight = parseFloat(containerStyle.paddingRight) || 0
         const paddingBottom = parseFloat(containerStyle.paddingBottom) || 0
-
-        // 计算实际可用空间（减去padding）
         const availableWidth = containerRect.width - paddingLeft - paddingRight
         const availableHeight = containerRect.height - paddingTop - paddingBottom
-
-        // 默认位置：右下角，留出一些边距
         const margin = 20
         const elementWidth = 56  // 3.5rem = 56px
         const elementHeight = 56 // 3.5rem = 56px
-
-        // 考虑控制按钮的额外空间
         const extraWidth = this.inEdit ? 32 : 0
         const extraHeight = this.inEdit ? 8 : 0
-
-        // 确保默认位置也遵循边界限制
         this.currentX = paddingLeft + Math.max(0, Math.min(availableWidth - elementWidth - extraWidth - margin, availableWidth - elementWidth - extraWidth))
         this.currentY = paddingTop + Math.max(0, Math.min(availableHeight - elementHeight - extraHeight - margin, availableHeight - elementHeight - extraHeight))
-
-        // 触发位置更新事件，更新layout_x和layout_y
         this.$emit('position-change', {
           layout_x: this.currentX,
           layout_y: this.currentY
@@ -318,8 +258,8 @@ export default {
 
 <style scoped lang="scss">
 .chat_mobile {
-  width: 3.5rem; /* 56px */
-  height: 3.5rem; /* 56px */
+  width: 3.5rem;
+  height: 3.5rem;
   background:#0e77ea;
   border-radius: 50%;
   display: flex;
@@ -329,10 +269,8 @@ export default {
   cursor: pointer;
   box-shadow: 0 0.25rem 0.75rem rgba(14, 119, 234, 0.4);
   position: relative;
-  overflow: visible; /* 改为visible以显示控制按钮 */
-  user-select: none; /* 防止拖动时选中文本 */
-
-  /* 控制按钮容器 */
+  overflow: visible;
+  user-select: none;
   .control-buttons {
     position: absolute;
     top: -0.5rem;

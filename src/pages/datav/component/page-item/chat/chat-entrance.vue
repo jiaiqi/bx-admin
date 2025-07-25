@@ -256,23 +256,13 @@ export default {
       this.startTop = this.top;
       this.dragStartTime = Date.now();
       this.hasMoved = false;
-      // 重置拖动结束时间，开始新的拖动
       this.dragEndTime = 0;
-
-      // 计算鼠标相对于组件的偏移量（全屏拖动模式）
       if (this.isPreview || this.isView) {
         const elementRect = this.$el.getBoundingClientRect();
-
-        // 直接使用视口坐标系
-        // 鼠标相对于视口的位置就是 event.clientX/Y
         const mouseX = event.clientX;
         const mouseY = event.clientY;
-
-        // 组件相对于视口的位置
         const elementX = elementRect.left;
         const elementY = elementRect.top;
-
-        // 计算偏移量（鼠标在组件内的相对位置）
         this.offsetX = mouseX - elementX;
         this.offsetY = mouseY - elementY;
       }
@@ -284,7 +274,6 @@ export default {
       const deltaX = event.clientX - this.startX;
       const deltaY = event.clientY - this.startY;
 
-      // 判断是否在移动，3像素的偏移量
       if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
         this.hasMoved = true;
       }
@@ -310,14 +299,11 @@ export default {
         this.top = (constrainedTop / viewportHeight) * 100;
 
       } else {
-        // 编辑模式
         const percentX = (deltaX / parentRect.width) * 100;
         const percentY = (deltaY / parentRect.height) * 100;
 
         this.left = this.startLeft + percentX;
         this.top = this.startTop + percentY;
-
-        // 边界限制
         const elementWidthPercent = (elementRect.width / parentRect.width) * 100;
         const elementHeightPercent = (elementRect.height / parentRect.height) * 100;
 
@@ -326,7 +312,7 @@ export default {
       }
     },
     stopDrag() {
-      //使用时间戳来增加一个边界延迟条件，反正托完立刻被打开弹窗
+      //使用时间戳来增加一个边界延迟条件，防止拖完立刻被打开弹窗
       if (!this.isDragging) return;
       if (this.hasMoved) {
         this.updateComponentProps();
@@ -425,10 +411,6 @@ export default {
       // this.$store.commit('chatInfo/handleCleaCount')
       this.$emit('setOpenChat',item)
       console.log(item)
-    },
-    onDelete() {
-      // 触发删除事件，传递当前组件的props
-      this.$emit('delete', this.props);
     }
   }
 }
