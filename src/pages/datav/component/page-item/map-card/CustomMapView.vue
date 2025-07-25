@@ -119,8 +119,8 @@
     </div>
 
     <!-- 自定义底图-地图视图区域 -->
-    <zoom-drag-container 
-      ref="zoomDragContainerRef" 
+    <zoom-drag-container
+      ref="zoomDragContainerRef"
       :show-tips="true"
       :ignore-scale-classes="'map-marker'"
     >
@@ -188,51 +188,15 @@
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物')"
       :marker-list.sync="markerList"
     ></multi-source-markers>
-    <!-- 弹窗内容 -->
-    <Teleport
-      to="body"
-      v-if="!isBuildingView"
-    >
-      <div
-        class="popover-content-to-body"
-        :style="{
-          left: popoverPosition.x + 'px',
-          top: popoverPosition.y + 'px',
-        }"
-        v-clickoutside="closePopup"
-      >
-        <transition name="popover-fade">
-          <div
-            class="popover-content"
-            :class="{ show: activeMarker && activeMarker.id }"
-          >
-            <template v-if="activeMarker && activeMarker.id">
-              <!-- 动态箭头方向和位置 -->
-              <div 
-                :class="[
-                  'popover-arrow',
-                  popoverPosition.arrowDirection || 'bottom'
-                ]"
-                :style="{
-                  left: (popoverPosition.arrowDirection === 'top' || popoverPosition.arrowDirection === 'bottom') 
-                    ? (popoverPosition.arrowPosition || 50) + '%' 
-                    : undefined,
-                  top: (popoverPosition.arrowDirection === 'left' || popoverPosition.arrowDirection === 'right') 
-                    ? (popoverPosition.arrowPosition || 50) + '%' 
-                    : undefined
-                }"
-              ></div>
-              <card-group-cell
-                :page-item="pageItem"
-                :cellsLayout="[cardUnitJson]"
-                :cell-data="[activeMarker]"
-                :key="activeMarker.id"
-              ></card-group-cell>
-            </template>
-          </div>
-        </transition>
-      </div>
-    </Teleport>
+    <!-- 地图弹窗组件 -->
+    <MapPopover
+      :active-marker="activeMarker"
+      :popover-position="popoverPosition"
+      :page-item="pageItem"
+      :card-unit-json="cardUnitJson"
+      :is-building-view="isBuildingView"
+      @close="closePopup"
+    />
   </div>
 </template>
 
@@ -273,10 +237,10 @@ import cardGroupCell from "../card-group-cell/card-group-cell.vue"; // 卡片组
 import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
 import { formatStyleData } from "../../../common"; // 样式数据格式化工具
 import { Icon } from "@iconify/vue2"; // 图标组件
-import Teleport from "vue2-teleport"; // Vue 2 传送门组件
 import cloneDeep from "lodash/cloneDeep";
 import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
 import MultiSourceMarkers from "./MultiSourceMarkers.vue";
+import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
 /**
  * 组件 Props 定义
  * @typedef {Object} Props
@@ -625,7 +589,7 @@ const setLabelActiveStyle = computed(() => {
  */
 function getPopoverDimensions() {
   const popoverElement = document.querySelector('.popover-content-to-body .popover-content');
-  
+
   if (popoverElement) {
     const rect = popoverElement.getBoundingClientRect();
     return {
@@ -633,7 +597,7 @@ function getPopoverDimensions() {
       height: rect.height || 200
     };
   }
-  
+
   // 如果无法获取实际尺寸，返回估算值
   return {
     width: 300,
@@ -653,85 +617,73 @@ function calculatePopoverPosition(element) {
 
   // 获取元素相对于视口的位置
   const elementRect = element.getBoundingClientRect();
-  
+
   // 获取视口尺寸
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-  
+
   // 获取弹窗实际尺寸或使用估算值
   const popoverDimensions = getPopoverDimensions();
   const popoverWidth = popoverDimensions.width;
   const popoverHeight = popoverDimensions.height;
   const padding = 50; // 距离视口边缘的最小间距
-  
+
   // 标记点中心位置
   const markerCenterX = elementRect.left + elementRect.width / 2;
   const markerCenterY = elementRect.top + elementRect.height / 2;
-  
+
   // 计算初始位置（默认在元素上方居中）
   let x = markerCenterX;
   let y = elementRect.top - CONFIG.UI.POPUP_OFFSET;
-  let arrowDirection = 'bottom'; // 默认箭头指向下方（弹窗在上方）
-  let arrowPosition = 50; // 箭头在弹窗中的位置百分比（默认居中）
-  
-  // 水平位置调整和箭头水平位置计算
+
+  // 水平位置调整
   const popoverLeft = x - popoverWidth / 2;
   const popoverRight = x + popoverWidth / 2;
-  
+
   if (popoverLeft < padding) {
     // 左边界溢出，调整弹窗到左对齐
-    const newX = padding + popoverWidth / 2;
-    // 计算箭头相对于弹窗的位置百分比
-    arrowPosition = Math.max(10, Math.min(90, ((markerCenterX - (padding + popoverWidth / 2)) / popoverWidth + 0.5) * 100));
-    x = newX;
+    x = padding + popoverWidth / 2;
   } else if (popoverRight > viewportWidth - padding) {
     // 右边界溢出，调整弹窗到右对齐
-    const newX = viewportWidth - padding - popoverWidth / 2;
-    // 计算箭头相对于弹窗的位置百分比
-    arrowPosition = Math.max(10, Math.min(90, ((markerCenterX - newX) / popoverWidth + 0.5) * 100));
-    x = newX;
+    x = viewportWidth - padding - popoverWidth / 2;
   }
-  
-  // 垂直位置调整和箭头方向计算
+
+  // 垂直位置调整
   const popoverTop = y - popoverHeight; // 考虑transform: translate(-50%, -100%)
   const popoverBottom = y;
-  
+
   if (popoverTop < padding) {
     // 上边界溢出，将弹窗显示在元素下方
     y = elementRect.bottom + CONFIG.UI.POPUP_OFFSET + popoverHeight;
-    arrowDirection = 'top'; // 箭头指向上方（弹窗在下方）
-    
+
     // 检查下方是否也会溢出
     if (y > viewportHeight - padding) {
       // 上下都会溢出，选择空间较大的一侧
       const spaceAbove = elementRect.top;
       const spaceBelow = viewportHeight - elementRect.bottom;
-      
+
       if (spaceAbove > spaceBelow) {
         // 上方空间更大，显示在上方但调整位置
         y = Math.max(padding + popoverHeight, elementRect.top - CONFIG.UI.POPUP_OFFSET);
-        arrowDirection = 'bottom'; // 箭头指向下方（弹窗在上方）
       } else {
         // 下方空间更大，显示在下方但调整位置
         y = Math.min(viewportHeight - padding, elementRect.bottom + CONFIG.UI.POPUP_OFFSET + popoverHeight);
-        arrowDirection = 'top'; // 箭头指向上方（弹窗在下方）
       }
     }
   } else if (popoverBottom > viewportHeight - padding) {
     // 下边界溢出（这种情况在默认上方显示时不太可能发生，但为了完整性保留）
     y = viewportHeight - padding;
-    arrowDirection = 'bottom'; // 保持箭头指向下方
   }
-  
-  // 更新弹窗位置、箭头方向和箭头位置
-  popoverPosition.value = { x, y, arrowDirection, arrowPosition };
-  
+
+  // 更新弹窗位置（移除箭头相关属性）
+  popoverPosition.value = { x, y };
+
   // 可选：添加调试信息
   console.log('弹窗位置计算:', {
     element: { x: elementRect.left, y: elementRect.top, width: elementRect.width, height: elementRect.height },
     marker: { centerX: markerCenterX, centerY: markerCenterY },
     viewport: { width: viewportWidth, height: viewportHeight },
-    popover: { x, y, width: popoverWidth, height: popoverHeight, arrowDirection, arrowPosition },
+    popover: { x, y, width: popoverWidth, height: popoverHeight },
     adjustments: {
       horizontalOverflow: popoverLeft < padding || popoverRight > viewportWidth - padding,
       verticalOverflow: popoverTop < padding || popoverBottom > viewportHeight - padding
@@ -748,34 +700,38 @@ function calculatePopoverPosition(element) {
  * @param {Event} event - 点击事件对象
  */
 function tapMarker(item, event) {
-  // 如果点击的是当前激活的标记点，隐藏弹窗
-  if (item?.id && item?.id === activeMarker.value?.id) {
-    activeMarker.value = null;
-    currentMarkerElement.value = null;
-    removeEventListeners(); // 移除事件监听器
-  } else {
-    activeMarker.value = item; // 设置新的激活标记点
-    // 记录点击位置和元素引用
-    if (event) {
-      console.log(event.currentTarget);
-      const ele = event.currentTarget;
-      currentMarkerElement.value = ele; // 保存元素引用
-      calculatePopoverPosition(ele); // 初始位置计算
-      addEventListeners(); // 添加事件监听器
-      
-      // 延迟重新计算位置，确保弹窗内容已渲染
-      setTimeout(() => {
-        if (currentMarkerElement.value && activeMarker.value?.id) {
-          calculatePopoverPosition(currentMarkerElement.value);
-        }
-      }, 100); // 100ms延迟，可根据实际情况调整
-      
-      // 再次延迟计算，处理可能的异步内容加载
-      setTimeout(() => {
-        if (currentMarkerElement.value && activeMarker.value?.id) {
-          calculatePopoverPosition(currentMarkerElement.value);
-        }
-      }, 300); // 300ms延迟，处理异步内容
+  console.log('点击标记点', item, mapJson.value.onclick);
+
+  if (mapJson.value.tips_card_unit_json && mapJson.value.onclick === '弹出卡片') {
+    // 如果点击的是当前激活的标记点，隐藏弹窗
+    if (item?.id && item?.id === activeMarker.value?.id) {
+      activeMarker.value = null;
+      currentMarkerElement.value = null;
+      removeEventListeners(); // 移除事件监听器
+    } else {
+      activeMarker.value = item; // 设置新的激活标记点
+      // 记录点击位置和元素引用
+      if (event) {
+        console.log(event.currentTarget);
+        const ele = event.currentTarget;
+        currentMarkerElement.value = ele; // 保存元素引用
+        calculatePopoverPosition(ele); // 初始位置计算
+        addEventListeners(); // 添加事件监听器
+
+        // 延迟重新计算位置，确保弹窗内容已渲染
+        setTimeout(() => {
+          if (currentMarkerElement.value && activeMarker.value?.id) {
+            calculatePopoverPosition(currentMarkerElement.value);
+          }
+        }, 100); // 100ms延迟，可根据实际情况调整
+
+        // 再次延迟计算，处理可能的异步内容加载
+        setTimeout(() => {
+          if (currentMarkerElement.value && activeMarker.value?.id) {
+            calculatePopoverPosition(currentMarkerElement.value);
+          }
+        }, 300); // 300ms延迟，处理异步内容
+      }
     }
   }
 }
@@ -1056,7 +1012,7 @@ function clickMarker(marker, event) {
       return; // 切换到建筑物视图后直接返回
     }
   }
-  
+
   // 处理标签类型标记点的弹窗显示（如果配置了弹窗）
   if (cardUnitJson.value && marker) {
     // 如果点击的是当前激活的标记点，隐藏弹窗
@@ -1066,21 +1022,21 @@ function clickMarker(marker, event) {
       removeEventListeners(); // 移除事件监听器
     } else {
       activeMarker.value = marker; // 设置新的激活标记点
-      
+
       // 如果有事件对象，记录点击位置和元素引用
       if (event && event.currentTarget) {
         const ele = event.currentTarget;
         currentMarkerElement.value = ele; // 保存元素引用
         calculatePopoverPosition(ele); // 初始位置计算
         addEventListeners(); // 添加事件监听器
-        
+
         // 延迟重新计算位置，确保弹窗内容已渲染
         setTimeout(() => {
           if (currentMarkerElement.value && activeMarker.value?.id) {
             calculatePopoverPosition(currentMarkerElement.value);
           }
         }, 100); // 100ms延迟，可根据实际情况调整
-        
+
         // 再次延迟计算，处理可能的异步内容加载
         setTimeout(() => {
           if (currentMarkerElement.value && activeMarker.value?.id) {
@@ -1377,8 +1333,18 @@ onUnmounted(() => {
     position: absolute;
     transform: translate(-50%, -50%);
 
+
     &.cursor-pointer {
       cursor: pointer;
+
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+        z-index: 20;
+      }
+
+      &:active {
+        transform: translate(-50%, -50%) scale(0.95);
+      }
     }
 
     .marker-icon {
@@ -1413,89 +1379,6 @@ onUnmounted(() => {
       width: 30px;
     }
   }
-}
-
-:global(.popover-content-to-body) {
-  position: fixed;
-  z-index: 1000;
-  border-radius: 5px;
-  transform: translate(-50%, -100%) scale(1);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-  opacity: 1;
-  width: max-content;
-  height: max-content;
-
-  &.popover-fade-enter-active,
-  &.popover-fade-leave-active {
-    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  }
-
-  &.popover-fade-enter,
-  &.popover-fade-leave-to {
-    opacity: 0;
-    transform: translate(-50%, -120%) scale(0.8);
-  }
-
-  &.popover-fade-enter-to,
-  &.popover-fade-leave {
-    opacity: 1;
-    transform: translate(-50%, -100%) scale(1);
-  }
-}
-
-:global(.popover-content-to-body .popover-content) {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8);
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-:global(.popover-content-to-body .popover-content.show) {
-  opacity: 1;
-  transform: translate(0%, 0%) scale(1);
-}
-
-:global(.popover-content-to-body .popover-arrow) {
-  position: absolute;
-  width: 0;
-  height: 0;
-  z-index: 1001;
-}
-
-/* 箭头指向下方（弹窗在标记物上方） */
-:global(.popover-content-to-body .popover-arrow.bottom) {
-  top: 100%;
-  transform: translateX(-50%);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid #fff;
-}
-
-/* 箭头指向上方（弹窗在标记物下方） */
-:global(.popover-content-to-body .popover-arrow.top) {
-  bottom: 100%;
-  transform: translateX(-50%);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 8px solid #fff;
-}
-
-/* 箭头指向左侧（弹窗在标记物右侧） */
-:global(.popover-content-to-body .popover-arrow.left) {
-  right: 100%;
-  transform: translateY(-50%);
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 8px solid #fff;
-}
-
-/* 箭头指向右侧（弹窗在标记物左侧） */
-:global(.popover-content-to-body .popover-arrow.right) {
-  left: 100%;
-  transform: translateY(-50%);
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-left: 8px solid #fff;
 }
 
 /* 移除旧的箭头样式 */
