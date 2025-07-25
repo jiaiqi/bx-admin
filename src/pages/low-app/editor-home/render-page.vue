@@ -5,9 +5,10 @@
     @dragover.prevent="!isPreview && $event.preventDefault()"
     @drop.prevent="!isPreview && $event.preventDefault()"
   >
-    <div class="component-container">
-      <div 
-        v-for="(item, index) in currentComponents"
+    <div class="component-container" id="mobile_container">
+      <!-- 普通组件渲染区域 -->
+      <div
+        v-for="(item, index) in normalComponents"
         :key="item.id || index"
         class="component-wrapper"
         :style="getWrapperStyle(item)"
@@ -23,7 +24,7 @@
           <div class="drag-handle">
             <i class="el-icon-rank"></i>
           </div>
-          <div 
+          <div
             class="delete-btn"
             @click.stop="handleDeleteComponent(item,item.id)"
             title="删除组件"
@@ -52,6 +53,32 @@
 <!--          @mousedown.stop.prevent="startResize($event, item)"-->
 <!--        ></div>-->
       </div>
+
+      <!-- 悬浮组件渲染区域 - chat-by-mobile -->
+      <div
+        v-for="(item, index) in floatingComponents"
+        :key="'floating-' + (item.id || index)"
+        class="floating-component-wrapper"
+        :class="{
+          'floating-edit-mode': !isPreview,
+          'selected': !isPreview && currentId === item.id
+        }"
+        @click="!isPreview && handleComponentClick(item)"
+      >
+        <component
+          :is="getComponentType(item)"
+          v-bind="item"
+          :pageItem="item"
+          :layout="item.layout"
+          :screenType="screenType"
+          :pageConfig="pageConfig"
+          :inTabs="false"
+          :inEdit="!isPreview"
+          :currentId="currentId"
+          :onDelete="() => handleDeleteComponent(item, item.id)"
+          @position-change="handleFloatingPositionChange(item, $event)"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -60,13 +87,15 @@
 import dragStore from '../app-materials/store/dragStore'
 import pageItem from "@/pages/datav/component/page-item/page-item.vue";
 import floatComponent from "./float-component.vue";
+import chatByMobile from "@/pages/low-app/editor-home/chatByMobile.vue";
 import {$delete} from "@/common/http";
 
 export default {
   name: "render-page",
   components: {
     pageItem,
-    floatComponent
+    floatComponent,
+    chatByMobile
   },
   data() {
     return {
@@ -92,6 +121,22 @@ export default {
     components: {
       type: Array,
       default: ()=> []
+    }
+  },
+  computed: {
+    // 普通组件（非悬浮组件）
+    normalComponents() {
+      return this.currentComponents.filter(item => {
+        const componentType = this.getComponentType(item);
+        return componentType !== 'chat-by-mobile';
+      });
+    },
+    // 悬浮组件（chat-by-mobile）
+    floatingComponents() {
+      return this.currentComponents.filter(item => {
+        const componentType = this.getComponentType(item);
+        return componentType === 'chat-by-mobile';
+      });
     }
   },
   watch: {
@@ -235,13 +280,15 @@ export default {
       console.log('当前获取的组件:', item)
       
       // 根据组件类型返回对应的组件名称
-      switch (item.type) {
+      switch (item.com_type) {
         case 'container':
           return 'lc-container'
         case 'layout':
           return 'lc-block'
         case 'component':
           return item.component || 'page-item'
+        case '咨询入口':
+          return item.component='chat-by-mobile'
         default:
           return 'page-item'
       }
@@ -387,94 +434,107 @@ export default {
 
     // 处理拖拽开始
     handleDragStart(event, item, index) {
-      this.dragIndex = index
-      event.dataTransfer.effectAllowed = 'move'
-      event.dataTransfer.setData('text/plain', index)
+      // 找到该组件在完整组件列表中的真实索引
+      const realIndex = this.currentComponents.findIndex(comp => comp.id === item.id);
+      this.dragIndex = realIndex;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', realIndex);
       // 添加拖拽时的样式
-      event.target.classList.add('dragging')
+      event.target.classList.add('dragging');
     },
 
     // 处理拖拽进入
     handleDragEnter(event, index) {
-      if (index === this.dragIndex) return
-      this.dragOverIndex = index
-      event.target.classList.add('drag-over')
+      // 找到该位置对应的组件在完整组件列表中的真实索引
+      const normalComponent = this.normalComponents[index];
+      if (!normalComponent) return;
+
+      const realIndex = this.currentComponents.findIndex(comp => comp.id === normalComponent.id);
+      if (realIndex === this.dragIndex) return;
+
+      this.dragOverIndex = realIndex;
+      event.target.classList.add('drag-over');
     },
 
     // 处理拖拽离开
     handleDragLeave(event, index) {
-      event.target.classList.remove('drag-over')
+      event.target.classList.remove('drag-over');
     },
 
     // 处理放置
     handleDrop(event, index) {
       // 移除所有组件的拖拽相关样式
       document.querySelectorAll('.component-wrapper').forEach(el => {
-        el.classList.remove('drag-over')
-        el.classList.remove('dragging')
-      })
-      
+        el.classList.remove('drag-over');
+        el.classList.remove('dragging');
+      });
+
       // 如果是新拖入的组件，不进行位置交换
-      if (this.dragIndex === -1) return
-      
-      if (this.dragIndex === index) return
-      
+      if (this.dragIndex === -1) return;
+
+      // 找到目标位置对应的组件在完整组件列表中的真实索引
+      const normalComponent = this.normalComponents[index];
+      if (!normalComponent) return;
+
+      const realTargetIndex = this.currentComponents.findIndex(comp => comp.id === normalComponent.id);
+      if (this.dragIndex === realTargetIndex) return;
+
       // 获取拖拽的组件和目标位置的组件
-      const draggedItem = this.currentComponents[this.dragIndex]
-      const targetItem = this.currentComponents[index]
-      
-      if (!draggedItem || !targetItem) return
-      
+      const draggedItem = this.currentComponents[this.dragIndex];
+      const targetItem = this.currentComponents[realTargetIndex];
+
+      if (!draggedItem || !targetItem) return;
+
       // 交换两个组件的com_seq值
-      const tempSeq = draggedItem.com_seq
-      draggedItem.com_seq = targetItem.com_seq
-      targetItem.com_seq = tempSeq
-      
+      const tempSeq = draggedItem.com_seq;
+      draggedItem.com_seq = targetItem.com_seq;
+      targetItem.com_seq = tempSeq;
+
       // 标记两个组件的位置已变更
-      draggedItem.isPositionChanged = true
-      targetItem.isPositionChanged = true
-      
+      draggedItem.isPositionChanged = true;
+      targetItem.isPositionChanged = true;
+
       // 存储被交换的组件ID（只存储没有_editType的组件，即引入的组件）
       if (!draggedItem._editType) {
-        this.swappedComponents.add(draggedItem.id)
+        this.swappedComponents.add(draggedItem.id);
       }
       if (!targetItem._editType) {
-        this.swappedComponents.add(targetItem.id)
+        this.swappedComponents.add(targetItem.id);
       }
-      
+
       // 创建新的组件数组
-      const newComponents = [...this.currentComponents]
-      
+      const newComponents = [...this.currentComponents];
+
       // 从原位置移除
-      newComponents.splice(this.dragIndex, 1)
-      
+      newComponents.splice(this.dragIndex, 1);
+
       // 插入到新位置
-      newComponents.splice(index, 0, draggedItem)
-      
+      newComponents.splice(realTargetIndex, 0, draggedItem);
+
       // 使用 Vue.set 更新整个数组以确保响应式
-      this.$set(this, 'currentComponents', newComponents)
-      
+      this.$set(this, 'currentComponents', newComponents);
+
       // 根据com_seq值重新排序
-      this.currentComponents.sort((a, b) => a.com_seq - b.com_seq)
-      
+      this.currentComponents.sort((a, b) => a.com_seq - b.com_seq);
+
       // 更新组件的z-index和拖拽索引
       this.currentComponents.forEach((comp, index) => {
-        comp.layout_z = index + 1
-        comp.dragIndex = index
-      })
-      
+        comp.layout_z = index + 1;
+        comp.dragIndex = index;
+      });
+
       // 触发组件更新事件
-      this.$emit('UpdateComponents', this.currentComponents)
-      
+      this.$emit('UpdateComponents', this.currentComponents);
+
       // 触发组件交换事件，传递被交换的组件信息
-      const swappedComponents = this.getSwappedComponents()
+      const swappedComponents = this.getSwappedComponents();
       if (swappedComponents.length > 0) {
-        this.$emit('ComponentsSwapped', swappedComponents)
+        this.$emit('ComponentsSwapped', swappedComponents);
       }
-      
+
       // 重置拖拽状态
-      this.dragIndex = -1
-      this.dragOverIndex = -1
+      this.dragIndex = -1;
+      this.dragOverIndex = -1;
     },
     
     // 获取被交换的组件
@@ -510,7 +570,6 @@ export default {
 
     // 全局drop事件处理
     handleGlobalDrop(e) {
-      debugger
       const dragData = dragStore.getDraggingElement();
       if (dragData) {
         // 获取鼠标位置
@@ -554,7 +613,7 @@ export default {
         }
         if (dragData.value === "咨询入口") {
           dragData.com_type = "咨询入口";
-          dragData.component = "page-item";
+          dragData.component = "chat-by-mobile";
           if (!dragData._editType) {
             dragData._editType = "add";
             dragData.com_name = "咨询入口";
@@ -590,6 +649,21 @@ export default {
       if (!dragStore.getDraggingElement()) {
         dragStore.clearDragType();
         dragStore.setDraggingElement(null);
+      }
+    },
+
+    // 处理悬浮组件位置变化
+    handleFloatingPositionChange(item, position) {
+      // 更新组件的位置信息
+      const index = this.currentComponents.findIndex(comp => comp.id === item.id)
+      if (index > -1) {
+        // 更新layout_x和layout_y
+        this.$set(this.currentComponents[index], 'layout_x', position.layout_x)
+        this.$set(this.currentComponents[index], 'layout_y', position.layout_y)
+        this.$set(this.currentComponents[index], 'isPositionChanged', true)
+
+        // 触发组件更新事件
+        this.$emit('UpdateComponents', this.currentComponents)
       }
     },
   },
@@ -765,5 +839,28 @@ export default {
   &:active {
     background-color: #096dd9;
   }
+}
+
+/* 悬浮组件样式 */
+.floating-component-wrapper {
+  position: absolute;
+  z-index: 1000;
+  border-radius: 50%;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+  /* 编辑模式下的样式 */
+  &.floating-edit-mode {
+    &.selected {
+      /* 选中状态的样式可以保留，用于视觉反馈 */
+      outline: 2px solid #1890ff;
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* 预览模式下的样式调整 */
+[data-preview="true"] .floating-component-wrapper {
+  border: none;
+  background-color: transparent;
+  padding: 0;
 }
 </style>

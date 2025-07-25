@@ -1,22 +1,33 @@
 <template>
-  <div class="chat_en" :style="[chatStyleJson,setPosition]"
+  <div class="chat_en" :style="[setPosition]"
        @click.stop="onTap"
        @mousedown.stop="handleMouseDown"
        ref="chatEntranceRef"
        :class="{ 'draggable': isPreview || isView, 'editable': !isPreview && !isView }"
   >
-    <!-- 编辑模式下的拖动按钮 -->
+    <!-- 编辑模式下的操作工具栏 -->
     <div
       v-if="isActive && !isPreview && !isView"
-      class="drag-button"
-      @mousedown.stop="startDrag"
-      title="拖动组件"
+      class="action-toolbar"
     >
-      <i class="el-icon-rank"></i>
+      <div
+        class="action-button delete-btn"
+        @click.stop="onDelete"
+        title="删除组件"
+      >
+        <i class="el-icon-close"></i>
+      </div>
+      <div
+        class="action-button drag-btn"
+        @mousedown.stop="startDrag"
+        title="拖动组件"
+      >
+        <i class="el-icon-rank"></i>
+      </div>
     </div>
 
-     <li v-for="(item,index) in chatList" class="chat_list" @click="handleChatClick(item, $event)">
-       <span><img :src="chatImgs" alt="" :class="{'chat_ds': true, 'blink': item.isOpen}"></span>
+     <li v-for="(item,index) in chatList" class="chat_list" @click="handleChatClick(item, $event)" :style="[chatStyleJson]">
+       <span><img :src="chatBg" alt="" :class="{'chat_ds': true, 'blink': item.isOpen}"></span>
        <span>{{item.chat_type}}</span>
      </li>
   </div>
@@ -30,7 +41,6 @@ export default {
   data(){
     return {
       chatCount:0,
-      chatImgs:chaImg,
       chatType:0,
       chatList:[
         {
@@ -60,6 +70,8 @@ export default {
       offsetY: 0,
       // 拖动结束后的延迟标志，防止立即触发点击
       dragEndTime: 0,
+      // 存储背景图片URL
+      chatBg:chaImg,
     }
   },
   props: {
@@ -109,12 +121,24 @@ export default {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
     chatStyleJson() {
-      const styleJson = this.pageItem?.style_json || {};
-      let style = {};
-      if (styleJson) {
-        style = formatStyleData(styleJson);
+      // 安全检查：确保pageItem存在且有style_json属性
+      if (!this.pageItem || !this.pageItem.style_json) {
+        return {};
       }
-      return style;
+      let style = {};
+      try {
+        style = formatStyleData(this.pageItem.style_json);
+
+        // 从样式对象中移除background-image属性，背景图片将单独处理
+        if (style && style['background-image']) {
+          delete style['background-image'];
+        }
+      } catch (error) {
+        console.warn('处理样式时出错:', error);
+        return {};
+      }
+
+      return style || {};
     },
     chartStore(){
       return this.$store.state.chatInfo.chatBase
@@ -142,6 +166,31 @@ export default {
       },
       deep:true,
       immediate:true
+    },
+    // 监听pageItem变化，提取背景图片
+    pageItem: {
+      handler(newVal) {
+        // 默认使用chaImg
+        this.chatBg = chaImg;
+
+        // 尝试提取自定义背景图片
+        if (newVal && newVal.style_json) {
+          try {
+            const style = formatStyleData(newVal.style_json);
+            if (style && style['background-image']) {
+              const backgroundImage = style['background-image'];
+              const urlMatch = backgroundImage.match(/url\(['"]?([^'"]+)['"]?\)/);
+              if (urlMatch && urlMatch[1]) {
+                this.chatBg = urlMatch[1];
+              }
+            }
+          } catch (error) {
+            // 出错时保持默认值
+          }
+        }
+      },
+      deep: true,
+      immediate: true
     }
   },
    mounted(){
@@ -175,6 +224,9 @@ export default {
           height: window.innerHeight
         }
       };
+    },
+    onDelete() {
+      this.$emit("delete", this.props);
     },
     onTap(event) {
       // 如果刚刚拖动过，不触发点击事件
@@ -229,41 +281,31 @@ export default {
     },
     onDrag(event) {
       if (!this.isDragging) return;
-
       const deltaX = event.clientX - this.startX;
       const deltaY = event.clientY - this.startY;
 
-      // 检测是否真的在移动（超过3像素才算移动）
+      // 判断是否在移动，3像素的偏移量
       if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
         this.hasMoved = true;
       }
 
-      // 获取容器信息
       const container = this.getParentContainer();
       const elementRect = this.$el.getBoundingClientRect();
       const parentRect = container.rect;
 
       if (this.isPreview || this.isView) {
-        // 全屏拖动模式：直接使用视口坐标系
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-
-        // 鼠标位置（相对于视口）
         const mouseX = event.clientX;
         const mouseY = event.clientY;
 
-        // 组件左上角位置 = 鼠标位置 - 偏移量
         const newLeft = mouseX - this.offsetX;
         const newTop = mouseY - this.offsetY;
-
-        // 边界限制（确保组件完全在视口内）
         const maxLeft = viewportWidth - elementRect.width;
         const maxTop = viewportHeight - elementRect.height;
 
         const constrainedLeft = Math.max(0, Math.min(maxLeft, newLeft));
         const constrainedTop = Math.max(0, Math.min(maxTop, newTop));
-
-        // 转换为百分比（相对于视口）
         this.left = (constrainedLeft / viewportWidth) * 100;
         this.top = (constrainedTop / viewportHeight) * 100;
 
@@ -284,20 +326,18 @@ export default {
       }
     },
     stopDrag() {
+      //使用时间戳来增加一个边界延迟条件，反正托完立刻被打开弹窗
       if (!this.isDragging) return;
       if (this.hasMoved) {
         this.updateComponentProps();
-        // 记录拖动结束时间，用于防止立即触发点击事件
         this.dragEndTime = Date.now();
       }
       this.isDragging = false;
-      // 延迟重置hasMoved标志，防止拖动结束后立即触发点击
       setTimeout(() => {
         this.hasMoved = false;
       }, 100); // 100ms延迟
     },
     updateComponentProps() {
-      // 更新组件的属性，触发事件通知父组件
       const updatedProps = {
         ...this.props,
         layout_x: parseFloat(this.left.toFixed(2)),
@@ -306,11 +346,9 @@ export default {
         y: parseFloat(this.top.toFixed(2)),
       };
 
-      // 在预览和查看模式下，只更新位置，不触发选中事件
       if (this.isPreview || this.isView) {
         this.$emit("resize", updatedProps);
       } else {
-        // 编辑模式下，触发resize事件和click事件
         this.$emit("resize", updatedProps);
         this.$emit("click", updatedProps);
       }
@@ -387,6 +425,10 @@ export default {
       // this.$store.commit('chatInfo/handleCleaCount')
       this.$emit('setOpenChat',item)
       console.log(item)
+    },
+    onDelete() {
+      // 触发删除事件，传递当前组件的props
+      this.$emit('delete', this.props);
     }
   }
 }
@@ -432,31 +474,63 @@ li{
     cursor: pointer;
   }
 
-  // 拖动按钮样式
-  .drag-button {
+  // 操作工具栏样式
+  .action-toolbar {
     position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 20px;
-    height: 20px;
-    background-color: #17d57e;
-    border: 1px solid white;
+    top: -12px;
+    right: -12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+
+  .action-button {
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: move;
-    z-index: 1000;
-    font-size: 12px;
+    font-size: 10px;
     color: white;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.8);
 
     &:hover {
-      background-color: #15c471;
       transform: scale(1.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      transform: scale(0.95);
     }
 
     i {
-      font-size: 10px;
+      font-size: 9px;
+    }
+  }
+
+  .delete-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    cursor: pointer;
+
+    &:hover {
+      background: linear-gradient(135deg, #ff5252, #e53935);
+    }
+  }
+
+  .drag-btn {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    cursor: move;
+
+    &:hover {
+      background: linear-gradient(135deg, #26d0ce, #2a9d8f);
     }
   }
 }
@@ -464,14 +538,15 @@ li{
   display: flex;
   width:100%;
   align-items: center;
-  justify-content: space-around;
   margin:0.125rem 0;
   background:#f7c25c;
   border:1px solid #d3ebf6;
   cursor: pointer;
+  padding:0.0625rem 0.125rem;
   img{
     display: block;
     width:1.875rem;
+    margin-right:0.1875rem;
   }
 }
 .chat_ds{
