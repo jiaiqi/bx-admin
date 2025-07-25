@@ -154,7 +154,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+
+// 定义事件
+const emit = defineEmits(['scale-change']);
 
 // 组件属性
 const props = defineProps({
@@ -179,6 +182,11 @@ const props = defineProps({
   storageKey: {
     type: String,
     default: 'zoom-drag-tips-close-count'
+  },
+  // 忽略缩放的元素class名称，支持字符串或数组，将对匹配的元素进行反向缩放
+  ignoreScaleClasses: {
+    type: [String, Array],
+    default: () => []
   }
 });
 
@@ -254,6 +262,8 @@ const handleWheel = (event) => {
 
   if (newScale !== zoomScale.value) {
     zoomScale.value = newScale;
+    // 发射缩放变化事件
+    emit('scale-change', newScale);
   }
 };
 
@@ -314,6 +324,8 @@ const handleKeyUp = (event) => {
 const resetView = () => {
   zoomScale.value = CONFIG.ZOOM.DEFAULT;
   mapPosition.value = { x: 0, y: 0 };
+  // 发射缩放变化事件
+  emit('scale-change', CONFIG.ZOOM.DEFAULT);
 };
 
 const showTips = () => {
@@ -358,6 +370,59 @@ const resetCloseCount = () => {
   saveCloseCount(0);
 };
 
+/**
+ * 反向缩放功能
+ * 根据传入的class名称，对指定元素进行反向缩放处理
+ */
+
+// 获取需要反向缩放的class列表
+const getInverseScaleClasses = () => {
+  if (!props.ignoreScaleClasses) return [];
+
+  if (typeof props.ignoreScaleClasses === 'string') {
+    return [props.ignoreScaleClasses];
+  }
+
+  if (Array.isArray(props.ignoreScaleClasses)) {
+    return props.ignoreScaleClasses;
+  }
+
+  return [];
+};
+
+// 应用反向缩放样式
+const applyInverseScale = (scale) => {
+  const classes = getInverseScaleClasses();
+  if (classes.length === 0) return;
+
+  const inverseScale = 1 / scale;
+
+  classes.forEach(className => {
+    const elements = containerRef.value?.querySelectorAll(`.${className}`);
+    if (elements) {
+      elements.forEach(element => {
+        // 保存原始transform，避免覆盖其他transform属性
+        const currentTransform = element.style.transform || '';
+        const scaleRegex = /scale\([^)]*\)/g;
+        const otherTransforms = currentTransform.replace(scaleRegex, '').trim();
+
+        // 应用反向缩放，保持其他transform属性
+        const newTransform = otherTransforms
+          ? `${otherTransforms} scale(${inverseScale})`
+          : `scale(${inverseScale})`;
+
+        element.style.transform = newTransform;
+        element.style.transformOrigin = 'center center';
+      });
+    }
+  });
+};
+
+// 监听缩放变化，自动应用反向缩放
+watch(zoomScale, (newScale) => {
+  applyInverseScale(newScale);
+}, { immediate: true });
+
 // 暴露方法给父组件
 defineExpose({
   resetView,
@@ -382,10 +447,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style
-  lang="scss"
-  scoped
->
+<style lang="scss" scoped>
 .zoom-drag-container {
   width: 100%;
   height: 100%;

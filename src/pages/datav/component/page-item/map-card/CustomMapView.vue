@@ -119,7 +119,11 @@
     </div>
 
     <!-- 自定义底图-地图视图区域 -->
-    <zoom-drag-container :show-tips="true">
+    <zoom-drag-container 
+      ref="zoomDragContainerRef" 
+      :show-tips="true"
+      :ignore-scale-classes="'map-marker'"
+    >
       <div
         class="map-view base-image"
         :class="{
@@ -352,6 +356,11 @@ const buildingInfo = ref({}); // 当前建筑物信息
 const buildingTree = ref([]); // 建筑物树形数据
 const floorInfo = ref(null); // 当前楼层信息
 const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
+
+/**
+ * 缩放容器相关状态
+ */
+const zoomDragContainerRef = ref(null); // ZoomDragContainer组件引用
 
 /**
  * 递归查找具有底图的父级节点
