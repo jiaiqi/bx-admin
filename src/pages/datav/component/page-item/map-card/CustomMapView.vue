@@ -136,7 +136,10 @@
         }"
       >
         <!-- 图片加载动画 -->
-        <div class="image-loading-overlay" v-if="imageLoading">
+        <div
+          class="image-loading-overlay"
+          v-if="imageLoading"
+        >
           <div class="loading-spinner">
             <div class="spinner-ring"></div>
             <div class="spinner-ring"></div>
@@ -195,11 +198,57 @@
         </template>
       </div>
     </zoom-drag-container>
+
+    <!-- 地图切换记录 - 面包屑导航 -->
+    <div
+      class="map-switch-record-container"
+      v-if="finallyMapUndoRedo && finallyMapUndoRedo.length > 1"
+    >
+      <div class="map-switch-record">
+        <div class="breadcrumb-container">
+          <!-- <Icon
+          icon="material-symbols:home"
+          class="home-icon"
+        /> -->
+          <div
+            class="map-switch-record-item"
+            v-for="(item, index) in finallyMapUndoRedo"
+            @click="handleMapJsonChange(item, index)"
+            :key="index"
+          >
+            <Icon
+              icon="material-symbols:home"
+              class="home-icon"
+              v-if="index === 0"
+            />
+            <!-- 分隔符 -->
+            <Icon
+              icon="material-symbols:chevron-right"
+              class="breadcrumb-separator"
+              v-if="index > 0"
+            />
+            <!-- 面包屑项 -->
+            <span
+              class="breadcrumb-text"
+              :title="item.map_json.map_name"
+              :class="{ 'is-current': index === finallyMapUndoRedo.length - 1 }"
+            >
+              {{ item.map_json.map_name }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 使用多标记物配置加载标记物数据 -->
     <multi-source-markers
       :map-json="mapJson"
-      v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物')"
+      :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
+      v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
+
     <!-- 地图标记点弹窗 -->
     <map-popover
       :active-marker="activeMarker"
@@ -299,6 +348,13 @@ const CONFIG = {
 };
 
 const mapUndoRedo = ref([])
+const finallyMapUndoRedo = computed(() => {
+  let result = []
+  if (Array.isArray(mapUndoRedo.value)) {
+    result = [...mapUndoRedo.value]
+  }
+  return result
+})
 
 /**
  * 地图配置
@@ -309,6 +365,21 @@ if (props.pageItem.map_json) {
 }
 
 const baseIamgeByReq = ref("")
+
+
+function handleMapJsonChange(item, index) {
+  if (index) {
+    mapUndoRedo.value.splice(index, 1)
+  } else if (index === 0) {
+    mapUndoRedo.value = []
+  }
+  if (item.config) {
+    getMapBaseImage(item.config.drill_down['jump_map_json'], item.config, item.data)
+  }
+  resetMapState()
+  mapJson.value = cloneDeep(item.map_json)
+  initComponents()
+}
 
 /**
  * 标记点和弹窗相关状态
@@ -384,7 +455,7 @@ function findParentWithBaseImage(data, list) {
  * 4. 默认底图
  */
 const baseImage = computed(() => {
-  if(baseIamgeByReq.value){
+  if (baseIamgeByReq.value) {
     return getImagePath(baseIamgeByReq.value)
   }
   const baseImageCol = mapJson.value.map_base_col; // 底图字段配置
@@ -402,12 +473,12 @@ const baseImage = computed(() => {
   }
 
   // 检查当前选中项是否为叶子节点(没有子节点)
-  if (selectedTreeData.value?.is_leaf !== "是") {
+  // if (selectedTreeData.value?.is_leaf !== "是") {
     // 检查当前选中项的底图
     if (selectedTreeData.value?.[baseImageCol]) {
       return getImagePath(selectedTreeData.value[baseImageCol]);
     }
-  }
+  // }
 
   // 递归查找父级节点的底图
   let parent = findParentWithBaseImage(selectedTreeData.value, treeData.value);
@@ -720,6 +791,22 @@ function handleMarkerClick(marker, event) {
 
 }
 
+async function getMapBaseImage(map_json, config, data = {}) {
+  if (map_json?.image_source_type === '接口请求') {
+    // 底图从接口请求查找
+    if (map_json.base_image_srv_req_json) {
+      if (config?.col_map?.col_no) {
+        data.noVal = data[config.col_map.col_no]
+      }
+      const baseImageData = await getMapBaseImageWithReq(map_json.base_image_srv_req_json, data)
+      if (map_json?.map_base_col) {
+        const baseImageNo = baseImageData[map_json.map_base_col]
+        baseIamgeByReq.value = baseImageNo
+      }
+    }
+  }
+}
+
 /**
  * 地图下钻
  * @param params 
@@ -727,36 +814,28 @@ function handleMarkerClick(marker, event) {
 async function drillDown(config, data) {
   const { drill_down } = config
   if (drill_down['jump_map_json']) {
-    // 下钻前先保存原始地图配置
-    mapUndoRedo.value.push({
-      map_json: cloneDeep(mapJson.value),
-      markerList: cloneDeep(markerList.value),
-    })
-    resetMapState()
-    mapJson.value = drill_down['jump_map_json']
-    if (mapJson.value?.image_source_type === '接口请求') {
-      // 底图从接口请求查找
-      if (mapJson.value?.base_image_srv_req_json) {
-        if (config?.col_map?.col_no) {
-          data.noVal = data[config.col_map.col_no]
-        }
-        const baseImageData = await getMapBaseImageWithReq(mapJson.value?.base_image_srv_req_json, data)
-        if (mapJson?.value?.map_base_col) {
-          const baseImageNo = baseImageData[mapJson.value.map_base_col]
-          baseIamgeByReq.value = baseImageNo
-        }
-      }
+    if (!mapUndoRedo.value.length) {
+      // 下钻前先保存原始地图配置
+      mapUndoRedo.value.push({
+        map_json: cloneDeep(mapJson.value),
+        markerList: cloneDeep(markerList.value),
+      })
     }
-    // // 下钻后保存新地图配置
-    // mapUndoRedo.value.push({
-    //   map_json: cloneDeep(drill_down['jump_map_json']),
-    //   data: data,
-    // })
+
+    handleMapJsonChange({
+      map_json: drill_down['jump_map_json']
+    })
+    getMapBaseImage(drill_down['jump_map_json'], config, data)
+    // 下钻后保存新地图配置
+    mapUndoRedo.value.push({
+      map_json: cloneDeep(drill_down['jump_map_json']),
+      data: data,
+      config: config,
+    })
   }
 }
 const { renderStr } = useUtils()
 async function getMapBaseImageWithReq(reqJson, data) {
-  debugger
   let req = {}
   if (reqJson) {
     req = { ...reqJson }
@@ -770,7 +849,6 @@ async function getMapBaseImageWithReq(reqJson, data) {
     }
     const url = `${req.mapp}/select/${req.serviceName}`
     const res = await $http.post(url, req)
-    debugger
     if (res.data.data?.length) {
       const baseImageInfo = res.data.data[0]
       return baseImageInfo
@@ -811,7 +889,7 @@ async function resetMapState() {
   imageLoading.value = false;
   imageLoaded.value = true;
   currentImageSrc.value = ""
-
+  baseIamgeByReq.value = ""
 }
 
 /**
@@ -1046,11 +1124,8 @@ watch(
   { immediate: true }
 );
 
-/**
- * 组件挂载生命周期钩子
- * 初始化地图
- */
-onMounted(() => {
+
+function initComponents() {
   // 检查是否有树形数据配置
   if (setTreeReq.value) {
     initMapTreeData(); // 初始化树形数据
@@ -1060,6 +1135,14 @@ onMounted(() => {
       markerList.value = res;
     });
   }
+}
+
+/**
+ * 组件挂载生命周期钩子
+ * 初始化地图
+ */
+onMounted(() => {
+  initComponents();
 });
 
 </script>
@@ -1173,6 +1256,7 @@ onMounted(() => {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1182,15 +1266,19 @@ onMounted(() => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.6;
   }
+
   50% {
     opacity: 1;
   }
@@ -1446,5 +1534,116 @@ onMounted(() => {
 .tree-expand-leave-from {
   max-height: 1000px;
   opacity: 1;
+}
+
+.map-switch-record-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  animation: slideUp 0.3s ease-out;
+  cursor: pointer;
+  &:hover {
+    .map-switch-record {
+      bottom: 0;
+    }
+  }
+}
+
+.map-switch-record {
+  position: relative;
+  bottom: -150px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 12px 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: bottom 0.3s ease-out;
+}
+
+.breadcrumb-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.home-icon {
+  color: #007aff;
+  font-size: 16px;
+  margin-right: 4px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.map-switch-record-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-separator {
+  color: #94a3b8;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.breadcrumb-text {
+  color: #475569;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    transform: translateY(-1px);
+  }
+
+  &.is-current {
+    background: linear-gradient(135deg, #007aff, #4a90e2);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+
+    &:hover {
+      background: linear-gradient(135deg, #0056cc, #357abd);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* 动画效果 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 </style>

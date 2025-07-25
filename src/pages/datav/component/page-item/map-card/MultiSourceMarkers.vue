@@ -12,6 +12,10 @@ const props = defineProps({
   markerList: {
     type: Array,
     default: () => [],
+  },
+  sourceJson: {
+    type: Array,
+    default: () => [],
   }
 })
 
@@ -23,9 +27,10 @@ const markers = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-// 计算属性：获取多源POI配置
+// // 计算属性：获取多源POI配置
 const sourceJson = computed(() => {
-  return props.mapJson?.multi_src_poi_json || []
+  return props.sourceJson
+  // return props.mapJson?.multi_src_poi_json || []
 })
 
 /**
@@ -38,7 +43,7 @@ const sourceJson = computed(() => {
  */
 async function getMarkers(params = {}) {
   const { srv_req_json: p, poi_name, poi_type, col_map } = params
-  
+
   // 参数验证
   if (!p || !p.mapp || !p.serviceName) {
     console.warn('获取标记点数据：缺少必要的服务配置参数', params)
@@ -48,10 +53,10 @@ async function getMarkers(params = {}) {
   try {
     const url = `/${p.mapp}/select/${p.serviceName}`
     const res = await $http.post(url, p)
-    
+
     if (res?.data?.state === 'SUCCESS') {
       const data = res.data.data
-      
+
       // 数据验证
       if (!Array.isArray(data)) {
         console.warn('获取标记点数据：返回数据格式不正确', data)
@@ -68,10 +73,10 @@ async function getMarkers(params = {}) {
         },
         _col_map: col_map || {}
       }))
-      
+
       // 添加到标记点列表
       markers.value.push(...list)
-      
+
     } else {
       const errorMsg = res?.data?.resultMessage || '获取标记点数据失败'
       console.error('获取标记点数据失败：', errorMsg)
@@ -150,19 +155,28 @@ defineExpose({
 <template>
   <div class="multi-source-markers">
     <!-- 加载状态指示器 -->
-    <div v-if="loading" class="loading-indicator">
+    <div
+      v-if="loading"
+      class="loading-indicator"
+    >
       <i class="el-icon-loading"></i>
       <span>正在加载标记点数据...</span>
     </div>
-    
+
     <!-- 错误信息显示 -->
-    <div v-if="error && !loading" class="error-message">
+    <div
+      v-if="error && !loading"
+      class="error-message"
+    >
       <i class="el-icon-warning"></i>
       <span>{{ error }}</span>
     </div>
-    
+
     <!-- 数据统计信息 -->
-    <div v-if="!loading && !error" class="marker-stats">
+    <div
+      v-if="!loading && !error"
+      class="marker-stats"
+    >
       <span>已加载 {{ markers.length }} 个标记点</span>
     </div>
   </div>
@@ -177,12 +191,12 @@ defineExpose({
     padding: 12px;
     color: #409eff;
     font-size: 14px;
-    
+
     i {
       font-size: 16px;
     }
   }
-  
+
   .error-message {
     display: flex;
     align-items: center;
@@ -193,12 +207,12 @@ defineExpose({
     background-color: #fef0f0;
     border: 1px solid #fbc4c4;
     border-radius: 4px;
-    
+
     i {
       font-size: 16px;
     }
   }
-  
+
   .marker-stats {
     padding: 8px 12px;
     font-size: 12px;
