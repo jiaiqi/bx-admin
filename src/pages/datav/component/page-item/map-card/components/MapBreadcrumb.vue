@@ -26,10 +26,10 @@
           <!-- 面包屑项 -->
           <span
             class="breadcrumb-text"
-            :title="item.map_json.map_name"
+            :title="getBreadLabel(item)"
             :class="{ 'is-current': index === breadcrumbItems.length - 1 }"
           >
-            {{ item.map_json.map_name }}
+            {{ getBreadLabel(item) }}
           </span>
         </div>
       </div>
@@ -63,6 +63,11 @@ const emit = defineEmits(['breadcrumb-click']);
  */
 function handleBreadcrumbClick(item, index) {
   emit('breadcrumb-click', item, index);
+}
+
+function getBreadLabel(item) {
+  const { map_json } = item;
+  return map_json?.map_label || map_json?.map_name
 }
 </script>
 
