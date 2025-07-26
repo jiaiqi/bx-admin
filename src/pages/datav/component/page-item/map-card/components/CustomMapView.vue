@@ -195,7 +195,7 @@
  *   :tree-req="treeRequestConfig"
  * />
  */
-
+import cloneDeep from "lodash/cloneDeep";
 import { onMounted, ref, computed, watch, set } from "vue";
 
 /**
@@ -203,9 +203,7 @@ import { onMounted, ref, computed, watch, set } from "vue";
  */
 import { $http, getImagePath } from "@/common/http.js"; // 图片路径处理工具
 import { $selectList } from "@/common/http"; // HTTP 请求工具
-import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
-import { formatStyleData } from "../../../common"; // 样式数据格式化工具
-import cloneDeep from "lodash/cloneDeep";
+import TreeDataItem from "./TreeDataItem.vue"; // 树形数据项组件
 import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
 import MultiSourceMarkers from "./MultiSourceMarkers.vue";
 import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
@@ -213,7 +211,7 @@ import MapTreeSidebar from "./MapTreeSidebar.vue"; // 地图树形侧边栏组�
 import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
 import { useUtils } from "@/common/vueApi";
 
-import { useMarkers } from "./composables/useMarkers";
+import { useMarkers } from "../composables/useMarkers";
 
 /**
  * 组件 Props 定义

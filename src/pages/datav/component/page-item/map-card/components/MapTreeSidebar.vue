@@ -88,7 +88,7 @@
 
 import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue2'
-import TreeDataItem from '../TreeDataItem.vue'
+import TreeDataItem from './TreeDataItem.vue'
 
 /**
  * 组件 Props 定义

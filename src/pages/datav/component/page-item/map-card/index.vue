@@ -43,8 +43,8 @@
  */
 
 import { computed } from "vue";
-import CustomMapView from "./CustomMapView.vue"; // 自定义底图组件
-import OnlineMapView from "./OnlineMapView.vue"; // 在线地图组件
+import CustomMapView from "./components/CustomMapView.vue"; // 自定义底图组件
+import OnlineMapView from "./components/OnlineMapView.vue"; // 在线地图组件
 
 /**
  * 组件 Props 定义
