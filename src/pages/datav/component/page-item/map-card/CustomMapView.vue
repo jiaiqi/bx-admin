@@ -156,7 +156,7 @@
         <!-- 普通视图的标记点内容 -->
         <template v-else>
           <!-- 标签类型的标记点 -->
-          <template v-if="mapJson && mapJson.map_type === '标签' && markerList.length">
+          <template v-if="!mapJson.multi_src_poi_json && mapJson && mapJson.map_type === '标签' && markerList.length">
             <div
               class="map-marker"
               :class="{ 'is-active': isActive(marker) }"
@@ -474,10 +474,10 @@ const baseImage = computed(() => {
 
   // 检查当前选中项是否为叶子节点(没有子节点)
   // if (selectedTreeData.value?.is_leaf !== "是") {
-    // 检查当前选中项的底图
-    if (selectedTreeData.value?.[baseImageCol]) {
-      return getImagePath(selectedTreeData.value[baseImageCol]);
-    }
+  // 检查当前选中项的底图
+  if (selectedTreeData.value?.[baseImageCol]) {
+    return getImagePath(selectedTreeData.value[baseImageCol]);
+  }
   // }
 
   // 递归查找父级节点的底图
@@ -670,16 +670,7 @@ function getItemPosition(item = {}) {
     left: 0,
     top: 0,
   };
-  if (mapJson.value?.x_col && mapJson.value?.y_col) {
-    // 设置 X 轴位置（左右位置）
-    if (item[mapJson.value?.x_col]) {
-      pos.left = item[mapJson.value?.x_col] + "%";
-    }
-    // 设置 Y 轴位置（上下位置）
-    if (item[mapJson.value?.y_col]) {
-      pos.top = item[mapJson.value?.y_col] + "%";
-    }
-  } else if (item?._col_map) {
+  if (item?._col_map?.col_x && item?._col_map?.col_y) {
     const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
     pos.label = item[col_label]
     pos.left = item[col_x] + "%";
@@ -688,6 +679,15 @@ function getItemPosition(item = {}) {
     pos.height = (col_y_width || 30) + 'px';
     pos.icon = customized_icon
     pos.value = item[col_no]
+  } else if (mapJson.value?.x_col && mapJson.value?.y_col) {
+    // 设置 X 轴位置（左右位置）
+    if (item[mapJson.value?.x_col]) {
+      pos.left = item[mapJson.value?.x_col] + "%";
+    }
+    // 设置 Y 轴位置（上下位置）
+    if (item[mapJson.value?.y_col]) {
+      pos.top = item[mapJson.value?.y_col] + "%";
+    }
   }
 
   return pos;
@@ -938,6 +938,7 @@ function getTreeItemLabel(item) {
   return item?.area_name || item?.name || "";
 }
 
+
 /**
  * 监听选中树形数据的变化
  * 当选中项变化时，更新标记点列表
@@ -947,14 +948,21 @@ watch(
   (newVal) => {
     console.log(newVal);
     // 如果选中项有子节点且配置了坐标字段，过滤出有坐标的子项作为标记点
-    if (
+    if (mapJson.value?.map_option?.includes('多来源标记物')) {
+
+    } else if (
       newVal?.children?.length &&
       mapJson.value?.x_col &&
       mapJson.value?.y_col
     ) {
       markerList.value = newVal.children.filter(
         (item) => item[mapJson.value?.x_col] && item[mapJson.value?.y_col]
-      );
+      ).map(item => {
+        return {
+          ...item,
+          _type: '标签'
+        }
+      })
     }
   }
 );
@@ -1548,6 +1556,7 @@ onMounted(() => {
   justify-content: center;
   animation: slideUp 0.3s ease-out;
   cursor: pointer;
+
   &:hover {
     .map-switch-record {
       bottom: 0;
