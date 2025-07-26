@@ -144,45 +144,10 @@
     </zoom-drag-container>
 
     <!-- 地图切换记录 - 面包屑导航 -->
-    <div
-      class="map-switch-record-container"
-      v-if="finallyMapUndoRedo && finallyMapUndoRedo.length > 1"
-    >
-      <div class="map-switch-record">
-        <div class="breadcrumb-container">
-          <!-- <Icon
-          icon="material-symbols:home"
-          class="home-icon"
-        /> -->
-          <div
-            class="map-switch-record-item"
-            v-for="(item, index) in finallyMapUndoRedo"
-            @click="handleMapJsonChange(item, index)"
-            :key="index"
-          >
-            <Icon
-              icon="material-symbols:home"
-              class="home-icon"
-              v-if="index === 0"
-            />
-            <!-- 分隔符 -->
-            <Icon
-              icon="material-symbols:chevron-right"
-              class="breadcrumb-separator"
-              v-if="index > 0"
-            />
-            <!-- 面包屑项 -->
-            <span
-              class="breadcrumb-text"
-              :title="item.map_json.map_name"
-              :class="{ 'is-current': index === finallyMapUndoRedo.length - 1 }"
-            >
-              {{ item.map_json.map_name }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <MapBreadcrumb
+      :breadcrumb-items="finallyMapUndoRedo"
+      @breadcrumb-click="handleMapJsonChange"
+    />
 
 
     <!-- 使用多标记物配置加载标记物数据 -->
@@ -240,13 +205,16 @@ import { $http, getImagePath } from "@/common/http.js"; // 图片路径处理工
 import { $selectList } from "@/common/http"; // HTTP 请求工具
 import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
 import { formatStyleData } from "../../../common"; // 样式数据格式化工具
-import { Icon } from "@iconify/vue2"; // 图标组件
 import cloneDeep from "lodash/cloneDeep";
 import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
 import MultiSourceMarkers from "./MultiSourceMarkers.vue";
 import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
 import MapTreeSidebar from "./MapTreeSidebar.vue"; // 地图树形侧边栏组件
+import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
 import { useUtils } from "@/common/vueApi";
+
+import { useMarkers } from "./composables/useMarkers";
+
 /**
  * 组件 Props 定义
  * @typedef {Object} Props
@@ -290,6 +258,9 @@ const mapJson = ref(null)
 if (props.pageItem.map_json) {
   mapJson.value = props.pageItem.map_json
 }
+
+const { getItemPosition, getItemIcon, isActive, setLabelActiveStyle, setLabelStyle } = useMarkers(props, mapJson)
+
 
 const baseIamgeByReq = ref("")
 
@@ -476,17 +447,6 @@ async function handleImageTransition(newImageSrc) {
 }
 
 
-
-/**
- * 判断标记点是否激活
- */
-function isActive(marker) {
-  if (selectedTreeData.value && marker?.id) {
-    return selectedTreeData.value?.id === marker.id;
-  }
-  return false;
-}
-
 /**
  * 初始化自定义地图数据
  * 根据配置获取自定义地图的标记点数据
@@ -535,122 +495,6 @@ async function initCustomMap() {
   return list;
 }
 
-/**
- * 获取标记点图标
- * 根据配置和数据项获取对应的图标路径
- *
- * @function getItemIcon
- * @param {Object} item - 数据项对象，默认为空对象
- * @returns {string} 图标路径，如果没有配置则返回空字符串
- */
-function getItemIcon(item = {}) {
-  // 参数类型检查
-  if (!item || typeof item !== "object") {
-    console.warn("getItemIcon: 无效的item参数", item);
-    item = {};
-  }
-  if (item?.col_map?.customized_icon) {
-    // 自定义图标
-    return getImagePath(item[item.col_map.customized_icon])
-  } else if (item?._poi_info?.poi_type_icon) {
-    // 默认图标
-    return getImagePath(item._poi_info.poi_type_icon)
-  } else if (item?._poi_info?.icon) {
-    // 默认图标
-    return getImagePath(item._poi_info.icon)
-  }
-
-  const mapConfig = mapJson.value;
-  if (!mapConfig) {
-    console.warn("getItemIcon: 地图配置不存在");
-    return "";
-  }
-
-  try {
-    // 优先使用数据项中的自定义图标
-    const iconCol = mapConfig.marker_icon_col;
-    if (iconCol && item[iconCol]) {
-      return getImagePath(item[iconCol]);
-    }
-
-    // 使用默认图标
-    if (mapConfig.icon_default) {
-      return getImagePath(mapConfig.icon_default);
-    }
-  } catch (error) {
-    console.error("getItemIcon: 获取图标路径失败", error);
-  }
-
-  return ""; // 无图标时返回空字符串
-}
-
-/**
- * 获取标记点位置
- * 根据配置的坐标字段计算标记点在地图上的位置
- *
- * @function getItemPosition
- * @param {Object} item - 数据项对象，默认为空对象
- * @returns {Object} 位置对象，包含 left 和 top 属性（百分比值）
- */
-function getItemPosition(item = {}) {
-  let pos = {
-    left: 0,
-    top: 0,
-  };
-  if (item?._col_map?.col_x && item?._col_map?.col_y) {
-    const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
-    pos.label = item[col_label]
-    pos.left = item[col_x] + "%";
-    pos.top = item[col_y] + "%";
-    pos.width = (col_x_width || 30) + 'px';
-    pos.height = (col_y_width || 30) + 'px';
-    pos.icon = customized_icon
-    pos.value = item[col_no]
-  } else if (mapJson.value?.x_col && mapJson.value?.y_col) {
-    // 设置 X 轴位置（左右位置）
-    if (item[mapJson.value?.x_col]) {
-      pos.left = item[mapJson.value?.x_col] + "%";
-    }
-    // 设置 Y 轴位置（上下位置）
-    if (item[mapJson.value?.y_col]) {
-      pos.top = item[mapJson.value?.y_col] + "%";
-    }
-  }
-
-  return pos;
-}
-
-/**
- * 标签样式计算属性
- * 当地图类型为标签时，格式化标签的样式配置
- *
- * @computed setLabelStyle
- * @returns {Object|undefined} 格式化后的样式对象
- */
-const setLabelStyle = computed(() => {
-  if (
-    mapJson.value?.map_type === "标签" &&
-    mapJson.value?.col_label_style_json
-  ) {
-    return formatStyleData(mapJson.value?.col_label_style_json);
-  }
-});
-
-/**
- * 标签激活状态样式计算属性
- * 当地图类型为标签时，格式化标签激活状态的样式配置
- *
- * @computed setLabelActiveStyle
- * @returns {Object|undefined} 格式化后的激活样式对象
- */
-const setLabelActiveStyle = computed(() => {
-  if (
-    mapJson.value?.map_type === "标签" &&
-    mapJson.value?.label_active_style_json
-  ) {
-    return formatStyleData(mapJson.value?.label_active_style_json);
-  }
-});
 
 function allowClick(marker) {
   if (marker?._poi_info?.onclick) {
@@ -1299,123 +1143,6 @@ onMounted(() => {
     .marker-icon {
       width: 30px;
     }
-  }
-}
-
-/* 移除旧的箭头样式 */
-:global(.popover-content-to-body .bottom-arrow) {
-  display: none;
-}
-
-.map-switch-record-container {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.1);
-  z-index: 200;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  animation: slideUp 0.3s ease-out;
-  cursor: pointer;
-
-  &:hover {
-    .map-switch-record {
-      bottom: 0;
-    }
-  }
-}
-
-.map-switch-record {
-  position: relative;
-  bottom: -150px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
-  padding: 12px 20px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: bottom 0.3s ease-out;
-}
-
-.breadcrumb-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.home-icon {
-  color: #007aff;
-  font-size: 16px;
-  margin-right: 4px;
-  opacity: 0.8;
-  transition: all 0.2s ease;
-
-  &:hover {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-.map-switch-record-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.breadcrumb-separator {
-  color: #94a3b8;
-  font-size: 14px;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
-
-.breadcrumb-text {
-  color: #475569;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-    transform: translateY(-1px);
-  }
-
-  &.is-current {
-    background: linear-gradient(135deg, #007aff, #4a90e2);
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-
-    &:hover {
-      background: linear-gradient(135deg, #0056cc, #357abd);
-      transform: translateY(-1px);
-    }
-  }
-}
-
-/* 动画效果 */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
   }
 }
 </style>

@@ -114,59 +114,17 @@ export function useMarkers(props, mapJson) {
     return false
   }
 
-  /**
-   * 初始化自定义地图数据
-   */
-  async function initCustomMap() {
-    console.log("自定义底图初始化开始")
-    let list = []
-    
-    try {
-      if (
-        props.pageItem.srv_req_type === "请求数据" &&
-        props.pageItem.srv_req_json
-      ) {
-        const reqJson = props.pageItem.srv_req_json
-        const req = props.pageItem.srv_req_json
-        const url = `/${reqJson.mapp}/select/${reqJson.serviceName}`
-
-        console.log("发起API请求:", url, req)
-        const res = await $selectList(url, req)
-
-        if (res.ok) {
-          list = res.data || []
-          console.log("API请求成功，获取数据:", list.length, "条")
-        } else {
-          console.warn("API请求失败:", res.message || "未知错误")
-          list = []
-        }
-      } else if (props.pageItem.srv_req_type === "模拟数据") {
-        list = props.pageItem.mock_data_json || []
-        console.log("使用模拟数据:", list.length, "条")
-      } else {
-        console.warn("未配置有效的数据源类型:", props.pageItem.srv_req_type)
-      }
-    } catch (error) {
-      console.error("初始化自定义地图数据失败:", error)
-      list = []
-    }
-
-    console.log("自定义底图初始化完成，返回数据:", list.length, "条")
-    return list
-  }
-
   return {
     // 状态
     markerList,
-    
+
     // 计算属性
     setLabelStyle,
     setLabelActiveStyle,
-    
+
     // 方法
     getItemIcon,
     getItemPosition,
     isActive,
-    initCustomMap
   }
 }
