@@ -1,5 +1,5 @@
-import {FieldInfo} from '../model/FieldInfo'
-import {Field} from '../model/Field'
+import { FieldInfo } from '../model/FieldInfo'
+import { Field } from '../model/Field'
 import Vue from 'vue'
 
 
@@ -13,6 +13,7 @@ export default {
   data() {
     return {
       activeForm: null,
+      activeFormName: null,
       clickedRow: {},
     }
   },
@@ -26,7 +27,7 @@ export default {
         return this.mainTable && (this.mainTable.replace("bx", "srv") + "_add")
       }
     },
-    getImportService(){
+    getImportService() {
       let button = this.gridButton.find(item => item.button_type === "import");
       if (button && button.service_name) {
         return button.service_name
@@ -35,11 +36,11 @@ export default {
       }
     },
 
-    getUpdateService: function(){
+    getUpdateService: function () {
       let srv = ""
-      if(this.rowButtonActiveServiceName){
+      if (this.rowButtonActiveServiceName) {
         srv = this.rowButtonActiveServiceName
-      }else {
+      } else {
         srv = this.mainTable && (this.mainTable.replace("bx", "srv") + "_update")
       }
       return srv
@@ -47,7 +48,7 @@ export default {
 
     getDefaultCondition4Duplicate: function () {
       let list = this;
-      const colName =  this.pub_field_map?.id || "id"
+      const colName = this.pub_field_map?.id || "id"
       let condition = {
         colName,
         ruleType: "eq",
@@ -59,7 +60,7 @@ export default {
 
     getDefaultCondition4DuplicateDeep: function () {
       let list = this;
-      const colName =  this.pub_field_map?.id || "id"
+      const colName = this.pub_field_map?.id || "id"
       let condition = {
         colName,
         ruleType: "eq",
@@ -68,35 +69,49 @@ export default {
 
       return [condition];
     },
-    getCustomPkCol(){
+    getCustomPkCol() {
       return this.pub_field_map?.id || null
     },
   },
+  watch: {
+    activeForm(newValue, oldValue) {
+      if (!newValue || newValue === 'xx') {
+        this.activeFormName = ''
+      }
+    }
+  },
   methods: {
     onFilterFormLoaded: function (form) {
-     
-
+      if (form && form.serviceViewName) {
+        this.activeFormName = form.serviceViewName
+      }
       this.$emit('filter-form-loaded', form);
     },
 
     onAddFormLoaded: function (form) {
-      
+
       if (form.actions.submit) {
         form.actions.submit.nav2Location = null;
       }
-      if(this.childForeignkey?.referenced_column_name && form.fields[this.childForeignkey.referenced_column_name]){
+      if (this.childForeignkey?.referenced_column_name && form.fields[this.childForeignkey.referenced_column_name]) {
         const column_name = this.childForeignkey.column_name
         form.fields[this.childForeignkey.referenced_column_name].model = this.listMainFormDatas[column_name];
+      }
+
+      if (form && form.serviceViewName) {
+        this.activeFormName = form.serviceViewName
       }
       this.$emit('add-form-loaded', this.$refs['add-form']);
     },
 
     onUpdateFormLoaded: function (form) {
-      
+
       if (form.actions.submit) {
         form.actions.submit.nav2Location = null;
       }
-
+      if (form && form.serviceViewName) {
+        this.activeFormName = form.serviceViewName
+      }
       this.$emit('update-form-loaded', this.$refs['update-form']);
     },
 
@@ -112,7 +127,9 @@ export default {
         let parentNoField = form.fields[parentCol];
         parentNoField.setSrvVal(row[noCol]);
       }
-
+      if (form && form.serviceViewName) {
+        this.activeFormName = form.serviceViewName
+      }
       // this.$emit('add-child-form-loaded', this.$refs['add-child-form']);
       this.$emit('add-form-loaded', this.$refs['add-child-form']);
     },
@@ -121,14 +138,16 @@ export default {
       form.actions.submit.nav2Location = null;
 
       // mask special fields like password:
-      Object.values(form.fields).filter( field => field.info.type === "Password").forEach(field => field.setSrvVal(null))
-
+      Object.values(form.fields).filter(field => field.info.type === "Password").forEach(field => field.setSrvVal(null))
+      if (form && form.serviceViewName) {
+        this.activeFormName = form.serviceViewName
+      }
       this.$emit('duplicate-form-loaded', form);
     },
 
     onAddFormActionComplete(action) {
       console.log('onAddFormActionComplete', action);
-      
+
       if (action == 'submit' || action == 'save_draft') {
         this.activeForm = null;
       }
@@ -160,7 +179,7 @@ export default {
     getClickedRowPk(type) {
       if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].id) {
         return this.clickedRow[type].id.toString()
-      }else if(this.pub_field_map?.id&&this.clickedRow && this.clickedRow[type] && this.clickedRow[type][this.pub_field_map?.id]) {
+      } else if (this.pub_field_map?.id && this.clickedRow && this.clickedRow[type] && this.clickedRow[type][this.pub_field_map?.id]) {
         return this.clickedRow[type][this.pub_field_map.id]
       } else {
         return null;
@@ -176,7 +195,7 @@ export default {
     },
 
     onUpdateClicked(row) {
-      
+
       let self = this
       let type = 'update';
       //  let rowData = {}
@@ -187,7 +206,7 @@ export default {
         this.activeForm = 'update';
       });
     },
-    onCustomizeImport(row,button) {
+    onCustomizeImport(row, button) {
       let type = 'customizeImport';
       this.$set(this.clickedRow, type, row);
       this.importService = button.operate_service
@@ -202,7 +221,7 @@ export default {
     },
 
     onDuplicateClicked(row) {
-      const data = {...row}
+      const data = { ...row }
       // if(data.id){
       //   delete data.id
       // }
@@ -215,7 +234,7 @@ export default {
     },
 
     onDuplicateDeepClicked(row) {
-      const data = {...row}
+      const data = { ...row }
       // if(data.id){
       //   delete data.id
       // }
