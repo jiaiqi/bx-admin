@@ -171,7 +171,7 @@ export default {
           ? json.options
           : "";
       options = options.split(",");
-      if (this.groupCollapse === true) {
+      if (this.groupCollapse === true && !options.includes("分组默认折叠")) {
         options.push("分组默认折叠");
       }
       return options;
@@ -364,10 +364,14 @@ export default {
     },
     onSectionsCollapseChange(key) {
       let self = this;
+      // if (
+      //   key &&
+      //   (this.cfgJsonOptionsType.indexOf("分组默认折叠") !== -1 ||
+      //     key?.includes(":折叠")) &&
+      //   key !== "$"
+      // ) {
       if (
         key &&
-        (this.cfgJsonOptionsType.indexOf("分组默认折叠") !== -1 ||
-          key?.includes(":折叠")) &&
         key !== "$"
       ) {
         console.log(

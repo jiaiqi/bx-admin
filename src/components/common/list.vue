@@ -1984,12 +1984,21 @@ export default {
   .el-button+.el-dropdown {
     margin-left: 0;
   }
+  .el-dropdown>.el-button {
+    width: 100%;
+  }
 
   .cell {
     padding: 8px 6px;
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    display: flex !important;
+    flex-wrap: wrap;
+
+    // display: grid !important;
+    // grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 4px;
+    .el-button {
+      min-width: 80px;
+    }
   }
 
   .el-button--mini,
