@@ -1,19 +1,47 @@
 <template>
   <div id="proc_detail">
-    <div style="font-size: 20px; position: fixed; top: 0px; z-index: 9999">
+    <div class="proc_detail-header">
+      <el-button type="text">
+
+        <!-- <i v-bind:class="icon"></i> -->
+        <span>
+          {{
+            setPageTitle
+          }}
+        </span>
+      </el-button>
       <el-button
         type="text"
+        :title="viewFlowChart ? '点击隐藏流程图' : '点击显示流程图'"
         @click="hideFlowchart(this)"
-        style="font-size: 20px"
       >
-        <i v-bind:class="icon"></i
-        >{{
-          processTempl.templ_name
-            ? processTempl.templ_name +
-              ` - ` +
-              (mainData.proc_status ? mainData.proc_status : "")
-            : ""
-        }}
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          class="icon"
+          v-if="viewFlowChart"
+        >
+          <path
+            fill="currentColor"
+            d="M15 20v-2h-4v-5H9v2H2V9h7v2h2V6h4V4h7v6h-7V8h-2v8h2v-2h7v6z"
+          />
+        </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          class="icon"
+          viewBox="0 0 24 24"
+          v-else
+        >
+          <path
+            fill="currentColor"
+            d="M15 20v-2h-4v-5H9v2H2V9h7v2h2V6h4V4h7v6h-7V8h-2v8h2v-2h7v6zm2-2h3v-2h-3zM4 13h3v-2H4zm13-5h3V6h-3zm0 10v-2zM7 13v-2zm10-5V6z"
+          />
+        </svg>
       </el-button>
       <!-- <el-button
       type="text"
@@ -25,7 +53,10 @@
     </div>
 
     <!--流程图-->
-    <el-card class="box-card" v-show="viewFlowChart">
+    <el-card
+      class="box-card"
+      v-if="viewFlowChart"
+    >
       <div class="text item">
         <el-row>
           <flowStep
@@ -46,16 +77,22 @@
       class="box-card"
       v-show="handle_active_step_no != '_approval_record_'"
     >
-      <div slot="header" class="clearfix">
-        <label> {{ handle_active_step_name }} </label>&nbsp; &nbsp;
-        <label
-          v-if="
-            urgentStep.length > 0 && proHanleData._handle_type == 'start_proc'
-          "
-        >
-          <el-checkbox :border="1 == 1" size="medium" v-model="urgent"
-            >紧急申请</el-checkbox
-          >
+      <div
+        slot="header"
+        class="clearfix"
+        v-if="
+          urgentStep.length > 0 && proHanleData._handle_type == 'start_proc'
+        "
+      >
+        <!-- <label> {{ handle_active_step_name }} </label>&nbsp; &nbsp; -->
+        <label v-if="
+          urgentStep.length > 0 && proHanleData._handle_type == 'start_proc'
+        ">
+          <el-checkbox
+            :border="1 == 1"
+            size="medium"
+            v-model="urgent"
+          >紧急申请</el-checkbox>
         </label>
       </div>
 
@@ -68,12 +105,10 @@
         >
           <!--显示审核过的数据 条件不等于当前处理步骤-->
 
-          <div
-            v-if="
-              handle_active_step_no == step_item.step_no &&
-              (step_item.step_no != proHanleData.step_no || proc_basic.is_finsh)
-            "
-          >
+          <div v-if="
+            handle_active_step_no == step_item.step_no &&
+            (step_item.step_no != proHanleData.step_no || proc_basic.is_finsh)
+          ">
             <!--tabs模式展示-->
 
             <el-tabs
@@ -95,7 +130,7 @@
                     <proc-simple-list
                       @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      "
+                        "
                       :name="'stepr' + step_item.step_no + 'i' + index"
                       :foreign-key="biz_item._foreign_key[0]"
                       :service="biz_item.select_service"
@@ -119,9 +154,8 @@
                       :name="'stepr' + step_item.step_no + 'i' + index"
                       ref="proc-simple-detail"
                       :service="biz_item.select_service"
-                      :default-conditions="
-                        getFormViewCondition(biz_item, step_item.step_no)
-                      "
+                      :default-conditions="getFormViewCondition(biz_item, step_item.step_no)
+                        "
                       @form-loaded="detail_form_loaded($event)"
                     ></detail>
                   </el-row>
@@ -145,8 +179,7 @@
                     class="el-col el-col-24 el-col-xl-24"
                     :key="step_item.step_no + index + '_list'"
                   >
-                    <span class="tag_font_class"
-                      >{{ biz_item["_section_name"] }}
+                    <span class="tag_font_class">{{ biz_item["_section_name"] }}
                     </span>
                   </div>
 
@@ -154,7 +187,7 @@
                     <proc-simple-list
                       @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      "
+                        "
                       :name="'stepr' + step_item.step_no + 'i' + index"
                       :foreign-key="biz_item._foreign_key[0]"
                       :service="biz_item.select_service"
@@ -182,8 +215,7 @@
                     class="el-col el-col-24 el-col-xl-24"
                     :key="step_item.step_no + index + '_list'"
                   >
-                    <span class="tag_font_class"
-                      >{{ biz_item["_section_name"] }}
+                    <span class="tag_font_class">{{ biz_item["_section_name"] }}
                     </span>
                   </div>
 
@@ -191,7 +223,7 @@
                     <proc-simple-list
                       @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      "
+                        "
                       :name="'stepr' + step_item.step_no + 'i' + index"
                       :foreign-key="biz_item._foreign_key[0]"
                       :service="biz_item.select_service"
@@ -218,7 +250,10 @@
                 :key="step_item.step_no + index + '_record_result'"
                 v-show="opinion == null ? true : opinion.show !== false"
               >
-                <el-form label-width="130px" label-suffix=":">
+                <el-form
+                  label-width="130px"
+                  label-suffix=":"
+                >
                   <el-row>
                     <div
                       class="el-col el-col-24 el-col-xl-24"
@@ -230,7 +265,10 @@
                     </div>
 
                     <el-col :span="6">
-                      <el-form-item label="意见" prop="proc_result">
+                      <el-form-item
+                        label="意见"
+                        prop="proc_result"
+                      >
                         <!-- <el-input
                           :readonly="1 == 1"
                           :value="
@@ -243,13 +281,12 @@
                         <!-- opinion -->
                         <el-input
                           :readonly="1 == 1"
-                          :value="
-                            opinion == null
-                              ? step_item.proc_result[
-                                  step_item._record_data.proc_result
-                                ]
-                              : opinion.disp
-                          "
+                          :value="opinion == null
+                            ? step_item.proc_result[
+                            step_item._record_data.proc_result
+                            ]
+                            : opinion.disp
+                            "
                         ></el-input>
                       </el-form-item>
                     </el-col>
@@ -257,7 +294,10 @@
                       :span="24"
                       v-show="opinion == null ? true : opinion.remark !== false"
                     >
-                      <el-form-item label="说明" prop="remark">
+                      <el-form-item
+                        label="说明"
+                        prop="remark"
+                      >
                         <el-input
                           type="textarea"
                           :value="step_item._record_data.remark"
@@ -284,8 +324,7 @@
                           :key="index + '_file'"
                           :href="serviceApi().downloadFile + file.fileurl"
                         >
-                          {{ file.src_name }}</a
-                        >
+                          {{ file.src_name }}</a>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -299,18 +338,16 @@
                     proc_basic.is_finsh) &&
                   biz_item.type == 'form'
                 "
-                v-show="
-                  bizDataStepReadVisible[step_item.step_no] !== false &&
+                v-show="bizDataStepReadVisible[step_item.step_no] !== false &&
                   '否' != biz_item.is_show
-                "
+                  "
                 :key="step_item.step_no + index + '_detail'"
               >
                 <div
                   class="el-col el-col-24 el-col-xl-24"
                   :key="step_item.step_no + index + '_form'"
                 >
-                  <span class="tag_font_class"
-                    >{{ biz_item["_section_name"] }}
+                  <span class="tag_font_class">{{ biz_item["_section_name"] }}
                   </span>
                 </div>
 
@@ -320,9 +357,8 @@
                   :name="'stepr' + step_item.step_no + 'i' + index"
                   ref="proc-simple-detail"
                   :service="biz_item.select_service"
-                  :default-conditions="
-                    getFormViewCondition(biz_item, step_item.step_no)
-                  "
+                  :default-conditions="getFormViewCondition(biz_item, step_item.step_no)
+                    "
                   :is_view_title="1 == 2"
                   @form-loaded="onFormLoading = false"
                 ></detail>
@@ -350,12 +386,9 @@
                   v-if="biz_item.type == 'grid'"
                   :key="step_item.step_no + collapse_index + '_list'"
                 >
-                  <div
-                    :key="step_item.step_no + collapse_index + '_list_section'"
-                  >
+                  <div :key="step_item.step_no + collapse_index + '_list_section'">
                     <div class="el-form-item">
-                      <span class="section-title"
-                        >{{ biz_item["_section_name"] }}
+                      <span class="section-title">{{ biz_item["_section_name"] }}
                       </span>
                     </div>
                   </div>
@@ -365,14 +398,13 @@
                       :name="'apply_list' + collapse_index"
                       @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      "
+                        "
                       :foreign-key="biz_item._foreign_key[0]"
                       :service="biz_item.select_service"
-                      :list-type="
-                        biz_item['_type_grid'] == 'readGrid'
-                          ? 'procdetaillist'
-                          : 'prochandlelist'
-                      "
+                      :list-type="biz_item['_type_grid'] == 'readGrid'
+                        ? 'procdetaillist'
+                        : 'prochandlelist'
+                        "
                       :default-condition="[
                         {
                           colName: 'parent_proc_instance_no',
@@ -389,12 +421,9 @@
                   v-if="biz_item.type == 'procgrid'"
                   :key="step_item.step_no + collapse_index + '_list'"
                 >
-                  <div
-                    :key="step_item.step_no + collapse_index + '_list_section'"
-                  >
+                  <div :key="step_item.step_no + collapse_index + '_list_section'">
                     <div class="el-form-item">
-                      <span class="section-title"
-                        >{{ biz_item["_section_name"] }}
+                      <span class="section-title">{{ biz_item["_section_name"] }}
                       </span>
                     </div>
                   </div>
@@ -429,11 +458,10 @@
                     :name="'collapse_apply_update' + collapse_index"
                     :ref="'collapse-proc-update-form-submit_' + collapse_index"
                     :service="biz_item.update_service"
-                    :pk-col="
-                      biz_item.biz_type == 'main'
-                        ? 'proc_instance_no'
-                        : 'parent_proc_instance_no'
-                    "
+                    :pk-col="biz_item.biz_type == 'main'
+                      ? 'proc_instance_no'
+                      : 'parent_proc_instance_no'
+                      "
                     :pk="proc_instance_no"
                     @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
                   ></update>
@@ -445,9 +473,8 @@
                     form-type="procdetail"
                     name="collapse-proc-simple-detail"
                     :service="biz_item.select_service"
-                    :default-conditions="
-                      getFormViewCondition(biz_item, step_item.step_no)
-                    "
+                    :default-conditions="getFormViewCondition(biz_item, step_item.step_no)
+                      "
                     @form-loaded="onFormLoading = false"
                   ></detail>
                   <add
@@ -487,8 +514,7 @@
                   >
                     <div :key="step_item.step_no + index + '_list_section'">
                       <div class="el-form-item">
-                        <span class="section-title"
-                          >{{ biz_item["_section_name"] }}
+                        <span class="section-title">{{ biz_item["_section_name"] }}
                         </span>
                       </div>
                     </div>
@@ -498,15 +524,14 @@
                         :name="'apply_list' + tab_index"
                         @proc-simple-list-loaded="
                           onProcSimpleListLoad(biz_item._uuid, $event)
-                        "
+                          "
                         :foreign-key="biz_item._foreign_key[0]"
                         :mainData="mainData"
                         :service="biz_item.select_service"
-                        :list-type="
-                          biz_item['_type_grid'] == 'readGrid'
-                            ? 'procdetaillist'
-                            : 'prochandlelist'
-                        "
+                        :list-type="biz_item['_type_grid'] == 'readGrid'
+                          ? 'procdetaillist'
+                          : 'prochandlelist'
+                          "
                         :default-condition="[
                           {
                             colName: 'parent_proc_instance_no',
@@ -530,11 +555,10 @@
                       :name="'tabs_apply_update' + tab_index"
                       :ref="'tabs-proc-update-form-submit_' + tab_index"
                       :service="biz_item.update_service"
-                      :pk-col="
-                        biz_item.biz_type == 'main'
-                          ? 'proc_instance_no'
-                          : 'parent_proc_instance_no'
-                      "
+                      :pk-col="biz_item.biz_type == 'main'
+                        ? 'proc_instance_no'
+                        : 'parent_proc_instance_no'
+                        "
                       :pk="proc_instance_no"
                       @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
                     ></update>
@@ -559,7 +583,11 @@
               :proc-result="procResult"
               v-if="procResult"
             ></proc-handler>
-            <el-row type="flex" class="row-bg" justify="center">
+            <el-row
+              type="flex"
+              class="row-bg"
+              justify="center"
+            >
               <el-button
                 :disabled="submitStatus === 'occupy'"
                 type="primary"
@@ -570,7 +598,7 @@
                       : 'update',
                     'submit'
                   )
-                "
+                  "
               >
                 提交
               </el-button>
@@ -584,7 +612,7 @@
                       : 'update',
                     'save'
                   )
-                "
+                  "
               >
                 保存草稿
               </el-button>
@@ -611,8 +639,7 @@
                 >
                   <div :key="step_item.step_no + index + '_list_section'">
                     <div class="el-form-item">
-                      <span class="section-title"
-                        >{{ biz_item["_section_name"] }}
+                      <span class="section-title">{{ biz_item["_section_name"] }}
                       </span>
                     </div>
                   </div>
@@ -626,13 +653,12 @@
                       :name="'apv' + step_item.step_no + 'i' + index"
                       @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      "
+                        "
                       :foreign-key="biz_item._foreign_key[0]"
-                      :list-type="
-                        biz_item['_type_grid'] == 'readGrid'
-                          ? 'procdetaillist'
-                          : 'prochandlelist'
-                      "
+                      :list-type="biz_item['_type_grid'] == 'readGrid'
+                        ? 'procdetaillist'
+                        : 'prochandlelist'
+                        "
                       :storage-type="step_item.list_storage_type || 'mem'"
                       :service="biz_item.select_service"
                       :default-condition="[
@@ -656,7 +682,7 @@
                       :name="'stepr' + step_item.step_no + 'i' + index"
                       @proc-simple-list-loaded="
                         onProcSimpleListLoad(biz_item._uuid, $event)
-                      "
+                        "
                       :foreign-key="biz_item._foreign_key[0]"
                       :service="biz_item.select_service"
                       list-type="procreadlist"
@@ -684,11 +710,10 @@
                       :name="'apv' + step_item.step_no + 'i' + index"
                       ref="proc-update-form-approval"
                       :service="biz_item.update_service"
-                      :pk-col="
-                        biz_item.biz_type == 'main'
-                          ? 'proc_instance_no'
-                          : 'parent_proc_instance_no'
-                      "
+                      :pk-col="biz_item.biz_type == 'main'
+                        ? 'proc_instance_no'
+                        : 'parent_proc_instance_no'
+                        "
                       :pk="proc_instance_no"
                       @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
                     ></update>
@@ -708,9 +733,8 @@
                       form-type="procdetail"
                       name="proc-simple-detail"
                       :service="biz_item.select_service"
-                      :default-conditions="
-                        getFormViewCondition(biz_item, step_item.step_no)
-                      "
+                      :default-conditions="getFormViewCondition(biz_item, step_item.step_no)
+                        "
                       @form-loaded="onFormLoading = false"
                     ></detail>
                   </div>
@@ -742,13 +766,12 @@
                         :name="'apv' + step_item.step_no + 'i' + index"
                         @proc-simple-list-loaded="
                           onProcSimpleListLoad(biz_item._uuid, $event)
-                        "
+                          "
                         :foreign-key="biz_item._foreign_key[0]"
-                        :list-type="
-                          biz_item['_type_grid'] == 'readGrid'
-                            ? 'procdetaillist'
-                            : 'prochandlelist'
-                        "
+                        :list-type="biz_item['_type_grid'] == 'readGrid'
+                          ? 'procdetaillist'
+                          : 'prochandlelist'
+                          "
                         :storage-type="step_item.list_storage_type || 'mem'"
                         :service="biz_item.select_service"
                         :default-condition="[
@@ -775,11 +798,10 @@
                         :name="'apv' + step_item.step_no + 'i' + index"
                         ref="proc-update-form-approval"
                         :service="biz_item.update_service"
-                        :pk-col="
-                          biz_item.biz_type == 'main'
-                            ? 'proc_instance_no'
-                            : 'parent_proc_instance_no'
-                        "
+                        :pk-col="biz_item.biz_type == 'main'
+                          ? 'proc_instance_no'
+                          : 'parent_proc_instance_no'
+                          "
                         :pk="proc_instance_no"
                         @form-loaded="onProcFormLoad(biz_item._uuid, $event)"
                       ></update>
@@ -799,9 +821,8 @@
                         form-type="procdetail"
                         name="proc-simple-detail"
                         :service="biz_item.select_service"
-                        :default-conditions="
-                          getFormViewCondition(biz_item, step_item.step_no)
-                        "
+                        :default-conditions="getFormViewCondition(biz_item, step_item.step_no)
+                          "
                         @form-loaded="onFormLoading = false"
                       ></detail>
                     </div>
@@ -811,12 +832,10 @@
             </el-row>
 
             <!--审批表单-->
-            <el-row
-              v-if="
-                proHanleData.authority &&
-                proHanleData.approval_options.length > 0
-              "
-            >
+            <el-row v-if="
+              proHanleData.authority &&
+              proHanleData.approval_options.length > 0
+            ">
               <div
                 class="el-col el-col-24 el-col-xl-24"
                 :key="step_item.step_no + index + '_list_section'"
@@ -844,7 +863,7 @@
                     :key="item.value"
                     v-model="approval_form.proc_result"
                     :label="item.value"
-                    >{{ item.disp }}
+                  >{{ item.disp }}
                   </el-radio>
                 </el-form-item>
               </el-col>
@@ -854,10 +873,12 @@
                   ref="procHandler"
                   type="approve"
                   :proc-result="procResult"
-                ></proc-handler
-              ></el-col>
+                ></proc-handler></el-col>
 
-              <el-col :span="6" v-if="approval_form.proc_result == 'turn'">
+              <el-col
+                :span="6"
+                v-if="approval_form.proc_result == 'turn'"
+              >
                 <el-form-item
                   label="转派用户"
                   prop="turn_user_no"
@@ -886,7 +907,10 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :span="24" v-if="approval_form.proc_result == 'return'">
+              <el-col
+                :span="24"
+                v-if="approval_form.proc_result == 'return'"
+              >
                 <el-form-item
                   label="返回步骤"
                   prop="step_no"
@@ -902,7 +926,7 @@
                     :key="item.value"
                     v-model="approval_form.step_no"
                     :label="item.value"
-                    >{{ item.disp }}
+                  >{{ item.disp }}
                   </el-radio>
                 </el-form-item>
               </el-col>
@@ -945,20 +969,26 @@
                 </el-form-item>
               </el-col>
 
-              <el-col :span="24" v-loading="onFormLoading">
-                <el-row type="flex" class="row-bg" justify="center">
+              <el-col
+                :span="24"
+                v-loading="onFormLoading"
+              >
+                <el-row
+                  type="flex"
+                  class="row-bg"
+                  justify="center"
+                >
                   <el-form-item>
                     <el-button
                       type="primary"
                       @click="submitApprovalForm('approval_form', false)"
-                      >提交
+                    >提交
                     </el-button>
                     <!--
                     <el-button type="primary" @click="submitApprovalForm('approval_form',true)">保存草稿
                     </el-button>-->
 
-                    <el-button @click="resetForm('approval_form')"
-                      >重置
+                    <el-button @click="resetForm('approval_form')">重置
                     </el-button>
                   </el-form-item>
                 </el-row>
@@ -984,7 +1014,10 @@
       v-if="record_default_condition.length > 0"
       v-show="appvalResult > 0"
     >
-      <div slot="header" class="clearfix">
+      <div
+        slot="header"
+        class="clearfix"
+      >
         <span class="tag_font_class">流程审批结果</span>
       </div>
 
@@ -1092,7 +1125,7 @@ export default {
     return {
       submitStatus: "unwanted", //unwanted 空闲 // occupy 占用
       urgent: false,
-      viewFlowChart: true,
+      viewFlowChart: false, //默认不显示顶部流程图
       noAuthorityErrorMessage: null,
       apvTurnUserOtionsFunc: null,
       bizDataStepReadVisible: {},
@@ -1156,6 +1189,15 @@ export default {
     };
   },
   computed: {
+    setPageTitle() {
+      if (this.handle_active_step_name) {
+        return this.handle_active_step_name
+      } else if (this.processTempl?.templ_name) {
+        return this.processTempl.templ_name` - ` + (this.mainData.proc_status || "")
+      } else {
+        return ''
+      }
+    },
     procResult() {
       let result = {};
       if (
@@ -1762,7 +1804,6 @@ export default {
     hideFlowchart(data) {
       if (this.viewFlowChart) {
         this.icon = "el-icon-s-unfold";
-
         this.viewFlowChart = false;
       } else {
         this.icon = "el-icon-s-fold";
@@ -2736,6 +2777,46 @@ export default {
 /**
   div.aaaaa:hover{cursor:pointer;border-bottom:1px solid #000;color:red}
   div.aaaaa:visited {border-bottom:1px solid #000;}**/
+#proc_detail {
+  padding-top: 46px;
+
+  .proc_detail-header {
+    position: static;
+    top: 0;
+    width: 100%;
+    font-size: 20px;
+    position: fixed;
+    z-index: 9;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+
+    .el-button {
+      font-size: 1em;
+    }
+
+    .button-text {
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+
+      .icon {
+        margin-left: 10px;
+        // color: #606266;
+
+        // &:hover {
+        //   color: currentColor;
+        // }
+
+        // &.active {
+        //   color: currentColor;
+        // }
+      }
+    }
+  }
+}
 
 .div_click_class {
   /* text-decoration: underline; */
@@ -2755,7 +2836,7 @@ export default {
 }
 
 .el-row {
-  > .el-steps {
+  >.el-steps {
     div.el-step:nth-last-of-type(2) {
       .el-step__head {
         .el-step__line {
