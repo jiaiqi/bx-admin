@@ -1,19 +1,20 @@
 <template>
   <div id="proc_detail">
     <div class="proc_detail-header">
-      <el-button type="text">
-
+      <span></span>
+      <div class="title">
         <!-- <i v-bind:class="icon"></i> -->
-        <span>
+        <span class="">
           {{
             setPageTitle
           }}
         </span>
-      </el-button>
+      </div>
       <el-button
         type="text"
         :title="viewFlowChart ? '点击隐藏流程图' : '点击显示流程图'"
         @click="hideFlowchart(this)"
+        v-if="proc_basic && proc_basic.show_flow_chart !== false"
       >
 
         <svg
@@ -43,6 +44,7 @@
           />
         </svg>
       </el-button>
+      <span v-else></span>
       <!-- <el-button
       type="text"
       @click="updateShowHelp(this)"
@@ -2784,6 +2786,7 @@ export default {
     position: static;
     top: 0;
     width: 100%;
+    height: 46px;
     font-size: 20px;
     position: fixed;
     z-index: 9;
@@ -2791,8 +2794,15 @@ export default {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 0 20px;
-
+    .title{
+      font-size: 1.2rem;
+      color: var(--primary-color,#409eff);
+    }
+    .cursor-unset {
+      cursor: unset;
+    }
     .el-button {
       font-size: 1em;
     }
