@@ -103,21 +103,22 @@
       v-model="activeName"
       @tab-click="handleClick(activeName)"
     >
-      <el-tab-pane
-        :label="item.finallyLabel"
-        :name="item.key"
-        v-for="item in setTabs"
-        v-if="item.show"
-      >
-        <list
-          :ref="item.key"
-          :list-type="item.key"
+      <template v-for="item in setTabs">
+        <el-tab-pane
+          :label="item.finallyLabel"
           :name="item.key"
-          :service="service_name"
-          @gridData-change="setTip"
-          @list-loaded="timerRefresh"
-        > </list>
-      </el-tab-pane>
+          v-if="item.show"
+        >
+          <list
+            :ref="item.key"
+            :list-type="item.key"
+            :name="item.key"
+            :service="service_name"
+            @gridData-change="setTip"
+            @list-loaded="timerRefresh"
+          > </list>
+        </el-tab-pane>
+      </template>
     </el-tabs>
   </div>
 </template>
