@@ -19,6 +19,18 @@ export default {
   },
 
   computed: {
+    getActiveFormName() {
+      let pages_attribute = sessionStorage.getItem('pages_attribute')
+      if (pages_attribute && typeof pages_attribute === 'string') {
+        try {
+          pages_attribute = JSON.parse(pages_attribute)
+        } catch (error) {
+        }
+        if (pages_attribute['使用服务名作为弹窗标题'] === '是') {
+          return this.activeFormName
+        }
+      }
+    },
     getAddService: function () {
       let addButton = this.gridButton.filter(item => item.button_type === "add");
       if (addButton && addButton.length > 0) {

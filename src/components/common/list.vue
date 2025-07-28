@@ -738,7 +738,7 @@
     </div>
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '添加'"
+      :title="getActiveFormName || '添加'"
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
@@ -774,7 +774,7 @@
       <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
     <el-dialog
-      :title="activeFormName || '添加下级节点'"
+      :title="getActiveFormName || '添加下级节点'"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'add-child'"
@@ -804,7 +804,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '复制'"
+      :title="getActiveFormName || '复制'"
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
@@ -834,7 +834,7 @@
 
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '深度复制'"
+      :title="getActiveFormName || '深度复制'"
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
@@ -868,7 +868,7 @@
 
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '编辑'"
+      :title="getActiveFormName || '编辑'"
       width="90%"
       :visible="activeForm == 'update'"
       :close-on-click-modal="1 == 2"
@@ -912,7 +912,7 @@
 
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '导入'"
+      :title="getActiveFormName || '导入'"
       width="90%"
       :visible="activeForm == 'import'"
       append-to-body
@@ -930,7 +930,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '自定义导入'"
+      :title="getActiveFormName || '自定义导入'"
       width="90%"
       :visible="activeForm == 'customizeImport'"
       append-to-body
@@ -949,7 +949,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '导出'"
+      :title="getActiveFormName || '导出'"
       width="90%"
       :visible="activeForm == 'export'"
       append-to-body
@@ -965,7 +965,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '管理子表'"
+      :title="getActiveFormName || '管理子表'"
       width="90%"
       :visible="activeForm == 'manageChildList'"
       append-to-body
@@ -991,7 +991,7 @@
     <el-dialog
       class="customDialogClass"
       ref="batchApprove"
-      :title="activeFormName || '审批'"
+      :title="getActiveFormName || '审批'"
       width="90%"
       :visible="activeForm == 'batchApprove'"
       append-to-body
@@ -1123,7 +1123,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '二级密码验证'"
+      :title="getActiveFormName || '二级密码验证'"
       :show-close="false"
       width="40%"
       :close-on-click-modal="1 == 2"
@@ -1140,7 +1140,7 @@
     <!-- PC支付-->
     <el-dialog
       class="customDialogClass"
-      :title="activeFormName || '订单支付'"
+      :title="getActiveFormName || '订单支付'"
       :visible="activeForm === 'pay'"
       @close="closeDialog"
       width="50%"

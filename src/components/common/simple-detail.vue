@@ -206,6 +206,7 @@ import SimpleUpdate from "./simple-update.vue";
 import CustButtonMinx from "../mixin/cust-button-minx";
 import { hotTableMetadata } from "../model/Field";
 import updateHistory from "../ui/update-history.vue";
+import collapseArrow from "../ui/collapse-arrow.vue";
 import BroadcastMixin from "../mixin/broadcast-channel-mixin";
 export default {
   name: "simple-detail",
@@ -216,6 +217,7 @@ export default {
     loader: Loader,
     updateHistory,
     update: () => import("./update.vue"),
+    collapseArrow
   },
   mixins: [FormMixin, CustButtonMinx, FormValidateMixin, BroadcastMixin],
   props: {
