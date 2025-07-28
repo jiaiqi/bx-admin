@@ -315,7 +315,7 @@
 
           <!--审核流程form表单数据 条件等于当前审核步骤-->
           <el-form
-            label-width="10rem"
+            label-width="6rem"
             label-suffix=":"
             :model="approval_form"
             ref="approval_form"

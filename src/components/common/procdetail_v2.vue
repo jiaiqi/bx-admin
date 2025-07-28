@@ -593,7 +593,7 @@
 
           <!--(operate)审核流程Form以及业务表单-->
           <el-form
-            label-width="10rem"
+            label-width="6rem"
             label-suffix=":"
             :model="approval_form"
             ref="approval_form"
