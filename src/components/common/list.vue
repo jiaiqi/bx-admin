@@ -574,7 +574,7 @@
           <el-table-column
             label="操作"
             header-align="left"
-            width="280"
+            :width="operationColumnWidth"
             fixed="right"
             class-name="handler-button-group"
             v-if="
@@ -1255,6 +1255,37 @@ export default {
         }, {});
       }
     },
+    // 计算操作列的最佳宽度，但不超过300px
+    operationColumnWidth() {
+      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
+        return 280; // 默认宽度
+      }
+      
+      // 计算按钮总宽度
+      let totalWidth = 0;
+      const buttonPadding = 10; // 按钮内边距
+      const buttonMargin = 8; // 按钮间距
+      const minButtonWidth = 60; // 最小按钮宽度
+      
+      this.sortedRowButtons.forEach(button => {
+        if (button.button_type === '_btn_group') {
+          // 下拉按钮组，固定宽度
+          totalWidth += 100 + buttonMargin;
+        } else {
+          // 普通按钮，根据文字长度计算
+          const buttonText = button.button_name || '操作';
+          const textWidth = this.getTextWidth(buttonText);
+          const buttonWidth = Math.max(textWidth + buttonPadding * 2, minButtonWidth);
+          totalWidth += buttonWidth + buttonMargin;
+        }
+      });
+      
+      // 添加列的内边距
+      totalWidth += 20;
+      
+      // 限制最大宽度为300px，最小宽度为120px
+      return Math.min(Math.max(totalWidth, 120), 300);
+    },
     isDemo() {
       return (
         this.$route?.query?.viewMode === "demo" ||
@@ -1480,6 +1511,22 @@ export default {
         }
       }
       return sty;
+    },
+    /**
+     * 计算文本宽度
+     * @param {string} text 文本内容
+     * @returns {number} 文本宽度（像素）
+     */
+    getTextWidth(text) {
+      if (!text) return 0;
+      
+      // 创建临时元素来测量文本宽度
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = '14px Arial'; // 使用默认字体大小
+      const width = context.measureText(text).width;
+      
+      return Math.ceil(width);
     },
     changeListStyle(type = "list") {
       console.log(type);
