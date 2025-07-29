@@ -526,15 +526,6 @@
                     >{{ tag || "" }}
                     </el-tag>
                   </div>
-
-                  <!-- <div v-else-if="item.srvcol.updatable">
-                      <el-input-number size="small"
-                        v-if="item.col_type === 'Integer' || 'int' || 'Float' || 'money'"
-                        v-model="scope.row[item.column]" @change="handleEdit(scope.$index, scope.row)" :min="0"
-                        label=""></el-input-number>
-                      <el-input size="small" v-else-if="item.col_type === 'String'"
-                        v-model="scope.row[item.column]" @change="handleEdit(scope.$index, scope.row)"></el-input>
-                    </div> -->
                   <a
                     class="link-to-detail"
                     title="点击查看详情"
@@ -598,20 +589,6 @@
               slot-scope="scope"
               v-if="getColumnsShow(scope.row)"
             >
-              <!-- <el-button v-for="(button, index) in sortedRowButtons"
-                            :key="index"
-                            @click="rowButtonClick(button,scope.row)"
-                            :size="button._moreConfig.size" 
-                            :type="button._moreConfig.type" 
-                            :icon="button._moreConfig.icon" 
-                            :round="button._moreConfig.style !== '' &&  button._moreConfig.style === 'round'"
-                            :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
-                            :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
-                            :disabled="button.evalDisable()"
-                            v-if="getDispExps(button, scope.row) && button.permission"
-                            v-show="isRowButtonVisible(button, scope.row)">
-                    {{ getButtonName(button, scope.row) }}
-                  </el-button> -->
               <template
                 v-for="(button, index) in sortedRowButtons"
                 style="
@@ -625,18 +602,6 @@
                   isRowButtonVisible(button, scope.row, scope.$index)
                   "
               >
-                <!-- <el-button
-                    type="text"
-                    :title="getButtonName(button, scope.row)"
-                    @click.stop.native="rowButtonClick(button, scope.row)"
-                    v-if="
-                      routeMeta &&
-                      routeMeta.isTree === true &&
-                      button.button_type == 'addchild' &&
-                      getButtonOptSrv(button, scope.row, 'isShow')
-                    "
-                    ><i class="el-icon-plus"></i
-                  ></el-button> -->
                 <el-button
                   @click="rowButtonClick(button, scope.row)"
                   :size="button._moreConfig.size"
