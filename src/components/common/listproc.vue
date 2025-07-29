@@ -105,7 +105,7 @@
     >
       <template v-for="item in setTabs">
         <el-tab-pane
-          :label="item.finallyLabel"
+          :label="item.finallyLabel || item.label"
           :name="item.key"
           v-if="item.show"
         >
@@ -227,7 +227,6 @@ export default {
         // 服务端返回tabs配置
         if (this.listV2Data?.proc_tabs) {
           this.procTabs = this.listV2Data.proc_tabs.map(item => {
-            item.finallyLabel = item.label
             item.show = true
             return item
           })
@@ -252,11 +251,13 @@ export default {
     },
     setTip(gridData, listProcType) {
       if (gridData.page) {
+        
         if (Array.isArray(this.procTabs) && this.procTabs.length) {
-          this.procTabs.forEach(item => {
+          this.procTabs = this.procTabs.map(item => {
             if (item.key == listProcType) {
-              item.finallyLabel = item.label + "(" + gridData.page.total + ")";
+              item.finallyLabel = `${item.label}(${gridData.page.total})`
             }
+            return item
           })
         }
         if (listProcType == "mine") {

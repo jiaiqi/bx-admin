@@ -25,7 +25,7 @@
         ref="elform"
         :inline="false"
         label-position="right"
-        label-width="6rem"
+        label-width="6.5rem"
         v-if="formLoaded"
       >
         <slot name="field-form-prepend"></slot>

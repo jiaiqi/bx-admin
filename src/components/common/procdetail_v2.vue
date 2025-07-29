@@ -1,50 +1,64 @@
 <template>
   <div id="proc_detail">
     <div class="proc_detail-header">
-      <span></span>
-      <div class="title">
-        <!-- <i v-bind:class="icon"></i> -->
+      <!-- 默认不显示顶部流程图 -->
+      <template v-if="proc_basic && proc_basic.show_flow_chart === false"> <el-button
+          type="text"
+          :title="viewFlowChart ? '点击隐藏流程图' : '点击显示流程图'"
+          @click="hideFlowchart(this)"
+        >
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            class="icon"
+            v-if="viewFlowChart"
+          >
+            <path
+              fill="currentColor"
+              d="M15 20v-2h-4v-5H9v2H2V9h7v2h2V6h4V4h7v6h-7V8h-2v8h2v-2h7v6z"
+            />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            class="icon"
+            viewBox="0 0 24 24"
+            v-else
+          >
+            <path
+              fill="currentColor"
+              d="M15 20v-2h-4v-5H9v2H2V9h7v2h2V6h4V4h7v6h-7V8h-2v8h2v-2h7v6zm2-2h3v-2h-3zM4 13h3v-2H4zm13-5h3V6h-3zm0 10v-2zM7 13v-2zm10-5V6z"
+            />
+          </svg>
+        </el-button>
+        <div class="title">
+          <span class="">
+            {{
+              setPageTitle
+            }}
+          </span>
+        </div>
+      </template>
+
+      <!-- 默认显示顶部流程图 -->
+      <el-button
+        type="text"
+        @click="hideFlowchart(this)"
+        v-else
+      >
+        <i v-bind:class="icon"></i>
         <span class="">
           {{
             setPageTitle
           }}
         </span>
-      </div>
-      <el-button
-        type="text"
-        :title="viewFlowChart ? '点击隐藏流程图' : '点击显示流程图'"
-        @click="hideFlowchart(this)"
-        v-if="proc_basic && proc_basic.show_flow_chart !== false"
-      >
-
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          class="icon"
-          v-if="viewFlowChart"
-        >
-          <path
-            fill="currentColor"
-            d="M15 20v-2h-4v-5H9v2H2V9h7v2h2V6h4V4h7v6h-7V8h-2v8h2v-2h7v6z"
-          />
-        </svg>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          class="icon"
-          viewBox="0 0 24 24"
-          v-else
-        >
-          <path
-            fill="currentColor"
-            d="M15 20v-2h-4v-5H9v2H2V9h7v2h2V6h4V4h7v6h-7V8h-2v8h2v-2h7v6zm2-2h3v-2h-3zM4 13h3v-2H4zm13-5h3V6h-3zm0 10v-2zM7 13v-2zm10-5V6z"
-          />
-        </svg>
       </el-button>
-      <span v-else></span>
+
+      <span></span>
       <!-- <el-button
       type="text"
       @click="updateShowHelp(this)"
@@ -623,7 +637,7 @@
 
           <!--(operate)审核流程Form以及业务表单-->
           <el-form
-            label-width="6rem"
+            label-width="6.5rem"
             label-suffix=":"
             :model="approval_form"
             ref="approval_form"
@@ -1127,7 +1141,7 @@ export default {
     return {
       submitStatus: "unwanted", //unwanted 空闲 // occupy 占用
       urgent: false,
-      viewFlowChart: false, //默认不显示顶部流程图
+      viewFlowChart: true, //默认不显示顶部流程图
       noAuthorityErrorMessage: null,
       apvTurnUserOtionsFunc: null,
       bizDataStepReadVisible: {},
@@ -2096,7 +2110,11 @@ export default {
             }
             this.proc_basic = response.body.proc_basic;
             this.proCharData = response.body.proCharData;
-
+            if (this.proc_basic.show_flow_chart === false) {
+              this.viewFlowChart = false;
+            } else {
+              this.viewFlowChart = true;
+            }
             this.proHanleDataList = response.body.proHanleData;
             if (response.body.urgentStep) {
               this.urgentStep = response.body.urgentStep;
@@ -2224,7 +2242,11 @@ export default {
           this.processTempl = response.body.processTempl;
 
           this.proc_basic = response.body.proc_basic;
-
+          if (this.proc_basic.show_flow_chart === false) {
+            this.viewFlowChart = false;
+          } else {
+            this.viewFlowChart = true;
+          }
           if (response.body.urgentStep && response.body.urgent == "是") {
             this.urgentStep = response.body.urgentStep;
             for (var item of this.urgentStep) {
@@ -2780,15 +2802,34 @@ export default {
   div.aaaaa:hover{cursor:pointer;border-bottom:1px solid #000;color:red}
   div.aaaaa:visited {border-bottom:1px solid #000;}**/
 #proc_detail {
-  padding-top: 46px;
+  padding: 1rem;
+  padding-top: calc(46px + 1rem);
+  height: 100vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #f1f2f3;
+  }
 
   .proc_detail-header {
-    position: static;
+    position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
     height: 46px;
     font-size: 20px;
-    position: fixed;
+    // position: fixed;
     z-index: 9;
     backdrop-filter: blur(10px);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -2796,13 +2837,16 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    .title{
+
+    .title {
       font-size: 1.2rem;
-      color: var(--primary-color,#409eff);
+      color: var(--primary-color, #409eff);
     }
+
     .cursor-unset {
       cursor: unset;
     }
+
     .el-button {
       font-size: 1em;
     }
@@ -2826,6 +2870,11 @@ export default {
       }
     }
   }
+}
+
+.box-card {
+  margin-bottom: 1rem;
+  height: unset;
 }
 
 .div_click_class {

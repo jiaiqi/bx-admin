@@ -13,7 +13,7 @@
         ref="elform"
         :inline="false"
         label-position="right"
-        label-width="6rem"
+        label-width="6.5rem"
         label-suffix=":"
         v-if="formLoaded"
       >
