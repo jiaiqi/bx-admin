@@ -46,7 +46,7 @@
                 ? `${field.info.getLabelStyle()} required`
                 : field.info.getLabelStyle()
             "
-            class="el-form-item__label"
+            class=""
             style="
               width: 10rem;
               text-overflow: ellipsis;

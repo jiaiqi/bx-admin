@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <router-view v-if="ready" :key="$route.path"></router-view>
+    <router-view
+      v-if="ready"
+      :key="$route.path"
+    ></router-view>
     <login-dialog ref="loginRef"></login-dialog>
   </div>
 </template>
@@ -168,14 +171,16 @@ body {
   margin: 0;
   padding: 0;
 }
+
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   color: #2c3e50;
+
   &.dark-mode,
-  > .dark-mode {
+  >.dark-mode {
     color: #eee;
   }
 }
@@ -290,6 +295,7 @@ span.section-title {
 .el-cascader .el-input.is-focus .el-input__inner {
   border-color: var(--primary-color, #409eff) !important;
 }
+
 .el-tabs__active-bar {
   background-color: var(--primary-color, #409eff);
 }
@@ -321,21 +327,35 @@ span.section-title {
 .dialog-footer,
 .handler-bar,
 .upload-demo {
+
   &.highlight,
   .el-table-filter__bottom button:hover,
   .el-form .el-form-item .el-form-item__label {
     color: var(--primary-color, #007aff);
   }
+
   .el-table__cell.descending .caret-wrapper .sort-caret.descending {
     border-top-color: var(--primary-color, #007aff);
   }
+
   .el-table__cell.ascending .caret-wrapper .sort-caret.ascending {
     border-bottom-color: var(--primary-color, #007aff);
   }
 
   .el-table {
-    th.el-table__cell > .cell.highlight {
+    th.el-table__cell>.cell.highlight {
       color: var(--primary-color, #007aff);
+    }
+  }
+  // 弹窗标题颜色
+  .el-dialog {
+    .el-dialog__header {
+      background-color: var(--primary-color, #007aff);
+      margin-bottom: 1rem;
+      .el-dialog__title,
+      .el-dialog__headerbtn .el-dialog__close {
+        color: #fff;
+      }
     }
   }
 
@@ -343,23 +363,27 @@ span.section-title {
     color: #fff;
     background: var(--primary-color, #007aff);
   }
+
   .el-pagination.is-background {
     .el-pager li:not(.disabled):hover {
       color: var(--primary-color, #007aff);
     }
+
     .el-pager li:not(.disabled).active {
       background-color: var(--primary-color, #409eff);
       color: #fff;
     }
   }
+
   .materia-warp {
     .type-item.active {
       color: var(--primary-color, #007aff);
     }
   }
+
   a,
-  .el-radio__input.is-checked + .el-radio__label,
-  .el-checkbox__input.is-checked + .el-checkbox__label {
+  .el-radio__input.is-checked+.el-radio__label,
+  .el-checkbox__input.is-checked+.el-checkbox__label {
     color: var(--primary-color, #409eff);
   }
 
@@ -396,6 +420,7 @@ span.section-title {
     background-color: var(--menu-bg-color, #409eff);
     border-color: var(--menu-bg-color, #409eff);
     color: var(--menu-text-color, #fff);
+
     &.is-plain {
       color: var(--menu-bg-color, #409eff);
       background: var(--menu-bg-light-color, #ecf5ff);
@@ -422,8 +447,9 @@ span.section-title {
 // 主题相关-end
 
 .is-demo {
+
   // 原型图样式
-  .el-checkbox__input.is-checked + .el-checkbox__label {
+  .el-checkbox__input.is-checked+.el-checkbox__label {
     color: #666;
   }
 
@@ -515,7 +541,7 @@ span.section-title {
       background-color: #8b8b8b;
     }
 
-    th > .cell {
+    th>.cell {
       color: #333;
     }
 
@@ -528,8 +554,8 @@ span.section-title {
     }
 
     .hover-row,
-    .hover-row > td,
-    .current-row > td {
+    .hover-row>td,
+    .current-row>td {
       background-color: #ececec !important;
     }
 
@@ -563,17 +589,19 @@ span.section-title {
 .field-editor {
   .el-form-item__label {
     margin-bottom: 10px;
-
+    padding-left: 10px;
     label {
       margin-bottom: 0;
     }
   }
 }
+
 .form-view-wrapper .el-form span.section-title {
   margin-bottom: 10px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
+
   &.is-collapse {
     margin-bottom: 0;
     border-bottom: none;

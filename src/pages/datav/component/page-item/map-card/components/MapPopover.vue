@@ -51,9 +51,9 @@
  * />
  */
 
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import Teleport from "vue2-teleport";
-import cardGroupCell from "../card-group-cell/card-group-cell.vue";
+import cardGroupCell from "@/pages/datav/component/page-item/card-group-cell/card-group-cell.vue";
 
 /**
  * 组件配置常量
@@ -82,28 +82,28 @@ const props = defineProps({
     default: () => ({}),
     description: "当前激活的标记点对象，包含标记点的所有数据信息"
   },
-  
+
   // 标记点DOM元素
   markerElement: {
     type: [HTMLElement, null],
     default: null,
     description: "标记点的DOM元素，用于计算弹窗位置"
   },
-  
+
   // 页面项配置
   pageItem: {
     type: Object,
     default: () => ({}),
     description: "页面项配置对象，包含地图配置、样式等信息"
   },
-  
+
   // 卡片单元配置
   cardUnitJson: {
     type: Object,
     default: () => ({}),
     description: "卡片单元JSON配置，用于渲染弹窗内容"
   },
-  
+
   // 是否为建筑物视图
   isBuildingView: {
     type: Boolean,

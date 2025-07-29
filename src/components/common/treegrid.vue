@@ -290,7 +290,7 @@
     </el-row>
 
     <el-dialog
-      title="添加"
+      :title="getActiveFormName || '添加'"
       class="customDialogClass"
       width="90%"
       :close-on-click-modal="1 == 2"
@@ -330,7 +330,7 @@
     </el-dialog>
 
     <el-dialog
-      title="复制"
+      :title="getActiveFormName || '复制'"
       class="customDialogClass"
       width="90%"
       :close-on-click-modal="1 == 2"
@@ -381,7 +381,7 @@
     </el-dialog>
 
     <el-dialog
-      title="编辑"
+      :title="getActiveFormName || '编辑'"
       class="customDialogClass"
       width="90%"
       :close-on-click-modal="1 == 2"
@@ -425,7 +425,7 @@
     </el-dialog>
 
     <el-dialog
-      title="添加下级节点"
+      :title="getActiveFormName || '添加下级节点'"
       width="90%"
       class="customDialogClass"
       :close-on-click-modal="1 == 2"
@@ -469,8 +469,9 @@
       </simple-add> -->
     </el-dialog>
     <el-dialog
+      :title="getActiveFormName || '导入'"
       class="customDialogClass"
-      title="导入"
+
       width="90%"
       :visible="activeForm == 'import'"
       append-to-body
@@ -487,7 +488,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="自定义导入"
+      :title="getActiveFormName || '自定义导入'"
       width="90%"
       :visible="activeForm == 'customizeImport'"
       append-to-body
@@ -505,7 +506,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="导出"
+      :title="getActiveFormName || '导出'"
       width="90%"
       :visible="activeForm == 'export'"
       append-to-body

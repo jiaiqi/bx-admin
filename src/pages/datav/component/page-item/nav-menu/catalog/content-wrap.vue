@@ -4,8 +4,14 @@
     :class="setClassByPath"
     v-if="contentViewMode !== '空白'"
   >
-    <div class="title" v-if="data && data.name">
-      <Icon icon="ri-arrow-right-s-fill" class="icon"></Icon>
+    <div
+      class="title"
+      v-if="data && data.name"
+    >
+      <Icon
+        icon="ri-arrow-right-s-fill"
+        class="icon"
+      ></Icon>
       <span class="ml-2 text">
         {{ data.name || "" }}
       </span>
@@ -13,11 +19,10 @@
     <template v-if="contentViewMode === '详情'">
       <template v-if="showRichText">
         <div
-          class="content"
+          class="content rich-text-content"
           v-if="contentList && contentList.length"
-          v-html="
-            recoverFileAddress4richText(contentList && contentList[0].content)
-          "
+          v-html="recoverFileAddress4richText(contentList && contentList[0].content)
+            "
         ></div>
         <div v-else>
           <el-empty description="暂无数据"></el-empty>
@@ -37,22 +42,19 @@
           size="small"
           :class="{ primary: dateType === '近一周' }"
           @click="changeDateType('近一周')"
-          >近一周</el-button
-        >
+        >近一周</el-button>
         <el-button
           class="filter-btn"
           size="small"
           :class="{ primary: dateType === '近一月' }"
           @click="changeDateType('近一月')"
-          >近一月</el-button
-        >
+        >近一月</el-button>
         <el-button
           class="filter-btn"
           size="small"
           :class="{ primary: dateType === '近半年' }"
           @click="changeDateType('近半年')"
-          >近半年</el-button
-        >
+        >近半年</el-button>
         <el-date-picker
           class="date-picker"
           size="small"
@@ -138,7 +140,10 @@
         <el-empty description="暂无数据"></el-empty>
       </div>
     </template>
-    <catalog-tabs :data="data" v-if="data && data.child_view_mode === 'tabs'">
+    <catalog-tabs
+      :data="data"
+      v-if="data && data.child_view_mode === 'tabs'"
+    >
     </catalog-tabs>
   </div>
 </template>
@@ -156,7 +161,7 @@ export default {
   components: {
     Icon,
     catalogTabs,
-    lowCodeView:()=>import("@/pages/lowcode/view.vue")
+    lowCodeView: () => import("@/pages/lowcode/view.vue")
   },
   computed: {
     tabs() {
@@ -331,50 +336,57 @@ export default {
       // }
     }
   }
+
   .title {
     align-items: center;
     display: flex;
     margin-bottom: 20px;
+
     .text {
       line-height: 40px;
       color: rgba(16, 16, 16, 1);
       font-size: 28px;
       font-weight: 700;
     }
+
     .icon {
       color: var(--primary-color, #007aff);
     }
   }
+
   .quick-filter {
     margin-bottom: 20px;
+
     .date-picker {
       margin-left: 10px;
     }
+
     .filter-btn {
       &.primary {
         border-color: transparent;
-        background: var(
-          --primary-color,
-          linear-gradient(
-            151.99deg,
-            rgba(0, 122, 255, 1) 29.59%,
-            rgba(4, 71, 171, 1) 294.82%
-          )
-        );
+        background: var(--primary-color,
+            linear-gradient(151.99deg,
+              rgba(0, 122, 255, 1) 29.59%,
+              rgba(4, 71, 171, 1) 294.82%));
         color: #fff;
       }
     }
   }
+
   .content-list {
     margin-bottom: 50px;
+
     .multi-line-ellipsis {
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2; /* 设置行数 */
+      -webkit-line-clamp: 2;
+      /* 设置行数 */
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: normal; /* 允许文本换行 */
+      white-space: normal;
+      /* 允许文本换行 */
     }
+
     .content-item {
       font-size: 20px;
       display: flex;
@@ -383,14 +395,17 @@ export default {
       border: 1px solid #eeeeee;
       margin-bottom: 10px;
       cursor: pointer;
+
       &:hover {
         box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
         border-bottom-width: 4px;
         border-bottom-color: var(--primary-color, #0447ab);
+
         .title {
           color: var(--primary-color, #0447ab);
         }
       }
+
       .content-box {
         min-height: 100px;
         flex: 1;
@@ -398,20 +413,24 @@ export default {
         display: flex;
         flex-direction: column;
         justify-content: center;
+
         .title {
           font-size: 20px;
           font-weight: bold;
           margin-bottom: 10px;
         }
+
         .summary {
           color: #737373;
           margin: 5px 0;
         }
+
         .footer {
           color: #aeaeb2;
           display: flex;
           align-items: center;
           line-height: 24px;
+
           .separator {
             display: inline-block;
             width: 2px;
@@ -422,19 +441,23 @@ export default {
           }
         }
       }
+
       &.style-1 {
         .date-box {
           width: 80px;
           text-align: center;
+
           .year {
             font-size: 28px;
             font-weight: 600;
           }
+
           .month {
             font-size: 24px;
             font-weight: 600;
           }
         }
+
         .line {
           width: 4px;
           height: 100px;
@@ -442,9 +465,11 @@ export default {
           background-color: #f5f5f5;
         }
       }
+
       &.style-2 {
         display: flex;
         align-items: center;
+
         .img {
           width: 240px;
           background-color: #ccc;
@@ -453,19 +478,169 @@ export default {
           object-fit: cover;
           margin-right: 20px;
         }
+
         border: none;
       }
     }
   }
+
   .pagination-box {
     text-align: center;
     padding: 10px;
+
     :deep(.el-pagination) {
       &.is-background {
         .el-pager li:not(.disabled).active {
           background-color: var(--primary-color, #0447ab);
         }
       }
+    }
+  }
+
+  /* 富文本内容样式隔离 */
+  .rich-text-content {
+    /* 重置所有样式到浏览器默认值，避免外部样式干扰 */
+    all: revert;
+
+    /* 设置基础容器样式 */
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+
+    /* 为富文本内容创建新的样式上下文 */
+    isolation: isolate;
+
+    /* 重置字体和基础样式 */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+
+    /* 确保内部元素样式重置 */
+    :deep(*) {
+      /* 重置所有内部元素的样式 */
+      all: revert;
+      box-sizing: border-box;
+    }
+
+    /* 为常见的富文本元素设置合理的默认样式 */
+    :deep(p) {
+      margin: 1em 0;
+      line-height: 1.6;
+    }
+
+    :deep(h1) {
+      font-size: 2em;
+      font-weight: bold;
+      margin: 0.67em 0;
+    }
+
+    :deep(h2) {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0.75em 0;
+    }
+
+    :deep(h3) {
+      font-size: 1.17em;
+      font-weight: bold;
+      margin: 1em 0;
+    }
+
+    :deep(h4) {
+      font-size: 1em;
+      font-weight: bold;
+      margin: 1.33em 0;
+    }
+
+    :deep(h5) {
+      font-size: 0.83em;
+      font-weight: bold;
+      margin: 1.67em 0;
+    }
+
+    :deep(h6) {
+      font-size: 0.67em;
+      font-weight: bold;
+      margin: 2.33em 0;
+    }
+
+    :deep(ul),
+    :deep(ol) {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+
+    :deep(li) {
+      margin: 0.5em 0;
+
+      &::marker {
+        color: currentColor;
+      }
+    }
+
+    :deep(blockquote) {
+      margin: 1em 0;
+      padding-left: 1em;
+      border-left: 4px solid #ddd;
+      color: #666;
+    }
+
+    :deep(table) {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+
+    :deep(th),
+    :deep(td) {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    :deep(th) {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+
+    :deep(img) {
+      // max-width: 100%;
+      // height: auto;
+      // display: initial;
+      // margin: 1em auto;
+      all: revert;
+      border-style: solid;
+      border-color: transparent;
+    }
+
+    :deep(a) {
+      color: #007aff;
+      text-decoration: underline;
+    }
+
+    :deep(a:hover) {
+      color: #0056b3;
+    }
+
+    :deep(code) {
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    :deep(pre) {
+      background-color: #f5f5f5;
+      padding: 1em;
+      border-radius: 5px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+
+    :deep(pre code) {
+      background-color: transparent;
+      padding: 0;
     }
   }
 }

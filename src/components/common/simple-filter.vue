@@ -5,7 +5,7 @@
       <el-form
         :inline="false"
         label-position="right"
-        label-width="10rem"
+        label-width="6rem"
         v-if="formLoaded"
       >
         <p v-if="supportGroup">过滤字段</p>
@@ -27,7 +27,7 @@
       <el-form
         :inline="false"
         label-position="right"
-        label-width="10rem"
+        label-width="6rem"
         v-if="formLoaded"
       >
         <p>分组字段</p>
@@ -45,7 +45,7 @@
       <el-form
         :inline="false"
         label-position="right"
-        label-width="10rem"
+        label-width="6rem"
         v-if="formLoaded"
       >
         <p>聚合字段</p>

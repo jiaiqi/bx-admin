@@ -49,78 +49,21 @@
     </div>
 
     <!-- 普通视图的侧边栏树形数据 -->
-    <div
-      class="map-left"
-      :style="{
-        '--left': left + 'px',
-      }"
-      :class="{ collapsed: isCollapsed }"
-      v-else-if="!isBuildingView && treeData && treeData.length"
-    >
-      <div
-        class="map-tree-data"
-        v-if="treeData.length"
-      >
-        <div
-          class="tree-data-item"
-          v-for="item in treeData"
-          :key="item.id"
-        >
-          <div
-            class="tree-data-item-name"
-            :class="{
-              active:
-                (selectedTreeData &&
-                  item.id &&
-                  selectedTreeData.id === item.id) ||
-                (selectedTreeData.path &&
-                  selectedTreeData.path.startsWith(item.path)),
-            }"
-            @click="tapTreeData(item)"
-          >
-            <i
-              class="tree-data-item-name-icon el-icon-caret-right"
-              :class="{ expanded: expandedNodes[item.id] }"
-              @click.stop="toggleExpand(item)"
-            ></i>
-            <span class="tree-data-item-name-text">
-              {{ getTreeItemLabel(item) }}
-            </span>
-          </div>
-          <transition name="tree-expand">
-            <div
-              class="tree-data-item-child"
-              v-show="expandedNodes[item.id]"
-            >
-              <tree-data-item
-                v-for="child in item.children"
-                :key="child.id"
-                :item="child"
-                :selected="selectedTreeData"
-                :level="1"
-                :set-children-func="setChildren"
-                @select="tapTreeData"
-              />
-            </div>
-          </transition>
-        </div>
-      </div>
-      <div
-        class="collapsed-icon"
-        @click="changeCollapsed"
-        v-if="treeData.length"
-        :title="isCollapsed ? '展开' : '收起'"
-      >
-        <Icon
-          icon="material-symbols:arrow-menu-close"
-          class="icon"
-        ></Icon>
-      </div>
-    </div>
+    <MapTreeSidebar
+      v-if="!isBuildingView"
+      :tree-data="treeData"
+      :selected-tree-data="selectedTreeData"
+      :expanded-nodes="expandedNodes"
+      :is-collapsed="isCollapsed"
+      :map-json="mapJson"
+      :set-children="setChildren"
+      @tree-data-click="tapTreeData"
+      @toggle-expand="toggleExpand"
+      @toggle-collapsed="changeCollapsed"
+    />
 
     <!-- 自定义底图-地图视图区域 -->
     <zoom-drag-container
-      ref="zoomDragContainerRef"
       :show-tips="true"
       :ignore-scale-classes="'map-marker'"
     >
@@ -129,11 +72,26 @@
         :class="{
           'building-view': isBuildingView,
           'custom-map': !isBuildingView,
+          'image-loading': imageLoading,
+          'image-loaded': imageLoaded,
         }"
         :style="{
-          backgroundImage: `url(${baseImage})`,
+          backgroundImage: `url(${currentImageSrc})`,
         }"
       >
+        <!-- 图片加载动画 -->
+        <div
+          class="image-loading-overlay"
+          v-if="imageLoading"
+        >
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="loading-text">底图加载中...</div>
+          </div>
+        </div>
+
         <!-- 建筑物视图内容 -->
         <template v-if="isBuildingView">
           <!-- building-view 的标记点内容可以在这里添加 -->
@@ -142,7 +100,7 @@
         <!-- 普通视图的标记点内容 -->
         <template v-else>
           <!-- 标签类型的标记点 -->
-          <template v-if="mapJson && mapJson.map_type === '标签' && markerList.length">
+          <template v-if="!mapJson.multi_src_poi_json && mapJson && mapJson.map_type === '标签' && markerList.length">
             <div
               class="map-marker"
               :class="{ 'is-active': isActive(marker) }"
@@ -169,8 +127,9 @@
               class="map-marker"
               :style="getItemPosition(item)"
               @click.stop="handleMarkerClick(item, $event)"
-              :class="{ 'cursor-pointer': !!cardUnitJson }"
+              :class="{ 'cursor-pointer': allowClick(item) }"
               v-for="item in markerList"
+              :title="getMarkerTitle(item)"
               :key="item.id"
             >
               <img
@@ -183,11 +142,22 @@
         </template>
       </div>
     </zoom-drag-container>
+
+    <!-- 地图切换记录 - 面包屑导航 -->
+    <MapBreadcrumb
+      :breadcrumb-items="finallyMapUndoRedo"
+      @breadcrumb-click="handleMapJsonChange"
+    />
+
+
+    <!-- 使用多标记物配置加载标记物数据 -->
     <multi-source-markers
       :map-json="mapJson"
-      v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物')"
+      :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
+      v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
+
     <!-- 地图标记点弹窗 -->
     <map-popover
       :active-marker="activeMarker"
@@ -225,22 +195,24 @@
  *   :tree-req="treeRequestConfig"
  * />
  */
-
-import { onMounted, onUnmounted, ref, computed, watch, set } from "vue";
+import cloneDeep from "lodash/cloneDeep";
+import { onMounted, ref, computed, watch, set } from "vue";
 
 /**
  * 工具函数和组件导入
  */
-import { getImagePath } from "@/common/http.js"; // 图片路径处理工具
+import { $http, getImagePath } from "@/common/http.js"; // 图片路径处理工具
 import { $selectList } from "@/common/http"; // HTTP 请求工具
-import cardGroupCell from "../card-group-cell/card-group-cell.vue"; // 卡片组单元格组件
-import TreeDataItem from "../TreeDataItem.vue"; // 树形数据项组件
-import { formatStyleData } from "../../../common"; // 样式数据格式化工具
-import { Icon } from "@iconify/vue2"; // 图标组件
-import cloneDeep from "lodash/cloneDeep";
+import TreeDataItem from "./TreeDataItem.vue"; // 树形数据项组件
 import ZoomDragContainer from "@/components/common/ZoomDragContainer.vue"; // 缩放拖拽容器组件
 import MultiSourceMarkers from "./MultiSourceMarkers.vue";
 import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
+import MapTreeSidebar from "./MapTreeSidebar.vue"; // 地图树形侧边栏组件
+import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
+import { useUtils } from "@/common/vueApi";
+
+import { useMarkers } from "../composables/useMarkers";
+
 /**
  * 组件 Props 定义
  * @typedef {Object} Props
@@ -252,18 +224,12 @@ const props = defineProps({
   treeReq: Object, // 树形数据请求配置
 });
 
-/**
- * 组件事件发射器
- */
 const emit = defineEmits(["select"]);
 
 /**
  * 左侧面板折叠状态管理
  */
 const isCollapsed = ref(false); // 是否折叠左侧面板
-const left = computed(() =>
-  isCollapsed.value ? -CONFIG.UI.SIDEBAR_WIDTH : CONFIG.UI.SIDEBAR_MARGIN
-); // 计算左侧面板位置
 
 /**
  * 切换左侧面板折叠状态
@@ -273,28 +239,43 @@ const changeCollapsed = () => {
   isCollapsed.value = !isCollapsed.value;
 };
 
-/**
- * 组件配置常量
- */
-const CONFIG = {
-  // UI 配置
-  UI: {
-    SIDEBAR_WIDTH: 230, // 侧边栏宽度
-    SIDEBAR_MARGIN: 15, // 侧边栏边距
-    POPUP_OFFSET: 10, // 弹窗偏移距离
-  },
-  // 性能优化配置
-  PERFORMANCE: {
-    DEBOUNCE_DELAY: 100, // 防抖延迟时间（毫秒）
-  },
-};
+
+const mapUndoRedo = ref([])
+const finallyMapUndoRedo = computed(() => {
+  let result = []
+  if (Array.isArray(mapUndoRedo.value)) {
+    result = [...mapUndoRedo.value]
+  }
+  return result
+})
 
 /**
- * 地图配置计算属性
+ * 地图配置
  */
-const mapJson = computed(() => {
-  return props.pageItem.map_json || {};
-});
+const mapJson = ref(null)
+if (props.pageItem.map_json) {
+  mapJson.value = props.pageItem.map_json
+}
+
+const { getItemPosition, getItemIcon, isActive, setLabelActiveStyle, setLabelStyle } = useMarkers(props, mapJson)
+
+
+const baseIamgeByReq = ref("")
+
+
+function handleMapJsonChange(item, index) {
+  if (index) {
+    mapUndoRedo.value.splice(index, 1)
+  } else if (index === 0) {
+    mapUndoRedo.value = []
+  }
+  if (item.config) {
+    getMapBaseImage(item.config.drill_down['jump_map_json'], item.config, item.data)
+  }
+  resetMapState()
+  mapJson.value = cloneDeep(item.map_json)
+  initComponents()
+}
 
 /**
  * 标记点和弹窗相关状态
@@ -320,10 +301,13 @@ const buildingTree = ref([]); // 建筑物树形数据
 const floorInfo = ref(null); // 当前楼层信息
 const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
 
+
 /**
- * 缩放容器相关状态
+ * 图片加载状态管理
  */
-const zoomDragContainerRef = ref(null); // ZoomDragContainer组件引用
+const imageLoading = ref(false); // 图片是否正在加载
+const imageLoaded = ref(true); // 图片是否已加载完成
+const currentImageSrc = ref(''); // 当前显示的图片路径
 
 /**
  * 递归查找具有底图的父级节点
@@ -367,6 +351,9 @@ function findParentWithBaseImage(data, list) {
  * 4. 默认底图
  */
 const baseImage = computed(() => {
+  if (baseIamgeByReq.value) {
+    return getImagePath(baseIamgeByReq.value)
+  }
   const baseImageCol = mapJson.value.map_base_col; // 底图字段配置
   if (!baseImageCol) {
     // 如果没有配置底图字段，检查楼层信息
@@ -382,12 +369,12 @@ const baseImage = computed(() => {
   }
 
   // 检查当前选中项是否为叶子节点(没有子节点)
-  if (selectedTreeData.value?.is_leaf !== "是") {
-    // 检查当前选中项的底图
-    if (selectedTreeData.value?.[baseImageCol]) {
-      return getImagePath(selectedTreeData.value[baseImageCol]);
-    }
+  // if (selectedTreeData.value?.is_leaf !== "是") {
+  // 检查当前选中项的底图
+  if (selectedTreeData.value?.[baseImageCol]) {
+    return getImagePath(selectedTreeData.value[baseImageCol]);
   }
+  // }
 
   // 递归查找父级节点的底图
   let parent = findParentWithBaseImage(selectedTreeData.value, treeData.value);
@@ -402,17 +389,61 @@ const baseImage = computed(() => {
   return getImagePath(mapJson.value.base_image);
 });
 
+/**
+ * 预加载图片并处理过渡效果
+ * @param {string} imageSrc - 图片路径
+ * @returns {Promise} 图片加载Promise
+ */
+function preloadImage(imageSrc) {
+  return new Promise((resolve, reject) => {
+    if (!imageSrc) {
+      resolve();
+      return;
+    }
 
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${imageSrc}`));
+    img.src = imageSrc;
+  });
+}
 
 /**
- * 判断标记点是否激活
+ * 处理图片切换的平滑过渡
+ * @param {string} newImageSrc - 新的图片路径
  */
-function isActive(marker) {
-  if (selectedTreeData.value && marker?.id) {
-    return selectedTreeData.value?.id === marker.id;
+async function handleImageTransition(newImageSrc) {
+  // 如果新图片路径与当前相同，不需要切换
+  if (newImageSrc === currentImageSrc.value) {
+    return;
   }
-  return false;
+
+  try {
+    // 设置加载状态
+    imageLoading.value = true;
+
+    // 预加载新图片
+    await preloadImage(newImageSrc);
+
+    // 图片加载完成后，开始过渡
+    imageLoaded.value = false;
+
+    // 短暂延迟后切换图片并显示
+    setTimeout(() => {
+      currentImageSrc.value = newImageSrc;
+      imageLoaded.value = true;
+      imageLoading.value = false;
+    }, 150); // 150ms的淡出时间
+
+  } catch (error) {
+    console.warn('图片加载失败:', error);
+    // 即使加载失败也要更新状态
+    currentImageSrc.value = newImageSrc;
+    imageLoaded.value = true;
+    imageLoading.value = false;
+  }
 }
+
 
 /**
  * 初始化自定义地图数据
@@ -462,122 +493,14 @@ async function initCustomMap() {
   return list;
 }
 
-/**
- * 获取标记点图标
- * 根据配置和数据项获取对应的图标路径
- *
- * @function getItemIcon
- * @param {Object} item - 数据项对象，默认为空对象
- * @returns {string} 图标路径，如果没有配置则返回空字符串
- */
-function getItemIcon(item = {}) {
-  // 参数类型检查
-  if (!item || typeof item !== "object") {
-    console.warn("getItemIcon: 无效的item参数", item);
-    item = {};
-  }
-  if (item?.col_map?.customized_icon) {
-    // 自定义图标
-    return getImagePath(item[item.col_map.customized_icon])
-  } else if (item?._poi_info?.poi_type_icon) {
-    // 默认图标
-    return getImagePath(item._poi_info.poi_type_icon)
-  } else if (item?._poi_info?.icon) {
-    // 默认图标
-    return getImagePath(item._poi_info.icon)
-  }
 
-  const mapConfig = mapJson.value;
-  if (!mapConfig) {
-    console.warn("getItemIcon: 地图配置不存在");
-    return "";
+function allowClick(marker) {
+  if (marker?._poi_info?.onclick) {
+    return true
+  } else if (marker && cardUnitJson.value && mapJson.value.onclick === '弹出卡片') {
+    return true
   }
-
-  try {
-    // 优先使用数据项中的自定义图标
-    const iconCol = mapConfig.marker_icon_col;
-    if (iconCol && item[iconCol]) {
-      return getImagePath(item[iconCol]);
-    }
-
-    // 使用默认图标
-    if (mapConfig.icon_default) {
-      return getImagePath(mapConfig.icon_default);
-    }
-  } catch (error) {
-    console.error("getItemIcon: 获取图标路径失败", error);
-  }
-
-  return ""; // 无图标时返回空字符串
 }
-
-/**
- * 获取标记点位置
- * 根据配置的坐标字段计算标记点在地图上的位置
- *
- * @function getItemPosition
- * @param {Object} item - 数据项对象，默认为空对象
- * @returns {Object} 位置对象，包含 left 和 top 属性（百分比值）
- */
-function getItemPosition(item = {}) {
-  let pos = {
-    left: 0,
-    top: 0,
-  };
-  if (mapJson.value?.x_col && mapJson.value?.y_col) {
-    // 设置 X 轴位置（左右位置）
-    if (item[mapJson.value?.x_col]) {
-      pos.left = item[mapJson.value?.x_col] + "%";
-    }
-    // 设置 Y 轴位置（上下位置）
-    if (item[mapJson.value?.y_col]) {
-      pos.top = item[mapJson.value?.y_col] + "%";
-    }
-  } else if (item?._col_map) {
-    const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
-    pos.label = item[col_label]
-    pos.left = item[col_x] + "%";
-    pos.top = item[col_y] + "%";
-    pos.width = (col_x_width || 30) + 'px';
-    pos.height = (col_y_width || 30) + 'px';
-    pos.icon = customized_icon
-    pos.value = item[col_no]
-  }
-
-  return pos;
-}
-
-/**
- * 标签样式计算属性
- * 当地图类型为标签时，格式化标签的样式配置
- *
- * @computed setLabelStyle
- * @returns {Object|undefined} 格式化后的样式对象
- */
-const setLabelStyle = computed(() => {
-  if (
-    mapJson.value?.map_type === "标签" &&
-    mapJson.value?.col_label_style_json
-  ) {
-    return formatStyleData(mapJson.value?.col_label_style_json);
-  }
-});
-
-/**
- * 标签激活状态样式计算属性
- * 当地图类型为标签时，格式化标签激活状态的样式配置
- *
- * @computed setLabelActiveStyle
- * @returns {Object|undefined} 格式化后的激活样式对象
- */
-const setLabelActiveStyle = computed(() => {
-  if (
-    mapJson.value?.map_type === "标签" &&
-    mapJson.value?.label_active_style_json
-  ) {
-    return formatStyleData(mapJson.value?.label_active_style_json);
-  }
-});
 
 /**
  * 统一的标记点点击处理函数
@@ -589,35 +512,153 @@ const setLabelActiveStyle = computed(() => {
  */
 function handleMarkerClick(marker, event) {
   console.log('点击标记点', marker, mapJson.value.onclick);
+  if (marker?._poi_info?.onclick) {
+    // 多标记物点击事件处理
+    switch (marker._poi_info.onclick) {
+      case '弹出卡片':
 
-  // 检查是否配置了建筑物视图切换条件
-  if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
+        break;
+      case '跳转':
+
+        break;
+
+      case '下钻':
+        drillDown(marker._poi_info, marker)
+        break;
+      case '设置变量':
+
+        break;
+    }
+    return
+  } else if (mapJson.value?.building_view_val && mapJson.value.building_view_col) {
+    // 检查是否配置了建筑物视图切换条件
     const val = marker[mapJson.value?.building_view_col]; // 获取标记点的建筑物视图字段值
     // 如果值匹配建筑物视图条件，切换到建筑物视图
     if (val && mapJson.value?.building_view_val?.includes(val)) {
       switchToBuildingView(marker);
       return; // 切换到建筑物视图后直接返回
     }
-  }
-
-  // 检查是否需要显示弹窗
-  const shouldShowPopover = marker && cardUnitJson.value && mapJson.value.onclick === '弹出卡片'; // 图标类型的条件
-
-  if (shouldShowPopover) {
-    // 如果点击的是当前激活的标记点，隐藏弹窗
-    if (marker?.id && marker?.id === activeMarker.value?.id) {
-      activeMarker.value = null;
-      activeMarkerElement.value = null;
-    } else {
-      activeMarker.value = marker; // 设置新的激活标记点
-
-      // 记录标记点元素引用
-      if (event && event.currentTarget) {
-        console.log('标记点元素:', event.currentTarget);
-        activeMarkerElement.value = event.currentTarget; // 保存元素引用
+  } else if (marker && cardUnitJson.value) {
+    // 检查是否需要显示弹窗
+    const shouldShowPopover = mapJson.value.onclick === '弹出卡片';
+    if (shouldShowPopover) {
+      // 如果点击的是当前激活的标记点，隐藏弹窗
+      if (marker?.id && marker?.id === activeMarker.value?.id) {
+        activeMarker.value = null;
+        activeMarkerElement.value = null;
+      } else {
+        activeMarker.value = marker; // 设置新的激活标记点
+        // 记录标记点元素引用
+        if (event && event.currentTarget) {
+          console.log('标记点元素:', event.currentTarget);
+          activeMarkerElement.value = event.currentTarget; // 保存元素引用
+        }
       }
     }
   }
+
+
+}
+
+async function getMapBaseImage(map_json, config, data = {}) {
+  if (map_json?.image_source_type === '接口请求') {
+    // 底图从接口请求查找
+    if (map_json.base_image_srv_req_json) {
+      if (config?.col_map?.col_no) {
+        data.noVal = data[config.col_map.col_no]
+      }
+      const baseImageData = await getMapBaseImageWithReq(map_json.base_image_srv_req_json, data)
+      if (map_json?.map_base_col) {
+        const baseImageNo = baseImageData[map_json.map_base_col]
+        baseIamgeByReq.value = baseImageNo
+      }
+    }
+  }
+}
+
+/**
+ * 地图下钻
+ * @param params 
+ */
+async function drillDown(config, data) {
+  const { drill_down } = config
+  if (drill_down['jump_map_json']) {
+    if (!mapUndoRedo.value.length) {
+      // 下钻前先保存原始地图配置
+      mapUndoRedo.value.push({
+        map_json: cloneDeep(mapJson.value),
+        markerList: cloneDeep(markerList.value),
+      })
+    }
+
+    handleMapJsonChange({
+      map_json: drill_down['jump_map_json']
+    })
+    getMapBaseImage(drill_down['jump_map_json'], config, data)
+    // 下钻后保存新地图配置
+    mapUndoRedo.value.push({
+      map_json: cloneDeep(drill_down['jump_map_json']),
+      data: data,
+      config: config,
+    })
+  }
+}
+const { renderStr } = useUtils()
+async function getMapBaseImageWithReq(reqJson, data) {
+  let req = {}
+  if (reqJson) {
+    req = { ...reqJson }
+    if (Array.isArray(reqJson?.condition) && reqJson.condition.length) {
+      req.condition = reqJson.condition.map(item => {
+        return {
+          ...item,
+          value: renderStr(item.value, data)
+        }
+      })
+    }
+    const url = `${req.mapp}/select/${req.serviceName}`
+    const res = await $http.post(url, req)
+    if (res.data.data?.length) {
+      const baseImageInfo = res.data.data[0]
+      return baseImageInfo
+    }
+  }
+}
+
+
+function getMarkerTitle(marker) {
+  if (marker?._col_map?.col_label) {
+    return marker[marker._col_map.col_label]
+  }
+}
+
+/**
+ * 重置地图状态
+ * 重置地图配置、标记点列表、激活标记点等状态
+ *
+ * @function resetMapState
+ */
+async function resetMapState() {
+  isCollapsed.value = false;
+  mapJson.value = null
+  markerList.value = []
+  activeMarker.value = null
+  activeMarkerElement.value = null
+
+  treeData.value = []
+  selectedTreeData.value = null
+  expandedNodes.value = {}
+
+  isBuildingView.value = false;
+  buildingInfo.value = null
+  buildingTree.value = []
+  floorInfo.value = null
+  expandedBuildingNodes.value = {}
+
+  imageLoading.value = false;
+  imageLoaded.value = true;
+  currentImageSrc.value = ""
+  baseIamgeByReq.value = ""
 }
 
 /**
@@ -666,6 +707,7 @@ function getTreeItemLabel(item) {
   return item?.area_name || item?.name || "";
 }
 
+
 /**
  * 监听选中树形数据的变化
  * 当选中项变化时，更新标记点列表
@@ -675,14 +717,21 @@ watch(
   (newVal) => {
     console.log(newVal);
     // 如果选中项有子节点且配置了坐标字段，过滤出有坐标的子项作为标记点
-    if (
-      newVal.children?.length &&
+    if (mapJson.value?.map_option?.includes('多来源标记物')) {
+
+    } else if (
+      newVal?.children?.length &&
       mapJson.value?.x_col &&
       mapJson.value?.y_col
     ) {
       markerList.value = newVal.children.filter(
         (item) => item[mapJson.value?.x_col] && item[mapJson.value?.y_col]
-      );
+      ).map(item => {
+        return {
+          ...item,
+          _type: '标签'
+        }
+      })
     }
   }
 );
@@ -842,10 +891,18 @@ const setTreeReq = computed(() => {
 });
 
 /**
- * 组件挂载生命周期钩子
- * 初始化地图
+ * 监听baseImage变化，触发平滑过渡
  */
-onMounted(() => {
+watch(
+  () => baseImage.value,
+  (newImageSrc) => {
+    handleImageTransition(newImageSrc);
+  },
+  { immediate: true }
+);
+
+
+function initComponents() {
   // 检查是否有树形数据配置
   if (setTreeReq.value) {
     initMapTreeData(); // 初始化树形数据
@@ -855,6 +912,14 @@ onMounted(() => {
       markerList.value = res;
     });
   }
+}
+
+/**
+ * 组件挂载生命周期钩子
+ * 初始化地图
+ */
+onMounted(() => {
+  initComponents();
 });
 
 </script>
@@ -881,7 +946,119 @@ onMounted(() => {
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
 
+  /* 图片加载状态样式 */
+  &.image-loading {
+    opacity: 0.7;
+    backdrop-filter: blur(20px);
+  }
+
+  &.image-loaded {
+    opacity: 1;
+  }
+
+  /* 图片切换时的过渡效果 */
+  &:not(.image-loaded) {
+    backdrop-filter: blur(20px);
+  }
+}
+
+/* 图片加载动画样式 */
+.image-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid transparent;
+  border-top: 3px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: absolute;
+}
+
+.spinner-ring:nth-child(1) {
+  width: 40px;
+  height: 40px;
+  animation-delay: 0s;
+}
+
+.spinner-ring:nth-child(2) {
+  width: 60px;
+  height: 60px;
+  border-top-color: #4a90e2;
+  animation-delay: -0.3s;
+  animation-duration: 1.5s;
+}
+
+.spinner-ring:nth-child(3) {
+  width: 80px;
+  height: 80px;
+  border-top-color: #87ceeb;
+  animation-delay: -0.6s;
+  animation-duration: 2s;
+}
+
+.loading-text {
+  margin-top: 120px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 动画关键帧 */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .building-view {
@@ -894,12 +1071,6 @@ onMounted(() => {
     height: 100%;
     overflow-y: auto;
     display: inline-block;
-
-    .tree-data-item {
-      .tree-data-item-name {
-        min-width: 100px;
-      }
-    }
   }
 
   .map-bg {
@@ -911,145 +1082,6 @@ onMounted(() => {
     z-index: 10;
     height: 100%;
     width: 100%;
-  }
-}
-
-.map-left {
-  z-index: 100;
-  max-height: 80%;
-  top: 15px;
-  left: var(--left, 15px);
-  display: flex;
-  position: absolute;
-  transition: left cubic-bezier(0.5, -0.5, 0.5, 1) 0.3s;
-
-  .map-tree-data {
-    position: relative;
-    width: 220px;
-    transform: scale(1);
-    transition: transform cubic-bezier(0.5, -0.5, 0.5, 1) 0.3s;
-  }
-
-  &.collapsed {
-    .map-tree-data {
-      transform: scale(0);
-    }
-
-    .collapsed-icon {
-      .icon {
-        rotate: 180deg;
-      }
-    }
-  }
-
-  .collapsed-icon {
-    position: absolute;
-    cursor: pointer;
-    text-align: center;
-    width: 50px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 24px;
-    right: 0;
-    transform: translateX(100%);
-
-    .icon {
-      transform: scale(0);
-      rotate: 0;
-    }
-
-    &:hover {
-      backdrop-filter: blur(1px);
-
-      .icon {
-        transform: scale(1);
-      }
-    }
-  }
-}
-
-.map-tree-data {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  z-index: 100;
-  background: #fff;
-  max-height: 80%;
-  overflow-y: auto;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #ccc #f5f5f5;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 3px;
-  }
-
-  .tree-data-item {
-    border-top: 1px solid #e5e5e5;
-
-    &:first-child {
-      border-top: none;
-    }
-
-    .tree-data-item-name {
-      border-bottom: 1px solid #e5e5e5;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      width: 100%;
-      padding: 0px 30px;
-      line-height: 46px;
-      min-width: 175px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      text-align: center;
-      cursor: pointer;
-
-      .tree-data-item-name-icon {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translate(0, -50%);
-        font-size: 16px;
-        transition: transform 0.3s ease;
-        cursor: pointer;
-
-        &.expanded {
-          transform: translate(0, -50%) rotate(90deg);
-        }
-      }
-
-      &.active {
-        background: linear-gradient(151.99deg,
-            rgba(0, 122, 255, 1) 29.59%,
-            rgba(4, 71, 171, 1) 294.82%);
-        color: #fff;
-      }
-    }
-
-    .tree-data-item-child {
-      .tree-data-item-child-item {
-        .tree-data-item-child-item-name {
-          border-left: 2px solid transparent;
-          width: 100%;
-          padding: 5px 30px;
-          line-height: 46px;
-          cursor: pointer;
-        }
-      }
-    }
   }
 }
 
@@ -1110,29 +1142,5 @@ onMounted(() => {
       width: 30px;
     }
   }
-}
-
-/* 移除旧的箭头样式 */
-:global(.popover-content-to-body .bottom-arrow) {
-  display: none;
-}
-
-.tree-expand-enter-active,
-.tree-expand-leave-active {
-  transition: all 0.3s ease;
-  max-height: 1000px;
-  overflow: hidden;
-}
-
-.tree-expand-enter-from,
-.tree-expand-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-
-.tree-expand-enter-to,
-.tree-expand-leave-from {
-  max-height: 1000px;
-  opacity: 1;
 }
 </style>

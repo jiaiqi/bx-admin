@@ -6,7 +6,7 @@
         active: selected && item.id && selected.id === item.id,
       }"
       :style="{ paddingLeft: `${(level + 1) * 20}px` }"
-      @click="onTap"
+      @click.stop="onTap(item)"
     >
       <i
         v-if="(item.children && item.children.length) || item.is_leaf !== '是'"
@@ -28,7 +28,7 @@
           :selected="selected"
           :level="level + 1"
           :set-children-func="setChildrenFunc"
-          @select="$emit('select', $event)"
+          @select="onTap"
         />
       </div>
     </transition>
@@ -77,11 +77,11 @@ function toggleExpand() {
 }
 
 const emit = defineEmits(["select"]);
-function onTap() {
+function onTap(data) {
   if (!expanded.value) {
     toggleExpand();
   }
-  emit("select", props.item);
+  emit("select", data || props.item);
 }
 </script>
 

@@ -22,7 +22,7 @@
         ref="elform"
         :inline="false"
         label-position="right"
-        label-width="10rem"
+        label-width="6rem"
         v-if="formLoaded"
       >
         <el-row v-for="(formItems, section) in sections" :key="section">
@@ -188,6 +188,7 @@ import Vue from "vue";
 import Loader from "./loader.vue";
 import CustButtonMinx from "../mixin/cust-button-minx";
 import agreementBox from "./agreement-box.vue";
+import collapseArrow from "../ui/collapse-arrow.vue";
 import cloneDeep from "lodash/cloneDeep";
 export default {
   name: "simple-add",
@@ -196,6 +197,7 @@ export default {
     "field-editor": FieldEditor,
     Action,
     agreementBox,
+    collapseArrow
   },
   mixins: [FormMixin, CustButtonMinx, FieldRedundantMixin, FormValidateMixin],
   props: {

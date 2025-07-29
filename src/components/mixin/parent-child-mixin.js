@@ -39,7 +39,7 @@ export default {
         return null;
       },
     },
-    isPlatChildForm:{
+    isPlatChildForm: {
       type: Boolean,
       default: false
     }
@@ -56,7 +56,7 @@ export default {
       let res = false;
       if (!this.childrenList?.length) {
         res = true;
-      }else{
+      } else {
         res = Object.keys(this.childDataLoadedMap)?.length === this.childrenList?.length;
       }
       console.log("allChildDataLoaded", res);
@@ -65,6 +65,10 @@ export default {
     selectServiceName() {
       let basicForm = this.$refs.basicForm;
       return basicForm ? basicForm.loaderService : null;
+    },
+
+    serviceViewName() {
+      return this.getBasicForm()?.formV2?.service_view_name
     },
 
     fields: function () {
@@ -250,12 +254,12 @@ export default {
 
                 try {
                   isShow = eval(showExpr);
-                } catch (e) {}
+                } catch (e) { }
               } else if (showExpr) {
                 try {
                   console.log("showChildList", eval(showExpr), showExpr);
                   isShow = eval(showExpr);
-                } catch (e) {}
+                } catch (e) { }
               }
 
               if (!isShow) {
@@ -271,7 +275,7 @@ export default {
       return (
         this.child_service &&
         this.child_service.filter((child) => this.showChildList(child)).length >
-          0
+        0
       );
     },
 
@@ -285,10 +289,10 @@ export default {
     },
 
     onSubmitted2mem: function (srvvalFormMode, fields) {
-      if(Object.keys(srvvalFormMode).length){
+      if (Object.keys(srvvalFormMode).length) {
         Object.keys(srvvalFormMode).forEach(key => {
-          if(fields[key]?.moreInfo){
-           this.$set(srvvalFormMode,`_${key}_disp`,fields[key]?.moreInfo)
+          if (fields[key]?.moreInfo) {
+            this.$set(srvvalFormMode, `_${key}_disp`, fields[key]?.moreInfo)
           }
         });
       }
@@ -317,7 +321,7 @@ export default {
       return self
         .loadColsV2(self.selectServiceName, "detail", null, this.service)
         .then((response) => {
-          if(!response || !response.data || !response.data.data){
+          if (!response || !response.data || !response.data.data) {
             return
           }
           let childrenServices = response.data.data["child_service"];
@@ -392,7 +396,7 @@ export default {
 
     onChildListLoaded(_cList) {
       let childList = _cList
-      if(_cList?.$refs?.list?.$refs?.list){
+      if (_cList?.$refs?.list?.$refs?.list) {
         childList = _cList?.$refs?.list
       }
       let basicForm = this.getBasicForm();
@@ -454,7 +458,7 @@ export default {
             });
           });
           return
-          
+
         }
       }
       // let executor = basicForm.$refs.submit[0].$refs.executor;
@@ -508,7 +512,7 @@ export default {
 
     onChildInlineListLoaded(inlineList, _cList) {
       let childList = _cList
-      if(_cList?.$refs?.list?.$refs?.list){
+      if (_cList?.$refs?.list?.$refs?.list) {
         childList = _cList?.$refs?.list
       }
       let basicForm = this.getBasicForm();
@@ -552,7 +556,7 @@ export default {
      */
     showChildList: function (_cList, mainFromData) {
       let childList = _cList
-      if(_cList?.$refs?.list?.$refs?.list){
+      if (_cList?.$refs?.list?.$refs?.list) {
         childList = _cList?.$refs?.list
       }
       let self = this;
@@ -566,7 +570,7 @@ export default {
           if (json && evalJson(json, data) === false) {
             return false;
           }
-        } catch (error) {}
+        } catch (error) { }
       }
       if (fk && expr) {
         if (isString(expr)) {
@@ -585,12 +589,12 @@ export default {
 
               try {
                 return eval(showExpr);
-              } catch (e) {}
+              } catch (e) { }
             } else if (showExpr) {
               try {
                 console.log("showChildList", eval(showExpr), showExpr);
                 return eval(showExpr);
-              } catch (e) {}
+              } catch (e) { }
             } else {
               return true;
             }
@@ -600,9 +604,9 @@ export default {
     },
   },
   watch: {
-    allChildDataLoaded:{
+    allChildDataLoaded: {
       immediate: true,
-      handler: function(value){
+      handler: function (value) {
         // if(value === false){
         //   const loading = this.$loading({
         //     lock: true,

@@ -407,7 +407,8 @@
                   "
                 style="max-height: 10vh; overflow: hidden"
                 @dblclick="openHtml(formatValue(scope.row, item))"
-              ></div>
+              >
+              </div>
               <!-- Enum | Dict 根据配置显示图标 -->
               <div v-else-if="
                 (item.col_type === 'Enum' || item.col_type === 'Dict') &&
@@ -737,7 +738,7 @@
     </div>
     <el-dialog
       class="customDialogClass"
-      title="添加"
+      :title="getActiveFormName || '添加'"
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
@@ -745,14 +746,6 @@
       :visible="activeForm == 'add'"
       @close="closeDialog"
     >
-      <!-- <template #title>
-      <div class="flex justify-between pr-5">
-        <div>添加</div>
-        <div>
-
-        </div>
-      </div>
-     </template> -->
       <add
         name="list-add"
         :mainService="mainService"
@@ -781,7 +774,7 @@
       <!-- :defaultValues="listMainFormDatas" -->
     </el-dialog>
     <el-dialog
-      title="添加下级节点"
+      :title="getActiveFormName || '添加下级节点'"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'add-child'"
@@ -811,7 +804,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="复制"
+      :title="getActiveFormName || '复制'"
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
@@ -841,7 +834,7 @@
 
     <el-dialog
       class="customDialogClass"
-      title="深度复制"
+      :title="getActiveFormName || '深度复制'"
       width="90%"
       :close-on-click-modal="1 == 2"
       append-to-body
@@ -875,7 +868,7 @@
 
     <el-dialog
       class="customDialogClass"
-      title="编辑"
+      :title="getActiveFormName || '编辑'"
       width="90%"
       :visible="activeForm == 'update'"
       :close-on-click-modal="1 == 2"
@@ -919,7 +912,7 @@
 
     <el-dialog
       class="customDialogClass"
-      title="导入"
+      :title="getActiveFormName || '导入'"
       width="90%"
       :visible="activeForm == 'import'"
       append-to-body
@@ -928,6 +921,7 @@
       <import-dialog
         :service="addService"
         :sign-service-name="addService"
+        ref="import-form"
         v-if="activeForm == 'import'"
         :button="actionGridButton"
         @close="onImportDialogClosed"
@@ -936,7 +930,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="自定义导入"
+      :title="getActiveFormName || '自定义导入'"
       width="90%"
       :visible="activeForm == 'customizeImport'"
       append-to-body
@@ -946,6 +940,7 @@
         :service="importService"
         :sign-service-name="addService"
         :importPageType="'customize'"
+        ref="customizeImport-form"
         v-if="activeForm == 'customizeImport'"
         :button="actionGridButton"
         @close="onImportDialogClosed"
@@ -954,7 +949,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="导出"
+      :title="getActiveFormName || '导出'"
       width="90%"
       :visible="activeForm == 'export'"
       append-to-body
@@ -963,12 +958,14 @@
       <exportLayout
         :columns="gridHeader"
         :type="'exprot'"
+        ref="export-form"
         @on-export-clicked="onExportClicked($event)"
-      ></exportLayout>
+      >
+      </exportLayout>
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="管理子表"
+      :title="getActiveFormName || '管理子表'"
       width="90%"
       :visible="activeForm == 'manageChildList'"
       append-to-body
@@ -994,13 +991,14 @@
     <el-dialog
       class="customDialogClass"
       ref="batchApprove"
-      title="审批"
+      :title="getActiveFormName || '审批'"
       width="90%"
       :visible="activeForm == 'batchApprove'"
       append-to-body
       @close="closeDialog"
     >
       <batchApprove
+        ref="batchApprove-form"
         @action-success="actionSuccess()"
         :approvaList="approvaList"
         :approvalOptions="approvalOptions"
@@ -1125,7 +1123,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="二级密码验证"
+      :title="getActiveFormName || '二级密码验证'"
       :show-close="false"
       width="40%"
       :close-on-click-modal="1 == 2"
@@ -1135,13 +1133,14 @@
     >
       <srvAuthLogin
         :serviceName="service"
+        ref="srvAuthLogin-form"
         @srv-auth-success="srvAuthSuccess"
       ></srvAuthLogin>
     </el-dialog>
     <!-- PC支付-->
     <el-dialog
       class="customDialogClass"
-      title="订单支付"
+      :title="getActiveFormName || '订单支付'"
       :visible="activeForm === 'pay'"
       @close="closeDialog"
       width="50%"
@@ -1153,6 +1152,7 @@
         :buttonInfo="buttonInfo"
         :orders="multipleSelection"
         @close-dialog="closeDialog"
+        ref="pay-form"
         v-if="activeForm === 'pay' && buttonInfo"
       ></payment-popup>
     </el-dialog>
@@ -1984,12 +1984,21 @@ export default {
   .el-button+.el-dropdown {
     margin-left: 0;
   }
+  .el-dropdown>.el-button {
+    width: 100%;
+  }
 
   .cell {
     padding: 8px 6px;
-    display: grid!important;
-    grid-template-columns: repeat(auto-fill,minmax(70px,1fr));
+    display: flex !important;
+    flex-wrap: wrap;
+
+    // display: grid !important;
+    // grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 4px;
+    .el-button {
+      min-width: 80px;
+    }
   }
 
   .el-button--mini,
