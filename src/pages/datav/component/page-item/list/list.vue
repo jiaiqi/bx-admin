@@ -31,7 +31,10 @@
       >
         {{ pageItem.com_label }}
       </div>
-      <div class="statistic-box" v-if="stasticData.length">
+      <div
+        class="statistic-box"
+        v-if="stasticData.length"
+      >
         <div
           class="statistic-item"
           v-for="(item, index) in stasticData"
@@ -40,18 +43,18 @@
           <div class="label">{{ item.label }}</div>
           <div class="value">
             {{ item.value || "0" }}
-            <span
-              v-if="
-                v2Data &&
-                v2Data.cfgJson &&
-                v2Data.cfgJson.statistics_card_col_unit
-              "
-              >{{ v2Data.cfgJson.statistics_card_col_unit }}</span
-            >
+            <span v-if="
+              v2Data &&
+              v2Data.cfgJson &&
+              v2Data.cfgJson.statistics_card_col_unit
+            ">{{ v2Data.cfgJson.statistics_card_col_unit }}</span>
           </div>
         </div>
       </div>
-      <div class="handler-bar" v-if="showSearchBar">
+      <div
+        class="handler-bar"
+        v-if="showSearchBar"
+      >
         <div></div>
         <div class="flex items-center">
           <el-input
@@ -66,8 +69,7 @@
             class="search-btn"
             @click="onSearch"
             size="mini"
-            >搜索</el-button
-          >
+          >搜索</el-button>
           <el-button
             type="primary"
             class="search-btn"
@@ -75,8 +77,7 @@
             plain
             size="mini"
             @click="showAddDialog = true"
-            >{{ addBtn.button_name }}</el-button
-          >
+          >{{ addBtn.button_name }}</el-button>
         </div>
       </div>
       <div class="list-view">
@@ -169,10 +170,7 @@
             </div>
             <div
               class="table-column row-button-box"
-              :style="{
-                color: setStyle && setStyle.color,
-                'font-size': setStyle && setStyle['font-size'],
-              }"
+              :style="rowButtonBoxStyle"
               v-if="showRowButtons"
             >
               操作
@@ -212,21 +210,28 @@
                     {{ formatValue(item, col) }}
                   </span>
                 </div>
-                <div class="table-column row-button-box" v-if="showRowButtons">
+                <div
+                  class="table-column row-button-box"
+                  :style="rowButtonBoxStyle"
+                  v-if="showRowButtons"
+                >
                   <el-button
-                    type="primary"
+                    type="text"
                     size="mini"
                     v-for="btn in setRowButtons"
+                    :key="btn.button_type"
                     @click="onRowButtonClick(btn, item)"
-                    >{{ btn.button_name }}</el-button
-                  >
+                  >{{ btn.button_name }}</el-button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="pagination-box" v-if="showPagination">
+      <div
+        class="pagination-box"
+        v-if="showPagination"
+      >
         <el-pagination
           background
           class="el-pagination"
@@ -360,7 +365,7 @@ export default {
     showRowButtons() {
       let show = false;
       if (
-        this.listConfig?.list_options?.includes("单元按钮") &&
+        (this.listConfig?.list_options?.includes("单元按钮") || this.listConfig?.list_options?.includes("表格按钮")) &&
         this.setRowButtons.length > 0
       ) {
         show = true;
@@ -375,7 +380,7 @@ export default {
     },
     setRowButtons() {
       let buttons = this.listV2RowButtons || [];
-      const ignoreBtns = ["duplicate", "delete", "edit", "detail"];
+      const ignoreBtns = ["duplicate", "delete", "edit"];
       return buttons.filter(
         (item) => item.permission && !ignoreBtns.includes(item.button_type)
       );
@@ -560,8 +565,59 @@ export default {
           null,
       };
     },
+    // 动态计算操作列宽度
+    rowButtonBoxWidth() {
+      if (!this.showRowButtons || !this.setRowButtons.length) {
+        return '0px';
+      }
+
+      // 基础按钮宽度（包含padding、margin等）
+      const baseButtonWidth = 60; // mini按钮基础宽度
+      const buttonMargin = 8; // 按钮间距
+      const containerPadding = 16; // 容器内边距
+      const buttonPadding = 10; // 按钮内边距
+
+      // 计算所有按钮文字的总长度
+      let totalTextWidth = 0;
+      this.setRowButtons.forEach(btn => {
+        const textWidth = this.measureTextWidth(btn.button_name || '', '12px');
+        const buttonWidth = textWidth + buttonPadding;
+        totalTextWidth += buttonWidth
+      });
+
+      // 计算总宽度：按钮数量 * 基础宽度 + 文字宽度 + 间距
+      const totalWidth =
+        this.setRowButtons.length * baseButtonWidth +
+        totalTextWidth +
+        (this.setRowButtons.length - 1) * buttonMargin +
+        containerPadding;
+
+      // 设置最小和最大宽度限制
+      const minWidth = 80;
+      const maxWidth = 200;
+
+      return Math.min(Math.max(totalWidth, minWidth), maxWidth) + 'px';
+    },
+
+    // 操作列样式
+    rowButtonBoxStyle() {
+      return {
+        width: this.rowButtonBoxWidth,
+        minWidth: this.rowButtonBoxWidth,
+        maxWidth: this.rowButtonBoxWidth,
+        color: this.setStyle && this.setStyle.color,
+        'font-size': this.setStyle && this.setStyle['font-size'],
+      };
+    },
   },
   methods: {
+    // 精确测量文字宽度
+    measureTextWidth(text, fontSize = '12px', fontFamily = 'Arial') {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = `${fontSize} ${fontFamily}`;
+      return context.measureText(text).width;
+    },
     onSelect(item) {
       console.log("onSelect", item);
       if (
@@ -721,7 +777,7 @@ export default {
         if (res.data.data?.cfg_json) {
           try {
             res.data.data.cfgJson = JSON.parse(res.data.data.cfg_json);
-          } catch (error) {}
+          } catch (error) { }
         }
         this.v2Data = res.data.data;
       }
@@ -772,7 +828,19 @@ export default {
     },
     onRowButtonClick(e, data) {
       console.log(e, data);
-      if (e?.operate_mode === "跳转") {
+      if (e?.button_type === 'detail') {
+        if (e.service_name && data?.id) {
+          let address = `/vpages/#/detail/${e.service_name}/${data.id}`
+          if (e.application) {
+            address += `?srvApp=${e.application}`
+          }
+          let title = `${e.service_view_name}[${data.id}]`
+          if (this.v2Data?.key_disp_col && data[this.v2Data?.key_disp_col]) {
+            title = `${data[this.v2Data?.key_disp_col]}(${e.service_view_name})`
+          }
+          this.addTabByUrl(address, title)
+        }
+      } else if (e?.operate_mode === "跳转") {
         if (e.operate_type === "URL跳转") {
           const result = this.pre_data_handle(e, [data]);
           if (result) {
@@ -1100,9 +1168,11 @@ export default {
   display: flex;
   overflow: hidden;
   flex: 1;
+
   .map-card-container {
     width: 70%;
   }
+
   .list-container {
     flex: 1;
     display: flex;
@@ -1113,6 +1183,7 @@ export default {
       padding: 10px 20px;
       font-weight: bold;
     }
+
     .list-view {
       flex: 1;
       overflow-y: auto;
@@ -1123,6 +1194,7 @@ export default {
         width: 6px;
         height: 6px;
       }
+
       &::-webkit-scrollbar-thumb {
         background-color: rgba(0, 0, 0, 0.1);
         border-radius: 4px;
@@ -1130,6 +1202,7 @@ export default {
     }
   }
 }
+
 .more-btn {
   position: absolute;
   top: 15px;
@@ -1137,6 +1210,7 @@ export default {
   margin: 0 15px;
   cursor: pointer;
   color: inherit;
+
   // transition: scale 0.3s ease-in-out;
   &:hover {
     scale: 1.05;
@@ -1144,23 +1218,29 @@ export default {
     // border-bottom: 1px dashed currentColor;
   }
 }
+
 .handler-bar {
   display: flex;
   justify-content: space-between;
+
   .search-input {
     min-width: 300px;
   }
+
   .search-btn {
     min-width: 80px;
   }
 }
+
 .bx-table {
   // overflow: hidden;
   color: var(--cell_color, #fff);
+
   .table-head,
   .table-row {
     display: flex;
     background-color: var(--cell_bg);
+
     &.stripe {
       background-color: var(--cell_bg2, rgba($color: #fff, $alpha: 0.1));
       color: var(--cell_color2);
@@ -1175,6 +1255,7 @@ export default {
       cursor: pointer;
       display: flex;
       align-items: center;
+
       .td-img {
         width: 100%;
         height: 100%;
@@ -1183,14 +1264,17 @@ export default {
         width: 120px;
         border-radius: 8px;
       }
+
       &.row-button-box {
         flex: 1.5;
+
         .el-button {
-          min-width: 80px;
+          min-width: 50px;
         }
       }
     }
   }
+
   .table-head {
     background-color: var(--tbl_head_bg, rgba($color: #999, $alpha: 0.2));
   }
@@ -1225,12 +1309,15 @@ export default {
     }
   }
 }
+
 .bx-card-list {
   .swiper-container {
     position: relative;
+
     ::v-deep .el-carousel__indicators.el-carousel__indicators--horizontal {
       bottom: 20px;
     }
+
     .swiper-title {
       position: absolute;
       bottom: 0;
@@ -1252,6 +1339,7 @@ export default {
 .pagination-box {
   text-align: center;
   padding: 10px;
+
   :deep(.el-pagination) {
     &.is-background {
       .el-pager li:not(.disabled).active {
@@ -1266,6 +1354,7 @@ export default {
   .table-body-wrap {
     overflow: hidden;
   }
+
   .table-body {
     position: relative;
     // 启用硬件加速

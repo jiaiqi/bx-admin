@@ -1620,7 +1620,7 @@ export default {
       const buttons = this.sortedRowButtons;
       const padding = 16; // 按钮内边距
       const margin = 8; // 按钮间距
-      const minButtonWidth = 60; // 最小按钮宽度
+      const minButtonWidth = 80; // 最小按钮宽度
 
       buttons.forEach(button => {
         if (button.button_type === '_btn_group' && button?.buttons?.length) {

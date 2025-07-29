@@ -1265,7 +1265,7 @@ export default {
       let totalWidth = 0;
       const buttonPadding = 10; // 按钮内边距
       const buttonMargin = 8; // 按钮间距
-      const minButtonWidth = 60; // 最小按钮宽度
+      const minButtonWidth = 80; // 最小按钮宽度
 
       this.sortedRowButtons.forEach(button => {
         if (button.button_type === '_btn_group' && button?.buttons?.length) {
