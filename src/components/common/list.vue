@@ -287,10 +287,10 @@
           >
             <template slot-scope="scope">
               <file-list
-                  v-if="['FileList', 'Image'].includes(item.col_type)"
-                  :data="scope.row"
-                  :field="item"
-                ></file-list>
+                v-if="['FileList', 'Image'].includes(item.col_type)"
+                :data="scope.row"
+                :field="item"
+              ></file-list>
               <template v-else-if="item._obj_info">
                 <file-list
                   v-if="['FileList', 'Image'].includes(item.col_type)"
@@ -1260,15 +1260,15 @@ export default {
       if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
         return 280; // 默认宽度
       }
-      
+
       // 计算按钮总宽度
       let totalWidth = 0;
       const buttonPadding = 10; // 按钮内边距
       const buttonMargin = 8; // 按钮间距
       const minButtonWidth = 60; // 最小按钮宽度
-      
+
       this.sortedRowButtons.forEach(button => {
-        if (button.button_type === '_btn_group') {
+        if (button.button_type === '_btn_group' && button?.buttons?.length) {
           // 下拉按钮组，固定宽度
           totalWidth += 100 + buttonMargin;
         } else {
@@ -1279,10 +1279,10 @@ export default {
           totalWidth += buttonWidth + buttonMargin;
         }
       });
-      
+
       // 添加列的内边距
       totalWidth += 20;
-      
+
       // 限制最大宽度为300px，最小宽度为120px
       return Math.min(Math.max(totalWidth, 120), 300);
     },
@@ -1519,13 +1519,13 @@ export default {
      */
     getTextWidth(text) {
       if (!text) return 0;
-      
+
       // 创建临时元素来测量文本宽度
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       context.font = '14px Arial'; // 使用默认字体大小
       const width = context.measureText(text).width;
-      
+
       return Math.ceil(width);
     },
     changeListStyle(type = "list") {
@@ -2002,6 +2002,7 @@ export default {
   .el-button+.el-dropdown {
     margin-left: 0;
   }
+
   .el-dropdown>.el-button {
     width: 100%;
   }
@@ -2014,6 +2015,7 @@ export default {
     // display: grid !important;
     // grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 4px;
+
     .el-button {
       min-width: 80px;
     }

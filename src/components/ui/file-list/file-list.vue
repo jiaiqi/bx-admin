@@ -8,27 +8,6 @@
     :title="field.label"
     class="attachment"
   >
-
-    <!-- <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="32"
-      height="32"
-      viewBox="0 0 24 24"
-      class="attachment-icon"
-    >
-      <g
-        fill="currentColor"
-        fill-rule="evenodd"
-        clip-rule="evenodd"
-      >
-        <path
-          d="M5 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7.414A2 2 0 0 0 20.414 6L18 3.586A2 2 0 0 0 16.586 3zm3 11a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6H8zm1-7V5h6v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1"
-        />
-        <path d="M14 17h-4v-2h4z" />
-      </g>
-    </svg> -->
-
-
     <el-popover
       trigger="click"
       ref="show_popover"
@@ -292,9 +271,12 @@ export default {
   &-icon {
     cursor: pointer;
     color: var(--primary-color, #409eff);
-
+    transition: all 0.1s ease;
     &:hover {
-      font-weight: bold;
+      transform: scale(1.01);
+    }
+    &:active{
+      transform: scale(0.95);
     }
   }
 }

@@ -31,8 +31,8 @@
         <template v-for="(item, index) in gridButton">
           <el-button
             :size="item._moreConfig && item._moreConfig.size
-                ? item._moreConfig.size
-                : ''
+              ? item._moreConfig.size
+              : ''
               "
             :type="!item.button_cls ? 'primary' : item.button_cls"
             :key="index"
@@ -364,8 +364,8 @@
         :defaultValues="activeData"
         duplicateType="duplicate"
         :duplicateData="clickedRow && clickedRow.duplicatedeep
-            ? clickedRow.duplicatedeep
-            : null
+          ? clickedRow.duplicatedeep
+          : null
           "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
@@ -465,7 +465,6 @@
     <el-dialog
       :title="getActiveFormName || '导入'"
       class="customDialogClass"
-
       width="90%"
       :visible="activeForm == 'import'"
       append-to-body
@@ -626,7 +625,7 @@ export default {
       context.font = font;
       return context.measureText(text).width;
     },
-    
+
     openHtml(val) {
       const h = this.$createElement;
       this.$msgbox({
@@ -1610,7 +1609,7 @@ export default {
       );
       return h * ratio;
     },
-    
+
     // 动态计算操作列宽度，最大300px
     operationColumnWidth() {
       if (!this.sortedRowButtons || !this.sortedRowButtons.buttons) {
@@ -1624,7 +1623,7 @@ export default {
       const minButtonWidth = 60; // 最小按钮宽度
 
       buttons.forEach(button => {
-        if (button.type === 'dropdown') {
+        if (button.button_type === '_btn_group' && button?.buttons?.length) {
           // 下拉按钮组固定宽度
           totalWidth += 100;
         } else {
@@ -1683,10 +1682,7 @@ export default {
 };
 </script>
 
-<style
-  scoped
-  lang="scss"
->
+<style scoped lang="scss">
 // .tree-grid >>> .el-table__empty-block {
 //   width: 100% !important;
 // }
