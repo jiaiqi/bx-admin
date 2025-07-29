@@ -286,7 +286,12 @@
             :cell-style="cellStyle"
           >
             <template slot-scope="scope">
-              <template v-if="item._obj_info">
+              <file-list
+                  v-if="['FileList', 'Image'].includes(item.col_type)"
+                  :data="scope.row"
+                  :field="item"
+                ></file-list>
+              <template v-else-if="item._obj_info">
                 <file-list
                   v-if="['FileList', 'Image'].includes(item.col_type)"
                   :data="scope.row"
@@ -1231,6 +1236,7 @@ export default {
     childForeignkey: Object,
     defaultCondition: Array,
     routeMeta: Object,
+    customListType: String,
   },
   watch: {
     gridDataRun: {

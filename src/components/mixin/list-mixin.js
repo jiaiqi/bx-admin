@@ -414,6 +414,10 @@ export default {
       );
     },
     excelBtn() {
+      if(this.customListType == 'popup'){
+        // 列表在弹窗中不显示excel按钮
+        return false
+      }
       const attr = JSON.parse(
         sessionStorage.getItem("pages_attribute") || "{}"
       );
