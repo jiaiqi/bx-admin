@@ -155,6 +155,7 @@
       :map-json="mapJson"
       :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
+      :map-data="currrentMapData"
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
 
@@ -247,6 +248,16 @@ const finallyMapUndoRedo = computed(() => {
     result = [...mapUndoRedo.value]
   }
   return result
+})
+const currentMapInfo = computed(() => {
+  if (Array.isArray(finallyMapUndoRedo.value) && finallyMapUndoRedo.value.length) {
+    return finallyMapUndoRedo.value[finallyMapUndoRedo.value.length - 1]
+  }
+})
+const currrentMapData = computed(() => {
+  if (currentMapInfo.value && currentMapInfo.value.data) {
+    return currentMapInfo.value.data
+  }
 })
 
 /**

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { MessageBox } from 'element-ui'
 import { $http } from '@/common/http'
 
@@ -16,7 +16,11 @@ const props = defineProps({
   sourceJson: {
     type: Array,
     default: () => [],
-  }
+  },
+  mapData: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 // 事件定义
@@ -42,7 +46,14 @@ const sourceJson = computed(() => {
  * @param {Object} params.col_map - 列映射配置
  */
 async function getMarkers(params = {}) {
-  const { srv_req_json: p, poi_name, poi_type, col_map } = params
+  let { srv_req_json: p, poi_name, poi_type, col_map } = params
+  if (params.srv_req_info) {
+    // 配置变动,srv_req_json改为从srv_req_info中获取
+    p = params.srv_req_info.srv_req_json
+  } else {
+    return
+  }
+
 
   // 参数验证
   if (!p || !p.mapp || !p.serviceName) {
@@ -50,6 +61,22 @@ async function getMarkers(params = {}) {
     return
   }
 
+  const reqInfo = params.srv_req_info
+  const { map_filter_poi_col, map_filter_poi_rule, poi_refer_map_filter_col } = reqInfo;
+ 
+  if (map_filter_poi_col && map_filter_poi_rule && poi_refer_map_filter_col && props.mapData[poi_refer_map_filter_col]) {
+    const obj = {
+      colName: map_filter_poi_col,
+      value: props.mapData[poi_refer_map_filter_col],
+      ruleType: map_filter_poi_rule === '等于' ? 'eq' : 'like]'
+    }
+    if (p.condition) {
+      p.condition.push(obj)
+    } else {
+      p.condition = [obj]
+    }
+  }
+  
   try {
     const url = `/${p.mapp}/select/${p.serviceName}`
     const res = await $http.post(url, p)
@@ -119,7 +146,6 @@ async function fetchAllMarkers() {
 watch(
   () => sourceJson.value,
   async (newVal, oldVal) => {
-    // 深度比较，避免不必要的重新请求
     if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
       await nextTick()
       await fetchAllMarkers()
