@@ -71,9 +71,9 @@ async function getMarkers(params = {}) {
 
   if (filterCol && ruleType && dataCol && props.mapData[dataCol]) {
     const obj = {
-      colName: map_filter_poi_col,
-      value: props.mapData[poi_refer_map_filter_col],
-      ruleType: map_filter_poi_rule === '等于' ? 'eq' : 'like]'
+      colName: filterCol,
+      value: props.mapData[dataCol],
+      ruleType: ruleType === '等于' ? 'eq' : 'like]'
     }
     if (p.condition) {
       p.condition.push(obj)
@@ -150,11 +150,11 @@ async function fetchAllMarkers() {
         console.error(`数据源 ${i} 请求失败：`, err)
       }
     }
-    
+
     if (failedCount > 0) {
       console.warn(`${failedCount} 个数据源请求失败，${successCount} 个成功`)
     }
-    
+
   } catch (err) {
     console.error('批量获取标记点数据失败：', err)
   } finally {
