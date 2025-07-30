@@ -155,6 +155,7 @@
       :pageItem="pageItemData"
       :page-params-model="pageParamsModel"
       :query-options="queryOptions"
+      :in-edit="inEdit"
     ></map-card>
     <page-item-chart
       :class="{ mobile: screenType === 'mobile' }"

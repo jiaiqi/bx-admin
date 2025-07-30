@@ -187,7 +187,12 @@ const props = defineProps({
   ignoreScaleClasses: {
     type: [String, Array],
     default: () => []
+  },
+  inEdit: { // 是否处于编辑状态
+    type: Boolean,
+    default: false,
   }
+
 });
 
 // 配置常量
@@ -435,13 +440,13 @@ onMounted(() => {
   // 初始化关闭次数
   closeCount.value = getCloseCount();
 
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('keyup', handleKeyUp);
+  // window.addEventListener('keydown', handleKeyDown);
+  // window.addEventListener('keyup', handleKeyUp);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
-  window.removeEventListener('keyup', handleKeyUp);
+  // window.removeEventListener('keydown', handleKeyDown);
+  // window.removeEventListener('keyup', handleKeyUp);
   if (tipsTimer) clearTimeout(tipsTimer);
   if (countdownTimer) clearInterval(countdownTimer);
 });
@@ -458,7 +463,7 @@ onUnmounted(() => {
   scrollbar-width: none;
 
   // 可视化编辑器画布背景 - 点状网格
-  background-color: #f8f9fa;
+  background-color: transparent;
   background-image: radial-gradient(circle at center,
       rgba(0, 0, 0, 0.15) 1px,
       transparent 1px);
@@ -501,8 +506,8 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   transition: transform 0.2s ease-out;
-  background-color: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  // background-color: rgba(0, 0, 0, 0.1);
+  // backdrop-filter: blur(2px);
   position: relative;
 
   // 拖拽时禁用过渡动画以提升性能

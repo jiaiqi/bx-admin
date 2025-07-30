@@ -1011,6 +1011,8 @@ export default {
     // 键盘事件处理
     handleKeyDown(e) {
       if (e.code === "Space") {
+        console.log(e,':onSpace');
+        
         if (!this.isSpacePressed) {
           this.isSpacePressed = true;
         }

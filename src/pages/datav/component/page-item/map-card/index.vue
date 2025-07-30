@@ -4,6 +4,7 @@
     v-if="mapBaseSupplier === '自定义底图'"
     :page-item="pageItem"
     :tree-req="treeReq"
+    :in-edit="inEdit"
     @select="handleMapSelect"
   />
 
@@ -13,6 +14,7 @@
     :map-json="mapJson"
     :com-no="pageItem.com_no"
     :page-item="pageItem"
+    :in-edit="inEdit"
     @select="handleMapSelect"
   />
 </template>
@@ -61,6 +63,10 @@ const props = defineProps({
   treeReq: {
     type: Object,
   },
+  inEdit: { //处于可视化编辑状态
+    type: Boolean,
+    default: false,
+  }
 });
 
 /**
@@ -92,5 +98,4 @@ const handleMapSelect = (item) => {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

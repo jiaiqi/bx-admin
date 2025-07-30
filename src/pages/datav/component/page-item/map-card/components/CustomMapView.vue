@@ -65,6 +65,7 @@
     <!-- 自定义底图-地图视图区域 -->
     <zoom-drag-container
       :show-tips="true"
+      :in-edit="inEdit"
       :ignore-scale-classes="'map-marker'"
     >
       <div
@@ -223,6 +224,7 @@ import { useMarkers } from "../composables/useMarkers";
 const props = defineProps({
   pageItem: Object, // 页面项配置
   treeReq: Object, // 树形数据请求配置
+  inEdit: Boolean, // 是否处于编辑状态
 });
 
 const emit = defineEmits(["select"]);
@@ -1097,8 +1099,8 @@ onMounted(() => {
 }
 
 .custom-map {
-  background-color: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  // background-color: rgba(0, 0, 0, 0.1);
+  // backdrop-filter: blur(10px);
   position: relative;
   width: 100%;
   height: 100%;
