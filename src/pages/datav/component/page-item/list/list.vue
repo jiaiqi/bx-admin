@@ -1,11 +1,5 @@
 <template>
   <div class="data-view-list">
-    <!-- <div class="more-btn">
-      <span v-if="showMoreBtn" @click="toMore">
-        更多
-        <i class="el-icon-arrow-right"></i>
-      </span>
-    </div> -->
     <div
       class="map-card-container"
       v-if="listOptions && listOptions.includes('关联地图筛选')"
@@ -1255,6 +1249,12 @@ export default {
       cursor: pointer;
       display: flex;
       align-items: center;
+
+      span {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
 
       .td-img {
         width: 100%;
