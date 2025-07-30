@@ -78,6 +78,7 @@
         }"
         :style="{
           backgroundImage: `url(${currentImageSrc})`,
+          backgroundSize: backgroundSize,
         }"
       >
         <!-- 图片加载动画 -->
@@ -321,6 +322,10 @@ const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
 const imageLoading = ref(false); // 图片是否正在加载
 const imageLoaded = ref(true); // 图片是否已加载完成
 const currentImageSrc = ref(''); // 当前显示的图片路径
+
+const backgroundSize = computed(() => {
+  return mapJson.value?.base_image_fill_method || 'auto'
+})
 
 /**
  * 递归查找具有底图的父级节点
