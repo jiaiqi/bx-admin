@@ -2,51 +2,16 @@
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
   <div class="map-view-container">
     <!-- 建筑物视图的树形数据 -->
-    <div
-      class="building-tree-data map-tree-data"
-      v-if="isBuildingView && buildingTree && buildingTree.length"
-    >
-      <div
-        class="tree-data-item"
-        v-for="item in buildingTree"
-        :key="item.id"
-      >
-        <div
-          class="tree-data-item-name"
-          :class="{
-            active:
-              (floorInfo && item.id && floorInfo.id === item.id) ||
-              (floorInfo.path && floorInfo.path.startsWith(item.path)),
-          }"
-          @click="tapBuildingTreeData(item)"
-        >
-          <i
-            class="tree-data-item-name-icon el-icon-caret-right"
-            :class="{ expanded: expandedBuildingNodes[item.id] }"
-            @click.stop="toggleExpand(item)"
-            v-if="item.children && item.children.length"
-          ></i>
-          <span class="tree-data-item-name-text">
-            {{ getTreeItemLabel(item) }}
-          </span>
-        </div>
-        <transition name="tree-expand">
-          <div
-            class="tree-data-item-child"
-            v-show="expandedBuildingNodes[item.id]"
-          >
-            <tree-data-item
-              v-for="child in item.children"
-              :key="child.id"
-              :item="child"
-              :selected="floorInfo"
-              :level="1"
-              @select="tapBuildingTreeData"
-            />
-          </div>
-        </transition>
-      </div>
-    </div>
+    <BuildingTreeData
+      :is-building-view="isBuildingView"
+      :building-tree="buildingTree"
+      :floor-info="floorInfo"
+      :expanded-building-nodes="expandedBuildingNodes"
+      :map-json="mapJson"
+      :get-tree-item-label="getTreeItemLabel"
+      @tree-data-click="tapBuildingTreeData"
+      @toggle-expand="toggleExpand"
+    />
 
     <!-- 普通视图的侧边栏树形数据 -->
     <MapTreeSidebar
@@ -93,7 +58,6 @@
       :breadcrumb-items="finallyMapUndoRedo"
       @breadcrumb-click="handleMapJsonChange"
     />
-
 
     <!-- 使用多来源标记物配置加载标记物数据 -->
     <multi-source-markers
@@ -158,6 +122,7 @@ import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
 import MapTreeSidebar from "./MapTreeSidebar.vue"; // 地图树形侧边栏组件
 import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
 import MapViewContent from "./MapViewContent.vue"; // 地图视图内容组件
+import BuildingTreeData from "./BuildingTreeData.vue"; // 建筑物树形数据组件
 import { useUtils } from "@/common/vueApi";
 
 import { useMarkers } from "../composables/useMarkers";
@@ -172,6 +137,7 @@ const props = defineProps({
   pageItem: Object, // 页面项配置
   treeReq: Object, // 树形数据请求配置
   inEdit: Boolean, // 是否处于编辑状态
+  pageParamsModel: Object, // 页面参数模型
 });
 
 const emit = defineEmits(["select"]);
@@ -263,7 +229,7 @@ const popupPosition = computed(() => {
       '点击元素左侧': 'left',
     }
     result.positionDirection = directionMap[direction]
-  } else if ('屏幕居中') {
+  } else if ('屏幕居中' === direction) {
     result.positionMode = 'center'
   }
   return result

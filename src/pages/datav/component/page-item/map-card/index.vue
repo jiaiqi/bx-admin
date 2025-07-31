@@ -5,6 +5,7 @@
     :page-item="pageItem"
     :tree-req="treeReq"
     :in-edit="inEdit"
+    :page-params-model="pageParamsModel"
     @select="handleMapSelect"
   />
 
@@ -15,6 +16,7 @@
     :com-no="pageItem.com_no"
     :page-item="pageItem"
     :in-edit="inEdit"
+    :page-params-model="pageParamsModel"
     @select="handleMapSelect"
   />
 </template>
@@ -59,6 +61,10 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({}),
+  },
+  pageParamsModel: {
+    type: Object,
+    default: () => ({})
   },
   treeReq: {
     type: Object,

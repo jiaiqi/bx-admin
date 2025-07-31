@@ -49,7 +49,7 @@
           @click="handleMarkerClick(marker, $event)"
         >
           <div class="map-marker-content">
-            {{ marker[mapJson.col_label] || "" }}
+            {{ getItemLabel(marker) || "" }}
           </div>
         </div>
       </template>
@@ -58,11 +58,17 @@
       <template v-else-if="markerList.length">
         <div
           class="map-marker"
-          :style="getItemPosition(item)"
+          :style="[
+            {
+              ...setLabelStyle,
+              ...(isActive(marker) ? setLabelActiveStyle : {}),
+            },
+            getItemPosition(item)
+          ]"
           @click.stop="handleMarkerClick(item, $event)"
           :class="{ 'cursor-pointer': allowClick(item) }"
           v-for="item in markerList"
-          :title="getMarkerTitle(item)"
+          :title="getItemLabel(item)"
           :key="item.id"
         >
           <img
@@ -70,6 +76,7 @@
             class="marker-icon"
             v-if="getItemIcon(item)"
           />
+          <span v-if="getItemLabel(item)">{{ getItemLabel(item) }}</span>
         </div>
       </template>
     </template>
@@ -77,6 +84,9 @@
 </template>
 
 <script setup>
+import { getImagePath } from '@/common/http.js'
+import { formatStyleData } from '../../../../common'
+import { computed } from 'vue'
 /**
  * 地图视图内容组件
  * @component MapViewContent
@@ -122,27 +132,27 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  // 标记点样式相关函数
-  getItemPosition: {
-    type: Function,
-    required: true
-  },
-  getItemIcon: {
-    type: Function,
-    required: true
-  },
+  // // 标记点样式相关函数
+  // getItemPosition: {
+  //   type: Function,
+  //   required: true
+  // },
+  // getItemIcon: {
+  //   type: Function,
+  //   required: true
+  // },
   isActive: {
     type: Function,
     required: true
   },
-  setLabelStyle: {
-    type: Object,
-    default: () => ({})
-  },
-  setLabelActiveStyle: {
-    type: Object,
-    default: () => ({})
-  },
+  // setLabelStyle: {
+  //   type: Object,
+  //   default: () => ({})
+  // },
+  // setLabelActiveStyle: {
+  //   type: Object,
+  //   default: () => ({})
+  // },
   // 工具函数
   allowClick: {
     type: Function,
@@ -166,6 +176,110 @@ const emit = defineEmits(['marker-click']);
  */
 function handleMarkerClick(marker, event) {
   emit('marker-click', marker, event);
+}
+
+function getItemLabel(item) {
+  if (item._col_map && item._col_map.col_label && item[item._col_map.col_label]) {
+    return item[item._col_map.col_label]
+  }
+  if (props.mapJson.col_label && item[props.mapJson.col_label]) {
+    return item[props.mapJson.col_label]
+  }
+}
+
+
+/**
+ * 标签样式计算属性
+ */
+const setLabelStyle = computed(() => {
+  if (
+    props.mapJson?.map_type === "标签" &&
+    props.mapJson?.col_label_style_json
+  ) {
+    return formatStyleData(props.mapJson?.col_label_style_json)
+  }
+  return {}
+})
+
+/**
+ * 标签激活状态样式计算属性
+ */
+const setLabelActiveStyle = computed(() => {
+  if (
+    props.mapJson?.map_type === "标签" &&
+    props.mapJson?.label_active_style_json
+  ) {
+    return formatStyleData(props.mapJson?.label_active_style_json)
+  }
+})
+
+/**
+ * 获取标记点图标
+ */
+function getItemIcon(item = {}) {
+  if (!item || typeof item !== "object") {
+    console.warn("getItemIcon: 无效的item参数", item)
+    item = {}
+  }
+
+  if (item?.col_map?.customized_icon) {
+    return getImagePath(item[item.col_map.customized_icon])
+  } else if (item?._poi_info?.poi_type_icon) {
+    return getImagePath(item._poi_info.poi_type_icon)
+  } else if (item?._poi_info?.icon) {
+    return getImagePath(item._poi_info.icon)
+  }
+
+  const mapConfig = props.mapJson
+  if (!mapConfig) {
+    console.warn("getItemIcon: 地图配置不存在")
+    return ""
+  }
+
+  try {
+    const iconCol = mapConfig.marker_icon_col
+    if (iconCol && item[iconCol]) {
+      return getImagePath(item[iconCol])
+    }
+
+    if (mapConfig.icon_default) {
+      return getImagePath(mapConfig.icon_default)
+    }
+  } catch (error) {
+    console.error("getItemIcon: 获取图标路径失败", error)
+  }
+
+  return ""
+}
+
+/**
+ * 获取标记点位置
+ */
+function getItemPosition(item = {}) {
+  let pos = {
+    left: 0,
+    top: 0,
+  }
+
+  if (props.mapJson?.x_col && props.mapJson?.y_col) {
+    if (item[props.mapJson?.x_col]) {
+      pos.left = item[props.mapJson?.x_col] + "%"
+    }
+    if (item[props.mapJson?.y_col]) {
+      pos.top = item[props.mapJson?.y_col] + "%"
+    }
+  } else if (item?._col_map) {
+    const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
+    pos.label = item[col_label]
+    pos.left = item[col_x] + "%"
+    pos.top = item[col_y] + "%"
+    pos.width = (col_x_width || 30) + 'px'
+    pos.height = (col_y_width || 30) + 'px'
+    pos.icon = customized_icon
+    pos.value = item[col_no]
+  }
+
+  return pos
 }
 </script>
 
