@@ -91,7 +91,7 @@ async function getMarkers(params = {}) {
     }
   }
   let pageParamsModel = cloneDeep(props.pageParamsModel)
-  
+
   if(pageParamsModel && typeof pageParamsModel === 'object'){
     for(let key in pageParamsModel){
       if(pageParamsModel[key]?.value){
@@ -109,6 +109,7 @@ async function getMarkers(params = {}) {
     const conds = []
     for (let cond of conditions) {
       let condModel = cloneDeep(cond)
+      condModel._raw_value = condModel.value
       if (cond && condModel.value && condModel.value.indexOf('${') !== -1 && condModel.value.indexOf('}') !== -
         1 && params) {
         if (renderStr(condModel.value, globalParams) && renderStr(condModel.value, globalParams).indexOf('[object') == -1) {
@@ -127,7 +128,6 @@ async function getMarkers(params = {}) {
         }
       }
       conds.push(cloneDeep(condModel))
-      debugger
     }
     p.condition = conds
   }
