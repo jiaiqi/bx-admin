@@ -119,11 +119,20 @@ export default {
         }
 
         // 处理主子表冗余逻辑
-        if (fieldInfo.mainSubRedundant && !fieldInfo?.redundant?.dependField) {
+        const dependField = fieldInfo?.redundant?.dependField
+        const refedCol = fieldInfo?.redundant?.refedCol
+        const mainData = self.parentAddMainFormDatas; // 获取主表数据
+        if (fieldInfo.mainSubRedundant) {
+          // if (dependField&&this.allFields?.[dependField] && refedCol !== fieldInfo.name ) {
+          //   // dependField是子表本身的字段并且refedCol不是当前字段 不触发主子表冗余
+          //   return 
+          // }
+          if(dependField !== this.childForeignkey['referenced_column_name'] && dependField!==this.childForeignkey['column_name']){
+            // dependField 不是主表的编号字段
+            return
+          }
           // 主子表冗余
-          let mainData = self.parentAddMainFormDatas; // 获取主表数据
           let subMainRedundant = fieldInfo.mainSubRedundant; // 主子表冗余配置
-
           // 检查主表数据存在且触发条件为"always"
           if (mainData && subMainRedundant.trigger == "always") {
             // 检查主表数据中是否包含引用列
