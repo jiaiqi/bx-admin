@@ -65,6 +65,7 @@
       :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
       :map-data="currrentMapData"
+      :page-params-model="pageParamsModel"
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
 

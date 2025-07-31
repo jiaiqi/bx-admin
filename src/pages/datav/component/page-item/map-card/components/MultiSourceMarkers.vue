@@ -2,6 +2,8 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { MessageBox } from 'element-ui'
 import { $http } from '@/common/http'
+import cloneDeep from 'lodash/cloneDeep'
+import { useUtils } from "@/common/vueApi";
 
 // 组件属性定义
 const props = defineProps({
@@ -21,6 +23,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  pageParamsModel: {
+    type: Object,
+    default: () => ({})
+  },
 })
 
 // 事件定义
@@ -36,6 +42,9 @@ const sourceJson = computed(() => {
   return props.sourceJson
   // return props.mapJson?.multi_src_poi_json || []
 })
+
+
+const { renderStr } = useUtils()
 
 /**
  * 获取标记点数据
@@ -81,7 +90,47 @@ async function getMarkers(params = {}) {
       p.condition = [obj]
     }
   }
+  let pageParamsModel = cloneDeep(props.pageParamsModel)
+  
+  if(pageParamsModel && typeof pageParamsModel === 'object'){
+    for(let key in pageParamsModel){
+      if(pageParamsModel[key]?.value){
+        pageParamsModel[key] = pageParamsModel[key].value
+      }
+    }
+  }
 
+  if (p.condition?.length) {
+    const globalParams = {
+      ...pageParamsModel || {},
+      ...props.mapData || {}
+    }
+    const conditions = cloneDeep(p.condition)
+    const conds = []
+    for (let cond of conditions) {
+      let condModel = cloneDeep(cond)
+      if (cond && condModel.value && condModel.value.indexOf('${') !== -1 && condModel.value.indexOf('}') !== -
+        1 && params) {
+        if (renderStr(condModel.value, globalParams) && renderStr(condModel.value, globalParams).indexOf('[object') == -1) {
+          condModel.value = renderStr(condModel.value, globalParams)
+        } else {
+          let key = condModel.value
+          var sreg = new RegExp("\\${", "g"); // 加'g'，删除字符串里所有的"a"
+          var ereg = new RegExp("\}", "g"); // 加'g'，删除字符串里所有的"a"
+          key = key.replace(sreg, "");
+          key = key.replace(ereg, "");
+          console.log('--srvReq', params, key)
+          condModel.value = params && params.hasOwnProperty(key) ? params[key] : ""
+          if (condModel.value?.value) {
+            condModel.value = condModel.value.value
+          }
+        }
+      }
+      conds.push(cloneDeep(condModel))
+      debugger
+    }
+    p.condition = conds
+  }
   try {
     const url = `/${p.mapp}/select/${p.serviceName}`
     const res = await $http.post(url, p)
