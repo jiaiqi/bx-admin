@@ -516,7 +516,7 @@ export default {
         decorator(model);
       }
 
-      this.$emit("form-model-changed", model);
+      this.$emit("form-model-changed", this);
       return model;
     },
 
