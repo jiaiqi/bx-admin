@@ -1362,6 +1362,8 @@ export default {
       if (typeof item?._btn_index === 'number' && Array.isArray(data?._buttons)) {
         if (data._buttons[item._btn_index] === 1) {
           result = true
+        }else{
+          result = false
         }
       }
       // if (
