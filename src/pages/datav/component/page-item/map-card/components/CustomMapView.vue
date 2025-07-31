@@ -152,7 +152,7 @@
     />
 
 
-    <!-- 使用多标记物配置加载标记物数据 -->
+    <!-- 使用多来源标记物配置加载标记物数据 -->
     <multi-source-markers
       :map-json="mapJson"
       :source-json="mapJson.multi_src_poi_json"
@@ -168,6 +168,8 @@
       :page-item="pageItem"
       :card-unit-json="cardUnitJson"
       :is-building-view="isBuildingView"
+      :position-direction="popupPosition.positionDirection"
+      :position-mode="popupPosition.positionMode"
       @close="closePopup"
     />
   </div>
@@ -297,10 +299,35 @@ function handleMapJsonChange(item, index) {
 const markerList = ref([]); // 标记点列表
 const activeMarker = ref({}); // 当前激活的标记点
 const activeMarkerElement = ref(null); // 当前激活标记点的 DOM 元素引用
+const popupPosition = computed(() => {
+  let result = {
+  }
+  let direction = mapJson.value?.popup_direction
+  const marker = activeMarker.value
+  if (marker && marker?._poi_info?.onclick_tips?.popup_direction) {
+    // 多来源标记物 弹出卡片配置在标记物配置里
+    direction = marker?._poi_info?.onclick_tips?.popup_direction
+  }
+  if (direction === '自动计算') {
+    result.positionMode = 'auto'
+  } else if (['点击元素上方', '点击元素右侧', '点击元素下方', '点击元素左侧'].includes(direction)) {
+    result.positionMode = 'direction'
+    const directionMap = {
+      '点击元素上方': 'top',
+      '点击元素右侧': 'right',
+      '点击元素下方': 'bottom',
+      '点击元素左侧': 'left',
+    }
+    result.positionDirection = directionMap[direction]
+  } else if ('屏幕居中') {
+    result.positionMode = 'center'
+  }
+  return result
+})
 const cardUnitJson = computed(() => {
   const marker = activeMarker.value
   if (marker && marker?._poi_info?.onclick_tips?.tips_card_unit_json) {
-    // 多标记物配置 弹出卡片配置在标记物配置里
+    // 多来源标记物 弹出卡片配置在标记物配置里
     return marker?._poi_info?.onclick_tips?.tips_card_unit_json
   }
   return mapJson.value.tips_card_unit_json
