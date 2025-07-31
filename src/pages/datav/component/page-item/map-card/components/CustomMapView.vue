@@ -297,7 +297,14 @@ function handleMapJsonChange(item, index) {
 const markerList = ref([]); // 标记点列表
 const activeMarker = ref({}); // 当前激活的标记点
 const activeMarkerElement = ref(null); // 当前激活标记点的 DOM 元素引用
-const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json); // 卡片单元配置
+const cardUnitJson = computed(() => {
+  const marker = activeMarker.value
+  if (marker && marker?._poi_info?.onclick_tips?.tips_card_unit_json) {
+    // 多标记物配置 弹出卡片配置在标记物配置里
+    return marker?._poi_info?.onclick_tips?.tips_card_unit_json
+  }
+  return mapJson.value.tips_card_unit_json
+}); // 卡片单元配置
 
 /**
  * 树形数据相关状态
@@ -520,6 +527,22 @@ function allowClick(marker) {
   }
 }
 
+function setActiveMarker(marker, event) {
+  // 检查是否需要显示弹窗
+  // 如果点击的是当前激活的标记点，隐藏弹窗
+  if (marker?.id && marker?.id === activeMarker.value?.id) {
+    activeMarker.value = null;
+    activeMarkerElement.value = null;
+  } else {
+    activeMarker.value = marker; // 设置新的激活标记点
+    // 记录标记点元素引用
+    if (event && event.currentTarget) {
+      console.log('标记点元素:', event.currentTarget);
+      activeMarkerElement.value = event.currentTarget; // 保存元素引用
+    }
+  }
+}
+
 /**
  * 统一的标记点点击处理函数
  * 处理所有类型标记点的点击事件，包括弹窗显示和建筑物视图切换
@@ -534,7 +557,10 @@ function handleMarkerClick(marker, event) {
     // 多标记物点击事件处理
     switch (marker._poi_info.onclick) {
       case '弹出卡片':
-
+        if (marker?._poi_info?.onclick_tips?.tips_card_unit_json) {
+          // 设置激活标记点
+          setActiveMarker(marker, event)
+        }
         break;
       case '跳转':
 
@@ -560,18 +586,7 @@ function handleMarkerClick(marker, event) {
     // 检查是否需要显示弹窗
     const shouldShowPopover = mapJson.value.onclick === '弹出卡片';
     if (shouldShowPopover) {
-      // 如果点击的是当前激活的标记点，隐藏弹窗
-      if (marker?.id && marker?.id === activeMarker.value?.id) {
-        activeMarker.value = null;
-        activeMarkerElement.value = null;
-      } else {
-        activeMarker.value = marker; // 设置新的激活标记点
-        // 记录标记点元素引用
-        if (event && event.currentTarget) {
-          console.log('标记点元素:', event.currentTarget);
-          activeMarkerElement.value = event.currentTarget; // 保存元素引用
-        }
-      }
+      setActiveMarker(marker, event)
     }
   }
 
