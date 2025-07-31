@@ -132,8 +132,52 @@
         :sortable="item.sortable && !isMem() ? 'custom' : false"
       >
         <template slot-scope="scope">
+          <file-list
+            v-if="['FileList', 'Image'].includes(item.col_type)"
+            :data="scope.row"
+            :field="item"
+          ></file-list>
+          <template v-else-if="item._obj_info">
+            <file-list
+              v-if="['FileList', 'Image'].includes(item.col_type)"
+              :data="scope.row"
+              :field="item"
+            ></file-list>
+            <template v-else-if="['fk', 'fks', 'fkjsons'].includes(item.col_type)">
+              <div class="fk-tags">
+                <template v-for="(tag, tIndex) in getFkJson(scope.row, item)">
+                  <el-tag
+                    size="mini"
+                    style="margin-right: 4px; margin-bottom: 2px"
+                    :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+                    @click="onLinkClicked(scope.row, item)"
+                  >
+                    {{ tag || "--" }}
+                  </el-tag>
+                </template>
+              </div>
+            </template>
+            <template v-else-if="['User', 'UserList'].includes(item.col_type)">
+              <template v-for="(tag, tIndex) in getUserTags(item, scope.row)">
+                <a
+                  v-if="item.linkUrlFunc"
+                  v-show="scope.row[item.column]"
+                  style="
+                        white-space: nowrap;
+                        color: dodgerblue;
+                        cursor: pointer;
+                      "
+                  :key="tIndex"
+                  @click="onLinkClicked(scope.row, item)"
+                >
+                  {{ tag || "--" }}
+                </a>
+              </template>
+            </template>
+          </template>
+
           <p
-            v-if="
+            v-else-if="
               formatValue(scope.row, item) &&
               ['Note', 'RichText'].includes(item.col_type)
             "
@@ -529,6 +573,7 @@ import remove from "lodash/remove";
 import cloneDeep from "lodash/cloneDeep";
 import ImportDialog from "../ui/import-form.vue"; // 导入ui
 import exportLayout from "./export-layout"; // 自定义导出 || 导入
+import FileList from "../ui/file-list/file-list.vue";
 
 function deepClone(obj) {
   if (obj == null) return null;
@@ -560,6 +605,7 @@ export default {
     update: () => import("../common/update.vue"),
     ImportDialog,
     exportLayout,
+    FileList
   },
   mixins: [ListPopupMixin, CustButtonMinx, MemListMixin, ListMixin],
 
@@ -1597,6 +1643,52 @@ export default {
       if (action == "submit") {
         this.activeForm = null;
       }
+    },
+    getUserTags(column, data) {
+      let result = [];
+      const fkCols = ["User", "fk", "fks", "fkjsons"];
+      if (fkCols.includes(column?.col_type)) {
+        if (
+          column?._obj_info?.a_save_b_obj_col &&
+          data[column?._obj_info?.a_save_b_obj_col]
+        ) {
+          let str = data[column?._obj_info?.a_save_b_obj_col];
+          try {
+            let arr = JSON.parse(str);
+            if (Array.isArray(arr)) {
+              result = arr;
+            } else {
+              result = [arr];
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        } else if (
+          column?._obj_info?.a_save_b_obj_col &&
+          !data[column?._obj_info?.a_save_b_obj_col] &&
+          data[column.column]
+        ) {
+          result = [
+            {
+              user_disp: data[column.column],
+            },
+          ];
+        }
+      }
+      console.log("result", result);
+      result = result.map((item) => {
+        if (column?.col_type === "User") {
+          return item.user_disp;
+        } else if (
+          column?.srvcol?.fmt?.disp_col &&
+          item?.[column?.srvcol?.fmt?.disp_col]
+        ) {
+          return item[column.srvcol.fmt.disp_col];
+        } else {
+          return item.user_disp;
+        }
+      });
+      return result;
     },
   },
 
