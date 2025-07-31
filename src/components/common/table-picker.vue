@@ -705,10 +705,10 @@ export default {
     },
     changePage(page) {
       this.page.pageNo = page;
-      if (this.listV2?.is_tree === true) {
-      } else {
-        this.loadOptions();
-      }
+      // if (this.listV2?.is_tree === true) {
+      // } else {
+      this.loadOptions();
+      // }
     },
     async buildGridHeader() {
       if (this.fmt && this.fmt.service) {

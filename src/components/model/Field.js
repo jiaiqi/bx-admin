@@ -517,6 +517,9 @@ export class Field {
     ) {
       return false;
     }
+    if(this.info.readonly){
+      return false;
+    }
     return this.evalVersatileFlagVar(this.info.editable);
   }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { MessageBox } from 'element-ui'
 import { $http } from '@/common/http'
 
@@ -16,7 +16,11 @@ const props = defineProps({
   sourceJson: {
     type: Array,
     default: () => [],
-  }
+  },
+  mapData: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 // 事件定义
@@ -42,12 +46,40 @@ const sourceJson = computed(() => {
  * @param {Object} params.col_map - 列映射配置
  */
 async function getMarkers(params = {}) {
-  const { srv_req_json: p, poi_name, poi_type, col_map } = params
+  let { srv_req_json: p, poi_name, poi_type, col_map } = params
+  if (params.srv_req_info) {
+    // 配置变动,srv_req_json改为从srv_req_info中获取
+    p = params.srv_req_info.srv_req_json
+  } else {
+    console.warn('获取标记点数据：缺少必要的服务配置参数', params)
+    return
+  }
+
 
   // 参数验证
   if (!p || !p.mapp || !p.serviceName) {
     console.warn('获取标记点数据：缺少必要的服务配置参数', params)
     return
+  }
+
+  const reqInfo = params.srv_req_info
+  const {
+    map_filter_poi_col: filterCol, // condition中的colName
+    map_filter_poi_rule: ruleType, // 比较规则
+    poi_refer_map_filter_col: dataCol // 数据中对应的字段
+  } = reqInfo;
+
+  if (filterCol && ruleType && dataCol && props.mapData[dataCol]) {
+    const obj = {
+      colName: filterCol,
+      value: props.mapData[dataCol],
+      ruleType: ruleType === '等于' ? 'eq' : 'like]'
+    }
+    if (p.condition) {
+      p.condition.push(obj)
+    } else {
+      p.condition = [obj]
+    }
   }
 
   try {
@@ -92,7 +124,7 @@ async function getMarkers(params = {}) {
 }
 
 /**
- * 批量获取所有数据源的标记点
+ * 批量获取所有数据源的标记点（顺序执行）
  */
 async function fetchAllMarkers() {
   if (!sourceJson.value.length) {
@@ -104,10 +136,25 @@ async function fetchAllMarkers() {
   error.value = null
   markers.value = []
 
+  let successCount = 0
+  let failedCount = 0
+
   try {
-    // 并发请求所有数据源
-    const promises = sourceJson.value.map(item => getMarkers(item))
-    await Promise.allSettled(promises)
+    // 顺序执行每个请求
+    for (let i = 0; i < sourceJson.value.length; i++) {
+      try {
+        await getMarkers(sourceJson.value[i])
+        successCount++
+      } catch (err) {
+        failedCount++
+        console.error(`数据源 ${i} 请求失败：`, err)
+      }
+    }
+
+    if (failedCount > 0) {
+      console.warn(`${failedCount} 个数据源请求失败，${successCount} 个成功`)
+    }
+
   } catch (err) {
     console.error('批量获取标记点数据失败：', err)
   } finally {
@@ -119,7 +166,6 @@ async function fetchAllMarkers() {
 watch(
   () => sourceJson.value,
   async (newVal, oldVal) => {
-    // 深度比较，避免不必要的重新请求
     if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
       await nextTick()
       await fetchAllMarkers()

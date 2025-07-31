@@ -1049,6 +1049,15 @@ function init_util() {
       window.open(url);
     }
   };
+  Vue.prototype.closeCurrentTab = function () {
+    const currTab = window?.top?.tab?.getCurrentTab()
+    if (window.top?.tab && window.top.tab.closeCurrentTab) {
+      window.top.tab.closeCurrentTab(currTab)
+    } else {
+      window.close()
+    }
+  }
+
   /**
    *  //字符串截取
    * @param {*} str
@@ -1533,7 +1542,7 @@ function init_util() {
       let user = top.user;
       if (expr && typeof expr === 'string' && expr.trim() === 'new Date()') {
         let value = eval(expr)
-        if(value && value.getTime && typeof value.getTime === 'function'){
+        if (value && value.getTime && typeof value.getTime === 'function') {
           return dayjs(value).format('YYYY-MM-DD HH:mm:ss')
         }
       }

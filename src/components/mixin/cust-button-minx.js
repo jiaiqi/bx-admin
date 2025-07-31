@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 export default {
   methods: {
     /**
@@ -105,6 +106,7 @@ export default {
      */
     pre_data_handle(butinfo, operateData) {
       var me = this;
+      let moment = dayjs
       var pre_data_handle = butinfo.pre_data_handle;
       if (
         pre_data_handle != undefined &&
@@ -192,6 +194,9 @@ export default {
      * @param {*} operateData
      */
     getPackageData(butinfo, operateData) {
+
+      let moment = dayjs
+
       var packagedata = {};
       var new_data = {};
       var new_conditions = [];
@@ -788,6 +793,7 @@ export default {
      */
     url_pre_data_handle(item, operateData, mainDetailData) {
       let self = this;
+      let moment = dayjs
       if (!top.pathConfig.gateway) {
         top.pathConfig.gateway = window.backendIpAddr
       }
@@ -799,6 +805,7 @@ export default {
         pre_data_handle != ""
       ) {
         // var mainDetailData = self.listMainFormDatas || null
+
         back_url = eval(
           "var zz=" + pre_data_handle + "(operateData,mainDetailData,self); zz"
         );

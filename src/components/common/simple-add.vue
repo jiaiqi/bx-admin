@@ -22,7 +22,7 @@
         ref="elform"
         :inline="false"
         label-position="right"
-        label-width="6rem"
+        label-width="6.5rem"
         v-if="formLoaded"
       >
         <el-row v-for="(formItems, section) in sections" :key="section">

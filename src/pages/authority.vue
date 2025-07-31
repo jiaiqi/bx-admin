@@ -1,77 +1,95 @@
 <template>
-  <div style="" v-loading="loading" class="retail-tree">
+  <div
+    style=""
+    v-loading="loading"
+    class="retail-tree"
+  >
     <!-- <button @click="onClick">刷新</button> -->
-    <el-form
-      :model="roleModel"
-      :rules="rules"
-      ref="roleForm"
-      label-width="100px"
-      class="demo-ruleForm"
-    >
-      <el-form-item label="角色名称" prop="role_name">
-        <el-input
-          :disabled="pageType == 'detail'"
-          v-model="roleModel.role_name"
-          placeholder="请输入角色名称"
-        ></el-input>
-      </el-form-item>
-      <el-form-item label="角色描述" prop="remark">
-        <el-input
-          :disabled="pageType == 'detail'"
-          type="textarea"
-          v-model="roleModel.remark"
-          placeholder="请输入角色描述"
-        ></el-input>
-      </el-form-item>
-      <el-form-item label="权限类型" prop="auth_type">
-        <el-checkbox-group v-model="roleModel.auth_type">
-          <el-checkbox lable="自定义" true-label="自定义">自定义</el-checkbox>
-          <!-- <el-checkbox lable="所有ALL" true-label="所有ALL"
+    <div class="retail-tree-row">
+      <el-form
+        :model="roleModel"
+        :rules="rules"
+        ref="roleForm"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item
+          label="角色名称"
+          prop="role_name"
+        >
+          <el-input
+            :disabled="pageType == 'detail'"
+            v-model="roleModel.role_name"
+            placeholder="请输入角色名称"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="角色描述"
+          prop="remark"
+        >
+          <el-input
+            :disabled="pageType == 'detail'"
+            type="textarea"
+            v-model="roleModel.remark"
+            placeholder="请输入角色描述"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="权限类型"
+          prop="auth_type"
+        >
+          <el-checkbox-group v-model="roleModel.auth_type">
+            <el-checkbox
+              lable="自定义"
+              true-label="自定义"
+            >自定义</el-checkbox>
+            <!-- <el-checkbox lable="所有ALL" true-label="所有ALL"
             >所有ALL</el-checkbox
           > -->
-        </el-checkbox-group>
-      </el-form-item>
-    </el-form>
-    <el-form
-      ref="form"
-      :model="terminalTypeModel"
-      label-width="100px"
-      v-if="roleModel.auth_type === '自定义'"
-    >
-      <el-form-item
-        :label="
-          item.terminal_type == '一体机' ? '台式收银机' : item.terminal_type
-        "
-        v-for="(item, index) in terminalType"
-        :key="index"
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <el-form
+        ref="form"
+        :model="terminalTypeModel"
+        label-width="100px"
+        v-if="roleModel.auth_type === '自定义'"
       >
-        <el-checkbox
-          v-model="cfg.checked"
-          v-if="pageType !== 'detail'"
-          v-for="(cfg, n) in item.checkCfg"
-          :key="n"
-          @change="checkChange(cfg, item, index)"
-          >{{ cfg.label }}</el-checkbox
+        <el-form-item
+          :label="item.terminal_type == '一体机' ? '台式收银机' : item.terminal_type
+            "
+          v-for="(item, index) in terminalType"
+          :key="index"
         >
-        <!-- <el-checkbox-group v-model="item.value" @change="handleCheckedCitiesChange">
+          <el-checkbox
+            v-model="cfg.checked"
+            v-if="pageType !== 'detail'"
+            v-for="(cfg, n) in item.checkCfg"
+            :key="n"
+            @change="checkChange(cfg, item, index)"
+          >{{ cfg.label }}</el-checkbox>
+          <!-- <el-checkbox-group v-model="item.value" @change="handleCheckedCitiesChange">
           <el-checkbox :label="cfg.label" :name="cfg.value" v-for="(cfg,n) in item.checkCfg" :key="n">{{cfg.label}}</el-checkbox>
         </el-checkbox-group> -->
-        <!-- !getUserChecked(item.checkCfg,'cascade') -->
-        <el-tree
-          :ref="'tree' + index"
-          :data="item._treeData"
-          show-checkbox
-          :node-key="nodeKey"
-          :default-expand-all="getUserChecked(item.checkCfg, 'expand')"
-          :check-strictly="false"
-          :default-checked-keys="item.checkedKeys"
-          @current-change="currentChange"
-          @check="treeCurrentChange"
-          :props="defaultProps"
-        >
-          <span class="custom-tree-node" slot-scope="{ node, data }">
-            <span>{{ node.label }}</span>
-            <!-- <span>
+          <!-- !getUserChecked(item.checkCfg,'cascade') -->
+          <el-tree
+            :ref="'tree' + index"
+            :data="item._treeData"
+            show-checkbox
+            :node-key="nodeKey"
+            :default-expand-all="getUserChecked(item.checkCfg, 'expand')"
+            :check-strictly="false"
+            :default-checked-keys="item.checkedKeys"
+            @current-change="currentChange"
+            @check="treeCurrentChange"
+            :props="defaultProps"
+          >
+            <span
+              class="custom-tree-node"
+              slot-scope="{ node, data }"
+            >
+              <span>{{ node.label }}</span>
+              <!-- <span>
               <el-button
                 type="text"
                 size="mini"
@@ -85,20 +103,24 @@
                 Delete
               </el-button>
             </span> -->
-          </span>
-        </el-tree>
-      </el-form-item>
-    </el-form>
-    <el-row
+            </span>
+          </el-tree>
+        </el-form-item>
+      </el-form>
+    </div>
+    <el-card
       v-if="pageType !== 'detail'"
       type="flex"
-      class="row-bg"
+      class="footer"
       justify="center"
     >
-      <el-button type="primary" @click="onSubmit">{{
+      <el-button
+        type="primary"
+        @click="onSubmit"
+      >{{
         showLogs.buttonName
       }}</el-button>
-    </el-row>
+    </el-card>
   </div>
 </template>
 
@@ -304,7 +326,7 @@ export default {
       return [
         {
           serviceName: "srvsys_set_app_role_auth",
-          srvApp: sessionStorage.getItem("current_app") || "hsprl",
+          srvApp: sessionStorage.getItem("current_app") || this.$route.query?.srvApp || "hsprl",
           data: [req],
         },
       ];
@@ -525,11 +547,21 @@ export default {
           });
           let role_no = res.data.response[0].response.role_no;
           if (self.pageType == "add") {
-            self.$set(this, "roleModel", {
-              remark: "",
-              role_name: "",
-            });
             self.getDefaultTreeData();
+            self.$confirm("是否继续新增？点击取消后将关闭当前页面", "新增成功", {
+              confirmButtonText: "继续新增",
+              cancelButtonText: "取消",
+              type: "warning",
+            }).then(() => {
+              // self.$set(this, "roleModel", {
+              //   remark: "",
+              //   role_name: "",
+              // });
+              location.reload()
+            }).catch(() => {
+              //关闭当前页面
+              self.closeCurrentTab()
+            })
           } else if (self.pageType == "update") {
             self.loadUpdateDefaultData();
           }
@@ -730,7 +762,7 @@ export default {
       });
     },
   },
-  created: function () {},
+  created: function () { },
   mounted: function () {
     this.loading = true;
     if (this.$route.query) {
@@ -756,8 +788,35 @@ export default {
 </script>
 <style lang="less">
 .retail-tree {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .retail-tree-row {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+
+    // 优化滚动条样式
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #ddd;
+      border-radius: 3px;
+      cursor: move;
+    }
+  }
+
+  .footer {
+    margin-top: 20px;
+    text-align: center;
+  }
+
   .el-tree {
-    min-height: 100px;
+    min-height: 300px;
     border: 1px solid #f2f2f2;
   }
 
@@ -771,9 +830,7 @@ export default {
     border-color: #409eff !important;
   }
 
-  .el-tree
-    .el-checkbox__input.is-disabled.is-checked
-    .el-checkbox__inner::after {
+  .el-tree .el-checkbox__input.is-disabled.is-checked .el-checkbox__inner::after {
     border-color: #ffffff !important;
   }
 }

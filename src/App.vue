@@ -590,6 +590,7 @@ span.section-title {
   .el-form-item__label {
     margin-bottom: 10px;
     padding-left: 10px;
+    padding-right: 5px;
     label {
       margin-bottom: 0;
     }

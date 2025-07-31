@@ -65,6 +65,7 @@
     <!-- 自定义底图-地图视图区域 -->
     <zoom-drag-container
       :show-tips="true"
+      :in-edit="inEdit"
       :ignore-scale-classes="'map-marker'"
     >
       <div
@@ -77,6 +78,7 @@
         }"
         :style="{
           backgroundImage: `url(${currentImageSrc})`,
+          backgroundSize: backgroundSize,
         }"
       >
         <!-- 图片加载动画 -->
@@ -150,11 +152,12 @@
     />
 
 
-    <!-- 使用多标记物配置加载标记物数据 -->
+    <!-- 使用多来源标记物配置加载标记物数据 -->
     <multi-source-markers
       :map-json="mapJson"
       :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
+      :map-data="currrentMapData"
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
 
@@ -165,6 +168,8 @@
       :page-item="pageItem"
       :card-unit-json="cardUnitJson"
       :is-building-view="isBuildingView"
+      :position-direction="popupPosition.positionDirection"
+      :position-mode="popupPosition.positionMode"
       @close="closePopup"
     />
   </div>
@@ -222,6 +227,7 @@ import { useMarkers } from "../composables/useMarkers";
 const props = defineProps({
   pageItem: Object, // 页面项配置
   treeReq: Object, // 树形数据请求配置
+  inEdit: Boolean, // 是否处于编辑状态
 });
 
 const emit = defineEmits(["select"]);
@@ -247,6 +253,16 @@ const finallyMapUndoRedo = computed(() => {
     result = [...mapUndoRedo.value]
   }
   return result
+})
+const currentMapInfo = computed(() => {
+  if (Array.isArray(finallyMapUndoRedo.value) && finallyMapUndoRedo.value.length) {
+    return finallyMapUndoRedo.value[finallyMapUndoRedo.value.length - 1]
+  }
+})
+const currrentMapData = computed(() => {
+  if (currentMapInfo.value && currentMapInfo.value.data) {
+    return currentMapInfo.value.data
+  }
 })
 
 /**
@@ -283,7 +299,39 @@ function handleMapJsonChange(item, index) {
 const markerList = ref([]); // 标记点列表
 const activeMarker = ref({}); // 当前激活的标记点
 const activeMarkerElement = ref(null); // 当前激活标记点的 DOM 元素引用
-const cardUnitJson = computed(() => mapJson.value.tips_card_unit_json); // 卡片单元配置
+const popupPosition = computed(() => {
+  let result = {
+  }
+  let direction = mapJson.value?.popup_direction
+  const marker = activeMarker.value
+  if (marker && marker?._poi_info?.onclick_tips?.popup_direction) {
+    // 多来源标记物 弹出卡片配置在标记物配置里
+    direction = marker?._poi_info?.onclick_tips?.popup_direction
+  }
+  if (direction === '自动计算') {
+    result.positionMode = 'auto'
+  } else if (['点击元素上方', '点击元素右侧', '点击元素下方', '点击元素左侧'].includes(direction)) {
+    result.positionMode = 'direction'
+    const directionMap = {
+      '点击元素上方': 'top',
+      '点击元素右侧': 'right',
+      '点击元素下方': 'bottom',
+      '点击元素左侧': 'left',
+    }
+    result.positionDirection = directionMap[direction]
+  } else if ('屏幕居中') {
+    result.positionMode = 'center'
+  }
+  return result
+})
+const cardUnitJson = computed(() => {
+  const marker = activeMarker.value
+  if (marker && marker?._poi_info?.onclick_tips?.tips_card_unit_json) {
+    // 多来源标记物 弹出卡片配置在标记物配置里
+    return marker?._poi_info?.onclick_tips?.tips_card_unit_json
+  }
+  return mapJson.value.tips_card_unit_json
+}); // 卡片单元配置
 
 /**
  * 树形数据相关状态
@@ -308,6 +356,10 @@ const expandedBuildingNodes = ref({}); // 建筑物节点展开状态
 const imageLoading = ref(false); // 图片是否正在加载
 const imageLoaded = ref(true); // 图片是否已加载完成
 const currentImageSrc = ref(''); // 当前显示的图片路径
+
+const backgroundSize = computed(() => {
+  return mapJson.value?.base_image_fill_method || 'auto'
+})
 
 /**
  * 递归查找具有底图的父级节点
@@ -502,6 +554,22 @@ function allowClick(marker) {
   }
 }
 
+function setActiveMarker(marker, event) {
+  // 检查是否需要显示弹窗
+  // 如果点击的是当前激活的标记点，隐藏弹窗
+  if (marker?.id && marker?.id === activeMarker.value?.id) {
+    activeMarker.value = null;
+    activeMarkerElement.value = null;
+  } else {
+    activeMarker.value = marker; // 设置新的激活标记点
+    // 记录标记点元素引用
+    if (event && event.currentTarget) {
+      console.log('标记点元素:', event.currentTarget);
+      activeMarkerElement.value = event.currentTarget; // 保存元素引用
+    }
+  }
+}
+
 /**
  * 统一的标记点点击处理函数
  * 处理所有类型标记点的点击事件，包括弹窗显示和建筑物视图切换
@@ -516,7 +584,10 @@ function handleMarkerClick(marker, event) {
     // 多标记物点击事件处理
     switch (marker._poi_info.onclick) {
       case '弹出卡片':
-
+        if (marker?._poi_info?.onclick_tips?.tips_card_unit_json) {
+          // 设置激活标记点
+          setActiveMarker(marker, event)
+        }
         break;
       case '跳转':
 
@@ -542,18 +613,7 @@ function handleMarkerClick(marker, event) {
     // 检查是否需要显示弹窗
     const shouldShowPopover = mapJson.value.onclick === '弹出卡片';
     if (shouldShowPopover) {
-      // 如果点击的是当前激活的标记点，隐藏弹窗
-      if (marker?.id && marker?.id === activeMarker.value?.id) {
-        activeMarker.value = null;
-        activeMarkerElement.value = null;
-      } else {
-        activeMarker.value = marker; // 设置新的激活标记点
-        // 记录标记点元素引用
-        if (event && event.currentTarget) {
-          console.log('标记点元素:', event.currentTarget);
-          activeMarkerElement.value = event.currentTarget; // 保存元素引用
-        }
-      }
+      setActiveMarker(marker, event)
     }
   }
 
@@ -1086,8 +1146,8 @@ onMounted(() => {
 }
 
 .custom-map {
-  background-color: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  // background-color: rgba(0, 0, 0, 0.1);
+  // backdrop-filter: blur(10px);
   position: relative;
   width: 100%;
   height: 100%;

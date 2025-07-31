@@ -286,7 +286,12 @@
             :cell-style="cellStyle"
           >
             <template slot-scope="scope">
-              <template v-if="item._obj_info">
+              <file-list
+                v-if="['FileList', 'Image'].includes(item.col_type)"
+                :data="scope.row"
+                :field="item"
+              ></file-list>
+              <template v-else-if="item._obj_info">
                 <file-list
                   v-if="['FileList', 'Image'].includes(item.col_type)"
                   :data="scope.row"
@@ -521,15 +526,6 @@
                     >{{ tag || "" }}
                     </el-tag>
                   </div>
-
-                  <!-- <div v-else-if="item.srvcol.updatable">
-                      <el-input-number size="small"
-                        v-if="item.col_type === 'Integer' || 'int' || 'Float' || 'money'"
-                        v-model="scope.row[item.column]" @change="handleEdit(scope.$index, scope.row)" :min="0"
-                        label=""></el-input-number>
-                      <el-input size="small" v-else-if="item.col_type === 'String'"
-                        v-model="scope.row[item.column]" @change="handleEdit(scope.$index, scope.row)"></el-input>
-                    </div> -->
                   <a
                     class="link-to-detail"
                     title="点击查看详情"
@@ -578,7 +574,7 @@
           <el-table-column
             label="操作"
             header-align="left"
-            width="280"
+            :width="operationColumnWidth"
             fixed="right"
             class-name="handler-button-group"
             v-if="
@@ -593,20 +589,6 @@
               slot-scope="scope"
               v-if="getColumnsShow(scope.row)"
             >
-              <!-- <el-button v-for="(button, index) in sortedRowButtons"
-                            :key="index"
-                            @click="rowButtonClick(button,scope.row)"
-                            :size="button._moreConfig.size" 
-                            :type="button._moreConfig.type" 
-                            :icon="button._moreConfig.icon" 
-                            :round="button._moreConfig.style !== '' &&  button._moreConfig.style === 'round'"
-                            :plain="button._moreConfig.style !== '' && button._moreConfig.style === 'plain'"
-                            :circle="button._moreConfig.style !== '' && button._moreConfig.style === 'circle'"
-                            :disabled="button.evalDisable()"
-                            v-if="getDispExps(button, scope.row) && button.permission"
-                            v-show="isRowButtonVisible(button, scope.row)">
-                    {{ getButtonName(button, scope.row) }}
-                  </el-button> -->
               <template
                 v-for="(button, index) in sortedRowButtons"
                 style="
@@ -620,18 +602,6 @@
                   isRowButtonVisible(button, scope.row, scope.$index)
                   "
               >
-                <!-- <el-button
-                    type="text"
-                    :title="getButtonName(button, scope.row)"
-                    @click.stop.native="rowButtonClick(button, scope.row)"
-                    v-if="
-                      routeMeta &&
-                      routeMeta.isTree === true &&
-                      button.button_type == 'addchild' &&
-                      getButtonOptSrv(button, scope.row, 'isShow')
-                    "
-                    ><i class="el-icon-plus"></i
-                  ></el-button> -->
                 <el-button
                   @click="rowButtonClick(button, scope.row)"
                   :size="button._moreConfig.size"
@@ -1231,6 +1201,7 @@ export default {
     childForeignkey: Object,
     defaultCondition: Array,
     routeMeta: Object,
+    customListType: String,
   },
   watch: {
     gridDataRun: {
@@ -1283,6 +1254,37 @@ export default {
           return res;
         }, {});
       }
+    },
+    // 计算操作列的最佳宽度，但不超过300px
+    operationColumnWidth() {
+      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
+        return 280; // 默认宽度
+      }
+
+      // 计算按钮总宽度
+      let totalWidth = 0;
+      const buttonPadding = 10; // 按钮内边距
+      const buttonMargin = 8; // 按钮间距
+      const minButtonWidth = 80; // 最小按钮宽度
+
+      this.sortedRowButtons.forEach(button => {
+        if (button.button_type === '_btn_group' && button?.buttons?.length) {
+          // 下拉按钮组，固定宽度
+          totalWidth += 100 + buttonMargin;
+        } else {
+          // 普通按钮，根据文字长度计算
+          const buttonText = button.button_name || '操作';
+          const textWidth = this.getTextWidth(buttonText);
+          const buttonWidth = Math.max(textWidth + buttonPadding * 2, minButtonWidth);
+          totalWidth += buttonWidth + buttonMargin;
+        }
+      });
+
+      // 添加列的内边距
+      totalWidth += 20;
+
+      // 限制最大宽度为300px，最小宽度为120px
+      return Math.min(Math.max(totalWidth, 120), 300);
     },
     isDemo() {
       return (
@@ -1509,6 +1511,22 @@ export default {
         }
       }
       return sty;
+    },
+    /**
+     * 计算文本宽度
+     * @param {string} text 文本内容
+     * @returns {number} 文本宽度（像素）
+     */
+    getTextWidth(text) {
+      if (!text) return 0;
+
+      // 创建临时元素来测量文本宽度
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = '14px Arial'; // 使用默认字体大小
+      const width = context.measureText(text).width;
+
+      return Math.ceil(width);
     },
     changeListStyle(type = "list") {
       console.log(type);
@@ -1984,6 +2002,7 @@ export default {
   .el-button+.el-dropdown {
     margin-left: 0;
   }
+
   .el-dropdown>.el-button {
     width: 100%;
   }
@@ -1996,6 +2015,7 @@ export default {
     // display: grid !important;
     // grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 4px;
+
     .el-button {
       min-width: 80px;
     }

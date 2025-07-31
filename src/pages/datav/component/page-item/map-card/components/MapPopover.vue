@@ -6,6 +6,10 @@
   >
     <div
       class="popover-content-to-body"
+      :class="{
+        'center-mode': positionMode === 'center',
+        'direction-mode': positionMode === 'direction'
+      }"
       :style="{
         left: calculatedPosition.x + 'px',
         top: calculatedPosition.y + 'px',
@@ -34,7 +38,7 @@
  * 地图标记点弹窗组件
  * 
  * 功能特性：
- * - 🎯 智能定位：根据标记点元素自动计算最佳显示位置
+ * - 🎯 多模式定位：支持自动计算、固定方向、屏幕居中三种定位模式
  * - 🔄 平滑动画：支持淡入淡出和缩放动画效果
  * - 📱 响应式设计：适配不同屏幕尺寸，智能避免边界溢出
  * - 🖱️ 交互友好：支持点击外部关闭
@@ -47,6 +51,8 @@
  *   :page-item="pageConfig"
  *   :card-unit-json="cardConfig"
  *   :is-building-view="false"
+ *   :position-mode="'auto'"           // 'auto' | 'direction' | 'center'
+ *   :position-direction="'top'"      // 'left' | 'top' | 'right' | 'bottom' (当position-mode为'direction'时生效)
  *   @close="handlePopoverClose"
  * />
  */
@@ -62,6 +68,7 @@ const CONFIG = {
   UI: {
     POPUP_OFFSET: 10, // 弹窗偏移距离
     VIEWPORT_PADDING: 50, // 距离视口边缘的最小间距
+    DIRECTION_OFFSET: 15, // 方向模式的偏移距离
   },
   PERFORMANCE: {
     DEBOUNCE_DELAY: 100, // 防抖延迟时间（毫秒）
@@ -109,6 +116,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
     description: "是否为建筑物视图模式，建筑物视图下不显示弹窗"
+  },
+
+  // 定位模式
+  positionMode: {
+    type: String,
+    default: 'auto',
+    validator: (value) => ['auto', 'direction', 'center'].includes(value),
+    description: "弹窗定位模式：'auto' - 自动计算位置，'direction' - 固定方向，'center' - 屏幕居中"
+  },
+
+  // 固定方向
+  positionDirection: {
+    type: String,
+    default: 'top',
+    validator: (value) => ['left', 'top', 'right', 'bottom'].includes(value),
+    description: "当positionMode为'direction'时，指定弹窗相对于标记点的方向"
   }
 });
 
@@ -149,14 +172,67 @@ function getPopoverDimensions() {
 }
 
 /**
- * 计算弹窗位置
- * 根据标记点元素的位置计算弹窗的显示位置，智能检测视口边界并调整位置
- *
- * @function calculatePopoverPosition
- * @param {HTMLElement} element - 标记点 DOM 元素
+ * 计算屏幕居中位置
+ * @function calculateCenterPosition
  */
-function calculatePopoverPosition(element) {
-  if (!element) return; // 检查元素是否存在
+function calculateCenterPosition() {
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const popoverDimensions = getPopoverDimensions();
+  
+  return {
+    x: viewportWidth / 2,
+    y: viewportHeight / 2
+  };
+}
+
+/**
+ * 计算固定方向位置
+ * @function calculateDirectionPosition
+ * @param {HTMLElement} element - 标记点DOM元素
+ * @param {string} direction - 方向
+ */
+function calculateDirectionPosition(element, direction) {
+  if (!element) return { x: 0, y: 0 };
+
+  const elementRect = element.getBoundingClientRect();
+  const popoverDimensions = getPopoverDimensions();
+  const offset = CONFIG.UI.DIRECTION_OFFSET;
+
+  let x, y;
+
+  switch (direction) {
+    case 'top':
+      x = elementRect.left + elementRect.width / 2;
+      y = elementRect.top - offset;
+      break;
+    case 'bottom':
+      x = elementRect.left + elementRect.width / 2;
+      y = elementRect.bottom + offset + popoverDimensions.height;
+      break;
+    case 'left':
+      x = elementRect.left - offset;
+      y = elementRect.top + elementRect.height / 2;
+      break;
+    case 'right':
+      x = elementRect.right + offset + popoverDimensions.width;
+      y = elementRect.top + elementRect.height / 2;
+      break;
+    default:
+      x = elementRect.left + elementRect.width / 2;
+      y = elementRect.top - offset;
+  }
+
+  return { x, y };
+}
+
+/**
+ * 计算自动位置（原有逻辑）
+ * @function calculateAutoPosition
+ * @param {HTMLElement} element - 标记点DOM元素
+ */
+function calculateAutoPosition(element) {
+  if (!element) return;
 
   // 获取元素相对于视口的位置
   const elementRect = element.getBoundingClientRect();
@@ -214,23 +290,44 @@ function calculatePopoverPosition(element) {
       }
     }
   } else if (popoverBottom > viewportHeight - padding) {
-    // 下边界溢出（这种情况在默认上方显示时不太可能发生，但为了完整性保留）
+    // 下边界溢出
     y = viewportHeight - padding;
   }
 
-  // 更新弹窗位置
-  calculatedPosition.value = { x, y };
+  return { x, y };
+}
 
-  // 可选：添加调试信息
+/**
+ * 计算弹窗位置（统一入口）
+ * 根据配置的模式计算弹窗的显示位置
+ *
+ * @function calculatePopoverPosition
+ * @param {HTMLElement} element - 标记点 DOM 元素
+ */
+function calculatePopoverPosition(element) {
+  let position;
+
+  switch (props.positionMode) {
+    case 'center':
+      position = calculateCenterPosition();
+      break;
+    case 'direction':
+      position = calculateDirectionPosition(element, props.positionDirection);
+      break;
+    case 'auto':
+    default:
+      position = calculateAutoPosition(element);
+      break;
+  }
+
+  calculatedPosition.value = position;
+
+  // 调试信息
   console.log('弹窗位置计算:', {
-    element: { x: elementRect.left, y: elementRect.top, width: elementRect.width, height: elementRect.height },
-    marker: { centerX: markerCenterX, centerY: markerCenterY },
-    viewport: { width: viewportWidth, height: viewportHeight },
-    popover: { x, y, width: popoverWidth, height: popoverHeight },
-    adjustments: {
-      horizontalOverflow: popoverLeft < padding || popoverRight > viewportWidth - padding,
-      verticalOverflow: popoverTop < padding || popoverBottom > viewportHeight - padding
-    }
+    mode: props.positionMode,
+    direction: props.positionDirection,
+    position: position,
+    element: element ? element.getBoundingClientRect() : null
   });
 }
 
@@ -274,6 +371,12 @@ function handleViewportChange() {
   debounceTimer = setTimeout(() => {
     // 检查是否有激活的标记点和对应的DOM元素
     if (props.markerElement && props.activeMarker?.id) {
+      // 对于居中模式，不需要检查元素是否在视口内
+      if (props.positionMode === 'center') {
+        calculatePopoverPosition(props.markerElement);
+        return;
+      }
+
       // 检查标记点元素是否在可视区域内
       if (isElementInViewport(props.markerElement)) {
         // 在可视区域内，重新计算弹窗位置
@@ -334,8 +437,10 @@ watch(
         }
       }, 300);
 
-      // 添加事件监听器
-      addEventListeners();
+      // 添加事件监听器（居中模式不需要）
+      if (props.positionMode !== 'center') {
+        addEventListeners();
+      }
     } else {
       // 移除事件监听器
       removeEventListeners();
@@ -353,6 +458,20 @@ watch(
     if (!newMarker?.id) {
       // 标记点被清空，移除事件监听器
       removeEventListeners();
+    }
+  }
+);
+
+/**
+ * 监听定位模式变化
+ */
+watch(
+  () => [props.positionMode, props.positionDirection],
+  () => {
+    if (props.markerElement && props.activeMarker?.id) {
+      nextTick(() => {
+        calculatePopoverPosition(props.markerElement);
+      });
     }
   }
 );
@@ -390,6 +509,16 @@ onUnmounted(() => {
   height: max-content;
   pointer-events: auto;
 
+  /* 居中模式样式 */
+  &.center-mode {
+    transform: translate(-50%, -50%);
+  }
+
+  /* 方向模式样式 */
+  &.direction-mode {
+    transform: translate(0, 0);
+  }
+
   /* 弹窗动画效果 */
   &.popover-fade-enter-active,
   &.popover-fade-leave-active {
@@ -400,12 +529,28 @@ onUnmounted(() => {
   &.popover-fade-leave-to {
     opacity: 0;
     transform: translate(-50%, -120%) scale(0.8);
+    
+    &.center-mode {
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    
+    &.direction-mode {
+      transform: translate(0, 0) scale(0.8);
+    }
   }
 
   &.popover-fade-enter-to,
   &.popover-fade-leave {
     opacity: 1;
     transform: translate(-50%, -100%) scale(1);
+    
+    &.center-mode {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    
+    &.direction-mode {
+      transform: translate(0, 0) scale(1);
+    }
   }
 }
 

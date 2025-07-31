@@ -31,8 +31,8 @@
         <template v-for="(item, index) in gridButton">
           <el-button
             :size="item._moreConfig && item._moreConfig.size
-                ? item._moreConfig.size
-                : ''
+              ? item._moreConfig.size
+              : ''
               "
             :type="!item.button_cls ? 'primary' : item.button_cls"
             :key="index"
@@ -167,17 +167,11 @@
       </el-table-column>
 
       <el-table-column
-        fixed="right"
         label="操作"
+        :width="operationColumnWidth"
+        fixed="right"
         align="center"
-        width="255"
         class-name="handler-button-group"
-        v-if="
-          !readOnly &&
-          listType != 'selectlist' &&
-          !hideButtons &&
-          sortedRowButtons.length > 0
-        "
       >
         <template slot-scope="scope">
           <template
@@ -370,8 +364,8 @@
         :defaultValues="activeData"
         duplicateType="duplicate"
         :duplicateData="clickedRow && clickedRow.duplicatedeep
-            ? clickedRow.duplicatedeep
-            : null
+          ? clickedRow.duplicatedeep
+          : null
           "
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onDuplicateFormLoaded"
@@ -471,7 +465,6 @@
     <el-dialog
       :title="getActiveFormName || '导入'"
       class="customDialogClass"
-
       width="90%"
       :visible="activeForm == 'import'"
       append-to-body
@@ -625,6 +618,14 @@ export default {
     };
   },
   methods: {
+    // 使用Canvas精确测量文本宽度
+    getTextWidth(text, font = '14px Arial') {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = font;
+      return context.measureText(text).width;
+    },
+
     openHtml(val) {
       const h = this.$createElement;
       this.$msgbox({
@@ -1608,6 +1609,43 @@ export default {
       );
       return h * ratio;
     },
+
+    // 动态计算操作列宽度，最大300px
+    operationColumnWidth() {
+      if (!this.sortedRowButtons || !this.sortedRowButtons.buttons) {
+        return 280; // 默认宽度
+      }
+
+      let totalWidth = 0;
+      const buttons = this.sortedRowButtons;
+      const padding = 16; // 按钮内边距
+      const margin = 8; // 按钮间距
+      const minButtonWidth = 80; // 最小按钮宽度
+
+      buttons.forEach(button => {
+        if (button.button_type === '_btn_group' && button?.buttons?.length) {
+          // 下拉按钮组固定宽度
+          totalWidth += 100;
+        } else {
+          // 常规按钮根据文本长度计算
+          const textWidth = this.getTextWidth(button.text || button.label || '操作', '14px Arial');
+          const buttonWidth = Math.max(textWidth + padding, minButtonWidth);
+          totalWidth += buttonWidth;
+        }
+        totalWidth += margin; // 按钮间距
+      });
+
+      // 移除最后一个按钮的间距
+      if (buttons.length > 0) {
+        totalWidth -= margin;
+      }
+
+      // 添加列的内边距
+      totalWidth += 20;
+
+      // 限制在120-300px范围内
+      return Math.min(Math.max(totalWidth, 120), 300);
+    }
   },
 
   created: function () {
@@ -1644,10 +1682,7 @@ export default {
 };
 </script>
 
-<style
-  scoped
-  lang="scss"
->
+<style scoped lang="scss">
 // .tree-grid >>> .el-table__empty-block {
 //   width: 100% !important;
 // }
