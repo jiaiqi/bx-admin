@@ -31,7 +31,7 @@
     <zoom-drag-container
       :show-tips="true"
       :in-edit="inEdit"
-      :ignore-scale-classes="'map-marker'"
+      :ignore-scale-classes="'map-marker-abcdefg'"
     >
       <!-- 使用抽离的地图视图内容组件 -->
       <MapViewContent
@@ -49,7 +49,12 @@
         :set-label-active-style="setLabelActiveStyle"
         :allow-click="allowClick"
         :get-marker-title="getMarkerTitle"
+        :in-editor="inEdit"
         @marker-click="handleMarkerClick"
+        @edit-mode-change="handleEditModeChange"
+        @marker-position-change="handleMarkerPositionChange"
+        @save-changes="handleSaveChanges"
+        @cancel-changes="handleCancelChanges"
       />
     </zoom-drag-container>
 
@@ -66,6 +71,7 @@
       :marker-list.sync="markerList"
       :map-data="currrentMapData"
       :page-params-model="pageParamsModel"
+      ref="multiSourceMarkersRef"
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
 
@@ -604,6 +610,96 @@ function getMarkerTitle(marker) {
 }
 
 /**
+ * 编辑模式切换处理
+ * @param {boolean} editMode - 是否进入编辑模式
+ */
+function handleEditModeChange(editMode) {
+  console.log('编辑模式切换:', editMode)
+  // 可以在这里添加编辑模式切换时的额外逻辑
+}
+
+/**
+ * 标记点位置变更处理
+ * @param {Object} marker - 标记点数据
+ * @param {number} newX - 新的X坐标
+ * @param {number} newY - 新的Y坐标
+ */
+function handleMarkerPositionChange(marker, newX, newY) {
+  console.log('标记点位置变更:', marker.id, newX, newY)
+  // 实时更新标记点位置（已在DraggableMarker中处理）
+}
+const multiSourceMarkersRef = ref(null)
+/**
+ * 保存标记点位置更改
+ * @param {Array} changesArray - 按update_request_no分组的更改数据
+ */
+function handleSaveChanges(changesArray) {
+  console.log('保存标记点位置更改:', changesArray)
+
+  // 调用API保存更改到后端
+  let successCount = 0
+  changesArray.forEach(async (group) => {
+    const { update_request_no, marker_edit_cfg, markers } = group
+    const { update_request_json: reqJson } = marker_edit_cfg
+    const url = `/${reqJson.mapp}/operate/${reqJson.serviceName}`
+    if (Array.isArray(group.markers) && group.markers.length) {
+      let reqs = []
+      group.markers.forEach(item => {
+        const markerData = item.markerData
+        const { col_x, col_y } = markerData._col_map
+        const { x: oldX, y: oldY } = item.originalPosition
+        const { x: newX, y: newY } = item.newPosition
+        if (oldX !== newX || oldY !== newY) {
+          let data = {}
+          if (oldX !== newX) {
+            data[col_x] = Number(newX.toFixed(4))
+          }
+          if (oldY !== newY) {
+            data[col_y] = Number(newY.toFixed(4))
+          }
+          reqs.push({
+            "serviceName": reqJson.serviceName,
+            "condition": [
+              {
+                "colName": "id",
+                "ruleType": "eq",
+                "value": markerData.id
+              }
+            ],
+            "data": [data]
+          })
+        }
+      })
+      if (Array.isArray(reqs) && reqs.length) {
+        try {
+          const res = await $http.post(url, reqs)
+          // 更新点位
+          if (res.data.state === 'SUCCESS') {
+            console.log('更新点位');
+            multiSourceMarkersRef.value.fetchAllMarkers()
+            successCount++
+          }
+        } catch (error) {
+          console.error(`保存 ${update_request_no} 的标记点位置失败:`, error)
+        }
+      }
+    }
+  })
+
+  if (successCount === changesArray.length) {
+    Message.success('保存成功')
+  }
+}
+
+/**
+ * 取消标记点位置更改
+ */
+function handleCancelChanges() {
+  console.log('取消标记点位置更改')
+  // 标记点位置已在MapEditMode组件中恢复
+}
+
+/**
  * 重置地图状态
  * 重置地图配置、标记点列表、激活标记点等状态
  *
@@ -906,5 +1002,4 @@ onMounted(() => {
   scrollbar-width: none;
 }
 
-// 移除原有的地图视图相关样式，这些样式已移动到 MapViewContent 组件中
-</style>
+// 移除原有的地图视图相关样式，这些样式已移动到 MapViewContent 组件中</style>

@@ -6,6 +6,7 @@
       'custom-map': !isBuildingView,
       'image-loading': imageLoading,
       'image-loaded': imageLoaded,
+      'edit-mode': isEditMode,
     }"
     :style="{
       backgroundImage: `url(${currentImageSrc})`,
@@ -56,29 +57,62 @@
 
       <!-- 图标类型的标记点 -->
       <template v-else-if="markerList.length">
-        <MapMarker
-          v-for="item in markerList"
-          :key="item.id"
-          :item="item"
-          :map-json="mapJson"
-          :allow-click="allowClick"
-          @marker-click="handleMarkerClick"
-        />
+        <!-- 编辑模式下使用可拖拽标记点 -->
+        <template v-if="isEditMode">
+          <DraggableMarker
+            v-for="item in markerList"
+            :key="item.id"
+            :item="item"
+            :map-json="mapJson"
+            :is-edit-mode="isEditMode"
+            :get-item-position="getItemPosition"
+            :is-active="isActive"
+            :get-marker-title="getMarkerTitle"
+            @marker-click="handleMarkerClick"
+            @position-change="handleMarkerPositionChange"
+            @drag-start="handleMarkerDragStart"
+            @drag-end="handleMarkerDragEnd"
+          />
+        </template>
+        <!-- 普通模式下使用原有标记点 -->
+        <template v-else>
+          <MapMarker
+            v-for="item in markerList"
+            :key="item.id"
+            :item="item"
+            :map-json="mapJson"
+            :allow-click="allowClick"
+            @marker-click="handleMarkerClick"
+          />
+        </template>
       </template>
     </template>
+
+    <!-- 编辑模式组件 -->
+    <MapEditMode
+      ref="editModeRef"
+      :marker-list="markerList"
+      :map-json="mapJson"
+      @edit-mode-change="handleEditModeChange"
+      @save-changes="handleSaveChanges"
+      @cancel-changes="handleCancelChanges"
+      v-if="showMapEditBtn"
+    />
   </div>
 </template>
 
 <script setup>
 import { getImagePath } from '@/common/http.js'
 import { formatStyleData } from '../../../../common'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MapMarker from './MapMarker.vue'
-
+import DraggableMarker from './DraggableMarker.vue'
+import MapEditMode from './MapEditMode.vue'
+import { useRoute } from '@/common/vueApi'
 /**
  * 地图视图内容组件
  * @component MapViewContent
- * @description 负责渲染地图底图、加载动画和标记点
+ * @description 负责渲染地图底图、加载动画和标记点，支持编辑模式
  */
 
 /**
@@ -120,27 +154,11 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  // // 标记点样式相关函数
-  // getItemPosition: {
-  //   type: Function,
-  //   required: true
-  // },
-  // getItemIcon: {
-  //   type: Function,
-  //   required: true
-  // },
+  // 标记点样式相关函数
   isActive: {
     type: Function,
     required: true
   },
-  // setLabelStyle: {
-  //   type: Object,
-  //   default: () => ({})
-  // },
-  // setLabelActiveStyle: {
-  //   type: Object,
-  //   default: () => ({})
-  // },
   // 工具函数
   allowClick: {
     type: Function,
@@ -149,13 +167,27 @@ const props = defineProps({
   getMarkerTitle: {
     type: Function,
     required: true
-  }
+  },
+  inEditor: { //处于可视化编辑器中
+    type: Boolean,
+    default: false
+  },
 });
 
 /**
  * 组件事件定义
  */
-const emit = defineEmits(['marker-click']);
+const emit = defineEmits([
+  'marker-click',
+  'edit-mode-change',
+  'marker-position-change',
+  'save-changes',
+  'cancel-changes'
+]);
+
+// 编辑模式状态
+const isEditMode = ref(false)
+const editModeRef = ref(null)
 
 /**
  * 标记点点击处理
@@ -164,6 +196,63 @@ const emit = defineEmits(['marker-click']);
  */
 function handleMarkerClick(marker, event) {
   emit('marker-click', marker, event);
+}
+
+/**
+ * 编辑模式切换处理
+ * @param {boolean} editMode - 是否进入编辑模式
+ */
+function handleEditModeChange(editMode) {
+  isEditMode.value = editMode
+  emit('edit-mode-change', editMode)
+}
+
+/**
+ * 标记点位置变更处理
+ * @param {Object} marker - 标记点数据
+ * @param {number} newX - 新的X坐标
+ * @param {number} newY - 新的Y坐标
+ */
+function handleMarkerPositionChange(marker, newX, newY) {
+  // 直接记录到编辑模式组件，不再触发额外事件
+  if (editModeRef.value && typeof editModeRef.value.recordMarkerChange === 'function') {
+    editModeRef.value.recordMarkerChange(marker, newX, newY)
+  }
+  // 只向父组件发送事件，不再循环处理
+  emit('marker-position-change', marker, newX, newY)
+}
+
+/**
+ * 标记点拖拽开始处理
+ * @param {Object} marker - 标记点数据
+ */
+function handleMarkerDragStart(marker) {
+  console.log('开始拖拽标记点:', marker)
+}
+
+/**
+ * 标记点拖拽结束处理
+ * @param {Object} marker - 标记点数据
+ */
+function handleMarkerDragEnd(marker) {
+  console.log('结束拖拽标记点:', marker)
+}
+
+/**
+ * 保存更改处理
+ * @param {Array} changesArray - 按update_request_no分组的更改数据
+ */
+function handleSaveChanges(changesArray) {
+  console.log('保存标记点位置更改:', changesArray)
+  emit('save-changes', changesArray)
+}
+
+/**
+ * 取消更改处理
+ */
+function handleCancelChanges() {
+  console.log('取消标记点位置更改')
+  emit('cancel-changes')
 }
 
 function getItemLabel(item) {
@@ -188,7 +277,14 @@ function getIconStyle(item) {
   }
   return {}
 }
+const route = useRoute()
+const showMapEditBtn = computed(() => {
+  if (props.inEditor === false && route.query.editMap === 'true') {
+    return true
+  }
+  return false
 
+})
 
 /**
  * 标签样式计算属性
@@ -276,10 +372,10 @@ function getItemPosition(item = {}) {
     pos.label = item[col_label]
     pos.left = item[col_x] + "%"
     pos.top = item[col_y] + "%"
-    if(col_x_width){
+    if (col_x_width) {
       pos.width = col_x_width + 'px'
     }
-    if(col_y_width){
+    if (col_y_width) {
       pos.height = col_y_width + 'px'
     }
     pos.icon = customized_icon
@@ -288,6 +384,14 @@ function getItemPosition(item = {}) {
 
   return pos
 }
+
+/**
+ * 暴露给父组件的方法和属性
+ */
+defineExpose({
+  isEditMode,
+  editModeRef
+})
 </script>
 
 <style lang="scss" scoped>
@@ -296,6 +400,16 @@ function getItemPosition(item = {}) {
   height: 100%;
   position: relative;
 
+  // 编辑模式样式
+  &.edit-mode {
+    .map-marker {
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translate(-50%, -50%) scale(1.05);
+      }
+    }
+  }
 }
 
 .base-image {
@@ -442,8 +556,6 @@ function getItemPosition(item = {}) {
 }
 
 .custom-map {
-  // background-color: rgba(0, 0, 0, 0.1);
-  // backdrop-filter: blur(10px);
   position: relative;
   width: 100%;
   height: 100%;
@@ -451,9 +563,6 @@ function getItemPosition(item = {}) {
   .map-marker {
     position: absolute;
     transform: translate(-50%, -50%);
-
-
-
 
     .marker-icon {
       width: 30px;
