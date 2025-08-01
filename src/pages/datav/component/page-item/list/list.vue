@@ -159,6 +159,7 @@
                 color: setStyle && setStyle.color,
                 'font-size': setStyle && setStyle['font-size'],
               }"
+              :title="col.label"
             >
               {{ col.label }}
             </div>
@@ -1171,6 +1172,7 @@ export default {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 
     .list-title {
       font-size: 18px;
@@ -1181,12 +1183,12 @@ export default {
     .list-view {
       flex: 1;
       overflow-y: auto;
+      scrollbar-width: none;
       scrollbar-width: thin;
-      scrollbar-color: rgba(0, 0, 0, 0.1) #f1f1f1;
-
+      scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
       &::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 3px;
+        height: 3px;
       }
 
       &::-webkit-scrollbar-thumb {
@@ -1229,12 +1231,11 @@ export default {
 .bx-table {
   // overflow: hidden;
   color: var(--cell_color, #fff);
-
+  // display: table;
   .table-head,
   .table-row {
     display: flex;
     background-color: var(--cell_bg);
-
     &.stripe {
       background-color: var(--cell_bg2, rgba($color: #fff, $alpha: 0.1));
       color: var(--cell_color2);
@@ -1247,8 +1248,8 @@ export default {
       white-space: nowrap;
       overflow: hidden;
       cursor: pointer;
-      display: flex;
-      align-items: center;
+      // display: flex;
+      // align-items: center;
 
       span {
         text-overflow: ellipsis;

@@ -61,7 +61,7 @@
           :style="[
             {
               ...setLabelStyle,
-              ...(isActive(marker) ? setLabelActiveStyle : {}),
+              ...(isActive(item) ? setLabelActiveStyle : {}),
             },
             getItemPosition(item)
           ]"
