@@ -2,51 +2,16 @@
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
   <div class="map-view-container">
     <!-- 建筑物视图的树形数据 -->
-    <div
-      class="building-tree-data map-tree-data"
-      v-if="isBuildingView && buildingTree && buildingTree.length"
-    >
-      <div
-        class="tree-data-item"
-        v-for="item in buildingTree"
-        :key="item.id"
-      >
-        <div
-          class="tree-data-item-name"
-          :class="{
-            active:
-              (floorInfo && item.id && floorInfo.id === item.id) ||
-              (floorInfo.path && floorInfo.path.startsWith(item.path)),
-          }"
-          @click="tapBuildingTreeData(item)"
-        >
-          <i
-            class="tree-data-item-name-icon el-icon-caret-right"
-            :class="{ expanded: expandedBuildingNodes[item.id] }"
-            @click.stop="toggleExpand(item)"
-            v-if="item.children && item.children.length"
-          ></i>
-          <span class="tree-data-item-name-text">
-            {{ getTreeItemLabel(item) }}
-          </span>
-        </div>
-        <transition name="tree-expand">
-          <div
-            class="tree-data-item-child"
-            v-show="expandedBuildingNodes[item.id]"
-          >
-            <tree-data-item
-              v-for="child in item.children"
-              :key="child.id"
-              :item="child"
-              :selected="floorInfo"
-              :level="1"
-              @select="tapBuildingTreeData"
-            />
-          </div>
-        </transition>
-      </div>
-    </div>
+    <BuildingTreeData
+      :is-building-view="isBuildingView"
+      :building-tree="buildingTree"
+      :floor-info="floorInfo"
+      :expanded-building-nodes="expandedBuildingNodes"
+      :map-json="mapJson"
+      :get-tree-item-label="getTreeItemLabel"
+      @tree-data-click="tapBuildingTreeData"
+      @toggle-expand="toggleExpand"
+    />
 
     <!-- 普通视图的侧边栏树形数据 -->
     <MapTreeSidebar
@@ -68,81 +33,24 @@
       :in-edit="inEdit"
       :ignore-scale-classes="'map-marker'"
     >
-      <div
-        class="map-view base-image"
-        :class="{
-          'building-view': isBuildingView,
-          'custom-map': !isBuildingView,
-          'image-loading': imageLoading,
-          'image-loaded': imageLoaded,
-        }"
-        :style="{
-          backgroundImage: `url(${currentImageSrc})`,
-          backgroundSize: backgroundSize,
-        }"
-      >
-        <!-- 图片加载动画 -->
-        <div
-          class="image-loading-overlay"
-          v-if="imageLoading"
-        >
-          <div class="loading-spinner">
-            <div class="spinner-ring"></div>
-            <div class="spinner-ring"></div>
-            <div class="spinner-ring"></div>
-            <div class="loading-text">底图加载中...</div>
-          </div>
-        </div>
-
-        <!-- 建筑物视图内容 -->
-        <template v-if="isBuildingView">
-          <!-- building-view 的标记点内容可以在这里添加 -->
-        </template>
-
-        <!-- 普通视图的标记点内容 -->
-        <template v-else>
-          <!-- 标签类型的标记点 -->
-          <template v-if="!mapJson.multi_src_poi_json && mapJson && mapJson.map_type === '标签' && markerList.length">
-            <div
-              class="map-marker"
-              :class="{ 'is-active': isActive(marker) }"
-              :style="[
-                {
-                  ...setLabelStyle,
-                  ...(isActive(marker) ? setLabelActiveStyle : {}),
-                },
-                getItemPosition(marker),
-              ]"
-              v-for="marker in markerList"
-              :key="marker.id"
-              @click="handleMarkerClick(marker, $event)"
-            >
-              <div class="map-marker-content">
-                {{ marker[mapJson.col_label] || "" }}
-              </div>
-            </div>
-          </template>
-
-          <!-- 图标类型的标记点 -->
-          <template v-else-if="markerList.length">
-            <div
-              class="map-marker"
-              :style="getItemPosition(item)"
-              @click.stop="handleMarkerClick(item, $event)"
-              :class="{ 'cursor-pointer': allowClick(item) }"
-              v-for="item in markerList"
-              :title="getMarkerTitle(item)"
-              :key="item.id"
-            >
-              <img
-                :src="getItemIcon(item)"
-                class="marker-icon"
-                v-if="getItemIcon(item)"
-              />
-            </div>
-          </template>
-        </template>
-      </div>
+      <!-- 使用抽离的地图视图内容组件 -->
+      <MapViewContent
+        :map-json="mapJson"
+        :is-building-view="isBuildingView"
+        :marker-list="markerList"
+        :current-image-src="currentImageSrc"
+        :background-size="backgroundSize"
+        :image-loading="imageLoading"
+        :image-loaded="imageLoaded"
+        :get-item-position="getItemPosition"
+        :get-item-icon="getItemIcon"
+        :is-active="isActive"
+        :set-label-style="setLabelStyle"
+        :set-label-active-style="setLabelActiveStyle"
+        :allow-click="allowClick"
+        :get-marker-title="getMarkerTitle"
+        @marker-click="handleMarkerClick"
+      />
     </zoom-drag-container>
 
     <!-- 地图切换记录 - 面包屑导航 -->
@@ -151,13 +59,13 @@
       @breadcrumb-click="handleMapJsonChange"
     />
 
-
     <!-- 使用多来源标记物配置加载标记物数据 -->
     <multi-source-markers
       :map-json="mapJson"
       :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
       :map-data="currrentMapData"
+      :page-params-model="pageParamsModel"
       v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
     ></multi-source-markers>
 
@@ -214,6 +122,8 @@ import MultiSourceMarkers from "./MultiSourceMarkers.vue";
 import MapPopover from "./MapPopover.vue"; // 地图弹窗组件
 import MapTreeSidebar from "./MapTreeSidebar.vue"; // 地图树形侧边栏组件
 import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
+import MapViewContent from "./MapViewContent.vue"; // 地图视图内容组件
+import BuildingTreeData from "./BuildingTreeData.vue"; // 建筑物树形数据组件
 import { useUtils } from "@/common/vueApi";
 
 import { useMarkers } from "../composables/useMarkers";
@@ -228,6 +138,7 @@ const props = defineProps({
   pageItem: Object, // 页面项配置
   treeReq: Object, // 树形数据请求配置
   inEdit: Boolean, // 是否处于编辑状态
+  pageParamsModel: Object, // 页面参数模型
 });
 
 const emit = defineEmits(["select"]);
@@ -319,7 +230,7 @@ const popupPosition = computed(() => {
       '点击元素左侧': 'left',
     }
     result.positionDirection = directionMap[direction]
-  } else if ('屏幕居中') {
+  } else if ('屏幕居中' === direction) {
     result.positionMode = 'center'
   }
   return result
@@ -995,212 +906,5 @@ onMounted(() => {
   scrollbar-width: none;
 }
 
-.map-view {
-  width: 100%;
-  height: 100%;
-  position: relative;
-
-}
-
-.base-image {
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  transition: opacity 0.3s ease-in-out;
-  opacity: 1;
-
-  /* 图片加载状态样式 */
-  &.image-loading {
-    opacity: 0.7;
-    backdrop-filter: blur(20px);
-  }
-
-  &.image-loaded {
-    opacity: 1;
-  }
-
-  /* 图片切换时的过渡效果 */
-  &:not(.image-loaded) {
-    backdrop-filter: blur(20px);
-  }
-}
-
-/* 图片加载动画样式 */
-.image-loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.spinner-ring {
-  width: 40px;
-  height: 40px;
-  border: 3px solid transparent;
-  border-top: 3px solid #007aff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  position: absolute;
-}
-
-.spinner-ring:nth-child(1) {
-  width: 40px;
-  height: 40px;
-  animation-delay: 0s;
-}
-
-.spinner-ring:nth-child(2) {
-  width: 60px;
-  height: 60px;
-  border-top-color: #4a90e2;
-  animation-delay: -0.3s;
-  animation-duration: 1.5s;
-}
-
-.spinner-ring:nth-child(3) {
-  width: 80px;
-  height: 80px;
-  border-top-color: #87ceeb;
-  animation-delay: -0.6s;
-  animation-duration: 2s;
-}
-
-.loading-text {
-  margin-top: 120px;
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-/* 动画关键帧 */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-.building-view {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  grid-template-rows: 1fr;
-
-  .building-tree-data {
-    position: unset;
-    height: 100%;
-    overflow-y: auto;
-    display: inline-block;
-  }
-
-  .map-bg {
-    display: inline-block;
-    flex: 1;
-    background-color: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    position: relative;
-    z-index: 10;
-    height: 100%;
-    width: 100%;
-  }
-}
-
-.custom-map {
-  // background-color: rgba(0, 0, 0, 0.1);
-  // backdrop-filter: blur(10px);
-  position: relative;
-  width: 100%;
-  height: 100%;
-
-  .map-marker {
-    position: absolute;
-    transform: translate(-50%, -50%);
-
-
-    &.cursor-pointer {
-      cursor: pointer;
-
-      &:hover {
-        transform: translate(-50%, -50%) scale(1.1);
-        z-index: 20;
-      }
-
-      &:active {
-        transform: translate(-50%, -50%) scale(0.95);
-      }
-    }
-
-    .marker-icon {
-      width: 30px;
-    }
-  }
-}
-
-.building-view {
-  background-color: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.2s ease-out;
-
-  // 拖拽时禁用过渡动画以提升性能
-  &.no-transition {
-    transition: none !important;
-  }
-
-  // 可以在这里添加building-view特有的样式
-  .building-marker {
-    position: absolute;
-    transform: translate(-50%, -50%);
-
-    &.cursor-pointer {
-      cursor: pointer;
-    }
-
-    .marker-icon {
-      width: 30px;
-    }
-  }
-}
+// 移除原有的地图视图相关样式，这些样式已移动到 MapViewContent 组件中
 </style>
