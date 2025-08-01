@@ -59,14 +59,8 @@
         <div
           class="map-marker"
           :style="[
-            {
-              ...setLabelStyle,
-              ...(isActive(marker) ? setLabelActiveStyle : {}),
-            },
             getItemPosition(item)
           ]"
-          @click.stop="handleMarkerClick(item, $event)"
-          :class="{ 'cursor-pointer': allowClick(item) }"
           v-for="item in markerList"
           :title="getItemLabel(item)"
           :key="item.id"
@@ -74,9 +68,16 @@
           <img
             :src="getItemIcon(item)"
             class="marker-icon"
+            :class="{ 'cursor-pointer': allowClick(item) }"
+            :style="getIconStyle(item)"
+            @click.stop="handleMarkerClick(item, $event)"
             v-if="getItemIcon(item)"
           />
-          <span v-if="getItemLabel(item)">{{ getItemLabel(item) }}</span>
+          <span
+            v-if="getItemLabel(item)"
+            :style="getLabelStyle(item)"
+            class="marker-label"
+          >{{ getItemLabel(item) }}</span>
         </div>
       </template>
     </template>
@@ -187,6 +188,20 @@ function getItemLabel(item) {
   }
 }
 
+function getLabelStyle(item) {
+  if (item._poi_info?.label_style_json) {
+    return formatStyleData(item._poi_info?.label_style_json)
+  }
+  return {}
+}
+
+function getIconStyle(item) {
+  if (item._poi_info?.icon_style_json) {
+    return formatStyleData(item._poi_info?.icon_style_json)
+  }
+  return {}
+}
+
 
 /**
  * 标签样式计算属性
@@ -270,11 +285,16 @@ function getItemPosition(item = {}) {
     }
   } else if (item?._col_map) {
     const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
+
     pos.label = item[col_label]
     pos.left = item[col_x] + "%"
     pos.top = item[col_y] + "%"
-    pos.width = (col_x_width || 30) + 'px'
-    pos.height = (col_y_width || 30) + 'px'
+    if(col_x_width){
+      pos.width = col_x_width + 'px'
+    }
+    if(col_y_width){
+      pos.height = col_y_width + 'px'
+    }
     pos.icon = customized_icon
     pos.value = item[col_no]
   }
@@ -446,21 +466,32 @@ function getItemPosition(item = {}) {
     transform: translate(-50%, -50%);
 
 
-    &.cursor-pointer {
-      cursor: pointer;
 
-      &:hover {
-        transform: translate(-50%, -50%) scale(1.1);
-        z-index: 20;
-      }
-
-      &:active {
-        transform: translate(-50%, -50%) scale(0.95);
-      }
-    }
 
     .marker-icon {
       width: 30px;
+      transition: all 0.3s ease-in-out;
+
+      &.cursor-pointer {
+        cursor: pointer;
+
+        &:hover {
+          transform: scale(1.1);
+          z-index: 20;
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+    }
+
+    .marker-label {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      width: 100px;
+      transform: translate(-50%, 100%);
     }
   }
 }

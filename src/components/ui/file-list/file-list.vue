@@ -158,7 +158,7 @@ export default {
       return cond
     },
     pageAttribute() {
-      let pages_attribute = sessionStorage.pages_attribute;
+      let pages_attribute = sessionStorage.pages_attribute||{};
       if (pages_attribute && typeof pages_attribute === 'string') {
         try {
           pages_attribute = JSON.parse(pages_attribute)
