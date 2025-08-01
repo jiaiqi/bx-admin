@@ -127,7 +127,7 @@ export default {
           //   // dependField是子表本身的字段并且refedCol不是当前字段 不触发主子表冗余
           //   return 
           // }
-          if(dependField !== this.childForeignkey['referenced_column_name'] && dependField!==this.childForeignkey['column_name']){
+          if (this.childForeignkey && this.childForeignkey['referenced_column_name'] && dependField !== this.childForeignkey['referenced_column_name'] && dependField !== this.childForeignkey['column_name']) {
             // dependField 不是主表的编号字段
             return
           }
