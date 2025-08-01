@@ -75,8 +75,6 @@ function handleMarkerClick(item, event) {
 function allowClick(marker) {
   if (marker?._poi_info?.onclick) {
     return true
-  } else if (marker && cardUnitJson.value && mapJson.value.onclick === '弹出卡片') {
-    return true
   }
 }
 
