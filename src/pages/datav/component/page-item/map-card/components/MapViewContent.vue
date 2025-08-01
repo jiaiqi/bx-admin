@@ -56,29 +56,14 @@
 
       <!-- 图标类型的标记点 -->
       <template v-else-if="markerList.length">
-        <div
-          class="map-marker"
-          :style="[
-            getItemPosition(item)
-          ]"
+        <MapMarker
           v-for="item in markerList"
-          :title="getItemLabel(item)"
           :key="item.id"
-        >
-          <img
-            :src="getItemIcon(item)"
-            class="marker-icon"
-            :class="{ 'cursor-pointer': allowClick(item) }"
-            :style="getIconStyle(item)"
-            @click.stop="handleMarkerClick(item, $event)"
-            v-if="getItemIcon(item)"
-          />
-          <span
-            v-if="getItemLabel(item)"
-            :style="getLabelStyle(item)"
-            class="marker-label"
-          >{{ getItemLabel(item) }}</span>
-        </div>
+          :item="item"
+          :map-json="mapJson"
+          :allow-click="allowClick"
+          @marker-click="handleMarkerClick"
+        />
       </template>
     </template>
   </div>
@@ -88,6 +73,8 @@
 import { getImagePath } from '@/common/http.js'
 import { formatStyleData } from '../../../../common'
 import { computed } from 'vue'
+import MapMarker from './MapMarker.vue'
+
 /**
  * 地图视图内容组件
  * @component MapViewContent
