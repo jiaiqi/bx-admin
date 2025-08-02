@@ -437,7 +437,13 @@ let routes = [
     component: () =>
       import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
   },
-
+    //规则表达式可视化
+  {
+    path: "/regular",
+    name: "regular",
+    component: () =>
+        import(/* webpackChunkName: "regular" */ "@/pages/regularExpression/regular-box.vue")
+  },
 
   //移动端站点编辑使用
   {

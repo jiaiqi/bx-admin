@@ -42,20 +42,7 @@ export default {
     return {
       chatCount:0,
       chatType:0,
-      chatList:[
-        {
-          chat_type:'法律咨询',
-          code:2,
-          groupId:null,
-          isOpen:false
-        },
-        {
-          chat_type:'法律咨询161',
-          code:161,
-          groupId:null,
-          isOpen:false
-        }
-      ],
+      chatList:[],
       left: this.position.x || 0,
       top: this.position.y || 0,
       isDragging: false,
@@ -112,7 +99,7 @@ export default {
     setPosition() {
       console.log('position',this.position)
       return {
-        position: "absolute",
+        position: "fixed",
         left: this.left + "%",
         top: this.top + "%",
       };
@@ -120,6 +107,7 @@ export default {
     props() {
       return { ...this.$props, ...(this.$attrs || {}) };
     },
+
     chatStyleJson() {
       // 安全检查：确保pageItem存在且有style_json属性
       if (!this.pageItem || !this.pageItem.style_json) {
@@ -148,6 +136,7 @@ export default {
     },
     setDataInfo(){
       return this.pageItem.srv_req_type==='请求数据'? this.pageItem.srv_req_json:null
+
     },
   },
   watch:{
@@ -194,7 +183,7 @@ export default {
     }
   },
    mounted(){
-    // this.getChatList()
+    this.getChatList()
     // 初始化位置
     if (this.pageItem?.layout_x !== undefined) {
       this.left = parseFloat(this.pageItem.layout_x);
@@ -346,11 +335,29 @@ export default {
           serviceName:req.serviceName,
           colNames:['*'],
           condition:req.condition?req.condition:[],
+          page:req.page,
+          draft: false,
+          order: []
         }
         const url = `/${req.mapp}/select/${req.serviceName}`;
         const res = await this.$http.post(url, setParams);
         if(res.data.state!=='SUCCESS') return;
-        // this.chatList = res.data.data
+        let ls = res.data.data
+        if(ls && ls.length>0){
+          let base={};
+          let tep =[];
+          ls.map(d=>{
+            base={
+              chat_type:d.name,
+              code:d.id,
+              groupId:null,
+              isOpen:false,
+            }
+            tep.push(base);
+          })
+          console.log('-----',tep)
+          this.chatList = [...tep]
+        }
       }
     },
 
@@ -423,11 +430,10 @@ li{
   list-style: none;
 }
 .chat_en{
-  position: absolute;
-  z-index: 10000;
+  position: fixed;
+  z-index: 999;
   top:0.625rem;
   left:0.625rem;
-  width:9.375rem;
   padding:0.625rem;
   box-sizing: border-box;
   font-size:0.875rem;
