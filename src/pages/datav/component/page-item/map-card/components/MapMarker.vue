@@ -218,7 +218,9 @@ function getItemPosition(item = {}) {
     position: absolute;
     bottom: -10px;
     left: 50%;
-    width: 100px;
+    min-width: 50px;
+    text-align: center;
+    white-space: nowrap;
     transform: translate(-50%, 100%);
   }
 }
