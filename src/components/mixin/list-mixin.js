@@ -2318,6 +2318,9 @@ export default {
     },
     loadTableData(srvAuth) {
       let self = this;
+      if(this.listType == 'addchildlist'){
+        return
+      }
       if (!this.vpageNo && !this.isRefreshed) {
         // 登录过期后刷新
         this.isRefreshed = true;
@@ -2630,6 +2633,7 @@ export default {
                     this.cardInstance.setCardData(this.gridData);
                   }
 
+                  
                   this.$emit("list-data-loaded", this);
                   loading.close();
                   this.$refs?.["bx-table-layout"]?.doLayout();
@@ -2810,6 +2814,7 @@ export default {
                     this.cardInstance.setCardData(this.gridData);
                   }
 
+                  
                   this.$emit("list-data-loaded", this);
                   loading.close();
                   this.$refs?.["bx-table-layout"]?.doLayout();
@@ -2866,6 +2871,7 @@ export default {
                 this.cardInstance.setCardData(this.gridData);
               }
 
+              
               this.$emit("list-data-loaded", this);
 
               loading.close();
@@ -3433,6 +3439,7 @@ export default {
                 this.gridData = this.gridData.concat(dataArray);
               }
 
+              
               this.$emit("list-data-loaded", this);
             });
           }
