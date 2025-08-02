@@ -75,6 +75,12 @@ export default {
         return null;
       },
     },
+    childForeignkey: {
+      type: Object,
+      default: function () {
+        return null;
+      },
+    },
     approvalFormMode: {
       type: Object,
       default: function () {
