@@ -37,11 +37,9 @@
       <template v-if="!mapJson.multi_src_poi_json && mapJson && mapJson.map_type === '标签' && markerList.length">
         <div
           class="map-marker"
-          :class="{ 'is-active': isActive(marker) }"
           :style="[
             {
               ...setLabelStyle,
-              ...(isActive(marker) ? setLabelActiveStyle : {}),
             },
             getItemPosition(marker),
           ]"
@@ -66,8 +64,6 @@
             :map-json="mapJson"
             :is-edit-mode="isEditMode"
             :get-item-position="getItemPosition"
-            :is-active="isActive"
-            :get-marker-title="getMarkerTitle"
             @marker-click="handleMarkerClick"
             @position-change="handleMarkerPositionChange"
             @drag-start="handleMarkerDragStart"
@@ -81,7 +77,6 @@
             :key="item.id"
             :item="item"
             :map-json="mapJson"
-            :allow-click="allowClick"
             @marker-click="handleMarkerClick"
           />
         </template>
@@ -153,20 +148,6 @@ const props = defineProps({
   imageLoaded: {
     type: Boolean,
     default: true
-  },
-  // 标记点样式相关函数
-  isActive: {
-    type: Function,
-    required: true
-  },
-  // 工具函数
-  allowClick: {
-    type: Function,
-    required: true
-  },
-  getMarkerTitle: {
-    type: Function,
-    required: true
   },
   inEditor: { //处于可视化编辑器中
     type: Boolean,

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import TabList from "@/components/common/tab-list2";
+import { lowCodeRoutes } from "@/pages/lowcode/routes.js";
 const SimpleAdd = () =>
   import(/* webpackChunkName: "add" */ "@/components/common/simple-add");
 // const viewpdf = () => import("@/components/common/viewpdf");
@@ -437,25 +438,7 @@ let routes = [
       import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
   },
 
-  {
-    path: "/lowcode/editor/:pageNo",
-    name: "lowcode-editor",
-    meta: {
-      isEditor: true,
-    },
-    component: () =>
-      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
-  },
-  {
-    path: "/lowcode/view/:pageNo",
-    name: "lowcode-view",
-    meta: {
-      isEditor: false,
-      isView: true,
-    },
-    component: () =>
-      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
-  },
+
   //移动端站点编辑使用
   {
     path: "/app/edit/:pageNo",
@@ -468,36 +451,6 @@ let routes = [
     name: "app-preview",
     meta: {},
     component: () => import(/* webpackChunkName: "low-app" */ "@/pages/low-app/app-preview/preview-page.vue")
-  },
-  {
-    path: "/site/:pageNo",
-    name: "website",
-    component: () =>
-      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
-    meta: {
-      isEditor: false,
-      isView: true,
-    }
-  },
-  {
-    path: "/site/:pageNo/:anchorName",
-    name: "websiteWithAnchor",
-    component: () =>
-      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
-    meta: {
-      isEditor: false,
-      isView: true,
-    }
-  },
-  {
-    path: "/card-cell-editor/:cardNo",
-    name: "cardCellEditor",
-    component: () =>
-      import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/card-cell-editor/card-cell-editor.vue"),
-    meta: {
-      isEditor: false,
-      isView: true,
-    }
   },
   {
     path: '/authority',
@@ -556,131 +509,131 @@ routes.push({
       component: () => import("@/pages/platform/index.vue"),
     },
 
-    // storeMonitor
-    //大屏拖拽页面
-    {
-      // 网格布局 - 新
-      path: "/lowcode-grid",
-      component: () =>
-        import(
-          /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
-        ),
-      children: [
-        {
-          //可视化编辑页面 新布局
-          path: "editor",
-          name: "gridEditorAdd",
-          component: () =>
-            import(
-              /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
-            ),
-        },
-        {
-          //可视化编辑页面(update) 新布局
-          path: "editor/:no",
-          name: "gridEditorUpdate",
-          component: () =>
-            import(
-              /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
-            ),
-        },
-        {
-          //可视化编辑页面(update) 新布局
-          path: "view/:no",
-          name: "gridViewDetail",
-          component: () =>
-            import(
-              /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
-            ),
-        },
-      ],
-    },
-    // 网格布局
-    {
-      path: "/grid-editor",
-      meta: {
-        view: true,
-      },
-      component: () =>
-        import(
-          /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
-        ),
-    },
-    {
-      path: "/gridview",
-      component: () =>
-        import(
-          /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
-        ),
-      meta: {
-        view: true,
-      },
-      children: [
-        {
-          //可视化编辑页面
-          path: "editor",
-          name: "gridEditor",
-          component: () =>
-            import(
-              /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
-            ),
-        },
-        {
-          //可视化编辑页面(update)
-          path: "editor/:no",
-          name: "gridEditor2",
-          component: () =>
-            import(
-              /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
-            ),
-        },
-        {
-          // 预览页面
-          path: "view/:no",
-          name: "gridview",
-          component: () =>
-            import(
-              /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
-            ),
-        },
-      ],
-    },
-    // 图层布局
-    {
-      path: "/layer",
-      name: "layerview",
-      component: () =>
-        import(
-          /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
-        ),
-      //子路由
-      children: [
-        {
-          path: "editor/:no",
-          //也不使用懒加载，先在文件头部提前引入
-          component: () =>
-            import(
-              /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
-            ),
-        },
-        {
-          path: "editor",
-          //也不使用懒加载，先在文件头部提前引入
-          component: () =>
-            import(
-              /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
-            ),
-        },
-        {
-          path: "view/:no",
-          //@是定位 src 文件夹
-          component: () =>
-            import(
-              /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
-            ),
-        },
-      ],
-    },
+    // // storeMonitor
+    // //大屏拖拽页面
+    // {
+    //   // 网格布局 - 新
+    //   path: "/lowcode-grid",
+    //   component: () =>
+    //     import(
+    //       /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
+    //     ),
+    //   children: [
+    //     {
+    //       //可视化编辑页面 新布局
+    //       path: "editor",
+    //       name: "gridEditorAdd",
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
+    //         ),
+    //     },
+    //     {
+    //       //可视化编辑页面(update) 新布局
+    //       path: "editor/:no",
+    //       name: "gridEditorUpdate",
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
+    //         ),
+    //     },
+    //     {
+    //       //可视化编辑页面(update) 新布局
+    //       path: "view/:no",
+    //       name: "gridViewDetail",
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "grid-editor" */ "@/pages/datav/grid-layout/editor-next.vue"
+    //         ),
+    //     },
+    //   ],
+    // },
+    // // 网格布局
+    // {
+    //   path: "/grid-editor",
+    //   meta: {
+    //     view: true,
+    //   },
+    //   component: () =>
+    //     import(
+    //       /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
+    //     ),
+    // },
+    // {
+    //   path: "/gridview",
+    //   component: () =>
+    //     import(
+    //       /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
+    //     ),
+    //   meta: {
+    //     view: true,
+    //   },
+    //   children: [
+    //     {
+    //       //可视化编辑页面
+    //       path: "editor",
+    //       name: "gridEditor",
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
+    //         ),
+    //     },
+    //     {
+    //       //可视化编辑页面(update)
+    //       path: "editor/:no",
+    //       name: "gridEditor2",
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
+    //         ),
+    //     },
+    //     {
+    //       // 预览页面
+    //       path: "view/:no",
+    //       name: "gridview",
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "grid-view" */ "@/pages/datav/grid-layout/index.vue"
+    //         ),
+    //     },
+    //   ],
+    // },
+    // // 图层布局
+    // {
+    //   path: "/layer",
+    //   name: "layerview",
+    //   component: () =>
+    //     import(
+    //       /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
+    //     ),
+    //   //子路由
+    //   children: [
+    //     {
+    //       path: "editor/:no",
+    //       //也不使用懒加载，先在文件头部提前引入
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
+    //         ),
+    //     },
+    //     {
+    //       path: "editor",
+    //       //也不使用懒加载，先在文件头部提前引入
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
+    //         ),
+    //     },
+    //     {
+    //       path: "view/:no",
+    //       //@是定位 src 文件夹
+    //       component: () =>
+    //         import(
+    //           /* webpackChunkName: "layer" */ "@/pages/datav/layer-layout/index.vue"
+    //         ),
+    //     },
+    //   ],
+    // },
     // 西乡劳动项目
     {
       path: "/booking",
@@ -866,6 +819,9 @@ routes.push({ //网站
     name: "BookingHistory",
     component: () => import("@/pages/meetingRoomBooking/bookingHistory.vue")
   })
+
+// 最新的低代码相关路由
+routes.push(...lowCodeRoutes)
 
 Vue.use(VueRouter);
 const router = new VueRouter({

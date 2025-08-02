@@ -46,11 +46,6 @@ const props = defineProps({
     type: Object,
     required: true
   },
-  // // 是否允许点击
-  // allowClick: {
-  //   type: Function,
-  //   required: true
-  // }
 });
 
 /**

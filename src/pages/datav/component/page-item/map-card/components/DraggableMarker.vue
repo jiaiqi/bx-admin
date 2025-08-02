@@ -1,13 +1,12 @@
 <template>
     <div class="draggable-marker" :class="{
-        'is-active': isActive(item),
         'is-dragging': isDragging,
         'is-editable': isEditable && isEditMode
     }" :style="[
         markerStyle,
         getItemPosition(item),
         isDragging ? { zIndex: 9999 } : {}
-    ]" @mousedown="handleMouseDown" @click="handleMarkerClick" :title="getMarkerTitle(item)">
+    ]" @mousedown="handleMouseDown" @click="handleMarkerClick">
         <!-- 标记点内容 -->
         <div class="marker-content">
             <!-- 图标类型的标记点 -->
@@ -61,14 +60,6 @@ const props = defineProps({
     },
     // 标记点样式相关函数
     getItemPosition: {
-        type: Function,
-        required: true
-    },
-    isActive: {
-        type: Function,
-        required: true
-    },
-    getMarkerTitle: {
         type: Function,
         required: true
     },

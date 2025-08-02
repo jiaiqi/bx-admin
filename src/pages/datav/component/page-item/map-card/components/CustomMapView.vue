@@ -48,7 +48,6 @@
         :set-label-style="setLabelStyle"
         :set-label-active-style="setLabelActiveStyle"
         :allow-click="allowClick"
-        :get-marker-title="getMarkerTitle"
         :in-editor="inEdit"
         @marker-click="handleMarkerClick"
         @edit-mode-change="handleEditModeChange"
@@ -599,13 +598,6 @@ async function getMapBaseImageWithReq(reqJson, data) {
       const baseImageInfo = res.data.data[0]
       return baseImageInfo
     }
-  }
-}
-
-
-function getMarkerTitle(marker) {
-  if (marker?._col_map?.col_label) {
-    return marker[marker._col_map.col_label]
   }
 }
 
