@@ -166,6 +166,7 @@ export default {
 
       if (!this.isMem()) {
         this.loadTableData();
+        this.$emit('form-action-complete', action);
       }
     },
 
@@ -176,6 +177,7 @@ export default {
 
       if (!this.isMem()) {
         this.loadTableData();
+        this.$emit('form-action-complete', action);
       }
     },
 
@@ -186,6 +188,7 @@ export default {
 
       if (!this.isMem()) {
         this.loadTableData();
+        this.$emit('form-action-complete', action);
       }
     },
     getClickedRowPk(type) {

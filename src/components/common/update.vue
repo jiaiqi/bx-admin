@@ -1,6 +1,10 @@
 <template>
   <div v-loading="allChildDataLoaded === false">
-    <el-card class="box-card" :body-style="{ padding: '0px' }" shadow="never">
+    <el-card
+      class="box-card"
+      :body-style="{ padding: '0px' }"
+      shadow="never"
+    >
       <!-- <div slot="header" class="clearfix">
         <span>{{ label }}</span>
       </div> -->
@@ -26,6 +30,7 @@
           :init-load="initLoad"
           :reference-row-data="referenceRowData"
           :reference-no-column="referenceNoColumn"
+          :childForeignkey="childForeignkey"
           @form-loaded="onBasicFormLoaded"
           @action-complete="$emit('action-complete', $event)"
           @form-model-changed="onInnerFormModelChanged($event)"
@@ -42,9 +47,8 @@
             <el-collapse v-model="buildCollapsedRun['form_prepend']">
               <template v-for="(item, index) in childListRun.form.prepend">
                 <el-collapse-item
-                  :title="
-                    item.foreign_key.section_name || item.foreign_key.table_name
-                  "
+                  :title="item.foreign_key.section_name || item.foreign_key.table_name
+                    "
                   v-show="showChildList(item, defaultValues)"
                   :name="'form_prepend_' + index"
                 >
@@ -83,9 +87,8 @@
             <el-collapse v-model="buildCollapsedRun['form_append']">
               <template v-for="(item, index) in childListRun.form.append">
                 <el-collapse-item
-                  :title="
-                    item.foreign_key.section_name || item.foreign_key.table_name
-                  "
+                  :title="item.foreign_key.section_name || item.foreign_key.table_name
+                    "
                   v-show="showChildList(item, defaultValues)"
                   :name="'form_append_' + index"
                 >
@@ -127,9 +130,8 @@
             <el-collapse v-model="buildCollapsedRun[col + '_prepend']">
               <template v-for="(item, index) in fieldChildRun[col].prepend">
                 <el-collapse-item
-                  :title="
-                    item.foreign_key.section_name || item.foreign_key.table_name
-                  "
+                  :title="item.foreign_key.section_name || item.foreign_key.table_name
+                    "
                   v-show="showChildList(item, defaultValues)"
                   :key="index"
                   :name="col + '_prepend_' + index"
@@ -172,9 +174,8 @@
             <el-collapse v-model="buildCollapsedRun[col + '_append']">
               <template v-for="(item, index) in fieldChildRun[col].append">
                 <el-collapse-item
-                  :title="
-                    item.foreign_key.section_name || item.foreign_key.table_name
-                  "
+                  :title="item.foreign_key.section_name || item.foreign_key.table_name
+                    "
                   v-show="showChildList(item, defaultValues)"
                   :key="index"
                   :name="col + '_append_' + index"
@@ -226,6 +227,9 @@ export default {
   },
   mixins: [ParentChildMixin],
   props: {
+    childForeignkey: {
+      type: Object,
+    },
     initOrigin: {
       type: String,
       default: "none",
@@ -271,7 +275,7 @@ export default {
     },
 
     pk: {
-      type: [String,Number],
+      type: [String, Number],
     },
 
     initLoad: {

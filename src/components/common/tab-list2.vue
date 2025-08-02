@@ -4,16 +4,12 @@
       v-if="moreConfig && moreConfig.hasOwnProperty('pagePrompt')"
       :title="moreConfig.pagePrompt.title ? moreConfig.pagePrompt.title : ''"
       :closable="false"
-      :type="
-        moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
-      "
+      :type="moreConfig.pagePrompt.type ? moreConfig.pagePrompt.type : 'warning'
+        "
     >
       <slot>
-        <div
-          v-html="
-            recoverFileAddress4richText(moreConfig.pagePrompt.description)
-          "
-        ></div>
+        <div v-html="recoverFileAddress4richText(moreConfig.pagePrompt.description)
+          "></div>
       </slot>
     </el-alert>
     <filterTabs
@@ -51,7 +47,10 @@
               :content="sum.tip"
               placement="right"
             >
-              <i class="el-icon-question" style="color: #525252"></i>
+              <i
+                class="el-icon-question"
+                style="color: #525252"
+              ></i>
             </el-tooltip>
           </div>
           <div class="grid-content bg-purple">
@@ -108,6 +107,9 @@
           @list-data-loaded="listDataLoaded"
           @grid-data-changed="$emit('grid-data-changed', $event)"
           @standby-row-added="$emit('standby-row-added', $event)"
+          @suffix-actions-complete="$emit('suffix-actions-complete', $event)"
+          @form-action-complete="$emit('form-action-complete', $event)"
+          @customize-action-complete="customizeActionComplete"
           v-else
         >
         </list>
@@ -289,6 +291,10 @@ export default {
   },
 
   methods: {
+    customizeActionComplete(e, button) {
+      console.log('customizeActionComplete', e, button);
+      this.$emit('customize-action-complete', e, button);
+    },
     listDataLoaded(event) {
       this.$emit("list-data-loaded", event);
       console.log("listDataLoaded", event.gridData);
@@ -520,7 +526,7 @@ export default {
             this.addTab(section, tab);
           }
         });
-      } catch (e) {}
+      } catch (e) { }
     },
 
     addTab: function (activeSection, tab) {
@@ -780,16 +786,19 @@ export default {
   height: 100%;
   max-height: 100vh;
   flex-direction: column;
+
   .list-page-content {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+
     ::v-deep .list-comp-wrap {
       height: 100%;
       // overflow: hidden;
       display: flex;
       flex-direction: column;
+
       .table-list-row {
         flex: 1;
         display: flex;
@@ -799,6 +808,7 @@ export default {
     }
   }
 }
+
 .stata-data-layout {
   width: 100%;
   display: flex;

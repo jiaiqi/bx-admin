@@ -791,6 +791,7 @@
         :submit2-db="storageType == 'db'"
         :parentPageType="listType"
         :defaultValues="activeData"
+        :childForeignkey="childForeignkey"
         :parentMainFormDatas="listMainFormDatas"
         duplicateType="duplicate"
         :duplicateData="clickedRow && clickedRow.duplicate ? clickedRow.duplicate : null
@@ -821,6 +822,7 @@
         :parentPageType="listType"
         :haveDraft="isDraft"
         :pageName="'list-duplicatedeep'"
+        :childForeignkey="childForeignkey"
         :parentMainFormDatas="listMainFormDatas"
         :pageIsDraft="activeTabName"
         :defaultValues="activeData"
@@ -858,6 +860,7 @@
         :initLoad="initLoad"
         :defaultValues="clickedRow['update']"
         :submit2-db="storageType == 'db'"
+        :childForeignkey="childForeignkey"
         :parentPageType="listType"
         :haveDraft="isDraft"
         :parentMainFormDatas="listMainFormDatas"

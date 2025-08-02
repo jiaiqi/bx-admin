@@ -410,6 +410,7 @@ export default {
           window.location.reload();
         }
       }
+      this.$emit('popup-action-complete', e);
     },
   },
 };

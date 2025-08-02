@@ -75,6 +75,12 @@ export default {
         return null;
       },
     },
+    childForeignkey: {
+      type: Object,
+      default: function () {
+        return null;
+      },
+    },
     approvalFormMode: {
       type: Object,
       default: function () {
@@ -343,6 +349,9 @@ export default {
 
       let cols = this.colValChangeRequestCols;
       let formModel = this.formModel;
+      if(!reqs){
+        return null;
+      }
       for (let r of reqs) {
         let cond = r.condition;
         for (let c of cond) {

@@ -166,7 +166,7 @@ export const useUtils = () => {
   if (!vm) {
     throw new Error('useUtils() must be called in setup()')
   }
-  const utilKeys = ['renderStr', 'addTabByUrl']
+  const utilKeys = ['renderStr', 'addTabByUrl','$set']
   const utils = {}
   utilKeys.forEach(key => {
     if (!vm.proxy[key]) {

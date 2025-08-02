@@ -1,5 +1,8 @@
 <template>
-  <div style="height: 100%" v-if="id && id !== 'xxx'">
+  <div
+    style="height: 100%"
+    v-if="id && id !== 'xxx'"
+  >
     <card-detail
       :pk-col="pkCol"
       :pk="id"
@@ -40,12 +43,19 @@
       </div>
       <template v-if="!hasVisibleChildListTab() && detailshow">
         <template v-if="isPlatChildForm !== true">
-          <div slot="header" class="clearfix" v-show="is_view_title">
+          <div
+            slot="header"
+            class="clearfix"
+            v-show="is_view_title"
+          >
             <span>{{ tab_view_name }}</span>
           </div>
         </template>
 
-        <div class="text item detail-card" v-if="initLoad">
+        <div
+          class="text item detail-card"
+          v-if="initLoad"
+        >
           <simple-detail
             :divCond="buildDivCond"
             :mainService="mainService"
@@ -76,9 +86,8 @@
                 <template v-for="(item, index) in childListRun.form.prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="'form_prepend_' + index"
                   >
@@ -99,20 +108,18 @@
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
                       :pageIsDraft="pageIsDraft"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :key="index"
                       ref="childrenList"
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -121,6 +128,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -138,9 +147,8 @@
                 <template v-for="(item, index) in childListRun.form.append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="'form_append_' + index"
                   >
@@ -163,20 +171,18 @@
                       :pageIsDraft="pageIsDraft"
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :key="index"
                       ref="childrenList"
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -185,6 +191,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -205,9 +213,8 @@
                 <template v-for="(item, index) in fieldChildRun[col].prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="col + '_prepend_' + index"
                   >
@@ -216,11 +223,10 @@
                       :mainService="service_name"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
                       :pageIsDraft="pageIsDraft"
@@ -229,10 +235,9 @@
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -241,6 +246,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -261,9 +268,8 @@
                 <template v-for="(item, index) in fieldChildRun[col].append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="col + '_append_' + index"
                   >
@@ -272,11 +278,10 @@
                       :mainService="service_name"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
                       :pageIsDraft="pageIsDraft"
@@ -285,10 +290,9 @@
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -297,6 +301,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -307,7 +313,10 @@
         </div>
       </template>
 
-      <el-tabs v-if="hasVisibleChildListTab()" style="height: 100%">
+      <el-tabs
+        v-if="hasVisibleChildListTab()"
+        style="height: 100%"
+      >
         <el-tab-pane :label="tab_view_name">
           <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
@@ -340,9 +349,8 @@
                 <template v-for="(item, index) in childListRun.form.prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="'form_prepend_' + index"
                   >
@@ -365,20 +373,18 @@
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
                       :pageIsDraft="pageIsDraft"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :key="index"
                       ref="childrenList"
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -387,6 +393,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -404,9 +412,8 @@
                 <template v-for="(item, index) in childListRun.form.append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="'form_append_' + index"
                   >
@@ -430,20 +437,18 @@
                       :pageIsDraft="pageIsDraft"
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :key="index"
                       ref="childrenList"
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -452,6 +457,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -472,9 +479,8 @@
                 <template v-for="(item, index) in fieldChildRun[col].prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="col + '_prepend_' + index"
                   >
@@ -484,11 +490,10 @@
                       :mainService="service_name"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
                       :pageIsDraft="pageIsDraft"
@@ -497,10 +502,9 @@
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -509,6 +513,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -529,9 +535,8 @@
                 <template v-for="(item, index) in fieldChildRun[col].append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="
-                      showChildList(item, detailData) && !isTabsModel(item)
-                    "
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)
+                      "
                     :key="index"
                     :name="col + '_append_' + index"
                   >
@@ -541,11 +546,10 @@
                       :mainService="service_name"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
-                      :list-type="
-                        formType == 'procdetail'
-                          ? 'procdetaillist'
-                          : 'detaillist'
-                      "
+                      :list-type="formType == 'procdetail'
+                        ? 'procdetaillist'
+                        : 'detaillist'
+                        "
                       :childListConfig="item"
                       @detailOnLoaded="refreshDetail"
                       :pageIsDraft="pageIsDraft"
@@ -554,10 +558,9 @@
                       :$srv-app="item.srv_app"
                       :service="item.service_name"
                       :foreign-key="item.foreign_key"
-                      :read-only="
-                        childListReadonly ||
+                      :read-only="childListReadonly ||
                         item.foreign_key.child_table_readonly == '是'
-                      "
+                        "
                       :default-condition="getChildListDefaultCondition(item)"
                       :search-form="searchForm"
                       :is-tree="!!item.parent_no_col"
@@ -566,6 +569,8 @@
                       @list-loaded="$emit('list-loaded', $event)"
                       @update-form-loaded="$emit('update-form-loaded', $event)"
                       @add-form-loaded="$emit('add-form-loaded', $event)"
+                      @suffix-actions-complete="suffixActionsComplete"
+                      @form-action-complete="formActionComplete"
                     >
                     </child-list>
                   </el-collapse-item>
@@ -605,9 +610,8 @@
               v-else
               :isTree="item.table_type === '树形表'"
               :isProc="item.table_type === '流程表'"
-              :list-type="
-                formType == 'procdetail' ? 'procdetaillist' : 'detaillist'
-              "
+              :list-type="formType == 'procdetail' ? 'procdetaillist' : 'detaillist'
+                "
               :childListConfig="item"
               :pageIsDraft="pageIsDraft"
               :key="index"
@@ -625,6 +629,8 @@
               @list-loaded="$emit('list-loaded', $event)"
               @update-form-loaded="$emit('update-form-loaded', $event)"
               @add-form-loaded="$emit('add-form-loaded', $event)"
+              @suffix-actions-complete="suffixActionsComplete"
+              @form-action-complete="formActionComplete"
             >
             </child-list>
           </el-tab-pane>
@@ -786,6 +792,17 @@ export default {
     };
   },
   methods: {
+    formActionComplete(action){
+      console.log('formActionComplete:', action);
+      
+    },
+    suffixActionsComplete(event) {
+      console.log('suffixActionsComplete:', event);
+      if (event?.actionInfo?.button_type == "customize") {
+        // 子表静默操作完成，刷新主表数据
+        this.$refs["simple-detail"]?.initDetail?.();
+      }
+    },
     refreshChildList() {
       // 详情弹窗提交 更新子表数据
       if (this.$refs?.["childrenList"]?.length) {
@@ -879,9 +896,8 @@ export default {
       }
 
       let detailData = null;
-      let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${
-        this.service_name
-      }`;
+      let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${this.service_name
+        }`;
       console.log(
         "srvAuthKey",
         srvAuthKey,
@@ -962,9 +978,8 @@ export default {
         this.tab_view_name = response.body.data["service_view_name"] + "详情";
       }
       let detailData = null;
-      let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${
-        this.service_name
-      }`;
+      let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${this.service_name
+        }`;
       console.log(
         "srvAuthKey",
         srvAuthKey,
@@ -1005,8 +1020,8 @@ export default {
               item["state"] == "1"
                 ? "success"
                 : item["state"] == "0"
-                ? "process"
-                : "wait"; //success
+                  ? "process"
+                  : "wait"; //success
             return item;
           });
           console.log("response.body222", dataResp);
@@ -1100,25 +1115,32 @@ export default {
 .el-collapse-item:first-child {
   margin-bottom: unset !important;
 }
+
 .box-card {
   height: 100%;
+
   &.detail-box-card {
     display: flex;
     flex-direction: column;
+
     .el-card__body {
       flex: 1;
+
       .detail-card {
         height: calc(100% - 60px);
         overflow: auto;
       }
     }
   }
+
   .el-tabs__content {
     height: 100%;
+
     .el-tab-pane {
       height: 100%;
     }
   }
+
   .text.item {
     display: flex;
     flex-direction: column;
