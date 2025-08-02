@@ -102,7 +102,7 @@ export default {
         return {
           position: "fixed",
           left: "auto",
-          right: "20px", // 距离右边缘20px
+          right: "0px", // 距离右边缘20px
           top: this.top + "%",
         };
       }
@@ -363,7 +363,6 @@ export default {
             }
             tep.push(base);
           })
-          console.log('-----',tep)
           this.chatList = [...tep]
         }
       }
