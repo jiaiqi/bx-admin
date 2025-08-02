@@ -5,7 +5,6 @@
       'building-view': isBuildingView,
       'custom-map': !isBuildingView,
       'image-loading': imageLoading,
-      'image-loaded': imageLoaded,
       'edit-mode': isEditMode,
     }"
     :style="{
@@ -143,11 +142,6 @@ const props = defineProps({
   imageLoading: {
     type: Boolean,
     default: false
-  },
-  // 图片已加载状态
-  imageLoaded: {
-    type: Boolean,
-    default: true
   },
   inEditor: { //处于可视化编辑器中
     type: Boolean,
@@ -403,15 +397,6 @@ defineExpose({
   /* 图片加载状态样式 */
   &.image-loading {
     opacity: 0.7;
-    backdrop-filter: blur(20px);
-  }
-
-  &.image-loaded {
-    opacity: 1;
-  }
-
-  /* 图片切换时的过渡效果 */
-  &:not(.image-loaded) {
     backdrop-filter: blur(20px);
   }
 }

@@ -41,7 +41,6 @@
         :current-image-src="currentImageSrc"
         :background-size="backgroundSize"
         :image-loading="imageLoading"
-        :image-loaded="imageLoaded"
         :get-item-position="getItemPosition"
         :get-item-icon="getItemIcon"
         :is-active="isActive"
@@ -389,19 +388,14 @@ async function handleImageTransition(newImageSrc) {
   try {
     // 设置加载状态
     imageLoading.value = true;
-
+    imageLoaded.value = false
     // 预加载新图片
     await preloadImage(newImageSrc);
-
-    // 图片加载完成后，开始过渡
-    imageLoaded.value = false;
-
-    // 短暂延迟后切换图片并显示
     setTimeout(() => {
       currentImageSrc.value = newImageSrc;
       imageLoaded.value = true;
       imageLoading.value = false;
-    }, 150); // 150ms的淡出时间
+    }, 100);
 
   } catch (error) {
     console.warn('图片加载失败:', error);
