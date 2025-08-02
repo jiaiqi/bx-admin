@@ -390,7 +390,7 @@ async function handleImageTransition(newImageSrc) {
     imageLoading.value = true;
     imageLoaded.value = false
     // 预加载新图片
-    await preloadImage(newImageSrc);
+    preloadImage(newImageSrc);
     setTimeout(() => {
       currentImageSrc.value = newImageSrc;
       imageLoaded.value = true;

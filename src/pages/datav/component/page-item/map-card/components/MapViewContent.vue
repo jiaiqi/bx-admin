@@ -254,6 +254,9 @@ function getIconStyle(item) {
 }
 const route = useRoute()
 const showMapEditBtn = computed(() => {
+  if(props.mapJson?.map_option?.includes('位置编辑')){
+    return true
+  }
   if (props.inEditor === false && route.query.editMap === 'true') {
     return true
   }
