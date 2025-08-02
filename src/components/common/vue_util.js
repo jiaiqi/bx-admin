@@ -1358,6 +1358,9 @@ function init_util() {
         dialog.rowData = params.listRowData;
       }
     }
+    dialog.$on('popup-action-complete', (e) => {
+      console.log('popup-action-complete:', e);
+    })
     // 调用弹窗的地方传进来的回调函数，如果有传，则弹窗操作完成后调用此函数触发回调，通知组件操作完成
     dialog.callback = callback;
   };

@@ -343,6 +343,9 @@ export default {
 
       let cols = this.colValChangeRequestCols;
       let formModel = this.formModel;
+      if(!reqs){
+        return null;
+      }
       for (let r of reqs) {
         let cond = r.condition;
         for (let c of cond) {

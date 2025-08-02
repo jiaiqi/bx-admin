@@ -139,6 +139,7 @@ export default {
           window.location.reload();
         }
       }
+      this.$emit('suffix-actions-complete', butinfo);
     },
 
     /**
@@ -355,7 +356,6 @@ export default {
       } else if ("跳转" == operate_mode) {
       } else if ("静默操作" == operate_mode) {
         var me = this;
-
         var operate_params_cfg = butinfo.operate_params;
         var bxRequests = [];
         debugger
@@ -1138,7 +1138,6 @@ export default {
       this.pre_data_handle(item, operateData);
       var me = this;
       var bxRequests = [];
-
       var operate_params_cfg = item.operate_params;
 
       if (

@@ -118,6 +118,9 @@
       @list-data-loaded="listLoaded($event)"
       @grid-data-changed="$emit('grid-data-changed', $event)"
       @standby-row-added="onStandbyRowAdded"
+      @suffix-actions-complete="suffixActionsComplete"
+      @form-action-complete="$emit('form-action-complete', $event)"
+      @customize-action-complete="customizeActionComplete"
       v-else
     >
     </tab-list>
@@ -138,6 +141,7 @@ import excelList from "../feature/excel-list.vue"; // 新增的excel表格
 
 import { evalJson } from "@/util/evalJsonExpr.js";
 
+import cloneDeep from "lodash/cloneDeep";
 import concat from "lodash/concat";
 /**
  * 子表组件， 主要是处理外键相关的逻辑： 例如外籍列、外键disp列隐藏；添加行数据自动添加外键列的值。
@@ -368,9 +372,25 @@ export default {
       }
     },
   },
-  created: function () {},
+  created: function () { },
 
   methods: {
+    customizeActionComplete(e, button) {
+      // 子表自定义按钮弹窗 - 操作完成
+      const obj = {
+        action: e,
+        actionInfo: cloneDeep(button),
+        listInfo: cloneDeep(this.childListConfig)
+      }
+      this.$emit('suffix-actions-complete', obj);
+    },
+    suffixActionsComplete(butinfo) {
+      // 子表自定义按钮静默操作完成
+      const obj = {
+        actionInfo: cloneDeep(butinfo), listInfo: cloneDeep(this.childListConfig)
+      }
+      this.$emit('suffix-actions-complete', obj);
+    },
     getInnerList() {
       return this.$refs?.list?.$refs?.list || this.$refs.list;
     },
@@ -382,7 +402,7 @@ export default {
       }
     },
     childDataLoadedRun(e) {
-      console.log("child-list",e)
+      console.log("child-list", e)
       this.$emit("child-loaded", e);
     },
     buildRunQuries() {

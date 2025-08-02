@@ -414,7 +414,7 @@ export default {
       );
     },
     excelBtn() {
-      if(this.customListType == 'popup'){
+      if (this.customListType == 'popup') {
         // 列表在弹窗中不显示excel按钮
         return false
       }
@@ -1362,7 +1362,7 @@ export default {
       if (typeof item?._btn_index === 'number' && Array.isArray(data?._buttons)) {
         if (data._buttons[item._btn_index] === 1) {
           result = true
-        }else{
+        } else {
           result = false
         }
       }
@@ -1732,6 +1732,7 @@ export default {
             this.customizeOperate(button, this.multipleSelection, (e) => {
               // dialog操作完成之后的回调 刷新列表
               this.loadTableData();
+              this.$emit('customize-action-complete', e, button);
             });
             // this.customize_add(button, this.multipleSelection);
           }
@@ -1740,6 +1741,7 @@ export default {
             this.customizeOperate(button, this.multipleSelection, (e) => {
               // dialog操作完成之后的回调 刷新列表
               this.loadTableData();
+              this.$emit('customize-action-complete', e, button);
             });
           }
         }
@@ -1978,6 +1980,7 @@ export default {
             this.customizeOperate(operate_item, data, (e) => {
               // dialog操作完成之后的回调 刷新列表
               this.loadTableData();
+              this.$emit('customize-action-complete', e, operate_item);
             });
           }
         }
@@ -2010,6 +2013,8 @@ export default {
       this.customizeOperate(operate_item, data, (e) => {
         // dialog操作完成之后的回调 刷新列表
         this.loadTableData();
+        this.$emit('customize-action-complete', e, operate_item);
+
       });
       // if(data.operate_type.endsWith("弹出")){
 
