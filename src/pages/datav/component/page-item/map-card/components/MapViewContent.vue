@@ -11,6 +11,9 @@
       backgroundImage: `url(${currentImageSrc})`,
       backgroundSize: backgroundSize,
     }"
+    ref="mapViewContentRef"
+    tabindex="1"
+    @keydown.stop.prevent="handleKeyDown"
   >
     <!-- 图片加载动画 -->
     <div
@@ -67,7 +70,9 @@
             @position-change="handleMarkerPositionChange"
             @drag-start="handleMarkerDragStart"
             @drag-end="handleMarkerDragEnd"
-          />
+          >
+            <div class="drag-handle"></div> <!-- 添加拖拽手柄 -->
+          </DraggableMarker>
         </template>
         <!-- 普通模式下使用原有标记点 -->
         <template v-else>
@@ -98,7 +103,7 @@
 <script setup>
 import { getImagePath } from '@/common/http.js'
 import { formatStyleData } from '../../../../common'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import MapMarker from './MapMarker.vue'
 import DraggableMarker from './DraggableMarker.vue'
 import MapEditMode from './MapEditMode.vue'
@@ -159,6 +164,8 @@ const emit = defineEmits([
   'save-changes',
   'cancel-changes'
 ]);
+
+const mapViewContentRef = ref(null)
 
 // 编辑模式状态
 const isEditMode = ref(false)
@@ -254,7 +261,7 @@ function getIconStyle(item) {
 }
 const route = useRoute()
 const showMapEditBtn = computed(() => {
-  if(props.mapJson?.map_option?.includes('位置编辑')){
+  if (props.mapJson?.map_option?.includes('位置编辑')) {
     return true
   }
   if (props.inEditor === false && route.query.editMap === 'true') {
@@ -370,6 +377,17 @@ defineExpose({
   isEditMode,
   editModeRef
 })
+
+function handleKeyDown(e) {
+  if (e.key === 'Escape' && isEditMode.value) {
+    e.preventDefault()
+    editModeRef.value?.cancelChanges()
+  }
+  if (e.ctrlKey && e.key === 's' && isEditMode.value) {
+    e.preventDefault()
+    editModeRef.value?.saveChanges()
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -382,10 +400,28 @@ defineExpose({
   &.edit-mode {
     .map-marker {
       transition: all 0.2s ease;
+      cursor: move;
 
       &:hover {
-        transform: translate(-50%, -50%) scale(1.05);
+        transform: translate(-50%, -50%) scale(1.1);
+        box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
       }
+
+      &.dragging {
+        opacity: 0.8;
+        box-shadow: 0 0 15px rgba(0, 122, 255, 0.8);
+      }
+    }
+
+    .drag-handle {
+      width: 20px;
+      height: 20px;
+      background: #007aff;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      cursor: move;
     }
   }
 }

@@ -267,7 +267,9 @@ defineExpose({
   isEditMode: () => isEditMode.value,
   editableMarkers,
   recordMarkerChange,
-  hasChanges: () => hasChanges.value
+  hasChanges: () => hasChanges.value,
+  saveChanges,
+  cancelChanges
 })
 </script>
 
