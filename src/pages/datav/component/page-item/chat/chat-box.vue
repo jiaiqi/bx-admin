@@ -4,12 +4,12 @@
        :title="safeChatItem.chat_type"
        @close="closeDialog"
        :visible="activeChat"
-       width="30%"
+       width="40%"
        append-to-body
        :close-on-click-modal="false"
        :destroy-on-close="true"
    >
-     <div style="height: 500px" v-if="externalUrl && showIframe">
+     <div style="height: 600px" v-if="externalUrl && showIframe">
        <iframe
          :key="iframeKey"
          width="100%"
@@ -128,6 +128,7 @@ export default{
            ],
          }
        ]
+
        let res = await this.$http.post(urls,req)
        if(res.data.resultCode!=='SUCCESS') return
        let ls = res.data.response[0];
@@ -135,9 +136,10 @@ export default{
          sessionStorage.setItem("loginInfo",ls.response);
          sessionStorage.setItem("accessToken", ls.response.accessToken);
          sessionStorage.setItem("refreshToken",  ls.response.refreshToken);
+         sessionStorage.setItem('is_customer',ls.response.is_customer);
          let ids = ls.response.group_id;
          sessionStorage.setItem("cur_group_id", ids);
-         this.externalUrl=window.APP_CONFIG.chatUrl+`?accessToken=${encodeURIComponent(ls.response.accessToken)}&refreshToken=${encodeURIComponent(ls.response.refreshToken)}&groupId=${encodeURIComponent(ids)}&userNo=${this.baseInfo.user_no}`
+         this.externalUrl=window.APP_CONFIG.chatUrl+`?accessToken=${encodeURIComponent(ls.response.accessToken)}&refreshToken=${encodeURIComponent(ls.response.refreshToken)}&groupId=${encodeURIComponent(ids)}&userNo=${this.baseInfo.user_no}&is_customer=${ls.response.is_customer}`
          let obj={
              setId:this.safeChatItem.code?this.safeChatItem.code:this.baseInfo.group_id,
              groupId:Number(ids)

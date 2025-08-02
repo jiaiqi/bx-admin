@@ -14,6 +14,15 @@
     "build-lib4app": "bili --format cjs --name index --plugin vue --vue.css false"
   },
   "dependencies": {
+    "@antv/x6": "^2.18.1",
+    "@antv/x6-plugin-clipboard": "^2.1.6",
+    "@antv/x6-plugin-history": "^2.2.4",
+    "@antv/x6-plugin-keyboard": "^2.2.3",
+    "@antv/x6-plugin-selection": "^2.2.2",
+    "@antv/x6-plugin-snapline": "^2.1.7",
+    "@antv/x6-plugin-stencil": "^2.1.5",
+    "@antv/x6-plugin-transform": "^2.1.8",
+    "@antv/x6-vue-shape": "^2.1.2",
     "@iconify/json": "^2.2.333",
     "@popperjs/core": "^2.11.7",
     "@tailwindcss/postcss7-compat": "^2.2.17",
@@ -41,6 +50,7 @@
     "ezuikit-js": "^7.6.3",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
+    "insert-css": "^2.0.0",
     "jquery": "^3.6.4",
     "jsdom": "^21.1.1",
     "jspdf": "^2.5.1",

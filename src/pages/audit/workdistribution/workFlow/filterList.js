@@ -23,8 +23,13 @@ export const filterListByOption = (list, toList) => {
     list.forEach(item => {
         // 如果源对象和目标对象都有相同的 key
         if (item?.columns && result.hasOwnProperty(item.columns)) {
+            if(!Array.isArray(item.option_list_v2)) {
+                result[item.columns]=item.option_list_v2;
+            }
             // 将源对象的值赋给目标对象
-            result[item.columns] = item.option_list_v2 || [];
+            if(Array.isArray(item.option_list_v2)){
+                result[item.columns] = item.option_list_v2||[];
+            }
         }
     });
 
