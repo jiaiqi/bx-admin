@@ -97,7 +97,15 @@ export default {
       return this.currentId && this.id === this.currentId;
     },
     setPosition() {
-      console.log('position',this.position)
+      // 当isPreview为真时，强制定位到右侧距离边缘20px的位置
+      if (this.isPreview) {
+        return {
+          position: "fixed",
+          left: "auto",
+          right: "20px", // 距离右边缘20px
+          top: this.top + "%",
+        };
+      }
       return {
         position: "fixed",
         left: this.left + "%",
@@ -460,6 +468,12 @@ li{
   // 编辑模式下默认指针
   &.editable {
     cursor: pointer;
+  }
+
+  // 预览模式下的右侧定位样式
+  &.draggable[style*="right: 20px"] {
+    left: auto !important;
+    right: 20px !important;
   }
 
   // 操作工具栏样式
