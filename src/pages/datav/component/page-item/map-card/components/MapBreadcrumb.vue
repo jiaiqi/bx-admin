@@ -79,12 +79,13 @@ function getBreadLabel(item) {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.1);
+  // background-color: rgba(0, 0, 0, 0.1);
   z-index: 200;
   width: 100%;
   display: flex;
   justify-content: center;
   animation: slideUp 0.3s ease-out;
+  pointer-events: none;
   // cursor: pointer;
 
   // &:hover {
@@ -106,6 +107,7 @@ function getBreadLabel(item) {
     0 8px 32px rgba(0, 0, 0, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.05);
   transition: bottom 0.3s ease-out;
+  pointer-events: auto;
 }
 
 .breadcrumb-container {
