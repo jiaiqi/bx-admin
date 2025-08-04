@@ -11,11 +11,12 @@
       :get-tree-item-label="getTreeItemLabel"
       @tree-data-click="tapBuildingTreeData"
       @toggle-expand="toggleExpand"
+      v-if="isBuildingView"
     />
 
     <!-- 普通视图的侧边栏树形数据 -->
     <MapTreeSidebar
-      v-if="!isBuildingView"
+      v-if="!isBuildingView && showLeftPanel"
       :tree-data="treeData"
       :selected-tree-data="selectedTreeData"
       :expanded-nodes="expandedNodes"
@@ -37,7 +38,7 @@
       <MapViewContent
         :map-json="mapJson"
         :is-building-view="isBuildingView"
-        :marker-list="markerList"
+        :marker-list="setMarkerList"
         :current-image-src="currentImageSrc"
         :background-size="backgroundSize"
         :image-loading="imageLoading"
@@ -60,6 +61,7 @@
     <MapBreadcrumb
       :breadcrumb-items="finallyMapUndoRedo"
       @breadcrumb-click="handleMapJsonChange"
+      v-if="finallyMapUndoRedo && finallyMapUndoRedo.length"
     />
 
     <!-- 使用多来源标记物配置加载标记物数据 -->
@@ -73,6 +75,13 @@
       ref="multiSourceMarkersRef"
       v-if="isMultiSource"
     ></multi-source-markers>
+
+    <!-- 地图图例 -->
+    <map-legend
+      :source-json="mapJson.multi_src_poi_json"
+      @legend-fold-change="handleLegendFoldChange"
+      v-if="showLegend"
+    ></map-legend>
 
     <!-- 地图标记点弹窗 -->
     <map-popover
@@ -129,6 +138,8 @@ import MapTreeSidebar from "./MapTreeSidebar.vue"; // 地图树形侧边栏组�
 import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
 import MapViewContent from "./MapViewContent.vue"; // 地图视图内容组件
 import BuildingTreeData from "./BuildingTreeData.vue"; // 建筑物树形数据组件
+import MapLegend from "./MapLegend.vue"; // 地图图例组件
+
 import { useUtils } from "@/common/vueApi";
 
 import { useMarkers } from "../composables/useMarkers";
@@ -152,6 +163,7 @@ const emit = defineEmits(["select"]);
  * 左侧面板折叠状态管理
  */
 const isCollapsed = ref(false); // 是否折叠左侧面板
+
 
 /**
  * 切换左侧面板折叠状态
@@ -178,7 +190,7 @@ const currentMapInfo = computed(() => {
 const currrentMapData = computed(() => {
   if (currentMapInfo.value && currentMapInfo.value.data) {
     return currentMapInfo.value.data
-  }else if(selectedTreeData.value){
+  } else if (selectedTreeData.value) {
     return selectedTreeData.value
   }
 })
@@ -191,9 +203,36 @@ if (props.pageItem.map_json) {
   mapJson.value = props.pageItem.map_json
 }
 
+const showLeftPanel = computed(() => {
+  return mapJson.value && mapJson.value.map_option?.includes('对象树切换')
+})
+
 const isMultiSource = computed(() => {
   return mapJson.value?.map_option?.includes('多来源标记物')
 })
+
+const showLegend = computed(() => {
+  return mapJson.value?.map_option?.includes('显示图例')
+})
+
+const foldLegends = ref([])
+const setMarkerList = computed(() => {
+  if (Array.isArray(markerList.value) && markerList.value.length) {
+    return markerList.value.map(item => {
+      item._visible = true
+      const legendName = item._poi_info?.poi_name
+      if (legendName && foldLegends.value.includes(legendName)) {
+        item._visible = false
+      }
+      return item
+    })
+  } else {
+    return []
+  }
+})
+const handleLegendFoldChange = (legends) => {
+  foldLegends.value = legends.filter(item => item.fold === true).map(item => item.name)
+}
 
 const { getItemPosition, getItemIcon, isActive, setLabelActiveStyle, setLabelStyle } = useMarkers(props, mapJson)
 
@@ -969,9 +1008,9 @@ watch(
 
 function initComponents() {
   // 检查是否有树形数据配置
-  if (setTreeReq.value) {
+  if (setTreeReq.value && showLeftPanel.value) {
     initMapTreeData(); // 初始化树形数据
-  } else {
+  } else if (!isMultiSource.value) {
     // 初始化自定义地图数据
     initCustomMap().then((res) => {
       markerList.value = res;

@@ -83,8 +83,14 @@ function handleMarkerClick(item, event) {
  * @returns {boolean} 是否允许点击
  */
 function allowClick(marker) {
-  if (marker?._poi_info?.onclick) {
-    return true
+  if (props.mapJson?.map_option?.includes('多来源标记物')) {
+    if (marker?._poi_info?.onclick) {
+      return true
+    }
+  } else {
+    if (props.mapJson.onclick) {
+      return true
+    }
   }
 }
 
@@ -174,7 +180,7 @@ function getItemIcon(item = {}) {
  * @returns {Object} 位置样式对象
  */
 function getItemPosition(item = {}) {
-  if(props.inDrag) {
+  if (props.inDrag) {
     return {
     }
   }

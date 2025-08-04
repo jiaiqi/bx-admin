@@ -84,7 +84,7 @@ async function getMarkers(params = {}) {
   const selectTreeData = {
     ...props.selectTreeData || {}
   }
-  
+
   if (filterCol && ruleType && dataCol && (props.mapData[dataCol] || selectTreeData[dataCol])) {
     const obj = {
       colName: filterCol,
@@ -219,25 +219,25 @@ async function fetchAllMarkers() {
   }
 }
 
-// // 监听数据源配置变化
-// watch(
-//   () => sourceJson.value,
-//   async (newVal, oldVal) => {
-//     if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-//       await nextTick()
-//       await fetchAllMarkers()
-//     }
-//   },
-//   {
-//     immediate: true,
-//     deep: true
-//   }
-// )
+// 监听数据源配置变化
+watch(
+  () => sourceJson.value,
+  async (newVal, oldVal) => {
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      await nextTick()
+      await fetchAllMarkers()
+    }
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
 
 watch(
   () => props.mapData,
   async (newVal, oldVal) => {
-    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+    if (newVal && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
       await nextTick()
       await fetchAllMarkers()
     }
