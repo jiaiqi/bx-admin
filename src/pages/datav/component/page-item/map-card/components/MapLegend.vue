@@ -52,7 +52,7 @@ export default {
     position: {
       type: Object,
       default: () => ({
-        positionDirection: 'top',//top top-right top-left bottom bottom-right bottom-left
+        positionDirection: 'top-right',//top top-right top-left bottom bottom-right bottom-left
         positionMode: 'absolute'
       })
     }
@@ -164,9 +164,10 @@ export default {
   padding: 8px 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   min-width: 80px;
+  max-width: 300px; // 限制最大宽度
   backdrop-filter: blur(2px);
   color: #fff;
   background-color: rgba(0, 0, 0, 0.2);
@@ -177,6 +178,9 @@ export default {
   align-items: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex: 0 0 calc(33.333% - 8px); // 每行最多3列，减去gap的影响
+  min-width: 60px; // 最小宽度保证内容可读
+  max-width: 120px; // 最大宽度避免过长
 
   &.legend-item-fold {
     opacity: 0.4;
@@ -227,26 +231,29 @@ export default {
 // 水平布局（当图例项较少时）
 @media (min-width: 768px) {
   .legend-container {
+    // 保持flex-wrap: wrap，确保超过3列时换行
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 12px 16px;
+    gap: 8px 16px;
+  }
 
-    .legend-item {
-      flex: none;
-    }
+  .legend-item {
+    flex: 0 0 calc(33.333% - 11px); // 调整gap影响
+    min-width:60px;
+    max-width: 130px;
   }
 
   // 顶部和底部位置时使用水平布局
   .legend-top .legend-container,
   .legend-bottom .legend-container {
     flex-direction: row;
+    flex-wrap: wrap;
   }
 }
 
 // 响应式设计
 @media (max-width: 768px) {
   .map-legend {
-
     &.legend-top-right,
     &.legend-bottom-right {
       right: 10px;
@@ -268,7 +275,13 @@ export default {
   .legend-container {
     max-width: none;
     padding: 6px 8px;
-    gap: 4px;
+    gap: 4px 8px;
+  }
+
+  .legend-item {
+    flex: 0 0 calc(50% - 4px); // 移动端每行2列
+    min-width: 70px;
+    max-width: none;
   }
 
   .legend-text {

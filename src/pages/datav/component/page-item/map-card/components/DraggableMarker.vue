@@ -3,7 +3,8 @@
     class="draggable-marker"
     :class="{
       'is-dragging': isDragging,
-      'is-editable': isEditable && isEditMode
+      'is-editable': isEditable && isEditMode,
+      'is-not-editable': !isEditable && isEditMode
     }"
     :style="[
       markerStyle,
@@ -36,6 +37,27 @@
           d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z"
         />
       </svg>
+    </div>
+
+    <!-- 不可编辑提示 -->
+    <div
+      v-if="!isEditable && isEditMode"
+      class="not-editable-tooltip"
+    >
+      <div class="tooltip-content">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="warning-icon"
+        >
+          <path
+            d="M12,2L13.09,8.26L22,9L13.09,9.74L12,16L10.91,9.74L2,9L10.91,8.26L12,2M12,7A2,2 0 0,0 10,9A2,2 0 0,0 12,11A2,2 0 0,0 14,9A2,2 0 0,0 12,7Z"
+          />
+        </svg>
+        <span>请配置编辑服务</span>
+      </div>
     </div>
   </div>
 </template>
@@ -249,6 +271,37 @@ function handleMarkerClick(item, event) {
     }
   }
 
+  &.is-not-editable {
+    cursor: not-allowed;
+
+    &:hover {
+      .marker-content {
+        position: relative;
+        opacity: 0.7;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          border: 2px solid #ff6b6b;
+          background: rgba(255, 107, 107, 0.1);
+          border-radius: 4px;
+          animation: pulseRed 1.5s infinite;
+        }
+      }
+
+      .not-editable-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -5px);
+        
+      }
+    }
+  }
+
   &.is-dragging {
     cursor: grabbing;
     transform: translate(-50%, -50%) scale(1.1);
@@ -271,7 +324,7 @@ function handleMarkerClick(item, event) {
   .marker-content {
     position: relative;
     pointer-events: none; // 防止内部元素干扰拖拽
-    transform: translate(0,0);
+    transform: translate(0, 0);
     left: unset;
     top: unset;
   }
@@ -299,6 +352,47 @@ function handleMarkerClick(item, event) {
   &.is-dragging .drag-indicator {
     opacity: 1;
   }
+
+  .not-editable-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 10000;
+
+    .tooltip-content {
+      background: rgba(255, 107, 107, 0.95);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(4px);
+
+      .warning-icon {
+        flex-shrink: 0;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: rgba(255, 107, 107, 0.95);
+      }
+    }
+  }
 }
 
 // 蓝色边框脉冲动画
@@ -313,6 +407,21 @@ function handleMarkerClick(item, event) {
 
   100% {
     box-shadow: 0 0 0 0 rgba(0, 122, 255, 0);
+  }
+}
+
+// 红色边框脉冲动画
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 107, 107, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
   }
 }
 </style>
