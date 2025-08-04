@@ -58,12 +58,11 @@ async function getMarkers(params = {}) {
   let { srv_req_json: p, poi_name, poi_type, col_map } = params
   if (params.srv_req_info) {
     // 配置变动,srv_req_json改为从srv_req_info中获取
-    p = params.srv_req_info.srv_req_json
+    p = cloneDeep(params.srv_req_info.srv_req_json)
   } else {
     console.warn('获取标记点数据：缺少必要的服务配置参数', params)
     return
   }
-
 
   // 参数验证
   if (!p || !p.mapp || !p.serviceName) {
@@ -92,9 +91,9 @@ async function getMarkers(params = {}) {
   }
   let pageParamsModel = cloneDeep(props.pageParamsModel)
 
-  if(pageParamsModel && typeof pageParamsModel === 'object'){
-    for(let key in pageParamsModel){
-      if(pageParamsModel[key]?.value){
+  if (pageParamsModel && typeof pageParamsModel === 'object') {
+    for (let key in pageParamsModel) {
+      if (pageParamsModel[key]?.value) {
         pageParamsModel[key] = pageParamsModel[key].value
       }
     }
@@ -211,9 +210,23 @@ async function fetchAllMarkers() {
   }
 }
 
-// 监听数据源配置变化
+// // 监听数据源配置变化
+// watch(
+//   () => sourceJson.value,
+//   async (newVal, oldVal) => {
+//     if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+//       await nextTick()
+//       await fetchAllMarkers()
+//     }
+//   },
+//   {
+//     immediate: true,
+//     deep: true
+//   }
+// )
+
 watch(
-  () => sourceJson.value,
+  () => props.mapData,
   async (newVal, oldVal) => {
     if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
       await nextTick()
@@ -221,11 +234,9 @@ watch(
     }
   },
   {
-    immediate: true,
     deep: true
   }
 )
-
 // 监听标记点数据变化，向父组件发送更新事件
 watch(
   () => markers.value,

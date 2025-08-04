@@ -70,7 +70,7 @@
       :map-data="currrentMapData"
       :page-params-model="pageParamsModel"
       ref="multiSourceMarkersRef"
-      v-if="mapJson && mapJson.map_option && mapJson.map_option.includes('多来源标记物') && mapJson.multi_src_poi_json"
+      v-if="isMultiSource"
     ></multi-source-markers>
 
     <!-- 地图标记点弹窗 -->
@@ -177,6 +177,8 @@ const currentMapInfo = computed(() => {
 const currrentMapData = computed(() => {
   if (currentMapInfo.value && currentMapInfo.value.data) {
     return currentMapInfo.value.data
+  }else if(selectedTreeData.value){
+    return selectedTreeData.value
   }
 })
 
@@ -187,6 +189,10 @@ const mapJson = ref(null)
 if (props.pageItem.map_json) {
   mapJson.value = props.pageItem.map_json
 }
+
+const isMultiSource = computed(() => {
+  return mapJson.value?.map_option?.includes('多来源标记物')
+})
 
 const { getItemPosition, getItemIcon, isActive, setLabelActiveStyle, setLabelStyle } = useMarkers(props, mapJson)
 
@@ -735,12 +741,17 @@ function closePopup() {
 async function toggleExpand(item) {
   console.log("toggleExpand", item);
   if (!item || !item.id) return; // 检查参数有效性
-  await setChildren(item);
 
   // 切换展开状态
   set(expandedNodes.value, item.id, !expandedNodes.value[item.id]);
 
   console.log("expandedNodes", expandedNodes.value);
+
+  // if (mapJson.value?.map_option?.includes('多来源标记物')) {
+  //   return
+  // }
+  await setChildren(item);
+
 }
 
 /**

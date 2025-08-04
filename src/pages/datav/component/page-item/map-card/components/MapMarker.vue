@@ -5,19 +5,22 @@
       getItemPosition(item)
     ]"
     :title="getItemLabel(item)"
+    :class="{ 'cursor-pointer': allowClick(item) }"
+    @click.stop="handleMarkerClick(item, $event)"
   >
     <img
       :src="getItemIcon(item)"
       class="marker-icon"
-      :class="{ 'cursor-pointer': allowClick(item) }"
       :style="getIconStyle(item)"
-      @click.stop="handleMarkerClick(item, $event)"
-      v-if="getItemIcon(item)"
+      v-if="!onlyShowLabel && getItemIcon(item)"
     />
     <span
       v-if="getItemLabel(item)"
       :style="getLabelStyle(item)"
       class="marker-label"
+      :class="{
+        'only-show-label': onlyShowLabel
+      }"
     >{{ getItemLabel(item) }}</span>
   </div>
 </template>
@@ -25,6 +28,7 @@
 <script setup>
 import { getImagePath } from '@/common/http.js'
 import { formatStyleData } from '@/pages/datav/common/index.js'
+import { computed } from 'vue';
 
 /**
  * 地图标记组件
@@ -48,6 +52,10 @@ const props = defineProps({
   },
 });
 
+const onlyShowLabel = computed(() => {
+  return props.item._poi_info?.display_label === '仅显示标签'
+})
+
 /**
  * 组件事件定义
  */
@@ -59,7 +67,9 @@ const emit = defineEmits(['marker-click']);
  * @param {Event} event - 点击事件
  */
 function handleMarkerClick(item, event) {
-  emit('marker-click', item, event);
+  if(allowClick(item)) {
+    emit('marker-click', item, event);
+  }
 }
 
 /**
@@ -222,6 +232,12 @@ function getItemPosition(item = {}) {
     text-align: center;
     white-space: nowrap;
     transform: translate(-50%, 100%);
+
+    &.only-show-label {
+      transform: translate(-50%, -50%);
+      bottom: 0;
+      bottom: unset;
+    }
   }
 }
 </style>
