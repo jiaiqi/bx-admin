@@ -129,7 +129,7 @@ export default {
           // }
           if (this.childForeignkey && this.childForeignkey['referenced_column_name'] && dependField !== this.childForeignkey['referenced_column_name'] && dependField !== this.childForeignkey['column_name']) {
             // dependField 不是主表的编号字段
-            return
+            continue
           }
           // 主子表冗余
           let subMainRedundant = fieldInfo.mainSubRedundant; // 主子表冗余配置
