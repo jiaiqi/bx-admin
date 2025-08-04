@@ -13,7 +13,7 @@
     }"
     ref="mapViewContentRef"
     tabindex="1"
-    @keydown.stop.prevent="handleKeyDown"
+    @keydown="handleKeyDown"
   >
     <!-- 图片加载动画 -->
     <div
@@ -381,10 +381,12 @@ defineExpose({
 function handleKeyDown(e) {
   if (e.key === 'Escape' && isEditMode.value) {
     e.preventDefault()
+    e.stopPropagation()
     editModeRef.value?.cancelChanges()
   }
   if (e.ctrlKey && e.key === 's' && isEditMode.value) {
     e.preventDefault()
+    e.stopPropagation()
     editModeRef.value?.saveChanges()
   }
 }

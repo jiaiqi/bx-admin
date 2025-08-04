@@ -16,7 +16,7 @@
     @keyup="handleKeyUp"
     @mouseenter="showTips"
     @focus="showTips"
-    tabindex="0"
+    tabindex="99"
   >
     <div
       class="content-view"
