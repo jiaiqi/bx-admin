@@ -266,6 +266,7 @@ export default {
 
       event.preventDefault();
     },
+
     onDrag(event) {
       if (!this.isDragging) return;
       const deltaX = event.clientX - this.startX;
