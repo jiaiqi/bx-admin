@@ -15,7 +15,7 @@
       v-if="!onlyShowLabel && getItemIcon(item)"
     />
     <span
-      v-if="getItemLabel(item)"
+      v-if="shouldShowLabel && getItemLabel(item)"
       :style="getLabelStyle(item)"
       class="marker-label"
       :class="{
@@ -59,6 +59,19 @@ const props = defineProps({
 
 const onlyShowLabel = computed(() => {
   return props.item._poi_info?.display_label === '仅显示标签'
+})
+
+/**
+ * 判断是否应该显示标签
+ */
+const shouldShowLabel = computed(() => {
+  const displayLabel = props.item._poi_info?.display_label
+  // 当display_label为空、null、undefined或者为"否"时，不显示标签
+  if (!displayLabel || displayLabel === '否') {
+    return false
+  }
+  // 当display_label为"仅显示标签"或"是"时，显示标签
+  return displayLabel === '仅显示标签' || displayLabel === '是'
 })
 
 /**

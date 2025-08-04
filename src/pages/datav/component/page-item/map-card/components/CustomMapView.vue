@@ -242,7 +242,7 @@ const baseIamgeByReq = ref("")
 
 function handleMapJsonChange(item, index) {
   if (index) {
-    mapUndoRedo.value.splice(index, 1)
+    mapUndoRedo.value.splice(index+1, 1)
   } else if (index === 0) {
     mapUndoRedo.value = []
   }
