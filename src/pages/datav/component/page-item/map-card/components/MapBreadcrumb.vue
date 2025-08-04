@@ -66,7 +66,10 @@ function handleBreadcrumbClick(item, index) {
 }
 
 function getBreadLabel(item) {
-  const { map_json } = item;
+  const { map_json, data } = item;
+  if (data && data?._col_map?.col_label && data[data?._col_map?.col_label]) {
+    return data[data?._col_map?.col_label]
+  }
   return map_json?.map_label || map_json?.map_name
 }
 </script>
