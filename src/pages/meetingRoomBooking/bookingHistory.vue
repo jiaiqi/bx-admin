@@ -281,7 +281,7 @@ const pagination = reactive({
 
 // 返回预约页面
 const backToBooking = () => {
-  router.push("/mettingRoomBooking");
+  router.push("/meetingRoomBooking");
 };
 
 // 刷新列表

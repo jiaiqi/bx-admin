@@ -2,6 +2,8 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import TabList from "@/components/common/tab-list2";
 import { lowCodeRoutes } from "@/pages/lowcode/routes.js";
+import { BookingPages } from "@/pages/meetingRoomBooking/bookingRoutes.js";
+
 const SimpleAdd = () =>
   import(/* webpackChunkName: "add" */ "@/components/common/simple-add");
 // const viewpdf = () => import("@/components/common/viewpdf");
@@ -437,12 +439,12 @@ let routes = [
     component: () =>
       import(/* webpackChunkName: "dhvideo" */ "@/pages/dahua-video/video-home.vue")
   },
-    //规则表达式可视化
+  //规则表达式可视化
   {
     path: "/regular",
     name: "regular",
     component: () =>
-        import(/* webpackChunkName: "regular" */ "@/pages/regularExpression/regular-box.vue")
+      import(/* webpackChunkName: "regular" */ "@/pages/regularExpression/regular-box.vue")
   },
 
   //移动端站点编辑使用
@@ -806,25 +808,10 @@ routes.push({ //网站
   path: "/login",
   name: "Login",
   component: () => import("@/pages/login/login.vue")
-},
-  {
-    // 会议室预约
-    path: "/meetingRoomBooking",
-    name: "MeetingRoomBooking",
-    component: () => import("@/pages/meetingRoomBooking/meetingRoomBooking.vue")
-  },
-  {
-    // 会议室预约成功页面
-    path: "/bookingSuccess",
-    name: "BookingSuccess",
-    component: () => import("@/pages/meetingRoomBooking/bookingSuccess.vue")
-  },
-  {
-    // 会议室预约记录页面
-    path: "/bookingHistory",
-    name: "BookingHistory",
-    component: () => import("@/pages/meetingRoomBooking/bookingHistory.vue")
-  })
+})
+
+// 园区预约页面
+routes.push(...BookingPages)
 
 // 最新的低代码相关路由
 routes.push(...lowCodeRoutes)
