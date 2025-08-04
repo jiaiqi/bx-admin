@@ -50,6 +50,11 @@ const props = defineProps({
     type: Object,
     required: true
   },
+  // 是否在拖拽组件中
+  inDrag: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const onlyShowLabel = computed(() => {
@@ -67,7 +72,7 @@ const emit = defineEmits(['marker-click']);
  * @param {Event} event - 点击事件
  */
 function handleMarkerClick(item, event) {
-  if(allowClick(item)) {
+  if (allowClick(item)) {
     emit('marker-click', item, event);
   }
 }
@@ -169,6 +174,10 @@ function getItemIcon(item = {}) {
  * @returns {Object} 位置样式对象
  */
 function getItemPosition(item = {}) {
+  if(props.inDrag) {
+    return {
+    }
+  }
   let pos = {
     left: 0,
     top: 0,
@@ -234,9 +243,10 @@ function getItemPosition(item = {}) {
     transform: translate(-50%, 100%);
 
     &.only-show-label {
-      transform: translate(-50%, -50%);
-      bottom: 0;
+      position: relative;
+      left: unset;
       bottom: unset;
+      transform: translate(-50%, 0);
     }
   }
 }

@@ -11,28 +11,15 @@
       isDragging ? { zIndex: 9999 } : {}
     ]"
     @mousedown="handleMouseDown"
-    @click="handleMarkerClick"
   >
-    <!-- 标记点内容 -->
-    <div class="marker-content">
-      <!-- 图标类型的标记点 -->
-      <img
-        v-if="getItemIcon(item)"
-        :src="getItemIcon(item)"
-        class="marker-icon"
-        :style="getIconStyle(item)"
-        draggable="false"
-      />
-
-      <!-- 标签类型的标记点 -->
-      <div
-        v-if="getItemLabel(item)"
-        class="marker-label"
-        :style="getLabelStyle(item)"
-      >
-        {{ getItemLabel(item) }}
-      </div>
-    </div>
+    <!-- 复用MapMarker组件 -->
+    <MapMarker
+      :item="item"
+      :map-json="mapJson"
+      @marker-click="handleMarkerClick"
+      class="marker-content"
+      :in-drag="true"
+    />
 
     <!-- 编辑模式下的拖拽指示器 -->
     <div
@@ -54,14 +41,13 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
-import { getImagePath } from '@/common/http.js'
-import { formatStyleData } from '@/pages/datav/common/index.js'
+import { ref, computed } from 'vue'
+import MapMarker from './MapMarker.vue'
 
 /**
  * 可拖拽标记点组件
  * @component DraggableMarker
- * @description 支持拖拽编辑的地图标记点组件
+ * @description 支持拖拽编辑的地图标记点组件，复用MapMarker组件
  */
 
 const props = defineProps({
@@ -80,7 +66,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // 标记点样式相关函数
+  // 标记点位置获取函数
   getItemPosition: {
     type: Function,
     required: true
@@ -220,7 +206,7 @@ function updateMarkerPosition(newX, newY) {
 /**
  * 处理标记点点击事件
  */
-function handleMarkerClick(event) {
+function handleMarkerClick(item, event) {
   // 如果正在拖拽或处于编辑模式，不触发点击事件
   if (isDragging.value || (props.isEditMode && isEditable.value)) {
     event.preventDefault()
@@ -228,79 +214,7 @@ function handleMarkerClick(event) {
     return
   }
 
-  emit('marker-click', props.item, event)
-}
-
-/**
- * 获取标记点标签文本
- */
-function getItemLabel(item) {
-  if (item._col_map && item._col_map.col_label && item[item._col_map.col_label]) {
-    return item[item._col_map.col_label]
-  }
-  if (props.mapJson.col_label && item[props.mapJson.col_label]) {
-    return item[props.mapJson.col_label]
-  }
-  return ''
-}
-
-/**
- * 获取标签样式
- */
-function getLabelStyle(item) {
-  if (item._poi_info?.label_style_json) {
-    return formatStyleData(item._poi_info?.label_style_json)
-  }
-  return {}
-}
-
-/**
- * 获取图标样式
- */
-function getIconStyle(item) {
-  if (item._poi_info?.icon_style_json) {
-    return formatStyleData(item._poi_info?.icon_style_json)
-  }
-  return {}
-}
-
-/**
- * 获取标记点图标
- */
-function getItemIcon(item = {}) {
-  if (!item || typeof item !== "object") {
-    console.warn("getItemIcon: 无效的item参数", item)
-    item = {}
-  }
-
-  if (item?.col_map?.customized_icon) {
-    return getImagePath(item[item.col_map.customized_icon])
-  } else if (item?._poi_info?.poi_type_icon) {
-    return getImagePath(item._poi_info.poi_type_icon)
-  } else if (item?._poi_info?.icon) {
-    return getImagePath(item._poi_info.icon)
-  }
-
-  const mapConfig = props.mapJson
-  if (!mapConfig) {
-    console.warn("getItemIcon: 地图配置不存在")
-    return ""
-  }
-
-  try {
-    const iconCol = mapConfig.marker_icon_col
-    if (iconCol && item[iconCol]) {
-      return getImagePath(item[iconCol])
-    }
-
-    if (mapConfig.icon_default) {
-      return getImagePath(mapConfig.icon_default)
-    }
-  } catch (error) {
-    console.error("getItemIcon: 获取图标路径失败", error)
-  }
-
-  return ""
+  emit('marker-click', item, event)
 }
 </script>
 
@@ -328,6 +242,7 @@ function getItemIcon(item = {}) {
           bottom: -2px;
           border: 2px solid #007aff;
           background: rgba(0, 122, 255, 0.1);
+          border-radius: 4px;
           animation: pulseBlue 1.5s infinite;
         }
       }
@@ -349,27 +264,16 @@ function getItemIcon(item = {}) {
       bottom: -2px;
       border: 2px solid #007aff;
       background: rgba(0, 122, 255, 0.2);
+      border-radius: 4px;
     }
   }
 
   .marker-content {
     position: relative;
-  }
-
-  .marker-icon {
-    width: 30px;
-    height: auto;
-    transition: all 0.3s ease-in-out;
-    pointer-events: none;
-  }
-
-  .marker-label {
-    pointer-events: none;
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    width: 100px;
-    transform: translate(-50%, 100%);
+    pointer-events: none; // 防止内部元素干扰拖拽
+    transform: translate(0,0);
+    left: unset;
+    top: unset;
   }
 
   .drag-indicator {
@@ -388,20 +292,12 @@ function getItemIcon(item = {}) {
     opacity: 0;
     transition: opacity 0.2s ease;
     pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
-  &.is-editable:hover {
-
-    .drag-indicator {
-      opacity: 1;
-    }
-  }
-
-  &.is-dragging {
-
-    .drag-indicator {
-      opacity: 1;
-    }
+  &.is-editable:hover .drag-indicator,
+  &.is-dragging .drag-indicator {
+    opacity: 1;
   }
 }
 
