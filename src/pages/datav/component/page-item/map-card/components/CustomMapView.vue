@@ -68,6 +68,7 @@
       :source-json="mapJson.multi_src_poi_json"
       :marker-list.sync="markerList"
       :map-data="currrentMapData"
+      :select-tree-data="selectedTreeData"
       :page-params-model="pageParamsModel"
       ref="multiSourceMarkersRef"
       v-if="isMultiSource"

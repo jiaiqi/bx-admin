@@ -23,6 +23,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  selectTreeData: {
+    type: Object,
+    default: () => ({})
+  },
   pageParamsModel: {
     type: Object,
     default: () => ({})
@@ -77,10 +81,14 @@ async function getMarkers(params = {}) {
     poi_refer_map_filter_col: dataCol // 数据中对应的字段
   } = reqInfo;
 
-  if (filterCol && ruleType && dataCol && props.mapData[dataCol]) {
+  const selectTreeData = {
+    ...props.selectTreeData || {}
+  }
+  
+  if (filterCol && ruleType && dataCol && (props.mapData[dataCol] || selectTreeData[dataCol])) {
     const obj = {
       colName: filterCol,
-      value: props.mapData[dataCol],
+      value: props.mapData[dataCol] || params[dataCol],
       ruleType: ruleType === '等于' ? 'eq' : 'like]'
     }
     if (p.condition) {
@@ -102,7 +110,8 @@ async function getMarkers(params = {}) {
   if (p.condition?.length) {
     const globalParams = {
       ...pageParamsModel || {},
-      ...props.mapData || {}
+      ...props.mapData || {},
+      ...props.selectTreeData || {}
     }
     const conditions = cloneDeep(p.condition)
     const conds = []
