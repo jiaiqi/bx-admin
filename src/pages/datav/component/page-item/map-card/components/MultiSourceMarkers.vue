@@ -88,7 +88,7 @@ async function getMarkers(params = {}) {
   if (filterCol && ruleType && dataCol && (props.mapData[dataCol] || selectTreeData[dataCol])) {
     const obj = {
       colName: filterCol,
-      value: props.mapData[dataCol] || params[dataCol],
+      value: selectTreeData[dataCol] || props.mapData[dataCol],
       ruleType: ruleType === '等于' ? 'eq' : 'like]'
     }
     if (p.condition) {
@@ -236,6 +236,18 @@ watch(
 
 watch(
   () => props.mapData,
+  async (newVal, oldVal) => {
+    if (newVal && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      await nextTick()
+      await fetchAllMarkers()
+    }
+  },
+  {
+    deep: true
+  }
+)
+watch(
+  () => props.selectTreeData,
   async (newVal, oldVal) => {
     if (newVal && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
       await nextTick()
