@@ -1,6 +1,11 @@
 <template>
   <!-- 自定义底图的地图容器 - 支持建筑物视图和普通视图 -->
-  <div class="map-view-container">
+  <div 
+    class="map-view-container"
+    ref="mapContainerRef"
+    @mouseenter="showFullscreenBtn = true"
+    @mouseleave="showFullscreenBtn = false"
+  >
     <!-- 建筑物视图的树形数据 -->
     <BuildingTreeData
       :is-building-view="isBuildingView"
@@ -94,6 +99,7 @@
     />
 
     <!-- 地图编辑模式组件 - 放在最外层避免受缩放拖拽影响 -->
+    <!-- 地图编辑模式组件 - 放在最外层避免受缩放拖拽影响 -->
     <MapEditMode
       ref="editModeRef"
       :marker-list="setMarkerList"
@@ -103,6 +109,32 @@
       @cancel-changes="handleCancelChanges"
       v-if="showMapEditBtn"
     />
+
+    <!-- 全屏按钮 - 鼠标悬停时显示 -->
+    <div
+      class="fullscreen-btn"
+      :class="{ 'visible': showFullscreenBtn }"
+      @click="toggleFullscreen"
+      :title="isFullscreen ? '退出全屏' : '进入全屏'"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <!-- 进入全屏图标 -->
+        <path
+          v-if="!isFullscreen"
+          d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+        />
+        <!-- 退出全屏图标 -->
+        <path
+          v-else
+          d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"
+        />
+      </svg>
+    </div>
   </div>
 </template>
 
@@ -132,7 +164,7 @@
  * />
  */
 import cloneDeep from "lodash/cloneDeep";
-import { onMounted, ref, computed, watch, set } from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, set } from "vue";
 
 /**
  * 工具函数和组件导入
@@ -181,6 +213,13 @@ const isCollapsed = ref(false); // 是否折叠左侧面板
  */
 const isEditMode = ref(false); // 是否处于编辑模式
 const editModeRef = ref(null); // 编辑模式组件引用
+
+/**
+ * 全屏模式状态管理
+ */
+const showFullscreenBtn = ref(false); // 是否显示全屏按钮
+const isFullscreen = ref(false); // 是否处于全屏状态
+const mapContainerRef = ref(null); // 地图容器引用
 
 
 /**
@@ -776,11 +815,71 @@ function handleSaveChanges(changesArray) {
 }
 
 /**
+/**
  * 取消标记点位置更改
  */
 function handleCancelChanges() {
   console.log('取消标记点位置更改')
   // 标记点位置已在MapEditMode组件中恢复
+}
+
+/**
+ * 切换全屏模式
+ */
+function toggleFullscreen() {
+  if (!mapContainerRef.value) return;
+
+  if (!isFullscreen.value) {
+    // 进入全屏
+    enterFullscreen();
+  } else {
+    // 退出全屏
+    exitFullscreen();
+  }
+}
+
+/**
+ * 进入全屏模式
+ */
+function enterFullscreen() {
+  const element = mapContainerRef.value;
+  
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if (element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if (element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+}
+
+/**
+ * 退出全屏模式
+ */
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  }
+}
+
+/**
+ * 监听全屏状态变化
+ */
+function handleFullscreenChange() {
+  isFullscreen.value = !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
 }
 
 /**
@@ -1074,11 +1173,30 @@ function initComponents() {
 }
 
 /**
+/**
  * 组件挂载生命周期钩子
  * 初始化地图
  */
 onMounted(() => {
   initComponents();
+  
+  // 添加全屏状态变化监听器
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+  document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+  document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+});
+
+/**
+ * 组件卸载生命周期钩子
+ * 清理事件监听器
+ */
+onUnmounted(() => {
+  // 移除全屏状态变化监听器
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+  document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+  document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
 });
 
 </script>
@@ -1092,6 +1210,47 @@ onMounted(() => {
   outline: none;
   user-select: none;
   scrollbar-width: none;
+}
+
+/* 全屏按钮样式 */
+.fullscreen-btn {
+  position: absolute;
+  top: 60px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
 }
 
 // 移除原有的地图视图相关样式，这些样式已移动到 MapViewContent 组件中</style>
