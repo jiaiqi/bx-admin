@@ -201,6 +201,26 @@ const currrentMapData = computed(() => {
 const mapJson = ref(null)
 if (props.pageItem.map_json) {
   mapJson.value = props.pageItem.map_json
+  if (mapJson.value.map_option?.includes('位置编辑')) {
+    if (Array.isArray(mapJson.value.multi_src_poi_json) && mapJson.value.multi_src_poi_json.length) {
+      mapJson.value.multi_src_poi_json.forEach(item => {
+        if (!item.marker_edit_cfg || !item.marker_edit_cfg?.update_request_json) {
+          if (item.srv_req_info?.srv_req_json) {
+            const reqJson = item.srv_req_info.srv_req_json
+            item.marker_edit_cfg = {
+              "update_request_no": item.srv_req_info.srv_req_no || new Date().getTime(),
+              "update_request_json": {
+                "mapp": reqJson.mapp,
+                "srv_type": "update",
+                "serviceName": reqJson.serviceName?.replace('_select', '_update')
+              }
+            }
+
+          }
+        }
+      })
+    }
+  }
 }
 
 const showLeftPanel = computed(() => {
@@ -242,7 +262,7 @@ const baseIamgeByReq = ref("")
 
 function handleMapJsonChange(item, index) {
   if (index) {
-    mapUndoRedo.value.splice(index+1, 1)
+    mapUndoRedo.value.splice(index + 1, 1)
   } else if (index === 0) {
     mapUndoRedo.value = []
   }

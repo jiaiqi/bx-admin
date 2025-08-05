@@ -315,8 +315,8 @@ function enterEditMode() {
 
   // 保存所有可编辑标记点的原始位置
   editableMarkers.value.forEach(marker => {
-    const xCol = props.mapJson.x_col || marker._col_map?.col_x
-    const yCol = props.mapJson.y_col || marker._col_map?.col_y
+    const xCol = marker._col_map?.col_x || props.mapJson.x_col
+    const yCol = marker._col_map?.col_y || props.mapJson.y_col
 
     if (xCol && yCol && marker.id) {
       originalPositions.value[marker.id] = {
@@ -348,8 +348,8 @@ function exitEditMode() {
 function recordMarkerChange(marker, newX, newY) {
   if (!marker.id) return
 
-  const xCol = props.mapJson.x_col || marker._col_map?.col_x
-  const yCol = props.mapJson.y_col || marker._col_map?.col_y
+  const xCol = marker._col_map?.col_x || props.mapJson.x_col
+  const yCol = marker._col_map?.col_y || props.mapJson.y_col
 
   if (!xCol || !yCol) return
 
@@ -475,8 +475,8 @@ function performCancel() {
   Object.values(markerChanges.value).forEach(change => {
     const marker = change.marker
     const originalPos = change.originalPosition
-    const xCol = props.mapJson.x_col || marker._col_map?.col_x
-    const yCol = props.mapJson.y_col || marker._col_map?.col_y
+    const xCol = marker._col_map?.col_x || props.mapJson.x_col
+    const yCol = marker._col_map?.col_y || props.mapJson.y_col
 
     if (xCol && yCol) {
       marker[xCol] = originalPos.x

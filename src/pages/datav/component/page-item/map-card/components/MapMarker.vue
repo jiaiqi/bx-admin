@@ -202,27 +202,40 @@ function getItemPosition(item = {}) {
     top: 0,
   }
 
-  if (props.mapJson?.x_col && props.mapJson?.y_col) {
-    if (item[props.mapJson?.x_col]) {
-      pos.left = item[props.mapJson?.x_col] + "%"
-    }
-    if (item[props.mapJson?.y_col]) {
-      pos.top = item[props.mapJson?.y_col] + "%"
-    }
-  } else if (item?._col_map) {
+  if (item?._col_map) {
     const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
 
     pos.label = item[col_label]
     pos.left = item[col_x] + "%"
     pos.top = item[col_y] + "%"
     if (col_x_width) {
-      pos.width = col_x_width + 'px'
+      pos.width = col_x_width + '%'
     }
     if (col_y_width) {
-      pos.height = col_y_width + 'px'
+      pos.height = col_y_width + '%'
     }
     pos.icon = customized_icon
     pos.value = item[col_no]
+  } else if (props.mapJson?.x_col && props.mapJson?.y_col) {
+    if (item[props.mapJson?.x_col]) {
+      pos.left = item[props.mapJson?.x_col] + "%"
+    }
+    if (item[props.mapJson?.y_col]) {
+      pos.top = item[props.mapJson?.y_col] + "%"
+    }
+  }
+
+  // 检查最终的left和top值，如果都为0则给随机值
+  const leftValue = parseFloat(pos.left) || 0
+  const topValue = parseFloat(pos.top) || 0
+
+  if (leftValue === 0 && topValue === 0) {
+    // 生成5-15%之间的随机值，避免太靠边或重叠
+    const randomLeft = Math.random() * 10 + 5 // 5-15%
+    const randomTop = Math.random() * 10 + 5  // 5-15%
+
+    pos.left = randomLeft + "%"
+    pos.top = randomTop + "%"
   }
 
   return pos

@@ -88,11 +88,11 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // 标记点位置获取函数
-  getItemPosition: {
-    type: Function,
-    required: true
-  },
+  // // 标记点位置获取函数
+  // getItemPosition: {
+  //   type: Function,
+  //   required: true
+  // },
   // 标记点样式
   markerStyle: {
     type: Object,
@@ -138,8 +138,8 @@ function handleMouseDown(event) {
   }
 
   // 记录标记点初始位置
-  const xCol = props.mapJson.x_col || props.item._col_map?.col_x
-  const yCol = props.mapJson.y_col || props.item._col_map?.col_y
+  const xCol = props.item._col_map?.col_x || props.mapJson.x_col
+  const yCol = props.item._col_map?.col_y || props.mapJson.y_col
 
   if (xCol && yCol) {
     markerStartPos.value = {
@@ -212,8 +212,8 @@ function handleMouseUp(event) {
  * 更新标记点位置
  */
 function updateMarkerPosition(newX, newY) {
-  const xCol = props.mapJson.x_col || props.item._col_map?.col_x
-  const yCol = props.mapJson.y_col || props.item._col_map?.col_y
+  const xCol = props.item._col_map?.col_x || props.mapJson.x_col
+  const yCol = props.item._col_map?.col_y || props.mapJson.y_col
 
   if (xCol && yCol) {
     // 直接修改标记点数据
@@ -237,6 +237,56 @@ function handleMarkerClick(item, event) {
   }
 
   emit('marker-click', item, event)
+}
+
+/**
+ * 获取标记点位置
+ * @param {Object} item - 标记点数据
+ * @returns {Object} 位置样式对象
+ */
+function getItemPosition(item = {}) {
+  let pos = {
+    left: 0,
+    top: 0,
+  }
+
+  if (item?._col_map) {
+    const { col_label, col_no, col_x, col_x_width, col_y, col_y_width, customized_icon } = item._col_map || {}
+
+    pos.label = item[col_label]
+    pos.left = item[col_x] + "%"
+    pos.top = item[col_y] + "%"
+    if (col_x_width) {
+      pos.width = col_x_width + 'px'
+    }
+    if (col_y_width) {
+      pos.height = col_y_width + 'px'
+    }
+    pos.icon = customized_icon
+    pos.value = item[col_no]
+  } else if (props.mapJson?.x_col && props.mapJson?.y_col) {
+    if (item[props.mapJson?.x_col]) {
+      pos.left = item[props.mapJson?.x_col] + "%"
+    }
+    if (item[props.mapJson?.y_col]) {
+      pos.top = item[props.mapJson?.y_col] + "%"
+    }
+  }
+
+  // 检查最终的left和top值，如果都为0则给随机值
+  const leftValue = parseFloat(pos.left) || 0
+  const topValue = parseFloat(pos.top) || 0
+
+  if (leftValue === 0 && topValue === 0) {
+    // 生成5-15%之间的随机值，避免太靠边或重叠
+    const randomLeft = Math.random() * 10 + 5 // 5-15%
+    const randomTop = Math.random() * 10 + 5  // 5-15%
+
+    pos.left = randomLeft + "%"
+    pos.top = randomTop + "%"
+  }
+
+  return pos
 }
 </script>
 
@@ -297,7 +347,7 @@ function handleMarkerClick(item, event) {
         opacity: 1;
         visibility: visible;
         transform: translate(-50%, -5px);
-        
+
       }
     }
   }

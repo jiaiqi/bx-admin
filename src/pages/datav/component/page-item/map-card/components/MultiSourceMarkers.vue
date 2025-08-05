@@ -153,16 +153,26 @@ async function getMarkers(params = {}) {
       }
 
       // 处理数据，添加POI信息和列映射
-      const list = data.map(item => ({
-        ...item,
-        _poi_info: {
-          poi_name,
-          poi_type,
-          ...params
-        },
-        _col_map: col_map || {}
-      }))
-
+      const list = data.map(item => {
+        const obj = {
+          ...item,
+          _poi_info: {
+            poi_name,
+            poi_type,
+            ...params
+          },
+          _col_map: col_map || {}
+        }
+        if (col_map) {
+          if (col_map.col_x && !item[col_map.col_x]) {
+            obj[col_map.col_x] = Math.random() * 10 + 5
+          }
+          if (col_map.col_y && !item[col_map.col_y]) {
+            obj[col_map.col_y] = 100 - Math.random() * 10 + 5
+          }
+        }
+        return obj
+      })
       // 添加到标记点列表
       markers.value.push(...list)
 
@@ -179,6 +189,7 @@ async function getMarkers(params = {}) {
     error.value = errorMsg
   }
 }
+
 
 /**
  * 批量获取所有数据源的标记点（顺序执行）
