@@ -196,9 +196,10 @@ export default {
   }
 }
 
-.legend-icon {
-  width: 20px;
-  height: 20px;
+.legend-icon,
+.legend-symbol {
+  width: 24px;
+  height: 24px;
   margin-right: 6px;
   flex-shrink: 0;
 
@@ -210,16 +211,16 @@ export default {
 }
 
 .legend-symbol {
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+  margin-left: 6px;
   border-radius: 2px;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .legend-text {
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -232,14 +233,13 @@ export default {
 @media (min-width: 768px) {
   .legend-container {
     // 保持flex-wrap: wrap，确保超过3列时换行
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     gap: 8px 16px;
   }
 
   .legend-item {
-    flex: 0 0 calc(33.333% - 11px); // 调整gap影响
-    min-width:60px;
+    min-width: 60px;
     max-width: 130px;
   }
 
@@ -254,6 +254,7 @@ export default {
 // 响应式设计
 @media (max-width: 768px) {
   .map-legend {
+
     &.legend-top-right,
     &.legend-bottom-right {
       right: 10px;

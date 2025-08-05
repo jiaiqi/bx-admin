@@ -12,6 +12,8 @@
       isDragging ? { zIndex: 9999 } : {}
     ]"
     @mousedown="handleMouseDown"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <!-- 复用MapMarker组件 -->
     <MapMarker
@@ -21,6 +23,16 @@
       class="marker-content"
       :in-drag="true"
     />
+
+    <!-- 编辑模式下的标题提示 -->
+    <div
+      v-if="isEditMode && showTitle"
+      class="marker-title-tooltip"
+    >
+      <div class="tooltip-content">
+        {{ getMarkerTitle() }}
+      </div>
+    </div>
 
     <!-- 编辑模式下的拖拽指示器 -->
     <div
@@ -88,11 +100,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // // 标记点位置获取函数
-  // getItemPosition: {
-  //   type: Function,
-  //   required: true
-  // },
   // 标记点样式
   markerStyle: {
     type: Object,
@@ -112,6 +119,9 @@ const isDragging = ref(false)
 const dragStartPos = ref({ x: 0, y: 0 })
 const markerStartPos = ref({ x: 0, y: 0 })
 
+// 标题显示状态
+const showTitle = ref(false)
+
 /**
  * 检查标记点是否可编辑
  */
@@ -120,9 +130,47 @@ const isEditable = computed(() => {
 })
 
 /**
+ * 获取标记点标题
+ */
+function getMarkerTitle() {
+  // 优先使用标签字段
+  const labelCol = props.item._col_map?.col_label
+  if (labelCol && props.item[labelCol]) {
+    return props.item[labelCol]
+  }
+
+  // 其次使用POI名称
+  if (props.item._poi_info?.poi_name) {
+    return props.item._poi_info.poi_name
+  }
+
+  // 使用ID或默认文本
+  return props.item.id || props.item.name || '标记点'
+}
+
+/**
+ * 处理鼠标进入事件
+ */
+function handleMouseEnter() {
+  if (props.isEditMode && !isDragging.value) {
+    showTitle.value = true
+  }
+}
+
+/**
+ * 处理鼠标离开事件
+ */
+function handleMouseLeave() {
+  showTitle.value = false
+}
+
+/**
  * 处理鼠标按下事件
  */
 function handleMouseDown(event) {
+  // 隐藏标题
+  showTitle.value = false
+
   // 只有在编辑模式下且标记点可编辑时才允许拖拽
   if (!props.isEditMode || !isEditable.value) {
     return
@@ -347,7 +395,6 @@ function getItemPosition(item = {}) {
         opacity: 1;
         visibility: visible;
         transform: translate(-50%, -5px);
-
       }
     }
   }
@@ -377,6 +424,42 @@ function getItemPosition(item = {}) {
     transform: translate(0, 0);
     left: unset;
     top: unset;
+  }
+
+  // 标题提示框样式
+  .marker-title-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    z-index: 10001;
+    pointer-events: none;
+    animation: fadeInUp 0.2s ease;
+
+    .tooltip-content {
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(4px);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: rgba(0, 0, 0, 0.8);
+      }
+    }
   }
 
   .drag-indicator {
@@ -442,6 +525,18 @@ function getItemPosition(item = {}) {
         border-top-color: rgba(255, 107, 107, 0.95);
       }
     }
+  }
+}
+
+// 标题提示框动画
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
