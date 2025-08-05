@@ -197,6 +197,34 @@ async function getMarkers(params = {}) {
       }
 
       // 处理数据，添加POI信息和列映射
+      const dataCount = data.length
+      let xRange, yRange, xBase, yBase
+
+      if (dataCount <= 10) {
+        // 少量数据：小范围随机
+        xRange = 10
+        yRange = 10
+        xBase = 5
+        yBase = 5
+      } else if (dataCount <= 50) {
+        // 中等数据：中等范围随机
+        xRange = 20
+        yRange = 15
+        xBase = 10
+        yBase = 10
+      } else if (dataCount <= 100) {
+        // 较多数据：较大范围随机
+        xRange = 40
+        yRange = 25
+        xBase = 15
+        yBase = 15
+      } else {
+        // 大量数据：最大范围随机
+        xRange = 60
+        yRange = 35
+        xBase = 20
+        yBase = 20
+      }
       const list = data.map(item => {
         const obj = {
           ...item,
@@ -208,11 +236,16 @@ async function getMarkers(params = {}) {
           _col_map: col_map || {}
         }
         if (col_map) {
+          // 根据数据数量动态计算随机范围
+
+
           if (col_map.col_x && !item[col_map.col_x]) {
+            // obj[col_map.col_x] = Math.random() * xRange + xBase
             obj[col_map.col_x] = Math.random() * 10 + 5
           }
           if (col_map.col_y && !item[col_map.col_y]) {
             obj[col_map.col_y] = 80 - Math.random() * 10 + 5
+            // obj[col_map.col_y] = (80 - yBase - yRange) + Math.random() * yRange
           }
         }
         return obj
