@@ -1,9 +1,9 @@
-import {FieldInfo} from "../model/FieldInfo";
-import {Field} from "../model/Field";
+import { FieldInfo } from "../model/FieldInfo";
+import { Field } from "../model/Field";
 import Executor from "../common/executor.vue";
 import Vue from "vue";
-import {InlineForm} from "../model/InlineForm";
-import {traverseObj} from "../../util/DataUtil";
+import { InlineForm } from "../model/InlineForm";
+import { traverseObj } from "../../util/DataUtil";
 import cloneDeep from "lodash/cloneDeep";
 import isEmpty from "lodash/isEmpty";
 import includes from "lodash/includes";
@@ -25,9 +25,9 @@ export default {
       type: String,
       default: "db"
     },
-    memInitdatasAdd:{
+    memInitdatasAdd: {
       type: Array,
-      default(){
+      default() {
         return []
       }
     },
@@ -50,7 +50,7 @@ export default {
       type: String,
       default: "",
     },
-    
+
   },
 
   data() {
@@ -68,7 +68,7 @@ export default {
       addSrvCols: [],
 
       updateSrvCols: [],
-      standbyData:{
+      standbyData: {
         _dirtyFlags: 'standby',
         _guid: this.guid(),
       },
@@ -92,8 +92,8 @@ export default {
 
       let queries = [];
       let addQuery = this.buildAddQuery();
-      if( addQuery ) {
-        if(fk){
+      if (addQuery) {
+        if (fk) {
           addQuery.depend_keys = [{
             type: "column", depend_key: fk.referenced_column_name, add_col: fk.column_name
           }];
@@ -112,11 +112,11 @@ export default {
     buildAddQuery() {
       let colNames = this.addSrvCols.filter(srvcol => srvcol.in_add !== 0 && !srvcol.auto_generate).map(srvcol => srvcol.columns);
       let addedRows = cloneDeep(this.gridData.filter((item) => {
-        if(item._dirtyFlags === "add"){
+        if (item._dirtyFlags === "add") {
           return item
         }
-        
-      })) ;
+
+      }));
 
       if (addedRows.length == 0) {
         return null;
@@ -152,8 +152,8 @@ export default {
       // 删除 _ 前缀的字段
       addedRows.forEach(row => {
         for (let key in row) {
-          if ( key !== 'child_data_list' && !includes(colNames, key)) {
-            delete  row[key];
+          if (key !== 'child_data_list' && !includes(colNames, key)) {
+            delete row[key];
           }
         }
       });
@@ -165,12 +165,12 @@ export default {
     buildUpdateQueries() {
 
       let colNames = this.updateSrvCols.filter(srvcol => srvcol.in_update !== 0).map(srvcol => srvcol.columns);
-      let updatedRows = cloneDeep(this.gridData.filter(item => item._dirtyFlags === "update")) ;
+      let updatedRows = cloneDeep(this.gridData.filter(item => item._dirtyFlags === "update"));
       let queries = updatedRows.map(row => {
         return {
           serviceName: this.updateService,
           data: [row],
-          condition: [{colName: "id", ruleType: "eq", value: row.id,}]
+          condition: [{ colName: "id", ruleType: "eq", value: row.id, }]
         }
       });
 
@@ -200,7 +200,7 @@ export default {
       updatedRows.forEach(row => {
         for (let key in row) {
           if (key !== 'child_data_list' && !includes(colNames, key)) {
-            delete  row[key];
+            delete row[key];
           }
         }
       });
@@ -272,7 +272,7 @@ export default {
             try {
               this.loadTableData();
             } catch (e) {
-              
+
               this.gridData = [];
             }
           })
@@ -297,7 +297,7 @@ export default {
      * @param fields
      */
     onAdd2MemSubmitted: function (srvvalRow, fields) {
-      
+
       if (!this.isMem()) {
         return;
       }
@@ -307,7 +307,7 @@ export default {
       srvvalRow._dirtyFlags = "add";
       srvvalRow._guid = this.guid();
 
-      
+
       if (this.isTreeGrid()) {
         srvvalRow.is_leaf = "是";
         this.mergeAdd(null, null, srvvalRow)
@@ -344,32 +344,32 @@ export default {
         return;
       }
 
-      console.log('onUpdate2MemSubmitted',srvvalRow, fields)
+      console.log('onUpdate2MemSubmitted', srvvalRow, fields)
       this.addFinderDispCol(fields, srvvalRow);
       let target = null
-      if(srvvalRow.hasOwnProperty("_guid") && srvvalRow._guid !== null){
-        target = this.gridData.find( item => srvvalRow._guid && item._guid == srvvalRow._guid);
-      }else if(!srvvalRow.hasOwnProperty("_guid") && srvvalRow.hasOwnProperty("id") && srvvalRow.id !== null){
-        target = this.gridData.find( item => srvvalRow.id && item.id == srvvalRow.id);
+      if (srvvalRow.hasOwnProperty("_guid") && srvvalRow._guid !== null) {
+        target = this.gridData.find(item => srvvalRow._guid && item._guid == srvvalRow._guid);
+      } else if (!srvvalRow.hasOwnProperty("_guid") && srvvalRow.hasOwnProperty("id") && srvvalRow.id !== null) {
+        target = this.gridData.find(item => srvvalRow.id && item.id == srvvalRow.id);
       }
-      
-      if(target.hasOwnProperty('id') && target.id == null){
+
+      if (target.hasOwnProperty('id') && target.id == null) {
         this.updateDirtyFlags(target, "add");
       }
-      target = target || this.gridData.find( item => item._guid == srvvalRow._guid);
+      target = target || this.gridData.find(item => item._guid == srvvalRow._guid);
 
       // _.assign(target, srvvalRow); //202.11.20更改 不用之前的_.assign方法，改为手动遍历对象的key来合并对象，合并时使用vue的$set方法，使得页面数据更新
-      if(Object.keys(srvvalRow).length){
+      if (Object.keys(srvvalRow).length) {
         Object.keys(srvvalRow).forEach(key => {
           // if(fields[key]?.moreInfo){
           //  this.$set(target,`_${key}__disp`,fields[key]?.moreInfo)
           // }
-          this.$set(target,key,srvvalRow[key])
+          this.$set(target, key, srvvalRow[key])
         });
       }
 
       this.syncRow2Fields(target);
-      
+
       this.updateDirtyFlags(target, "update");
     },
 
@@ -386,43 +386,43 @@ export default {
         } else {
           // to delete an mem-added item, but left standby row
           if ("standby" !== item._dirtyFlags) {
-            let index = this.gridData.findIndex( i => item._guid && (i._guid == item._guid))
+            let index = this.gridData.findIndex(i => item._guid && (i._guid == item._guid))
             this.gridData.splice(index, 1)
           }
         }
       });
-      
+
       // 从vuex里同步删除数据
       let resArr = []
-      let frontTableData = this.$store.getters.getFrontTableData()      
-      if (frontTableData && frontTableData.data && frontTableData.data.length>0) {
+      let frontTableData = this.$store.getters.getFrontTableData()
+      if (frontTableData && frontTableData.data && frontTableData.data.length > 0) {
         const from = frontTableData.params.from
         const to = frontTableData.params.to
-        const data = frontTableData.data  
+        const data = frontTableData.data
         const service = frontTableData.service
 
         if (this.service === service) {
-          resArr = data.filter(x => !deleteRows.some(y => (y[to] ? y[to]:y[from]) === (x[to] ? x[to]:x[from])))
-          this.gridData = this.gridData.filter(x => !deleteRows.some(y => (y[to] ? y[to]:y[from]) === (x[to] ? x[to]:x[from])))
+          resArr = data.filter(x => !deleteRows.some(y => (y[to] ? y[to] : y[from]) === (x[to] ? x[to] : x[from])))
+          this.gridData = this.gridData.filter(x => !deleteRows.some(y => (y[to] ? y[to] : y[from]) === (x[to] ? x[to] : x[from])))
 
           this.$store.commit("setFrontTableData", {
             data: resArr,
             service: frontTableData.service,
             params: frontTableData.params
           })
-        }      
+        }
       }
     },
 
     syncRow2Fields: function (targetRow) {
       // sync dbrow to fields
       if (this.inplaceEditData) {
-        let fieldMap = this.inplaceEditData.find( item => (item.id && item.id === targetRow.id));
-        fieldMap = fieldMap || this.inplaceEditData.find( item => item._guid == targetRow._guid);
+        let fieldMap = this.inplaceEditData.find(item => (item.id && item.id === targetRow.id));
+        fieldMap = fieldMap || this.inplaceEditData.find(item => item._guid == targetRow._guid);
         if (fieldMap) {
           for (let key in targetRow) {
             if (fieldMap[key] && fieldMap[key].setSrvVal) {
-              
+
 
               fieldMap[key].setSrvVal(targetRow[key]);
             }
@@ -437,7 +437,7 @@ export default {
       delete copy.id
       delete copy._guid
 
-      let standbyRow = this.gridData.find( item => item._dirtyFlags === "standby");
+      let standbyRow = this.gridData.find(item => item._dirtyFlags === "standby");
       assign(standbyRow, copy)
 
       this.syncRow2Fields(standbyRow)
@@ -446,7 +446,7 @@ export default {
     },
 
     onUndoSubmitted: function (row) {
-      if (!row._dirtyFlags) { 
+      if (!row._dirtyFlags) {
         return;
       }
 
@@ -468,7 +468,7 @@ export default {
           this.$set(row, "_dirtyFlags", null);
         })
       } else {
-        
+
       }
     },
 
@@ -491,7 +491,7 @@ export default {
           if ("delete" === action) {
             this.$set(row, "_dirtyFlags", action);
           }
-          if('add' === action){
+          if ('add' === action) {
             this.$set(row, "_dirtyFlags", action);
           }
         } else if ("pristine" === row._dirtyFlags) {
@@ -500,7 +500,7 @@ export default {
       }
     },
 
-    tableRowClassName({row, rowIndex}) {
+    tableRowClassName({ row, rowIndex }) {
       if ("add" === row._dirtyFlags) {
         return 'add-row';
       } else if ("delete" === row._dirtyFlags) {
@@ -518,7 +518,7 @@ export default {
     isInplaceEdit() {
       return this.inplaceEdit && this.inplaceEditMode;
     },
-    getStandbyRow(){
+    getStandbyRow() {
       // add a blank row to griddata:
       let newRow = {
         _dirtyFlags: 'standby',
@@ -555,9 +555,9 @@ export default {
           newRow._inlineLists[fk.constraint_name] = [];
         });
       }
-      if(e){
+      if (e) {
         this.gridData.push(e);
-        
+
 
         // for (let i in this.srv_cols) {
         //   let srvCol = this.srv_cols[i];
@@ -568,13 +568,13 @@ export default {
 
         this.buildEditData(e);
 
-        this.$emit("standby-row-added", e);  
-      }else{
+        this.$emit("standby-row-added", e);
+      } else {
         /**
          * 默认增加内存表空行代码
          */
         // this.gridData.push(newRow);
-        
+
 
         // for (let i in this.srv_cols) {
         //   let srvCol = this.srv_cols[i];
@@ -587,7 +587,7 @@ export default {
 
         // this.$emit("standby-row-added", newRow); 
       }
-      
+
     }
     ,
 
@@ -601,14 +601,14 @@ export default {
           let editable = item[srvcolInFlag] === 1 && item.table_column !== "id";
           let inListCols = !!this.srv_cols.find(
             listcol => listcol.table_name === item.table_name && listcol.table_column === item.table_column);
-         
+
           return editable && inListCols;
         })
         .map(item => {
           let fi = new FieldInfo(item, "update");
           let listCol = this.srv_cols.find(col => col.table_name === item.table_name && col.table_column === item.table_column);
 
-          
+
 
           let field = new Field(fi, null);
           field.key = listCol.columns;
@@ -617,13 +617,13 @@ export default {
            * 处理子表默认值 引用主表from
            */
           let infoObj = field.info
-          if(infoObj.hasOwnProperty('moreConfig') && infoObj.editor === "DateRange" && infoObj.moreConfig !== null &&  infoObj.moreConfig.hasOwnProperty('DateRangeConfig')){
-            field.info._DateMaxMin = this.getDateRangExpr(infoObj,this.listMainFormDatas)
+          if (infoObj.hasOwnProperty('moreConfig') && infoObj.editor === "DateRange" && infoObj.moreConfig !== null && infoObj.moreConfig.hasOwnProperty('DateRangeConfig')) {
+            field.info._DateMaxMin = this.getDateRangExpr(infoObj, this.listMainFormDatas)
           }
           return field;
         });
 
-      let _fieldMap = {id: row.id, _guid: row._guid};
+      let _fieldMap = { id: row.id, _guid: row._guid };
       let list = this;
       let formModelDecorator = function (formModel) {
         if (formModel) {
@@ -644,8 +644,8 @@ export default {
 
       // watch the row
       this.$watch(function () {
-          return row;
-        },
+        return row;
+      },
         function (newVal, oldVal) {
           let formModelFunc = _ => row;
           this.handleRedundantOnFormModelChange(newVal, oldVal, _fieldMap, formModelFunc);
@@ -670,7 +670,7 @@ export default {
             let ComponentClass = Vue.extend(Executor)
             let executorComp = new ComponentClass({})
             let queries = executorComp.buildQuery(executor);
-            
+
             return queries;
           })
 
@@ -691,50 +691,72 @@ export default {
             })
         });
 
-    }
-    ,
+    },
 
-    loadAddUpdateSrvCols() {
+    async loadAddUpdateSrvCols() {
       let addServiceP = !this.addService || this.addSrvCols.length > 0
         ? Promise.resolve(false)
-        : this.loadColsV2(this.addService, "add",null,this.mainService);
+        : this.loadColsV2(this.addService, "add", null, this.mainService);
+      if (!this.addService || this.addSrvCols.length > 0) {
+      } else {
+        // 查找add服务的字段
+        let addServiceP = this.loadColsV2(this.addService, "add", null, this.mainService);
+        const response = await addServiceP
+        if (response && response.body?.data) {
+          let data = response.body.data;
+          this.addSrvCols = data?.srv_cols||[];
+          // console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
+        }
+      }
 
-        
-      return addServiceP
-        .then(response => {
-          if (response && response.body) {
-            let data = response.body.data;
-            this.addSrvCols = data.srv_cols;
-            // console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
 
-            
-            
-          }
-          
-          return !this.updateService || this.updateSrvCols.length > 0
-            ? Promise.resolve(false)
-            : this.loadColsV2(this.updateService, "update",null,this.mainService);
-        })
-        .then(response => {
-          if (response && response.body) {
-            let data = response.body.data;
-            this.updateSrvCols = data.srv_cols;
-          }
-        })
+      if (!this.updateService || this.updateSrvCols.length > 0) {
+        return fasle
+      } else {
+        // 查找update服务的字段
+        const response = await this.loadColsV2(this.updateService, "update", null, this.mainService);
+        if (response && response.body) {
+          let data = response.body.data;
+          this.updateSrvCols = data.srv_cols;
+          // console.log('loadAddUpdateSrvCols',this.updateSrvCols,data)
+        }
+      }
+
+      // return addServiceP
+      //   .then(response => {
+      //     if (response && response.body) {
+      //       let data = response.body.data;
+      //       this.addSrvCols = data.srv_cols;
+      //       // console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
+
+
+
+      //     }
+
+      //     return !this.updateService || this.updateSrvCols.length > 0
+      //       ? Promise.resolve(false)
+      //       : this.loadColsV2(this.updateService, "update", null, this.mainService);
+      //   })
+      //   .then(response => {
+      //     if (response && response.body) {
+      //       let data = response.body.data;
+      //       this.updateSrvCols = data.srv_cols;
+      //     }
+      //   })
     }
     ,
 
     onInplaceEditClicked() {
       if (!this.inplaceEditMode === true) {
-        
+
 
         this.loadAddUpdateSrvCols()
           .then(_ => {
-            
-            
+
+
             // clear old data
             this.inplaceEditData.splice(0, this.inplaceEditData.length)
-            
+
             this.gridData.forEach(row => {
               if (!row._dirtyFlags) {
                 // 如果没有 dirtyFlags，设置默认的flags
@@ -753,7 +775,7 @@ export default {
             this.$nextTick(_ => {
               this.inplaceEditMode = true;
 
-            
+
               if (this.$refs.inlineList) {
                 this.$refs.inlineList.filter(item => item.listLoaded).forEach(item => item.onInplaceEditClicked())
               }
@@ -769,11 +791,11 @@ export default {
         listSrvColName = listSrvColName.substring(1).substring(0, listSrvColName.length - 6);
       }
 
-      let fieldMap = this.inplaceEditData.find( item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
+      let fieldMap = this.inplaceEditData.find(item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
 
       let field = fieldMap ? fieldMap[listSrvColName] : null;
-      
-      
+
+
       return field;
     }
     ,
@@ -828,7 +850,7 @@ export default {
     ,
 
     onCellValueChanged(row, column) {
-     
+
 
       if (!row) {
         return;
@@ -837,20 +859,20 @@ export default {
       let field = this.findEditField(row, column);
 
       if (field) {
-        let fieldMap = this.inplaceEditData.find( item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
+        let fieldMap = this.inplaceEditData.find(item => (item.id && item.id === row.id) || (item._guid && item._guid === row._guid));
         this.handleFieldFkRedundant(field, fieldMap);
         /**
          * 处理起止日期值分离同步
          */
-        let DateRangeEndCol= field.info._DateRangeEndColName
-        if(field.info.editor === "DateRange" && DateRangeEndCol !== null){
-          if(field.hasOwnProperty('_DateRangeModel') && field._DateRangeModel!==null ){
-            if(DateRangeEndCol !== undefined && DateRangeEndCol !== ''){
+        let DateRangeEndCol = field.info._DateRangeEndColName
+        if (field.info.editor === "DateRange" && DateRangeEndCol !== null) {
+          if (field.hasOwnProperty('_DateRangeModel') && field._DateRangeModel !== null) {
+            if (DateRangeEndCol !== undefined && DateRangeEndCol !== '') {
               let endCol = fieldMap[DateRangeEndCol]
               field.model = field._DateRangeModel[0]
               row[column] = field._DateRangeModel[0]
-              row[DateRangeEndCol] =  field._DateRangeModel[1]
-              
+              row[DateRangeEndCol] = field._DateRangeModel[1]
+
               fieldMap[DateRangeEndCol].model = field._DateRangeModel[1]// endCol.model = field._DateRangeModel[1]
             }
           }
@@ -908,9 +930,9 @@ export default {
       let itemsFunc = rtDataCtx => {
         let listData = (listDataFunc && listDataFunc(rtDataCtx)) || vm.gridData;
         return listData.filter((item) => {
-          if(this.listType === 'addchildlist' || item._dirtyFlags === "add"){
+          if (this.listType === 'addchildlist' || item._dirtyFlags === "add") {
             return item
-          }else if(item._dirtyFlags === "add"){
+          } else if (item._dirtyFlags === "add") {
             return item
           }
         });
@@ -937,13 +959,13 @@ export default {
           valueExpr: `item.${srvcol.columns}`,
           enableFunc: (value, item) => {
             let newValue = item[srvcol.columns];
-            let oldRow = vm.unmodifiedGridData.find( unmodified => unmodified.id === item.id);
+            let oldRow = vm.unmodifiedGridData.find(unmodified => unmodified.id === item.id);
 
             if (!oldRow) {
               return false;
             } else {
               let oldValue = oldRow[srvcol.columns];
-          
+
               return oldValue != newValue;
             }
           }
@@ -997,7 +1019,7 @@ export default {
     buildExecutors4Edit(listDataFunc) {
       return this.loadAddUpdateSrvCols().then(_ => {
         let executors = [];
-        
+
         executors.push(this.buildAddExecutor(listDataFunc));
         executors.push(this.buildUpdateExecutor(listDataFunc));
         executors.push(this.buildDeleteExecutor(listDataFunc));
@@ -1009,7 +1031,7 @@ export default {
 
     isFkWithDispCol(srvcol) {
       let dispCol = `_${srvcol}_disp`
-      return !!this.srv_cols.find( item => item.columns === dispCol);
+      return !!this.srv_cols.find(item => item.columns === dispCol);
     }
     ,
 
@@ -1043,72 +1065,72 @@ export default {
         return map[row._dirtyFlags];
       }
     },
-    getDateRangExpr:function(infoObj,e){
+    getDateRangExpr: function (infoObj, e) {
       /**
           * 处理子表默认值 引用主表from
           */
-         let m = {
-           min:null,
-           max:null
-         }
-         if(infoObj.hasOwnProperty('moreConfig') && infoObj.editor === "DateRange" && infoObj.moreConfig.hasOwnProperty('DateRangeConfig')){
-          let mainData = e
-          let cfg = infoObj.moreConfig.DateRangeConfig
-          if(cfg.hasOwnProperty('minDate')){
-            if(cfg.minDate !== '' && cfg.minDate !== null &&  cfg.minDate !== undefined){
-              if(cfg.minDate.indexOf('{') !== -1 && cfg.minDate.indexOf('}') !== -1){
-                let minexp = cfg.minDate.match(/{(\S*)}/)[1]
-                m.min = eval(minexp)
-                if(m.min === null || m.min === undefined){
-                  m.min = '1990-01-01'
-                }
-              }else{
-                m.min = cfg.minDate
+      let m = {
+        min: null,
+        max: null
+      }
+      if (infoObj.hasOwnProperty('moreConfig') && infoObj.editor === "DateRange" && infoObj.moreConfig.hasOwnProperty('DateRangeConfig')) {
+        let mainData = e
+        let cfg = infoObj.moreConfig.DateRangeConfig
+        if (cfg.hasOwnProperty('minDate')) {
+          if (cfg.minDate !== '' && cfg.minDate !== null && cfg.minDate !== undefined) {
+            if (cfg.minDate.indexOf('{') !== -1 && cfg.minDate.indexOf('}') !== -1) {
+              let minexp = cfg.minDate.match(/{(\S*)}/)[1]
+              m.min = eval(minexp)
+              if (m.min === null || m.min === undefined) {
+                m.min = '1990-01-01'
               }
-            }else{
-              m.min = '1990-01-01'
+            } else {
+              m.min = cfg.minDate
             }
-          }else{
-              m.min = '1990-01-01'
-              
+          } else {
+            m.min = '1990-01-01'
           }
-          if(cfg.hasOwnProperty('maxDate')){
-            if(cfg.maxDate !== '' &&  cfg.maxDate !== null &&  cfg.maxDate !== undefined){
-              if(cfg.maxDate.indexOf('{') !== -1 && cfg.maxDate.indexOf('}') !== -1){
-                let maxexp = cfg.maxDate.match(/{(\S*)}/)[1]
-                m.max = eval(maxexp)
-                if(m.max === null || m.max === undefined){
-                  m.max = '2050-12-30'
-                }
-              }else{
-                m.max = cfg.maxDate
+        } else {
+          m.min = '1990-01-01'
+
+        }
+        if (cfg.hasOwnProperty('maxDate')) {
+          if (cfg.maxDate !== '' && cfg.maxDate !== null && cfg.maxDate !== undefined) {
+            if (cfg.maxDate.indexOf('{') !== -1 && cfg.maxDate.indexOf('}') !== -1) {
+              let maxexp = cfg.maxDate.match(/{(\S*)}/)[1]
+              m.max = eval(maxexp)
+              if (m.max === null || m.max === undefined) {
+                m.max = '2050-12-30'
               }
-            }else{
-              m.max = '2050-12-30'
+            } else {
+              m.max = cfg.maxDate
             }
-          }else{
+          } else {
             m.max = '2050-12-30'
           }
-          
+        } else {
+          m.max = '2050-12-30'
+        }
+
       }
-         return m
-   }
+      return m
+    }
 
 
   },
 
-  
+
   mounted: function () {
 
     this.$watch(function () {
-        return this.gridData;
-      },
+      return this.gridData;
+    },
       function (newVal, oldVal) {
         if (!this.listLoaded) {
           return;
         }
 
-        
+
         this.$emit("grid-data-changed", this);
       },
       {
@@ -1116,59 +1138,59 @@ export default {
       });
 
   },
-  watch:{
-      gridData:{
-        deep: true,
-        handler (val, oldVal) {
-          if(val?.length&&val.find(item=>['add','update'].includes(item._dirtyFlags))){
-            if(!this.addSrvCols?.length&&this.addService){
-              this.loadAddUpdateSrvCols()
-            }
-          }
-        }
-      },
-      "memInitdatasAdd":{
-        deep: true,
-        immediate: true,
-        handler (val, oldVal) {
-          if(val?.length&&!this.addSrvCols?.length){
+  watch: {
+    gridData: {
+      deep: true,
+      handler(val, oldVal) {
+        if (val?.length && val.find(item => ['add', 'update'].includes(item._dirtyFlags))) {
+          if (!this.addSrvCols?.length && this.addService) {
             this.loadAddUpdateSrvCols()
           }
-          let initAddDatas = val.map(item => item)
-          if(Array.isArray(initAddDatas)){
-            // 内存子表 init add Datas 加载默认添加数据
-            this.gridData = [].map((item) => item) 
-              for(let row of initAddDatas){
-                  row._dirtyFlags = "add";
-                  row._guid = this.guid();
-                    let guids = this.gridData.filter(item =>{
-                      let guid = item.guid
-                      if(guid){
-                        return guid
-                      }
-                    })
-
-                    // console.log('memInitdatasAdd',row)
-                    if(guids.indexOf(row._guid) == -1){
-                      this.gridData.push(JSON.parse(JSON.stringify(row)));
-                      if(oldVal.length !== 0 && JSON.stringify(val) !== JSON.stringify(oldVal)){
-                        // this.$message({
-                        //   message: `${this.childForeignkey.section_name}数据已加载！`,
-                        //   type: "warning",
-                        // });
-                      }
-                      
-                    }
-                
-              }
-          }
-  
         }
       }
+    },
+    "memInitdatasAdd": {
+      deep: true,
+      immediate: true,
+      handler(val, oldVal) {
+        if (val?.length && !this.addSrvCols?.length) {
+          this.loadAddUpdateSrvCols()
+        }
+        let initAddDatas = val.map(item => item)
+        if (Array.isArray(initAddDatas)) {
+          // 内存子表 init add Datas 加载默认添加数据
+          this.gridData = [].map((item) => item)
+          for (let row of initAddDatas) {
+            row._dirtyFlags = "add";
+            row._guid = this.guid();
+            let guids = this.gridData.filter(item => {
+              let guid = item.guid
+              if (guid) {
+                return guid
+              }
+            })
+
+            // console.log('memInitdatasAdd',row)
+            if (guids.indexOf(row._guid) == -1) {
+              this.gridData.push(JSON.parse(JSON.stringify(row)));
+              if (oldVal.length !== 0 && JSON.stringify(val) !== JSON.stringify(oldVal)) {
+                // this.$message({
+                //   message: `${this.childForeignkey.section_name}数据已加载！`,
+                //   type: "warning",
+                // });
+              }
+
+            }
+
+          }
+        }
+
+      }
+    }
 
 
-    
+
   }
 
-  
+
 };
