@@ -30,21 +30,20 @@
           <el-button @click="resetSearch">重置</el-button>
         </div>
       </div>
-      <!-- <div
+      <div
         class="date-header-center"
-        v-if="selectedTime && selectedTime.start_time"
+        v-if="selectedTimes.length > 0"
       >
-        当前选择的是：
-        <span class="text-blue">
-          {{ selectedTime.rsvo_name }}
-        </span>
-        时间段：
-        <span class="text-blue">
-          {{ selectedDate }}
-          {{ formatTime(selectedTime.start_time) }} -
-          {{ formatTime(selectedTime.end_time) }}
-        </span>
-      </div> -->
+        <div class="selected-count">
+          已选择 <span class="text-blue">{{ selectedTimes[0].rsvo_name }}</span> 的
+          <span class="text-blue">{{ selectedTimes.length }}</span> 个连续时间段
+          <el-button
+            size="small"
+            type="text"
+            @click="clearSelectedTimes"
+          >清空</el-button>
+        </div>
+      </div>
       <div class="date-header-right">
         <el-button
           class="history-btn"
@@ -57,7 +56,7 @@
           type="primary"
           class="reserve-btn"
           @click="submitReservation"
-          :disabled="!selectedTime"
+          :disabled="selectedTimes.length === 0"
         >
           立即预约
         </el-button>
@@ -202,21 +201,20 @@
       :destroy-on-close="true"
     >
       <div
-        class="date-header-center"
-        v-if="selectedTime && selectedTime.start_time"
+        class="selected-times-list"
+        v-if="selectedTimes.length > 0"
       >
-        <div class="header-info">
-          <span class="info-label"> 预约地点： </span>
-          <span class="text-blue">
-            {{ selectedTime.rsvo_name }}
-          </span>
+        <div class="selected-times-title">已选择的连续时间段：</div>
+        <div class="selected-room-info">
+          <span class="info-label">会议室：</span>
+          <span class="info-value">{{ selectedTimes[0].rsvo_name }}</span>
         </div>
-        <div class="header-info">
-          <span class="info-label"> 时间段：</span>
-          <span class="text-blue">
-            {{ selectedDate }}
-            {{ formatTime(selectedTime.start_time) }} -
-            {{ formatTime(selectedTime.end_time) }}
+        <div class="selected-time-range">
+          <span class="info-label">时间范围：</span>
+          <span class="info-value">
+            {{ formatTime(selectedTimes[0].start_time) }} - {{
+              formatTime(selectedTimes[selectedTimes.length - 1].end_time) }}
+            (共{{ selectedTimes.length }}个时段)
           </span>
         </div>
       </div>
@@ -225,6 +223,7 @@
         ref="reservationForm"
         :rules="formRules"
         label-width="80px"
+        class="mt-4"
       >
         <el-form-item
           label="联系人"
@@ -254,12 +253,12 @@
             <el-input-number
               v-model="formData.count"
               :min="1"
-              :max="(selectedTime && selectedTime.div_count) || 100"
+              :max="getMaxCapacity()"
             ></el-input-number>
             <span class="ml-2">
               <i class="el-icon-info"></i>
               最大容纳
-              <span class="">{{ selectedTime && selectedTime.div_count }}</span>
+              <span class="">{{ getMaxCapacity() }}</span>
               人</span>
           </div>
         </el-form-item>
@@ -290,7 +289,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, reactive } from "vue";
+import { ref, onMounted, onUnmounted, reactive, computed } from "vue";
 import {
   useMessage,
   useMessageBox,
@@ -310,7 +309,7 @@ const router = useRouter();
 const searchKey = ref("");
 const roomList = ref([]);
 const selectedDate = ref(dayjs().format("YYYY-MM-DD"));
-const selectedTime = ref(null);
+const selectedTimes = ref([]); // 改为数组，支持多选
 
 // 分页相关
 const pageInfo = reactive({
@@ -360,18 +359,127 @@ const timeSlots = ref([
 // 方法定义
 const handleDateChange = (date) => {
   selectedDate.value = date;
+  selectedTimes.value = []; // 切换日期时清空已选择的时间段
   fetchRoomList(false);
 };
 
+// 选择时间段（支持同一会议室的连续时间段多选）
 const selectTimeSlot = (item) => {
   if (isTimeOccupied(item)) {
     return; // 已被预约的时间段不能选择
   }
-  selectedTime.value = {
-    rsvt_no: item.rsvt_no, // 预约时段编码
-    rsvo_no: item.rsvo_no, // 预约场所编码
-    ...item,
-  };
+
+  // 检查是否已经选中
+  const index = selectedTimes.value.findIndex(
+    time => time.rsvo_no === item.rsvo_no && time.rsvt_no === item.rsvt_no
+  );
+
+  if (index !== -1) {
+    // 如果已选中，则取消选择
+    selectedTimes.value.splice(index, 1);
+    // 重新排序选中的时间段
+    sortSelectedTimes();
+  } else {
+    // 如果当前没有选择，或者选择的是同一个会议室
+    if (selectedTimes.value.length === 0 || selectedTimes.value[0].rsvo_no === item.rsvo_no) {
+      // 检查是否连续
+      if (isTimeSlotContinuous(item)) {
+        // 如果未选中，则添加到选中列表
+        selectedTimes.value.push({
+          rsvt_no: item.rsvt_no, // 预约时段编码
+          rsvo_no: item.rsvo_no, // 预约场所编码
+          ...item,
+        });
+        // 按时间排序
+        sortSelectedTimes();
+      } else {
+        ElMessage.warning("只能选择连续的时间段");
+      }
+    } else {
+      ElMessage.warning("只能选择同一个会议室的时间段");
+    }
+  }
+};
+
+// 检查时间段是否在数据顺序上连续
+const isTimeSlotContinuous = (newItem) => {
+  if (selectedTimes.value.length === 0) return true;
+
+  // 获取当前会议室的所有时间段数据
+  const currentRoom = roomList.value.find(room => room.rsvo_no === newItem.rsvo_no);
+  if (!currentRoom || !currentRoom.timeList) return false;
+
+  // 获取该会议室所有时间段的索引映射
+  const timeIndexMap = new Map();
+  currentRoom.timeList.forEach((time, index) => {
+    timeIndexMap.set(time.rsvt_no, index);
+  });
+
+  // 获取新选择时间段在该会议室中的索引位置
+  const newItemIndex = timeIndexMap.get(newItem.rsvt_no);
+  if (newItemIndex === undefined) return false;
+
+  // 获取所有已选时间段在该会议室中的索引位置
+  const selectedIndexes = selectedTimes.value
+    .map(time => timeIndexMap.get(time.rsvt_no))
+    .filter(index => index !== undefined)
+    .sort((a, b) => a - b);
+
+  // 检查新索引是否与已选索引连续
+  // 情况1：新索引在已选索引的最小值前面且连续
+  if (newItemIndex === selectedIndexes[0] - 1) {
+    return true;
+  }
+
+  // 情况2：新索引在已选索引的最大值后面且连续
+  if (newItemIndex === selectedIndexes[selectedIndexes.length - 1] + 1) {
+    return true;
+  }
+
+  // 情况3：新索引填补已选索引中的空隙，使整体保持连续
+  // 将新索引插入到已选索引中，检查整体是否连续
+  const allIndexes = [...selectedIndexes, newItemIndex].sort((a, b) => a - b);
+
+  // 检查排序后的索引数组是否连续
+  for (let i = 1; i < allIndexes.length; i++) {
+    if (allIndexes[i] - allIndexes[i - 1] !== 1) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+// 按在会议室时间列表中的顺序排序选中的时间段
+const sortSelectedTimes = () => {
+  if (selectedTimes.value.length === 0) return;
+
+  // 获取当前会议室的时间段数据
+  const currentRoom = roomList.value.find(room => room.rsvo_no === selectedTimes.value[0].rsvo_no);
+  if (!currentRoom || !currentRoom.timeList) return;
+
+  // 创建时间段顺序映射
+  const timeOrderMap = new Map();
+  currentRoom.timeList.forEach((time, index) => {
+    timeOrderMap.set(time.rsvt_no, index);
+  });
+
+  // 按照在时间列表中的顺序排序
+  selectedTimes.value.sort((a, b) => {
+    const indexA = timeOrderMap.get(a.rsvt_no) || 0;
+    const indexB = timeOrderMap.get(b.rsvt_no) || 0;
+    return indexA - indexB;
+  });
+};
+
+// 清空已选择的时间段
+const clearSelectedTimes = () => {
+  selectedTimes.value = [];
+};
+
+// 从已选择列表中移除指定时间段
+const removeSelectedTime = (index) => {
+  selectedTimes.value.splice(index, 1);
 };
 
 const isTimeOccupied = (item = {}) => {
@@ -379,11 +487,16 @@ const isTimeOccupied = (item = {}) => {
 };
 
 const isTimeSelected = (item = {}) => {
-  return (
-    selectedTime.value &&
-    selectedTime.value.rsvo_no === item.rsvo_no &&
-    selectedTime.value.rsvt_no === item.rsvt_no
+  return selectedTimes.value.some(
+    time => time.rsvo_no === item.rsvo_no && time.rsvt_no === item.rsvt_no
   );
+};
+
+// 获取所选时间段中的最小容量作为最大可选人数
+const getMaxCapacity = () => {
+  if (selectedTimes.value.length === 0) return 100;
+
+  return Math.min(...selectedTimes.value.map(time => time.div_count || 100));
 };
 
 const navigateToHistory = () => {
@@ -522,8 +635,8 @@ async function getTime(rsvo_no) {
 
 // 打开预约对话框
 const submitReservation = () => {
-  if (!selectedTime.value) {
-    ElMessage.warning("请选择预约时间段");
+  if (selectedTimes.value.length === 0) {
+    ElMessage.warning("请至少选择一个时间段");
     return;
   }
 
@@ -554,53 +667,56 @@ const submitForm = async () => {
       try {
         // 预约提交
         const url = `/park/operate/srvreserve_record_add`;
-        const data = selectedTime.value;
-        if (!data) {
-          ElMessage.warning("请选择预约时间段");
+
+        if (selectedTimes.value.length === 0) {
+          ElMessage.warning("请至少选择一个时间段");
           return;
         }
-        debugger
+
+        // 构建批量预约请求
+        const data = selectedTimes.value[0] || {};
+        const requestsData = {
+          rsvo_no: data.rsvo_no,
+          rsvr_date: selectedDate.value || data.datey,
+          start_time: selectedTimes.value.map((item) => item.start_time).toString(),
+          count: formData.count, // 人数
+          rsvp_no: data.rsvp_no,
+          rsvt_no: selectedTimes.value.map((item) => item.rsvt_no).toString(), // 时间段编号
+          contacts: formData.contacts,
+          mobilephone: formData.mobilephone,
+          remark: formData.remark, //备注
+        }
         const req = [
           {
             serviceName: "srvreserve_record_add",
             condition: [],
-            data: [
-              {
-                rsvo_no: data.rsvo_no,
-                rsvr_date: selectedDate.value || data.datey,
-                start_time: data.start_time,
-                count: formData.count, // 人数
-                rsvp_no: data.rsvp_no,
-                rsvt_no: data.rsvt_no,
-                contacts: formData.contacts,
-                mobilephone: formData.mobilephone,
-                remark: formData.remark, //备注
-              },
-            ],
+            data: [requestsData],
           },
         ];
+
         const res = await $http.post(url, req);
         if (res.data?.state === "SUCCESS") {
           dialogVisible.value = false;
-
+          const firstTime = selectedTimes.value[0];
+          const lastTime = selectedTimes.value[selectedTimes.value.length - 1];
           // 跳转到预约成功页面，并传递预约信息
           router.push({
             path: "/bookingSuccess",
             query: {
-              roomName: selectedTime.value.rsvo_name,
+              roomName: data.rsvo_name,
+              timeSlot: `${firstTime.start_time} - ${lastTime.end_time}`,
+              count: formData.count,
               date: selectedDate.value,
-              timeSlot: `${formatTime(
-                selectedTime.value.start_time
-              )} - ${formatTime(selectedTime.value.end_time)}`,
               contacts: formData.contacts,
               mobilephone: formData.mobilephone,
-              count: formData.count,
               remark: formData.remark,
             },
           });
-
           // 刷新会议室列表
           fetchRoomList();
+
+          // 清空已选择的时间段
+          selectedTimes.value = [];
         } else if (res.data?.resultMessage) {
           ElMessage.error(res.data?.resultMessage);
         }
@@ -610,78 +726,6 @@ const submitForm = async () => {
     } else {
       return false;
     }
-  });
-};
-
-// 模拟 API
-const mockApiCall = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        data: [
-          {
-            rsvo_no: "RSVO250618140010",
-            rsvo_name: "会议室001",
-            max: 50,
-            address: "创新科技产业园一期西区·办公楼B6-204",
-          },
-          {
-            rsvo_no: "RSVO250618140011",
-            rsvo_name: "会议室002",
-            max: 35,
-            address: "创新科技产业园一期西区·办公楼B6-205",
-          },
-          {
-            rsvo_no: "RSVO250618140012",
-            rsvo_name: "会议室003",
-            max: 30,
-            address: "创新科技产业园一期西区·办公楼B6-206",
-          },
-          {
-            rsvo_no: "RSVO250618140013",
-            rsvo_name: "会议室004",
-            max: 25,
-            address: "创新科技产业园一期西区·办公楼B6-207",
-          },
-          {
-            rsvo_no: "RSVO250618140014",
-            rsvo_name: "会议室005",
-            max: 40,
-            address: "创新科技产业园一期西区·办公楼B6-208",
-          },
-          {
-            rsvo_no: "RSVO250618140015",
-            rsvo_name: "会议室006",
-            max: 20,
-            address: "创新科技产业园一期西区·办公楼B6-209",
-          },
-          {
-            rsvo_no: "RSVO250618140016",
-            rsvo_name: "会议室007",
-            max: 60,
-            address: "创新科技产业园一期西区·办公楼B6-210",
-          },
-          {
-            rsvo_no: "RSVO250618140017",
-            rsvo_name: "会议室008",
-            max: 45,
-            address: "创新科技产业园一期西区·办公楼B6-211",
-          },
-        ],
-      });
-    }, 500);
-  });
-};
-
-const mockReservationApi = (timeSlot) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        reservationId: "RES-" + Date.now(),
-        timeSlot,
-      });
-    }, 500);
   });
 };
 
@@ -750,22 +794,19 @@ onUnmounted(() => {
 
 // 顶部日期选择区域
 .date-header-center {
-  margin-bottom: 20px;
+  margin: 10px 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  align-items: center;
 
-  .header-info {
-    line-height: 40px;
-  }
-
-  .info-label {
-    // min-width: 80px;
-    display: inline-block;
+  .selected-count {
+    font-size: 14px;
+    color: #333;
   }
 
   .text-blue {
-    font-size: 14px;
-    // font-weight: 600;
+    font-size: 16px;
+    font-weight: 600;
     color: #007bff;
   }
 }
@@ -779,6 +820,7 @@ onUnmounted(() => {
   align-items: center;
   border-radius: 20px 20px 0 0;
   overflow: hidden;
+  flex-wrap: wrap;
 
   .date-header-left {
     display: flex;
@@ -819,6 +861,35 @@ onUnmounted(() => {
     .search-btn {
       background: #007bff;
       border-color: #007bff;
+    }
+  }
+}
+
+.selected-times-list {
+  margin-bottom: 20px;
+
+  .selected-times-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .selected-room-info,
+  .selected-time-range {
+    margin-bottom: 8px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+
+    .info-label {
+      font-weight: 500;
+      color: #666;
+      margin-right: 8px;
+    }
+
+    .info-value {
+      color: #333;
+      font-weight: 600;
     }
   }
 }
@@ -954,8 +1025,7 @@ onUnmounted(() => {
           .room-name {
             font-size: 18px;
             font-weight: 600;
-            color: #333;
-            // margin-bottom: 4px;
+            color: #333; // margin-bottom: 4px;
           }
 
           .room-location {

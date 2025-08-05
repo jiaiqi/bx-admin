@@ -1219,7 +1219,7 @@ onUnmounted(() => {
   right: 15px;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 6px;
   display: flex;
