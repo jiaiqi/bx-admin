@@ -12,8 +12,6 @@
       backgroundSize: backgroundSize,
     }"
     ref="mapViewContentRef"
-    tabindex="1"
-    @keydown="handleKeyDown"
   >
     <!-- 图片加载动画 -->
     <div
@@ -87,16 +85,6 @@
       </template>
     </template>
 
-    <!-- 编辑模式组件 -->
-    <MapEditMode
-      ref="editModeRef"
-      :marker-list="markerList"
-      :map-json="mapJson"
-      @edit-mode-change="handleEditModeChange"
-      @save-changes="handleSaveChanges"
-      @cancel-changes="handleCancelChanges"
-      v-if="showMapEditBtn"
-    />
   </div>
 </template>
 
@@ -106,7 +94,6 @@ import { formatStyleData } from '../../../../common'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import MapMarker from './MapMarker.vue'
 import DraggableMarker from './DraggableMarker.vue'
-import MapEditMode from './MapEditMode.vue'
 import { useRoute } from '@/common/vueApi'
 /**
  * 地图视图内容组件
@@ -152,6 +139,11 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  // 是否处于编辑模式
+  isEditMode: {
+    type: Boolean,
+    default: false
+  },
 });
 
 /**
@@ -159,17 +151,11 @@ const props = defineProps({
  */
 const emit = defineEmits([
   'marker-click',
-  'edit-mode-change',
-  'marker-position-change',
-  'save-changes',
-  'cancel-changes'
+  'marker-position-change'
 ]);
 
 const mapViewContentRef = ref(null)
 
-// 编辑模式状态
-const isEditMode = ref(false)
-const editModeRef = ref(null)
 
 /**
  * 标记点点击处理
@@ -181,26 +167,12 @@ function handleMarkerClick(marker, event) {
 }
 
 /**
- * 编辑模式切换处理
- * @param {boolean} editMode - 是否进入编辑模式
- */
-function handleEditModeChange(editMode) {
-  isEditMode.value = editMode
-  emit('edit-mode-change', editMode)
-}
-
-/**
  * 标记点位置变更处理
  * @param {Object} marker - 标记点数据
  * @param {number} newX - 新的X坐标
  * @param {number} newY - 新的Y坐标
  */
 function handleMarkerPositionChange(marker, newX, newY) {
-  // 直接记录到编辑模式组件，不再触发额外事件
-  if (editModeRef.value && typeof editModeRef.value.recordMarkerChange === 'function') {
-    editModeRef.value.recordMarkerChange(marker, newX, newY)
-  }
-  // 只向父组件发送事件，不再循环处理
   emit('marker-position-change', marker, newX, newY)
 }
 
@@ -220,22 +192,6 @@ function handleMarkerDragEnd(marker) {
   console.log('结束拖拽标记点:', marker)
 }
 
-/**
- * 保存更改处理
- * @param {Array} changesArray - 按update_request_no分组的更改数据
- */
-function handleSaveChanges(changesArray) {
-  console.log('保存标记点位置更改:', changesArray)
-  emit('save-changes', changesArray)
-}
-
-/**
- * 取消更改处理
- */
-function handleCancelChanges() {
-  console.log('取消标记点位置更改')
-  emit('cancel-changes')
-}
 
 function getItemLabel(item) {
   if (item._col_map && item._col_map.col_label && item[item._col_map.col_label]) {
@@ -260,16 +216,6 @@ function getIconStyle(item) {
   return {}
 }
 const route = useRoute()
-const showMapEditBtn = computed(() => {
-  if (props.mapJson?.map_option?.includes('位置编辑')) {
-    return true
-  }
-  if (props.inEditor === false && route.query.editMap === 'true') {
-    return true
-  }
-  return false
-
-})
 
 /**
  * 标签样式计算属性
@@ -370,26 +316,7 @@ function getItemPosition(item = {}) {
   return pos
 }
 
-/**
- * 暴露给父组件的方法和属性
- */
-defineExpose({
-  isEditMode,
-  editModeRef
-})
 
-function handleKeyDown(e) {
-  if (e.key === 'Escape' && isEditMode.value) {
-    e.preventDefault()
-    e.stopPropagation()
-    editModeRef.value?.cancelChanges()
-  }
-  if (e.ctrlKey && e.key === 's' && isEditMode.value) {
-    e.preventDefault()
-    e.stopPropagation()
-    editModeRef.value?.saveChanges()
-  }
-}
 </script>
 
 <style lang="scss" scoped>

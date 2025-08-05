@@ -32,7 +32,7 @@
     <zoom-drag-container
       :show-tips="true"
       :in-edit="inEdit"
-      :ignore-scale-classes="'map-marker-abcdefg'"
+      :ignore-scale-classes="['map-marker123','draggable-marker111']"
     >
       <!-- 使用抽离的地图视图内容组件 -->
       <MapViewContent
@@ -49,11 +49,9 @@
         :set-label-active-style="setLabelActiveStyle"
         :allow-click="allowClick"
         :in-editor="inEdit"
+        :is-edit-mode="isEditMode"
         @marker-click="handleMarkerClick"
-        @edit-mode-change="handleEditModeChange"
         @marker-position-change="handleMarkerPositionChange"
-        @save-changes="handleSaveChanges"
-        @cancel-changes="handleCancelChanges"
       />
     </zoom-drag-container>
 
@@ -93,6 +91,17 @@
       :position-direction="popupPosition.positionDirection"
       :position-mode="popupPosition.positionMode"
       @close="closePopup"
+    />
+
+    <!-- 地图编辑模式组件 - 放在最外层避免受缩放拖拽影响 -->
+    <MapEditMode
+      ref="editModeRef"
+      :marker-list="setMarkerList"
+      :map-json="mapJson"
+      @edit-mode-change="handleEditModeChange"
+      @save-changes="handleSaveChanges"
+      @cancel-changes="handleCancelChanges"
+      v-if="showMapEditBtn"
     />
   </div>
 </template>
@@ -139,10 +148,13 @@ import MapBreadcrumb from "./MapBreadcrumb.vue"; // 地图面包屑导航组件
 import MapViewContent from "./MapViewContent.vue"; // 地图视图内容组件
 import BuildingTreeData from "./BuildingTreeData.vue"; // 建筑物树形数据组件
 import MapLegend from "./MapLegend.vue"; // 地图图例组件
+import MapEditMode from "./MapEditMode.vue"; // 地图编辑模式组件
 
-import { useUtils } from "@/common/vueApi";
+import { useUtils, useRoute } from "@/common/vueApi";
 
 import { useMarkers } from "../composables/useMarkers";
+
+const route = useRoute();
 
 /**
  * 组件 Props 定义
@@ -163,6 +175,12 @@ const emit = defineEmits(["select"]);
  * 左侧面板折叠状态管理
  */
 const isCollapsed = ref(false); // 是否折叠左侧面板
+
+/**
+ * 编辑模式状态管理
+ */
+const isEditMode = ref(false); // 是否处于编辑模式
+const editModeRef = ref(null); // 编辑模式组件引用
 
 
 /**
@@ -233,6 +251,16 @@ const isMultiSource = computed(() => {
 
 const showLegend = computed(() => {
   return mapJson.value?.map_option?.includes('显示图例')
+})
+
+const showMapEditBtn = computed(() => {
+  if (mapJson.value?.map_option?.includes('位置编辑')) {
+    return true
+  }
+  if (props.inEdit === false && route.query.editMap === 'true') {
+    return true
+  }
+  return false
 })
 
 const foldLegends = ref([])
@@ -667,6 +695,7 @@ async function getMapBaseImageWithReq(reqJson, data) {
  */
 function handleEditModeChange(editMode) {
   console.log('编辑模式切换:', editMode)
+  isEditMode.value = editMode
   // 可以在这里添加编辑模式切换时的额外逻辑
 }
 
@@ -678,7 +707,10 @@ function handleEditModeChange(editMode) {
  */
 function handleMarkerPositionChange(marker, newX, newY) {
   console.log('标记点位置变更:', marker.id, newX, newY)
-  // 实时更新标记点位置（已在DraggableMarker中处理）
+  // 直接记录到编辑模式组件
+  if (editModeRef.value && typeof editModeRef.value.recordMarkerChange === 'function') {
+    editModeRef.value.recordMarkerChange(marker, newX, newY)
+  }
 }
 const multiSourceMarkersRef = ref(null)
 /**
@@ -778,6 +810,9 @@ async function resetMapState() {
   imageLoaded.value = true;
   currentImageSrc.value = ""
   baseIamgeByReq.value = ""
+  
+  // 重置编辑模式状态
+  isEditMode.value = false;
 }
 
 /**
