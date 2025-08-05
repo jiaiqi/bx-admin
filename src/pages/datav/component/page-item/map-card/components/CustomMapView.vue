@@ -339,7 +339,7 @@ const imageLoaded = ref(true); // 图片是否已加载完成
 const currentImageSrc = ref(''); // 当前显示的图片路径
 
 const backgroundSize = computed(() => {
-  return mapJson.value?.base_image_fill_method || 'auto'
+  return mapJson.value?.base_image_fill_method || '100% 100%'
 })
 
 /**
