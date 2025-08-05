@@ -22,9 +22,11 @@
             class="search-input"
             clearable
           />
-          <el-button type="primary" class="search-btn" @click="fetchRoomList"
-            >搜索</el-button
-          >
+          <el-button
+            type="primary"
+            class="search-btn"
+            @click="fetchRoomList()"
+          >搜索</el-button>
           <el-button @click="resetSearch">重置</el-button>
         </div>
       </div>
@@ -44,7 +46,10 @@
         </span>
       </div> -->
       <div class="date-header-right">
-        <el-button class="history-btn" @click="navigateToHistory">
+        <el-button
+          class="history-btn"
+          @click="navigateToHistory"
+        >
           <i class="history-icon">🕐</i>
           <span>历史记录</span>
         </el-button>
@@ -63,7 +68,10 @@
     <div class="calendar_container">
       <div class="room-schedule">
         <template v-for="item in roomList">
-          <div class="room-row" v-if="item.timeList && item.timeList.length">
+          <div
+            class="room-row"
+            v-if="item.timeList && item.timeList.length"
+          >
             <!-- 会议室信息 -->
             <div class="room-info">
               <div class="room-header">
@@ -76,7 +84,10 @@
                       height="20"
                       viewBox="0 0 24 24"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g
+                        fill="none"
+                        fill-rule="evenodd"
+                      >
                         <path
                           d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"
                         />
@@ -92,19 +103,27 @@
                     <!-- <div class="room-location">{{ item.address || "" }}</div> -->
                   </div>
                 </div>
-                <div class="room-intro" v-if="item.rsvo_intro">
-                  <el-popover placement="right" width="400" trigger="hover">
+                <div
+                  class="room-intro"
+                  v-if="item.rsvo_intro"
+                >
+                  <el-popover
+                    placement="right"
+                    width="400"
+                    trigger="hover"
+                  >
                     <div
                       v-if="item.rsvo_intro"
                       v-html="item.rsvo_intro"
                       style="max-height: 300px; overflow-y: auto"
                     ></div>
-                    <span slot="reference" class="cursor-pointer"
-                      >介绍<i
+                    <span
+                      slot="reference"
+                      class="cursor-pointer"
+                    >介绍<i
                         class="el-icon-info ml-1"
                         style="color: oklch(79.5% 0.184 86.047)"
-                      ></i
-                    ></span>
+                      ></i></span>
                   </el-popover>
                   <!-- <span>信息：</span>
                 <div class="capacity-number">{{ item.max || "" }}</div> -->
@@ -113,7 +132,10 @@
             </div>
 
             <!-- 时间段网格 -->
-            <div class="time-grid" v-if="item.timeList">
+            <div
+              class="time-grid"
+              v-if="item.timeList"
+            >
               <div
                 v-for="time in item.timeList"
                 :key="time.slot"
@@ -133,23 +155,38 @@
             </div>
           </div>
         </template>
-        
+
         <!-- 底部加载状态 -->
-        <div class="loading-container" v-if="roomList.length > 0">
-          <div v-if="pageInfo.loading" class="loading-spinner">
+        <div
+          class="loading-container"
+          v-if="roomList.length > 0"
+        >
+          <div
+            v-if="pageInfo.loading"
+            class="loading-spinner"
+          >
             <i class="el-icon-loading"></i>
             <span>加载中...</span>
           </div>
-          <div v-else-if="!pageInfo.hasMore" class="no-more-data">
+          <div
+            v-else-if="!pageInfo.hasMore"
+            class="no-more-data"
+          >
             没有更多数据了
           </div>
-          <div v-else class="load-more-hint">
+          <div
+            v-else
+            class="load-more-hint"
+          >
             滚动加载更多
           </div>
         </div>
-        
+
         <!-- 无数据提示 -->
-        <div v-if="roomList.length === 0 && !pageInfo.loading" class="empty-data">
+        <div
+          v-if="roomList.length === 0 && !pageInfo.loading"
+          class="empty-data"
+        >
           <div class="empty-text">暂无会议室数据</div>
         </div>
       </div>
@@ -189,21 +226,30 @@
         :rules="formRules"
         label-width="80px"
       >
-        <el-form-item label="联系人" prop="contacts">
+        <el-form-item
+          label="联系人"
+          prop="contacts"
+        >
           <el-input
             v-model="formData.contacts"
             placeholder="请输入联系人姓名"
             clearable
           ></el-input>
         </el-form-item>
-        <el-form-item label="联系方式" prop="mobilephone">
+        <el-form-item
+          label="联系方式"
+          prop="mobilephone"
+        >
           <el-input
             v-model="formData.mobilephone"
             placeholder="请输入联系方式"
             clearable
           ></el-input>
         </el-form-item>
-        <el-form-item label="人数" prop="count">
+        <el-form-item
+          label="人数"
+          prop="count"
+        >
           <div class="flex items-center justify-between">
             <el-input-number
               v-model="formData.count"
@@ -214,11 +260,13 @@
               <i class="el-icon-info"></i>
               最大容纳
               <span class="">{{ selectedTime && selectedTime.div_count }}</span>
-              人</span
-            >
+              人</span>
           </div>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
+        <el-form-item
+          label="备注"
+          prop="remark"
+        >
           <el-input
             v-model="formData.remark"
             type="textarea"
@@ -227,9 +275,15 @@
           ></el-input>
         </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer">
+      <span
+        slot="footer"
+        class="dialog-footer"
+      >
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button
+          type="primary"
+          @click="submitForm"
+        >确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -363,10 +417,11 @@ const fetchRoomList = async (isLoadMore = false) => {
       pageInfo.pageNo = 1;
       pageInfo.hasMore = true;
     }
-
-    const url = `/park/select/srvreserve_obj_select`;
+    // const service = 'srvreserve_obj_select'
+    const service = 'srvreserve_obj_reserve_select' //250825-service更换
+    const url = `/park/select/${service}`;
     const req = {
-      serviceName: "srvreserve_obj_select",
+      serviceName: service,
       colNames: ["*"],
       condition: [],
       page: {
@@ -383,7 +438,6 @@ const fetchRoomList = async (isLoadMore = false) => {
         value: searchKey.value,
       });
     }
-
     if (selectedDate.value) {
       // req.condition.push({
       //   colName: "datey",
@@ -398,7 +452,7 @@ const fetchRoomList = async (isLoadMore = false) => {
     if (res?.data?.state === "SUCCESS") {
       console.log(res.data.data);
       pageInfo.total = res.data.page?.total || 0;
-      
+
       if (Array.isArray(res.data.data)) {
         for (var index = 0; index < res.data.data.length; index++) {
           const item = res.data.data[index];
@@ -408,7 +462,7 @@ const fetchRoomList = async (isLoadMore = false) => {
 
         // 判断是否还有更多数据
         pageInfo.hasMore = list.length > 0 && roomList.value.length + list.length < pageInfo.total;
-        
+
         // 如果是加载更多，则追加到现有列表，否则替换列表
         if (isLoadMore) {
           roomList.value = [...roomList.value, ...list];
@@ -505,6 +559,7 @@ const submitForm = async () => {
           ElMessage.warning("请选择预约时间段");
           return;
         }
+        debugger
         const req = [
           {
             serviceName: "srvreserve_record_add",
@@ -634,12 +689,12 @@ const mockReservationApi = (timeSlot) => {
 const handleScroll = () => {
   const container = document.querySelector('.calendar_container');
   if (!container) return;
-  
+
   // 当滚动到底部时加载更多数据
   const scrollTop = container.scrollTop;
   const scrollHeight = container.scrollHeight;
   const clientHeight = container.clientHeight;
-  
+
   // 当距离底部100px时开始加载更多
   if (scrollHeight - scrollTop - clientHeight < 100 && !pageInfo.loading && pageInfo.hasMore) {
     fetchRoomList(true);
@@ -649,7 +704,7 @@ const handleScroll = () => {
 // 生命周期钩子
 onMounted(() => {
   fetchRoomList(false);
-  
+
   // 添加滚动监听
   const container = document.querySelector('.calendar_container');
   if (container) {
@@ -672,6 +727,7 @@ onUnmounted(() => {
   background-color: #007bff;
   border-color: #007bff;
 }
+
 .history-icon {
   display: inline-block;
   font-style: normal;
@@ -697,19 +753,23 @@ onUnmounted(() => {
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
+
   .header-info {
     line-height: 40px;
   }
+
   .info-label {
     // min-width: 80px;
     display: inline-block;
   }
+
   .text-blue {
     font-size: 14px;
     // font-weight: 600;
     color: #007bff;
   }
 }
+
 .date-header {
   background: white;
   padding: 16px 20px;
@@ -719,6 +779,7 @@ onUnmounted(() => {
   align-items: center;
   border-radius: 20px 20px 0 0;
   overflow: hidden;
+
   .date-header-left {
     display: flex;
     gap: 10px;
@@ -774,6 +835,7 @@ onUnmounted(() => {
       display: flex;
       justify-content: center;
     }
+
     .search-section {
       .search-input {
         min-width: 100px;
@@ -791,20 +853,24 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border-radius: 0 0 20px 20px;
   overflow-y: auto;
+
   &::-webkit-scrollbar-thumb {
     background: transparent;
     border-radius: 4px;
   }
+
   &::-webkit-scrollbar {
     width: 4px;
     height: 4px;
   }
+
   &:hover {
     &::-webkit-scrollbar-thumb {
       background: rgba($color: #000, $alpha: 0.3);
       border-radius: 4px;
     }
   }
+
   &::-webkit-scrollbar-track {
     background: #fff;
   }
@@ -866,10 +932,12 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: space-between;
+
         .room-header-left {
           display: flex;
           align-items: center;
         }
+
         .room-icon {
           width: 28px;
           height: 28px;
@@ -974,20 +1042,21 @@ onUnmounted(() => {
   text-align: center;
   color: #666;
   font-size: 14px;
-  
+
   .loading-spinner {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    
+
     i {
       font-size: 20px;
       color: #007bff;
     }
   }
-  
-  .no-more-data, .load-more-hint {
+
+  .no-more-data,
+  .load-more-hint {
     padding: 10px;
     color: #999;
   }
@@ -998,7 +1067,7 @@ onUnmounted(() => {
   padding: 40px 0;
   text-align: center;
   color: #999;
-  
+
   .empty-text {
     font-size: 16px;
     margin-bottom: 20px;
