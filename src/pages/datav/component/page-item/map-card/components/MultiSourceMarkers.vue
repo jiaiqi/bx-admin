@@ -4,7 +4,7 @@ import { MessageBox } from 'element-ui'
 import { $http } from '@/common/http'
 import cloneDeep from 'lodash/cloneDeep'
 import { useUtils } from "@/common/vueApi";
-
+import debounce from 'lodash/debounce'
 // 组件属性定义
 const props = defineProps({
   mapJson: {
@@ -40,6 +40,50 @@ const emit = defineEmits(['update:markerList'])
 const markers = ref([])
 const loading = ref(false)
 const error = ref(null)
+
+// 使用 lodash debounce 创建防抖函数
+const debouncedFetchAllMarkers = debounce(async () => {
+  if (!sourceJson.value.length) {
+    markers.value = []
+    return
+  }
+
+  loading.value = true
+  error.value = null
+  markers.value = []
+
+  let successCount = 0
+  let failedCount = 0
+
+  try {
+    // 顺序执行每个请求
+    for (let i = 0; i < sourceJson.value.length; i++) {
+      try {
+        await getMarkers(sourceJson.value[i])
+        successCount++
+      } catch (err) {
+        failedCount++
+        console.error(`数据源 ${i} 请求失败：`, err)
+      }
+    }
+
+    if (failedCount > 0) {
+      console.warn(`${failedCount} 个数据源请求失败，${successCount} 个成功`)
+    }
+
+  } catch (err) {
+    console.error('批量获取标记点数据失败：', err)
+  } finally {
+    loading.value = false
+  }
+}, 1000)
+
+/**
+ * 批量获取所有数据源的标记点（顺序执行）- 带防抖功能
+ */
+async function fetchAllMarkers() {
+  return debouncedFetchAllMarkers()
+}
 
 // // 计算属性：获取多源POI配置
 const sourceJson = computed(() => {
@@ -191,44 +235,62 @@ async function getMarkers(params = {}) {
 }
 
 
-/**
- * 批量获取所有数据源的标记点（顺序执行）
- */
-async function fetchAllMarkers() {
-  if (!sourceJson.value.length) {
-    markers.value = []
-    return
-  }
+// /**
+//  * 批量获取所有数据源的标记点（顺序执行）- 带防抖功能
+//  */
+// async function fetchAllMarkers() {
+//   // 清除之前的定时器
+//   if (debounceTimer) {
+//     clearTimeout(debounceTimer)
+//   }
 
-  loading.value = true
-  error.value = null
-  markers.value = []
+//   // 设置新的定时器，1秒后执行
+//   return new Promise((resolve) => {
+//     debounceTimer = setTimeout(async () => {
+//       await fetchAllMarkersImmediate()
+//       resolve()
+//     }, 1000)
+//   })
+// }
 
-  let successCount = 0
-  let failedCount = 0
+// /**
+//  * 立即执行的批量获取标记点函数
+//  */
+// async function fetchAllMarkersImmediate() {
+//   if (!sourceJson.value.length) {
+//     markers.value = []
+//     return
+//   }
 
-  try {
-    // 顺序执行每个请求
-    for (let i = 0; i < sourceJson.value.length; i++) {
-      try {
-        await getMarkers(sourceJson.value[i])
-        successCount++
-      } catch (err) {
-        failedCount++
-        console.error(`数据源 ${i} 请求失败：`, err)
-      }
-    }
+//   loading.value = true
+//   error.value = null
+//   markers.value = []
 
-    if (failedCount > 0) {
-      console.warn(`${failedCount} 个数据源请求失败，${successCount} 个成功`)
-    }
+//   let successCount = 0
+//   let failedCount = 0
 
-  } catch (err) {
-    console.error('批量获取标记点数据失败：', err)
-  } finally {
-    loading.value = false
-  }
-}
+//   try {
+//     // 顺序执行每个请求
+//     for (let i = 0; i < sourceJson.value.length; i++) {
+//       try {
+//         await getMarkers(sourceJson.value[i])
+//         successCount++
+//       } catch (err) {
+//         failedCount++
+//         console.error(`数据源 ${i} 请求失败：`, err)
+//       }
+//     }
+
+//     if (failedCount > 0) {
+//       console.warn(`${failedCount} 个数据源请求失败，${successCount} 个成功`)
+//     }
+
+//   } catch (err) {
+//     console.error('批量获取标记点数据失败：', err)
+//   } finally {
+//     loading.value = false
+//   }
+// }
 
 // 监听数据源配置变化
 watch(
