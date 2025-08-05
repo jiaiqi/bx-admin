@@ -163,7 +163,7 @@ const emit = defineEmits(['scale-change']);
 const props = defineProps({
   showTips: {
     type: Boolean,
-    default: true
+    default: false
   },
   autoHideTips: {
     type: Boolean,

@@ -133,8 +133,8 @@ export default {
   }
 
   &.legend-top-right {
-    top: 15px;
-    right: 15px;
+    top: 20px;
+    right: 60px;
   }
 
   &.legend-top-left {
