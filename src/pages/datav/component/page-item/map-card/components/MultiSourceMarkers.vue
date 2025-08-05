@@ -168,7 +168,7 @@ async function getMarkers(params = {}) {
             obj[col_map.col_x] = Math.random() * 10 + 5
           }
           if (col_map.col_y && !item[col_map.col_y]) {
-            obj[col_map.col_y] = 100 - Math.random() * 10 + 5
+            obj[col_map.col_y] = 80 - Math.random() * 10 + 5
           }
         }
         return obj
