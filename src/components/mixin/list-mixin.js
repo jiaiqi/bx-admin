@@ -2318,9 +2318,9 @@ export default {
     },
     loadTableData(srvAuth) {
       let self = this;
-      if(this.listType == 'addchildlist'){
-        return
-      }
+      // if(this.listType == 'addchildlist'){
+      //   return
+      // }
       if (!this.vpageNo && !this.isRefreshed) {
         // 登录过期后刷新
         this.isRefreshed = true;
