@@ -4,11 +4,17 @@
       <div class="history-header">
         <h1 class="history-title">预约记录</h1>
         <div class="history-actions">
-          <el-button class="history-btn" @click="backToBooking">
+          <el-button
+            class="history-btn"
+            @click="backToBooking"
+          >
             <i class="el-icon-back"></i>
             <span>返回预约页面</span>
           </el-button>
-          <el-button type="primary" @click="refreshList">
+          <el-button
+            type="primary"
+            @click="refreshList"
+          >
             <i class="el-icon-refresh"></i>
             <span>刷新列表</span>
           </el-button>
@@ -17,7 +23,11 @@
 
       <!-- 搜索筛选区域 -->
       <div class="search-filter">
-        <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form
+          :inline="true"
+          :model="searchForm"
+          class="search-form"
+        >
           <el-form-item label="会议室">
             <el-input
               v-model="searchForm.roomName"
@@ -44,17 +54,25 @@
             ></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" class="search-btn" @click="searchRecords"
-              >搜索</el-button
-            >
+            <el-button
+              type="primary"
+              class="search-btn"
+              @click="searchRecords"
+            >搜索</el-button>
             <el-button @click="resetSearch">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
 
       <!-- 预约记录卡片列表 -->
-      <div class="record-list" v-loading="loading">
-        <div v-if="recordList.length === 0" class="empty-data">
+      <div
+        class="record-list"
+        v-loading="loading"
+      >
+        <div
+          v-if="recordList.length === 0"
+          class="empty-data"
+        >
           <div class="empty-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -69,12 +87,17 @@
             </svg>
           </div>
           <p class="empty-text">暂无预约记录</p>
-          <el-button type="primary" class="reserve-btn" @click="backToBooking"
-            >立即预约</el-button
-          >
+          <el-button
+            type="primary"
+            class="reserve-btn"
+            @click="backToBooking"
+          >立即预约</el-button>
         </div>
 
-        <div v-else class="record-cards">
+        <div
+          v-else
+          class="record-cards"
+        >
           <div
             v-for="(record, index) in recordList"
             :key="index"
@@ -82,7 +105,10 @@
           >
             <div class="card-header">
               <div class="room-name">{{ record.rsvo_name }}</div>
-              <el-tag size="small" :type="getStatusType(record.review_status)">
+              <el-tag
+                size="small"
+                :type="getStatusType(record.review_status)"
+              >
                 {{ getStatusText(record.review_status) }}
               </el-tag>
             </div>
@@ -95,8 +121,7 @@
                 </div>
                 <div class="info-item">
                   <i class="el-icon-time"></i>
-                  <span
-                    >{{ formatTime(record.start_time) }}
+                  <span>{{ formatTime(record.start_time) }}
                     <span v-if="record.end_time">
                       -
                       {{ formatTime(record.end_time) }}
@@ -121,9 +146,15 @@
                   <i class="el-icon-user-solid"></i>
                   <span>{{ record.count }}人</span>
                 </div>
-                <div class="info-item" v-if="record.remark">
+                <div
+                  class="info-item"
+                  v-if="record.remark"
+                >
                   <i class="el-icon-document"></i>
-                  <el-tooltip :content="record.remark" placement="top">
+                  <el-tooltip
+                    :content="record.remark"
+                    placement="top"
+                  >
                     <span class="remark-text">{{ record.remark }}</span>
                   </el-tooltip>
                 </div>
@@ -131,17 +162,14 @@
             </div>
 
             <div class="card-footer">
-              <span class="create-time"
-                >创建时间: {{ formatCreateTime(record.create_time) }}</span
-              >
+              <span class="create-time">创建时间: {{ formatCreateTime(record.create_time) }}</span>
               <div class="card-actions">
                 <el-button
                   type="primary"
                   size="mini"
                   plain
                   @click="viewDetail(record)"
-                  >查看详情</el-button
-                >
+                >查看详情</el-button>
                 <!-- <el-button
                   v-if="canCancel(record)"
                   type="danger"
@@ -177,7 +205,10 @@
       width="500px"
       center
     >
-      <div class="detail-content" v-if="selectedRecord">
+      <div
+        class="detail-content"
+        v-if="selectedRecord"
+      >
         <div class="detail-item">
           <span class="detail-label">会议室：</span>
           <span class="detail-value">{{ selectedRecord.rsvo_name }}</span>
@@ -228,15 +259,17 @@
           </span>
         </div>
       </div>
-      <span slot="footer" class="dialog-footer">
+      <span
+        slot="footer"
+        class="dialog-footer"
+      >
         <el-button @click="detailDialogVisible = false">关闭</el-button>
         <el-button
           v-if="canCancel(selectedRecord)"
           type="danger"
           plain
           @click="cancelReservation(selectedRecord)"
-          >取消预约</el-button
-        >
+        >取消预约</el-button>
       </span>
     </el-dialog>
   </div>
@@ -413,7 +446,7 @@ const cancelReservation = (record) => {
         ElMessage.error("取消预约失败: " + error.message);
       }
     })
-    .catch(() => {});
+    .catch(() => { });
 };
 
 // 判断是否可以取消预约
@@ -462,6 +495,13 @@ const getStatusText = (status) => {
 // 格式化时间
 const formatTime = (timeStr) => {
   if (!timeStr) return "";
+  if (typeof timeStr === 'string' && timeStr.includes(',')) {
+    let timeArr = timeStr.split(',')
+    return timeArr.map(item => dayjs(`2000-01-01 ${item}`).format("HH:mm")).join('、')
+    // if (timeArr.length > 1) {
+    //   return dayjs(`2000-01-01 ${timeArr[0]}`).format("HH:mm") + ' - ' + dayjs(`2000-01-01 ${timeArr[timeArr.length - 1]}`).format("HH:mm");
+    // }
+  }
   return dayjs(`2000-01-01 ${timeStr}`).format("HH:mm");
 };
 
