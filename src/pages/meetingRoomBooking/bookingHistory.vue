@@ -461,15 +461,12 @@ const canCancel = (record) => {
 // 获取状态类型
 const getStatusType = (status) => {
   switch (status) {
-    case 1:
-    case "1":
-      return "success"; // 已预约
-    case 2:
-    case "2":
-      return "danger"; // 已取消
-    case 3:
-    case "3":
-      return "info"; // 已完成
+    case "通过":
+      return "success"; 
+    case "不通过":
+      return "danger";
+    case "待审核":
+      return "info";
     default:
       return "info";
   }
