@@ -36,19 +36,26 @@
           <span class="label">联系方式：</span>
           <span class="value">{{ reservationInfo.mobilephone }}</span>
         </div>
-        <div class="info-item">
+        <div
+          class="info-item"
+          v-if="![1, '1'].includes(reservationInfo.count)"
+        >
           <span class="label">人数：</span>
           <span class="value">{{ reservationInfo.count }}人</span>
         </div>
-        <div class="info-item" v-if="reservationInfo.remark">
+        <div
+          class="info-item"
+          v-if="reservationInfo.remark"
+        >
           <span class="label">备注：</span>
           <span class="value">{{ reservationInfo.remark }}</span>
         </div>
       </div>
       <div class="success-actions">
-        <el-button type="primary" @click="backToBooking"
-          >返回预约页面</el-button
-        >
+        <el-button
+          type="primary"
+          @click="backToBooking"
+        >返回预约页面</el-button>
         <el-button @click="navigateToHistory">查看历史记录</el-button>
       </div>
     </div>

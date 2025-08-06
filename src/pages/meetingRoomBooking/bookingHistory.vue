@@ -141,7 +141,10 @@
                 </div>
               </div>
 
-              <div class="info-row">
+              <div
+                class="info-row"
+                v-if="![1, '1'].includes(record.count)"
+              >
                 <div class="info-item">
                   <i class="el-icon-user-solid"></i>
                   <span>{{ record.count }}人</span>
@@ -235,7 +238,10 @@
           <span class="detail-label">联系方式：</span>
           <span class="detail-value">{{ selectedRecord.mobilephone }}</span>
         </div>
-        <div class="detail-item">
+        <div
+          class="detail-item"
+          v-if="![1, '1'].includes(selectedRecord.count)"
+        >
           <span class="detail-label">人数：</span>
           <span class="detail-value">{{ selectedRecord.count }}人</span>
         </div>
@@ -462,7 +468,7 @@ const canCancel = (record) => {
 const getStatusType = (status) => {
   switch (status) {
     case "通过":
-      return "success"; 
+      return "success";
     case "不通过":
       return "danger";
     case "待审核":
@@ -666,7 +672,7 @@ onMounted(() => {
         .info-row {
           display: flex;
           margin-bottom: 12px;
-          flex-wrap: wrap;
+          // flex-wrap: wrap;
 
           &:last-child {
             margin-bottom: 0;

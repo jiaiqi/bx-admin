@@ -248,6 +248,7 @@
         <el-form-item
           label="人数"
           prop="count"
+          v-if="!hidePersonCount"
         >
           <div class="flex items-center justify-between">
             <el-input-number
@@ -310,7 +311,11 @@ const searchKey = ref("");
 const roomList = ref([]);
 const selectedDate = ref(dayjs().format("YYYY-MM-DD"));
 const selectedTimes = ref([]); // 改为数组，支持多选
-
+const hidePersonCount = computed(() => {
+  if (Array.isArray(selectedTimes.value)) {
+    return selectedTimes.value?.length > 0 && selectedTimes.value.every(item => item.div_count === 1)
+  }
+})
 // 分页相关
 const pageInfo = reactive({
   pageNo: 1,
@@ -496,7 +501,7 @@ const isTimeSelected = (item = {}) => {
 const getMaxCapacity = () => {
   if (selectedTimes.value.length === 0) return 100;
 
-  return Math.min(...selectedTimes.value.map(time => time.div_count || 100));
+  return Math.min(...selectedTimes.value.map(time => time.div_count || 1));
 };
 
 const navigateToHistory = () => {
