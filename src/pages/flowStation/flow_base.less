@@ -1,0 +1,169 @@
+.Flex(@_flex,@_center,@_just){
+  display:@_flex;
+  align-items:@_center;
+  justify-content:@_just;
+}
+.flex_column(){
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+}
+.flow_station{
+  width: 100%;
+  height: 100%;
+  background: url("./icon/bg.png") no-repeat;
+  background-size:100% 100%;
+  overflow:auto;
+}
+//.flow_line2{
+//  width: 100%;
+//  display: flex;
+//  justify-content: center;
+//  img{
+//    display: block;
+//    width:60%;
+//  }
+//}
+.flow_content{
+  width:45%;
+  height: 100%;
+  margin:0 auto;
+  padding:0.3125rem;
+}
+.flow_row{
+  width:100%;
+  .flex_column();
+}
+.flow_station_head{
+  box-sizing: border-box;
+  padding:0.1875rem 0.9375rem;
+  color: rgba(16,16,16,1);
+  font-size: 1.75rem;
+  text-align:center;
+  font-family: PingFangSC-bold;
+}
+.flow_row_item_index{
+  width:80%;
+  .flex_column();
+}
+.flow_row_item_ch{
+  width:100%;
+  .flex_column();
+}
+.flow_row_item_bg{
+  width:50%;
+  padding:0.5rem 1.875rem;
+  border-radius: 8px;
+  background-color: rgba(0,122,255,1);
+  color: rgba(255,255,255,1);
+  font-size: 1rem;
+  text-align: center;
+  box-shadow: 0px 2px 6px 0px rgba(0,0,0,0.2);
+  font-family: PingFangSC-regular;
+}
+.flow_station_body{
+  width:90%;
+  height:calc(100% - 5rem);
+  margin:1.25rem auto;
+  .flex_column();
+}
+.flow_title_sl{
+  width:40%;
+  padding:0.5rem 1.875rem;
+  border-radius: 8px;
+  background-color: rgba(0,122,255,1);
+  color: rgba(255,255,255,1);
+  font-size: 0.875rem;
+  text-align: center;
+  box-shadow: 0px 2px 6px 0px rgba(0,0,0,0.2);
+  font-family: PingFangSC-regular;
+  .Flex(flex,center,center);
+  .sl_icon{
+    width:2.1875rem;
+    img{
+      display: block;
+      width:1.25rem;
+    }
+  }
+}
+.line{
+  display:flex;
+  justify-content: center;
+}
+.flow_index{
+  display:flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  span{
+    display:block;
+  }
+}
+.flow_step{
+  background-color: rgba(0,122,255,1);
+  color: rgba(255,255,255,1);
+  font-size: 14px;
+  text-align: center;
+  font-family: PingFangSC-regular;
+  width:1.75rem;
+  height:1.75rem;
+  line-height:1.75rem;
+  border-radius:50%;
+  margin:0.125rem 0;
+}
+.flow_start{
+  color: rgba(0,122,255,1);
+  font-size: 1rem;
+  text-align:center;
+  font-family: PingFangSC-bold;
+  font-weight: bold;
+}
+.flow_child_row{
+  width:100%;
+  display: flex;
+  justify-content:space-around;
+  align-items: center;
+}
+.flow_child_item{
+  padding:0.1875rem 1.875rem;
+  border-radius: 8px;
+  background-color: rgba(255,255,255,1);
+  color: rgba(16,16,16,1);
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0px 2px 6px 0px rgba(0,0,0,0.2);
+  font-family: PingFangSC-regular;
+  border: 2px solid rgba(0,122,255,1);
+}
+// 导出按钮样式
+.export-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: linear-gradient(135deg, #007AFF, #0056CC);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 16px;
+  }
+}

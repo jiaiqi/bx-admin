@@ -39,6 +39,15 @@ export default {
       },
       immediate: true,
       deep:true
+    },
+    cellItemData:{
+      deep:true,
+      immediate: true,
+      handler(val){
+       if(val&&val.chnl_no&&this.cellItem){
+        this.getModVideoInfo(val.chnl_no);
+       }
+      }
     }
   },
   computed:{
@@ -62,6 +71,19 @@ export default {
     },
   },
   methods:{
+       //弹窗获取视频通道信息
+       async getModVideoInfo(chnl_no){
+         let url='/iot/select/srviot_dev_mon_channel_party_select'
+         let req= {
+          page: {pageNo: 1, rownumber: 10},
+          serviceName: "srviot_dev_mon_channel_party_select",
+          colNames: ["*"],
+          condition: [{colName: "chnl_no", ruleType: "like", value: chnl_no}]}
+         const res = await $http.post(url, req);
+         if(res.data.state!=='SUCCESS') return;
+         let rows=res.data.data[0]
+         this.playHls(rows.url)
+       },
        //获取视频数据通道接口
       async getVideoInfoById(){
          if(this.setDataInfo){
@@ -96,6 +118,7 @@ export default {
        },
      //hls视频播放
      playHls(url) {
+         console.log('播放的视频流地址',url)
       //每次初始化前先判断播放实例是否存在，存在时将其销毁
       if(this.hlsplayer != null) {
         this.hlsplayer.destroy();
@@ -142,6 +165,8 @@ export default {
     }
   },
   mounted(){
+    console.log('cellItemData',this.cellItemData)
+    console.log('弹窗视频信息',this.cellItem);
     this.autoTestSupHls();
 
   }

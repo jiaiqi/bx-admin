@@ -87,6 +87,11 @@ const inForm = () =>
 // pages
 // Vue.use(Router);
 let routes = [
+  {
+    path: "/flow-station",
+    name: "FlowStation",
+    component: ()=> import(/* webpackChunkName: "flow" */ "@/pages/flowStation/flow-station.vue"),
+  },
   //测试支付使用
   {
     path: "/payment",
