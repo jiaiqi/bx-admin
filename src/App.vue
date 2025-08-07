@@ -387,11 +387,11 @@ span.section-title {
     color: var(--primary-color, #409eff);
   }
 
-  .el-tag:not(.el-tag--info) {
-    background-color: var(--menu-bg-light-color, #b3d8ff);
-    border-color: var(--menu-light-border-color, #b3d8ff);
-    color: var(--primary-color, #409eff);
-  }
+  // .el-tag:not(.el-tag--info) {
+  //   background-color: var(--menu-bg-light-color, #b3d8ff);
+  //   border-color: var(--menu-light-border-color, #b3d8ff);
+  //   color: var(--primary-color, #409eff);
+  // }
 
   .el-button:focus,
   .el-button:hover {

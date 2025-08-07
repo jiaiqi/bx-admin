@@ -18,6 +18,20 @@
       @show="visibleChange"
     >
       <template slot="reference">
+        <div
+          class="table-picker-input"
+          v-if="disabled && getFkJson && getFkJson.length"
+        >
+          <template v-for="(tag, tIndex) in getFkJson">
+            <el-tag
+              size="mini"
+              style="margin-right: 4px; margin-bottom: 2px"
+              :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+            >
+              {{ tag || "--" }}
+            </el-tag>
+          </template>
+        </div>
         <el-select
           style="width: 100%"
           :disabled="disabled"
@@ -30,6 +44,7 @@
           @remove-tag="removeTag"
           @clear="clearSelect"
           @focus="onSearch"
+          v-else
         >
           <el-option
             v-for="item in allData"
@@ -203,6 +218,99 @@ export default {
     };
   },
   computed: {
+    ObjInfo() {
+      return this.field.info?.srvCol?.option_list_v2?.obj_info
+    },
+    getFkJson() {
+      if (this.disabled && this.ObjInfo) {
+        let row = this.formModel
+        let col = cloneDeep(this.field.info)
+        col.srvcol = col?.srvCol
+        col.column = col.name
+        col._obj_info = this.ObjInfo
+
+        let val = "";
+        let result = [];
+        debugger
+        if (row && col && col.column && row[col.column]) {
+          val = row[col.column];
+        }
+        let colType = "";
+        if (col && col.srvcol && col.srvcol.col_type) {
+          colType = col.srvcol.col_type;
+        }
+        let fmt = col && col.srvcol && col.srvcol.fmt;
+        let valueCol = fmt && fmt.primary_col;
+        let dispCol = fmt && fmt.disp_col;
+        if (
+          col?._obj_info?.a_save_b_obj_col &&
+          row[col?._obj_info?.a_save_b_obj_col]
+        ) {
+          let str = row[col?._obj_info?.a_save_b_obj_col];
+          try {
+            let arr = JSON.parse(str);
+            if (Array.isArray(arr)) {
+              result = arr;
+            } else {
+              result = [arr];
+            }
+          } catch (error) {
+            console.log(error);
+          }
+          if (Array.isArray(result) && result.length > 0) {
+            result = result.map(item => {
+              if (!item[dispCol] && !item[valueCol] && item.label && item.value) {
+                item[dispCol] = item.label
+                item[valueCol] = item.value
+              }
+              return item
+            })
+            result = result.map((item) => item[dispCol] || item[valueCol]);
+          }
+        }
+        if (!result || (result && result.length === 0)) {
+          switch (colType) {
+            case "fks":
+              result = val ? val.split(",") : [];
+              break;
+            case "fkjson":
+              try {
+                result = val ? JSON.parse(val) : {};
+              } catch (error) {
+                console.log(error);
+              }
+              if (result && result[dispCol]) {
+                result = [result[dispCol] || result[valueCol]];
+              }
+              break;
+            case "fkjsons":
+              try {
+                result = val ? JSON.parse(val) : [];
+              } catch (error) { }
+              if (Array.isArray(result) && result.length > 0) {
+                result = result.map((item) => item[dispCol] || item[valueCol]);
+              }
+              break;
+          }
+        }
+        return result;
+      }
+    },
+    displayValue() {
+      if (this.a_save_b_obj_col && this.formModel[this.a_save_b_obj_col]) {
+        const json = this.formModel[this.a_save_b_obj_col]
+        if (typeof json === 'string' && json) {
+          try {
+            const obj = JSON.parse(json)
+
+          } catch (error) {
+
+          }
+
+        }
+      }
+
+    },
     allSelect() {
       return this.optionListV2?.allSelect;
     },
@@ -1141,6 +1249,26 @@ export default {
 <style lang="scss">
 .popper-class {
   display: none;
+}
+
+.table-picker-input {
+  -webkit-appearance: none;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #E4E7ED;
+  box-sizing: border-box;
+  color: #606266;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  outline: 0;
+  padding: 0 15px;
+  transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+  width: 100%;
+  background-color: #F5F7FA;
+  border-color: #E4E7ED;
+  color: #C0C4CC;
+  cursor: not-allowed;
 }
 
 .table-picker-wrapper {
