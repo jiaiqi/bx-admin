@@ -192,7 +192,14 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   let seriesValueCols = chartJson?.series_value_cols || "";
 
   seriesValueCols = seriesValueCols.split(",");
-
+  let y2seriesValueCols = []
+  let y2SeriesNames = []
+  if (chartJson?.y2_name_cfg && chartJson?.y2_cols) {
+    y2SeriesNames = chartJson?.y2_name_cfg.split(',')
+    y2seriesValueCols = chartJson?.y2_cols.split(',')
+  }
+  seriesValueCols = seriesValueCols.concat(y2seriesValueCols)
+  seriesName = seriesName.concat(y2SeriesNames)
   // const mapJson =
   //   pageItem.cols_map_json?.cols_map_json ||
   //   pageItem?.page_com_cols_map_json?.cols_map_json;
@@ -223,6 +230,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           // color: this.color,
           // type: type,
         };
+
+        if (y2seriesValueCols.includes(dataColName)) {
+          // 副坐标轴
+          series.yAxisIndex = 1
+        }
+
         if (
           lineVal1 &&
           lineVal2 &&
