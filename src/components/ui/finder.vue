@@ -79,7 +79,7 @@
           :fetch-suggestions="loadOptions"
           :value-key="field.info.dispCol"
           :disabled="setDisabled"
-          v-model="selected"
+          v-model="inputValue"
           :placeholder="field.info.placeholder"
           clearable
           @select="handleSelect"
@@ -283,6 +283,7 @@ export default {
   data() {
     return {
       selected: null,
+      inputValue:"",
       popup: false,
       activePopup: "",
       appNo: null,
