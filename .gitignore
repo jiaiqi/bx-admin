@@ -30,7 +30,7 @@ yarn.lock
 package-lock.json
 src/components/test/spa_mock.js
 /package.json
-/vue.config.js
+/vue.config.js-bck
 /deploy.config.js
 /dist.zip
 vpages

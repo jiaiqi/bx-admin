@@ -14,15 +14,6 @@
     "build-lib4app": "bili --format cjs --name index --plugin vue --vue.css false"
   },
   "dependencies": {
-    "@antv/x6": "^2.18.1",
-    "@antv/x6-plugin-clipboard": "^2.1.6",
-    "@antv/x6-plugin-history": "^2.2.4",
-    "@antv/x6-plugin-keyboard": "^2.2.3",
-    "@antv/x6-plugin-selection": "^2.2.2",
-    "@antv/x6-plugin-snapline": "^2.1.7",
-    "@antv/x6-plugin-stencil": "^2.1.5",
-    "@antv/x6-plugin-transform": "^2.1.8",
-    "@antv/x6-vue-shape": "^2.1.2",
     "@iconify/json": "^2.2.333",
     "@popperjs/core": "^2.11.7",
     "@tailwindcss/postcss7-compat": "^2.2.17",
@@ -93,10 +84,14 @@
     "@iconify/vue2": "^2.1.0",
     "@vue/cli-plugin-babel": "3.12.1",
     "@vue/cli-service": "3.12.1",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "babel-plugin-transform-remove-debugger": "^6.9.4",
     "compression-webpack-plugin": "^6.0.3",
     "sass": "^1.60.0",
+    "terser-webpack-plugin": "^4.2.3",
     "vue-template-compiler": "2.6.14",
-    "vue2-ace-editor": "0.0.15"
+    "vue2-ace-editor": "0.0.15",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "browserslist": [
     "> 1%",
