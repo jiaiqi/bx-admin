@@ -97,6 +97,16 @@ export default {
         this.setThemeVariable();
       }
     },
+    setStyle: {
+      handler(newVal, oldVal) {
+        if(newVal&&newVal['font-size']){
+          document.body.style.fontSize = newVal['font-size']
+          document.querySelector('html').style.fontSize = newVal['font-size']
+        }
+      },
+      deep: true,
+      immediate: true,
+    }
   },
   created() {
     if (this.lowCodeJson?.page_no) {
