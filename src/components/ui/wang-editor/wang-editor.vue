@@ -107,7 +107,13 @@ export default {
       this.innerHtml = this.recoverFileAddress4richText(srvVal);
     },
     getSrvVal() {
-      return this.innerHtml;
+      // 获取值
+      return this.replaceFileAddressSuffix(this.innerHtml);
+    },
+    replaceFileAddressSuffix(val = "") {
+      const prefix = this.serviceApi().downloadFilePrefix;
+      val = val?.replaceAll?.(prefix, "$bxFileAddress$");
+      return val;
     },
     onCreated(editor) {
       this.editor = Object.seal(editor); // 【注意】一定要用 Object.seal() 否则会报错
@@ -121,7 +127,7 @@ export default {
     onChange(editor) {
       //   console.log("onChange", editor.getHtml()); // onChange 时获取编辑器最新内容
       if (this.innerHtml !== this.field.model) {
-        this.$set(this.field, "model", this.innerHtml);
+        this.$set(this.field, "model", this.replaceFileAddressSuffix(this.innerHtml));
         this.$emit("change", this.field.info.name, this.field);
       }
     },
