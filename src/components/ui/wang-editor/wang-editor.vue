@@ -66,7 +66,7 @@ export default {
   },
   created() {
     this.ticket = sessionStorage.getItem("bx_auth_ticket");
-    this.innerHtml = this.value;
+    this.innerHtml = this.recoverFileAddress4richText(this.value);
     this.$nextTick(() => {
       this.domLoad = true;
     });
@@ -85,7 +85,7 @@ export default {
     },
     value(newValue) {
       if (newValue !== this.innerHtml) {
-        this.innerHtml = newValue;
+        this.innerHtml = this.recoverFileAddress4richText(newValue);
       }
     },
   },
@@ -104,7 +104,7 @@ export default {
       }
     },
     setSrvVal(srvVal) {
-      this.innerHtml = srvVal;
+      this.innerHtml = this.recoverFileAddress4richText(srvVal);
     },
     getSrvVal() {
       return this.innerHtml;
