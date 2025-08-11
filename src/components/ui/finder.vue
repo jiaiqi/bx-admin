@@ -706,9 +706,6 @@ export default {
         this.selected = null;
       }
       this.inputValue = this.selected
-      // this.inputValue = this.field.getSrvVal();
-
-
     },
     onPickerSelected(selected) {
       this.field.model = selected;

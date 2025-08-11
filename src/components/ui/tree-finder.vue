@@ -31,7 +31,10 @@
     :emitPath="false"
     ref="elCascader"
   >
-    <template slot-scope="{ node, data }" v-if="props.checkStrictly !== false">
+    <template
+      slot-scope="{ node, data }"
+      v-if="props.checkStrictly !== false"
+    >
       <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
     </template>
   </el-cascader>
@@ -40,7 +43,13 @@
 <script>
 import debounce from "lodash/debounce";
 export default {
-  props: ["field"],
+  props: {
+    field: Object,
+    allowChangeModel: {
+      type: Boolean,
+      default: true,
+    }
+  },
   data() {
     return {
       // value组成的路径数组
@@ -60,8 +69,8 @@ export default {
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
         checkStrictly:
           top?.env?.includes("health") ||
-          this.optionListV2?.checkStrictly === false ||
-          this.optionListV2?.["只能选择叶子节点"] === true
+            this.optionListV2?.checkStrictly === false ||
+            this.optionListV2?.["只能选择叶子节点"] === true
             ? false
             : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
         lazy: this.dispLoaderV2?.lazyLoad === false ? false : true,
@@ -155,6 +164,15 @@ export default {
   },
 
   methods: {
+    changeFieldModel(data, emitEvent = true) {
+      this.field.model = data;
+      if (emitEvent) {
+        this.$emit("field-value-changed", this.field.info.name, this.field);
+      }
+    },
+    onlyEmitData(data) {
+      this.$emit("on-change", data);
+    },
     clickNode(node, data) {
       if (this.props.checkStrictly === false) {
         if (data.is_leaf !== "是") {
@@ -163,20 +181,29 @@ export default {
         }
       }
       console.log(node, data, "clickNode");
-      this.field.model = data;
+      // this.field.model = data;
       // if (this.dispLoaderV2?.lazyLoad === false) {
       //   this.selected = [data[this.props.value]];
       // } else {
       this.selected = node.path;
       // }
-      this.$emit("field-value-changed", this.field.info.name, this.field);
+      // this.$emit("field-value-changed", this.field.info.name, this.field);
+      if (this.allowChangeModel !== false) {
+        this.changeFieldModel(data);
+      } else {
+        this.onlyEmitData(data);
+      }
       this.$nextTick(() => {
         this.$refs.elCascader.dropDownVisible = false;
       });
     },
     onClear() {
-      this.field.model = null;
-      this.$emit("field-value-changed", this.field.info.name, this.field);
+      if (this.allowChangeModel !== false) {
+        this.changeFieldModel(null);
+      } else {
+        this.onlyEmitData(null);
+
+      }
       this.$nextTick(() => {
         this.loadOptions();
       });
@@ -445,8 +472,11 @@ export default {
             //     return val;
             //   })
             //   .filter((t) => !!t);
-            this.field.model = item;
-            this.$emit("field-value-changed", this.field.info.name, this.field);
+            if (this.allowChangeModel !== false) {
+              this.changeFieldModel(item);
+            } else {
+              this.onlyEmitData(item);
+            }
           }
           return options;
         }
@@ -468,6 +498,31 @@ export default {
         //   this.options = options;
         // }
       }
+    },
+    setInitVal() {
+      let fieldInfo = this.field.info;
+      if (
+        this.hasInit === false &&
+        this.options.length > 0 &&
+        !this.field.model &&
+        this.field.info &&
+        this.field.info.srvCol &&
+        this.field.info.srvCol.init_expr === "$firstRowData"
+      ) {
+        let loader = this.dispLoaderV2;
+        this.field.model = this.options[0];
+        this.selected =
+          loader.showAsPair !== true
+            ? this.options[0][fieldInfo.dispCol]
+            : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
+            }`;
+        this.hasInit = true;
+      } else if (this.field.model && (this.finderSelected||this.field.finderSelected)) {
+        this.selected = this.finderSelected || this.field.finderSelected;
+      } else if (!this.field.model && !this.finderSelected) {
+        this.selected = null;
+      }
+      // this.inputValue = this.selected
     },
     async setInitValOption() {
       let fieldInfo = this.field.info;
@@ -548,10 +603,14 @@ export default {
       if (response && response.data && response.data.data) {
         let options = response.data.data;
         if (options.length > 0) {
-          this.field.model = options[0];
+          const item = options[0];
           this.selected =
             options[0]?.path?.split("/").filter((item) => !!item) || [];
-          this.$emit("field-value-changed", this.field.info.name, this.field);
+          if (this.allowChangeModel !== false) {
+            this.changeFieldModel(item);
+          } else {
+            this.onlyEmitData(item);
+          }
         }
       }
     },
@@ -611,12 +670,17 @@ export default {
       setTimeout(() => {
         const data = this.$refs?.elCascader?.getCheckedNodes?.()?.[0]?.data;
         if (val !== this.field.getSrvVal()) {
-          if (data) {
-            this.field.model = data;
+          // if (data) {
+          //   this.field.model = data;
+          // } else {
+          //   this.field.model = null;
+          // }
+          if (this.allowChangeModel !== false) {
+            this.changeFieldModel(data || null);
           } else {
-            this.field.model = null;
+            this.onlyEmitData(data || null);
           }
-          this.$emit("field-value-changed", this.field.info.name, this.field);
+          // this.$emit("field-value-changed", this.field.info.name, this.field);
         }
         let loader = this.dispLoaderV2;
         if (loader.parentCol && !val) {
@@ -632,23 +696,27 @@ export default {
     onSelectChange(val) {
       let loader = this.dispLoaderV2;
 
-      if (this.selected && this.selected.length > 0) {
-        this.field.model = this.findSelectedItem() || this.field.model;
-        // this.selected = this.field.model
+      // if (this.selected && this.selected.length > 0) {
+      //   this.field.model = this.findSelectedItem() || this.field.model;
+      //   // this.selected = this.field.model
+      // } else {
+      //   this.field.model = null;
+      // }
+      const data = this.selected && this.selected.length > 0 ? this.findSelectedItem() || this.field.model : null
+      if (this.allowChangeModel !== false) {
+        this.changeFieldModel(data || null, false);
       } else {
-        this.field.model = null;
+        this.onlyEmitData(data || null, false);
       }
-
       if (loader.parentCol) {
         console.log(val, "onSelectChange");
         this.treeLazySelect(loader, val);
       }
-      if (val !== this.field.getSrvVal()) {
-        this.$emit("field-value-changed", this.field.info.name, this.field);
-      }
-      // this.$nextTick(() => {
-      //   this.$refs.elCascader.dropDownVisible = false
-      // });
+      // if (val !== this.field.getSrvVal()) {
+      //   this.$emit("field-value-changed", this.field.info.name, this.field);
+      // }
+
+
     },
     getPath(val) {
       let option = {};
@@ -716,8 +784,13 @@ export default {
               return val;
             })
             .filter((t) => !!t);
-          this.field.model = item;
-          this.$emit("field-value-changed", this.field.info.name, this.field);
+          if (this.allowChangeModel !== false) {
+            this.changeFieldModel(item || null, false);
+          } else {
+            this.onlyEmitData(item || null, false);
+          }
+          // this.field.model = item;
+          // this.$emit("field-value-changed", this.field.info.name, this.field);
           if (this.selected.length > 0 && loader.parentCol) {
             // this.setInitValOption()
           }
@@ -824,7 +897,7 @@ export default {
     },
   },
 
-  destroyed: function () {},
+  destroyed: function () { },
 
   mounted: function () {
     if (this.field.model) {
@@ -851,9 +924,16 @@ export default {
         this.field.info.srvCol.init_expr === "$firstRowData"
       ) {
         // 默认选中首行数据
-        this.field.model = this.options[0];
+        // this.field.model = this.options[0];
+        const model = this.options[0];
+
+        // this.$emit("field-value-changed", this.field.info.name, this.field);
+        if (this.allowChangeModel !== false) {
+          this.changeFieldModel(model, false);
+        } else {
+          this.onlyEmitData(model, false);
+        }
         this.selected = [this.field.model[this.field.info.valueCol]];
-        this.$emit("field-value-changed", this.field.info.name, this.field);
         this.hasInit = true;
       }
     });
@@ -863,6 +943,9 @@ export default {
       deep: true,
       handler(newValue, oldValue) {
         console.log(newValue, oldValue, "field.model", this.field);
+        if (newValue !== oldValue) {
+          this.setInitVal()
+        }
       },
     },
     visibleChange: function (newValue, oldValue) {

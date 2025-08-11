@@ -1,4 +1,13 @@
 <template>
+  <tree-finder
+    :disabled="disabled"
+    v-if="isTree"
+    ref="editor"
+    :field="setTreeField"
+    :allow-change-model="false"
+    @on-change="onTreeChange"
+  >
+  </tree-finder>
   <el-autocomplete
     class="inline-input"
     v-model="field.model"
@@ -11,18 +20,34 @@
     suffix-icon="el-icon-edit"
     @select="handleSelect"
     @clear="handleClear"
+    v-else
   >
   </el-autocomplete>
 </template>
 
 <script>
+import cloneDeep from 'lodash/cloneDeep';
+import TreeFinder from './tree-finder.vue';
 export default {
   props: {
     field: Object,
     disabled: Boolean,
   },
-  mounted() {},
+  components: {
+    TreeFinder,
+  },
+  mounted() { },
   computed: {
+    setTreeField() {
+      const field = this.field
+      const optionListV2 = cloneDeep(this.optionsV2List)
+      field.info.srvCol.option_list_v2 = optionListV2
+      field.info.srvCol.option_list_v3 = optionListV2
+      field.info.valueCol = optionListV2.refed_col
+      field.info.dispCol = optionListV2.key_disp_col
+      field.info.parentCol = optionListV2.parent_no_col
+      return field
+    },
     modelValue() {
       let value = this.field.model;
       return value;
@@ -35,6 +60,9 @@ export default {
     optionsV2List() {
       let optionsV2 = this.field.autocompleteFunc();
       return optionsV2;
+    },
+    isTree() {
+      return this.optionsV2List?.is_tree === true
     },
     optionsReq() {
       let optionsV2 = this.field.autocompleteFunc();
@@ -102,6 +130,23 @@ export default {
   },
 
   methods: {
+    onTreeChange(val) {
+      console.log('onTreeChange', val);
+      if (val) {
+        this.handleSelect({
+          option: val,
+          label: val[this.optionsV2List.key_disp_col],
+          value: val[this.optionsV2List.refed_col],
+        })
+      } else {
+        const dependField = this.getDependField();
+        dependField.model = null;
+        dependField.finderSelected = null;
+        this.$set(dependField, "model", null);
+        this.$emit("change", dependField);
+      }
+    },
+
     getDependField() {
       let dependField; //fk字段
       if (this.field.form.fields && Array.isArray(this.field.form.fields)) {
@@ -201,9 +246,8 @@ export default {
             if (valColumn == this.optionsV2List["key_disp_col"]) {
               result.label = item[this.optionsV2List["key_disp_col"]];
             } else {
-              result.label = `${item[this.optionsV2List["key_disp_col"]]}(${
-                item[this.optionsV2List["refed_col"]]
-              }/${item[this.optionsV2List["key_disp_col"]]})`;
+              result.label = `${item[this.optionsV2List["key_disp_col"]]}(${item[this.optionsV2List["refed_col"]]
+                }/${item[this.optionsV2List["key_disp_col"]]})`;
             }
             return result;
           });
