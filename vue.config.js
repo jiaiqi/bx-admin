@@ -1,28 +1,20 @@
 const webpack = require("webpack");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const productionGzipExtensions = ["js", "css"];
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 function getProdExternals() {
-  // for lib target
-  // return {
-  //   lodash: "lodash",
-  //   moment: "moment",
-  // };
-
-  // for app target
   return {
-    // "vue":"Vue",
-    // "vue-router":"VueRouter",
-    // "vuex":"Vuex",
     lodash: "_",
     moment: "moment",
-    // "element-ui":"ELEMENT"
   };
 }
-console.log(process.env.VUE_APP_TARGET, process.env.BASE_URL, process.env.NODE_ENV);
+
+
 
 module.exports = {
   chainWebpack: (config) => {
+    // Babel配置优化
     config.module
       .rule('js')
       .use('babel-loader')
@@ -30,123 +22,265 @@ module.exports = {
         return {
           ...options,
           presets: [
-            ['@babel/preset-env', { useBuiltIns: 'entry', corejs: 3 }]
+            ['@babel/preset-env', { 
+              useBuiltIns: 'entry', 
+              corejs: 3,
+              targets: {
+                browsers: ['> 1%', 'last 2 versions', 'not ie <= 8']
+              }
+            }]
           ],
           plugins: [
             "@babel/plugin-transform-optional-chaining", // 可选链 ?.
-            "@babel/plugin-transform-nullish-coalescing-operator" // 空值合并 ??
-          ]
+            "@babel/plugin-transform-nullish-coalescing-operator", // 空值合并 ??
+            // 生产环境移除console和debugger
+            // process.env.NODE_ENV === 'production' && [
+            //   'transform-remove-console',
+            //   {
+            //     exclude: ['error', 'warn'] // 保留error和warn
+            //   }
+            // ],
+            // 移除debugger语句
+            process.env.NODE_ENV === 'production' && 'transform-remove-debugger'
+          ].filter(Boolean)
         };
       });
-    // config.module
-    //   .rule('mjs')
-    //   .test(/\.mjs$/)  // 匹配 .mjs 文件
-    //   .include
-    //   .add(/node_modules/)
-    //   .end()
-    //   .type('javascript/auto')
-    //   .use('babel-loader') // 确保为 mjs 文件也使用了 loader
-    //   .loader('babel-loader')
-    //   .tap(options => {
-    //     // 可以在这里修改 babel-loader 的选项，如果需要的话可以和 js 文件使用不同的配置
-    //     return {
-    //       ...options,
-    //       presets: [
-    //         ['@babel/preset-env', { useBuiltIns: 'entry', corejs: 3 }]
-    //       ],
-    //       plugins: [
-    //         "@babel/plugin-transform-optional-chaining", // 可选链 ?.
-    //         "@babel/plugin-transform-nullish-coalescing-operator" // 空值合并 ??
-    //       ]
-    //     };
-    //   });
-    console.log(process.env.VUE_APP_TARGET, process.env.BASE_URL, process.env.NODE_ENV === "production");
+
+    // 生产环境优化
     if (process.env.NODE_ENV === "production") {
-      // 只在生产环境中应用此配置
-      // 生产环境 删除懒加载模块的 prefetch preload，降低带宽压力
-      // 移除 prefetch 插件
-      config.plugins.delete("prefetch");
-      // 移除 preload 插件
-      config.plugins.delete("preload");
-      // 生产环境 压缩代码
-      config.optimization.splitChunks = {
-        chunks: "all", // 对所有类型的chunk（同步和异步）进行分割
-        minSize: 10 * 1000, // 最小尺寸，这里设置为10KB（10000字节），默认是30000字节
-        maxSize: 500 * 1000, // 添加这个配置来确保超过500KB的chunk会被分割
-        minChunks: 1, // 被至少多少个chunk共享的模块才会被提取
-        maxAsyncRequests: 20, // 最大异步请求数量
-        maxInitialRequests: 20, // 入口点处的最大并行请求数量
-        automaticNameDelimiter: "~", // 文件名连接符
-        name: true, // 根据模块的路径自动生成名称
-        cacheGroups: {
-          // 缓存组配置，可以根据不同的条件定制拆分规则
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            priority: -10, // 优先级
-            filename: "vendors.js", // 提取出的chunk命名
-          },
-          default: {
-            minChunks: 2, // 默认情况下，被至少两个chunk共享的模块才会被提取
-            priority: -20,
-            reuseExistingChunk: true, // 如果已存在对应的chunk，则复用而不是新建
-          },
-        },
-      };
+      // 启用代码压缩
       config.optimization.minimize(true);
+
+      // 添加BundleAnalyzerPlugin - 只在需要分析时启用
+      // config
+      //   .plugin('bundle-analyzer')
+      //   .use(BundleAnalyzerPlugin, [{
+      //     analyzerMode: 'static',
+      //     openAnalyzer: false,
+      //     reportFilename: 'bundle-report.html',
+      //     generateStatsFile: true,
+      //     statsFilename: 'bundle-stats.json'
+      //   }]);
+    }
+
+    // 开发环境优化
+    if (process.env.NODE_ENV === "development") {
+      // 开发环境启用热更新
+      config.plugins.delete('preload');
+      config.plugins.delete('prefetch');
+    }
+    
+    // 生产环境优化preload和prefetch策略 - 解决首次加载过慢问题
+    if (process.env.NODE_ENV === "production") {
+      // 完全禁用preload，避免首次加载过多资源
+      config.plugins.delete('preload');
+
+      // 避免预取大型库文件，减少不必要的网络请求
+      config.plugin('prefetch').tap(options => {
+        options[0].fileBlacklist = options[0].fileBlacklist || [];
+        options[0].fileBlacklist.push(
+          /\.map$/, // 排除sourcemap
+          /vendor/, // 排除vendor包
+          /editor-vendor/, // 排除编辑器相关
+          /echarts-vendor/, // 排除图表库
+          /other-vendor/, // 排除其他大型库
+          /bootstrap-vendor/, // 排除bootstrap
+          /utils-vendor/, // 排除工具库
+          /element-ui/, // 排除element-ui
+          /vue-vendor/, // 排除vue相关
+          /\.(woff|woff2|ttf|eot)$/, // 排除字体文件
+          /bcmap/, // 排除百度地图
+          /test\./, // 排除测试文件
+          /demo\./, // 排除演示文件
+          /example\./ // 排除示例文件
+        );
+        return options;
+      });
     }
   },
-  productionSourceMap: true, // 生产环境是否生成 sourceMap 文件
-  transpileDependencies: ["simple-mind-map"  /**  思维导图*/, "@svgdotjs", "json-editor-vue"],
-  // publicPath: process.env.NODE_ENV === 'production' ? '/vpages/' : './',
+
+  productionSourceMap: false, // 生产环境不生成sourceMap
+  transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
-  // publicPath:  "/vpages/",
-  outputDir:  "vpages",
+  outputDir: "vpages",
+  
   configureWebpack: {
-    // externals:  getProdExternals(),
-    // externals: process.env.NODE_ENV === "production" ? getProdExternals() : {},
-    plugins:
-      process.env.NODE_ENV !== "development"
-        ? //// 配置compression-webpack-plugin压缩 对超过10kb的文件gzip压缩
-        [
+    // 性能优化
+    performance: {
+      hints: process.env.NODE_ENV === 'production' ? 'warning' : false,
+      maxEntrypointSize: 1024000, // 提高入口文件大小限制到1MB
+      maxAssetSize: 1024000 // 提高资源文件大小限制到1MB
+    },
+    
+    // 优化解析
+    resolve: {
+      alias: {
+        '@': require('path').resolve(__dirname, 'src')
+      },
+      extensions: ['.js', '.vue', '.json']
+    },
+
+    // 生产环境优化配置
+    optimization: process.env.NODE_ENV === 'production' ? {
+      splitChunks: {
+        chunks: "all",
+        minSize: 50 * 1000, // 提高最小chunk大小，减少过度分割
+        maxSize: 800 * 1000, // 提高最大chunk大小
+        minChunks: 2, // 至少被2个chunk引用才分离
+        maxAsyncRequests: 30, // 减少异步请求数量
+        maxInitialRequests: 20, // 减少初始请求数量
+        automaticNameDelimiter: "~",
+        name: true,
+        cacheGroups: {
+          //Ui库强制分包,分包策略优先级最高
+          'element-ui': {
+            test: /[\\/]node_modules[\\/]element-ui[\\/]/,
+            name: 'element-ui',
+            priority: 40,
+            chunks: 'all',
+            enforce: false
+          },
+          
+          //Vue主包不会强制分离
+          'vue-vendor': {
+            test: /[\\/]node_modules[\\/](vue|vue-router|vuex)[\\/]/,
+            name: 'vue-vendor',
+            priority: 35,
+            chunks: 'all',
+            enforce: false
+          },
+          
+          // 编辑器分包 -按需只对异步chunk分离
+          'editor-vendor': {
+            test: /[\\/]node_modules[\\/](@wangeditor|tinymce|codemirror|ace-builds|simple-mind-map|@tiptap)[\\/]/,
+            name: 'editor-vendor',
+            priority: 30,
+            chunks: 'async',
+            enforce: false
+          },
+          
+          // Echarts 分包按需，异步chunk分离
+          'echarts-vendor': {
+            test: /[\\/]node_modules[\\/]echarts[\\/]/,
+            name: 'echarts-vendor',
+            priority: 25,
+            chunks: 'async',
+            enforce: false
+          },
+          
+          // 工具库分包
+          'utils-vendor': {
+            test: /[\\/]node_modules[\\/](lodash|moment|dayjs|axios|jquery)[\\/]/,
+            name: 'utils-vendor',
+            priority: 20,
+            chunks: 'all',
+            enforce: false
+          },
+          
+          // 其他大型库分包，按需，只对异步chunk分离
+          'other-vendor': {
+            test: /[\\/]node_modules[\\/](@antv|xlsx|jspdf|html2canvas|ezuikit-js|vue-easytable)[\\/]/,
+            name: 'other-vendor',
+            priority: 15,
+            chunks: 'async',
+            enforce: false
+          },
+          
+          // Bootstrap分包，按需，只对异步chunk分离
+          'bootstrap-vendor': {
+            test: /[\\/]node_modules[\\/](bootstrap|bootstrap-vue|bootstrap-icons)[\\/]/,
+            name: 'bootstrap-vendor',
+            priority: 15,
+            chunks: 'async',
+            enforce: false
+          },
+          
+          //其他第三方分包，最后处理
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+            chunks: 'all'
+          }
+        }
+      },
+      minimizer: [
+        new (require('terser-webpack-plugin'))({
+          terserOptions: {
+            compress: {
+              // drop_console: true, // 移除console
+              // drop_debugger: true, // 移除debugger
+              // pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'] // 移除特定函数
+            },
+            mangle: {
+              safari10: true //Safari 10
+            }
+          },
+          extractComments: false //忽略注释
+        })
+      ]
+    } : {},
+
+    plugins: process.env.NODE_ENV !== "development"
+      ? [
+          // Gzip压缩配置优化
           new CompressionWebpackPlugin({
             algorithm: "gzip",
-            test: new RegExp(
-              "\\.(" + productionGzipExtensions.join("|") + ")$"
-            ),
-            threshold: 10240,
+            test: new RegExp("\\.(" + productionGzipExtensions.join("|") + ")$"),
+            threshold: 8192, //最低8k
             minRatio: 0.8,
+            deleteOriginalAssets: false//不再保留源文件
           }),
-          // Ignore all locale files of moment.js
+          
+          //ig moment.js的locale文件
           new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+          
+          //igElementUI的locale文件
+          new webpack.IgnorePlugin(/^\.\/locale$/, /element-ui$/),
+          
+          //环境变量
+          new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+          }),
+          
+          //模块ID
+          new webpack.HashedModuleIdsPlugin(),
+          
+          // 添加BundleAnalyzerPlugin用于分析 - 只在需要分析时启用
+          // new BundleAnalyzerPlugin({
+          //   analyzerMode: 'static',
+          //   openAnalyzer: false,
+          //   reportFilename: 'bundle-report.html',
+          //   generateStatsFile: true,
+          //   statsFilename: 'bundle-stats.json'
+          // })
         ]
-        : [new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)],
+      : [
+          new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+          new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+          })
+        ]
   },
+
   devServer: {
-    port: 8080, // 端口号
-    // host: "192.168.0.133",
-    https: false, // https:{type:Boolean}
-    open: false, //配置自动启动浏览器
+    port: 8080,
+    https: false,
+    open: false,
+    hot: true, // 启用热更新
+    compress: true, // 启用gzip压缩
+    overlay: {
+      errors: true,
+      warnings: false
+    },
     proxy: {
       "/baiduApi": {
-        target: "https://api.map.baidu.com", // 目标接口域名
-        // target:'http://192.168.0.151/bxmap', // 目标接口域名
-        changeOrigin: true, //是否跨域
-        ws: true, // 是否代理websockets
+        target: "https://api.map.baidu.com",
+        changeOrigin: true,
+        ws: true,
         pathRewrite: {
-          "^/baiduApi": "", //请求的时候使用这个api就可以
+          "^/baiduApi": "",
         },
       },
     },
-    // proxy: 'http://localhost:4000' // 配置跨域处理,只有一个代理
-    // proxy: {
-    //   "/api": {
-    //   target: "<url>",
-    //     ws: true,
-    //     changeOrigin: true
-    //   },
-    //   "/foo": {
-    //     target: "<other_url>"
-    //   }
-    // } // 配置多个代理
   },
 };
