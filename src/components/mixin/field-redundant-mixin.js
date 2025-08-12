@@ -196,7 +196,7 @@ export default {
           ret = eval("var zz=" + func + "(row, vm, field); zz");
         } catch (error) {
           console.error("计算函数执行出错:", error);
-          console.log('执行出错的计算函数:', func);
+          console.warn('执行出错的计算函数:', func);
         }
 
         // 获取计算规则配置
@@ -215,7 +215,7 @@ export default {
             !row?._children?.[calc_rule.constraint_name]?.length
           ) {
             // 没有子表或者子表数量为0的时候不进行计算
-            return;
+            // return;
           }
         }
 
