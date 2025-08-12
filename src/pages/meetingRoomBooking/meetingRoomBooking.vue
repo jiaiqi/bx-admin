@@ -47,6 +47,14 @@
       <div class="date-header-right">
         <el-button
           class="history-btn"
+          @click="fetchRoomList(false)"
+        >
+          <i class="history-icon"></i>
+          <span>刷新</span>
+        </el-button>
+
+        <el-button
+          class="history-btn"
           @click="navigateToHistory"
         >
           <i class="history-icon">🕐</i>
