@@ -91,7 +91,7 @@ export default{
       let req={
          serviceName: "srvpark_checklist_process_image_select",
          colNames: ["*"],
-         condition: [{colName: "checklist_no", ruleType: "eq", value: this.checklist_no?this.getNoByUrls:"CN202507290001"}]
+         condition: [{colName: "checklist_no", ruleType: "eq", value: this.checklist_no?this.checklist_no:"CN202507290001"}]
         }
        let res = await $http.post(url, req);
        if(res.data.state!=='SUCCESS') return;
