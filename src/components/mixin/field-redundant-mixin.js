@@ -30,7 +30,7 @@ export default {
      * // 在表单数据变化时调用
      * this.handleRedundantOnFormModelChange(newFormData, oldFormData, this.fields, () => this.formModel);
      */
-    handleRedundantOnFormModelChange(newVal, oldVal, fields, formModelFunc) {
+    handleRedundantOnFormModelChange(newVal, oldVal, fields, formModelFunc, isChild = false) {
       let self = this;
       // 检查表单是否已加载完成，未加载则直接返回
       if (!this.isLoaded()) {
@@ -115,8 +115,17 @@ export default {
               // 对于不包含HTTP请求的计算，直接执行
               self.handleRedundantViaJs(field, formModelFunc, vm);
             }
-          }
+          } else
+            // 处理子表求和
+            if (isChild) {
+              if (fieldInfo?.redundant?.func) {
+                let vm = self;
+                self.handleRedundantViaJs(field, formModelFunc, vm);
+              }
+            }
         }
+
+
 
         // 处理主子表冗余逻辑
         const dependField = fieldInfo?.redundant?.dependField
@@ -182,7 +191,13 @@ export default {
         let row = formModelFunc(); // 获取当前表单数据
         // console.log('handleRedundantViaJs row',row,func)
         // 执行计算函数，使用 eval 动态执行字符串形式的函数
-        let ret = eval("var zz=" + func + "(row, vm, field); zz");
+        let ret = undefined
+        try {
+          ret = eval("var zz=" + func + "(row, vm, field); zz");
+        } catch (error) {
+          console.error("计算函数执行出错:", error);
+          console.log('执行出错的计算函数:', func);
+        }
 
         // 获取计算规则配置
         const calc_rule = fieldInfo.redundant.calc_rule;
@@ -248,6 +263,7 @@ export default {
           }
         }
       }
+
     },
 
     /**
