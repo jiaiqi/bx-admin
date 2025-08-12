@@ -66,7 +66,7 @@ export default{
   data(){
     return{
       flowList:[],
-      checklist_no:'',
+      checklist_no:null,
       flowInfo:{
         bgImg:'',
         title:'',
