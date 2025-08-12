@@ -580,6 +580,7 @@
             v-if="
               !readOnly &&
               listType != 'selectlist' &&
+              mode != 'selectlist' &&
               !hideButtons &&
               sortedRowButtons.length > 0
             "
@@ -1205,6 +1206,7 @@ export default {
     defaultCondition: Array,
     routeMeta: Object,
     customListType: String,
+    mode: String,
   },
   watch: {
     gridDataRun: {

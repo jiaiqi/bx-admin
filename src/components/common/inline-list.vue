@@ -48,7 +48,8 @@
         </el-table-column>
 
         <el-table-column fixed="right" label="操作" header-align="left"
-                         width="250" v-if="!readOnly && listType!='selectlist'">
+                         width="250" v-if="!readOnly && listType!='selectlist'&&mode!='selectlist'">
+
           <template slot-scope="scope">
             <el-tag v-if="isMem() && isDirtyRow(scope.row)"
                     :type="getDirtyRowTagType(scope.row)">
@@ -160,6 +161,8 @@
       foreignKey: {
         type: Object
       },
+      mode: String,
+
     },
 
     data() {
@@ -264,5 +267,3 @@
     text-align: left !important;
   }
 </style>
-
-

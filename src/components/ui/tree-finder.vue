@@ -1,48 +1,93 @@
-/* */
 <template>
-  <a
-    v-if="field.info.linkUrlFunc && !field.info.editable"
-    v-show="field.getSrvVal()"
-    style="white-space: normal; color: dodgerblue; cursor: pointer"
-    @click="onLinkClicked()"
-  >
-    {{ field.getDispVal4Read() }}
-  </a>
-  <el-input
-    v-else-if="field.model && noData"
-    clearable
-    @clear="onClear()"
-    :value="field.getSrvVal()"
-  ></el-input>
-  <el-cascader
-    v-else
-    :placeholder="field.info.placeholder"
-    :options="options"
-    v-model="selected"
-    :props="props"
-    :change-on-select="unlimited"
-    filterable
-    clearable
-    :visible-change="visibleChange"
-    :show-all-levels="field.info.editable"
-    :disabled="!field.info.editable"
-    :before-filter="beforeFilter"
-    @change="onChange"
-    :emitPath="false"
-    ref="elCascader"
-  >
-    <template
-      slot-scope="{ node, data }"
-      v-if="props.checkStrictly !== false"
+  <div style="width: 100%;">
+    <a
+      v-if="field.info.linkUrlFunc && !field.info.editable"
+      v-show="field.getSrvVal()"
+      style="white-space: normal; color: dodgerblue; cursor: pointer"
+      @click="onLinkClicked()"
     >
-      <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
-    </template>
-  </el-cascader>
+      {{ field.getDispVal4Read() }}
+    </a>
+    <el-input
+      v-else-if="field.model && noData"
+      clearable
+      @clear="onClear()"
+      :value="field.getSrvVal()"
+    ></el-input>
+    <el-cascader
+      v-else
+      :placeholder="field.info.placeholder"
+      :options="options"
+      v-model="selected"
+      :props="props"
+      :change-on-select="unlimited"
+      filterable
+      clearable
+      :visible-change="visibleChange"
+      :show-all-levels="field.info.editable"
+      :disabled="!field.info.editable"
+      :before-filter="beforeFilter"
+      @change="onChange"
+      :emitPath="false"
+      ref="elCascader"
+    >
+      <template
+        slot-scope="{ node, data }"
+        v-if="props.checkStrictly !== false"
+      >
+        <span @click.stop="clickNode(node, data)">{{ node.label }}</span>
+      </template>
+    </el-cascader>
+    <el-button
+      icon="el-icon-search"
+      v-if="!field.info.noSearchIcon"
+      @click="onPopupClicked"
+    >
+    </el-button>
+
+    <el-dialog
+      title="查询选择"
+      width="90%"
+      :close-on-click-modal="1 == 2"
+      append-to-body
+      :visible="popup"
+      v-if="popup"
+      @close="popup = false"
+    >
+      <!-- <list
+        :service="dispLoaderV2.service"
+        v-if="popup"
+        ref="popup"
+        mode="finder"
+        listType="selectlist"
+        :grid-data-filter="this.dedupOptions"
+        :default-condition="popupDefaultConditions()"
+        @row-dbclick="onRowSelected"
+      >
+      </list> -->
+      <tab-list
+        :service="dispLoaderV2.service"
+        v-if="popup"
+        ref="popup"
+        mode="finder"
+        tabListType="treelist"
+        :mode="'selectlist'"
+        :grid-data-filter="this.dedupOptions"
+        :default-condition="popupDefaultConditions()"
+        @row-dbclick="onRowSelected"
+      ></tab-list>
+      <div style="text-align: center; color: red">请双击列表行进行选择</div>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
 import debounce from "lodash/debounce";
 export default {
+  components: {
+    List: () => import("../common/list.vue"),
+    TabList: () => import("@/components/common/tab-list2.vue"),
+  },
   props: {
     field: Object,
     allowChangeModel: {
@@ -59,6 +104,8 @@ export default {
       noData: false,
       visibleChange: false,
       hasInit: false, //已经设置过初始值
+      popup: false, // 列表弹窗
+
     };
   },
 
@@ -164,6 +211,98 @@ export default {
   },
 
   methods: {
+    emitFieldValueChange() {
+      let objCol = null;
+      let objInfo = this.optionListV2?.obj_info;
+      if (objInfo?.a_save_b_cols && objInfo?.a_save_b_obj_col) {
+        // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
+        let newValue = this.field.model;
+        if (this.isFks) {
+          newValue = this.$refs?.tablePicker?.getSelectedData?.();
+        }
+        const cols = objInfo?.a_save_b_cols.split(",");
+        let obj = {};
+        let objStr = "";
+        if (cols?.includes("*")) {
+          obj = cloneDeep(newValue);
+        } else if (newValue && cols?.length) {
+          cols.forEach((col) => {
+            obj[col] = newValue?.[col];
+          });
+        }
+        objStr = JSON.stringify(obj);
+        if (objStr === "{}" || !newValue || !isObject(newValue)) {
+          objStr = "";
+        }
+        objCol = {
+          type: "a_save_b_obj",
+          col: objInfo.a_save_b_obj_col,
+          val: objStr,
+        };
+        console.log("更新obj_info", objCol);
+        // 将更新的字段信息保存在_obj_col上，方便在form中获取
+        this.$set(this.field, "_obj_col", objCol);
+      } else if (this.field?._obj_col?.val) {
+        // 清空通过_obj_col保存的值
+        this.$set(this.field["_obj_col"], "val", "");
+      }
+      this.$emit("field-value-changed", this.field.info.name, this.field);
+    },
+    onRowSelected(row, event) {
+      let item = row;
+      // this.field.model = item;
+
+      // this.$emit("blur", this.field);
+      // this.emitFieldValueChange();
+      let fieldInfo = this.field.info;
+      let loader = this.dispLoaderV2;
+      // this.selected =
+      //   loader.showAsPair !== true
+      //     ? item[fieldInfo.dispCol]
+      //     : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
+      this.popup = false;
+      if (this.allowChangeModel !== false) {
+        this.changeFieldModel(item || null);
+      } else {
+        this.onlyEmitData(item || null);
+      }
+      this.selected = item.path?.split('/')?.filter(Boolean) || [];
+
+    },
+    popupDefaultConditions(loader) {
+      let conditions = this.defaultConditions || [];
+      let fieldInfo = this.field.info;
+      loader = loader || this.dispLoaderV2;
+      return conditions.concat(this.buildConditions(loader));
+    },
+
+    dedupOptions(options, loader) {
+      loader = loader || this.dispLoaderV2;
+      if (!loader?.dedup) {
+        return;
+      }
+
+      let form = this.field.form;
+      if (form) {
+        let gridData = form.srvValFormModel()._gridData;
+        if (gridData && gridData.length) {
+          let key_col = this.field.info.srvCol.columns;
+          let existVals = gridData.map((item) => item[key_col]);
+          remove(options, (option) => existVals.includes(option[key_col]));
+        }
+      }
+    },
+
+    onPopupClicked() {
+      if (!this.field.info.editable) {
+        return;
+      }
+
+      this.popup = true;
+
+      // hide suggestions
+      this.$refs.elCascader.activated = false;
+    },
     changeFieldModel(data, emitEvent = true) {
       this.field.model = data;
       if (emitEvent) {
@@ -517,7 +656,7 @@ export default {
             : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
             }`;
         this.hasInit = true;
-      } else if (this.field.model && (this.finderSelected||this.field.finderSelected)) {
+      } else if (this.field.model && (this.finderSelected || this.field.finderSelected)) {
         this.selected = this.finderSelected || this.field.finderSelected;
       } else if (!this.field.model && !this.finderSelected) {
         this.selected = null;

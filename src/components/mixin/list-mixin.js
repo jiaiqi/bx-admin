@@ -2633,7 +2633,7 @@ export default {
                     this.cardInstance.setCardData(this.gridData);
                   }
 
-                  
+
                   this.$emit("list-data-loaded", this);
                   loading.close();
                   this.$refs?.["bx-table-layout"]?.doLayout();
@@ -2814,7 +2814,7 @@ export default {
                     this.cardInstance.setCardData(this.gridData);
                   }
 
-                  
+
                   this.$emit("list-data-loaded", this);
                   loading.close();
                   this.$refs?.["bx-table-layout"]?.doLayout();
@@ -2871,7 +2871,7 @@ export default {
                 this.cardInstance.setCardData(this.gridData);
               }
 
-              
+
               this.$emit("list-data-loaded", this);
 
               loading.close();
@@ -3197,7 +3197,7 @@ export default {
       //加载serviceCols
       await this.loadColsV2(
         this.service_name,
-        use_type,
+        this.mode === 'selectlist' ? this.mode : use_type,
         null,
         this.mainService,
         forceRefreshV2
@@ -3439,7 +3439,7 @@ export default {
                 this.gridData = this.gridData.concat(dataArray);
               }
 
-              
+
               this.$emit("list-data-loaded", this);
             });
           }

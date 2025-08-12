@@ -64,7 +64,7 @@
       <template>
         <treegrid
           ref="list"
-          v-if="routeName === 'treegrid' && isTreeReal && storageType === 'db'"
+          v-if="mode !== 'selectlist' && routeName === 'treegrid' && isTreeReal && storageType === 'db'"
           :list-type="getListType"
           :storage-type="storageType"
           :service="getService()"
@@ -78,6 +78,7 @@
           :route-meta="meta"
           :$srvApp="$srvApp"
           :list-type="getListType"
+          :mode="mode"
           :storage-type="storageType"
           :service="getService()"
           @more-config-loaded="moreConfigLoaded"
@@ -110,6 +111,7 @@
           @suffix-actions-complete="$emit('suffix-actions-complete', $event)"
           @form-action-complete="$emit('form-action-complete', $event)"
           @customize-action-complete="customizeActionComplete"
+          @row-dbclick="$emit('row-dbclick', $event)"
           v-else
         >
         </list>
@@ -179,6 +181,7 @@ export default {
       },
     },
     tabListType: String,
+    mode: String,
     listName: String,
     childforeignvalue: [String, Number, Object],
     listMainFormDatas: [Array, Object],
