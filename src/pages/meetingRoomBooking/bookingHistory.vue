@@ -425,10 +425,10 @@ const cancelReservation = (record) => {
   })
     .then(async () => {
       try {
-        const url = `/park/operate/srvreserve_record_cancel`;
+        const url = `/park/operate/srvreserve_record_cancel_update`;
         const req = [
           {
-            serviceName: "srvreserve_record_cancel",
+            serviceName: "srvreserve_record_cancel_update",
             condition: [
               {
                 colName: "rsvr_no",
@@ -436,7 +436,7 @@ const cancelReservation = (record) => {
                 value: record.rsvr_no,
               },
             ],
-            data: [],
+            data: [{ "review_status": "已取消" }],
           },
         ];
 
@@ -458,10 +458,8 @@ const cancelReservation = (record) => {
 // 判断是否可以取消预约
 const canCancel = (record) => {
   if (!record) return false;
-
+  return record?.review_status === '待审核'
   // 根据状态判断是否可以取消
-  // 假设状态为1表示已预约，可以取消
-  return record.review_status === 1 || record.review_status === "1";
 };
 
 // 获取状态类型
