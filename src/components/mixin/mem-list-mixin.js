@@ -711,7 +711,7 @@ export default {
 
 
       if (!this.updateService || this.updateSrvCols.length > 0) {
-        return fasle
+        return false
       } else {
         // 查找update服务的字段
         const response = await this.loadColsV2(this.updateService, "update", null, this.mainService);
