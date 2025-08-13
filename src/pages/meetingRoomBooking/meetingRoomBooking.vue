@@ -735,10 +735,12 @@ const submitForm = async () => {
 
         // 构建批量预约请求
         const data = selectedTimes.value[0] || {};
+        const endData = selectedTimes.value[selectedTimes.value.length - 1] || {};
         const requestsData = {
           rsvo_no: data.rsvo_no,
           rsvr_date: selectedDate.value || data.datey,
           start_time: selectedTimes.value.map((item) => item.start_time).toString(),
+          end_time: endData.end_time,
           count: formData.count, // 人数
           rsvp_no: data.rsvp_no,
           rsvt_no: selectedTimes.value.map((item) => item.rsvt_no).toString(), // 时间段编号

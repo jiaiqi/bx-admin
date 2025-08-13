@@ -51,6 +51,15 @@
               v-model="searchForm.contacts"
               placeholder="联系人姓名"
               clearable
+              style="width: 120px;"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="预约人">
+            <el-input
+              v-model="searchForm.createUserDisp"
+              placeholder="预约人姓名"
+              clearable
+              style="width: 120px;"
             ></el-input>
           </el-form-item>
           <el-form-item>
@@ -121,21 +130,24 @@
                 </div>
                 <div class="info-item">
                   <i class="el-icon-time"></i>
-                  <span>{{ formatTime(record.start_time) }}
-                    <span v-if="record.end_time">
-                      -
-                      {{ formatTime(record.end_time) }}
-                    </span>
+                  <span>
+                    {{ formatTimeRange(record) }}
                   </span>
                 </div>
               </div>
 
               <div class="info-row">
-                <div class="info-item">
+                <div
+                  class="info-item"
+                  title="联系人"
+                >
                   <i class="el-icon-user"></i>
                   <span>{{ record.contacts }}</span>
                 </div>
-                <div class="info-item">
+                <div
+                  class="info-item"
+                  title="联系电话"
+                >
                   <i class="el-icon-mobile-phone"></i>
                   <span>{{ record.mobilephone }}</span>
                 </div>
@@ -165,7 +177,10 @@
             </div>
 
             <div class="card-footer">
-              <span class="create-time">创建时间: {{ formatCreateTime(record.create_time) }}</span>
+              <div class="create-info">
+                <span class="create-time">创建时间: {{ formatCreateTime(record.create_time) }}</span>
+                <span class="create-time">预约人: {{ record.create_user_disp || record.create_user || '--' }}</span>
+              </div>
               <div class="card-actions">
                 <el-button
                   type="primary"
@@ -223,11 +238,7 @@
         <div class="detail-item">
           <span class="detail-label">时间段：</span>
           <span class="detail-value">
-            {{ formatTime(selectedRecord.start_time) }}
-            <span v-if="selectedRecord.end_time">
-              -
-              {{ formatTime(selectedRecord.end_time) }}
-            </span>
+            {{ formatTimeRange(selectedRecord) }}
           </span>
         </div>
         <div class="detail-item">
@@ -282,7 +293,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, computed, reactive, onMounted } from "vue";
 import {
   useRouter,
   useRoute,
@@ -309,6 +320,7 @@ const searchForm = reactive({
   roomName: "",
   dateRange: [],
   contacts: "",
+  createUserDisp: "",
 });
 
 // 分页配置
@@ -339,6 +351,8 @@ const resetSearch = () => {
   searchForm.roomName = "";
   searchForm.dateRange = [];
   searchForm.contacts = "";
+  searchForm.createUserDisp = "";
+
   pagination.pageNo = 1;
   fetchRecordList();
 };
@@ -395,6 +409,15 @@ const fetchRecordList = async () => {
         value: searchForm.contacts,
       });
     }
+
+    if (searchForm.createUserDisp) {
+      req.condition.push({
+        colName: "create_user_disp",
+        ruleType: "like",
+        value: searchForm.createUserDisp,
+      });
+    }
+
 
     const res = await $http.post(url, req);
     if (res?.data?.state === "SUCCESS") {
@@ -455,10 +478,22 @@ const cancelReservation = (record) => {
     .catch(() => { });
 };
 
+const currentUserNo = computed(() => {
+  let userInfo = top.user || sessionStorage.getItem('current_login_user') || sessionStorage.getItem("login_user_info")
+  if (userInfo && typeof userInfo === 'string') {
+    try {
+      userInfo = JSON.parse(userInfo)
+    } catch (error) {
+      userInfo = {}
+    }
+  }
+  return userInfo?.user_no || ''
+})
+
 // 判断是否可以取消预约
 const canCancel = (record) => {
   if (!record) return false;
-  return record?.review_status === '待审核'
+  return currentUserNo.value && record.create_user === currentUserNo.value && record?.review_status === '待审核'
   // 根据状态判断是否可以取消
 };
 
@@ -505,6 +540,15 @@ const formatTime = (timeStr) => {
   }
   return dayjs(`2000-01-01 ${timeStr}`).format("HH:mm");
 };
+
+const formatTimeRange = (record) => {
+  if (!record) return "";
+  if (record.start_time && record.end_time) {
+    const start_time = record.start_time.split(',')[0]
+    return dayjs(`${record.rsvr_date} ${start_time}`).format("HH:mm") + ' - ' + dayjs(`${record.rsvr_date} ${record.end_time}`).format("HH:mm");
+  }
+  return formatTime(record.start_time)
+}
 
 // 分页处理
 const handleSizeChange = (size) => {
@@ -632,7 +676,7 @@ onMounted(() => {
 
   .record-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 
@@ -709,6 +753,11 @@ onMounted(() => {
         padding: 12px 16px;
         border-top: 1px solid #ebeef5;
         background-color: #fafafa;
+
+        .create-info {
+          display: flex;
+          flex-direction: column;
+        }
 
         .create-time {
           font-size: 12px;
