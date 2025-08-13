@@ -180,24 +180,24 @@
 
             <div class="card-footer">
               <div class="create-info">
-                <span class="create-time">创建时间: {{ formatCreateTime(record.create_time) }}</span>
+                <!-- <span class="create-time">创建时间: {{ formatCreateTime(record.create_time) }}</span> -->
                 <span class="create-time">预约人: {{ record.create_user_disp || record.create_user || '--' }}</span>
               </div>
               <div class="card-actions">
+                <el-button
+                  v-if="canCancel(record)"
+                  type="danger"
+                  size="mini"
+                  plain
+                  @click="cancelReservation(record)"
+                >取消预约</el-button>
+
                 <el-button
                   type="primary"
                   size="mini"
                   plain
                   @click="viewDetail(record)"
                 >查看详情</el-button>
-                <!-- <el-button
-                  v-if="canCancel(record)"
-                  type="danger"
-                  size="mini"
-                  plain
-                  @click="cancelReservation(record)"
-                  >取消预约</el-button
-                > -->
               </div>
             </div>
           </div>
@@ -269,7 +269,7 @@
               size="small"
               :type="getStatusType(selectedRecord.review_status)"
             >
-              {{selectedRecord.review_status }}
+              {{ selectedRecord.review_status }}
             </el-tag>
           </span>
         </div>
@@ -286,13 +286,13 @@
         slot="footer"
         class="dialog-footer"
       >
-        <el-button @click="detailDialogVisible = false">关闭</el-button>
         <el-button
           v-if="canCancel(selectedRecord)"
           type="danger"
           plain
           @click="cancelReservation(selectedRecord)"
         >取消预约</el-button>
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
       </span>
     </el-dialog>
   </div>
@@ -367,12 +367,7 @@ const resetSearch = () => {
 const formatCreateTime = (time) => {
   if (!time) return "";
   // 只保留日期和时间，不显示秒
-  const dateTime = time.split(" ");
-  if (dateTime.length >= 2) {
-    const timePart = dateTime[1].split(":");
-    return `${dateTime[0]} ${timePart[0]}:${timePart[1]}`;
-  }
-  return time;
+  return dayjs(time).format("MM-DD HH:mm");
 };
 
 // 获取预约记录列表
@@ -637,8 +632,9 @@ onMounted(() => {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap:10px 40px;
-    .el-form-item{
+    gap: 10px 40px;
+
+    .el-form-item {
       margin-bottom: 0;
     }
   }
@@ -761,7 +757,6 @@ onMounted(() => {
 
         .card-actions {
           display: flex;
-          gap: 8px;
         }
       }
     }
