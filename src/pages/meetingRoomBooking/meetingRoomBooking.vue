@@ -375,6 +375,41 @@ const isTimeSlotBookable = (item) => {
   return true;
 };
 
+// 检查是否可以取消指定的时间段（如果超过2个时间段，只能取消首尾）
+const canCancelTimeSlot = (item) => {
+  // 如果选中的时间段少于等于2个，可以随意取消
+  if (selectedTimes.value.length <= 2) {
+    return true;
+  }
+
+  // 获取当前会议室的所有时间段数据
+  const currentRoom = roomList.value.find(room => room.rsvo_no === item.rsvo_no);
+  if (!currentRoom || !currentRoom.timeList) return true;
+
+  // 获取该会议室所有时间段的索引映射
+  const timeIndexMap = new Map();
+  currentRoom.timeList.forEach((time, index) => {
+    timeIndexMap.set(time.rsvt_no, index);
+  });
+
+  // 获取要取消的时间段在该会议室中的索引位置
+  const cancelItemIndex = timeIndexMap.get(item.rsvt_no);
+  if (cancelItemIndex === undefined) return true;
+
+  // 获取所有已选时间段在该会议室中的索引位置并排序
+  const selectedIndexes = selectedTimes.value
+    .map(time => timeIndexMap.get(time.rsvt_no))
+    .filter(index => index !== undefined)
+    .sort((a, b) => a - b);
+
+  // 检查要取消的时间段是否在首尾位置
+  const firstIndex = selectedIndexes[0];
+  const lastIndex = selectedIndexes[selectedIndexes.length - 1];
+  
+  // 只能取消首尾时间段
+  return cancelItemIndex === firstIndex || cancelItemIndex === lastIndex;
+};
+
 // 选择时间段（支持同一会议室的连续时间段多选）
 const selectTimeSlot = (item) => {
   if (isTimeOccupied(item)) {
@@ -395,9 +430,15 @@ const selectTimeSlot = (item) => {
 
   if (index !== -1) {
     // 如果已选中，则取消选择
-    selectedTimes.value.splice(index, 1);
-    // 重新排序选中的时间段
-    sortSelectedTimes();
+    // 检查是否可以取消该时间段（如果超过2个时间段，只能取消首尾）
+    if (canCancelTimeSlot(item)) {
+      selectedTimes.value.splice(index, 1);
+      // 重新排序选中的时间段
+      sortSelectedTimes();
+    } else {
+      ElMessage.warning("已选中超过两个连续时间段，只能从首尾时间段取消选择");
+      return;
+    }
   } else {
     // 如果当前没有选择，或者选择的是同一个会议室
     if (selectedTimes.value.length === 0 || selectedTimes.value[0].rsvo_no === item.rsvo_no) {
