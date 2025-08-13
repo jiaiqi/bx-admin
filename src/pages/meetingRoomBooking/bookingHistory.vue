@@ -716,15 +716,23 @@ onMounted(() => {
             align-items: center;
             margin-right: 16px;
             margin-bottom: 8px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
 
             i {
               color: #409eff;
               margin-right: 8px;
               font-size: 16px;
+
             }
 
             span {
               color: #606266;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
 
             .remark-text {
