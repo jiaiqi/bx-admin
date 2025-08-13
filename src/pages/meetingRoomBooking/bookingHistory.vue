@@ -28,40 +28,42 @@
           :model="searchForm"
           class="search-form"
         >
-          <el-form-item label="会议室">
-            <el-input
-              v-model="searchForm.roomName"
-              placeholder="会议室名称"
-              clearable
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="日期范围">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              value-format="yyyy-MM-dd"
-              format="yyyy年MM月dd日"
-            ></el-date-picker>
-          </el-form-item>
-          <el-form-item label="联系人">
-            <el-input
-              v-model="searchForm.contacts"
-              placeholder="联系人姓名"
-              clearable
-              style="width: 120px;"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="预约人">
-            <el-input
-              v-model="searchForm.createUserDisp"
-              placeholder="预约人姓名"
-              clearable
-              style="width: 120px;"
-            ></el-input>
-          </el-form-item>
+          <div>
+            <el-form-item label="会议室">
+              <el-input
+                v-model="searchForm.roomName"
+                placeholder="会议室名称"
+                clearable
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="日期范围">
+              <el-date-picker
+                v-model="searchForm.dateRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                value-format="yyyy-MM-dd"
+                format="yyyy年MM月dd日"
+              ></el-date-picker>
+            </el-form-item>
+            <el-form-item label="联系人">
+              <el-input
+                v-model="searchForm.contacts"
+                placeholder="联系人姓名"
+                clearable
+                style="width: 140px;"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="预约人">
+              <el-input
+                v-model="searchForm.createUserDisp"
+                placeholder="预约人姓名"
+                clearable
+                style="width: 140px;"
+              ></el-input>
+            </el-form-item>
+          </div>
           <el-form-item>
             <el-button
               type="primary"
@@ -118,7 +120,7 @@
                 size="small"
                 :type="getStatusType(record.review_status)"
               >
-                {{ getStatusText(record.review_status) }}
+                {{ record.review_status }}
               </el-tag>
             </div>
 
@@ -261,23 +263,23 @@
           <span class="detail-value">{{ selectedRecord.remark || "无" }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">创建时间：</span>
-          <span class="detail-value">{{ selectedRecord.create_time }}</span>
-        </div>
-        <div class="detail-item">
           <span class="detail-label">状态：</span>
           <span class="detail-value">
             <el-tag
               size="small"
               :type="getStatusType(selectedRecord.review_status)"
             >
-              {{ getStatusText(selectedRecord.review_status) }}
+              {{selectedRecord.review_status }}
             </el-tag>
           </span>
         </div>
         <div class="detail-item">
           <span class="detail-label">预约人：</span>
           <span class="detail-value">{{ selectedRecord.create_user_disp || selectedRecord.create_user || '--' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">创建时间：</span>
+          <span class="detail-value">{{ selectedRecord.create_time }}</span>
         </div>
       </div>
       <span
@@ -510,25 +512,10 @@ const getStatusType = (status) => {
       return "danger";
     case "待审核":
       return "info";
+    case "已取消":
+      return "warning";
     default:
       return "info";
-  }
-};
-
-// 获取状态文本
-const getStatusText = (status) => {
-  switch (status) {
-    case 1:
-    case "1":
-      return "已预约";
-    case 2:
-    case "2":
-      return "已取消";
-    case 3:
-    case "3":
-      return "已完成";
-    default:
-      return status;
   }
 };
 
@@ -649,7 +636,11 @@ onMounted(() => {
   .search-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    justify-content: space-between;
+    gap:10px 40px;
+    .el-form-item{
+      margin-bottom: 0;
+    }
   }
 }
 

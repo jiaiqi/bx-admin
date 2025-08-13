@@ -740,13 +740,14 @@ const submitForm = async () => {
           rsvo_no: data.rsvo_no,
           rsvr_date: selectedDate.value || data.datey,
           start_time: selectedTimes.value.map((item) => item.start_time).toString(),
-          end_time: endData.end_time,
-          count: formData.count, // 人数
           rsvp_no: data.rsvp_no,
           rsvt_no: selectedTimes.value.map((item) => item.rsvt_no).toString(), // 时间段编号
           contacts: formData.contacts,
           mobilephone: formData.mobilephone,
           remark: formData.remark, //备注
+        }
+        if(endData?.end_time){
+          requestsData.end_time = endData.end_time;
         }
         const req = [
           {
