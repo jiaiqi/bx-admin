@@ -149,14 +149,18 @@
                 class="time-slot"
                 :class="{
                   occupied: isTimeOccupied(time),
-                  available: !isTimeOccupied(time),
+                  available: !isTimeOccupied(time) && isTimeSlotBookable(time),
                   selected: isTimeSelected(time),
+                  disabled: !isTimeSlotBookable(time) && !isTimeOccupied(time),
                 }"
                 @click="selectTimeSlot(time)"
               >
                 <div class="time-label">{{ time.label }}</div>
                 <div class="status-label">
-                  {{ isTimeOccupied(time) ? "已预约" : "空闲" }}
+                  {{ 
+                    isTimeOccupied(time) ? "已预约" : 
+                    !isTimeSlotBookable(time) ? "已过期" : "空闲" 
+                  }}
                 </div>
               </div>
             </div>
@@ -351,35 +355,37 @@ const formRules = {
   mobilephone: [{ required: true, message: "请输入联系方式", trigger: "blur" }],
 };
 
-// 时间段配置
-const timeSlots = ref([
-  { slot: "09:00", label: "9:00" },
-  { slot: "09:30", label: "9:30" },
-  { slot: "10:00", label: "10:00" },
-  { slot: "10:30", label: "10:30" },
-  { slot: "11:00", label: "11:00" },
-  { slot: "11:30", label: "11:30" },
-  { slot: "12:00", label: "12:00" },
-  { slot: "14:00", label: "14:00" },
-  { slot: "14:30", label: "14:30" },
-  { slot: "15:00", label: "15:00" },
-  { slot: "15:30", label: "15:30" },
-  { slot: "16:00", label: "16:00" },
-  { slot: "16:30", label: "16:30" },
-  { slot: "17:00", label: "17:00" },
-]);
-
-// 方法定义
 const handleDateChange = (date) => {
   selectedDate.value = date;
   selectedTimes.value = []; // 切换日期时清空已选择的时间段
   fetchRoomList(false);
 };
 
+// 检查时间段是否可以预约（不能预约当前时间往前推半小时之前的时间段）
+const isTimeSlotBookable = (item) => {
+  const now = dayjs();
+  const selectedDateTime = dayjs(`${selectedDate.value} ${item.start_time}`);
+  const halfHourFromNow = now.subtract(30, 'minute');
+  
+  // 如果选择的时间段开始时间在当前时间往前推半小时之前，则不能预约
+  if (selectedDateTime.isBefore(halfHourFromNow)) {
+    return false;
+  }
+  
+  return true;
+};
+
 // 选择时间段（支持同一会议室的连续时间段多选）
 const selectTimeSlot = (item) => {
   if (isTimeOccupied(item)) {
     return; // 已被预约的时间段不能选择
+  }
+
+  // 检查时间段是否可以预约
+  if (!isTimeSlotBookable(item)) {
+    // ElMessage.warning("不能预约当前时间往前推半小时之前的时间段");
+    ElMessage.warning("已过期,不可预约!");
+    return;
   }
 
   // 检查是否已经选中
@@ -1113,6 +1119,18 @@ onUnmounted(() => {
           background-color: #2196f3;
           color: white;
           box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        &.disabled {
+          background-color: #f5f5f5;
+          color: #ccc;
+          cursor: not-allowed;
+          opacity: 0.6;
+
+          &:hover {
+            transform: none;
+            background-color: #f5f5f5;
+          }
         }
       }
     }
