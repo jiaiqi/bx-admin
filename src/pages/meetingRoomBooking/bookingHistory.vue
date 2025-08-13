@@ -275,6 +275,10 @@
             </el-tag>
           </span>
         </div>
+        <div class="detail-item">
+          <span class="detail-label">预约人：</span>
+          <span class="detail-value">{{ selectedRecord.create_user_disp || selectedRecord.create_user || '--' }}</span>
+        </div>
       </div>
       <span
         slot="footer"
