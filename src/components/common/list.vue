@@ -271,10 +271,7 @@
             :prop="item.column"
             :align="item.align"
             :fixed="item.rowFixed ? true : null"
-            :show-overflow-tooltip="getListShowFileList(item) === true
-              ? false
-              : !listCellsTextDispWarp
-              "
+            :show-overflow-tooltip="false"
             :label="item.label"
             :min-width="getColumnMinWidth(item)
               ? getColumnMinWidth(item)
@@ -285,289 +282,318 @@
             :sortable="item.sortable && !isMem() ? 'custom' : false"
             :cell-style="cellStyle"
           >
+            <template #header>
+              <el-tooltip
+                placement="top"
+                effect="dark"
+                :content="item.label"
+              >
+                <span>
+                  {{ item.label }}
+
+                </span>
+              </el-tooltip>
+            </template>
             <template slot-scope="scope">
-              <file-list
-                v-if="['FileList', 'Image'].includes(item.col_type)"
-                :data="scope.row"
-                :field="item"
-              ></file-list>
-              <template v-else-if="item._obj_info">
+              <el-tooltip
+                placement="top"
+                effect="dark"
+                :content="scope.row[item.column]"
+                :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText'].includes(item.col_type)"
+              >
+                <div
+                  slot="content"
+                  v-if="['String', 'Note', 'RichText', 'MultilineText'].includes(item.col_type) && scope.row[item.column]"
+                >
+                  <div
+                    style="max-width: 600px;"
+                    v-html="scope.row[item.column]"
+                  >
+                  </div>
+                </div>
                 <file-list
                   v-if="['FileList', 'Image'].includes(item.col_type)"
                   :data="scope.row"
                   :field="item"
                 ></file-list>
-                <template v-else-if="['fk', 'fks', 'fkjsons'].includes(item.col_type)">
-                  <div class="fk-tags">
-                    <template v-for="(tag, tIndex) in getFkJson(scope.row, item)">
-                      <el-tag
-                        size="mini"
-                        style="margin-right: 4px; margin-bottom: 2px"
-                        :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
-                        @click="onLinkClicked(scope.row, item)"
-                      >
-                        {{ tag || "--" }}
-                      </el-tag>
-                    </template>
-                  </div>
-                </template>
-                <template v-else-if="['User', 'UserList'].includes(item.col_type)">
-                  <template v-for="(tag, tIndex) in getUserTags(item, scope.row)">
-                    <a
-                      v-if="item.linkUrlFunc"
-                      v-show="scope.row[item.column]"
-                      style="
+                <template v-else-if="item._obj_info">
+                  <file-list
+                    v-if="['FileList', 'Image'].includes(item.col_type)"
+                    :data="scope.row"
+                    :field="item"
+                  ></file-list>
+                  <template v-else-if="['fk', 'fks', 'fkjsons'].includes(item.col_type)">
+                    <div class="fk-tags">
+                      <template v-for="(tag, tIndex) in getFkJson(scope.row, item)">
+                        <el-tag
+                          size="mini"
+                          style="margin-right: 4px; margin-bottom: 2px"
+                          :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+                          @click="onLinkClicked(scope.row, item)"
+                        >
+                          {{ tag || "--" }}
+                        </el-tag>
+                      </template>
+                    </div>
+                  </template>
+                  <template v-else-if="['User', 'UserList'].includes(item.col_type)">
+                    <template v-for="(tag, tIndex) in getUserTags(item, scope.row)">
+                      <a
+                        v-if="item.linkUrlFunc"
+                        v-show="scope.row[item.column]"
+                        style="
                         white-space: nowrap;
                         color: dodgerblue;
                         cursor: pointer;
                       "
-                      :key="tIndex"
-                      @click="onLinkClicked(scope.row, item)"
-                    >
-                      {{ tag || "--" }}
-                    </a>
+                        :key="tIndex"
+                        @click="onLinkClicked(scope.row, item)"
+                      >
+                        {{ tag || "--" }}
+                      </a>
+                    </template>
                   </template>
                 </template>
-              </template>
 
-              <!-- 二进制文件 -->
-              <div v-else-if="item.col_type === 'ImgBin'">
-                <el-image
-                  style="width: 50px; height: 50px"
-                  :src="blobToBase64(scope.row[item.column])"
-                  fit="cover"
+                <!-- 二进制文件 -->
+                <div v-else-if="item.col_type === 'ImgBin'">
+                  <el-image
+                    style="width: 50px; height: 50px"
+                    :src="blobToBase64(scope.row[item.column])"
+                    fit="cover"
+                  >
+                  </el-image>
+                </div>
+                <!-- 在线url -->
+                <div v-else-if="item.col_type === 'ImgUrl'">
+                  <el-image
+                    style="width: 50px; height: 50px"
+                    :src="setImgUrl(scope.row[item.column])"
+                    fit="cover"
+                  >
+                  </el-image>
+                </div>
+                <div v-else-if="
+                  item.srvcol &&
+                  item.srvcol.subtype &&
+                  ['progress', 'rate'].includes(item.srvcol.subtype)
+                ">
+                  <el-rate
+                    :value="scope.row[item.column]"
+                    show-score
+                    :disabled="true"
+                    text-color="#ff9900"
+                    style="width: 100%"
+                    v-if="item.srvcol.subtype === 'rate'"
+                  >
+                  </el-rate>
+                  <el-progress
+                    :percentage="scope.row[item.column] || 0"
+                    :text-inside="true"
+                    :stroke-width="18"
+                    v-else-if="item.srvcol.subtype === 'progress'"
+                  ></el-progress>
+                </div>
+                <div v-else-if="
+                  canInlineEdit &&
+                  onInlineEditing &&
+                  inlineEditCols &&
+                  item.column &&
+                  inlineEditCols[item.column]
+                ">
+                  <inline-edit-list
+                    :key="item.column"
+                    :field="inlineEditCols[item.column]"
+                    :ref="'inlineEditor' + item.column"
+                    :data="scope.row"
+                    @on-change="onInlineChange($event, scope.$index)"
+                  ></inline-edit-list>
+                </div>
+                <div
+                  v-else-if="
+                    isInplaceEdit() && findEditField(scope.row, item.column)
+                  "
+                  class="is-InplaceEdit"
                 >
-                </el-image>
-              </div>
-              <!-- 在线url -->
-              <div v-else-if="item.col_type === 'ImgUrl'">
-                <el-image
-                  style="width: 50px; height: 50px"
-                  :src="setImgUrl(scope.row[item.column])"
-                  fit="cover"
-                >
-                </el-image>
-              </div>
-              <div v-else-if="
-                item.srvcol &&
-                item.srvcol.subtype &&
-                ['progress', 'rate'].includes(item.srvcol.subtype)
-              ">
-                <el-rate
-                  :value="scope.row[item.column]"
-                  show-score
-                  :disabled="true"
-                  text-color="#ff9900"
-                  style="width: 100%"
-                  v-if="item.srvcol.subtype === 'rate'"
-                >
-                </el-rate>
-                <el-progress
-                  :percentage="scope.row[item.column] || 0"
-                  :text-inside="true"
-                  :stroke-width="18"
-                  v-else-if="item.srvcol.subtype === 'progress'"
-                ></el-progress>
-              </div>
-              <div v-else-if="
-                canInlineEdit &&
-                onInlineEditing &&
-                inlineEditCols &&
-                item.column &&
-                inlineEditCols[item.column]
-              ">
-                <inline-edit-list
-                  :key="item.column"
-                  :field="inlineEditCols[item.column]"
-                  :ref="'inlineEditor' + item.column"
-                  :data="scope.row"
-                  @on-change="onInlineChange($event, scope.$index)"
-                ></inline-edit-list>
-              </div>
-              <div
-                v-else-if="
-                  isInplaceEdit() && findEditField(scope.row, item.column)
-                "
-                class="is-InplaceEdit"
-              >
-                <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
+                  <!-- <raw-field-editor :field="findEditField(scope.row, item.column)"
                           @field-value-changed="onCellValueChanged(scope.row, item.column)"
                           @blur="onCellBlur(scope.row, item.column)">
                     </raw-field-editor> -->
-                {{ formatValue(scope.row, item) }}
-              </div>
-              <div v-else-if="item.col_type === 'progress'">
-                <el-progress
-                  :text-inside="true"
-                  :stroke-width="18"
-                  :percentage="scope.row[item.column]"
-                ></el-progress>
-              </div>
-              <div
-                v-else-if="
-                  formatValue(scope.row, item) &&
-                  ['Note', 'RichText'].includes(item.col_type)
-                "
-                v-html="recoverFileAddress4richText(formatValue(scope.row, item))
-                  "
-                style="max-height: 10vh; overflow: hidden"
-                @dblclick="openHtml(formatValue(scope.row, item))"
-              >
-              </div>
-              <!-- Enum | Dict 根据配置显示图标 -->
-              <div v-else-if="
-                (item.col_type === 'Enum' || item.col_type === 'Dict') &&
-                item.show_option_icon !== false
-              ">
+                  {{ formatValue(scope.row, item) }}
+                </div>
+                <div v-else-if="item.col_type === 'progress'">
+                  <el-progress
+                    :text-inside="true"
+                    :stroke-width="18"
+                    :percentage="scope.row[item.column]"
+                  ></el-progress>
+                </div>
                 <div
-                  v-for="(optionIcon, index) in item.show_option_icon"
-                  :key="index"
-                  class="row-icons"
+                  v-else-if="
+                    formatValue(scope.row, item) &&
+                    ['Note', 'RichText'].includes(item.col_type)
+                  "
+                  v-html="recoverFileAddress4richText(formatValue(scope.row, item))
+                    "
+                  style="max-height: 10vh; overflow: hidden"
+                  @dblclick="openHtml(formatValue(scope.row, item))"
+                >
+                </div>
+                <!-- Enum | Dict 根据配置显示图标 -->
+                <div v-else-if="
+                  (item.col_type === 'Enum' || item.col_type === 'Dict') &&
+                  item.show_option_icon !== false
+                ">
+                  <div
+                    v-for="(optionIcon, index) in item.show_option_icon"
+                    :key="index"
+                    class="row-icons"
+                  >
+                    <img
+                      fit="contain"
+                      v-if="scope.row[item.column] === optionIcon.value"
+                      :src="optionIcon.icon"
+                    />
+                  </div>
+                </div>
+                <div
+                  v-else-if="item.col_type === 'Image'"
+                  class="list-image"
                 >
                   <img
-                    fit="contain"
-                    v-if="scope.row[item.column] === optionIcon.value"
-                    :src="optionIcon.icon"
+                    v-if="scope.row[item.column]"
+                    :src="serviceApi(scope.row[item.column]).downloadFileNo +
+                      scope.row[item.column]
+                      "
                   />
                 </div>
-              </div>
-              <div
-                v-else-if="item.col_type === 'Image'"
-                class="list-image"
-              >
-                <img
-                  v-if="scope.row[item.column]"
-                  :src="serviceApi(scope.row[item.column]).downloadFileNo +
-                    scope.row[item.column]
-                    "
-                />
-              </div>
 
-              <!-- <div v-else-if="item.col_type === 'FileList'">
+                <!-- <div v-else-if="item.col_type === 'FileList'">
                     <upload-file :field="wrapCellIntoField(item.column, scope.row[item.column])"></upload-file>
                   </div> 1116隐藏-->
-              <div
-                v-else-if="
-                  item.col_type === 'FileList' && getListShowFileList(item)
-                "
-                class="list-image"
-              >
                 <div
-                  style="display: flex; align-items: center"
-                  :title="fileItem.src_name"
-                  v-for="(fileItem, index) in getListFileDatas(item, scope.row)"
-                  :key="index"
+                  v-else-if="
+                    item.col_type === 'FileList' && getListShowFileList(item)
+                  "
+                  class="list-image"
                 >
-                  <i
-                    v-show="getFileType(fileItem) === 'img' ||
-                      getFileType(fileItem) === 'pdf' ||
-                      getFileType(fileItem) === 'ppt'
-                      "
-                    title="预览"
-                    style="cursor: pointer"
-                    class="el-icon-view"
-                    @click.stop="
-                      onPreView(
-                        fileItem,
-                        index,
-                        getListFileDatas(item, scope.row)
-                      )
-                      "
+                  <div
+                    style="display: flex; align-items: center"
+                    :title="fileItem.src_name"
+                    v-for="(fileItem, index) in getListFileDatas(item, scope.row)"
+                    :key="index"
                   >
-                  </i>
-                  <el-link
-                    @click="getDownloadFile(fileItem)"
-                    v-if="getListFileDatas(item, scope.row).length > 0"
-                  >
-                    <i :class="getFileType(fileItem) === 'img'
-                      ? 'el-icon-picture-outline'
-                      : getFileType(fileItem) === 'doc'
-                        ? 'el-icon-tickets'
-                        : getFileType(fileItem) === 'media'
-                          ? 'el-icon-picture-outline'
-                          : 'el-icon-folder'
-                      "></i>
-                    {{ getStrIntercept(fileItem.src_name, 0) }}
-                  </el-link>
-                  <!-- <span></span> -->
+                    <i
+                      v-show="getFileType(fileItem) === 'img' ||
+                        getFileType(fileItem) === 'pdf' ||
+                        getFileType(fileItem) === 'ppt'
+                        "
+                      title="预览"
+                      style="cursor: pointer"
+                      class="el-icon-view"
+                      @click.stop="
+                        onPreView(
+                          fileItem,
+                          index,
+                          getListFileDatas(item, scope.row)
+                        )
+                        "
+                    >
+                    </i>
+                    <el-link
+                      @click="getDownloadFile(fileItem)"
+                      v-if="getListFileDatas(item, scope.row).length > 0"
+                    >
+                      <i :class="getFileType(fileItem) === 'img'
+                        ? 'el-icon-picture-outline'
+                        : getFileType(fileItem) === 'doc'
+                          ? 'el-icon-tickets'
+                          : getFileType(fileItem) === 'media'
+                            ? 'el-icon-picture-outline'
+                            : 'el-icon-folder'
+                        "></i>
+                      {{ getStrIntercept(fileItem.src_name, 0) }}
+                    </el-link>
+                    <!-- <span></span> -->
+                  </div>
                 </div>
-              </div>
 
-              <template v-else>
-                <div
-                  v-if="header_view_model == 'group'"
-                  class="group-table"
-                >
-                  <pre>{{ formatValue(scope.row, item) }}</pre>
-                </div>
                 <template v-else>
-                  <a
-                    v-if="item.linkUrlFunc"
-                    v-show="scope.row[item.column]"
-                    style="
+                  <div
+                    v-if="header_view_model == 'group'"
+                    class="group-table"
+                  >
+                    <pre>{{ formatValue(scope.row, item) }}</pre>
+                  </div>
+                  <template v-else>
+                    <a
+                      v-if="item.linkUrlFunc"
+                      v-show="scope.row[item.column]"
+                      style="
                       white-space: nowrap;
                       color: dodgerblue;
                       cursor: pointer;
                     "
-                    @click="onLinkClicked(scope.row, item)"
-                  >
-                    {{ formatValue(scope.row, item) }}
-                  </a>
-                  <div
-                    style="display: flex; flex-wrap: wrap"
-                    v-else-if="isFkJson(scope.row, item)"
-                  >
-                    <el-tag
-                      style="margin-right: 4px; margin-bottom: 2px"
-                      size="mini"
-                      :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
-                      v-for="(tag, tIndex) in getFkJson(scope.row, item)"
-                      :key="tIndex"
-                    >{{ tag || "" }}
-                    </el-tag>
-                  </div>
-                  <a
-                    class="link-to-detail"
-                    title="点击查看详情"
-                    v-else-if="
-                      isDetailLink(item.column, scope.row, scope.$index)
-                    "
-                    @click="toDetail(item.column, scope.row, scope.$index)"
-                  >{{ formatValue(scope.row, item) }}</a>
-                  <span
-                    v-else
-                    :class="{
-                      hasBg:
-                        (item.backgroundMap &&
-                          item.backgroundMap[scope.row[item.column]]) ||
-                        item.backgroundMap['_default'],
-                    }"
-                    :style="setTdStyle(item, scope.row)"
-                  >{{ formatValue(scope.row, item) }}</span>
+                      @click="onLinkClicked(scope.row, item)"
+                    >
+                      {{ formatValue(scope.row, item) }}
+                    </a>
+                    <div
+                      style="display: flex; flex-wrap: wrap"
+                      v-else-if="isFkJson(scope.row, item)"
+                    >
+                      <el-tag
+                        style="margin-right: 4px; margin-bottom: 2px"
+                        size="mini"
+                        :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+                        v-for="(tag, tIndex) in getFkJson(scope.row, item)"
+                        :key="tIndex"
+                      >{{ tag || "" }}
+                      </el-tag>
+                    </div>
+                    <a
+                      class="link-to-detail"
+                      title="点击查看详情"
+                      v-else-if="
+                        isDetailLink(item.column, scope.row, scope.$index)
+                      "
+                      @click="toDetail(item.column, scope.row, scope.$index)"
+                    >{{ formatValue(scope.row, item) }}</a>
+                    <span
+                      v-else
+                      :class="{
+                        hasBg:
+                          (item.backgroundMap &&
+                            item.backgroundMap[scope.row[item.column]]) ||
+                          item.backgroundMap['_default'],
+                      }"
+                      :style="setTdStyle(item, scope.row)"
+                    >{{ formatValue(scope.row, item) }}</span>
+                  </template>
                 </template>
-              </template>
-              <div
-                style="float: right"
-                v-if="
-                  showAddChildBtn(scope.row, scope.$index, item.column, index)
-                "
-              >
-                <el-button
-                  type="text"
-                  style="padding: 0; margin: 0"
-                  :title="getButtonName(
-                    showAddChildBtn(scope.row, scope.$index),
-                    scope.row
-                  )
-                    "
-                  @click.stop.native="
-                    rowButtonClick(
+                <div
+                  style="float: right"
+                  v-if="
+                    showAddChildBtn(scope.row, scope.$index, item.column, index)
+                  "
+                >
+                  <el-button
+                    type="text"
+                    style="padding: 0; margin: 0"
+                    :title="getButtonName(
                       showAddChildBtn(scope.row, scope.$index),
                       scope.row
                     )
-                    "
-                ><i class="el-icon-plus"></i></el-button>
-              </div>
+                      "
+                    @click.stop.native="
+                      rowButtonClick(
+                        showAddChildBtn(scope.row, scope.$index),
+                        scope.row
+                      )
+                      "
+                  ><i class="el-icon-plus"></i></el-button>
+                </div>
+              </el-tooltip>
             </template>
           </el-table-column>
 

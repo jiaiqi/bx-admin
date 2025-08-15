@@ -3508,7 +3508,6 @@ export default {
     },
     getListShowFileList(col) {
       let colItem = col || null;
-
       if (colItem) {
         let moreConfig = colItem.more_config;
         return moreConfig &&
