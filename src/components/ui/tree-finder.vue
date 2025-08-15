@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%;">
+  <div style="width: 100%;display: flex;">
     <a
       v-if="field.info.linkUrlFunc && !field.info.editable"
       v-show="field.getSrvVal()"
@@ -40,8 +40,11 @@
     </el-cascader>
     <el-button
       icon="el-icon-search"
-      v-if="!field.info.noSearchIcon"
+      v-if="!field.info.noSearchIcon && field.info.editable"
       @click="onPopupClicked"
+      type="default"
+      class=""
+      style="background-color: #F5F7FA;"
     >
     </el-button>
 
