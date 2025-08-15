@@ -1,5 +1,5 @@
 <template>
-<div class="flow_station">
+<div class="flow_station" :style="[{backgroundImage:'url('+flowInfo.bgImg+')'}]">
   <!-- 导出按钮 -->
 <!--  <div class="export-btn" @click="exportToImage">-->
 <!--    <i class="el-icon-download"></i>-->
@@ -7,12 +7,12 @@
 <!--  </div>-->
   
   <div class="flow_content" ref="flowContent">
-    <div class="flow_station_head">{{title}}</div>
+    <div class="flow_station_head">{{flowInfo.title}}</div>
     <div class="flow_station_body">
         <div class="flow_row" v-for="(item,index) in flowList">
           <div class="flow_row_item_bg" v-if="!item.child">
               <span v-if="item.icon">
-                      <img :src="getIconPath(item.icon+'.png')" alt=""/>
+                      <img :src="getImagePath(item.icon)" alt=""/>
                     </span>
             <span>{{item.title}}</span>
           </div>
@@ -25,7 +25,7 @@
                <div class="flow_row_item_ch">
                   <div class="flow_title_sl">
                     <span v-if="item.icon" class="sl_icon">
-                      <img :src="getIconPath(item.icon+'.png')" alt=""/>
+                      <img :src="getImagePath(item.icon)" alt=""/>
                     </span>
                     <span class="sl_icon_title">{{item.title}}</span>
                   </div>
@@ -59,16 +59,51 @@
 
 <script>
 import { flowStation } from "@/pages/flowStation/flow";
+import {$http, getImagePath} from "@/common/http";
 
 export default{
   name: "flow-station",
   data(){
     return{
-      title:flowStation[0].title,
-      flowList:flowStation
+      flowList:[],
+      checklist_no:null,
+      flowInfo:{
+        bgImg:'',
+        title:'',
+      }
     }
   },
+  created(){
+    this.getNoByUrls();
+  },
+  mounted(){
+    this.getFlowListData();
+  },
   methods: {
+     getNoByUrls(){
+      if(this.$route.query && this.$route.query.checklist_no){
+        this.checklist_no=this.$route.query.checklist_no;
+      }
+     },
+    //获取流程数据信息
+    async getFlowListData(){
+      let url = '/park/select/srvpark_checklist_process_image_select';
+      let req={
+         serviceName: "srvpark_checklist_process_image_select",
+         colNames: ["*"],
+         condition: [{colName: "checklist_no", ruleType: "eq", value: this.checklist_no?this.checklist_no:"CN202507290001"}]
+        }
+       let res = await $http.post(url, req);
+       if(res.data.state!=='SUCCESS') return;
+       let ls =res.data;
+       this.flowInfo.title = ls.checklist.checklist_name;
+       this.flowInfo.bgImg=getImagePath(ls.checklist.background_image);
+       this.flowList=ls.node
+      console.log(res);
+
+    },
+
+
     // 动态获取图片地址的方法
     getIconPath(iconName) {
       console.log(iconName);

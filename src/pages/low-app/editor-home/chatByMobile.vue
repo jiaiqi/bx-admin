@@ -97,7 +97,6 @@ export default {
           delete style['owner_no'];
         }
       } catch (error) {
-        console.warn('处理样式时出错:', error);
         return {};
       }
       return style || {};
@@ -107,7 +106,6 @@ export default {
     pageItem: {
       handler(newPageItem) {
         if (newPageItem) {
-          console.log(newPageItem)
           // 使用layout_x和layout_y作为位置信息
           this.currentX = newPageItem.layout_x !== undefined ? parseFloat(newPageItem.layout_x) : null
           this.currentY = newPageItem.layout_y !== undefined ? parseFloat(newPageItem.layout_y) : null
@@ -158,7 +156,6 @@ export default {
         return
       }
       if (!this.inEdit) {
-        console.log('打开在线咨询');
       }
     },
     handleMouseDown(event) {
@@ -198,14 +195,12 @@ export default {
       const availableHeight = containerRect.height - paddingTop - paddingBottom
       newX = Math.max(paddingLeft, Math.min(newX, paddingLeft + availableWidth - elementWidth - extraWidth))
       newY = Math.max(paddingTop, Math.min(newY, paddingTop + availableHeight - elementHeight - extraHeight))
-      console.log('限制后位置:', newX, newY)
       this.currentX = newX
       this.currentY = newY
     },
     handleMouseUp() {
       if (this.isDragging) {
         this.isDragging = false
-
         // 触发位置更新事件，更新layout_x和layout_y
         this.$emit('position-change', {
           layout_x: this.currentX,

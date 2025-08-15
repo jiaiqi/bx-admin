@@ -158,7 +158,6 @@ export default {
           }))
           // 根据com_seq值排序
           this.currentComponents = componentsWithIndex.sort((a, b) => a.com_seq - b.com_seq)
-          console.log('这是当前的组件列',this.currentComponents)
           // 更新组件的z-index
           this.rearrangeComponents()
         }
@@ -219,7 +218,6 @@ export default {
               this.$message.error(msg || '删除组件失败');
             }
           } catch (error) {
-            console.error('删除组件出错:', error);
             this.$message.error('删除组件时发生错误');
           } finally {
             loading.close();
@@ -234,7 +232,6 @@ export default {
           }
         }
       } catch (error) {
-        console.error('删除组件操作失败:', error);
         this.$message.error('删除组件操作失败');
       }
     },
@@ -276,9 +273,6 @@ export default {
     // 获取组件类型
     getComponentType(item) {
       if (!item) return null
-      
-      console.log('当前获取的组件:', item)
-      
       // 根据组件类型返回对应的组件名称
       switch (item.com_type) {
         case 'container':
