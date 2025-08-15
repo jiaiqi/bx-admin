@@ -11,10 +11,10 @@
     @mousedown="handleMouseDown"
     @mousemove="handleMouseMove"
     @mouseup="handleMouseUp"
-    @mouseleave="handleMouseUp"
     @keydown="handleKeyDown"
     @keyup="handleKeyUp"
-    @mouseenter="showTips"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
     @focus="showTips"
     tabindex="99"
   >
@@ -357,6 +357,24 @@ const showTips = () => {
   }
 };
 
+// 鼠标进入组件时添加键盘监听器
+const handleMouseEnter = () => {
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+  showTips();
+};
+
+// 鼠标离开组件时移除键盘监听器
+const handleMouseLeave = () => {
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
+  // 重置按键状态
+  isSpacePressed.value = false;
+  isCtrlPressed.value = false;
+  // 调用原有的鼠标抬起处理逻辑
+  handleMouseUp();
+};
+
 const hideTips = () => {
   if (tipsTimer) clearTimeout(tipsTimer);
   if (countdownTimer) clearInterval(countdownTimer);
@@ -439,14 +457,12 @@ defineExpose({
 onMounted(() => {
   // 初始化关闭次数
   closeCount.value = getCloseCount();
-
-  // window.addEventListener('keydown', handleKeyDown);
-  // window.addEventListener('keyup', handleKeyUp);
 });
 
 onUnmounted(() => {
-  // window.removeEventListener('keydown', handleKeyDown);
-  // window.removeEventListener('keyup', handleKeyUp);
+  // 确保清理键盘事件监听器
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
   if (tipsTimer) clearTimeout(tipsTimer);
   if (countdownTimer) clearInterval(countdownTimer);
 });
