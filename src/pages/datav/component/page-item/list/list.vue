@@ -1,5 +1,15 @@
 <template>
   <div class="data-view-list">
+    <!-- 自定义加载动画 -->
+    <div class="custom-loading" v-if="loading">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <div class="loading-text">数据加载中...</div>
+    </div>
+
     <div
       class="map-card-container"
       v-if="listOptions && listOptions.includes('关联地图筛选')"
@@ -142,86 +152,21 @@
           </cardGroupCell>
         </div>
         <!-- 表格 -->
-        <div
-          class="bx-table"
+        <BxTable
           v-else
-          :style="setTableStyle"
-          :class="{
-            'scroll-animation': isVerticalScroll,
-          }"
-        >
-          <div class="table-head">
-            <div
-              class="table-column"
-              v-for="col in tableColumn"
-              :key="col.columns"
-              :style="{
-                color: setStyle && setStyle.color,
-                'font-size': setStyle && setStyle['font-size'],
-              }"
-              :title="col.label"
-            >
-              {{ col.label }}
-            </div>
-            <div
-              class="table-column row-button-box"
-              :style="rowButtonBoxStyle"
-              v-if="showRowButtons"
-            >
-              操作
-            </div>
-          </div>
-          <div
-            class="table-body-wrap"
-            :style="{
-              height: isVerticalScroll ? `${displayRowLimit * 40}px` : 'auto',
-            }"
-          >
-            <div class="table-body">
-              <div
-                class="table-row"
-                v-for="(item, index) in displayTableData"
-                :key="index"
-                :class="{ stripe: striped && index % 2 === 1 }"
-              >
-                <div
-                  class="table-column"
-                  v-for="col in tableColumn"
-                  :title="formatValue(item, col)"
-                  :key="col.columns"
-                  :style="{
-                    color: setStyle && setStyle.color,
-                    'font-size': setStyle && setStyle['font-size'],
-                  }"
-                >
-                  <el-image
-                    class="td-img"
-                    :src="getImagePath(formatValue(item, col))"
-                    :preview-src-list="[getImagePath(formatValue(item, col))]"
-                    v-if="col.col_type === 'Image' && formatValue(item, col)"
-                  >
-                  </el-image>
-                  <span v-else>
-                    {{ formatValue(item, col) }}
-                  </span>
-                </div>
-                <div
-                  class="table-column row-button-box"
-                  :style="rowButtonBoxStyle"
-                  v-if="showRowButtons"
-                >
-                  <el-button
-                    type="text"
-                    size="mini"
-                    v-for="btn in setRowButtons"
-                    :key="btn.button_type"
-                    @click="onRowButtonClick(btn, item)"
-                  >{{ btn.button_name }}</el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          :table-column="tableColumn"
+          :display-table-data="displayTableData"
+          :set-style="setStyle"
+          :set-table-style="setTableStyle"
+          :striped="striped"
+          :show-row-buttons="showRowButtons"
+          :set-row-buttons="setRowButtons"
+          :row-button-box-style="rowButtonBoxStyle"
+          :is-vertical-scroll="isVerticalScroll"
+          :display-row-limit="displayRowLimit"
+          :list-config="listConfig"
+          @row-button-click="onRowButtonClick"
+        />
       </div>
       <div
         class="pagination-box"
@@ -270,6 +215,7 @@ import { formatStyleData } from "../../../common/index";
 import GridList from "./grid-list.vue";
 import SimpleAdd from "@/components/common/simple-add.vue";
 import MapCard from "../map-card/index.vue";
+import BxTable from "./BxTable.vue";
 export default {
   name: "data-view-list",
   components: {
@@ -277,6 +223,7 @@ export default {
     GridList,
     SimpleAdd,
     MapCard,
+    BxTable,
   },
   props: {
     pageItem: {
@@ -308,6 +255,8 @@ export default {
       showAddDialog: false,
       // 滚动相关数据
       scrollTimer: null,
+      loading: false,
+      loaded: false,
     };
   },
   computed: {
@@ -518,10 +467,6 @@ export default {
             return item;
           });
       }
-    },
-    // 滚动方向
-    scrollDirection() {
-      return this.listConfig.animation_direction === "由上至下" ? "down" : "up";
     },
     // 是否为纵向滚动
     isVerticalScroll() {
@@ -738,7 +683,13 @@ export default {
           item.value = this.renderStr(item.value, data);
         });
       }
+      this.loading = true;
+
       const res = await $http.post(url, req);
+      this.loading = false;
+      this.loaded = true;
+
+
       if (res.data.state === "SUCCESS") {
         this.tableData = res.data.data;
         if (res.data.page) {
@@ -815,9 +766,7 @@ export default {
         }
       }
     },
-    formatValue(row, col) {
-      return row?.[col.columns];
-    },
+
     onClickBlock(e) {
       console.log("onClickBlock", e);
     },
@@ -965,91 +914,7 @@ export default {
         }
       }
     },
-    // 开始纵向滚动 - 性能优化版本
-    startVerticalScroll() {
-      if (!this.isVerticalScroll) return;
-      this.stopVerticalScroll();
 
-      const interval = Math.max(
-        (this.listConfig.animation_interval ||
-          this.$options.CONSTANTS.DEFAULT_INTERVAL / 1000) * 1000,
-        2000
-      );
-
-      this.scrollTimer = setInterval(() => {
-        this.performScrollStep();
-      }, interval);
-    },
-
-    // 执行单步滚动 - 使用transform优化性能
-    performScrollStep() {
-      const tableBody = this.$el?.querySelector(".table-body");
-      if (!tableBody || !tableBody.children.length) return;
-
-      const rows = Array.from(tableBody.children);
-      const rowHeight = rows[0]?.offsetHeight || 0;
-
-      if (rowHeight === 0) return;
-
-      // 使用transform实现平滑滚动，避免DOM重排
-      // 向下滚动时内容向上移动（负值），向上滚动时内容向下移动（正值）
-      const translateY =
-        this.scrollDirection === "down" ? rowHeight : -rowHeight;
-      const ANIMATION_DURATION = this.listConfig?.animation_duration || 2000;
-      // 添加过渡效果
-      tableBody.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.55, -0.55, 0.5, 1.2)`;
-      tableBody.style.transform = `translateY(${translateY}px)`;
-
-      // 动画完成后重置位置并调整DOM结构
-      setTimeout(() => {
-        this.resetScrollPosition(tableBody, rows);
-      }, ANIMATION_DURATION);
-    },
-
-    // 重置滚动位置并调整DOM结构
-    resetScrollPosition(tableBody, rows) {
-      // 移除过渡效果，立即重置transform
-      tableBody.style.transition = "none";
-      tableBody.style.transform = "translateY(0)";
-
-      // 使用DocumentFragment批量操作DOM，减少重排
-      const fragment = document.createDocumentFragment();
-
-      if (this.scrollDirection === "down") {
-        // 向下滚动：将最后一行移到第一行（显示新的内容）
-        const lastRow = rows[rows.length - 1];
-        fragment.appendChild(lastRow);
-        rows.slice(0, -1).forEach((row) => fragment.appendChild(row));
-      } else {
-        // 向上滚动：将第一行移到最后（显示之前的内容）
-        const firstRow = rows[0];
-        rows.slice(1).forEach((row) => fragment.appendChild(row));
-        fragment.appendChild(firstRow);
-      }
-
-      // 一次性更新DOM
-      tableBody.innerHTML = "";
-      tableBody.appendChild(fragment);
-    },
-    // 停止纵向滚动
-    stopVerticalScroll() {
-      if (this.scrollTimer) {
-        clearInterval(this.scrollTimer);
-        this.scrollTimer = null;
-      }
-      // 清理滚动相关样式
-      this.cleanupScrollStyles();
-    },
-
-    // 清理滚动样式，防止内存泄漏
-    cleanupScrollStyles() {
-      const tableBody = this.$el?.querySelector(".table-body");
-      if (tableBody) {
-        tableBody.style.transition = "";
-        tableBody.style.transform = "";
-        tableBody.style.willChange = "auto";
-      }
-    },
 
     // 错误处理包装器
     safeExecute(fn, errorMessage = "操作执行失败") {
@@ -1089,29 +954,9 @@ export default {
     // else if(Array.isArray(this.pageItem.list_json?.mock_data_json)&&this.pageItem.list_json?.mock_data_json.length){
     //   this.tableData = this.pageItem.list_json?.mock_data_json;
     // }
-    // 组件挂载后启动滚动
-    if (this.isVerticalScroll) {
-      this.$nextTick(() => {
-        this.startVerticalScroll();
-      });
-    }
-  },
-  beforeDestroy() {
-    // 组件销毁前清理所有资源
-    this.stopVerticalScroll();
-    this.cleanupScrollStyles();
 
-    // 清理可能的事件监听器
-    if (this.$el) {
-      const tableBody = this.$el.querySelector(".table-body");
-      if (tableBody) {
-        tableBody.removeEventListener(
-          "transitionend",
-          this.handleTransitionEnd
-        );
-      }
-    }
   },
+
   watch: {
     pageParamsModel: {
       deep: true,
@@ -1121,44 +966,14 @@ export default {
         this.paramsLinkage();
       },
     },
-    // 监听滚动配置变化
-    "listConfig.animation_type": {
-      handler(newVal, oldVal) {
-        if (newVal === "纵向滚动") {
-          this.$nextTick(() => {
-            this.startVerticalScroll();
-          });
-        } else {
-          this.stopVerticalScroll();
-        }
-      },
-    },
-    "listConfig.animation_direction": {
-      handler(newVal, oldVal) {
-        if (this.isVerticalScroll) {
-          this.stopVerticalScroll();
-          this.$nextTick(() => {
-            this.startVerticalScroll();
-          });
-        }
-      },
-    },
-    tableData: {
-      handler(newVal, oldVal) {
-        if (this.isVerticalScroll) {
-          this.scrollIndex = 0;
-          this.$nextTick(() => {
-            this.startVerticalScroll();
-          });
-        }
-      },
-    },
+
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .data-view-list {
+  position: relative;
   width: 100%;
   display: flex;
   overflow: hidden;
@@ -1228,58 +1043,7 @@ export default {
   }
 }
 
-.bx-table {
-  // overflow: hidden;
-  color: var(--cell_color, #fff);
-  // display: table;
-  .table-head,
-  .table-row {
-    display: flex;
-    background-color: var(--cell_bg);
-    &.stripe {
-      background-color: var(--cell_bg2, rgba($color: #fff, $alpha: 0.1));
-      color: var(--cell_color2);
-    }
 
-    .table-column {
-      flex: 1;
-      padding: 8px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-      cursor: pointer;
-      // display: flex;
-      // align-items: center;
-
-      span {
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-      }
-
-      .td-img {
-        width: 100%;
-        height: 100%;
-        min-height: 50px;
-        object-fit: cover;
-        width: 120px;
-        border-radius: 8px;
-      }
-
-      &.row-button-box {
-        flex: 1.5;
-
-        .el-button {
-          min-width: 50px;
-        }
-      }
-    }
-  }
-
-  .table-head {
-    background-color: var(--tbl_head_bg, rgba($color: #999, $alpha: 0.2));
-  }
-}
 
 .statistic-box {
   display: flex;
@@ -1350,47 +1114,94 @@ export default {
   }
 }
 
-// 滚动动画样式 - 性能优化版本
-.scroll-animation {
-  .table-body-wrap {
-    overflow: hidden;
+/* 自定义加载动画样式 */
+.custom-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.loading-spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+}
+
+.spinner-ring:nth-child(1) {
+  border-top-color: #3498db;
+  animation-delay: 0s;
+}
+
+.spinner-ring:nth-child(2) {
+  border-top-color: #e74c3c;
+  animation-delay: -0.5s;
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
+}
+
+.spinner-ring:nth-child(3) {
+  border-top-color: #f39c12;
+  animation-delay: -1s;
+  width: 60%;
+  height: 60%;
+  top: 20%;
+  left: 20%;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-
-  .table-body {
-    position: relative;
-    // 启用硬件加速
-    transform: translateZ(0);
-    will-change: transform;
-
-    .table-row {
-      transition: opacity 0.3s ease-out;
-      opacity: 1;
-      // 启用硬件加速
-      transform: translateZ(0);
-
-      // 顶部即将滚出视口的元素渐隐效果
-      &:first-child {
-        opacity: 0.8;
-      }
-
-      &:nth-child(2) {
-        opacity: 0.9;
-      }
-
-      // 底部即将滚出视口的元素渐隐效果
-      &:last-child {
-        opacity: 0.8;
-      }
-
-      &:nth-last-child(2) {
-        opacity: 0.9;
-      }
-
-      // 中间完全可见区域保持完全不透明
-      &:nth-child(n + 3):nth-last-child(n + 3) {
-        opacity: 1;
-      }
-    }
+  100% {
+    transform: rotate(360deg);
   }
 }
+
+.loading-text {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 深色主题适配 */
+.data-view-list[data-theme="dark"] .custom-loading {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.data-view-list[data-theme="dark"] .loading-text {
+  color: #ccc;
+}
+
 </style>

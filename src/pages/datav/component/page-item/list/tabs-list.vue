@@ -1,5 +1,8 @@
 <template>
-  <div class="tabs" :class="{ 'vertical-tabs': vertical }">
+  <div
+    class="tabs"
+    :class="{ 'vertical-tabs': vertical }"
+  >
     <div
       class="tab-name-box"
       :class="{
@@ -7,6 +10,7 @@
         'justify-end': !vertical && rightTab,
         'justify-center': !vertical && !leftTab && !rightTab,
       }"
+      :style="[buildTabsTitleStyle]"
     >
       <div
         class="tab-name"
@@ -30,7 +34,12 @@
       ></div>
     </div>
     <div class="tab-content">
-      <div v-for="item in components" :key="item.id">
+      <div
+        v-for="item in components"
+        :key="item.id"
+        class="tab-item"
+        v-if="activeName === item.com_name"
+      >
         <page-item
           use-layout="false"
           ref="pageItem"
@@ -38,7 +47,6 @@
           :in-tabs="true"
           :pageParamsModel="pageParamsModel"
           :queryOptions="queryOptions"
-          v-if="activeName === item.com_name"
         ></page-item>
         <!-- <List
           v-if="activeName === item.com_name"
@@ -83,6 +91,9 @@ export default {
     },
   },
   computed: {
+    buildTabsTitleStyle() {
+      return formatStyleData(this.tabsJson?.tabs_title_style_json || "");
+    },
     // 获取tabs中所有卡片单元编号+名称的键值对
     getTabsCardList() {
       let list = this.components;
@@ -198,9 +209,14 @@ export default {
 
 <style lang="scss" scoped>
 .tabs {
+  position: relative;
   padding: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
   &.vertical-tabs {
-    display: flex;
+    flex-direction: row;
 
     .tab-name-box {
       flex-direction: column;
@@ -211,9 +227,14 @@ export default {
         text-align: center;
       }
     }
+  }
 
-    .tab-content {
-      flex: 1;
+  .tab-content {
+    flex: 1;
+
+    .tab-item {
+      height: 100%;
+      width: 100%;
     }
   }
 }
@@ -223,11 +244,13 @@ export default {
   align-items: center;
   position: relative; // 添加相对定位
   margin-bottom: 5px;
+  border-bottom: 1px solid #BBB;
 
   .tab-name {
     cursor: pointer;
     padding: 0 4px 8px; // 添加底部内边距，为下划线留出空间
     position: relative; // 添加相对定位
+    margin-right: 80px;
 
     &:not(.button-mode) {
       margin-right: 20px;
@@ -235,6 +258,20 @@ export default {
 
     &.active:not(.button-mode) {
       color: var(--primary-color, #409eff);
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border: 5px solid transparent;
+        border-bottom-color: #333;
+        z-index: -1;
+      }
+
     }
 
     &.button-mode {
