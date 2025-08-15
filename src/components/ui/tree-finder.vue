@@ -1,6 +1,7 @@
 <template>
-  <div style="width: 100%;">
+  <div style="width: 100%;display: flex;">
     <a
+      class="flex-1"
       v-if="field.info.linkUrlFunc && !field.info.editable"
       v-show="field.getSrvVal()"
       style="white-space: normal; color: dodgerblue; cursor: pointer"
@@ -9,12 +10,14 @@
       {{ field.getDispVal4Read() }}
     </a>
     <el-input
+      class="flex-1"
       v-else-if="field.model && noData"
       clearable
       @clear="onClear()"
       :value="field.getSrvVal()"
     ></el-input>
     <el-cascader
+      class="flex-1"
       v-else
       :placeholder="field.info.placeholder"
       :options="options"
@@ -40,8 +43,11 @@
     </el-cascader>
     <el-button
       icon="el-icon-search"
-      v-if="!field.info.noSearchIcon"
+      v-if="!field.info.noSearchIcon && field.info.editable"
       @click="onPopupClicked"
+      type="default"
+      class=""
+      style="background-color: #F5F7FA;"
     >
     </el-button>
 
