@@ -105,7 +105,8 @@ export const pageCompCols = [
   "enter_direction",
   "enter_animation_duration", "enter_animation_delay", "enter_animation_repeat",
   // 动效相关
-  "migration_json", "animation_type"
+  "migration_json", "animation_type",
+  "title_icon_style_json",//标题icon样式
   // "owner_tabs_no",
   // "is_leaf",
   // "path",

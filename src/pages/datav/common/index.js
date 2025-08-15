@@ -7,7 +7,7 @@ const formatStyleData = (val) => {
     try {
       json = JSON.parse(json);
     } catch (error) {
-      console.error("error：" + str + "!" + e);
+      console.error("error：" + json + "!" + error);
     }
   }
   let str = JSON.stringify(json);

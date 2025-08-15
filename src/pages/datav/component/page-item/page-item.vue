@@ -28,7 +28,10 @@
         <span class="name">
           {{ pageItem.com_name || "" }}
         </span>
-        <i class="el-icon-close button close-icon" @click="onDelete"></i>
+        <i
+          class="el-icon-close button close-icon"
+          @click="onDelete"
+        ></i>
       </div>
     </div>
 
@@ -51,22 +54,37 @@
         ]"
       >
         <template v-if="mixTitleIcon && mixTitleIcon !== '无'">
-          <span class="icon1" v-if="mixTitleIcon === '竖线'"></span>
-          <span class="icon2" v-if="mixTitleIcon === '圆形'"></span>
-          <span class="icon3" v-if="mixTitleIcon === '方块'"></span>
-          <Icon
-            icon="ri-arrow-drop-right-fill"
-            v-if="mixTitleIcon === '三角形'"
-          ></Icon>
-          <Icon
-            :icon="mixTitleIcon"
-            v-else-if="mixTitleIcon && mixTitleIcon !== '下划线'"
-          ></Icon>
+          <span :style="[titleIconStyle]">
+
+            <span
+              class="icon1"
+              v-if="mixTitleIcon === '竖线'"
+            ></span>
+            <span
+              class="icon2"
+              v-if="mixTitleIcon === '圆形'"
+            ></span>
+            <span
+              class="icon3"
+              v-if="mixTitleIcon === '方块'"
+            ></span>
+            <Icon
+              icon="ri-arrow-drop-right-fill"
+              v-if="mixTitleIcon === '三角形'"
+            ></Icon>
+            <Icon
+              :icon="mixTitleIcon"
+              v-else-if="mixTitleIcon && mixTitleIcon !== '下划线'"
+            ></Icon>
+          </span>
         </template>
         <span>
           {{ pageItemData.com_label }}
         </span>
-        <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
+        <span
+          v-if="mixTitleIcon === '下划线'"
+          class="under-line"
+        ></span>
       </div>
 
       <div
@@ -237,14 +255,14 @@
       :query-options="queryOptions"
     >
     </info-details>
-<!--    <chat-entrance-->
-<!--        v-else-if="pageItemData.com_type === '咨询入口'"-->
-<!--        :pageItem="pageItemData"-->
-<!--        :page-params-model="pageParamsModel"-->
-<!--        :query-options="queryOptions"-->
-<!--        @setOpenChat="setOpenChat"-->
-<!--    >-->
-<!--    </chat-entrance>-->
+    <!--    <chat-entrance-->
+    <!--        v-else-if="pageItemData.com_type === '咨询入口'"-->
+    <!--        :pageItem="pageItemData"-->
+    <!--        :page-params-model="pageParamsModel"-->
+    <!--        :query-options="queryOptions"-->
+    <!--        @setOpenChat="setOpenChat"-->
+    <!--    >-->
+    <!--    </chat-entrance>-->
     <div
       v-else-if="pageItemData && pageItemData.com_label"
       :class="{ mobile: screenType === 'mobile' }"
@@ -379,7 +397,9 @@ export default {
     mixTitleIcon() {
       return this.pageItemData?.com_icon || this.pageConfig?.dv_com_icon;
     },
-
+    titleIconStyle() {
+      return formatStyleData(this.pageItemData?.title_icon_style_json || "");
+    },
     mixTitleStyle() {
       let style = {};
       if (this.pageItemData?.com_title_style_json) {
@@ -439,7 +459,7 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, oldValue) {
-        console.log('---这是什么设备',this.screenType)
+        console.log('---这是什么设备', this.screenType)
         if (newValue !== oldValue) {
           this.pageItemData = newValue || {};
         }
@@ -517,10 +537,12 @@ export default {
   @include layout.overlay;
   z-index: 99;
   $primary-color: #17d57e;
+
   &.page-item__overlay {
     .el-icon-close {
       // transform: translateX(100%);
     }
+
     // .name,.el-icon-close {
     //   position: absolute;
     //   top: 0;
@@ -529,16 +551,20 @@ export default {
     //   transform: translateY(-100%);
     // }
   }
+
   &:hover {
     border: 2px dashed rgba($color: $primary-color, $alpha: 1);
     background-color: rgba($color: $primary-color, $alpha: 0.1);
   }
+
   &.active {
     border: 2px solid $primary-color;
   }
+
   .name {
     background-color: rgba($color: $primary-color, $alpha: 0.7);
   }
+
   .close-icon {
     height: 28px;
     width: 28px;
@@ -547,6 +573,7 @@ export default {
     align-items: center;
     background-color: rgba($color: $primary-color, $alpha: 0.7);
     cursor: pointer;
+
     &:hover {
       font-size: 1.2em;
     }
@@ -561,6 +588,7 @@ export default {
   color: #333;
   display: flex;
   flex-direction: column;
+
   &.mobile {
     background-color: #eee;
     border: 1px solid #ccc;
@@ -570,28 +598,34 @@ export default {
       text-align: center;
     }
   }
+
   &.inline-block {
     width: unset;
     height: unset;
     display: inline-block;
   }
+
   .more-btn-bottom {
     text-align: center;
     background: rgba($color: #000000, $alpha: 0.05);
     margin-top: 4px;
+
     &:hover {
       background: rgba($color: #000000, $alpha: 0.1);
       cursor: pointer;
+
       .more-btn {
         color: var(--primary-color, #409eff);
         text-decoration: underline;
         text-decoration-color: var(--primary-color, #409eff);
       }
     }
+
     .more-btn {
       padding: 2px 10px;
       border-radius: 4px;
       font-size: 12px;
+
       // background-color: var(--primary-color, #409eff);
       // color: #fff;
       &:hover {
@@ -601,17 +635,21 @@ export default {
       }
     }
   }
+
   .page-item__label {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
+
   .more-btn {
     cursor: pointer;
+
     &:hover {
       color: var(--primary-color, #409eff);
     }
   }
+
   .page-item__label-text {
     display: flex;
     position: relative;
