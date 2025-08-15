@@ -258,20 +258,6 @@ export default {
 
     &.active:not(.button-mode) {
       color: var(--primary-color, #409eff);
-
-      &::after {
-        content: "";
-        position: absolute;
-        bottom: 4px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border: 5px solid transparent;
-        border-bottom-color: #333;
-        z-index: -1;
-      }
-
     }
 
     &.button-mode {
@@ -297,6 +283,19 @@ export default {
     background-color: var(--primary-color, #409eff); // 默认颜色
     transition: transform 0.3s ease, width 0.3s ease; // 添加过渡动画
     border-radius: 1px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border: 5px solid transparent;
+      border-bottom-color: #333;
+      z-index: -1;
+    }
   }
 }
 </style>
