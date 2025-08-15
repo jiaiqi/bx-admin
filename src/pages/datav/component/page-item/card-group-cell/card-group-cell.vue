@@ -42,6 +42,7 @@
             :showActiveCard="showActiveCard"
             :inList="inList"
             @on-click-cell="onClickCell"
+            @show-dialog="showDialog"
             class="marquee-item"
           >
           </card-cell-layout>
@@ -66,18 +67,21 @@
           @mouse-enter="setActiveCardIndex(index)"
           @mouse-leave="activeCardAutoplay"
           @on-click-cell="onClickCell"
+          @show-dialog="showDialog"
         >
         </card-cell-layout>
       </template>
     </template>
 
-    <el-dialog
-      title=""
+    <custom-dialog
       :visible.sync="dialogVisible"
-      append-to-body
+      @close="handleDialogClose"
       v-if="dialogUrl && dialogVisible"
     >
-      <div v-if="iframeLoading" class="iframe-loading">
+      <div
+        v-if="iframeLoading && !dialogPosition.pageNo"
+        class="iframe-loading"
+      >
         <el-loading-spinner></el-loading-spinner>
         <div class="loading-text">
           <p>
@@ -85,13 +89,19 @@
           </p>
         </div>
       </div>
+      <lowcode-page
+        :prop-page-no="dialogPosition.pageNo"
+        v-if="dialogPosition.pageNo"
+      >
+      </lowcode-page>
       <iframe
+        v-else
         :src="dialogUrl"
         frameborder="0"
         style="width: 100%; height: 80vh"
         @load="iframeLoading = false"
       ></iframe>
-    </el-dialog>
+    </custom-dialog>
   </div>
 </template>
 <style>
@@ -117,6 +127,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -126,9 +137,11 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -175,9 +188,11 @@
   0% {
     opacity: 0;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }
@@ -218,8 +233,9 @@ import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import cardCellLayout from "./card-cell-layout.vue";
+import customDialog from "./custom-dialog.vue";
 import cloneDeep from "lodash/cloneDeep.js";
-
+// import lowcodePage from '../../../../lowcode/view.vue'
 let activeCardTimer = null;
 
 export default {
@@ -228,9 +244,8 @@ export default {
     Icon,
     cardCellPart,
     cardCellLayout,
-    // cardGroupCellItem
-    // bxform
-    // bxForm: () => import('@/views/custom/components/bx-form/bx-form.vue') //剔除 原小程序form组件
+    customDialog,
+    lowcodePage: () => import('@/pages/lowcode/view.vue')
   },
   name: "card-group-cell",
   mixins: [cardGroupCellMxin, marqueeMixin],
@@ -428,7 +443,7 @@ export default {
       // console.log('config',config)
       let height =
         config.hasOwnProperty("style_json") &&
-        config.style_json.hasOwnProperty("height")
+          config.style_json.hasOwnProperty("height")
           ? config.style_json.height
           : "auto";
       let configStyle = config["style_json"] || {};
@@ -520,6 +535,12 @@ export default {
           return JSON.stringify(json[0]?.jump_json || null) || "";
         }
       }
+    },
+    handleDialogClose() {
+      this.dialogVisible = false;
+      this.dialogUrl = "";
+      this.dialogPosition = null;
+      this.iframeLoading = true;
     },
     setActiveCardIndex(index) {
       clearInterval(activeCardTimer);
@@ -702,6 +723,7 @@ export default {
                 y,
                 w,
                 h,
+                pageNo: jumpJson.dest_page_no,
               };
               this.dialogVisible = true;
               this.iframeLoading = true;

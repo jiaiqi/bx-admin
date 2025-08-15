@@ -373,12 +373,12 @@ export default {
 
   .table-row {
     .table-column {
-      min-height: 86px;
+      // min-height: 86px;
     }
   }
 
   .table-head {
-    background-color: var(--tbl_head_bg, rgba($color: #F0F3F9, $alpha: 1));
+    background-color: var(--tbl_head_bg, rgba($color: #F0F3F9, $alpha: 0.1));
   }
 }
 

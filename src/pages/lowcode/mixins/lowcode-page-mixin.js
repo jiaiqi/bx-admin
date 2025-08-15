@@ -27,6 +27,12 @@ import { pageCompCols } from "../components/property/columns";
  * @description 为低代码页面提供通用的配置管理、组件初始化、主题设置等功能
  */
 export default {
+  props: {
+    propPageNo: {
+      type: String,
+      default: ''
+    },
+  },
   /**
    * 向子组件提供页面配置和参数的访问方法
    * @returns {Object} 包含获取页面配置和参数方法的对象
@@ -99,7 +105,7 @@ export default {
     },
     setStyle: {
       handler(newVal, oldVal) {
-        if(newVal&&newVal['font-size']){
+        if (newVal && newVal['font-size']) {
           document.body.style.fontSize = newVal['font-size']
           document.querySelector('html').style.fontSize = newVal['font-size']
         }
@@ -120,7 +126,12 @@ export default {
       this.initPageParams()
       return
     }
-    this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
+    if (this.propPageNo) {
+      this.pageNo = this.propPageNo
+    } else {
+      this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
+    }
+
     if (this.pageNo) {
       this.getPageConfig().then(() => {
         this.$nextTick(() => {
@@ -267,11 +278,11 @@ export default {
             }
           } else {
             item.component = "page-item";
-            if (item.com_name!=='咨询入口'&&item.com_option?.includes("悬浮可拖动")) {
+            if (item.com_name !== '咨询入口' && item.com_option?.includes("悬浮可拖动")) {
               item.component = "float-component";
             }
             //在线咨询特别处理
-            if(item.com_name==='咨询入口'&&item.com_option?.includes("悬浮可拖动")){
+            if (item.com_name === '咨询入口' && item.com_option?.includes("悬浮可拖动")) {
               item.component = "chat-entrance";
             }
           }

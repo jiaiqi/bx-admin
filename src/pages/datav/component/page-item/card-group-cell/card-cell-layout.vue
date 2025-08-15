@@ -90,6 +90,7 @@ const emits = defineEmits([
   "show-dialog",
   "mouse-enter",
   "mouse-leave",
+
 ]);
 // jumpJson() {
 //     return JSON.stringify(this.cellLayoutJson?.jump_json || null);
@@ -113,7 +114,6 @@ const {
 
   // 事件处理相关
   onClickCell,
-  showDialog,
 } = useCardCell(props, emits);
 
 // 模板中使用的计算属性
@@ -130,6 +130,11 @@ const mouseLeave = (event) => {
   resumeAutoPlay(event);
   emits("mouse-leave");
 };
+
+const showDialog = (event) => {
+  emits("show-dialog", event);
+}
+
 </script>
 
 <style lang="scss" scoped>

@@ -880,6 +880,7 @@ export default {
           return;
         } else if (subCol?.jump_json) {
           // 执行自定义跳转
+          debugger
           if (subCol?.jump_json?.click_type === "弹框") {
             if (subCol?.jump_json?.popup_type === "卡片") {
               const { popup_card_json, popup_placement } = subCol?.jump_json;
@@ -1107,10 +1108,7 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
->
+<style lang="scss" scoped>
 [class^="bx-cell-"] {
   &.cursor-pointer {
     &:hover {
