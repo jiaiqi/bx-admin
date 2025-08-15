@@ -1276,6 +1276,9 @@ export default {
             if (data[key]) {
               delete data[key];
             }
+            if(key&&key.indexOf("_")===0){
+              delete data[key];
+            }
           });
           Object.keys(data).forEach((key) => {
             if (data[key] === "" || data[key] === null) {
