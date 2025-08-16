@@ -236,7 +236,7 @@ export default{
         this.handleStatus=true;
         let ls =res.data.data[0];
         this.statusText=ls.state
-        this.stepStatus=ls.state==='已支付'||ls.state==='已退款'?true:ls.state==='支付失败'||ls.state=='待支付'?false:true
+        this.stepStatus=ls.state==='已支付'||ls.state==='已退款'?true:!(ls.state === '支付失败' || ls.state === '待支付')
         clearInterval(this.payTimer);
         this.payTimer=null;
 

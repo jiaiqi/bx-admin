@@ -48,4 +48,27 @@ export default class Payment {
         }
        return await $http.post(url,req)
     }
+    //获取预付费订单信息
+    async getPayPrepaidInfo(params){
+       let url= `/park/select/srvpark_object_dev_sd_balance_select`
+       let req ={
+           serviceName: "srvpark_object_dev_sd_balance_select",
+           colNames: ["*"],
+           condition: [{colName: "no", ruleType: "like", value:params.no}],
+           page: {"pageNo": 1, "rownumber": 10},
+       }
+       return await $http.post(url,req)
+    }
+    //手动添加订单数据入库返回订单编号信息数据
+    async getAddPayInfo(params){
+        let url=`/park/add/srvpark_prepaid_sd_bill_add`
+        let req=[
+            {
+                serviceName: "srvpark_prepaid_sd_bill_add",
+                condition:[],
+                data:params,
+            }
+        ]
+        return await $http.post(url,req)
+    }
 }
