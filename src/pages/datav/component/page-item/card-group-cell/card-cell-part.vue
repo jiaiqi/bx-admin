@@ -128,6 +128,8 @@
       :style="[buildColStyleJson]"
       v-else-if="cellItem.parts_type == '二维码'"
       :ref="partsType"
+      @click.native.stop="onClickSubBlock()"
+
     ></qr-code>
     <div
       ref="bxCellContainer"
@@ -199,6 +201,8 @@
             @on-click-part="onClickSubBlock"
             @on-click-cell="onClickCell"
             @show-dialog="showDialog"
+            @refresh-component="$emit('refresh-component')"
+
           ></card-cell-part>
         </template>
       </template>
