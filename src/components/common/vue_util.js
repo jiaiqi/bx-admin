@@ -37,7 +37,7 @@ function init_util() {
     report: "/vpages/#/reportList",
   };
 
-  Vue.prototype.getImagePath = (no, notThumb) => {
+  Vue.prototype.getImagePath = (no, size) => {
     if (no && typeof no === "string") {
       if (no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1) {
         return no;
@@ -53,7 +53,10 @@ function init_util() {
       // if (notThumb === false) {
       //   url += `&thumbnailType=fwsu_100`
       // }
-      if (location.href?.includes('lowcode-grid/editor/')) {
+      if (size && typeof size === 'number') {
+        url += `&thumbnailType=fwsu_${size}`
+      }
+      if (location.href?.includes('/editor/')) {
         // 可视化编辑页面，图片后缀增加时间戳，避免缓存
         url += `&t=${new Date().getTime()}`
       }

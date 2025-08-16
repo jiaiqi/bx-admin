@@ -299,11 +299,11 @@
                 placement="top"
                 effect="dark"
                 :content="scope.row[item.column]"
-                :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText'].includes(item.col_type)"
+                :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type)"
               >
                 <div
                   slot="content"
-                  v-if="['String', 'Note', 'RichText', 'MultilineText'].includes(item.col_type) && scope.row[item.column]"
+                  v-if="['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type) && scope.row[item.column]"
                 >
                   <div
                     style="max-width: 600px;"
@@ -312,7 +312,7 @@
                   </div>
                 </div>
                 <file-list
-                  v-if="['FileList', 'Image'].includes(item.col_type)"
+                  v-if="['FileList'].includes(item.col_type)"
                   :data="scope.row"
                   :field="item"
                 ></file-list>
@@ -457,15 +457,14 @@
                   </div>
                 </div>
                 <div
-                  v-else-if="item.col_type === 'Image'"
+                  v-else-if="item.col_type === 'Image'&&scope.row[item.column]"
                   class="list-image"
                 >
-                  <img
-                    v-if="scope.row[item.column]"
-                    :src="serviceApi(scope.row[item.column]).downloadFileNo +
-                      scope.row[item.column]
-                      "
-                  />
+                  <el-image
+                    :src="getImagePath(scope.row[item.column],30)"
+                    :preview-src-list="[getImagePath(scope.row[item.column])]"
+                  >
+                  </el-image>
                 </div>
 
                 <!-- <div v-else-if="item.col_type === 'FileList'">
@@ -1861,6 +1860,14 @@ export default {
   .el-table td .cell {
     display: block;
     line-height: 23px;
+
+    .el-tooltip {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: normal;
+      max-height: 80px;
+      display: inline-block;
+    }
   }
 
   .el-table__expand-icon>.el-icon {
@@ -1913,6 +1920,8 @@ export default {
   }
 
   .list-image {
+    display: flex !important;
+
     img {
       max-height: 2rem;
       max-width: 2rem;
