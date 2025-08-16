@@ -6,6 +6,7 @@
     :page-params-model="pageParamsModel"
     @on-click-cell="onClickCell"
     :pageItem="pageItem"
+    @refresh-component="$emit('refresh-component')"
   ></card-cell-part>
 </template>
 

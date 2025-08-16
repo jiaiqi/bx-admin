@@ -24,6 +24,7 @@
       @show-dialog="showDialog"
       @on-click-row="changeActiveAccordionSeq(n)"
       @mouse-enter="changeActiveAccordionSeq(n)"
+      @refresh-component="$emit('refresh-component')"
       v-for="(item, n) in cellLayoutJson?.parts_json"
       :key="item.id || `part-${n}`"
     ></card-cell-part>

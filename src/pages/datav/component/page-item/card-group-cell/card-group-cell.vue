@@ -43,6 +43,7 @@
             :inList="inList"
             @on-click-cell="onClickCell"
             @show-dialog="showDialog"
+            @refresh-component="$emit('refresh-component')"
             class="marquee-item"
           >
           </card-cell-layout>
@@ -68,6 +69,7 @@
           @mouse-leave="activeCardAutoplay"
           @on-click-cell="onClickCell"
           @show-dialog="showDialog"
+          @refresh-component="$emit('refresh-component')"
         >
         </card-cell-layout>
       </template>

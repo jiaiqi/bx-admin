@@ -14,6 +14,8 @@
     @on-click-block="onClickBlock"
     @on-click-icon="onClickBlock"
     @data-updated="onDataUpdate"
+    @refresh-component="refresh"
+    v-loading="loading"
     v-if="cellsLayoutJson && cellsLayoutJson.length"
   ></cardGroupCell>
   <div v-else-if="pageItem && pageItem.com_label">
@@ -88,7 +90,7 @@ export default {
         case "静态自有配置":
           cells =
             this.pageItem?.card_unit_merge_json ||
-            this.pageItem?.card_group_json?.card_unit_json
+              this.pageItem?.card_group_json?.card_unit_json
               ? [this.pageItem?.card_group_json?.card_unit_json]
               : [];
           break;
@@ -100,7 +102,7 @@ export default {
         default:
           cells =
             this.pageItem?.card_unit_merge_json ||
-            this.pageItem?.card_group_json?.card_unit_json
+              this.pageItem?.card_group_json?.card_unit_json
               ? [this.pageItem?.card_group_json?.card_unit_json]
               : [];
           break;
@@ -146,6 +148,8 @@ export default {
         this.cellData = mock_srv_data_json.map((item) => item);
       } else if (req.serviceName) {
         const { condition, page, order, group } = req;
+        this.loading = true;
+
         const res = await this.select(
           req.serviceName,
           condition,
@@ -155,6 +159,8 @@ export default {
           null,
           req.mapp
         );
+        this.loading = false;
+
         if (res.data.state !== "FAILURE" && res.data.data.length > 0) {
           this.cellData = res.data.data;
         } else {
@@ -163,7 +169,7 @@ export default {
       }
     },
   },
-  created() {},
+  created() { },
 };
 </script>
 

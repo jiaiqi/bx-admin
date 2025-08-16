@@ -990,6 +990,10 @@ export default {
             window.location.href = loginUrl;
             break;
           default:
+            if (optionsType?.includes('刷新组件请求')) {
+              console.log('刷新组件请求：', this.cellItem);
+              this.$emit('refresh-component')
+            }
             console.log("没有点击事件");
             break;
         }
