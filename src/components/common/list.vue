@@ -306,7 +306,7 @@
                   v-if="['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type) && scope.row[item.column]"
                 >
                   <div
-                    style="max-width: 600px;"
+                    style="max-width: 600px;max-height: 400px;overflow: auto;"
                     v-html="scope.row[item.column]"
                   >
                   </div>

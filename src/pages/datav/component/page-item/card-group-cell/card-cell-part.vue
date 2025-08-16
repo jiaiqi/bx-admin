@@ -122,7 +122,7 @@
       :ref="partsType"
     ></div>
     <qr-code
-      :size="buildColStyleJson.width ? parseInt(buildColStyleJson.width) : 100"
+      :size="getQrcodeSize"
       :text="getPartModelData || 'https://www.baidu.com'"
       :color="buildColStyleJson.color || '#000000'"
       :style="[buildColStyleJson]"
@@ -319,6 +319,19 @@ export default {
 
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
+    getQrcodeSize() {
+      let width = this.buildColStyleJson?.width || 100
+      if (typeof width === 'string') {
+        if (width.indexOf('rpx') > -1) {
+          width = parseInt(width) * 0.5
+        }
+      }
+      width = parseInt(width)
+      if (isNaN(width)) {
+        width = 100
+      }
+      return width
+    },
     setComColMap() {
       let map = this.comColMap || {};
       if (Object.keys(map).length === 0) {

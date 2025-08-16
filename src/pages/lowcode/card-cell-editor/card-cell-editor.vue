@@ -1238,7 +1238,7 @@ export default {
      * @returns {Promise<void>}
      */
     async pasteToSelectedPart(newPart) {
-      if (this.selectedPart.parts_type === "row") {
+      if (["row", "block",'行容器','块容器'].includes(this.selectedPart.parts_type)) {
         if (!this.selectedPart.children) {
           this.$set(this.selectedPart, "children", []);
         }
