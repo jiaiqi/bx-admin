@@ -10,7 +10,7 @@
     <div class="flow_station_head">{{flowInfo.title}}</div>
     <div class="flow_station_body">
         <div class="flow_row" v-for="(item,index) in flowList">
-          <div class="flow_row_item_bg" v-if="!item.child">
+          <div :class="item.background==='true' ?'flow_row_item_bg':'flow_row_item_bg_nol'" v-if="!item.child">
               <span v-if="item.icon">
                       <img :src="getImagePath(item.icon)" alt=""/>
                     </span>
@@ -23,7 +23,7 @@
                  <span class="flow_step">{{index}}</span>
                </div>
                <div class="flow_row_item_ch">
-                  <div class="flow_title_sl">
+                  <div :class="item.background==='true'? 'flow_title_sl':'flow_title_sl_nol'">
                     <span v-if="item.icon" class="sl_icon">
                       <img :src="getImagePath(item.icon)" alt=""/>
                     </span>
@@ -36,7 +36,7 @@
                      <img :src="getIconPath('line.png')" alt=""/>
                    </div>
                   <div class="flow_child_row">
-                    <div class="flow_child_item" v-for="(sub,idx) in item.child">
+                    <div :class="sub.background==='true'?'flow_child_item':'flow_child_item_nol'" v-for="(sub,idx) in item.child">
                       {{sub.title}}
                     </div>
                   </div>
@@ -99,8 +99,6 @@ export default{
        this.flowInfo.title = ls.checklist.checklist_name;
        this.flowInfo.bgImg=getImagePath(ls.checklist.background_image);
        this.flowList=ls.node
-      console.log(res);
-
     },
 
 
