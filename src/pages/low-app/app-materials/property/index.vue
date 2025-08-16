@@ -1,7 +1,14 @@
 <template>
   <div class="property-pane">
-    <el-tabs type="border-card" v-model="activeTab">
-      <el-tab-pane label="页面" name="页面" v-if="!currentItem">
+    <el-tabs
+      type="border-card"
+      v-model="activeTab"
+    >
+      <el-tab-pane
+        label="页面"
+        name="页面"
+        v-if="!currentItem"
+      >
         <div class="tab-content">
           <simple-update
             name="list-update"
@@ -49,10 +56,10 @@
               :group-collapse="true"
               @executor-complete="
                 onStyleColUpdate($event, 'page-style-col-update', item)
-              "
+                "
               @field-value-changed="
                 onValueChange($event, 'page-style-col-update', item)
-              "
+                "
               ref="pageStyleColUpdate"
               v-if="item.value"
             >
@@ -68,7 +75,7 @@
               :navAfterSubmit="false"
               @executor-complete="
                 onStyleColUpdate($event, 'page-style-col-add', item)
-              "
+                "
               ref="pageStyleColAdd"
               v-else
             >
@@ -114,7 +121,11 @@
         </simple-add> -->
       </el-tab-pane>
 
-      <el-tab-pane label="组件配置" name="组件配置" v-if="showCompForm">
+      <el-tab-pane
+        label="组件配置"
+        name="组件配置"
+        v-if="showCompForm"
+      >
         <simple-update
           name="list-update"
           ref="compFormUpdate"
@@ -126,15 +137,13 @@
           @action-complete="onComponentUpdate"
           @field-value-changed="
             onValueChange($event, 'component-cfg-update', compServiceCfg)
-          "
+            "
           @form-loaded="onCompFormLoaded"
           v-if="componentCfgLoaded || activeTab === '组件配置'"
         >
         </simple-update>
       </el-tab-pane>
-      <template
-        v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length"
-      >
+      <template v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length">
         <el-tab-pane
           :label="'组件' + item.label"
           :name="item.key"
@@ -152,10 +161,10 @@
               :group-collapse="true"
               @executor-complete="
                 onStyleColUpdate($event, 'page-comp-style-col-update', item)
-              "
+                "
               @field-value-changed="
                 onValueChange($event, 'page-comp-style-col-update', item)
-              "
+                "
               ref="pageCompStyleColUpdate"
               v-if="item.value"
             >
@@ -165,7 +174,7 @@
               :navAfterSubmit="false"
               @executor-complete="
                 onStyleColUpdate($event, 'page-comp-style-col-add', item)
-              "
+                "
               :defaultValues="{
                 page_no: pageConfig.page_no,
                 com_no: currentItem.com_no,
@@ -197,10 +206,10 @@
               :group-collapse="true"
               @executor-complete="
                 onStyleColUpdate($event, 'comp-style-col-update', item)
-              "
+                "
               @field-value-changed="
                 onValueChange($event, 'comp-style-col-update', item)
-              "
+                "
               ref="compStyleColUpdate"
               v-if="item.value"
             >
@@ -210,7 +219,7 @@
               :navAfterSubmit="false"
               @executor-complete="
                 onStyleColUpdate($event, 'comp-style-col-add', item)
-              "
+                "
               :defaultValues="{
                 page_no: pageConfig.page_no,
                 com_no: currentItem.com_no,
@@ -306,7 +315,7 @@ export default {
   computed: {
     showPageCompForm() {
       console.log('结果是', !!this.componentId || (!this.componentId && this.pageId && this.currentItem?._type === "component"))
-      return !!this.componentId || (!this.componentId && this.pageId && (this.currentItem?._type === "component"||this.currentItem?.type === "component"));
+      return !!this.componentId || (!this.componentId && this.pageId && (this.currentItem?._type === "component" || this.currentItem?.type === "component"));
     },
     showCompForm() {
       return this.compServiceCfg?.service && this.compServiceCfg?.pk;
@@ -825,9 +834,8 @@ export default {
           addObj.data.push({
             layout_party: "组件",
             parent_no: layoutInfo.layout_no,
-            layout_name: `${item?.data?.com_type_name}_${
-              i + 1
-            }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
+            layout_name: `${item?.data?.com_type_name}_${i + 1
+              }_${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
             seq: item.timestamp || i + 1, //改用时间戳做关联 相对更可靠
             pos_x: item.x,
             pos_y: item.y,
@@ -1074,7 +1082,7 @@ export default {
       const result = list.map((item, index) => {
         let data = {};
         keys.forEach((key) => {
-          if (item[key]&&!selJson.includes(key)) {
+          if (item[key] && !selJson.includes(key)) {
             data[key] = item[key];
           }
         });
@@ -1101,7 +1109,7 @@ export default {
     //  }
     // },
     async handleSave() {
-      console.log('保存几个组件',this.components)
+      console.log('保存几个组件', this.components)
       if (Array.isArray(this.components) && this.components.length) {
         const oldComponents = this.components
         let addList = oldComponents.filter((item) => { return item?._editType === "add" });
@@ -1111,12 +1119,12 @@ export default {
             // todo 更新组件
             //  this.updateComponentNo()
             const resultComps = await this.insertComponents(
-                this.pageConfig,
-                normalChild
+              this.pageConfig,
+              normalChild
             );
             if (
-                Array.isArray(resultComps) &&
-                resultComps.length === normalChild.length
+              Array.isArray(resultComps) &&
+              resultComps.length === normalChild.length
             ) {
               addList = this.updateNormalComponents(addList, resultComps);
             }
@@ -1170,7 +1178,7 @@ export default {
       }
     },
     // 更新组件的宽高以及定位
-    async updateComponent(event) {},
+    async updateComponent(event) { },
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
@@ -1245,12 +1253,15 @@ export default {
             }
           });
           Object.keys(data).forEach((key) => {
+            if (key && key.indexOf("_") === 0) {
+              delete data[key];
+            }
             if (data[key] === "" || data[key] === null) {
               delete data[key];
             }
             if (
-                key?.lastIndexOf("_json_data") > -1 &&
-                typeof data[key] === "object"
+              key?.lastIndexOf("_json_data") > -1 &&
+              typeof data[key] === "object"
             ) {
               delete data[key];
             }
@@ -1332,12 +1343,12 @@ export default {
               break;
             case "detail":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
-              compObj.data = [{widget_type:"文本"}];
+              compObj.data = [{ widget_type: "文本" }];
               break;
 
             case "咨询入口":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
-              compObj.data = [{widget_type:"文本"}];
+              compObj.data = [{ widget_type: "文本" }];
               break;
           }
           addCompArr.push(compObj);
@@ -1348,8 +1359,8 @@ export default {
         }
         let componentsLength = 0;
         if (
-            pageData.component_json &&
-            typeof pageData.component_json === "string"
+          pageData.component_json &&
+          typeof pageData.component_json === "string"
         ) {
           componentsLength = JSON.parse(pageData.component_json)?.length;
         }
@@ -1449,9 +1460,10 @@ export default {
     overflow-y: auto;
   }
 }
+
 .el-tabs {
   width: 100%;
-  height:100%;
+  height: 100%;
   // padding-bottom: 50px;
   overflow: hidden;
   border: none;
@@ -1464,8 +1476,7 @@ export default {
     height: 100%;
   }
 
-  ::v-deep .el-tabs--border-card {
-  }
+  ::v-deep .el-tabs--border-card {}
 
   ::v-deep .el-tabs__content {
     height: 95%;

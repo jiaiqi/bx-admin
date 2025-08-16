@@ -1206,7 +1206,7 @@ export default {
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
-      debugger
+        console.log(data);
       if (pageData?.id) {
         //创建子组件
         if (layout?.length === 0) {
@@ -1278,7 +1278,7 @@ export default {
             }
           });
           Object.keys(data).forEach((key) => {
-            if(key&&key.indexOf("_")===0){
+            if (key && key.indexOf("_") === 0) {
               delete data[key];
             }
             if (data[key] === "" || data[key] === null) {
@@ -1373,7 +1373,7 @@ export default {
               break;
             case "咨询入口":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
-              compObj.data = [{widget_type:"文本"}];
+              compObj.data = [{ widget_type: "文本" }];
               break;
 
           }
@@ -1480,10 +1480,7 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
->
+<style lang="scss" scoped>
 .property-pane {
   width: 300px;
 
