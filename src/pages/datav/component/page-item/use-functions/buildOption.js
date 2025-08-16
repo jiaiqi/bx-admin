@@ -4,6 +4,8 @@ import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
 
 let __colors = [
   "#007AFF",
+  "#FF6263",
+  "#FDB05D",
   "#66E1DF",
   "#34C758",
   "#FFCB01",
@@ -194,7 +196,7 @@ const buildSankeyOption = (
         curveness: config.curveness      // 连线弯曲度
       },
       itemStyle: {
-        borderWidth: 1,                  // 节点边框宽度
+        borderWidth: 0,                  // 节点边框宽度
         borderColor: '#aaa'              // 节点边框颜色
       },
       label: {
