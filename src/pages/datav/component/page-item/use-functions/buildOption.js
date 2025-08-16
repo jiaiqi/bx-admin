@@ -72,11 +72,16 @@ export const initChart = (domRef) => {
 const buildSankeyOption = (
   data,
   keyMap = {
-    idKey: "area_no",
-    pidKey: "parent_no",
-    nameKey: "name",
-    subNameKey: "rec_time",
-    valueKey: "day_use_quantity",
+    idKey: "area_no", // 节点唯一标识字段名
+
+    pidKey: "parent_no", // 父节点标识字段名
+
+    nameKey: "name", // 节点显示名称字段名
+
+    subNameKey: "rec_time", 
+
+    valueKey: "day_use_quantity", // 节点数值字段名
+
     levelKey: "level"
   },
   options = {}
@@ -126,7 +131,6 @@ const buildSankeyOption = (
       nodes.push(node);           // 添加到节点数组中
     }
   });
-
   // 第二遍遍历：创建节点间的连接关系
   // 根据父子关系建立桑基图的流向连接
   data.forEach(item => {
@@ -183,7 +187,7 @@ const buildSankeyOption = (
       },
       draggable: true,                   // 允许拖拽节点调整位置
       focusNodeAdjacency: 'allEdges',    // 鼠标划上时高亮的节点和连线，allEdges表示高亮所有相关连线和节点
-      // layoutIterations: 0,               // 布局迭代次数，0表示按数据原始顺序排列，不进行自动优化
+      layoutIterations: 0,               // 布局迭代次数，0表示按数据原始顺序排列，不进行自动优化
       levels: levels,                    // 层级样式配置数组
       lineStyle: {
         color: 'gradient',               // 连线颜色使用渐变效果
