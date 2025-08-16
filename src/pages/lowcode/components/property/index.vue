@@ -1206,7 +1206,6 @@ export default {
 
     // 更新页面属性时同时创建新增的组件，以及对应的组件配置
     async insertComponents(pageData, layout) {
-        console.log(data);
       if (pageData?.id) {
         //创建子组件
         if (layout?.length === 0) {

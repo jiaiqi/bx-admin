@@ -112,6 +112,9 @@ const chartType = computed(() => {
     case "水球图":
       chartType = "liquidFill";
       break;
+    case "桑基图":
+      chartType = "sankey";
+      break;
     default:
       chartType = "line";
       break;

@@ -295,7 +295,6 @@ export default {
       }
       const res = await this.$http.post(url, req);
       if (res?.data?.state === "SUCCESS") {
-        debugger
         const list = res.data.data.map((ele) => {
           let obj = {
             ...ele,
