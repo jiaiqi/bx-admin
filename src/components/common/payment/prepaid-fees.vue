@@ -154,7 +154,7 @@
           <i v-else class="failed-icon">✗</i>
         </div>
         <h3 class="result-title" :class="{ 'success': stepStatus, 'failed': !stepStatus }">
-          {{ stepStatus ? '支付成功' : '支付失败' }}
+          {{ stepStatus ? '支付成功' : '失败' }}
         </h3>
         <p class="result-message">{{ statusText }}</p>
         <button class="back-btn" @click="backToPayment">
@@ -357,7 +357,7 @@ export default{
           //5s后启动查询
           setTimeout(()=>{
             this.keepStatusInfo()
-          },10*5000)
+          },1000*10)
 
         }
       }).catch(err=>{})
