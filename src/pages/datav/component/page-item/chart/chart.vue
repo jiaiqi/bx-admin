@@ -72,9 +72,9 @@ const drawOption = () => {
   if (!chartObj) return;
   chartObj.showLoading({
     text: "加载中...",
-    color: "#eee",
-    textColor: "#fff",
-    maskColor: "rgba(0, 0, 0, 0.2)",
+    color: "#333",
+    textColor: "#333",
+    maskColor: "rgba(255, 255, 255, 0.3)",
     spinnerRadius: 20,
   });
   const options = {
