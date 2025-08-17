@@ -1,28 +1,52 @@
 <template>
-  <Chart
-    ref="chartRef"
-    v-loading="loading"
-    element-loading-background="rgba(0, 0, 0, 0.1)"
-    class="uni-ec-canvas"
-    :page-item="pageItem"
-    :options="option"
-    :canvasId="canvasId"
-    :chartType="chartType"
-    :cellData="cellData"
-    v-if="option && chartType !== 'liquidFill'"
-    @click-chart="clickChart"
-  ></Chart>
-  <LiquidFillChart
-    v-else-if="option && chartType == 'liquidFill'"
-    :value="liquidValue"
-    :color="setLiquidColor"
-  ></LiquidFillChart>
+  <div class="chart-wrap">
+
+    <!-- 公共日期筛选组件 -->
+    <DateFilter
+      :filter-config="chartConfig.date_filter_opt"
+      :date-column="dateColumn"
+      @filter-change="onDateFilterChange"
+      @filter-reset="onDateFilterReset"
+      v-if="showDateFilter"
+    />
+
+    <div class="chart-content">
+      <SankeyChart
+        ref="sankeyChartRef"
+        :page-item="pageItem"
+        :cell-data="cellData"
+        :loading="loading"
+        @click-chart="clickChart"
+        v-if="chartType === 'sankey'"
+      ></SankeyChart>
+      <Chart
+        ref="chartRef"
+        v-loading="loading"
+        element-loading-background="rgba(0, 0, 0, 0.1)"
+        class="uni-ec-canvas"
+        :page-item="pageItem"
+        :options="option"
+        :canvasId="canvasId"
+        :chartType="chartType"
+        :cellData="cellData"
+        @click-chart="clickChart"
+        v-else-if="option && chartType !== 'liquidFill'"
+      ></Chart>
+      <LiquidFillChart
+        v-else-if="option && chartType == 'liquidFill'"
+        :value="liquidValue"
+        :color="setLiquidColor"
+      ></LiquidFillChart>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { computed, watch, onMounted, ref } from "vue";
 import LiquidFillChart from "@/pages/datav/component/page-item/LiquidFillChart.vue";
 import Chart from "./chart.vue";
+import SankeyChart from "./SankeyChart.vue";
+import DateFilter from "./DateFilter.vue";
 import { $select } from "../../../common/http.js";
 import {
   useBuildOption,
@@ -31,6 +55,7 @@ import {
 import { useUtils } from "@/common/vueApi.js";
 import cloneDeep from "lodash/cloneDeep";
 import { formatStyleData } from "@/pages/datav/common";
+import dayjs from "dayjs";
 const { renderStr } = useUtils();
 
 const props = defineProps({
@@ -61,6 +86,9 @@ const emit = defineEmits(["clickChart"]);
 const option = ref(null);
 const loading = ref(false);
 
+// 日期筛选状态
+const currentDateFilter = ref(null);
+
 const clickChart = () => {
   emit("clickChart");
 };
@@ -77,6 +105,33 @@ const setLiquidColor = computed(() => {
 });
 const chartConfig = computed(() => {
   return pageItem?.chart_json;
+});
+
+const showDateFilter = computed(() => {
+  return chartConfig.value?.date_filter_opt && chartConfig.value?.date_filter_opt.date_select_opt && chartConfig.value?.date_filter_opt.col_date_select;
+})
+
+
+
+// 日期筛选字段配置
+const dateColumn = computed(() => {
+  // 从图表配置中获取日期筛选字段
+  const config = chartConfig.value;
+  if (config) {
+    // 优先从桑基图配置中获取
+    if (config.config_sankey?.col_date_select) {
+      return config.config_sankey.col_date_select;
+    }
+    // 从其他图表配置中获取日期字段
+    if (config.col_date_select) {
+      return config.col_date_select;
+    }
+    // 从通用配置中获取
+    if (config.date_column) {
+      return config.date_column;
+    }
+  }
+  return '';
 });
 const chartType = computed(() => {
   let chartType = "";
@@ -138,6 +193,8 @@ const colsMapDetailJson = computed(() => {
 });
 
 const calcSrvReq = (req) => {
+  req = cloneDeep(req);
+
   let params = {};
   if (props.pageParamsModel && typeof props.pageParamsModel === "object") {
     params = {
@@ -152,6 +209,43 @@ const calcSrvReq = (req) => {
     userInfo: sessionStorage.getItem("login_user_info"),
   };
 
+  // 添加日期筛选条件
+  if (currentDateFilter.value && dateColumn.value) {
+    let cond = {
+      colName: dateColumn.value,
+      ruleType: 'like]',
+      value: currentDateFilter.value.selectedDate
+    }
+    if (req.condition) {
+      req.condition.push(cond)
+    } else {
+      req.condition = [cond]
+    }
+    if (allColumns.value.length) {
+      let dateFilterGroup = allColumns.value.filter(key => key !== dateColumn.value).map(colName => {
+        return {
+          colName, type: "by"
+        }
+      })
+
+      let groupMap = {
+        '按日': 'date',
+        '按月': 'month',
+        '按年': 'year'
+      }
+      dateFilterGroup.push({
+        colName: dateColumn.value,
+        type: `by_${groupMap[currentDateFilter.value.type]}`
+      })
+      if (req.group) {
+        req.group.push(...dateFilterGroup)
+      } else {
+        req.group = [...dateFilterGroup]
+      }
+    }
+  }
+
+  // 处理原有条件
   if (
     req.hasOwnProperty("condition") &&
     Array.isArray(req.condition) &&
@@ -187,21 +281,34 @@ const calcSrvReq = (req) => {
       }
       conds.push(cloneDeep(condModel));
     }
-    req.condition = conds.map((item) => item);
   }
+  debugger
+  // 配置了日期筛选字段 默认查当天的数据
+  if(dateColumn.value && !conds?.find(item=>item.colName === dateColumn.value)){ 
+    conds = conds || []
+    conds.push({
+      colName: dateColumn.value,
+      ruleType: 'eq',
+      value: dayjs().format('YYYY-MM-DD')
+    })
+  }
+  // 设置最终的条件数组
+  req.condition = conds.map((item) => item);
   return req;
 };
-
+const allColumns = ref([])
 const onSrvReq = async (req = null) => {
   req = req || pageItem?.srv_req_json;
   if (req) {
     req = calcSrvReq(req);
+    
     loading.value = true;
     let res = await $select(req, req.mapp);
     loading.value = false;
     console.log(res);
     if (res.ok && res.data.length > 0) {
       cellData.value = res.data;
+      allColumns.value = Object.keys(res.data[0])
     }
     console.log(pageItem);
     //todo 水球数据只需要传入具体的数字
@@ -284,7 +391,6 @@ onMounted(() => {
       : null;
     const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson;
     onSrvReq(req);
-    // onSrvReq();
     if (pageItem?.srv_req_json?.cycle_req_timer) {
       // 定时刷新
       autoRefreshData();
@@ -405,8 +511,42 @@ function paramsLinkage() {
 }
 
 const chartRef = ref(null);
+const sankeyChartRef = ref(null);
+// 日期筛选事件处理
+const onDateFilterChange = (filterParams) => {
+  console.log('日期筛选变化:', filterParams);
+  currentDateFilter.value = filterParams;
+
+  // 重新请求数据
+  let itemReqJson = pageItem?.srv_req_json
+    ? JSON.parse(JSON.stringify(pageItem.srv_req_json))
+    : null;
+  const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson;
+  if (req?.serviceName) {
+    onSrvReq(req);
+  }
+};
+
+const onDateFilterReset = () => {
+  console.log('重置日期筛选');
+  currentDateFilter.value = null;
+
+  // 重新请求数据
+  let itemReqJson = pageItem?.srv_req_json
+    ? JSON.parse(JSON.stringify(pageItem.srv_req_json))
+    : null;
+  const req = itemReqJson ? buildRequestParams(itemReqJson) : itemReqJson;
+  if (req?.serviceName) {
+    onSrvReq(req);
+  }
+};
+
 const onResize = () => {
-  // chartRef?.value?.onResize();
+  if (chartType.value === 'sankey') {
+    sankeyChartRef?.value?.onResize();
+  } else {
+    chartRef?.value?.onResize();
+  }
 };
 defineExpose({
   onResize,
@@ -416,5 +556,16 @@ defineExpose({
 <style lang="scss" scoped>
 ::v-deep .el-loading-mask {
   background-color: rgba($color: #000000, $alpha: 0.1);
+}
+
+.chart-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  .chart-content {
+    flex: 1;
+  }
+
 }
 </style>

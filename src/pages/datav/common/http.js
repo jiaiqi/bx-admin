@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Message } from "element-ui"; // 引入elementUI的Message组件
 import Vue from "vue";
+
 let bx_auth_ticket = "";
 // let baseURL = window.backendIpAddr || `http://192.168.0.155:8888`;
 // let baseURL = window.backendIpAddr || `https://api.100xsys.cn`; // sass
@@ -20,7 +21,7 @@ if (pathConfig) {
     if (pathConfig?.gateway) {
       baseURL = pathConfig?.gateway;
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 window.backendIpAddr = baseURL
 
@@ -32,6 +33,45 @@ const getRootWindow = (_window) => {
     return _window;
   }
 };
+
+export const openLogin = () => {
+  if (process.env.NODE_ENV === "development") {
+    return Vue.prototype.$loginRef?.open((res) => {
+      console.log(res);
+    });
+  }
+  if (getRootWindow()?.layer) {
+    var login_page = "/main/login.html";
+    try {
+      if (top.getLoginAddress) {
+        console.info("1");
+        login_page = "/" + top.getLoginAddress();
+      }
+    } catch (exception) { }
+    getRootWindow()?.layer.open({
+      title: false,
+      type: 2,
+      content: window.location.origin + login_page,
+      closeBtn: 0,
+      area: ["300px", "350px"],
+      shade: 0.9,
+    });
+  } else {
+    // 当vue页面在iframe中时，跳转到登录页面
+    if (top !== window) {
+      var login_page = "/main/index.html";
+      try {
+        if (top.getMainAddress) {
+          console.info("1");
+          login_page = "/" + top.getMainAddress();
+        }
+      } catch (exception) { }
+      window.location.href = window.location.origin + login_page;
+    } else {
+
+    }
+  }
+}
 
 export const backendIpAddr = baseURL
 export const $axios = axios.create({
@@ -76,41 +116,9 @@ $axios.interceptors.response.use(
         //   type: "error",
         // });
         if (response.data.resultCode == "0011") {
-          Vue.prototype.$store&&Vue.prototype.$store.commit("clearSrvCols");
-
-          // sessionStorage.clear()
-          // localStorage.clear()
-          if (getRootWindow()?.layer) {
-            var login_page = "/main/login.html";
-            try {
-              if (top.getLoginAddress) {
-                console.info("1");
-                login_page = "/" + top.getLoginAddress();
-              }
-            } catch (exception) {}
-            getRootWindow()?.layer.open({
-              title: false,
-              type: 2,
-              content: window.location.origin + login_page,
-              closeBtn: 0,
-              area: ["300px", "350px"],
-              shade: 0.9,
-            });
-          } else {
-            // 当vue页面在iframe中时，跳转到登录页面
-            if (top !== window) {
-              var login_page = "/main/index.html";
-              try {
-                if (top.getMainAddress) {
-                  console.info("1");
-                  login_page = "/" + top.getMainAddress();
-                }
-              } catch (exception) {}
-              window.location.href = window.location.origin + login_page;
-            }else {
-              
-            }
-          }
+          debugger
+          Vue.prototype.$store && Vue.prototype.$store.commit("clearSrvCols");
+          openLogin()
         } else if (response.data.resultCode == "0000") {
           if (sessionStorage.getItem("need_login_flag") != "need_login") {
             // alert(response.data.resultMessage);
@@ -176,10 +184,9 @@ export const getImagePath = (no, notThumb) => {
     if (no.indexOf("&bx_auth_ticket") !== -1) {
       no = no.split("&bx_auth_ticket")[0];
     }
-    let url = `${serviceApi.imageFileNo}${no}&bx_auth_ticket=${
-      bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
-    }`;
-    if(location.href?.includes('lowcode-grid/editor/')){
+    let url = `${serviceApi.imageFileNo}${no}&bx_auth_ticket=${bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+      }`;
+    if (location.href?.includes('lowcode-grid/editor/')) {
       // 可视化编辑页面，图片后缀增加时间戳，避免缓存
       url += `&t=${new Date().getTime()}`
     }
