@@ -1,43 +1,47 @@
 <template>
-  <teleport
-    to="body"
-    v-if="visible"
-  >
-    <!-- 遮罩层 -->
-    <div
-      class="custom-dialog-overlay"
-      @click="handleOverlayClick"
+  <teleport to="body">
+    <transition
+      name="dialog"
+      @enter="onEnter"
+      @leave="onLeave"
     >
-      <!-- 弹窗内容 -->
+      <!-- 遮罩层 -->
       <div
-        class="custom-dialog-content"
-        @click.stop
-        ref="dialogContent"
+        v-if="visible"
+        class="custom-dialog-overlay"
+        @click="handleOverlayClick"
       >
-        <!-- 关闭按钮 -->
-        <button
-          class="custom-dialog-close"
-          @click="handleClose"
-          type="button"
+        <!-- 弹窗内容 -->
+        <div
+          class="custom-dialog-content"
+          @click.stop
+          ref="dialogContent"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="currentColor"
+          <!-- 关闭按钮 -->
+          <button
+            class="custom-dialog-close"
+            @click="handleClose"
+            type="button"
           >
-            <path
-              d="M8 6.586L13.657 1 15 2.343 9.414 8 15 13.657 13.657 15 8 9.414 2.343 15 1 13.657 6.586 8 1 2.343 2.343 1 8 6.586z"
-            />
-          </svg>
-        </button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
+              <path
+                d="M8 6.586L13.657 1 15 2.343 9.414 8 15 13.657 13.657 15 8 9.414 2.343 15 1 13.657 6.586 8 1 2.343 2.343 1 8 6.586z"
+              />
+            </svg>
+          </button>
 
-        <!-- 插槽内容 -->
-        <!-- <div class="custom-dialog-body"> -->
-        <slot></slot>
-        <!-- </div> -->
+          <!-- 插槽内容 -->
+          <div>
+            <slot></slot>
+          </div>
+        </div>
       </div>
-    </div>
+    </transition>
   </teleport>
 </template>
 
@@ -56,7 +60,7 @@ export default {
     },
     closeOnClickModal: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   methods: {
@@ -73,22 +77,34 @@ export default {
       if (event.key === 'Escape' && this.visible) {
         this.handleClose();
       }
+    },
+    onEnter(el) {
+      // 进入动画开始时的回调
+      this.$emit('opened');
+    },
+    onLeave(el) {
+      // 离开动画结束时的回调
+      this.$emit('closed');
     }
   },
-  mounted() {
-    document.addEventListener('keydown', this.handleEscKey);
-  },
-  beforeDestroy() {
-    document.removeEventListener('keydown', this.handleEscKey);
-  },
+  // mounted() {
+  //   document.addEventListener('keydown', this.handleEscKey);
+  // },
+  // beforeDestroy() {
+  //   document.removeEventListener('keydown', this.handleEscKey);
+  // },
   watch: {
     visible(newVal) {
       if (newVal) {
         // 弹窗打开时禁止body滚动
         document.body.style.overflow = 'hidden';
+        // 弹窗打开时禁止body滚动
+        document.body.style.pointerEvents = 'none';
       } else {
         // 弹窗关闭时恢复body滚动
         document.body.style.overflow = '';
+        // 弹窗关闭时恢复body滚动
+        document.body.style.pointerEvents = '';
       }
     }
   }
@@ -102,13 +118,13 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(5px);
+  overflow: hidden;
 }
 
 .custom-dialog-content {
@@ -120,7 +136,6 @@ export default {
   max-width: 80vw;
   max-height: 80vh;
   /* overflow: auto; */
-  animation: slideIn 0.3s ease-out;
   min-width: 300px;
   min-height: 200px;
   transform: translate(-50%, 0%);
@@ -133,52 +148,81 @@ export default {
   width: 32px;
   height: 32px;
   border: none;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: #fefefe;
   transition: all 0.2s ease;
-  z-index: 1;
+  z-index: 99;
 }
 
 .custom-dialog-close:hover {
-  background: rgba(0, 0, 0, 0.2);
-  color: #333;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
   transform: scale(1.1);
   z-index: 9;
 }
 
-.custom-dialog-body {
-  padding: 20px;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
+
+/* Vue Transition 动画效果 */
+.dialog-enter-active {
+  transition: all 0.3s ease-out;
 }
 
-/* 动画效果 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+.dialog-leave-active {
+  transition: all 0.25s ease-in;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-20px);
-  }
+.dialog-enter-from {
+  opacity: 0;
+  transform: scale(0);
+}
 
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.dialog-enter-to {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dialog-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dialog-leave-to {
+  opacity: 0;
+  transform: scale(0);
+}
+
+/* 弹窗内容的动画 */
+.dialog-enter-active .custom-dialog-content {
+  transition: all 0.3s ease-out;
+}
+
+.dialog-leave-active .custom-dialog-content {
+  transition: all 0.25s ease-in;
+}
+
+.dialog-enter-from .custom-dialog-content {
+  opacity: 0;
+  transform: translate(-50%, -20px) scale(0.9);
+}
+
+.dialog-enter-to .custom-dialog-content {
+  opacity: 1;
+  transform: translate(-50%, 0%) scale(1);
+}
+
+.dialog-leave-from .custom-dialog-content {
+  opacity: 1;
+  transform: translate(-50%, 0%) scale(1);
+}
+
+.dialog-leave-to .custom-dialog-content {
+  opacity: 0;
+  transform: translate(-50%, -20px) scale(0.9);
 }
 
 /* 深色主题适配 */
@@ -207,8 +251,5 @@ export default {
     margin: 20px;
   }
 
-  .custom-dialog-body {
-    padding: 16px;
-  }
 }
 </style>

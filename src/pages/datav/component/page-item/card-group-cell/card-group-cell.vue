@@ -78,10 +78,9 @@
     <custom-dialog
       :visible.sync="dialogVisible"
       @close="handleDialogClose"
-      v-if="dialogUrl && dialogVisible"
     >
       <div
-        v-if="iframeLoading && !dialogPosition.pageNo"
+        v-if="iframeLoading && dialogPosition && !dialogPosition.pageNo"
         class="iframe-loading"
       >
         <el-loading-spinner></el-loading-spinner>
@@ -93,11 +92,12 @@
       </div>
       <lowcode-page
         :prop-page-no="dialogPosition.pageNo"
-        v-if="dialogPosition.pageNo"
+        v-if="dialogPosition && dialogPosition.pageNo"
+        @executor-complete="executorComplete"
       >
       </lowcode-page>
       <iframe
-        v-else
+        v-else-if="dialogUrl && dialogVisible"
         :src="dialogUrl"
         frameborder="0"
         style="width: 100%; height: 80vh"
@@ -529,6 +529,11 @@ export default {
   },
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
+    executorComplete(data) {
+      console.log('executorComplete', data);
+      this.handleDialogClose()
+    },
+
     getStr(json, type) {
       if (type === "item") {
         return JSON.stringify(json || null);

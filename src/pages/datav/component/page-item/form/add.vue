@@ -15,8 +15,10 @@ const srvType = computed(() => {
   return props.pageItem?.srv_req_json?.srv_type;
 });
 const pageLoading = ref(true); //表单加载中
-const afterSubmit = (data) => {
-  console.log("afterSubmit:", data);
+const emit = defineEmits(["executor-complete"]);
+const executorComplete = (data) => {
+  console.log("executor-complete:", data);
+  emit("executor-complete", data);
 };
 </script>
 
@@ -24,8 +26,8 @@ const afterSubmit = (data) => {
   <simple-add
     :service="service"
     :$srv-app="srvApp"
-    :navAfterSubmit="true"
-    @executor-complete="afterSubmit"
+    :navAfterSubmit="false"
+    @executor-complete="executorComplete"
     @form-loaded="pageLoading = false"
     v-if="service"
   >

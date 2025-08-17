@@ -13,6 +13,7 @@
       :page-no="pageNo"
       :page-config="pageConfig"
       :isPreview="true"
+      @executor-complete="$emit('executor-complete', $event)"
     ></lc-view>
   </div>
 </template>

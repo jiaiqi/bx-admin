@@ -1,11 +1,9 @@
 <template>
-  <div
-    v-if="
-      hiddenComponentVisible === false &&
-      visible == false &&
-      type === 'component'
-    "
-  >
+  <div v-if="
+    hiddenComponentVisible === false &&
+    visible == false &&
+    type === 'component'
+  ">
     组件已隐藏
   </div>
   <div
@@ -24,13 +22,19 @@
     ></div>
     <div class="login-box">
       <div>请在登录后进行查看</div>
-      <button class="login-btn" @click="toLogin">登录</button>
+      <button
+        class="login-btn"
+        @click="toLogin"
+      >登录</button>
     </div>
   </div>
-    <!-- 在线咨询对话框-->
-    <div v-else-if="com_name === '咨询入口'&& isOpenChat">
-      <ChatBox :visible.sync="isOpenChat" :chatItem="chatItem" />
-    </div>
+  <!-- 在线咨询对话框-->
+  <div v-else-if="com_name === '咨询入口' && isOpenChat">
+    <ChatBox
+      :visible.sync="isOpenChat"
+      :chatItem="chatItem"
+    />
+  </div>
   <component
     :is="component"
     v-else-if="
@@ -54,13 +58,13 @@
     @setOpenChat="setOpenChat"
     @swap-components="$emit('swap-components', $event)"
     @move-component="$emit('move-component', $event)"
+    @executor-complete="$emit('executor-complete', $event)"
     :class="{ 'preview-mode': isPreview, 'view-mode': isView }"
-    :style="
-      (props.com_option && props.com_option.includes('悬浮可拖动')) ||
-      type === '悬浮组件'
+    :style="(props.com_option && props.com_option.includes('悬浮可拖动')) ||
+        type === '悬浮组件'
         ? ''
         : 'position: relative; z-index: 1'
-    "
+      "
   >
     <template v-if="childComponents && childComponents.length">
       <lc-view
@@ -85,12 +89,17 @@
         @setOpenChat="setOpenChat"
         @swap-components="$emit('swap-components', $event)"
         @move-component="$emit('move-component', $event)"
+        @executor-complete="$emit('executor-complete', $event)"
+
       ></lc-view>
     </template>
     <slot v-else>
       <template v-if="!isView && !isPreview">
         <template v-if="type === 'content'">
-          <span class="" style="color: #999; pointer-events: none">
+          <span
+            class=""
+            style="color: #999; pointer-events: none"
+          >
             {{ name || "可放置组件/布局容器" }}
           </span>
         </template>
@@ -239,8 +248,8 @@ export default {
   data() {
     return {
       childComponents: [],
-      chatItem:null,
-      isOpenChat:false,
+      chatItem: null,
+      isOpenChat: false,
     };
   },
   watch: {
@@ -258,11 +267,11 @@ export default {
   },
   methods: {
     //打开指定的在线咨询框
-    setOpenChat(item){
-      this.isOpenChat=true;
-      this.chatItem=item;
+    setOpenChat(item) {
+      this.isOpenChat = true;
+      this.chatItem = item;
       console.log(this.com_name)
-      console.log('这是打开的聊天框',item)
+      console.log('这是打开的聊天框', item)
     },
     toLogin() {
       const currentUrl = window.location.pathname + window.location.hash;
@@ -304,6 +313,7 @@ export default {
   height: 100%;
   position: relative;
   overflow: hidden;
+
   .login-bg {
     position: absolute;
     top: 0;
@@ -317,6 +327,7 @@ export default {
     filter: blur(10px);
     z-index: -1;
   }
+
   .login-box {
     width: 100%;
     height: 100%;
@@ -325,6 +336,7 @@ export default {
     align-items: center;
     color: #fff;
     flex-direction: column;
+
     .login-btn {
       padding: 10px 20px;
       border-radius: 5px;

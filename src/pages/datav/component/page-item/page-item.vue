@@ -247,6 +247,7 @@
       :pageItem="pageItemData"
       :page-params-model="pageParamsModel"
       :query-options="queryOptions"
+      @executor-complete="$emit('executor-complete', $event)"
     ></form-add>
     <info-details
       v-else-if="pageItemData.com_type === 'detail'"
