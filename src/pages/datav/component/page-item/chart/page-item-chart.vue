@@ -1,6 +1,5 @@
 <template>
   <div class="chart-wrap">
-
     <!-- 公共日期筛选组件 -->
     <DateFilter
       :filter-config="chartConfig.date_filter_opt"
@@ -9,8 +8,30 @@
       @filter-reset="onDateFilterReset"
       v-if="showDateFilter"
     />
-
-    <div class="chart-content">
+    <!-- 加载状态 -->
+    <div class="loading-container" v-if="loading">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <div class="loading-text">数据加载中...</div>
+      </div>
+    </div>
+    
+    <!-- 空数据状态 -->
+    <div class="empty-data-container" v-else-if="loaded && cellData.length === 0">
+      <div class="empty-data">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <path d="M32 8C18.745 8 8 18.745 8 32s10.745 24 24 24 24-10.745 24-24S45.255 8 32 8zm0 44c-11.046 0-20-8.954-20-20s8.954-20 20-20 20 8.954 20 20-8.954 20-20 20z" fill="#d9d9d9"/>
+            <path d="M32 20c-1.105 0-2 .895-2 2v12c0 1.105.895 2 2 2s2-.895 2-2V22c0-1.105-.895-2-2-2zm0 20c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z" fill="#d9d9d9"/>
+          </svg>
+        </div>
+        <div class="empty-text">暂无数据</div>
+        <div class="empty-desc">请检查数据源配置或筛选条件</div>
+      </div>
+    </div>
+    
+    <!-- 图表内容 -->
+    <div class="chart-content" v-else-if="loaded">
       <SankeyChart
         ref="sankeyChartRef"
         :page-item="pageItem"
@@ -85,6 +106,7 @@ const emit = defineEmits(["clickChart"]);
 
 const option = ref(null);
 const loading = ref(false);
+const loaded = ref(false);
 
 // 日期筛选状态
 const currentDateFilter = ref(null);
@@ -284,7 +306,7 @@ const calcSrvReq = (req) => {
   }
   debugger
   // 配置了日期筛选字段 默认查当天的数据
-  if(dateColumn.value && !conds?.find(item=>item.colName === dateColumn.value)){ 
+  if (dateColumn.value && !conds?.find(item => item.colName === dateColumn.value)) {
     conds = conds || []
     conds.push({
       colName: dateColumn.value,
@@ -301,14 +323,17 @@ const onSrvReq = async (req = null) => {
   req = req || pageItem?.srv_req_json;
   if (req) {
     req = calcSrvReq(req);
-    
     loading.value = true;
     let res = await $select(req, req.mapp);
     loading.value = false;
+    loaded.value = true;
+
     console.log(res);
     if (res.ok && res.data.length > 0) {
       cellData.value = res.data;
       allColumns.value = Object.keys(res.data[0])
+    } else {
+      cellData.value = []
     }
     console.log(pageItem);
     //todo 水球数据只需要传入具体的数字
@@ -567,5 +592,77 @@ defineExpose({
     flex: 1;
   }
 
+  // 加载状态样式
+  .loading-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #409eff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      .loading-text {
+        color: #666;
+        font-size: 14px;
+      }
+    }
+  }
+  
+  // 空数据状态样式
+  .empty-data-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    
+    .empty-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background-color: rgba(0,0,0,0.05);
+      padding: 20px;
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+
+      .empty-icon {
+        opacity: 0.6;
+      }
+      
+      .empty-text {
+        color: #909399;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      
+      .empty-desc {
+        color: #c0c4cc;
+        font-size: 12px;
+        text-align: center;
+        line-height: 1.4;
+      }
+    }
+  }
+  
+  // 旋转动画
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 }
 </style>
