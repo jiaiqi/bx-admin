@@ -9,29 +9,49 @@
       v-if="showDateFilter"
     />
     <!-- 加载状态 -->
-    <div class="loading-container" v-if="loading">
+    <div
+      class="loading-container"
+      v-if="loading"
+    >
       <div class="loading-spinner">
         <div class="spinner"></div>
         <div class="loading-text">数据加载中...</div>
       </div>
     </div>
-    
+
     <!-- 空数据状态 -->
-    <div class="empty-data-container" v-else-if="loaded && cellData.length === 0">
+    <div
+      class="empty-data-container"
+      v-else-if="loaded && cellData.length === 0"
+    >
       <div class="empty-data">
         <div class="empty-icon">
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <path d="M32 8C18.745 8 8 18.745 8 32s10.745 24 24 24 24-10.745 24-24S45.255 8 32 8zm0 44c-11.046 0-20-8.954-20-20s8.954-20 20-20 20 8.954 20 20-8.954 20-20 20z" fill="#d9d9d9"/>
-            <path d="M32 20c-1.105 0-2 .895-2 2v12c0 1.105.895 2 2 2s2-.895 2-2V22c0-1.105-.895-2-2-2zm0 20c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z" fill="#d9d9d9"/>
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 64 64"
+            fill="none"
+          >
+            <path
+              d="M32 8C18.745 8 8 18.745 8 32s10.745 24 24 24 24-10.745 24-24S45.255 8 32 8zm0 44c-11.046 0-20-8.954-20-20s8.954-20 20-20 20 8.954 20 20-8.954 20-20 20z"
+              fill="#d9d9d9"
+            />
+            <path
+              d="M32 20c-1.105 0-2 .895-2 2v12c0 1.105.895 2 2 2s2-.895 2-2V22c0-1.105-.895-2-2-2zm0 20c-1.105 0-2 .895-2 2s.895 2 2 2 2-.895 2-2-.895-2-2-2z"
+              fill="#d9d9d9"
+            />
           </svg>
         </div>
         <div class="empty-text">暂无数据</div>
         <div class="empty-desc">请检查数据源配置或筛选条件</div>
       </div>
     </div>
-    
+
     <!-- 图表内容 -->
-    <div class="chart-content" v-else-if="loaded">
+    <div
+      class="chart-content"
+      v-else-if="loaded"
+    >
       <SankeyChart
         ref="sankeyChartRef"
         :page-item="pageItem"
@@ -304,9 +324,8 @@ const calcSrvReq = (req) => {
       conds.push(cloneDeep(condModel));
     }
   }
-  debugger
   // 配置了日期筛选字段 默认查当天的数据
-  if (dateColumn.value && !conds?.find(item => item.colName === dateColumn.value)) {
+  if (showDateFilter.value && dateColumn.value && !conds?.find(item => item.colName === dateColumn.value)) {
     conds = conds || []
     conds.push({
       colName: dateColumn.value,
@@ -599,13 +618,13 @@ defineExpose({
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    
+
     .loading-spinner {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 16px;
-      
+
       .spinner {
         width: 40px;
         height: 40px;
@@ -614,14 +633,14 @@ defineExpose({
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
-      
+
       .loading-text {
         color: #666;
         font-size: 14px;
       }
     }
   }
-  
+
   // 空数据状态样式
   .empty-data-container {
     flex: 1;
@@ -629,13 +648,13 @@ defineExpose({
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    
+
     .empty-data {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 12px;
-      background-color: rgba(0,0,0,0.05);
+      background-color: rgba(0, 0, 0, 0.05);
       padding: 20px;
       border-radius: 8px;
       backdrop-filter: blur(4px);
@@ -643,13 +662,13 @@ defineExpose({
       .empty-icon {
         opacity: 0.6;
       }
-      
+
       .empty-text {
         color: #909399;
         font-size: 16px;
         font-weight: 500;
       }
-      
+
       .empty-desc {
         color: #c0c4cc;
         font-size: 12px;
@@ -658,11 +677,16 @@ defineExpose({
       }
     }
   }
-  
+
   // 旋转动画
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
   }
 }
 </style>
