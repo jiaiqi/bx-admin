@@ -22,6 +22,18 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "hsprl",
   },
+  yananxing: {
+    // 开发环境
+    gateway_protocol: "http",
+    gateway_ip: "192.168.0.196",
+    // gateway_ip: "192.168.0.155",
+    port: "",
+    // port: "2881",
+    gateway: "http://192.168.0.196/bxapi",
+    // gateway: "http://192.168.0.155:2881",
+    sso_app: "sso",
+    application: "config",
+  },
   wujingDev: {
     // 武警网站开发环境
     gateway_protocol: "http",

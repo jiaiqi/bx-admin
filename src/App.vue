@@ -347,11 +347,13 @@ span.section-title {
       color: var(--primary-color, #007aff);
     }
   }
+
   // 弹窗标题颜色
   .el-dialog {
     .el-dialog__header {
       background-color: var(--primary-color, #007aff);
       margin-bottom: 1rem;
+
       .el-dialog__title,
       .el-dialog__headerbtn .el-dialog__close {
         color: #fff;
@@ -444,7 +446,22 @@ span.section-title {
   }
 }
 
+
 // 主题相关-end
+
+.el-table td .cell {
+  display: block;
+  line-height: 23px;
+  max-height: 80px;
+  
+  .el-tooltip {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    max-height: 70px;
+    display: inline-block;
+  }
+}
 
 .is-demo {
 
@@ -591,6 +608,7 @@ span.section-title {
     margin-bottom: 10px;
     padding-left: 10px;
     padding-right: 5px;
+
     label {
       margin-bottom: 0;
     }

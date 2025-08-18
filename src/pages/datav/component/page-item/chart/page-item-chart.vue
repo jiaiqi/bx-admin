@@ -390,6 +390,8 @@ onMounted(() => {
   ) {
     // 使用模拟数据
     cellData.value = pageItem.mock_srv_data_json;
+    loaded.value = true;
+
     option.value = useBuildOption(
       chartType.value,
       pageItem,

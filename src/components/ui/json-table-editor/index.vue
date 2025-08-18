@@ -54,7 +54,7 @@
       :max-height="maxHeight"
       border-y
       :columns="columns"
-      :table-data="tableData"
+      :table-data="tableData||[]"
       row-key-field-name="rowKey"
       :virtual-scroll-option="virtualScrollOption"
       :cell-autofill-option="cellAutofillOption"
@@ -447,7 +447,7 @@ export default {
         });
         const tableData = [firstRow, ...otherData];
         console.log("json2tableData", tableData);
-        return tableData;
+        return tableData || [];
       }
     },
     batchInsertCols() {
@@ -519,7 +519,7 @@ export default {
   },
   created() {
     // this.initTableData();
-    if (this.value) {
+    if (this.value && this.value!=='[]') {
       if (JSON.stringify(this.value) !== JSON.stringify(this.tableData)) {
         this.tableData = this.json2tableData(JSON.parse(this.value));
       }
