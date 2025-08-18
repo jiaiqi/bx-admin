@@ -1583,7 +1583,7 @@ export default {
 }
 
 .el-form-item__prompt {
-  width: 10rem;
+  width:  9rem;
   overflow: hidden;
   /*隐藏超出单元格的部分*/
   color: orange;

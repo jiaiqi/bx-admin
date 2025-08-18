@@ -637,7 +637,7 @@
 
           <!--(operate)审核流程Form以及业务表单-->
           <el-form
-            label-width="6.5rem"
+            label-width="9rem"
             label-suffix=":"
             :model="approval_form"
             ref="approval_form"
@@ -2885,7 +2885,7 @@ export default {
 
 .tag_font_class {
   display: block;
-  min-width: 10rem;
+  min-width:  9rem;
   color: #409eff;
   font-weight: 600;
   line-height: 1.5rem;

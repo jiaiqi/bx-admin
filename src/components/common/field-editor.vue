@@ -48,7 +48,7 @@
             "
             class=""
             style="
-              width: 10rem;
+              width:  9rem;
               text-overflow: ellipsis;
               overflow: hidden;
               white-space: nowrap;

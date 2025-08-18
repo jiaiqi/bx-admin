@@ -1079,7 +1079,7 @@ $fontColor: #323232;
     display: flex;
 
     .line-info-content-list {
-      width: 10rem;
+      width:  9rem;
 
       .list-table-layout-tr {
         display: flex;

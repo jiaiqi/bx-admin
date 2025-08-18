@@ -15,7 +15,7 @@
       <el-col :span="24" v-if="stepOptions && stepOptions.length">
         <el-form-item
           label="下一步"
-          label-width="6.5rem"
+          label-width="9rem"
           v-if="stepOptions && stepOptions.length"
           prop="next_step"
         >
@@ -42,7 +42,7 @@
       >
         <el-form-item
           label="处理人"
-          label-width="6.5rem"
+          label-width="9rem"
           v-if="
             procResult.next_handle_user &&
             procResult.next_handle_user.serviceName
@@ -70,7 +70,7 @@
       >
         <el-form-item
           label="抄送人"
-          label-width="6.5rem"
+          label-width="9rem"
           v-if="procResult.cc_user && procResult.cc_user.serviceName"
           prop="cc_user"
         >
