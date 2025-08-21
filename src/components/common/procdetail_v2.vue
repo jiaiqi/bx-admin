@@ -2088,263 +2088,375 @@ export default {
 
       return conditions;
     },
+    /**
+     * 初始化流程数据 - 根据不同场景加载流程基本信息、步骤配置和处理数据
+     * 该方法是流程详情组件的核心初始化方法，负责：
+     * 1. 区分申请页面(approval)和详情页面(detail)两种模式
+     * 2. 加载流程基本配置、步骤数据、处理数据等
+     * 3. 处理紧急流程标识
+     * 4. 初始化表单显示状态和定时保存配置
+     */
     async initProcData() {
-      //第一次申请查询基本信息
+      // 判断是否为第一次申请场景：通过service_name是否存在来区分申请页面和详情页面
       if (this.service_name != "" && this.service_name != undefined) {
+        // === 申请页面模式 ===
+        // 设置页面类型为申请页面
         this.page_type = "approval";
+        
+        // 查询流程基本配置的服务名
         let proc_basic_srv = "srvProcess_basic_cfg_v2_select";
+        
+        // 构建查询条件：根据服务名查询流程配置
         let condition = [
           {
-            colName: "service_name",
-            ruleType: "eq",
-            value: this.service_name,
+            colName: "service_name",    // 查询字段：服务名
+            ruleType: "eq",             // 查询规则：等于
+            value: this.service_name,    // 查询值：当前服务名
           },
         ];
 
-        //
+        // 调用查询服务获取流程基本配置信息
         await this.select(proc_basic_srv, condition).then((response) => {
+          // 获取响应数据
           var respData = response.body;
+          
+          // 检查响应状态是否成功
           if (respData.state == "SUCCESS") {
+            // 设置流程页面实例编号（如果存在）
             if (respData.vpage_no) {
               this.procPageInstance = respData.vpage_no;
             }
+            
+            // 设置流程基本配置信息
             this.proc_basic = response.body.proc_basic;
+            
+            // 设置流程步骤特征数据（流程图节点信息）
             this.proCharData = response.body.proCharData;
+            
+            // 根据配置决定是否显示流程图
             if (this.proc_basic.show_flow_chart === false) {
-              this.viewFlowChart = false;
+              this.viewFlowChart = false;  // 隐藏流程图
             } else {
-              this.viewFlowChart = true;
+              this.viewFlowChart = true;   // 显示流程图
             }
+            
+            // 设置流程处理数据列表（各步骤的处理配置）
             this.proHanleDataList = response.body.proHanleData;
+            
+            // 处理紧急步骤标识
             if (response.body.urgentStep) {
               this.urgentStep = response.body.urgentStep;
+              
+              // 遍历紧急步骤列表
               for (var item of this.urgentStep) {
+                // 遍历流程步骤数据
                 for (var it of this.proCharData) {
+                  // 匹配步骤编号且不是初始步骤
                   if (
                     item["step_no"] == it["step_no"] &&
                     this.proc_basic.init_step_no != it["step_no"]
                   ) {
+                    // 在步骤名称后添加"(紧急)"标识
                     it["step_name"] = it["step_name"] + "(紧急)";
+                    
+                    // 处理简化步骤名称
                     if (it["simple_step_name"] != null) {
-                      it["simple_step_name"] =
-                        it["simple_step_name"] + "(紧急)";
+                      it["simple_step_name"] = it["simple_step_name"] + "(紧急)";
                     } else {
                       it["simple_step_name"] = it["step_name"];
                     }
 
-                    break;
+                    break; // 找到匹配项后跳出内层循环
                   }
                 }
               }
             }
 
+            // 设置按钮信息配置
             this.button_info = response.body.button;
+            
+            // 设置流程模板信息
             this.processTempl = response.body.processTempl;
 
+            // 处理更多配置选项（审批相关配置）
             var more_config = this.proc_basic.more_config;
             if (more_config && more_config.approval) {
+              // 设置是否显示审批记录
               this.recordShow = more_config.approval.record;
+              // 设置是否显示审批结果
               this.resultShow = more_config.approval.result;
             }
+            
+            // 处理审批选项的key-value映射
             if (this.proHanleDataList) {
+              // 遍历处理数据列表
               for (var listItem of this.proHanleDataList) {
+                // 检查是否存在审批选项
                 if (listItem.approval_options != undefined) {
+                  // 遍历审批选项
                   for (var item of listItem.approval_options) {
                     var key = item.key;
 
+                    // 处理key值不存在的情况
                     if (key == undefined) {
                       var key_value = item["value"];
-                      item["key"] = key_value;
-                      item["key_value"] = key_value;
+                      item["key"] = key_value;      // 设置key为value值
+                      item["key_value"] = key_value; // 保存原始value
                     } else {
+                      // key存在时，交换key和value的值
                       var key_value = item["value"];
-                      item["value"] = key;
-                      item["key_value"] = key_value;
+                      item["value"] = key;           // value设置为原key值
+                      item["key_value"] = key_value; // 保存原始value
                     }
                   }
                 }
               }
             }
 
+            // 处理业务表单显示状态（基于默认值和初始步骤）
             this.proHanleDataList = this.getShowBizForm(
               this.proHanleDataList,
               this.startProcDefaultValue,
               this.proc_basic.init_step_no
             );
+            
+            // 设置当前处理数据为列表第一项
             if (this.proHanleDataList.length > 0) {
               this.proHanleData = this.proHanleDataList[0];
             }
+            
+            // 初始化业务表单加载状态数组
             this.loadbizNum = [];
             for (var item of this.proHanleData.biz_cfg_data) {
+              // 收集所有业务配置的UUID用于跟踪加载状态
               if (item._uuid) {
                 this.loadbizNum.push(item._uuid);
               }
             }
 
+            // 设置当前激活步骤的名称和编号
             this.handle_active_step_name = this.proHanleData.step_name;
             this.handle_active_step_no = this.proHanleData.step_no;
+            
+            // 设置定时保存间隔
             if (this.proc_basic) {
               if (
                 this.proc_basic.save_period == undefined ||
                 this.proc_basic.save_period == null ||
                 this.proc_basic.save_period == ""
               ) {
-                this.interval == null;
+                this.interval == null; // 不设置定时保存
               } else {
-                this.interval = this.proc_basic.save_period;
+                this.interval = this.proc_basic.save_period; // 设置保存间隔
               }
             }
           }
+          
+          // 设置主数据为启动流程的默认值
           this.mainData = this.startProcDefaultValue;
-          /**
-           * 处理默认表单是否显示
-           */
+          
+          // 处理默认表单是否显示（基于默认值和初始步骤）
           this.proCharData = this.getShowBizForm(
             this.proCharData,
             this.startProcDefaultValue,
             this.proc_basic.init_step_no
           );
+          
+          // 触发元数据加载完成事件
           this.emitEvent("metadata-loaded", this);
         });
       } else {
+        // === 详情页面模式 ===
+        // 设置页面类型为详情页面
         this.page_type = "detail";
-        //流程详情页面
+        
+        // 设置审批记录的默认查询条件
         this.record_default_condition = [
           {
-            colName: "proc_instance_no",
-            value: this.proc_instance_no,
-            ruleType: "eq",
+            colName: "proc_instance_no",  // 查询字段：流程实例编号
+            value: this.proc_instance_no,  // 查询值：当前流程实例编号
+            ruleType: "eq",               // 查询规则：等于
           },
         ];
+        
+        // 定义查询流程基本配置的服务名
         let proc_basic_srv = "srvProcess_basic_cfg_v2_select";
+        
+        // 构建查询条件：根据流程实例编号查询
         let condition = [
           {
-            colName: "proc_instance_no",
-            ruleType: "eq",
-            value: this.proc_instance_no,
+            colName: "proc_instance_no",   // 查询字段：流程实例编号
+            ruleType: "eq",               // 查询规则：等于
+            value: this.proc_instance_no,  // 查询值：当前流程实例编号
           },
         ];
-        //
+        
+        // 调用查询服务获取流程详情信息
         await this.select(proc_basic_srv, condition).then((response) => {
+          // 设置流程页面实例编号（如果存在）
           if (response.body.vpage_no) {
             this.procPageInstance = response.body.vpage_no;
           }
+          
+          // 设置流程步骤特征数据
           this.proCharData = response.body.proCharData;
+          
+          // 获取处理数据列表
           let hanleDatas = response.body.proHanleData;
 
+          // 按权限排序处理数据：有权限的排在前面，无权限的排在后面
           hanleDatas.forEach((item) => {
             if (item.authority) {
-              this.proHanleDataList.unshift(item);
+              this.proHanleDataList.unshift(item); // 有权限的插入到数组开头
             } else {
-              this.proHanleDataList.push(item);
+              this.proHanleDataList.push(item);    // 无权限的添加到数组末尾
             }
           });
+          
+          // 设置流程模板信息
           this.processTempl = response.body.processTempl;
 
+          // 设置流程基本配置
           this.proc_basic = response.body.proc_basic;
+          
+          // 根据配置决定是否显示流程图
           if (this.proc_basic.show_flow_chart === false) {
             this.viewFlowChart = false;
           } else {
             this.viewFlowChart = true;
           }
+          
+          // 处理紧急步骤标识（仅当存在紧急步骤且标记为紧急时）
           if (response.body.urgentStep && response.body.urgent == "是") {
             this.urgentStep = response.body.urgentStep;
+            
+            // 遍历紧急步骤列表
             for (var item of this.urgentStep) {
+              // 遍历流程步骤数据
               for (var it of this.proCharData) {
+                // 匹配步骤编号且不是初始步骤
                 if (
                   item["step_no"] == it["step_no"] &&
                   this.proc_basic.init_step_no != it["step_no"]
                 ) {
+                  // 在步骤名称后添加"(紧急)"标识
                   it["step_name"] = it["step_name"] + "(紧急)";
 
+                  // 处理简化步骤名称
                   if (it["simple_step_name"] != null) {
                     it["simple_step_name"] = it["simple_step_name"] + "(紧急)";
                   } else {
                     it["simple_step_name"] = it["step_name"];
                   }
-                  break;
+                  break; // 找到匹配项后跳出内层循环
                 }
               }
             }
           }
 
+          // 处理更多配置选项（审批相关配置）
           var more_config = this.proc_basic.more_config;
           if (more_config && more_config.approval) {
+            // 设置是否显示审批记录
             this.recordShow = more_config.approval.record;
+            // 设置是否显示审批结果
             this.resultShow = more_config.approval.result;
           }
+          
+          // 设置主数据为响应中的主数据
           this.mainData = response.body.mainData;
+          
+          // 处理审批选项的key-value映射
           if (this.proHanleDataList) {
+            // 遍历处理数据列表
             for (var listItem of this.proHanleDataList) {
+              // 检查是否存在审批选项
               if (listItem.approval_options != undefined) {
+                // 遍历审批选项
                 for (var item of listItem.approval_options) {
                   var key = item.key;
 
+                  // 处理key值不存在的情况
                   if (key == undefined) {
                     var key_value = item["value"];
-                    item["key"] = key_value;
-                    item["key_value"] = key_value;
+                    item["key"] = key_value;      // 设置key为value值
+                    item["key_value"] = key_value; // 保存原始value
                   } else {
+                    // key存在时，交换key和value的值
                     var key_value = item["value"];
-                    item["value"] = key;
-                    item["key_value"] = key_value;
+                    item["value"] = key;           // value设置为原key值
+                    item["key_value"] = key_value; // 保存原始value
                   }
                 }
               }
             }
           }
 
+          // 处理业务表单显示状态（基于主数据和初始步骤）
           this.proHanleDataList = this.getShowBizForm(
             this.proHanleDataList,
             this.mainData,
             this.proc_basic.init_step_no
           );
+          
+          // 设置当前处理数据为列表第一项
           if (this.proHanleDataList.length > 0) {
             this.proHanleData = this.proHanleDataList[0];
           }
 
+          // 初始化业务表单加载状态数组
           this.loadbizNum = [];
           for (var item of this.proHanleData.biz_cfg_data) {
+            // 收集所有业务配置的UUID用于跟踪加载状态
             if (item._uuid) {
               this.loadbizNum.push(item._uuid);
             }
           }
 
+          // 设置当前激活步骤的名称和编号
           this.handle_active_step_name = this.proHanleData.step_name;
           this.handle_active_step_no = this.proHanleData.step_no;
 
+          // 设置定时保存间隔
           if (this.proc_basic) {
             if (
               this.proc_basic.save_period == undefined ||
               this.proc_basic.save_period == null ||
               this.proc_basic.save_period == ""
             ) {
-              this.interval == null;
+              this.interval == null; // 不设置定时保存
             } else {
-              this.interval = this.proc_basic.save_period;
+              this.interval = this.proc_basic.save_period; // 设置保存间隔
             }
           }
-          /**
-           * 处理默认表单是否显示
-           */
+          
+          // 处理默认表单是否显示（基于主数据和初始步骤）
           this.proCharData = this.getShowBizForm(
             this.proCharData,
             this.mainData,
             this.proc_basic.init_step_no
           );
 
+          // 触发元数据加载完成事件
           this.emitEvent("metadata-loaded", this);
         });
       }
+      
+      // === 公共处理逻辑 ===
+      // 最终处理业务表单显示状态（确保数据一致性）
       this.proHanleDataList = this.getShowBizForm(
         this.proHanleDataList,
         this.mainData,
         this.proc_basic.init_step_no
       );
+      
+      // 确保当前处理数据不为空
       if (this.proHanleDataList.length > 0) {
         this.proHanleData = this.proHanleDataList[0];
       }
-      this.getStepConfigJson(); // 获取当前步骤审批表单配置信息
+      
+      // 获取当前步骤审批表单配置信息
+      this.getStepConfigJson();
     },
     start: debounce(
       function (operate_type, procState, timerSave) {
