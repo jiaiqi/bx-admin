@@ -286,6 +286,7 @@ export default {
           }
         });
     },
+    //月卡缴费特别处理
     handleFilterPayMonth(button,data){
       console.log("handleFilterPayMonth", button);
       console.log("handleFilterPayMonth---", data);
