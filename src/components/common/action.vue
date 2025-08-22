@@ -301,7 +301,8 @@ export default {
             });
             return
           }
-          this.$router.push({path: '/pay-month', query: { bill_no:nos }});
+           let urls=`/vpages/#/pay-month?bill_no=${nos}`
+           this.addTabByUrl(urls, "停车缴费");
         }
       }
     },
