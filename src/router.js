@@ -104,6 +104,11 @@ let routes = [
     component: () => import("@/components/common/payment/prepaid-fees.vue"),
   },
   {
+    path: "/pay-month",
+    name: "payMonth",
+    component: () => import("@/components/common/payment/pay-month.vue"),
+  },
+  {
     path: "/register",
     name: "register",
     component: () => import("@/pages/common/register/register.vue"),

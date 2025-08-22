@@ -158,9 +158,7 @@
          element-loading-spinner="el-icon-loading"
          element-loading-background="rgba(0, 0, 0, 0.8)"
     >
-      <!-- 三个门架列表容器 -->
       <div style="height: 70%; overflow-y: auto;">
-        <!-- 序列1组门架列表 -->
         <div class="st_list" :style="[{height:stationList2.length>0&&stationList3.length>0?'30%'
         :stationList2.length>0|stationList3.length>0?'40%':'70%'}]">
           <div class="st_tl_info">
@@ -185,7 +183,6 @@
           </div>
         </div>
 
-        <!-- 序列2组门架列表 -->
         <div class="st_list" :style="[{height:stationList2.length>0?'30%':'5%'}]">
           <div class="st_tl_info">
             <span>
@@ -209,7 +206,6 @@
           </div>
         </div>
 
-        <!-- 序列3组门架列表 -->
         <div class="st_list" :style="[{height:stationList3.length>0?'30%':'5%'}]">
           <div class="st_tl_info">
             <span>
@@ -234,16 +230,12 @@
         </div>
       </div>
 
-      <!-- 计费按钮和结果显示区域 -->
       <div style="height: 30%; border-top: 1px solid #eee; padding-top: 0.5rem;" class="flw_rest">
-        <!-- 稽核计费按钮 -->
         <div class="handle_sub" style="margin-bottom: 0.5rem;">
           <el-button style="width:100%" type="primary" plain size="mini" @click="handleSubmitQuick()">稽核计费</el-button>
         </div>
         
-        <!-- 计费结果显示 -->
         <div style="display: flex; flex-direction: row; gap: 0.5rem; height: calc(100% - 60px);">
-          <!-- 序列1计费结果 -->
           <div class="fee-result-group" style="min-width: 180px; flex-shrink: 0;">
             <div style="font-weight: bold; margin-bottom: 0.5rem; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem;">分组1计费</div>
             <div class="des_tl">
@@ -260,7 +252,6 @@
             </div>
           </div>
 
-          <!-- 序列2计费结果 -->
           <div class="fee-result-group" style="min-width: 180px; flex-shrink: 0;">
             <div style="font-weight: bold; margin-bottom: 0.5rem; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem;">分组2计费</div>
             <div class="des_tl">
@@ -277,7 +268,6 @@
             </div>
           </div>
 
-          <!-- 序列3计费结果 -->
           <div class="fee-result-group" style="min-width: 180px; flex-shrink: 0;">
             <div style="font-weight: bold; margin-bottom: 0.5rem; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem;">分组3计费：</div>
             <div class="des_tl">
@@ -349,17 +339,13 @@ export default {
         }
       ],
       formatFeeToYuan:formatFeeToYuan,
-      currentGroupIndex: 1, // 当前选中的组索引
+      currentGroupIndex: 1,
       selectedGroups: {
         1: false,
         2: false,
         3: false
       },
-      // feeInfo:{
-      //   fee:0,    // 实收金额
-      //   discountFee:0, //优惠金额
-      //   payFee:0, //应收金额
-      // },
+
       feeInfo1: {
         fee: 0,
         discountFee: 0,
@@ -380,11 +366,11 @@ export default {
       stationList1: [],
       stationList2: [],
       stationList3: [],
-      pendingStationList: [], // 新增：暂存待更新的门架列表
-      debounceTimer: null, // 添加防抖定时器
-      debouncedHandleGantryGroupInput: null, // 添加防抖处理后的方法声明
-      debouncedHandleHexGroupInput: null, // 添加hex输入框的防抖处理后的方法声明
-      storedGantryGroup: '', // 存储textGantryGroup的值
+      pendingStationList: [],
+      debounceTimer: null,
+      debouncedHandleGantryGroupInput: null,
+      debouncedHandleHexGroupInput: null,
+      storedGantryGroup: '',
       baseRules:{
         vehicleType: [
           { required: true, message: '车型不能为空', trigger: 'change' },
@@ -405,36 +391,36 @@ export default {
       },
       handleMap:null,
       baseForm:{
-        mediaType:'', //通行介质
-        vehicleType:'',//稽核车型
-        vehicleUserType:'', //车辆用户类型
-        vehicleClass:'', //车种
-        rateProgramVer:0, //计费模块版本号
-        rateVer:0 // 费率版本号
+        mediaType:'',
+        vehicleType:'',
+        vehicleUserType:'',
+        vehicleClass:'',
+        rateProgramVer:0,
+        rateVer:0
       },
       quickForm1:{
-        textGantryGroup:'', //人录入门架序列
-        textGantryHexGroup:'', //人录入门架序列hex
+        textGantryGroup:'',
+        textGantryHexGroup:'',
         gantryCount:0,
-        gantryGroup:'',    //门架集合
-        gantryHexGroup:'', //hex
-        dataSource:'', //数据源集合
+        gantryGroup:'',
+        gantryHexGroup:'',
+        dataSource:'',
       },
       quickForm2:{
-        textGantryGroup:'', //人录入门架序列
-        textGantryHexGroup:'', //人录入门架序列hex
+        textGantryGroup:'',
+        textGantryHexGroup:'',
         gantryCount:0,
-        gantryGroup:'',    //门架集合
-        gantryHexGroup:'', //hex
-        dataSource:'', //数据源集合
+        gantryGroup:'',
+        gantryHexGroup:'',
+        dataSource:'',
       },
       quickForm3:{
-        textGantryGroup:'', //人录入门架序列
-        textGantryHexGroup:'', //人录入门架序列hex
+        textGantryGroup:'',
+        textGantryHexGroup:'',
         gantryCount:0,
-        gantryGroup:'',    //门架集合
-        gantryHexGroup:'', //hex
-        dataSource:'', //数据源集合
+        gantryGroup:'',
+        gantryHexGroup:'',
+        dataSource:'',
       },
       useOptions:{
         vehicleclass:[],
@@ -445,11 +431,14 @@ export default {
     }
   },
   methods:{
-    //绘制路线
-     handleDrawLine(list,grindex){
+    /**
+     * @Description:绘制路线
+     * @Author:Eirice
+     * @Date: 2025-06-06 14:29:34
+     */
+    handleDrawLine(list,grindex){
        const colorIdx=['#3af584','#235ef1','#8d49f5']
       if (!list || !this.handleMap) {
-        console.warn('无效的路线数据或地图对象未初始化')
         return
       }
       try {
@@ -458,7 +447,6 @@ export default {
         let source = makeFeatureCollection(features)
         setColorLine(this.handleMap,colorIdx[grindex-1],list,grindex)
       } catch (error) {
-        console.error('绘制路线时发生错误:', error)
       }
     },
 
@@ -469,14 +457,12 @@ export default {
      */
     async getRoutesByBaiDu(customParams = null){
       if (!this.handleMap) {
-        console.warn('地图对象未初始化')
         return []
       }
 
       let ak=window.APP_CONFIG.RouteAK?window.APP_CONFIG.RouteAK:''
       let urls=window.APP_CONFIG.viRoute;
 
-      // 如果没有传入参数，则从drivingPoint构建参数
       const params = customParams
 
       let line= await orderUtils.getBaiduMapRoute(ak,urls,params);
@@ -484,25 +470,25 @@ export default {
       return lines
     },
 
-    //路线数据过滤
+    /**
+     * @Description:路线数据过滤
+     * @Author:Eirice
+     * @Date: 2025-06-06 14:29:34
+     */
     handleFilterLine(line){
       try {
-        // 验证输入数据
         if (!line?.data) {
-          console.warn('路线数据为空');
           return [];
         }
 
         const { data } = line;
         if (data.status !== 0) {
-          console.warn('路线数据状态异常:', data.status);
           return [];
         }
 
         const routes = [];
         const { result } = data;
 
-        // 处理专网接口数据
         if (result?.steps && !result?.routes) {
           const steps = result.steps.reduce((acc, step) => {
             const path = step.path.split(',');
@@ -519,7 +505,6 @@ export default {
           }, []);
           routes.push(...steps);
         }
-        // 处理标准接口数据
         else if (result?.routes) {
           const routePoints = result.routes.reduce((acc, route) => {
             const steps = route.steps.reduce((stepAcc, step) => {
@@ -536,15 +521,17 @@ export default {
 
         return routes;
       } catch (error) {
-        console.error('处理路线数据时发生错误:', error);
         return [];
       }
     },
-    //途径点多个分隔及多段路查询
-   async handleSpliceWayPoints(groupIndex) {
+    /**
+     * @Description:途径点多个分隔及多段路查询
+     * @Author:Eirice
+     * @Date: 2025-06-06 14:29:34
+     */
+    async handleSpliceWayPoints(groupIndex) {
       this.lineLoading=true
       if (!this.handleMap) {
-        console.warn('地图对象未初始化')
         return
       }
       const stationListKey = `stationList${groupIndex}`;
@@ -555,9 +542,7 @@ export default {
        }
       const splitInfo = window.APP_CONFIG.splitType
 
-      // 如果总点数小于等于最大值+2（起点和终点），直接规划
       if (allPoints.length <= MAX_WAYPOINTS + 2) {
-        // 直接使用getRoutesByBaiDu进行规划
         const params = {
           origin: `${allPoints[0].lat},${allPoints[0].lng}`,
           destination: `${allPoints[allPoints.length - 1].lat},${allPoints[allPoints.length - 1].lng}`,
@@ -569,7 +554,6 @@ export default {
 
         const lines = await this.getRoutesByBaiDu(params)
 
-        // 绘制路线
         if (lines && lines.length > 0) {
           this.lineLoading=false
           const linePoints = lines.map(point => new BMap.Point(point.lng, point.lat))
@@ -581,18 +565,14 @@ export default {
       const segments = []
       let currentSegment = []
 
-      // 将点分组，每个分段最多包含MAX_WAYPOINTS个途径点,由于起点，终点不算在途径点数量中，
-     // 所以步长的总量时途径点+2的数量
       for (let i = 0; i < allPoints.length; i++) {
         currentSegment.push(allPoints[i])
         if (currentSegment.length === MAX_WAYPOINTS + 2) {
           segments.push([...currentSegment])
-         //todo 为了保证数据的连续性，使用前一段数据的最后一个点作为下一段数据的起点使用
           currentSegment = [allPoints[i]]
         }
       }
 
-      // 添加最后一段（如果还有剩余点）
       if (currentSegment.length > 1) {
         segments.push(currentSegment)
       }
@@ -601,7 +581,6 @@ export default {
       for (let i = 0; i < segments.length; i++) {
         const segment = segments[i]
 
-        // 处理当前分段的起终点和途径点
         const segmentStart = segment[0]
         const segmentEnd = segment[segment.length - 1]
         const segmentWaypoints = segment.slice(1, -1)
@@ -625,20 +604,17 @@ export default {
         if (lines && lines.length > 0) {
           const currentRoute = lines.map(point => [point.lng, point.lat])
 
-          // 合并路线（除了最后一段，其他段需要去掉最后一个点，避免重复）
-          if (i < segments.length - 1) {
-            allRoutes = allRoutes.concat(currentRoute.slice(0, -1))
-          } else {
-            allRoutes = allRoutes.concat(currentRoute)
-          }
-        }
-        //最后一次并发接受且结果回来后
-        if(i=segments.length-1&&lines){
-          this.lineLoading=false
+                  if (i < segments.length - 1) {
+          allRoutes = allRoutes.concat(currentRoute.slice(0, -1))
+        } else {
+          allRoutes = allRoutes.concat(currentRoute)
         }
       }
+      if(i=segments.length-1&&lines){
+        this.lineLoading=false
+      }
+    }
 
-      // 绘制完整路线
       if (allRoutes.length > 0) {
         const linePoints = allRoutes.map(point => new BMap.Point(point[0], point[1]))
         this.handleDrawLine(linePoints,groupIndex)
@@ -670,12 +646,15 @@ export default {
       };
     },
 
-    //门架序列数据处理
+    /**
+     * @Description:门架序列数据处理
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleGantryGroupInput(value, groupIndex) {
       this.handlePublicTest(groupIndex);
       const formKey = `quickForm${groupIndex}`;
       if (!value) {
-        // 清空hex值
         this[formKey].textGantryHexGroup = '';
         const stationListKey = `stationList${groupIndex}`;
         this[stationListKey] = this[stationListKey].filter(item => !item.fromTextGantry);
@@ -686,19 +665,11 @@ export default {
         }
         return;
       }
-
-      // 使用 | 分割字符串并去重
       const gantryArray = value.split('|').filter(item => item.trim());
       const uniqueGantryArray = [...new Set(gantryArray)];
-
-      // 更新输入框的值和存储值
       this[formKey].textGantryGroup = uniqueGantryArray.join('|');
       this.storedGantryGroup = this[formKey].textGantryGroup;
-
-      // 将|替换为英文逗号后传递给handleByTextGantryGroup
       let ids = this[formKey].textGantryGroup.replace(/\|/g, ',');
-
-      // 获取新的门架数据，但只暂存，不直接更新stationList
       let info={
         page:{},
         condition:[{colName: "id", ruleType: "in", value:ids}],
@@ -709,36 +680,29 @@ export default {
       }
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') { this.pendingStationList = []; return; }
-        // 新查回的数据加fromTextGantry: true
         let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
-        // 按输入顺序排序
         const inputOrder = uniqueGantryArray.map(x => String(x).trim());
-        console.log('工人录入textGantryGroup:', inputOrder);
-        console.log('排序前的textGantryGroup:', ls.map(x => String(x.id).trim()));
         ls.sort((a, b) => inputOrder.indexOf(String(a.id).trim()) - inputOrder.indexOf(String(b.id).trim()));
-        console.log('排序后的获数据:', ls.map(x => String(x.id).trim()));
         this.pendingStationList = ls;
-        // 根据查询返回的数据更新textGantryHexGroup
         const hexValues = ls.map(item => item.gantryhex).filter(hex => hex);
         this[formKey].textGantryHexGroup = hexValues.join('|');
-
       }).catch(err => { this.pendingStationList = []; });
     },
-    //更新门架按钮点击按钮时触发门架查询
+    /**
+     * @Description:更新门架按钮点击按钮时触发门架查询
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleUpdateGantryList(groupIndex) {
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
       
       const formKey = `quickForm${groupIndex}`;
       if (!this[formKey]) {
-        console.error(`选择的表单${formKey} 不存在`);
         return;
       }
 
-      // 如果没有输入门架序列，清除所有人工录入门架
       if (!this[formKey].textGantryGroup) {
         const stationListKey = `stationList${groupIndex}`;
         this[stationListKey] = this[stationListKey].filter(item => !item.fromTextGantry);
@@ -752,11 +716,9 @@ export default {
         return;
       }
 
-      // 获取非人工录入门架ID
       const stationListKey = `stationList${groupIndex}`;
       const existIds = new Set(this[stationListKey].filter(item => !item.fromTextGantry).map(item => String(item.id)));
 
-      // 根据当前的textGantryGroup重新查询数据
       let ids = this[formKey].textGantryGroup.replace(/\|/g, ',');
       let info = {
         page: {},
@@ -769,11 +731,7 @@ export default {
 
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') return;
-
-        // 新查回的数据加fromTextGantry: true
         let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
-
-        // 过滤新门架，找出未重复的
         const filtered = [];
         const removedIds = [];
         ls.forEach(item => {
@@ -783,11 +741,8 @@ export default {
             removedIds.push(String(item.id));
           }
         });
-
-        // 移除原有人工录入门架
         this[stationListKey] = this[stationListKey].filter(item => !item.fromTextGantry);
         this[stationListKey] = [...this[stationListKey], ...filtered];
-        // 对人工录入门架排序，并放在stationList后面
         const manualList = this[stationListKey].filter(item => item.fromTextGantry);
         const otherList = this[stationListKey].filter(item => !item.fromTextGantry);
         const inputOrder = this[formKey].textGantryGroup.split('|').map(x => String(x).trim());
@@ -795,16 +750,13 @@ export default {
         this[stationListKey] = [...otherList, ...manualList];
         this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
         this.handleDrawMarkers(groupIndex);
-
         if(this[stationListKey].length > 0) {
           this.handleFly(this[stationListKey][0]);
         }
 
-        // 同步textGantryGroup
         if (removedIds.length > 0) {
           const arr = this[formKey].textGantryGroup.split('|').filter(id => id && !removedIds.includes(id));
           this[formKey].textGantryGroup = arr.join('|');
-          // 同步textGantryHexGroup门架
           const groupIds = this[formKey].textGantryGroup.split('|').filter(Boolean);
           const idToHex = {};
           this[stationListKey].forEach(item => {
@@ -812,33 +764,23 @@ export default {
           });
           const hexArr = groupIds.map(id => idToHex[id]).filter(Boolean);
           this[formKey].textGantryHexGroup = hexArr.join('|');
-          // 记录重复信息
           this[`repeatedInformation${groupIndex}`] = removedIds.join(',');
         } else {
           this[`repeatedInformation${groupIndex}`] = '';
         }
-
-        // 更新pendingStationList为空，因为已经处理完了
         this.pendingStationList = [];
       }).catch(err => {
         this.pendingStationList = [];
       });
     },
-    //门架序列点击清除
     handleClearGantry(groupIndex){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
-      
       const formKey = `quickForm${groupIndex}`;
       if (!this[formKey]) {
-        console.error(`表单对象 ${formKey} 不存在`);
         return;
       }
-
-      // 只移除人工录入门架
       const stationListKey = `stationList${groupIndex}`;
       this[stationListKey] = this[stationListKey].filter(item => !item.fromTextGantry);
       this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
@@ -855,7 +797,6 @@ export default {
      */
     handleStationDataSource(list) {
       if (list.length > 0) {
-        //第一条数据
         const firstItem = list[0];
         if (firstItem.grantry_type === "虚拟门架") {
           firstItem.dataSource = 1;
@@ -864,13 +805,9 @@ export default {
         } else if (firstItem.grantry_type === "路段门架") {
           firstItem.dataSource = 3;
         }
-
-        //中间的数据
         for (let i = 1; i < list.length - 1; i++) {
           list[i].dataSource = 3;
         }
-
-        //最后一条数据
         const lastItem = list[list.length - 1];
         if (lastItem.grantry_type === "虚拟门架") {
           lastItem.dataSource = 5;
@@ -888,53 +825,40 @@ export default {
      * @Date: 2025-06-18 14:03:05
      */
     handleDrawMarkers(groupIndex){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
-      
       const stationListKey = `stationList${groupIndex}`;
       if (!this[stationListKey]) {
-        console.error(`门架列表 ${stationListKey} 不存在`);
         return;
       }
 
-      // 构建点位配置
       const pointConfig = {
         icon: require(`@/assets/mapIcon/point_ico.png`),
         select: true
       };
-      // 构建最终的点位数组
       const additionalMarkers = this[stationListKey].map((item, index) => ({
         ...pointConfig,
         name: item.tollgrantry_name?item.tollgrantry_name:item.tradenodename,
         point: handleMakePoint('', item.lng, item.lat),
-        seq_id: index + 1,  // 添加 seq 字段，从 1 开始
+        seq_id: index + 1,
         ...item
       }));
-      // 重新绘制地图标记
       drewMarkerKinds(this.handleMap, additionalMarkers,groupIndex);
       setTimeout(()=>{
         this.handleSpliceWayPoints(groupIndex)
       },500)
     },
     handleClear(groupIndex = 1){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
-      
       const formKey = `quickForm${groupIndex}`;
       if (!this[formKey]) {
-        console.error(`表单对象 ${formKey} 不存在`);
         return;
       }
-
       const stationListKey = `stationList${groupIndex}`;
       const repeatedInfoKey = `repeatedInformation${groupIndex}`;
-      
       this[stationListKey] = [];
       clearMarkersByKind(this.handleMap,groupIndex)
       this[repeatedInfoKey] = '';
@@ -944,8 +868,6 @@ export default {
       this.selectedGroups[groupIndex] = false;
       this.handleClearFeeByIndex(groupIndex);
     },
-
-     //清空门架后主动清除被清空门架的计费数据
     handleClearFeeByIndex(groupIndex){
       const feeInfoKey = `feeInfo${groupIndex}`;
       Object.keys(this[feeInfoKey]).forEach(key=>{
@@ -953,20 +875,19 @@ export default {
       })
     },
 
-    //人工录入门架子序列后查询们门架子
+    /**
+     * @Description:根据文本门架组查询门架信息
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleByTextGantryGroup(ids, groupIndex = 1){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
-      
       const formKey = `quickForm${groupIndex}`;
       if (!this[formKey]) {
-        console.error(`表单对象 ${formKey} 不存在`);
         return;
       }
-
       let info={
         page:{},
         condition:[{colName: "id", ruleType: "in", value:ids}],
@@ -977,71 +898,62 @@ export default {
       }
       orderUtils.getAllStationByInfo(info).then(res => {
         if(res.data.state !== 'SUCCESS') return;
-        // 新查回的数据加fromTextGantry: true
         let ls = res.data.data.map(item => ({ ...item, fromTextGantry: true }));
-        // 只移除通过textGantryGroup查询回来的门架
         const stationListKey = `stationList${groupIndex}`;
         this[stationListKey] = this[stationListKey].filter(station => !station.fromTextGantry);
-        // 合并新查回的数据和原有的（fromTextGantry: false），用id去重
         const map = new Map();
         [...this[stationListKey], ...ls].forEach(item => {
           map.set(item.id, item);
         });
         this[stationListKey] = Array.from(map.values());
-        // 处理数据源
         this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
-        // 更新地图标记
         this.handleDrawMarkers(groupIndex);
         this.handleFly(this[stationListKey][0])
-        // 根据查询返回的数据更新textGantryHexGroup
         const hexValues = ls.map(item => item.gantryhex).filter(hex => hex);
         this[formKey].textGantryHexGroup = hexValues.join('|');
       }).catch(err => {})
     },
-    //门架选择
+    /**
+     * @Description:门架选择
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleFilterStation(list, groupIndex = 1){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
-        return;
-      }
-      
-      const stationListKey = `stationList${groupIndex}`;
-      const repeatedInfoKey = `repeatedInformation${groupIndex}`;
-      
-      if (!this[stationListKey]) {
-        console.error(`门架列表 ${stationListKey} 不存在`);
         return;
       }
 
-      // 现有门架ID集合
+      const stationListKey = `stationList${groupIndex}`;
+      const repeatedInfoKey = `repeatedInformation${groupIndex}`;
+
+      if (!this[stationListKey]) {
+        return;
+      }
+
       const existIds = new Set(this[stationListKey].map(item => String(item.id)));
-      // 过滤新门架，只保留未存在的
       const filtered = list.filter(item => !existIds.has(String(item.id)));
-      // 记录被去重掉的ID
       const repeated = list.filter(item => existIds.has(String(item.id))).map(item => item.id);
       this[repeatedInfoKey] = repeated.length > 0 ? repeated.join(',') : '';
-      // 合并
       this[stationListKey] = [...this[stationListKey], ...filtered];
       this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
       this.handleDrawMarkers(groupIndex);
       if(this[stationListKey].length > 0) {
         this.handleFly(this[stationListKey][0]);
       }
-      console.log('处理后的门架列表：', this[stationListKey]);
     },
 
-    //选择的门架子删除
+    /**
+     * @Description:选择的门架子删除
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleDelete(item, groupIndex = 1){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
-      
+
       const formKey = `quickForm${groupIndex}`;
       if (!this[formKey]) {
-        console.error(`表单对象 ${formKey} 不存在`);
         return;
       }
 
@@ -1050,10 +962,8 @@ export default {
       if (index > -1) {
         this[stationListKey].splice(index, 1);
         this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
-        //todo 获取存在于人工序列中的被删除门架序列号
         const gantryIds = this[formKey].textGantryGroup.split('|').filter(id => id.trim());
         if (gantryIds.includes(item.id.toString())) {
-          // 如果存在，则从textGantryGroup中移除该ID
           const updatedIds = gantryIds.filter(id => id !== item.id.toString());
           this[formKey].textGantryGroup = updatedIds.join('|');
           this.storedGantryGroup = this[formKey].textGantryGroup;
@@ -1062,7 +972,6 @@ export default {
             let queryIds = this[formKey].textGantryGroup.replace(/\|/g, ',');
             this.handleByTextGantryGroup(queryIds, groupIndex);
           } else {
-            // 如果textGantryGroup为空，则清空textGantryHexGroup
             this[formKey].textGantryHexGroup = '';
           }
         }
@@ -1073,22 +982,22 @@ export default {
       }
       this.handleDrawMarkers(groupIndex)
     },
-    //拖拽结束后的回调
+    /**
+     * @Description:拖拽结束后的回调
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     onDragEnd(groupIndex) {
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
-      
+
       const stationListKey = `stationList${groupIndex}`;
       if (!this[stationListKey]) {
-        console.error(`门架列表 ${stationListKey} 不存在`);
         return;
       }
 
       this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
-      console.log('排序后的门架列表：', this[stationListKey]);
     },
     initMineMap(){
       let options = {
@@ -1098,17 +1007,24 @@ export default {
       baseMap = new MapUtils(options);
       this.handleMap = baseMap.initMap();
     },
-    //获取公共提交时表单参数匹配选项
+    /**
+     * @Description:获取公共提交时表单参数匹配选项
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     getPublicColNames(){
       orderUtils.getOrderFormList().then(res=>{
         if(res.data.state!=='SUCCESS') return
         let ls= res.data.data
         let ops = ls.srv_cols
         this.useOptions={...filterListByOption(ops,this.useOptions)}
-        console.log(this.useOptions)
       }).catch(err => {})
     },
-    //加载地图资源
+    /**
+     * @Description:加载地图资源
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     asyncLoadMap(){
       return new Promise(function (resolve, reject) {
         if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
@@ -1128,30 +1044,33 @@ export default {
     },
 
 
-    //处理公共校验规则信息
+    /**
+     * @Description:处理公共校验规则信息
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handlePublicTest(groupIndex){
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
         return;
       }
 
       const formKey = `quickForm${groupIndex}`;
       if (!this[formKey]) {
-        console.error(`不存在的人工 ${formKey}`);
         return;
       }
     },
 
-    //处理携带hex文本进入时查询出对应的门架序列数据
+    /**
+     * @Description:处理携带hex文本进入时查询出对应的门架序列数据
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleHexGroupInput(value, groupIndex = 1) {
       this.handlePublicTest(groupIndex);
       const formKey = `quickForm${groupIndex}`;
       if (!value) {
-        // 清空指定列的人工序列
         this[formKey].textGantryGroup = '';
         this.pendingStationList = [];
-        // 当指定列的HEX被清除时，对应加入到指定列表的数据也需要被清除
         const stationListKey = `stationList${groupIndex}`;
         this[stationListKey] = this[stationListKey].filter(item => !item.fromTextGantry);
         this[stationListKey] = this.handleStationDataSource(this[stationListKey]);
@@ -1162,16 +1081,12 @@ export default {
         return;
       }
 
-      // 使用 | 分割字符串并去重
       const hexArray = value.split('|').filter(item => item.trim());
       const uniqueHexArray = [...new Set(hexArray)];
 
-      // 更新输入框的值
       this[formKey].textGantryHexGroup = uniqueHexArray.join('|');
 
-      // 将|替换为英文逗号后传递给handleGetStationByHex
       let ids = this[formKey].textGantryHexGroup.replace(/\|/g, ',');
-      // 查询HEX对应的门架，查回数据只暂存，不直接更新stationList
 
       let info={
         page:{},
@@ -1185,14 +1100,9 @@ export default {
         if(res.data.state !== 'SUCCESS') { this.pendingStationList = []; return; }
         let ls = res.data.data;
 
-        // 按输入顺序排序
         const inputOrder = uniqueHexArray.map(x => String(x).trim());
-        console.log('人工录入:', inputOrder);
-        console.log('排序前:', ls.map(x => String(x.gantryhex).trim()));
         ls.sort((a, b) => inputOrder.indexOf(String(a.gantryhex).trim()) - inputOrder.indexOf(String(b.gantryhex).trim()));
-        console.log('排序后:', ls.map(x => String(x.gantryhex).trim()));
         this.pendingStationList = ls;
-        // 将获取到的门架ID拼接到textGantryGroup
         const gantryIds = ls.map(item => item.id).filter(id => id);
         this[formKey].textGantryGroup = gantryIds.join('|');
       }).catch(err => { this.pendingStationList = []; });
@@ -1207,7 +1117,6 @@ export default {
     handleSubmitQuick(){
       this.$refs.baseForm.validate((valid) => {
         if (valid) {
-          //检查是否有门架列表被选择
           const check=Object.values(this.selectedGroups).filter(d=>{return d});
           if(!check||check.length===0){
             Message({
@@ -1216,12 +1125,11 @@ export default {
             });
             return;
           }
-          // 检查是否有门架数据
           const hasStationData = [1, 2, 3].some(groupNum => {
             const stationListKey = `stationList${groupNum}`;
             return this[stationListKey] && this[stationListKey].length > 0;
           });
-          
+
           if (!hasStationData) {
             Message({
               type: 'warning',
@@ -1229,8 +1137,7 @@ export default {
             });
             return;
           }
-          
-          // 为每个有门架数据的序列组进行计费
+
           [1, 2, 3].forEach(groupNum => {
             const stationListKey = `stationList${groupNum}`;
             if(this[stationListKey] && this[stationListKey].length > 0 && this.selectedGroups[groupNum]) {
@@ -1250,7 +1157,6 @@ export default {
                 enStationId:inStation.grantry_type==='收费站'?inStation.id:'',
                 exStationId:exStation.grantry_type==='收费站'?exStation.id:'',
               }
-              console.log(`序列${groupNum}计费参数`,obj)
               this.quickBillingSubmit(obj, groupNum)
             }
           });
@@ -1292,7 +1198,6 @@ export default {
       if (!this[feeInfoKey]) {
         return;
       }
-      console.log(`<UNK>${groupIndex}<UNK>`,this.selectedGroups)
       this.handleCancelFeeInfo();
       orderUtils.handleQuickBilling(obj).then(res => {
         if(res.data.code !== 0) return;
@@ -1308,30 +1213,26 @@ export default {
         }
       }).catch(err => {})
     },
-    // 处理选择框变化
+    /**
+     * @Description:处理选择框变化
+     * @Author:Eirice
+     * @Date: 2025-06-18 15:16:12
+     */
     handleGroupSelect(groupIndex) {
-      // 添加安全检查
       if (!groupIndex || ![1, 2, 3].includes(groupIndex)) {
-        console.error('无效的groupIndex:', groupIndex);
-        return;
-      }
-      
-      if (!this.selectedGroups) {
-        console.error('selectedGroups 对象不存在');
         return;
       }
 
-      console.log(`序列${groupIndex}选择状态:`, this.selectedGroups[groupIndex]);
+      if (!this.selectedGroups) {
+        return;
+      }
     },
   },
   created() {
-    // 创建防抖处理后的方法
     this.debouncedHandleGantryGroupInput = this.debounce(this.handleGantryGroupInput);
     this.debouncedHandleHexGroupInput = this.debounce(this.handleHexGroupInput);
   },
   mounted(){
-    // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-15d289bb-a896-4fc4-b2ed-2a47861c8084');
     this.getPublicColNames();
     this.asyncLoadMap();
     setTimeout(()=>{this.initMineMap()},500)

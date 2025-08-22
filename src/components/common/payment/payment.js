@@ -59,6 +59,19 @@ export default class Payment {
        }
        return await $http.post(url,req)
     }
+
+    //获取停车月缴费信息
+    async getFeeByMonth(params){
+        let url =`/park/select/srvpark_monthly_payment_select`
+        let req={
+            serviceName: "srvpark_monthly_payment_select",
+            colNames: ["*"],
+            condition:[{colName: "bill_no", ruleType: "like", value: params.no}],
+            page: {"pageNo": 1, "rownumber": 10},
+        }
+        return await $http.post(url,req)
+    }
+
     //手动添加订单数据入库返回订单编号信息数据
     async getAddPayInfo(params){
         let url=`/park/add/srvpark_prepaid_sd_bill_add`
