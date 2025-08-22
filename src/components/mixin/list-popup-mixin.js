@@ -157,6 +157,9 @@ export default {
       this.$emit('duplicate-form-loaded', form);
     },
 
+    onAddFormExecutorComplete(info){
+      console.log('ssss',info);
+    },
     onAddFormActionComplete(action) {
       console.log('onAddFormActionComplete', action);
 
