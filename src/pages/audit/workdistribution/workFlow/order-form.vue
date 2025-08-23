@@ -547,11 +547,11 @@ export default {
       this.ruleForm.operator_id=item.user_id;
     },
 
-      //机构编号切换
-       setDepOrd(){
-         console.log(this.ruleForm.org_no);
-         this.handleFilterPutOrg()
-       },
+  //机构编号切换
+    setDepOrd(){
+      console.log(this.ruleForm.org_no);
+      this.handleFilterPutOrg()
+    },
 
      //发起人切换
      setOperInfo(){
@@ -645,7 +645,7 @@ export default {
           return;
         }
         _this.operatorName = res.data.data;
-        _this.ruleForm.operator_name= _this.operatorName[0].user_id;
+        _this.ruleForm.operator_name= _this.operatorName[0].user_name;
         _this.ruleForm.operator_id=_this.operatorName[0].user_id;
         _this.ruleForm.user_no=_this.operatorName[0].user_no;
         _this.getDepSelectInfo(_this.operatorName[0].dept_no)
@@ -686,7 +686,8 @@ export default {
     //获取发起人弹窗表格被双击数据
     getPromoterRow(row){
       this.operatorName=[row];
-      this.ruleForm.operator_name= this.operatorName[0].user_id;
+      // this.ruleForm.operator_name= this.operatorName[0].user_id;
+      this.ruleForm.operator_name= this.operatorName[0].user_name;
       this.ruleForm.operator_id=this.operatorName[0].user_id;
       this.setOperInfo();
     },
