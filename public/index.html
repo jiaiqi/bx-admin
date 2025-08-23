@@ -13,7 +13,11 @@
         
         <!--生产环境地图使用-->
         <% if (process.env.NODE_ENV === 'production') { %>
-       <script src="./config/config_build.js"></script>
+          <!-- 测试环境 -->
+          <!-- <script src="./config/config_dev.js"></script> -->
+
+          <!-- 稽核内网 -->
+          <script src="./config/config_build.js"></script>
         <% } %>
 
         <!--大华视频使用勿删除-->
