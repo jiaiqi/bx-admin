@@ -7,8 +7,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <!-- <link rel="icon" href="<%= BASE_URL %>favicon.ico"> -->
        <!--开发环境地图使用-->
+        <% if (process.env.NODE_ENV === 'development') { %>
         <script src="./config/config_dev.js"></script>
-<!--        <script src="./config/config_build.js"></script>-->
+        <% } %>
+        
+        <!--生产环境地图使用-->
+        <% if (process.env.NODE_ENV === 'production') { %>
+       <script src="./config/config_build.js"></script>
+        <% } %>
+
         <!--大华视频使用勿删除-->
         <script src="./dhvideo/videoPlayer.js"></script>
 

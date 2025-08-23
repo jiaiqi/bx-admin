@@ -2103,7 +2103,7 @@ export default {
         // 设置页面类型为申请页面
         this.page_type = "approval";
         
-        // 查询流程基本配置的服务名
+        // 定义查询流程基本配置的服务名
         let proc_basic_srv = "srvProcess_basic_cfg_v2_select";
         
         // 构建查询条件：根据服务名查询流程配置

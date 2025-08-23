@@ -3,7 +3,11 @@
   <!--信息头部-->
    <div class="app_header">
      <div class="app_other"></div>
-     <div class="app_name"></div>
+     <div class="app_name">
+      <span v-if="pageConfig">
+       {{pageConfig.page_name}}
+      </span>
+     </div>
      <div class="app_bts">
        <li><el-button type="primary" size="mini" @click="initPage">刷新</el-button></li>
        <li><el-button type="primary" size="mini"
