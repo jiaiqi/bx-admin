@@ -1928,8 +1928,15 @@ export default {
     display: flex !important;
 
     img {
-      max-height: 2rem;
-      max-width: 2rem;
+      width: 2rem;
+      height: 2rem;
+      object-fit: cover;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-right: 4px;
+      &:last-child {
+        margin-right: 0;
+      }
     }
   }
 }
