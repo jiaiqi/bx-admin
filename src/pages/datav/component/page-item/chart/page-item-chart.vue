@@ -43,7 +43,7 @@
           </svg>
         </div>
         <div class="empty-text">暂无数据</div>
-        <div class="empty-desc">请检查数据源配置或筛选条件</div>
+        <!-- <div class="empty-desc">请检查数据源配置或筛选条件</div> -->
       </div>
     </div>
 

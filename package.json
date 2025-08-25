@@ -6,8 +6,9 @@
     "dev": "vue-cli-service serve",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "dev:wj": "vue-cli-service serve --mode wj",
-    "build:wj": "vue-cli-service build --mode wj",
+    "build:audit": "vue-cli-service build --mode audit", //稽核环境
+    "dev:wj": "vue-cli-service serve --mode wj", // 武警dev环境
+    "build:wj": "vue-cli-service build --mode wj", // 武警生产环境
     "lint": "vue-cli-service lint",
     "deploy:dev": "deploy-cli-service deploy --mode dev",
     "build-lib": "vue-cli-service build --target lib --name bxhome src/index.js",

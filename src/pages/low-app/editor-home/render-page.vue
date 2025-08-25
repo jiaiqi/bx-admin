@@ -1,16 +1,24 @@
 <template>
-  <div 
+  <div
     class="render-page"
     :data-preview="isPreview"
     @dragover.prevent="!isPreview && $event.preventDefault()"
     @drop.prevent="!isPreview && $event.preventDefault()"
+    @click="!isPreview && handleClick"
   >
-    <div class="component-container" id="mobile_container">
+    <div
+      class="component-container"
+      id="mobile_container"
+      @click.stop="!isPreview && handleClick"
+    >
       <!-- 普通组件渲染区域 -->
       <div
         v-for="(item, index) in normalComponents"
         :key="item.id || index"
         class="component-wrapper"
+        :class="{
+          'selected': !isPreview && currentId === item.id
+        }"
         :style="getWrapperStyle(item)"
         :draggable="!isPreview"
         @dragstart="!isPreview && handleDragStart($event, item, index)"
@@ -18,15 +26,18 @@
         @dragenter.prevent="!isPreview && handleDragEnter($event, index)"
         @dragleave.prevent="!isPreview && handleDragLeave($event, index)"
         @drop.prevent="!isPreview && handleDrop($event, index)"
-        @click="!isPreview && handleComponentClick(item)"
+        @click.stop="!isPreview && handleComponentClick(item)"
       >
-        <div class="component-header" v-if="!isPreview">
+        <div
+          class="component-header"
+          v-if="!isPreview"
+        >
           <div class="drag-handle">
             <i class="el-icon-rank"></i>
           </div>
           <div
             class="delete-btn"
-            @click.stop="handleDeleteComponent(item,item.id)"
+            @click.stop="handleDeleteComponent(item, item.id)"
             title="删除组件"
           >
             <i class="el-icon-delete"></i>
@@ -46,12 +57,12 @@
             :currentId="currentId"
           />
         </div>
-          <!--暂时取消对高度的推拽更改-->
-<!--        <div-->
-<!--          v-if="!isPreview"-->
-<!--          class="resize-handle"-->
-<!--          @mousedown.stop.prevent="startResize($event, item)"-->
-<!--        ></div>-->
+        <!--暂时取消对高度的推拽更改-->
+        <!--        <div-->
+        <!--          v-if="!isPreview"-->
+        <!--          class="resize-handle"-->
+        <!--          @mousedown.stop.prevent="startResize($event, item)"-->
+        <!--        ></div>-->
       </div>
 
       <!-- 悬浮组件渲染区域 - chat-by-mobile -->
@@ -88,7 +99,7 @@ import dragStore from '../app-materials/store/dragStore'
 import pageItem from "@/pages/datav/component/page-item/page-item.vue";
 import floatComponent from "./float-component.vue";
 import chatByMobile from "@/pages/low-app/editor-home/chatByMobile.vue";
-import {$delete} from "@/common/http";
+import { $delete } from "@/common/http";
 
 export default {
   name: "render-page",
@@ -103,7 +114,7 @@ export default {
       screenType: 'mobile', // 默认屏幕类型 mobile /pc
       pageConfig: {}, // 页面配置
       inEdit: true, // 是否处于编辑状态
-      currentId: null, // 当前选中的组件ID
+      // currentId: null, // 当前选中的组件ID
       resizing: false, // 是否正在调整大小
       currentResizeItem: null, // 当前正在调整大小的组件
       startY: 0, // 开始调整时的Y坐标
@@ -113,15 +124,19 @@ export default {
       swappedComponents: new Set(), // 存储被交换的组件ID
     }
   },
-  props:{
-    isPreview:{
+  props: {
+    isPreview: {
       type: Boolean,
       default: false
     },
     components: {
       type: Array,
-      default: ()=> []
-    }
+      default: () => []
+    },
+    currentId: {
+      type: [String, Number],
+      default: ''
+    },
   },
   computed: {
     // 普通组件（非悬浮组件）
@@ -167,10 +182,10 @@ export default {
   methods: {
 
     //移动端不需要使用遮罩方式，批处理带遮罩的组件
-    handleDeleteOverlay(){
+    handleDeleteOverlay() {
       let dom = document.getElementsByClassName('page-item__overlay')
-      if(dom && dom.length>0){
-        Array.from(dom).forEach(d=>{d.style.display="none";});
+      if (dom && dom.length > 0) {
+        Array.from(dom).forEach(d => { d.style.display = "none"; });
       }
     },
     // 处理删除组件
@@ -240,15 +255,15 @@ export default {
     rearrangeComponents(isNewComponent = false) {
       // 先根据com_seq值排序
       this.currentComponents.sort((a, b) => a.com_seq - b.com_seq)
-      
+
       // 更新每个组件的z-index、拖拽索引和com_seq值
       this.currentComponents.forEach((comp, index) => {
         const oldSeq = comp.com_seq
         const newSeq = (index + 1) * 100
-        
+
         comp.layout_z = index + 1
         comp.dragIndex = index
-        
+
         // 只有在非新组件添加的情况下，才更新com_seq和isPositionChanged状态
         if (!isNewComponent) {
           comp.com_seq = newSeq
@@ -282,7 +297,7 @@ export default {
         case 'component':
           return item.component || 'page-item'
         case '咨询入口':
-          return item.component='chat-by-mobile'
+          return item.component = 'chat-by-mobile'
         default:
           return 'page-item'
       }
@@ -291,17 +306,20 @@ export default {
     // 获取组件样式
     getComponentStyle(item) {
       if (!item) return {}
-      
+
       return {
         width: '100%',
         height: '100%',
         pointerEvents: 'auto'
       }
     },
-
+    handleClick() {
+      debugger
+      this.handleComponentClick()
+    },
     // 处理组件点击事件
     handleComponentClick(item) {
-      this.$emit('componentClick', this.currentComponents,item)
+      this.$emit('componentClick', this.currentComponents, item)
       // 触发组件更新事件
       this.$emit('UpdateComponents', this.currentComponents)
     },
@@ -309,10 +327,10 @@ export default {
     // 添加新组件
     addComponent(componentData) {
       if (!componentData) return
-      
+
       // 生成唯一ID
       const id = componentData.id || `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      
+
       // 创建新组件数据
       const newComponent = {
         id,
@@ -323,9 +341,9 @@ export default {
         com_seq: componentData.com_seq || (this.currentComponents.length + 1) * 100,
         isPositionChanged: false, // 新添加的组件默认未变更位置
         _editType: 'add', // 添加编辑类型标识
-        _duplicate_id:componentData.id?componentData.id:'',
+        _duplicate_id: componentData.id ? componentData.id : '',
         ...componentData.data,
-        com_name:componentData.comp_label || componentData.chart_name || componentData.label
+        com_name: componentData.comp_label || componentData.chart_name || componentData.label
       }
 
       // 添加到组件列表末尾
@@ -378,13 +396,13 @@ export default {
     // 开始调整大小
     startResize(event, item) {
       if (!this.inEdit) return
-      
+
       const wrapper = event.target.closest('.component-wrapper')
       if (!wrapper) return
-      
+
       // 禁用拖拽
       wrapper.draggable = false
-      
+
       this.resizing = true
       this.currentResizeItem = item
       this.startY = event.clientY
@@ -401,7 +419,7 @@ export default {
       const deltaY = event.clientY - this.startY
       const deltaYRem = deltaY / 16
       const newHeight = Math.max(6.25, this.startHeight + deltaYRem)
-      
+
       // 直接更新组件的高度
       this.currentResizeItem.layout_height = newHeight
     },
@@ -409,7 +427,7 @@ export default {
     // 停止调整大小
     stopResize(event) {
       if (!this.resizing) return
-      
+
       // 恢复拖拽
       if (this.currentResizeItem) {
         const wrapper = document.querySelector(`[data-id="${this.currentResizeItem.id}"]`)
@@ -417,10 +435,10 @@ export default {
           wrapper.draggable = true
         }
       }
-      
+
       this.resizing = false
       this.currentResizeItem = null
-      
+
       // 移除全局鼠标事件监听
       document.removeEventListener('mousemove', this.handleResize)
       document.removeEventListener('mouseup', this.stopResize)
@@ -530,19 +548,19 @@ export default {
       this.dragIndex = -1;
       this.dragOverIndex = -1;
     },
-    
+
     // 获取被交换的组件
     getSwappedComponents() {
-      return this.currentComponents.filter(comp => 
+      return this.currentComponents.filter(comp =>
         this.swappedComponents.has(comp.id)
       )
     },
-    
+
     // 清除交换记录
     clearSwapRecord() {
       this.swappedComponents.clear()
     },
-    
+
     // 获取位置发生变更的组件
     getPositionChangedComponents() {
       return this.currentComponents.filter(comp => comp.isPositionChanged)
@@ -585,7 +603,7 @@ export default {
           };
           dragData._type = "component";
         }
-        if(dragData.type==='qrCode'){
+        if (dragData.type === 'qrCode') {
 
           dragData._type = "component";
         }
@@ -684,7 +702,7 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-radius:0.9375rem;
+  border-radius: 0.9375rem;
   width: 375px;
   height: 667px;
   margin: 5vh auto;
@@ -713,24 +731,63 @@ export default {
   border-radius: 0.3125rem;
   position: relative;
   flex-shrink: 0;
-  
+
+  &.selected {
+    // &::after {
+    //   content: '';
+    //   position: absolute;
+    //   top: -2px;
+    //   left: -2px;
+    //   right: -2px;
+    //   bottom: -2px;
+    //   border: 4px solid #1890ff;
+    //   border-radius: 0.3125rem;
+    //   pointer-events: none;
+    //   z-index: 10;
+    // }
+
+    .component-header {
+      background-color: rgba($color: #1890ff, $alpha: 1);
+      opacity: 1;
+      color: #fff;
+
+      .drag-handle {
+        color: #fff;
+
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: -2px;
+        border-bottom: 2px solid #1890ff;
+        border-radius: 0;
+        pointer-events: none;
+        z-index: 10;
+      }
+    }
+  }
+
   &.dragging {
     opacity: 0.5;
     cursor: move;
   }
-  
+
   &.drag-over {
     border: 2px dashed #1890ff;
     transform: translateY(0.625rem);
   }
-  
+
   &:hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    
+
     .delete-btn {
       opacity: 1;
     }
-    
+
     .resize-handle {
       background-color: #40a9ff;
     }
@@ -763,7 +820,7 @@ export default {
   cursor: move;
   color: #666;
   padding: 0.25rem;
-  
+
   &:hover {
     color: #1890ff;
   }
@@ -798,12 +855,12 @@ export default {
   color: #fff;
   opacity: 0;
   transition: all 0.3s ease;
-  
+
   &:hover {
     background-color: #ff4d4f;
     transform: scale(1.1);
   }
-  
+
   i {
     font-size: 0.875rem;
   }
@@ -817,7 +874,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &::after {
     content: '';
     width: 2rem;
@@ -825,11 +882,11 @@ export default {
     background-color: #fff;
     border-radius: 0.0625rem;
   }
-  
+
   &:hover {
     background-color: #40a9ff;
   }
-  
+
   &:active {
     background-color: #096dd9;
   }
@@ -841,6 +898,7 @@ export default {
   z-index: 1000;
   border-radius: 50%;
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+
   /* 编辑模式下的样式 */
   &.floating-edit-mode {
     &.selected {
