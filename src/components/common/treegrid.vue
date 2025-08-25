@@ -132,6 +132,7 @@
         :sortable="item.sortable && !isMem() ? 'custom' : false"
       >
         <template slot-scope="scope">
+
           <file-list
             v-if="['FileList', 'Image'].includes(item.col_type)"
             :data="scope.row"
@@ -176,6 +177,55 @@
             </template>
           </template>
 
+          <!-- 二进制文件 -->
+          <div v-else-if="item.col_type === 'ImgBin'">
+            <el-image
+              style="width: 50px; height: 50px"
+              :src="blobToBase64(scope.row[item.column])"
+              fit="cover"
+            >
+            </el-image>
+          </div>
+
+          <!-- 在线url -->
+          <div v-else-if="item.col_type === 'ImgUrl'">
+            <el-image
+              style="width: 50px; height: 50px"
+              :src="setImgUrl(scope.row[item.column])"
+              fit="cover"
+            >
+            </el-image>
+          </div>
+          <!-- 进度条、星级评分 -->
+          <div v-else-if="
+            item.srvcol &&
+            item.srvcol.subtype &&
+            ['progress', 'rate'].includes(item.srvcol.subtype)
+          ">
+            <el-rate
+              :value="scope.row[item.column]"
+              show-score
+              :disabled="true"
+              text-color="#ff9900"
+              style="width: 100%"
+              v-if="item.srvcol.subtype === 'rate'"
+            >
+            </el-rate>
+            <el-progress
+              :percentage="scope.row[item.column] || 0"
+              :text-inside="true"
+              :stroke-width="18"
+              v-else-if="item.srvcol.subtype === 'progress'"
+            ></el-progress>
+          </div>
+          <div v-else-if="item.col_type === 'progress'">
+            <el-progress
+              :text-inside="true"
+              :stroke-width="18"
+              :percentage="scope.row[item.column]"
+            ></el-progress>
+          </div>
+
           <p
             v-else-if="
               formatValue(scope.row, item) &&
@@ -187,6 +237,95 @@
               openHtmlrecoverFileAddress4richText(formatValue(scope.row, item))
               "
           ></p>
+          <!-- Enum | Dict 根据配置显示图标 -->
+          <div v-else-if="
+            (item.col_type === 'Enum' || item.col_type === 'Dict') &&
+            item.show_option_icon !== false
+          ">
+            <div
+              v-for="(optionIcon, index) in item.show_option_icon"
+              :key="index"
+              class="row-icons"
+            >
+              <img
+                fit="contain"
+                v-if="scope.row[item.column] === optionIcon.value"
+                :src="optionIcon.icon"
+              />
+            </div>
+          </div>
+
+          <!-- 图片预览 -->
+          <div
+            v-else-if="item.col_type === 'Image' && scope.row[item.column]"
+            class="list-image"
+          >
+            <el-image
+              :src="getImagePath(scope.row[item.column], 30)"
+              :preview-src-list="[getImagePath(scope.row[item.column])]"
+            >
+            </el-image>
+          </div>
+          <!-- 文件预览 -->
+          <div
+            v-else-if="
+              item.col_type === 'FileList' && getListShowFileList(item)
+            "
+            class="list-image"
+          >
+            <div
+              style="display: flex; align-items: center"
+              :title="fileItem.src_name"
+              v-for="(fileItem, index) in getListFileDatas(item, scope.row)"
+              :key="index"
+            >
+              <i
+                v-show="getFileType(fileItem) === 'img' ||
+                  getFileType(fileItem) === 'pdf' ||
+                  getFileType(fileItem) === 'ppt'
+                  "
+                title="预览"
+                style="cursor: pointer"
+                class="el-icon-view"
+                @click.stop="
+                  onPreView(
+                    fileItem,
+                    index,
+                    getListFileDatas(item, scope.row)
+                  )
+                  "
+              >
+              </i>
+              <el-link
+                @click="getDownloadFile(fileItem)"
+                v-if="getListFileDatas(item, scope.row).length > 0"
+              >
+                <i :class="getFileType(fileItem) === 'img'
+                  ? 'el-icon-picture-outline'
+                  : getFileType(fileItem) === 'doc'
+                    ? 'el-icon-tickets'
+                    : getFileType(fileItem) === 'media'
+                      ? 'el-icon-picture-outline'
+                      : 'el-icon-folder'
+                  "></i>
+                {{ getStrIntercept(fileItem.src_name, 0) }}
+              </el-link>
+              <!-- <span></span> -->
+            </div>
+          </div>
+          <a
+            v-if="item.linkUrlFunc"
+            v-show="scope.row[item.column]"
+            style="
+                      white-space: nowrap;
+                      color: dodgerblue;
+                      cursor: pointer;
+                    "
+            @click="onLinkClicked(scope.row, item)"
+          >
+            {{ formatValue(scope.row, item) }}
+          </a>
+
           <a
             class="link-to-detail"
             title="点击查看详情"

@@ -373,6 +373,8 @@
                   >
                   </el-image>
                 </div>
+
+                <!-- 进度条、星级评分 -->
                 <div v-else-if="
                   item.srvcol &&
                   item.srvcol.subtype &&
@@ -470,6 +472,7 @@
                 <!-- <div v-else-if="item.col_type === 'FileList'">
                     <upload-file :field="wrapCellIntoField(item.column, scope.row[item.column])"></upload-file>
                   </div> 1116隐藏-->
+                <!-- 文件预览 -->
                 <div
                   v-else-if="
                     item.col_type === 'FileList' && getListShowFileList(item)
@@ -758,7 +761,6 @@
         :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)"
         @executor-complete="onAddFormExecutorComplete"
-
         @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
         @close-dialog="closeDialog"
