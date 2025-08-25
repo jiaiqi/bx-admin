@@ -134,7 +134,7 @@
         <template slot-scope="scope">
 
           <file-list
-            v-if="['FileList', 'Image'].includes(item.col_type)"
+            v-if="['FileList'].includes(item.col_type)"
             :data="scope.row"
             :field="item"
           ></file-list>
@@ -314,7 +314,7 @@
             </div>
           </div>
           <a
-            v-if="item.linkUrlFunc"
+            v-else-if="item.linkUrlFunc"
             v-show="scope.row[item.column]"
             style="
                       white-space: nowrap;
