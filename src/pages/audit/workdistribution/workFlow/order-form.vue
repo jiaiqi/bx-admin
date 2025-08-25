@@ -630,14 +630,6 @@ export default {
 
       }).catch(err=>{})
     },
-    /**
-     * @Description:生产工单变化信息
-     * @Author:Eirice
-     * @Date: 2025-06-16 10:21:20
-     */
-    initOrderNoInfo(){
-
-    },
     initQuerySearch(){
      let _this = this;
       orderUtils.getPromoterInfo().then(res => {
@@ -675,15 +667,12 @@ export default {
         this.getTrafficFlow()
       }
     },
-    //打开发起人弹窗
     setPromoter(){
       this.showModal=true;
     },
-    //打开机构编号
     setInstituion(){
       this.showInsMod=true;
     },
-    //获取发起人弹窗表格被双击数据
     getPromoterRow(row){
       this.operatorName=[row];
       // this.ruleForm.operator_name= this.operatorName[0].user_id;
@@ -691,13 +680,11 @@ export default {
       this.ruleForm.operator_id=this.operatorName[0].user_id;
       this.setOperInfo();
     },
-    //机构编码弹窗双击获取数据
     getInsTableRow(row){
       this.optionsPageOrg=[row];
       this.ruleForm.org_no= this.optionsPageOrg[0].dept_no;
       this.handleFilterPutOrg();
     },
-    //参数去空
     handleSetEmpty(){
       this.handleChangeFee()
       const result = Object.keys(this.ruleForm).reduce((acc, key) => {
@@ -826,11 +813,8 @@ export default {
      * @Date: 2025-06-10 09:45:17
      */
      handleChangeFee(){
-      // 转换费用为数字类型
       const originalFee = typeof this.ruleForm.orginal_fee === 'string' ? parseFloat(this.ruleForm.orginal_fee) : this.ruleForm.orginal_fee;
       const realFee = typeof this.ruleForm.real_fee === 'string' ? parseFloat(this.ruleForm.real_fee) : this.ruleForm.real_fee;
-      
-      // 确保两个费用都是有效的数字
       if (!isNaN(originalFee) && !isNaN(realFee)) {
         const diff = originalFee - realFee;
         this.ruleForm.owe_fee = diff > 0 ? diff : 0;
@@ -867,9 +851,7 @@ export default {
     //重置条件
     restForm(){
       const sel=['sus_vehicle_id','sus_escape_type','pass_time','sus_plate_color','pass_id','real_fee', 'org_id','org_name','org_no', 'org_type','province','operator_name','operator_id','order_no']
-      // 遍历ruleForm的所有字段
       Object.keys(this.ruleForm).forEach(key => {
-        // 如果字段不在sel数组中，则重置为初始值
         if (!sel.includes(key)) {
           this.ruleForm[key] = ''
         }
@@ -877,7 +859,6 @@ export default {
           this.ruleForm[key] = 0
         }
       })
-      // 重置图片相关数据
       this.evidencePic = []
       this.preList = []
       this.picIds = ''
@@ -938,12 +919,8 @@ export default {
     if(base){
        this.ruleForm={...base}
     }
-    console.log('--22',this.ruleForm.org_id);
-
-    // 组件挂载后默认调用一次
   },
   beforeDestroy(){
-    console.log('这是离开时要存的表单',this.ruleForm);
     this.$store.commit('orderForm/handleSetOrderForm',this.ruleForm)
   }
 }

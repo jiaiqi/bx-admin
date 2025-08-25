@@ -33,7 +33,7 @@ export class ActionInfo {
     this.servcie_type = e ? e.servcie_type : null
     this.suffix_actions = e ? e.suffix_actions : null
     this.button_icon = e?.button_icon||null
-
+    this.suffix_actions_params = e?.suffix_actions_params
     /**
    * 处理自定义按钮 风格
    */

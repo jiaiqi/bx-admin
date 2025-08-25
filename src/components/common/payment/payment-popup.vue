@@ -254,53 +254,36 @@ export default{
       
       // 清除验证错误信息
       this.validationError = '';
-      
-      // 设置新的防抖定时器，500ms后执行验证
       this.debounceTimer = setTimeout(() => {
         this.validatePayAmount();
       }, 500);
     },
-    // 验证支付金额
     validatePayAmount() {
       const payAmount = parseFloat(this.payInfo.pay_amount);
       const pendingAmount = parseFloat(this.payInfo.pending_amount);
-      
-      // 检查是否为空
       if (!this.payInfo.pay_amount || this.payInfo.pay_amount.trim() === '') {
         this.validationError = '请输入支付金额';
         return false;
       }
-      
-      // 检查是否为有效数字
       if (isNaN(payAmount) || payAmount <= 0) {
         this.validationError = '请输入有效的支付金额';
         return false;
       }
-      
-      // 使用精确比较，将金额转换为分为单位进行比较
       const payAmountInCents = Math.round(payAmount * 100);
       const pendingAmountInCents = Math.round(pendingAmount * 100);
-      
-      // 检查是否与待支付金额相等
       if (payAmountInCents !== pendingAmountInCents) {
         this.validationError = '支付金额必须与待支付金额相等';
         return false;
       }
-      
-      // 验证通过，清除错误信息
       this.validationError = '';
       return true;
     },
-    // 清除验证错误信息
     clearValidationError() {
       this.validationError = '';
     },
 
-    //确认支付金额与待支付进行比较校准
     handleGetPendingPayAmount(){
-      // 计算待支付金额 - 使用精确计算避免浮点数精度问题
       this.payInfo.pending_amount = this.orderList.reduce((total, item) => {
-        // 将金额转换为分为单位进行计算，避免浮点数精度问题
         const itemAmountInCents = Math.round(parseFloat(item.total_fee) * 100);
         const totalInCents = Math.round(total * 100);
         const newTotalInCents = totalInCents + itemAmountInCents;
@@ -309,31 +292,21 @@ export default{
     },
     //手动提交
     handleSubmit() {
-      // 校验确认支付金额
       if (!this.payInfo.pay_amount || this.payInfo.pay_amount.trim() === '') {
         this.$message.error('请输入确认支付金额');
         return false;
       }
-
-      // 校验付款人姓名
       if (!this.payInfo.pay_user || this.payInfo.pay_user.trim() === '') {
         this.$message.error('请输入付款人姓名');
         return false;
       }
-
-      // 校验支付金额是否正确
       if (!this.validatePayAmount()) {
         this.$message.error('支付金额验证失败，请检查输入');
         return false;
       }
-      
-      // 构建订单详情数组
       this.payInfo.order_details = this.orderList.map(item => ({
         su_order_no: item.su_order_no
       }));
-
-      console.log('提交数据：', this.payInfo);
-      // 深拷贝 payInfo 并去除 pending_amount 字段
       let payInfoParam = JSON.parse(JSON.stringify(this.payInfo));
       delete payInfoParam.pending_amount;
       if(this.payStep===2){
@@ -416,10 +389,6 @@ export default{
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       return parts.join('.');
     }
-  },
-  mounted() {
-    // sessionStorage.removeItem('bx_auth_ticket');
-    // sessionStorage.setItem('bx_auth_ticket','xabxdzkj-a30cecf0-903f-4625-9f5e-c3a93dcfc9f5');
   },
   beforeDestroy() {
     // 组件销毁前清除定时器

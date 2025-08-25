@@ -757,6 +757,8 @@
         :parentPageType="listType"
         :parentMainFormDatas="listMainFormDatas"
         @action-complete="onAddFormActionComplete($event)"
+        @executor-complete="onAddFormExecutorComplete"
+
         @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
         @close-dialog="closeDialog"
@@ -858,6 +860,7 @@
           : null
           "
         @action-complete="onAddFormActionComplete($event)"
+        @executor-complete="onAddFormExecutorComplete"
         @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
       >

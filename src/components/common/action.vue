@@ -254,6 +254,7 @@ export default {
             //   ...pageKey
             // })
           }
+          return response;
         })
         .then((value) => {
           if (
@@ -271,9 +272,12 @@ export default {
 
             self.$router.push(self.info.nav2Location);
           }
+          return value;
         })
-        .then((_) => {
+        .then((result) => {
           self.$emit("action-complete", self.info.name);
+          // self.$emit('action-info', {button:self.info,data:result});
+          this.handleFilterPayMonth(self.info, result);
         })
         .catch(() => {})
         .finally(() => {
@@ -281,6 +285,26 @@ export default {
             loading.close();
           }
         });
+    },
+    //月卡缴费特别处理
+    handleFilterPayMonth(button,data){
+      console.log("handleFilterPayMonth", button);
+      console.log("handleFilterPayMonth---", data);
+      if(button&&button.suffix_actions && button.suffix_actions==='redirect'&&button.suffix_actions_params){
+        if(data&&data.data.response){
+          let ls = data.data.response[0].response.effect_data[0];
+          let nos=ls.bill_no
+          if(!nos) {
+            this.$message({
+              message: "订单bill_no不存在！",
+              type: "erro",
+            });
+            return
+          }
+           let urls=`/vpages/#/pay-month?bill_no=${nos}`
+           this.addTabByUrl(urls, "停车缴费");
+        }
+      }
     },
     clearTimer() {
       let self = this;
