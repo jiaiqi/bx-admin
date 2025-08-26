@@ -298,7 +298,7 @@
               <el-tooltip
                 placement="top"
                 effect="dark"
-                :content="scope.row[item.column]"
+                :content="getTooltipContent(scope.row, item)"
                 :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type)"
               >
                 <div
@@ -306,8 +306,9 @@
                   v-if="['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type) && scope.row[item.column]"
                 >
                   <div
-                    style="max-width: 600px;max-height: 400px;overflow: auto;"
-                    v-html="scope.row[item.column]"
+                    style=""
+                    class="rich-text-content"
+                    v-html="recoverFileAddress4richText(scope.row[item.column])"
                   >
                   </div>
                 </div>
@@ -1365,6 +1366,13 @@ export default {
   },
 
   methods: {
+    getTooltipContent(row, column) {
+      let text = row[column.column] || ''
+      if (text && typeof text === 'number') {
+        text = text + ''
+      }
+      return text;
+    },
     setTableMaxHeight() {
       if (this.$refs.elTableParentDiv?.$el) {
         const parentEle = this.$refs.elTableParentDiv?.$el;
@@ -1863,7 +1871,7 @@ export default {
   }
 
   .el-table td .cell {
-    display: block;
+    display: flex;
     line-height: 23px;
 
     .el-tooltip {
@@ -1934,6 +1942,7 @@ export default {
       border-radius: 4px;
       overflow: hidden;
       margin-right: 4px;
+
       &:last-child {
         margin-right: 0;
       }
@@ -2080,6 +2089,33 @@ export default {
 
   .el-button [class*=el-icon-]+span {
     margin-left: 0;
+  }
+}
+
+.rich-text-content {
+  max-width: 600px;
+  max-height: 400px;
+  overflow: auto;
+
+  /* 整个滚动条 */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  /* 滚动条轨道 */
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  /* 滚动滑块 */
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  /* 滚动滑块在悬停时的样式 */
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
   }
 }
 </style>
