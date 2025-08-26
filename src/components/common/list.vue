@@ -445,7 +445,7 @@
                 <!-- Enum | Dict 根据配置显示图标 -->
                 <div v-else-if="
                   (item.col_type === 'Enum' || item.col_type === 'Dict') &&
-                  item.show_option_icon !== false
+                  item.show_option_icon
                 ">
                   <div
                     v-for="(optionIcon, index) in item.show_option_icon"
