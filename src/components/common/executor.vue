@@ -78,6 +78,16 @@ export default {
       ) {
         // 编辑样式时，gno字段的值和引用行的no字段的值不一致 当前数据不数据被引用行 需要将编辑改为创建，暂时只有样式表这样处理
         query.serviceName = conf.service.replace("update", "add");
+        query['duplicate'] = true;
+        if(Array.isArray(query.condition)){
+          if(!query.condition.find(item=>item.colName==='id') && this.defaultValues?.id){
+            query.condition.push({
+              colName: 'id',
+              operator: 'equal',
+              value: this.defaultValues?.id
+            })
+          }
+        }
         if (query.data?.length) {
           query.data = query.data.map((item) => {
             item[this.gnoColumnInfo?.column] =
@@ -129,6 +139,7 @@ export default {
         ) {
           query["duplicate"] = true;
         }
+        // else if(this.queryMethod === 'add' && )
         if (Array.isArray(query?.data) && query.data.length > 0) {
           query.data = query.data.map((item) => {
             if (item.id) {
