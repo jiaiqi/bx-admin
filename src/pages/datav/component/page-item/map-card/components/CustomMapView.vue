@@ -35,7 +35,7 @@
 
     <!-- 自定义底图-地图视图区域 -->
     <zoom-drag-container
-      :show-tips="true"
+      :show-tips="false"
       :in-edit="inEdit"
       :ignore-scale-classes="['map-marker123','draggable-marker111']"
     >

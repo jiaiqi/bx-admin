@@ -2442,34 +2442,60 @@ function init_util() {
     }
   };
 
-  Vue.prototype.renderStr = (str, obj = {}) => {
-    if (typeof obj === "object" && str && typeof str === "string") {
-      str = str.replace(/\$\{(.*?)\}/g, (match, key) => {
-        key = key.trim();
-        let result = obj[key];
-        let arr = key.split(".");
-        if (arr?.length) {
-          result = obj;
-          arr.forEach((item) => {
-            try {
-              result =
-                result[item] || result[item] === false || result[item] === 0
-                  ? result[item]
-                  : "";
-              if (result === 0) {
-                result = "0";
-              }
-            } catch (e) {
-              //TODO handle the exception
-            }
-          });
+ Vue.prototype.renderStr = (str, obj = {}) => {
+  // if(str && str?.includes('.')&&str.split('.').length>1 && !/\$\{(.*?)\}/g.test(str)){
+  // }
+  
+  // 辅助函数：尝试解析 JSON 字符串
+  const tryParseJson = (value) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        // 只有当解析结果是对象或数组时才返回解析结果
+        if (typeof parsed === 'object' && parsed !== null) {
+          return parsed;
         }
-        return result;
-      });
+      } catch (e) {
+        // 解析失败，返回原值
+      }
     }
-    return str;
+    return value;
   };
-
+  
+  // 如果 obj 本身是 JSON 字符串，先解析它
+  obj = tryParseJson(obj);
+  
+  if (typeof obj === "object" && str && typeof str === "string") {
+    str = str.replace(/\$\{(.*?)\}/g, (match, key) => {
+      key = key.trim();
+      let result = obj[key];
+      let arr = key.split(".");
+      if (arr?.length) {
+        result = obj;
+        arr.forEach((item) => {
+          try {
+            result =
+              result[item] || result[item] === false || result[item] === 0
+                ? result[item]
+                : "";
+            if (result === 0) {
+              result = "0";
+            }
+            // 在每一步访问后，尝试解析 JSON 字符串
+            result = tryParseJson(result);
+          } catch (e) {
+            //TODO handle the exception
+          }
+        });
+      } else {
+        // 对于单层属性访问，也尝试解析 JSON 字符串
+        result = tryParseJson(result);
+      }
+      return result;
+    });
+  }
+  return str;
+};
   /**
    * 将queryString格式的divCond转为数组格式
    * @param {*} url
