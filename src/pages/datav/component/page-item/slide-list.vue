@@ -53,7 +53,8 @@
     </el-carousel>
     <div
       class="swiper-cot"
-      v-else-if="swiperList.length > 1"
+      v-else-if="swiperList.length > 1 || (swiperList.length === 1 && swiperList[0].type === 'vr')"
+      
       style="height: 100%"
     >
       <div
@@ -84,7 +85,7 @@
             <div
               class="swiper-item-box"
               @click.stop="toDetail(item)"
-              :class="{ 'is-vr': item.type === 'vr' && item.vr_no }"
+              :class="{ 'is-vr': item.type === 'vr' }"
             >
               <img
                 :src="item.videoPoster"
@@ -99,12 +100,12 @@
               <!-- VR遮罩层 -->
               <div
                 class="vr-overlay"
-                v-if="item.type === 'vr' && item.vr_no"
+                v-if="item.type === 'vr'"
               >
                 <a
                   class="vr-icon"
                   target="_blank"
-                  :href="getVrUrl(item.vr_no)"
+                  :href="getVrUrl(item.vr_no, item.vrLink)"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -166,7 +167,7 @@
           <img
             v-for="(item, index) in swiperList"
             :key="item.id"
-            :src="item.url"
+            :src="item._thumbnail || item.url"
             @click="changeCarousel(index)"
             :class="{ active: current === index }"
             alt=""
@@ -305,7 +306,10 @@ export default {
     });
   },
   methods: {
-    getVrUrl(no) {
+    getVrUrl(no, link) {
+      if (link) {
+        return link
+      }
       return `/VRhome/#/ModView?no=${no}`;
     },
     changeCarousel(index) {
@@ -490,6 +494,7 @@ export default {
     },
     async getSwiperList() {
       const swiperJson = this.pageItem?.swiper_json;
+      let data = null
       if (swiperJson?.image_origin === "接口请求") {
         let reqJson =
           this.pageItem.swiper_json.srv_req_json || this.pageItem.srv_req_json;
@@ -503,13 +508,15 @@ export default {
         );
         const res = await this.$http.post(url, reqJson);
         if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
+          data = res.data.data[0]
           this.swiperList = res.data.data.map((item, index) => {
             return {
               ...item,
               url: this.getImagePath(item[swiperJson?.srv_col_image]),
+              _thumbnail: this.getImagePath(item[swiperJson?.srv_col_image], 100),
               _title: item[swiperJson?.srv_col_title || "title"] || "",
             };
-          });
+          }).filter(item => item && item[swiperJson?.srv_col_image]);
           if (swiperJson?.swiper_options?.includes("单行数据多张图片")) {
             const fileNo = res.data.data[0]?.[swiperJson?.srv_col_image];
             if (fileNo) {
@@ -523,6 +530,9 @@ export default {
                 if (file?.fileurl?.indexOf("http") === 0) {
                   file.url = file.fileurl;
                 }
+
+                file._thumbnail = `${prefix}${response.body.data[i].fileurl}?thumbnailType=fwsu_40`;
+
                 list.push(file);
               }
               this.swiperList = list;
@@ -546,11 +556,53 @@ export default {
         }
       }
       if (swiperJson?.vr_no && swiperJson?.vr_cover) {
-        this.swiperList.unshift({
-          url: this.getImagePath(swiperJson?.vr_cover),
-          type: "vr",
-          vr_no: swiperJson?.vr_no,
-        });
+        let img = swiperJson?.vr_cover
+        let name = ''
+        let vrNo = swiperJson?.vr_no
+        let vrLink = ''
+        if (data && typeof data === 'object') {
+          if (swiperJson.vr_img_col) {
+            let col = swiperJson.vr_img_col
+            if (col?.includes('.') && !col?.includes('${')) {
+              img = this.renderStr('${' + col + '}', data)
+            } else {
+              img = data[col]
+            }
+          }
+          if (swiperJson.vr_name_col) {
+            let col = swiperJson.vr_name_col
+            if (col?.includes('.') && !col?.includes('${')) {
+              name = this.renderStr('${' + col + '}', data)
+            } else {
+              name = data[col]
+            }
+          }
+          if (swiperJson.vr_link_col) {
+            let col = swiperJson.vr_link_col
+            if (col?.includes('.') && !col?.includes('${')) {
+              vrLink = this.renderStr('${' + col + '}', data)
+            } else {
+              vrLink = data[col]
+            }
+          }
+          if (swiperJson.vr_no_col) {
+            let col = swiperJson.vr_no_col
+            if (col?.includes('.') && !col?.includes('${')) {
+              vrNo = this.renderStr('${' + col + '}', data)
+            } else {
+              vrNo = data[col]
+            }
+          }
+        }
+        if (vrNo) {
+          this.swiperList.unshift({
+            _thumbnail: this.getImagePath(img, 100),
+            url: this.getImagePath(img),
+            type: "vr",
+            vr_no: vrNo,
+            vrLink
+          });
+        }
       }
     },
   },

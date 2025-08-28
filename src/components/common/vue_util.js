@@ -49,7 +49,10 @@ function init_util() {
         no = no.split("&bx_auth_ticket")[0];
       }
       let url = `${serviceApi.imageFileNo
-        }${no}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+        }${no}`;
+      if(sessionStorage.getItem("bx_auth_ticket")){
+        url += `&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`
+      }
       // if (notThumb === false) {
       //   url += `&thumbnailType=fwsu_100`
       // }
