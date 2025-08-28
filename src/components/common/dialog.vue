@@ -20,7 +20,7 @@
     </el-dialog>
     <el-dialog
       class="customDialogClass"
-      title="添加"
+      :title="getActiveFormName || '添加'"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'add'"
@@ -39,6 +39,8 @@
         :defaultValues="defaultValues"
         :parentMainFormDatas="listMainFormDatas"
         @action-complete="onActionComplete($event)"
+        @form-loaded="onFormLoaded"
+        :serviceViewName.sync="serviceViewName"
       >
       </add>
 
@@ -69,7 +71,7 @@
 
     <el-dialog
       class="customDialogClass"
-      title="编辑"
+      :title="getActiveFormName || '编辑'"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'update'"
@@ -87,7 +89,9 @@
         :defaultValues="defaultValues"
         :defaultConditions="defaultConditions"
         :parentPageType="'list'"
+        @form-loaded="onFormLoaded"
         @action-complete="onActionComplete"
+        :serviceViewName.sync="serviceViewName"
       >
       </update>
       <!-- <simple-update name="update" :appNo="customSrvApp" :init-load="initLoad" ref="update-form" v-if="activeForm == 'update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null">
@@ -96,7 +100,7 @@
 
     <el-dialog
       class="customDialogClass"
-      title="详情"
+      :title="getActiveFormName || '详情'"
       width="90%"
       :close-on-click-modal="1 == 2"
       :visible="activeForm == 'detail'"
@@ -110,6 +114,7 @@
         :service="service"
         :default-conditions="defaultConditions"
         :default-values="defaultValues"
+        :serviceViewName.sync="serviceViewName"
       >
       </simple-detail>
     </el-dialog>
@@ -130,6 +135,7 @@
         :service="service"
         :default-condition="defaultConditions"
         list-type="list"
+        :serviceViewName.sync="serviceViewName"
       >
       </list>
     </el-dialog>
@@ -149,6 +155,7 @@
         v-if="activeForm == 'treegrid'"
         :service="service"
         :default-condition="defaultConditions"
+        :serviceViewName.sync="serviceViewName"
       >
       </treegrid>
     </el-dialog>
@@ -168,6 +175,7 @@
         v-if="activeForm == 'editgrid'"
         :service="service"
         :buttonInfo="buttonInfo"
+        :serviceViewName.sync="serviceViewName"
       >
       </edit-grid>
     </el-dialog>
@@ -188,6 +196,7 @@
         :gridData="gridData"
         :_service="_service"
         :buttonInfo="buttonInfo"
+        :serviceViewName.sync="serviceViewName"
       >
       </select-fill-grid>
     </el-dialog>
@@ -207,6 +216,7 @@
         :mainData="listMainFormDatas"
         :initSelectedDatas="batchInitConfig"
         :buttonInfo="buttonInfo"
+        :serviceViewName.sync="serviceViewName"
       >
       </batchEditGrid>
     </el-dialog>
@@ -230,7 +240,8 @@
         :default-conditions="defaultConditions"
         :default-values="defaultValues"
         @action-complete="onActionComplete"
-        @form-loaded="onFormLoaded('update')"
+        @form-loaded="onFormLoaded"
+        :serviceViewName.sync="serviceViewName"
       >
       </simple-update>
 
@@ -305,7 +316,7 @@ export default {
     return {
       preventNav: false, //阻止默认的跳转行为
       isLastStep: () => true,
-      inStep:false
+      inStep: false
     };
   },
   mixins: [ExecutorMixin],
@@ -317,6 +328,18 @@ export default {
     rowData: Object,
   },
   computed: {
+    getActiveFormName() {
+      let pages_attribute = sessionStorage.getItem('pages_attribute')
+      if (pages_attribute && typeof pages_attribute === 'string') {
+        try {
+          pages_attribute = JSON.parse(pages_attribute)
+        } catch (error) {
+        }
+        if (pages_attribute['使用服务名作为弹窗标题'] === '是') {
+          return this.serviceViewName
+        }
+      }
+    },
     customSrvApp: function () {
       let app = localStorage.getItem("activeApp");
       if (this.buttonInfo && this.buttonInfo.application) {
@@ -358,6 +381,7 @@ export default {
       defaultCondition: null,
       listMainFormDatas: null,
       batchInitConfig: null,
+      serviceViewName: null,
     };
   },
 
@@ -369,11 +393,15 @@ export default {
     closeDialog() {
       this.activeForm = "xx";
     },
-    onFormLoaded(operate_type) {
+    onFormLoaded(formVm) {
       var me = this;
+      const serviceViewName = formVm?.getBasicForm()?.formV2?.service_view_name
+      this.serviceViewName = serviceViewName
       let form = this.$refs["list-update-form"];
+      if (!form?.srvCols) {
+        return
+      }
       var srv_cols = form.srvCols;
-
       for (var field of srv_cols) {
         if (!field.batch_col) {
           if (form.fields[field.table_column] != undefined) {
