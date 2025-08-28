@@ -1,7 +1,10 @@
 <template>
   <div class="data-view-list">
     <!-- 自定义加载动画 -->
-    <div class="custom-loading" v-if="loading">
+    <div
+      class="custom-loading"
+      v-if="loading"
+    >
       <div class="loading-spinner">
         <div class="spinner-ring"></div>
         <div class="spinner-ring"></div>
@@ -491,6 +494,8 @@ export default {
           this.listConfig?.tbl_head_bg ||
           this.setStyle?.["--tbl_head_bg"] ||
           null,
+        "--tbl_head_color":
+          this.listConfig?.tbl_head_color || this.setStyle?.["--tbl_head_bg"] || null,
         "--cell_bg":
           this.listConfig?.cell_bg || this.setStyle?.["--cell_bg"] || null,
         "--cell_color":
@@ -1001,6 +1006,7 @@ export default {
       scrollbar-width: none;
       scrollbar-width: thin;
       scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+
       &::-webkit-scrollbar {
         width: 3px;
         height: 3px;
@@ -1173,6 +1179,7 @@ export default {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1187,9 +1194,12 @@ export default {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.6;
   }
+
   50% {
     opacity: 1;
   }
@@ -1203,5 +1213,4 @@ export default {
 .data-view-list[data-theme="dark"] .loading-text {
   color: #ccc;
 }
-
 </style>

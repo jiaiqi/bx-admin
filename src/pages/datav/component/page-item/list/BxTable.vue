@@ -12,7 +12,7 @@
         v-for="col in tableColumn"
         :key="col.columns"
         :style="{
-          color: setStyle && setStyle.color,
+          color: setStyle && setStyle.color ? 'var(--tbl_head_color,' + setStyle.color + ')' : null,
           'font-size': setStyle && setStyle['font-size'],
         }"
         :title="col.label"
@@ -378,7 +378,12 @@ export default {
   }
 
   .table-head {
+    color: var(--tbl_head_color);
     background-color: var(--tbl_head_bg, rgba($color: #F0F3F9, $alpha: 0.1));
+
+    .table-column {
+      color: var(--tbl_head_color);
+    }
   }
 }
 
