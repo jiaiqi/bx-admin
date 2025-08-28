@@ -3371,14 +3371,17 @@ export default {
         if (this.defaultOrder.length > 0) {
           this.order = this.order.concat(this.defaultOrder);
         }
-
-        this.loadTableData().finally((_) => {
-          if (this.defaultInplaceEditMode) {
-            this.onInplaceEditClicked();
-          }
-
+        if (!['addchildlist'].includes(this.listType)) {
+          this.loadTableData().finally((_) => {
+            if (this.defaultInplaceEditMode) {
+              this.onInplaceEditClicked();
+            }
+            this.$emit("list-loaded", this);
+          });
+        } else {
           this.$emit("list-loaded", this);
-        });
+        }
+
       } catch (e) {
         // handle case in add child list
 
