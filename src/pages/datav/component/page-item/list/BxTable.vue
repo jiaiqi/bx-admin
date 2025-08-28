@@ -45,10 +45,13 @@
             v-for="col in tableColumn"
             :title="formatValue(item, col)"
             :key="col.columns"
-            :style="{
-              color: setStyle && setStyle.color,
-              'font-size': setStyle && setStyle['font-size'],
-            }"
+            :style="[
+              {
+                color: setStyle && setStyle.color,
+                'font-size': setStyle && setStyle['font-size'],
+              },
+              getElementStyle
+            ]"
           >
             <el-image
               class="td-img"
@@ -82,6 +85,8 @@
 </template>
 
 <script>
+import { formatStyleData } from "@/pages/datav/common/index.js";
+
 export default {
   name: 'BxTable',
   props: {
@@ -147,6 +152,15 @@ export default {
     };
   },
   computed: {
+    getElementStyle() {
+      const config = this.listConfig;
+      let style = {};
+      if (config["element_style_json"]) {
+        style = config["element_style_json"];
+      }
+      style = formatStyleData(style);
+      return style;
+    },
     // 滚动方向
     scrollDirection() {
       return this.listConfig?.animation_direction === "由上至下" ? "down" : "up";
