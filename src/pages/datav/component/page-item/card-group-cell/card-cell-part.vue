@@ -2,7 +2,7 @@
   <Fragment v-if="partsShow">
     <LiquidFillChart
       v-if="partsType === '水球图'"
-      :value="getPartModelData"
+      :value="setPartModelData"
       :ref="partsType"
       :style="[buildColStyleJson]"
       :color="setLiquidConfig.color"
@@ -22,7 +22,7 @@
       :class="{
         'cursor-pointer': isLink,
       }"
-      :src="getImagePath(getPartModelData)"
+      :src="getImagePath(setPartModelData)"
       :style="[buildColStyleJson]"
       v-if="['视频'].includes(partsType)"
       :ref="partsType"
@@ -47,7 +47,7 @@
       :style="[buildColStyleJson, animationStyle]"
       :ref="partsType"
     >
-      {{ getPartModelData }}
+      {{ setPartModelData }}
     </div>
     <div
       v-else-if="['variable', '变量'].includes(cellItem.parts_type)"
@@ -59,7 +59,7 @@
       :style="[buildColStyleJson]"
       :ref="partsType"
     >
-      {{ getPartModelData || "" }}
+      {{ setPartModelData || "" }}
     </div>
     <el-image
       v-else-if="['图片', 'iconImg'].includes(item.parts_type)"
@@ -68,7 +68,7 @@
       :height="buildColStyleJson.height || 'auto'"
       :width="buildColStyleJson.width || '100%'"
       :border-radius="buildColStyleJson['border-radius']"
-      :src="getImagePath(getPartModelData, 150)"
+      :src="getImagePath(setPartModelData, 150)"
       class="demo-layout bx-text-cell"
       :class="{
         'cursor-pointer': isLink,
@@ -82,7 +82,7 @@
       :disabled="true"
       v-else-if="['rate', '星级评分'].includes(item.parts_type)"
       :count="5"
-      :value="Number(getPartModelData) || 0"
+      :value="Number(setPartModelData) || 0"
       :ref="partsType"
     ></el-rate>
     <el-progress
@@ -92,16 +92,16 @@
       :count="5"
       :define-back-color="buildColStyleJson['background-color'] || ''"
       :color="buildColStyleJson.color || '#2979ff'"
-      :percentage="Number(getPartModelData) || 0"
+      :percentage="Number(setPartModelData) || 0"
       :ref="partsType"
     ></el-progress>
     <i
       v-else-if="
         iconPartTypes.includes(item.parts_type) &&
-        getPartModelData &&
-        getPartModelData.indexOf('el-icon-') === 0
+        setPartModelData &&
+        setPartModelData.indexOf('el-icon-') === 0
       "
-      :class="[getPartModelData, { 'cursor-pointer': isLink }]"
+      :class="[setPartModelData, { 'cursor-pointer': isLink }]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
       :ref="partsType"
@@ -110,7 +110,7 @@
       v-else-if="iconPartTypes.includes(item.parts_type) && getIconName"
       :icon="getIconName"
       class="bx-cell-icon"
-      :class="[{ 'cursor-pointer': isLink }, getPartModelData]"
+      :class="[{ 'cursor-pointer': isLink }, setPartModelData]"
       :style="[buildColStyleJson]"
       @click.stop="onClickSubBlock()"
       :ref="partsType"
@@ -118,18 +118,17 @@
     <div
       v-else-if="item.parts_type == '富文本'"
       :style="[buildColStyleJson]"
-      v-html="recoverFileAddress4richText(getPartModelData)"
+      v-html="recoverFileAddress4richText(setPartModelData)"
       :ref="partsType"
     ></div>
     <qr-code
       :size="getQrcodeSize"
-      :text="getPartModelData || 'https://www.baidu.com'"
+      :text="setPartModelData || 'https://www.baidu.com'"
       :color="buildColStyleJson.color || '#000000'"
       :style="[buildColStyleJson]"
       v-else-if="cellItem.parts_type == '二维码'"
       :ref="partsType"
       @click.native.stop="onClickSubBlock()"
-
     ></qr-code>
     <div
       ref="bxCellContainer"
@@ -202,7 +201,6 @@
             @on-click-cell="onClickCell"
             @show-dialog="showDialog"
             @refresh-component="$emit('refresh-component')"
-
           ></card-cell-part>
         </template>
       </template>
@@ -244,6 +242,8 @@ import {
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
+import { getFilePath } from "@/common/httpUtil";
+import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -423,7 +423,7 @@ export default {
     },
     // 数字动画完整配置
     numberAnimationConfig() {
-      const number = Number(this.getPartModelData);
+      const number = Number(this.setPartModelData);
       return {
         from: 0,
         to: isNaN(number) ? 0 : number,
@@ -434,7 +434,7 @@ export default {
     },
     getIconName() {
       if (this.iconPartTypes.includes(this.cellItem?.parts_type)) {
-        let icon = this.getPartModelData || "";
+        let icon = this.setPartModelData || "";
         if (icon) {
           if (icon?.startsWith("i-")) {
             return icon.replace("i-", "");
@@ -509,9 +509,9 @@ export default {
       return this.getImagePath(poster);
     },
     resetRichTextHtml() {
-      if (this.getPartModelData && typeof this.getPartModelData === "string") {
+      if (this.setPartModelData && typeof this.setPartModelData === "string") {
         // 将所有nowrap改为wrap，防止一行展示不全不自动换行
-        return this.getPartModelData.replace(/nowrap/gi, "wrap");
+        return this.setPartModelData.replace(/nowrap/gi, "wrap");
       } else {
         return "";
       }
@@ -558,10 +558,89 @@ export default {
       }
       return obj;
     },
+    setPartModelData() {
+      return this.getPartModelData()
+    },
+    partsShow() {
+      const item = this.cellItem;
+      const itemData = this.cellItemData || {};
+      const map = this.setComColMap || {};
+      let show = true;
+      if (
+        item.disp_flag === "显示" &&
+        item?.disp_variable?.includes("手风琴")
+      ) {
+        return this.accordionSeq === this.activeAccordionSeq;
+      }
+      // 根据显示条件判断是否显示 islogin代表是否登录
+      if (item.disp_flag && item?.disp_variable?.toLowerCase() === "islogin") {
+        if (item.disp_flag === "显示") {
+          return item.disp_compare_value === "是"
+            ? !!this.logined
+            : !this.logined;
+        } else if (item.disp_flag === "隐藏") {
+          return item.disp_compare_value === "是"
+            ? !this.logined
+            : !!this.logined;
+        }
+      } else if (item && itemData) {
+        if (
+          item.disp_flag == "显示" &&
+          item.disp_variable &&
+          map.hasOwnProperty(item.disp_variable)
+        ) {
+          show = false;
+          let val =
+            itemData[map[item.disp_variable]] ||
+            this.queryOptions[map[item.disp_variable]] ||
+            null;
+          let dispValue = item.disp_compare_value || null; // 显示值
+          if (dispValue === "notnull") {
+            show = !!val;
+          } else if (dispValue && val) {
+            dispValue = dispValue.split(",");
+            // console.log('dispValue1',dispValue,val,itemData.target_name)
+            if (dispValue.indexOf(val) !== -1) {
+              show = true;
+            }
+          }
+        } else if (
+          item.disp_flag == "隐藏" &&
+          item.disp_variable &&
+          map.hasOwnProperty(item.disp_variable)
+        ) {
+          show = true;
+          let val =
+            itemData[map[item.disp_variable]] ||
+            this.queryOptions[map[item.disp_variable]] ||
+            null;
+          let dispValue = item.disp_compare_value || null; // 隐藏值
+          if (["null", "false"].includes(disp_compare_value)) {
+            show = !!val;
+          } else if (dispValue && val) {
+            dispValue = dispValue.split(",");
+            if (dispValue.indexOf(val) !== -1) {
+              show = false;
+            }
+          }
+        }
+      }
+      // console.log('dispValue2',itemData.rent_type,itemData.rent_status,show)
+      if (!show) {
+        console.log(
+          "dispValue2",
+          itemData.rent_type,
+          itemData.rent_status,
+          show
+        );
+      }
+      return show;
+    },
+  },
+  methods: {
     getPartModelData() {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
-
       let map = this.setComColMap || {};
       let type = item.parts_type;
       let key = item.variable || null;
@@ -592,6 +671,22 @@ export default {
           optionsType = item?.sys_fun;
         }
         switch (optionsType) {
+          case '下载':
+          case '预览':
+            if (getTrueValue === true) {
+              key = item.variable
+              if (key && map.hasOwnProperty(key) && itemData.hasOwnProperty(map[key]) &&
+                itemData[map[key]]) {
+                val = itemData[map[key]]
+              } else if (itemData[key]) {
+                val = itemData[key]
+              } else {
+                val = undefined
+              }
+            } else {
+              val = item.parts_text
+            }
+            break
           case "拨打电话":
             key = item?.para_phone_col || item.variable;
             if (
@@ -711,84 +806,6 @@ export default {
       }
       return val;
     },
-
-    partsShow() {
-      const item = this.cellItem;
-      const itemData = this.cellItemData || {};
-      const map = this.setComColMap || {};
-      let show = true;
-      if (
-        item.disp_flag === "显示" &&
-        item?.disp_variable?.includes("手风琴")
-      ) {
-        return this.accordionSeq === this.activeAccordionSeq;
-      }
-      // 根据显示条件判断是否显示 islogin代表是否登录
-      if (item.disp_flag && item?.disp_variable?.toLowerCase() === "islogin") {
-        if (item.disp_flag === "显示") {
-          return item.disp_compare_value === "是"
-            ? !!this.logined
-            : !this.logined;
-        } else if (item.disp_flag === "隐藏") {
-          return item.disp_compare_value === "是"
-            ? !this.logined
-            : !!this.logined;
-        }
-      } else if (item && itemData) {
-        if (
-          item.disp_flag == "显示" &&
-          item.disp_variable &&
-          map.hasOwnProperty(item.disp_variable)
-        ) {
-          show = false;
-          let val =
-            itemData[map[item.disp_variable]] ||
-            this.queryOptions[map[item.disp_variable]] ||
-            null;
-          let dispValue = item.disp_compare_value || null; // 显示值
-          if (dispValue === "notnull") {
-            show = !!val;
-          } else if (dispValue && val) {
-            dispValue = dispValue.split(",");
-            // console.log('dispValue1',dispValue,val,itemData.target_name)
-            if (dispValue.indexOf(val) !== -1) {
-              show = true;
-            }
-          }
-        } else if (
-          item.disp_flag == "隐藏" &&
-          item.disp_variable &&
-          map.hasOwnProperty(item.disp_variable)
-        ) {
-          show = true;
-          let val =
-            itemData[map[item.disp_variable]] ||
-            this.queryOptions[map[item.disp_variable]] ||
-            null;
-          let dispValue = item.disp_compare_value || null; // 隐藏值
-          if (["null", "false"].includes(disp_compare_value)) {
-            show = !!val;
-          } else if (dispValue && val) {
-            dispValue = dispValue.split(",");
-            if (dispValue.indexOf(val) !== -1) {
-              show = false;
-            }
-          }
-        }
-      }
-      // console.log('dispValue2',itemData.rent_type,itemData.rent_status,show)
-      if (!show) {
-        console.log(
-          "dispValue2",
-          itemData.rent_type,
-          itemData.rent_status,
-          show
-        );
-      }
-      return show;
-    },
-  },
-  methods: {
     getSubJson(cellItem) {
       if (Array.isArray(cellItem?.sub_card_parts_json)) {
         return cellItem.sub_card_parts_json;
@@ -897,7 +914,6 @@ export default {
           return;
         } else if (subCol?.jump_json) {
           // 执行自定义跳转
-          debugger
           if (subCol?.jump_json?.click_type === "弹框") {
             if (subCol?.jump_json?.popup_type === "卡片") {
               const { popup_card_json, popup_placement } = subCol?.jump_json;
@@ -935,8 +951,34 @@ export default {
         let map = this.setComColMap;
         let val = null;
         switch (optionsType) {
+          case "下载":
+          case "预览":
+            val = this.getPartModelData;
+            console.log(optionsType, val);
+            if (val) {
+              this.getFiles(val, "原图")
+                .then((list) => {
+                  if (Array.isArray(list) && list.length > 0) {
+                    if (list.length === 1) {
+                      downloadFile(list[0].__url, list[0].file_type, list[0].src_name);
+                    } else {
+                      this.showFileSelectionModal(list, "download");
+                    }
+                  } else {
+                    this.$message.error(`没有可${optionsType}的文件`);
+                  }
+                })
+                .catch((error) => {
+                  console.error("获取文件列表失败:", error);
+                  this.$message.error("获取文件失败");
+                });
+            } else {
+              this.$message.error(`未配置${optionsType}链接`);
+            }
+            break;
+            break;
           case "拨打电话":
-            // val = this.getPartModelData(subCol, map, item)
+            // val = this.setPartModelData(subCol, map, item)
             val = itemData[subCol.para_phone_col];
             console.log("拨打电话", val);
             if (val) {
@@ -947,8 +989,8 @@ export default {
             }
             break;
           case "发短信":
-            // val = this.getPartModelData(subCol, map, item)
-            val = this.getPartModelData;
+            // val = this.setPartModelData(subCol, map, item)
+            val = this.setPartModelData;
             console.log("发短信", val);
             if (val) {
               window.location.href = `sms:${val}`;
@@ -958,7 +1000,7 @@ export default {
             }
             break;
           case "地图导航":
-            val = this.getPartModelData;
+            val = this.setPartModelData;
             console.log("地图导航", val);
             if (val && val.hasOwnProperty("lat") && val.hasOwnProperty("lgt")) {
               this.$message.error("功能开发中...");
@@ -1006,6 +1048,69 @@ export default {
       500,
       true
     ),
+    // PDF预览方法
+    handlePreview(file) {
+      let currLocation = window.location.href;
+      let hashIndex = currLocation.indexOf("#");
+      if (hashIndex > 0) {
+        let pdfPreviewUrl =
+          currLocation.substring(0, hashIndex) +
+          "#/viewpdf?pdfsrc=" +
+          encodeURIComponent(file.url);
+        this.addTabByUrl(pdfPreviewUrl, "文件预览");
+      }
+    },
+    // 预览文件方法
+    previewFile(url, fileType, fileList, index) {
+      const file = {
+        url: url,
+        file_type: fileType,
+        src_name: fileList[index]?.src_name,
+        fileurl: url
+      };
+
+      // 根据文件类型进行不同的预览处理
+      if (["jpg", "jpeg", "png", "gif", "JPG", "JPEG", "PNG", "GIF"].includes(fileType)) {
+        // 图片预览
+        // this.onPreView(file, index, fileList);
+      } else if (fileType === "pdf") {
+        // PDF预览
+        this.handlePreview(file);
+      } else if (["ppt", "pptx"].includes(fileType)) {
+        // PPT预览
+        const filePath = `${window.backendIpAddr}/file/forward?targetUrl=${url}`
+        const previewUrl = `/vpages/ppt/index.html?file=${encodeURIComponent(filePath)}`;
+        this.addTabByUrl(previewUrl, "文件预览");
+      } else {
+        // 其他文件类型直接下载
+        this.$message.warning("该文件类型不支持预览，将为您下载文件");
+        this.downloadFile(url, fileType, file.src_name);
+      }
+    },
+    // 显示文件选择弹窗（多文件时）
+    showFileSelectionModal(fileList, action) {
+      const fileNames = fileList.map((file, index) => `${index + 1}. ${file.src_name}`).join('\n');
+      this.$prompt(`请选择要${action === 'download' ? '下载' : '预览'}的文件序号:\n${fileNames}`, '文件选择', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /^[1-9]\d*$/,
+        inputErrorMessage: '请输入有效的文件序号'
+      }).then(({ value }) => {
+        const index = parseInt(value) - 1;
+        if (index >= 0 && index < fileList.length) {
+          const file = fileList[index];
+          if (action === 'download') {
+            downloadFile(file.__url, file.file_type, file.src_name);
+          } else {
+            this.previewFile(file.__url, file.file_type, fileList, index);
+          }
+        } else {
+          this.$message.error('文件序号超出范围');
+        }
+      }).catch(() => {
+        // 用户取消操作
+      });
+    },
     getFileUrl(url) {
       if (url?.indexOf("http") === 0) {
         return url;
@@ -1017,7 +1122,7 @@ export default {
       }
     },
     async getFiles(no, size) {
-      let res = await this.getFilePath(no);
+      let res = await getFilePath(no);
       if (res?.length) {
         res = res.map((item) => {
           item.__url = this.getFileUrl(item.fileurl);
@@ -1041,7 +1146,7 @@ export default {
     parseNumberToText() {
       if (this.numberPartTypes.includes(this.cellItem.parts_type)) {
         // 数字类型，解析配置，处理千分位、单位换算等
-        const number = Number(this.getPartModelData);
+        const number = Number(this.setPartModelData);
         if (!isNaN(number)) {
           // 使用formatNumber函数处理数字格式化
           const formattedText = formatNumber(number, this.numberFormatOptions);
@@ -1115,7 +1220,7 @@ export default {
     },
   },
   watch: {
-    getPartModelData() {
+    setPartModelData() {
       this.initPart();
     },
   },

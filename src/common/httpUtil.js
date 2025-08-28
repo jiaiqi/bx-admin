@@ -41,7 +41,7 @@ export const onFetch = async (
     useType: "list",
     rdt: false,
     divCondition: null,
-    isDraft:false
+    isDraft: false
   },
   vm = {}
 ) => {
@@ -84,7 +84,7 @@ export const resolveDefaultSrvApp = function (vm = {}) {
   return app;
 };
 export function findParentHasPageInstance(vm) {
-  if(!vm){
+  if (!vm) {
     return
   }
   if (vm?.procPageInstance) return vm.procPageInstance
@@ -127,7 +127,7 @@ export const doSelect = function (option = {}, vm = {}) {
     draft: draft,
     vpage_no: vpageNo,
     use_type: useType, //2023.10.20增加use_type参数 解决行按钮权限丢失问题
-    draft:isDraft
+    draft: isDraft
   };
   let proc_page_instance = findParentHasPageInstance(vm)
   if (proc_page_instance) {
@@ -220,3 +220,27 @@ export const doSelect = function (option = {}, vm = {}) {
     return $http.post(url, query);
   }
 };
+
+/**
+ * @description 根据file_no查找文件列表
+ * @param {String} file_no - 文件编号
+ */
+export const getFilePath = async function (file_no) {
+  const service = 'srvfile_attachment_select'
+  const url = `${window.backendIpAddr}/file/select/${service}`
+  const req = {
+    "serviceName": service,
+    "colNames": ["*"],
+    "condition": [{
+      "colName": "file_no",
+      "value": file_no,
+      "ruleType": "eq",
+    }]
+  }
+  if (file_no) {
+    let response = await $http.post(url, req);
+    if (response.data.state === 'SUCCESS' && response.data.data.length > 0) {
+      return response.data.data
+    }
+  }
+}

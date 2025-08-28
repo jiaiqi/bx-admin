@@ -671,3 +671,53 @@ export function convertColorWithOpacity(color, opacity, format = "hex") {
     return result;
   }
 }
+
+/**
+  * 获取文件扩展名
+  */
+export function getFileExtension(url) {
+  if (!url) return ''
+  const fileName = url.split('/').pop().split('?')[0]
+  const extension = fileName.split('.').pop().toLowerCase()
+  return extension
+}
+
+/**
+ * 根据文件后缀判断是否为图片文件
+ */
+export const isImageFile = (url, fileType) => {
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']
+  let extension = this.getFileExtension(url)
+  if (fileType) {
+    extension = fileType
+  }
+  if (extension) {
+    extension = extension.toLowerCase()
+  }
+  return imageExtensions.includes(extension)
+}
+
+/**
+     * H5环境下载
+     */
+export function downloadFileH5(url, fileName) {
+  return new Promise((resolve, reject) => {
+    try {
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName || url.split('/').pop().split('?')[0] || 'download'
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      uni.showToast({
+        title: '开始下载',
+        duration: 1500
+      })
+      resolve()
+    } catch (error) {
+      reject(new Error('下载失败'))
+    }
+  })
+}
