@@ -1,5 +1,8 @@
 <template>
-  <div class="swiper-list" v-if="!swiperList || swiperList.length === 0">
+  <div
+    class="swiper-list"
+    v-if="!swiperList || swiperList.length === 0"
+  >
     <span v-if="pageItem && pageItem.com_label">{{ pageItem.com_label }}</span>
   </div>
   <div
@@ -17,6 +20,7 @@
       :autoplay="true"
       :interval="5000"
       duration="500"
+      arrow="always"
       @change="swiperChange"
       indicator-color="#333"
       indicator-active-color="#E8E8E8"
@@ -73,7 +77,7 @@
         >
           <el-carousel-item
             v-for="(item, index) in swiperList"
-            :key="item.url?item.url:index"
+            :key="item.url ? item.url : index"
             :data-id="item.id"
             :class="current == index ? 'cur' : ''"
           >
@@ -93,8 +97,15 @@
                 v-else-if="!item.store_video_file || item.file_type !== '视频'"
               />
               <!-- VR遮罩层 -->
-              <div class="vr-overlay" v-if="item.type === 'vr' && item.vr_no">
-                <a class="vr-icon" target="_blank" :href="getVrUrl(item.vr_no)">
+              <div
+                class="vr-overlay"
+                v-if="item.type === 'vr' && item.vr_no"
+              >
+                <a
+                  class="vr-icon"
+                  target="_blank"
+                  :href="getVrUrl(item.vr_no)"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -134,10 +145,13 @@
           :cell-data="[item]"
           v-for="(item, index) in swiperList"
           v-if="index === current"
-          :key="item.id?item.id:index"
+          :key="item.id ? item.id : index"
         ></card-group-cell>
       </div>
-      <div class="thumbnails-container" v-else-if="useThumbnails">
+      <div
+        class="thumbnails-container"
+        v-else-if="useThumbnails"
+      >
         <button
           class="scroll-btn scroll-btn-left"
           @click="scrollThumbnails('left')"
@@ -145,7 +159,10 @@
         >
           <i class="el-icon-arrow-left"></i>
         </button>
-        <div class="thumbnails" ref="thumbnailsContainer">
+        <div
+          class="thumbnails"
+          ref="thumbnailsContainer"
+        >
           <img
             v-for="(item, index) in swiperList"
             :key="item.id"
@@ -166,7 +183,10 @@
       </div>
     </div>
 
-    <div class="single-media" v-else>
+    <div
+      class="single-media"
+      v-else
+    >
       <div
         class="swiper-item-box"
         :style="[tagStylefn(pageItem.swiper_json.style_json)]"
@@ -188,7 +208,10 @@
           v-else-if="!item.store_video_file || item.file_type !== '视频'"
           @click.stop="toDetail(item)"
         />
-        <div class="title" v-if="item._title">{{ item._title }}</div>
+        <div
+          class="title"
+          v-if="item._title"
+        >{{ item._title }}</div>
       </div>
     </div>
   </div>
@@ -557,6 +580,7 @@ export default {
     width: 100%;
     height: 100%;
     position: relative;
+
     .title {
       position: absolute;
       bottom: 0;
@@ -571,6 +595,7 @@ export default {
       padding: 10px;
       box-sizing: border-box;
     }
+
     video,
     img {
       width: 100%;
@@ -668,6 +693,7 @@ export default {
 .scroll-btn-right {
   margin-left: 5px;
 }
+
 .thumbnails-mode {
   :deep(.el-carousel) {
     .el-carousel__indicators {
@@ -699,6 +725,7 @@ export default {
     padding: 30px;
     border-radius: 50%;
     cursor: pointer;
+
     svg {
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
@@ -707,11 +734,13 @@ export default {
 
 // VR图标脉冲动画
 @keyframes vrPulse {
+
   0%,
   100% {
     transform: scale(0.9);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 1;
@@ -729,6 +758,17 @@ export default {
       // animation-play-state: paused;
       // }
     }
+  }
+}
+
+::v-deep .el-carousel__container {
+  .el-carousel__arrow {
+    width: min(60px, 20%);
+    height: min(60px, 20%);
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    font-size: 30px;
+    font-weight: 600;
   }
 }
 </style>
