@@ -638,7 +638,7 @@ export default {
     },
   },
   methods: {
-    getPartModelData() {
+    getPartModelData(getTrueValue = false) {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
       let map = this.setComColMap || {};
@@ -953,7 +953,7 @@ export default {
         switch (optionsType) {
           case "下载":
           case "预览":
-            val = this.getPartModelData;
+            val = this.getPartModelData(true);
             console.log(optionsType, val);
             if (val) {
               this.getFiles(val, "原图")
@@ -1141,6 +1141,7 @@ export default {
           return item;
         });
         this.$set(this.fileNoMap, no, res);
+        return res;
       }
     },
     parseNumberToText() {
