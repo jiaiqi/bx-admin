@@ -359,6 +359,7 @@ export class FieldInfo {
     }
 
     if (formType == "filter") {
+      this._inFilterForm = true;
       if (this.isNumeric()) {
         this.editor = "input-range";
       } else if (this.type == "Date") {

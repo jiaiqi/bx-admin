@@ -579,6 +579,10 @@ export default {
     },
     allowEditAndSelect() {
       // 编辑选择
+      if(this.field.info?._inFilterForm===true){
+        // 过滤表单需要编辑选择
+        return false
+      }
       return (
         this.addSrvCfg?.permission &&
         this.addSrvCfg.srv &&
