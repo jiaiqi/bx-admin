@@ -48,9 +48,9 @@
         >
           <el-option
             v-for="item in allData"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+            :key="item.value + ''"
+            :label="item.label + ''"
+            :value="item.value + ''"
           >
           </el-option>
         </el-select>
@@ -231,7 +231,6 @@ export default {
 
         let val = "";
         let result = [];
-        debugger
         if (row && col && col.column && row[col.column]) {
           val = row[col.column];
         }
@@ -459,8 +458,13 @@ export default {
     getSelectedData() {
       let result = this.selected;
       if (this.fieldType === "fks") {
-        result = this.allData.filter((item) =>
-          this.selected.includes(item[this.valueCol])
+        result = this.allData.filter((item) =>{
+          if(typeof item[this.valueCol] === 'number'){
+            item[this.valueCol] = item[this.valueCol].toString()
+          }
+          return this.selected.includes(item[this.valueCol])
+        }
+          
         );
       }
       if (this.isSelectedAll && this.allSelect) {
@@ -694,6 +698,9 @@ export default {
     initTableSelection() {
       if (Array.isArray(this.allData) && this.allData.length > 0) {
         this.gridData = this.gridData.map((item) => {
+          if (typeof item[this.valueCol] === 'number') {
+            item[this.valueCol] = item[this.valueCol].toString()
+          }
           if (this.selected.indexOf(item[this.valueCol]) !== -1) {
             item.checked = true;
           } else {
