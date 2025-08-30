@@ -1,5 +1,17 @@
 <template>
   <Fragment v-if="partsShow">
+    <div
+      v-if="['附件'].includes(cellItem.parts_type)"
+      class="bx-cell-variable"
+      :class="{
+        'cursor-pointer': isLink,
+      }"
+      @click.stop="onClickSubBlock()"
+      :style="[buildColStyleJson]"
+      :ref="partsType"
+    >
+      {{ getFileName || "" }}
+    </div>
     <LiquidFillChart
       v-if="partsType === '水球图'"
       :value="setPartModelData"
@@ -273,6 +285,7 @@ export default {
   data() {
     return {
       fileNoMap: {},
+      fileList: [],
       liquidColor: "",
       showCardPopup: false,
       popupCardJson: null,
@@ -636,6 +649,13 @@ export default {
       }
       return show;
     },
+    getFileName() {
+      let fileName = '附件1'
+      if (Array.isArray(this.fileList) && this.fileList.length) {
+        fileName = this.fileList[0].src_name || fileName
+      }
+      return fileName
+    }
   },
   methods: {
     getPartModelData(getTrueValue = false) {
@@ -1200,6 +1220,15 @@ export default {
       this.clickedElement = null;
     },
     initPart() {
+      if (this.cellItem.parts_type == '附件') {
+        if (this.setPartModelData) {
+          this.getFiles(this.setPartModelData, '原图').then(res => {
+            if (Array.isArray(res)) {
+              this.fileList = res
+            }
+          })
+        }
+      }
       if (this.enableNumberRollAnimation) {
         // 使用数字滚动特效
         this.$nextTick(() => {
