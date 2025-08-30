@@ -650,7 +650,7 @@ export default {
       return show;
     },
     getFileName() {
-      let fileName = '附件1'
+      let fileName = this.setPartModelData || '附件1'
       if (Array.isArray(this.fileList) && this.fileList.length) {
         fileName = this.fileList[0].src_name || fileName
       }
