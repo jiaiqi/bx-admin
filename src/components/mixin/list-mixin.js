@@ -3371,16 +3371,20 @@ export default {
         if (this.defaultOrder.length > 0) {
           this.order = this.order.concat(this.defaultOrder);
         }
-        if (!['addchildlist'].includes(this.listType)) {
+        if (['addchildlist'].includes(this.listType) && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
+          // 有默认数据，不发请求查找默认数据
+        }else{
           this.loadTableData().finally((_) => {
             if (this.defaultInplaceEditMode) {
               this.onInplaceEditClicked();
             }
             this.$emit("list-loaded", this);
           });
-        } else {
-          this.$emit("list-loaded", this);
         }
+
+        // } else {
+        //   this.$emit("list-loaded", this);
+        // }
 
       } catch (e) {
         // handle case in add child list
