@@ -24,11 +24,12 @@ export const pathConfigMap = {
   yananxing: {
     // 开发环境
     gateway_protocol: "http",
-    gateway_ip: "39.105.177.145",
+    // gateway_ip: "39.105.177.145",
+    gateway_ip: "139.196.111.15",
     // gateway_ip: "192.168.0.155",
-    port: "",
+    port: "9001",
     // port: "2881",
-    gateway: "http://39.105.177.145/bxapi",
+    gateway: "http://139.196.111.15:9001/bxapi",
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
