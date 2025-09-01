@@ -2,6 +2,7 @@
   <div class="work_flow">
     <el-form
       :model="ruleForm"
+      :rules="ruleFormRules"
       ref="ruleForm"
       label-width="auto"
       class="demo-ruleForm"
@@ -553,6 +554,7 @@
           <el-form-item
             label="稽核车型"
             prop="vehicle_type"
+            required
           >
             <el-select
               v-model="ruleForm.vehicle_type"
@@ -911,6 +913,11 @@ export default {
         vehicleclass: "",  //车种
         vehicleusertype: "",  //车辆用户类型
       },
+      ruleFormRules: {
+        vehicle_type: [
+          { required: true, message: '请选择稽核车型', trigger: 'blur' }
+        ],
+      },
       restaurants: [],
       resDep: [],
       prUrl: '',
@@ -1109,6 +1116,8 @@ export default {
       return result;
     },
     async handleSubmit() {
+      let isValid = await this.$refs.ruleForm.validate();
+      if (!isValid) return;
       this.handleTest()
     },
     //提交工单前进行通行测试，当返回有数据时不允许提交，无返回数据时可以正常走下一步提交
