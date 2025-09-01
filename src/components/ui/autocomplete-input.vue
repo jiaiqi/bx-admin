@@ -41,6 +41,7 @@ export default {
     setTreeField() {
       const field = this.field
       const optionListV2 = cloneDeep(this.optionsV2List)
+      field.info.srvCol = cloneDeep(field.info.srvCol)
       field.info.srvCol.option_list_v2 = optionListV2
       field.info.srvCol.option_list_v3 = optionListV2
       field.info.valueCol = optionListV2.refed_col
