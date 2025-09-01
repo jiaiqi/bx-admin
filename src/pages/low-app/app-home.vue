@@ -78,6 +78,7 @@
           :components="components"
           ref="propertyRef"
           @refresh="onRefresh"
+          v-if="!propertyCollapsed"
         />
       </div>
     </div>
