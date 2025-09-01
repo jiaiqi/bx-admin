@@ -178,8 +178,8 @@ export default {
         placeholder: "请输入内容...",
         readOnly: this.disabled,
         MENU_CONF: {
-          uploadImage: this.uploadConfig,
-          uploadVideo: this.uploadConfig,
+          uploadImage: this.imgUploadCfg,
+          uploadVideo: this.videoUploadCfg,
         },
       };
     },
@@ -191,7 +191,7 @@ export default {
         // form-data fieldName ，默认值 'wangeditor-uploaded-image'
         fieldName: "file",
         // 单个文件的最大体积限制，默认为 2M
-        maxFileSize: 10 * 1024 * 1024, // 10M
+        maxFileSize: 10 * 1024 * 1024, // 1000M
         // 最多可上传几个文件，默认为 100
         maxNumberOfFiles: 1,
         // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
@@ -233,6 +233,22 @@ export default {
           }
         },
       };
+    },
+    imgUploadCfg() {
+      return {
+        ...this.uploadConfig,
+        maxFileSize: 10 * 1024 * 1024, // 10M
+        // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
+        allowedFileTypes: ["image/*"],
+      }
+    },
+    videoUploadCfg() {
+      return {
+        ...this.uploadConfig,
+        maxFileSize: 500 * 1024 * 1024, // 500M
+        // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
+        allowedFileTypes: ["video/*"],
+      }
     },
   },
   beforeDestroy() {
