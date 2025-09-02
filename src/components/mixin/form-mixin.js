@@ -1166,7 +1166,12 @@ export default {
         }
         this.$nextTick(() => {
           setTimeout(() => {
-            self.handleValidation(fieldName);
+            // 富文本（Note/ueditor）字段仅在提交时校验：
+            const info = field && field.info;
+            const isRichText = info && (info.type === 'Note' || info.editor === 'ueditor');
+            if (!isRichText) {
+              self.handleValidation(fieldName);
+            }
           }, 100);
         });
       }

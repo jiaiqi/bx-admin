@@ -24,6 +24,7 @@ export default {
       selected: null,
       ue: null,
       eleId: null,
+      
     };
   },
   methods: {
