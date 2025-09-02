@@ -1699,7 +1699,7 @@ export default {
           button.application
         );
       } else if ("export" == type) {
-        this.onExportClicked();
+        this.onExportClicked(null, button);
         // this.activeForm = "export"   // 显示导出配置
       } else if ("import" == type) {
         this.onImportClicked(button);
@@ -3375,7 +3375,7 @@ export default {
         }
         if (['addchildlist'].includes(this.listType) && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
           // 有默认数据，不发请求查找默认数据
-        }else{
+        } else {
           this.loadTableData().finally((_) => {
             if (this.defaultInplaceEditMode) {
               this.onInplaceEditClicked();
@@ -3584,7 +3584,7 @@ export default {
       }
       console.log("onBatchApprove", rows, item);
     },
-    onExportClicked(columns) {
+    onExportClicked(columns, button) {
       // send req to generate excel
       // 导出操作
       console.log("onExportClicked", columns);
@@ -3603,8 +3603,9 @@ export default {
       const relationCondition =
         this.$parent?.$refs?.filterTabs?.buildConditions?.();
       var loading = this.openLoading();
+      const service = button?.operate_service || this.service_name
       this.genExportExcel(
-        this.service_name,
+        service,
         this.buildQueryConditions(),
         null,
         this.order,
