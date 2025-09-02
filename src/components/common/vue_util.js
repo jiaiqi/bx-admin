@@ -402,7 +402,8 @@ function init_util() {
     use_type,
     app,
     mainSrv,
-    forceRefreshV2 = false
+    forceRefreshV2 = false,
+    idVal
   ) {
     if (!service_name) {
       console.error("service_name is null");
@@ -416,7 +417,7 @@ function init_util() {
       return cacheP;
     }
 
-    let loadedP = this.doLoadColsV2(service_name, use_type, app, mainSrv);
+    let loadedP = this.doLoadColsV2(service_name, use_type, app, mainSrv, idVal);
     this.$store &&
       this.$store.commit("addSrvCols", {
         service: fullServiceName,
@@ -427,7 +428,7 @@ function init_util() {
     return loadedP;
   };
 
-  Vue.prototype.getV2RequestData = function (service_name, use_type, mainSrv) {
+  Vue.prototype.getV2RequestData = function (service_name, use_type, mainSrv, idVal) {
     let requestData = {
       serviceName: "srvsys_service_columnex_v2_select",
       colNames: ["*"],
@@ -458,6 +459,14 @@ function init_util() {
         ruleType: "eq",
       });
     }
+    // 详情场景：仅当调用方传入 id 值时，追加 { colName: 'id', ... }
+    if (use_type === 'detail' && idVal !== undefined && idVal !== null && idVal !== '') {
+      requestData.condition.push({
+        colName: 'id',
+        value: idVal,
+        ruleType: 'eq'
+      });
+    }
     let url = decodeURIComponent(window.location.href);
     let params = parseUrlParams(url);
     if (params && params.v2Params) {
@@ -476,8 +485,9 @@ function init_util() {
     return requestData;
   };
 
-  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv) {
-    var data = Vue.prototype.getV2RequestData(service_name, use_type, mainSrv);
+  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv, idVal) {
+    // 使用当前组件实例上下文，仅根据调用方传入的 id 值决定是否追加主键条件
+    var data = this.getV2RequestData(service_name, use_type, mainSrv, idVal);
 
     var url = this.getServiceUrl(
       "select",
