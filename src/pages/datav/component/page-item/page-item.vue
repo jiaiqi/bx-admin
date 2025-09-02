@@ -62,15 +62,15 @@
             ></span>
             <span
               class="icon2"
-              v-if="mixTitleIcon === '圆形'"
+              v-else-if="mixTitleIcon === '圆形'"
             ></span>
             <span
               class="icon3"
-              v-if="mixTitleIcon === '方块'"
+              v-else-if="mixTitleIcon === '方块'"
             ></span>
             <Icon
               icon="ri-arrow-drop-right-fill"
-              v-if="mixTitleIcon === '三角形'"
+              v-else-if="mixTitleIcon === '三角形'"
             ></Icon>
             <Icon
               :icon="mixTitleIcon"
