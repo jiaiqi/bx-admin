@@ -3365,6 +3365,8 @@ export default {
           this.listLoaded = true;
           this.initLoad = true;
           this.emitEvent("metadata-loaded", this);
+          // 拿到列表v2之后重新加载新增、修改的服务列
+          this.loadAddUpdateSrvCols?.()
         });
 
       try {

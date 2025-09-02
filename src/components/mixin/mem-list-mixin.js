@@ -694,55 +694,25 @@ export default {
     },
 
     async loadAddUpdateSrvCols() {
-      let addServiceP = !this.addService || this.addSrvCols.length > 0
-        ? Promise.resolve(false)
-        : this.loadColsV2(this.addService, "add", null, this.mainService);
-      if (!this.addService || this.addSrvCols.length > 0) {
-      } else {
+      // 已经获取到add服务，并且没有获取到add服务的字段
+      if (this.addService && !this.addSrvCols?.length) {
         // 查找add服务的字段
-        let addServiceP = this.loadColsV2(this.addService, "add", null, this.mainService);
-        const response = await addServiceP
+        const response = await this.loadColsV2(this.addService, "add", null, this.mainService)
         if (response && response.body?.data) {
           let data = response.body.data;
-          this.addSrvCols = data?.srv_cols||[];
-          // console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
+          this.addSrvCols = data?.srv_cols || [];
         }
       }
 
-
-      if (!this.updateService || this.updateSrvCols.length > 0) {
-        return false
-      } else {
+      // 已经获取到update服务，并且没有获取到update服务的字段
+      if (this.updateService && !this.updateSrvCols.length) {
         // 查找update服务的字段
         const response = await this.loadColsV2(this.updateService, "update", null, this.mainService);
-        if (response && response.body) {
+        if (response && response.body?.data) {
           let data = response.body.data;
           this.updateSrvCols = data.srv_cols;
-          // console.log('loadAddUpdateSrvCols',this.updateSrvCols,data)
         }
       }
-
-      // return addServiceP
-      //   .then(response => {
-      //     if (response && response.body) {
-      //       let data = response.body.data;
-      //       this.addSrvCols = data.srv_cols;
-      //       // console.log('loadAddUpdateSrvCols',this.addSrvCols,data)
-
-
-
-      //     }
-
-      //     return !this.updateService || this.updateSrvCols.length > 0
-      //       ? Promise.resolve(false)
-      //       : this.loadColsV2(this.updateService, "update", null, this.mainService);
-      //   })
-      //   .then(response => {
-      //     if (response && response.body) {
-      //       let data = response.body.data;
-      //       this.updateSrvCols = data.srv_cols;
-      //     }
-      //   })
     }
     ,
 
