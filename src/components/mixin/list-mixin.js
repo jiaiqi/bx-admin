@@ -1700,7 +1700,7 @@ export default {
           button.application
         );
       } else if ("export" == type) {
-        this.onExportClicked(operate_service);
+        this.onExportClicked(null,operate_service);
         // this.activeForm = "export"   // 显示导出配置
       } else if ("import" == type) {
         this.onImportClicked(button);
@@ -3583,7 +3583,7 @@ export default {
       }
       console.log("onBatchApprove", rows, item);
     },
-    onExportClicked(operate_service,columns) {
+    onExportClicked(columns,operate_service) {
       // send req to generate excel
       // 导出操作
       console.log("onExportClicked", columns);
