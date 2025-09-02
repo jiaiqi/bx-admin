@@ -1263,7 +1263,7 @@ export default {
           "modify_user_disp",
           "row_json",
           "page_no",
-          "image",
+          // "image",
           // "preview",
           "cellItem",
           "parentId",
