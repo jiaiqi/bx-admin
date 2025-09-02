@@ -11,13 +11,13 @@
       :mode="mode"
       :key="ticket + 1"
       ref="toobar"
-      v-if="disable !== true"
+      v-if="getDisabled !== true"
     />
     <Editor
       v-model="innerHtml"
       style="height: 220px; overflow-y: auto"
       :defaultConfig="editorConfig"
-      :disabled="disable"
+      :disabled="getDisabled"
       :mode="mode"
       @click.stop
       @onCreated="onCreated"
@@ -126,7 +126,7 @@ export default {
       console.log(event, "oninput");
     },
     onChange(editor) {
-        console.log("onChange", this.innerHtml,this.getSrvVal(),this.field.model); // onChange 时获取编辑器最新内容
+      console.log("onChange", this.innerHtml, this.getSrvVal(), this.field.model); // onChange 时获取编辑器最新内容
       if (this.getSrvVal() !== this.field.model) {
         this.$set(this.field, "model", this.replaceFileAddressSuffix(this.getSrvVal()));
         this.$emit("change", this.field.info.name, this.field);
@@ -173,11 +173,18 @@ export default {
     },
   },
   computed: {
+    getDisabled() {
+      if (this.disable) return true
+      if (this.field?.info?.editable === false) {
+        return true;
+      }
+      return false;
+    },
     editorConfig() {
       return {
         autoFocus: false,
         placeholder: "请输入内容...",
-        readOnly: this.disabled,
+        readOnly: this.getDisabled,
         MENU_CONF: {
           uploadImage: this.imgUploadCfg,
           uploadVideo: this.videoUploadCfg,
