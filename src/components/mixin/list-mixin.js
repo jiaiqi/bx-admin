@@ -1534,6 +1534,7 @@ export default {
       var exeservice = button.service_name;
       var tab_title = button.service_view_name;
       var operate_type = button.operate_type;
+      let operate_service = button.operate_service;
       var moreConfig = null;
       if (button.more_config && typeof button.more_config === "string") {
         try {
@@ -1699,7 +1700,7 @@ export default {
           button.application
         );
       } else if ("export" == type) {
-        this.onExportClicked();
+        this.onExportClicked(operate_service);
         // this.activeForm = "export"   // 显示导出配置
       } else if ("import" == type) {
         this.onImportClicked(button);
@@ -3602,14 +3603,14 @@ export default {
         this.$parent?.$refs?.filterTabs?.buildConditions?.();
       var loading = this.openLoading();
       this.genExportExcel(
-        this.service_name,
+        columns? columns:this.service_name,
         this.buildQueryConditions(),
         null,
         this.order,
         null,
         null,
         isProc,
-        columns,
+        null,
         relationCondition
       ).then((response) => {
         loading.close();
