@@ -348,7 +348,14 @@ export default {
           ? this.field.info.moreConfig.fileType
           : "";
       if (filterType) {
-        filterType = filterType.split(",");
+        // 如果配置的是字符串，按逗号分割；如果是数组，直接使用
+        if (typeof filterType === 'string') {
+          filterType = filterType.split(",");
+        } else if (Array.isArray(filterType)) {
+          filterType = filterType;
+        } else {
+          filterType = [];
+        }
       }
       return filterType;
     },
@@ -360,15 +367,32 @@ export default {
       initialViewIndex: 3,
       upLen: 0,
       uploadFile: this.serviceApi().uploadFile,
-      fileDesc:
-        this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
-          ? "请上传文件,大小不超过" +
-          this.field.info.moreConfig.fileMaxSize +
-          "MB"
-          : "请上传文件,大小不超过200MB",
-      fileType: "",
+      fileDesc: (() => {
+        let desc = "请上传文件";
+        
+        // 添加文件类型限制说明
+        if (this.field.info.moreConfig && this.field.info.moreConfig.fileType) {
+          let fileTypeText = "";
+          if (typeof this.field.info.moreConfig.fileType === 'string') {
+            fileTypeText = this.field.info.moreConfig.fileType;
+          } else if (Array.isArray(this.field.info.moreConfig.fileType)) {
+            fileTypeText = this.field.info.moreConfig.fileType.join("、");
+          }
+          if (fileTypeText) {
+            desc += `，支持 ${fileTypeText} 格式`;
+          }
+        }
+        
+        // 添加文件大小限制说明
+        if (this.field.info.moreConfig && this.field.info.moreConfig.fileMaxSize) {
+          desc += `，大小不超过 ${this.field.info.moreConfig.fileMaxSize}MB`;
+        } else {
+          desc += "，大小不超过200MB";
+        }
+        
+        return desc;
+      })(),
+      fileType: this.field.info.moreConfig && this.field.info.moreConfig.fileType ? this.field.info.moreConfig.fileType : "",
       fileSize:
         this.field.info.moreConfig &&
           this.field.info.moreConfig !== null &&
@@ -789,22 +813,28 @@ export default {
           return false;
         }
         if (this.fileType) {
-          //默认支持所有类型上传
+          // 根据 more_config 中配置的 fileType 进行文件类型验证
           let flag = false;
           let type = file.name
             .slice(file.name.lastIndexOf(".") + 1)
             .toLowerCase();
-          if (this.fileType.includes(type)) {
+          
+          // 处理 fileType 配置，支持字符串和数组两种格式
+          let allowedTypes = [];
+          if (typeof this.fileType === 'string') {
+            allowedTypes = this.fileType.split(",").map(t => t.trim().toLowerCase());
+          } else if (Array.isArray(this.fileType)) {
+            allowedTypes = this.fileType.map(t => t.trim().toLowerCase());
+          }
+          
+          // 检查文件类型是否在允许列表中
+          if (allowedTypes.includes(type)) {
             flag = true;
           }
-          // for (let i in this.fileType.split("/")) {
-          //   if (file.name.split(".")[1] === this.fileType.split("/")[i]) {
-          //     flag = true;
-          //     break;
-          //   }
-          // }
+          
           if (!flag) {
-            this.$message.error("只能上传" + this.fileType + "文件!");
+            let allowedTypesText = Array.isArray(this.fileType) ? this.fileType.join("、") : this.fileType;
+            this.$message.error(`只能上传 ${allowedTypesText} 格式文件!`);
             return false;
           }
         }
