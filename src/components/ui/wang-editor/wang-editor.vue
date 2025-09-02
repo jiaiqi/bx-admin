@@ -108,6 +108,7 @@ export default {
     },
     getSrvVal() {
       // 获取值
+      if (this.innerHtml == "<p><br></p>") return ""
       return this.replaceFileAddressSuffix(this.innerHtml);
     },
     replaceFileAddressSuffix(val = "") {
@@ -125,9 +126,9 @@ export default {
       console.log(event, "oninput");
     },
     onChange(editor) {
-      //   console.log("onChange", editor.getHtml()); // onChange 时获取编辑器最新内容
-      if (this.innerHtml !== this.field.model) {
-        this.$set(this.field, "model", this.replaceFileAddressSuffix(this.innerHtml));
+        console.log("onChange", this.innerHtml,this.getSrvVal(),this.field.model); // onChange 时获取编辑器最新内容
+      if (this.getSrvVal() !== this.field.model) {
+        this.$set(this.field, "model", this.replaceFileAddressSuffix(this.getSrvVal()));
         this.$emit("change", this.field.info.name, this.field);
       }
     },
