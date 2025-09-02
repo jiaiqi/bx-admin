@@ -458,6 +458,35 @@ function init_util() {
         ruleType: "eq",
       });
     }
+    // 当为详情场景时，尽可能把主键id一并带上，提升后端精确度
+    if (use_type === 'detail') {
+      try {
+        // 优先从组件属性/实例中获取
+        let pkVal = this?.pk ?? this?.$attrs?.pk ?? this?.id ?? this?.$route?.params?.id;
+        const pkCol = this?.pkCol ?? this?.$attrs?.pkCol ?? 'id';
+        // 兜底：从 URL 路径中提取 /detail/<service>/<id>
+        if ((pkVal === undefined || pkVal === null || pkVal === '') && typeof window !== 'undefined') {
+          const path = window.location && window.location.pathname || '';
+          const segs = path.split('/').filter(Boolean);
+          // 取最后一段作为 id（通常为 /detail/<service>/<id>）
+          if (segs.length >= 3) {
+            const maybeId = segs[segs.length - 1];
+            if (maybeId) {
+              pkVal = maybeId;
+            }
+          }
+        }
+        if (pkVal !== undefined && pkVal !== null && pkCol) {
+          requestData.condition.push({
+            colName: pkCol,
+            value: pkVal,
+            ruleType: 'eq'
+          });
+        }
+      } catch (e) {
+        // 安全兜底，忽略异常
+      }
+    }
     let url = decodeURIComponent(window.location.href);
     let params = parseUrlParams(url);
     if (params && params.v2Params) {
@@ -477,7 +506,8 @@ function init_util() {
   };
 
   Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv) {
-    var data = Vue.prototype.getV2RequestData(service_name, use_type, mainSrv);
+    // 使用当前组件实例上下文，确保可读取 this.pk / this.pkCol / this.$route
+    var data = this.getV2RequestData(service_name, use_type, mainSrv);
 
     var url = this.getServiceUrl(
       "select",

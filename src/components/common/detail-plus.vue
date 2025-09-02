@@ -190,7 +190,7 @@ export default {
       });
 
       let childList = [];
-      await this.loadColsV2(this.service_name, "detail").then(response => {
+      await this.loadColsV2(this.service_name, "detail", null, this.service_name).then(response => {
         this.detail_srv_cols = response.body.data["srv_cols"];
         childList = response.body.data["child_service"];
         var temp = response.body.data["service_view_name"];
