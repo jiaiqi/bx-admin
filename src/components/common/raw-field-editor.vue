@@ -746,7 +746,7 @@
         <!-- 显示字段校验错误信息 -->
         <div
           class="el-form-item__error"
-          v-show="(field.hasValidateError() || field.hasValidatePrompt()) && touched"
+          v-show="field.hasValidateError() || field.hasValidatePrompt()"
           :title="field.getAnyValidatePrompt()"
         >
           <!-- v-show="field.hasValidateError() || field.hasValidatePrompt()" -->
@@ -767,7 +767,7 @@
           >
             <i slot="reference" class="el-icon-warning"></i>
           </el-popover>
-          <span class="no-nowrap" v-show="field.hasValidateError() && touched">
+          <span class="no-nowrap" v-show="field.hasValidateError()">
             <!-- v-show="field.hasValidateError()" -->
             {{ field.getAnyValidateError() }}
             {{
@@ -779,7 +779,7 @@
           <!-- 显示字段校验提示信息 -->
           <span
             class="el-form-item__prompt no-nowrap"
-            v-show="field.hasValidatePrompt() && touched"
+            v-show="field.hasValidatePrompt()"
           >
             <!-- v-show=" field.hasValidatePrompt()" -->
             {{ field.getAnyValidatePrompt() }}
@@ -956,7 +956,6 @@ export default {
       isTreeJsonEditor: false,
       jsonEditorMode: "text",
       finderSelected: "",
-      touched: false,
       pickerOptions: {
         disabledDate: (time) => {
           return this.field.info.subType === "year"
@@ -1177,7 +1176,6 @@ export default {
     },
     onBlur() {
       this.inputStatus = "";
-      this.touched = true;
       // 校验唯一性
       let self = this;
       let isUniqueCheck = this.field.info.isUniqueCheck;
