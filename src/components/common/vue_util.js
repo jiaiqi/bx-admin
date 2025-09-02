@@ -402,7 +402,8 @@ function init_util() {
     use_type,
     app,
     mainSrv,
-    forceRefreshV2 = false
+    forceRefreshV2 = false,
+    idVal
   ) {
     if (!service_name) {
       console.error("service_name is null");
@@ -416,7 +417,7 @@ function init_util() {
       return cacheP;
     }
 
-    let loadedP = this.doLoadColsV2(service_name, use_type, app, mainSrv);
+    let loadedP = this.doLoadColsV2(service_name, use_type, app, mainSrv, idVal);
     this.$store &&
       this.$store.commit("addSrvCols", {
         service: fullServiceName,
@@ -427,7 +428,7 @@ function init_util() {
     return loadedP;
   };
 
-  Vue.prototype.getV2RequestData = function (service_name, use_type, mainSrv) {
+  Vue.prototype.getV2RequestData = function (service_name, use_type, mainSrv, idVal) {
     let requestData = {
       serviceName: "srvsys_service_columnex_v2_select",
       colNames: ["*"],
@@ -458,34 +459,13 @@ function init_util() {
         ruleType: "eq",
       });
     }
-    // 当为详情场景时，尽可能把主键id一并带上，提升后端精确度
-    if (use_type === 'detail') {
-      try {
-        // 优先从组件属性/实例中获取
-        let pkVal = this?.pk ?? this?.$attrs?.pk ?? this?.id ?? this?.$route?.params?.id;
-        const pkCol = this?.pkCol ?? this?.$attrs?.pkCol ?? 'id';
-        // 兜底：从 URL 路径中提取 /detail/<service>/<id>
-        if ((pkVal === undefined || pkVal === null || pkVal === '') && typeof window !== 'undefined') {
-          const path = window.location && window.location.pathname || '';
-          const segs = path.split('/').filter(Boolean);
-          // 取最后一段作为 id（通常为 /detail/<service>/<id>）
-          if (segs.length >= 3) {
-            const maybeId = segs[segs.length - 1];
-            if (maybeId) {
-              pkVal = maybeId;
-            }
-          }
-        }
-        if (pkVal !== undefined && pkVal !== null && pkCol) {
-          requestData.condition.push({
-            colName: pkCol,
-            value: pkVal,
-            ruleType: 'eq'
-          });
-        }
-      } catch (e) {
-        // 安全兜底，忽略异常
-      }
+    // 详情场景：仅当调用方传入 id 值时，追加 { colName: 'id', ... }
+    if (use_type === 'detail' && idVal !== undefined && idVal !== null && idVal !== '') {
+      requestData.condition.push({
+        colName: 'id',
+        value: idVal,
+        ruleType: 'eq'
+      });
     }
     let url = decodeURIComponent(window.location.href);
     let params = parseUrlParams(url);
@@ -505,9 +485,9 @@ function init_util() {
     return requestData;
   };
 
-  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv) {
-    // 使用当前组件实例上下文，确保可读取 this.pk / this.pkCol / this.$route
-    var data = this.getV2RequestData(service_name, use_type, mainSrv);
+  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv, idVal) {
+    // 使用当前组件实例上下文，仅根据调用方传入的 id 值决定是否追加主键条件
+    var data = this.getV2RequestData(service_name, use_type, mainSrv, idVal);
 
     var url = this.getServiceUrl(
       "select",

@@ -942,7 +942,9 @@ export default {
         this.service_name,
         "detail",
         null,
-        this.service_name
+        this.service_name,
+        false,
+        this.id
       );
       this.detail_srv_cols = response.body.data["srv_cols"];
       childList = response.body.data["child_service"];
