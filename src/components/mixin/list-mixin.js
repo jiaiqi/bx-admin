@@ -3583,7 +3583,7 @@ export default {
       }
       console.log("onBatchApprove", rows, item);
     },
-    onExportClicked(columns) {
+    onExportClicked(operate_service,columns) {
       // send req to generate excel
       // 导出操作
       console.log("onExportClicked", columns);
@@ -3603,14 +3603,14 @@ export default {
         this.$parent?.$refs?.filterTabs?.buildConditions?.();
       var loading = this.openLoading();
       this.genExportExcel(
-        columns? columns:this.service_name,
+        operate_service? operate_service:this.service_name,
         this.buildQueryConditions(),
         null,
         this.order,
         null,
         null,
         isProc,
-        null,
+        columns,
         relationCondition
       ).then((response) => {
         loading.close();
