@@ -219,7 +219,9 @@ export default {
   },
   computed: {
     ObjInfo() {
-      return this.field.info?.srvCol?.option_list_v2?.obj_info
+      let objInfo = this.field.info?.srvCol?.option_list_v2?.obj_info || {}
+      
+      return objInfo
     },
     getFkJson() {
       if (this.disabled && this.ObjInfo) {
@@ -458,13 +460,13 @@ export default {
     getSelectedData() {
       let result = this.selected;
       if (this.fieldType === "fks") {
-        result = this.allData.filter((item) =>{
-          if(typeof item[this.valueCol] === 'number'){
+        result = this.allData.filter((item) => {
+          if (typeof item[this.valueCol] === 'number') {
             item[this.valueCol] = item[this.valueCol].toString()
           }
           return this.selected.includes(item[this.valueCol])
         }
-          
+
         );
       }
       if (this.isSelectedAll && this.allSelect) {
@@ -1266,8 +1268,8 @@ export default {
   box-sizing: border-box;
   color: #606266;
   display: inline-block;
-  height: 40px;
-  line-height: 40px;
+  min-height: 40px;
+
   outline: 0;
   padding: 0 15px;
   transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
@@ -1276,6 +1278,7 @@ export default {
   border-color: #E4E7ED;
   color: #C0C4CC;
   cursor: not-allowed;
+  margin-bottom: 10px;
 }
 
 .table-picker-wrapper {
