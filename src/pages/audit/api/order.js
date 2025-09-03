@@ -201,6 +201,27 @@ export default class OrderApi {
     }
     return await $http.post(url, req)
   }
+
+  async checkOrderExist(passid) {
+    if(!passid) return false
+    let url = path + `/aud/select/srvaud_workorder_passid_select`
+    let req = {
+      colNames: ["*"],
+      serviceName: "srvaud_workorder_passid_select",
+      condition: [
+        {
+          colName:'passid',
+          value:passid,
+          ruleType:'eq'
+        }
+      ],
+    }
+    const res =  await $http.post(url, req)
+    if(res.data.state==="SUCCESS"&&res.data.data.length>0){
+      return true
+    }
+  }
+
   //根据车辆流水内的出入时间及passid获取通行信息数据（收费站，门架）
   async getCarPathInfoById(options) {
     let url = path + `/aud/select/srvaud_susvehpasspath_select`

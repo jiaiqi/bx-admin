@@ -89,7 +89,6 @@
           <el-form-item
             label="交易通行时间"
             prop="pass_time"
-            style="margin-left: 14%"
           >
             <el-input
               disabled
@@ -101,19 +100,19 @@
         </el-col>
         <el-col
           :span="12"
-          style="padding-left:6.28%"
+          style="padding-left:6.28%;display: flex;"
         >
           <el-form-item
-            label="确认逃费类型"
-            prop="escape_type"
+            label="收费车型"
+            prop="trade_vehicle_type"
           >
             <el-select
-              v-model="ruleForm.escape_type"
+              v-model="ruleForm.trade_vehicle_type"
               placeholder="请选择"
               clearable
             >
               <el-option
-                v-for="item in optionsPage.escape_type"
+                v-for="item in optionsPage.trade_vehicle_type"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -121,6 +120,7 @@
               </el-option>
             </el-select>
           </el-form-item>
+
         </el-col>
         <el-col :span="12">
           <el-form-item
@@ -241,9 +241,28 @@
         </el-col>
 
         <el-col
-          :span="12"
-          style="display: flex;width:43.5%;justify-content: space-between"
+          :span="24"
+          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;"
         >
+          <el-form-item
+            label="确认逃费类型"
+            prop="escape_type"
+          >
+            <el-select
+              v-model="ruleForm.escape_type"
+              placeholder="请选择"
+              clearable
+              style="width: 100%;"
+            >
+              <el-option
+                v-for="item in optionsPage.escape_type"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item
             label="人工审核车牌号"
             prop="vehicle_id"
@@ -274,22 +293,18 @@
               </el-option>
             </el-select>
           </el-form-item>
-        </el-col>
-        <el-col
-          :span="12"
-          style="display: flex;padding-left: 6.42%"
-        >
           <el-form-item
-            label="收费车型"
-            prop="trade_vehicle_type"
+            label="稽核车型"
+            prop="vehicle_type"
+            required
           >
             <el-select
-              v-model="ruleForm.trade_vehicle_type"
-              placeholder="请选择"
+              v-model="ruleForm.vehicle_type"
               clearable
+              placeholder="请选择"
             >
               <el-option
-                v-for="item in optionsPage.trade_vehicle_type"
+                v-for="item in optionsPage.vehicle_type"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -297,6 +312,11 @@
               </el-option>
             </el-select>
           </el-form-item>
+        </el-col>
+        <el-col
+          :span="6"
+          style="display: flex;"
+        >
           <el-form-item
             label="通行收费(元)"
             prop="orginal_fee"
@@ -318,7 +338,7 @@
         </el-col>
         <el-col
           :span="12"
-          style="display: flex;width:43.5%;justify-content: space-between"
+          style="display:grid;grid-template-columns: 1fr 1fr;"
         >
           <el-form-item
             label="实际费用(元)"
@@ -550,7 +570,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <!-- <el-col :span="12">
           <el-form-item
             label="稽核车型"
             prop="vehicle_type"
@@ -571,7 +591,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-        </el-col>
+        </el-col> -->
         <el-col :span="12">
           <el-form-item
             label="是否是发起方提交证据"
@@ -813,6 +833,33 @@
       :files="evidencePic"
       @getSavePicInfo="getSavePicInfo"
     />
+
+    <!-- 工单已存在覆盖层 -->
+    <div
+      v-if="showOrderExistOverlay"
+      class="order-exist-overlay"
+    >
+      <div class="overlay-content">
+        <div class="icon-container">
+          <i
+            class="el-icon-warning"
+            style="font-size: 48px; color: #E6A23C;"
+          ></i>
+        </div>
+        <h2 class="title">工单已存在</h2>
+        <p class="message">该通行标识已经发起过工单，请勿重复提交</p>
+        <div class="button-container">
+          <el-button
+            type="primary"
+            size="medium"
+            @click="closeCurrentPage"
+            style="padding: 12px 24px; font-size: 14px;"
+          >
+            关闭页面
+          </el-button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -835,12 +882,14 @@ export default {
   },
   data() {
     return {
+      addV2: null,
       evidencePic: [],
       supColums: [],
       suspectedData: [],
       showInsMod: false,
       showModal: false,
       showPicMod: false,
+      showOrderExistOverlay: false, // 控制工单已存在覆盖层的显示
       operatorName: [],
       optionsPageOrg: [], //机构编号
       optionsPage: {
@@ -954,6 +1003,7 @@ export default {
       let _this = this;
       orderUtils.getOrderFormList().then(res => {
         if (!res || res.data.state !== "SUCCESS") return
+        this.addV2 = res.data.data
         let ls = res.data.data
         _this.pageNo = ls.vpage_no;
         let ops = ls.srv_cols
@@ -1199,6 +1249,9 @@ export default {
         if (res.data.state !== 'SUCCESS') return;
         this.suspectedData = res.data.data ? res.data.data : []
         console.log('获取到流水', this.suspectedData)
+        if (this.suspectedData?.[0]?.vehicletype) {
+          this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
+        }
       }).catch(err => { })
     },
     /**
@@ -1323,6 +1376,15 @@ export default {
         });
         this.ruleForm.relevant_org = ids.join(',');
       }
+    },
+
+    // 关闭当前页面
+    closeCurrentPage() {
+      if (top.window?.tab && top.window.tab.closeCurrentTab && top.window.tab.getCurrentTab) {
+        tab.closeCurrentTab(tab.getCurrentTab())
+      } else {
+        this.$message.error('关闭失败,请尝试手动关闭标签页')
+      }
     }
   },
 
@@ -1341,6 +1403,12 @@ export default {
     if (base) {
       this.ruleForm = { ...base }
     }
+    orderUtils.checkOrderExist(this.ruleForm.pass_id).then(res => {
+      if (res === true) {
+        // 工单已经发起过了
+        this.showOrderExistOverlay = true;
+      }
+    })
   },
   beforeDestroy() {
     this.$store.commit('orderForm/handleSetOrderForm', this.ruleForm)
@@ -1434,6 +1502,83 @@ export default {
 
   >span {
     margin: 0 0.5rem;
+  }
+}
+
+.el-form-item__content .el-select {
+  width: 100%;
+}
+
+/* 工单已存在覆盖层样式 */
+.order-exist-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.overlay-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  animation: slideUp 0.3s ease-out;
+}
+
+.icon-container {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.message {
+  font-size: 16px;
+  color: #606266;
+  margin: 0 0 30px 0;
+  line-height: 1.6;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 </style>
