@@ -942,7 +942,7 @@ export default {
         this.service_name,
         "detail",
         null,
-        this.service_name,
+        null,
         false,
         this.id
       );

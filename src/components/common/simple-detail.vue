@@ -225,7 +225,6 @@ export default {
       type: String,
       default: "detail",
     },
-
     pkCol: {
       type: [String, Number],
     },
@@ -253,7 +252,6 @@ export default {
       return model;
     },
   },
-
   data() {
     return {
       service_name: this.service || this.$route.params.service_name,
@@ -331,7 +329,7 @@ export default {
     initDetail() {
       return new Promise((resolve) => {
         // 确保元数据请求携带 main_srv，避免与外层重复请求产生两次调用
-        this.mainService = this.service_name;
+        // this.mainService = this.service_name;
         this.createFields((srvCol) => srvCol.in_detail != 0)
           .then((response) => {
             if (response.data.encryptedCols) {
