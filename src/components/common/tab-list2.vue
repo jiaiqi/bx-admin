@@ -112,6 +112,7 @@
           @form-action-complete="$emit('form-action-complete', $event)"
           @customize-action-complete="customizeActionComplete"
           @row-dbclick="$emit('row-dbclick', $event)"
+          @metadata-loaded="metadataLoaded"
           v-else
         >
         </list>
@@ -748,28 +749,37 @@ export default {
       //     });
       //   })
     },
+    metadataLoaded(vm) {
+      console.log('metadataLoaded:',vm?.listV2Data);
+      let tabs = vm?.listV2Data?.tabs.sort((a, b) => a.orders - b.orders);
+      this.cols = vm?.listV2Data?.srv_cols;
+      if (!tabs || tabs.length == 0) {
+        return;
+      }
+      this.buildSections(tabs);
+    },
   },
 
   mounted: function () {
     window.tabs = this;
-    let self = this;
-    this.loadColsV2(this.getService(), this.getListType).then((response) => {
-      if (
-        response &&
-        response.data &&
-        response.data.data &&
-        response.data.data.tabs
-      ) {
-        let tabs = response.data.data.tabs.sort((a, b) => a.orders - b.orders);
-        this.cols = response.data.data.srv_cols;
-        if (!tabs || tabs.length == 0) {
-          return;
-        }
-        this.buildSections(tabs);
-        //
-      } else {
-      }
-    });
+    // let self = this;
+    // this.loadColsV2(this.getService(), this.getListType).then((response) => {
+    //   if (
+    //     response &&
+    //     response.data &&
+    //     response.data.data &&
+    //     response.data.data.tabs
+    //   ) {
+    //     let tabs = response.data.data.tabs.sort((a, b) => a.orders - b.orders);
+    //     this.cols = response.data.data.srv_cols;
+    //     if (!tabs || tabs.length == 0) {
+    //       return;
+    //     }
+    //     this.buildSections(tabs);
+    //     //
+    //   } else {
+    //   }
+    // });
   },
   watch: {
     isDefault: {

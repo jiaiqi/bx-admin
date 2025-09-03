@@ -3194,14 +3194,14 @@ export default {
       if (this.listType == "procreadlist") {
         use_type = "procreadlist";
       }
-
       //加载serviceCols
       await this.loadColsV2(
         this.service_name,
         this.mode === 'selectlist' ? this.mode : use_type,
         null,
         this.mainService,
-        forceRefreshV2
+        forceRefreshV2,
+        this.listMainFormDatas?.id||null
       )
         .then((response) => {
           let respData = response.body.data;
@@ -3368,6 +3368,7 @@ export default {
           this.emitEvent("metadata-loaded", this);
           // 拿到列表v2之后重新加载新增、修改的服务列
           this.loadAddUpdateSrvCols?.()
+          this.$emit('metadata-loaded',this)
         });
 
       try {
