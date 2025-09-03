@@ -3376,6 +3376,7 @@ export default {
         }
         if (['addchildlist'].includes(this.listType) && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
           // 有默认数据，不发请求查找默认数据
+            this.$emit("list-loaded", this);
         } else {
           this.loadTableData().finally((_) => {
             if (this.defaultInplaceEditMode) {

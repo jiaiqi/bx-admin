@@ -413,7 +413,6 @@ export default {
             executor = action.$refs.executor;
           }
         }
-        // 此代码已经弃用！ 由 buildRunQuries 代替
         if (executor && childList.isMem()) {
           childList.buildExecutors4Edit().then((subexecutors) => {
             let fk = childList.foreignKey;
