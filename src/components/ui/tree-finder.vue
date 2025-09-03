@@ -103,6 +103,7 @@ export default {
   },
   data() {
     return {
+      loadOptionsRes: this.loadOptions(),
       // value组成的路径数组
       selected: [],
       // 树形结构数据
@@ -139,7 +140,7 @@ export default {
               resolve(list);
             });
           } else if (!node.data?.[this.dispLoaderV2.refedCol]) {
-            this.loadOptions().then((res) => {
+            this.loadOptionsRes.then((res) => {
               if (Array.isArray(res)) {
                 resolve(res);
               }
@@ -1048,7 +1049,7 @@ export default {
     if (this.field.model) {
       this.loadDetail();
     }
-    this.loadOptions().then((_) => {
+    this.loadOptionsRes.then((_) => {
       if (this.selected.length == 0 && this.field.model) {
         let value = this.field.model[this.field.info.valueCol];
         if (value == undefined || value == null) {
