@@ -2931,7 +2931,8 @@ export default {
         colType === "Email" ||
         colType === "TelNo"
       ) {
-        return "right";
+        // return "right";
+        return "center"; //2025.9.2改为居中
       } else if (
         colType === "Enum" ||
         colType === "Dict" ||
