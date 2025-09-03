@@ -459,8 +459,8 @@ function init_util() {
         ruleType: "eq",
       });
     }
-    // 详情子表场景：仅当调用方传入 id 值时，追加 { colName: 'id', ... } 2025-09-03
-    if (use_type === 'detaillist' && idVal !== undefined && idVal !== null && idVal !== '') {
+    // 详情场景：仅当调用方传入 id 值时，追加 { colName: 'id', ... } 2025-09-03
+    if (use_type === 'detail' && idVal !== undefined && idVal !== null && idVal !== '') {
       requestData.condition.push({
         colName: 'id',
         value: idVal,

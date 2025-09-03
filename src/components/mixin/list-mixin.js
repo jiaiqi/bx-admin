@@ -3201,7 +3201,6 @@ export default {
         null,
         this.mainService,
         forceRefreshV2,
-        this.listMainFormDatas?.id||null
       )
         .then((response) => {
           let respData = response.body.data;
