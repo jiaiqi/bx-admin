@@ -122,6 +122,7 @@
         :key="index"
         v-if="item.show && item.column != firstColumn"
         :width="item.width"
+        :align="item.align"
         :prop="item.column"
         :min-width="item.list_min_width"
         :show-overflow-tooltip="getListShowFileList(item) === true ? false : true
@@ -1317,7 +1318,7 @@ export default {
             header["sortable"] = true;
             header["list_min_width"] = serviceCol["list_min_width"];
             header["col_type"] = colType;
-
+            header["align"] = this.getColAlign(colType);
             if (header["sortable"] && column_index == 0) {
               this.firstColumn = serviceCol["columns"];
               column_index++;

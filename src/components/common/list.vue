@@ -1893,34 +1893,7 @@ export default {
 
   .cell.el-tooltip {}
 
-  .el-table {
-
-    .is-right {
-
-      .cell,
-      .el-tooltip {
-        justify-content: flex-end;
-        width: 100% !important;
-
-        .el-progress-bar {
-          min-width: 50px;
-        }
-      }
-    }
-
-    .is-center {
-
-      .cell,
-      .el-tooltip {
-        justify-content: center;
-        width: 100% !important;
-
-        .el-progress-bar {
-          min-width: 50px;
-        }
-      }
-    }
-  }
+  
 
   // .el-table td.is-right,
   // .el-table th.is-right {

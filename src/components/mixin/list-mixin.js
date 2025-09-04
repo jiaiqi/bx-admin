@@ -2925,20 +2925,12 @@ export default {
 
     getColAlign: function (colType) {
       if (
-        colType === "Money" ||
-        colType === "int" ||
-        colType === "Integer" ||
-        colType === "Email" ||
-        colType === "TelNo"
+        ['Float', 'Money', 'int', 'Integer', 'Decimal', 'Email', 'TelNo'].includes(colType)
       ) {
         // return "right";
         return "center"; //2025.9.2改为居中
       } else if (
-        colType === "Enum" ||
-        colType === "Dict" ||
-        colType === "Date" ||
-        colType === "DateRange" ||
-        colType === "DateTime"
+        ['Enum', 'Dict', 'Date', 'DateRange', 'DateTime'].includes(colType)
       ) {
         return "center";
       } else {
@@ -3367,7 +3359,7 @@ export default {
           this.emitEvent("metadata-loaded", this);
           // 拿到列表v2之后重新加载新增、修改的服务列
           this.loadAddUpdateSrvCols?.()
-          this.$emit('metadata-loaded',this)
+          this.$emit('metadata-loaded', this)
         });
 
       try {
@@ -3376,7 +3368,7 @@ export default {
         }
         if (['addchildlist'].includes(this.listType) && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
           // 有默认数据，不发请求查找默认数据
-            this.$emit("list-loaded", this);
+          this.$emit("list-loaded", this);
         } else {
           this.loadTableData().finally((_) => {
             if (this.defaultInplaceEditMode) {
