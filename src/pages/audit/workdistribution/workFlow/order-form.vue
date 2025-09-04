@@ -1376,7 +1376,8 @@ export default {
 
     // 关闭当前页面
     closeCurrentPage() {
-      if (top.window?.tab && top.window.tab.closeCurrentTab && top.window.tab.getCurrentTab) {
+      const tab = top.window?.tab
+      if (tab && tab.closeCurrentTab && tab.getCurrentTab) {
         tab.closeCurrentTab(tab.getCurrentTab())
       } else {
         this.$message.error('关闭失败,请尝试手动关闭标签页')
