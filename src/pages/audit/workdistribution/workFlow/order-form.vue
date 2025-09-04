@@ -312,11 +312,41 @@
               </el-option>
             </el-select>
           </el-form-item>
+
         </el-col>
         <el-col
-          :span="6"
-          style="display: flex;"
+          :span="24"
+          style="display: grid;grid-template-columns: repeat(4,1fr);"
         >
+          <el-form-item
+            label="是否为大件车辆"
+            prop="isnormel"
+          >
+            <el-select
+              v-model="ruleForm.isnormel"
+              clearable
+              placeholder="请选择"
+              @change="handleSetBigCar"
+            >
+              <el-option
+                v-for="item in optionsPage.isnormel"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            label="车轴数"
+            prop="axlecount"
+          >
+            <el-input
+              v-model="ruleForm.axlecount"
+              clearable
+              placeholder="请输入..."
+            ></el-input>
+          </el-form-item>
           <el-form-item
             label="通行收费(元)"
             prop="orginal_fee"
@@ -335,11 +365,6 @@
               >计费查询</el-button>
             </li>
           </el-form-item>
-        </el-col>
-        <el-col
-          :span="12"
-          style="display:grid;grid-template-columns: 1fr 1fr;"
-        >
           <el-form-item
             label="实际费用(元)"
             prop="real_fee"
@@ -350,6 +375,11 @@
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
+        </el-col>
+        <el-col
+          :span="12"
+          style="display:grid;grid-template-columns: 1fr 1fr;"
+        >
           <el-form-item
             label="补缴费用(元)"
             prop="owe_fee"
@@ -655,41 +685,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
-          <el-form-item
-            label="是否为大件车辆"
-            prop="isnormel"
-          >
-            <el-select
-              v-model="ruleForm.isnormel"
-              clearable
-              placeholder="请选择"
-              style="width:84.3%;"
-              @change="handleSetBigCar"
-            >
-              <el-option
-                v-for="item in optionsPage.isnormel"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            label="车轴数"
-            prop="axlecount"
-          >
-            <el-input
-              v-model="ruleForm.axlecount"
-              clearable
-              style="width:84.5%"
-              placeholder="请输入..."
-            ></el-input>
-          </el-form-item>
-        </el-col>
+
         <el-col
           :span="12"
           v-if="false"
