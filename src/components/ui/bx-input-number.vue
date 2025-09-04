@@ -205,6 +205,10 @@ export default {
     },
   },
   methods: {
+    setSrvVal(val) {
+      this.currentValue = val;
+      this.$emit("input", val);
+    },
     toPrecision(num, precision) {
       if (precision === undefined || precision === null)
         precision = this.numPrecision;

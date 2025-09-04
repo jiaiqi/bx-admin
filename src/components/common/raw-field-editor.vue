@@ -49,6 +49,7 @@
               :max="field.info.getMax()"
               label="描述文字"
               :fieldMoreConfig="field.info"
+              ref="editor"
               @change="$emit('field-value-changed', field.info.name, field)"
               @blur="onBlur"
             >
