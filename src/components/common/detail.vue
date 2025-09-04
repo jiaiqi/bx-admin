@@ -1,7 +1,7 @@
 <template>
   <div
     style="height: 100%"
-    v-if="id && id !== 'xxx'"
+    v-if="(id && id !== 'xxx') || (defaultConditions && defaultConditions.length)"
   >
     <card-detail
       :pk-col="pkCol"
@@ -792,9 +792,9 @@ export default {
     };
   },
   methods: {
-    formActionComplete(action){
+    formActionComplete(action) {
       console.log('formActionComplete:', action);
-      
+
     },
     suffixActionsComplete(event) {
       console.log('suffixActionsComplete:', event);
