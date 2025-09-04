@@ -202,6 +202,7 @@ export default class OrderApi {
     return await $http.post(url, req)
   }
 
+  // 校验工单是否存在
   async checkOrderExist(passid) {
     if(!passid) return false
     let url = path + `/aud/select/srvaud_workorder_passid_select`
@@ -210,7 +211,7 @@ export default class OrderApi {
       serviceName: "srvaud_workorder_passid_select",
       condition: [
         {
-          colName:'passid',
+          colName:'pass_id',
           value:passid,
           ruleType:'eq'
         }
