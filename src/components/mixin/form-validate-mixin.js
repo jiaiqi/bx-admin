@@ -125,8 +125,8 @@ export default {
       }
       if (rule.hasOwnProperty("pattern")) {
         let text = fieldSrvVal;
-        if (!text) {
-          return true;
+        if ([undefined, null, ''].includes(text)) {
+          return true; // 空字符串不校验
         }
         var regex = RegExp(rule.pattern, 'g');
         let test = regex.test(text);
