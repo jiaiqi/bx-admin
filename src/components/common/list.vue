@@ -229,7 +229,6 @@
           stripe
           border
           style="width: 100%"
-          :max-height="tableMaxHeight"
           :row-class-name="tableRowClassName"
           row-key="id"
           highlight-current-row
@@ -301,6 +300,7 @@
                 :content="getTooltipContent(scope.row, item)"
                 :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type)"
               >
+
                 <div
                   slot="content"
                   v-if="['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type) && scope.row[item.column]"
@@ -522,57 +522,64 @@
                 </div>
 
                 <template v-else>
-                  <div
-                    v-if="header_view_model == 'group'"
-                    class="group-table"
-                  >
-                    <pre>{{ formatValue(scope.row, item) }}</pre>
-                  </div>
-                  <template v-else>
-                    <a
-                      v-if="item.linkUrlFunc"
-                      v-show="scope.row[item.column]"
-                      style="
+
+                  <div>
+                    <span
+                      class="is-leaf"
+                      v-if="routeMeta&&routeMeta.isTree&&scope.row&&scope.row['is_leaf']==='是'&&index === 0 && !scope.row.parent_no"
+                    ></span>
+                    <div
+                      v-if="header_view_model == 'group'"
+                      class="group-table"
+                    >
+                      <pre>{{ formatValue(scope.row, item) }}</pre>
+                    </div>
+                    <template v-else>
+                      <a
+                        v-if="item.linkUrlFunc"
+                        v-show="scope.row[item.column]"
+                        style="
                       white-space: nowrap;
                       color: dodgerblue;
                       cursor: pointer;
                     "
-                      @click="onLinkClicked(scope.row, item)"
-                    >
-                      {{ formatValue(scope.row, item) }}
-                    </a>
-                    <div
-                      style="display: flex; flex-wrap: wrap"
-                      v-else-if="isFkJson(scope.row, item)"
-                    >
-                      <el-tag
-                        style="margin-right: 4px; margin-bottom: 2px"
-                        size="mini"
-                        :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
-                        v-for="(tag, tIndex) in getFkJson(scope.row, item)"
-                        :key="tIndex"
-                      >{{ tag || "" }}
-                      </el-tag>
-                    </div>
-                    <a
-                      class="link-to-detail"
-                      title="点击查看详情"
-                      v-else-if="
+                        @click="onLinkClicked(scope.row, item)"
+                      >
+                        {{ formatValue(scope.row, item) }}
+                      </a>
+                      <div
+                        style="display: flex; flex-wrap: wrap"
+                        v-else-if="isFkJson(scope.row, item)"
+                      >
+                        <el-tag
+                          style="margin-right: 4px; margin-bottom: 2px"
+                          size="mini"
+                          :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
+                          v-for="(tag, tIndex) in getFkJson(scope.row, item)"
+                          :key="tIndex"
+                        >{{ tag || "" }}
+                        </el-tag>
+                      </div>
+                      <a
+                        class="link-to-detail"
+                        title="点击查看详情"
+                        v-else-if="
                         isDetailLink(item.column, scope.row, scope.$index)
                       "
-                      @click="toDetail(item.column, scope.row, scope.$index)"
-                    >{{ formatValue(scope.row, item) }}</a>
-                    <span
-                      v-else
-                      :class="{
+                        @click="toDetail(item.column, scope.row, scope.$index)"
+                      >{{ formatValue(scope.row, item) }}</a>
+                      <span
+                        v-else
+                        :class="{
                         hasBg:
                           (item.backgroundMap &&
                             item.backgroundMap[scope.row[item.column]]) ||
                           item.backgroundMap['_default'],
                       }"
-                      :style="setTdStyle(item, scope.row)"
-                    >{{ formatValue(scope.row, item) }}</span>
-                  </template>
+                        :style="setTdStyle(item, scope.row)"
+                      >{{ formatValue(scope.row, item) }}</span>
+                    </template>
+                  </div>
                 </template>
                 <div
                   style="float: right"
@@ -1880,6 +1887,11 @@ export default {
       white-space: normal;
       max-height: 80px;
       display: inline-block;
+
+      .is-leaf {
+        display: inline-block;
+        padding-right: 25px;
+      }
     }
   }
 
@@ -1893,7 +1905,7 @@ export default {
 
   .cell.el-tooltip {}
 
-  
+
 
   // .el-table td.is-right,
   // .el-table th.is-right {

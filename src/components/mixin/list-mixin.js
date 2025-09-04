@@ -13,13 +13,14 @@ import cloneDeep from "lodash/cloneDeep";
 import isFunction from "lodash/isFunction";
 import batchAddMixin from "@/components/mixin/batch-add-mixin";
 import { onFetch } from "@/common/httpUtil";
+import inlineEditListMixin from "@/components/mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
 
 export function MissRequiredConditionError(cond) {
   console.error("缺少条件：", cond);
 }
 let polling = null;
 export default {
-  mixins: [batchAddMixin],
+  mixins: [batchAddMixin, inlineEditListMixin],
   data() {
     return {
       tabsConfig: [
@@ -822,14 +823,10 @@ export default {
           row[column.property] == this.sumConfig.sum_text &&
           !isNaN(Number(this.sumConfig.sum_text_col_span))
         ) {
-          //  console.log({ row, column, rowIndex, columnIndex })
-          // return [1,1]
-
           return {
             rowspan: 1,
             colspan: colspan,
           };
-          // [1, this.sumConfig.sum_text_col_span];
         } else if (columnIndex < colspan) {
           return {
             rowspan: 0,
@@ -841,17 +838,8 @@ export default {
         let colspan = 1;
         let rowSpanCols = [];
         let colName = column.property;
-        if (
-          this.cfgJson &&
-          this.cfgJson.hasOwnProperty("list_style_json") &&
-          this.cfgJson.list_style_json &&
-          this.cfgJson.list_style_json.hasOwnProperty(
-            "list_auto_row_span_cols"
-          ) &&
-          this.cfgJson.list_style_json.list_auto_row_span_cols
-        ) {
-          rowSpanCols =
-            this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
+        if (colName && this.cfgJson?.list_style_json?.list_auto_row_span_cols) {
+          rowSpanCols = this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
         }
         let iValue = this.gridDataRun?.[rowIndex]?.[colName] + ""; // 值
         if (rowSpanCols && rowSpanCols.indexOf(colName) !== -1) {
@@ -869,7 +857,6 @@ export default {
             firstValue = this.gridDataRun[rowIndex - 1][colName] + ""; // 前一行
             lastValue = undefined; // 前一行
           }
-
           if (firstValue !== iValue) {
             let allRows = 1;
             let isNext = true;

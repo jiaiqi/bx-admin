@@ -52,8 +52,10 @@
       border
       lazy
       :row-class-name="tableRowClassName"
+      :span-method="arraySpanMethod"
       @filter-change="filterChange"
       @sort-change="handleSortChange"
+      style="width: 100%"
     >
       <el-table-column width="50">
         <template slot-scope="scope">
@@ -66,79 +68,57 @@
       </el-table-column>
 
       <el-table-column
-        width="300"
         v-for="(item, index) in gridHeader"
         :key="index"
-        v-if="item.column == firstColumn"
-        :show-overflow-tooltip="getListShowFileList(item) === true ? false : true
-          "
-        :label="item.label"
-        :min-width="item.list_min_width"
-        show-overflow-tooltip
-      >
-        <template slot-scope="scope">
-          <span
-            v-for="(space, levelIndex) in scope.row._level"
-            :key="levelIndex"
-            class="ms-tree-space"
-          >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-
-          <span
-            class="button is-outlined is-primary is-small"
-            v-if="toggleIconShow(scope.row)"
-            @click="toggle(scope.row)"
-          >
-            <i
-              v-if="!scope.row._expanded"
-              class="el-icon-plus"
-              aria-hidden="true"
-            ></i>
-            <i
-              v-if="scope.row._expanded"
-              class="el-icon-minus"
-              aria-hidden="true"
-            ></i>
-          </span>
-          <span
-            v-else
-            class="ms-tree-space"
-          >&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          <span :title="scope.row[firstColumn]">
-            <a
-              class="link-to-detail"
-              title="点击查看详情"
-              v-if="isDetailLink(item.column, scope.row, scope.$index)"
-              @click="toDetail(item.column, scope.row, scope.$index)"
-            >{{ formatValue(scope.row, item) }}</a>
-            <span v-else>
-              {{ scope.row[firstColumn] }}
-            </span>
-          </span>
-        </template>
-      </el-table-column>
-
-      <el-table-column
-        v-for="(item, index) in gridHeader"
-        :key="index"
-        v-if="item.show && item.column != firstColumn"
-        :width="item.width"
+        v-if="item.show"
+        :width="item.column == firstColumn ? 300 : null"
         :align="item.align"
         :prop="item.column"
         :min-width="item.list_min_width"
-        :show-overflow-tooltip="getListShowFileList(item) === true ? false : true
-          "
+        :show-overflow-tooltip="getListShowFileList(item) === true ? false : true"
         :label="item.label"
         :filters="item.filters"
         :column-key="item.column"
         :sortable="item.sortable && !isMem() ? 'custom' : false"
       >
         <template slot-scope="scope">
+          <!-- 树形结构的缩进和展开/收起按钮 (仅在firstColumn显示) -->
+          <template v-if="item.column == firstColumn">
+            <span
+              v-for="(space, levelIndex) in scope.row._level"
+              :key="levelIndex"
+              class="ms-tree-space"
+            >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
-          <file-list
-            v-if="['FileList'].includes(item.col_type)"
-            :data="scope.row"
-            :field="item"
-          ></file-list>
+            <span
+              class="button is-outlined is-primary is-small"
+              v-if="toggleIconShow(scope.row)"
+              @click="toggle(scope.row)"
+            >
+              <i
+                v-if="!scope.row._expanded"
+                class="el-icon-plus"
+                aria-hidden="true"
+              ></i>
+              <i
+                v-if="scope.row._expanded"
+                class="el-icon-minus"
+                aria-hidden="true"
+              ></i>
+            </span>
+            <span
+              v-else
+              class="ms-tree-space"
+            >&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          </template>
+
+          <!-- 统一的列内容渲染逻辑 -->
+          <template v-if="['FileList'].includes(item.col_type)">
+            <file-list
+              :data="scope.row"
+              :field="item"
+            ></file-list>
+          </template>
           <template v-else-if="item._obj_info">
             <file-list
               v-if="['FileList', 'Image'].includes(item.col_type)"
@@ -311,7 +291,6 @@
                   "></i>
                 {{ getStrIntercept(fileItem.src_name, 0) }}
               </el-link>
-              <!-- <span></span> -->
             </div>
           </div>
           <a
@@ -1248,6 +1227,9 @@ export default {
           let listData = response.body.data["srv_cols"];
           this.vpageNo = respData.vpage_no;
 
+          if (respData.cfg_json) {
+            this.handleCfgJson(respData.cfg_json);
+          }
           // this.gridButton = response.body.data["gridButton"];
           // this.rowButton = response.body.data["rowButton"];
 
@@ -1833,15 +1815,6 @@ export default {
   },
 
   computed: {
-    maxTableHeight() {
-      let ratio = 0.8;
-      let h = Math.max(
-        document.documentElement.clientHeight,
-        window.innerHeight || 0
-      );
-      return h * ratio;
-    },
-
     // 动态计算操作列宽度，最大300px
     operationColumnWidth() {
       if (!this.sortedRowButtons || !this.sortedRowButtons.buttons) {
