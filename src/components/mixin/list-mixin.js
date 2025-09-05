@@ -35,6 +35,9 @@ export default {
           len: 0,
         },
       ],
+      firstColumn: null,
+      unfoldDataMap: {},
+      treeNodeLoadingMap: {},
       initLoad: false,
       activeTabName: "norm",
       activeRowButton: null,
@@ -2481,16 +2484,32 @@ export default {
                   this.srvAuthLogin = true;
                 } else {
                   if (this.listType === "treelist") {
-                    response.data = response.data.map((item) => {
-                      item.hasChildren = item.is_leaf !== "是";
-                      if (item.hasChildren === true) {
-                        item.children = [];
-                        item.expanded = false;
-                      }
-                      return item;
+                    // 使用treegrid风格的树形结构处理
+                    response.data.forEach((item) => {
+                      item._children = item.children;
+                      delete item.children;
                     });
-                  }
-                  this.gridData = response.data;
+                    this.buildTreeData(response.data, true);
+                    this.gridData = this.setSpaceIcon(response.data, null);
+                    
+                    // 设置firstColumn
+                    if (this.gridHeader && this.gridHeader.length > 0) {
+                      this.firstColumn = this.gridHeader.find(item => 
+                        this.getGridHeaderDispExps(item, this.listMainFormDatas)
+                      )?.column;
+                    }
+                    
+                    // 处理已展开的节点
+                    if (this.gridData.length > 0) {
+                      this.gridData.forEach((item) => {
+                        if (this.unfoldDataMap[item.id] === true) {
+                          this.toggle(item);
+                        }
+                      });
+                    }
+                  } else {
+                     this.gridData = response.data;
+                   }
                   this.originListData = JSON.parse(
                     JSON.stringify(response.data)
                   );
@@ -3731,6 +3750,192 @@ export default {
         }
       }
       return datas;
+    },
+    
+    // 树形结构相关方法
+    toggleIconShow(record) {
+      return record.is_leaf === "否";
+    },
+    
+    async toggle(rowData) {
+      let me = this;
+      const noCol = this.listV2Data["no_col"];
+      const parentCol = this.listV2Data["parent_no_col"];
+      
+      let childLen = !rowData._children ? 0 : rowData._children.length;
+      
+      if (rowData._expanded) {
+        this.removeChildValue(rowData);
+      } else {
+        if (rowData._children && rowData._children.length > 0) {
+          for (var item of rowData._children) {
+            if (!rowData["_checked"]) {
+              item["_checked"] = false;
+              item["_indeterminate"] = false;
+              
+              if (item.is_leaf == "否") {
+                item._expanded = false;
+              }
+            }
+            me.gridData.splice(me.gridData.indexOf(rowData) + 1, 0, item);
+          }
+        } else {
+          // 设置loading状态
+          this.$set(this.treeNodeLoadingMap, rowData.id + "", true);
+          
+          var childData = [];
+          var childCondition = [
+            {
+              colName: parentCol,
+              value: rowData[noCol],
+              ruleType: "eq",
+            },
+          ];
+          
+          try {
+            await this.select(
+              this.service_name,
+              childCondition,
+              {
+                pageNo: 1,
+                rownumber: 300,
+              },
+              this.order,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              this.vpageNo,
+              "treelist"
+            ).then((response) => {
+              if (response.body.resultCode == "0011") {
+                this.$store.commit("clearSrvCols");
+                this.vpageNo = null;
+                return;
+              }
+              this.buildTreeData(response.body.data, false);
+              childData = response.body.data;
+            });
+            
+            var data = me.setSpaceIcon(childData, rowData._level);
+            rowData._children = this.bxDeepClone(data);
+            
+            let i = 0;
+            for (var item of rowData._children) {
+              if (rowData["_checked"]) {
+                item["_checked"] = true;
+              }
+              me.gridData.splice(me.gridData.indexOf(rowData) + i + 1, 0, item);
+              i++;
+            }
+          } finally {
+            // 清除loading状态
+            this.$set(this.treeNodeLoadingMap, rowData.id + "", false);
+          }
+        }
+        
+        if (rowData._children && rowData._children.length > 0) {
+          rowData._children.forEach((item) => {
+            if (this.unfoldDataMap[item.id] === true) {
+              this.toggle(item);
+            }
+          });
+        }
+      }
+      
+      rowData._expanded = !rowData._expanded;
+      this.$set(this.unfoldDataMap, rowData.id + "", rowData._expanded);
+    },
+    
+    removeChildValue(rowData) {
+      const noCol = this.listV2Data["no_col"];
+      const parentCol = this.listV2Data["parent_no_col"];
+      var me = this;
+      let dataArr = [];
+      let childLen = rowData._children.length;
+      dataArr.push(rowData);
+      let arr = me.getChildFlowId(dataArr, []);
+      
+      for (let i = 0; i < childLen; i++) {
+        if (rowData._children[i]._children != undefined) {
+          var _len = rowData._children[i]._children.length;
+          if (_len > 0) {
+            this.removeChildValue(rowData._children[i]);
+          }
+        }
+        
+        me.gridData.map((value) => {
+          if (
+            arr.indexOf(value[parentCol]) > -1 &&
+            !value["_level_node"]
+          ) {
+            this.$set(this.unfoldDataMap, value.id + "", false);
+            this.removeByValue(me.gridData, value);
+          }
+        });
+      }
+    },
+    
+    getChildFlowId(data, emptyArr) {
+      const noCol = this.listV2Data["no_col"];
+      let me = this;
+      Array.from(data).forEach((record) => {
+        emptyArr.push(record[noCol]);
+        if (record._children && record._children.length > 0) {
+          let childFlowIdArr = me.getChildFlowId(record._children, emptyArr);
+          emptyArr.concat(childFlowIdArr);
+        }
+      });
+      return emptyArr;
+    },
+    
+    setSpaceIcon(data, level) {
+      let me = this;
+      let _level = 0;
+      data.forEach((value) => {
+        value._expanded = false;
+        if (level !== undefined && level !== null) {
+          _level = level + 1;
+        } else {
+          _level = 1;
+        }
+        value._level = _level;
+        if (value._children && value._children.length > 0) {
+          me.setSpaceIcon(value._children, _level);
+        }
+      });
+      return data;
+    },
+    
+    buildTreeData(data, _level_node) {
+      if (!data) {
+        return;
+      }
+      for (var item of data) {
+        item._checked = false;
+        item._indeterminate = false;
+        item._level_node = _level_node;
+        if (item.is_leaf == "否") {
+          item._children = [];
+        }
+        if (item._children && item._children.length > 0) {
+          this.buildTreeData(item._children, false);
+        }
+      }
+    },
+    
+    removeByValue(sourceData, val) {
+      for (var i = 0; i < sourceData.length; i++) {
+        if (sourceData[i] == val) {
+          sourceData.splice(i, 1);
+          break;
+        }
+      }
     },
   },
 
