@@ -103,7 +103,6 @@ export default {
   },
   data() {
     return {
-      loadOptionsRes: this.loadOptions(),
       // value组成的路径数组
       selected: [],
       // 树形结构数据
@@ -140,7 +139,7 @@ export default {
               resolve(list);
             });
           } else if (!node.data?.[this.dispLoaderV2.refedCol]) {
-            this.loadOptionsRes.then((res) => {
+            this.loadOptions().then((res) => {
               if (Array.isArray(res)) {
                 resolve(res);
               }
@@ -255,7 +254,7 @@ export default {
       }
       this.$emit("field-value-changed", this.field.info.name, this.field);
     },
-    onRowSelected(row, event) {
+    async onRowSelected(row, event) {
       let item = row;
       // this.field.model = item;
 
@@ -273,9 +272,198 @@ export default {
       } else {
         this.onlyEmitData(item || null);
       }
-      this.selected = item.path?.split('/')?.filter(Boolean) || [];
+
+      // 修复：正确设置el-cascader的selected路径
+      if (item && item.path) {
+        // 将path按'/'分割，并转换为对应的value值数组
+        let pathArray = item.path.split('/').filter(Boolean);
+        this.selected = pathArray.map((val) => {
+          // 如果value字段是数字类型，需要转换为数字
+          if (typeof item[this.props.value] === "number" && !isNaN(Number(val))) {
+            return Number(val);
+          }
+          return val;
+        });
+
+        // 获取完整路径数据并构建树形结构
+        try {
+          const treeStructureData = await this.getFullPathData(item.path);
+          console.log('完整路径树形数据:', treeStructureData);
+          this.options = treeStructureData
+          // 触发自定义事件，将树形结构数据传递给父组件
+          this.$emit('path-data-loaded', {
+            selectedItem: item,
+            treeStructureData: treeStructureData,
+            path: item.path
+          });
+        } catch (error) {
+          console.error('获取完整路径数据失败:', error);
+        }
+      } else {
+        this.selected = [];
+      }
 
     },
+
+    /**
+     * 根据路径查询所有相关数据并构建树形结构
+     * @param {string} path - 路径字符串，如 "1/2/3"
+     * @returns {Object} 树形结构数据
+     */
+    async getFullPathData(path) {
+      if (!path) return null;
+
+      try {
+        const loader = this.dispLoaderV2 || this.field.info.dispLoader;
+        if (!loader) {
+          console.error('数据加载器配置不存在');
+          return null;
+        }
+
+        const pathArray = path.split('/').filter(item => item !== '');
+        if (pathArray.length === 0) return null;
+
+        // 获取最顶级节点的值
+        const topLevelValue = pathArray[0];
+
+        // 构建查询条件 - 使用path进行like查询
+        let conditions = this.buildConditions(loader);
+        conditions.push({
+          colName: "path",
+          ruleType: "like",
+          value: topLevelValue
+        });
+
+        const params = {
+          serviceName: loader.service,
+          colNames: ["*"],
+          condition: conditions
+        };
+
+        const url = this.getServiceUrl("select", loader.service);
+        const response = await this.$http.post(url, params);
+
+        if (response?.data?.state === "SUCCESS" && response.data.data?.length > 0) {
+          // 按照treeLazySelect中的方法处理数据
+          let allData = response.data.data.map((item) => {
+            item.children = item.is_leaf === "是" ? null : [];
+            item.leaf = item.is_leaf === "是";
+            return item;
+          });
+
+          // 如果需要重命名标签
+          if (this.needRenameLabel()) {
+            allData.forEach((item) => this.renameLable(item));
+          }
+
+          // // 从查询结果中筛选出路径相关的数据
+          // const pathRelatedData = [];
+
+          // for (let i = 0; i < pathArray.length; i++) {
+          //   const currentPath = pathArray.slice(0, i + 1).join('/');
+          //   const nodeData = allData.find(item => item.path && item.path.includes(currentPath));
+
+          //   if (nodeData) {
+          //     pathRelatedData.push(nodeData);
+          //   } else {
+          //     console.warn(`未找到路径对应的数据: ${currentPath}`);
+          //     break;
+          //   }
+          // }
+
+          // 构建树形结构
+          const treeOptions = {
+            idField: this.props?.value || 'id',
+            parentField: this.dispLoaderV2?.parentCol || 'parentId',
+            childrenField: 'children',
+            rootValue: null
+          };
+          return this.buildTreeStructure(allData, treeOptions);
+
+        } else {
+          console.error('查询路径数据失败');
+          return null;
+        }
+
+      } catch (error) {
+        console.error('获取完整路径数据失败:', error);
+        return null;
+      }
+    },
+
+    /**
+     * 将路径数据数组构建成树形结构
+     * @param {Array} pathDataArray - 路径数据数组
+     * @returns {Object} 树形结构数据
+     */
+    /**
+     * 将数组数据构建为树形结构
+     * @param {Array} dataArray - 数据数组
+     * @param {Object} options - 配置选项
+     * @param {string} options.idField - ID字段名，默认为 'id'
+     * @param {string} options.parentField - 父节点字段名，默认为 'parentId'
+     * @param {string} options.childrenField - 子节点字段名，默认为 'children'
+     * @param {*} options.rootValue - 根节点的父节点值，默认为 null
+     * @returns {Array} 树形结构数组
+     */
+    buildTreeStructure(dataArray, options = {}) {
+      if (!dataArray || !Array.isArray(dataArray) || dataArray.length === 0) {
+        return [];
+      }
+
+      const {
+        idField = this.props?.value || 'id',
+        parentField = this.dispLoaderV2?.parentCol || 'parentId',
+        childrenField = 'children',
+        rootValue = null
+      } = options;
+
+      // 创建数据副本，避免修改原数组
+      const dataMap = new Map();
+      const result = [];
+
+      // 第一步：创建所有节点的映射
+      dataArray.forEach(item => {
+        const nodeData = { ...item };
+        nodeData[childrenField] = [];
+        dataMap.set(nodeData[idField], nodeData);
+      });
+
+      // 第二步：构建父子关系
+      dataArray.forEach(item => {
+        const nodeData = dataMap.get(item[idField]);
+        const parentId = item[parentField];
+
+        if (parentId === rootValue || parentId === null || parentId === undefined || parentId === '') {
+          // 根节点
+          result.push(nodeData);
+        } else {
+          // 子节点
+          const parentNode = dataMap.get(parentId);
+          if (parentNode) {
+            parentNode[childrenField].push(nodeData);
+          } else {
+            // 如果找不到父节点，也作为根节点处理
+            result.push(nodeData);
+          }
+        }
+      });
+
+      // 第三步：清理空的children数组（可选）
+      const cleanEmptyChildren = (nodes) => {
+        nodes.forEach(node => {
+          if (node[childrenField] && node[childrenField].length === 0) {
+            node[childrenField] = node.leaf === true ? null : [];
+          } else if (node[childrenField] && node[childrenField].length > 0) {
+            cleanEmptyChildren(node[childrenField]);
+          }
+        });
+      };
+
+      cleanEmptyChildren(result);
+      return result;
+    },
+
     popupDefaultConditions(loader) {
       let conditions = this.defaultConditions || [];
       let fieldInfo = this.field.info;
@@ -1045,44 +1233,46 @@ export default {
 
   destroyed: function () { },
 
-  mounted: function () {
+  created: function () {
     if (this.field.model) {
       this.loadDetail();
     }
-    this.loadOptionsRes.then((_) => {
-      if (this.selected.length == 0 && this.field.model) {
-        let value = this.field.model[this.field.info.valueCol];
-        if (value == undefined || value == null) {
-          value = this.field.model;
-        }
-        console.log("tree-finder", this);
-        if (this.dispLoaderV2?.parentCol) {
-          // this.setInitValOption(value)
-        } else {
-          this.setSrvVal(value);
-        }
-      } else if (
-        this.hasInit === false &&
-        this.options.length > 0 &&
-        !this.field.model &&
-        this.field.info &&
-        this.field.info.srvCol &&
-        this.field.info.srvCol.init_expr === "$firstRowData"
-      ) {
-        // 默认选中首行数据
-        // this.field.model = this.options[0];
-        const model = this.options[0];
+    console.log('created:', this.dispLoaderV2);
 
-        // this.$emit("field-value-changed", this.field.info.name, this.field);
-        if (this.allowChangeModel !== false) {
-          this.changeFieldModel(model, false);
-        } else {
-          this.onlyEmitData(model, false);
-        }
-        this.selected = [this.field.model[this.field.info.valueCol]];
-        this.hasInit = true;
-      }
-    });
+    // this.loadOptions.then((_) => {
+    //   if (this.selected.length == 0 && this.field.model) {
+    //     let value = this.field.model[this.field.info.valueCol];
+    //     if (value == undefined || value == null) {
+    //       value = this.field.model;
+    //     }
+    //     console.log("tree-finder", this);
+    //     if (this.dispLoaderV2?.parentCol) {
+    //       // this.setInitValOption(value)
+    //     } else {
+    //       this.setSrvVal(value);
+    //     }
+    //   } else if (
+    //     this.hasInit === false &&
+    //     this.options.length > 0 &&
+    //     !this.field.model &&
+    //     this.field.info &&
+    //     this.field.info.srvCol &&
+    //     this.field.info.srvCol.init_expr === "$firstRowData"
+    //   ) {
+    //     // 默认选中首行数据
+    //     // this.field.model = this.options[0];
+    //     const model = this.options[0];
+
+    //     // this.$emit("field-value-changed", this.field.info.name, this.field);
+    //     if (this.allowChangeModel !== false) {
+    //       this.changeFieldModel(model, false);
+    //     } else {
+    //       this.onlyEmitData(model, false);
+    //     }
+    //     this.selected = [this.field.model[this.field.info.valueCol]];
+    //     this.hasInit = true;
+    //   }
+    // });
   },
   watch: {
     "field.model": {
