@@ -2144,22 +2144,6 @@ export default {
   width: 20px;
 }
 
-.button {
-  cursor: pointer;
-  margin-right: 5px;
-  padding: 2px 6px;
-  border: 1px solid #409eff;
-  border-radius: 3px;
-  background: #fff;
-  color: #409eff;
-  font-size: 12px;
-
-  &:hover {
-    background: #409eff;
-    color: #fff;
-  }
-}
-
 /* 旋转动画 */
 @keyframes rotate {
   from {
