@@ -220,6 +220,9 @@
         class="row-bg table-row"
         justify="center"
         ref="elTableParentDiv"
+        :style="{
+          // maxHeight: maxTableHeight + 'px'  
+        }"
         v-else
       >
         <el-table
@@ -228,7 +231,6 @@
           stripe
           border
           style="width: 100%"
-          :max-height="tableMaxHeight"
           :row-class-name="tableRowClassName"
           row-key="id"
           highlight-current-row
@@ -1337,6 +1339,43 @@ export default {
     };
   },
   computed: {
+    
+    // 动态计算操作列宽度，最大300px
+    operationColumnWidth() {
+      if (!this.sortedRowButtons || !this.sortedRowButtons.buttons) {
+        return 280; // 默认宽度
+      }
+
+      let totalWidth = 0;
+      const buttons = this.sortedRowButtons;
+      const padding = 16; // 按钮内边距
+      const margin = 8; // 按钮间距
+      const minButtonWidth = 80; // 最小按钮宽度
+
+      buttons.forEach(button => {
+        if (button.button_type === '_btn_group' && button?.buttons?.length) {
+          // 下拉按钮组固定宽度
+          totalWidth += 100;
+        } else {
+          // 常规按钮根据文本长度计算
+          const textWidth = this.getTextWidth(button.text || button.label || '操作', '14px Arial');
+          const buttonWidth = Math.max(textWidth + padding, minButtonWidth);
+          totalWidth += buttonWidth;
+        }
+        totalWidth += margin; // 按钮间距
+      });
+
+      // 移除最后一个按钮的间距
+      if (buttons.length > 0) {
+        totalWidth -= margin;
+      }
+
+      // 添加列的内边距
+      totalWidth += 20;
+
+      // 限制在120-300px范围内
+      return Math.min(Math.max(totalWidth, 120), 300);
+    },
     setDefaultValue() {
       if (this.filterCondition?.length) {
         return this.filterCondition.reduce((res, cur) => {
@@ -1935,7 +1974,9 @@ export default {
 .el-table th.gutter {
   display: table-cell !important;
 }
-
+.el-table{
+  height: fit-content;
+}
 .el-table td,
 .el-table th {
   padding: 2px !important;
@@ -2169,11 +2210,11 @@ export default {
   flex: 1;
   display: flex !important;
   flex-direction: column;
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 .row-bg.table-row {
-  flex: 1;
+  // flex: 1;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
 }
