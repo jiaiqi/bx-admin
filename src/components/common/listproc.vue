@@ -239,7 +239,7 @@ export default {
     },
     handleClick(activeName) {
       // timerRefresh()
-      this.$refs[activeName].loadTableData()
+      this.$refs[activeName]?.loadTableData?.()
     },
     timerRefresh(listCom) {
       if (top.pathConfig && top.pathConfig.pages_attribute && top.pathConfig.pages_attribute.proc_page_refresh_time) {

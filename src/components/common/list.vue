@@ -2215,7 +2215,7 @@ export default {
 
 .row-bg.table-row {
   // flex: 1;
-  max-height: calc(100vh - 100px);
+  // max-height: calc(100vh - 100px);
   overflow-y: auto;
 }
 
