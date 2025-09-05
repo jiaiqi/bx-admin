@@ -1375,8 +1375,8 @@ export default {
       // 计算按钮总宽度
       let totalWidth = 0;
       const buttonPadding = 12; // 稍微增加内边距
-      const buttonMargin = 6;   // 减少间距
-      const minButtonWidth = 70; // 减少最小按钮宽度
+      const buttonMargin = 12;   // 减少间距
+      const minButtonWidth = 80; // 减少最小按钮宽度
       
       // 根据屏幕宽度动态调整
       const screenWidth = window.innerWidth;
