@@ -38,6 +38,7 @@ export default {
       firstColumn: null,
       unfoldDataMap: {},
       treeNodeLoadingMap: {},
+      _columnWidthCache: null, // 操作列宽度缓存
       initLoad: false,
       activeTabName: "norm",
       activeRowButton: null,
@@ -409,6 +410,22 @@ export default {
         // }
       },
     },
+    // 监听按钮变化，清除宽度缓存
+    sortedRowButtons: {
+      handler() {
+        // 清除缓存，触发重新计算
+        this._columnWidthCache = null;
+      },
+      deep: true
+    },
+    // 监听数据变化，清除宽度缓存
+    gridData: {
+      handler() {
+        // 数据变化可能影响按钮可见性，清除缓存
+        this._columnWidthCache = null;
+      },
+      deep: true
+    }
   },
 
   computed: {
@@ -719,6 +736,67 @@ export default {
       return this.gridHeader.filter((item) => item.col_type !== "InlineList");
     },
 
+    // 计算操作列的最佳宽度，优化版本
+    operationColumnWidth() {
+      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
+        return 120; // 减少默认宽度
+      }
+
+      // 生成缓存键，基于按钮配置
+      const cacheKey = JSON.stringify(this.sortedRowButtons.map(btn => ({
+        name: btn.button_name,
+        type: btn.button_type,
+        hasButtons: btn.buttons?.length || 0
+      })));
+      
+      // 检查缓存
+      if (this._columnWidthCache && this._columnWidthCache.key === cacheKey) {
+        return this._columnWidthCache.width;
+      }
+
+      // 获取实际可见的按钮
+      const visibleButtons = this.getVisibleRowButtons();
+      
+      if (visibleButtons.length === 0) {
+        return 120;
+      }
+
+      // 计算按钮总宽度
+      let totalWidth = 0;
+      const buttonPadding = 12; // 稍微增加内边距
+      const buttonMargin = 6;   // 减少间距
+      const minButtonWidth = 70; // 减少最小按钮宽度
+      
+      // 根据屏幕宽度动态调整
+      const screenWidth = window.innerWidth;
+      const maxWidth = screenWidth < 1200 ? 250 : 320; // 响应式最大宽度
+
+      visibleButtons.forEach(button => {
+        if (button.button_type === '_btn_group' && button?.buttons?.length) {
+          // 下拉按钮组，根据子按钮数量动态调整
+          const groupWidth = Math.min(90 + button.buttons.length * 5, 120);
+          totalWidth += groupWidth + buttonMargin;
+        } else {
+          // 普通按钮，根据文字长度计算
+          const buttonText = button.button_name || '操作';
+          const textWidth = this.getTextWidth(buttonText, '14px', 'Arial');
+          const buttonWidth = Math.max(textWidth + buttonPadding * 2, minButtonWidth);
+          totalWidth += buttonWidth + buttonMargin;
+        }
+      });
+
+      // 添加列的内边距
+      totalWidth += 16;
+
+      // 动态最大最小宽度限制
+      const finalWidth = Math.min(Math.max(totalWidth, 100), maxWidth);
+      
+      // 缓存结果
+      this._columnWidthCache = { key: cacheKey, width: finalWidth };
+      
+      return finalWidth;
+    },
+
     maxTableHeight() {
       let ratio = 0.8;
       let h = Math.max(
@@ -844,7 +922,10 @@ export default {
         if (colName && this.cfgJson?.list_style_json?.list_auto_row_span_cols) {
           rowSpanCols = this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
         }
-        let iValue = this.gridDataRun?.[rowIndex]?.[colName] + ""; // 值
+        let iValue = this.gridDataRun?.[rowIndex]?.[colName]; // 值
+        if (iValue) {
+          iValue += ""
+        }
         if (rowSpanCols && rowSpanCols.indexOf(colName) !== -1) {
           let lastValue = "";
           let firstValue = "";
@@ -860,7 +941,7 @@ export default {
             firstValue = this.gridDataRun[rowIndex - 1][colName] + ""; // 前一行
             lastValue = undefined; // 前一行
           }
-          if (firstValue !== iValue) {
+          if (iValue && firstValue !== iValue) {
             let allRows = 1;
             let isNext = true;
             for (let i in this.gridDataRun) {
@@ -879,12 +960,11 @@ export default {
             }
             rowspan = allRows;
             colspan = 1;
-          } else if (firstValue == iValue) {
+          } else if (iValue && firstValue == iValue) {
             rowspan = 0;
             colspan = 0;
           }
-
-          // console.log('span Method:',rowIndex,colName,iValue,'跨行：',rowspan)
+          console.log('span Method:', rowIndex, colName, iValue, '跨行：', rowspan)
           return {
             rowspan: rowspan,
             colspan: colspan,
@@ -2491,14 +2571,14 @@ export default {
                     });
                     this.buildTreeData(response.data, true);
                     this.gridData = this.setSpaceIcon(response.data, null);
-                    
+
                     // 设置firstColumn
                     if (this.gridHeader && this.gridHeader.length > 0) {
-                      this.firstColumn = this.gridHeader.find(item => 
+                      this.firstColumn = this.gridHeader.find(item =>
                         this.getGridHeaderDispExps(item, this.listMainFormDatas)
                       )?.column;
                     }
-                    
+
                     // 处理已展开的节点
                     if (this.gridData.length > 0) {
                       this.gridData.forEach((item) => {
@@ -2508,8 +2588,8 @@ export default {
                       });
                     }
                   } else {
-                     this.gridData = response.data;
-                   }
+                    this.gridData = response.data;
+                  }
                   this.originListData = JSON.parse(
                     JSON.stringify(response.data)
                   );
@@ -3751,19 +3831,19 @@ export default {
       }
       return datas;
     },
-    
+
     // 树形结构相关方法
     toggleIconShow(record) {
       return record.is_leaf === "否";
     },
-    
+
     async toggle(rowData) {
       let me = this;
       const noCol = this.listV2Data["no_col"];
       const parentCol = this.listV2Data["parent_no_col"];
-      
+
       let childLen = !rowData._children ? 0 : rowData._children.length;
-      
+
       if (rowData._expanded) {
         this.removeChildValue(rowData);
       } else {
@@ -3772,7 +3852,7 @@ export default {
             if (!rowData["_checked"]) {
               item["_checked"] = false;
               item["_indeterminate"] = false;
-              
+
               if (item.is_leaf == "否") {
                 item._expanded = false;
               }
@@ -3782,7 +3862,7 @@ export default {
         } else {
           // 设置loading状态
           this.$set(this.treeNodeLoadingMap, rowData.id + "", true);
-          
+
           var childData = [];
           var childCondition = [
             {
@@ -3791,7 +3871,7 @@ export default {
               ruleType: "eq",
             },
           ];
-          
+
           try {
             await this.select(
               this.service_name,
@@ -3821,10 +3901,10 @@ export default {
               this.buildTreeData(response.body.data, false);
               childData = response.body.data;
             });
-            
+
             var data = me.setSpaceIcon(childData, rowData._level);
             rowData._children = this.bxDeepClone(data);
-            
+
             let i = 0;
             for (var item of rowData._children) {
               if (rowData["_checked"]) {
@@ -3838,7 +3918,7 @@ export default {
             this.$set(this.treeNodeLoadingMap, rowData.id + "", false);
           }
         }
-        
+
         if (rowData._children && rowData._children.length > 0) {
           rowData._children.forEach((item) => {
             if (this.unfoldDataMap[item.id] === true) {
@@ -3847,11 +3927,11 @@ export default {
           });
         }
       }
-      
+
       rowData._expanded = !rowData._expanded;
       this.$set(this.unfoldDataMap, rowData.id + "", rowData._expanded);
     },
-    
+
     removeChildValue(rowData) {
       const noCol = this.listV2Data["no_col"];
       const parentCol = this.listV2Data["parent_no_col"];
@@ -3860,7 +3940,7 @@ export default {
       let childLen = rowData._children.length;
       dataArr.push(rowData);
       let arr = me.getChildFlowId(dataArr, []);
-      
+
       for (let i = 0; i < childLen; i++) {
         if (rowData._children[i]._children != undefined) {
           var _len = rowData._children[i]._children.length;
@@ -3868,7 +3948,7 @@ export default {
             this.removeChildValue(rowData._children[i]);
           }
         }
-        
+
         me.gridData.map((value) => {
           if (
             arr.indexOf(value[parentCol]) > -1 &&
@@ -3880,7 +3960,7 @@ export default {
         });
       }
     },
-    
+
     getChildFlowId(data, emptyArr) {
       const noCol = this.listV2Data["no_col"];
       let me = this;
@@ -3893,7 +3973,7 @@ export default {
       });
       return emptyArr;
     },
-    
+
     setSpaceIcon(data, level) {
       let me = this;
       let _level = 0;
@@ -3911,7 +3991,7 @@ export default {
       });
       return data;
     },
-    
+
     buildTreeData(data, _level_node) {
       if (!data) {
         return;
@@ -3928,7 +4008,7 @@ export default {
         }
       }
     },
-    
+
     removeByValue(sourceData, val) {
       for (var i = 0; i < sourceData.length; i++) {
         if (sourceData[i] == val) {
@@ -3936,6 +4016,54 @@ export default {
           break;
         }
       }
+    },
+
+    /**
+     * 计算文本宽度（优化版本）
+     * @param {string} text 文本内容
+     * @param {string} fontSize 字体大小
+     * @param {string} fontFamily 字体族
+     * @returns {number} 文本宽度（像素）
+     */
+    getTextWidth(text, fontSize = '14px', fontFamily = 'Arial') {
+      if (!text) return 0;
+      
+      // 使用更精确的字体配置
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = `${fontSize} ${fontFamily}`;
+      
+      // 考虑中文字符的宽度差异
+      const width = context.measureText(text).width;
+      
+      // 为中文字符添加额外的宽度补偿
+      const chineseCharCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+      const extraWidth = chineseCharCount * 2; // 中文字符通常更宽
+      
+      return Math.ceil(width + extraWidth);
+    },
+    
+    /**
+     * 获取实际可见的行按钮
+     * @returns {Array} 可见的按钮数组
+     */
+    getVisibleRowButtons() {
+      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
+        return [];
+      }
+      
+      // 如果没有数据，返回所有按钮
+      if (!this.gridData || this.gridData.length === 0) {
+        return this.sortedRowButtons;
+      }
+      
+      // 只返回在当前数据中至少有一行可见的按钮
+      return this.sortedRowButtons.filter(button => {
+        return this.gridData.some((row, index) => 
+          this.getDispExps(button, row, index) && 
+          this.isRowButtonVisible(button, row, index)
+        );
+      });
     },
   },
 

@@ -524,12 +524,13 @@
                 >
                   <!-- 树形结构的缩进和展开/收起按钮 (仅在firstColumn显示) -->
                   <template v-if="listType === 'treelist' && item.column == firstColumn">
-                    <span
-                      v-for="(space, levelIndex) in scope.row._level"
-                      :key="levelIndex"
-                      class="ms-tree-space"
-                    >&nbsp;&nbsp;</span>
-
+                    <template v-if="scope.row['parent_no']">
+                      <span
+                        v-for="(space, levelIndex) in scope.row._level"
+                        :key="levelIndex"
+                        class="ms-tree-space"
+                      ></span>
+                    </template>
                     <span
                       class="is-small"
                       v-if="toggleIconShow(scope.row)"
@@ -549,16 +550,16 @@
                         aria-hidden="true"
                       ></i>
                     </span>
-                    <span
+                    <!-- <span
                       v-else
-                      class="ms-tree-space"
-                    >&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                      class=""
+                    >&nbsp;&nbsp;&nbsp;&nbsp;</span> -->
                   </template>
 
                   <span>
                     <span
                       class="is-leaf"
-                      v-if="routeMeta&&routeMeta.isTree&&scope.row&&scope.row['is_leaf']==='是'&&index === 0 && !scope.row.parent_no"
+                      v-if="routeMeta&&routeMeta.isTree&&scope.row&&scope.row['is_leaf']==='是'&&index === 0 "
                     ></span>
                     <div
                       v-if="header_view_model == 'group'"
@@ -1333,7 +1334,6 @@ export default {
       listStyle: "list",
       tableMaxHeight: 500,
       resizeObserver: null,
-      _columnWidthCache: null, // 操作列宽度缓存
     };
   },
   computed: {
@@ -1346,66 +1346,6 @@ export default {
           return res;
         }, {});
       }
-    },
-    // 计算操作列的最佳宽度，优化版本
-    operationColumnWidth() {
-      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
-        return 120; // 减少默认宽度
-      }
-
-      // 生成缓存键，基于按钮配置
-      const cacheKey = JSON.stringify(this.sortedRowButtons.map(btn => ({
-        name: btn.button_name,
-        type: btn.button_type,
-        hasButtons: btn.buttons?.length || 0
-      })));
-      
-      // 检查缓存
-      if (this._columnWidthCache && this._columnWidthCache.key === cacheKey) {
-        return this._columnWidthCache.width;
-      }
-
-      // 获取实际可见的按钮
-      const visibleButtons = this.getVisibleRowButtons();
-      
-      if (visibleButtons.length === 0) {
-        return 120;
-      }
-
-      // 计算按钮总宽度
-      let totalWidth = 0;
-      const buttonPadding = 12; // 稍微增加内边距
-      const buttonMargin = 12;   // 减少间距
-      const minButtonWidth = 80; // 减少最小按钮宽度
-      
-      // 根据屏幕宽度动态调整
-      const screenWidth = window.innerWidth;
-      const maxWidth = screenWidth < 1200 ? 250 : 320; // 响应式最大宽度
-
-      visibleButtons.forEach(button => {
-        if (button.button_type === '_btn_group' && button?.buttons?.length) {
-          // 下拉按钮组，根据子按钮数量动态调整
-          const groupWidth = Math.min(90 + button.buttons.length * 5, 120);
-          totalWidth += groupWidth + buttonMargin;
-        } else {
-          // 普通按钮，根据文字长度计算
-          const buttonText = button.button_name || '操作';
-          const textWidth = this.getTextWidth(buttonText, '14px', 'Arial');
-          const buttonWidth = Math.max(textWidth + buttonPadding * 2, minButtonWidth);
-          totalWidth += buttonWidth + buttonMargin;
-        }
-      });
-
-      // 添加列的内边距
-      totalWidth += 16;
-
-      // 动态最大最小宽度限制
-      const finalWidth = Math.min(Math.max(totalWidth, 100), maxWidth);
-      
-      // 缓存结果
-      this._columnWidthCache = { key: cacheKey, width: finalWidth };
-      
-      return finalWidth;
     },
     isDemo() {
       return (
@@ -1479,9 +1419,9 @@ export default {
           parentEle.parentElement.style.flexDirection = "column";
           this.tableMaxHeight = parentEle.offsetHeight;
         }
-        if (this.tableMaxHeight < 500) {
-          this.tableMaxHeight = 500;
-        }
+        // if (this.tableMaxHeight < 500) {
+        //   this.tableMaxHeight = 500;
+        // }
       }
     },
     showAddChildBtn(row, index, column, columnIndex) {
@@ -1639,53 +1579,6 @@ export default {
         }
       }
       return sty;
-    },
-    /**
-     * 计算文本宽度（优化版本）
-     * @param {string} text 文本内容
-     * @param {string} fontSize 字体大小
-     * @param {string} fontFamily 字体族
-     * @returns {number} 文本宽度（像素）
-     */
-    getTextWidth(text, fontSize = '14px', fontFamily = 'Arial') {
-      if (!text) return 0;
-      
-      // 使用更精确的字体配置
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      context.font = `${fontSize} ${fontFamily}`;
-      
-      // 考虑中文字符的宽度差异
-      const width = context.measureText(text).width;
-      
-      // 为中文字符添加额外的宽度补偿
-      const chineseCharCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
-      const extraWidth = chineseCharCount * 2; // 中文字符通常更宽
-      
-      return Math.ceil(width + extraWidth);
-    },
-    
-    /**
-     * 获取实际可见的行按钮
-     * @returns {Array} 可见的按钮数组
-     */
-    getVisibleRowButtons() {
-      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
-        return [];
-      }
-      
-      // 如果没有数据，返回所有按钮
-      if (!this.gridData || this.gridData.length === 0) {
-        return this.sortedRowButtons;
-      }
-      
-      // 只返回在当前数据中至少有一行可见的按钮
-      return this.sortedRowButtons.filter(button => {
-        return this.gridData.some((row, index) => 
-          this.getDispExps(button, row, index) && 
-          this.isRowButtonVisible(button, row, index)
-        );
-      });
     },
     changeListStyle(type = "list") {
       console.log(type);
@@ -1999,7 +1892,7 @@ export default {
 
       .is-leaf {
         display: inline-block;
-        padding-right: 25px;
+        padding-right: 18px;
       }
     }
   }
@@ -2197,6 +2090,7 @@ export default {
     padding: 8px 6px;
     display: flex !important;
     flex-wrap: wrap;
+    justify-content: center;
 
     // display: grid !important;
     // grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -2247,6 +2141,7 @@ export default {
 /* 树形结构样式 */
 .ms-tree-space {
   display: inline-block;
+  width: 20px;
 }
 
 .button {
@@ -2258,7 +2153,7 @@ export default {
   background: #fff;
   color: #409eff;
   font-size: 12px;
-  
+
   &:hover {
     background: #409eff;
     color: #fff;
@@ -2270,39 +2165,42 @@ export default {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 .is-small {
-  .el-icon-arrow-right{
+  .el-icon-arrow-right {
     transition: all 0.3s ease;
   }
+
   .is-rotate {
     transform: rotate(90deg);
   }
 }
+
 .table-list-row {
   flex: 1;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   overflow: hidden;
 }
 
-.row-bg.table-row{
-  flex:1;
+.row-bg.table-row {
+  flex: 1;
   max-height: calc(100vh - 100px);
-  overflow-y:auto;
+  overflow-y: auto;
 }
-.el-table__body-wrapper{
-  margin-right: 15px!important;
-}
-.el-table__fixed-right{
-  right: 15px!important;
-}
-.el-table__fixed-body-wrapper{
-  bottom: 20px;
-  right: 20px;
-}
-</style>
+
+// .el-table__body-wrapper{
+//   margin-right: 15px!important;
+// }
+// .el-table__fixed-right{  
+//   right: 15px!important;
+// }
+// .el-table__fixed-body-wrapper{
+//   bottom: 20px;
+//   right: 20px;
+// }</style>
