@@ -258,6 +258,30 @@
         </span>
       </el-tree>
     </el-drawer>
+    <!-- 移动端预览弹窗 -->
+    <el-dialog
+      title="移动端预览"
+      :visible.sync="mobilePreviewVisible"
+      width="420px"
+      :modal="true"
+      class="mobile-preview-dialog"
+      @open="onMobilePreviewOpen"
+    >
+      <div class="mobile-preview-content">
+        <!-- 加载动画 -->
+        <div v-if="iframeLoading" class="iframe-loading">
+          <i class="el-icon-loading"></i>
+          <span>页面加载中...</span>
+        </div>
+        <iframe
+          :src="mobilePreviewUrl"
+          frameborder="0"
+          class="mobile-preview-iframe"
+          @load="onIframeLoad"
+          :style="{ opacity: iframeLoading ? 0 : 1 }"
+        ></iframe>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -337,6 +361,15 @@ export default {
         ? width
         : `${parseFloat(width)}px`;
     },
+    // 移动端预览URL
+    mobilePreviewUrl() {
+      const isDev = process.env.NODE_ENV === 'development';
+      const baseUrl = isDev ? 'http://192.168.0.196' : '';
+      if(isDev){
+        return `/vpages/#/lowcode/view/${this.pageNo}?srvApp=config`
+      }
+      return `${baseUrl}/xmp/views/custom/index/index?page_no=${this.pageNo}`;
+    },
   },
   data() {
     return {
@@ -376,6 +409,10 @@ export default {
       isResizingProperty: false,
       // 移动端视图状态
       isMobileView: false,
+      // 移动端预览弹窗状态
+      mobilePreviewVisible: false,
+      // iframe加载状态
+      iframeLoading: true,
     };
   },
   mounted() {
@@ -450,8 +487,14 @@ export default {
       this.$refs.editorRef.deleteComponent(data);
     },
     openNewTab() {
-      const url = `/vpages/#/lowcode/view/${this.pageNo}`;
-      window.open(url, "_blank");
+      // 如果是移动端视图，使用弹窗在当前页面预览
+      if (this.isMobileView) {
+        this.mobilePreviewVisible = true;
+      } else {
+        // 桌面端使用原有预览方式
+        const url = `/vpages/#/lowcode/view/${this.pageNo}`;
+        window.open(url, "_blank");
+      }
     },
     onDragStart(data) {
       this.draggingComponentType = data.type;
@@ -550,6 +593,16 @@ export default {
       this.isMobileView = !this.isMobileView;
       // 保存状态到localStorage
       localStorage.setItem('lowcode_mobile_view', this.isMobileView);
+    },
+
+    // 移动端预览弹窗打开时
+    onMobilePreviewOpen() {
+      this.iframeLoading = true;
+    },
+
+    // iframe加载完成
+    onIframeLoad() {
+      this.iframeLoading = false;
     },
 
     findComponentById(components, id) {
@@ -1666,6 +1719,52 @@ export default {
     .right-btn {
       display: block;
     }
+  }
+}
+
+/* 移动端预览弹窗样式 */
+.mobile-preview-dialog {
+  .el-dialog__body {
+    padding: 0;
+  }
+}
+
+.mobile-preview-content {
+  position: relative;
+  width: 100%;
+  height: 667px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+}
+
+.mobile-preview-iframe {
+  width: 375px;
+  height: 667px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease;
+}
+
+.iframe-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #666;
+  font-size: 14px;
+  z-index: 10;
+  
+  i {
+    font-size: 24px;
+    color: #409eff;
   }
 }
 </style>
