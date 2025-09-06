@@ -3383,8 +3383,11 @@ export default {
           this.listLoaded = true;
           this.initLoad = true;
           this.emitEvent("metadata-loaded", this);
-          // 拿到列表v2之后重新加载新增、修改的服务列
-          this.loadAddUpdateSrvCols?.()
+          if (this.listType?.includes('childlist') && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
+            // 子表并且有配置默认数据
+            // 拿到列表v2之后重新加载新增、修改的服务列
+            this.loadAddUpdateSrvCols?.()
+          }
           this.$emit('metadata-loaded', this)
         });
 
