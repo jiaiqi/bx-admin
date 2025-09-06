@@ -77,6 +77,10 @@ const inlineEditList = () =>
   import(
     /* webpackChunkName: "list" */ "@/components/common/inline-edit-list.vue"
   );
+
+// 聊天页面
+const ChatPage = () =>
+  import(/* webpackChunkName: "chat" */ "@/pages/chat/index");
 const waybill = () =>
   import(/* webpackChunkName: "waybill" */ "@/pages/waybill.vue");
 
@@ -225,6 +229,15 @@ let routes = [
     component: explain,
     meta: {
       compName: "explain",
+    },
+  },
+  {
+    path: "/chat",
+    name: "chat",
+    component: ChatPage,
+    meta: {
+      title: "延安研学智能客服",
+      compName: "chat",
     },
   },
   {
