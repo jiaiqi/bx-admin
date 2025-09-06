@@ -319,6 +319,20 @@
                     {{ dateFormat( scope.row[item.column],'YYYY-MM') }}
                   </template>
                   <template v-else>
+                    {{ dateFormat( scope.row[item.column],'YYYY-MM-DD') }}
+                  </template>
+                </span>
+                <span v-if="item.col_type==='DateTime'">
+                  <template v-if="item.srvcol&&item.srvcol.subtype==='Hour'">
+                    {{ dateFormat( scope.row[item.column],'HH') }}
+                  </template>
+                  <template v-else-if="item.srvcol&&item.srvcol.subtype==='minute'">
+                    {{ dateFormat( scope.row[item.column],'HH:mm') }}
+                  </template>
+                  <template v-else-if="item.srvcol&&item.srvcol.subtype==='second'">
+                    {{ dateFormat( scope.row[item.column],'HH:mm:ss') }}
+                  </template>
+                  <template v-else>
                     {{ dateFormat( scope.row[item.column],'YYYY-MM-DD HH:mm') }}
                   </template>
                 </span>
