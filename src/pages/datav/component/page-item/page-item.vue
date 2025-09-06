@@ -589,7 +589,10 @@ export default {
   color: #333;
   display: flex;
   flex-direction: column;
-
+  @media screen and (max-width: 768px) {
+    width: 100%;
+    height: unset;
+  }
   &.mobile {
     background-color: #eee;
     border: 1px solid #ccc;

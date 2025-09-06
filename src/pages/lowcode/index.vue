@@ -1550,7 +1550,9 @@ export default {
       &.mobile-view {
         display: flex;
         justify-content: center;
-        
+        .page-item {
+          height: unset;
+        }
         &.in-edit {
           .editor-view {
             width: 375px;
