@@ -57,7 +57,7 @@
       padding: 2px;
     }
   }
-  &.active {
+  &.active,&.hovering {
     .com-name-overlay {
       gap:1px;
       display: inline-flex;

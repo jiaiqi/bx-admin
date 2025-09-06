@@ -11,13 +11,13 @@
     <div
       class="overlay"
       :class="{
-        'on-drag-float-component': draggingComponentType === '悬浮组件'|| draggingComponentType === '咨询入口',
+        'on-drag-float-component': ['悬浮组件', '咨询入口'].includes(draggingComponentType),
       }"
       @click="clickOutside"
     ></div>
     <lc-view
       :style="{
-        'pointer-events': draggingComponentType === '悬浮组件' || draggingComponentType === '咨询入口'? 'none' : '',
+        'pointer-events': ['悬浮组件', '咨询入口'].includes(draggingComponentType) ? 'none' : '',
       }"
       v-for="item in editorComponents"
       :current-id="currentId"
@@ -315,7 +315,7 @@ export default {
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("editor-drag-over");
         e.currentTarget.classList.remove("editor-drag-not-allowed");
-      } else if (draggedType === "悬浮组件"||draggedType==='咨询入口') {
+      } else if (draggedType === "悬浮组件" || draggedType === '咨询入口') {
         // 允许放置悬浮组件
         e.dataTransfer.dropEffect = "copy";
         e.currentTarget.classList.add("on-drag-float-component");
@@ -350,7 +350,6 @@ export default {
         });
     },
     handleEditorDrop(e) {
-      debugger
       e.preventDefault();
       e.currentTarget.classList.remove("editor-drag-over");
       e.currentTarget.classList.remove("editor-drag-not-allowed");
@@ -378,7 +377,7 @@ export default {
             const y = e.clientY - rect.top;
             const xPercent = (x / rect.width) * 100;
             const yPercent = (y / rect.height) * 100;
-            
+
             draggedElement.position = {
               x: xPercent,
               y: yPercent,
@@ -396,7 +395,7 @@ export default {
               this.editorComponents.push(draggedElement);
             }
             this.$emit("change", this.editorComponents);
-          }else if(draggedElement.value==='详情组件') {
+          } else if (draggedElement.value === '详情组件') {
             draggedElement.com_type = "details";
             draggedElement.component = "component";
             if (!draggedElement._editType) {
@@ -410,7 +409,7 @@ export default {
               this.editorComponents.push(draggedElement);
             }
             this.$emit("change", this.editorComponents);
-          }else if(draggedElement.value==='咨询入口') {
+          } else if (draggedElement.value === '咨询入口') {
             // 计算当前放入的点相对于editor-view的位置 单位使用百分比
             const rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -459,6 +458,7 @@ export default {
   min-width: var(--content-width);
   position: relative;
   padding-bottom: 50px;
+
   &.editor-drag-over {
     border: 2px dashed #ff740e;
     background-color: rgba(255, 116, 14, 0.05);
@@ -475,8 +475,10 @@ export default {
       border-radius: 4px;
     }
   }
+
   &.on-drag-float-component {
     background-color: rgba(255, 116, 14, 0.1);
+
     &.editor-drag-over {
       &::before {
         content: "放置悬浮组件";
@@ -517,6 +519,7 @@ export default {
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
   z-index: 0;
+
   .on-drag-float-component {
     z-index: 9999999;
   }

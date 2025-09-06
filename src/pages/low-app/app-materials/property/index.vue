@@ -27,62 +27,8 @@
           >
           </simple-update>
           <div v-else>请先保存</div>
-          <!-- <simple-add
-            :service="pageService"
-            :navAfterSubmit="false"
-            @executor-complete="onPageUpdate($event, 'add')"
-            @form-loaded="pageLoading = false"
-            @submitted2mem=""
-            v-else
-          >
-          </simple-add> -->
         </div>
       </el-tab-pane>
-      <template v-if="!currentItem && pageStyleCols && pageStyleCols.length">
-        <el-tab-pane
-          :label="item.label"
-          :name="item.columns"
-          v-for="item in pageStyleCols"
-          :key="item.columns"
-        >
-          <div class="tab-content">
-            <simple-update
-              name="list-update"
-              :navAfterSubmit="false"
-              :service="item.option_list_v2.update_srv_cfg.srv"
-              :pk="item.value"
-              :app-no="item.option_list_v2.app || appNo"
-              :pkCol="item.option_list_v2.refed_col"
-              :group-collapse="true"
-              @executor-complete="
-                onStyleColUpdate($event, 'page-style-col-update', item)
-                "
-              @field-value-changed="
-                onValueChange($event, 'page-style-col-update', item)
-                "
-              ref="pageStyleColUpdate"
-              v-if="item.value"
-            >
-            </simple-update>
-            <!-- <div v-else>请先保存</div> -->
-            <simple-add
-              :service="item.option_list_v2.add_srv_cfg.srv"
-              :defaultValues="{
-                page_no: pageConfig.page_no,
-                obj_type: '页面',
-                owner_no: pageConfig.page_no,
-              }"
-              :navAfterSubmit="false"
-              @executor-complete="
-                onStyleColUpdate($event, 'page-style-col-add', item)
-                "
-              ref="pageStyleColAdd"
-              v-else
-            >
-            </simple-add>
-          </div>
-        </el-tab-pane>
-      </template>
       <el-tab-pane
         label="组件"
         name="组件"
@@ -105,20 +51,6 @@
         >
         </simple-update>
         <div v-else>请先保存</div>
-
-        <!-- <simple-add
-          ref="compForm"
-          :pageName="'list-duplicate'"
-          :service="componentService"
-          :defaultValues="addCompDefaultValues"
-          @executor-complete="onComponentUpdate($event, 'add')"
-          @form-loaded="componentLoading = false"
-          :navAfterSubmit="false"
-          @submitted2mem=""
-          @field-value-changed="onValueChange($event, 'component-add')"
-          v-else-if="showAddComponent"
-        >
-        </simple-add> -->
       </el-tab-pane>
 
       <el-tab-pane
@@ -143,99 +75,6 @@
         >
         </simple-update>
       </el-tab-pane>
-      <template v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length">
-        <el-tab-pane
-          :label="'组件' + item.label"
-          :name="item.key"
-          v-for="item in pageCompStyleCols"
-          :key="item.key"
-        >
-          <div class="tab-content">
-            <simple-update
-              name="list-update"
-              :navAfterSubmit="false"
-              :service="item.option_list_v2.update_srv_cfg.srv"
-              :pk="item.value"
-              :app-no="item.option_list_v2.app || appNo"
-              :pkCol="item.option_list_v2.refed_col"
-              :group-collapse="true"
-              @executor-complete="
-                onStyleColUpdate($event, 'page-comp-style-col-update', item)
-                "
-              @field-value-changed="
-                onValueChange($event, 'page-comp-style-col-update', item)
-                "
-              ref="pageCompStyleColUpdate"
-              v-if="item.value"
-            >
-            </simple-update>
-            <simple-add
-              :service="item.option_list_v2.add_srv_cfg.srv"
-              :navAfterSubmit="false"
-              @executor-complete="
-                onStyleColUpdate($event, 'page-comp-style-col-add', item)
-                "
-              :defaultValues="{
-                page_no: pageConfig.page_no,
-                com_no: currentItem.com_no,
-                obj_type: '组件',
-                owner_no: currentItem.com_no,
-              }"
-              ref="pageCompStyleColAdd"
-              v-else
-            >
-            </simple-add>
-          </div>
-        </el-tab-pane>
-      </template>
-      <template v-if="showCompForm && compStyleCols && compStyleCols.length">
-        <el-tab-pane
-          :label="'组件配置-' + item.label"
-          :name="item.key"
-          v-for="item in compStyleCols"
-          :key="item.key"
-        >
-          <div class="tab-content">
-            <simple-update
-              name="list-update"
-              :navAfterSubmit="false"
-              :service="item.option_list_v2.update_srv_cfg.srv"
-              :pk="item.value"
-              :app-no="item.option_list_v2.app || appNo"
-              :pkCol="item.option_list_v2.refed_col"
-              :group-collapse="true"
-              @executor-complete="
-                onStyleColUpdate($event, 'comp-style-col-update', item)
-                "
-              @field-value-changed="
-                onValueChange($event, 'comp-style-col-update', item)
-                "
-              ref="compStyleColUpdate"
-              v-if="item.value"
-            >
-            </simple-update>
-            <simple-add
-              :service="item.option_list_v2.add_srv_cfg.srv"
-              :navAfterSubmit="false"
-              @executor-complete="
-                onStyleColUpdate($event, 'comp-style-col-add', item)
-                "
-              :defaultValues="{
-                page_no: pageConfig.page_no,
-                com_no: currentItem.com_no,
-                obj_type: '组件',
-                owner_no: currentItem.com_no,
-              }"
-              ref="compStyleColAdd"
-              v-else
-            >
-            </simple-add>
-          </div>
-        </el-tab-pane>
-      </template>
-      <!-- <el-tab-pane label="CSS" name="CSS">
-        <css-editor />
-      </el-tab-pane> -->
     </el-tabs>
   </div>
 </template>
@@ -1143,6 +982,51 @@ export default {
           // let normalChild = this.findNormalChild(addChildRes);
           console.log(addChildRes);
         }
+
+        const updateList = this.findLayoutComponentsByType(
+          oldComponents,
+          "update"
+        );
+        if (updateList?.length) {
+          //更新页面组件 目前只有固定的几个key可以更新
+          const updateKeys = [
+            "com_seq",
+            "layout_height",
+            "layout_width",
+            "layout_x",
+            "layout_y",
+            "parent_no",
+          ];
+          const updateObj = [];
+          updateList.forEach((item) => {
+            // 组装更新对象
+            const data = {};
+            updateKeys.forEach((key) => {
+              if (item[key]) {
+                data[key] = item[key];
+              }
+            });
+            if (!Object.keys(data).length) {
+              return;
+            }
+            const obj = {
+              serviceName: "srvpage_cfg_page_component_update",
+              // serviceName: "srvpage_cfg_page_component_editor_update",
+              condition: [
+                {
+                  colName: "id",
+                  ruleType: "eq",
+                  value: item.id,
+                },
+              ],
+              data: [data],
+            };
+            updateObj.push(obj);
+          });
+          await this.httpOperate("update", updateObj);
+        }
+
+
         return this.$emit("refresh");
         // this.$message.success("保存成功");
         const addNormalComponents = this.findNormalComponents(oldComponents);
