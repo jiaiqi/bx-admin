@@ -2461,7 +2461,7 @@ function init_util() {
   
   // 辅助函数：尝试解析 JSON 字符串
   const tryParseJson = (value) => {
-    if (typeof value === 'string') {
+    if (value && typeof value === 'string') {
       try {
         const parsed = JSON.parse(value);
         // 只有当解析结果是对象或数组时才返回解析结果

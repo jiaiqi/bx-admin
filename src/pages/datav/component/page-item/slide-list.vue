@@ -100,7 +100,7 @@
               <!-- VR遮罩层 -->
               <div
                 class="vr-overlay"
-                v-if="item.type === 'vr'"
+                v-if="item.type === 'vr' && item.vrLink"
               >
                 <a
                   class="vr-icon"
@@ -560,13 +560,14 @@ export default {
         let name = ''
         let vrNo = swiperJson?.vr_no
         let vrLink = ''
+        debugger
         if (data && typeof data === 'object') {
           if (swiperJson.vr_img_col) {
             let col = swiperJson.vr_img_col
             if (col?.includes('.') && !col?.includes('${')) {
-              img = this.renderStr('${' + col + '}', data)
+              img = this.renderStr('${' + col + '}', data) || img
             } else {
-              img = data[col]
+              img = data[col] || img
             }
           }
           if (swiperJson.vr_name_col) {
