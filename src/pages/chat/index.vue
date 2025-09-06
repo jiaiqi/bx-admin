@@ -259,7 +259,7 @@ export default {
 
 /* 聊天头部 */
 .chat-header {
-  background-color: #C92127;
+  background-color: #FD6E58;
   color: white;
   padding: 32px;
   display: flex;
@@ -356,7 +356,7 @@ export default {
 
 .message-wrapper.assistant .avatar {
   background-color: rgba(201, 33, 39, 0.1);
-  color: #C92127;
+  color: #FD6E58;
 }
 
 .message-bubble {
@@ -374,7 +374,7 @@ export default {
 }
 
 .user-bubble {
-  background-color: #C92127;
+  background-color: #FD6E58;
   color: white;
   border-radius: 36px 36px 0 36px;
 }
@@ -437,12 +437,12 @@ export default {
 }
 
 .message-input:focus {
-  border-color: #C92127;
+  border-color: #FD6E58;
   background-color: white;
 }
 
 .send-btn {
-  background-color: #C92127;
+  background-color: #FD6E58;
   color: white;
   padding: 24px;
   border-radius: 50%;
@@ -482,7 +482,7 @@ export default {
 }
 
 .quick-link {
-  color: #C92127;
+  color: #FD6E58;
   text-decoration: underline;
   cursor: pointer;
 }
