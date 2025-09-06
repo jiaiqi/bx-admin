@@ -35,6 +35,15 @@
         >
           <Icon icon="ri-dashboard-horizontal-line" />
         </div>
+        <!-- 添加移动端/桌面端分辨率切换按钮 -->
+        <div
+          @click.stop="toggleMobileView"
+          class="handle-btn"
+          :class="{ active: isMobileView }"
+          title="切换移动端/桌面端分辨率"
+        >
+          <Icon :icon="isMobileView ? 'ri:computer-line' : 'ri:smartphone-line'" />
+        </div>
         <!-- 添加深色模式切换按钮 -->
         <div
           @click.stop="setDarkMode(!isDarkMode)"
@@ -96,7 +105,10 @@
       <div
         class="editor-container"
         @click="currentChange()"
-        :class="{ 'in-edit': !isPreview && !isView }"
+        :class="{ 
+          'in-edit': !isPreview && !isView,
+          'mobile-view': isMobileView
+        }"
         ref="editorContainer"
         @mousedown="handleMouseDown"
         @mousemove="handleMouseMove"
@@ -184,6 +196,7 @@
       </div>
       <div
         class="preview-container"
+        :class="{ 'mobile-preview': isMobileView }"
         :style="[themeVariable]"
       >
         <lc-view
@@ -313,6 +326,11 @@ export default {
       return list;
     },
     contentAreaWidth() {
+      // 如果是移动端视图，返回固定的移动端宽度
+      if (this.isMobileView) {
+        return '375px';
+      }
+      // 否则使用原有逻辑
       let width = this.pageConfig?.content_area_width || "100%";
       return typeof width === "string" &&
         (width?.includes("%") || width?.includes("vw") || width?.includes("vh"))
@@ -356,6 +374,8 @@ export default {
       // 面板调整宽度相关
       isResizingMaterials: false,
       isResizingProperty: false,
+      // 移动端视图状态
+      isMobileView: false,
     };
   },
   mounted() {
@@ -372,6 +392,11 @@ export default {
     }
     // 设置深色模式
     this.setDarkMode(this.isDarkMode);
+    // 从localStorage中读取移动端视图状态
+    const savedMobileView = localStorage.getItem('lowcode_mobile_view');
+    if (savedMobileView !== null) {
+      this.isMobileView = savedMobileView === 'true';
+    }
   },
   created() {
     // 在组件挂载后，获取editorContainer引用
@@ -519,6 +544,12 @@ export default {
     // 切换属性面板
     togglePropertyPanel() {
       this.propertyCollapsed = !this.propertyCollapsed;
+    },
+    // 切换移动端视图
+    toggleMobileView() {
+      this.isMobileView = !this.isMobileView;
+      // 保存状态到localStorage
+      localStorage.setItem('lowcode_mobile_view', this.isMobileView);
     },
 
     findComponentById(components, id) {
@@ -1461,6 +1492,27 @@ export default {
           min-height: 100vh;
         }
       }
+
+      // 移动端视图样式
+      &.mobile-view {
+        display: flex;
+        justify-content: center;
+        
+        &.in-edit {
+          .editor-view {
+            width: 375px;
+            min-height: 667px;
+            max-width: 375px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            overflow-y: auto;
+          }
+        }
+      }
     }
 
     // 属性面板容器样式，使用CSS变量控制宽度
@@ -1567,6 +1619,25 @@ export default {
 
   .preview-container {
     border: 1px dashed #ccc;
+    
+    &.mobile-preview {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+      background: #f5f5f5;
+      
+      .lc-view {
+        width: 375px;
+        min-height: 667px;
+        max-width: 375px;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+      }
+    }
   }
 }
 
