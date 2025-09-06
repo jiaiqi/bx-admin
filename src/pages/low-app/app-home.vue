@@ -2,7 +2,23 @@
   <div class="app_home">
     <!--信息头部-->
     <div class="app_header">
-      <div class="app_other"></div>
+      <div class="app_other">
+        <!-- 组件大纲和JSON查看按钮 -->
+        <div
+          @click.stop="jsonVisible = true"
+          class="handle-btn"
+          title="组件json"
+        >
+          <i class="el-icon-document"></i>
+        </div>
+        <div
+          @click.stop="outlineVisible = true"
+          class="handle-btn"
+          title="组件大纲"
+        >
+          <i class="el-icon-menu"></i>
+        </div>
+      </div>
       <div class="app_name">
         <span v-if="pageConfig">
           {{ pageConfig.page_name }}
@@ -82,6 +98,50 @@
         />
       </div>
     </div>
+    
+    <!-- JSON预览弹窗 -->
+    <el-drawer
+      title="页面JSON预览"
+      :visible.sync="jsonVisible"
+      direction="ltr"
+      size="500px"
+      :with-header="false"
+    >
+      <json-viewer
+        :value="components"
+        expanded
+        :expand-depth="5"
+        :copyable="{ copyText: '复制', copiedText: '已复制' }"
+      ></json-viewer>
+    </el-drawer>
+    
+    <!-- 组件大纲弹窗 -->
+    <el-drawer
+      title="组件大纲"
+      :visible.sync="outlineVisible"
+      direction="ltr"
+      size="500px"
+      :modal="false"
+      class="outline-container"
+    >
+      <el-tree
+        :highlight-current="true"
+        :default-expand-all="true"
+        :expand-on-click-node="false"
+        :current-node-key="currentId"
+        :data="outlineTree"
+        :props="outlineTreeProps"
+        @node-click="clickComponent"
+      >
+        <span
+          class="custom-tree-node"
+          style="width: 100%; display: flex"
+          slot-scope="{ node, data }"
+        >
+          <span style="flex: 1">{{ node.label }}</span>
+        </span>
+      </el-tree>
+    </el-drawer>
   </div>
 </template>
 
@@ -93,12 +153,16 @@ import RenderPage from "@/pages/low-app/editor-home/render-page.vue";
 import dragStore from "@/pages/low-app/app-materials/store/dragStore";
 import PropertyView from "@/pages/low-app/app-materials/property/index.vue";
 import debounce from "lodash/debounce";
+import JsonViewer from "vue-json-viewer";
+import "vue-json-viewer/style.css";
+import cloneDeep from "lodash/cloneDeep";
 export default {
   name: "app-home",
   components: {
     MaterialsView,
     RenderPage,
-    PropertyView
+    PropertyView,
+    JsonViewer
   },
   data() {
     return {
@@ -114,8 +178,24 @@ export default {
       pageConfig: null,
       currentId: '',
       currentItem: null,
-      positionChange: []
+      positionChange: [],
+      // 弹窗控制状态
+      jsonVisible: false, //json视图
+      outlineVisible: false, //大纲视图
     }
+  },
+  computed: {
+    // 组件大纲树属性配置
+    outlineTreeProps() {
+      return {
+        label: "com_name",
+        children: "children",
+      };
+    },
+    // 组件大纲树数据
+    outlineTree() {
+      return this.components || [];
+    },
   },
   created() {
     this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
@@ -366,6 +446,14 @@ export default {
       }
 
       return data;
+    },
+    // 点击组件大纲中的组件
+    clickComponent(data) {
+      console.log('点击组件大纲中的组件:', data);
+      this.currentId = data.id;
+      this.currentItem = data;
+      // 关闭大纲弹窗
+      this.outlineVisible = false;
     },
   }
 }
