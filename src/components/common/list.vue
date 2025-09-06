@@ -311,6 +311,17 @@
                   >
                   </div>
                 </div>
+                <span v-if="item.col_type==='Date'">
+                  <template v-if="item.srvcol&&item.srvcol.subtype==='year'">
+                    {{ dateFormat( scope.row[item.column],'YYYY') }}
+                  </template>
+                  <template v-else-if="item.srvcol&&item.srvcol.subtype==='month'">
+                    {{ dateFormat( scope.row[item.column],'YYYY-MM') }}
+                  </template>
+                  <template v-else>
+                    {{ dateFormat( scope.row[item.column],'YYYY-MM-DD HH:mm') }}
+                  </template>
+                </span>
                 <file-list
                   v-if="['FileList'].includes(item.col_type)"
                   :data="scope.row"
@@ -1235,6 +1246,7 @@ import inlineEditListMixin from "../mixin/inline-edit-list-mixin"; //行内编�
 import inlineEditList from "./inline-edit-list.vue";
 import vueChart from "../ui/widget/chart.vue";
 import { blobToBase64 } from "../../common/common";
+
 import {
   IconList,
   IconGrid,
@@ -1336,10 +1348,11 @@ export default {
       listStyle: "list",
       tableMaxHeight: 500,
       resizeObserver: null,
+      blobToBase64,
     };
   },
   computed: {
-    
+
     // 动态计算操作列宽度，最大300px
     operationColumnWidth() {
       if (!this.sortedRowButtons || !this.sortedRowButtons.buttons) {
@@ -1974,9 +1987,11 @@ export default {
 .el-table th.gutter {
   display: table-cell !important;
 }
-.el-table{
+
+.el-table {
   height: fit-content;
 }
+
 .el-table td,
 .el-table th {
   padding: 2px !important;

@@ -2936,6 +2936,11 @@ function init_util() {
     val = val.replace(/(bx_auth_ticket=)[^&]+/ig, ticketStr);
     return val;
   }
+
+  Vue.prototype.dateFormat = (value, format = 'YYYY-MM-DD HH:mm:ss') => {
+    if (!value) return '';
+    return dayjs(value).format(format);
+  }
 }
 
 export default init_util;
