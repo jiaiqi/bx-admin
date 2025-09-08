@@ -21,7 +21,7 @@
         v-model="selectedDate"
         :type="datePickerType"
         :placeholder="datePickerPlaceholder"
-        :format="dateFormat"
+        :format="dateFormatStr"
         :value-format="dateValueFormat"
         @change="onDateChange"
         size="small"
@@ -96,7 +96,7 @@ export default {
       return placeholderMap[this.dateFilterType] || '选择日期'
     },
     // 日期显示格式
-    dateFormat() {
+    dateFormatStr() {
       const formatMap = {
         day: 'yyyy-MM-dd',
         month: 'yyyy-MM',

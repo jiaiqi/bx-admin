@@ -115,13 +115,13 @@
           <!-- 统一的列内容渲染逻辑 -->
           <span v-if="item.col_type === 'Date'">
             <template v-if="item.srvcol && item.srvcol.subtype === 'year'">
-              {{ dateFormat(scope.row[item.column], 'YYYY') }}
+              {{ formatDate(scope.row[item.column], 'YYYY') }}
             </template>
             <template v-else-if="item.srvcol && item.srvcol.subtype === 'month'">
-              {{ dateFormat(scope.row[item.column], 'YYYY-MM') }}
+              {{ formatDate(scope.row[item.column], 'YYYY-MM') }}
             </template>
             <template v-else>
-              {{ dateFormat(scope.row[item.column], 'YYYY-MM-DD HH:mm') }}
+              {{ formatDate(scope.row[item.column], 'YYYY-MM-DD HH:mm') }}
             </template>
           </span>
           <template v-if="['FileList'].includes(item.col_type)">
