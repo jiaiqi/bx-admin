@@ -115,7 +115,9 @@ module.exports = {
     // 优化解析
     resolve: {
       alias: {
-        '@': require('path').resolve(__dirname, 'src')
+        '@': require('path').resolve(__dirname, 'src'),
+        'element-ui/lib/utils/date-util': require('path').resolve(__dirname, 'src/plugin/date-util-patch.js'),
+        'element-ui/lib/utils/date': require('path').resolve(__dirname, 'src/plugin/fecha-patch.js')
       },
       extensions: ['.js', '.vue', '.json']
     },
