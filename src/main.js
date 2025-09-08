@@ -5,6 +5,7 @@ import App from "./App.vue";
 import router from "./router.js";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
+import "./plugins/element-date-guard";
 // 自定义theme.css
 import "../theme/scss/common-theme.scss";
 import VueInit from "@/components/common/vue_init";
