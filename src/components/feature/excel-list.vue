@@ -16,18 +16,24 @@ export default {
       type: String,
       default: "broadCast"
     },
-    mainService:{
+    mainService: {
       type: String,
     },
-    colSrv:String,
+    colSrv: String,
     data: Object,
-    memInitdatasAdd:Array,
-    disabled:Boolean,
-    isTree:Boolean,
-    defaultCondition:{
+    memInitdatasAdd: Array,
+    disabled: Boolean,
+    isTree: Boolean,
+    defaultCondition: {
       type: Array,
       default: function () {
         return [];
+      }
+    },
+    childforeignkey:{
+      type: Object,
+      default: function () {
+        return {};
       }
     }
   },
@@ -44,8 +50,8 @@ export default {
       deep: true,
       handler(newValue, oldValue) {
         this.emit({
-          type:'initDataChange',
-          data:newValue
+          type: 'initDataChange',
+          data: newValue
         })
       }
     }
@@ -54,23 +60,23 @@ export default {
     frameSrc() {
       let src = `/dataview/#/${this.broadCastName}/${this.type}/${this.mainService}/${this.resolveDefaultSrvApp()}/${this.serviceName}`
       // let src = `http://localhost:5173/dataview/#/childList/${this.type}/${this.broadCastName}/${this.resolveDefaultSrvApp()}/${this.serviceName}`
-      if(location.hostname==='localhost'){
+      if (location.hostname === 'localhost') {
         src = `http://localhost:5173${src}`
       }
-      if(this.colSrv&&this.colSrv!==this.serviceName){
-        src+=`?colSrv=${this.colSrv}`
+      if (this.colSrv && this.colSrv !== this.serviceName) {
+        src += `?colSrv=${this.colSrv}`
       }
-      if(this.isTree){
-        src+= src?.includes('?')?'&isTree=true': `?isTree=true`
+      if (this.isTree) {
+        src += src?.includes('?') ? '&isTree=true' : `?isTree=true`
       }
-      if(Array.isArray(this.defaultCondition)&&this.defaultCondition.length>0){
-        this.defaultCondition.forEach(item=>{
+      if (Array.isArray(this.defaultCondition) && this.defaultCondition.length > 0) {
+        this.defaultCondition.forEach(item => {
           let str = `${item.colName}=${item.value}`
-          src+= src?.includes('?')?`&${str}`: `?${str}`
+          src += src?.includes('?') ? `&${str}` : `?${str}`
         })
       }
-      if(this.disabled===true){
-        src+= src?.includes('?')?'&disabled=true': `?disabled=true`
+      if (this.disabled === true) {
+        src += src?.includes('?') ? '&disabled=true' : `?disabled=true`
       }
       return src
     },
@@ -85,12 +91,13 @@ export default {
     buildRunQuries() {
       return this.listData
     },
-    
+
     load() {
       this.emit(this.data)
       this.emit({
-        childListCfg:this.data
+        childListCfg: this.data
       })
+      this.$emit("list-loaded", this)
     },
     initBroadcastChannel(str = '') {
       this.broadCastName = new Date().getTime() + `_${str}`
@@ -107,7 +114,7 @@ export default {
           if (data?.type === 'heightChange') {
             console.log('heightChange', data)
             if (this.$refs?.myFrame?.style) {
-              this.$refs.myFrame.style.minHeight = data.data + 35 +'px'
+              this.$refs.myFrame.style.minHeight = data.data + 35 + 'px'
             }
           }
           console.log('listener', data)
@@ -119,26 +126,8 @@ export default {
     emit(data = {}) {
       // 通过broadcastChannel广播消息
       if (this.broadcastChannel?.postMessage) {
-        console.log('emit::',data)
+        console.log('emit::', data)
         this.broadcastChannel.postMessage(JSON.stringify(data));
-      //   if(this.frameSrc?.includes('disabled=true')){
-      //     this.listData = [
-      //   {
-      //     "serviceName": this.addButton?.service_name,
-      //     "data": [...data],
-      //     "depend_keys": [
-      //       {
-      //         "type": "column",
-      //         "depend_key": this.childListCfg?.foreign_key?.referenced_column_name,
-      //         "add_col": this.childListCfg?.foreign_key?.column_name,
-      //       }
-      //     ]
-      //   }
-      // ]
-          
-          
-      //     data.data
-      //   }
       }
     },
     beforeDestroy() {
@@ -150,10 +139,12 @@ export default {
 </script>
 
 <template>
-  <iframe ref="myFrame" style="width: 100%;height: 100%;min-height: 300px; border: none;" :src="frameSrc"
-          @load="load"></iframe>
+  <iframe
+    ref="myFrame"
+    style="width: 100%;height: 100%;min-height: 300px; border: none;"
+    :src="frameSrc"
+    @load="load"
+  ></iframe>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

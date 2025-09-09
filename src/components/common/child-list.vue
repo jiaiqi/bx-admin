@@ -11,10 +11,11 @@
       :data="item"
       :type="listType"
       :default-condition="getDefaultConditions"
-      :childForeignkey="foreignKey"
+      :childforeignkey="foreignKey"
       :main-data="mainData"
       :div-cond="divCond"
       :is-tree="isTree"
+      @list-loaded="onListLoaded"
       v-if="
         uiMode === 'excel' &&
         // 'addchildlist' === listType &&
