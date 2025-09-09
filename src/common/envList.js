@@ -21,6 +21,20 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "hsprl",
   },
+  yanxue2: {
+    // 开发环境
+    gateway_protocol: "http",
+    // gateway_ip: "39.105.177.145",
+    gateway_ip: "yxsj.sneducloud.com",
+    // gateway_ip: "192.168.0.155",
+    port: "",
+    // port: "2881",
+    suffix: "/bxapi",
+    gateway: "http://yxsj.sneducloud.com/bxapi",
+    // gateway: "http://192.168.0.155:2881",
+    sso_app: "sso",
+    application: "config",
+  },
   yananxing: {
     // 开发环境
     gateway_protocol: "http",
