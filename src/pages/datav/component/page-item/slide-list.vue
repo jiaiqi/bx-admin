@@ -5,6 +5,7 @@
   >
     <span v-if="pageItem && pageItem.com_label">{{ pageItem.com_label }}</span>
   </div>
+
   <div
     class="swiper-list"
     :class="{ 'left-bottom-dot': dotPostion === 'left-bottom' }"
@@ -12,6 +13,16 @@
     :data-order-no="pageItem['order_no']"
     v-else-if="pageItem"
   >
+    <stack-swiper
+      :swiper-style="tagStylefn(pageItem.swiper_json.style_json)"
+      :swiper-list="swiperList"
+      :layoutMode="swiperStyle"
+      :page-item="pageItem"
+      :cardJson="getCardJson"
+      @on-tap="toDetail"
+      @change="swiperChange"
+      v-if="swiperStyle && ['堆叠1', '堆叠2'].includes(swiperStyle)"
+    ></stack-swiper>
     <el-carousel
       class="card-swiper square-dot"
       :indicator-dots="false"
@@ -24,7 +35,7 @@
       @change="swiperChange"
       indicator-color="#333"
       indicator-active-color="#E8E8E8"
-      v-if="swiperList.length > 1 && swiperStyle === '卡片'"
+      v-else-if="swiperList.length > 1 && swiperStyle === '卡片'"
     >
       <el-carousel-item
         v-for="(item, index) in swiperList"
@@ -54,7 +65,6 @@
     <div
       class="swiper-cot"
       v-else-if="swiperList.length > 1 || (swiperList.length === 1 && swiperList[0].type === 'vr')"
-      
       style="height: 100%"
     >
       <div
@@ -221,11 +231,12 @@
 <script>
 import { formatStyleData, rpx2px } from "../../common/index.js";
 import cardGroupCell from "./card-group-cell/card-group-cell.vue";
-
+import StackSwiper from "./stack-swiper/stack-swiper.vue";
 export default {
-  name: "home-swiper-list",
+  name: "slide-list",
   components: {
     cardGroupCell,
+    StackSwiper
   },
   computed: {
     //判定是否含有缩略图显示选项
@@ -238,8 +249,11 @@ export default {
     getCardJson() {
       return this.pageItem?.swiper_json?.card_json;
     },
+    swiperJson() {
+      return this.pageItem?.swiper_json;
+    },
     swiperStyle() {
-      return this.pageItem?.swiper_style || "平铺";
+      return this.swiperJson?.swiper_layout || "平铺";
     },
     interval() {
       return this.pageItem?.more_config?.interval || 5000;
@@ -516,7 +530,7 @@ export default {
               _thumbnail: this.getImagePath(item[swiperJson?.srv_col_image], 100),
               _title: item[swiperJson?.srv_col_title || "title"] || "",
             };
-          }).filter(item => item && item[swiperJson?.srv_col_image]);
+          })
           if (swiperJson?.swiper_options?.includes("单行数据多张图片")) {
             const fileNo = res.data.data[0]?.[swiperJson?.srv_col_image];
             if (fileNo) {
@@ -537,6 +551,10 @@ export default {
               }
               this.swiperList = list;
             }
+          }
+          if(!this.getCardJson){
+            // 纯图的轮播图，过滤没有图片的数据
+            this.swiperList = this.swiperList.filter(item => item && item[swiperJson?.srv_col_image]);
           }
         }
       } else if (swiperJson?.image_origin === "集中传图" && swiperJson?.image) {

@@ -2765,7 +2765,7 @@ function init_util() {
       }
 
       let pageNo = jumpJson?.dest_page_no
-      let url = '/views/custom/index/index'
+      let url = '/vpages/#/site'
       let authJson = jumpJson.page_auth_json || null
       if (pageNo) {
         if (jumpJson?.tmpl_page_json?.file_path) {
