@@ -35,6 +35,20 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "config",
   },
+  yananxingOut: {
+    // 延安行开发环境外网
+    gateway_protocol: "https",
+    // gateway_ip: "39.105.177.145",
+    gateway_ip: "yax.100xsys.cn",
+    // gateway_ip: "192.168.0.155",
+    port: "",
+    // port: "2881",
+    suffix: "/bxapi",
+    gateway: "https://yax.100xsys.cn/bxapi",
+    // gateway: "http://192.168.0.155:2881",
+    sso_app: "sso",
+    application: "config",
+  },
   wujingDev: {
     // 武警网站开发环境
     gateway_protocol: "http",

@@ -2937,7 +2937,7 @@ function init_util() {
     return val;
   }
 
-  Vue.prototype.dateFormat = (value, format = 'YYYY-MM-DD HH:mm:ss') => {
+  Vue.prototype.formatDate = (value, format = 'YYYY-MM-DD HH:mm:ss') => {
     if (!value) return '';
     return dayjs(value).format(format);
   }

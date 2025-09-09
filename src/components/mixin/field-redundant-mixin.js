@@ -101,13 +101,22 @@ export default {
             // 如果计算函数中发请求了，再判断是否匹配calc_trigger_col来判断是否需要进行计算，否则直接计算,避免之前没配置calc_trigger_col的表内计算不会触发
             // 检查计算函数是否包含HTTP请求
             if (fieldInfo.redundant?.func?.indexOf("$http.") > -1) {
-              // 对于包含HTTP请求的计算，需要检查触发列配置
+              // 对于包含HTTP请求的计算：
               if (Array.isArray(calc_trigger_col) && calc_trigger_col.length) {
-                // 触发计算的字段值有变化才进行计算
+                // 配置了 calc_trigger_col 时，仅在这些列变化时触发
                 let needUpdate = calc_trigger_col.some(
                   (col) => newVal[col] != oldVal[col]
                 );
                 if (needUpdate) {
+                  self.handleRedundantViaJs(field, formModelFunc, vm);
+                }
+              } else {
+                // 兼容老数据：未配置 calc_trigger_col 时，回退到 dependField 变化触发
+                const dependFieldName = fieldInfo?.redundant?.dependField;
+                if (
+                  dependFieldName &&
+                  newVal[dependFieldName] != oldVal[dependFieldName]
+                ) {
                   self.handleRedundantViaJs(field, formModelFunc, vm);
                 }
               }
