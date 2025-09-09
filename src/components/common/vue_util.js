@@ -56,8 +56,12 @@ function init_util() {
       // if (notThumb === false) {
       //   url += `&thumbnailType=fwsu_100`
       // }
-      if (size && typeof size === 'number') {
-        url += `&thumbnailType=fwsu_${size}`
+      let thumbnailSize = size
+      if(thumbnailSize){
+        thumbnailSize = Number(thumbnailSize)
+      }
+      if (thumbnailSize && typeof thumbnailSize === 'number' && !isNaN(thumbnailSize)) {
+        url += `&thumbnailType=fwsu_${thumbnailSize}`
       }
       if (location.href?.includes('/editor/')) {
         // 可视化编辑页面，图片后缀增加时间戳，避免缓存

@@ -80,7 +80,7 @@
       :height="buildColStyleJson.height || 'auto'"
       :width="buildColStyleJson.width || '100%'"
       :border-radius="buildColStyleJson['border-radius']"
-      :src="getImagePath(setPartModelData, 150)"
+      :src="getImagePath(setPartModelData, item.img_dpi)"
       class="demo-layout bx-text-cell"
       :class="{
         'cursor-pointer': isLink,
