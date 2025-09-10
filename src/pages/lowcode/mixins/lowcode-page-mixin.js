@@ -207,6 +207,35 @@ export default {
         this.$message.info("无数据！");
       }
     },
+     async getAppConfig(appNo) {
+       appNo = appNo || `UAPP2508121733480001`
+      const service = 'srvpage_cfg_app_guest_select'
+      const req = {
+        "serviceName": service,
+        "colNames": ["*"],
+        "condition": [{
+          colName: 'app_no',
+          ruleType: "eq",
+          value: appNo
+          // app.globalData.app_no
+        }],
+        "page": {
+          "pageNo": 1,
+          "rownumber": 1
+        },
+      }
+      try {
+        const res = await this.$fetch('select', service, req)
+        console.log(res);
+        if (res.success && Array.isArray(res.data) && res.data.length) {
+          let appCfg = res.data[0]
+          sessionStorage.setItem('lowAppCfg', JSON.stringify(appCfg))
+          
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
     /**
      * 初始化页面配置
      * @param {Object} data - 原始页面配置数据
@@ -228,6 +257,10 @@ export default {
         }
       });
       this.pageConfig = data;
+      if(data?.app_no){
+
+      }
+      debugger
       // 使用Vuex初始化主题
       if (data?.app_json_data) {
         let currentTheme = data.app_json_data.current_theme;

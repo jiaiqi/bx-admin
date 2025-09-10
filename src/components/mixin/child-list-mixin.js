@@ -105,7 +105,7 @@ export default {
         refedTable = this.foreignKey.refed_service;
         // hide headers if srvcol comes from main table
         if (innerList != undefined) {
-          innerList.gridHeader.filter(header => {
+          innerList?.gridHeader?.filter(header => {
             let srvcol = header.srvcol;
             if (!srvcol) {
               return false
@@ -121,7 +121,7 @@ export default {
       } else {
         // hide headers if srvcol comes from main table
         if (innerList != undefined) {
-          innerList.gridHeader.filter(header => {
+          innerList?.gridHeader?.filter(header => {
             let srvcol = header.srvcol;
             if (!srvcol) {
               return false
