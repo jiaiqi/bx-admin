@@ -1,8 +1,18 @@
 <template>
-  <div class="card-cell-editor" ref="cardCellEditor">
+  <div
+    class="card-cell-editor"
+    ref="cardCellEditor"
+  >
     <header class="header">
       <div class="header-left">
         <h1 class="title">卡片单元设计器</h1>
+        <div
+          @click.stop="outlineVisible = true"
+          class="handle-btn"
+          title="组件大纲"
+        >
+          <Icon icon="ri-node-tree" />
+        </div>
       </div>
       <div class="header-center">
         <template v-if="cardInfo && cardInfo.card_name">
@@ -10,19 +20,39 @@
         </template>
       </div>
       <div class="header-right">
-        <div class="theme-toggle-btn" @click="changeTheme" title="切换主题模式">
-          <Icon
-            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
-            class="theme-icon"
-          />
-        </div>
-        <el-button class="" @click="refresh" :loading="onSaving"
-          >刷新</el-button
+        <div
+          @click="changeTheme"
+          class="handle-btn"
+          title="切换主题模式"
         >
-        <el-button class="save-btn" @click="saveCard" :loading="onSaving">
-          保存
-        </el-button>
-        <el-button class="preview-btn" @click="previewCard">预览</el-button>
+          <Icon :icon="isDarkMode ? 'ri:sun-fill' : 'ri:moon-fill'" />
+        </div>
+        <div
+          @click="refresh"
+          class="handle-btn"
+          title="刷新"
+          :class="{ loading: onSaving }"
+        >
+          <span class="text">刷新</span>
+          <Icon icon="ri:refresh-line" />
+        </div>
+        <div
+          @click="saveCard"
+          class="handle-btn"
+          title="保存"
+          :class="{ loading: onSaving }"
+        >
+          <span class="text">保存</span>
+          <Icon icon="ri:save-fill" />
+        </div>
+        <div
+          @click="previewCard"
+          class="handle-btn"
+          title="预览"
+        >
+          <span class="text">预览</span>
+          <Icon icon="ri:eye-fill" />
+        </div>
       </div>
     </header>
     <main class="main">
@@ -149,18 +179,55 @@
       :close-on-press-escape="false"
       :destroy-on-close="true"
       fullscreen
-      :before-close="
-        () => {
-          this.isPreview = false;
-        }
-      "
+      :before-close="() => {
+        this.isPreview = false;
+      }
+        "
     >
-      <div class="preview-mode" v-if="isPreview">
+      <div
+        class="preview-mode"
+        v-if="isPreview"
+      >
         <div class="preview-content">
           <card-cell :card-cell="cardInfo"></card-cell>
         </div>
       </div>
     </el-dialog>
+    <el-drawer
+      title="组件大纲"
+      :visible.sync="outlineVisible"
+      direction="ltr"
+      size="500px"
+      :modal="false"
+      class="outline-container"
+    >
+      <el-tree
+        :highlight-current="true"
+        :default-expand-all="true"
+        :expand-on-click-node="false"
+        :current-node-key="selectedPart ? (selectedPart._id || selectedPart.id) : null"
+        :data="outlineTree"
+        :props="outlineTreeProps"
+        @node-click="clickPart"
+      >
+        <span
+          class="custom-tree-node"
+          style="width: 100%; display: flex"
+          slot-scope="{ node, data }"
+        >
+          <span style="flex: 1">{{ node.label }}</span>
+          <span class="right-btn">
+            <el-button
+              type="text"
+              size="mini"
+              @click.stop="() => removePart(node, data)"
+            >
+              删除
+            </el-button>
+          </span>
+        </span>
+      </el-tree>
+    </el-drawer>
   </div>
 </template>
 
@@ -353,6 +420,7 @@ export default {
       saveTimer: null, // 保存操作的定时器
       partHeaderStyleCache: new Map(), // 部件头部样式缓存
       isEditorActive: false, // 编辑器是否处于激活状态
+      outlineVisible: false, // 大纲视图显示状态
     };
   },
   computed: {
@@ -394,6 +462,26 @@ export default {
       if (!this.selectedPart) return {};
       const style = this.calcPartHeaderPosition(this.selectedPart);
       return style;
+    },
+
+    /**
+     * 组件大纲树形结构属性配置
+     * @returns {Object} 树形组件属性配置
+     */
+    outlineTreeProps() {
+      return {
+        label: "card_parts_name",
+        children: "children",
+      };
+    },
+
+    /**
+     * 组件大纲树形数据
+     * @returns {Array} 树形数据结构
+     */
+    outlineTree() {
+      let list = cloneDeep(this.partsList);
+      return list;
     },
   },
   methods: {
@@ -670,6 +758,24 @@ export default {
           }
         );
       });
+    },
+
+    /**
+     * 点击大纲节点选中部件
+     * @param {Object} data - 部件数据
+     */
+    clickPart(data) {
+      console.log("clickPart:", data);
+      this.selectPart(data);
+    },
+
+    /**
+     * 从大纲中删除部件
+     * @param {Object} node - 树节点
+     * @param {Object} data - 部件数据
+     */
+    removePart(node, data) {
+      this.deletePart(data);
     },
 
     /**
@@ -1238,7 +1344,7 @@ export default {
      * @returns {Promise<void>}
      */
     async pasteToSelectedPart(newPart) {
-      if (["row", "block",'行容器','块容器'].includes(this.selectedPart.parts_type)) {
+      if (["row", "block", '行容器', '块容器'].includes(this.selectedPart.parts_type)) {
         if (!this.selectedPart.children) {
           this.$set(this.selectedPart, "children", []);
         }
@@ -1357,6 +1463,7 @@ export default {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -1368,6 +1475,7 @@ export default {
     transform: translateY(-10px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1378,6 +1486,7 @@ export default {
 ::view-transition-old(root) {
   animation: none;
 }
+
 .card-cell-editor {
   display: flex;
   flex-direction: column;
@@ -1386,22 +1495,28 @@ export default {
   overflow: hidden;
   --bg-color: #fff;
   background-color: var(--bg-color);
+
   &.dark-mode {
     --bg-color: #1a1a1a;
     --primary-color: #4a90e2;
     --menu-bg-color: var(--primary-color);
+
     .header {
       background-color: rgba($color: #2d2d2d, $alpha: 0.5);
       border-bottom-color: #444;
+
       .title {
         color: #ffffff;
       }
+
       .header-right,
       .header-center {
+
         button {
           color: #ffffff;
           border-color: #444;
           background-color: #333;
+
           &.save-btn {
             background-color: #4a90e2;
             border-color: #4a90e2;
@@ -1424,25 +1539,32 @@ export default {
     }
 
     .main {
+
       .materials-panel,
       .property-panel {
         background-color: #252525;
         border-right-color: #444;
+
         .panel-header {
           border-bottom-color: #444;
+
           .panel-title {
             color: #ffffff;
           }
         }
+
         .panel-content {
           color: #dddddd;
+
           :deep(.property-pane) {
             background-color: #252525;
           }
         }
+
         .material-item {
           background-color: #333;
           border-color: #444;
+
           .material-name {
             color: #dddddd;
           }
@@ -1456,41 +1578,51 @@ export default {
       .editor-content {
         background-color: rgba($color: #2d2d2d, $alpha: 0.5);
         border-color: #444;
+
         .overlay {
           background-color: rgba(0, 0, 0, 0.1);
         }
       }
+
       .property-panel {
         border-left-color: #444;
         background-color: #252525;
+
         :deep(.form-view-wrapper) {
           background-color: #2d2d2d;
+
           .raw_field_editor input {
             --custom-input-color: #ddd;
           }
+
           .el-autocomplete-suggestion {
             background-color: #2d2d2d;
             color: #ffffff;
           }
+
           .el-button {
             background-color: #333;
             border-color: #444;
             color: #dddddd;
-            &.el-button--primary {
-            }
+
+            &.el-button--primary {}
           }
+
           .el-checkbox,
           .el-upload__tip {
             color: #dddddd;
           }
+
           .el-input-group__append {
             background-color: #333;
             border-color: #444;
           }
+
           .el-input__inner {
             background-color: #333;
             border-color: #444;
           }
+
           .el-upload--picture-card {
             background-color: #252525;
             border-color: #444;
@@ -1498,14 +1630,17 @@ export default {
         }
       }
     }
+
     :deep(.el-dialog__wrapper) {
       .el-dialog {
         background-color: #2d2d2d;
+
         .el-dialog__title,
         .el-dialog__headerbtn,
         .el-dialog__close {
           color: #ddd;
         }
+
         .el-dialog__body,
         .preview-mode {
           height: 80vh;
@@ -1533,23 +1668,34 @@ export default {
 
   .header-left {
     flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
     .title {
       font-size: 16px;
       font-weight: bold;
       color: #333;
+      margin: 0;
     }
   }
+
   .header-center {
     justify-content: center;
   }
+
   .header-right {
+
     justify-content: flex-end;
   }
+
   .header-center,
   .header-right {
     display: flex;
     align-items: center;
+    gap: 10px;
     flex: 1;
+
     .theme-toggle-btn {
       display: flex;
       align-items: center;
@@ -1563,6 +1709,7 @@ export default {
       transition: all 0.3s ease;
       padding: 0;
       margin-right: 10px;
+
       &:hover {
         background-color: #f5f7fa;
       }
@@ -1571,6 +1718,7 @@ export default {
         font-size: 20px;
         color: #606266;
         transition: all 0.3s ease;
+
         &:hover {
           transform: rotate(15deg);
         }
@@ -1587,9 +1735,11 @@ export default {
       cursor: pointer;
       transition: all 0.2s ease-in-out;
       min-width: 80px;
+
       &:active {
         transform: scale(0.98);
       }
+
       &.save-btn {
         background-color: var(--primary-color, #409eff);
         color: #fff;
@@ -1701,6 +1851,7 @@ export default {
     background-color: #f0f0f5;
   }
 }
+
 .preview-mode {
   display: flex;
   justify-content: center;
@@ -1712,9 +1863,10 @@ export default {
   background-size: 20px 20px, 20px 20px;
   background-image: linear-gradient(#f5f5f9 19px, transparent 0),
     linear-gradient(90deg, transparent 19px, #000 0);
-  .preview-content {
-  }
+
+  .preview-content {}
 }
+
 .editor-content {
   display: inline-block;
   padding: 10px;
@@ -1747,6 +1899,7 @@ export default {
       background-color: rgba(103, 194, 58, 0.1);
     }
   }
+
   .card-part-header {
     position: absolute;
     top: 0;
@@ -1761,6 +1914,7 @@ export default {
     border: none;
     line-height: 30px;
     gap: 1px;
+
     .part-label,
     .part-delete {
       background-color: var(--primary-color, #006cff);
@@ -1770,17 +1924,20 @@ export default {
       height: 30px;
       padding: 0 10px;
     }
+
     .part-label {
       flex: 1;
       text-align: left;
       min-width: max-content;
     }
+
     .part-delete {
       cursor: pointer;
       font-size: 16px;
       min-width: 60px;
       justify-content: center;
       gap: 5px;
+
       .iconify {
         &:hover {
           font-weight: bold;
@@ -1792,7 +1949,7 @@ export default {
 }
 
 .editor-content.drag-over-editor {
-  > .overlay {
+  >.overlay {
     background-color: rgba(103, 194, 58, 0.1);
     border: 2px dashed #67c23a;
   }
@@ -1802,6 +1959,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+
   &:after {
     content: "拖拽组件到此处";
     color: #909399;
@@ -1897,5 +2055,59 @@ export default {
     left: 2px;
     transition: all 0.3s;
   }
+}
+
+/* 组件大纲按钮样式 */
+.handle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #606266;
+  background-color: #f5f7fa;
+  padding: 0 8px;
+  gap: 4px;
+  border: 1px solid transparent;
+
+  .text {
+    font-size: 12px;
+  }
+}
+
+.handle-btn:hover {
+  background-color: #f5f7fa;
+  color: var(--primary-color, #409eff);
+  border-color: var(--primary-color, #409eff);
+}
+
+.dark-mode .handle-btn {
+  color: #c0c4cc;
+  background-color: #2d2d2d;
+}
+
+.dark-mode .handle-btn:hover {
+  background-color: #2d2d2d;
+}
+
+/* 组件大纲drawer样式 */
+.outline-container .custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 8px;
+}
+
+.outline-container .right-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.outline-container .custom-tree-node:hover .right-btn {
+  opacity: 1;
 }
 </style>

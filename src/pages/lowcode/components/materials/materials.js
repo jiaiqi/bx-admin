@@ -154,6 +154,14 @@ export const materialsTree = [
         "type": "qrCode",
         "component": "pageItem",
         "icon": "ri-qr-code-fill"
+      },
+      {
+        "label": "倒计时",
+        "value": "倒计时",
+        "parts_type": "倒计时",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri:timer-fill"
       }
     ]
   },
