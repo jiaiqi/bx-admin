@@ -197,7 +197,7 @@
       title="组件大纲"
       :visible.sync="outlineVisible"
       direction="ltr"
-      size="500px"
+      size="400px"
       :modal="false"
       class="outline-container"
     >
@@ -247,6 +247,7 @@ import CardPart from "./components/CardPart.vue";
 import propertyEditor from "./components/propertyEditor.vue";
 import cloneDeep from "lodash/cloneDeep";
 import CardCell from "./components/CardCell.vue";
+import clickoutside from "@/pages/datav/common/clickoutside.js";
 
 /**
  * 常量定义
@@ -400,6 +401,9 @@ export default {
     CardPart,
     propertyEditor,
     CardCell,
+  },
+  directives: {
+    clickoutside: clickoutside,
   },
   data() {
     return {
@@ -1398,6 +1402,7 @@ export default {
      * @param {MouseEvent} event - 鼠标事件对象
      */
     handleContainerClick(event) {
+      this.outlineVisible = false;
       if (event.target === event.currentTarget) {
         this.selectPart();
         this.isEditorActive = false;
@@ -2094,6 +2099,10 @@ export default {
 }
 
 /* 组件大纲drawer样式 */
+.el-drawer__wrapper {
+  width: 400px;
+}
+
 .outline-container .custom-tree-node {
   display: flex;
   align-items: center;
@@ -2109,5 +2118,65 @@ export default {
 
 .outline-container .custom-tree-node:hover .right-btn {
   opacity: 1;
+}
+
+/* 暗色模式下的组件大纲样式 */
+.dark-mode :deep(.outline-container) {
+
+  .el-drawer__title,
+  .el-drawer__body,
+  .el-drawer {
+    background-color: #2d2d2d;
+    color: #333;
+    margin-bottom: 0;
+  }
+
+  .el-drawer__header {
+    background-color: #2d2d2d;
+    border-bottom: 1px solid #4c4d4f;
+    color: #e4e7ed;
+    margin-bottom: 10px;
+  }
+
+  .el-drawer__body {
+    background-color: #2d2d2d;
+  }
+
+  .el-tree {
+    background-color: transparent;
+  }
+
+  .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+    color: #fff;
+    background-color: #3a3a3a;
+  }
+
+  .el-tree-node {
+
+    .el-tree-node__content {
+      &:hover {
+        background-color: #3a3a3a;
+        color: #c0c4cc;
+      }
+    }
+
+    .el-tree-node__expand-icon {
+      color: #c0c4cc;
+    }
+  }
+
+  .custom-tree-node {
+    color: #c0c4cc;
+
+    .right-btn {
+      .el-button--text {
+        color: #c0c4cc;
+
+        &:hover {
+          color: #409eff;
+        }
+      }
+    }
+  }
 }
 </style>
