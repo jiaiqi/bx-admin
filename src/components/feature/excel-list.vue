@@ -59,6 +59,9 @@ export default {
   computed: {
     frameSrc() {
       let src = `/dataview/#/${this.broadCastName}/${this.type}/${this.mainService}/${this.resolveDefaultSrvApp()}/${this.serviceName}`
+      // if(Array.isArray(this.memInitdatasAdd)&&this.memInitdatasAdd.length){
+      //   src += `?memInitdatasAdd=${encodeURIComponent(JSON.stringify(this.memInitdatasAdd))}`
+      // }
       // let src = `http://localhost:5173/dataview/#/childList/${this.type}/${this.broadCastName}/${this.resolveDefaultSrvApp()}/${this.serviceName}`
       if (location.hostname === 'localhost') {
         src = `http://localhost:5173${src}`

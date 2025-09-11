@@ -188,7 +188,23 @@ export default {
         MENU_CONF: {
           uploadImage: this.imgUploadCfg,
           uploadVideo: this.videoUploadCfg,
+          fontSize: {
+            // 元素支持两种形式
+            //   1. 字符串；
+            //   2. { name: 'xxx', value: 'xxx' }
+            fontSizeList: (() => {
+              let arr = [];
+              for (let i = 12; i <= 40; i++) {
+                arr.push(i + 'px');
+              }
+              return arr;
+            })(),
+          },
+          fontFamily: {
+            fontFamilyList: ["宋体", "仿宋", "微软雅黑", "楷体", "黑体", "Arial", "Tahoma", "Verdana", "Times New Roman", "Courier New"]
+          }
         },
+
       };
     },
     uploadConfig() {

@@ -107,6 +107,10 @@
       :percentage="Number(setPartModelData) || 0"
       :ref="partsType"
     ></el-progress>
+    <div
+      v-else-if="iconPartTypes.includes(item.parts_type) && !setPartModelData"
+      :style="[buildColStyleJson]"
+    ></div>
     <i
       v-else-if="
         iconPartTypes.includes(item.parts_type) &&
@@ -152,9 +156,7 @@
     <div
       ref="bxCellContainer"
       v-else-if="
-        containerPartTypes.includes(cellItem.parts_type) &&
-        cellItem.hasOwnProperty('sub_card_parts_json') &&
-        cellItem.sub_card_parts_json.length > 0
+        containerPartTypes.includes(cellItem.parts_type)
       "
       :class="{
         'marquee-mode': childAnimationType === '跑马灯',
@@ -203,7 +205,7 @@
           ></card-cell-part>
         </template>
       </div>
-      <template v-else>
+      <template v-else-if="getSubJson(cellItem) && getSubJson(cellItem).length > 0">
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
           <card-cell-part
             :cellItem="subCardPart"

@@ -132,7 +132,12 @@ export default {
       return this.tabsJson.com_json || [];
     },
     setActiveStyle() {
-      return formatStyleData(this.tabsJson?.active_style_json);
+      let style = {
+        background_color:this.tabsJson?.act_color,
+        border_color:this.tabsJson?.act_color,
+        ...this.tabsJson?.active_style_json||{},
+      }
+      return formatStyleData(style);
     },
     buttonMode() {
       return this.tabsJson?.tabs_options?.includes("按钮样式");
