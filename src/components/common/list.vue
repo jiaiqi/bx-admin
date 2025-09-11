@@ -1214,8 +1214,8 @@
       class="customDialogClass"
       :title="getActiveFormName || '订单支付'"
       :visible="activeForm === 'pay'"
-      @close="closeDialog"
-      width="50%"
+      @close="closePayment"
+      width="700px"
       append-to-body
       :close-on-click-modal="false"
       :destroy-on-close="true"
@@ -1223,7 +1223,7 @@
       <payment-popup
         :buttonInfo="buttonInfo"
         :orders="multipleSelection"
-        @close-dialog="closeDialog"
+        @close-payment="closePayment"
         ref="pay-form"
         v-if="activeForm === 'pay' && buttonInfo"
       ></payment-popup>
@@ -1705,6 +1705,19 @@ export default {
       });
     },
     closeDialog() {
+      this.activeForm = "";
+    },
+    closePayment() {
+      if (this.buttonInfo?.suffix_actions) {
+        switch (this.buttonInfo?.suffix_actions) {
+          case 'refresh':
+            this.refresh();
+            break;
+
+          default:
+            break;
+        }
+      }
       this.activeForm = "";
     },
     srvAuthSuccess(e) {

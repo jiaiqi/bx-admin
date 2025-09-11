@@ -1586,6 +1586,9 @@ export default {
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
       } else if (type === 'pay') {
+        if(this.multipleSelection.length == 0) {
+          return this.$message.warning("请选择需要支付的数据", "提示");
+        }
         this.buttonInfo = button
         this.activeForm = 'pay';
       } else if ("add" == type) {
