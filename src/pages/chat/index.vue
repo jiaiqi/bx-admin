@@ -5,7 +5,7 @@
       <!-- 聊天头部 -->
       <div class="chat-header">
         <div class="avatar">
-          <i class="ri-customer-service-2-fill"></i>
+          <Icon icon="ri:customer-service-2-fill" />
         </div>
         <div class="header-info">
           <div class="header-title">到延安去，智能助手</div>
@@ -13,7 +13,7 @@
         </div>
         <div class="header-actions">
           <button class="clear-btn" @click="clearChat">
-            <i class="ri-refresh-line"></i>
+            <Icon icon="ri:refresh-line" />
           </button>
         </div>
       </div>
@@ -23,7 +23,7 @@
         <!-- 欢迎消息 -->
         <div class="message-wrapper assistant">
           <div class="avatar">
-            <i class="ri-robot-2-fill"></i>
+            <Icon icon="ri:robot-2-fill" />
           </div>
           <div class="message-bubble assistant-bubble">
             <div>您好！请问有什么可以帮助您的？</div>
@@ -33,20 +33,20 @@
         <!-- 动态消息列表 -->
         <div v-for="(message, index) in messages" :key="'msg-' + index" class="message-wrapper" :class="message.sender" :id="'msg-' + index">
           <div class="avatar" v-if="message.sender === 'assistant'">
-            <i class="ri-robot-2-fill"></i>
+            <Icon icon="ri:robot-2-fill" />
           </div>
           <div class="message-bubble" :class="message.sender + '-bubble'">
             <div>{{ message.text }}</div>
           </div>
           <div class="avatar" v-if="message.sender === 'user'">
-            <i class="ri-user-line"></i>
+            <Icon icon="ri:user-line" />
           </div>
         </div>
         
         <!-- 正在输入指示器 -->
         <div v-if="isTyping" class="message-wrapper assistant">
           <div class="avatar">
-            <i class="ri-robot-2-fill"></i>
+            <Icon icon="ri:robot-2-fill" />
           </div>
           <div class="message-bubble assistant-bubble">
             <div class="typing-indicator">
@@ -75,7 +75,7 @@
             @click="sendMessage"
             :disabled="isRequesting"
           >
-            <i class="ri-send-plane-fill"></i>
+            <Icon icon="ri:send-plane-fill" />
           </button>
         </div>
         <div class="quick-questions">
@@ -96,9 +96,13 @@
 const API_KEY = process.env.VUE_APP_DASHSCOPE_API_KEY || "sk-cc24ecc61a7940d19b9eb90a1becd2e7"; // DashScope API Key
 const APP_ID = process.env.VUE_APP_DASHSCOPE_APP_ID || "549e30c3c77648e4a2dff71c434d2647"; // 百炼应用ID（已关联样例库）
 const API_URL = `https://dashscope.aliyuncs.com/api/v1/apps/${APP_ID}/completion`;
+import { Icon } from "@iconify/vue2";
 
 export default {
   name: 'ChatPage',
+  components: {
+    Icon
+  },
   data() {
     return {
       // 聊天相关数据
@@ -278,7 +282,7 @@ export default {
   flex-shrink: 0;
 }
 
-.avatar i {
+.avatar .iconify {
   font-size: 32px;
 }
 
@@ -320,7 +324,7 @@ export default {
   color: white;
 }
 
-.clear-btn i {
+.clear-btn .iconify {
   font-size: 32px;
 }
 
@@ -467,7 +471,7 @@ export default {
   cursor: not-allowed;
 }
 
-.send-btn i {
+.send-btn .iconify {
   font-size: 32px;
 }
 
@@ -516,7 +520,7 @@ export default {
     height: 60px;
   }
   
-  .avatar i {
+  .avatar .iconify {
     font-size: 24px;
   }
   
@@ -539,7 +543,7 @@ export default {
     height: 80px;
   }
   
-  .send-btn i {
+  .send-btn .iconify {
     font-size: 24px;
   }
 }
