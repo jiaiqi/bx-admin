@@ -157,7 +157,7 @@
 
               <div
                 class="info-row"
-                v-if="![1, '1'].includes(record.count)"
+                v-if="record.count && ![1, '1'].includes(record.count)"
               >
                 <div class="info-item">
                   <i class="el-icon-user-solid"></i>
@@ -678,7 +678,8 @@ onMounted(() => {
       overflow: hidden;
       transition: transform 0.3s, box-shadow 0.3s;
       border: 1px solid #ebeef5;
-
+      display: flex;
+      flex-direction: column;
       &:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
