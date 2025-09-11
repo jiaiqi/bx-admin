@@ -147,6 +147,13 @@
       @click.native.stop="onClickSubBlock()"
     ></qr-code>
     <div
+      v-else-if="cellItem.parts_type === '倒计时'"
+      :style="[buildColStyleJson]"
+      :ref="partsType"
+    >
+      {{ countdownDisplay }}
+    </div>
+    <div
       ref="bxCellContainer"
       v-else-if="
         containerPartTypes.includes(cellItem.parts_type)
@@ -300,6 +307,9 @@ export default {
       imagePartTypes: ["图片", "iconImg"],
       iconPartTypes: ["icon", "字体图标", "图标"],
       containerPartTypes: ["块容器", "行容器", "block", "row"],
+      countdownTimeMs: 0,
+      countdownDisplay: '00日00时00分00秒',
+      _countdownTimer: null,
     };
   },
   props: {
@@ -660,6 +670,54 @@ export default {
     }
   },
   methods: {
+    startNativeCountdown() {
+      const ms = this.computeCountdownMs(this.setPartModelData);
+      this.countdownTimeMs = ms;
+      this.updateCountdownDisplay(ms);
+      if (this._countdownTimer) {
+        clearInterval(this._countdownTimer);
+        this._countdownTimer = null;
+      }
+      if (ms <= 0) return;
+      this._countdownTimer = setInterval(() => {
+        this.countdownTimeMs = Math.max(0, this.countdownTimeMs - 1000);
+        this.updateCountdownDisplay(this.countdownTimeMs);
+        if (this.countdownTimeMs <= 0) {
+          clearInterval(this._countdownTimer);
+          this._countdownTimer = null;
+        }
+      }, 1000);
+    },
+    updateCountdownDisplay(ms) {
+      const total = Math.max(0, Number(ms) || 0);
+      const day = Math.floor(total / (24 * 60 * 60 * 1000));
+      const hour = Math.floor((total % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      const minute = Math.floor((total % (60 * 60 * 1000)) / (60 * 1000));
+      const second = Math.floor((total % (60 * 1000)) / 1000);
+      const pad = (n) => String(n).padStart(2, '0');
+      this.countdownDisplay = `${pad(day)}日${pad(hour)}时${pad(minute)}分${pad(second)}秒`;
+    },
+    computeCountdownMs(rawVal) {
+      if (!rawVal) return 0;
+      const raw = String(rawVal).trim();
+      let end = dayjs(raw);
+      if (!end.isValid()) {
+        const m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) {
+          const year = Number(m[1]);
+          const month = Number(m[2]) - 1;
+          const day = Number(m[3]);
+          end = dayjs(new Date(year, month, day, 0, 0, 0));
+        } else {
+          return 0;
+        }
+      } else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(raw)) {
+        end = end.startOf('day');
+      }
+      const now = dayjs();
+      const diff = end.valueOf() - now.valueOf();
+      return diff > 0 ? diff : 0;
+    },
     getPartModelData(getTrueValue = false) {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
@@ -1231,6 +1289,9 @@ export default {
           })
         }
       }
+      if (this.cellItem.parts_type === '倒计时') {
+        this.startNativeCountdown();
+      }
       if (this.enableNumberRollAnimation) {
         // 使用数字滚动特效
         this.$nextTick(() => {
@@ -1260,6 +1321,10 @@ export default {
     this.initPart();
   },
   beforeUnmount() {
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+      this._countdownTimer = null;
+    }
     numberAnimationStop?.();
     numberAnimationStop = null;
   },
