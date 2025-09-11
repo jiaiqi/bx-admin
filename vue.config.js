@@ -122,6 +122,8 @@ module.exports = {
 
     // 生产环境优化配置
     optimization: process.env.NODE_ENV === 'production' ? {
+      usedExports: true, // 开启tree shaking
+      sideEffects: true, // 开启副作用分析
       splitChunks: {
         chunks: "all",
         minSize: 50 * 1000, // 提高最小chunk大小，减少过度分割
