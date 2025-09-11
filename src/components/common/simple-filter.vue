@@ -7,6 +7,7 @@
         label-position="right"
         label-width="9rem"
         v-if="formLoaded"
+        @keyup.enter.native="onSearchClicked"
       >
         <p v-if="supportGroup">过滤字段</p>
         <field-editor
