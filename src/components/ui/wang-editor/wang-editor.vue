@@ -199,6 +199,9 @@ export default {
               }
               return arr;
             })(),
+          },
+          fontFamily: {
+            fontFamilyList: ["宋体", "仿宋", "微软雅黑", "楷体", "黑体", "Arial", "Tahoma", "Verdana", "Times New Roman", "Courier New"]
           }
         },
 
