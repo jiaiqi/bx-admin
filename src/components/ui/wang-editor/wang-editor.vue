@@ -39,9 +39,10 @@
 
 <script>
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
-import ChunkUploadUtil from "@/util/chunk-upload-util.js";
+import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
 
 export default {
+  mixins: [bigFileUploadMixin],
   components: { Editor, Toolbar },
   props: {
     value: String,
@@ -63,20 +64,15 @@ export default {
       innerHtml: null,
       domLoad: false,
       previewImage: null,
-      chunkUploadUtil: null,
     };
   },
   created() {
     this.ticket = sessionStorage.getItem("bx_auth_ticket");
     this.innerHtml = this.recoverFileAddress4richText(this.value);
     
-    // 初始化分片上传工具
-    this.chunkUploadUtil = new ChunkUploadUtil({
-      chunkSize: 20 * 1024 * 1024, // 20MB
-      limitSize: 50, // 50MB
-      maxRequest: 6,
-      useSplitChuck: true
-    });
+    // 设置分片上传参数，便于测试
+    this.limitSize = 50; // 50MB启用分片上传
+    this.chunkSize = 20 * 1024 * 1024; // 2MB分片大小
     
     this.$nextTick(() => {
       this.domLoad = true;
@@ -131,6 +127,88 @@ export default {
       const prefix = this.serviceApi().downloadFilePrefix;
       val = val?.replaceAll?.("$bxFileAddress$", prefix);
       return val;
+    },
+    // 统一处理文件上传
+    async handleFileUpload(file, insertFn, fileType = 'image') {
+      try {
+        const fileSize = file.size / 1024 / 1024; // 转换为MB
+        
+        // 检查是否应该使用分片上传
+        if (this.useSplitChuck && fileSize > this.limitSize) {
+          console.log(`使用分片上传${fileType}:`, file.name, fileSize + 'MB');
+          
+          const result = await this.handelUploadBigFile(file, {
+            chunkSize: this.chunkSize,
+            maxRequest: this.maxRequest,
+            onHashProgress: (percentage) => {
+              console.log('Hash计算进度:', percentage + '%');
+            },
+            onUploadProgress: (percentage) => {
+              console.log('上传进度:', percentage + '%');
+            },
+            onUploadSuccess: (res) => {
+              console.log('分片上传成功:', res);
+            }
+          });
+
+          console.log('分片上传结果:', result);        
+          if (result && result.url) {
+            // 统一使用insertFn方法，不管是图片还是视频
+            insertFn(result.url);
+            this.$message.success(`${fileType === 'image' ? '图片' : '视频'}上传成功`);
+          } else if (result && result.fileurl) {
+            // 如果返回的是原始格式，需要构造URL
+            // 使用与普通上传一致的URL构造方式
+            const url = `${window.backendIpAddr}/file/download?filePath=${result.fileurl}`;
+            // 统一使用insertFn方法
+            insertFn(url);
+            this.$message.success(`${fileType === 'image' ? '图片' : '视频'}上传成功`);
+          } else {
+            this.$message.error('文件上传失败：结果异常');
+          }
+        } else {
+          // 使用普通上传
+          console.log(`使用普通上传${fileType}:`, file.name, fileSize + 'MB');
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('serviceName', 'srv_bxfile_service');
+          formData.append('interfaceName', 'add');
+          formData.append('app_no', this.srvApp || top?.pathConfig?.application || sessionStorage.getItem("current_app") || "oa");
+
+          const response = await fetch(window.backendIpAddr + "/file/upload?bx_auth_ticket=" + this.ticket, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'bx_auth_ticket': this.ticket,
+              'bx-auth-ticket': this.ticket,
+            }
+          });
+
+          const res = await response.json();
+          console.log('普通上传结果:', res);
+          
+          if (res.fileurl) {
+            const url = `${window.backendIpAddr}/file/download?filePath=${res.fileurl}`;
+            console.log('文件URL:', url);
+            // 统一使用insertFn方法
+            insertFn(url);
+            this.$message.success(`${fileType === 'image' ? '图片' : '视频'}上传成功`);
+          } else {
+            if (res?.resultCode === "0011") {
+              this.$message.error(res.resultMessage);
+              this.$emit("needLogin", () => {
+                this.ticket = sessionStorage.getItem("bx_auth_ticket");
+              });
+            } else {
+              console.error('上传失败:', res);
+              throw new Error(res?.resultMessage || '上传失败');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('上传失败:', error);
+        this.$message.error('文件上传失败: ' + error.message);
+      }
     },
     onCreated(editor) {
       this.editor = Object.seal(editor); // 【注意】一定要用 Object.seal() 否则会报错
@@ -255,79 +333,6 @@ export default {
         withCredentials: true,
         // 超时时间，默认为 10 秒
         timeout: 100 * 1000, //100 秒
-        // 自定义上传函数，支持分片上传
-        customUpload: async (file, insertFn) => {
-          try {
-            // 检查是否应该使用分片上传
-            if (self.chunkUploadUtil.shouldUseChunkUpload(file)) {
-              console.log('使用分片上传:', file.name, file.size);
-              
-              const result = await self.chunkUploadUtil.uploadFile(file, {
-                onHashProgress: (percentage) => {
-                  console.log('Hash计算进度:', percentage + '%');
-                },
-                onUploadProgress: (percentage) => {
-                  console.log('上传进度:', percentage + '%');
-                },
-                onUploadSuccess: (res) => {
-                  console.log('分片上传成功:', res);
-                },
-                onError: (error) => {
-                  console.error('分片上传失败:', error);
-                  self.$message.error('文件上传失败: ' + error.message);
-                },
-                app_no: self.srvApp || top?.pathConfig?.application || sessionStorage.getItem("current_app") || "oa",
-                table_name: "",
-                columns: ""
-              });
-
-              if (result && result.fileurl) {
-                const url = self.chunkUploadUtil.getFileUrl(result.fileurl);
-                insertFn(url);
-                self.$message.success('文件上传成功');
-              } else {
-                throw new Error('上传结果异常');
-              }
-            } else {
-              // 使用普通上传
-              console.log('使用普通上传:', file.name, file.size);
-              const formData = new FormData();
-              formData.append('file', file);
-              formData.append('serviceName', 'srv_bxfile_service');
-              formData.append('interfaceName', 'add');
-              formData.append('app_no', self.srvApp || top?.pathConfig?.application || sessionStorage.getItem("current_app") || "oa");
-
-              const response = await fetch(window.backendIpAddr + "/file/upload?bx_auth_ticket=" + self.ticket, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                  'bx_auth_ticket': self.ticket,
-                  'bx-auth-ticket': self.ticket,
-                }
-              });
-
-              const res = await response.json();
-              
-              if (res.fileurl) {
-                const url = `${window.backendIpAddr}/file/download?filePath=${res.fileurl}`;
-                insertFn(url);
-                self.$message.success('文件上传成功');
-              } else {
-                if (res?.resultCode === "0011") {
-                  self.$message.error(res.resultMessage);
-                  self.$emit("needLogin", () => {
-                    self.ticket = sessionStorage.getItem("bx_auth_ticket");
-                  });
-                } else {
-                  throw new Error(res?.resultMessage || '上传失败');
-                }
-              }
-            }
-          } catch (error) {
-            console.error('上传失败:', error);
-            self.$message.error('文件上传失败: ' + error.message);
-          }
-        },
         customInsert(res, insertFn) {
           // JS 语法
           // res 即服务端的返回结果
@@ -348,19 +353,29 @@ export default {
       };
     },
     imgUploadCfg() {
+      const self = this;
       return {
         ...this.uploadConfig,
         maxFileSize: 100 * 1024 * 1024, // 100M，支持大图片分片上传
         // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
         allowedFileTypes: ["image/*"],
+        // 自定义上传函数，支持分片上传
+        customUpload: async (file, insertFn) => {
+          await self.handleFileUpload(file, insertFn, 'image');
+        },
       }
     },
     videoUploadCfg() {
+      const self = this;
       return {
         ...this.uploadConfig,
         maxFileSize: 1024 * 1024 * 1024, // 1GB，支持大视频分片上传
         // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
         allowedFileTypes: ["video/*"],
+        // 自定义上传函数，支持分片上传
+        customUpload: async (file, insertFn) => {
+          await self.handleFileUpload(file, insertFn, 'video');
+        },
       }
     },
   },

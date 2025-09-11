@@ -283,7 +283,7 @@ export default {
               resolve(mergeResult)
             } else {
               // 如果还没完全上传完，则继续上传
-              this.uploadSingleFile(taskArrItem)
+              this.uploadSingleFile(taskArrItem).then(resolve).catch(reject)
             }
           }
         }
@@ -337,13 +337,19 @@ export default {
       //  最后赋值文件切片上传完成个数为0
       taskArrItem.finishNumber = 0
       this.onUploadSuccess?.(res)
-      if (res?.fileurl) {
-        const url = this.getFileUrl(res.fileurl);
+      
+      // 尝试多种可能的文件路径字段名
+      let filePath = res?.fileurl || res?.file_path || res?.filePath || res?.path || res?.url;
+      
+      if (filePath) {
+        const url = this.getFileUrl(filePath);
         return {
           url,
-          name: res.src_name,
+          name: res.src_name || res.fileName || res.name || taskArrItem.fileName,
+          fileurl: filePath, // 保持原始fileurl用于后续处理
         };
       } else {
+        console.warn('未找到文件路径字段，返回原始数据:', res);
         return res
       }
     },
