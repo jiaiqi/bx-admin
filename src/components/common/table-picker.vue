@@ -220,7 +220,7 @@ export default {
   computed: {
     ObjInfo() {
       let objInfo = this.field.info?.srvCol?.option_list_v2?.obj_info || {}
-      
+
       return objInfo
     },
     getFkJson() {
@@ -272,7 +272,19 @@ export default {
         if (!result || (result && result.length === 0)) {
           switch (colType) {
             case "fks":
-              result = val ? val.split(",") : [];
+              let valJson = null
+              try {
+                valJson = JSON.parse(val)
+              } catch (error) {
+
+              }
+              if (valJson && Array.isArray(valJson) && valJson.length) {
+                result = valJson.map(item => {
+                  return item[dispCol]
+                })
+              } else {
+                result = val ? val.split(",") : [];
+              }
               break;
             case "fkjson":
               try {

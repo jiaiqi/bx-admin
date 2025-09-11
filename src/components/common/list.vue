@@ -2252,11 +2252,11 @@ export default {
   flex: 1;
   display: flex !important;
   flex-direction: column;
-  // overflow: hidden;
+  overflow: hidden;
 }
 
 .row-bg.table-row {
-  // flex: 1;
+  flex: 1;
   // max-height: calc(100vh - 100px);
   overflow-y: auto;
 }
