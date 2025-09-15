@@ -140,12 +140,7 @@ let routes = [
     name: "expert-register",
     component: () => import(/* webpackChunkName: "health" */ "@/pages/health/register.vue"),
   },
-  {
-    path: "/health-test",
-    name: "health-test",
-    component: () => import(/* webpackChunkName: "health" */ "@/pages/health/index.vue"),
-  },
-
+  
   // ==================== 仪表板 ====================
   {
     path: "/dashboard",
