@@ -1479,7 +1479,7 @@ export default {
         if (Object.keys(childDatas).length > 0) {
           for (let key in childDatas) {
             let item = childDatas[key];
-            if (item.length > 0) {
+            if (item && Array.isArray(item) && item.length > 0) {
               item = item.filter((row) => {
                 // 过滤掉内存表删除的数据
                 if (
