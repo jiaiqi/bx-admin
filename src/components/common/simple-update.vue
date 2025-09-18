@@ -5,20 +5,28 @@
     :element-loading-text="isFromLoaded.text"
   >
     <el-form v-if="draftConfig && draftConfig.isDraft">
-      <el-form-item label="自动保存草稿" style="margin-bottom: 0px">
+      <el-form-item
+        label="自动保存草稿"
+        style="margin-bottom: 0px"
+      >
         <el-switch v-model="draftConfig.auto_save"></el-switch>
       </el-form-item>
     </el-form>
     <template>
-      <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
+      <el-alert
+        v-if="pagePrompt"
+        :closable="false"
+        :type="pagePrompt.type"
+      >
         <slot>
-          <div
-            v-html="recoverFileAddress4richText(pagePrompt.description)"
-          ></div>
+          <div v-html="recoverFileAddress4richText(pagePrompt.description)"></div>
         </slot>
       </el-alert>
     </template>
-    <el-row v-show="evalVisible()" class="form-view-wrapper">
+    <el-row
+      v-show="evalVisible()"
+      class="form-view-wrapper"
+    >
       <slot name="form-child-prepend"></slot>
       <el-form
         :model="formModel"
@@ -29,7 +37,10 @@
         v-if="formLoaded"
       >
         <slot name="field-form-prepend"></slot>
-        <el-row v-for="(formItems, section) in sections" :key="section">
+        <el-row
+          v-for="(formItems, section) in sections"
+          :key="section"
+        >
           <div class="el-col el-col-24 el-col-xl-24">
             <div
               class="el-form-item"
@@ -75,13 +86,19 @@
               @field-history-popup="onFieldHistoryPopup"
               @child-form-loaded="onChildFormLoaded"
             >
-              <template #field-child-prepend class="">
+              <template
+                #field-child-prepend
+                class=""
+              >
                 <slot
                   :name="formItem.field.info.name + '-child-prepend'"
                   class="padding-bottom"
                 ></slot>
               </template>
-              <template #field-child-append class="padding-bottom">
+              <template
+                #field-child-append
+                class="padding-bottom"
+              >
                 <slot
                   :name="formItem.field.info.name + '-child-append'"
                   class="padding-bottom"
@@ -103,12 +120,13 @@
       </loader>
     </el-row>
     <!-- <slot name="child-body" v-bind:mainForm="formModel"></slot> -->
-    <el-row
-      v-if="
-        cfgJson && cfgJson.agreement_json && cfgJson.agreement_json.agreement_no
-      "
-    >
-      <el-col :span="24" style="text-align: center; padding: 20px">
+    <el-row v-if="
+      cfgJson && cfgJson.agreement_json && cfgJson.agreement_json.agreement_no
+    ">
+      <el-col
+        :span="24"
+        style="text-align: center; padding: 20px"
+      >
         <agreement-box
           :agreementJson="cfgJson.agreement_json"
           :agreementChecked.sync="agreementChecked"
@@ -125,7 +143,10 @@
           !agreementChecked,
       }"
     >
-      <el-col :span="24" style="text-align: center; padding: 20px">
+      <el-col
+        :span="24"
+        style="text-align: center; padding: 20px"
+      >
         <action
           v-for="item in actions"
           :info="item"
@@ -159,8 +180,14 @@
         border
         style="width: 100%"
       >
-        <el-table-column prop="value" label="值"> </el-table-column>
-        <el-table-column prop="remark" label="说明"> </el-table-column>
+        <el-table-column
+          prop="value"
+          label="值"
+        > </el-table-column>
+        <el-table-column
+          prop="remark"
+          label="说明"
+        > </el-table-column>
       </el-table>
     </el-dialog>
   </div>
@@ -361,6 +388,8 @@ export default {
 
     createExecutorValueEnableFunc: function (colName) {
       return (value) => {
+        console.log('createExecutorValueEnableFunc:', colName, value);
+
         if (
           this.referenceNoColumnInfo?.value &&
           this.gnoColumnInfo?.value !== this.referenceNoColumnInfo?.value
@@ -373,12 +402,10 @@ export default {
           return !!value.value && colName !== this.pkCol && !noPerm4Sensi && inAdd && true;
         }
         try {
-          let rawRow = this.$refs.loader.lastValidResp
-            ? this.$refs.loader.lastValidResp[0]
-            : {};
+          let rawRow = this.$refs.loader.lastValidResp?.[0] || {};
           let noPerm4Sensi =
             this.allFields[colName] && this.allFields[colName].noPerm4Sensi;
-          let isDiff = rawRow[colName] != value.value;
+          let isDiff = (rawRow[colName] !== undefined && rawRow[colName] != value.value) || (rawRow[colName] === undefined && value.value);
           // console.log(colName,rawRow[colName],value.value)
           return isDiff && !noPerm4Sensi;
         } catch (e) {
@@ -389,7 +416,7 @@ export default {
 
     confLoader: function () {
       let loader = this.$refs.loader;
-      if(!loader) return
+      if (!loader) return
       loader.enableFunc = (_) => {
         return loader.conditions && loader.conditions.length > 0;
       };
@@ -481,7 +508,7 @@ export default {
     },
   },
 
-  created: function () {},
+  created: function () { },
 
   mounted: function () {
     this.createFields(
@@ -626,11 +653,13 @@ div.el-form-item__content {
   line-height: initial;
   line-height: unset;
 }
+
 .disabled {
   cursor: not-allowed;
   filter: grayscale(1);
   opacity: 0.5;
 }
+
 .disabled .bx_action {
   pointer-events: none;
 }
