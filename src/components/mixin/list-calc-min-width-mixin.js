@@ -27,6 +27,10 @@ export default {
     },
     // 更新表字段的最小列宽的请求参数
     calcTableColumnWidthReq() {
+      const tableName = this.columnWidthMap[key].fieldInfo.table_name
+      if (!tableName) {
+        return false
+      }
       if (Object.keys(this.columnWidthMap)?.length) {
         const arr = [];
         Object.keys(this.columnWidthMap).forEach((key) => {
@@ -41,7 +45,7 @@ export default {
                 { colName: "column_name", value: key, ruleType: "eq" },
                 {
                   colName: "table_name",
-                  value: this.columnWidthMap[key].fieldInfo.table_name,
+                  value: tableName,
                   ruleType: "eq",
                 },
               ],
@@ -150,6 +154,9 @@ export default {
     updateTableColumn() {
       const url = this.getServiceUrl("operate", 'srvsys_table_columns_update');
       const req = this.calcTableColumnWidthReq;
+      if (req === false) {
+        return
+      }
       const loading = this.$loading({
         lock: true,
         text: 'Loading',
