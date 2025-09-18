@@ -203,7 +203,7 @@ export default {
             key: 'userall',
             label: '全部',
             finallyLabel: this.allNum || '全部',
-            show: true
+            show: this.allNum && this.allNum > 0 ? true : false
           }
         ]
       }
@@ -251,7 +251,6 @@ export default {
     },
     setTip(gridData, listProcType) {
       if (gridData.page) {
-        
         if (Array.isArray(this.procTabs) && this.procTabs.length) {
           this.procTabs = this.procTabs.map(item => {
             if (item.key == listProcType) {
