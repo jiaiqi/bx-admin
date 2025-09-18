@@ -52,5 +52,13 @@ export const lowCodeRoutes = [
     meta: {
       title: '地图标记点编辑器',
     }
+  },
+  {
+    path: '/get-page-address',
+    name: 'GetPageAddress',
+    component: () => import(/* webpackChunkName: "lowcode" */ '@/pages/lowcode/get-page-address/get-page-address.vue'),
+    meta: {
+      title: '页面地址获取工具',
+    }
   }
 ]

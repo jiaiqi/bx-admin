@@ -64,4 +64,9 @@ export default [
     name: "app-preview",
     component: () => import(/* webpackChunkName: "mobile-app" */ "@/pages/low-app/app-preview/preview-page.vue"),
   },
+
+  {
+    path: "/get-page-address",
+    component: () => import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/get-page-address/get-page-address.vue"),
+  },
 ];
