@@ -9,6 +9,7 @@
         'justify-start': !vertical && leftTab,
         'justify-end': !vertical && rightTab,
         'justify-center': !vertical && !leftTab && !rightTab,
+        'button-mode': buttonMode,
       }"
       :style="[buildTabsTitleStyle]"
     >
@@ -16,7 +17,7 @@
         class="tab-name"
         v-for="item in components"
         :key="item.id"
-        :style="[activeName === item.com_name ? setActiveStyle : {}]"
+        :style="[activeName === item.com_name ? setActiveStyle : setNormalStyle]"
         :class="{
           active: activeName === item.com_name,
           'button-mode': buttonMode,
@@ -74,6 +75,7 @@ export default {
       tabs: [],
       // 添加下划线样式数据
       underlineStyle: {
+        "--primary-color": this.tabsJson?.act_color,
         width: "0px",
         transform: "translateX(0px)",
       },
@@ -131,11 +133,23 @@ export default {
     components() {
       return this.tabsJson.com_json || [];
     },
-    setActiveStyle() {
+    setNormalStyle() {
       let style = {
-        background_color:this.tabsJson?.act_color,
-        border_color:this.tabsJson?.act_color,
-        ...this.tabsJson?.active_style_json||{},
+        ...this.tabsJson?.style_json || {},
+      }
+      return formatStyleData(style);
+    },
+    setActiveStyle() {
+      let style = {}
+      if (this.buttonMode) {
+        style = {
+          background_color: this.tabsJson?.act_color,
+          border_color: this.tabsJson?.act_color,
+        }
+      }
+      style = {
+        ...style,
+        ...this.tabsJson?.active_style_json || {},
       }
       return formatStyleData(style);
     },
@@ -204,6 +218,7 @@ export default {
 
       // 计算下划线位置
       this.underlineStyle = {
+        "--primary-color": this.tabsJson?.act_color,
         width: `${width}px`,
         transform: `translateX(${left - parentLeft}px)`,
       };
@@ -251,6 +266,10 @@ export default {
   margin-bottom: 5px;
   border-bottom: 1px solid #BBB;
 
+  &.button-mode {
+    border-bottom: none;
+  }
+
   .tab-name {
     cursor: pointer;
     padding: 0 4px 8px; // 添加底部内边距，为下划线留出空间
@@ -266,8 +285,8 @@ export default {
     }
 
     &.button-mode {
-      color: var(--primary-color, #409eff);
-      border: 1px solid var(--primary-color, #409eff);
+      color: #333;
+      border: 1px solid #eee;
       border-radius: 0;
       padding: 4px 16px;
       margin-right: 10px;
@@ -292,13 +311,13 @@ export default {
     &::after {
       content: "";
       position: absolute;
-      bottom: 4px;
+      bottom: 3px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
       border: 5px solid transparent;
-      border-bottom-color: #333;
+      border-bottom-color: var(--primary-color, #409eff);
       z-index: -1;
     }
   }
