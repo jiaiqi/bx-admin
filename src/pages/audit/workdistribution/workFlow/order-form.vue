@@ -6,6 +6,7 @@
       ref="ruleForm"
       label-width="auto"
       class="demo-ruleForm"
+      :disabled="isDetail === true"
     >
       <el-row>
         <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">嫌疑车辆信息</el-col>
@@ -131,7 +132,7 @@
               <el-tag
                 v-for="(item, index) in relevantList"
                 :key="item.id"
-                closable
+                :closable="!isDetail"
                 size="mini"
                 style="margin:0 0.1875rem"
                 @close="handleClose(item)"
@@ -793,7 +794,7 @@
           </div>
         </div>
       </el-row>
-      <el-row>
+      <el-row v-if="!isDetail">
         <el-col
           :span="24"
           style="display: flex;justify-content: center"
@@ -860,7 +861,6 @@
 </template>
 
 <script>
-import { $http } from '@/common/http';
 import { filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn, createOrderNo, formatFeeToYuan, formatFeeToFen } from './filterList'
 import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
@@ -976,7 +976,10 @@ export default {
   computed: {
     ...mapGetters('orderForm', [
       'getOrderForm'
-    ])
+    ]),
+    isDetail() {
+      return this.$route.query?.pageType === 'detail'
+    },
   },
   methods: {
     //通行介质变化检测
@@ -988,6 +991,7 @@ export default {
       this.initSpecialType()
     },
     setPicMod() {
+      if(this.isDetail) return
       this.showPicMod = true
     },
     /**

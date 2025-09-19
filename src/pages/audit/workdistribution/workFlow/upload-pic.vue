@@ -124,7 +124,7 @@ export default {
   data() {
     return {
       preList: [],
-      setFileDesc: '请上传jpg/png格式的图片,大小不超过2MB',
+      setFileDesc: '请上传常见格式的图片(jpg/jpeg/png/gif/bmp/webp等),大小不超过2MB',
       rules: {
         // icon_title: [
         //   { required: true, message: '证据说明不能为空', trigger: 'blur' },
@@ -149,7 +149,7 @@ export default {
         thumbnailType: "fwsu_100",
         columns: "order_evidence",
       },
-      fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
+      fileType: "jpg/jpeg/png/gif/bmp/webp/svg/tif/tiff/PNG/JPG/JPEG/GIF/BMP/WEBP/SVG/TIF/TIFF",
       fileSize: 2,
       limit: 8,
       fileLists: [],
@@ -460,7 +460,8 @@ export default {
     margin: 0 0.5rem;
   }
 }
-.upload-wrap{
+
+.upload-wrap {
   display: flex;
   flex-wrap: wrap;
 }
