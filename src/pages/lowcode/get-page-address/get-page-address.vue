@@ -11,7 +11,7 @@
       <!-- 左侧设备区域 -->
       <div class="left-panel">
         <!-- 设备控制区域 -->
-        <div class="device-controls">
+        <!-- <div class="device-controls">
           <el-card shadow="hover">
             <div
               slot="header"
@@ -33,7 +33,7 @@
               </div>
             </div>
           </el-card>
-        </div>
+        </div> -->
 
         <!-- 手机外壳容器 -->
         <div
@@ -743,7 +743,7 @@ export default {
     transition: all 0.3s ease;
 
     &:hover {
-      transform: translateY(-5px);
+      transform: translateY(-2px);
       box-shadow:
         0 25px 50px rgba(0, 0, 0, 0.4),
         inset 0 2px 4px rgba(255, 255, 255, 0.1);
