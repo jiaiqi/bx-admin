@@ -3,7 +3,7 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <h2>页面地址获取工具</h2>
-      <p class="description">通过iframe内嵌H5页面，实时监听并获取页面URL变化</p>
+      <!-- <p class="description">通过iframe内嵌H5页面，实时监听并获取页面URL变化</p> -->
     </div>
 
     <!-- 主要内容区域 - 左右布局 -->
@@ -17,46 +17,20 @@
               slot="header"
               class="card-header"
             >
-              <span>设备设置</span>
+              <span>设备预览</span>
             </div>
             <div class="control-group">
-              <label>设备型号:</label>
-              <el-select
-                v-model="selectedDevice"
-                @change="changeDevice"
-              >
-                <el-option
-                  label="iPhone 14"
-                  value="iphone14"
-                ></el-option>
-                <el-option
-                  label="iPhone SE"
-                  value="iphonese"
-                ></el-option>
-                <el-option
-                  label="Samsung Galaxy"
-                  value="samsung"
-                ></el-option>
-                <el-option
-                  label="Google Pixel"
-                  value="pixel"
-                ></el-option>
-              </el-select>
-            </div>
-            <div class="control-group">
-              <el-button
-                size="small"
-                @click="toggleOrientation"
-              >
-                {{ isLandscape ? '切换竖屏' : '切换横屏' }}
-              </el-button>
-              <el-button
-                size="small"
-                @click="toggleFullscreen"
-                v-if="currentUrl"
-              >
-                {{ isFullscreen ? '退出全屏' : '全屏预览' }}
-              </el-button>
+              <div class="device-info">
+                <span>尺寸: 375 × 667</span>
+                <el-button
+                  size="small"
+                  @click="toggleFullscreen"
+                  v-if="currentUrl"
+                  :title="isFullscreen ? '退出全屏' : '全屏预览'"
+                >
+                  <i class="el-icon-full-screen"></i>
+                </el-button>
+              </div>
             </div>
           </el-card>
         </div>
@@ -64,13 +38,15 @@
         <!-- 手机外壳容器 -->
         <div
           class="phone-container"
-          :class="{ 'fullscreen': isFullscreen, 'landscape': isLandscape }"
-          v-if="currentUrl"
+          :class="{ 'fullscreen': isFullscreen }"
         >
           <div
-            class="phone-shell"
-            :class="deviceClass"
+            class="exist-fullscreen"
+            @click="toggleFullscreen"
           >
+            <i class="el-icon-close"></i>
+          </div>
+          <div class="phone-shell">
             <!-- 手机顶部 -->
             <div class="phone-top">
               <div class="speaker"></div>
@@ -86,14 +62,17 @@
                   <span class="time">{{ currentTime }}</span>
                 </div>
                 <div class="status-right">
-                  <span class="signal">●●●●</span>
+                  <!-- <span class="signal">●●●●</span> -->
                   <span class="wifi">📶</span>
                   <span class="battery">🔋 {{ batteryLevel }}%</span>
                 </div>
               </div>
 
               <!-- iframe内容区域 -->
-              <div class="screen-content">
+              <div
+                class="screen-content"
+                v-if="currentUrl"
+              >
                 <iframe
                   ref="pageIframe"
                   :src="currentUrl"
@@ -111,20 +90,9 @@
             </div>
 
             <!-- 手机底部 -->
-            <div class="phone-bottom">
-              <div
-                class="home-button"
-                v-if="selectedDevice.includes('iphone')"
-              ></div>
-              <div
-                class="navigation-bar"
-                v-else
-              >
-                <div class="nav-button back">◀</div>
-                <div class="nav-button home">●</div>
-                <div class="nav-button menu">■</div>
-              </div>
-            </div>
+            <!-- <div class="phone-bottom">
+              <div class="home-button"></div>
+            </div> -->
 
             <!-- 侧边按钮 -->
             <div class="side-buttons">
@@ -141,7 +109,10 @@
       <!-- 右侧内容区域 -->
       <div class="right-panel">
         <!-- URL输入区域 -->
-        <div class="url-input-section">
+        <div
+          class="url-input-section"
+          v-if="showUrlInput"
+        >
           <el-card shadow="hover">
             <div
               slot="header"
@@ -174,6 +145,36 @@
               >
                 加载页面
               </el-button>
+            </div>
+          </el-card>
+        </div>
+
+        <!-- 当通过路由参数加载时显示的信息区域 -->
+        <div
+          class="route-url-info"
+          v-if="!showUrlInput && currentUrl"
+        >
+          <el-card shadow="hover">
+            <div
+              slot="header"
+              class="card-header"
+            >
+              <span>当前加载的页面</span>
+              <div class="header-actions">
+                <el-button
+                  size="mini"
+                  @click="refreshIframe"
+                >刷新页面</el-button>
+              </div>
+            </div>
+            <div class="route-url-display">
+              <el-input
+                :value="currentUrl"
+                readonly
+                type="textarea"
+                :rows="2"
+                resize="none"
+              ></el-input>
             </div>
           </el-card>
         </div>
@@ -214,10 +215,18 @@
                   <el-button
                     size="mini"
                     type="primary"
-                    @click="copyUrl('h5')"
+                    @click="copyFullUrl()"
                   >
                     <i class="el-icon-copy-document"></i>
-                    复制H5地址
+                    复制完整H5地址
+                  </el-button>
+                  <el-button
+                    size="mini"
+                    type="info"
+                    @click="copySimpleUrl()"
+                  >
+                    <i class="el-icon-copy-document"></i>
+                    复制简化H5地址
                   </el-button>
                   <el-button
                     size="mini"
@@ -250,15 +259,24 @@
                   <div class="history-actions">
                     <el-button
                       size="mini"
-                      @click="copyHistoryUrl(historyItem.url, 'h5')"
+                      type="primary"
+                      @click="copyHistoryFullUrl(historyItem.url)"
                     >
-                      复制H5
+                      完整地址
                     </el-button>
                     <el-button
                       size="mini"
+                      type="info"
+                      @click="copyHistorySimpleUrl(historyItem.url)"
+                    >
+                      简化地址
+                    </el-button>
+                    <el-button
+                      size="mini"
+                      type="success"
                       @click="copyHistoryUrl(historyItem.url, 'miniprogram')"
                     >
-                      复制小程序
+                      小程序
                     </el-button>
                   </div>
                 </div>
@@ -278,9 +296,9 @@
             </div>
             <div class="help-content">
               <ol>
-                <li>在上方输入框中输入要监听的H5页面地址</li>
-                <li>点击"加载页面"按钮，页面将在左侧手机设备中显示</li>
-                <li>可以选择不同的设备型号和屏幕方向</li>
+                <li v-if="showUrlInput">在上方输入框中输入要监听的H5页面地址</li>
+                <li v-if="showUrlInput">点击"加载页面"按钮，页面将在左侧手机设备中显示</li>
+                <li>页面将在左侧手机设备中以375×667尺寸显示</li>
                 <li>当iframe内的页面URL发生变化时，会自动检测并显示新的地址</li>
                 <li>可以复制H5地址或转换为小程序地址格式</li>
                 <li>支持查看URL变化历史记录</li>
@@ -315,26 +333,23 @@ export default {
       isFullscreen: false,
       messageListener: null,
       // 手机外壳相关数据
-      selectedDevice: 'iphone14',
-      isLandscape: false,
       currentTime: '',
       batteryLevel: 85,
       timeInterval: null
     }
   },
   computed: {
-    deviceClass() {
-      return {
-        'iphone': this.selectedDevice.includes('iphone'),
-        'android': this.selectedDevice.includes('samsung') || this.selectedDevice.includes('pixel'),
-        'iphone14': this.selectedDevice === 'iphone14',
-        'iphonese': this.selectedDevice === 'iphonese',
-        'samsung': this.selectedDevice === 'samsung',
-        'pixel': this.selectedDevice === 'pixel'
-      }
+    // 判断是否显示URL输入框
+    showUrlInput() {
+      return !this.$route.query.url
     }
   },
   mounted() {
+    // 检查路由参数中是否有URL
+    if (this.$route.query.url) {
+      this.inputUrl = this.$route.query.url
+      this.loadUrlFromRoute(this.$route.query.url)
+    }
     this.setupMessageListener()
     this.updateTime()
     this.timeInterval = setInterval(this.updateTime, 1000)
@@ -359,6 +374,24 @@ export default {
       window.addEventListener('message', this.messageListener)
     },
 
+    // 从路由参数加载URL
+    loadUrlFromRoute(routeUrl) {
+      let url = routeUrl.trim()
+      // 如果没有协议，默认添加当前协议+ip
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = window.location.origin + url
+      }
+
+      this.currentUrl = url
+      this.detectedUrl = url
+      this.isLoading = true
+
+      // 添加到历史记录
+      this.addToHistory(url)
+
+      this.$message.success('页面加载中...')
+    },
+
     // 加载URL
     loadUrl() {
       if (!this.inputUrl.trim()) {
@@ -369,7 +402,7 @@ export default {
       let url = this.inputUrl.trim()
       // 如果没有协议，默认添加https
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url
+        url = 'http://' + url
       }
 
       this.currentUrl = url
@@ -467,9 +500,29 @@ export default {
       }
     },
 
-    // 复制URL
+    // 复制完整H5地址
+    copyFullUrl() {
+      this.copyToClipboard(this.detectedUrl, 'h5-full')
+    },
+
+    // 复制简化H5地址
+    copySimpleUrl() {
+      this.copyToClipboard(this.detectedUrl, 'h5-simple')
+    },
+
+    // 复制小程序地址
     copyUrl(type) {
       this.copyToClipboard(this.detectedUrl, type)
+    },
+
+    // 复制历史记录完整地址
+    copyHistoryFullUrl(url) {
+      this.copyToClipboard(url, 'h5-full')
+    },
+
+    // 复制历史记录简化地址
+    copyHistorySimpleUrl(url) {
+      this.copyToClipboard(url, 'h5-simple')
     },
 
     // 复制历史URL
@@ -483,7 +536,17 @@ export default {
 
       if (type === 'miniprogram') {
         // 转换为小程序地址格式（这里可以根据实际需求调整格式）
-        copyText = `小程序地址: ${url}`
+        if (url.indexOf('xmp') !== -1) {
+          copyText = url.split('xmp')[1]
+        } else {
+          return this.$message.error('当前页面没有对应的小程序页面')
+        }
+      } else if (type === 'h5-full') {
+        // 完整H5地址，保持原样
+        copyText = url
+      } else if (type === 'h5-simple') {
+        // 简化H5地址，去掉协议部分
+        copyText = url.replace(window.location.origin, '')
       }
 
       // 创建临时文本域
@@ -494,7 +557,17 @@ export default {
 
       try {
         document.execCommand('copy')
-        this.$message.success(`${type === 'h5' ? 'H5' : '小程序'}地址已复制到剪贴板`)
+        let message = ''
+        if (type === 'h5-full') {
+          message = '完整H5地址已复制到剪贴板'
+        } else if (type === 'h5-simple') {
+          message = '简化H5地址已复制到剪贴板'
+        } else if (type === 'miniprogram') {
+          message = '小程序地址已复制到剪贴板'
+        } else {
+          message = 'H5地址已复制到剪贴板'
+        }
+        this.$message.success(message)
       } catch (err) {
         this.$message.error('复制失败，请手动复制')
       }
@@ -516,27 +589,6 @@ export default {
     },
 
     // 手机外壳相关方法
-    // 切换设备
-    changeDevice() {
-      this.$message.info(`已切换到 ${this.getDeviceName()}`)
-    },
-
-    // 获取设备名称
-    getDeviceName() {
-      const deviceNames = {
-        'iphone14': 'iPhone 14',
-        'iphonese': 'iPhone SE',
-        'samsung': 'Samsung Galaxy',
-        'pixel': 'Google Pixel'
-      }
-      return deviceNames[this.selectedDevice] || '未知设备'
-    },
-
-    // 切换屏幕方向
-    toggleOrientation() {
-      this.isLandscape = !this.isLandscape
-      this.$message.info(`已切换到${this.isLandscape ? '横屏' : '竖屏'}模式`)
-    },
 
     // 更新时间
     updateTime() {
@@ -558,13 +610,13 @@ export default {
 
 <style lang="scss" scoped>
 .get-page-address {
-  padding: 20px;
+  padding: 10px;
   max-width: 1400px;
   margin: 0 auto;
 
   .page-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
 
     h2 {
       color: #303133;
@@ -583,30 +635,29 @@ export default {
     gap: 20px;
     align-items: flex-start;
 
+    ::v-deep .el-card__header {
+      padding: 0;
+    }
+
+    ::v-deep .el-card__body {
+      padding: 5px 15px;
+    }
+
     // 左侧面板 - 设备区域
     .left-panel {
       flex: 0 0 400px;
 
       .device-controls {
-        margin-bottom: 20px;
-
         .control-group {
-          margin-bottom: 15px;
+          .device-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
 
-          label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #303133;
-          }
-
-          .el-select {
-            width: 100%;
-          }
-
-          .el-button {
-            margin-right: 10px;
-            margin-bottom: 5px;
+            span {
+              color: #606266;
+              font-size: 14px;
+            }
           }
         }
       }
@@ -617,7 +668,7 @@ export default {
       flex: 1;
 
       .url-input-section {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
 
         .input-group {
           display: flex;
@@ -639,6 +690,10 @@ export default {
     padding: 20px;
     min-height: 600px;
 
+    .exist-fullscreen {
+      display: none;
+    }
+
     &.fullscreen {
       position: fixed;
       top: 0;
@@ -648,29 +703,40 @@ export default {
       z-index: 9999;
       background: #f5f5f5;
       padding: 20px;
-    }
 
-    &.landscape {
-      .phone-shell {
-        transform: rotate(90deg);
-        width: 500px;
-        height: 250px;
+      .exist-fullscreen {
+        display: inline-block;
+        position: absolute;
+        top: 50px;
+        right: 50px;
+        background-color: #666;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        color: #eee;
+        border-radius: 50%;
+        cursor: pointer;
 
-        .phone-screen {
-          width: 100%;
-          height: 210px;
+        &:hover {
+          background-color: #888;
+          color: #fff;
+          scale: 1.1;
+          font-size: 24px;
         }
       }
     }
+
+
   }
 
   // 手机外壳主体
   .phone-shell {
     position: relative;
-    width: 300px;
-    height: 600px;
-    background: linear-gradient(145deg, #2c3e50, #34495e);
-    border-radius: 25px;
+    width: 395px; // 375 + 20px边框
+    height: 707px; // 667 + 40px边框
+    background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+    border-radius: 30px;
     box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.3),
       inset 0 2px 4px rgba(255, 255, 255, 0.1);
@@ -683,157 +749,96 @@ export default {
         inset 0 2px 4px rgba(255, 255, 255, 0.1);
     }
 
-    // iPhone样式
-    &.iphone {
-      background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
-
-      &.iphone14 {
-        border-radius: 30px;
-
-        .phone-top {
-          .camera {
-            width: 80px;
-            height: 25px;
-            border-radius: 12px;
-            background: #000;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-
-            &::before {
-              content: '';
-              position: absolute;
-              width: 12px;
-              height: 12px;
-              background: #333;
-              border-radius: 50%;
-              top: 50%;
-              left: 15px;
-              transform: translateY(-50%);
-            }
-
-            &::after {
-              content: '';
-              position: absolute;
-              width: 8px;
-              height: 8px;
-              background: #444;
-              border-radius: 50%;
-              top: 50%;
-              right: 15px;
-              transform: translateY(-50%);
-            }
-          }
-        }
-      }
-
-      &.iphonese {
-        border-radius: 20px;
-        height: 550px;
-
-        .phone-screen {
-          height: 450px;
-        }
-      }
-    }
-
-    // Android样式
-    &.android {
-      background: linear-gradient(145deg, #263238, #37474f);
-
-      &.samsung {
-        border-radius: 22px;
-
-        .phone-top {
-          .camera {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: #000;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-          }
-        }
-      }
-
-      &.pixel {
-        border-radius: 18px;
-        background: linear-gradient(145deg, #4285f4, #5a9fd4);
-      }
-    }
-  }
-
-  // 手机顶部
-  .phone-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .speaker {
-      width: 60px;
-      height: 4px;
-      background: #666;
-      border-radius: 2px;
+    // 手机顶部元素
+    .phone-top {
       position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-    .camera {
-      width: 12px;
-      height: 12px;
-      background: #000;
-      border-radius: 50%;
-      position: absolute;
-      top: 20px;
-      left: 40px;
+      .speaker {
+        position: absolute;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #333, #555, #333);
+        border-radius: 3px;
+        top: 0px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
 
-      &::after {
-        content: '';
+      .camera {
+        position: absolute;
+        width: 80px;
+        height: 10px;
+        border-radius: 12px;
+        background: #000;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+
+        &::before {
+          content: '';
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          background: #333;
+          border-radius: 50%;
+          top: 50%;
+          left: 15px;
+          transform: translateY(-50%);
+          box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          background: #333;
+          border-radius: 50%;
+          top: 50%;
+          right: 15px;
+          transform: translateY(-50%);
+          box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .sensor {
         position: absolute;
         width: 8px;
         height: 8px;
-        background: #333;
+        background: #222;
         border-radius: 50%;
-        top: 2px;
-        left: 2px;
+        top: 16px;
+        left: 60px;
       }
     }
-
-    .sensor {
-      width: 8px;
-      height: 8px;
-      background: #444;
-      border-radius: 50%;
-      position: absolute;
-      top: 22px;
-      right: 40px;
-    }
   }
+
+
 
   // 手机屏幕
   .phone-screen {
     position: absolute;
-    top: 50px;
-    left: 15px;
-    right: 15px;
-    height: 500px;
+    top: 20px;
+    left: 10px;
+    width: 375px;
+    height: 667px;
     background: #000;
-    border-radius: 15px;
+    border-radius: 25px;
     overflow: hidden;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid #333;
 
     // 状态栏
     .status-bar {
       height: 30px;
-      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -842,6 +847,7 @@ export default {
       color: #fff;
       z-index: 10;
       position: relative;
+      backdrop-filter: blur(10px);
 
       .status-left {
         .time {
@@ -865,12 +871,13 @@ export default {
     // 屏幕内容区域
     .screen-content {
       position: relative;
-      width: 100%;
-      height: calc(100% - 30px);
+      width: 375px;
+      height: 637px; // 667 - 30px状态栏
+      background: #fff;
 
       iframe {
-        width: 100%;
-        height: 100%;
+        width: 375px;
+        height: 637px;
         border: none;
         background: #fff;
       }
@@ -909,10 +916,10 @@ export default {
   // 手机底部
   .phone-bottom {
     position: absolute;
-    bottom: 15px;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 35px;
+    height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -920,48 +927,29 @@ export default {
     .home-button {
       width: 50px;
       height: 50px;
-      background: linear-gradient(145deg, #555, #777);
+      background: #333;
       border-radius: 50%;
-      border: 2px solid #333;
+      border: 2px solid #555;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
+      position: absolute;
+      bottom: 15px;
 
       &:hover {
-        background: linear-gradient(145deg, #666, #888);
-        transform: scale(0.95);
+        background: #444;
+        transform: scale(1.05);
       }
 
-      &:active {
-        transform: scale(0.9);
-      }
-    }
-
-    .navigation-bar {
-      display: flex;
-      justify-content: space-around;
-      width: 200px;
-
-      .nav-button {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.1);
+      &::after {
+        content: '';
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 2px solid #666;
         border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #fff;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: scale(1.1);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
     }
   }
@@ -971,36 +959,38 @@ export default {
     .power-button {
       position: absolute;
       right: -3px;
-      top: 100px;
+      top: 120px;
       width: 6px;
       height: 60px;
-      background: linear-gradient(to right, #555, #777);
-      border-radius: 3px;
+      background: linear-gradient(90deg, #3a3a3a, #2a2a2a, #3a3a3a);
+      border-radius: 0 3px 3px 0;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
 
       &:hover {
-        background: linear-gradient(to right, #666, #888);
+        background: linear-gradient(90deg, #4a4a4a, #3a3a3a, #4a4a4a);
       }
     }
 
     .volume-buttons {
       position: absolute;
       left: -3px;
-      top: 80px;
+      top: 100px;
 
       .volume-up,
       .volume-down {
         width: 6px;
-        height: 40px;
-        background: linear-gradient(to left, #555, #777);
-        border-radius: 3px;
-        margin-bottom: 10px;
+        height: 35px;
+        background: linear-gradient(90deg, #3a3a3a, #2a2a2a, #3a3a3a);
+        border-radius: 3px 0 0 3px;
+        margin-bottom: 15px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s;
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1);
 
         &:hover {
-          background: linear-gradient(to left, #666, #888);
+          background: linear-gradient(90deg, #4a4a4a, #3a3a3a, #4a4a4a);
         }
       }
     }
@@ -1023,17 +1013,6 @@ export default {
   .main-content {
     .left-panel {
       flex: 0 0 350px;
-
-      .phone-container {
-        .phone-shell {
-          width: 250px;
-          height: 500px;
-
-          .phone-screen {
-            height: 400px;
-          }
-        }
-      }
     }
   }
 }
@@ -1049,15 +1028,6 @@ export default {
       .phone-container {
         justify-content: center;
         padding: 20px;
-
-        .phone-shell {
-          width: 300px;
-          height: 600px;
-
-          .phone-screen {
-            height: 500px;
-          }
-        }
       }
     }
 
@@ -1078,26 +1048,6 @@ export default {
       .phone-container {
         padding: 15px;
         min-height: 450px;
-
-        .phone-shell {
-          width: 250px;
-          height: 500px;
-
-          .phone-screen {
-            height: 400px;
-          }
-        }
-
-        &.landscape {
-          .phone-shell {
-            width: 450px;
-            height: 225px;
-
-            .phone-screen {
-              height: 185px;
-            }
-          }
-        }
       }
     }
   }
@@ -1123,26 +1073,6 @@ export default {
       .phone-container {
         padding: 10px;
         min-height: 350px;
-
-        .phone-shell {
-          width: 200px;
-          height: 400px;
-
-          .phone-screen {
-            height: 320px;
-          }
-        }
-
-        &.landscape {
-          .phone-shell {
-            width: 350px;
-            height: 175px;
-
-            .phone-screen {
-              height: 135px;
-            }
-          }
-        }
       }
     }
 
@@ -1239,6 +1169,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 5px 15px;
 
   .header-actions {
     display: flex;
