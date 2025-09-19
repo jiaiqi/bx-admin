@@ -1,10 +1,9 @@
 <template>
   <div class="get-page-address">
     <!-- 页面标题 -->
-    <div class="page-header">
+    <!-- <div class="page-header">
       <h2>页面地址获取工具</h2>
-      <!-- <p class="description">通过iframe内嵌H5页面，实时监听并获取页面URL变化</p> -->
-    </div>
+    </div> -->
 
     <!-- 主要内容区域 - 左右布局 -->
     <div class="main-content">
@@ -48,11 +47,11 @@
           </div>
           <div class="phone-shell">
             <!-- 手机顶部 -->
-            <div class="phone-top">
+            <!-- <div class="phone-top">
               <div class="speaker"></div>
               <div class="camera"></div>
               <div class="sensor"></div>
-            </div>
+            </div> -->
 
             <!-- 手机屏幕区域 -->
             <div class="phone-screen">
@@ -62,7 +61,6 @@
                   <span class="time">{{ currentTime }}</span>
                 </div>
                 <div class="status-right">
-                  <!-- <span class="signal">●●●●</span> -->
                   <span class="wifi">📶</span>
                   <span class="battery">🔋 {{ batteryLevel }}%</span>
                 </div>
@@ -95,13 +93,13 @@
             </div> -->
 
             <!-- 侧边按钮 -->
-            <div class="side-buttons">
+            <!-- <div class="side-buttons">
               <div class="power-button"></div>
               <div class="volume-buttons">
                 <div class="volume-up"></div>
                 <div class="volume-down"></div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -298,7 +296,7 @@
               <ol>
                 <li v-if="showUrlInput">在上方输入框中输入要监听的H5页面地址</li>
                 <li v-if="showUrlInput">点击"加载页面"按钮，页面将在左侧手机设备中显示</li>
-                <li>页面将在左侧手机设备中以375×667尺寸显示</li>
+                <li>页面将在左侧手机设备中以453×912尺寸显示</li>
                 <li>当iframe内的页面URL发生变化时，会自动检测并显示新的地址</li>
                 <li>可以复制H5地址或转换为小程序地址格式</li>
                 <li>支持查看URL变化历史记录</li>
@@ -610,7 +608,7 @@ export default {
 
 <style lang="scss" scoped>
 .get-page-address {
-  padding: 10px;
+  padding: 0;
   max-width: 1400px;
   margin: 0 auto;
 
@@ -645,7 +643,7 @@ export default {
 
     // 左侧面板 - 设备区域
     .left-panel {
-      flex: 0 0 400px;
+      flex: 0 0 500px;
 
       .device-controls {
         .control-group {
@@ -687,7 +685,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 0;
     min-height: 600px;
 
     .exist-fullscreen {
@@ -733,21 +731,30 @@ export default {
   // 手机外壳主体
   .phone-shell {
     position: relative;
-    width: 395px; // 375 + 20px边框
-    height: 707px; // 667 + 40px边框
-    background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+    // width: 362.4px;
+    // height: 729.6px;
+    width: 407.7px;
+    height: 828.8px;
+    // width: 453px;
+    // height: 912px; 
+    // width: 473px; // 453 + 20px边框
+    // height: 952px; // 912 + 40px边框
+    // background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
     border-radius: 30px;
-    box-shadow:
-      0 20px 40px rgba(0, 0, 0, 0.3),
-      inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    // box-shadow:
+    //   0 20px 40px rgba(0, 0, 0, 0.3),
+    //   inset 0 2px 4px rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
+    // background-size: cover;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.4),
-        inset 0 2px 4px rgba(255, 255, 255, 0.1);
-    }
+    // &:hover {
+    //   transform: translateY(-2px);
+    //   box-shadow:
+    //     0 25px 50px rgba(0, 0, 0, 0.4),
+    //     inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    // }
+
+    overflow: hidden;
 
     // 手机顶部元素
     .phone-top {
@@ -825,29 +832,50 @@ export default {
 
   // 手机屏幕
   .phone-screen {
-    position: absolute;
-    top: 20px;
-    left: 10px;
-    width: 375px;
-    height: 667px;
-    background: #000;
+    // position: absolute;
+    // top: 10px;
+    // left: 10px;
+    // width: 453px;
+    // height: 912px;
+    width: 100%;
+    height: 100%;
+    // background: #000;
     border-radius: 25px;
     overflow: hidden;
-    border: 2px solid #333;
+    position: relative;
+    padding: 20px 24px 85px;
+
+
+    // border: 2px solid #333;
+    &:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('~@/pages/lowcode/get-page-address/iPhoneBezel.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      z-index: 10;
+      pointer-events: none;
+    }
 
     // 状态栏
     .status-bar {
-      height: 30px;
+      height: 60px;
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
+      background-color: #333;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 15px;
+      padding: 0 25px;
       font-size: 12px;
       color: #fff;
       z-index: 10;
       position: relative;
       backdrop-filter: blur(10px);
+      border-radius: 30px 30px 0 0;
 
       .status-left {
         .time {
@@ -871,13 +899,18 @@ export default {
     // 屏幕内容区域
     .screen-content {
       position: relative;
-      width: 375px;
-      height: 637px; // 667 - 30px状态栏
-      background: #fff;
+      // width: 375px;
+      // height: 637px; // 667 - 30px状态栏
+      width: 100%;
+      height: 100%;
+      // border-radius: 25px;
+      overflow: hidden;
 
       iframe {
-        width: 375px;
-        height: 637px;
+        // width: 375px;
+        // height: 637px;
+        width: 100%;
+        height: 100%;
         border: none;
         background: #fff;
       }
@@ -1027,7 +1060,7 @@ export default {
 
       .phone-container {
         justify-content: center;
-        padding: 20px;
+        // padding: 20px;
       }
     }
 
@@ -1040,13 +1073,13 @@ export default {
 
 @media (max-width: 768px) {
   .get-page-address {
-    padding: 15px;
+    // padding: 15px;
   }
 
   .main-content {
     .left-panel {
       .phone-container {
-        padding: 15px;
+        // padding: 15px;
         min-height: 450px;
       }
     }
@@ -1055,7 +1088,7 @@ export default {
 
 @media (max-width: 480px) {
   .get-page-address {
-    padding: 10px;
+    // padding: 10px;
   }
 
   .main-content {
@@ -1071,7 +1104,7 @@ export default {
       }
 
       .phone-container {
-        padding: 10px;
+        // padding: 10px;
         min-height: 350px;
       }
     }
