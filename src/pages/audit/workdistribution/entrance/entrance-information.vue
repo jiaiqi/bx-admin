@@ -1,20 +1,28 @@
 <template>
-  <div class="door-frame"
-       v-loading="isLoading"
-       element-loading-text="查询中....."
-       element-loading-spinner="el-icon-loading"
-       element-loading-background="rgba(0, 0, 0, 0.8)"
+  <div
+    class="door-frame"
+    v-loading="isLoading"
+    element-loading-text="查询中....."
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
   >
-    <div  v-if="list.length==0" class="err_info">
-      <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{passId}}</el-empty>
+    <div
+      v-if="list.length == 0"
+      class="err_info"
+    >
+      <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{ passId }}</el-empty>
     </div>
-    <el-timeline :reverse="reverse" v-if="list.length>0">
+    <el-timeline
+      :reverse="reverse"
+      v-if="list.length > 0"
+    >
       <el-timeline-item
-          :hideTimestamp="false"
-          v-for="(item, index) in list"
-          :key="index"
-          :color="index===0?'#0bbd87':index===list.length-1?'#e80621':'#3194f6'"
-          :timestamp="item.transtime">
+        :hideTimestamp="false"
+        v-for="(item, index) in list"
+        :key="index"
+        :color="index === 0 ? '#0bbd87' : index === list.length - 1 ? '#e80621' : '#3194f6'"
+        :timestamp="item.transtime"
+      >
         <div class="info-item">
           <div class="item-list">
             门架编号：{{ item.tradenodeid }}
@@ -26,52 +34,125 @@
             过车时间：{{ item.transtime }}
           </div>
           <div class="item-list">
-            计费金额：{{ item.fee_disp?item.fee_disp:item.fee }}
+            计费金额：{{ item.fee_disp ? item.fee_disp : item.fee }}
           </div>
-          <div v-if="item.grantry_type==='收费站'">
-            <el-image style="width:43.75rem;height: 18.75rem"
-                      :src="getPic(item,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
-          </div>
-          <div v-else>
-            <el-image style="width:43.75rem;height: 18.75rem"
-                      :src="getPic(item,'car','')"></el-image>
+          <!-- 图片展开/收起区域 -->
+          <div class="image-toggle-section">
+            <div
+              class="toggle-button"
+              @click="toggleImageExpand(index)"
+              :class="{ 'expanded': expandedImages[index] }"
+            >
+              <i :class="expandedImages[index] ? 'el-icon-caret-top' : 'el-icon-caret-bottom'"></i>
+              {{ expandedImages[index] ? '收起图片' : '展开图片' }}
+            </div>
+
+            <!-- 图片内容区域 -->
+            <div
+              v-if="expandedImages[index]"
+              class="image-content"
+            >
+              <div v-if="item.grantry_type === '收费站'">
+                <el-image
+                  style="width:43.75rem;height: 18.75rem"
+                  :src="getPic(item, 'car', index === 0 ? 'en' : index === list.length - 1 ? 'ex' : '')"
+                  lazy
+                ></el-image>
+              </div>
+              <div v-else>
+                <el-image
+                  style="width:43.75rem;height: 18.75rem"
+                  :src="getPic(item, 'car', '')"
+                  lazy
+                ></el-image>
+              </div>
+            </div>
           </div>
         </div>
       </el-timeline-item>
     </el-timeline>
     <el-dialog
-        title="图片"
-        fullscreen
-        append-to-body
-        destroy-on-close
-        :visible.sync="centerDialogVisible"
-        center>
+      title="图片"
+      fullscreen
+      append-to-body
+      destroy-on-close
+      :visible.sync="centerDialogVisible"
+      center
+    >
       <div class="image-box">
-        <el-image :src="imgSrc" style="width: 100%;height: 100%" fit="scale-down"></el-image>
+        <el-image
+          :src="imgSrc"
+          style="width: 100%;height: 100%"
+          fit="scale-down"
+        ></el-image>
       </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="hideDialog">关闭</el-button>
+      <span
+        slot="footer"
+        class="dialog-footer"
+      >
+        <el-button
+          type="primary"
+          @click="hideDialog"
+        >关闭</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 <script setup>
 // 门架信息
-import {onMounted, ref} from "vue";
-import {useRoute} from "@/common/vueApi";
-import {getEntranceData} from "@/pages/audit/workdistribution/entrance/entrance";
+import { onMounted, ref, reactive, computed, nextTick, getCurrentInstance } from "vue";
+import { useRoute } from "@/common/vueApi";
+import { getEntranceData } from "@/pages/audit/workdistribution/entrance/entrance";
 import OrderApi from "@/pages/audit/api/order";
 import { Loading } from 'element-ui';
-const orderUtil= new OrderApi()
+const orderUtil = new OrderApi()
 const reverse = ref(false)
 const route = useRoute()
 const list = ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
-const isLoading=ref(false)
+const isLoading = ref(false)
+// 获取当前实例用于强制更新
+const instance = getCurrentInstance()
+
+// 图片展开状态管理 - 提供多种解决方案
+// 方案1: 使用Map方式确保响应式更新
+const expandedImagesMap = ref(new Map())
+
+// 方案2: 使用简单对象 + 强制更新
+const expandedImagesSimple = ref({})
+
+// 创建computed属性来处理模板中的访问
+const expandedImages = computed(() => {
+  const result = {}
+  expandedImagesMap.value.forEach((value, key) => {
+    result[key] = value
+  })
+  return result
+})
+
 const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
+}
+
+// 切换图片展开状态 - 提供多种解决方案
+const toggleImageExpand = (index) => {
+  // 方案1: 使用Map方式
+  const currentState = expandedImagesMap.value.get(index) || false
+  expandedImagesMap.value.set(index, !currentState)
+  expandedImagesMap.value = new Map(expandedImagesMap.value)
+  
+  // 方案2: 如果Map方式不行，使用简单对象 + 强制更新
+  // expandedImagesSimple.value[index] = !expandedImagesSimple.value[index]
+  // nextTick(() => {
+  //   if (instance && instance.proxy && instance.proxy.$forceUpdate) {
+  //     instance.proxy.$forceUpdate()
+  //   }
+  // })
+  
+  // 方案3: 最简单的重新赋值方式
+  // expandedImagesSimple.value = { ...expandedImagesSimple.value, [index]: !expandedImagesSimple.value[index] }
 }
 let passId = route.query?.pass_id
 let strTime = route.query?.startTime
@@ -93,8 +174,8 @@ const getPic = (item, imgtype, enType) => {
  */
 const getTrafficFlow = (id) => {
   let cadn = {
-    condition:[{colName: "passid", ruleType: "like", value: passId}],
-    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
@@ -108,17 +189,17 @@ const getTrafficFlow = (id) => {
  * @Author:Eirice
  * @Date: 2025-06-06 17:45:45
  */
-const getPointByOriginCenter=()=>{
-  isLoading.value=true
-  let obj={
-    condition:[{colName: "passid", ruleType: "like", value: passId}],
-    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+const getPointByOriginCenter = () => {
+  isLoading.value = true
+  let obj = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
-  orderUtil.getOriginCenterDetails(obj).then(res=>{
-    if(res.data.state !== 'SUCCESS') return;
-    isLoading.value=false
+  orderUtil.getOriginCenterDetails(obj).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    isLoading.value = false
     handleFilterListInfo(res.data.data)
-  }).catch(err => {})
+  }).catch(err => { })
 }
 
 /**
@@ -126,21 +207,21 @@ const getPointByOriginCenter=()=>{
  * @Author:Eirice
  * @Date: 2025-06-06 17:48:49
  */
-const getPointByLocation=()=>{
-   isLoading.value=true
-  let obj={
-    condition:[{colName: "passid", ruleType: "like", value: passId}],
-    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+const getPointByLocation = () => {
+  isLoading.value = true
+  let obj = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
-  orderUtil.getLocationCenterDetails(obj).then(res=>{
-    if(res.data.state !== 'SUCCESS') return;
-    if(res.data.data&&res.data.data.length>0){
-      isLoading.value=false
+  orderUtil.getLocationCenterDetails(obj).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    if (res.data.data && res.data.data.length > 0) {
+      isLoading.value = false
       handleFilterListInfo(res.data.data)
-    }else {
+    } else {
       getPointByOriginCenter()
     }
-  }).catch(err => {})
+  }).catch(err => { })
 }
 
 /**
@@ -170,37 +251,37 @@ const handleFilterListInfo = (data) => {
   });
   // 转换为数组并排序
   const sortedPoints = Array.from(uniquePoints.values())
-      .sort((a, b) => {
-        // 优先使用seq字段排序
-        const seqA = a.seq || a.seq_id || 0;
-        const seqB = b.seq || b.seq_id || 0;
-        return seqA - seqB;
-      });
-  list.value=sortedPoints
+    .sort((a, b) => {
+      // 优先使用seq字段排序
+      const seqA = a.seq || a.seq_id || 0;
+      const seqB = b.seq || b.seq_id || 0;
+      return seqA - seqB;
+    });
+  list.value = sortedPoints
 }
 /**
  * @Description:根据查询到的车辆信息获取车辆通行信息
  * @Author:Eirice
  * @Date: 2025-05-30 14:06:57
  */
-const getCarTimeLine=(info)=>{
-    let tep= info[0]
-   if(tep){
-     let cadn = {
-       condition: [
-         {colName: "passid", value: tep.passid, ruleType: "eq"},
-         {colName: "enid", value: tep.enpointid, ruleType: "eq"},
-         {colName: "exid", value: tep.expointid, ruleType: "eq"},
-         {colName: "vtype", value: 1, ruleType: "eq"}
-       ],
-       divCond:[{colName: "transtime", ruleType: "between", value: [tep.entime, tep.extime]}]
-     }
-     orderUtil.getCarPathInfoById(cadn).then(res=>{
-       if(res.data.state !== 'SUCCESS') return;
-       list.value=res.data.data
+const getCarTimeLine = (info) => {
+  let tep = info[0]
+  if (tep) {
+    let cadn = {
+      condition: [
+        { colName: "passid", value: tep.passid, ruleType: "eq" },
+        { colName: "enid", value: tep.enpointid, ruleType: "eq" },
+        { colName: "exid", value: tep.expointid, ruleType: "eq" },
+        { colName: "vtype", value: 1, ruleType: "eq" }
+      ],
+      divCond: [{ colName: "transtime", ruleType: "between", value: [tep.entime, tep.extime] }]
+    }
+    orderUtil.getCarPathInfoById(cadn).then(res => {
+      if (res.data.state !== 'SUCCESS') return;
+      list.value = res.data.data
 
-     }).catch(err => {})
-   }
+    }).catch(err => { })
+  }
 }
 const hideDialog = () => {
   centerDialogVisible.value = false
@@ -235,5 +316,58 @@ onMounted(() => {
 .image-box {
   width: 100%;
   height: calc(100vh - 12.5rem);
+}
+
+.image-toggle-section {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #606266;
+  font-size: 14px;
+  user-select: none;
+}
+
+.toggle-button:hover {
+  background-color: #ecf5ff;
+  border-color: #b3d8ff;
+  color: #409eff;
+}
+
+.toggle-button.expanded {
+  background-color: #ecf5ff;
+  border-color: #409eff;
+  color: #409eff;
+}
+
+.toggle-button i {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+.image-content {
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
