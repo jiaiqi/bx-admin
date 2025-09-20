@@ -112,15 +112,9 @@ const list = ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
 const isLoading = ref(false)
-// 获取当前实例用于强制更新
-const instance = getCurrentInstance()
 
-// 图片展开状态管理 - 提供多种解决方案
-// 方案1: 使用Map方式确保响应式更新
+// 图片展开状态管理 
 const expandedImagesMap = ref(new Map())
-
-// 方案2: 使用简单对象 + 强制更新
-const expandedImagesSimple = ref({})
 
 // 创建computed属性来处理模板中的访问
 const expandedImages = computed(() => {
@@ -136,23 +130,10 @@ const showPicture = (item) => {
   centerDialogVisible.value = true
 }
 
-// 切换图片展开状态 - 提供多种解决方案
 const toggleImageExpand = (index) => {
-  // 方案1: 使用Map方式
   const currentState = expandedImagesMap.value.get(index) || false
   expandedImagesMap.value.set(index, !currentState)
   expandedImagesMap.value = new Map(expandedImagesMap.value)
-  
-  // 方案2: 如果Map方式不行，使用简单对象 + 强制更新
-  // expandedImagesSimple.value[index] = !expandedImagesSimple.value[index]
-  // nextTick(() => {
-  //   if (instance && instance.proxy && instance.proxy.$forceUpdate) {
-  //     instance.proxy.$forceUpdate()
-  //   }
-  // })
-  
-  // 方案3: 最简单的重新赋值方式
-  // expandedImagesSimple.value = { ...expandedImagesSimple.value, [index]: !expandedImagesSimple.value[index] }
 }
 let passId = route.query?.pass_id
 let strTime = route.query?.startTime
