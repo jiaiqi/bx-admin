@@ -75,7 +75,10 @@
       </div>
 
       <!-- 右侧内容区域 -->
-      <div class="right-panel" v-if="!($route.query.url && $route.query.fullscreen === 'true')">
+      <div
+        class="right-panel"
+        v-if="!($route.query.url && $route.query.fullscreen === 'true')"
+      >
         <!-- URL输入区域 -->
         <div
           class="url-input-section"
@@ -611,7 +614,7 @@ export default {
   .main-content {
     display: flex;
     gap: 50px;
-    align-items: flex-start;
+    align-items: center;
 
     ::v-deep .el-card__header {
       padding: 0;
@@ -674,27 +677,27 @@ export default {
       display: none;
     }
 
-    // 钛合金边框效果
-    &::before {
-      content: '';
-      position: absolute;
-      top: -3px;
-      left: -3px;
-      right: -3px;
-      bottom: -3px;
-      border-radius: 33px;
-      background: linear-gradient(135deg,
-          #8a8a8a 0%,
-          #b8b8b8 25%,
-          #d4d4d4 50%,
-          #b8b8b8 75%,
-          #8a8a8a 100%);
-      z-index: -1;
-      box-shadow:
-        0 0 20px rgba(0, 0, 0, 0.4),
-        inset 0 1px 2px rgba(255, 255, 255, 0.3),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-    }
+    // // 钛合金边框效果
+    // &::before {
+    //   content: '';
+    //   position: absolute;
+    //   top: -3px;
+    //   left: -3px;
+    //   right: -3px;
+    //   bottom: -3px;
+    //   border-radius: 33px;
+    //   background: linear-gradient(135deg,
+    //       #8a8a8a 0%,
+    //       #b8b8b8 25%,
+    //       #d4d4d4 50%,
+    //       #b8b8b8 75%,
+    //       #8a8a8a 100%);
+    //   z-index: -1;
+    //   box-shadow:
+    //     0 0 20px rgba(0, 0, 0, 0.4),
+    //     inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    //     inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+    // }
 
     // 内层边框高光
     &::after {
