@@ -98,6 +98,46 @@
       </simple-update> -->
     </el-dialog>
 
+    <!-- form编辑弹框form外嵌套循环列表 -->
+     <el-dialog
+      class="customDialogClass"
+      :title="getActiveFormName || '编辑'"
+      width="90%"
+      :close-on-click-modal="1 == 2"
+      :visible="activeForm == 'listupdate'"
+      @close="onCloseEvent()"
+      append-to-body
+    >
+      <div>
+        <!-- 调试日志 -->
+        <div v-if="activeForm == 'listupdate'" style="display: none;">
+          <div>dialog.vue - defaultValues: {{ defaultValues }}</div>
+          <div>dialog.vue - defaultValues类型: {{ Array.isArray(defaultValues) ? '数组' : typeof defaultValues }}</div>
+          <div>dialog.vue - defaultConditions: {{ defaultConditions }}</div>
+        </div>
+        
+        <ListUpdate
+          name="list-update"
+          ref="update-form"
+          v-if="activeForm == 'listupdate'"
+          :init-load="initLoad"
+          :pk="pk"
+          :pkCol="pkCol"
+          :service="service"
+          :mainService="mainService"
+          :defaultValues="defaultValues || []"
+          :defaultConditions="defaultConditions"
+          :parentPageType="'list'"
+          @form-loaded="onFormLoaded"
+          @action-complete="onActionComplete"
+          :serviceViewName.sync="serviceViewName"
+        >
+        </ListUpdate>
+      </div>
+      <!-- <simple-update name="update" :appNo="customSrvApp" :init-load="initLoad" ref="update-form" v-if="activeForm == 'update'" :service="service" :default-conditions="defaultConditions" :default-values="defaultValues" @action-complete="activeForm = null">
+      </simple-update> -->
+    </el-dialog>
+
     <el-dialog
       class="customDialogClass"
       :title="getActiveFormName || '详情'"
@@ -291,6 +331,7 @@ import SimpleDetail from "./simple-detail.vue";
 import SimpleUpdate from "./simple-update.vue";
 import update from "./update.vue";
 import List from "./list.vue";
+import ListUpdate from "./listupdate.vue";
 import Treegrid from "./treegrid.vue";
 import EditGrid from "./edit-grid.vue";
 import SelectFillGrid from "./select-fill-grid.vue";
@@ -309,6 +350,7 @@ export default {
     Executor,
     add,
     update,
+    ListUpdate,  // 添加ListUpdate组件注册
     batchEditGrid,
     bookingPage,
   },
@@ -354,15 +396,27 @@ export default {
     pk: function () {
       let cond = this.defaultConditions;
       let pk = "";
-      if (this.defaultConditions.length > 0) {
+      // 先检查defaultConditions是否存在且是数组
+      if (this.defaultConditions && Array.isArray(this.defaultConditions) && this.defaultConditions.length > 0) {
         pk = this.defaultConditions[0].value;
+      }
+      // 如果defaultConditions中没有pk值，尝试从defaultValues中获取
+      if (!pk && this.defaultValues && typeof this.defaultValues === 'object') {
+        // 尝试从defaultValues中获取id或与pkCol同名的字段值
+        const pkColName = this.pkCol || 'id';
+        if (this.defaultValues[pkColName]) {
+          pk = this.defaultValues[pkColName];
+        } else if (this.defaultValues.id) {
+          pk = this.defaultValues.id;
+        }
       }
       return pk;
     },
     pkCol: function () {
       let cond = this.defaultConditions;
       let pk = "";
-      if (this.defaultConditions.length > 0) {
+      // 先检查defaultConditions是否存在且是数组
+      if (this.defaultConditions && Array.isArray(this.defaultConditions) && this.defaultConditions.length > 0) {
         pk = this.defaultConditions[0].colName;
       }
       return pk;
@@ -382,6 +436,7 @@ export default {
       listMainFormDatas: null,
       batchInitConfig: null,
       serviceViewName: null,
+      mainService: null
     };
   },
 

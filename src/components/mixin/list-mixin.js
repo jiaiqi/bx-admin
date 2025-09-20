@@ -1988,7 +1988,9 @@ export default {
             this.customize_delete(operate_item, data);
           } else if (operate_item.operate_type == "增加") {
             this.customize_add(operate_item, data);
-          } else {
+          } else if(operate_item.operate_type == "地址访问"){
+            this.customize_popup(operate_item, data);
+          }else {
             operate_item.listservice = this.service;
             this.customizeOperate(operate_item, data, (e) => {
               // dialog操作完成之后的回调 刷新列表
@@ -2005,7 +2007,7 @@ export default {
           buttonMode: operate_item.servcie_type,
           submitState: false,
         };
-        console.log(operate_item);
+        console.log(operate_item, 333333333);
         this.$store.commit("setTableButtonsPopup", {
           ...pageKey,
         });

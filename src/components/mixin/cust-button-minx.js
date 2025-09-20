@@ -832,6 +832,41 @@ export default {
      * @param {*} operateData
      */
     customize_popup(item, operateData, callback) {
+      console.log("customize_update11111111", item, operateData, callback);
+      // 处理form表单不支持列表卡片渲染页面的情况，暂定根据配置地址访问方式适配跳转
+      if(item.operate_type == "地址访问"){
+        const queryData = {
+          colName: "order_no",
+          ruleType:"eq",
+          value: operateData[0].order_no
+        }
+        let bigquerydata = {
+          colNames: ["*"],
+          condition: [],
+          draft:false,
+          page:{pageNo: 1, rownumber: 10},
+          query_source:"list_page",
+          serviceName: item.service_name,
+          srvApp: item.application
+        }
+          bigquerydata.condition.push(queryData);
+         var urlAddress = this.getServiceUrl("select", item.service_name, item.application);
+         this.$http.post(urlAddress, bigquerydata).then((response) => {
+          console.log("customize_popup2222222", response);
+          if(response?.data?.data?.length){
+            let data = response?.data?.data;
+            const param = {
+              service: item.service_name,
+              btninfo: item,
+              formType: 'listupdate',
+              mainService: 'srvedu_rank_score_update',
+              defaultValues: data // 将获取到的数据作为defaultValues传递给弹出的表单组件
+            }
+            this.popupDialog(param, callback)
+          }
+         })
+              return false
+      }
       if (item.more_config && typeof item.more_config === "string") {
         try {
           item["moreConfig"] = JSON.parse(item.more_config);
@@ -1138,7 +1173,6 @@ export default {
       var me = this;
       var bxRequests = [];
       var operate_params_cfg = item.operate_params;
-
       if (
         operateData.length <= 0 &&
         operate_params_cfg != undefined &&
