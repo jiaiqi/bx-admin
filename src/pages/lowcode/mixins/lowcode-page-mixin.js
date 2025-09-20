@@ -189,6 +189,9 @@ export default {
       let themeVariable = Object.keys(this.themeVariable).reduce(
         (pre, cur) => {
           pre += `${cur}: ${this.themeVariable[cur]};`;
+          if (cur?.includes('_')) {
+            pre += `${cur.replace(/\_/g, '-')}: ${this.themeVariable[cur]};`;
+          }
           return pre;
         },
         ""
@@ -196,6 +199,9 @@ export default {
       if (appThemeInfo && Object.keys(appThemeInfo).length) {
         themeVariable += Object.keys(appThemeInfo).reduce((pre, cur) => {
           pre += `${cur}: ${appThemeInfo[cur]};`;
+          if (cur?.includes('_')) {
+            pre += `${cur.replace(/\_/g, '-')}: ${appThemeInfo[cur]};`;
+          }
           return pre;
         }, '')
       }
