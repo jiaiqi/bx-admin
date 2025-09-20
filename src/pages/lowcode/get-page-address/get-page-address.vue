@@ -75,7 +75,7 @@
       </div>
 
       <!-- 右侧内容区域 -->
-      <div class="right-panel">
+      <div class="right-panel" v-if="!($route.query.url && $route.query.fullscreen === 'true')">
         <!-- URL输入区域 -->
         <div
           class="url-input-section"
@@ -310,6 +310,10 @@ export default {
     // 判断是否显示URL输入框
     showUrlInput() {
       return !this.$route.query.url
+    },
+    // 判断是否应该自动全屏
+    shouldAutoFullscreen() {
+      return this.$route.query.url && this.$route.query.fullscreen === 'true'
     }
   },
   mounted() {
@@ -318,6 +322,10 @@ export default {
       this.inputUrl = this.$route.query.url
       this.loadUrlFromRoute(this.$route.query.url)
     }
+    // // 检查是否需要自动全屏
+    // if (this.shouldAutoFullscreen) {
+    //   this.isFullscreen = true
+    // }
     this.setupMessageListener()
     this.updateTime()
     this.timeInterval = setInterval(this.updateTime, 1000)
