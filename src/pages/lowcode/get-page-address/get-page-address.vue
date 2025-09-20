@@ -613,9 +613,10 @@ export default {
   // 主要内容区域 - 左右布局
   .main-content {
     display: flex;
-    gap: 50px;
+    gap: 20px;
+    padding: 20px;
     align-items: center;
-
+    height: 100%;
     ::v-deep .el-card__header {
       padding: 0;
     }
@@ -647,7 +648,10 @@ export default {
     // 右侧面板 - 内容区域
     .right-panel {
       flex: 1;
-
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       .url-input-section {
         margin-bottom: 10px;
 
@@ -1228,8 +1232,8 @@ export default {
 
       .history-item {
         display: flex;
+        flex-direction: column;
         justify-content: space-between;
-        align-items: center;
         padding: 10px;
         border: 1px solid #ebeef5;
         border-radius: 4px;
