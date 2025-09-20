@@ -23,6 +23,20 @@
                 <div class="status-left">
                   <span class="time">{{ currentTime }}</span>
                 </div>
+                <div class="status-center">
+                  <div class="camera-area">
+                    <div class="camera-lens">
+                      <div class="camera-outer-ring"></div>
+                      <div class="camera-inner-lens"></div>
+                      <div class="camera-highlight"></div>
+                    </div>
+                    <div class="camera-lens">
+                      <div class="camera-outer-ring"></div>
+                      <div class="camera-inner-lens"></div>
+                      <div class="camera-highlight"></div>
+                    </div>
+                  </div>
+                </div>
                 <div class="status-right">
                   <span class="wifi">📶</span>
                   <span class="battery">🔋 {{ batteryLevel }}%</span>
@@ -565,6 +579,10 @@ export default {
   padding: 10px;
   max-width: 1400px;
   margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   .page-header {
     text-align: center;
@@ -584,7 +602,7 @@ export default {
   // 主要内容区域 - 左右布局
   .main-content {
     display: flex;
-    gap: 20px;
+    gap: 50px;
     align-items: flex-start;
 
     ::v-deep .el-card__header {
@@ -597,7 +615,7 @@ export default {
 
     // 左侧面板 - 设备区域
     .left-panel {
-      flex: 0 0 500px;
+      // flex: 0 0 500px;
 
       .device-controls {
         .control-group {
@@ -639,11 +657,56 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0px ;
+    padding: 0px;
     min-height: 600px;
+    position: relative;
+    width: fit-content;
 
     .exist-fullscreen {
       display: none;
+    }
+
+    // 钛合金边框效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 33px;
+      background: linear-gradient(135deg,
+          #8a8a8a 0%,
+          #b8b8b8 25%,
+          #d4d4d4 50%,
+          #b8b8b8 75%,
+          #8a8a8a 100%);
+      z-index: -1;
+      box-shadow:
+        0 0 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    // 内层边框高光
+    &::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      bottom: -1px;
+      border-radius: 31px;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.4) 0%,
+          rgba(255, 255, 255, 0.1) 25%,
+          rgba(255, 255, 255, 0.05) 50%,
+          rgba(255, 255, 255, 0.1) 75%,
+          rgba(255, 255, 255, 0.3) 100%);
+      z-index: -1;
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.5),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.3);
     }
 
     &.fullscreen {
@@ -687,8 +750,10 @@ export default {
     position: relative;
     // width: 362.4px;
     // height: 729.6px;
-    width: 407.7px;
-    height: 828.8px;
+    width: 375px;
+    height: 707px; // 667 + 40px边框
+    // width: 407.7px;
+    // height: 828.8px;
     // width: 453px;
     // height: 912px; 
     // width: 473px; // 453 + 20px边框
@@ -708,6 +773,7 @@ export default {
     // }
 
     overflow: hidden;
+
 
     // 手机顶部元素
     .phone-top {
@@ -787,11 +853,12 @@ export default {
   .phone-screen {
     width: 100%;
     height: 100%;
-    border-radius: 25px;
-    overflow: hidden;
+    // border-radius: 25px;
+    // overflow: hidden;
     position: relative;
     // padding: 20px 24px 85px;
-
+    display: flex;
+    flex-direction: column;
     // &:after {
     //   content: '';
     //   position: absolute;
@@ -824,8 +891,75 @@ export default {
       border-radius: 30px 30px 0 0;
 
       .status-left {
+        flex: 1;
+
         .time {
           font-weight: bold;
+        }
+      }
+
+      .status-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .camera-area {
+          background: #000;
+          border-radius: 12px;
+          padding: 3px 8px;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          justify-content: center;
+          box-shadow:
+            inset 0 1px 2px rgba(255, 255, 255, 0.1),
+            0 1px 3px rgba(0, 0, 0, 0.3);
+          border: 1px solid #1a1a1a;
+        }
+
+        .camera-lens {
+          position: relative;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #1a1a1a;
+          border: 1px solid #333;
+          box-shadow:
+            inset 0 1px 2px rgba(0, 0, 0, 0.8),
+            0 0 3px rgba(0, 0, 0, 0.5);
+
+          .camera-outer-ring {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1px solid #444;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+          }
+
+          .camera-inner-lens {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #333 0%, #111 40%, #000 100%);
+            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.9);
+          }
+
+          .camera-highlight {
+            position: absolute;
+            top: 1.5px;
+            left: 2px;
+            width: 1.5px;
+            height: 1.5px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 1px rgba(255, 255, 255, 0.2);
+          }
         }
       }
 
@@ -833,6 +967,8 @@ export default {
         display: flex;
         gap: 8px;
         align-items: center;
+        flex: 1;
+        justify-content: flex-end;
 
         .signal,
         .wifi,
@@ -846,8 +982,9 @@ export default {
     .screen-content {
       position: relative;
       width: 100%;
-      height: 100%;
+      // height: 100%;
       overflow: hidden;
+      flex: 1;
 
       iframe {
         width: 100%;
