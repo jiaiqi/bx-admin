@@ -1355,7 +1355,7 @@ function init_util() {
     }
 
     dialog.defaultConditions = params.condition;
-    dialog.defaultValues = params.data;
+    dialog.defaultValues = params.defaultValues || params.data || [];
     dialog.mapcondition = params.mapcondition;
     if (params.otherParams != undefined && params.otherParams != null) {
       var load_old_data = params.otherParams.load_old_data;
