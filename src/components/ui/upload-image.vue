@@ -137,8 +137,7 @@
         ref="upload"
         class="upload-demo"
         :class="{
-          'upload-disabled':
-            limit && fileLength && fileLength >= limit && !isHttp,
+          'upload-disabled': limit && (fileLength && fileLength >= limit || fileLists.length >= limit) && !isHttp,
         }"
         :action="uploadFile"
         :with-credentials="true"
@@ -158,25 +157,13 @@
         list-type="picture-card"
         :style="useFilePicker ? 'display:none;' : ''"
         v-if="
-          !limit || !fileLength || (limit && fileLength && fileLength < limit)
+          !limit || !fileLength || (limit && fileLength && fileLength < limit && fileLists.length < limit)
         "
       >
         <el-button
           size="small"
           type="primary"
         >点击上传</el-button>
-        <!-- <div
-          slot="tip"
-          class="el-upload__tip"
-          :class="{ 'text-red111': field.getAnyValidateError() }"
-        >
-          <i
-            slot="reference"
-            class="el-icon-warning"
-            v-if="field.getAnyValidateError()"
-          ></i>
-          {{ setFileDesc }}
-        </div> -->
       </el-upload>
 
       <div
@@ -806,10 +793,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style
-  scoped
-  lang="scss"
->
+<style scoped lang="scss">
 ::v-deep .el-upload-list {
   border: none !important;
 }
@@ -854,6 +838,8 @@ export default {
 }
 
 .upload-disabled {
+  display: none;
+
   .el-upload {
     display: none;
   }
