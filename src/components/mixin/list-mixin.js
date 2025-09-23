@@ -1988,7 +1988,7 @@ export default {
             this.customize_delete(operate_item, data);
           } else if (operate_item.operate_type == "增加") {
             this.customize_add(operate_item, data);
-          } else if(operate_item.operate_type == "地址访问"){
+          } else if(operate_item.operate_type == "申请弹出"){
             this.customize_popup(operate_item, data);
           }else {
             operate_item.listservice = this.service;
