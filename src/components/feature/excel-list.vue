@@ -30,7 +30,7 @@ export default {
         return [];
       }
     },
-    childforeignkey:{
+    childforeignkey: {
       type: Object,
       default: function () {
         return {};
@@ -74,8 +74,10 @@ export default {
       }
       if (Array.isArray(this.defaultCondition) && this.defaultCondition.length > 0) {
         this.defaultCondition.forEach(item => {
-          let str = `${item.colName}=${item.value}`
-          src += src?.includes('?') ? `&${str}` : `?${str}`
+          if (item.value && ![null, undefined, '', 'null', 'undefined'].includes(item.value)) {
+            let str = `${item.colName}=${item.value}`
+            src += src?.includes('?') ? `&${str}` : `?${str}`
+          }
         })
       }
       if (this.disabled === true) {

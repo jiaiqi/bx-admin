@@ -2943,7 +2943,7 @@ export default {
             colName: fk.column_name,
             ruleType: "eq",
             valueFunc: (_) => {
-              return row[fk.referenced_column_name];
+              return row[fk.referenced_column_name] || null;
             },
           },
         ];
