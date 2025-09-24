@@ -1,18 +1,16 @@
 <template>
-  <div
-    class="card-cell-editor"
-    ref="cardCellEditor"
-  >
+  <div class="card-cell-editor" ref="cardCellEditor">
     <header class="header">
       <div class="header-left">
         <h1 class="title">卡片单元设计器</h1>
-        <div
-          @click.stop="outlineVisible = true"
-          class="handle-btn"
-          title="组件大纲"
-        >
-          <Icon icon="ri-node-tree" />
-        </div>
+        <el-tooltip content="组件大纲" placement="bottom">
+          <div
+            @click.stop="outlineVisible = true"
+            class="handle-btn"
+          >
+            <Icon icon="ri-node-tree" />
+          </div>
+        </el-tooltip>
       </div>
       <div class="header-center">
         <template v-if="cardInfo && cardInfo.card_name">
@@ -20,39 +18,34 @@
         </template>
       </div>
       <div class="header-right">
-        <div
-          @click="changeTheme"
-          class="handle-btn"
-          title="切换主题模式"
-        >
-          <Icon :icon="isDarkMode ? 'ri:sun-fill' : 'ri:moon-fill'" />
-        </div>
-        <div
-          @click="refresh"
-          class="handle-btn"
-          title="刷新"
-          :class="{ loading: onSaving }"
-        >
-          <span class="text">刷新</span>
-          <Icon icon="ri:refresh-line" />
-        </div>
-        <div
-          @click="saveCard"
-          class="handle-btn"
-          title="保存"
-          :class="{ loading: onSaving }"
-        >
-          <span class="text">保存</span>
-          <Icon icon="ri:save-fill" />
-        </div>
-        <div
-          @click="previewCard"
-          class="handle-btn"
-          title="预览"
-        >
-          <span class="text">预览</span>
-          <Icon icon="ri:eye-fill" />
-        </div>
+        <el-tooltip content="切换主题模式" placement="bottom">
+          <div @click="changeTheme" class="handle-btn">
+            <Icon :icon="isDarkMode ? 'ri:sun-fill' : 'ri:moon-fill'" />
+          </div>
+        </el-tooltip>
+        <el-tooltip content="刷新" placement="bottom">
+          <div
+            @click="refresh"
+            class="handle-btn"
+            :class="{ loading: onSaving }"
+          >
+            <Icon icon="ri:refresh-line" />
+          </div>
+        </el-tooltip>
+        <el-tooltip content="保存" placement="bottom">
+          <div
+            @click="saveCard"
+            class="handle-btn"
+            :class="{ loading: onSaving || propertyLoading }"
+          >
+            <Icon icon="ri:save-fill" />
+          </div>
+        </el-tooltip>
+        <el-tooltip content="预览" placement="bottom">
+          <div @click="previewCard" class="handle-btn">
+            <Icon icon="ri:eye-fill" />
+          </div>
+        </el-tooltip>
       </div>
     </header>
     <main class="main">
@@ -108,25 +101,31 @@
                 ""
               }}</span>
               <div class="part-delete">
-                <i title="复制">
-                  <Icon
-                    icon="ri:file-copy-2-fill"
-                    @click.native.stop="handleCopyPart()"
-                  ></Icon>
-                </i>
-                <i title="粘贴">
-                  <Icon
-                    icon="ri:file-copy-2-line"
-                    @click.native.stop="handlePastePart()"
-                  ></Icon>
-                </i>
+                <el-tooltip content="复制" placement="bottom">
+                  <i>
+                    <Icon
+                      icon="ri:file-copy-2-fill"
+                      @click.native.stop="handleCopyPart()"
+                    ></Icon>
+                  </i>
+                </el-tooltip>
+                <el-tooltip content="粘贴" placement="bottom">
+                  <i>
+                    <Icon
+                      icon="ri:file-copy-2-line"
+                      @click.native.stop="handlePastePart()"
+                    ></Icon>
+                  </i>
+                </el-tooltip>
 
-                <i title="删除">
-                  <Icon
-                    icon="ri:delete-bin-line"
-                    @click.native="deletePart(selectedPart)"
-                  ></Icon>
-                </i>
+                <el-tooltip content="删除" placement="bottom">
+                  <i>
+                    <Icon
+                      icon="ri:delete-bin-line"
+                      @click.native="deletePart(selectedPart)"
+                    ></Icon>
+                  </i>
+                </el-tooltip>
               </div>
             </div>
             <div
@@ -168,6 +167,7 @@
             @saved="saved"
             @unit-update="onUnitUpdate"
             @parts-update="onPartsUpdate"
+            @loading-change="onPropertyLoadingChange"
           ></property-editor>
         </div>
       </aside>
@@ -179,15 +179,13 @@
       :close-on-press-escape="false"
       :destroy-on-close="true"
       fullscreen
-      :before-close="() => {
-        this.isPreview = false;
-      }
-        "
+      :before-close="
+        () => {
+          this.isPreview = false;
+        }
+      "
     >
-      <div
-        class="preview-mode"
-        v-if="isPreview"
-      >
+      <div class="preview-mode" v-if="isPreview">
         <div class="preview-content">
           <card-cell :card-cell="cardInfo"></card-cell>
         </div>
@@ -205,7 +203,9 @@
         :highlight-current="true"
         :default-expand-all="true"
         :expand-on-click-node="false"
-        :current-node-key="selectedPart ? (selectedPart._id || selectedPart.id) : null"
+        :current-node-key="
+          selectedPart ? selectedPart._id || selectedPart.id : null
+        "
         :data="outlineTree"
         :props="outlineTreeProps"
         @node-click="clickPart"
@@ -414,6 +414,7 @@ export default {
       selectedPart: null, // 当前选中的部件
       draggedPart: null, // 正在拖拽的部件
       onSaving: false, // 是否正在保存
+      propertyLoading: false, // 属性编辑器的保存状态
       isPreview: false, // 是否处于预览模式
       hiddenPartsVisible: false, // 是否显示隐藏的部件
       isDarkMode: false, // 是否为深色模式
@@ -489,6 +490,14 @@ export default {
     },
   },
   methods: {
+    /**
+     * 处理属性编辑器的 loading 状态变化
+     * @param {boolean} loading - loading 状态
+     */
+    onPropertyLoadingChange(loading) {
+      this.propertyLoading = loading;
+    },
+
     handleContainerFocus() {
       console.log("handleContainerFocus");
       this.checkClipboardSupport();
@@ -629,6 +638,11 @@ export default {
     async saveCard() {
       if (!this.partsList.length) {
         this.$message.warning("请先添加卡片部件");
+        return;
+      }
+
+      // 如果属性编辑器正在保存，阻止重复点击
+      if (this.propertyLoading) {
         return;
       }
 
@@ -1348,7 +1362,11 @@ export default {
      * @returns {Promise<void>}
      */
     async pasteToSelectedPart(newPart) {
-      if (["row", "block", '行容器', '块容器'].includes(this.selectedPart.parts_type)) {
+      if (
+        ["row", "block", "行容器", "块容器"].includes(
+          this.selectedPart.parts_type
+        )
+      ) {
         if (!this.selectedPart.children) {
           this.$set(this.selectedPart, "children", []);
         }
@@ -1516,7 +1534,6 @@ export default {
 
       .header-right,
       .header-center {
-
         button {
           color: #ffffff;
           border-color: #444;
@@ -1544,7 +1561,6 @@ export default {
     }
 
     .main {
-
       .materials-panel,
       .property-panel {
         background-color: #252525;
@@ -1610,7 +1626,8 @@ export default {
             border-color: #444;
             color: #dddddd;
 
-            &.el-button--primary {}
+            &.el-button--primary {
+            }
           }
 
           .el-checkbox,
@@ -1690,7 +1707,6 @@ export default {
   }
 
   .header-right {
-
     justify-content: flex-end;
   }
 
@@ -1869,7 +1885,8 @@ export default {
   background-image: linear-gradient(#f5f5f9 19px, transparent 0),
     linear-gradient(90deg, transparent 19px, #000 0);
 
-  .preview-content {}
+  .preview-content {
+  }
 }
 
 .editor-content {
@@ -1919,7 +1936,7 @@ export default {
     border: none;
     line-height: 30px;
     gap: 1px;
-
+    transition: all 0.2s ease;
     .part-label,
     .part-delete {
       background-color: var(--primary-color, #006cff);
@@ -1954,7 +1971,7 @@ export default {
 }
 
 .editor-content.drag-over-editor {
-  >.overlay {
+  > .overlay {
     background-color: rgba(103, 194, 58, 0.1);
     border: 2px dashed #67c23a;
   }
@@ -2081,6 +2098,34 @@ export default {
   .text {
     font-size: 12px;
   }
+
+  &.loading {
+    background-color: #f5f7fa;
+    color: #666;
+    pointer-events: none;
+    position: relative;
+    cursor: not-allowed;
+    opacity: 0.7;
+    background-color: rgba(45, 45, 45, 0.1);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-top: 2px solid #666;
+      border-radius: 50%;
+      animation: loading-spin 1s linear infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    // 禁用状态下的图标样式
+    .iconify {
+      opacity: 0.5;
+    }
+  }
 }
 
 .handle-btn:hover {
@@ -2092,6 +2137,20 @@ export default {
 .dark-mode .handle-btn {
   color: #c0c4cc;
   background-color: #2d2d2d;
+
+  &.loading {
+    background-color: #1f1f1f;
+    color: #999;
+    border-color: #555;
+
+    &::before {
+      border-top-color: #999;
+    }
+
+    .iconify {
+      opacity: 0.4;
+    }
+  }
 }
 
 .dark-mode .handle-btn:hover {
@@ -2122,7 +2181,6 @@ export default {
 
 /* 暗色模式下的组件大纲样式 */
 .dark-mode :deep(.outline-container) {
-
   .el-drawer__title,
   .el-drawer__body,
   .el-drawer {
@@ -2146,13 +2204,14 @@ export default {
     background-color: transparent;
   }
 
-  .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+  .el-tree--highlight-current
+    .el-tree-node.is-current
+    > .el-tree-node__content {
     color: #fff;
     background-color: #3a3a3a;
   }
 
   .el-tree-node {
-
     .el-tree-node__content {
       &:hover {
         background-color: #3a3a3a;
@@ -2177,6 +2236,15 @@ export default {
         }
       }
     }
+  }
+}
+
+@keyframes loading-spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
   }
 }
 </style>

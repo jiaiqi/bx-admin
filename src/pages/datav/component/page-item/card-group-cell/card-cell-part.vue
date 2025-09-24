@@ -155,9 +155,7 @@
     </div>
     <div
       ref="bxCellContainer"
-      v-else-if="
-        containerPartTypes.includes(cellItem.parts_type)
-      "
+      v-else-if="containerPartTypes.includes(cellItem.parts_type)"
       :class="{
         'marquee-mode': childAnimationType === '跑马灯',
         'cursor-pointer': isLink && childAnimationType !== '跑马灯',
@@ -205,7 +203,9 @@
           ></card-cell-part>
         </template>
       </div>
-      <template v-else-if="getSubJson(cellItem) && getSubJson(cellItem).length > 0">
+      <template
+        v-else-if="getSubJson(cellItem) && getSubJson(cellItem).length > 0"
+      >
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
           <card-cell-part
             :cellItem="subCardPart"
@@ -308,7 +308,7 @@ export default {
       iconPartTypes: ["icon", "字体图标", "图标"],
       containerPartTypes: ["块容器", "行容器", "block", "row"],
       countdownTimeMs: 0,
-      countdownDisplay: '00日00时00分00秒',
+      countdownDisplay: "00日00时00分00秒",
       _countdownTimer: null,
     };
   },
@@ -349,17 +349,17 @@ export default {
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
     getQrcodeSize() {
-      let width = this.buildColStyleJson?.width || 100
-      if (typeof width === 'string') {
-        if (width.indexOf('rpx') > -1) {
-          width = parseInt(width) * 0.5
+      let width = this.buildColStyleJson?.width || 100;
+      if (typeof width === "string") {
+        if (width.indexOf("rpx") > -1) {
+          width = parseInt(width) * 0.5;
         }
       }
-      width = parseInt(width)
+      width = parseInt(width);
       if (isNaN(width)) {
-        width = 100
+        width = 100;
       }
-      return width
+      return width;
     },
     setComColMap() {
       let map = this.comColMap || {};
@@ -584,7 +584,7 @@ export default {
       return obj;
     },
     setPartModelData() {
-      return this.getPartModelData()
+      return this.getPartModelData();
     },
     partsShow() {
       const item = this.cellItem;
@@ -662,12 +662,12 @@ export default {
       return show;
     },
     getFileName() {
-      let fileName = this.setPartModelData || '附件1'
+      let fileName = this.setPartModelData || "附件1";
       if (Array.isArray(this.fileList) && this.fileList.length) {
-        fileName = this.fileList[0].src_name || fileName
+        fileName = this.fileList[0].src_name || fileName;
       }
-      return fileName
-    }
+      return fileName;
+    },
   },
   methods: {
     startNativeCountdown() {
@@ -691,11 +691,15 @@ export default {
     updateCountdownDisplay(ms) {
       const total = Math.max(0, Number(ms) || 0);
       const day = Math.floor(total / (24 * 60 * 60 * 1000));
-      const hour = Math.floor((total % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      const hour = Math.floor(
+        (total % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+      );
       const minute = Math.floor((total % (60 * 60 * 1000)) / (60 * 1000));
       const second = Math.floor((total % (60 * 1000)) / 1000);
-      const pad = (n) => String(n).padStart(2, '0');
-      this.countdownDisplay = `${pad(day)}日${pad(hour)}时${pad(minute)}分${pad(second)}秒`;
+      const pad = (n) => String(n).padStart(2, "0");
+      this.countdownDisplay = `${pad(day)}日${pad(hour)}时${pad(minute)}分${pad(
+        second
+      )}秒`;
     },
     computeCountdownMs(rawVal) {
       if (!rawVal) return 0;
@@ -712,7 +716,7 @@ export default {
           return 0;
         }
       } else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(raw)) {
-        end = end.startOf('day');
+        end = end.startOf("day");
       }
       const now = dayjs();
       const diff = end.valueOf() - now.valueOf();
@@ -751,22 +755,26 @@ export default {
           optionsType = item?.sys_fun;
         }
         switch (optionsType) {
-          case '下载':
-          case '预览':
+          case "下载":
+          case "预览":
             if (getTrueValue === true) {
-              key = item.variable
-              if (key && map.hasOwnProperty(key) && itemData.hasOwnProperty(map[key]) &&
-                itemData[map[key]]) {
-                val = itemData[map[key]]
+              key = item.variable;
+              if (
+                key &&
+                map.hasOwnProperty(key) &&
+                itemData.hasOwnProperty(map[key]) &&
+                itemData[map[key]]
+              ) {
+                val = itemData[map[key]];
               } else if (itemData[key]) {
-                val = itemData[key]
+                val = itemData[key];
               } else {
-                val = undefined
+                val = undefined;
               }
             } else {
-              val = item.parts_text
+              val = item.parts_text;
             }
-            break
+            break;
           case "拨打电话":
             key = item?.para_phone_col || item.variable;
             if (
@@ -869,7 +877,12 @@ export default {
         }
       }
       if (type === "时间日期" && item.date_format_rule) {
-        val = dayjs(val).format(item.date_format_rule);
+        // 校验 val 是否为有效日期，不是的话置为空
+        if (val && dayjs(val).isValid()) {
+          val = dayjs(val).format(item.date_format_rule);
+        } else {
+          val = dayjs().format(item.date_format_rule);
+        }
       }
       if (val && type === "iconImg" && item?.img_amount_limit === "多张") {
         // 展示多张图片
@@ -1040,7 +1053,11 @@ export default {
                 .then((list) => {
                   if (Array.isArray(list) && list.length > 0) {
                     if (list.length === 1) {
-                      downloadFile(list[0].__url, list[0].file_type, list[0].src_name);
+                      downloadFile(
+                        list[0].__url,
+                        list[0].file_type,
+                        list[0].src_name
+                      );
                     } else {
                       this.showFileSelectionModal(list, "download");
                     }
@@ -1116,9 +1133,9 @@ export default {
             window.location.href = loginUrl;
             break;
           default:
-            if (optionsType?.includes('刷新组件请求')) {
-              console.log('刷新组件请求：', this.cellItem);
-              this.$emit('refresh-component')
+            if (optionsType?.includes("刷新组件请求")) {
+              console.log("刷新组件请求：", this.cellItem);
+              this.$emit("refresh-component");
             }
             console.log("没有点击事件");
             break;
@@ -1146,11 +1163,15 @@ export default {
         url: url,
         file_type: fileType,
         src_name: fileList[index]?.src_name,
-        fileurl: url
+        fileurl: url,
       };
 
       // 根据文件类型进行不同的预览处理
-      if (["jpg", "jpeg", "png", "gif", "JPG", "JPEG", "PNG", "GIF"].includes(fileType)) {
+      if (
+        ["jpg", "jpeg", "png", "gif", "JPG", "JPEG", "PNG", "GIF"].includes(
+          fileType
+        )
+      ) {
         // 图片预览
         // this.onPreView(file, index, fileList);
       } else if (fileType === "pdf") {
@@ -1158,8 +1179,10 @@ export default {
         this.handlePreview(file);
       } else if (["ppt", "pptx"].includes(fileType)) {
         // PPT预览
-        const filePath = `${window.backendIpAddr}/file/forward?targetUrl=${url}`
-        const previewUrl = `/vpages/ppt/index.html?file=${encodeURIComponent(filePath)}`;
+        const filePath = `${window.backendIpAddr}/file/forward?targetUrl=${url}`;
+        const previewUrl = `/vpages/ppt/index.html?file=${encodeURIComponent(
+          filePath
+        )}`;
         this.addTabByUrl(previewUrl, "文件预览");
       } else {
         // 其他文件类型直接下载
@@ -1169,27 +1192,37 @@ export default {
     },
     // 显示文件选择弹窗（多文件时）
     showFileSelectionModal(fileList, action) {
-      const fileNames = fileList.map((file, index) => `${index + 1}. ${file.src_name}`).join('\n');
-      this.$prompt(`请选择要${action === 'download' ? '下载' : '预览'}的文件序号:\n${fileNames}`, '文件选择', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /^[1-9]\d*$/,
-        inputErrorMessage: '请输入有效的文件序号'
-      }).then(({ value }) => {
-        const index = parseInt(value) - 1;
-        if (index >= 0 && index < fileList.length) {
-          const file = fileList[index];
-          if (action === 'download') {
-            downloadFile(file.__url, file.file_type, file.src_name);
-          } else {
-            this.previewFile(file.__url, file.file_type, fileList, index);
-          }
-        } else {
-          this.$message.error('文件序号超出范围');
+      const fileNames = fileList
+        .map((file, index) => `${index + 1}. ${file.src_name}`)
+        .join("\n");
+      this.$prompt(
+        `请选择要${
+          action === "download" ? "下载" : "预览"
+        }的文件序号:\n${fileNames}`,
+        "文件选择",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputPattern: /^[1-9]\d*$/,
+          inputErrorMessage: "请输入有效的文件序号",
         }
-      }).catch(() => {
-        // 用户取消操作
-      });
+      )
+        .then(({ value }) => {
+          const index = parseInt(value) - 1;
+          if (index >= 0 && index < fileList.length) {
+            const file = fileList[index];
+            if (action === "download") {
+              downloadFile(file.__url, file.file_type, file.src_name);
+            } else {
+              this.previewFile(file.__url, file.file_type, fileList, index);
+            }
+          } else {
+            this.$message.error("文件序号超出范围");
+          }
+        })
+        .catch(() => {
+          // 用户取消操作
+        });
     },
     getFileUrl(url) {
       if (url?.indexOf("http") === 0) {
@@ -1197,8 +1230,9 @@ export default {
       } else if (url?.indexOf("data:image") === 0) {
         return url;
       } else {
-        return `${this.serviceApi().downloadFile
-          }${url}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+        return `${
+          this.serviceApi().downloadFile
+        }${url}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
       }
     },
     async getFiles(no, size) {
@@ -1280,16 +1314,16 @@ export default {
       this.clickedElement = null;
     },
     initPart() {
-      if (this.cellItem.parts_type == '附件') {
+      if (this.cellItem.parts_type == "附件") {
         if (this.setPartModelData) {
-          this.getFiles(this.setPartModelData, '原图').then(res => {
+          this.getFiles(this.setPartModelData, "原图").then((res) => {
             if (Array.isArray(res)) {
-              this.fileList = res
+              this.fileList = res;
             }
-          })
+          });
         }
       }
-      if (this.cellItem.parts_type === '倒计时') {
+      if (this.cellItem.parts_type === "倒计时") {
         this.startNativeCountdown();
       }
       if (this.enableNumberRollAnimation) {
