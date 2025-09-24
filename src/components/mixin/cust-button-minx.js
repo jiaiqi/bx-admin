@@ -834,7 +834,7 @@ export default {
     customize_popup(item, operateData, callback) {
       console.log("customize_update11111111", item, operateData, callback);
       // 处理form表单不支持列表卡片渲染页面的情况，暂定根据配置地址访问方式适配跳转
-      if(item.operate_type == "地址访问"){
+      if(item.operate_type == "申请弹出"){
         const queryData = {
           colName: "order_no",
           ruleType:"eq",
