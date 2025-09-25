@@ -622,14 +622,14 @@ export default {
         this.isEdit = true;
         if (
           this.field.model != null &&
-          this.field.model?.indexOf("http") !== 0
+          this.field.model?.indexOf("http") !== 0 &&
+          this.field.model // 确保model有值
         ) {
           //如果有file_no则查询出相关的图片信息
           this.uploadParams.file_no = this.field.model;
           this.queryData();
         } else if (this.field.model?.indexOf("http") === 0) {
-          console.log(2222222222222);
-
+          // 直接使用HTTP URL作为图片源
           this.fileLists.push({
             url: this.field.model,
           });
@@ -749,22 +749,36 @@ export default {
           // 查询文件上传状态
           await this.checkUploadStatus(response.file_no);
         }
-        // await new Promise((resolve) => setTimeout(resolve, 500));
         this.loading = false;
         console.timeEnd("handleSuccess");
       }
       if (response.state === undefined) {
         this.$message.info("上传成功！");
-        this.uploadParams.file_no = response.file_no;
-        this.field.model = response.file_no;
+        
+        // 检查是否有自定义的handleSuccess方法
+        let modelValue = response.file_no;
+        if (this.field.handleSuccess && typeof this.field.handleSuccess === 'function') {
+          // 使用自定义的handleSuccess方法处理响应
+          modelValue = this.field.handleSuccess(response);
+        } else {
+          // 默认处理逻辑
+          this.uploadParams.file_no = response.file_no;
+          if (response.fileurl?.indexOf("http") === 0) {
+            modelValue = response.fileurl;
+          }
+        }
+        
+        // 设置model值
+        this.field.model = modelValue;
+        
+        // 设置文件URL
         response.url = this.serviceApi().downloadFile + response.fileurl;
         if (response.fileurl?.indexOf("http") === 0) {
           response.url = response.fileurl;
         }
+        
+        // 添加到文件列表并触发事件
         this.fileLists.push(response);
-        if (response.fileurl?.indexOf("http") === 0) {
-          this.field.model = response.fileurl;
-        }
         this.$emit("change", this.field.model);
         this.setObjInfo(fileList);
       } else {

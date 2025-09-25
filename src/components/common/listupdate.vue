@@ -56,6 +56,19 @@
             />
           </div>
         </div>
+        
+        <!-- 图片上传 -->
+        <div class="listupdate-section">
+          <label>上传图片：</label>
+          <div class="listupdate-wrapper">
+            <upload-image
+              ref="uploadImage"
+              :limit="3"
+              :field="getUploadField(item)"
+              @change="imgChange($event, item)"
+            />
+          </div>
+        </div>
       </div>
     </el-card>
     
@@ -69,11 +82,13 @@
 
 <script>
 import BxInputNumber from '../ui/bx-input-number.vue';
+import UploadImage from '../ui/upload-image.vue';
 
 export default {
   name: 'ListUpdate',
   components: {
-    BxInputNumber
+    BxInputNumber,
+    UploadImage
   },
   props: {
     dataList: {
@@ -109,7 +124,23 @@ export default {
   data() {
     return {
       // 用于编辑的本地数据副本
-      editableData: []
+      editableData: [],
+      field:{
+        info:{
+          editor:'upload-image',
+          label:'上传图片',
+          type:'Image',
+          visible: true,
+          name:'image',
+          bodyVisible: true,
+          srvCol:{
+            service_name:'srvedu_sch_order_update',
+            columns:'image',
+            table_name:'srvedu_sch_order',
+            label:'上传图片'
+          }
+        }
+      }
     };
   },
   computed: {
@@ -125,26 +156,106 @@ export default {
   watch: {
     // 当displayData变化时，同步到editableData
     displayData: {
-      handler(newData) {
-        // 深拷贝数据，避免直接修改props
-        this.editableData = JSON.parse(JSON.stringify(newData));
-        // 为每条数据初始化score和comment字段
-        this.editableData.forEach(item => {
-          if (item.score === undefined || item.score === null) {
-            item.score = 0;
-          } else {
-            item.score = this.parseScore(item.score);
-          }
-          if (item.comment === undefined) {
-            item.comment = '';
-          }
-        });
-      },
-      immediate: true,
-      deep: true
-    }
+        handler(newData) {
+          // 深拷贝数据，避免直接修改props
+          this.editableData = JSON.parse(JSON.stringify(newData));
+          // 为每条数据初始化score和remark字段
+          this.editableData.forEach(item => {
+            if (item.score === undefined || item.score === null) {
+              item.score = 0;
+            } else {
+              item.score = this.parseScore(item.score);
+            }
+            if (item.remark === undefined || item.remark === null) {
+              item.remark = '';
+            }
+            // 初始化图片字段
+            if (item.image === undefined || item.image === null || item.image === '') {
+              item.image = [];
+            } else if (!Array.isArray(item.image)) {
+              item.image = [item.image]; // 转换为数组
+            }
+          });
+        },
+        immediate: true,
+        deep: true
+      }
   },
   methods: {
+    // 获取上传组件的field配置
+    getUploadField(item) {
+        // 创建一个配置对象，支持图片上传和预览
+        const field = {
+          info: {
+            editor: 'upload-image',
+            label: '上传图片',
+            type: 'Image',
+            visible: true,
+            name: 'image',
+            bodyVisible: true,
+            editable: true,
+            srvCol: {
+              service_name: 'srvedu_sch_order_select',
+              columns: 'image',
+              table_name: 'bxedu_order_info',
+              label: '上传图片'
+            },
+            moreConfig: {
+              fileMaxSize: 10 // 10MB
+            }
+          },
+          // 模拟必要的方法
+          getAnyValidateError: function() { return ''; },
+          serviceApi: function() {
+            // 返回实际的上传下载URL
+            return {
+              uploadFile: '/file/upload',
+              downloadFile: '/file/download?filePath='
+            };
+          },
+          // 添加fileType和fileSize配置
+          fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp",
+          fileSize: 10 * 1024 ,
+          // 添加自定义处理上传成功的逻辑
+          handleSuccess: function(response) {
+            // 直接使用fileurl构建完整的图片URL
+            if (response.fileurl) {
+              // 构建完整的图片URL并设置到model中
+              const fullUrl = '/file/download?filePath=' + response.fileurl;
+            }
+            return response.file_no || '';
+          }
+        };
+        
+        // 使用Object.defineProperty创建model属性，确保与upload-image组件正确配合
+        Object.defineProperty(field, 'model', {
+          get: function() {
+            // 如果是数组，取第一个元素；否则返回原值
+            return Array.isArray(item.image) && item.image.length > 0 ? item.image[0] : '';
+          },
+          set: function(value) {
+            // 确保item.image是数组格式
+            if (!item.image || !Array.isArray(item.image)) {
+              item.image = [];
+            }
+            // 如果有值，替换第一个元素；否则清空数组
+            if (value) {
+              item.image[0] = value;
+            } else {
+              item.image = [];
+            }
+          }
+        });
+        
+        return field;
+      },
+    
+    // 处理图片变化事件
+    imgChange(value, item) {
+        console.log('imgChange4444444', value, item);
+          item.image = value;
+      },
+    
     // 确保score字段转换为数字类型
     parseScore(score) {
       const num = parseInt(score);
@@ -171,7 +282,8 @@ export default {
         data: [
           {
             score: item.score,
-            remark: item.remark || ''
+            remark: item.remark || '',
+            image: item.image || [] // 确保是数组类型
           }
         ]
       }));
