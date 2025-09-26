@@ -186,10 +186,11 @@
 import cloneDeep from "lodash/cloneDeep";
 import draggable from "vuedraggable";
 import filePicker from "./file-picker/file-picker.vue";
+import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
 
 export default {
-  mixins: [aSaveBMixin],
+  mixins: [aSaveBMixin, bigFileUploadMixin],
   components: {
     draggable,
     filePicker,
@@ -313,18 +314,40 @@ export default {
     }
     this.getData();
   },
+  mounted() {
+    // 初始化分片上传相关配置
+    this.initSplitUploadConfig();
+  },
   methods: {
+    // 初始化分片上传配置
+    initSplitUploadConfig() {
+      // 确保使用大文件上传混入的功能
+      if (typeof this.initBigFileUpload === 'function') {
+        this.initBigFileUpload();
+      }
+      // 设置分片大小和其他配置参数
+      this.chunkSize = 1 * 1024 * 1024; // 默认10MB
+      this.limitSize = 2; // 默认超过20MB使用分片上传
+      this.useSplitChuck = true; // 启用分片上传
+    },
     onPickerFileChange(event) {
       if (event?.files?.length) {
         const file = event?.files[0];
-        const newFile = new File([file], file.name, { type: file.type });
-        console.log(this.$refs.upload);
-        const upload = this.$refs.upload;
-        upload.handleStart(newFile);
-        setTimeout(() => {
-          upload.submit();
-        });
-        // this.fileLists.push({ name: file.name, url: URL.createObjectURL(file) });
+        
+        // 检查文件大小，决定是否使用分片上传
+        const fileSizeInMB = file.size / (1024 * 1024);
+        if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+          // 对大文件使用分片上传
+          this.handleBigFileUpload(file);
+        } else {
+          // 对小文件使用默认上传
+          const newFile = new File([file], file.name, { type: file.type });
+          const upload = this.$refs.upload;
+          upload.handleStart(newFile);
+          setTimeout(() => {
+            upload.submit();
+          });
+        }
       } else if (event?.url) {
         if (event.url?.indexOf("http") === 0) {
           if (this.fileLists?.length) {
@@ -334,9 +357,53 @@ export default {
           this.fileLists.push({
             fileurl: event.url,
             url: event.url,
+            name: '外部图片'
           });
         }
       }
+    },
+    
+    // 处理大文件上传的统一方法
+    handleBigFileUpload(file) {
+      const _this = this;
+      
+      // 显示上传中状态
+      this.loading = true;
+      
+      // 调用分片上传方法
+      this.handelUploadBigFile(file, {
+        onUploadProgress: (progress) => {
+          // 可以在这里处理上传进度
+          console.log('上传进度:', progress + '%');
+        },
+        onHashProgress: (progress) => {
+          // 可以在这里处理文件hash计算进度
+          console.log('文件处理进度:', progress + '%');
+        },
+        onUploadSuccess: async (res) => {
+          // 上传成功后的处理
+          console.log('分片上传成功:', res);
+          _this.loading = false;
+          
+          // 调用handleSuccess方法处理上传结果
+          if (res) {
+            // 构造类似普通上传的响应格式
+            const response = {
+              ...res,
+              file_no: res.file_no || res.id,
+              fileurl: res.fileurl || res.path || res.url,
+              src_name: res.src_name || res.fileName || file.name
+            };
+            
+            // 调用handleSuccess处理响应
+            await _this.handleSuccess(response, { ...file, response }, _this.fileLists);
+          }
+        }
+      }).catch(error => {
+        console.error('分片上传失败:', error);
+        _this.loading = false;
+        _this.$message.error('文件上传失败，请重试');
+      });
     },
     dataURLtoBlob(dataurl) {
       //将base64转换为blob
@@ -360,11 +427,20 @@ export default {
       /**调用element的上传方法 需要把base64转换成file上传**/
       let a = this.dataURLtoBlob(file);
       let b = this.blobToFile(a, info);
-      const upload = this.$refs.upload;
-      upload.handleStart(b);
-      setTimeout(() => {
-        upload.submit();
-      });
+      
+      // 检查文件大小，决定是否使用分片上传
+      const fileSizeInMB = b.size / (1024 * 1024);
+      if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+        // 对大文件使用分片上传
+        this.handleBigFileUpload(b);
+      } else {
+        // 对小文件使用默认上传
+        const upload = this.$refs.upload;
+        upload.handleStart(b);
+        setTimeout(() => {
+          upload.submit();
+        });
+      }
     },
     handleClick() {
       // 获取 el-upload 组件实例
@@ -475,17 +551,29 @@ export default {
     handleImage(blob) {
       const reader = new FileReader();
       const _this = this;
-      reader.onload = (event) => {
-        console.log("图片数据:", event.target.result);
-        let base64_str = event.target.result;
-        // 上传逻辑
-        _this.uploadImgFromPaste(base64_str, "paste", {
-          name: blob.name,
-          type: blob.type,
-          size: blob.size,
-        });
-      };
-      reader.readAsDataURL(blob);
+      
+      // 检查文件大小，决定是否直接使用blob进行分片上传
+      // 对于粘贴的图片，通常不会太大，但为了一致性还是保留逻辑
+      const fileSizeInMB = blob.size / (1024 * 1024);
+      
+      if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+        // 对于大文件，直接使用blob创建File对象进行分片上传
+        const file = new File([blob], blob.name || 'pasted-image.png', { type: blob.type });
+        _this.handleBigFileUpload(file);
+      } else {
+        // 对于小文件，转换为base64后上传
+        reader.onload = (event) => {
+          console.log("图片数据:", event.target.result);
+          let base64_str = event.target.result;
+          // 上传逻辑
+          _this.uploadImgFromPaste(base64_str, "paste", {
+            name: blob.name,
+            type: blob.type,
+            size: blob.size,
+          });
+        };
+        reader.readAsDataURL(blob);
+      }
     },
     refreshFileList() {
       this.loading = true;
@@ -622,16 +710,18 @@ export default {
         this.isEdit = true;
         if (
           this.field.model != null &&
-          this.field.model?.indexOf("http") !== 0
+          this.field.model?.indexOf("http") !== 0 &&
+          this.field.model // 确保model有值
         ) {
           //如果有file_no则查询出相关的图片信息
           this.uploadParams.file_no = this.field.model;
           this.queryData();
         } else if (this.field.model?.indexOf("http") === 0) {
-          console.log(2222222222222);
-
+          // 直接使用HTTP URL作为图片源
           this.fileLists.push({
             url: this.field.model,
+            fileurl: this.field.model,
+            name: '外部图片'
           });
         }
       } else {
@@ -641,10 +731,11 @@ export default {
     },
     queryData() {
       if (this.field.model?.indexOf("http") == 0) {
-        console.log(33333333333);
-
+        // 直接使用HTTP URL作为图片源
         this.fileLists.push({
           url: this.field.model,
+          fileurl: this.field.model,
+          name: '外部图片'
         });
         return;
       }
@@ -652,46 +743,112 @@ export default {
         for (let i in response.body.data) {
           let file = response.body.data[i];
           file.name = response.body.data[i].src_name;
-          file.url =
-            this.serviceApi().downloadFile + response.body.data[i].fileurl;
-          if (file?.fileurl?.indexOf("http") === 0) {
-            file.url = file.fileurl;
-          }
-          console.log(4444444444444444);
-
+          // 使用getFileUrl方法统一处理文件路径
+          file.url = this.getFileUrl(response.body.data[i].fileurl);
           this.fileLists.push(file);
         }
       });
     },
-    beforeAvatarUpload(file) {
-      if (file.size / 1024 > this.fileSize) {
-        this.$message.error("文件大小不能超过" + this.fileSize + "kb");
-        return false;
+    
+    // 删除文件方法，支持删除通过分片上传的文件
+    async deleteFile(params) {
+      try {
+        const url = `/file/delete`;
+        const res = await this.$http.post(url, params);
+        return res?.data;
+      } catch (error) {
+        console.error('删除文件失败:', error);
+        this.$message.error('删除文件失败');
+        return { body: { resultCode: 'ERROR', state: '删除失败' } };
       }
+    },
+    
+    // 检查上传状态方法
+    async checkUploadStatus(fileNo) {
+      try {
+        const url = `/file/checkStatus`;
+        const res = await this.$http.post(url, { file_no: fileNo });
+        return res?.data;
+      } catch (error) {
+        console.error('检查上传状态失败:', error);
+        return null;
+      }
+    },
+    beforeAvatarUpload(file) {
+      // 检查文件类型
       let flag = false;
       let type = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
       if (this.fileType.includes(type)) {
         flag = true;
       }
-      // for (let i in this.fileType.split("/")) {
-      //   let fileType = this.fileType.split("/")[i];
-      //   if (fileType && typeof fileType === "string") {
-      //     fileType = fileType.toLowerCase();
-      //   }
-      //   if (file.name.toLowerCase().indexOf(fileType.toLowerCase()) !== -1) {
-      //     flag = true;
-      //     break;
-      //   }
-
-      //   // if (file.name.split(".")[1] === fileType) {
-      //   //   flag = true;
-      //   //   break;
-      //   // }
-      // }
       if (!flag) {
         this.$message.error("只能上传" + this.fileType + "文件!");
         return false;
       }
+
+      // 检查文件大小
+      if (file.size / 1024 > this.fileSize) {
+        this.$message.error("文件大小不能超过" + this.fileSize + "kb");
+        return false;
+      }
+
+      // 判断是否需要使用分片上传
+      const fileSizeInMB = file.size / (1024 * 1024);
+      if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+        // 阻止默认上传
+        const _this = this;
+        
+        // 显示上传中状态
+        this.loading = true;
+        
+        // 设置上传参数
+        const uploadParams = {
+          table_name: this.uploadParams.table_name,
+          columns: this.uploadParams.columns,
+          app_no: this.resolveDefaultSrvApp()
+        };
+        
+        // 调用分片上传方法
+        this.handelUploadBigFile(file, {
+          onUploadProgress: (progress) => {
+            // 可以在这里处理上传进度
+            console.log('上传进度:', progress + '%');
+          },
+          onHashProgress: (progress) => {
+            // 可以在这里处理文件hash计算进度
+            console.log('文件处理进度:', progress + '%');
+          },
+          onUploadSuccess: async (res) => {
+            // 上传成功后的处理
+            console.log('分片上传成功:', res);
+            _this.loading = false;
+            
+            // 调用handleSuccess方法处理上传结果
+            if (res) {
+              // 构造类似普通上传的响应格式
+              const response = {
+                ...res,
+                file_no: res.file_no || res.id,
+                fileurl: res.fileurl || res.path || res.url,
+                src_name: res.src_name || res.fileName || file.name
+              };
+              
+              // 调用handleSuccess处理响应
+              await _this.handleSuccess(response, { ...file, response }, _this.fileLists);
+            }
+          }
+        }).catch(error => {
+          console.error('分片上传失败:', error);
+          _this.loading = false;
+          _this.$message.error('文件上传失败，请重试');
+        });
+        
+        // 返回false阻止默认上传
+        return false;
+      }
+      
+      // 小文件使用默认上传方式
+      return true;
     },
     handleRemove(file, fileList) {
       this.setObjInfo(fileList);
@@ -741,38 +898,87 @@ export default {
       }
     },
     async handleSuccess(response, file, fileList) {
-      if (response.fileurl?.startsWith("http")) {
+      // 统一处理分片上传和普通上传的响应格式
+      const normalizedResponse = this.normalizeResponse(response);
+      
+      if (normalizedResponse.fileurl?.startsWith("http")) {
         // 返回的http链接 查询上传状态 上传成功后再继续后面操作 避免未成功上传到华为云就显示在页面上导致显示的图片加载失败
         console.time("handleSuccess");
         this.loading = true;
-        if (response?.file_no) {
+        if (normalizedResponse?.file_no) {
           // 查询文件上传状态
-          await this.checkUploadStatus(response.file_no);
+          await this.checkUploadStatus(normalizedResponse.file_no);
         }
-        // await new Promise((resolve) => setTimeout(resolve, 500));
         this.loading = false;
         console.timeEnd("handleSuccess");
       }
-      if (response.state === undefined) {
+      
+      // 检查是否上传成功
+      const isSuccess = normalizedResponse.state === 'SUCCESS' || normalizedResponse.state === undefined;
+      
+      if (isSuccess) {
         this.$message.info("上传成功！");
-        this.uploadParams.file_no = response.file_no;
-        this.field.model = response.file_no;
-        response.url = this.serviceApi().downloadFile + response.fileurl;
-        if (response.fileurl?.indexOf("http") === 0) {
-          response.url = response.fileurl;
+        
+        // 检查是否有自定义的handleSuccess方法
+        let modelValue = normalizedResponse.file_no;
+        if (this.field.handleSuccess && typeof this.field.handleSuccess === 'function') {
+          // 使用自定义的handleSuccess方法处理响应
+          modelValue = this.field.handleSuccess(normalizedResponse);
+        } else {
+          // 默认处理逻辑
+          this.uploadParams.file_no = normalizedResponse.file_no;
+          if (normalizedResponse.fileurl?.indexOf("http") === 0) {
+            modelValue = normalizedResponse.fileurl;
+          }
         }
-        this.fileLists.push(response);
-        if (response.fileurl?.indexOf("http") === 0) {
-          this.field.model = response.fileurl;
+        
+        // 设置model值
+        this.field.model = modelValue;
+        
+        // 设置文件URL
+        normalizedResponse.url = this.getFileUrl(normalizedResponse.fileurl);
+        
+        // 添加到文件列表并触发事件
+        // 检查是否已经存在相同的文件，避免重复添加
+        const exists = this.fileLists.some(item => item.file_no === normalizedResponse.file_no || item.fileurl === normalizedResponse.fileurl);
+        if (!exists) {
+          this.fileLists.push(normalizedResponse);
         }
         this.$emit("change", this.field.model);
         this.setObjInfo(fileList);
       } else {
-        this.$message.error("上传失败！");
-        this.fileLists.splice(this.fileLists.length - 1, 1);
+        this.$message.error("上传失败！" + (normalizedResponse.message || ''));
+        // 从文件列表中移除失败的文件
+        const index = this.fileLists.findIndex(item => item.file_no === normalizedResponse.file_no || item.fileurl === normalizedResponse.fileurl);
+        if (index !== -1) {
+          this.fileLists.splice(index, 1);
+        }
       }
-      this.fileLength = fileList.length;
+      this.fileLength = this.fileLists.length;
       this.loading = false;
+    },
+    
+    // 统一归一化响应格式，处理分片上传和普通上传的不同响应结构
+    normalizeResponse(response) {
+      if (!response) return {};
+      
+      // 从big-file-upload-mixin继承的handleMerge方法返回的数据格式
+      if (response.id && !response.file_no) {
+        return {
+          ...response,
+          file_no: response.id,
+          fileurl: response.fileurl || response.path || response.url,
+          src_name: response.src_name || response.fileName || response.name
+        };
+      }
+      
+      // 普通上传响应格式
+      return {
+        ...response,
+        file_no: response.file_no || '',
+        fileurl: response.fileurl || '',
+        src_name: response.src_name || response.fileName || ''
+      };
     },
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 ${this.limit}个文件`);
