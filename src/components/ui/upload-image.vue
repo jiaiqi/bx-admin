@@ -65,27 +65,30 @@
               class="el-upload-list__item is-success animated"
             >
               <img
-                :src="item.url"
-                alt=""
-                class="el-upload-list__item-thumbnail"
-              />
-              <i class="el-icon-close"></i>
-              <span class="el-upload-list__item-actions">
-                <span
-                  class="el-upload-list__item-preview"
-                  title="预览"
-                  @click="handlePictureCardPreviewFileDetail(item)"
-                >
-                  <i class="el-icon-zoom-in"></i>
+              v-if="item.url"
+              :src="item.url"
+              alt=""
+              class="el-upload-list__item-thumbnail"
+            />
+            <i class="el-icon-close"></i>
+            <span
+                  class="el-upload-list__item-actions">
+                  <span
+                    class="el-upload-list__item-preview"
+                    title="预览"
+                    @click="handlePictureCardPreviewFileDetail(item)"
+                  >
+                    <i class="el-icon-zoom-in"></i>
+                  </span>
+                  <span
+                    v-if="!disabled"
+                    class="el-upload-list__item-delete"
+                    title="删除"
+                    @click="handleRemoveFileDetail(item, fileLists)"
+                  >
+                    <i class="el-icon-delete"></i>
+                  </span>
                 </span>
-                <span
-                  class="el-upload-list__item-delete"
-                  title="删除"
-                  @click="handleRemoveFileDetail(item, fileLists)"
-                >
-                  <i class="el-icon-delete"></i>
-                </span>
-              </span>
             </li>
           </transition-group>
         </draggable>
@@ -137,7 +140,7 @@
         ref="upload"
         class="upload-demo"
         :class="{
-          'upload-disabled': limit && (fileLength && fileLength >= limit || fileLists.length >= limit) && !isHttp,
+          'upload-disabled': disabled || (limit && (fileLength && fileLength >= limit || fileLists.length >= limit) && !isHttp),
         }"
         :action="uploadFile"
         :with-credentials="true"
@@ -147,12 +150,13 @@
         :before-upload="beforeAvatarUpload"
         :on-remove="handleRemove"
         :on-success="handleSuccess"
+        :on-progress="handleProgress"
         :on-exceed="handleExceed"
         :file-list="fileLists"
         :data="uploadParams"
         clearable
         :limit="limit"
-        :disabled="!field.info.editable"
+        :disabled="disabled || !field.info.editable"
         :show-file-list="false"
         list-type="picture-card"
         :style="useFilePicker ? 'display:none;' : ''"
@@ -166,6 +170,17 @@
         >点击上传</el-button>
       </el-upload>
 
+      <!-- 上传进度条，固定在上传按钮下方 -->
+      <div v-if="uploadProgress > 0 " class="global-progress-container">
+        <el-progress 
+          :percentage="uploadProgress" 
+          :stroke-width="6"
+          status="primary"
+          text-inside
+        ></el-progress>
+        <div class="upload-status-text">{{ uploadingFileName }} - 上传中...</div>
+      </div>
+      
       <div
         slot="tip"
         class="el-upload__tip w-full"
@@ -204,7 +219,10 @@ export default {
       type: Number,
       default: 100,
     },
-
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
     // $srvApp: {
     //   type: String,
     //   default: "file",
@@ -250,41 +268,43 @@ export default {
     },
   },
   data() {
-    return {
-      showFilePicker: false,
-      fileLists: [],
-      fileLength: 0,
-      fileDesc:
-        this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
-          ? "请上传jpg/png/svg格式的图片,大小不超过" +
-          this.field.info.moreConfig.fileMaxSize +
-          "MB"
-          : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
-      fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
-      fileSize:
-        this.field.info.moreConfig &&
-          this.field.info.moreConfig !== null &&
-          this.field.info.moreConfig.fileMaxSize
-          ? this.field.info.moreConfig.fileMaxSize * 1024
-          : 10 * 1024, // 默认10MB
-      imageDialog: false,
-      imageDialogUrl: "",
-      uploadFile: this.serviceApi().uploadFile,
-      uploadParams: {
-        serviceName: "srv_bxfile_service",
-        interfaceName: "add",
-        app_no: this.resolveDefaultSrvApp(),
-        table_name: "",
-        thumbnailType: "fwsu_100",
-        columns: "",
-      },
-      isEdit: true,
-      dialogVisibleDetail: false,
-      dialogImageDetailUrl: "",
-      loading: false,
-      onfocus: false,
+      return {
+        showFilePicker: false,
+        fileLists: [],
+        fileLength: 0,
+        fileDesc:
+          this.field.info.moreConfig &&
+            this.field.info.moreConfig !== null &&
+            this.field.info.moreConfig.fileMaxSize
+            ? "请上传jpg/png/svg格式的图片,大小不超过" +
+            this.field.info.moreConfig.fileMaxSize +
+            "MB"
+            : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
+        fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
+        fileSize:
+          this.field.info.moreConfig &&
+            this.field.info.moreConfig !== null &&
+            this.field.info.moreConfig.fileMaxSize
+            ? this.field.info.moreConfig.fileMaxSize * 1024
+            : 10 * 1024, // 默认10MB
+        imageDialog: false,
+        imageDialogUrl: "",
+        uploadFile: this.serviceApi().uploadFile,
+        uploadParams: {
+          serviceName: "srv_bxfile_service",
+          interfaceName: "add",
+          app_no: this.resolveDefaultSrvApp(),
+          table_name: "",
+          thumbnailType: "fwsu_100",
+          columns: "",
+        },
+        isEdit: true,
+        dialogVisibleDetail: false,
+        dialogImageDetailUrl: "",
+        loading: false,
+        onfocus: false,
+        uploadProgress: 0,
+        uploadingFileName: ""
     };
   },
   created: function () {
@@ -373,12 +393,14 @@ export default {
       // 调用分片上传方法
       this.handelUploadBigFile(file, {
         onUploadProgress: (progress) => {
-          // 可以在这里处理上传进度
+          // 处理上传进度，更新到界面
           console.log('上传进度:', progress + '%');
+          _this.updateBigFileProgress(file, progress);
         },
         onHashProgress: (progress) => {
-          // 可以在这里处理文件hash计算进度
+          // 处理文件hash计算进度，显示预处理进度
           console.log('文件处理进度:', progress + '%');
+          _this.updateBigFileProgress(file, progress);
         },
         onUploadSuccess: async (res) => {
           // 上传成功后的处理
@@ -811,12 +833,14 @@ export default {
         // 调用分片上传方法
         this.handelUploadBigFile(file, {
           onUploadProgress: (progress) => {
-            // 可以在这里处理上传进度
+            // 处理上传进度，更新到界面
             console.log('上传进度:', progress + '%');
+            _this.updateBigFileProgress(file, progress);
           },
           onHashProgress: (progress) => {
-            // 可以在这里处理文件hash计算进度
+            // 处理文件hash计算进度，显示预处理进度
             console.log('文件处理进度:', progress + '%');
+            _this.updateBigFileProgress(file, progress);
           },
           onUploadSuccess: async (res) => {
             // 上传成功后的处理
@@ -884,14 +908,21 @@ export default {
         const response = await this.deleteFile(params);
         this.fileLength = fileList.length - 1;
         this.$emit("change", this.field.model);
-        if (response && response.body.resultCode === "SUCCESS") {
-          this.$message.info(response.body.state);
+        
+        // 正确处理响应格式，考虑response可能直接包含resultCode或有body嵌套
+        const resultCode = response?.resultCode || response?.body?.resultCode;
+        const stateMessage = response?.state || response?.body?.state || '操作成功';
+        
+        if (resultCode === "SUCCESS") {
+          this.$message.info(stateMessage);
+          // 移除文件的操作由调用beforeRemove的handleRemoveFileDetail方法处理
           return true;
         } else {
-          this.$message.info(response.body.state);
+          this.$message.info(stateMessage);
           return false;
         }
       } else if (typeof file === "string" && file.indexOf("http") === 0) {
+        // 对于HTTP URL文件，在handleRemoveFileDetail中会移除
         this.field.model = "";
         this.$emit("change", this.field.model);
         return true;
@@ -982,6 +1013,37 @@ export default {
     },
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 ${this.limit}个文件`);
+    },
+    
+    // 处理上传进度
+    handleProgress(event, file, fileList) {
+      // 更新全局上传进度
+      const percentage = Math.round(event.percent);
+      this.uploadProgress = percentage;
+      this.uploadingFileName = file.name;
+      
+      // 上传完成后重置进度
+      if (percentage >= 100) {
+        setTimeout(() => {
+          this.uploadProgress = 0;
+          this.uploadingFileName = '';
+        }, 500);
+      }
+    },
+    
+    // 为分片上传更新进度
+    updateBigFileProgress(file, progress) {
+      // 更新全局上传进度
+      this.uploadProgress = progress;
+      this.uploadingFileName = file.name;
+      
+      // 上传完成后重置进度
+      if (progress >= 100) {
+        setTimeout(() => {
+          this.uploadProgress = 0;
+          this.uploadingFileName = '';
+        }, 1000);
+      }
     },
     setSrvVal(srvVal) {
       this.field.model = srvVal;
@@ -1080,4 +1142,37 @@ export default {
   background-size: 20px 20px !important;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
 }
+  /* 调整进度条和文件操作按钮的层级关系 */
+  .el-upload-list__item-actions {
+    z-index: 10;
+  }
+  
+  /* 图片占位样式 */
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #f5f7fa;
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+      linear-gradient(-45deg, #eee 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #eee 75%),
+      linear-gradient(-45deg, transparent 75%, #eee 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  
+  /* 全局进度条样式 */
+  .global-progress-container {
+    margin-top: 12px;
+    margin-bottom: 8px;
+    padding: 10px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+  }
+  
+  .upload-status-text {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #606266;
+    text-align: center;
+  }
 </style>
