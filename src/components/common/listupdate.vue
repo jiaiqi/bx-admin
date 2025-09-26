@@ -33,7 +33,7 @@
           <div class="listupdate-wrapper">
             <bx-input-number
               v-model="item.score"
-              :disabled="false"
+              :disabled="item.status === '待审核'"
               :fieldMoreConfig="{ subType: 'rate', showScore: true }"
               :max="5"
               :min="1"
@@ -50,6 +50,7 @@
             <el-input
               v-model="item.remark"
               type="textarea"
+              :disabled="item.status === '待审核'"
               :rows="4"
               placeholder="请输入评论意见"
               resize="none"
@@ -63,7 +64,8 @@
           <div class="listupdate-wrapper">
             <upload-image
               ref="uploadImage"
-              :limit="3"
+              :limit="5"
+              :disabled="item.status === '待审核'"
               :field="getUploadField(item)"
               @change="imgChange($event, item)"
             />
@@ -169,12 +171,7 @@ export default {
             if (item.remark === undefined || item.remark === null) {
               item.remark = '';
             }
-            // 初始化图片字段
-            if (item.image === undefined || item.image === null || item.image === '') {
-              item.image = [];
-            } else if (!Array.isArray(item.image)) {
-              item.image = [item.image]; // 转换为数组
-            }
+            
           });
         },
         immediate: true,
@@ -230,20 +227,12 @@ export default {
         // 使用Object.defineProperty创建model属性，确保与upload-image组件正确配合
         Object.defineProperty(field, 'model', {
           get: function() {
+            console.log('get image', item.image);
             // 如果是数组，取第一个元素；否则返回原值
-            return Array.isArray(item.image) && item.image.length > 0 ? item.image[0] : '';
+            return item.image || '';
           },
           set: function(value) {
-            // 确保item.image是数组格式
-            if (!item.image || !Array.isArray(item.image)) {
-              item.image = [];
-            }
-            // 如果有值，替换第一个元素；否则清空数组
-            if (value) {
-              item.image[0] = value;
-            } else {
-              item.image = [];
-            }
+              item.image = value;
           }
         });
         
@@ -270,23 +259,30 @@ export default {
     // 提交按钮点击事件
     handleSubmit() {
       // 构建符合要求的提交数据
-      const submitData = this.editableData.map(item => ({
-        serviceName: this.mainService || 'srvedu_rank_score_update',
-        condition: [
-          {
-            colName: 'id',
-            ruleType: 'eq',
-            value: item.id || item.obj_id || item.booking_id
-          }
-        ],
-        data: [
-          {
+      const submitData = this.editableData.map(item => {
+          const dataObj = {
             score: item.score,
-            remark: item.remark || '',
-            image: item.image || [] // 确保是数组类型
+            remark: item.remark,
+            image: item.image || ''
+          };
+          if(item.remark||item.image){
+            dataObj.status = '待审核'
+          }else{
+            dataObj.status = '可评价'
           }
-        ]
-      }));
+          
+          return {
+            serviceName: 'srvedu_rank_score_update',
+            condition: [
+              {
+                colName: 'id',
+                ruleType: 'eq',
+                value: item.id // 取每一项的主键id
+              }
+            ],
+            data: [dataObj]
+          };
+        });
       
       // 获取服务URL并发送请求
       if (this.getServiceUrl) {

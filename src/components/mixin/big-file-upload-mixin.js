@@ -182,13 +182,16 @@ export default {
 
     // 单个文件上传
     uploadSingleFile(taskArrItem) {
-      // 如果没有需要上传的切片 / 正在上传的切片还没传完，就不做处理
-      if (
-        taskArrItem.allChunkList.length === 0 ||
-        taskArrItem.whileRequests.length > 0
-      ) {
-        return false
-      }
+      // 确保始终返回Promise对象
+      return new Promise((resolve, reject) => {
+        // 如果没有需要上传的切片 / 正在上传的切片还没传完，就不做处理
+        if (
+          taskArrItem.allChunkList.length === 0 ||
+          taskArrItem.whileRequests.length > 0
+        ) {
+          resolve(false);
+          return;
+        }
       // 找到文件处于处理中/上传中的 文件列表（是文件而不是切片）
       const isTaskArrIng = this.uploadFileList.filter(
         (itemB) => itemB.state === 1 || itemB.state === 2
@@ -212,7 +215,6 @@ export default {
         // 否则总请求数置空,说明已经把没请求的全部放进请求列表了，不需要做过多请求
         taskArrItem.allChunkList = []
       }
-      return new Promise((resolve, reject) => {
         // 单个分片请求
         const uploadChunk = async (needObj, uploadId) => {
           const fd = new FormData()
@@ -291,8 +293,7 @@ export default {
         for (const item of whileRequest) {
           uploadChunk(item, taskArrItem.id)
         }
-      })
-
+      });
     },
 
     async mergeChunk(data) {
