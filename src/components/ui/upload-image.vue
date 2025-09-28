@@ -347,7 +347,7 @@ export default {
       }
       // 设置分片大小和其他配置参数
       this.chunkSize = 1 * 1024 * 1024; // 默认10MB
-      this.limitSize = 2; // 默认超过20MB使用分片上传
+      this.limitSize = 500; // 先将配置调大实现屏蔽作用
       this.useSplitChuck = true; // 启用分片上传
     },
     onPickerFileChange(event) {
