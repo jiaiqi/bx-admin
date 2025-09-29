@@ -304,7 +304,7 @@ export default {
     bottom: 0;
     left: 0;
     height: 3px;
-    background-color: var(--primary-color, #409eff); // 默认颜色
+    // background-color: var(--primary-color, #409eff); // 默认颜色
     transition: transform 0.3s ease, width 0.3s ease; // 添加过渡动画
     border-radius: 1px;
 

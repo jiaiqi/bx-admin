@@ -20,6 +20,13 @@
           <span class="label">地点：</span>
           <span class="value">{{ reservationInfo.roomName }}</span>
         </div>
+        <div
+          class="info-item"
+          v-if="reservationInfo.meetingName"
+        >
+          <span class="label">会议/活动名称：</span>
+          <span class="value">{{ reservationInfo.meetingName }}</span>
+        </div>
         <div class="info-item">
           <span class="label">日期：</span>
           <span class="value">{{ reservationInfo.date }}</span>
@@ -73,6 +80,7 @@ const { addTabByUrl } = useUtils();
 // 从路由参数中获取预约信息
 const reservationInfo = ref({
   roomName: "",
+  meetingName: "",
   date: "",
   timeSlot: "",
   contacts: "",
@@ -86,6 +94,7 @@ onMounted(() => {
   if (route.query) {
     reservationInfo.value = {
       roomName: route.query.roomName || "",
+      meetingName: route.query.meetingName || "",
       date: route.query.date || "",
       timeSlot: route.query.timeSlot || "",
       contacts: route.query.contacts || "",
@@ -153,7 +162,7 @@ const navigateToHistory = () => {
     line-height: 24px;
 
     .label {
-      width: 100px;
+      width: 140px;
       color: #666;
       text-align: right;
       padding-right: 12px;
@@ -197,7 +206,7 @@ const navigateToHistory = () => {
   }
 
   .success-actions {
-    flex-direction: column;
+    flex-direction:column;
     gap: 10px;
   }
 }

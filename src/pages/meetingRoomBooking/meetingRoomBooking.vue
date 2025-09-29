@@ -234,9 +234,19 @@
         :model="formData"
         ref="reservationForm"
         :rules="formRules"
-        label-width="80px"
+        label-width="120px"
         class="mt-4"
       >
+        <el-form-item
+          label="会议/活动名称"
+          prop="meeting_name"
+        >
+          <el-input
+            v-model="formData.meeting_name"
+            placeholder="请输入会议/活动名称"
+            clearable
+          ></el-input>
+        </el-form-item>
         <el-form-item
           label="联系人"
           prop="contacts"
@@ -343,6 +353,7 @@ const reservationForm = ref(null);
 
 // 表单数据
 const formData = reactive({
+  meeting_name: "", // 会议/活动名称
   contacts: "",
   mobilephone: "",
   count: 1,
@@ -351,6 +362,7 @@ const formData = reactive({
 
 // 表单验证规则
 const formRules = {
+  meeting_name: [{ required: true, message: "请输入会议/活动名称", trigger: "blur" }],
   contacts: [{ required: true, message: "请输入联系人姓名", trigger: "blur" }],
   mobilephone: [{ required: true, message: "请输入联系方式", trigger: "blur" }],
 };
@@ -744,6 +756,7 @@ const submitForm = async () => {
           start_time_split: selectedTimes.value.map((item) => item.start_time).toString(),
           rsvp_no: data.rsvp_no,
           rsvt_no: selectedTimes.value.map((item) => item.rsvt_no).toString(), // 时间段编号
+          meeting_name: formData.meeting_name, // 会议/活动名称
           count: formData.count,
           contacts: formData.contacts,
           mobilephone: formData.mobilephone,
@@ -770,6 +783,7 @@ const submitForm = async () => {
             path: "/bookingSuccess",
             query: {
               roomName: data.rsvo_name,
+              meetingName: formData.meeting_name,
               timeSlot: `${firstTime.start_time} - ${lastTime.end_time}`,
               count: formData.count,
               date: selectedDate.value,
