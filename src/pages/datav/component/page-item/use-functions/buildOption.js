@@ -425,16 +425,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "pie":
     case "ring":
       for (let sIndex in seriesName) {
+        console.log(chartJson);
+        
         var scale = 1
         var rich = {
-          yellow: {
-            color: "#ffc72b",
-            fontSize: 12 * scale,
-            padding: [5, 4],
-            align: 'center'
-          },
           total: {
-            color: "#ffc72b",
+            color: chartJson?.ring_val_color || "#ffc72b",
             fontSize: 18 * scale,
             align: 'center'
           },
@@ -444,9 +440,15 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             fontSize: 12 * scale,
             padding: [21, 0]
           },
-          blue: {
-            color: '#49dff0',
+          value: {
+            color: chartJson?.ring_val_color || '#49dff0',
             fontSize: 12 * scale,
+            align: 'center'
+          },
+          label: {
+            color: chartJson?.ring_text_color || "#ffc72b",
+            fontSize: 12 * scale,
+            padding: [5, 4],
             align: 'center'
           },
           hr: {
@@ -483,7 +485,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                     }
                   });
                   percent = ((params.value / total) * 100).toFixed(1);
-                  return '{yellow|' + params.name + '}{blue|' + percent + '%}';
+                  return '{label|' + params.name + '}{value|' + percent + '%}';
                 },
                 rich: rich,
               },
