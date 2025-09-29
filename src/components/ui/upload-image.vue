@@ -61,7 +61,6 @@
           <transition-group style="display: flex; flex-wrap: wrap">
             <li
               v-for="(item, index) in fileLists"
-              :key="index"
               class="el-upload-list__item is-success animated"
             >
               <img
