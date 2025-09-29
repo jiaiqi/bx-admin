@@ -440,12 +440,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             fontSize: 12 * scale,
             padding: [21, 0]
           },
-          value: {
+          valueColor: {
             color: chartJson?.ring_val_color || '#49dff0',
             fontSize: 12 * scale,
             align: 'center'
           },
-          label: {
+          labelColor: {
             color: chartJson?.ring_text_color || "#ffc72b",
             fontSize: 12 * scale,
             padding: [5, 4],
@@ -485,7 +485,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                     }
                   });
                   percent = ((params.value / total) * 100).toFixed(1);
-                  return '{label|' + params.name + '}{value|' + percent + '%}';
+                  return '{labelColor|' + params.name + '}{valueColor|' + percent + '%}';
                 },
                 rich: rich,
               },
@@ -1099,7 +1099,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       }, 0);
       var rich = {
         total: {
-          color: "#ffc72b",
+          color: chartJson?.ring_sum_color || chartJson?.ring_val_color || "#ffc72b",
           fontSize: 40 * scale,
           align: "center",
         },
