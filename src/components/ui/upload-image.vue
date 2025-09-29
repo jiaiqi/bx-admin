@@ -61,7 +61,7 @@
           <transition-group style="display: flex; flex-wrap: wrap">
             <li
               v-for="(item, index) in fileLists"
-              :key="item.uid || index"
+              :key="item.id || index"
               class="el-upload-list__item is-success animated"
             >
               <img
@@ -969,11 +969,7 @@ export default {
         normalizedResponse.url = this.getFileUrl(normalizedResponse.fileurl);
         
         // 添加到文件列表并触发事件
-        // 检查是否已经存在相同的文件，避免重复添加
-        const exists = this.fileLists.some(item => item.file_no === normalizedResponse.file_no || item.fileurl === normalizedResponse.fileurl);
-        if (!exists) {
           this.fileLists.push(normalizedResponse);
-        }
         this.$emit("change", this.field.model);
         this.setObjInfo(fileList);
       } else {
