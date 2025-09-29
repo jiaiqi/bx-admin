@@ -71,7 +71,7 @@ export default {
     this.innerHtml = this.recoverFileAddress4richText(this.value);
     
     // 设置分片上传参数，便于测试
-    this.limitSize = 50; // 50MB启用分片上传
+    this.limitSize = 500; // 先屏蔽
     this.chunkSize = 20 * 1024 * 1024; // 2MB分片大小
     
     this.$nextTick(() => {
