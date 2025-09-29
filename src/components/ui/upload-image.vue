@@ -61,6 +61,7 @@
           <transition-group style="display: flex; flex-wrap: wrap">
             <li
               v-for="(item, index) in fileLists"
+              :key="item.uid || index"
               class="el-upload-list__item is-success animated"
             >
               <img
@@ -174,7 +175,6 @@
         <el-progress 
           :percentage="uploadProgress" 
           :stroke-width="6"
-          status="primary"
           text-inside
         ></el-progress>
         <div class="upload-status-text">{{ uploadingFileName }} - 上传中...</div>
@@ -346,7 +346,7 @@ export default {
       }
       // 设置分片大小和其他配置参数
       this.chunkSize = 1 * 1024 * 1024; // 默认10MB
-      this.limitSize = 2; // 默认超过20MB使用分片上传
+      this.limitSize = 500; // 默认超过20MB使用分片上传
       this.useSplitChuck = true; // 启用分片上传
     },
     onPickerFileChange(event) {
