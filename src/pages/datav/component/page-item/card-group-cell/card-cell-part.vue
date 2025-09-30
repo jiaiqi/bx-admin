@@ -86,8 +86,9 @@
         'cursor-pointer': isLink,
       }"
       :style="[buildColStyleJson]"
-      mode="aspectFill"
-      img-mode="aspectFill"
+      :fit="setScaleMode"
+      :mode="item.scale_mode || 'aspectFill'"
+      :img-mode="item.scale_mode || 'aspectFill'"
       :ref="partsType"
     ></el-image>
     <el-rate
@@ -265,6 +266,7 @@ import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
 import { getFilePath } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
+import { set } from "lodash";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -360,6 +362,37 @@ export default {
         width = 100;
       }
       return width;
+    },
+    setScaleMode() {
+      let scale_mode = this.item.scale_mode 
+
+      // 微信小程序图片模式到el-image模式的映射
+      const modeMap = {
+        // 缩放模式映射
+        'scaleToFill': 'fill',      // 不保持纵横比缩放图片，使图片的宽高完全拉伸至填满 image 元素
+        'aspectFit': 'contain',     // 保持纵横比缩放图片，使图片的长边能完全显示出来
+        'aspectFill': 'cover',      // 保持纵横比缩放图片，只保证图片的短边能完全显示出来
+        'widthFix': 'scale-down',   // 宽度不变，高度自动变化，保持原图宽高比不变
+        
+        // 裁剪模式映射（统一映射到cover模式，因为裁剪模式在el-image中没有直接对应）
+        'top': 'cover',             // 不缩放图片，只显示图片的顶部区域
+        'bottom': 'cover',          // 不缩放图片，只显示图片的底部区域
+        'center': 'cover',          // 不缩放图片，只显示图片的中间区域
+        'left': 'cover',            // 不缩放图片，只显示图片的左边区域
+        'right': 'cover',           // 不缩放图片，只显示图片的右边区域
+        'top left': 'cover',        // 不缩放图片，只显示图片的左上边区域
+        'top right': 'cover',       // 不缩放图片，只显示图片的右上边区域
+        'bottom left': 'cover',     // 不缩放图片，只显示图片的左下边区域
+        'bottom right': 'cover'     // 不缩放图片，只显示图片的右下边区域
+      }
+      
+      // 如果scale_mode存在且在映射表中，返回对应的el-image模式
+      if (scale_mode && modeMap[scale_mode]) {
+        return modeMap[scale_mode]
+      }
+      
+      // 默认返回cover模式
+      return 'cover'
     },
     setComColMap() {
       let map = this.comColMap || {};
