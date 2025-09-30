@@ -86,8 +86,8 @@
         'cursor-pointer': isLink,
       }"
       :style="[buildColStyleJson]"
-      mode="aspectFill"
-      img-mode="aspectFill"
+      :mode="item.scale_mode || 'aspectFill'"
+      :img-mode="item.scale_mode || 'aspectFill'"
       :ref="partsType"
     ></el-image>
     <el-rate
