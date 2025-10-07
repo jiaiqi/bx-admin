@@ -475,7 +475,7 @@ export default {
     isVerticalScroll() {
       const displayLimit = this.listConfig.data_disp_limit || 5;
       return (
-        this.listConfig.animation_type === "纵向滚动" &&
+        (this.listConfig.animation_type === "纵向滚动" || this.listConfig.child_animation_type === "纵向滚动") &&
         this.tableData.length > displayLimit
       );
     },

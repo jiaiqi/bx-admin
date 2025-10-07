@@ -31,11 +31,11 @@ export function useAccordionAutoPlay(props) {
   )
 
   const isAccordionMode = computed(() =>
-    props.cellLayoutJson?.animation_type === '手风琴'
+    props.cellLayoutJson?.animation_type === '手风琴' || props.cellLayoutJson?.child_animation_type === '手风琴'
   )
 
   const isMarquee = computed(() =>
-    props.cellLayoutJson?.animation_type === '跑马灯'
+    props.cellLayoutJson?.animation_type === '跑马灯' || props.cellLayoutJson?.child_animation_type === '跑马灯'
   )
 
   // 防抖处理的切换函数

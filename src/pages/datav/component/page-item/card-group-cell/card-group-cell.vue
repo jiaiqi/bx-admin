@@ -366,14 +366,14 @@ export default {
     childAnimationType() {
       return (
         this.listConfig?.use_animation === "是" &&
-        this.listConfig?.animation_type
+        (this.listConfig?.animation_type || this.listConfig.child_animation_type)
       );
     },
     childAnimationConfig() {
       let obj = {};
       if (this.listConfig?.use_animation === "是") {
         obj = {
-          type: this.listConfig?.animation_type || "跑马灯",
+          type: this.listConfig?.animation_type || this.listConfig.child_animation_type || "跑马灯",
           step: this.listConfig?.animation_step || "100",
           direction: this.listConfig?.animation_direction || "由左往右",
           interval: (this.listConfig?.animation_interval || 1) * 1000, // 转换为毫秒
