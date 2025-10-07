@@ -27,10 +27,6 @@ export default {
     },
     // 更新表字段的最小列宽的请求参数
     calcTableColumnWidthReq() {
-      const tableName = this.columnWidthMap[key].fieldInfo.table_name
-      if (!tableName) {
-        return false
-      }
       if (Object.keys(this.columnWidthMap)?.length) {
         const arr = [];
         Object.keys(this.columnWidthMap).forEach((key) => {
@@ -38,6 +34,10 @@ export default {
             this.columnWidthMap[key]?.width &&
             !isNaN(parseFloat(this.columnWidthMap[key].width))
           ) {
+            const tableName = this.columnWidthMap[key].fieldInfo?.table_name
+            if (!tableName) {
+              return false
+            }
             arr.push({
               serviceName: "srvsys_table_columns_update",
               data: [{ list_min_width: this.columnWidthMap[key].width }],
@@ -57,15 +57,18 @@ export default {
     },
     // 更新服务列最小列宽的请求参数
     calcColumnWidthReq() {
+      // const columnService = 'srvsys_service_columns_query_update'
+      const columnService = 'srvsys_service_columns_update'
       if (Object.keys(this.columnWidthMap)?.length) {
         const arr = [];
-        const service = this.columnWidthMap[key].fieldInfo.service_name
-        const tableName = this.columnWidthMap[key].fieldInfo.table_name
+
         Object.keys(this.columnWidthMap).forEach((key) => {
           if (
             this.columnWidthMap[key]?.width &&
             !isNaN(parseFloat(this.columnWidthMap[key].width))
           ) {
+            const service = this.columnWidthMap[key].fieldInfo.service_name
+            const tableName = this.columnWidthMap[key].fieldInfo.table_name
             const condition = [
               { colName: "columns", value: key, ruleType: "eq" },
               { colName: "service_name", value: service, ruleType: "eq", },
@@ -78,7 +81,7 @@ export default {
               })
             }
             arr.push({
-              serviceName: "srvsys_service_columns_query_update",
+              serviceName: columnService,
               data: [{ list_min_width: this.columnWidthMap[key].width }],
               condition: condition
             });
@@ -120,7 +123,9 @@ export default {
     },
     // 更新服务列的最小宽度
     saveColumnWidth() {
-      const url = this.getServiceUrl("operate", 'srvsys_service_columns_query_update');
+      // const service = 'srvsys_service_columns_query_update'
+      const service = 'srvsys_service_columns_update'
+      const url = this.getServiceUrl("operate", service);
       const req = this.calcColumnWidthReq;
       const loading = this.$loading({
         lock: true,
