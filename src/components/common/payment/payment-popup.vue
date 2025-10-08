@@ -140,6 +140,22 @@
               v-model="payInfo.pay_user"
             ></el-input></span></el-col>
       </el-row>
+      <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        ><span class="col_t">支付凭证：</span></el-col>
+        <el-col :span="16">
+           <upload-image
+              ref="uploadImages"
+              :field="getUploadField(payInfo)"
+              @change="imgChange($event, payInfo.pay_voucher)"
+            />
+        </el-col>
+      </el-row>
       <!--二维码生成区域-->
       <div
         class="qrcode_info"
@@ -199,11 +215,13 @@ import payment from './payment';
 const payUtils = new payment();
 import QrCode from "@/pages/datav/component/page-item/qr-code/qr-code.vue";
 import payStatus from "@/components/common/payment/pay-status.vue";
+import UploadImage from '../../ui/upload-image.vue';
 export default {
   name: "payment-popup",
   components: {
     QrCode,
-    payStatus
+    payStatus,
+    UploadImage
   },
   data() {
     return {
@@ -217,11 +235,15 @@ export default {
       payWays: [
         {
           code: 1,
-          label: "现金支付",
+          label: "公户转账",
         },
         {
           code: 2,
           label: "扫描支付",
+        },
+        {
+          code: 3,
+          label: "个人支付",
         },
       ],
       qrcodeInfo: {
@@ -235,6 +257,8 @@ export default {
         pay_amount: '',  //付款金额
         pay_user: '',  //付款人
         pay_remark: '', //付款备注,
+        pay_voucher: '', //支付凭证
+        pay_method:'', //支付方式
         order_details: [] //支付详情项
       },
       validationError: '', // 验证错误信息
@@ -278,11 +302,15 @@ export default {
           this.payWays = [
             {
               code: 1,
-              label: "现金支付",
+              label: "公户转账",
             },
             {
               code: 2,
               label: "扫码支付",
+            },
+            {
+              code: 3,
+              label: "个人支付",
             },
           ]
         }
@@ -316,6 +344,78 @@ export default {
     }
   },
   methods: {
+     // 获取上传组件的field配置
+    getUploadField(item) {
+        // 创建一个配置对象，支持图片上传和预览
+        const field = {
+          info: {
+            editor: 'upload-image',
+            label: '上传图片',
+            type: 'Image',
+            visible: true,
+            name: 'pay_voucher',
+            bodyVisible: true,
+            editable: true,
+            srvCol: {
+              service_name: 'srvpark_contract_rent_bill_select',
+              columns: 'pay_voucher',
+              table_name: 'bxpark_contract_rent_bill',
+              label: '上传图片'
+            },
+            moreConfig: {
+              fileMaxSize: 10 // 10MB
+            }
+          },
+          // 模拟必要的方法
+          getAnyValidateError: function() { return ''; },
+          serviceApi: function() {
+            // 返回实际的上传下载URL
+            return {
+              uploadFile: '/file/upload',
+              downloadFile: '/file/download?filePath='
+            };
+          },
+          // 添加fileType和fileSize配置
+          fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp",
+          fileSize: 10 * 1024 ,
+          // 添加自定义处理上传成功的逻辑
+          handleSuccess: function(response) {
+            // 直接使用fileurl构建完整的图片URL
+            if (response.fileurl) {
+              // 构建完整的图片URL并设置到model中
+              const fullUrl = '/file/download?filePath=' + response.fileurl;
+            }
+            return response.file_no || '';
+          }
+        };
+        
+        // 使用Object.defineProperty创建model属性，确保与upload-image组件正确配合
+        Object.defineProperty(field, 'model', {
+          get: function() {
+            console.log('get image', item.pay_voucher);
+            // 如果是数组，取第一个元素；否则返回原值
+            return item && typeof item === 'object' ? (item.pay_voucher || '') : '';
+          },
+          set: function(value) {
+              // 确保item是对象类型再设置属性
+              if (item && typeof item === 'object') {
+                item.pay_voucher = value;
+              }
+          }
+        });
+        
+        return field;
+      },
+    
+    // 处理图片变化事件
+    imgChange(value, item) {
+        console.log('imgChange4444444', value, item);
+        // 确保item是对象类型再设置属性
+        if (item && typeof item === 'object') {
+          item.image = value;
+        }
+      },
+    
     keepStatusInfo() {
       let that = this;
       if (that.payTimer) {
@@ -405,6 +505,7 @@ export default {
       this.payInfo.order_details = this.orderList.map(item => ({
         su_order_no: item.su_order_no
       }));
+      this.payInfo.pay_method = this.payWays.find(item => item.code === this.payStep).label;
       let payInfoParam = JSON.parse(JSON.stringify(this.payInfo));
       delete payInfoParam.pending_amount;
       if (this.payStep === 2) {
@@ -479,6 +580,7 @@ export default {
         this.isShowQrcode = false;
         this.qrcodeInfo.qrCd = null
       }
+      this.$refs.uploadImages.fileLists = [];
     },
     handleBack() {
       this.handleStatus = false;
