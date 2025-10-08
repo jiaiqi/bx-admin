@@ -143,6 +143,7 @@
       <el-row
         :gutter="20"
         style="margin:5px 0"
+        v-if="payStep !== 2"
       >
         <el-col
           :span="6"
