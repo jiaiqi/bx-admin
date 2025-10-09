@@ -22,8 +22,8 @@ module.exports = {
         return {
           ...options,
           presets: [
-            ['@babel/preset-env', { 
-              useBuiltIns: 'entry', 
+            ['@babel/preset-env', {
+              useBuiltIns: 'entry',
               corejs: 3,
               targets: {
                 browsers: ['> 1%', 'last 2 versions', 'not ie <= 8']
@@ -69,7 +69,7 @@ module.exports = {
       config.plugins.delete('preload');
       config.plugins.delete('prefetch');
     }
-    
+
     // 生产环境优化preload和prefetch策略 - 解决首次加载过慢问题
     if (process.env.NODE_ENV === "production") {
       // 完全禁用preload，避免首次加载过多资源
@@ -103,7 +103,7 @@ module.exports = {
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
   outputDir: "vpages",
-  
+
   configureWebpack: {
     // 性能优化
     performance: {
@@ -111,7 +111,7 @@ module.exports = {
       maxEntrypointSize: 1024000, // 提高入口文件大小限制到1MB
       maxAssetSize: 1024000 // 提高资源文件大小限制到1MB
     },
-    
+
     // 优化解析
     resolve: {
       alias: {
@@ -126,11 +126,11 @@ module.exports = {
       sideEffects: true, // 开启副作用分析
       splitChunks: {
         chunks: "all",
-        minSize: 50 * 1000, // 提高最小chunk大小，减少过度分割
-        maxSize: 800 * 1000, // 提高最大chunk大小
-        minChunks: 2, // 至少被2个chunk引用才分离
-        maxAsyncRequests: 30, // 减少异步请求数量
-        maxInitialRequests: 20, // 减少初始请求数量
+        minSize: 100 * 1000, // 提高最小chunk大小到100KB，减少过度分割
+        maxSize: 500 * 1000, // 降低最大chunk大小到500KB，避免单个包过大
+        minChunks: 3, // 提高至少被3个chunk引用才分离
+        maxAsyncRequests: 10, // 大幅减少异步请求数量
+        maxInitialRequests: 8, // 大幅减少初始请求数量
         automaticNameDelimiter: "~",
         name: true,
         cacheGroups: {
@@ -142,7 +142,7 @@ module.exports = {
             chunks: 'all',
             enforce: false
           },
-          
+
           //Vue主包不会强制分离
           'vue-vendor': {
             test: /[\\/]node_modules[\\/](vue|vue-router|vuex)[\\/]/,
@@ -151,7 +151,7 @@ module.exports = {
             chunks: 'all',
             enforce: false
           },
-          
+
           // 编辑器分包 -按需只对异步chunk分离
           'editor-vendor': {
             test: /[\\/]node_modules[\\/](@wangeditor|tinymce|codemirror|ace-builds|simple-mind-map|@tiptap)[\\/]/,
@@ -160,7 +160,7 @@ module.exports = {
             chunks: 'async',
             enforce: false
           },
-          
+
           // Echarts 分包按需，异步chunk分离
           'echarts-vendor': {
             test: /[\\/]node_modules[\\/]echarts[\\/]/,
@@ -169,7 +169,7 @@ module.exports = {
             chunks: 'async',
             enforce: false
           },
-          
+
           // 工具库分包
           'utils-vendor': {
             test: /[\\/]node_modules[\\/](lodash|moment|dayjs|axios|jquery)[\\/]/,
@@ -178,7 +178,7 @@ module.exports = {
             chunks: 'all',
             enforce: false
           },
-          
+
           // 其他大型库分包，按需，只对异步chunk分离
           'other-vendor': {
             test: /[\\/]node_modules[\\/](@antv|xlsx|jspdf|html2canvas|ezuikit-js|vue-easytable)[\\/]/,
@@ -187,7 +187,7 @@ module.exports = {
             chunks: 'async',
             enforce: false
           },
-          
+
           // Bootstrap分包，按需，只对异步chunk分离
           'bootstrap-vendor': {
             test: /[\\/]node_modules[\\/](bootstrap|bootstrap-vue|bootstrap-icons)[\\/]/,
@@ -196,7 +196,7 @@ module.exports = {
             chunks: 'async',
             enforce: false
           },
-          
+
           //其他第三方分包，最后处理
           vendors: {
             test: /[\\/]node_modules[\\/]/,
@@ -224,44 +224,44 @@ module.exports = {
 
     plugins: process.env.NODE_ENV !== "development"
       ? [
-          // Gzip压缩配置优化
-          new CompressionWebpackPlugin({
-            algorithm: "gzip",
-            test: new RegExp("\\.(" + productionGzipExtensions.join("|") + ")$"),
-            threshold: 8192, //最低8k
-            minRatio: 0.8,
-            deleteOriginalAssets: false//不再保留源文件
-          }),
-          
-          //ig moment.js的locale文件
-          new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-          
-          //igElementUI的locale文件
-          new webpack.IgnorePlugin(/^\.\/locale$/, /element-ui$/),
-          
-          //环境变量
-          new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-          }),
-          
-          //模块ID
-          new webpack.HashedModuleIdsPlugin(),
-          
-          // 添加BundleAnalyzerPlugin用于分析 - 只在需要分析时启用
-          // new BundleAnalyzerPlugin({
-          //   analyzerMode: 'static',
-          //   openAnalyzer: false,
-          //   reportFilename: 'bundle-report.html',
-          //   generateStatsFile: true,
-          //   statsFilename: 'bundle-stats.json'
-          // })
-        ]
+        // Gzip压缩配置优化
+        new CompressionWebpackPlugin({
+          algorithm: "gzip",
+          test: new RegExp("\\.(" + productionGzipExtensions.join("|") + ")$"),
+          threshold: 8192, //最低8k
+          minRatio: 0.8,
+          deleteOriginalAssets: false//不再保留源文件
+        }),
+
+        //ig moment.js的locale文件
+        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+
+        //igElementUI的locale文件
+        new webpack.IgnorePlugin(/^\.\/locale$/, /element-ui$/),
+
+        //环境变量
+        new webpack.DefinePlugin({
+          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+        }),
+
+        //模块ID
+        new webpack.HashedModuleIdsPlugin(),
+
+        // 添加BundleAnalyzerPlugin用于分析 - 只在需要分析时启用
+        // new BundleAnalyzerPlugin({
+        //   analyzerMode: 'static',
+        //   openAnalyzer: false,
+        //   reportFilename: 'bundle-report.html',
+        //   generateStatsFile: true,
+        //   statsFilename: 'bundle-stats.json'
+        // })
+      ]
       : [
-          new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-          new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-          })
-        ]
+        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+        new webpack.DefinePlugin({
+          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+        })
+      ]
   },
 
   devServer: {
