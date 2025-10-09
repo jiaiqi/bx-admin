@@ -117,7 +117,7 @@
                 "
             >
             </userlist>
-
+<!-- 
             <ueditorPlus
               :field="field"
               ref="snote"
@@ -126,14 +126,14 @@
                 $emit('field-value-changed', field.info.name, field)
                 "
             >
-            </ueditorPlus>
+            </ueditorPlus> -->
             <wang-editor
               ref="editor"
               :disabled="getDisabled"
               :field="field"
               v-model="field.model"
               @change="$emit('field-value-changed', field.info.name, field)"
-              v-else-if="field.info.editor === 'ueditor'"
+              v-else-if="['snote','ueditor'].includes(field.info.editor)"
             >
             </wang-editor>
             <!-- <wang-editor
@@ -149,7 +149,7 @@
               "
             >
             </wang-editor> -->
-            <TinymceEditor
+            <!-- <TinymceEditor
               :disabled="getDisabled"
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -157,7 +157,7 @@
                 $emit('field-value-changed', field.info.name, field)
                 "
               ref="editor"
-            ></TinymceEditor>
+            ></TinymceEditor> -->
             <!-- <ueditor
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -869,8 +869,8 @@
 import InputRange from "../ui/input-range.vue";
 import Finder from "../ui/finder.vue";
 import multiFinder from "../ui/multi-finder.vue";
-import UEditor from "../ui/ueditor.vue";
-import TinymceEditor from "./tinymce/index.vue";
+// import UEditor from "../ui/ueditor.vue";
+// import TinymceEditor from "./tinymce/index.vue";
 // import UploadFile from "../ui/upload-file.vue";
 import UploadImage from "../ui/upload-image.vue";
 import TreeFinder from "../ui/tree-finder.vue";
@@ -884,7 +884,7 @@ import jsonTableEditor from "../ui/json-table-editor/index.vue";
 
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
-import ueditorPlus from "../ui/ueditor-plus.vue";
+// import ueditorPlus from "../ui/ueditor-plus.vue";
 // import tiptapEditor from "../ui/tiptap-editor/video-home.vue";
 import wangEditor from "../ui/wang-editor/wang-editor.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
@@ -916,7 +916,7 @@ export default {
     wangEditor,
     // tiptapEditor,
     ueditor: UEditor,
-    TinymceEditor,
+    // TinymceEditor,
     QrCode,
     multiFinder,
     dynamicSubTemp,
