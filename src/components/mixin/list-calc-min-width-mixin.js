@@ -111,6 +111,7 @@ export default {
         this.$set(this.columnWidthMap, column.columnKey, {
           width: newWidth > 50 ? newWidth : 50,
           fieldInfo: {
+            id: field.srvcol?.id,
             column: column.columnKey,
             service_name: field.srvcol?.service_name,
             table_name: field.srvcol?.table_name,
