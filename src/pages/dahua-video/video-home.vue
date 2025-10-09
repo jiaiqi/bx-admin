@@ -55,7 +55,7 @@
       <!-- 保存按钮区域 -->
       <div
         class="save-controls"
-        v-if="hasChannelsChanged"
+        v-if="!isPlayerLoading && hasChannelsChanged && props && props.video_card_channels"
       >
         <el-button
           type="primary"
@@ -450,7 +450,9 @@ const initPlayer = () => {
       console.error('销毁播放器时发生错误:', error);
     }
   }
-  return new Promise((resolve) => {
+  // 创建新的播放器实例
+  return new Promise((resolve, reject) => {
+
     myVideoPlayer = new VideoPlayer({
       videoId: "play_dh",
       windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
@@ -469,7 +471,7 @@ const initPlayer = () => {
         myVideoPlayer.changeDivision(props.division)
         // 播放器加载完成，隐藏加载动画
         isPlayerLoading.value = false
-        console.info('创建播放器成功:', versionInfo);
+        console.warn('创建播放器成功:', versionInfo);
         resolve();
       },
       // 创建播放器失败回调
@@ -477,25 +479,24 @@ const initPlayer = () => {
         // 有错误码，可打印查看错误信息
         isPlayerLoading.value = false
         console.error('创建播放器失败:', err);
-        resolve();
+        reject(err);
       },
       // 插件公共回调
       dhPlayerMessage: (info, err) => {
-        console.info('插件公共回调:', info, err);
+        console.warn('插件公共回调:', info, err);
       },
       // 实时预览成功回调
       realSuccess: (info) => {
-        console.info('实时预览成功:', info);
-        resolve();
+        console.warn('实时预览成功-init:', info);
       },
       // 实时预览失败回调
       realError: (info, err) => {
         console.error('实时预览失败:', info, err);
-        resolve();
+
       },
       // 对讲成功回调
       talkSuccess: (info) => {
-        console.info('对讲成功:', info);
+        console.warn('对讲成功:', info);
       },
       // 对讲失败回调
       talkError: (info, err) => {
@@ -503,18 +504,18 @@ const initPlayer = () => {
       },
       // 录像播放成功回调
       playbackSuccess: (info) => {
-        console.info('录像播放成功:', info);
-        resolve();
+        console.warn('录像播放成功:', info);
+
       },
       // 录像播放失败回调
       playbackError: (info, err) => {
         console.error('录像播放失败:', info, err);
-        resolve();
+
       },
       // 录像播放完成回调
       playbackFinish: (info) => {
-        console.info('录像播放完成:', info);
-        resolve();
+        console.warn('录像播放完成:', info);
+
       },
       // 抓图成功回调
       snapshotSuccess: ({ base64Url, path }, info) => {
@@ -533,35 +534,35 @@ const initPlayer = () => {
         aLink.download = "图片名称.jpg"; //这里写保存时的图片名称
         aLink.href = URL.createObjectURL(blob);
         aLink.click();
-        console.info('抓图成功:', info);
+        console.warn('抓图成功:', info);
       },
       // 关闭视频窗口回调
       closeWindowSuccess: ({ isAll, snum, channelList }) => {
-        console.info('关闭视频窗口成功:', { isAll, snum, channelList });
+        console.warn('关闭视频窗口成功:', { isAll, snum, channelList });
       },
       // 鼠标单击窗口回调
       clickWindow: (snum) => {
         // 点击窗口时，更新当前选择的窗口索引
         if (!isPlaybackMode.value) {
           selectedWindow.value = snum;
-          console.info('当前选择的实时窗口：', snum + 1);
+          console.warn('当前选择的实时窗口：', snum + 1);
         }
         if (isPlaybackMode.value && !isPlaying.value) {
           selectedWindow.value = snum;
-          console.info('当前选择的回放窗口：', snum + 1);
+          console.warn('当前选择的回放窗口：', snum + 1);
         }
       },
       // 鼠标双击窗口回调
       dbClickWindow: (snum) => {
-        console.info('鼠标双击窗口:', snum);
+        console.warn('鼠标双击窗口:', snum);
       },
       // 播放器窗口的数量回调
       changeDivision: (division) => {
-        console.info('播放器窗口的数量回调:', division);
+        console.warn('播放器窗口的数量回调:', division);
       },
       // rtsp 流下载录像成功回调
       downloadRecordSuccess: (info) => {
-        console.info('rtsp 流下载录像成功:', info);
+        console.warn('rtsp 流下载录像成功:', info);
       },
       // rtsp 流下载录像失败回调
       downloadRecordError: (info, err) => {
@@ -585,7 +586,7 @@ const playStartReal = (id, windowIndex = 0) => {
 
   // 更新窗口通道信息
   windowChannels.value[windowIndex] = id;
-  console.log('当前所有窗口通道信息：', windowChannels.value);
+  console.warn('当前所有窗口通道信息：', windowChannels.value);
 
   // 通知父组件窗口通道信息变化
   notifyParentWindowChannelsChange();
@@ -599,7 +600,7 @@ const playStartReal = (id, windowIndex = 0) => {
     cameraType: '1',  // 摄像头类型 (用于云台)
     capability: '00000000000000000000000000000001', // 能力集 (用于云台)
     realSuccess: (info) => {
-      console.info('实时预览成功:', info);
+      console.warn('playStartReal实时预览成功:', info);
     },
     // 实时预览失败回调
     realError: (info, err) => {
@@ -658,7 +659,7 @@ const startPlayback = () => {
         streamType: 0,
         snum: selectedWindow.value
       }]);
-      console.info('开始回放:', {
+      console.warn('开始回放:', {
         channelId: videoChannel.value,
         startTime: playbackStartTime.value,
         endTime: playbackEndTime.value,
@@ -844,7 +845,7 @@ const cancelPlayback = () => {
         },
         // 添加实时预览成功回调
         realSuccess: (info) => {
-          console.log('实时预览成功:', info);
+          console.log('实时预览成功-back:', info);
         },
         // 添加实时预览失败回调
         realError: (info, err) => {
@@ -931,7 +932,7 @@ const initWindowChannels = () => {
   try {
     if (props.video_card_channels) {
       const defaultChannels = JSON.parse(props.video_card_channels);
-      console.log('初始化窗口通道配置:', defaultChannels);
+      console.warn('初始化窗口通道配置:', defaultChannels);
 
       // 设置默认值
       windowChannels.value = { ...defaultChannels };
@@ -939,14 +940,14 @@ const initWindowChannels = () => {
 
       // 如果有默认值，自动播放
       if (Object.keys(defaultChannels).length > 0) {
-        console.log('检测到默认通道配置，准备自动播放');
+        console.warn('检测到默认通道配置，准备自动播放');
         // 延迟执行，确保播放器已初始化
         setTimeout(() => {
           Object.keys(defaultChannels).forEach(windowIndex => {
-            const channelInfo = defaultChannels[windowIndex];
-            if (channelInfo && channelInfo.chnl_no) {
-              console.log(`自动播放窗口 ${windowIndex}，通道: ${channelInfo.chnl_no}`);
-              playStartReal(channelInfo.chnl_no, parseInt(windowIndex));
+            const chnl_no = defaultChannels[windowIndex];
+            if (chnl_no) {
+              console.warn(`自动播放窗口 ${windowIndex}，通道: ${chnl_no}`);
+              playStartReal(chnl_no, parseInt(windowIndex));
             }
           });
         }, 1000);
@@ -966,10 +967,18 @@ onMounted(async () => {
 
 
   await getVideoInfo()
-  await initPlayer()
+  try {
+    await initPlayer()
 
-  // 初始化窗口通道配置
-  initWindowChannels();
+  } catch (error) {
+    console.error('初始化播放器失败:', error);
+  }
+
+  setTimeout(() => {
+    // 初始化窗口通道配置
+    initWindowChannels();
+
+  }, 3000);
 
 })
 
