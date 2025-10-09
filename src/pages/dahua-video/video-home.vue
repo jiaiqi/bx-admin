@@ -372,35 +372,45 @@ const initPlayer = () => {
       myVideoPlayer.changeDivision(props.division)
       // 播放器加载完成，隐藏加载动画
       isPlayerLoading.value = false
+      console.info('创建播放器成功:', versionInfo);
     },
     // 创建播放器失败回调
     createError: (err) => {
       // 有错误码，可打印查看错误信息
-      console.log(err)
+      isPlayerLoading.value = false
+      console.error('创建播放器失败:', err);
     },
     // 插件公共回调
     dhPlayerMessage: (info, err) => {
+      console.info('插件公共回调:', info, err);
     },
     // 实时预览成功回调
     realSuccess: (info) => {
+      console.info('实时预览成功:', info);
     },
     // 实时预览失败回调
     realError: (info, err) => {
+      console.error('实时预览失败:', info, err);
     },
     // 对讲成功回调
     talkSuccess: (info) => {
+      console.info('对讲成功:', info);
     },
     // 对讲失败回调
     talkError: (info, err) => {
+      console.error('对讲失败:', info, err);
     },
     // 录像播放成功回调
     playbackSuccess: (info) => {
+      console.info('录像播放成功:', info);
     },
     // 录像播放失败回调
     playbackError: (info, err) => {
+      console.error('录像播放失败:', info, err);
     },
     // 录像播放完成回调
     playbackFinish: (info) => {
+      console.info('录像播放完成:', info);
     },
     // 抓图成功回调
     snapshotSuccess: ({ base64Url, path }, info) => {
@@ -419,28 +429,34 @@ const initPlayer = () => {
       aLink.download = "图片名称.jpg"; //这里写保存时的图片名称
       aLink.href = URL.createObjectURL(blob);
       aLink.click();
+      console.info('抓图成功:', info);
     },
     // 关闭视频窗口回调
     closeWindowSuccess: ({ isAll, snum, channelList }) => {
+      console.info('关闭视频窗口成功:', { isAll, snum, channelList });
     },
     // 鼠标单击窗口回调
     clickWindow: (snum) => {
       if (isPlaybackMode.value && !isPlaying.value) {
         selectedWindow.value = snum;
-        console.log('当前选择的回放窗口：', snum + 1);
+        console.info('当前选择的回放窗口：', snum + 1);
       }
     },
     // 鼠标双击窗口回调
     dbClickWindow: (snum) => {
+      console.info('鼠标双击窗口:', snum);
     },
     // 播放器窗口的数量回调
     changeDivision: (division) => {
+      console.info('播放器窗口的数量回调:', division);
     },
     // rtsp 流下载录像成功回调
     downloadRecordSuccess: (info) => {
+      console.info('rtsp 流下载录像成功:', info);
     },
     // rtsp 流下载录像失败回调
     downloadRecordError: (info, err) => {
+      console.error('rtsp 流下载录像失败:', info, err);
     }
   });
 }
@@ -468,6 +484,13 @@ const playStartReal = (id, windowIndex = 0) => {
     deviceType: 2, // talkType 对讲类型  1-设备对讲 2-通道对讲 设备类别 (插件对讲时，需要配置该参数，否则无法对讲)
     cameraType: '1',  // 摄像头类型 (用于云台)
     capability: '00000000000000000000000000000001', // 能力集 (用于云台)
+    realSuccess: (info) => {
+      console.info('实时预览成功:', info);
+    },
+    // 实时预览失败回调
+    realError: (info, err) => {
+      console.error('实时预览失败:', info, err);
+    },
   }])
 }
 //历史回放
@@ -521,6 +544,14 @@ const startPlayback = () => {
         streamType: 0,
         snum: selectedWindow.value
       }]);
+      console.info('开始回放:', {
+        channelId: videoChannel.value,
+        startTime: playbackStartTime.value,
+        endTime: playbackEndTime.value,
+        recordSource: recordSource.value,
+        streamType: 0,
+        snum: selectedWindow.value
+      });
     },
     createError: (err) => {
       console.error('创建播放器失败:', err);
