@@ -34,4 +34,11 @@ export default [
     name: "waybill",
     component: () => import(/* webpackChunkName: "waybill" */ "@/pages/waybill.vue"),
   },
+  
+  // ==================== 园区大华视频监控 ====================
+  {
+    path: "/dhvideo",
+    name: "dhvideo",
+    component: () => import(/* webpackChunkName: "video" */ "@/pages/dahua-video/video-home.vue"),
+  },
 ];

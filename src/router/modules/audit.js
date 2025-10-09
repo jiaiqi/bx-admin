@@ -43,11 +43,4 @@ export default [
     name: "quick",
     component: () => import(/* webpackChunkName: "order" */ "@/pages/audit/workdistribution/quickBilling/quick-billing.vue"),
   },
-
-  // ==================== 视频监控 ====================
-  {
-    path: "/dhvideo",
-    name: "dhvideo",
-    component: () => import(/* webpackChunkName: "video" */ "@/pages/dahua-video/video-home.vue"),
-  },
 ];
