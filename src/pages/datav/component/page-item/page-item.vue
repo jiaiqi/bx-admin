@@ -259,9 +259,11 @@
     <DhVideo
       v-else-if="pageItemData.com_type === '大华视频监控'"
       :pageItem="pageItemData"
+      :video_card_channels="pageItemData.video_card_channels"
       :division="pageItemData.division"
       :page-params-model="pageParamsModel"
       :query-options="queryOptions"
+
     ></DhVideo>
     <!--    <chat-entrance-->
     <!--        v-else-if="pageItemData.com_type === '咨询入口'"-->
@@ -477,6 +479,12 @@ export default {
     },
   },
   methods: {
+    handleWindowChannelsChange(channels) {
+       console.log('窗口通道信息变化:', data.windowChannels);
+  // 在这里保存或处理窗口通道映射信息
+  // 例如：保存到 localStorage 或发送到服务器
+
+    },
     onDelete() {
       this.$emit("delete", this.pageItem);
     },

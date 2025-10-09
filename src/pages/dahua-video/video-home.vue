@@ -1,5 +1,8 @@
 <template>
-  <div class="video_page" :class="currentTheme">
+  <div
+    class="video_page"
+    :class="currentTheme"
+  >
     <div
       class="tree_left"
       :class="{ 'with-playback': videoChannel, 'collapsed': isCollapsed }"
@@ -49,6 +52,22 @@
           </span>
         </el-tree>
       </li>
+      <!-- 保存按钮区域 -->
+      <div
+        class="save-controls"
+        v-if="hasChannelsChanged"
+      >
+        <el-button
+          type="primary"
+          size="mini"
+          @click="saveWindowChannels"
+          class="save-btn"
+        >
+          <i class="el-icon-check"></i>
+          保存配置
+        </el-button>
+      </div>
+
       <div class="playback-controls">
         <div class="control-title">历史回放</div>
         <div class="divider"></div>
@@ -114,7 +133,10 @@
     </div>
     <div class="video_cot_area">
       <!-- 加载动画 -->
-      <div v-if="isPlayerLoading" class="video-loading-container">
+      <div
+        v-if="isPlayerLoading"
+        class="video-loading-container"
+      >
         <div class="video-loading-spinner">
           <div class="spinner-ring"></div>
         </div>
@@ -135,9 +157,13 @@ import { Notification } from 'element-ui';
 import {
   useRouter,
   useRoute,
+  useHttp,
 } from "@/common/vueApi";
+
+// 定义 emit 事件
+const emit = defineEmits(['window-channels-change', 'save-window-channels']);
 const route = useRoute();
-const shieldClass = ['shield-class', 'select','layui-nav closeBox','tab-buttons','layui-nav-child','layui-side','layui-header','property-panel-container','materials-panel-container']
+const shieldClass = ['shield-class', 'select', 'layui-nav closeBox', 'tab-buttons', 'layui-nav-child', 'layui-side', 'layui-header', 'property-panel-container', 'materials-panel-container']
 const Videos = new VideoUtil();
 const videoTree = ref([]);
 const expandedKeys = ref([]);
@@ -153,6 +179,14 @@ const props = defineProps({
   division: {
     type: Number,
     default: 9
+  },
+  pageItem: {
+    type: Object,
+    default: () => ({})
+  },
+  video_card_channels: {
+    type: String,
+    default: ''
   }
 })
 
@@ -169,7 +203,7 @@ const isPlaybackMode = ref(false);
 const selectedWindow = ref(0);
 const recordSource = ref(2); // 默认选择设备录像
 // 添加收缩状态控制
-const isCollapsed = ref(false);
+const isCollapsed = ref(true);
 // 记录每个窗口的通道信息
 const windowChannels = ref({});
 // 保存回放前的播放器状态
@@ -184,6 +218,10 @@ const currentTheme = ref('dark-theme');
 // 添加播放器加载状态
 const isPlayerLoading = ref(true);
 
+// 添加窗口通道变化监听相关状态
+const hasChannelsChanged = ref(false);
+const originalWindowChannels = ref({});
+
 // 检测是否在iframe中
 const isInIframe = () => {
   try {
@@ -192,11 +230,61 @@ const isInIframe = () => {
     return true;
   }
 };
+const http = useHttp();
+// 保存窗口通道配置
+const saveWindowChannels = async () => {
+  console.log('保存窗口通道配置:', windowChannels.value);
+
+  // 发送事件给父组件
+  emit('save-window-channels', {
+    windowChannels: windowChannels.value,
+    timestamp: new Date().toISOString()
+  });
+  const url = `config/operate/srvpage_cfg_page_component_update`
+  const req = [{
+    "serviceName": "srvpage_cfg_page_component_update",
+    "condition": [{ "colName": "com_no", "ruleType": "eq", "value": props.pageItem.com_no }],
+    "data": [{ "video_card_channels": JSON.stringify(windowChannels.value) }]
+  }]
+  const res = await http.post(url, req)
+  if (res.data.state === 'SUCCESS') {
+    // 更新原始配置，重置变化标记
+    originalWindowChannels.value = { ...windowChannels.value };
+    hasChannelsChanged.value = false;
+    // 显示保存成功提示
+    Notification({
+      title: '保存成功',
+      message: '窗口通道配置已保存',
+      type: 'success',
+      duration: 2000
+    });
+
+  } else {
+    Notification({
+      title: '保存失败',
+      message: '窗口通道配置保存失败',
+      type: 'error',
+      duration: 2000
+    });
+  }
+
+};
 
 // 根据环境自动选择主题
 const getThemeClass = () => {
-  return  ['website','lowcode-view'].includes(route.name) ? 'blue-theme':'dark-theme';
+  return ['website', 'lowcode-view'].includes(route.name) ? 'blue-theme' : 'dark-theme';
   return isInIframe() ? 'blue-theme' : 'dark-theme';
+};
+
+// 通知父组件窗口通道信息变化
+const notifyParentWindowChannelsChange = () => {
+  const channelsData = {
+    windowChannels: { ...windowChannels.value },
+    timestamp: Date.now()
+  };
+  console.log('通知父组件窗口通道信息变化:', channelsData);
+  hasChannelsChanged.value = true;
+  emit('window-channels-change', channelsData);
 };
 
 const setNode = (data) => {
@@ -237,6 +325,9 @@ const switchChannelInSingleWindow = (newChannelId) => {
     }
     // 清空当前窗口的通道信息
     windowChannels.value[0] = null;
+
+    // 通知父组件窗口通道信息变化
+    notifyParentWindowChannelsChange();
   } catch (error) {
     console.error('释放窗口通道时发生错误:', error);
   }
@@ -247,11 +338,14 @@ const switchChannelInSingleWindow = (newChannelId) => {
     windowChannels.value[0] = newChannelId;
     console.log('切换后的窗口通道信息：', windowChannels.value);
 
+    // 通知父组件窗口通道信息变化
+    notifyParentWindowChannelsChange();
+
     myVideoPlayer.startReal([{
       channelId: newChannelId,
       channelName: '通道名称',
       snum: 0, // 单窗口模式下固定使用索引0
-      streamType: 1,
+      streamType: 2,
       deviceType: 2,
       cameraType: '1',
       capability: '00000000000000000000000000000001'
@@ -282,6 +376,9 @@ const handleSelect = (selectedKeys, e) => {
     // 记录当前窗口的通道信息
     windowChannels.value[currentWindowIndex] = videoChannel.value;
     console.log('当前所有窗口通道信息：', windowChannels.value);
+
+    // 通知父组件窗口通道信息变化
+    notifyParentWindowChannelsChange();
 
     // 确保播放器已经初始化
     if (!myVideoPlayer) {
@@ -316,7 +413,7 @@ const handleSelect = (selectedKeys, e) => {
             channelId: videoChannel.value,
             channelName: '通道名称',
             snum: 0, // 单窗口模式下固定使用索引0
-            streamType: 1,
+            streamType: 2,
             deviceType: 2,
             cameraType: '1',
             capability: '00000000000000000000000000000001'
@@ -353,112 +450,126 @@ const initPlayer = () => {
       console.error('销毁播放器时发生错误:', error);
     }
   }
+  return new Promise((resolve) => {
+    myVideoPlayer = new VideoPlayer({
+      videoId: "play_dh",
+      windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
+      usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
+      pluginLoginInfo: LoginInfo,
+      division: props.division, // 默认显示9宫格
+      draggable: false, // 窗口拖拽 【暂不支持】
+      showBar: true, // 底部操作栏， 选传，【true - 显示, false - 隐藏】
+      shieldClass: shieldClass, // 如果DOM元素被插件挡住了，把DOM元素的类名传入。
+      coverShieldClass: ['video_cot_area'], // 如果插件要在dom内滚动，需要把DOM元素的类名传入，请查看案例-遮挡
+      parentIframeShieldClass: shieldClass, // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
+      // 创建播放器成功回调
+      createSuccess: (versionInfo) => {
+        console.log(LoginInfo)
+        // 初始化时默认显示9宫格
+        myVideoPlayer.changeDivision(props.division)
+        // 播放器加载完成，隐藏加载动画
+        isPlayerLoading.value = false
+        console.info('创建播放器成功:', versionInfo);
+        resolve();
+      },
+      // 创建播放器失败回调
+      createError: (err) => {
+        // 有错误码，可打印查看错误信息
+        isPlayerLoading.value = false
+        console.error('创建播放器失败:', err);
+        resolve();
+      },
+      // 插件公共回调
+      dhPlayerMessage: (info, err) => {
+        console.info('插件公共回调:', info, err);
+      },
+      // 实时预览成功回调
+      realSuccess: (info) => {
+        console.info('实时预览成功:', info);
+        resolve();
+      },
+      // 实时预览失败回调
+      realError: (info, err) => {
+        console.error('实时预览失败:', info, err);
+        resolve();
+      },
+      // 对讲成功回调
+      talkSuccess: (info) => {
+        console.info('对讲成功:', info);
+      },
+      // 对讲失败回调
+      talkError: (info, err) => {
+        console.error('对讲失败:', info, err);
+      },
+      // 录像播放成功回调
+      playbackSuccess: (info) => {
+        console.info('录像播放成功:', info);
+        resolve();
+      },
+      // 录像播放失败回调
+      playbackError: (info, err) => {
+        console.error('录像播放失败:', info, err);
+        resolve();
+      },
+      // 录像播放完成回调
+      playbackFinish: (info) => {
+        console.info('录像播放完成:', info);
+        resolve();
+      },
+      // 抓图成功回调
+      snapshotSuccess: ({ base64Url, path }, info) => {
+        let byteCharacters = atob(
+          base64Url.replace(/^data:image\/(png|jpeg|jpg);base64,/, "")
+        );
+        let byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        let byteArray = new Uint8Array(byteNumbers);
+        let blob = new Blob([byteArray], {
+          type: undefined,
+        });
+        let aLink = document.createElement("a");
+        aLink.download = "图片名称.jpg"; //这里写保存时的图片名称
+        aLink.href = URL.createObjectURL(blob);
+        aLink.click();
+        console.info('抓图成功:', info);
+      },
+      // 关闭视频窗口回调
+      closeWindowSuccess: ({ isAll, snum, channelList }) => {
+        console.info('关闭视频窗口成功:', { isAll, snum, channelList });
+      },
+      // 鼠标单击窗口回调
+      clickWindow: (snum) => {
+        // 点击窗口时，更新当前选择的窗口索引
+        if (!isPlaybackMode.value) {
+          selectedWindow.value = snum;
+          console.info('当前选择的实时窗口：', snum + 1);
+        }
+        if (isPlaybackMode.value && !isPlaying.value) {
+          selectedWindow.value = snum;
+          console.info('当前选择的回放窗口：', snum + 1);
+        }
+      },
+      // 鼠标双击窗口回调
+      dbClickWindow: (snum) => {
+        console.info('鼠标双击窗口:', snum);
+      },
+      // 播放器窗口的数量回调
+      changeDivision: (division) => {
+        console.info('播放器窗口的数量回调:', division);
+      },
+      // rtsp 流下载录像成功回调
+      downloadRecordSuccess: (info) => {
+        console.info('rtsp 流下载录像成功:', info);
+      },
+      // rtsp 流下载录像失败回调
+      downloadRecordError: (info, err) => {
+        console.error('rtsp 流下载录像失败:', info, err);
+      }
+    });
 
-  myVideoPlayer = new VideoPlayer({
-    videoId: "play_dh",
-    windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
-    usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
-    pluginLoginInfo: LoginInfo,
-    division: props.division, // 默认显示9宫格
-    draggable: false, // 窗口拖拽 【暂不支持】
-    showBar: true, // 底部操作栏， 选传，【true - 显示, false - 隐藏】
-    shieldClass: shieldClass, // 如果DOM元素被插件挡住了，把DOM元素的类名传入。
-    coverShieldClass: ['video_cot_area'], // 如果插件要在dom内滚动，需要把DOM元素的类名传入，请查看案例-遮挡
-    parentIframeShieldClass: shieldClass, // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
-    // 创建播放器成功回调
-    createSuccess: (versionInfo) => {
-      console.log(LoginInfo)
-      // 初始化时默认显示9宫格
-      myVideoPlayer.changeDivision(props.division)
-      // 播放器加载完成，隐藏加载动画
-      isPlayerLoading.value = false
-      console.info('创建播放器成功:', versionInfo);
-    },
-    // 创建播放器失败回调
-    createError: (err) => {
-      // 有错误码，可打印查看错误信息
-      isPlayerLoading.value = false
-      console.error('创建播放器失败:', err);
-    },
-    // 插件公共回调
-    dhPlayerMessage: (info, err) => {
-      console.info('插件公共回调:', info, err);
-    },
-    // 实时预览成功回调
-    realSuccess: (info) => {
-      console.info('实时预览成功:', info);
-    },
-    // 实时预览失败回调
-    realError: (info, err) => {
-      console.error('实时预览失败:', info, err);
-    },
-    // 对讲成功回调
-    talkSuccess: (info) => {
-      console.info('对讲成功:', info);
-    },
-    // 对讲失败回调
-    talkError: (info, err) => {
-      console.error('对讲失败:', info, err);
-    },
-    // 录像播放成功回调
-    playbackSuccess: (info) => {
-      console.info('录像播放成功:', info);
-    },
-    // 录像播放失败回调
-    playbackError: (info, err) => {
-      console.error('录像播放失败:', info, err);
-    },
-    // 录像播放完成回调
-    playbackFinish: (info) => {
-      console.info('录像播放完成:', info);
-    },
-    // 抓图成功回调
-    snapshotSuccess: ({ base64Url, path }, info) => {
-      let byteCharacters = atob(
-        base64Url.replace(/^data:image\/(png|jpeg|jpg);base64,/, "")
-      );
-      let byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      let byteArray = new Uint8Array(byteNumbers);
-      let blob = new Blob([byteArray], {
-        type: undefined,
-      });
-      let aLink = document.createElement("a");
-      aLink.download = "图片名称.jpg"; //这里写保存时的图片名称
-      aLink.href = URL.createObjectURL(blob);
-      aLink.click();
-      console.info('抓图成功:', info);
-    },
-    // 关闭视频窗口回调
-    closeWindowSuccess: ({ isAll, snum, channelList }) => {
-      console.info('关闭视频窗口成功:', { isAll, snum, channelList });
-    },
-    // 鼠标单击窗口回调
-    clickWindow: (snum) => {
-      if (isPlaybackMode.value && !isPlaying.value) {
-        selectedWindow.value = snum;
-        console.info('当前选择的回放窗口：', snum + 1);
-      }
-    },
-    // 鼠标双击窗口回调
-    dbClickWindow: (snum) => {
-      console.info('鼠标双击窗口:', snum);
-    },
-    // 播放器窗口的数量回调
-    changeDivision: (division) => {
-      console.info('播放器窗口的数量回调:', division);
-    },
-    // rtsp 流下载录像成功回调
-    downloadRecordSuccess: (info) => {
-      console.info('rtsp 流下载录像成功:', info);
-    },
-    // rtsp 流下载录像失败回调
-    downloadRecordError: (info, err) => {
-      console.error('rtsp 流下载录像失败:', info, err);
-    }
-  });
+  })
 }
 //实时流播放
 const playStartReal = (id, windowIndex = 0) => {
@@ -476,11 +587,14 @@ const playStartReal = (id, windowIndex = 0) => {
   windowChannels.value[windowIndex] = id;
   console.log('当前所有窗口通道信息：', windowChannels.value);
 
+  // 通知父组件窗口通道信息变化
+  notifyParentWindowChannelsChange();
+
   myVideoPlayer.startReal([{
     channelId: id, // 通道id 【必传】
     channelName: '通道名称', // 通道名称 (用于本地录像下载)
     snum: windowIndex, // 使用指定的窗口序号
-    streamType: 1,  // 1-主码流  2-辅码流 (可不传，默认主码流)
+    streamType: 2,  // 1-主码流  2-辅码流 (可不传，默认主码流)
     deviceType: 2, // talkType 对讲类型  1-设备对讲 2-通道对讲 设备类别 (插件对讲时，需要配置该参数，否则无法对讲)
     cameraType: '1',  // 摄像头类型 (用于云台)
     capability: '00000000000000000000000000000001', // 能力集 (用于云台)
@@ -530,7 +644,7 @@ const startPlayback = () => {
     division: 1,
     draggable: false,
     showBar: true,
-    shieldClass:shieldClass,
+    shieldClass: shieldClass,
     coverShieldClass: ['video_cot_area'],
     parentIframeShieldClass: shieldClass,
     createSuccess: (versionInfo) => {
@@ -688,7 +802,7 @@ const cancelPlayback = () => {
                   channelId: formattedChannelId,
                   channelName: '通道名称',
                   snum: parseInt(windowIndex),
-                  streamType: 1,
+                  streamType: 2,
                   deviceType: 2,
                   cameraType: '1',
                   capability: '00000000000000000000000000000001'
@@ -712,6 +826,9 @@ const cancelPlayback = () => {
                   savedChannels,
                   previousState: previousPlayerState.value
                 });
+
+                // 通知父组件窗口通道信息变化
+                notifyParentWindowChannelsChange();
               }, 200);
             } else {
               console.log('没有需要恢复的通道，当前状态：', {
@@ -778,15 +895,16 @@ const processTreeData = (data) => {
   });
 };
 //获取视频节点树
-const getVideoInfo = () => {
-  Videos.getVideoListByArea().then(res => {
-    if (res.data.state !== 'SUCCESS') return;
-    console.log('---', processTreeData(res.data.data))
-    videoTree.value = processTreeData(res.data.data);
-    console.log('--12videoTree', videoTree.value);
-    console.log(videoTree.value, 'videoTree.value');
-  }).catch(err => {
-  });
+const getVideoInfo = async () => {
+  const res = await Videos.getVideoListByArea()
+  // .then(res => {
+  if (res.data.state !== 'SUCCESS') return;
+  console.log('---', processTreeData(res.data.data))
+  videoTree.value = processTreeData(res.data.data);
+  console.log('--12videoTree', videoTree.value);
+  console.log(videoTree.value, 'videoTree.value');
+  // }).catch(err => {
+  // });
 }
 
 // 监听过滤文本变化
@@ -794,21 +912,65 @@ watch(filterText, (val) => {
   tree.value?.filter(val);
 });
 
+// 监听 windowChannels 变化
+watch(() => windowChannels.value, (newValue, oldValue) => {
+  // 深度比较新值和原始值
+  const isChanged = JSON.stringify(newValue) !== JSON.stringify(originalWindowChannels.value);
+  hasChannelsChanged.value = isChanged;
+  console.log('窗口通道变化检测:', { isChanged, newValue, originalValue: originalWindowChannels.value });
+}, { deep: true });
+
 // 过滤节点方法
 const filterNode = (value, data) => {
   if (!value) return true;
   return data.area_name.toLowerCase().includes(value.toLowerCase());
 };
 
-onMounted(() => {
+// 初始化窗口通道配置
+const initWindowChannels = () => {
+  try {
+    if (props.video_card_channels) {
+      const defaultChannels = JSON.parse(props.video_card_channels);
+      console.log('初始化窗口通道配置:', defaultChannels);
+
+      // 设置默认值
+      windowChannels.value = { ...defaultChannels };
+      originalWindowChannels.value = { ...defaultChannels };
+
+      // 如果有默认值，自动播放
+      if (Object.keys(defaultChannels).length > 0) {
+        console.log('检测到默认通道配置，准备自动播放');
+        // 延迟执行，确保播放器已初始化
+        setTimeout(() => {
+          Object.keys(defaultChannels).forEach(windowIndex => {
+            const channelInfo = defaultChannels[windowIndex];
+            if (channelInfo && channelInfo.chnl_no) {
+              console.log(`自动播放窗口 ${windowIndex}，通道: ${channelInfo.chnl_no}`);
+              playStartReal(channelInfo.chnl_no, parseInt(windowIndex));
+            }
+          });
+        }, 1000);
+      }
+    }
+  } catch (error) {
+    console.error('解析默认窗口通道配置失败:', error);
+  }
+};
+
+onMounted(async () => {
   // 根据环境自动选择主题
   currentTheme.value = getThemeClass();
-  
+
   // 给body添加对应的主题类
   document.body.classList.add(currentTheme.value);
-  
-  getVideoInfo()
-  initPlayer()
+
+
+  await getVideoInfo()
+  await initPlayer()
+
+  // 初始化窗口通道配置
+  initWindowChannels();
+
 })
 
 // 组件卸载时移除主题类
@@ -909,11 +1071,13 @@ li {
   justify-content: space-between;
   padding: 0.625rem;
   gap: 10px;
+
   // 暗色主题适配
   &.dark-theme {
     background: var(--bg-primary);
     color: var(--text-primary);
     backdrop-filter: blur(10px);
+
     .tree_left {
       background: var(--bg-sidebar);
       border: 1px solid var(--border-primary);
@@ -984,7 +1148,7 @@ li {
               }
             }
 
-            &.is-current > .el-tree-node__content {
+            &.is-current>.el-tree-node__content {
               background-color: var(--bg-tertiary);
             }
           }
@@ -1265,8 +1429,13 @@ li {
 
   /* 旋转动画 */
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .video_cot {
@@ -1274,7 +1443,8 @@ li {
   }
 
   // Element UI 组件暗色主题适配
-  &.dark-theme, &.blue-theme {
+  &.dark-theme,
+  &.blue-theme {
 
     // 树形组件
     .el-tree {
@@ -1569,6 +1739,52 @@ li {
         border-top-color: var(--input-bg) !important;
       }
     }
+  }
+}
+
+// 保存按钮样式
+.save-controls {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 10px;
+
+  .save-btn {
+    width: 100%;
+    background-color: var(--btn-primary-bg) !important;
+    border-color: var(--btn-primary-bg) !important;
+    color: var(--btn-primary-text) !important;
+
+    &:hover {
+      background-color: var(--btn-primary-hover) !important;
+      border-color: var(--btn-primary-hover) !important;
+    }
+
+    i {
+      margin-right: 5px;
+    }
+  }
+}
+
+// 主题适配
+.dark-theme .save-controls .save-btn {
+  background-color: #409eff !important;
+  border-color: #409eff !important;
+  color: #ffffff !important;
+
+  &:hover {
+    background-color: #66b1ff !important;
+    border-color: #66b1ff !important;
+  }
+}
+
+.iframe-theme .save-controls .save-btn {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+  color: #ffffff !important;
+
+  &:hover {
+    background-color: #40a9ff !important;
+    border-color: #40a9ff !important;
   }
 }
 </style>

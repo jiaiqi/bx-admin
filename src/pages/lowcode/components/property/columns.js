@@ -113,4 +113,5 @@ export const pageCompCols = [
   // "owner_tabs_no",
   // "is_leaf",
   // "path",
+  "video_card_channels",//视频通道配置
 ];
