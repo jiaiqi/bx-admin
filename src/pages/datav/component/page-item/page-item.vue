@@ -256,6 +256,13 @@
       :query-options="queryOptions"
     >
     </info-details>
+    <DhVideo
+      v-else-if="pageItemData.com_type === '大华视频监控'"
+      :pageItem="pageItemData"
+      :division="pageItemData.division"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
+    ></DhVideo>
     <!--    <chat-entrance-->
     <!--        v-else-if="pageItemData.com_type === '咨询入口'"-->
     <!--        :pageItem="pageItemData"-->
@@ -313,6 +320,7 @@ import formAdd from "./form/add.vue";
 import NavMenu from "./nav-menu/nav-menu.vue";
 import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
 import InfoDetails from "@/pages/datav/component/page-item/info-details.vue";
+import DhVideo from "@/pages/dahua-video/video-home.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import CanvasPage from "@/components/common/canvas-line/canvasPage.vue";
@@ -345,6 +353,7 @@ export default {
     Icon,
     CardCellPart,
     InfoDetails,
+    DhVideo,//大华视频监控
   },
   props: {
     pageItem: {

@@ -1272,13 +1272,15 @@ export default {
             case "detail":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
               compObj.data = [{ widget_type: "文本" }];
-
               break;
             case "咨询入口":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
               compObj.data = [{ widget_type: "文本" }];
               break;
-
+            case "大华视频监控":
+              compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
+              compObj.data = [{ widget_type: "视频" }];
+              break;
           }
           addCompArr.push(compObj);
         });

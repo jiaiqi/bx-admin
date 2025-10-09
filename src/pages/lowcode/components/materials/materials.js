@@ -383,7 +383,13 @@ export const materialsTree = [
         value: "咨询入口",
         icon: "ri-radio-button-fill",
         type: "咨询入口"
-      }
+      },
+       {
+        label: "大华视频监控",
+        value: "大华视频监控",
+        icon: "ri:video-on-fill",
+        type: "component"
+      },
     ],
   },
 

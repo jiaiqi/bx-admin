@@ -1,5 +1,5 @@
 <template>
-  <div class="video_page dark-theme">
+  <div class="video_page" :class="currentTheme">
     <div
       class="tree_left"
       :class="{ 'with-playback': videoChannel, 'collapsed': isCollapsed }"
@@ -112,10 +112,19 @@
         </div>
       </div>
     </div>
-    <div
-      class="video_cot"
-      id="play_dh"
-    ></div>
+    <div class="video_cot_area">
+      <!-- 加载动画 -->
+      <div v-if="isPlayerLoading" class="video-loading-container">
+        <div class="video-loading-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+        <div class="loading-text">视频播放器加载中...</div>
+      </div>
+      <div
+        class="video_cot"
+        id="play_dh"
+      ></div>
+    </div>
   </div>
 </template>
 
@@ -123,6 +132,12 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import VideoUtil from "@/pages/dahua-video/video";
 import { Notification } from 'element-ui';
+import {
+  useRouter,
+  useRoute,
+} from "@/common/vueApi";
+const route = useRoute();
+const shieldClass = ['shield-class', 'select','layui-nav closeBox','tab-buttons','layui-nav-child','layui-side','layui-header','property-panel-container','materials-panel-container']
 const Videos = new VideoUtil();
 const videoTree = ref([]);
 const expandedKeys = ref([]);
@@ -133,6 +148,14 @@ const fieldNames = {
   label: 'area_name',
   value: 'area_no'
 }
+
+const props = defineProps({
+  division: {
+    type: Number,
+    default: 9
+  }
+})
+
 const filterText = ref(''); //树节点过滤使用
 const tree = ref(null);
 let myVideoPlayer = null;
@@ -151,9 +174,30 @@ const isCollapsed = ref(false);
 const windowChannels = ref({});
 // 保存回放前的播放器状态
 const previousPlayerState = ref({
-  division: 9, // 默认9宫格
+  division: props.division, // 默认9宫格
   channels: {}
 });
+
+// 添加主题检测和管理
+const currentTheme = ref('dark-theme');
+
+// 添加播放器加载状态
+const isPlayerLoading = ref(true);
+
+// 检测是否在iframe中
+const isInIframe = () => {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+};
+
+// 根据环境自动选择主题
+const getThemeClass = () => {
+  return  route.name === 'lowcode-view'? 'blue-theme':'dark-theme';
+  return isInIframe() ? 'blue-theme' : 'dark-theme';
+};
 
 const setNode = (data) => {
   console.log('22222222', data);
@@ -315,17 +359,19 @@ const initPlayer = () => {
     windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
     usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
     pluginLoginInfo: LoginInfo,
-    division: 9, // 默认显示9宫格
+    division: props.division, // 默认显示9宫格
     draggable: false, // 窗口拖拽 【暂不支持】
     showBar: true, // 底部操作栏， 选传，【true - 显示, false - 隐藏】
-    shieldClass: ['shield-class', 'select'], // 如果DOM元素被插件挡住了，把DOM元素的类名传入。
-    coverShieldClass: [], // 如果插件要在dom内滚动，需要把DOM元素的类名传入，请查看案例-遮挡
-    parentIframeShieldClass: [], // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
+    shieldClass: shieldClass, // 如果DOM元素被插件挡住了，把DOM元素的类名传入。
+    coverShieldClass: ['video_cot_area'], // 如果插件要在dom内滚动，需要把DOM元素的类名传入，请查看案例-遮挡
+    parentIframeShieldClass: shieldClass, // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
     // 创建播放器成功回调
     createSuccess: (versionInfo) => {
       console.log(LoginInfo)
       // 初始化时默认显示9宫格
-      myVideoPlayer.changeDivision(9)
+      myVideoPlayer.changeDivision(props.division)
+      // 播放器加载完成，隐藏加载动画
+      isPlayerLoading.value = false
     },
     // 创建播放器失败回调
     createError: (err) => {
@@ -461,9 +507,9 @@ const startPlayback = () => {
     division: 1,
     draggable: false,
     showBar: true,
-    shieldClass: ['shield-class', 'select'],
-    coverShieldClass: [],
-    parentIframeShieldClass: [],
+    shieldClass:shieldClass,
+    coverShieldClass: ['video_cot_area'],
+    parentIframeShieldClass: shieldClass,
     createSuccess: (versionInfo) => {
       // 开始回放
       myVideoPlayer.startPlayback([{
@@ -527,7 +573,7 @@ const handlePlaybackModeChange = (checked) => {
 
       // 保存当前播放器状态
       previousPlayerState.value = {
-        division: myVideoPlayer.getDivision ? myVideoPlayer.getDivision() : 9,
+        division: myVideoPlayer.getDivision ? myVideoPlayer.getDivision() : props.division,
         channels: currentChannels
       };
 
@@ -581,16 +627,16 @@ const cancelPlayback = () => {
         windowType: 0,    // 实时预览模式
         usePluginLogin: true,
         pluginLoginInfo: LoginInfo,
-        division: 9, // 固定使用9宫格
+        division: props.division, // 固定使用9宫格
         draggable: false,
         showBar: true,
-        shieldClass: ['shield-class', 'select'],
-        coverShieldClass: [],
-        parentIframeShieldClass: [],
+        shieldClass: shieldClass,
+        coverShieldClass: ['video_cot_area'],
+        parentIframeShieldClass: shieldClass,
         createSuccess: (versionInfo) => {
           console.log('播放器创建成功，准备恢复播放');
           // 确保切换到9宫格
-          myVideoPlayer.changeDivision(9);
+          myVideoPlayer.changeDivision(props.division);
 
           // 增加延时确保窗口切换完成
           setTimeout(() => {
@@ -724,16 +770,19 @@ const filterNode = (value, data) => {
 };
 
 onMounted(() => {
-  // 给body添加暗色主题类
-  document.body.classList.add('dark-theme');
+  // 根据环境自动选择主题
+  currentTheme.value = getThemeClass();
+  
+  // 给body添加对应的主题类
+  document.body.classList.add(currentTheme.value);
+  
   getVideoInfo()
   initPlayer()
-
 })
 
-// 组件卸载时移除暗色主题类
+// 组件卸载时移除主题类
 onUnmounted(() => {
-  document.body.classList.remove('dark-theme');
+  document.body.classList.remove(currentTheme.value);
 })
 </script>
 
@@ -778,6 +827,42 @@ li {
   --input-placeholder: #888888;
 }
 
+// 定义CSS变量 - iframe主题颜色系统（基于#03192A背景）
+.blue-theme {
+  // 背景色 - 基于#03192A调整
+  --bg-primary: #03192A;
+  --bg-secondary: #0a2438;
+  --bg-tertiary: #0f2f46;
+  --bg-sidebar: #051e32;
+  --bg-control-panel: #0c2740;
+
+  // 文字颜色 - 针对深蓝背景优化
+  --text-primary: #ffffff;
+  --text-secondary: #b8d4f0;
+  --text-muted: #7a9cc6;
+  --text-title: #e8f2ff;
+
+  // 边框颜色 - 与深蓝背景协调
+  --border-primary: #1a3a5c;
+  --border-secondary: #0f2a44;
+  --border-hover: #2a4a6c;
+
+  // 按钮和交互元素 - 蓝色调
+  --btn-bg: #1a3a5c;
+  --btn-bg-hover: #2a4a6c;
+  --btn-text: #ffffff;
+
+  // 状态颜色
+  --status-online: #4CAF50;
+  --status-offline: #9E9E9E;
+
+  // 输入框 - 深蓝色调
+  --input-bg: #0a2438;
+  --input-border: #1a3a5c;
+  --input-text: #ffffff;
+  --input-placeholder: #7a9cc6;
+}
+
 .light-theme {}
 
 .is_online {
@@ -788,15 +873,16 @@ li {
 .video_page {
   width: 100%;
   height: 100%;
+  max-height: 100vh;
   display: flex;
   justify-content: space-between;
   padding: 0.625rem;
-
+  gap: 10px;
   // 暗色主题适配
   &.dark-theme {
     background: var(--bg-primary);
     color: var(--text-primary);
-
+    backdrop-filter: blur(10px);
     .tree_left {
       background: var(--bg-sidebar);
       border: 1px solid var(--border-primary);
@@ -819,6 +905,174 @@ li {
 
         .control-title {
           color: var(--text-title);
+        }
+      }
+    }
+  }
+
+  // iframe主题适配 - 复用暗色主题的所有样式
+  &.blue-theme {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+
+    .tree_left {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-primary);
+
+      .collapse-btn {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+
+        &:hover {
+          background-color: var(--btn-bg-hover);
+          border-color: var(--border-hover);
+        }
+      }
+
+      .tree_tl {
+        .el-tree {
+          background-color: transparent;
+          color: var(--text-primary);
+
+          .el-tree-node {
+            .el-tree-node__content {
+              background-color: transparent;
+              color: var(--text-primary);
+
+              &:hover {
+                background-color: var(--bg-tertiary);
+              }
+
+              .el-tree-node__expand-icon {
+                color: var(--text-secondary);
+              }
+
+              .custom-tree-node {
+                color: var(--text-primary);
+              }
+            }
+
+            &.is-current > .el-tree-node__content {
+              background-color: var(--bg-tertiary);
+            }
+          }
+        }
+      }
+
+      .playback-controls {
+        background-color: var(--bg-control-panel);
+        border-top: 1px solid var(--border-primary);
+
+        .control-title {
+          color: var(--text-title);
+          border-bottom: 1px solid var(--border-primary);
+        }
+
+        .control-content {
+          .date-picker-group {
+            .date-picker {
+              margin-bottom: 8px;
+            }
+          }
+
+          .button-group {
+            .el-button {
+              margin-right: 8px;
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .video_cot_area {
+      background-color: var(--bg-control-panel);
+      backdrop-filter: blur(10px);
+      width: 100%;
+    }
+
+    // 开关组件
+    .el-switch {
+      .el-switch__core {
+        background-color: var(--border-primary) !important;
+        border-color: var(--border-primary) !important;
+      }
+
+      .el-switch__label {
+        color: var(--text-secondary) !important;
+
+        &.is-active {
+          color: var(--text-primary) !important;
+        }
+      }
+    }
+
+    // 单选按钮组
+    .el-radio-group {
+      .el-radio {
+        .el-radio__label {
+          color: var(--text-primary) !important;
+        }
+
+        .el-radio__input.is-disabled+.el-radio__label {
+          color: var(--text-muted) !important;
+        }
+      }
+    }
+
+    // 日期选择器
+    .el-date-editor {
+      .el-input__inner {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        color: var(--input-text) !important;
+
+        &::placeholder {
+          color: var(--input-placeholder) !important;
+        }
+
+        &:focus {
+          border-color: var(--border-hover) !important;
+        }
+      }
+
+      &.is-disabled .el-input__inner {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-muted) !important;
+      }
+    }
+
+    // 按钮组件
+    .el-button {
+      &.el-button--mini {
+        background-color: var(--btn-bg) !important;
+        border-color: var(--border-primary) !important;
+        color: var(--btn-text) !important;
+
+        &:hover:not(.is-disabled) {
+          background-color: var(--btn-bg-hover) !important;
+          border-color: var(--border-hover) !important;
+        }
+
+        &.is-disabled {
+          background-color: var(--bg-secondary) !important;
+          border-color: var(--border-secondary) !important;
+          color: var(--text-muted) !important;
+        }
+      }
+
+      &.el-button--primary {
+        &.is-disabled {
+          background-color: var(--bg-secondary) !important;
+          border-color: var(--border-secondary) !important;
+        }
+      }
+
+      &.el-button--danger {
+        &.is-disabled {
+          background-color: var(--bg-secondary) !important;
+          border-color: var(--border-secondary) !important;
         }
       }
     }
@@ -867,6 +1121,7 @@ li {
       z-index: 1;
       cursor: pointer;
       transition: transform 0.3s ease;
+
       &:hover {
         background: #f5f7fa;
       }
@@ -930,14 +1185,65 @@ li {
     }
   }
 
-  .video_cot {
+  .video_cot_area {
     flex: 1;
     height: 100%;
-    background: #000;
+    backdrop-filter: blur(10px);
+    background-color: var(--bg-control-panel);
+    width: 100%;
+    position: relative;
+  }
+
+  /* 视频加载动画容器 */
+  .video-loading-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg-control-panel);
+    z-index: 10;
+  }
+
+  /* 旋转的圆形加载器 */
+  .video-loading-spinner {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+
+  .spinner-ring {
+    width: 100%;
+    height: 100%;
+    border: 4px solid var(--border-primary);
+    border-top: 4px solid var(--text-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* 加载文字 */
+  .loading-text {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* 旋转动画 */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .video_cot {
+    height: 100%;
   }
 
   // Element UI 组件暗色主题适配
-  &.dark-theme {
+  &.dark-theme, &.blue-theme {
 
     // 树形组件
     .el-tree {
@@ -1078,6 +1384,25 @@ li {
     border-color: var(--input-border) !important;
     color: var(--input-text) !important;
     border-radius: 0;
+
+    &::placeholder {
+      color: var(--input-placeholder) !important;
+    }
+
+    &:focus {
+      border-color: var(--border-hover) !important;
+    }
+  }
+}
+
+// iframe主题适配 - Element UI输入框
+.blue-theme .filter-input {
+  .el-input__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-text) !important;
+    border-radius: 0;
+
     &::placeholder {
       color: var(--input-placeholder) !important;
     }
@@ -1114,6 +1439,11 @@ li {
 
 // 暗色主题适配
 .dark-theme .divider {
+  background-color: var(--border-primary);
+}
+
+// iframe主题适配
+.blue-theme .divider {
   background-color: var(--border-primary);
 }
 
@@ -1162,6 +1492,52 @@ li {
       }
     }
   }
+}
 
+.blue-theme {
+  .el-picker-panel {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-text) !important;
+
+    .el-date-picker__header-label {
+      color: var(--input-text) !important;
+    }
+
+    .el-picker-panel__content {
+
+      .el-date-table th {
+        border-color: var(--input-border) !important;
+        color: var(--input-text) !important;
+      }
+    }
+
+    .el-date-picker__time-header,
+    .el-picker-panel__footer {
+      background-color: var(--input-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--input-text) !important;
+
+      .el-input__inner {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        color: var(--input-text) !important;
+      }
+
+      .el-button.el-button--default {
+        background-color: var(--btn-bg) !important;
+        border-color: var(--border-primary) !important;
+        color: var(--btn-text) !important;
+      }
+    }
+
+    .popper__arrow {
+      border-top-color: var(--input-border) !important;
+
+      &::after {
+        border-top-color: var(--input-bg) !important;
+      }
+    }
+  }
 }
 </style>

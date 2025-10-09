@@ -876,6 +876,23 @@ export default {
                  });
                  draggedElement._type = "component";
                }
+               if(draggedElement.value==='大华视频监控'){
+                 draggedElement.com_type = "大华视频监控";
+                 draggedElement.data = {
+                   // ...draggedElement,
+                   com_type: "大华视频监控",
+                 };
+
+                 Object.keys(draggedElement).forEach((key) => {
+                   if (key.startsWith("_default_")) {
+                     draggedElement.data[key.replace("_default_", "")] =
+                         draggedElement[key];
+                   }
+                 });
+                 draggedElement._type = "component";
+               }
+               
+
               if(draggedElement.value==='咨询入口'){
                 draggedElement.com_type = "咨询入口";
                 draggedElement.data = {

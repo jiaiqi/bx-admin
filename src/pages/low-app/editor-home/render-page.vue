@@ -645,6 +645,15 @@ export default {
             dragData.com_type = "detail";
           }
         }
+        if (dragData.value === "大华视频监控") {
+          dragData.com_type = "大华视频监控";
+          dragData.component = "page-item";
+          if (!dragData._editType) {
+            dragData._editType = "add";
+            dragData.com_name = "大华视频监控";
+            dragData.com_type = "大华视频监控";
+          }
+        }
         if (dragData.value === "咨询入口") {
           dragData.com_type = "咨询入口";
           dragData.component = "chat-by-mobile";
