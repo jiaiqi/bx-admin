@@ -195,7 +195,7 @@ const isInIframe = () => {
 
 // 根据环境自动选择主题
 const getThemeClass = () => {
-  return  route.name === 'lowcode-view'? 'blue-theme':'dark-theme';
+  return  ['website','lowcode-view'].includes(route.name) ? 'blue-theme':'dark-theme';
   return isInIframe() ? 'blue-theme' : 'dark-theme';
 };
 
