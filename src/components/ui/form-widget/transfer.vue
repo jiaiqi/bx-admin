@@ -492,7 +492,7 @@ export default {
       });
     },
     buildConditions: function (dispLoader, filterNull = true) {
-      let ret = [];
+      let ret = '';
       const rowData = this.field.form.srvValFormModel();
       const mainData = this.mainFormDatas;
       for (let i in dispLoader.conditions) {
