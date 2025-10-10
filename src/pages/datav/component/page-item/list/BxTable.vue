@@ -14,6 +14,8 @@
         :style="{
           color: setStyle && setStyle.color ? 'var(--tbl_head_color,' + setStyle.color + ')' : null,
           'font-size': setStyle && setStyle['font-size'],
+          width: col.width || '',
+          flex: col.width ? undefined : 1,
         }"
         :title="col.label"
       >
@@ -49,6 +51,8 @@
               {
                 color: setStyle && setStyle.color,
                 'font-size': setStyle && setStyle['font-size'],
+                width: col.width || '',
+                flex: col.width ? undefined : 1,
               },
               getElementStyle
             ]"
@@ -338,7 +342,6 @@ export default {
     }
 
     .table-column {
-      flex: 1;
       padding: 8px;
       text-overflow: ellipsis;
       white-space: nowrap;

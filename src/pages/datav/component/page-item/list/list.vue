@@ -340,10 +340,20 @@ export default {
       ) {
         const cols = this.listConfig?.custom_table_head_cols.split(",");
         const labels = this.listConfig?.custom_table_head_label.split(",");
+        let tbl_head_col_width = this.listConfig?.tbl_head_col_width?.split(',') || "";
         return labels?.map((label, index) => {
+          let width = undefined
+          if (tbl_head_col_width?.[index]) {
+            if (!isNaN(parseInt(tbl_head_col_width?.[index]))) {
+              width = tbl_head_col_width?.[index] + '%'
+            } else {
+              width = tbl_head_col_width?.[index]
+            }
+          }
           return {
             label,
             columns: cols[index],
+            width: width || undefined,
           };
         });
       }
