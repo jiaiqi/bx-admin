@@ -476,16 +476,17 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 // formatter: `{b} \r\n {c}${chartJson?.y1_unit || ""}`,
                 // bleedMargin: 3,
                 formatter: function (params, ticket, callback) {
-                  var total = 0; //考生总数量
-                  var percent = 0; //考生占比
+                  let total = 0; //总数量
+                  let percent = 0; //占比
+                  let value = params.value;
                   cellData.forEach(function (value, index, array) {
                     const num = value[chartJson.series_value_cols || 'value'];
                     if (!isNaN(Number(num))) {
                       total += Number(num)
                     }
                   });
-                  percent = ((params.value / total) * 100).toFixed(1);
-                  return '{labelColor|' + params.name + '}{valueColor|' + percent + '%}';
+                  percent = ((value / total) * 100).toFixed(1);
+                  return '{labelColor|' + params.name + '}{valueColor|' + percent + '%}' + '\r{labelColor|' + value + '}' + `${chartJson?.y1_unit || ""}`;
                 },
                 rich: rich,
               },
@@ -1108,6 +1109,11 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           align: "center",
           padding: [3, 0],
         },
+        num: {
+          color: chartJson?.ring_val_color || "#ffc72b",
+          fontSize: 24 * scale,
+          align: "center",
+        },
       };
       if (chartType === "ring") {
         const title = chartJson?.ring_sum_label || "总数";
@@ -1161,7 +1167,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
                   }
                   percent = ((params.value / total) * 100).toFixed(0);
                   if (params.name !== "") {
-                    return params.name + "\n{white|" + "占比" + percent + "%}";
+                    return params.name + "\n{white|" + "占比" + percent + "%}" + "\n{num|" + params.value + "}";
                   } else {
                     return "";
                   }
