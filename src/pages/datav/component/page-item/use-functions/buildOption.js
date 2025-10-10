@@ -499,6 +499,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                   let total = 0; //总数量
                   let percent = 0; //占比
                   let value = params.value;
+                  // 使用原始cellData计算总数，确保百分比正确
                   cellData.forEach(function (value, index, array) {
                     const num = value[chartJson.series_value_cols || 'value'];
                     if (!isNaN(Number(num))) {
@@ -521,7 +522,18 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           },
           tooltip: {
             trigger: 'item',
-            formatter: `{b}<br/>{c}${chartJson?.y1_unit || ""} ({d}%)`
+            formatter: function(params) {
+              // 计算原始数据总和，确保百分比正确
+              let originalTotal = 0;
+              cellData.forEach(function (data) {
+                const num = data[seriesValueCols[0]];
+                if (!isNaN(Number(num))) {
+                  originalTotal += Number(num);
+                }
+              });
+              const percent = ((params.value / originalTotal) * 100).toFixed(1);
+              return `${params.name}<br/>${params.value}${chartJson?.y1_unit || ""} (${percent}%)`;
+            }
           },
           data: [],
         };
@@ -529,8 +541,14 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           series.radius = ["45%", "60%"]
         }
         series.itemStyle.normal.label.show = showLabel;
+        
+        // 处理数据，当超过10项时合并为"其它"
+        let processedData = [];
+        let legendData = [];
+        
+        // 先构建所有数据项
+        let allDataItems = [];
         for (let data of cellData) {
-          // option['xAxis']['data'].push(data[sortAxisCol])
           let dataItem = {
             value: parseFloat(data[dataColName]),
             name: data[chartJson?.series_name_cfg || sortAxisCol],
@@ -540,28 +558,50 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               },
             },
           };
-          series["data"].push(dataItem);
-          // series["data"].push(parseFloat(data[dataColName]))
-          // series["data"].push(data[dataColName])
-          // series["data"].push({
-          //   value: 5,
-          //   name: "",
-          //   itemStyle: {
-          //     normal: {
-          //       label: {
-          //         show: false,
-          //       },
-          //       labelLine: {
-          //         show: false,
-          //       },
-          //       color: "rgba(0, 0, 0, 0)",
-          //       borderColor: "rgba(0, 0, 0, 0)",
-          //       borderWidth: 0,
-          //     },
-          //   },
-          // });
+          allDataItems.push(dataItem);
+        }
+        
+        // 按值大小排序（降序）
+        allDataItems.sort((a, b) => b.value - a.value);
+        
+        // 获取合并阈值配置，默认为5
+        const mergeThreshold = chartJson?.pie_merge_threshold || 5;
+        
+        // 如果数据项超过配置的阈值，合并后面的为"其它"
+        if (allDataItems.length > mergeThreshold) {
+          // 取前(阈值-1)项，为"其它"项留出位置
+          const keepCount = mergeThreshold - 1;
+          processedData = allDataItems.slice(0, keepCount);
+          
+          // 计算其它项的总和
+          let othersValue = 0;
+          for (let i = keepCount; i < allDataItems.length; i++) {
+            othersValue += allDataItems[i].value;
+          }
+          
+          // 添加"其它"项
+          if (othersValue > 0) {
+            processedData.push({
+              value: othersValue,
+              name: "其它",
+              itemStyle: {
+                normal: {
+                  borderWidth: 5,
+                },
+              },
+            });
+          }
+        } else {
+          processedData = allDataItems;
+        }
+        
+        // 添加处理后的数据到series
+        series["data"] = processedData;
+        
+        // 构建图例数据
+        for (let item of processedData) {
           let legendItem = {
-            name: data[chartJson?.series_name_cfg || sortAxisCol],
+            name: item.name,
             icon: "circle",
           };
           ecOptions["legend"]["data"].push(legendItem);
@@ -587,10 +627,16 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       ecOptions.legend.show = false;
       if (type === "ring") {
         const title = chartJson?.ring_sum_label || "总数";
+        // 计算原始数据的总和，确保总数正确
+        let originalTotal = 0;
+        cellData.forEach(function (data) {
+          const num = data[seriesValueCols[0]];
+          if (!isNaN(Number(num))) {
+            originalTotal += Number(num);
+          }
+        });
         ecOptions.title = {
-          text: pieDatas.reduce(function (prev, cur) {
-            return cur.value + prev;
-          }, 0),
+          text: originalTotal,
           left: "center",
           top: "center",
           padding: [24, 0],
