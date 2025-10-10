@@ -1,9 +1,15 @@
 <template>
-  <div class="date-time" :style="{ color: color }">
-    <div class="time">{{ time }}</div>
-    <div class="date">
-      <div class="ymd">{{ date }}</div>
-      <div class="week">{{ week }}</div>
+  <div class="date-time-container">
+    <i class="el-icon-arrow-left back-button" @click="goBack"></i>
+    <div
+      class="date-time"
+      :style="{ color: color }"
+    >
+      <div class="time">{{ time }}</div>
+      <div class="date">
+        <div class="ymd">{{ date }}</div>
+        <div class="week">{{ week }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -90,18 +96,52 @@ export default {
   beforeDestroy() {
     clearInterval(timer);
   },
+  methods: {
+    goBack() {
+      // 优先使用 Vue Router 的后退功能，如果不可用则使用浏览器原生后退
+      if (this.$router) {
+        this.$router.go(-1);
+      } else {
+        window.history.back();
+      }
+    }
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+.date-time-container {
+  display: flex;
+  align-items: center;
+}
+
+.back-button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 5px;
+  border-radius: 4px;
+  margin-right: 10px;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(-2px);
+  }
+  
+  &:active {
+    transform: translateX(-1px);
+  }
+}
+
 .date-time {
   display: flex;
   width: auto;
   flex-wrap: nowrap;
 }
+
 .time {
   font-size: 40px;
 }
+
 .date {
   font-size: 14px;
   display: flex;
@@ -109,11 +149,13 @@ export default {
   justify-content: center;
   align-items: flex-start;
   padding-left: 5px;
+
   .ymd,
   .week {
     line-height: 1;
     text-align: left;
   }
+
   .ymd {
     margin-bottom: 5px;
   }
