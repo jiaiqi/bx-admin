@@ -234,7 +234,8 @@ const http = useHttp();
 // 保存窗口通道配置
 const saveWindowChannels = async () => {
   console.log('保存窗口通道配置:', windowChannels.value);
-
+  const channelList = myVideoPlayer?.setting?.channelList || [];
+  console.warn('saveWindowChannels - channelList:', channelList);
   // 发送事件给父组件
   emit('save-window-channels', {
     windowChannels: windowChannels.value,
@@ -244,7 +245,7 @@ const saveWindowChannels = async () => {
   const req = [{
     "serviceName": "srvpage_cfg_page_component_update",
     "condition": [{ "colName": "com_no", "ruleType": "eq", "value": props.pageItem.com_no }],
-    "data": [{ "video_card_channels": JSON.stringify(windowChannels.value) }]
+    "data": [{ "video_card_channels": channelList && channelList.length ? JSON.stringify(channelList) : JSON.stringify(windowChannels.value) }]
   }]
   const res = await http.post(url, req)
   if (res.data.state === 'SUCCESS') {
@@ -282,6 +283,10 @@ const notifyParentWindowChannelsChange = () => {
     windowChannels: { ...windowChannels.value },
     timestamp: Date.now()
   };
+
+  const channelList = myVideoPlayer?.setting?.channelList || [];
+  console.warn('channelList:', channelList);
+
   console.log('通知父组件窗口通道信息变化:', channelsData);
   hasChannelsChanged.value = true;
   emit('window-channels-change', channelsData);
@@ -411,7 +416,7 @@ const handleSelect = (selectedKeys, e) => {
           // 否则开始实时播放
           myVideoPlayer.startReal([{
             channelId: videoChannel.value,
-            channelName: '通道名称',
+            channelName: node?.chnl_name || '通道名称',
             snum: 0, // 单窗口模式下固定使用索引0
             streamType: 2,
             deviceType: 2,
@@ -428,7 +433,7 @@ const handleSelect = (selectedKeys, e) => {
           startPlayback();
         }, 200);
       } else {
-        playStartReal(videoChannel.value, currentWindowIndex);
+        playStartReal(videoChannel.value, currentWindowIndex, node);
       }
     }
   }
@@ -573,7 +578,7 @@ const initPlayer = () => {
   })
 }
 //实时流播放
-const playStartReal = (id, windowIndex = 0) => {
+const playStartReal = (id, windowIndex = 0, node) => {
   if (!myVideoPlayer) {
     console.log('插件未初始化完成');
     return;
@@ -593,7 +598,7 @@ const playStartReal = (id, windowIndex = 0) => {
 
   myVideoPlayer.startReal([{
     channelId: id, // 通道id 【必传】
-    channelName: '通道名称', // 通道名称 (用于本地录像下载)
+    channelName: node?.chnl_name || '通道名称', // 通道名称 (用于本地录像下载)
     snum: windowIndex, // 使用指定的窗口序号
     streamType: 2,  // 1-主码流  2-辅码流 (可不传，默认主码流)
     deviceType: 2, // talkType 对讲类型  1-设备对讲 2-通道对讲 设备类别 (插件对讲时，需要配置该参数，否则无法对讲)
@@ -933,7 +938,20 @@ const initWindowChannels = () => {
     if (props.video_card_channels) {
       const defaultChannels = JSON.parse(props.video_card_channels);
       console.warn('初始化窗口通道配置:', defaultChannels);
-
+      if (Array.isArray(defaultChannels) && defaultChannels.length) {
+        // 有默认通道配置，使用它
+        console.warn('有默认通道配置数组:', defaultChannels);
+        console.warn('检测到默认通道配置，准备自动播放');
+        defaultChannels.forEach((item, index) => {
+          const chnl_no = item.channelId;
+          console.warn('通道信息:', item);
+          if (chnl_no) {
+            console.warn(`自动播放窗口 ${index}，通道: ${chnl_no}`);
+            playStartReal(chnl_no, parseInt(index));
+          }
+        });
+        return
+      }
       // 设置默认值
       windowChannels.value = { ...defaultChannels };
       originalWindowChannels.value = { ...defaultChannels };
