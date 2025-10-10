@@ -274,6 +274,51 @@ const router = new VueRouter({
   routes,
 });
 
+// 路由栈管理 - 需要在创建 store 后导入
+let store = null;
+
+// 延迟导入 store，避免循环依赖
+const getStore = () => {
+  if (!store) {
+    store = require('@/store').default;
+  }
+  return store;
+};
+
+// 路由守卫 - 集成路由栈管理
+router.beforeEach((to, from, next) => {
+  try {
+    const store = getStore();
+    
+    // 只有在路由栈启用时才记录路由
+    if (store.getters['routeStack/isEnabled']) {
+      // 推入新路由到栈
+      store.dispatch('routeStack/pushRoute', to);
+    }
+  } catch (error) {
+    console.warn('路由栈管理出错:', error);
+  }
+  
+  next();
+});
+
+// 路由后置守卫 - 可用于额外的路由栈处理
+router.afterEach((to, from) => {
+  try {
+    const store = getStore();
+    
+    // 这里可以添加路由切换后的额外处理逻辑
+    // 例如：记录路由访问统计、更新面包屑等
+    console.log('路由切换完成:', {
+      from: from.fullPath,
+      to: to.fullPath,
+      stackSize: store.getters['routeStack/stackSize']
+    });
+  } catch (error) {
+    console.warn('路由后置处理出错:', error);
+  }
+});
+
 router.onError((error) => {
   const pattern = /Loading chunk (\d)+ failed/g;
   const isChunkLoadFailed = error.message.match(pattern);
