@@ -36,22 +36,22 @@ function addAlphaToRGB(rgb, alpha) {
 
 //params 要处理的字符串
 //length 每行显示长度
-function getEqualNewlineString (params, length) {
-   let text = ''
-   let count = Math.ceil(params.length / length) // 向上取整数
-   // 一行展示length个
-   if (count > 1) {
-     for (let z = 1; z <= count; z++) {
-       text += params.substr((z - 1) * length, length)
-       if (z < count) {
-         text += '\n'
-       }
-     }
-   } else {
-     text += params.substr(0, length)
-   }
-   return text
- }
+function getEqualNewlineString(params, length) {
+  let text = ''
+  let count = Math.ceil(params.length / length) // 向上取整数
+  // 一行展示length个
+  if (count > 1) {
+    for (let z = 1; z <= count; z++) {
+      text += params.substr((z - 1) * length, length)
+      if (z < count) {
+        text += '\n'
+      }
+    }
+  } else {
+    text += params.substr(0, length)
+  }
+  return text
+}
 
 
 // 初始化 必须传入dom节点 建议使用vue的ref获取
@@ -446,7 +446,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "ring":
       for (let sIndex in seriesName) {
         console.log(chartJson);
-        
+
         var scale = 1
         var rich = {
           total: {
@@ -506,8 +506,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                     }
                   });
                   percent = ((value / total) * 100).toFixed(1);
-                  return '{labelColor|' + getEqualNewlineString(params.name,6) + '}{valueColor|' + percent + '%}'
-                  //  + '\r{labelColor|' + value + '}' + `${chartJson?.y1_unit || ""}`;
+                  return `{labelColor|${getEqualNewlineString(params.name, 6)}}${value}${chartJson?.y1_unit || ""}`;
+                  // return '{labelColor|' + getEqualNewlineString(params.name,6) + '}{valueColor|' + percent + '%}'
+                  //  + '({labelColor|' + value + `${chartJson?.y1_unit || ""})` + '}' ;
                 },
                 rich: rich,
               },
@@ -608,28 +609,28 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       }
       delete ecOptions.xAxis;
       delete ecOptions.yAxis;
-      
+
       // 添加自动轮播功能
       if (chartJson?.more_option?.includes('自动轮播')) {
         // 配置轮播间隔时间，默认3秒
         const interval = chartJson.auto_play_interval || 3000;
-        
+
         // 在配置中添加轮播相关的事件处理
         ecOptions.animation = true;
         ecOptions.animationDuration = 1000;
         ecOptions.animationEasing = 'cubicOut';
-        
+
         // 保存原始的数据长度用于轮播
         let series = ecOptions["series"][0];
         const dataLength = series.data.length;
-        
+
         // 添加轮播相关的配置到ecOptions中
         ecOptions._autoPlay = {
           dataLength: dataLength,
           interval: interval,
           currentIndex: 0
         };
-        
+
         // 配置emphasis样式，让选中项更突出
         series.emphasis = {
           itemStyle: {
@@ -638,7 +639,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           }
         };
       }
-      
+
       break;
     case "radar":
       // 默认配置
@@ -1219,7 +1220,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
                   }
                   percent = ((params.value / total) * 100).toFixed(0);
                   if (params.name !== "") {
-                    return params.name + "\n{white|" + "占比" + percent + "%}" 
+                    return params.name + "\n{white|" + "占比" + percent + "%}"
                     // + "\n{num|" + params.value + "}";
                   } else {
                     return "";
@@ -1290,16 +1291,16 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
 // 饼图自动轮播控制函数
 export const startPieAutoPlay = (chartInstance, ecOptions) => {
   if (!chartInstance || !ecOptions?._autoPlay) return;
-  
+
   const { dataLength, interval } = ecOptions._autoPlay;
   let currentIndex = 0;
-  
+
   // 清除之前的高亮
   chartInstance.dispatchAction({
     type: 'downplay',
     seriesIndex: 0
   });
-  
+
   // 高亮当前项
   const highlightItem = () => {
     // 先取消所有高亮
@@ -1307,30 +1308,30 @@ export const startPieAutoPlay = (chartInstance, ecOptions) => {
       type: 'downplay',
       seriesIndex: 0
     });
-    
+
     // 高亮当前项
     chartInstance.dispatchAction({
       type: 'highlight',
       seriesIndex: 0,
       dataIndex: currentIndex
     });
-    
+
     // 显示提示框
     chartInstance.dispatchAction({
       type: 'showTip',
       seriesIndex: 0,
       dataIndex: currentIndex
     });
-    
+
     currentIndex = (currentIndex + 1) % dataLength;
   };
-  
+
   // 立即执行一次
   highlightItem();
-  
+
   // 设置定时器
   const timer = setInterval(highlightItem, interval);
-  
+
   // 返回清除函数
   return () => {
     clearInterval(timer);
