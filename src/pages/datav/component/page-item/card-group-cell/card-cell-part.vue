@@ -482,12 +482,17 @@ export default {
     // 数字动画完整配置
     numberAnimationConfig() {
       const number = Number(this.setPartModelData);
+      // 判断目标值是否为整数
+      const isTargetInteger = Number.isInteger(number);
       return {
         from: 0,
         to: isNaN(number) ? 0 : number,
         duration: (this.cellLayoutJson?.animation_duration || 10) * 1000,
         formatOptions: this.numberFormatOptions,
-        animationOptions: this.numberAnimationOptions,
+        animationOptions: {
+          ...this.numberAnimationOptions,
+          isInteger: isTargetInteger, // 传递整数标识
+        },
       };
     },
     getIconName() {

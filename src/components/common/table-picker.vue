@@ -437,6 +437,13 @@ export default {
       });
   },
   watch: {
+    field: {
+      immediate: true,
+      deep: true,
+      handler(newValue, _) {
+        this.selected = newValue.model ? newValue.model.split(',') : []
+      },
+    },
     gridData: {
       immediate: true,
       deep: true,
