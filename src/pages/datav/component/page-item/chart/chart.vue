@@ -1,5 +1,5 @@
 <script setup>
-import { initChart } from "../use-functions/buildOption";
+import { initChart, startPieAutoPlay } from "../use-functions/buildOption";
 import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 const props = defineProps({
   options: {
@@ -24,6 +24,7 @@ const domRef = ref(null);
 
 let chartObj = null;
 let objResizeObserver;
+let autoPlayTimer = null;
 onMounted(() => {
   if (!domRef.value) return;
 
@@ -49,6 +50,11 @@ onUnmounted(() => {
   if (chartObj) {
     chartObj.dispose();
     chartObj = null;
+  }
+  // 清除自动轮播定时器
+  if (autoPlayTimer) {
+    autoPlayTimer();
+    autoPlayTimer = null;
   }
   // 取消监听
   domRef.value && objResizeObserver.unobserve(domRef.value);
@@ -87,6 +93,17 @@ const drawOption = () => {
     nextTick(() => {
       chartObj.setOption(options);
       chartObj.hideLoading();
+      
+      // 如果是饼图或环图且配置了自动轮播，启动轮播
+      if ((props.chartType === 'pie' || props.chartType === 'ring') && options._autoPlay) {
+        // 清除之前的轮播定时器
+        if (autoPlayTimer) {
+          autoPlayTimer();
+          autoPlayTimer = null;
+        }
+        // 启动新的轮播
+        autoPlayTimer = startPieAutoPlay(chartObj, options);
+      }
     });
   }, 1000);
 };

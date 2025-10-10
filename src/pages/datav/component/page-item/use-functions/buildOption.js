@@ -587,6 +587,37 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       }
       delete ecOptions.xAxis;
       delete ecOptions.yAxis;
+      
+      // 添加自动轮播功能
+      if (chartJson?.more_option?.includes('自动轮播')) {
+        // 配置轮播间隔时间，默认3秒
+        const interval = chartJson.auto_play_interval || 3000;
+        
+        // 在配置中添加轮播相关的事件处理
+        ecOptions.animation = true;
+        ecOptions.animationDuration = 1000;
+        ecOptions.animationEasing = 'cubicOut';
+        
+        // 保存原始的数据长度用于轮播
+        let series = ecOptions["series"][0];
+        const dataLength = series.data.length;
+        
+        // 添加轮播相关的配置到ecOptions中
+        ecOptions._autoPlay = {
+          dataLength: dataLength,
+          interval: interval,
+          currentIndex: 0
+        };
+        
+        // 配置emphasis样式，让选中项更突出
+        series.emphasis = {
+          itemStyle: {
+            shadowBlur: 20,
+            shadowColor: 'rgba(0, 0, 0, 0.9)'
+          }
+        };
+      }
+      
       break;
     case "radar":
       // 默认配置
@@ -1167,7 +1198,8 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
                   }
                   percent = ((params.value / total) * 100).toFixed(0);
                   if (params.name !== "") {
-                    return params.name + "\n{white|" + "占比" + percent + "%}" + "\n{num|" + params.value + "}";
+                    return params.name + "\n{white|" + "占比" + percent + "%}" 
+                    // + "\n{num|" + params.value + "}";
                   } else {
                     return "";
                   }
@@ -1232,4 +1264,61 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       break;
   }
   return option;
+};
+
+// 饼图自动轮播控制函数
+export const startPieAutoPlay = (chartInstance, ecOptions) => {
+  if (!chartInstance || !ecOptions?._autoPlay) return;
+  
+  const { dataLength, interval } = ecOptions._autoPlay;
+  let currentIndex = 0;
+  
+  // 清除之前的高亮
+  chartInstance.dispatchAction({
+    type: 'downplay',
+    seriesIndex: 0
+  });
+  
+  // 高亮当前项
+  const highlightItem = () => {
+    // 先取消所有高亮
+    chartInstance.dispatchAction({
+      type: 'downplay',
+      seriesIndex: 0
+    });
+    
+    // 高亮当前项
+    chartInstance.dispatchAction({
+      type: 'highlight',
+      seriesIndex: 0,
+      dataIndex: currentIndex
+    });
+    
+    // 显示提示框
+    chartInstance.dispatchAction({
+      type: 'showTip',
+      seriesIndex: 0,
+      dataIndex: currentIndex
+    });
+    
+    currentIndex = (currentIndex + 1) % dataLength;
+  };
+  
+  // 立即执行一次
+  highlightItem();
+  
+  // 设置定时器
+  const timer = setInterval(highlightItem, interval);
+  
+  // 返回清除函数
+  return () => {
+    clearInterval(timer);
+    chartInstance.dispatchAction({
+      type: 'downplay',
+      seriesIndex: 0
+    });
+    chartInstance.dispatchAction({
+      type: 'hideTip'
+    });
+  };
 };
