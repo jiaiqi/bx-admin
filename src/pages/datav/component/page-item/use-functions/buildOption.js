@@ -34,6 +34,26 @@ function addAlphaToRGB(rgb, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+//params 要处理的字符串
+//length 每行显示长度
+function getEqualNewlineString (params, length) {
+   let text = ''
+   let count = Math.ceil(params.length / length) // 向上取整数
+   // 一行展示length个
+   if (count > 1) {
+     for (let z = 1; z <= count; z++) {
+       text += params.substr((z - 1) * length, length)
+       if (z < count) {
+         text += '\n'
+       }
+     }
+   } else {
+     text += params.substr(0, length)
+   }
+   return text
+ }
+
+
 // 初始化 必须传入dom节点 建议使用vue的ref获取
 export const initChart = (domRef) => {
   return echarts.init(domRef);
@@ -486,7 +506,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                     }
                   });
                   percent = ((value / total) * 100).toFixed(1);
-                  return '{labelColor|' + params.name + '}{valueColor|' + percent + '%}' + '\r{labelColor|' + value + '}' + `${chartJson?.y1_unit || ""}`;
+                  return '{labelColor|' + getEqualNewlineString(params.name,6) + '}{valueColor|' + percent + '%}'
+                  //  + '\r{labelColor|' + value + '}' + `${chartJson?.y1_unit || ""}`;
                 },
                 rich: rich,
               },
