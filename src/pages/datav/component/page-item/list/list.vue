@@ -703,7 +703,7 @@ export default {
         // 数据更新后重新启动滚动
         if (this.isVerticalScroll) {
           this.$nextTick(() => {
-            this.startVerticalScroll();
+            // this.startVerticalScroll();
           });
         }
       }
