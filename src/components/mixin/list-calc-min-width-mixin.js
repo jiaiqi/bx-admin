@@ -38,6 +38,10 @@ export default {
             if (!tableName) {
               return false
             }
+            if (!key || !tableName) {
+              console.log('column_name or tableName is empty', key, tableName)
+              return false
+            }
             arr.push({
               serviceName: "srvsys_table_columns_update",
               data: [{ list_min_width: this.columnWidthMap[key].width }],
@@ -160,7 +164,8 @@ export default {
     updateTableColumn() {
       const url = this.getServiceUrl("operate", 'srvsys_table_columns_update');
       const req = this.calcTableColumnWidthReq;
-      if (req === false) {
+      if (req === false || (Array.isArray(req) && req.length === 0)) {
+        console.error('calcTableColumnWidthReq is empty', req)
         return
       }
       const loading = this.$loading({

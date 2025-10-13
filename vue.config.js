@@ -101,7 +101,8 @@ module.exports = {
 
   productionSourceMap: process.env.ENABLE_SOURCE_MAP === 'true', // 生产环境生成不生成sourceMap
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
-  publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
+  // publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
+  publicPath: './',
   outputDir: "vpages",
 
   configureWebpack: {
