@@ -448,22 +448,7 @@
               ></el-button>
             </div>
           </el-form-item>
-          <el-form-item
-            label="发起人id"
-            prop="operator_id"
-          >
-            <el-input
-              v-model="ruleForm.operator_id"
-              clearable
-              placeholder="请输入..."
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col
-          :span="12"
-          style="display: flex;padding-left: 6.42%"
-        >
-          <el-form-item
+           <el-form-item
             label="机构编号"
             prop="org_no"
           >
@@ -491,6 +476,22 @@
               ></el-button>
             </div>
           </el-form-item>
+          <!-- <el-form-item
+            label="发起人id"
+            prop="operator_id"
+          >
+            <el-input
+              v-model="ruleForm.operator_id"
+              clearable
+              placeholder="请输入..."
+            ></el-input>
+          </el-form-item> -->
+        </el-col>
+        <!-- <el-col
+          :span="12"
+          style="display: flex;padding-left: 6.42%"
+        >
+         
           <el-form-item
             label="发起机构"
             prop="org_name"
@@ -501,8 +502,8 @@
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
-        </el-col>
-        <el-col
+        </el-col> -->
+        <!-- <el-col
           :span="12"
           style="display: flex;justify-content: space-between; width: 43.5%;"
         >
@@ -534,7 +535,7 @@
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
-        </el-col>
+        </el-col> -->
         <el-col
           :span="12"
           style="padding-left: 6.42%;"
