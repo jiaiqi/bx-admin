@@ -528,7 +528,7 @@ export default {
               ...item,
               url: this.getImagePath(item[swiperJson?.srv_col_image]),
               _thumbnail: this.getImagePath(item[swiperJson?.srv_col_image], 100),
-              _title: item[swiperJson?.srv_col_title || "title"] || "",
+              _title: swiperJson?.srv_col_title && item[swiperJson?.srv_col_title] || "",
             };
           })
           if (swiperJson?.swiper_options?.includes("单行数据多张图片")) {
