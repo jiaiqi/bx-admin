@@ -48,6 +48,7 @@
   </div>
   <date-time
     v-else-if="widgetType === '时间日期'"
+    :page-config="pageConfig"
     :show-seconds="showSeconds"
     :parts-set="timeWidgetJson['parts-set']"
     :color="widgetColor"
@@ -78,6 +79,10 @@ export default {
     dateTime,
   },
   props: {
+    pageConfig: {
+      type: Object,
+      default: () => {},
+    },
     pageItem: Object,
     pageNo: String,
   },

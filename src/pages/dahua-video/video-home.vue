@@ -55,7 +55,7 @@
       <!-- 保存按钮区域 -->
       <div
         class="save-controls"
-        v-if="!isPlayerLoading && hasChannelsChanged && props && props.video_card_channels"
+        v-if="!isPlayerLoading && hasChannelsChanged && props && props.hasOwnProperty('video_card_channels')"
       >
         <el-button
           type="primary"
@@ -151,14 +151,16 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
 import VideoUtil from "@/pages/dahua-video/video";
 import { Notification } from 'element-ui';
 import {
   useRouter,
   useRoute,
   useHttp,
+  useUtils
 } from "@/common/vueApi";
+import cloneDeep from 'lodash/cloneDeep';
 
 // 定义 emit 事件
 const emit = defineEmits(['window-channels-change', 'save-window-channels']);
@@ -180,6 +182,10 @@ const props = defineProps({
     type: Number,
     default: 9
   },
+  pageConfig: {
+    type: Object,
+    default: () => ({})
+  },
   pageItem: {
     type: Object,
     default: () => ({})
@@ -189,6 +195,61 @@ const props = defineProps({
     default: ''
   }
 })
+const vueUtil = useUtils()
+const setReq = () => {
+  if (props.pageItem?.srv_req_json) {
+    const componentParamsModels = route.querys || {}
+    let params = componentParamsModels ? cloneDeep(componentParamsModels) : {};
+    const pageConfig = props.pageConfig || {}
+    if (pageConfig && pageConfig.interface_json_data && Array.isArray(pageConfig.interface_json_data)) {
+      if (pageConfig.interface_json_data.length > 0) {
+        let obj = pageConfig.interface_json_data[0]
+        params = {
+          ...params,
+          [obj.para]: obj.value
+        }
+      }
+    }
+    console.log('params', params);
+
+    let req = cloneDeep(props.pageItem?.srv_req_json) || {}
+    let conds = []
+    const globalParams = {
+      ...params,
+      user_no: sessionStorage.getItem('login_user_info')?.user_no,
+      userInfo: sessionStorage.getItem('login_user_info'),
+    }
+    if (req.hasOwnProperty('condition') && req.condition.length > 0) {
+      for (let cond of req.condition) {
+        let condModel = cloneDeep(cond)
+        if (cond && condModel.value && condModel.value.indexOf('${') !== -1 && condModel.value.indexOf('}') !== -
+          1 && params) {
+          if (vueUtil.renderStr(condModel.value, globalParams) && vueUtil.renderStr(condModel.value, globalParams).indexOf('[object') == -1) {
+            condModel.value = vueUtil.renderStr(condModel.value, globalParams)
+          } else {
+            let key = condModel.value
+            var sreg = new RegExp("\\${", "g"); // 加'g'，删除字符串里所有的"a"
+            var ereg = new RegExp("\}", "g"); // 加'g'，删除字符串里所有的"a"
+            key = key.replace(sreg, "");
+            key = key.replace(ereg, "");
+            console.log('--srvReq', params, key)
+            condModel.value = params && params.hasOwnProperty(key) ? params[key] : ""
+            if (condModel.value?.value) {
+              condModel.value = condModel.value.value
+            }
+          }
+
+        }
+        conds.push(cloneDeep(condModel))
+
+      }
+      req.condition = conds.map(item => item)
+    }
+    return req
+  } else {
+    return null
+  }
+}
 
 const filterText = ref(''); //树节点过滤使用
 const tree = ref(null);
@@ -230,7 +291,7 @@ const isInIframe = () => {
     return true;
   }
 };
-const http = useHttp();
+const $http = useHttp();
 // 保存窗口通道配置
 const saveWindowChannels = async () => {
   console.log('保存窗口通道配置:', windowChannels.value);
@@ -247,7 +308,7 @@ const saveWindowChannels = async () => {
     "condition": [{ "colName": "com_no", "ruleType": "eq", "value": props.pageItem.com_no }],
     "data": [{ "video_card_channels": channelList && channelList.length ? JSON.stringify(channelList) : JSON.stringify(windowChannels.value) }]
   }]
-  const res = await http.post(url, req)
+  const res = await $http.post(url, req)
   if (res.data.state === 'SUCCESS') {
     // 更新原始配置，重置变化标记
     originalWindowChannels.value = { ...windowChannels.value };
@@ -493,8 +554,9 @@ const initPlayer = () => {
       // 实时预览成功回调
       realSuccess: (info) => {
         console.warn('实时预览成功-init:', info);
+        notifyParentWindowChannelsChange();
       },
-      // 实时预览失败回调
+      // 实时预览失败 回调
       realError: (info, err) => {
         console.error('实时预览失败:', info, err);
 
@@ -902,7 +964,19 @@ const processTreeData = (data) => {
 };
 //获取视频节点树
 const getVideoInfo = async () => {
-  const res = await Videos.getVideoListByArea()
+  let res = null
+  let req = setReq()
+  if (req && req.serviceName) {
+    const url = `/${req.mapp}/select/${req.serviceName}`
+    req = {
+      ...req,
+      treeData: true,
+    }
+    res = await $http.post(url, req)
+    console.log('getVideoInfo-res', res);
+  } else {
+    res = await Videos.getVideoListByArea()
+  }
   // .then(res => {
   if (res.data.state !== 'SUCCESS') return;
   console.log('---', processTreeData(res.data.data))

@@ -212,6 +212,7 @@
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === '控件'"
       :ref="pageItemData.com_type"
+      :page-config="pageConfig"
       :pageItem="pageItemData"
       :page-params-model="pageParamsModel"
       :query-options="queryOptions"
@@ -259,6 +260,7 @@
     <DhVideo
       v-else-if="pageItemData.com_type === '大华视频监控'"
       :pageItem="pageItemData"
+      :page-config="pageConfig"
       :video_card_channels="pageItemData.video_card_channels"
       :division="pageItemData.division"
       :page-params-model="pageParamsModel"

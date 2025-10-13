@@ -1,6 +1,14 @@
 <template>
   <div class="date-time-container">
-    <i class="el-icon-arrow-left back-button" @click="goBack"></i>
+    <i
+      class="el-icon-arrow-left back-button"
+      @click="goBack"
+    ></i>
+    <i
+      class="el-icon-s-home back-button"
+      @click="goHome"
+      v-if="homePageNo"
+    ></i>
     <div
       class="date-time"
       :style="{ color: color }"
@@ -25,6 +33,10 @@ export default {
     };
   },
   props: {
+    pageConfig: {
+      type: Object,
+      default: () => { },
+    },
     showSeconds: {
       type: Boolean, //是否显示秒数
       default: false,
@@ -39,6 +51,20 @@ export default {
     },
   },
   computed: {
+    homePageNo() {
+      let result = ''
+      console.log('homePageNo', this.pageConfig);
+      let homePageNo = 'BX2508041432140001' //暂时写死
+      if(this.pageConfig.page_no && this.pageConfig.page_no !== homePageNo) {
+        result = homePageNo
+      }
+      // if (this.pageConfig && this.pageConfig.path) {
+      //   let arr = this.pageConfig.path.split('/')?.filter(val => val)
+      //   result = Array.isArray(arr) && arr.length > 1 ? arr[0] : ''
+      //   console.log('homePageNo', arr, result);
+      // }
+      return result
+    },
     date() {
       let format = "";
       if (this.partsSet.indexOf("年") > -1) {
@@ -97,6 +123,11 @@ export default {
     clearInterval(timer);
   },
   methods: {
+    goHome() {
+      if (this.homePageNo) {
+        this.$router.push(`/site/${this.homePageNo}`)
+      }
+    },
     goBack() {
       // 优先使用 Vue Router 的后退功能，如果不可用则使用浏览器原生后退
       if (this.$router) {
@@ -121,12 +152,12 @@ export default {
   padding: 5px;
   border-radius: 4px;
   margin-right: 10px;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
     transform: translateX(-2px);
   }
-  
+
   &:active {
     transform: translateX(-1px);
   }
