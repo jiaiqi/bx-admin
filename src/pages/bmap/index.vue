@@ -127,7 +127,7 @@ export default {
   },
   created() {
     this.asyncLoadMap().then(res => {
-      this.$store.commit('setBMapLoaded', true)
+      this.bMapLoaded = true
     }).catch(err => {
       console.error('加载地图失败：', err);
     })
@@ -138,9 +138,6 @@ export default {
       this.initCheckPointId = this.$route.query.id;
       this.getAllDepts();
     }
-    setTimeout(() => {
-      this.bMapLoaded = this.$store.getters.getBMapLoaded()
-    }, 1000)
   },
   methods: {
     asyncLoadMap() {
