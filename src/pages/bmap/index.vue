@@ -125,14 +125,13 @@ export default {
       ],
     };
   },
-  created() {
-    this.asyncLoadMap().then(res => {
-      this.bMapLoaded = true
-    }).catch(err => {
-      console.error('加载地图失败：', err);
-    })
-  },
-  mounted() {
+  async mounted() {
+    try {
+      await this.asyncLoadMap()
+      await new Promise(resolve => setTimeout(resolve, 500))
+    } catch (error) {
+      console.error('加载地图失败：', error);
+    }
     if (this.urlPath.indexOf("/bmap/editor/") !== -1) {
     } else if (this.urlPath.indexOf("/bmap/check") !== -1) {
       this.initCheckPointId = this.$route.query.id;
@@ -144,7 +143,7 @@ export default {
       return new Promise(function (resolve, reject) {
         if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
         if (typeof (BMap) !== "undefined") { return resolve(BMap) }
-        if(!window.APP_CONFIG.serverUrl) return reject('地图配置错误')
+        if (!window.APP_CONFIG.serverUrl) return reject('地图配置错误')
         let script = document.createElement('script')
         script.type = 'text/javascript'
         script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
