@@ -208,6 +208,7 @@ module.exports = {
       },
       minimizer: [
         new (require('terser-webpack-plugin'))({
+          parallel: true, // 启用多核并行压缩,提升压缩速度
           terserOptions: {
             compress: {
               // drop_console: true, // 移除console
