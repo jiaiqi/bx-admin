@@ -97,12 +97,38 @@ module.exports = {
         return options;
       });
     }
+
+    // 仅为业务代码生成 SourceMap（生产 + 显式开启 ENABLE_SOURCE_MAP 时）
+    if (process.env.NODE_ENV === 'production' && process.env.ENABLE_SOURCE_MAP === 'true') {
+      // 禁用默认 devtool，由插件精细化接管
+      config.devtool(false);
+      config
+        .plugin('sourcemap-devtool')
+        .use(webpack.SourceMapDevToolPlugin, [{
+          filename: 'sourcemaps/[name].[contenthash:8].js.map',
+          // 等价于 cheap-module-source-map：只生成行映射，不含列信息，且保留模块路径
+          module: true,
+          columns: false,
+          // 排除第三方与特大包，仅为业务代码生成 map
+          exclude: [
+            /node_modules/,
+            /chunk-vendors.*\.js$/,
+            /vendors.*\.js$/,
+            /video~.*\.js$/
+          ]
+        }]);
+    }
   },
 
-  productionSourceMap: process.env.ENABLE_SOURCE_MAP === 'true', // 生产环境生成不生成sourceMap
+  // 由插件精细化控制 sourcemap，默认关闭全局生产 SourceMap
+  productionSourceMap: false,
+  // 显式关闭 CSS SourceMap（CSS 生成 map 耗时大）
+  css: {
+    sourceMap: false
+  },
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
-  publicPath: './',
+  publicPath:process.env.NODE_ENV==='development' ? '/vpages/' : "./",
   outputDir: "vpages",
 
   configureWebpack: {
