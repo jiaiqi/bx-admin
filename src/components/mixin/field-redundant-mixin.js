@@ -224,7 +224,7 @@ export default {
             !row?._children?.[calc_rule.constraint_name]?.length
           ) {
             // 没有子表或者子表数量为0的时候不进行计算
-            // return;
+            return;
           }
         }
 
