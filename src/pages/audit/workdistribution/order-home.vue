@@ -121,23 +121,6 @@ export default {
         }
       }
     },
-    asyncLoadMap() {
-      return new Promise(function (resolve, reject) {
-        if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
-        if (typeof (BMap) !== "undefined") { return resolve(BMap) }
-        let script = document.createElement('script')
-        script.type = 'text/javascript'
-        script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
-        script.onerror = reject
-        document.head.appendChild(script)
-        const timer = setInterval(() => {
-          if (BMapGL || BMap) {
-            BMapGL ? resolve(BMapGL) : resolve(BMap)
-            clearInterval(timer)
-          }
-        }, 500)
-      })
-    }
   },
   watch: {
     '$route': {
@@ -156,7 +139,7 @@ export default {
     }
   },
   created() {
-    this.asyncLoadMap()
+  
   },
   mounted() {
     if (!this._isMounted) {
