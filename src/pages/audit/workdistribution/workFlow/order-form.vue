@@ -1122,6 +1122,7 @@ export default {
       let operate_params = this.getOperateParams();
       if(operate_params){
         operate_params = JSON.parse(operate_params).data;
+        console.log(operate_params, 999999)
       if (operate_params) {
         // 处理时间参数
         const passTime = operate_params[0].pass_time;
@@ -1152,8 +1153,18 @@ export default {
         const res = await this.getSusPassconvInfo()
         if(res){
           console.log(res, 777777)
-          this.operate_params = res
-          this.ruleForm = formDataByGetInfo(this.ruleForm, res)
+          this.operate_params = res[0]
+          this.ruleForm.media_no = res[0].obusn
+          this.ruleForm.media_type = res[0].mediatype
+          this.ruleForm.pass_time = res[0].extime
+          this.ruleForm.real_fee = res[0].fee
+          this.ruleForm.sus_escape_type = res[0].suspecttype
+          this.ruleForm.sus_plate_color = res[0].vehicleplate_color
+          this.ruleForm.sus_vehicle_id = res[0].vehicleplate_no
+          this.ruleForm.suspicion_id = res[0].suspectid
+          this.ruleForm.vehicleclass = res[0].envehicleclass
+          this.ruleForm.vehicleusertype = res[0].vehicleusertype
+          console.log(this.ruleForm,this.operate_params, 888888)
         this.initSpecialType()
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
@@ -1287,7 +1298,7 @@ export default {
     //根据passid获取页面多字段数据
     async getSusPassconvInfo() {
       let obj = {
-        condition: [{ colName: "passid", value: this.ruleForm.pass_id }],
+        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getSusPassconvInfo(obj)
