@@ -806,7 +806,34 @@ const getPublicColNames = (colName, type) => {
     console.log('获取到保存站点', addStation.value)
   }).catch(err => { })
 }
-onMounted(() => {
+
+function asyncLoadMap() {
+  return new Promise(function (resolve, reject) {
+    if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
+    if (typeof (BMap) !== "undefined") { return resolve(BMap) }
+    let script = document.createElement('script')
+    script.type = 'text/javascript'
+    script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
+    script.onerror = reject
+    script.onload = function () {
+      if (BMapGL || BMap) {
+        BMapGL ? resolve(BMapGL) : resolve(BMap)
+      }
+    }
+    document.head.appendChild(script)
+    const timer = setInterval(() => {
+      if (BMapGL || BMap) {
+        BMapGL ? resolve(BMapGL) : resolve(BMap)
+        clearInterval(timer)
+      }
+    }, 500)
+  })
+}
+
+
+onMounted(async () => {
+  await asyncLoadMap()
+  await new Promise(resolve => setTimeout(resolve, 500))
   isFirstSave.value = false
   let passId = route.query.pass_id
   initMineMap();
