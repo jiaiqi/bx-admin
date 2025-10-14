@@ -971,6 +971,7 @@ export default {
       picIds: '',
       strTime: '',
       endTime: '',
+      operate_params: {},
       relevantList: []
     }
   },
@@ -1116,9 +1117,11 @@ export default {
       }).catch(err => {
       });
     },
-    initForm() {
+    // 20251014调整取值逻辑，通过passid去调用接口去获取初始化参数
+    async initForm() {
       let operate_params = this.getOperateParams();
-      operate_params = JSON.parse(operate_params).data;
+      if(operate_params){
+        operate_params = JSON.parse(operate_params).data;
       if (operate_params) {
         // 处理时间参数
         const passTime = operate_params[0].pass_time;
@@ -1137,6 +1140,30 @@ export default {
         console.log('--', this.ruleForm);
         this.getTrafficFlow()
       }
+      }else{
+        let pass_id = this.$route.query.pass_id;
+        this.ruleForm.pass_id = pass_id
+        if(pass_id){
+        const pass_time = pass_id.slice(22, 30)
+        const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+        
+        this.strTime = moment(formattedDate).subtract(10, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(formattedDate).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+        const res = await this.getSusPassconvInfo()
+        if(res){
+          console.log(res, 777777)
+          this.operate_params = res
+          this.ruleForm = formDataByGetInfo(this.ruleForm, res)
+        this.initSpecialType()
+        this.handleChangeFee()
+        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+        this.getTrafficFlow()
+        }
+        }
+      }
+      
     },
     setPromoter() {
       this.showModal = true;
@@ -1255,6 +1282,19 @@ export default {
         }
       }).catch(err => { })
     },
+
+    //20251014 调整逻辑由页面路由直接获取数据改为通过passid调接口获取
+    //根据passid获取页面多字段数据
+    async getSusPassconvInfo() {
+      let obj = {
+        condition: [{ colName: "passid", value: this.ruleForm.pass_id }],
+        divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
+      }
+      const res = await orderUtils.getSusPassconvInfo(obj)
+      if(res.data){
+        return res.data.data ? res.data.data : []
+      }
+    },
     /**
      * @Description:计费查询使用
      * @Author:Eirice
@@ -1307,6 +1347,9 @@ export default {
       if (operate_params) {
         eclass = operate_params[0]?.vehicleclass
         sertype = operate_params[0]?.vehicleusertype
+      }else{
+        eclass = this.operate_params.vehicleclass
+        sertype = this.operate_params.vehicleusertype
       }
       if (this.ruleForm.media_type !== '' && this.ruleForm.isnormel !== '') {
         if (this.ruleForm.media_type === '1' && this.ruleForm.isnormel === '1') {

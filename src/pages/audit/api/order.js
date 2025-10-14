@@ -202,6 +202,23 @@ export default class OrderApi {
     return await $http.post(url, req)
   }
 
+    //根据passid获取页面多字段数据
+  async getSusPassconvInfo(options) {
+    let url = path + `/aud/select/srvaud_suspassconv_new_select?srvaud_suspassconv_new_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_suspassconv_new_select",
+      condition: options.condition,
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
   // 校验工单是否存在
   async checkOrderExist(passid) {
     if(!passid) return false
