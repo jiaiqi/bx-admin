@@ -15,11 +15,15 @@
       :isPreview="true"
       @executor-complete="$emit('executor-complete', $event)"
     ></lc-view>
+    
+    <!-- 浮动编辑按钮组件 -->
+    <floating-edit-button @edit-click="handleEditClick" />
   </div>
 </template>
 
 <script>
 import lcView from "./components/materials/view.vue";
+import FloatingEditButton from "./components/floating-edit-button.vue";
 
 import lowCodePageMixin from "./mixins/lowcode-page-mixin";
 import pageParamsMixin from "./mixins/page-params-mixin";
@@ -28,12 +32,18 @@ export default {
   name: "lowCodeView",
   components: {
     lcView,
+    FloatingEditButton,
   },
   mixins: [lowCodePageMixin, pageParamsMixin],
   data() {
     return {};
   },
-  methods: {},
+  methods: {
+    handleEditClick() {
+      // 编辑按钮点击事件处理
+      location.href = location.href.replace('site','lowcode/editor')
+    },
+  },
 };
 </script>
 
