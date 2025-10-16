@@ -219,6 +219,40 @@ export default class OrderApi {
     return await $http.post(url, req)
   }
 
+    //根据passid查询年表，分表查询条件为当前年和上一年获取页面多字段数据
+  async getSusvehPassInfo(options) {
+    let url = path + `/aud/select/srvaud_susvehpass_select?srvaud_susvehpass_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_susvehpass_select",
+      condition: options.condition,
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+    //根据passid查询日表，分表查询条件为前后一天获取页面多字段数据
+  async getPassconvInfo(options) {
+    let url = path + `/aud/select/srvaud_passconv_select?srvaud_passconv_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_passconv_select",
+      condition: options.condition.concat(options.divCond),
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
   // 校验工单是否存在
   async checkOrderExist(passid) {
     if(!passid) return false

@@ -1148,11 +1148,10 @@ export default {
         const pass_time = pass_id.slice(22, 30)
         const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
         
-        this.strTime = moment(formattedDate).subtract(10, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.endTime = moment(formattedDate).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
-        const res = await this.getSusPassconvInfo()
-        if(res){
-          console.log(res, 777777)
+        this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+        const res = await this.getSusvehPassInfo()
+        if(res&&res.length>0){
           this.operate_params = res[0]
           this.ruleForm.media_no = res[0].obusn
           this.ruleForm.media_type = res[0].mediatype
@@ -1164,8 +1163,30 @@ export default {
           this.ruleForm.suspicion_id = res[0].suspectid
           this.ruleForm.vehicleclass = res[0].envehicleclass
           this.ruleForm.vehicleusertype = res[0].vehicleusertype
-          console.log(this.ruleForm,this.operate_params, 888888)
         this.initSpecialType()
+        this.handleChangeFee()
+        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+        this.getTrafficFlow()
+        }else{
+          this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        const resdata = await this.getPassconvInfo()
+        if(resdata&&resdata.length>0){
+          this.operate_params = resdata[0]
+
+          this.ruleForm.media_no = resdata[0].obusn
+          this.ruleForm.media_type = resdata[0].mediatype
+          this.ruleForm.pass_time = resdata[0].extime
+          this.ruleForm.real_fee = resdata[0].fee
+          // this.ruleForm.sus_escape_type = resdata[0].suspecttype
+          this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
+          this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
+          // this.ruleForm.suspicion_id = resdata[0].suspectid
+          // this.ruleForm.vehicleclass = resdata[0].envehicleclass
+          this.ruleForm.vehicleusertype = resdata[0].vehicleusertype
+          this.initSpecialType()
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
@@ -1174,7 +1195,7 @@ export default {
         }
         }
       }
-      
+    }
     },
     setPromoter() {
       this.showModal = true;
@@ -1302,6 +1323,37 @@ export default {
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getSusPassconvInfo(obj)
+      if(res.data){
+        return res.data.data ? res.data.data : []
+      }
+    },
+    //根据passid查询年表，分表查询条件为当前年和上一年获取页面多字段数据
+     async getSusvehPassInfo() {
+      let obj = {
+        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
+      }
+      try {
+        const res = await orderUtils.getSusvehPassInfo(obj)
+        if(res.data){
+          return res.data.data ? res.data.data : []
+        }
+      } catch (error) {
+        const pass_time = this.ruleForm.pass_id.slice(22, 30)
+        const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+        
+        this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        return await this.getPassconvInfo()
+      }
+    },
+    //根据passid查询日表，分表查询条件为前后一天获取页面多字段数据
+     async getPassconvInfo() {
+      let obj = {
+        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        divCond: [{ colName: "entime", ruleType: "between", value: [this.strTime, this.endTime] },]
+      }
+      const res = await orderUtils.getPassconvInfo(obj)
       if(res.data){
         return res.data.data ? res.data.data : []
       }

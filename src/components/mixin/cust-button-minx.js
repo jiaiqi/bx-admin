@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+let path = process.env.NODE_ENV === "development" ? window.APP_CONFIG.API_URL : window.backendIpAddr
 export default {
   methods: {
     /**
@@ -649,6 +650,73 @@ export default {
         operateData,
         mainDetailData
       );
+
+      /*
+      * 处理自定义按钮需要请求接口并将结果拼接到url路径中的场景
+      */
+
+      if(back_url?.includes('isBmapVisualization=1')){
+        const back_url_param = back_url.substring(back_url.indexOf('?') + 1)
+        const decodebackurl = decodeURIComponent(back_url_param)
+        const queryParams = JSON.parse(decodebackurl.split("&")[0].split("=")[1])
+        queryParams.colNames = ["*"]
+         queryParams.queryMethod = "select"
+         queryParams.divCond =[]
+         queryParams.query_source ="list_page"
+         queryParams.page = {
+           "pageNo": 1,
+           "rownumber": 10
+         }
+         queryParams.relation_condition = {
+          "relation": "AND",
+          "data": []
+         }
+         queryParams.condition.forEach(item=>{
+          if(item.colName==="transtime"){
+            queryParams.relation_condition.data.push({
+              "colName": item.colName,
+              "ruleType": item.ruleType,
+              "value": item.value,
+              "use_div_calc": "是",
+              "use_query": "是"
+            })
+            queryParams.divCond.push(item)
+          }
+          if(item.colName==="vehicleplate_no"){
+            queryParams.relation_condition.data.push({
+              "colName": item.colName,
+              "ruleType": "like",
+              "value": item.value,
+            })
+          }
+          if(item.colName==="gantryid"){
+            queryParams.relation_condition.data.push(item)
+          }
+          if(item.colName==="vehicleplate_color"){
+            queryParams.relation_condition.data.push(item)
+          }
+         })
+         
+        const url = path + `/aud/select/srvaud_grantrydata_select`
+       const res = await this.$http.post(url, queryParams)
+          if (res) {
+              console.log(res, 88888888)
+              const passid = res?.data?.data?.[0]?.passid
+              // 在路径'/'后面插入passid，而不是在'?'后面
+              if (passid) {
+                // 查找最后一个'/'的位置
+                const lastSlashIndex = back_url.lastIndexOf('/');
+                if (lastSlashIndex > -1) {
+                  // 在最后一个'/'后插入passid
+                  back_url = back_url.substring(0, lastSlashIndex + 1) + passid + back_url.substring(lastSlashIndex + 1);
+                }
+              }
+          }
+        
+        console.log(queryParams, 66666666)
+        console.log(decodebackurl,66666666)
+        console.log(typeof decodebackurl, 77777777)
+      }
 
       if (back_url && item["operate_params"] && typeof item["operate_params"] === 'string') {
         var packageData = this.getPackageData(item, operateData);

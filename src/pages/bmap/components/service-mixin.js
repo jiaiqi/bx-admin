@@ -5,6 +5,7 @@ import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
+import moment from 'moment'
 import {getpassconv, getpassconvpath} from "../assets/mockData";
 
 let waypointsLen = 20  // 最大途径点 包含起终点数量
@@ -35,15 +36,16 @@ export default {
             loadStations:[],
             loadPassconvPath:{},
             tolllinks:[],
-            updatePoints:[]
-
+            updatePoints:[],
+            extime:'',
+            entime:''
         }
     },
     computed:{
         buildDivCond(){
             let divCond = []
-            let entime = this.$route.query.entime || this.$route.params.entime
-            let extime = this.$route.query.extime || this.$route.params.extime
+            let entime = this.$route.query.entime || this.$route.params.entime||this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime||this.extime
             divCond =  [{
                 "colName":"entime",
                 "ruleType":"in",
@@ -464,7 +466,8 @@ export default {
         }
     },
     mounted(){
-        let self = this
+        console.log(this.$route.query, 77777777)
+        let self = this 
         this.initMap()
         if(this.modeUrl == '/bmap/check' || this.modeUrl.indexOf('/bmap/check') !== -1){
             this.isEditor = true
@@ -482,6 +485,18 @@ export default {
        
     },
     methods: {
+        //处理新的取值逻辑，通过passid去接口中查询字段信息
+        getPassIdInfo(){
+             const pass_time = this.no.slice(22, 30)
+            const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+            if(!this.$route.query.entime || !this.$route.params.entime){
+                this.entime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+        
+            }
+            if(this.$route.query.extime || this.$route.params.extime){
+                this.extime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+            }
+        },
         getPassconv(){
             // 查询所有分公司下路段
             let self = this
@@ -499,8 +514,8 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            let entime = this.$route.query.entime || this.$route.params.entime
-            let extime = this.$route.query.extime || this.$route.params.extime
+            let entime = this.$route.query.entime || this.$route.params.entime||this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime||this.extime
             if(!self.no || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
@@ -575,8 +590,8 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            let entime = this.$route.query.entime || this.$route.params.entime
-            let extime = this.$route.query.extime || this.$route.params.extime
+            let entime = this.$route.query.entime || this.$route.params.entime || this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime || this.extime
             if(!passid || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 

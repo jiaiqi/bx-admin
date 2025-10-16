@@ -127,8 +127,10 @@ export default {
   },
   async mounted() {
     try {
-      await this.asyncLoadMap()
+      const map = await this.asyncLoadMap()
+      console.log(map,'++++++++++++++++++++++')
       await new Promise(resolve => setTimeout(resolve, 500))
+      this.bMapLoaded = true
     } catch (error) {
       console.error('加载地图失败：', error);
     }
@@ -149,17 +151,14 @@ export default {
         script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
         script.onerror = reject
         script.onload = function () {
-          if (BMapGL || BMap) {
-            BMapGL ? resolve(BMapGL) : resolve(BMap)
-          }
+          const timer = setInterval(() => {
+            if (BMapGL || BMap) {
+              BMapGL ? resolve(BMapGL) : resolve(BMap)
+              clearInterval(timer)
+            }
+          }, 500)
         }
         document.head.appendChild(script)
-        const timer = setInterval(() => {
-          if (BMapGL || BMap) {
-            BMapGL ? resolve(BMapGL) : resolve(BMap)
-            clearInterval(timer)
-          }
-        }, 500)
       })
     },
     setPointList(list) {
