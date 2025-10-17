@@ -145,6 +145,8 @@
             :comColMap="comColMapJson"
             :cardLayout="layoutJson"
             :rowButtons="listV2RowButtons"
+            :is-vertical-scroll="isVerticalScroll"
+            :display-row-limit="displayRowLimit"
             :list-config="listConfig"
             @on-click-cell="onClickCell"
             @on-click-block="onClickBlock"

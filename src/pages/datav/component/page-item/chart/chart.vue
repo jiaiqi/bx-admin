@@ -89,6 +89,13 @@ const drawOption = () => {
   if (props.colors?.length) {
     options.color = props.colors;
   }
+  // 将饼图和环图的起始角度从默认的90度（12点钟方向）改为270度（6点钟方向）
+  if ((props.chartType === 'pie' || props.chartType === 'ring') && !options.series[0]?.startAngle) {
+    options.series = options.series.map(series => ({
+      ...series,
+      startAngle: 270
+    }));
+  }
   setTimeout(() => {
     nextTick(() => {
       chartObj.setOption(options);
