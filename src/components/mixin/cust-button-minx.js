@@ -712,10 +712,6 @@ export default {
                 }
               }
           }
-        
-        console.log(queryParams, 66666666)
-        console.log(decodebackurl,66666666)
-        console.log(typeof decodebackurl, 77777777)
       }
 
       if (back_url && item["operate_params"] && typeof item["operate_params"] === 'string') {

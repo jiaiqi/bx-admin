@@ -971,6 +971,7 @@ export default {
       picIds: '',
       strTime: '',
       endTime: '',
+      order_no: '',//工单编号
       operate_params: {},
       relevantList: []
     }
@@ -1119,7 +1120,28 @@ export default {
     },
     // 20251014调整取值逻辑，通过passid去调用接口去获取初始化参数
     async initForm() {
-      let operate_params = this.getOperateParams();
+      if(this.isDetail){
+        this.order_no = this.$route.query?.order_no
+        const resOrder = await this.getWorkOrderDetail()
+        if(resOrder){
+           console.log(resOrder, 3333333)
+           this.ruleForm = formDataByGetInfo(this.ruleForm, resOrder[0])
+           this.ruleForm.vehicle_type = resOrder[0]._trade_vehicle_type_disp
+           this.initSpecialType()
+        this.handleChangeFee()
+        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+        this.getTrafficFlow()
+        const pass_time2 = this.ruleForm.pass_id.slice(22, 30)
+        const formattedDate2 = pass_time2.slice(0, 4) + '-' + pass_time2.slice(4, 6) + '-' + pass_time2.slice(6, 8);
+        
+        this.strTime = moment(formattedDate2).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+          this.endTime = moment(formattedDate2).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.getRelevantInfo()
+        }
+      }else{
+         let operate_params = this.getOperateParams();
       if(operate_params){
         operate_params = JSON.parse(operate_params).data;
         console.log(operate_params, 999999)
@@ -1196,6 +1218,8 @@ export default {
         }
       }
     }
+      }
+     
     },
     setPromoter() {
       this.showModal = true;
@@ -1323,6 +1347,16 @@ export default {
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getSusPassconvInfo(obj)
+      if(res.data){
+        return res.data.data ? res.data.data : []
+      }
+    },
+    //根据订单id去查询工单详情
+    async getWorkOrderDetail() {
+      let obj = {
+        condition: [{ colName: "order_no",ruleType: "eq", value: "BO202504251528555470001" }],
+      }
+      const res = await orderUtils.getWorkOrderDetail(obj)
       if(res.data){
         return res.data.data ? res.data.data : []
       }
