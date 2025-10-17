@@ -4,7 +4,15 @@
       'bx-card': true,
       'marquee-mode': childAnimationType === '跑马灯',
     }"
-    :style="[childAnimationType === '跑马灯' ? {} : gridStyle]"
+    :style="[
+      childAnimationType == '跑马灯' ? {} : gridStyle,
+      {
+        // 当启用垂直滚动时，父div作为可视区域容器
+        height: childAnimationType === '纵向滚动' ? `${this.displayRowLimit * this.averageChildHeight}px` : 'auto',
+        overflow: childAnimationType === '纵向滚动' ? 'hidden' : 'visible',
+        position: childAnimationType === '纵向滚动' ? 'relative' : 'static'
+      }
+    ]"
     ref="cardRef"
   >
     <div
@@ -17,14 +25,25 @@
           '--child-animation-type': childAnimationType,
           '--child-animation-direction': childAnimationConfig.direction,
           '--child-animation-delay': childAnimationConfig.delay,
+          // 纵向滚动时，内部容器作为可滚动内容区域
+          position: childAnimationType === '纵向滚动' ? 'absolute' : 'static',
+          top: 0,
+          left: 0,
+          right: 0
         },
       ]"
-      class="card-inner-container marquee-wrap"
-      v-if="childAnimationConfig && childAnimationConfig.type === '跑马灯'"
+      class="card-inner-container"
+      :class="{ 
+        'marquee-wrap': childAnimationConfig && childAnimationConfig.type === '跑马灯',
+        'vertical-scroll-container': childAnimationType === '纵向滚动'
+      }"
+      v-if="childAnimationConfig && (childAnimationConfig.type === '跑马灯' || childAnimationConfig.type === '纵向滚动')"
     >
       <template v-for="(cellItemData, index) in cellDataFinal">
         <div
-          class="marquee-item"
+          :class="{
+            'marquee-item': childAnimationConfig && childAnimationConfig.type === '跑马灯'
+          }"
           :data-item-data="getStr(cellItemData, 'item')"
           :data-jump-json="getStr(cellsLayout, 'jumpJson')"
         >
@@ -42,10 +61,12 @@
             :showActiveCard="showActiveCard"
             :inList="inList"
             :key="i"
+            @mouse-enter="setActiveCardIndex(index)"
+            @mouse-leave="activeCardAutoplay"
             @on-click-cell="onClickCell"
             @show-dialog="showDialog"
             @refresh-component="$emit('refresh-component')"
-            class="marquee-item"
+            :class="{ 'marquee-item': childAnimationConfig && childAnimationConfig.type === '跑马灯' }"
           >
           </card-cell-layout>
         </div>
@@ -232,6 +253,7 @@ import Teleport from "vue2-teleport";
 import { Icon } from "@iconify/vue2";
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
+import verticalScrollMixin from "./vertical-scroll-mixin.js"; // 纵向滚动混入
 import dayjs from "dayjs";
 import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
@@ -252,7 +274,7 @@ export default {
     lowcodePage: () => import('@/pages/lowcode/view.vue')
   },
   name: "card-group-cell",
-  mixins: [cardGroupCellMxin, marqueeMixin],
+  mixins: [cardGroupCellMxin, marqueeMixin, verticalScrollMixin],
 
   data() {
     return {
@@ -351,6 +373,16 @@ export default {
         return {};
       },
     },
+    // 是否垂直滚动
+    isVerticalScroll: {
+      type: Boolean,
+      default: false
+    },
+    // 显示行数限制
+    displayRowLimit: {
+      type: Number,
+      default: 5
+    },
     listConfig: {
       type: [Object, null],
       default: () => {
@@ -374,15 +406,44 @@ export default {
     childAnimationConfig() {
       let obj = {};
       if (this.listConfig?.use_animation === "是") {
+        // 针对纵向滚动，默认方向设置为向上
+        const defaultDirection = (this.listConfig?.animation_type || this.listConfig.child_animation_type || "跑马灯") === "纵向滚动" ? "向上" : "由左往右";
+        
         obj = {
           type: this.listConfig?.animation_type || this.listConfig.child_animation_type || "跑马灯",
           step: this.listConfig?.animation_step || "100",
-          direction: this.listConfig?.animation_direction || "由左往右",
+          direction: this.listConfig?.animation_direction || defaultDirection,
           interval: (this.listConfig?.animation_interval || 1) * 1000, // 转换为毫秒
           delay: (this.listConfig?.animation_delay || 0) * 1000, // 转换为毫秒
         };
       }
       return obj;
+    },
+    // 计算子元素的平均高度
+    averageChildHeight() {
+      // 默认高度，用于初始化时的默认值
+      let defaultHeight = 46;
+      
+      // 尝试从容器中获取实际子元素高度
+      // 注意：在组件初始化阶段，DOM可能尚未渲染完成，此时会返回默认值
+      try {
+        if (this.$refs.cardInnerContainer && this.$refs.cardInnerContainer.children.length > 0) {
+          const children = this.$refs.cardInnerContainer.children;
+          // 过滤出非克隆的原始子元素
+          const originalChildren = Array.from(children).filter(child => !child.classList.contains('vertical-scroll-clone'));
+          
+          if (originalChildren.length > 0) {
+            const totalHeight = originalChildren.reduce((sum, child) => sum + child.offsetHeight, 0);
+            const avgHeight = Math.round(totalHeight / originalChildren.length);
+            return avgHeight;
+          }
+        }
+      } catch (error) {
+        console.warn('计算子元素高度时出错:', error);
+      }
+      
+      // 如果无法获取实际高度，返回默认值
+      return defaultHeight;
     },
     inList() {
       return this.pageItem?.com_type === "list";
@@ -524,11 +585,250 @@ export default {
     ) {
       this.activeCardIndex = 0;
       this.activeCardAutoplay();
+    }else if(animationType === "纵向滚动"){
+        console.log('====== 纵向滚动分支开始执行 ======');
+        const config = this.childAnimationConfig;
+        const containerRef = 'cardInnerContainer';
+        
+        
+        // 确保父容器样式正确设置
+        if (this.$refs.cardRef) {
+          this.$refs.cardRef.style.position = 'relative';
+          this.$refs.cardRef.style.overflow = 'hidden';
+          this.$refs.cardRef.style.height = `${this.displayRowLimit * this.averageChildHeight}px`;
+          
+        }
+        
+        // 确保内部容器样式正确设置
+        if (this.$refs[containerRef]) {
+          this.$refs[containerRef].style.position = 'absolute';
+          this.$refs[containerRef].style.top = '0';
+          this.$refs[containerRef].style.left = '0';
+          this.$refs[containerRef].style.right = '0';
+          this.$refs[containerRef].style.overflow = 'visible';
+         
+        }
+        
+        // 检查配置参数
+        
+        
+        setTimeout(() => {
+          
+          // 停止任何可能正在运行的旧动画
+          if (this.verticalScrollIsRunning) {
+            this.stopVerticalScrollAnimation();
+          }
+          
+          // 重置运行状态
+          this.verticalScrollIsRunning = false;
+          
+          // 添加延迟检查和重试机制
+          const checkContainerAndStart = (attempt = 0, maxAttempts = 5, delay = 200) => {
+            
+            
+            // 检查容器引用
+            const container = this.$refs[containerRef];
+            
+            if (!container) {
+              if (attempt < maxAttempts - 1) {
+                
+                setTimeout(() => checkContainerAndStart(attempt + 1, maxAttempts, delay), delay);
+              } else {
+                
+                // 尝试直接查找DOM元素
+                const domElement = document.querySelector(`[ref="${containerRef}"]`);
+                
+                this.verticalScrollIsRunning = false;
+                return;
+              }
+              return;
+            }
+            
+            // 容器存在，检查子元素
+            const children = container.children;
+           
+            
+            if (children.length === 0) {
+             
+              return;
+            }
+            
+            // 确保父容器样式正确设置
+            if (this.$refs.cardRef) {
+              this.$refs.cardRef.style.position = 'relative';
+              this.$refs.cardRef.style.overflow = 'hidden';
+              this.$refs.cardRef.style.height = `${this.displayRowLimit * this.averageChildHeight}px`;
+            }
+            
+            // 确保内部容器样式正确设置
+            container.style.position = 'absolute';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.right = '0';
+            container.style.overflow = 'visible';
+            container.style.transform = 'translateY(0)';
+            container.style.willChange = 'transform';
+            container.style.boxSizing = 'border-box';
+            
+            
+            
+            // 清除可能存在的定时器
+            if (container._verticalScrollTimer) {
+              
+              clearInterval(container._verticalScrollTimer);
+              container._verticalScrollTimer = null;
+            }
+            
+            // 重置运行状态
+            this.verticalScrollIsRunning = false;
+            
+            
+            // 调用滚动动画方法
+            this.startVerticalScrollAnimation(config, containerRef);
+            
+            // 添加定时器验证和备用方案调用
+            setTimeout(() => {
+              const verifyContainer = this.$refs[containerRef];
+             
+              
+              if (verifyContainer && (!verifyContainer._verticalScrollTimer || !this.verticalScrollIsRunning)) {
+                
+                
+                try {
+                  // 计算必要的滚动参数
+                  const children = Array.from(verifyContainer.children);
+                  const originalHeight = children.reduce((sum, child) => sum + child.offsetHeight, 0);
+                  const containerHeight = verifyContainer.offsetHeight;
+                  
+                  
+                  // 重置容器状态
+                  verifyContainer.style.transition = 'none';
+                  verifyContainer.style.transform = 'translateY(0)';
+                  verifyContainer.offsetHeight; // 强制重绘
+                  
+                  // 调用mixin中的备用定时器方法
+                  if (this.setupFallbackScrollTimer) {
+                   
+                    this.setupFallbackScrollTimer(verifyContainer, config, originalHeight, containerHeight);
+                    this.verticalScrollIsRunning = true;
+                    
+                  } else {
+                    
+                  }
+                } catch (error) {
+                  
+                }
+              }
+            }, 300);
+            
+            // 记录调用后的运行状态
+          
+            
+            // 验证定时器是否设置成功
+            if (container && container._verticalScrollTimer) {
+              
+            } else {
+              
+              
+              // 确保容器样式正确
+              container.style.position = 'relative';
+              container.style.overflow = 'hidden';
+              
+              // 清除可能存在的旧定时器
+              if (container._verticalScrollTimer) {
+                clearInterval(container._verticalScrollTimer);
+                container._verticalScrollTimer = null;
+              }
+              
+              // 重新启动滚动动画
+              setTimeout(() => {
+                const newContainer = this.$refs[containerRef];
+                if (newContainer) {
+                 
+                  
+                  // 直接调用初始化方法
+                  this.initVerticalScrollLayout({
+                    delay: config.delay,
+                    speed: config.speed || 1
+                  }, containerRef);
+                  
+                  // 验证是否成功启动
+                  setTimeout(() => {
+                    const verifyContainer = this.$refs[containerRef];
+                    if (verifyContainer && verifyContainer._verticalScrollTimer) {
+                     
+                    } else {
+                     
+                      // 设置备用滚动定时器
+                      setupFallbackScrollTimer(newContainer, config);
+                    }
+                  }, 300);
+                }
+              }, 500);
+            }
+          };
+          
+          // 备用滚动定时器设置
+          const setupFallbackScrollTimer = (container, config) => {
+            
+            
+            if (!container) return;
+            
+            // 清除可能存在的定时器
+            if (container._verticalScrollTimer) {
+              clearInterval(container._verticalScrollTimer);
+            }
+            
+            // 创建简单的滚动逻辑
+            let position = 0;
+            const speed = parseInt(config.step) || 1; // 滚动速度
+            const maxScroll = container.scrollHeight - container.clientHeight;
+            
+            if (maxScroll > 0) {
+              container._verticalScrollTimer = setInterval(() => {
+                position += speed;
+                
+                // 检查是否需要重置滚动位置
+                  if (position >= maxScroll) {
+                    position = 0;
+                    
+                    // 使用直接赋值而非过渡动画，避免闪烁
+                    container.style.transition = 'none';
+                    container.style.transform = `translateY(-${position}px)`;
+                    
+                    // 强制重绘
+                    container.offsetHeight;
+                    
+                    // 恢复过渡效果
+                    setTimeout(() => {
+                      if (container) {
+                        container.style.transition = 'transform 0.3s ease-out';
+                      }
+                    }, 50);
+                    return;
+                  } else {
+                  container.style.transform = `translateY(-${position}px)`;
+                }
+              }, 30); // 滚动间隔
+              
+             
+            } else {
+              console.log('内容高度不足以滚动，不设置备用定时器');
+            }
+          };
+          
+          // 开始尝试检查和启动
+          checkContainerAndStart();
+          
+          console.log('====== 纵向滚动分支执行完毕 ======');
+        }, 1000);
     }
   },
   beforeDestroy() {
     activeCardTimer && clearInterval(activeCardTimer);
   },
+  
+
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
     executorComplete(data) {
@@ -828,5 +1128,19 @@ export default {
   max-height: 80vh;
   overflow-y: scroll;
   background-color: #fff;
+}
+
+/* 纵向滚动容器样式 */
+.vertical-scroll-container {
+  position: relative;
+  display: block;
+  
+  // 确保子元素在滚动过程中平滑过渡
+  > div {
+    position: relative;
+    // 启用硬件加速
+    transform: translateZ(0);
+    will-change: transform;
+  }
 }
 </style>

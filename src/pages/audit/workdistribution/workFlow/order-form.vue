@@ -1159,8 +1159,6 @@ export default {
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
         this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
-        console.log('这里的user_no3', this.ruleForm.user_no)
-        console.log('--', this.ruleForm);
         this.getTrafficFlow()
       }
       }else{
