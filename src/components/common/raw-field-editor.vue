@@ -955,6 +955,9 @@ export default {
       finderSelected: "",
       pickerOptions: {
         disabledDate: (time) => {
+          if(this.field.info.moreConfig?.DateRangeConfig?.disabledDateScript) {
+            return new Function('time', this.field.info.moreConfig.DateRangeConfig.disabledDateScript) (time);
+          }
           return this.field.info.subType === "year"
             ? this.dealDisabledDate(new Date(time).getFullYear().toString())
             : this.dealDisabledDate(time);
