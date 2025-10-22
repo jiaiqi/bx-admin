@@ -220,7 +220,6 @@ export default {
   },
   computed: {
     props() {
-      console.log("components0as0as00as", this.$props);
       return { ...this.$props, ...(this.$attrs || {}) };
     },
     isView() {

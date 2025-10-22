@@ -90,10 +90,7 @@ export default {
       }
     },
     handleEditClick() {
-      // 编辑按钮点击事件 - 先留空
-      console.log('编辑按钮被点击');
-      this.$emit('edit-click');
-      
+      window.open(location.href.replace('site','lowcode/editor'), '_blank')
       // 点击后隐藏按钮
       this.showEditButton = false;
     }
