@@ -25,11 +25,13 @@ export default {
   data() {
     return {
         containerStyle: {
-            transform: 'scale(1,1)',
-            transformOrigin: 'top left',
-            width: `${this.designSize.width}px`,
-            height: `${this.designSize.height}px`,
-            overflow: 'hidden'
+          '--originalX--': 1, 
+          '--originalY--': 1, 
+          transform: 'scale(1,1)',
+          transformOrigin: 'top left',
+          width: `${this.designSize.width}px`,
+          height: `${this.designSize.height}px`,
+          overflow: 'hidden'
         },
         dynamicStylesheet: null // 动态样式表
     };
@@ -77,14 +79,15 @@ export default {
       
       // 生成新的样式内容
       let cssContent = '';
+      let [x, y] = [1 / scaleX, 1 / scaleY];
+      const min = Math.min(scaleX, scaleY);
+      [x, y] = [x * min, y * min];
+      this.containerStyle['--originalX--'] = x;
+      this.containerStyle['--originalY--'] = y;
       this.keepOriginalSizeClasses.forEach(className => {
-        const [x, y] = [1 / scaleX, 1 / scaleY];
-        const min = Math.min(scaleX, scaleY);
-        const scaleValue = `${x * min}, ${y * min}`;
-        
         cssContent += `
           .ui_scaler ${className} {
-            transform: scale(${scaleValue});
+            transform: scale(${x}, ${y});
           }
         `;
       });
