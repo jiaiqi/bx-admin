@@ -11,10 +11,7 @@ export default {
     // UI设计尺寸对象 { width: 1920, height: 1080 }
     designSize: {
       type: Object,
-      default: null,
-      validator: function (value) {
-        return !value || (value.width && value.height);
-      }
+      default: () => {}
     },
     // 保持原尺寸的类名数组
     keepOriginalSizeClasses: {
@@ -24,6 +21,8 @@ export default {
   },
   data() {
     return {
+        width: null,
+        height: null,
         containerStyle: {
           '--originalX--': 1, 
           '--originalY--': 1, 
@@ -36,38 +35,63 @@ export default {
         dynamicStylesheet: null // 动态样式表
     };
   },
-  created() {
-    if (this.designSize) {
-      // 创建动态样式表
-      this.createDynamicStylesheet();
-      // 监听窗口大小变化
-      this.handleResize();
-      window.addEventListener('resize', this.handleResize);
+  watch: {
+    designSize: {
+      handler(newVal, oldVal) {
+        const temp = null;
+        if(!newVal.width && !newVal.height) {
+          temp.width = 1920;
+          temp.height = 1080;
+        } else {
+          if(newVal.width.includes('px') && newVal.height.includes('px')) {
+            temp.width = parseFloat(newVal.width);
+            temp.height = parseFloat(newVal.height);
+          }
+        }
+        if(temp) {
+          this.width = temp.width
+          this.height = temp.height
+          this.handleResize();
+          if(!this.dynamicStylesheet) {
+            // 监听窗口大小变化
+            window.addEventListener('resize', this.handleResize);
+            // 创建动态样式表
+            const style = document.createElement('style');
+            style.id = 'ui-scaler-dynamic-styles';
+            document.head.appendChild(style);
+            this.dynamicStylesheet = style;
+          }
+        }
+      },
+      immediate: true
     }
   },
   beforeDestroy() {
-    if (this.designSize) {
+    if (this.dynamicStylesheet) {
       // 移除监听器
       window.removeEventListener('resize', this.handleResize);
       // 移除动态样式表
-      this.removeDynamicStylesheet();
+      document.head.removeChild(this.dynamicStylesheet);
+      this.dynamicStylesheet = null;
     }
   },
   methods: {
-    // 创建动态样式表
-    createDynamicStylesheet() {
-      const style = document.createElement('style');
-      style.id = 'ui-scaler-dynamic-styles';
-      document.head.appendChild(style);
-      this.dynamicStylesheet = style;
-    },
     
-    // 移除动态样式表
-    removeDynamicStylesheet() {
-      if (this.dynamicStylesheet) {
-        document.head.removeChild(this.dynamicStylesheet);
-        this.dynamicStylesheet = null;
-      }
+    handleResize() {
+      const scaleX = window.innerWidth / this.width;
+      const scaleY = window.innerHeight / this.height;
+      
+      // 更新容器样式
+      Object.assign(this.containerStyle, {
+        transform: `scale(${scaleX}, ${scaleY})`,
+        transformOrigin: 'top left',
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        overflow: 'hidden'
+      })
+      
+      // 更新动态样式表
+      this.updateDynamicStylesheet(scaleX, scaleY);
     },
     
     // 更新动态样式表内容
@@ -82,8 +106,10 @@ export default {
       let [x, y] = [1 / scaleX, 1 / scaleY];
       const min = Math.min(scaleX, scaleY);
       [x, y] = [x * min, y * min];
-      this.containerStyle['--originalX--'] = x;
-      this.containerStyle['--originalY--'] = y;
+      Object.assign(this.containerStyle, {
+        '--originalX--': x, 
+        '--originalY--': y, 
+      })
       this.keepOriginalSizeClasses.forEach(className => {
         cssContent += `
           .ui_scaler ${className} {
@@ -94,20 +120,8 @@ export default {
       
       // 添加新内容到样式表
       this.dynamicStylesheet.textContent = cssContent;
-    },
-    
-    handleResize() {
-      const scaleX = window.innerWidth / this.designSize.width;
-      const scaleY = window.innerHeight / this.designSize.height;
-      
-      // 更新容器样式
-      this.containerStyle.transform = `scale(${scaleX}, ${scaleY})`
-      this.containerStyle.width = `${this.designSize.width}px`
-      this.containerStyle.height = `${this.designSize.height}px`
-      
-      // 更新动态样式表
-      this.updateDynamicStylesheet(scaleX, scaleY);
     }
+
   }
 };
 </script>

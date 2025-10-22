@@ -1,6 +1,6 @@
 <template>
   <ui-scaler
-    :design-size="{ width: 1920, height: 1080 }" 
+    :design-size="{ width: setStyle.width, height: setStyle.height }"
     :keep-original-size-classes="[
       `div[com_name*='环图'] canvas`,
       `div[com_name*='饼图'] canvas`,
