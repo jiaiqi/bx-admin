@@ -1275,6 +1275,14 @@ export default {
     // });
   },
   watch: {
+    "selected": {
+      deep: true,
+      handler(newValue, oldValue) {
+        if(this.field.model) {
+          this.selected = [this.field.model[this.field.info.name]];
+        }
+      },
+    },
     "field.model": {
       deep: true,
       handler(newValue, oldValue) {
