@@ -103,6 +103,7 @@ export default {
   },
   data() {
     return {
+      changeValue: null,
       // value组成的路径数组
       selected: [],
       // 树形结构数据
@@ -500,6 +501,7 @@ export default {
     },
     changeFieldModel(data, emitEvent = true) {
       this.field.model = data;
+      // this.$set(this.field, 'model', data)
       if (emitEvent) {
         this.$emit("field-value-changed", this.field.info.name, this.field);
       }
@@ -994,16 +996,19 @@ export default {
       }
     },
     onChange(val) {
+      let nVal = JSON.parse(JSON.stringify(val));
       if (Array.isArray(val)) {
         if (val.length) {
-          val = val[val.length - 1];
+          nVal = val[val.length - 1];
         } else {
-          val = null;
+          nVal = null;
         }
       }
+      this.changeValue = val
+      this.field.model[this.field.info.name] = nVal;
       setTimeout(() => {
         const data = this.$refs?.elCascader?.getCheckedNodes?.()?.[0]?.data;
-        if (val !== this.field.getSrvVal()) {
+        if (nVal !== this.field.getSrvVal()) {
           // if (data) {
           //   this.field.model = data;
           // } else {
@@ -1017,9 +1022,9 @@ export default {
           // this.$emit("field-value-changed", this.field.info.name, this.field);
         }
         let loader = this.dispLoaderV2;
-        if (loader.parentCol && !val) {
-          console.log(val, "onSelectChange");
-          this.treeLazySelect(loader, val).then((res) => {
+        if (loader.parentCol && !nVal) {
+          console.log(nVal, "onSelectChange");
+          this.treeLazySelect(loader, nVal).then((res) => {
             if (Array.isArray(res) && res.length > 0) {
               this.options = res;
             }
@@ -1278,12 +1283,16 @@ export default {
     "selected": {
       deep: true,
       handler(newValue, oldValue) {
-        newValue = Array.isArray(newValue) ? newValue[0] : null;
-        oldValue = Array.isArray(oldValue) ? oldValue[0] : null;
-        if(newValue !== oldValue) {
-         if(this.field.model) {
-          this.selected = [this.field.model[this.field.info.name]];
-        }
+        if(this.changeValue) {
+          this.$set(this, 'selected', this.changeValue);
+        } else {
+          newValue = Array.isArray(newValue) ? newValue[0] : null;
+          oldValue = Array.isArray(oldValue) ? oldValue[0] : null;
+          if(newValue !== oldValue) {
+            if(this.field.model) {
+              this.$set(this.selected, 0, this.field.model[this.field.info.name]);
+            }
+          }
         }
       },
     },
