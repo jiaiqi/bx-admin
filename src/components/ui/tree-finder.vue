@@ -1278,7 +1278,9 @@ export default {
     "selected": {
       deep: true,
       handler(newValue, oldValue) {
-        if(newValue[0] !== oldValue[0]) {
+        newValue = Array.isArray(newValue) ? newValue[0] : null;
+        oldValue = Array.isArray(oldValue) ? oldValue[0] : null;
+        if(newValue !== oldValue) {
          if(this.field.model) {
           this.selected = [this.field.model[this.field.info.name]];
         }
