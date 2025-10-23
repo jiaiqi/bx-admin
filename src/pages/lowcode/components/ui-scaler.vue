@@ -59,13 +59,7 @@ export default {
     }
   },
   beforeDestroy() {
-    if (this.dynamicStylesheet) {
-      // 移除监听器
-      window.removeEventListener('resize', this.handleResize);
-      // 移除动态样式表
-      document.head.removeChild(this.dynamicStylesheet);
-      this.dynamicStylesheet = null;
-    }
+    removeFn()
   },
   methods: {
     
@@ -88,6 +82,7 @@ export default {
       } else {
         // 更新容器样式
         this.$set(this, 'containerStyle', {});
+        removeFn()
       }
     },
     
@@ -115,6 +110,16 @@ export default {
       
       // 添加新内容到样式表
       this.dynamicStylesheet.textContent = cssContent;
+    },
+
+    removeFn() {
+      if (this.dynamicStylesheet) {
+        // 移除监听器
+        window.removeEventListener('resize', this.handleResize);
+        // 移除动态样式表
+        document.head.removeChild(this.dynamicStylesheet);
+        this.dynamicStylesheet = null;
+      }
     }
 
   }
