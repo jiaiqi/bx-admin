@@ -24,13 +24,6 @@ export default {
         width: null,
         height: null,
         containerStyle: {
-          '--originalX--': 1, 
-          '--originalY--': 1, 
-          transform: 'scale(1,1)',
-          transformOrigin: 'top left',
-          width: `${this.designSize.width}px`,
-          height: `${this.designSize.height}px`,
-          overflow: 'hidden'
         },
         dynamicStylesheet: null // 动态样式表
     };
@@ -38,7 +31,7 @@ export default {
   watch: {
     designSize: {
       handler(newVal, oldVal) {
-        const temp = null;
+        const temp = {};
         if(!newVal.width && !newVal.height) {
           temp.width = 1920;
           temp.height = 1080;
@@ -48,7 +41,7 @@ export default {
             temp.height = parseFloat(newVal.height);
           }
         }
-        if(temp) {
+        if(temp.width && temp.height) {
           this.width = temp.width
           this.height = temp.height
           this.handleResize();
@@ -61,6 +54,10 @@ export default {
             document.head.appendChild(style);
             this.dynamicStylesheet = style;
           }
+        } else {
+          this.width = null
+          this.height = null
+          this.handleResize();
         }
       },
       immediate: true
@@ -78,20 +75,25 @@ export default {
   methods: {
     
     handleResize() {
-      const scaleX = window.innerWidth / this.width;
-      const scaleY = window.innerHeight / this.height;
-      
-      // 更新容器样式
-      Object.assign(this.containerStyle, {
-        transform: `scale(${scaleX}, ${scaleY})`,
-        transformOrigin: 'top left',
-        width: `${this.width}px`,
-        height: `${this.height}px`,
-        overflow: 'hidden'
-      })
-      
-      // 更新动态样式表
-      this.updateDynamicStylesheet(scaleX, scaleY);
+      if(this.width && this.height) {
+        const scaleX = window.innerWidth / this.width;
+        const scaleY = window.innerHeight / this.height;
+        
+        // 更新容器样式
+        this.$set(this, 'containerStyle', {
+          transform: `scale(${scaleX}, ${scaleY})`,
+          transformOrigin: 'top left',
+          width: `${this.width}px`,
+          height: `${this.height}px`,
+          overflow: 'hidden'
+        });
+        
+        // 更新动态样式表
+        this.updateDynamicStylesheet(scaleX, scaleY);
+      } else {
+        // 更新容器样式
+        Object.keys(this.containerStyle).forEach(k => delete this.containerStyle[k])
+      }
     },
     
     // 更新动态样式表内容
@@ -106,10 +108,8 @@ export default {
       let [x, y] = [1 / scaleX, 1 / scaleY];
       const min = Math.min(scaleX, scaleY);
       [x, y] = [x * min, y * min];
-      Object.assign(this.containerStyle, {
-        '--originalX--': x, 
-        '--originalY--': y, 
-      })
+      this.$set(this.containerStyle, '--originalX--', x)
+      this.$set(this.containerStyle, '--originalY--', y)
       this.keepOriginalSizeClasses.forEach(className => {
         cssContent += `
           .ui_scaler ${className} {
