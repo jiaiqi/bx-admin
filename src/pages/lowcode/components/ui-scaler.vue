@@ -77,7 +77,10 @@ export default {
         this.updateDynamicStylesheet(scaleX, scaleY);
       } else {
         // 更新容器样式
-        this.$set(this, 'containerStyle', {});
+        this.$set(this, 'containerStyle', {
+          height: 'inherit',
+          width: 'inherit'
+        });
         removeFn()
       }
     },
