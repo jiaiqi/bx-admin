@@ -30,21 +30,19 @@ export default {
   },
   watch: {
     designSize: {
-      handler(newVal, oldVal) {
-        const temp = {};
+      handler(newVal, _) {
+        this.width = null
+        this.height = null
         if(!newVal.width && !newVal.height) {
-          temp.width = 1920;
-          temp.height = 1080;
+          this.width = 1920;
+          this.height = 1080;
         } else {
           if(newVal.width.includes('px') && newVal.height.includes('px')) {
-            temp.width = parseFloat(newVal.width);
-            temp.height = parseFloat(newVal.height);
+            this.width = parseFloat(newVal.width);
+            this.height = parseFloat(newVal.height);
           }
         }
-        if(temp.width && temp.height) {
-          this.width = temp.width
-          this.height = temp.height
-          this.handleResize();
+        if(this.width && this.height) {
           if(!this.dynamicStylesheet) {
             // 监听窗口大小变化
             window.addEventListener('resize', this.handleResize);
@@ -54,11 +52,8 @@ export default {
             document.head.appendChild(style);
             this.dynamicStylesheet = style;
           }
-        } else {
-          this.width = null
-          this.height = null
-          this.handleResize();
         }
+        this.handleResize();
       },
       immediate: true
     }
@@ -92,7 +87,7 @@ export default {
         this.updateDynamicStylesheet(scaleX, scaleY);
       } else {
         // 更新容器样式
-        Object.keys(this.containerStyle).forEach(k => delete this.containerStyle[k])
+        this.$set(this, 'containerStyle', {});
       }
     },
     
