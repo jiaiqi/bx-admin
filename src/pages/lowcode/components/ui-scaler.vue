@@ -8,7 +8,6 @@
 export default {
   name: 'UiScaler',
   props: {
-    // UI设计尺寸对象 { width: 1920, height: 1080 }
     designSize: {
       type: Object,
       default: () => {}
@@ -33,10 +32,7 @@ export default {
       handler(newVal, _) {
         this.width = null
         this.height = null
-        if(!newVal.width && !newVal.height) {
-          this.width = 1920;
-          this.height = 1080;
-        } else {
+        if(newVal.width && newVal.height) {
           if(newVal.width.includes('px') && newVal.height.includes('px')) {
             this.width = parseFloat(newVal.width);
             this.height = parseFloat(newVal.height);
