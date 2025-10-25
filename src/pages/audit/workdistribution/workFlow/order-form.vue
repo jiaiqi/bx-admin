@@ -371,6 +371,7 @@
             prop="real_fee"
           >
             <el-input
+              disabled
               v-model="ruleForm.real_fee"
               clearable
               placeholder="请输入..."
@@ -1165,6 +1166,7 @@ export default {
         let pass_id = this.$route.query.pass_id;
         this.ruleForm.pass_id = pass_id
         if(pass_id){
+        
         const pass_time = pass_id.slice(22, 30)
         const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
         
@@ -1176,7 +1178,6 @@ export default {
           this.ruleForm.media_no = res[0].obusn
           this.ruleForm.media_type = res[0].mediatype
           this.ruleForm.pass_time = res[0].extime
-          this.ruleForm.real_fee = res[0].fee
           this.ruleForm.sus_escape_type = res[0].suspecttype
           this.ruleForm.sus_plate_color = res[0].vehicleplate_color
           this.ruleForm.sus_vehicle_id = res[0].vehicleplate_no
@@ -1187,11 +1188,15 @@ export default {
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
         this.getTrafficFlow()
         }else{
           this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        const realfee = await this.getWorkorderFeeInfo()
+        console.log(realfee, 1111111)
+        if(realfee&&realfee.length>0){
+          this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
+        }
         const resdata = await this.getPassconvInfo()
         if(resdata&&resdata.length>0){
           this.operate_params = resdata[0]
@@ -1199,7 +1204,7 @@ export default {
           this.ruleForm.media_no = resdata[0].obusn
           this.ruleForm.media_type = resdata[0].mediatype
           this.ruleForm.pass_time = resdata[0].extime
-          this.ruleForm.real_fee = resdata[0].fee
+          // this.ruleForm.real_fee = resdata[0].fee
           // this.ruleForm.sus_escape_type = resdata[0].suspecttype
           this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
           this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
@@ -1210,7 +1215,7 @@ export default {
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+        // this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
         this.getTrafficFlow()
         }
         }
@@ -1386,6 +1391,17 @@ export default {
         divCond: [{ colName: "entime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getPassconvInfo(obj)
+      if(res.data){
+        return res.data.data ? res.data.data : []
+      }
+    },
+     //根据passid查询实际费用
+     async getWorkorderFeeInfo() {
+      let obj = {
+        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        divCond: [{ colName: "entime", ruleType: "between", value: [this.strTime, this.endTime] },]
+      }
+      const res = await orderUtils.getWorkorderFeeInfo(obj)
       if(res.data){
         return res.data.data ? res.data.data : []
       }
