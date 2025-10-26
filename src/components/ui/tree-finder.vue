@@ -19,7 +19,7 @@
     <el-cascader
       class="flex-1"
       v-else
-      :placeholder="field.info.placeholder"
+      :placeholder="loading ? '数据加载中...' : field.info.placeholder"
       :options="options"
       v-model="selected"
       :props="props"
@@ -28,7 +28,7 @@
       clearable
       :visible-change="visibleChange"
       :show-all-levels="field.info.editable"
-      :disabled="!field.info.editable"
+      :disabled="!field.info.editable || loading"
       :before-filter="beforeFilter"
       @change="onChange"
       :emitPath="false"
@@ -111,6 +111,7 @@ export default {
       visibleChange: false,
       hasInit: false, //已经设置过初始值
       popup: false, // 列表弹窗
+      loading: false, // 数据加载状态
 
     };
   },
@@ -984,27 +985,30 @@ export default {
       return options;
     },
     async loadDetail() {
-      const loader = this.dispLoaderV2;
+      this.loading = true; // 开始加载
       
-      // 获取当前节点的详细信息
-      const conditions = [
-        {
-          colName: loader.refedCol,
-          ruleType: "eq",
-          value: this.field.model,
-        },
-      ];
-      const params = {
-        serviceName: loader.service,
-        colNames: ["*"],
-        condition: conditions,
-        page: {
-          pageNo: 1,
-          rownumber: 1,
-        },
-      };
-      const url = this.getServiceUrl("select", loader.service);
-      const response = await this.$http.post(url, params);
+      try {
+        const loader = this.dispLoaderV2;
+        
+        // 获取当前节点的详细信息
+        const conditions = [
+          {
+            colName: loader.refedCol,
+            ruleType: "eq",
+            value: this.field.model,
+          },
+        ];
+        const params = {
+          serviceName: loader.service,
+          colNames: ["*"],
+          condition: conditions,
+          page: {
+            pageNo: 1,
+            rownumber: 1,
+          },
+        };
+        const url = this.getServiceUrl("select", loader.service);
+        const response = await this.$http.post(url, params);
       
       if (response && response.data && response.data.data && response.data.data.length > 0) {
         const item = response.data.data[0];
@@ -1052,40 +1056,50 @@ export default {
           this.onlyEmitData(item);
         }
       }
+      } catch (error) {
+        console.error('loadDetail 执行失败:', error);
+      } finally {
+        this.loading = false; // 结束加载
+      }
     },
     async loadOptions() {
-      let fieldInfo = this.field.info;
-      let conditions = [];
-      let loader = this.dispLoaderV2;
-      conditions = this.buildConditions(loader);
-      if (loader.parentCol) {
-        let curVal = this.field.getSrvVal();
-        return await this.treeLazySelect(loader, null, null, curVal);
-        // if (loader.parentCol) {
-        //   let curVal = this.field.getSrvVal();
-        //   return this.treeLazySelect(loader, null, null, curVal);
-        // } else {
-        //   return this.treeSelect(loader.service, conditions).then((response) => {
-        //     if (response && response.data && response.data.data) {
-        //       let options = response.data.data;
-        //       if (this.needRenameLabel()) {
-        //         options.forEach((option) => this.renameLable(option));
-        //       }
-        //       this.options = options;
-        //       this.noData = !options?.length;
-        //     }
-        //   });
-      }
-      this.treeSelect(loader.service, conditions).then((response) => {
-        if (response && response.data && response.data.data) {
-          let options = response.data.data;
-          if (this.needRenameLabel()) {
-            options.forEach((option) => this.renameLable(option));
-          }
-          this.options = options;
-          this.noData = !options?.length;
+      try {
+        let fieldInfo = this.field.info;
+        let conditions = [];
+        let loader = this.dispLoaderV2;
+        conditions = this.buildConditions(loader);
+        if (loader.parentCol) {
+          let curVal = this.field.getSrvVal();
+          return await this.treeLazySelect(loader, null, null, curVal);
+          // if (loader.parentCol) {
+          //   let curVal = this.field.getSrvVal();
+          //   return this.treeLazySelect(loader, null, null, curVal);
+          // } else {
+          //   return this.treeSelect(loader.service, conditions).then((response) => {
+          //     if (response && response.data && response.data.data) {
+          //       let options = response.data.data;
+          //       if (this.needRenameLabel()) {
+          //         options.forEach((option) => this.renameLable(option));
+          //       }
+          //       this.options = options;
+          //       this.noData = !options?.length;
+          //     }
+          //   });
         }
-      });
+        await this.treeSelect(loader.service, conditions).then((response) => {
+          if (response && response.data && response.data.data) {
+            let options = response.data.data;
+            if (this.needRenameLabel()) {
+              options.forEach((option) => this.renameLable(option));
+            }
+            this.options = options;
+            this.noData = !options?.length;
+          }
+        });
+      } catch (error) {
+        console.error('loadOptions 执行失败:', error);
+      } finally {
+      }
     },
 
     renameLable(option) {
