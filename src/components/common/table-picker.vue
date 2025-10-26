@@ -1,7 +1,7 @@
 <template>
   <div class="table-picker-wrapper">
     <el-popover
-      trigger="focus"
+      trigger="click"
       ref="show_popover"
       :disabled="disabled"
       :append-to-body="false"
@@ -1039,16 +1039,16 @@ export default {
           rownumber: this.page.rownumber,
         },
       };
-      if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
-        queryJson.colNames = this.setGridHeader.map((item) => item.column);
-        queryJson.colNames.push(
-          this.listV2.no_col,
-          this.listV2.parent_no_col,
-          "is_leaf",
-          "path",
-          "id"
-        );
-      }
+      // if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
+      //   queryJson.colNames = this.setGridHeader.map((item) => item.column);
+      //   queryJson.colNames.push(
+      //     this.listV2.no_col,
+      //     this.listV2.parent_no_col,
+      //     "is_leaf",
+      //     "path",
+      //     "id"
+      //   );
+      // }
       if (this.fmt && this.fmt.seq_col) {
         if (this.fmt.order_type) {
           queryJson.order = [
@@ -1154,17 +1154,17 @@ export default {
         queryJson.relation_condition = relation_condition;
       }
 
-      if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
-        queryJson.colNames = this.setGridHeader.map((item) => item.column);
-      }
+      // if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
+      //   queryJson.colNames = this.setGridHeader.map((item) => item.column);
+      // }
       if (this.listV2?.is_tree === true) {
-        queryJson.colNames.push(
-          this.listV2.no_col,
-          this.listV2.parent_no_col,
-          "is_leaf",
-          "path",
-          "id"
-        );
+        // queryJson.colNames.push(
+        //   this.listV2.no_col,
+        //   this.listV2.parent_no_col,
+        //   "is_leaf",
+        //   "path",
+        //   "id"
+        // );
         queryJson.use_type = "treelist";
         // queryJson.condition.push({
         //   colName: this.listV2.parent_no_col,
