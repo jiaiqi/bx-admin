@@ -689,6 +689,9 @@ export default {
               "value": item.value,
             })
           }
+           if(item.colName==="vehicleplate"){
+            queryParams.relation_condition.data.push(item)
+          }
           if(item.colName==="gantryid"){
             queryParams.relation_condition.data.push(item)
           }
@@ -697,7 +700,7 @@ export default {
           }
          })
          
-        const url = path + `/aud/select/srvaud_grantrydata_select`
+        const url = path + `/aud/select/${queryParams.service_name}`
        const res = await this.$http.post(url, queryParams)
           if (res) {
               console.log(res, 88888888)

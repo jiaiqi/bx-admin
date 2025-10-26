@@ -5,7 +5,7 @@ import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
-import moment from 'moment.js'
+import moment from 'dayjs'
 import {getpassconv, getpassconvpath} from "../assets/mockData";
 
 let waypointsLen = 20  // 最大途径点 包含起终点数量
@@ -41,7 +41,9 @@ export default {
             entime:'',
             enpointid:'',
             expointid:'',
-            vehicletype:''
+            vehicletype:'',
+            service_name:'',
+            vehicleid:''
         }
     },
     computed:{
@@ -92,7 +94,12 @@ export default {
                     "ruleType":"eq",
                     "value":this.vehicletype
                 }
-                cond.push(passid,exid,enid,vehicletype)
+                const vehicleid ={
+                    "colName":"vehicleid",
+                    "ruleType":"eq",
+                    "value":this.vehicleid
+                }
+                cond.push(passid,exid,enid,vehicletype,vehicleid)
             }
             return cond
         },
@@ -511,6 +518,10 @@ export default {
        
     },
     methods: {
+        // 处理新取值逻辑，当路径拼接了service_name时，并且passid有时走这个逻辑
+        getServiceName(){
+           
+        },
         //处理新的取值逻辑，通过passid去接口中查询字段信息
         getPassIdInfo(){
              const pass_time = this.no.slice(22, 30)
@@ -586,6 +597,7 @@ export default {
                     this.enpointid = res.data[0].enpointid
                     this.expointid = res.data[0].expointid
                     this.vehicletype = res.data[0].vehicletype
+                    this.vehicleid = res.data[0].vehicleid
                       this.getPassconvpath()
                 }else{
                     this.$message.error(JSON.stringify(res));
