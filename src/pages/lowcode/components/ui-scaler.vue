@@ -8,7 +8,6 @@
 export default {
   name: 'UiScaler',
   props: {
-    // UI设计尺寸对象 { width: 1920, height: 1080 }
     designSize: {
       type: Object,
       default: () => {}
@@ -24,34 +23,22 @@ export default {
         width: null,
         height: null,
         containerStyle: {
-          '--originalX--': 1, 
-          '--originalY--': 1, 
-          transform: 'scale(1,1)',
-          transformOrigin: 'top left',
-          width: `${this.designSize.width}px`,
-          height: `${this.designSize.height}px`,
-          overflow: 'hidden'
         },
         dynamicStylesheet: null // 动态样式表
     };
   },
   watch: {
     designSize: {
-      handler(newVal, oldVal) {
-        const temp = null;
-        if(!newVal.width && !newVal.height) {
-          temp.width = 1920;
-          temp.height = 1080;
-        } else {
+      handler(newVal, _) {
+        this.width = null
+        this.height = null
+        if(newVal.width && newVal.height) {
           if(newVal.width.includes('px') && newVal.height.includes('px')) {
-            temp.width = parseFloat(newVal.width);
-            temp.height = parseFloat(newVal.height);
+            this.width = parseFloat(newVal.width);
+            this.height = parseFloat(newVal.height);
           }
         }
-        if(temp) {
-          this.width = temp.width
-          this.height = temp.height
-          this.handleResize();
+        if(this.width && this.height) {
           if(!this.dynamicStylesheet) {
             // 监听窗口大小变化
             window.addEventListener('resize', this.handleResize);
@@ -62,36 +49,40 @@ export default {
             this.dynamicStylesheet = style;
           }
         }
+        this.handleResize();
       },
       immediate: true
     }
   },
   beforeDestroy() {
-    if (this.dynamicStylesheet) {
-      // 移除监听器
-      window.removeEventListener('resize', this.handleResize);
-      // 移除动态样式表
-      document.head.removeChild(this.dynamicStylesheet);
-      this.dynamicStylesheet = null;
-    }
+    removeFn()
   },
   methods: {
     
     handleResize() {
-      const scaleX = window.innerWidth / this.width;
-      const scaleY = window.innerHeight / this.height;
-      
-      // 更新容器样式
-      Object.assign(this.containerStyle, {
-        transform: `scale(${scaleX}, ${scaleY})`,
-        transformOrigin: 'top left',
-        width: `${this.width}px`,
-        height: `${this.height}px`,
-        overflow: 'hidden'
-      })
-      
-      // 更新动态样式表
-      this.updateDynamicStylesheet(scaleX, scaleY);
+      if(this.width && this.height) {
+        const scaleX = window.innerWidth / this.width;
+        const scaleY = window.innerHeight / this.height;
+        
+        // 更新容器样式
+        this.$set(this, 'containerStyle', {
+          transform: `scale(${scaleX}, ${scaleY})`,
+          transformOrigin: 'top left',
+          width: `${this.width}px`,
+          height: `${this.height}px`,
+          overflow: 'hidden'
+        });
+        
+        // 更新动态样式表
+        this.updateDynamicStylesheet(scaleX, scaleY);
+      } else {
+        // 更新容器样式
+        this.$set(this, 'containerStyle', {
+          height: 'inherit',
+          width: 'inherit'
+        });
+        removeFn()
+      }
     },
     
     // 更新动态样式表内容
@@ -106,10 +97,8 @@ export default {
       let [x, y] = [1 / scaleX, 1 / scaleY];
       const min = Math.min(scaleX, scaleY);
       [x, y] = [x * min, y * min];
-      Object.assign(this.containerStyle, {
-        '--originalX--': x, 
-        '--originalY--': y, 
-      })
+      this.$set(this.containerStyle, '--originalX--', x)
+      this.$set(this.containerStyle, '--originalY--', y)
       this.keepOriginalSizeClasses.forEach(className => {
         cssContent += `
           .ui_scaler ${className} {
@@ -120,6 +109,16 @@ export default {
       
       // 添加新内容到样式表
       this.dynamicStylesheet.textContent = cssContent;
+    },
+
+    removeFn() {
+      if (this.dynamicStylesheet) {
+        // 移除监听器
+        window.removeEventListener('resize', this.handleResize);
+        // 移除动态样式表
+        document.head.removeChild(this.dynamicStylesheet);
+        this.dynamicStylesheet = null;
+      }
     }
 
   }

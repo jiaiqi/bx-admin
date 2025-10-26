@@ -38,7 +38,10 @@ export default {
             tolllinks:[],
             updatePoints:[],
             extime:'',
-            entime:''
+            entime:'',
+            enpointid:'',
+            expointid:'',
+            vehicletype:''
         }
     },
     computed:{
@@ -68,6 +71,23 @@ export default {
               if (operate_Object["condition"]) {
                 cond.push(...operate_Object["condition"])
               }
+            }else{
+                const exid ={
+                    "colName":"exid",
+                    "ruleType":"eq",
+                    "value":this.expointid
+                }
+                 const enid ={
+                    "colName":"enid",
+                    "ruleType":"eq",
+                    "value":this.enpointid
+                }
+                const vehicletype ={
+                    "colName":"vtype",
+                    "ruleType":"eq",
+                    "value":this.vehicletype
+                }
+                cond.push(exid,enid,vehicletype)
             }
             return cond
         },
@@ -476,10 +496,10 @@ export default {
                 self.getPointInfo()
             }
         }else if(this.modeUrl == '/bmap/editor/' && this.no){
-            
+            this.getPassIdInfo()
             this.isEditor = false
-            this.getPassconv()
-            this.getPassconvpath()
+            // this.getPassconv()
+            // this.getPassconvpath()
         }
        
        
@@ -493,9 +513,10 @@ export default {
                 this.entime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
         
             }
-            if(this.$route.query.extime || this.$route.params.extime){
+            if(!this.$route.query.extime || !this.$route.params.extime){
                 this.extime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
             }
+            this.getPassconv()
         },
         getPassconv(){
             // 查询所有分公司下路段
@@ -555,12 +576,17 @@ export default {
                         item['_editor_type'] = 'driving'
                         return item
                     })
-                    // console.log('分公司',res.data)
+                    console.log('分公司1111111',res.data)
+                    this.enpointid = res.data[0].enpointid
+                    this.expointid = res.data[0].expointid
+                    this.vehicletype = res.data[0].vehicletype
+                      this.getPassconvpath()
                 }else{
                     this.$message.error(JSON.stringify(res));
                     // console.log('查询收费路段 异常',res)
                 }
               })
+            
         },
         async getPassconvpath(){
             // 查询所有门架
@@ -603,7 +629,7 @@ export default {
             }]
             // divCond = this.buildDivCond
             if(this.buildCond?.length){
-               conds = this.buildCond
+               conds = conds.concat(this.buildCond)
             }
             let res = {}
             if(this.pathData?.length ){

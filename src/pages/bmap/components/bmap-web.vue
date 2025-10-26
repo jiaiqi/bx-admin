@@ -982,7 +982,7 @@ $fontColor: #323232;
     .ui-layout-center-footer {
       position: fixed;
       // top: 0;
-      bottom: 1rem;
+      bottom: 2rem;
       display: flex;
 
       .ui-layout-center-footer-bar {
@@ -996,7 +996,10 @@ $fontColor: #323232;
           padding: 5px;
           display: flex;
           align-items: center;
-          border: 1px solid #fff;
+          border: 1px solid #1eaaff;
+          border-radius: 5px;
+          margin-left: 5px;
+          cursor: pointer;
 
           & > span {
             margin-right: 4px;

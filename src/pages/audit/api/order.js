@@ -265,6 +265,23 @@ export default class OrderApi {
     return await $http.post(url, req)
   }
 
+    //根据passid查询实际费用
+  async getWorkorderFeeInfo(options) {
+    let url = path + `/aud/select/srvaud_ads_workorder_fee_select?srvaud_ads_workorder_fee_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_ads_workorder_fee_select",
+      condition: options.condition.concat(options.divCond),
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
   // 校验工单是否存在
   async checkOrderExist(passid) {
     if(!passid) return false
