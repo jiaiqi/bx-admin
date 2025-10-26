@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import moment from 'moment.js'
+import moment from 'dayjs'
 export default {
   name: "order-home",
   data() {

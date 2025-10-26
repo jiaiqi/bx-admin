@@ -5,7 +5,7 @@ import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
-import moment from 'moment.js'
+import moment from 'dayjs'
 import {getpassconv, getpassconvpath} from "../assets/mockData";
 
 let waypointsLen = 20  // 最大途径点 包含起终点数量
