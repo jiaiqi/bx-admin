@@ -792,7 +792,7 @@ export default {
           }
           if (curVal && response.data.data.length > 0) {
             let item = response.data.data[0];
-            this.selected = [item[this.props.value]];
+            // this.selected = [item[this.props.value]];
             // let path = item.path;
             // this.selected = path
             //   .split("/")
@@ -806,6 +806,7 @@ export default {
             //     return val;
             //   })
             //   .filter((t) => !!t);
+            this.selected = item?.path?.split("/").filter((item) => !!item) || [];
             if (this.allowChangeModel !== false) {
               this.changeFieldModel(item);
             } else {
@@ -916,6 +917,8 @@ export default {
     },
     async loadDetail() {
       const loader = this.dispLoaderV2;
+      
+      // 获取当前节点的详细信息
       const conditions = [
         {
           colName: loader.refedCol,
@@ -934,17 +937,51 @@ export default {
       };
       const url = this.getServiceUrl("select", loader.service);
       const response = await this.$http.post(url, params);
-      if (response && response.data && response.data.data) {
-        let options = response.data.data;
-        if (options.length > 0) {
-          const item = options[0];
-          this.selected =
-            options[0]?.path?.split("/").filter((item) => !!item) || [];
-          if (this.allowChangeModel !== false) {
-            this.changeFieldModel(item);
-          } else {
-            this.onlyEmitData(item);
+      
+      if (response && response.data && response.data.data && response.data.data.length > 0) {
+        const item = response.data.data[0];
+        
+        // 如果有路径信息，构建完整的树形结构
+        if (item.path) {
+          try {
+            // 获取完整路径的树形数据
+            const treeStructureData = await this.getFullPathData(item.path);
+            if (treeStructureData && treeStructureData.length > 0) {
+              this.options = treeStructureData;
+              
+              // 设置正确的selected路径
+              const pathArray = item.path.split('/').filter(Boolean);
+              this.selected = pathArray.map((val) => {
+                // 如果value字段是数字类型，需要转换为数字
+                if (typeof item[this.props.value] === "number" && !isNaN(Number(val))) {
+                  return Number(val);
+                }
+                return val;
+              });
+              
+              console.log('默认值路径设置完成:', {
+                path: item.path,
+                selected: this.selected,
+                options: this.options
+              });
+            } else {
+              // 如果无法获取完整路径数据，使用原有逻辑
+              this.selected = item?.path?.split("/").filter((item) => !!item) || [];
+            }
+          } catch (error) {
+            console.error('构建完整路径失败，使用简单路径:', error);
+            this.selected = item?.path?.split("/").filter((item) => !!item) || [];
           }
+        } else {
+          // 没有路径信息时的处理
+          this.selected = [];
+        }
+        
+        // 设置字段模型
+        if (this.allowChangeModel !== false) {
+          this.changeFieldModel(item);
+        } else {
+          this.onlyEmitData(item);
         }
       }
     },
@@ -1236,6 +1273,9 @@ export default {
   created: function () {
     if (this.field.model) {
       this.loadDetail();
+    } else {
+      // 如果没有默认值，加载初始选项
+      this.loadOptions();
     }
     console.log('created:', this.dispLoaderV2);
 
@@ -1290,7 +1330,12 @@ export default {
           }
         }
         if (newValue !== oldValue) {
-          this.setInitVal()
+          // 如果新值存在且与旧值不同，重新加载详情以构建完整路径
+          if (newValue && typeof newValue === 'object' && newValue[this.dispLoaderV2?.refedCol]) {
+            this.loadDetail();
+          } else {
+            this.setInitVal();
+          }
         }
       },
     },
