@@ -55,7 +55,7 @@ export default {
     }
   },
   beforeDestroy() {
-    removeFn()
+    this.removeFn()
   },
   methods: {
     
@@ -81,7 +81,7 @@ export default {
           height: 'inherit',
           width: 'inherit'
         });
-        removeFn()
+        this.removeFn()
       }
     },
     
