@@ -72,6 +72,11 @@ export default {
                 cond.push(...operate_Object["condition"])
               }
             }else{
+               const passid ={
+                colName:'passid',
+                ruleType:'eq',
+                value:this.no
+                }
                 const exid ={
                     "colName":"exid",
                     "ruleType":"eq",
@@ -87,7 +92,7 @@ export default {
                     "ruleType":"eq",
                     "value":this.vehicletype
                 }
-                cond.push(exid,enid,vehicletype)
+                cond.push(passid,exid,enid,vehicletype)
             }
             return cond
         },
@@ -109,6 +114,7 @@ export default {
             let buildLines = []
             let loadStationsDatas = self.bxDeepClone(self.loadStations)
             let drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')
+            console.log('drivingPoints11111111111111111',drivingPoints)
             let drivingPayPoints = loadStationsDatas.filter(item => item['path_type'] == '收费路径')
             let drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
             let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
@@ -629,7 +635,7 @@ export default {
             }]
             // divCond = this.buildDivCond
             if(this.buildCond?.length){
-               conds = conds.concat(this.buildCond)
+               conds = this.buildCond
             }
             let res = {}
             if(this.pathData?.length ){
