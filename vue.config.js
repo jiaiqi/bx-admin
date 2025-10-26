@@ -142,7 +142,8 @@ module.exports = {
     // 优化解析
     resolve: {
       alias: {
-        '@': require('path').resolve(__dirname, 'src')
+        '@': require('path').resolve(__dirname, 'src'),
+        'moment.js': 'moment'
       },
       extensions: ['.js', '.vue', '.json']
     },
