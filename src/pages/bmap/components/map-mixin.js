@@ -617,7 +617,7 @@ export default {
           let point = new BMap.Point(p.lng, p.lat);
           let content = `${p.name}`; // label 显示内容
           if (self.modeUrl == '/bmap/editor/') {
-            content = `${p['_seq']}.${p.name}`; // label 显示内容
+            content = `${p['_seq']}.${p.name} 金额：${p.fee_disp?p.fee_disp:'0'}元`; // label 显示内容
           }
           let label = new BMap.Label(content, {       // 创建文本标注
             position: point,
@@ -643,7 +643,7 @@ export default {
             zIndex: zIndex
           });
           // 创建标注对象并添加到地图
-          let marker = new BMap.Marker(point, {icon: myIcon, title: p.name, enableDragging: this.isEditor});
+          let marker = new BMap.Marker(point, {icon: myIcon, title: `${p['_seq']}.${p.name} 金额：${p.fee_disp?p.fee_disp:'0'}元`, enableDragging: this.isEditor})
 
           marker['_data'] = p
           let labelData = self.bxDeepClone(p)
@@ -845,7 +845,7 @@ export default {
             zIndex: zIndex
           });
           // 创建标注对象并添加到地图
-          let marker = new BMap.Marker(point, {icon: myIcon, title: p.name, enableDragging: this.isEditor});
+          let marker = new BMap.Marker(point, {icon: myIcon, title: `${p['_seq']}.${p.name} 金额：${p.fee_disp?p.fee_disp:'0'}元`, enableDragging: this.isEditor});
 
           marker['_data'] = p
           let labelData = self.bxDeepClone(p)

@@ -121,7 +121,6 @@ export default {
             let buildLines = []
             let loadStationsDatas = self.bxDeepClone(self.loadStations)
             let drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')
-            console.log('drivingPoints11111111111111111',drivingPoints)
             let drivingPayPoints = loadStationsDatas.filter(item => item['path_type'] == '收费路径')
             let drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
             let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
