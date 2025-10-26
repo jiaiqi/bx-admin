@@ -307,6 +307,7 @@ export default {
 
     /**
      * 根据路径查询所有相关数据并构建树形结构
+     * 不仅加载选中路径上的节点，还要加载每个层级的所有同级节点数据
      * @param {string} path - 路径字符串，如 "1/2/3"
      * @returns {Object} 树形结构数据
      */
@@ -323,72 +324,139 @@ export default {
         const pathArray = path.split('/').filter(item => item !== '');
         if (pathArray.length === 0) return null;
 
-        // 获取最顶级节点的值
-        const topLevelValue = pathArray[0];
+        console.log('开始加载完整路径数据:', { path, pathArray });
 
-        // 构建查询条件 - 使用path进行like查询
-        let conditions = this.buildConditions(loader);
-        conditions.push({
-          colName: "path",
-          ruleType: "like",
-          value: topLevelValue
+        // 收集所有需要加载的数据
+        let allData = [];
+        
+        // 1. 首先加载根节点的所有同级数据
+        const rootSiblings = await this.loadSiblingNodes(loader, null);
+        if (rootSiblings && rootSiblings.length > 0) {
+          allData = allData.concat(rootSiblings);
+        }
+
+        // 2. 逐级加载路径上每个节点的子节点（同级数据）
+        for (let i = 0; i < pathArray.length; i++) {
+          const currentNodeValue = pathArray[i];
+          
+          // 加载当前节点的子节点（下一级的所有同级数据）
+          const childNodes = await this.loadSiblingNodes(loader, currentNodeValue);
+          if (childNodes && childNodes.length > 0) {
+            allData = allData.concat(childNodes);
+          }
+        }
+
+        // 3. 去重处理（基于节点ID）
+        const uniqueData = this.deduplicateNodes(allData);
+
+        // 4. 处理数据格式
+        const processedData = uniqueData.map((item) => {
+          item.children = item.is_leaf === "是" ? null : [];
+          item.leaf = item.is_leaf === "是";
+          return item;
         });
+
+        // 5. 如果需要重命名标签
+        if (this.needRenameLabel()) {
+          processedData.forEach((item) => this.renameLable(item));
+        }
+
+        // 6. 构建树形结构
+        const treeOptions = {
+          idField: this.props?.value || 'id',
+          parentField: this.dispLoaderV2?.parentCol || 'parentId',
+          childrenField: 'children',
+          rootValue: null
+        };
+
+        const treeStructure = this.buildTreeStructure(processedData, treeOptions);
+        
+        console.log('完整路径数据加载完成:', {
+          totalNodes: processedData.length,
+          treeStructure: treeStructure
+        });
+
+        return treeStructure;
+
+      } catch (error) {
+        console.error('获取完整路径数据失败:', error);
+        return null;
+      }
+    },
+
+    /**
+     * 加载指定父节点的所有子节点（同级数据）
+     * @param {Object} loader - 数据加载器配置
+     * @param {string|null} parentValue - 父节点值，null表示根节点
+     * @returns {Array} 子节点数组
+     */
+    async loadSiblingNodes(loader, parentValue = null) {
+      try {
+        let conditions = this.buildConditions(loader);
+        
+        if (parentValue === null) {
+          // 加载根节点数据
+          if (loader.parentCol) {
+            conditions.push({
+              colName: loader.parentCol,
+              ruleType: "isnull"
+            });
+          }
+        } else {
+          // 加载指定父节点的子节点
+          conditions.push({
+            colName: loader.parentCol,
+            ruleType: "eq",
+            value: parentValue
+          });
+        }
 
         const params = {
           serviceName: loader.service,
           colNames: ["*"],
-          condition: conditions
+          condition: conditions,
+          page: {
+            pageNo: 1,
+            pageSize: 1000 // 增加页面大小以确保获取所有同级数据
+          }
         };
 
         const url = this.getServiceUrl("select", loader.service);
         const response = await this.$http.post(url, params);
 
         if (response?.data?.state === "SUCCESS" && response.data.data?.length > 0) {
-          // 按照treeLazySelect中的方法处理数据
-          let allData = response.data.data.map((item) => {
-            item.children = item.is_leaf === "是" ? null : [];
-            item.leaf = item.is_leaf === "是";
-            return item;
-          });
-
-          // 如果需要重命名标签
-          if (this.needRenameLabel()) {
-            allData.forEach((item) => this.renameLable(item));
-          }
-
-          // // 从查询结果中筛选出路径相关的数据
-          // const pathRelatedData = [];
-
-          // for (let i = 0; i < pathArray.length; i++) {
-          //   const currentPath = pathArray.slice(0, i + 1).join('/');
-          //   const nodeData = allData.find(item => item.path && item.path.includes(currentPath));
-
-          //   if (nodeData) {
-          //     pathRelatedData.push(nodeData);
-          //   } else {
-          //     console.warn(`未找到路径对应的数据: ${currentPath}`);
-          //     break;
-          //   }
-          // }
-
-          // 构建树形结构
-          const treeOptions = {
-            idField: this.props?.value || 'id',
-            parentField: this.dispLoaderV2?.parentCol || 'parentId',
-            childrenField: 'children',
-            rootValue: null
-          };
-          return this.buildTreeStructure(allData, treeOptions);
-
+          console.log(`加载同级节点成功 - 父节点: ${parentValue || 'root'}, 数量: ${response.data.data.length}`);
+          return response.data.data;
         } else {
-          console.error('查询路径数据失败');
-          return null;
+          console.log(`未找到同级节点 - 父节点: ${parentValue || 'root'}`);
+          return [];
         }
 
       } catch (error) {
-        console.error('获取完整路径数据失败:', error);
-        return null;
+        console.error(`加载同级节点失败 - 父节点: ${parentValue || 'root'}`, error);
+        return [];
       }
+    },
+
+    /**
+     * 去重处理节点数据
+     * @param {Array} nodes - 节点数组
+     * @returns {Array} 去重后的节点数组
+     */
+    deduplicateNodes(nodes) {
+      if (!nodes || !Array.isArray(nodes)) return [];
+      
+      const idField = this.props?.value || 'id';
+      const uniqueMap = new Map();
+      
+      nodes.forEach(node => {
+        const nodeId = node[idField];
+        if (nodeId && !uniqueMap.has(nodeId)) {
+          uniqueMap.set(nodeId, node);
+        }
+      });
+      
+      return Array.from(uniqueMap.values());
     },
 
     /**
