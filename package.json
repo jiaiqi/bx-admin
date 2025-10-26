@@ -33,7 +33,7 @@
     "bootstrap-vue": "^2.23.1",
     "codemirror": "^5.54.0",
     "core-js": "^3.8.3",
-    "dayjs": "^1.11.10",
+    "dayjs": "^1.11.18",
     "echarts": "^4.8.0",
     "echarts-liquidfill": "^2.0.6",
     "echarts-wordcloud": "^1.1.3",
