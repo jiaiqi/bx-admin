@@ -868,7 +868,7 @@ import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
 import institutionMod from "@/pages/audit/workdistribution/workFlow/institution-mod.vue";
 import uploadPic from "@/pages/audit/workdistribution/workFlow/upload-pic.vue";
-import moment from 'moment'
+import moment from 'moment.js'
 const orderUtils = new OrderApi()
 import { mapGetters } from 'vuex';
 export default {
