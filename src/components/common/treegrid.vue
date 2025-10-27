@@ -81,6 +81,18 @@
         :column-key="item.column"
         :sortable="item.sortable && !isMem() ? 'custom' : false"
       >
+        <template #header>
+          <el-tooltip
+            placement="top"
+            effect="dark"
+            :content="item.label"
+          >
+            <span>
+              {{ item.label }}
+
+            </span>
+          </el-tooltip>
+        </template>
         <template slot-scope="scope">
           <!-- 树形结构的缩进和展开/收起按钮 (仅在firstColumn显示) -->
           <template v-if="item.column == firstColumn">
