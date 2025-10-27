@@ -94,10 +94,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
-      top: 40,
-      left: 10,
-      right: 10,
-      bottom: 0,
+      top: chartJson.grid_top || 40,
+      left: chartJson.grid_left || 10,
+      right: chartJson.grid_right || 10,
+      bottom: chartJson.grid_bottom || 0,
       containLabel: true,
     },
     legend: {
@@ -380,10 +380,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           if (nOption?.series?.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全
-              top: 45,
-              left: 10,
-              right: 10,
-              bottom: 0,
+              top: chartJson.grid_top || 45,
+              left: chartJson.grid_left || 10,
+              right: chartJson.grid_right || 10,
+              bottom: chartJson.grid_bottom || 0,
               containLabel: true,
             };
           }
@@ -522,7 +522,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           },
           tooltip: {
             trigger: 'item',
-            formatter: function(params) {
+            formatter: function (params) {
               // 计算原始数据总和，确保百分比正确
               let originalTotal = 0;
               cellData.forEach(function (data) {
@@ -541,11 +541,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           series.radius = ["45%", "60%"]
         }
         series.itemStyle.normal.label.show = showLabel;
-        
+
         // 处理数据，当超过10项时合并为"其它"
         let processedData = [];
         let legendData = [];
-        
+
         // 先构建所有数据项
         let allDataItems = [];
         for (let data of cellData) {
@@ -560,25 +560,25 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           };
           allDataItems.push(dataItem);
         }
-        
+
         // 按值大小排序（降序）
         allDataItems.sort((a, b) => b.value - a.value);
-        
+
         // 获取合并阈值配置，默认为5
         const mergeThreshold = chartJson?.pie_merge_threshold || 5;
-        
+
         // 如果数据项超过配置的阈值，合并后面的为"其它"
         if (allDataItems.length > mergeThreshold) {
           // 取前(阈值-1)项，为"其它"项留出位置
           const keepCount = mergeThreshold - 1;
           processedData = allDataItems.slice(0, keepCount);
-          
+
           // 计算其它项的总和
           let othersValue = 0;
           for (let i = keepCount; i < allDataItems.length; i++) {
             othersValue += allDataItems[i].value;
           }
-          
+
           // 添加"其它"项
           if (othersValue > 0) {
             processedData.push({
@@ -594,10 +594,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         } else {
           processedData = allDataItems;
         }
-        
+
         // 添加处理后的数据到series
         series["data"] = processedData;
-        
+
         // 构建图例数据
         for (let item of processedData) {
           let legendItem = {
