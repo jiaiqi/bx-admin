@@ -109,6 +109,7 @@
                   <div>终点： {{ tolllink.exstationname }}</div>
                   <!-- <div>应收：{{ tolllink.payfee }}</div> -->
                   <div>实收：{{ tolllink.fee_disp }}</div>
+                   <div v-if="tolllink.vehicletype">车辆类型：{{ tolllink._vehicletype_disp }}</div>
                   <div v-if="tolllink.ljfyfee_disp">路径反演金额：{{ tolllink.ljfyfee_disp }}</div>
                 </div>
 
@@ -175,7 +176,7 @@
             v-if="modeUrl == '/bmap/editor/'"
           >
             <div
-              class="ui-layout-center-footer-bar-item"
+              class="ui-layout-center-footer-bar-item button-editor-type"
               :class="
                 activeLine && activeLine['_editor_type'] == line.type
                   ? 'active'
@@ -996,10 +997,7 @@ $fontColor: #323232;
           padding: 5px;
           display: flex;
           align-items: center;
-          border: 1px solid #1eaaff;
-          border-radius: 5px;
-          margin-left: 5px;
-          cursor: pointer;
+          
 
           & > span {
             margin-right: 4px;
@@ -1015,6 +1013,13 @@ $fontColor: #323232;
             border: 1px solid rgb(40 189 108);
             background-color: rgb(231 255 236);
           }
+        }
+
+        .button-editor-type{
+          border: 1px solid #1eaaff;
+          border-radius: 5px;
+          margin-left: 5px;
+          cursor: pointer;
         }
       }
     }
