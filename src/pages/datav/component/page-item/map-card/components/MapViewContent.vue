@@ -59,6 +59,7 @@
         <template v-if="isEditMode">
           <DraggableMarker
             v-for="item in markerList"
+            :key="item.id"
             v-show="item._visible !== false"
             :item="item"
             :map-json="mapJson"
@@ -76,6 +77,7 @@
         <template v-else>
           <MapMarker
             v-for="item in markerList"
+            :key="item.id"
             v-show="item._visible !== false"
             :item="item"
             :map-json="mapJson"

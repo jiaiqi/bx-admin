@@ -13,6 +13,7 @@
         <el-radio-button
           :label="type"
           v-for="type in dateFilterTypes"
+          :key="type"
         >{{ type }}</el-radio-button>
       </el-radio-group>
 
