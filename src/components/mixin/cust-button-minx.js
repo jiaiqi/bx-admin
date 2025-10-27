@@ -659,6 +659,7 @@ export default {
         const back_url_param = back_url.substring(back_url.indexOf('?') + 1)
         const decodebackurl = decodeURIComponent(back_url_param)
         const queryParams = JSON.parse(decodebackurl.split("&")[0].split("=")[1])
+        console.log(queryParams, 99999999)
         queryParams.colNames = ["*"]
          queryParams.queryMethod = "select"
          queryParams.divCond =[]
@@ -700,7 +701,7 @@ export default {
           }
          })
          
-        const url = path + `/aud/select/${queryParams.service_name}`
+        const url = path + `/aud/select/${queryParams.serviceName||queryParams.service_name}`
        const res = await this.$http.post(url, queryParams)
           if (res) {
               console.log(res, 88888888)
