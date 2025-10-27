@@ -1175,10 +1175,11 @@ export default {
         const res = await this.getSusvehPassInfo()
         if(res&&res.length>0){
           this.operate_params = res[0]
+          this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
           this.ruleForm.media_no = res[0].obusn
           this.ruleForm.media_type = res[0].mediatype
           this.ruleForm.pass_time = res[0].extime
-          this.ruleForm.sus_escape_type = res[0].suspecttype
+          // this.ruleForm.sus_escape_type = res[0].escape_type
           this.ruleForm.sus_plate_color = res[0].vehicleplate_color
           this.ruleForm.sus_vehicle_id = res[0].vehicleplate_no
           this.ruleForm.suspicion_id = res[0].suspectid
@@ -1200,12 +1201,12 @@ export default {
         const resdata = await this.getPassconvInfo()
         if(resdata&&resdata.length>0){
           this.operate_params = resdata[0]
-
+          this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
           this.ruleForm.media_no = resdata[0].obusn
           this.ruleForm.media_type = resdata[0].mediatype
           this.ruleForm.pass_time = resdata[0].extime
           // this.ruleForm.real_fee = resdata[0].fee
-          // this.ruleForm.sus_escape_type = resdata[0].suspecttype
+          // this.ruleForm.sus_escape_type = resdata[0].escape_type
           this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
           this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
           // this.ruleForm.suspicion_id = resdata[0].suspectid
@@ -1399,7 +1400,7 @@ export default {
      async getWorkorderFeeInfo() {
       let obj = {
         condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
-        divCond: [{ colName: "entime", ruleType: "between", value: [this.strTime, this.endTime] },]
+        divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getWorkorderFeeInfo(obj)
       if(res.data){
