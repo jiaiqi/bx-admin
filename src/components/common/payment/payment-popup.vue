@@ -9,6 +9,7 @@
       class="pay_tep"
       v-if="!handleStatus"
     >
+    <form :model="payInfo">
       <el-row
         :gutter="20"
         style="margin:5px 0"
@@ -16,20 +17,21 @@
         <el-col
           :span="6"
           style="text-align: right;"
-        ><span class="col_t">支付方式：</span></el-col>
+        ><span class="col_t">支付类型：</span></el-col>
         <el-col :span="16">
           <div>
             <el-radio-group
               v-model="payStep"
               @change="chengPayWay"
             >
-              <el-radio
-                v-for="(item, index) in payWays"
-                :key="item.code"
-                :label="item.code"
-              >
-                {{ item.label }}
-              </el-radio>
+              <el-radio 
+                 v-for="(item, index) in payWays"
+                 :key="item.code"
+                 :label="item.code"
+                 :disabled="disabledIndexes.includes(index)"
+               >
+                 {{ item.label }}
+               </el-radio>
             </el-radio-group>
           </div>
         </el-col>
@@ -79,7 +81,33 @@
         ><span class="col_t">待支付金额：</span></el-col>
         <el-col :span="16"><span class="ped_pay">{{ '￥' + formatAmount(payInfo.pending_amount) }}</span></el-col>
       </el-row>
-      <el-row
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        ><span class="col_t">支付方式：</span></el-col>
+        <el-col :span="16">
+          <div>
+            <el-radio-group
+              v-model="payType"
+              @change="chengPayType"
+            >
+              <el-radio
+                v-for="(item, index) in payOption"
+                :key="item.code"
+                :label="item.code"
+              >
+                {{ item.label }}
+              </el-radio>
+            </el-radio-group>
+          </div>
+        </el-col>
+      </el-row>
+      <template v-if="payType === 2">
+        <el-row
         :gutter="20"
         style="margin:5px 0"
         v-if="payStep !== 2"
@@ -87,7 +115,9 @@
         <el-col
           :span="6"
           style="text-align: right;"
-        ><span class="col_t">确认支付金额：</span></el-col>
+        >
+        <span class="requireds">*</span>
+        <span class="col_t">确认支付金额：</span></el-col>
         <el-col :span="16">
           <span>
             <el-input
@@ -134,11 +164,20 @@
         <el-col
           :span="6"
           style="text-align: right;"
-        ><span class="col_t">付款人姓名：</span></el-col>
+        >
+        <span class="requiredss">*</span>
+        <span class="col_t">付款人姓名：</span></el-col>
         <el-col :span="16"><span><el-input
+              required
+              @blur="validatePayUser"
               placeholder="请输入...."
               v-model="payInfo.pay_user"
-            ></el-input></span></el-col>
+            ></el-input>
+          <div
+              v-if="validationError1"
+              class="validation-error"
+            >{{ validationError1 }}</div>
+          </span></el-col>
       </el-row>
       <el-row
         :gutter="20"
@@ -157,6 +196,100 @@
             />
         </el-col>
       </el-row>
+      </template>
+      <el-row>
+        <el-col :span="8"
+          style="text-align: right;">
+           <el-button
+          type="primary"
+          size="mini"
+          v-if="payType === 1"
+          @click="handlePayType"
+        >提交</el-button>
+        </el-col>
+      </el-row>
+      </form>
+      <div v-if="PayPublicOrder&&PayPublicOrder.length>0">
+         <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">订单号：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.odrNo || '' }}
+          </span></el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">匹配码：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.mtchCd || '' }}
+          </span></el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">商户结算户账号：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNo || '' }}
+          </span></el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">商户结算户户名：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNm || '' }}
+          </span></el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">总行行号：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.recBnkNo || '313791000015' }}
+          </span></el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">总行行名：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.recBnkNm || '西安银行股份有限公司' }}
+          </span></el-col>
+      </el-row>
+      </div>
+     
       <!--二维码生成区域-->
       <div
         class="qrcode_info"
@@ -185,13 +318,13 @@
         <el-button
           type="primary"
           size="mini"
-          v-if="!qrcodeInfo.qrCd"
+          v-if="!qrcodeInfo.qrCd&&payType === 2"
           @click="handleSubmit"
         >提交</el-button>
         <el-button
           type="primary"
           size="mini"
-          v-if="qrcodeInfo.qrCd"
+          v-if="qrcodeInfo.qrCd||payType === 1"
           @click="closePayment"
         >关闭</el-button>
       </div>
@@ -226,6 +359,7 @@ export default {
   },
   data() {
     return {
+      disabledIndexes: [],
       statusText: "",
       handleStatus: false,
       stepStatus: false,
@@ -233,6 +367,18 @@ export default {
       loadingText: '支付码生成中....',
       isShowQrcode: false,
       payStep: 2,
+      payType:1,
+      payOption:[
+        {
+          code: 1,
+          label: "线上",
+        },
+        {
+          code: 2,
+          label: "线下",
+        },
+      ],
+      PayPublicOrder:null,
       payWays: [
         {
           code: 1,
@@ -263,6 +409,7 @@ export default {
         order_details: [] //支付详情项
       },
       validationError: '', // 验证错误信息
+      validationError1: '', // 验证错误信息
       debounceTimer: null, // 防抖定时器,
       order_no: '',
       payTimer: null,
@@ -345,6 +492,19 @@ export default {
     }
   },
   methods: {
+    // 新线上提交方法
+    handlePayType(type){
+       this.payInfo.order_details = this.orderList.map(item => ({
+        su_order_no: item.su_order_no
+      }));
+      const payInfoParam = JSON.parse(JSON.stringify(this.payInfo));
+       this.showLoading = true;
+      payUtils.handlePayPublicOrder(payInfoParam).then((res) => {
+        this.showLoading = false;
+        this.PayPublicOrder= res.data[0]
+       console.log(this.PayPublicOrder, 999999999)
+      }).catch((err) => { })
+    },
      // 获取上传组件的field配置
     getUploadField(item) {
         // 创建一个配置对象，支持图片上传和预览
@@ -407,7 +567,16 @@ export default {
         
         return field;
       },
-    
+    chengPayType(val) {
+      this.payType = val;
+    },
+    validatePayUser() {
+      if (!this.payInfo.pay_user || this.payInfo.pay_user.trim() === '') {
+        this.validationError1 = '请输入付款人姓名';
+        return false;
+      }
+      return true;
+    },
     // 处理图片变化事件
     imgChange(value, item) {
         console.log('imgChange4444444', value, item);
@@ -581,7 +750,10 @@ export default {
         this.isShowQrcode = false;
         this.qrcodeInfo.qrCd = null
       }
-      this.$refs.uploadImages.fileLists = [];
+      if(this.$refs.uploadImages){
+        this.$refs.uploadImages.fileLists = [];
+      }
+      
     },
     handleBack() {
       this.handleStatus = false;
@@ -610,4 +782,16 @@ export default {
 
 <style scoped lang="less">
 @import "payment.less";
+.requireds{
+  color: red;
+  position: absolute;
+  top: 5px;
+  left: 40px;
+}
+.requiredss{
+  color: red;
+  position: absolute;
+  top: 5px;
+  left: 57px;
+}
 </style>
