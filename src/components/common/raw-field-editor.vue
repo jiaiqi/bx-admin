@@ -64,7 +64,7 @@
               :minlength="field.info.getMinLength()"
               :maxlength="field.info.getMaxLength()"
               @input="checkLength"
-              :value="field.model"
+              v-model="field.model"
               @change="$emit('field-value-changed', field.info.name, field)"
               @blur="onBlur"
             >
@@ -1175,14 +1175,14 @@ export default {
           }
         }
       }
-      // 对val做防抖处理，最终赋值给field.model = val
-      if (this._debounceCheckLengthTimer) {
-        clearTimeout(this._debounceCheckLengthTimer);
-      }
-      this._debounceCheckLengthTimer = setTimeout(() => {
-        this.field.model = val;
-        this._debounceCheckLengthTimer = null;
-      }, 300); // 防抖延时300ms，可根据需要调整
+      // // 对val做防抖处理，最终赋值给field.model = val
+      // if (this._debounceCheckLengthTimer) {
+      //   clearTimeout(this._debounceCheckLengthTimer);
+      // }
+      // this._debounceCheckLengthTimer = setTimeout(() => {
+      //   this.field.model = val;
+      //   this._debounceCheckLengthTimer = null;
+      // }, 300); // 防抖延时300ms，可根据需要调整
     },
     
     selectChange() {
