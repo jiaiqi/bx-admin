@@ -74,16 +74,21 @@
       justify="space-between"
     >
       <div class="table-head-btns">
-        <icon-excel-colorful
-          class="svg-icon"
-          style="cursor: pointer"
-          size="30"
-          :colors="['#409eff']"
-          :strokeWidth="3"
-          title="打开excel进行编辑"
-          @click.native="gridButtonClick(excelBtn)"
-          v-if="excelBtn"
-        ></icon-excel-colorful>
+        <a
+          :href="excelUrl"
+          target="_blank"
+          v-if="excelBtn && excelUrl"
+          @click.prevent="gridButtonClick(excelBtn)"
+        >
+          <icon-excel-colorful
+            class="svg-icon"
+            style="cursor: pointer"
+            size="30"
+            :colors="['#409eff']"
+            :strokeWidth="3"
+            title="打开excel进行编辑"
+          ></icon-excel-colorful>
+        </a>
         <!--        <icon-excel class="svg-icon" style="cursor: pointer" size="30" :strokeWidth="3"-->
         <!--                             @click.native="gridButtonClick(excelBtn)"  v-if="excelBtn"></icon-excel>-->
         <!-- <el-button type="primary" size="small"  v-if="(defaultDirtyFlags == 'add' || listType ==  'addchildlist') && batchAddButton && batchAddButton.hasOwnProperty('batchAdd') && batchAddButton.batchAdd.isDisp && selection" @click.stop="onMemBatchUpdateActive">

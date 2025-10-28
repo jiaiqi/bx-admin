@@ -468,8 +468,7 @@ export default {
       }
 
       if (show) {
-        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService
-          }&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+        let url = `/dataview/#/sheet/${this.service_name}?srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
         if (this.defaultCondition?.length) {
           this.defaultCondition.forEach((col) => {
             if (col.ruleType === "eq") {
@@ -518,6 +517,27 @@ export default {
           path_col: "是",
         };
       }
+    },
+    // 专门用于拼接Excel页面URL的计算属性
+    excelUrl() {
+      // 基础URL构建
+      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      
+      // 添加默认条件参数
+      if (this.defaultCondition?.length) {
+        this.defaultCondition.forEach((col) => {
+          if (col.ruleType === "eq") {
+            url += `&${col.colName}=${col.value}`;
+          }
+        });
+      }
+      
+      // 如果是树形结构，添加topTreeData参数
+      if (this.listV2Data?.is_tree === true) {
+        url += `&topTreeData=true`;
+      }
+      
+      return url;
     },
     tableButtonsPopupRun() {
       let val = this.$store.getters.getTableButtonsPopup;
