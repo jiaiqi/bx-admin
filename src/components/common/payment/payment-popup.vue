@@ -203,7 +203,7 @@
            <el-button
           type="primary"
           size="mini"
-          v-if="payType === 1"
+          v-if="payType === 1&&submitvisible"
           @click="handlePayType"
         >提交</el-button>
         </el-col>
@@ -363,6 +363,7 @@ export default {
       statusText: "",
       handleStatus: false,
       stepStatus: false,
+      submitvisible: true,
       showLoading: false,
       loadingText: '支付码生成中....',
       isShowQrcode: false,
@@ -467,6 +468,11 @@ export default {
           this.keyNames = tep[0].colName;
           this.rowKeys = tep[0].value.value_key;
           this.ruleTypes = tep[0].ruleType;
+
+          const isdisable = JSON.parse(newVal.operate_params).isdisable;
+          if(isdisable&&isdisable=='1'){
+            this.disabledIndexes = [1,2];
+          }
         }
       },
       immediate: true,
@@ -502,6 +508,10 @@ export default {
       payUtils.handlePayPublicOrder(payInfoParam).then((res) => {
         this.showLoading = false;
         this.PayPublicOrder= res.data[0]
+        if(this.PayPublicOrder&&this.PayPublicOrder.length>0){
+          this.submitvisible = false;
+        }
+        
        console.log(this.PayPublicOrder, 999999999)
       }).catch((err) => { })
     },
