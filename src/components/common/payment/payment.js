@@ -12,6 +12,17 @@ export default class Payment {
        ]
        return await $http.post(url, req)
     }
+     //新线上支付调用
+    async handlePayPublicOrder(params){
+       let url=`/wx/operate/srvbank_xa_to_pulic_order`
+       let req=[
+           {
+               serviceName: "srvbank_xa_to_pulic_order",
+               data:[params]
+           }
+       ]
+       return await $http.post(url, req)
+    }
     //订单列表信息获取
     async getOrderListByNo(params){
        let url =`/wx/select/srvbank_xa_order_item_select`
