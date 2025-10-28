@@ -1324,10 +1324,10 @@ export default {
             header["list_min_width"] = serviceCol["list_min_width"];
             header["col_type"] = colType;
             header["align"] = this.getColAlign(colType);
-            if (header["sortable"] && column_index == 0) {
-              this.firstColumn = serviceCol["columns"];
-              column_index++;
-            }
+            // if (header["sortable"] && column_index == 0) {
+            //   this.firstColumn = serviceCol["columns"];
+            //   column_index++;
+            // }
             if (
               serviceCol["col_type"] == "Enum" ||
               serviceCol["col_type"] == "Dict"
@@ -1342,6 +1342,10 @@ export default {
             }
 
             this.gridHeader.push(header);
+          }
+          let firstColumn = this.gridHeader.find((item) => item["sortable"] && item['show'] !== false);
+          if (firstColumn) {
+            this.firstColumn = firstColumn["column"];
           }
         })
         .then((_) => {
