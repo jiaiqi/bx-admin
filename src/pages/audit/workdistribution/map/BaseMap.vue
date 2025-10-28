@@ -74,6 +74,90 @@
         >确认修改</el-button>
       </div>
     </div>
+    <div class="formlist-foot">
+       <el-form
+      :model="ruleForm"
+      :rules="ruleFormRules"
+      label-width="auto"
+      class="demo-ruleForm"
+      :disabled="isDetail === true"
+    >
+       <el-col
+          :span="24"
+          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;"
+        >
+          <el-form-item
+            label="稽核车型"
+            prop="vehicle_type"
+          >
+            <el-select
+              v-model="ruleForm.vehicle_type"
+              clearable
+              @change="handleSetVehicleType"
+              placeholder="请选择"
+            >
+              <el-option
+                v-for="item in optionsPage.vehicle_type"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            label="是否为大件车辆"
+            prop="isnormel"
+          >
+            <el-select
+              v-model="ruleForm.isnormel"
+              clearable
+              placeholder="请选择"
+              @change="handleSetBigCar"
+            >
+              <el-option
+                v-for="item in optionsPage.isnormel"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item
+            label="车轴数"
+            prop="axlecount"
+          >
+            <el-input
+              v-model="ruleForm.axlecount"
+              clearable
+              @input="handleSetAxleCount"
+              placeholder="请输入..."
+            ></el-input>
+          </el-form-item>
+          <el-form-item
+            label="通行收费(元)"
+            prop="orginal_fee"
+          >
+            <li style="display: flex">
+              <el-input
+                v-model="ruleForm.orginal_fee"
+                @input="handleSetFee"
+                clearable
+                placeholder="请输入..."
+              ></el-input>
+              <!-- <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="handleGetCurrentFree"
+              >计费查询</el-button> -->
+            </li>
+          </el-form-item>
+       </el-col>
+    </el-form>
+
+    </div>
     <StationList
       :stVisible.sync="listVisible"
       @getChoseStations="handleFilterStation"
@@ -82,10 +166,11 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { onBeforeUnmount, onMounted, ref, computed, reactive } from "vue";
 import { useRoute } from "@/common/vueApi";
 import MapUtils from "@/pages/audit/workdistribution/map/mapUtils";
 import OrderApi from "@/pages/audit/api/order";
+import { filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn, createOrderNo, formatFeeToYuan, formatFeeToFen } from '../workFlow/filterList'
 import StationList from "@/pages/audit/workdistribution/map/stationList.vue";
 import { handleFilterCols } from "@/pages/audit/workdistribution/map/filterServiceCol";
 import _ from "lodash";
@@ -101,14 +186,34 @@ import {
   setPlanRoute
 } from "@/pages/audit/workdistribution/map/layerPage";
 import { Message } from 'element-ui';
+import eventBus from '@/common/eventBus';
 
 const orderUtil = new OrderApi();
 const route = useRoute()
+
 
 const isDetail = computed(() => {
   return route.query?.pageType === 'detail'
 })
 
+ const ruleForm= reactive({
+        orginal_fee: "",             //通行收费
+        axlecount: 0,                     //车轴数
+        isnormel: "",	                //是否为大件车辆
+        vehicle_type: "",  //稽核车型
+        pass_id: "",
+        vehicleusertype: "",
+        vehicleclass: "",
+        real_fee: 0,
+        owe_fee: 0,
+        media_type: ""
+      })
+    const ruleFormRules={
+        vehicle_type: [
+          { required: true, message: '请选择稽核车型', trigger: 'blur' }
+        ],
+      }
+ const optionsPage= JSON.parse(window.sessionStorage.getItem('optionsPage')) || {}
 const passId = route.query?.pass_id
 const strTime = route.query?.startTime
 const endTime = route.query?.endTime
@@ -146,6 +251,98 @@ const initDrawingRoute = async () => {
 
   }
 }
+const handleSetAxleCount=(val) =>{
+      console.log('val', val)
+      ruleForm.axlecount = val
+      eventBus.$emit('updateOrderForm', ruleForm)
+    }
+const handleSetFee=(val) =>{
+      console.log('val', val)
+      ruleForm.orginal_fee = val
+      eventBus.$emit('updateOrderForm', ruleForm)
+    }
+ const handleGetCurrentFree=()=> {
+
+      if (ruleForm.vehicle_type === '') {
+        Message.error('请在下方发起人信息栏，选择稽核车型后再进行计费查询！');
+      }
+      let obj = {
+        pass_id: ruleForm.pass_id,
+        vehicleusertype: ruleForm.vehicleusertype,
+        vehicleclass: ruleForm.vehicleclass,
+        vehicle_type: ruleForm.vehicle_type,
+        axleCount: ruleForm.axlecount
+      }
+      orderUtil.getDriverFreeDetails(obj).then(res => {
+        if (res.data.code !== 0) return;
+        if (res.data.messageInfo && res.data.messageInfo.tollDetail) {
+          let ls = res.data.messageInfo.tollDetail[0]
+          ruleForm.orginal_fee = formatFeeToYuan(ls.fee)
+          handleChangeFee()
+        }
+      }).catch(err => { })
+    }
+   const handleChangeFee=() =>{
+      const originalFee = typeof ruleForm.orginal_fee === 'string' ? parseFloat(ruleForm.orginal_fee) : ruleForm.orginal_fee;
+      const realFee = typeof ruleForm.real_fee === 'string' ? parseFloat(ruleForm.real_fee) : ruleForm.real_fee;
+      if (!isNaN(originalFee) && !isNaN(realFee)) {
+        const diff = originalFee - realFee;
+        ruleForm.owe_fee = diff > 0 ? diff : 0;
+      } else {
+        ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
+      }
+    }
+ //大件车辆类型判断
+  const handleSetBigCar=(val) =>{
+      console.log('val', val)
+      ruleForm.isnormel = val
+      eventBus.$emit('updateOrderForm', ruleForm)
+    }
+const handleSetVehicleType=(val) =>{
+      console.log('val', val)
+      ruleForm.vehicle_type = val
+      eventBus.$emit('updateOrderForm', ruleForm)
+    }
+ //通过通行介质类型及是否为大件车辆设置默认的车辆用户类型及车种
+  const initSpecialType=() =>{
+      let eclass = null;
+      let sertype = null
+      let operate_params = getOperateParams();
+      operate_params = JSON.parse(operate_params).data;
+      if (operate_params) {
+        eclass = operate_params[0]?.vehicleclass
+        sertype = operate_params[0]?.vehicleusertype
+      }else{
+        eclass = operate_params.vehicleclass
+         sertype = operate_params.vehicleusertype
+      }
+      if (ruleForm.media_type !== '' && ruleForm.isnormel !== '') {
+        if (ruleForm.media_type === '1' && ruleForm.isnormel === '1') {
+          ruleForm.vehicleusertype = '25';
+        }
+        else if (ruleForm.media_type === '2' && ruleForm.isnormel === '1') {
+          ruleForm.vehicleclass = '25';
+        }
+        else {
+          ruleForm.vehicleusertype = sertype ? sertype : '0';
+          ruleForm.vehicleclass = eclass ? eclass : '0';
+        }
+      } else {
+        ruleForm.vehicleusertype = sertype ? sertype : '0';
+        ruleForm.vehicleclass = eclass ? eclass : '0';
+      }
+    }
+const getAllOptionsList= () =>{
+      orderUtil.getOrderFormList().then(res => {
+        if (!res || res.data.state !== "SUCCESS") return
+        console.log('1111111111111', res.data)
+        let ls = res.data.data
+        let ops = ls.srv_cols
+        Object.assign(optionsPage, filterListByOption(ops, optionsPage))
+        console.log('123123', optionsPage)
+      }).catch(err => { })
+    }
+
 
 /**
  * @Description:获取百度路径规划数据信息
@@ -837,6 +1034,7 @@ onMounted(async () => {
   isFirstSave.value = false
   let passId = route.query.pass_id
   initMineMap();
+  // getAllOptionsList()
   handleMap.value = userMap.value.initMap();
   if (handleMap.value) {
     // getPointByOriginCenter();
@@ -861,7 +1059,17 @@ onBeforeUnmount(() => {
 li {
   list-style: none;
 }
-
+.formlist-foot{
+  width: 95%;
+  height: 200px;
+  position: fixed;
+  bottom: 0;
+  background: #fff;
+  z-index: 100;
+  .demo-ruleForm{
+    padding: 0.6125rem;
+  }
+}
 .map_content {
   width: 100%;
   height: 100%;

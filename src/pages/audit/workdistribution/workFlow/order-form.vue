@@ -302,6 +302,7 @@
             <el-select
               v-model="ruleForm.vehicle_type"
               clearable
+              disabled
               placeholder="请选择"
             >
               <el-option
@@ -326,6 +327,7 @@
             <el-select
               v-model="ruleForm.isnormel"
               clearable
+              disabled
               placeholder="请选择"
               @change="handleSetBigCar"
             >
@@ -345,6 +347,7 @@
             <el-input
               v-model="ruleForm.axlecount"
               clearable
+              disabled
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
@@ -356,6 +359,7 @@
               <el-input
                 v-model="ruleForm.orginal_fee"
                 clearable
+                disabled
                 placeholder="请输入..."
               ></el-input>
               <el-button
@@ -871,6 +875,8 @@ import uploadPic from "@/pages/audit/workdistribution/workFlow/upload-pic.vue";
 import moment from 'dayjs'
 const orderUtils = new OrderApi()
 import { mapGetters } from 'vuex';
+import eventBus from '@/common/eventBus';
+
 export default {
   name: "order-form",
   components: {
@@ -986,6 +992,30 @@ export default {
     },
   },
   methods: {
+    handleUpdateOrderForm(ruleForm) {
+    console.log('Received eventBus data:', ruleForm);
+    if (!ruleForm) return;
+    try {
+      // 逐个属性设置确保响应式
+      for (const key in ruleForm) {
+        if (ruleForm.hasOwnProperty(key)) {
+          // 处理axlecount类型转换和空值
+          if (key === 'axlecount') {
+            const value = ruleForm[key];
+            // 空字符串或null时保持当前值，否则转换为数字
+            const finalValue = value === '' || value === null ? this.ruleForm.axlecount : Number(value) || 0;
+            this.$set(this.ruleForm, key, finalValue);
+            console.log(`axlecount processed: ${value} → ${finalValue}`);
+          } else {
+            this.$set(this.ruleForm, key, ruleForm[key]);
+          }
+        }
+      }
+      console.log('ruleForm updated:', this.ruleForm);
+    } catch (error) {
+      console.error('Error updating ruleForm:', error);
+    }
+  },
     //通行介质变化检测
     handleSetMedia() {
       this.initSpecialType()
@@ -1012,7 +1042,12 @@ export default {
         _this.pageNo = ls.vpage_no;
         let ops = ls.srv_cols
         _this.optionsPage = filterListByOption(ops, _this.optionsPage)
+        window.sessionStorage.setItem('optionsPage', JSON.stringify(_this.optionsPage))
         _this.ruleForm = formDataByInitText(this.ruleForm, ops, 'init_expr')
+         const cachedData = eventBus.getLatestData('updateOrderForm');
+    if (cachedData) {
+      this.handleUpdateOrderForm(cachedData);
+    }
         console.log('123123', _this.ruleForm.user_no)
       }).catch(err => { })
     },
@@ -1154,7 +1189,7 @@ export default {
           this.endTime = moment(passTime).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
           console.log('计算的时间范围：', { startTime: this.strTime, endTime: this.endTime });
         }
-        this.ruleForm = formDataByGetInfo(this.ruleForm, operate_params[0])
+        // this.ruleForm = formDataByGetInfo(this.ruleForm, operate_params[0])
         this.initSpecialType()
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
@@ -1175,7 +1210,7 @@ export default {
         const res = await this.getSusvehPassInfo()
         if(res&&res.length>0){
           this.operate_params = res[0]
-          this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+          // this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
           this.ruleForm.media_no = res[0].obusn
           this.ruleForm.media_type = res[0].mediatype
           this.ruleForm.pass_time = res[0].extime
@@ -1201,7 +1236,7 @@ export default {
         const resdata = await this.getPassconvInfo()
         if(resdata&&resdata.length>0){
           this.operate_params = resdata[0]
-          this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+          // this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
           this.ruleForm.media_no = resdata[0].obusn
           this.ruleForm.media_type = resdata[0].mediatype
           this.ruleForm.pass_time = resdata[0].extime
@@ -1546,9 +1581,14 @@ export default {
   },
 
   created() {
-    this.prUrl = orderUtils.dowPicInfoUrl()
+    try {
+      this.prUrl = orderUtils.dowPicInfoUrl();
+      
+    } catch (error) {
+    }
   },
   mounted() {
+    // Check for cached event data
     this.supColums = SuspectedColumn()
     this.getAllOptionsList()
     this.initForm()
@@ -1563,11 +1603,13 @@ export default {
     orderUtils.checkOrderExist(this.ruleForm.pass_id).then(res => {
       if (res === true) {
         // 工单已经发起过了
+        if(this.isDetail) return
         this.showOrderExistOverlay = true;
       }
     })
   },
   beforeDestroy() {
+    eventBus.$off('updateOrderForm', this.handleUpdateOrderForm);
     this.$store.commit('orderForm/handleSetOrderForm', this.ruleForm)
   }
 }
