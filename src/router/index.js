@@ -271,7 +271,7 @@ routes.push(
 // 低代码相关
 routes.push(...lowcodeRoutes);
 
-router.push(
+routes.push(
   {
     path: "/:pageNo",
     name: "lowcode-view1",

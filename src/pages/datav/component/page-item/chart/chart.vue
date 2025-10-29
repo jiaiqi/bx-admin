@@ -22,34 +22,39 @@ const props = defineProps({
 });
 const domRef = ref(null);
 
-let chartObj = null;
+let chartObj = ref(null);
 let objResizeObserver;
 let autoPlayTimer = null;
+defineExpose({
+  chartObj,
+});
 onMounted(() => {
   if (!domRef.value) return;
 
   // 初始化
-  chartObj = initChart(domRef.value);
+  chartObj.value = initChart(domRef.value);
 
   objResizeObserver = new ResizeObserver(function (entries) {
     const entry = entries[0];
     if (entry?.target === domRef.value) {
-      chartObj?.resize();
+      chartObj.value?.resize();
     }
   });
 
   // 观察元素尺寸变化
   objResizeObserver.observe(domRef.value);
 
-  setTimeout(() => {
-    chartObj && chartObj.resize();
-  }, 1000);
+  nextTick(() => {
+    setTimeout(() => {
+      chartObj.value && chartObj.value.resize();
+    }, 500);
+  });
 });
 
 onUnmounted(() => {
-  if (chartObj) {
-    chartObj.dispose();
-    chartObj = null;
+  if (chartObj.value) {
+    chartObj.value.dispose();
+    chartObj.value = null;
   }
   // 清除自动轮播定时器
   if (autoPlayTimer) {
@@ -66,7 +71,7 @@ watch(
   () =>
     setTimeout(() => {
       drawOption();
-    }, 500),
+    }, 200),
   {
     immediate: true,
   }
@@ -75,12 +80,12 @@ watch(
 //加载图表配置
 const drawOption = () => {
   console.log(props.chartType);
-  if (!chartObj) return;
-  chartObj.showLoading({
+  if (!chartObj.value) return;
+  chartObj.value.showLoading({
     text: "加载中...",
     color: "#333",
     textColor: "#333",
-    maskColor: "rgba(255, 255, 255, 0.3)",
+    maskColor: "rgba(255, 255, 255, 0.1)",
     spinnerRadius: 20,
   });
   const options = {
@@ -98,9 +103,9 @@ const drawOption = () => {
   }
   setTimeout(() => {
     nextTick(() => {
-      chartObj.setOption(options);
-      chartObj.hideLoading();
-      
+      chartObj.value.setOption(options);
+      chartObj.value.hideLoading();
+
       // 如果是饼图或环图且配置了自动轮播，启动轮播
       if ((props.chartType === 'pie' || props.chartType === 'ring') && options._autoPlay) {
         // 清除之前的轮播定时器
@@ -109,7 +114,7 @@ const drawOption = () => {
           autoPlayTimer = null;
         }
         // 启动新的轮播
-        autoPlayTimer = startPieAutoPlay(chartObj, options);
+        autoPlayTimer = startPieAutoPlay(chartObj.value, options);
       }
     });
   }, 1000);
@@ -118,5 +123,9 @@ const drawOption = () => {
 
 <template>
   <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
-  <div ref="domRef" class="echarts-item" :style="{ width, height }"></div>
+  <div
+    ref="domRef"
+    class="echarts-item"
+    :style="{ width, height }"
+  ></div>
 </template>

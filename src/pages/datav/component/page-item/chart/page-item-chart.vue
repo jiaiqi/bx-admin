@@ -64,7 +64,6 @@
         ref="chartRef"
         v-loading="loading"
         element-loading-background="rgba(0, 0, 0, 0.1)"
-        class="uni-ec-canvas"
         :page-item="pageItem"
         :options="option"
         :canvasId="canvasId"
@@ -608,9 +607,13 @@ defineExpose({
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  width: 100%;
 
   .chart-content {
     flex: 1;
+    height: 100%;
+    width: 100%;
   }
 
   // 加载状态样式
