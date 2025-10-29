@@ -1,8 +1,14 @@
 <template>
   <div
     class="rich-editor"
-    v-if="domLoad"
+    v-if="getDisabled === true"
+  >
+    <div class="rich-editor-content" v-html="innerHtml"></div>
+  </div>
+  <div
+    class="rich-editor"
     ref="rich-editor"
+    v-else-if="domLoad"
   >
     <Toolbar
       style="border-bottom: 1px solid #ccc"
@@ -69,11 +75,11 @@ export default {
   created() {
     this.ticket = sessionStorage.getItem("bx_auth_ticket");
     this.innerHtml = this.recoverFileAddress4richText(this.value);
-    
+
     // 设置分片上传参数，便于测试
     this.limitSize = 500; // 先屏蔽
     this.chunkSize = 20 * 1024 * 1024; // 2MB分片大小
-    
+
     this.$nextTick(() => {
       this.domLoad = true;
     });
@@ -132,11 +138,11 @@ export default {
     async handleFileUpload(file, insertFn, fileType = 'image') {
       try {
         const fileSize = file.size / 1024 / 1024; // 转换为MB
-        
+
         // 检查是否应该使用分片上传
         if (this.useSplitChuck && fileSize > this.limitSize) {
           console.log(`使用分片上传${fileType}:`, file.name, fileSize + 'MB');
-          
+
           const result = await this.handelUploadBigFile(file, {
             chunkSize: this.chunkSize,
             maxRequest: this.maxRequest,
@@ -151,7 +157,7 @@ export default {
             }
           });
 
-          console.log('分片上传结果:', result);        
+          console.log('分片上传结果:', result);
           if (result && result.url) {
             // 统一使用insertFn方法，不管是图片还是视频
             insertFn(result.url);
@@ -186,7 +192,7 @@ export default {
 
           const res = await response.json();
           console.log('普通上传结果:', res);
-          
+
           if (res.fileurl) {
             const url = `${window.backendIpAddr}/file/download?filePath=${res.fileurl}`;
             console.log('文件URL:', url);
@@ -394,6 +400,16 @@ export default {
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   overflow: hidden;
+
+}
+
+.rich-editor .rich-editor-content {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 10px;
+  box-sizing: border-box;
 }
 </style>
 <style src="@wangeditor/editor/dist/css/style.css"></style>
