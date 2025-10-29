@@ -1228,11 +1228,6 @@ export default {
         }else{
           this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        const realfee = await this.getWorkorderFeeInfo()
-        console.log(realfee, 1111111)
-        if(realfee&&realfee.length>0){
-          this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
-        }
         const resdata = await this.getPassconvInfo()
         if(resdata&&resdata.length>0){
           this.operate_params = resdata[0]
@@ -1240,7 +1235,14 @@ export default {
           this.ruleForm.media_no = resdata[0].obusn
           this.ruleForm.media_type = resdata[0].mediatype
           this.ruleForm.pass_time = resdata[0].extime
-          // this.ruleForm.real_fee = resdata[0].fee
+          const realfee = await this.getWorkorderFeeInfo()
+        console.log(realfee, 1111111)
+        if(realfee&&realfee.length>0){
+          this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
+        }else{
+          this.ruleForm.real_fee = resdata[0].fee
+        }
+          
           // this.ruleForm.sus_escape_type = resdata[0].escape_type
           this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
           this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
