@@ -524,7 +524,7 @@ export default {
       // 基础URL构建
       // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
       let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
-      
+
       // 添加默认条件参数
       if (this.defaultCondition?.length) {
         this.defaultCondition.forEach((col) => {
@@ -533,12 +533,12 @@ export default {
           }
         });
       }
-      
+
       // 如果是树形结构，添加topTreeData参数
       if (this.listV2Data?.is_tree === true) {
         url += `&topTreeData=true`;
       }
-      
+
       return url;
     },
     tableButtonsPopupRun() {
@@ -1608,7 +1608,7 @@ export default {
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
       } else if (type === 'pay') {
-        if(this.multipleSelection.length == 0) {
+        if (this.multipleSelection.length == 0) {
           return this.$message.warning("请选择需要支付的数据", "提示");
         }
         this.buttonInfo = button
@@ -2010,9 +2010,9 @@ export default {
             this.customize_delete(operate_item, data);
           } else if (operate_item.operate_type == "增加") {
             this.customize_add(operate_item, data);
-          } else if(operate_item.operate_type == "申请弹出"){
+          } else if (operate_item.operate_type == "申请弹出") {
             this.customize_popup(operate_item, data);
-          }else {
+          } else {
             operate_item.listservice = this.service;
             this.customizeOperate(operate_item, data, (e) => {
               // dialog操作完成之后的回调 刷新列表
@@ -2977,6 +2977,10 @@ export default {
     },
 
     getColAlign: function (colType) {
+      if (['audit', 'auditDev'].includes(process.env.VUE_APP_TARGET)) {
+        // 稽核开发、生产环境 统一调整为居中
+        return "center";
+      }
       if (
         ['Float', 'Money', 'int', 'Integer', 'Decimal', 'Email', 'TelNo'].includes(colType)
       ) {
