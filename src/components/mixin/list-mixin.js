@@ -468,18 +468,19 @@ export default {
       }
 
       if (show) {
-        let url = `/dataview/#/sheet/${this.service_name}?srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
-        if (this.defaultCondition?.length) {
-          this.defaultCondition.forEach((col) => {
-            if (col.ruleType === "eq") {
-              url += `&${col.colName}=${col.value}`;
-            }
-          });
-          // url += `&topTreeData=true`;
-        }
-        if (this.listV2Data?.is_tree === true) {
-          url += `&topTreeData=true`;
-        }
+        // let url = `/dataview/#/sheet/${this.service_name}?srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+        // if (this.defaultCondition?.length) {
+        //   this.defaultCondition.forEach((col) => {
+        //     if (col.ruleType === "eq") {
+        //       url += `&${col.colName}=${col.value}`;
+        //     }
+        //   });
+        //   // url += `&topTreeData=true`;
+        // }
+        // if (this.listV2Data?.is_tree === true) {
+        //   url += `&topTreeData=true`;
+        // }
+        let url = this.excelUrl;
         let tabTitle = "";
         if (
           this.childForeignkey?.kedispcol &&
@@ -521,7 +522,8 @@ export default {
     // 专门用于拼接Excel页面URL的计算属性
     excelUrl() {
       // 基础URL构建
-      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
       
       // 添加默认条件参数
       if (this.defaultCondition?.length) {
