@@ -228,11 +228,10 @@ routes.push(...auditRoutes);
 routes.push(...healthRoutes);
 routes.push(...paymentRoutes);
 routes.push(...formRoutes);
-routes.push(...lowcodeRoutes);
+routes.push(...toolsRoutes);
 routes.push(...bookingRoutes);
 routes.push(...authorityRoutes);
 routes.push(...mediaRoutes);
-routes.push(...toolsRoutes);
 routes.push(...businessRoutes);
 
 routes.push(
@@ -269,6 +268,21 @@ routes.push(
   ]
 );
 
+// 低代码相关
+routes.push(...lowcodeRoutes);
+
+router.push(
+  {
+    path: "/:pageNo",
+    name: "lowcode-view1",
+    meta: {
+      isEditor: false,
+      isView: true,
+    },
+    component: () => import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
+  }
+)
+
 Vue.use(VueRouter);
 const router = new VueRouter({
   routes,
@@ -289,7 +303,7 @@ const getStore = () => {
 router.beforeEach((to, from, next) => {
   try {
     const store = getStore();
-    
+
     // 只有在路由栈启用时才记录路由
     if (store.getters['routeStack/isEnabled']) {
       // 推入新路由到栈
@@ -298,7 +312,7 @@ router.beforeEach((to, from, next) => {
   } catch (error) {
     console.warn('路由栈管理出错:', error);
   }
-  
+
   next();
 });
 
@@ -306,7 +320,7 @@ router.beforeEach((to, from, next) => {
 router.afterEach((to, from) => {
   try {
     const store = getStore();
-    
+
     // 这里可以添加路由切换后的额外处理逻辑
     // 例如：记录路由访问统计、更新面包屑等
     console.log('路由切换完成:', {

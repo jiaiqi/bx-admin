@@ -17,15 +17,6 @@ export default [
     },
     component: () => import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/index.vue"),
   },
-    {
-    path: "/:pageNo",
-    name: "lowcode-view1",
-    meta: {
-      isEditor: false,
-      isView: true,
-    },
-    component: () => import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
-  },
   {
     path: "/lowcode/view/:pageNo",
     name: "lowcode-view",
