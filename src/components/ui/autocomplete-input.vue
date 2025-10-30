@@ -1,13 +1,13 @@
 <template>
-  <tree-finder
+  <!-- <tree-finder //树形选择器在autocomplete的场景功能还不完善，暂时不使用
     :disabled="disabled"
-    v-if="isTree"
+    :$srvApp="optionsReq && optionsReq.srvApp || null"
     ref="editor"
     :field="setTreeField"
     :allow-change-model="false"
     @on-change="onTreeChange"
   >
-  </tree-finder>
+  </tree-finder> -->
   <el-autocomplete
     class="inline-input"
     v-model="field.model"
@@ -20,7 +20,6 @@
     suffix-icon="el-icon-edit"
     @select="handleSelect"
     @clear="handleClear"
-    v-else
   >
   </el-autocomplete>
 </template>

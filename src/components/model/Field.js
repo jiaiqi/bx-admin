@@ -132,10 +132,8 @@ export class Field {
 
     this.autocompleteInput = false;
     if (this.info.editor == null && this.info.redundant) {
-      let dependField = this.info.redundant.dependField;
       let field = this;
-      this.autocompleteInput = true;
-
+       
       this.autocompleteFunc = (_) => {
         let dependField = field.form.fields[this.info.redundant.dependField];
         if (Array.isArray(field.form.fields)) {
@@ -162,15 +160,11 @@ export class Field {
             });
           }
           return result;
-          // return (
-          //   (dependField.info.srvCol &&
-          //     dependField.info.srvCol.option_list_v2) ||
-          //   []
-          // );
         } else {
           return [];
         }
       };
+
       this.isAutocomplete = () => {
         //*如果引用的字段是fk字段的显示字段 则自动使用autocomplete特性,并且隐藏掉fk字段
         //?目前先默认不隐藏fk字段，sessionStorage中hide_fk_field为true时再隐藏，后续没啥问题了放开这个限制
@@ -206,6 +200,7 @@ export class Field {
         }
         return false;
       };
+      this.autocompleteInput = this.isAutocomplete();
       // let dependFieldOptionsListV2 = field.form.fields
     } else if (
       this.info.srvCol?.subtype === 'autocomplete' &&
