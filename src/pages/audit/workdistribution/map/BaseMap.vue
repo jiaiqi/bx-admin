@@ -196,23 +196,7 @@ const isDetail = computed(() => {
   return route.query?.pageType === 'detail'
 })
 
- const ruleForm= reactive({
-        orginal_fee: "",             //通行收费
-        axlecount: 0,                     //车轴数
-        isnormel: "",	                //是否为大件车辆
-        vehicle_type: "",  //稽核车型
-        pass_id: "",
-        vehicleusertype: "",
-        vehicleclass: "",
-        real_fee: 0,
-        owe_fee: 0,
-        media_type: ""
-      })
-    const ruleFormRules={
-        vehicle_type: [
-          { required: true, message: '请选择稽核车型', trigger: 'blur' }
-        ],
-      }
+
  const optionsPage= JSON.parse(window.sessionStorage.getItem('optionsPage')) || {}
 const passId = route.query?.pass_id
 const strTime = route.query?.startTime
@@ -230,7 +214,23 @@ const isEdit = ref(false);
 const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
-
+ const ruleForm= reactive({
+        orginal_fee: "",             //通行收费
+        axlecount: 0,                     //车轴数
+        isnormel: "",	                //是否为大件车辆
+        vehicle_type: "",  //稽核车型
+        pass_id: passId,
+        vehicleusertype: "",
+        vehicleclass: "",
+        real_fee: 0,
+        owe_fee: 0,
+        media_type: ""
+      })
+    const ruleFormRules={
+        vehicle_type: [
+          { required: true, message: '请选择稽核车型', trigger: 'blur' }
+        ],
+      }
 const setTabColes = () => {
   isColes.value = !isColes.value
 }

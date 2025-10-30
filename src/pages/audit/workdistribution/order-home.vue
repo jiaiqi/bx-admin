@@ -119,6 +119,12 @@ export default {
         } catch (e) {
           console.error('处理路由信息时出错：', e);
         }
+      }else{
+         // 保存初始路由信息
+            const currentQuery = this.$route.query;
+            if (currentQuery && Object.keys(currentQuery).length > 0) {
+              this.initialRouteInfo = JSON.parse(JSON.stringify(currentQuery));
+            }
       }
     },
   },

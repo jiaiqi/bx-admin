@@ -204,10 +204,10 @@ export default class OrderApi {
 
   //根据订单id去查询工单详情
   async getWorkOrderDetail(options) {
-    let url = path + `/aud/select/srvaud_ads_outer_workorder_select?srvaud_ads_outer_workorder_select`
+    let url = path + `/aud/select/srvaud_ads_workorder_select?srvaud_ads_workorder_select`
     let req = {
       colNames: ["*"],
-      serviceName: "srvaud_ads_outer_workorder_select",
+      serviceName: "srvaud_ads_workorder_select",
       condition: options.condition,
       page: { pageNo: 1, rownumber: 10 }
     }

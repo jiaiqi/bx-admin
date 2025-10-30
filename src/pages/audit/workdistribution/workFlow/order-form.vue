@@ -1005,10 +1005,12 @@ export default {
             const value = ruleForm[key];
             // 空字符串或null时保持当前值，否则转换为数字
             const finalValue = value === '' || value === null ? this.ruleForm.axlecount : Number(value) || 0;
-            this.$set(this.ruleForm, key, finalValue);
+            // this.$set(this.ruleForm, key, finalValue);
+            this.ruleForm = Object.assign(this.ruleForm, { axlecount: finalValue })
             console.log(`axlecount processed: ${value} → ${finalValue}`);
           } else {
-            this.$set(this.ruleForm, key, ruleForm[key]);
+            this.ruleForm = Object.assign(this.ruleForm, ruleForm)
+            // this.$set(this.ruleForm, key, ruleForm[key]);
           }
         }
       }
@@ -1045,6 +1047,7 @@ export default {
         _this.optionsPage = filterListByOption(ops, _this.optionsPage)
         window.sessionStorage.setItem('optionsPage', JSON.stringify(_this.optionsPage))
         _this.ruleForm = formDataByInitText(this.ruleForm, ops, 'init_expr')
+        console.log('这里的ruleForm4444444444', _this.ruleForm)
          const cachedData = eventBus.getLatestData('updateOrderForm');
     if (cachedData) {
       this.handleUpdateOrderForm(cachedData);
@@ -1209,9 +1212,10 @@ export default {
         this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
         const res = await this.getSusvehPassInfo()
+        console.log(this.ruleForm.pass_id, 2222222222)
         if(res&&res.length>0){
           this.operate_params = res[0]
-          // this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+          this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
           this.ruleForm.media_no = res[0].obusn
           this.ruleForm.media_type = res[0].mediatype
           this.ruleForm.pass_time = res[0].extime
@@ -1227,6 +1231,7 @@ export default {
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
         this.getTrafficFlow()
         }else{
+          console.log('这里的pass_id', pass_id)
           this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         const resdata = await this.getPassconvInfo()
