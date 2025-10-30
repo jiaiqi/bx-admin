@@ -243,7 +243,7 @@
 
         <el-col
           :span="24"
-          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;"
+          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;margin-bottom:10px;"
         >
           <el-form-item
             label="确认逃费类型"
@@ -318,7 +318,7 @@
         </el-col>
         <el-col
           :span="24"
-          style="display: grid;grid-template-columns: repeat(4,1fr);"
+          style="display: grid;grid-template-columns: repeat(4,1fr);gap: 10px;"
         >
           <el-form-item
             label="是否为大件车辆"
@@ -434,6 +434,7 @@
                 clear
                 v-model="ruleForm.operator_name"
                 clearable
+                required
                 placeholder="请选择"
                 @change="setOperInfo"
               >
@@ -1228,11 +1229,6 @@ export default {
         }else{
           this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        const realfee = await this.getWorkorderFeeInfo()
-        console.log(realfee, 1111111)
-        if(realfee&&realfee.length>0){
-          this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
-        }
         const resdata = await this.getPassconvInfo()
         if(resdata&&resdata.length>0){
           this.operate_params = resdata[0]
@@ -1240,7 +1236,14 @@ export default {
           this.ruleForm.media_no = resdata[0].obusn
           this.ruleForm.media_type = resdata[0].mediatype
           this.ruleForm.pass_time = resdata[0].extime
-          // this.ruleForm.real_fee = resdata[0].fee
+          const realfee = await this.getWorkorderFeeInfo()
+        console.log(realfee, 1111111)
+        if(realfee&&realfee.length>0){
+          this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
+        }else{
+          this.ruleForm.real_fee = resdata[0].fee
+        }
+          
           // this.ruleForm.sus_escape_type = resdata[0].escape_type
           this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
           this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
@@ -1290,6 +1293,7 @@ export default {
     },
     async handleSubmit() {
       let isValid = await this.$refs.ruleForm.validate();
+      console.log(isValid, 1111111)
       if (!isValid) return;
       this.handleTest()
     },
@@ -1306,7 +1310,14 @@ export default {
         let ls = res.data.data
         if (ls && ls.length === 0) {
           orderUtils.handleSubmitOrder([obj]).then(res => {
-            if (res.data.state !== 'SUCCESS') return;
+            if (res.data.state !== 'SUCCESS') {
+              if(res.data.resultMessage.indexOf('组织ID不能为空')>-1){
+                this.$message.error('请选择发起人');
+                return;
+              }
+              this.$message.error('工单保存失败:' + res.data.resultMessage);
+              return;
+            };
             this.$message.success('工单保存成功');
           }).catch(err => {
             this.$message.error('提交异常，请检查');
