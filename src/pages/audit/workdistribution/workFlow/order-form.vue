@@ -243,7 +243,7 @@
 
         <el-col
           :span="24"
-          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;"
+          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;margin-bottom:10px;"
         >
           <el-form-item
             label="确认逃费类型"
@@ -318,7 +318,7 @@
         </el-col>
         <el-col
           :span="24"
-          style="display: grid;grid-template-columns: repeat(4,1fr);"
+          style="display: grid;grid-template-columns: repeat(4,1fr);gap: 10px;"
         >
           <el-form-item
             label="是否为大件车辆"
@@ -434,6 +434,7 @@
                 clear
                 v-model="ruleForm.operator_name"
                 clearable
+                required
                 placeholder="请选择"
                 @change="setOperInfo"
               >
@@ -1292,6 +1293,7 @@ export default {
     },
     async handleSubmit() {
       let isValid = await this.$refs.ruleForm.validate();
+      console.log(isValid, 1111111)
       if (!isValid) return;
       this.handleTest()
     },
@@ -1308,7 +1310,14 @@ export default {
         let ls = res.data.data
         if (ls && ls.length === 0) {
           orderUtils.handleSubmitOrder([obj]).then(res => {
-            if (res.data.state !== 'SUCCESS') return;
+            if (res.data.state !== 'SUCCESS') {
+              if(res.data.resultMessage.indexOf('组织ID不能为空')>-1){
+                this.$message.error('请选择发起人');
+                return;
+              }
+              this.$message.error('工单保存失败:' + res.data.resultMessage);
+              return;
+            };
             this.$message.success('工单保存成功');
           }).catch(err => {
             this.$message.error('提交异常，请检查');
