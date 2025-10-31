@@ -40,7 +40,6 @@
               v-model="ruleForm.sus_escape_type"
               placeholder="请选择"
               clearable
-              disabled
             >
               <el-option
                 v-for="item in optionsPage.sus_escape_type"
@@ -1211,6 +1210,7 @@ export default {
         
         this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+         this.getTrafficFlow()
         const res = await this.getSusvehPassInfo()
         console.log(this.ruleForm.pass_id, 2222222222)
         if(res&&res.length>0){
@@ -1229,7 +1229,6 @@ export default {
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        this.getTrafficFlow()
         }else{
           console.log('这里的pass_id', pass_id)
           this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
@@ -1255,12 +1254,19 @@ export default {
           // this.ruleForm.suspicion_id = resdata[0].suspectid
           // this.ruleForm.vehicleclass = resdata[0].envehicleclass
           this.ruleForm.vehicleusertype = resdata[0].vehicleusertype
+         this.suspectedData = [{
+          'vehicleplate_no': resdata[0].vehicleplate_no,
+          '_vehicletype_disp': resdata[0]._vehicletype_disp,
+          'enstationname': resdata[0].enstationname,
+          'entime': resdata[0].entime,
+          'exstationname': resdata[0].exstationname,
+          'extime': resdata[0].extime,
+         }]
           this.initSpecialType()
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
         // this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
-        this.getTrafficFlow()
         }
         }
       }
