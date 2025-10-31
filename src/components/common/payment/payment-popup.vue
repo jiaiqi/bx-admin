@@ -84,6 +84,7 @@
        <el-row
         :gutter="20"
         style="margin:5px 0"
+        v-if="payStep === 1"
       >
         <el-col
           :span="6"
@@ -203,7 +204,7 @@
            <el-button
           type="primary"
           size="mini"
-          v-if="payType === 1&&submitvisible"
+          v-if="payType === 1&&payStep === 1&&submitvisible"
           @click="handlePayType"
         >提交</el-button>
         </el-col>
@@ -324,7 +325,7 @@
         <el-button
           type="primary"
           size="mini"
-          v-if="qrcodeInfo.qrCd||payType === 1"
+          v-if="(qrcodeInfo.qrCd||payType === 1)&&payStep === 1"
           @click="closePayment"
         >关闭</el-button>
       </div>
@@ -400,6 +401,7 @@ export default {
         transAddnInfo: null //附加信息
       },
       orderList: [],
+      parkList: [],
       payInfo: {
         pending_amount: 0,  //待支付金额
         pay_amount: '',  //付款金额
@@ -483,6 +485,8 @@ export default {
         if (Array.isArray(newVal) && newVal.length > 0) {
           // 提取 su_order_no 并拼接
           const orderNos = newVal.map(item => item[this.rowKeys]).join(',');
+          this.parkList = newVal.map(item => item['park_no_sub']);
+          console.log(this.parkList, 999999999)
           let obj = {
             ids: orderNos,
             keyName: this.keyNames,
@@ -682,9 +686,18 @@ export default {
         this.$message.error('支付金额验证失败，请检查输入');
         return false;
       }
-      this.payInfo.order_details = this.orderList.map(item => ({
-        su_order_no: item.su_order_no
-      }));
+      this.payInfo.order_details = []
+      this.orderList.forEach((item) => 
+         {
+          const obj = {
+            su_order_no: item.su_order_no,
+            park_no_sub: '',
+          }
+          this.parkList.forEach((park) => {
+            obj.park_no_sub = park
+          })
+          this.payInfo.order_details.push(obj)
+        });
       this.payInfo.pay_method = this.payWays.find(item => item.code === this.payStep).label;
       let payInfoParam = JSON.parse(JSON.stringify(this.payInfo));
       delete payInfoParam.pending_amount;
