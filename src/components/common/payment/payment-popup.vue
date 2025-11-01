@@ -107,7 +107,7 @@
           </div>
         </el-col>
       </el-row>
-      <template v-if="payType === 2">
+      <template v-if="payType === 2||payStep !== 1">
         <el-row
         :gutter="20"
         style="margin:5px 0"
@@ -248,7 +248,16 @@
         <span class="col_t">商户结算户账号：</span></el-col>
         <el-col :span="16">
           <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNo || '' }}
-          </span></el-col>
+          </span>
+        <el-tooltip effect="dark" content="复制成功" placement="top" v-model="copyTooltipVisible">
+       <el-button
+      icon="el-icon-copy-document"
+      size="mini"
+      type="text"
+      @click="handleCopy(PayPublicOrder?.mrchStlAcctNo)">
+        </el-button>
+        </el-tooltip>
+        </el-col>
       </el-row>
        <el-row
         :gutter="20"
@@ -363,6 +372,7 @@ export default {
       disabledIndexes: [],
       statusText: "",
       handleStatus: false,
+      copyTooltipVisible: false,
       stepStatus: false,
       submitvisible: true,
       showLoading: false,
@@ -502,6 +512,43 @@ export default {
     }
   },
   methods: {
+  handleCopy(text) {
+    if (!text) {
+      this.$message.warning('没有可复制的内容');
+      return;
+    }
+    // 尝试使用Clipboard API复制文本
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.copyTooltipVisible = true;
+        setTimeout(() => this.copyTooltipVisible = false, 2000);
+      }).catch(err => {
+        this.fallbackCopy(text);
+      });
+    } else {
+      this.fallbackCopy(text);
+    }
+  },
+  fallbackCopy(text) {
+    // 创建临时文本区域用于复制
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        this.copyTooltipVisible = true;
+        setTimeout(() => this.copyTooltipVisible = false, 2000);
+      } else {
+        this.$message.error('复制失败，请手动复制');
+      }
+    } catch (err) {
+      this.$message.error('复制失败，请手动复制');
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  },
     // 新线上提交方法
     handlePayType(type){
        this.payInfo.order_details = this.orderList.map(item => ({
@@ -608,7 +655,7 @@ export default {
       }
       this.payTimer = setInterval(() => {
         that.handelStatusInfo()
-      }, 500)
+      }, 2000)
     },
     //获取二维码支付后状态信息
     handelStatusInfo(status) {
