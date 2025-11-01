@@ -743,7 +743,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <!-- <el-col :span="12">
           <el-form-item
             label="证据附件编号"
             prop="order_evidence"
@@ -756,7 +756,7 @@
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
-        </el-col>
+        </el-col> -->
       </el-row>
       <el-row>
         <el-col style="color: #00a0e9;border-bottom: 1px solid #d8e6f5;margin-bottom:5px">
@@ -1262,6 +1262,17 @@ export default {
           'exstationname': resdata[0].exstationname,
           'extime': resdata[0].extime,
          }]
+         if(!(resdata[0].vehicleplate_no&&resdata[0]._vehicletype_disp&&resdata[0].enstationname&&resdata[0].entime&&resdata[0].exstationname&&resdata[0].extime)){
+          this.$confirm('暂无车辆通行流水，无法发起工单!', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            // 用户点击了确定按钮
+            this.closeCurrentPage()
+          })
+          return
+         }
           this.initSpecialType()
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
@@ -1281,6 +1292,7 @@ export default {
       this.showInsMod = true;
     },
     getPromoterRow(row) {
+      console.log(row, 1111111)
       this.operatorName = [row];
       // this.ruleForm.operator_name= this.operatorName[0].user_id;
       this.ruleForm.operator_name = this.operatorName[0].user_name;
