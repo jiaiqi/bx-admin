@@ -210,7 +210,7 @@
         </el-col>
       </el-row>
       </form>
-      <div v-if="PayPublicOrder&&PayPublicOrder.length>0">
+      <div v-if="!submitvisible&&payStep === 1&&payType === 1">
          <el-row
         :gutter="20"
         style="margin:5px 0"
@@ -221,7 +221,7 @@
         >
         <span class="col_t">订单号：</span></el-col>
         <el-col :span="16">
-          <span class="col_t">{{ PayPublicOrder?.odrNo || '' }}
+          <span class="col_t">{{ PayPublicOrder?.order_no || '' }}
           </span></el-col>
       </el-row>
        <el-row
@@ -319,7 +319,7 @@
         <el-button
           type="primary"
           size="mini"
-          v-if="!qrcodeInfo.qrCd&&payType === 2"
+          v-if="!qrcodeInfo.qrCd&&payType === 2||payStep===2||payStep===3"
           @click="handleSubmit"
         >提交</el-button>
         <el-button
@@ -511,8 +511,9 @@ export default {
        this.showLoading = true;
       payUtils.handlePayPublicOrder(payInfoParam).then((res) => {
         this.showLoading = false;
-        this.PayPublicOrder= res.data[0]
-        if(this.PayPublicOrder&&this.PayPublicOrder.length>0){
+        console.log(res, 222222222)
+        this.PayPublicOrder= res?.data?.response?.[0]?.response || {}
+        if(this.PayPublicOrder){
           this.submitvisible = false;
         }
         
@@ -674,7 +675,8 @@ export default {
     },
     //手动提交
     handleSubmit() {
-      if (!this.payInfo.pay_amount || this.payInfo.pay_amount.trim() === '') {
+      if (this.payStep === 1) {
+       if (!this.payInfo.pay_amount || this.payInfo.pay_amount.trim() === '') {
         this.$message.error('请输入确认支付金额');
         return false;
       }
@@ -686,6 +688,8 @@ export default {
         this.$message.error('支付金额验证失败，请检查输入');
         return false;
       }
+      }
+      
       this.payInfo.order_details = []
       this.orderList.forEach((item) => 
          {
