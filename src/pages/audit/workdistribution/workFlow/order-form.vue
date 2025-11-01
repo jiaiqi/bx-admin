@@ -1199,6 +1199,9 @@ export default {
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
         this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
         this.getTrafficFlow()
+        this.strTime = moment(passTime).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(passTime).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.getRelevantInfo();
       }
       }else{
         let pass_id = this.$route.query.pass_id;
@@ -1213,6 +1216,10 @@ export default {
          this.getTrafficFlow()
         const res = await this.getSusvehPassInfo()
         console.log(this.ruleForm.pass_id, 2222222222)
+
+         this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+        this.getRelevantInfo();
         if(res&&res.length>0){
           this.operate_params = res[0]
           this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
@@ -1628,7 +1635,6 @@ export default {
     this.initForm()
     this.initQuerySearch()
     this.getSavePicInfo(null)
-    this.getRelevantInfo();
     //从如果store有存储，从store 中获取一次填入到表单中
     let base = this.getOrderForm;
     if (base) {
