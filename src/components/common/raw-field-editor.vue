@@ -127,37 +127,25 @@
                 "
             >
             </ueditorPlus> -->
+            <!-- 根据环境变量动态选择富文本编辑器 -->
             <wang-editor
               ref="editor"
               :disabled="getDisabled"
               :field="field"
               v-model="field.model"
               @change="$emit('field-value-changed', field.info.name, field)"
-              v-else-if="['snote','ueditor'].includes(field.info.editor)"
+              v-else-if="['snote','ueditor'].includes(field.info.editor) && getRichEditorType === 'wang-editor'"
             >
             </wang-editor>
-            <!-- <wang-editor
-              ref="editor"
+            <TinymceEditor
               :disabled="getDisabled"
-              :field="field"
-              v-model="field.model"
-              @change="$emit('field-value-changed', field.info.name, field)"
-              v-else-if="
-                field.info.editor === 'ueditor' &&
-                field.info.moreConfig &&
-                field.info.moreConfig.mode === 'modern'
-              "
-            >
-            </wang-editor> -->
-            <!-- <TinymceEditor
-              :disabled="getDisabled"
-              v-else-if="field.info.editor === 'ueditor'"
+              v-else-if="['snote','ueditor'].includes(field.info.editor) && getRichEditorType === 'tinymce'"
               :field="field"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
                 "
               ref="editor"
-            ></TinymceEditor> -->
+            ></TinymceEditor>
             <!-- <ueditor
               v-else-if="field.info.editor === 'ueditor'"
               :field="field"
@@ -870,7 +858,7 @@ import InputRange from "../ui/input-range.vue";
 import Finder from "../ui/finder.vue";
 import multiFinder from "../ui/multi-finder.vue";
 // import UEditor from "../ui/ueditor.vue";
-// import TinymceEditor from "./tinymce/index.vue";
+import TinymceEditor from "./tinymce/index.vue";
 // import UploadFile from "../ui/upload-file.vue";
 import UploadImage from "../ui/upload-image.vue";
 import TreeFinder from "../ui/tree-finder.vue";
@@ -878,14 +866,12 @@ import BxInputNumber from "../ui/bx-input-number.vue";
 import Userlist from "../ui/userlist.vue";
 import QrCode from "../ui/qrcode.vue";
 import CodeEditor from "../ui/code-editor.vue";
-// import JsonEditor from 'json-editor-vue'
 import vueJsonEditor from "vue-json-editor-fix-cn";
 import jsonTableEditor from "../ui/json-table-editor/index.vue";
 
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 // import ueditorPlus from "../ui/ueditor-plus.vue";
-// import tiptapEditor from "../ui/tiptap-editor/video-home.vue";
 import wangEditor from "../ui/wang-editor/wang-editor.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
@@ -901,7 +887,6 @@ export default {
     Checkbox,
     Radio,
     CodeEditor,
-    // JsonEditor,
     vueJsonEditor,
     jsonTableEditor,
     Userlist,
@@ -914,9 +899,8 @@ export default {
     Finder,
     // ueditorPlus,
     wangEditor,
-    // tiptapEditor,
     // ueditor: UEditor,
-    // TinymceEditor,
+    TinymceEditor,
     QrCode,
     multiFinder,
     dynamicSubTemp,
@@ -1049,6 +1033,12 @@ export default {
           },
         };
       }
+    },
+    // 获取富文本编辑器类型
+    getRichEditorType() {
+      // 从环境变量获取配置，默认使用wang-editor
+      return 'tinymce'
+      return process.env.VUE_APP_RICH_EDITOR || 'wang-editor';
     },
   },
 
