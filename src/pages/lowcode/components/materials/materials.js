@@ -115,6 +115,14 @@ export const materialsTree = [
         "_default_parts_text": new Date().toLocaleString(),
         "icon": "ri-calendar-schedule-fill"
       },
+       {
+        "label": "天气",
+        "value": "天气",
+        "parts_type": "天气",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri:sun-foggy-fill"
+      },
       {
         "label": "视频",
         "value": "视频",
