@@ -162,6 +162,46 @@ import {
 } from "@/common/vueApi";
 import cloneDeep from 'lodash/cloneDeep';
 
+// 动态加载 videoPlayer.js 的函数
+const loadVideoPlayerScript = () => {
+  return new Promise((resolve, reject) => {
+    // 检查是否已经加载过
+    if (window.VideoPlayer && window.dhPlayerControl) {
+      resolve();
+      return;
+    }
+
+    // 检查是否已经有script标签在加载中
+    const existingScript = document.querySelector('script[src*="videoPlayer.js"]');
+    if (existingScript) {
+      // 如果已经在加载中，等待加载完成
+      existingScript.onload = () => resolve();
+      existingScript.onerror = () => reject(new Error('Failed to load videoPlayer.js'));
+      return;
+    }
+
+    // 创建script标签动态加载
+    const script = document.createElement('script');
+    script.src = './dhvideo/videoPlayer.js';
+    script.async = true;
+    
+    script.onload = () => {
+      console.log('videoPlayer.js 动态加载成功');
+      resolve();
+    };
+    
+    script.onerror = () => {
+      console.error('videoPlayer.js 动态加载失败');
+      reject(new Error('Failed to load videoPlayer.js'));
+    };
+    
+    document.head.appendChild(script);
+  });
+};
+
+// 视频播放器脚本加载状态
+const isVideoPlayerScriptLoaded = ref(false);
+
 // 定义 emit 事件
 const emit = defineEmits(['window-channels-change', 'save-window-channels']);
 const route = useRoute();
@@ -419,7 +459,7 @@ const switchChannelInSingleWindow = (newChannelId) => {
   }, 200); // 增加延时确保释放操作完成
 }
 
-const handleSelect = (selectedKeys, e) => {
+const handleSelect = async (selectedKeys, e) => {
   let node = e.data ? e.data : {};
   if (node && node.isChannel && !node.chnl_online_status || node.chnl_online_status === '离线')
     return Notification({
@@ -448,7 +488,12 @@ const handleSelect = (selectedKeys, e) => {
 
     // 确保播放器已经初始化
     if (!myVideoPlayer) {
-      initPlayer();
+      try {
+        await initPlayer();
+      } catch (error) {
+        console.error('初始化播放器失败:', error);
+        return;
+      }
     }
 
     // 获取当前分屏数
@@ -501,25 +546,33 @@ const handleSelect = (selectedKeys, e) => {
 }
 
 //初始化播放器
-const initPlayer = () => {
-  // 如果播放器实例已存在，先销毁它
-  if (myVideoPlayer) {
-    try {
-      // 如果正在播放，先停止播放
-      if (isPlaying.value) {
-        myVideoPlayer.stopPlayback();
-      }
-      // 销毁播放器实例
-      myVideoPlayer.destroy();
-      myVideoPlayer = null;
-    } catch (error) {
-      console.error('销毁播放器时发生错误:', error);
+const initPlayer = async () => {
+  try {
+    // 先动态加载 videoPlayer.js 脚本
+    if (!isVideoPlayerScriptLoaded.value) {
+      console.log('开始动态加载 videoPlayer.js...');
+      await loadVideoPlayerScript();
+      isVideoPlayerScriptLoaded.value = true;
     }
-  }
-  // 创建新的播放器实例
-  return new Promise((resolve, reject) => {
 
-    myVideoPlayer = new VideoPlayer({
+    // 如果播放器实例已存在，先销毁它
+    if (myVideoPlayer) {
+      try {
+        // 如果正在播放，先停止播放
+        if (isPlaying.value) {
+          myVideoPlayer.stopPlayback();
+        }
+        // 销毁播放器实例
+        myVideoPlayer.destroy();
+        myVideoPlayer = null;
+      } catch (error) {
+        console.error('销毁播放器时发生错误:', error);
+      }
+    }
+    
+    // 创建新的播放器实例
+    return new Promise((resolve, reject) => {
+      myVideoPlayer = new VideoPlayer({
       videoId: "play_dh",
       windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
       usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
@@ -638,6 +691,17 @@ const initPlayer = () => {
     });
 
   })
+  } catch (error) {
+    console.error('初始化播放器时发生错误:', error);
+    isPlayerLoading.value = false;
+    Notification({
+      title: '错误',
+      message: '视频播放器初始化失败: ' + error.message,
+      type: 'error',
+      duration: 3000
+    });
+    throw error;
+  }
 }
 //实时流播放
 const playStartReal = (id, windowIndex = 0, node) => {
