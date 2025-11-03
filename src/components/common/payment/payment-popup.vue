@@ -895,7 +895,7 @@ export default {
           //10s后启动查询
           setTimeout(() => {
             this.keepStatusInfo()
-          }, 10 * 1000)
+          }, 60 * 1000 * 30)
 
         }
       }).catch(err => { })
