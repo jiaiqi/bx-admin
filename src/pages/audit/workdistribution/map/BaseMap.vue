@@ -186,6 +186,7 @@ import {
   setPlanRoute
 } from "@/pages/audit/workdistribution/map/layerPage";
 import { Message } from 'element-ui';
+import moment from 'dayjs'
 import eventBus from '@/common/eventBus';
 
 const orderUtil = new OrderApi();
@@ -199,8 +200,13 @@ const isDetail = computed(() => {
 
  const optionsPage= JSON.parse(window.sessionStorage.getItem('optionsPage')) || {}
 const passId = route.query?.pass_id
-const strTime = route.query?.startTime
-const endTime = route.query?.endTime
+
+const pass_time = passId.slice(22, 30)
+const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+
+
+const strTime = route.query?.startTime || moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+const endTime = route.query?.endTime || moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
 const listVisible = ref(false)
 const drivingInfo = ref([])
 const userMap = ref(null);
