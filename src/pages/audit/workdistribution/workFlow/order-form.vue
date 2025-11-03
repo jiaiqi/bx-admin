@@ -1578,19 +1578,25 @@ export default {
 
       }
       orderUtils.getRelevantList(obj).then(res => {
-        if (res.data.state !== 'SUCCESS') return;
-        let ls = res.data.data;
-        let ids = []
-        if (ls) {
-          ls.map(d => {
-            d.select = true
-            ids.push(d.id)
-          })
-        }
-        this.relevantList = ls
-        this.ruleForm.relevant_org = ids.join(',')
-        console.log('经营单位id', this.ruleForm.relevant_org)
-
+        orderUtils.getRelevantListNew(obj).then(resData => {
+          let ls = res.data.data;
+          let lsNew = resData.data.data;
+          if(ls&&ls.length>0){
+           if(lsNew&&lsNew.length>0){
+            ls = [...new Set(ls.concat(lsNew))]
+           }
+          }
+          let ids = []
+          if (ls) {
+            ls.map(d => {
+              d.select = true
+              ids.push(d.id)
+            })
+          }
+          this.relevantList = ls
+          this.ruleForm.relevant_org = ids.join(',')
+          console.log('经营单位id', this.ruleForm.relevant_org)
+        })
       }).catch(err => { })
     },
     //经营单位删除后数据更新
