@@ -323,6 +323,18 @@ export default{
          return null;
        }
      },
+
+     //二维码支付接口
+     async getOnlinePayQrcode(payInfoParam) {
+      try {
+        const res = await payUtils.getQrcodeInfo(payInfoParam);
+        if(res.data.state!=='SUCCESS') return null;
+        let ls = res.data.response[0].response;
+        return ls;
+      } catch(err) {
+        return null;
+      }
+    },
     //现金线下支付提交
     handlePayCashInfo(payInfoParam){
       this.showLoading = true;
@@ -464,7 +476,7 @@ export default{
       this.showLoading = true;
       this.loadingText = '支付码生成中....';
       try {
-        const payInfoParam = await this.handleAddInfoIntoPayment();
+        const payInfoParam = await this.getOnlinePayQrcode(amount);
         if (payInfoParam) {
           this.getOnlinePayQrcode(payInfoParam)
         } else {

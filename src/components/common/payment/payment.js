@@ -48,6 +48,7 @@ export default class Payment {
     async getPayStatus(params){
         let url =`/wx/select/srvbank_xa_pay_state_select`
         let req={
+            "colNames": ["*"],
             "serviceName": "srvbank_xa_pay_state_select",
             "condition": [
                 {

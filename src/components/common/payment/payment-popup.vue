@@ -198,7 +198,7 @@
         </el-col>
       </el-row>
       </template>
-      <el-row>
+      <!-- <el-row>
         <el-col :span="8"
           style="text-align: right;">
            <el-button
@@ -208,7 +208,7 @@
           @click="handlePayType"
         >提交</el-button>
         </el-col>
-      </el-row>
+      </el-row> -->
       </form>
       <div v-if="!submitvisible&&payStep === 1&&payType === 1">
          <el-row
@@ -221,8 +221,16 @@
         >
         <span class="col_t">订单号：</span></el-col>
         <el-col :span="16">
-          <span class="col_t">{{ PayPublicOrder?.order_no || '' }}
-          </span></el-col>
+          <span class="col_t">{{ PayPublicOrder?.order_no || '' }}  </span>
+         <el-tooltip v-if="PayPublicOrder?.order_no" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['order_no']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.order_no, 'order_no')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
       </el-row>
        <el-row
         :gutter="20"
@@ -235,7 +243,16 @@
         <span class="col_t">匹配码：</span></el-col>
         <el-col :span="16">
           <span class="col_t">{{ PayPublicOrder?.mtchCd || '' }}
-          </span></el-col>
+          </span>
+         <el-tooltip v-if="PayPublicOrder?.mtchCd" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['mtchCd']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.mtchCd, 'mtchCd')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
       </el-row>
        <el-row
         :gutter="20"
@@ -249,12 +266,12 @@
         <el-col :span="16">
           <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNo || '' }}
           </span>
-        <el-tooltip effect="dark" content="复制成功" placement="top" v-model="copyTooltipVisible">
+        <el-tooltip v-if="PayPublicOrder?.mrchStlAcctNo" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['mrchStlAcctNo']" manual>
        <el-button
-      icon="el-icon-copy-document"
-      size="mini"
-      type="text"
-      @click="handleCopy(PayPublicOrder?.mrchStlAcctNo)">
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.mrchStlAcctNo, 'mrchStlAcctNo')">
         </el-button>
         </el-tooltip>
         </el-col>
@@ -270,7 +287,16 @@
         <span class="col_t">商户结算户户名：</span></el-col>
         <el-col :span="16">
           <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNm || '' }}
-          </span></el-col>
+          </span>
+         <el-tooltip v-if="PayPublicOrder?.mrchStlAcctNm" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['mrchStlAcctNm']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.mrchStlAcctNm, 'mrchStlAcctNm')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
       </el-row>
        <el-row
         :gutter="20"
@@ -283,7 +309,16 @@
         <span class="col_t">总行行号：</span></el-col>
         <el-col :span="16">
           <span class="col_t">{{ PayPublicOrder?.recBnkNo || '313791000015' }}
-          </span></el-col>
+          </span>
+         <el-tooltip effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['recBnkNo']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.recBnkNo, 'recBnkNo')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
       </el-row>
        <el-row
         :gutter="20"
@@ -296,8 +331,23 @@
         <span class="col_t">总行行名：</span></el-col>
         <el-col :span="16">
           <span class="col_t">{{ PayPublicOrder?.recBnkNm || '西安银行股份有限公司' }}
-          </span></el-col>
+          </span>
+         <el-tooltip effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['recBnkNm']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.recBnkNm, 'recBnkNm')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
       </el-row>
+      <div class="tips-container">
+          <el-icon class="tips-icon el-icon-info"></el-icon>
+          <div class="tips-content">请您通过企业对公账户完成转账，务必在转账附言中填写匹配码，
+            系统会根据匹配码自动匹配您的订单。若转账后 24 小时内订单状态未更新，
+            可联系客服提供匹配码查询进度。</div>
+        </div>
       </div>
      
       <!--二维码生成区域-->
@@ -325,16 +375,22 @@
           v-if="!qrcodeInfo.qrCd"
           @click="closePayment"
         >取消</el-button>
+          <el-button
+          type="primary"
+          size="mini"
+          v-if="payType === 1&&payStep === 1&&submitvisible"
+          @click="handlePayType"
+        >提交</el-button>
         <el-button
           type="primary"
           size="mini"
-          v-if="!qrcodeInfo.qrCd&&payType === 2||payStep===2||payStep===3"
+          v-if="!qrcodeInfo.qrCd&&(payType === 2||payStep===2||payStep===3)"
           @click="handleSubmit"
         >提交</el-button>
         <el-button
           type="primary"
           size="mini"
-          v-if="(qrcodeInfo.qrCd||payType === 1)&&payStep === 1"
+          v-if="payStep===1&&payType === 1&&!submitvisible"
           @click="closePayment"
         >关闭</el-button>
       </div>
@@ -371,8 +427,8 @@ export default {
     return {
       disabledIndexes: [],
       statusText: "",
+      copyTooltipVisible: {},
       handleStatus: false,
-      copyTooltipVisible: false,
       stepStatus: false,
       submitvisible: true,
       showLoading: false,
@@ -512,7 +568,14 @@ export default {
     }
   },
   methods: {
-  handleCopy(text) {
+  handleCopy(text, index) {
+       if (typeof index === 'undefined') return;
+       // 确保copyTooltipVisible始终是对象
+       if (typeof this.copyTooltipVisible !== 'object' || this.copyTooltipVisible === null) {
+         this.copyTooltipVisible = {};
+       }
+      this.$set(this.copyTooltipVisible, index, true);
+        setTimeout(() => this.$set(this.copyTooltipVisible, index, false), 2000);
     if (!text) {
       this.$message.warning('没有可复制的内容');
       return;
@@ -520,16 +583,16 @@ export default {
     // 尝试使用Clipboard API复制文本
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
-        this.copyTooltipVisible = true;
-        setTimeout(() => this.copyTooltipVisible = false, 2000);
+         this.$set(this.copyTooltipVisible, index, true);
+        setTimeout(() => this.$set(this.copyTooltipVisible, index, false), 2000);
       }).catch(err => {
-        this.fallbackCopy(text);
+        this.fallbackCopy(text, index);
       });
     } else {
       this.fallbackCopy(text);
     }
   },
-  fallbackCopy(text) {
+  fallbackCopy(text, index) {
     // 创建临时文本区域用于复制
     const textarea = document.createElement('textarea');
     textarea.value = text;
@@ -537,9 +600,9 @@ export default {
     textarea.select();
     try {
       const successful = document.execCommand('copy');
-      if (successful) {
-        this.copyTooltipVisible = true;
-        setTimeout(() => this.copyTooltipVisible = false, 2000);
+      if (successful && typeof index !== 'undefined') {
+        this.$set(this.copyTooltipVisible, index, true);
+      setTimeout(() => this.$set(this.copyTooltipVisible, index, false), 2000);
       } else {
         this.$message.error('复制失败，请手动复制');
       }
@@ -559,6 +622,10 @@ export default {
       payUtils.handlePayPublicOrder(payInfoParam).then((res) => {
         this.showLoading = false;
         console.log(res, 222222222)
+        if(res.data.state !=='SUCCESS'){
+          this.$message.error(res.data.resultMessage || '支付失败');
+          return;
+        }
         this.PayPublicOrder= res?.data?.response?.[0]?.response || {}
         if(this.PayPublicOrder){
           this.submitvisible = false;
@@ -661,7 +728,9 @@ export default {
     handelStatusInfo(status) {
       this.showLoading = true
       payUtils.getPayStatus(this.order_no).then(res => {
-        if (res.data.state !== 'SUCCESS') return;
+        if (res.data.state !== 'SUCCESS'){
+           this.showLoading = false
+        };
         this.showLoading = false
         this.handleStatus = true;
         let ls = res.data.data[0];
@@ -670,10 +739,14 @@ export default {
         clearInterval(this.payTimer);
         this.payTimer = null;
 
-      }).catch(err => { })
+      }).catch(err => { 
+        
+      })
     },
     closePayment() {
       this.$emit('close-payment')
+       clearInterval(this.payTimer);
+      this.payTimer = null;
     },
     // 处理输入变化，添加防抖
     handleInputChange() {
@@ -722,7 +795,7 @@ export default {
     },
     //手动提交
     handleSubmit() {
-      if (this.payStep === 1) {
+      if (this.payStep === 1||this.payStep === 3) {
        if (!this.payInfo.pay_amount || this.payInfo.pay_amount.trim() === '') {
         this.$message.error('请输入确认支付金额');
         return false;
@@ -733,6 +806,11 @@ export default {
       }
       if (!this.validatePayAmount()) {
         this.$message.error('支付金额验证失败，请检查输入');
+        return false;
+      }
+      }else if(this.payStep === 2){
+        if (!this.payInfo.pay_user || this.payInfo.pay_user.trim() === '') {
+        this.$message.error('请输入付款人姓名');
         return false;
       }
       }
@@ -801,7 +879,11 @@ export default {
       this.showLoading = true;
       this.loadingText = '支付码生成中....'
       payUtils.getQrcodeInfo(payInfoParam).then(res => {
-        if (res.data.state !== 'SUCCESS') return;
+        if (res.data.state !== 'SUCCESS') {
+          this.showLoading = false;
+          this.$message.error(res.data.resultMessage);
+          return
+        };
         let ls = res.data.response[0].response;
         if (ls) {
           this.showLoading = false;
@@ -824,6 +906,12 @@ export default {
         this.isShowQrcode = false;
         this.qrcodeInfo.qrCd = null
       }
+      this.payInfo.pay_user = ''
+      this.payInfo.pay_amount=''  //付款金额
+       if (that.payTimer) {
+        clearTimeout(that.payTimer);
+      }
+        this.payInfo.pay_remark= ''
       if(this.$refs.uploadImages){
         this.$refs.uploadImages.fileLists = [];
       }
@@ -831,6 +919,10 @@ export default {
     },
     handleBack() {
       this.handleStatus = false;
+      if(this.payTimer){
+        clearInterval(this.payTimer);
+        this.payTimer = null;
+      }
     },
 
     /**
@@ -850,6 +942,10 @@ export default {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
     }
+    if (this.payTimer) {
+      clearInterval(this.payTimer);
+      this.payTimer = null;
+    }
   }
 }
 </script>
@@ -868,4 +964,25 @@ export default {
   top: 5px;
   left: 57px;
 }
+.tips-container {
+  background-color: #ECF5FF;
+  padding: 12px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+  margin-top: 16px;
+}
+
+.tips-icon {
+  color: #409EFF;
+  margin-right: 8px;
+  margin-top: 3px;
+  font-size: 16px;
+}
+
+.tips-content {
+  color: #303133;
+  line-height: 1.5;
+}
+
 </style>
