@@ -1,7 +1,12 @@
 <template>
   <Fragment v-if="partsShow">
+    <weather
+      v-if="partsType === '天气'"
+      :page-item="pageItem"
+      :style="[buildColStyleJson]"
+    ></weather>
     <div
-      v-if="['附件'].includes(cellItem.parts_type)"
+      v-else-if="['附件'].includes(cellItem.parts_type)"
       class="bx-cell-variable"
       :class="{
         'cursor-pointer': isLink,
@@ -254,6 +259,7 @@ import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
 import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
+import weather from "../widgets/weather.vue";
 import { formatStyleData } from "@/pages/datav/common";
 import { setAnimationClass, setAnimationStyle } from "@/common/common";
 import {
@@ -266,7 +272,6 @@ import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
 import { getFilePath } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
-import { set } from "lodash";
 // 节流
 function throttle(func, delay = 300) {
   let prev = 0;
@@ -292,6 +297,7 @@ export default {
     qrCode,
     HlsplayerVideo,
     cardPopup,
+    weather
   },
   data() {
     return {
