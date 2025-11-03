@@ -62,6 +62,7 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
+    amapKey: "8d077c460039cabc346d2c8a2859ae3e", //高德地图key
   },
   wujingDev: {
     // 武警网站开发环境

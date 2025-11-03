@@ -75,6 +75,8 @@
 </template>
 
 <script>
+import { pathConfigMap } from "@/common/envList.js";
+
 export default {
   name: 'WeatherWidget',
   props: {
@@ -103,7 +105,14 @@ export default {
     // 高德地图API Key
     amapKey: {
       type: String,
-      default: '96f176f14e3eb276049d4abc28d39c61'
+      default: ()=>{
+        const pathConfig = pathConfigMap && window.env && pathConfigMap[window.env] || {}
+        if(pathConfig && pathConfig.amapKey){
+          // 从环境变量中获取高德地图key
+          return pathConfig.amapKey
+        }
+        return '96f176f14e3eb276049d4abc28d39c61'
+      }
     },
     // 是否自动获取天气数据
     autoFetch: {
