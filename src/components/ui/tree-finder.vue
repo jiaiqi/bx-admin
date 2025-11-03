@@ -530,7 +530,11 @@ export default {
       };
 
       cleanEmptyChildren(result);
-      return result;
+      
+      // 处理disabled状态传播
+      const processedResult = this.processDisabledState(result);
+      
+      return processedResult;
     },
 
     popupDefaultConditions(loader) {
@@ -720,7 +724,11 @@ export default {
           return item;
         });
         setTreeData(data);
-        return data;
+        
+        // 处理disabled状态传播
+        const processedData = this.processDisabledState(data);
+        
+        return processedData;
       } else {
         console.error("loadChildren error", response.data);
         return [];
@@ -848,7 +856,8 @@ export default {
         }
 
         if (loader.lazyLoad === false) {
-          this.options = response.data.data;
+          // 处理disabled状态传播
+          this.options = this.processDisabledState(response.data.data);
           // this.selected = this.field.model;
         } else {
           let options = response.data.data.map((item) => {
@@ -859,6 +868,10 @@ export default {
           if (this.needRenameLabel()) {
             options.forEach((option) => this.renameLable(option));
           }
+          
+          // 处理disabled状态传播
+          options = this.processDisabledState(options);
+          
           if (curVal && response.data.data.length > 0) {
             let item = response.data.data[0];
             // this.selected = [item[this.props.value]];
@@ -982,7 +995,9 @@ export default {
         }
         return item;
       });
-      return options;
+      
+      // 处理disabled状态传播
+      return this.processDisabledState(options);
     },
     async loadDetail() {
       this.loading = true; // 开始加载
@@ -1347,6 +1362,44 @@ export default {
         this.field.info?.srvCol?.option_list_v2?.service_label ||
         "详情";
       this.addTabByUrl(this.getLinkUrl(), tabTitle);
+    },
+
+    /**
+     * 处理树形数据中disabled状态的传播
+     * 当子节点全部disabled时，父节点也设置为disabled
+     * @param {Array} nodes - 树形节点数组
+     * @returns {Array} 处理后的节点数组
+     */
+    processDisabledState(nodes) {
+      if (!nodes || !Array.isArray(nodes) || nodes.length === 0) {
+        return nodes;
+      }
+
+      console.log('开始处理disabled状态传播，节点数量:', nodes.length);
+
+      return nodes.map(node => {
+        // 创建节点副本，避免修改原数据
+        const processedNode = { ...node };
+
+        // 如果有子节点，递归处理子节点
+        if (processedNode.children && Array.isArray(processedNode.children) && processedNode.children.length > 0) {
+          // 递归处理子节点
+          processedNode.children = this.processDisabledState(processedNode.children);
+          
+          // 检查所有子节点是否都被disabled
+          const allChildrenDisabled = processedNode.children.every(child => 
+            child.disabled === "是" || child.disabled === true
+          );
+          
+          // 如果所有子节点都被disabled，则将父节点也设置为disabled
+          if (allChildrenDisabled && processedNode.children.length > 0) {
+            console.log(`父节点 ${processedNode.label || processedNode.name || processedNode.id} 的所有子节点都被disabled，设置父节点为disabled`);
+            processedNode.disabled = "是";
+          }
+        }
+
+        return processedNode;
+      });
     },
   },
 
