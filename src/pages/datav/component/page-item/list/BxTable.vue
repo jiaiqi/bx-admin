@@ -222,7 +222,7 @@ export default {
       const ANIMATION_DURATION = this.listConfig?.animation_duration || 2000;
 
       // 添加过渡效果
-      tableBody.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.55, -0.55, 0.5, 1.2)`;
+      tableBody.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.55, -0.25, 0.5, 1.1)`;
       tableBody.style.transform = `translateY(${translateY}px)`;
 
       // 动画完成后重置位置并调整DOM结构
