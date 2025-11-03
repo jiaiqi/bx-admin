@@ -85,6 +85,7 @@
           <el-tooltip
             placement="top"
             effect="dark"
+            :open-delay="2000"
             :content="item.label"
           >
             <span>

@@ -289,11 +289,11 @@
               <el-tooltip
                 placement="top"
                 effect="dark"
+                :open-delay="2000"
                 :content="item.label"
               >
                 <span>
                   {{ item.label }}
-
                 </span>
               </el-tooltip>
             </template>
@@ -301,13 +301,14 @@
               <el-tooltip
                 placement="top"
                 effect="dark"
+                :open-delay="2000"
                 :content="getTooltipContent(scope.row, item)"
-                :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type)"
+                :disabled="!scope.row[item.column] || !['String', 'Note', 'RichText', 'MultilineText', 'Json'].includes(item.col_type)"
               >
 
                 <div
                   slot="content"
-                  v-if="['String', 'Note', 'RichText', 'MultilineText','Json'].includes(item.col_type) && scope.row[item.column]"
+                  v-if="['String', 'Note', 'RichText', 'MultilineText', 'Json'].includes(item.col_type) && scope.row[item.column]"
                 >
                   <div
                     style=""
@@ -316,29 +317,29 @@
                   >
                   </div>
                 </div>
-                <span v-if="item.col_type==='Date'">
-                  <template v-if="item.srvcol&&item.srvcol.subtype==='year'">
-                    {{ formatDate( scope.row[item.column],'YYYY') }}
+                <span v-if="item.col_type === 'Date'">
+                  <template v-if="item.srvcol && item.srvcol.subtype === 'year'">
+                    {{ formatDate(scope.row[item.column], 'YYYY') }}
                   </template>
-                  <template v-else-if="item.srvcol&&item.srvcol.subtype==='month'">
-                    {{ formatDate( scope.row[item.column],'YYYY-MM') }}
+                  <template v-else-if="item.srvcol && item.srvcol.subtype === 'month'">
+                    {{ formatDate(scope.row[item.column], 'YYYY-MM') }}
                   </template>
                   <template v-else>
-                    {{ formatDate( scope.row[item.column],'YYYY-MM-DD') }}
+                    {{ formatDate(scope.row[item.column], 'YYYY-MM-DD') }}
                   </template>
                 </span>
-                <span v-if="item.col_type==='DateTime'">
-                  <template v-if="item.srvcol&&item.srvcol.subtype==='Hour'">
-                    {{ formatDate( scope.row[item.column],'HH') }}
+                <span v-if="item.col_type === 'DateTime'">
+                  <template v-if="item.srvcol && item.srvcol.subtype === 'Hour'">
+                    {{ formatDate(scope.row[item.column], 'HH') }}
                   </template>
-                  <template v-else-if="item.srvcol&&item.srvcol.subtype==='minute'">
-                    {{ formatDate( scope.row[item.column],'HH:mm') }}
+                  <template v-else-if="item.srvcol && item.srvcol.subtype === 'minute'">
+                    {{ formatDate(scope.row[item.column], 'HH:mm') }}
                   </template>
-                  <template v-else-if="item.srvcol&&item.srvcol.subtype==='second'">
-                    {{ formatDate( scope.row[item.column],'HH:mm:ss') }}
+                  <template v-else-if="item.srvcol && item.srvcol.subtype === 'second'">
+                    {{ formatDate(scope.row[item.column], 'HH:mm:ss') }}
                   </template>
                   <template v-else>
-                    {{ formatDate( scope.row[item.column],'YYYY-MM-DD HH:mm') }}
+                    {{ formatDate(scope.row[item.column], 'YYYY-MM-DD HH:mm') }}
                   </template>
                 </span>
                 <file-list
@@ -489,11 +490,11 @@
                   </div>
                 </div>
                 <div
-                  v-else-if="item.col_type === 'Image'&&scope.row[item.column]"
+                  v-else-if="item.col_type === 'Image' && scope.row[item.column]"
                   class="list-image"
                 >
                   <el-image
-                    :src="getImagePath(scope.row[item.column],30)"
+                    :src="getImagePath(scope.row[item.column], 30)"
                     :preview-src-list="[getImagePath(scope.row[item.column])]"
                   >
                   </el-image>
@@ -578,7 +579,7 @@
                       <i
                         v-else
                         class="el-icon-arrow-right"
-                        :class="{'is-rotate':scope.row._expanded}"
+                        :class="{ 'is-rotate': scope.row._expanded }"
                         aria-hidden="true"
                       ></i>
                     </span>
@@ -591,7 +592,7 @@
                   <span>
                     <span
                       class="is-leaf"
-                      v-if="routeMeta&&routeMeta.isTree&&scope.row&&scope.row['is_leaf']==='是'&&index === 0 "
+                      v-if="routeMeta && routeMeta.isTree && scope.row && scope.row['is_leaf'] === '是' && index === 0"
                     ></span>
                     <div
                       v-if="header_view_model == 'group'"
@@ -629,18 +630,18 @@
                         class="link-to-detail"
                         title="点击查看详情"
                         v-else-if="
-                        isDetailLink(item.column, scope.row, scope.$index)
-                      "
+                          isDetailLink(item.column, scope.row, scope.$index)
+                        "
                         @click="toDetail(item.column, scope.row, scope.$index)"
                       >{{ formatValue(scope.row, item) }}</a>
                       <span
                         v-else
                         :class="{
-                        hasBg:
-                          (item.backgroundMap &&
-                            item.backgroundMap[scope.row[item.column]]) ||
-                          item.backgroundMap['_default'],
-                      }"
+                          hasBg:
+                            (item.backgroundMap &&
+                              item.backgroundMap[scope.row[item.column]]) ||
+                            item.backgroundMap['_default'],
+                        }"
                         :style="setTdStyle(item, scope.row)"
                       >{{ formatValue(scope.row, item) }}</span>
                     </template>
