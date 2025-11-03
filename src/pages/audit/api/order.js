@@ -479,6 +479,21 @@ export default class OrderApi {
     return await $http.post(url, req)
   }
 
+    async getRelevantListNew(params) {
+    let url = path + `/aud/select/srvaud_workorder_organ_new_select`
+    let req = {
+      colNames: ["*"],
+      condition: params.condition,
+      divCond: params.divCond,
+      query_source: "list_page",
+      order: [],
+      page: { pageNo: 1, rownumber: 10 },
+      serviceName: "srvaud_workorder_organ_new_select",
+      draft: false
+    }
+    return await $http.post(url, req)
+  }
+
   //快速计费提交
   async handleQuickBilling(params) {
     let url = path + '/aud/calc/toll/fee'
