@@ -1037,7 +1037,7 @@ export default {
     // 获取富文本编辑器类型
     getRichEditorType() {
       // 从环境变量获取配置，默认使用wang-editor
-      return 'tinymce'
+      // return 'tinymce'
       return process.env.VUE_APP_RICH_EDITOR || 'wang-editor';
     },
   },
