@@ -353,7 +353,8 @@
       <!--二维码生成区域-->
       <div
         class="qrcode_info"
-        v-if="isShowQrcode"
+        style="position: relative;"
+        v-if="isShowQrcode&&payStep===2"
       >
         <div class="qr_text">
           请尽快扫描二维码完成支付
@@ -366,6 +367,9 @@
             :text="qrcodeInfo.qrCd"
             :size="130"
           />
+        </div>
+        <div class="qc_cot" v-if="isPayed" style="background: #f5f7fa;opacity: 0.9;position: absolute;top: 56%;left: 50%;transform: translate(-50%, -50%);">
+          <img src="../../../assets/image/pay.png" style="width: 100px;height: 100px;" alt="">
         </div>
       </div>
       <div class="pay_bts">
@@ -384,13 +388,13 @@
         <el-button
           type="primary"
           size="mini"
-          v-if="!qrcodeInfo.qrCd&&(payType === 2||payStep===2||payStep===3)"
+          v-if="!qrcodeInfo.qrCd&&(payType === 2||payStep===2||(payStep===3&&!payStep3))"
           @click="handleSubmit"
         >提交</el-button>
         <el-button
           type="primary"
           size="mini"
-          v-if="payStep===1&&payType === 1&&!submitvisible"
+          v-if="(payStep===1&&payType === 1&&!submitvisible)||(payStep===2&&qrcodeInfo.qrCd)||(payStep===3&&payStep3)"
           @click="closePayment"
         >关闭</el-button>
       </div>
@@ -434,6 +438,8 @@ export default {
       showLoading: false,
       loadingText: '支付码生成中....',
       isShowQrcode: false,
+      isPayed: false,
+      payStep3: false,
       payStep: 2,
       payType:1,
       payOption:[
@@ -728,16 +734,19 @@ export default {
     handelStatusInfo(status) {
       this.showLoading = true
       payUtils.getPayStatus(this.order_no).then(res => {
-        if (res.data.state !== 'SUCCESS'){
-           this.showLoading = false
-        };
         this.showLoading = false
-        this.handleStatus = true;
+        if (res.data.state !== 'SUCCESS'){
+           
+        }else if(res.data.data[0].state === '已支付'){
+        // this.handleStatus = true;
+        this.isPayed = true
         let ls = res.data.data[0];
         this.statusText = ls.state
         this.stepStatus = ls.state === '已支付' || ls.state === '已退款' ? true : !(ls.state === '支付失败' || ls.state === '待支付')
         clearInterval(this.payTimer);
         this.payTimer = null;
+        }
+        
 
       }).catch(err => { 
         
@@ -842,6 +851,7 @@ export default {
       this.showLoading = true;
       payUtils.handlePayCash(payInfoParam).then((res) => {
         this.showLoading = false;
+        this.payStep3 = true
         let ls = res.data
         if (res.data.state === 'SUCCESS') {
           this.handleStatus = true;
@@ -886,6 +896,7 @@ export default {
         };
         let ls = res.data.response[0].response;
         if (ls) {
+          this.isPayed = false
           this.showLoading = false;
           this.qrcodeInfo.odrNo = ls.odrNo;
           this.qrcodeInfo.qrCd = ls.qrCd;
@@ -895,7 +906,7 @@ export default {
           //10s后启动查询
           setTimeout(() => {
             this.keepStatusInfo()
-          }, 60 * 1000 * 30)
+          }, 5 * 1000)
 
         }
       }).catch(err => { })

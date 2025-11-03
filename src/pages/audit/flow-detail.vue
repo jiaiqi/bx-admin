@@ -10,7 +10,7 @@ import showPath from './components/show-path.vue'
 
 const route = useRoute()
 let {passid, entime: entime, extime: extime} = route?.params || {}
-
+console.log(passid, 88888888)
 if (route?.query?.entime && route?.query?.extime) {
   entime = route?.query?.entime
   extime = route?.query?.extime
