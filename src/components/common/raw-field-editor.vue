@@ -1534,6 +1534,10 @@ export default {
 .el-date-editor {
   width: 100% !important;
   max-width: initial !important;
+
+  ::v-deep .el-range-separator {
+    min-width: 30px;
+  }
 }
 
 .el-input-number {
