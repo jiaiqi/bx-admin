@@ -162,6 +162,12 @@ export default {
         return null;
       },
     },
+    mainDispCol: {
+      type: String,
+      default: function () {
+        return null;
+      },
+    },
     readOnly: {
       type: Boolean,
       default: function () {
@@ -443,6 +449,10 @@ export default {
         sessionStorage.getItem("pages_attribute") || "{}"
       );
       let show = false;
+      if (process.env.NODE_ENV === 'development') {
+        // 开发环境默认显示
+        show = true
+      }
       let operate_mode = "跳转";
       if (
         this.service_name?.indexOf("srvsys_") === 0 ||
@@ -482,17 +492,15 @@ export default {
         // }
         let url = this.excelUrl;
         let tabTitle = "";
-        if (
-          this.childForeignkey?.kedispcol &&
-          this.listMainFormDatas[this.childForeignkey?.kedispcol]
-        ) {
-          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]
-            }`;
+        if (this.childForeignkey?.kedispcol && this.listMainFormDatas[this.childForeignkey?.kedispcol]) {
+          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]}`;
+        }else if(this.mainDispCol && this.listMainFormDatas[this.mainDispCol]){
+          tabTitle = `${this.listMainFormDatas[this.mainDispCol]}`;
         }
         if (this.childForeignkey?.section_name) {
-          tabTitle += `/${this.childForeignkey?.section_name}【excel】`;
+          tabTitle += `${tabTitle ? '/' : ''}${this.childForeignkey?.section_name}【excel】`;
         } else if (tabTitle && this.service_view_name) {
-          tabTitle += `/${this.service_view_name}【excel】`;
+          tabTitle += `${tabTitle ? '/' : ''}${this.service_view_name}【excel】`;
         }
         if (!tabTitle && this.service_view_name) {
           tabTitle = `${this.service_view_name}【excel】`;
@@ -522,8 +530,8 @@ export default {
     // 专门用于拼接Excel页面URL的计算属性
     excelUrl() {
       // 基础URL构建
-      // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
-      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
 
       // 添加默认条件参数
       if (this.defaultCondition?.length) {

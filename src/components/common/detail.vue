@@ -86,9 +86,7 @@
                 <template v-for="(item, index) in childListRun.form.prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_prepend_' + index"
                   >
                     <simple-detail
@@ -101,6 +99,7 @@
                     ></simple-detail>
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -147,9 +146,7 @@
                 <template v-for="(item, index) in childListRun.form.append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_append_' + index"
                   >
                     <simple-detail
@@ -164,6 +161,7 @@
                     ></simple-detail>
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -213,14 +211,13 @@
                 <template v-for="(item, index) in fieldChildRun[col].prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_prepend_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -268,14 +265,13 @@
                 <template v-for="(item, index) in fieldChildRun[col].append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_append_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -349,9 +345,7 @@
                 <template v-for="(item, index) in childListRun.form.prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_prepend_' + index"
                   >
                     <simple-detail
@@ -366,6 +360,7 @@
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -412,9 +407,7 @@
                 <template v-for="(item, index) in childListRun.form.append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_append_' + index"
                   >
                     <simple-detail
@@ -430,6 +423,7 @@
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -479,15 +473,14 @@
                 <template v-for="(item, index) in fieldChildRun[col].prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_prepend_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -535,15 +528,14 @@
                 <template v-for="(item, index) in fieldChildRun[col].append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_append_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -607,6 +599,7 @@
               style="height: calc(100% - 50px); overflow: auto"
               :divCond="buildDivCond"
               :mainService="service_name"
+              :main-disp-col="v2Data.key_disp_col"
               v-else
               :isTree="item.table_type === '树形表'"
               :isProc="item.table_type === '流程表'"
