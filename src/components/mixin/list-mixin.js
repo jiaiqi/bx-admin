@@ -162,6 +162,12 @@ export default {
         return null;
       },
     },
+    mainDispCol: {
+      type: String,
+      default: function () {
+        return null;
+      },
+    },
     readOnly: {
       type: Boolean,
       default: function () {
@@ -443,6 +449,10 @@ export default {
         sessionStorage.getItem("pages_attribute") || "{}"
       );
       let show = false;
+      if (process.env.NODE_ENV === 'development') {
+        // 开发环境默认显示
+        show = true
+      }
       let operate_mode = "跳转";
       if (
         this.service_name?.indexOf("srvsys_") === 0 ||
@@ -480,22 +490,28 @@ export default {
         // if (this.listV2Data?.is_tree === true) {
         //   url += `&topTreeData=true`;
         // }
-        let url = this.excelUrl;
-        let tabTitle = "";
-        if (
-          this.childForeignkey?.kedispcol &&
-          this.listMainFormDatas[this.childForeignkey?.kedispcol]
-        ) {
-          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]
-            }`;
+        let url = this.excelUrl; // Excel 导出链接
+        let tabTitle = ""; // 标签页标题，优先使用主表显示数据
+        // 优先使用子外键的显示列值作为标题
+        if (this.childForeignkey?.kedispcol && this.listMainFormDatas[this.childForeignkey?.kedispcol]) {
+          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]}`; // 使用子外键显示列的值
+          // 若上述不存在，退化为使用主表显示列的值
+        } else if (this.mainDispCol && this.listMainFormDatas && this.listMainFormDatas[this.mainDispCol]) {
+          tabTitle = `${this.listMainFormDatas[this.mainDispCol]}`; // 使用主表显示列的值
         }
+        if (tabTitle) {
+          tabTitle += '/'
+        }
+        // 若有section_name，拼接section_name并标记为 Excel
         if (this.childForeignkey?.section_name) {
-          tabTitle += `/${this.childForeignkey?.section_name}【excel】`;
+          tabTitle += `${this.childForeignkey?.section_name}【excel】`; // 添加小节名
+          // 若已有标题且存在service_view_name，追加service_view_name并标记为 Excel
         } else if (tabTitle && this.service_view_name) {
-          tabTitle += `/${this.service_view_name}【excel】`;
+          tabTitle += `${this.service_view_name}【excel】`; // 添加service_view_name
+          // 若尚无标题但存在service_view_name，直接使用service_view_name并标记为 Excel
         }
         if (!tabTitle && this.service_view_name) {
-          tabTitle = `${this.service_view_name}【excel】`;
+          tabTitle = `${this.service_view_name}【excel】`; // 以service_view_name为标题
         }
         return {
           page_type: "列表",
@@ -522,8 +538,8 @@ export default {
     // 专门用于拼接Excel页面URL的计算属性
     excelUrl() {
       // 基础URL构建
-      // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
-      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
 
       // 添加默认条件参数
       if (this.defaultCondition?.length) {

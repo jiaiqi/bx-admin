@@ -71,6 +71,7 @@
           :default-condition="getDefaultConditions"
           :relationCondition="relationCondition"
           :memInitdatasAdd="memInitdatasAdd"
+          :main-disp-col="mainDispCol"
         >
         </treegrid>
         <list
@@ -93,6 +94,7 @@
           :childforeignkey="foreignKey"
           :listMainFormDatas="listMainFormDatas"
           :mainService="mainService"
+          :main-disp-col="mainDispCol"
           :def-data-para="defDataPara"
           :readOnly="readOnly"
           @stats-data-load="statsLoaded"
@@ -187,6 +189,7 @@ export default {
     childforeignvalue: [String, Number, Object],
     listMainFormDatas: [Array, Object],
     mainService: String,
+    mainDispCol: String,
     readOnly: Boolean,
     searchForm: {
       type: Boolean,

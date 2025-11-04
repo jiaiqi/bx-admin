@@ -36,6 +36,7 @@
       :childForeignkey="foreignKey"
       :default-condition="getDefaultConditions"
       :main-data="mainData"
+      :main-disp-col="mainDispCol"
       :div-cond="divCond"
       :memInitdatasAdd="initDatas"
       @list-loaded="onListLoaded()"
@@ -75,6 +76,7 @@
       :merge-col="mergeCol"
       :listMainFormDatas="mainFormDatas"
       :main-data="mainData ? mainData : formModel"
+      :main-disp-col="mainDispCol"
       :$srvApp="$srvApp"
       :div-cond="divCond"
       @child-loaded="childDataLoadedRun($event)"
@@ -104,6 +106,7 @@
       :div-cond="divCond"
       :list-main-form-datas="mainFormDatas"
       :mainService="mainService"
+      :main-disp-col="mainDispCol"
       :list-name="service"
       :childforeignvalue="getRefColValue"
       :def-data-para="defDataPara"
@@ -265,6 +268,10 @@ export default {
       },
     },
     mainService: {
+      type: String,
+      default: "",
+    },
+    mainDispCol: {
       type: String,
       default: "",
     },

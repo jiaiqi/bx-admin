@@ -17,7 +17,22 @@
       justify="space-between"
     >
       <div class="table-head-btns">
-        <icon-excel-colorful
+        <a
+          :href="excelUrl"
+          target="_blank"
+          v-if="excelBtn && excelUrl"
+          @click.prevent="gridButtonClick(excelBtn)"
+        >
+          <icon-excel-colorful
+            class="svg-icon"
+            style="cursor: pointer"
+            size="30"
+            :colors="['#409eff']"
+            :strokeWidth="3"
+            title="打开excel进行编辑"
+          ></icon-excel-colorful>
+        </a>
+        <!-- <icon-excel-colorful
           class="svg-icon"
           style="cursor: pointer"
           size="30"
@@ -25,7 +40,7 @@
           :strokeWidth="3"
           @click.native="gridButtonClick(excelBtn)"
           v-if="excelBtn"
-        ></icon-excel-colorful>
+        ></icon-excel-colorful> -->
       </div>
       <div class="table-head-btns">
         <template v-for="(item, index) in gridButton">
