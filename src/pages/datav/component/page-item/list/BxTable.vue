@@ -90,9 +90,11 @@
 
 <script>
 import { formatStyleData } from "@/pages/datav/common/index.js";
+import verticalScrollMixin from "@/components/mixin/vertical-scroll-mixin.js";
 
 export default {
   name: 'BxTable',
+  mixins: [verticalScrollMixin],
   props: {
     // 表格列配置
     tableColumn: {
@@ -150,11 +152,6 @@ export default {
       default: () => ({})
     }
   },
-  data() {
-    return {
-      scrollTimer: null,
-    };
-  },
   computed: {
     getElementStyle() {
       const config = this.listConfig;
@@ -191,114 +188,36 @@ export default {
     onRowButtonClick(btn, item) {
       this.$emit('row-button-click', btn, item);
     },
-    // 开始纵向滚动 - 性能优化版本
-    startVerticalScroll() {
+    // 开始纵向滚动 - 使用通用混入
+    startTableVerticalScroll() {
       if (!this.isVerticalScroll) return;
+      
+      const config = {
+        interval: Math.max((this.listConfig?.animation_interval || 3) * 1000, 2000),
+        direction: this.scrollDirection,
+        duration: this.listConfig?.animation_duration || 2000
+      };
+      
+      const options = {
+        containerSelector: ".table-body",
+        containerType: "selector",
+        rowSelector: ".table-row"
+      };
+      
+      this.startVerticalScroll(config, options);
+    },
+    
+    // 停止纵向滚动 - 使用通用混入
+    stopTableVerticalScroll() {
       this.stopVerticalScroll();
-
-      const interval = Math.max(
-        (this.listConfig?.animation_interval || 3) * 1000,
-        2000
-      );
-
-      this.scrollTimer = setInterval(() => {
-        this.performScrollStep();
-      }, interval);
-    },
-
-    // 执行单步滚动 - 使用transform优化性能
-    performScrollStep() {
-      const tableBody = this.$el?.querySelector(".table-body");
-      if (!tableBody || !tableBody.children.length) return;
-
-      const rows = Array.from(tableBody.children);
-      const rowHeight = rows[0]?.offsetHeight || 0;
-
-      if (rowHeight === 0) return;
-
-      // 使用transform实现平滑滚动，避免DOM重排
-      const translateY =
-        this.scrollDirection === "down" ? rowHeight : -rowHeight;
-      const ANIMATION_DURATION = this.listConfig?.animation_duration || 2000;
-
-      // 添加过渡效果
-      tableBody.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.55, -0.25, 0.5, 1.1)`;
-      tableBody.style.transform = `translateY(${translateY}px)`;
-
-      // 动画完成后重置位置并调整DOM结构
-      setTimeout(() => {
-        this.resetScrollPosition(tableBody, rows);
-      }, ANIMATION_DURATION);
-    },
-
-    // 重置滚动位置并调整DOM结构
-    resetScrollPosition(tableBody, rows) {
-      // 移除过渡效果，立即重置transform
-      tableBody.style.transition = "none";
-      tableBody.style.transform = "translateY(0)";
-
-      // 使用DocumentFragment批量操作DOM，减少重排
-      const fragment = document.createDocumentFragment();
-
-      if (this.scrollDirection === "down") {
-        // 向下滚动：将最后一行移到第一行（显示新的内容）
-        const lastRow = rows[rows.length - 1];
-        fragment.appendChild(lastRow);
-        rows.slice(0, -1).forEach((row) => fragment.appendChild(row));
-      } else {
-        // 向上滚动：将第一行移到最后（显示之前的内容）
-        const firstRow = rows[0];
-        rows.slice(1).forEach((row) => fragment.appendChild(row));
-        fragment.appendChild(firstRow);
-      }
-
-      // 一次性更新DOM
-      tableBody.innerHTML = "";
-      tableBody.appendChild(fragment);
-    },
-
-    // 停止纵向滚动
-    stopVerticalScroll() {
-      if (this.scrollTimer) {
-        clearInterval(this.scrollTimer);
-        this.scrollTimer = null;
-      }
-      // 清理滚动相关样式
-      this.cleanupScrollStyles();
-    },
-
-    // 清理滚动样式，防止内存泄漏
-    cleanupScrollStyles() {
-      const tableBody = this.$el?.querySelector(".table-body");
-      if (tableBody) {
-        tableBody.style.transition = "";
-        tableBody.style.transform = "";
-        tableBody.style.willChange = "auto";
-      }
-    },
+    }
   },
   mounted() {
     // 组件挂载后启动滚动
     if (this.isVerticalScroll) {
       this.$nextTick(() => {
-        this.startVerticalScroll();
+        this.startTableVerticalScroll();
       });
-    }
-  },
-  beforeDestroy() {
-    // 组件销毁前清理所有资源
-    this.stopVerticalScroll();
-    this.cleanupScrollStyles();
-
-    // 清理可能的事件监听器
-    if (this.$el) {
-      const tableBody = this.$el.querySelector(".table-body");
-      if (tableBody) {
-        tableBody.removeEventListener(
-          "transitionend",
-          this.handleTransitionEnd
-        );
-      }
     }
   },
   watch: {
@@ -307,10 +226,10 @@ export default {
       handler(newVal) {
         if (newVal) {
           this.$nextTick(() => {
-            this.startVerticalScroll();
+            this.startTableVerticalScroll();
           });
         } else {
-          this.stopVerticalScroll();
+          this.stopTableVerticalScroll();
         }
       },
     },
@@ -318,7 +237,7 @@ export default {
       handler(newVal, oldVal) {
         if (this.isVerticalScroll) {
           this.$nextTick(() => {
-            this.startVerticalScroll();
+            this.startTableVerticalScroll();
           });
         }
       },

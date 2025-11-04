@@ -253,7 +253,7 @@ import Teleport from "vue2-teleport";
 import { Icon } from "@iconify/vue2";
 import cardGroupCellMxin from "./card-group-cell-mixin.js"; // 新的确实方法依赖 混入
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
-import optimizedVerticalScrollMixin from "./optimized-vertical-scroll-mixin.js"; // 优化版纵向滚动混入
+import verticalScrollMixin from "@/components/mixin/vertical-scroll-mixin.js"; // 通用纵向滚动混入
 import dayjs from "dayjs";
 import { mapGetters, mapActions } from "vuex";
 import cardCellPart from "./card-cell-part.vue";
@@ -274,7 +274,7 @@ export default {
     lowcodePage: () => import('@/pages/lowcode/view.vue')
   },
   name: "card-group-cell",
-  mixins: [cardGroupCellMxin, marqueeMixin, optimizedVerticalScrollMixin],
+  mixins: [cardGroupCellMxin, marqueeMixin, verticalScrollMixin],
 
   data() {
     return {
@@ -306,6 +306,12 @@ export default {
       handler(newVal, oldVal) {
         if (newVal !== oldVal) {
           this.updateChildHeightCache();
+          // 如果是纵向滚动模式，重启滚动
+          if (this.childAnimationType === '纵向滚动') {
+            this.$nextTick(() => {
+              this.restartVerticalScroll();
+            });
+          }
         }
       },
       deep: true
@@ -319,6 +325,19 @@ export default {
         }
       },
       deep: true
+    },
+    
+    // 监听动画类型变化，启动或停止滚动
+    childAnimationType: {
+      handler(newVal) {
+        if (newVal === '纵向滚动') {
+          this.$nextTick(() => {
+            this.startCardVerticalScroll();
+          });
+        } else {
+          this.stopCardVerticalScroll();
+        }
+      },
     },
   },
   props: {
@@ -592,11 +611,11 @@ export default {
       this.activeCardIndex = 0;
       this.activeCardAutoplay();
     } else if (animationType === "纵向滚动") {
-      // 使用优化版纵向滚动
+      // 使用通用纵向滚动混入
       this.$nextTick(() => {
         // 确保在启动滚动前计算高度
         this.calculateAverageChildHeight(true);
-        this.startVerticalScroll(this.childAnimationConfig, 'cardInnerContainer');
+        this.startCardVerticalScroll();
       });
     }
   },
@@ -920,6 +939,31 @@ export default {
         return style[column] || "";
       }
       return style;
+    },
+    
+    /**
+     * 开始卡片纵向滚动 - 使用通用混入
+     */
+    startCardVerticalScroll() {
+      const config = {
+        interval: this.childAnimationConfig?.interval || 3000,
+        direction: this.childAnimationConfig?.direction || "up",
+        duration: this.childAnimationConfig?.duration || 2000
+      };
+      
+      const options = {
+        containerSelector: "cardInnerContainer",
+        containerType: "ref"
+      };
+      
+      this.startVerticalScroll(config, options);
+    },
+    
+    /**
+     * 停止卡片纵向滚动 - 使用通用混入
+     */
+    stopCardVerticalScroll() {
+      this.stopVerticalScroll();
     },
   },
 };
