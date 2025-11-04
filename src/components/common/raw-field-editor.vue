@@ -117,7 +117,7 @@
                 "
             >
             </userlist>
-<!-- 
+            <!-- 
             <ueditorPlus
               :field="field"
               ref="snote"
@@ -134,12 +134,12 @@
               :field="field"
               v-model="field.model"
               @change="$emit('field-value-changed', field.info.name, field)"
-              v-else-if="['snote','ueditor'].includes(field.info.editor) && getRichEditorType === 'wang-editor'"
+              v-else-if="['snote', 'ueditor'].includes(field.info.editor) && getRichEditorType === 'wang-editor'"
             >
             </wang-editor>
             <TinymceEditor
               :disabled="getDisabled"
-              v-else-if="['snote','ueditor'].includes(field.info.editor) && getRichEditorType === 'tinymce'"
+              v-else-if="['snote', 'ueditor'].includes(field.info.editor) && getRichEditorType === 'tinymce'"
               :field="field"
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
@@ -164,12 +164,12 @@
               :type="field.info.subtype"
               clearable
               :format="field.info.subtype == 'year'
-                  ? 'yyyy年'
-                  : field.info.subtype == 'month'
-                    ? 'yyyy 年 MM 月'
-                    : field.info.subtype == 'week'
-                      ? 'yyyy 第 WW 周'
-                      : 'yyyy 年 MM 月 dd 日'
+                ? 'yyyy年'
+                : field.info.subtype == 'month'
+                  ? 'yyyy 年 MM 月'
+                  : field.info.subtype == 'week'
+                    ? 'yyyy 第 WW 周'
+                    : 'yyyy 年 MM 月 dd 日'
                 "
               :value-format="field.info.format ? field.info.format : 'yyyy-MM-dd'"
               :disabled="getDisabled"
@@ -233,6 +233,20 @@
             </el-select>
 
             <!-- range -->
+            <el-date-picker
+              v-else-if="field.info.editor === 'month-range'"
+              v-model="field.model"
+              type="monthrange"
+              range-separator="至"
+              start-placeholder="开始月"
+              end-placeholder="结束月"
+              clearable
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @change="$emit('field-value-changed', field.info.name, field)"
+              @blur="onBlur"
+            >
+            </el-date-picker>
             <el-date-picker
               v-else-if="field.info.editor === 'date-range'"
               v-model="field.model"
@@ -739,12 +753,12 @@
             v-show="field.hasValidateError() || field.hasValidatePrompt()"
             trigger="hover"
             :content="field.getAnyValidateError()
+              ? field.getAnyValidatePrompt()
+                ? field.getAnyValidateError() + field.getAnyValidatePrompt()
+                : field.getAnyValidateError()
+              : field.getAnyValidatePrompt()
                 ? field.getAnyValidatePrompt()
-                  ? field.getAnyValidateError() + field.getAnyValidatePrompt()
-                  : field.getAnyValidateError()
-                : field.getAnyValidatePrompt()
-                  ? field.getAnyValidatePrompt()
-                  : ''
+                : ''
               "
           >
             <i
@@ -780,8 +794,8 @@
             getShowHelpTips(field.info)
           "
           :title="field.info.moreConfig && field.info.moreConfig.help_tips
-              ? field.info.moreConfig.help_tips
-              : ''
+            ? field.info.moreConfig.help_tips
+            : ''
             "
           class="help-tips"
         >
@@ -791,8 +805,8 @@
             width="200"
             trigger="hover"
             :content="field.info.moreConfig && field.info.moreConfig.help_tips
-                ? field.info.moreConfig.help_tips
-                : ''
+              ? field.info.moreConfig.help_tips
+              : ''
               "
           >
             <i
@@ -871,20 +885,20 @@ export default {
     Userlist: () => import("../ui/userlist.vue"),
     QrCode: () => import("../ui/qrcode.vue"),
     multiFinder: () => import("../ui/multi-finder.vue"),
-    
+
     // 编辑器组件 - 异步引入
     CodeEditor: () => import("../ui/code-editor.vue"),
     TinymceEditor: () => import("./tinymce/index.vue"),
     wangEditor: () => import("../ui/wang-editor/wang-editor.vue"),
     jsonTableEditor: () => import("../ui/json-table-editor/index.vue"),
-    
+
     // 表单组件 - 异步引入
     dynamicSubTemp: () => import("../ui/dynamic-sub-temp.vue"), // 动态子组件
     verifyMobile: () => import("../ui/verifyMobile.vue"), // 手机验证码
     autocompleteInput: () => import("../ui/autocomplete-input.vue"), // 自动完成输入
     carNoKeyboard: () => import("../ui/car-no-keyboard.vue"), // 车牌号输入
     transferVue: () => import("../ui/form-widget/multi-select/index.vue"), // 多选穿梭框组件
-    
+
     // 第三方库组件 - 异步引入
     vueJsonEditor: () => import("vue-json-editor-fix-cn"),
     Icon: () => import("@iconify/vue2").then(module => module.Icon),
@@ -918,8 +932,8 @@ export default {
       finderSelected: "",
       pickerOptions: {
         disabledDate: (time) => {
-          if(this.field.info.moreConfig?.DateRangeConfig?.disabledDateScript) {
-            return new Function('time', this.field.info.moreConfig.DateRangeConfig.disabledDateScript) (time);
+          if (this.field.info.moreConfig?.DateRangeConfig?.disabledDateScript) {
+            return new Function('time', this.field.info.moreConfig.DateRangeConfig.disabledDateScript)(time);
           }
           return this.field.info.subType === "year"
             ? this.dealDisabledDate(new Date(time).getFullYear().toString())
@@ -1153,7 +1167,7 @@ export default {
       //   this._debounceCheckLengthTimer = null;
       // }, 300); // 防抖延时300ms，可根据需要调整
     },
-    
+
     selectChange() {
       if (!this.field.model) {
         this.field.model = null;

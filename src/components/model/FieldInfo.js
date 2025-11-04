@@ -364,6 +364,8 @@ export class FieldInfo {
         this.editor = "input-range";
       } else if (this.type == "Date") {
         this.editor = "date-range";
+      } else if (this.type == "Month") {
+        this.editor = "month-range";
       } else if (this.type == "Time") {
         this.editor = "time-range";
       } else if (this.type == "DateTime") {
