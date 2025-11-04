@@ -290,6 +290,8 @@ export class FieldInfo {
       this.editor = "date-picker";
       this.subtype = "month";
       this.subType = "month";
+    } else if (this.type == "MonthRange") {
+      this.editor = "month-range";
     } else if (this.type == "DateTime" || this.type == "datetime") {
       this.editor = "date-time-picker";
       // 利用date elmentUi date 默认 format 设置 日期控件格式
@@ -364,8 +366,6 @@ export class FieldInfo {
         this.editor = "input-range";
       } else if (this.type == "Date") {
         this.editor = "date-range";
-      } else if (this.type == "Month") {
-        this.editor = "month-range";
       } else if (this.type == "Time") {
         this.editor = "time-range";
       } else if (this.type == "DateTime") {

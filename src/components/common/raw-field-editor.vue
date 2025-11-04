@@ -239,7 +239,9 @@
               type="monthrange"
               range-separator="至"
               start-placeholder="开始月"
+              format="yyyy年MM月"
               end-placeholder="结束月"
+              value-format="yyyy-MM-dd"
               clearable
               :disabled="getDisabled"
               :placeholder="field.info.placeholder"
