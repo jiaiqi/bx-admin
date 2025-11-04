@@ -56,13 +56,13 @@ const hideDialog = () => {
           <!-- <div class="item-list" v-if="activity.ljfyfee_disp">
             路径反演金额：{{ activity.ljfyfee_disp }}
           </div> -->
-          <div v-if="activity.grantry_type==='收费站'">
-            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===data.length-1?'ex':'')"></el-image>
+          <div>
+            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===data.length-1?'ex':'')" @click="showPicture(activity)"></el-image>
           </div>
-          <div class="button" v-else>
+          <!-- <div class="button" v-else>
             <el-button type="primary" size="mini" @click="showPicture(activity)"><i class="el-icon-download mr-2"></i>获取图片
             </el-button>
-          </div>
+          </div> -->
         </div>
       </el-timeline-item>
     </el-timeline>
