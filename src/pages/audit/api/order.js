@@ -391,6 +391,16 @@ export default class OrderApi {
     }
     return await $http.post(url, req)
   }
+   async getOriginCenterDetailsNew(params) {
+    let url = path + `/aud/select/srvaud_audit_passconvdetail_ori_new_select`;
+    let req = {
+      colNames: ["*"],
+      serviceName: "srvaud_audit_passconvdetail_ori_new_select",
+      condition: params.condition,
+      divCond: params.divCond,
+    }
+    return await $http.post(url, req)
+  }
   //本地服务中查询车辆通行信息接口（初次进入地图时使用，有数据就用，没有数据使用远端中心接口的返回数据）
   async getLocationCenterDetails(params) {
     let url = path + `/aud/select/srvaud_audit_passconvdetail_select`;
@@ -489,6 +499,21 @@ export default class OrderApi {
       order: [],
       page: { pageNo: 1, rownumber: 10 },
       serviceName: "srvaud_workorder_organ_new_select",
+      draft: false
+    }
+    return await $http.post(url, req)
+  }
+
+   async getRelevantListOri(params) {
+    let url = path + `/aud/select/srvaud_workorder_organ_ori_select`
+    let req = {
+      colNames: ["*"],
+      condition: params.condition,
+      divCond: params.divCond,
+      query_source: "list_page",
+      order: [],
+      page: { pageNo: 1, rownumber: 10 },
+      serviceName: "srvaud_workorder_organ_ori_select",
       draft: false
     }
     return await $http.post(url, req)
