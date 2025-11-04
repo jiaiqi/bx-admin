@@ -27,13 +27,24 @@ export default {
       verticalScrollAnimation: null,
       // 滚动状态
       isVerticalScrolling: false,
+      // 标签页可见性相关
+      verticalScrollPaused: false,
+      verticalScrollConfigSnapshot: null,
+      verticalScrollOptionsSnapshot: null,
+      visibilityListenerAdded: false,
     };
+  },
+
+  mounted() {
+    // 监听标签页可见性变化，隐藏时暂停动画，可见时恢复
+    this.addVisibilityListener();
   },
 
   beforeDestroy() {
     // 组件销毁前清理所有资源
     this.stopVerticalScroll();
     this.cleanupVerticalScrollStyles();
+    this.removeVisibilityListener();
   },
 
   methods: {
@@ -50,39 +61,44 @@ export default {
      */
     startVerticalScroll(config = {}, options = {}) {
       if (!config || this.isVerticalScrolling) return;
-      
+
       // 默认配置
       const defaultConfig = {
         interval: 3000,
         direction: "up",
         duration: 2000
       };
-      
+
       // 默认选项
       const defaultOptions = {
         containerSelector: "cardInnerContainer",
         containerType: "ref",
         rowSelector: null
       };
-      
+
       const finalConfig = { ...defaultConfig, ...config };
       // 归一化：保证最小间隔，避免过快调度
       finalConfig.interval = Math.max(finalConfig.interval, 2000);
       const finalOptions = { ...defaultOptions, ...options };
-      
+
       // 获取滚动容器
       const scrollContainer = this.getScrollContainer(finalOptions);
       if (!scrollContainer) {
         console.warn('纵向滚动：未找到滚动容器');
         return;
       }
-      
+
       // 停止之前的滚动
       this.stopVerticalScroll();
-      
+
       // 设置滚动状态
       this.isVerticalScrolling = true;
-      
+
+      // 保存快照以便恢复
+      this.verticalScrollConfigSnapshot = { ...finalConfig };
+      this.verticalScrollOptionsSnapshot = { ...finalOptions };
+      this.verticalScrollPaused = false;
+
       // 启动首次滚动，后续由动画完成后链式调度
       this.performVerticalScrollStep(finalConfig, finalOptions);
     },
@@ -95,21 +111,21 @@ export default {
     performVerticalScrollStep(config, options) {
       const scrollContainer = this.getScrollContainer(options);
       if (!scrollContainer) return;
-      
+
       // 获取行元素
       const rows = this.getScrollRows(scrollContainer, options);
       if (!rows.length) return;
-      
+
       // 获取行高度
       const rowHeight = this.getRowHeight(rows);
       if (rowHeight === 0) return;
-      
+
       // 确定滚动方向
       const isDownDirection = this.isDownDirection(config.direction);
-      
+
       // 计算位移距离
       const translateY = isDownDirection ? rowHeight : -rowHeight;
-      
+
       // 执行滚动动画
       this.executeScrollAnimation(scrollContainer, translateY, config.duration, () => {
         this.resetVerticalScrollPosition(scrollContainer, rows, isDownDirection);
@@ -126,7 +142,7 @@ export default {
       // 计算等待时间：确保整体节奏约等于每次 interval 触发
       const wait = Math.max((config.interval || 3000) - (config.duration || 2000), 0);
       if (this.verticalScrollTimer) {
-        try { clearTimeout(this.verticalScrollTimer); } catch (_) {}
+        try { clearTimeout(this.verticalScrollTimer); } catch (_) { }
         this.verticalScrollTimer = null;
       }
       this.verticalScrollTimer = setTimeout(() => {
@@ -158,7 +174,7 @@ export default {
       try {
         // 取消前一个动画，避免并发
         if (this.verticalScrollAnimation) {
-          try { this.verticalScrollAnimation.cancel(); } catch (_) {}
+          try { this.verticalScrollAnimation.cancel(); } catch (_) { }
           this.verticalScrollAnimation = null;
         }
 
@@ -167,7 +183,7 @@ export default {
           { transform: `translateY(${translateY}px)` }
         ];
         console.log('使用 Web Animations API 执行滚动动画');
-        
+
         const options = {
           duration,
           easing: 'cubic-bezier(0.55, -0.25, 0.5, 1.1)',
@@ -183,7 +199,7 @@ export default {
           if (callback && typeof callback === 'function') {
             callback();
           }
-          try { animation.cancel(); } catch (_) {}
+          try { animation.cancel(); } catch (_) { }
           this.verticalScrollAnimation = null;
           container.style.willChange = 'auto';
         };
@@ -223,10 +239,10 @@ export default {
       // 移除过渡效果，立即重置transform
       scrollContainer.style.transition = "none";
       scrollContainer.style.transform = "translateY(0)";
-      
+
       // 使用DocumentFragment批量操作DOM，减少重排
       const fragment = document.createDocumentFragment();
-      
+
       if (isDownDirection) {
         // 向下滚动：将最后一行移到第一行
         const lastRow = rows[rows.length - 1];
@@ -238,7 +254,7 @@ export default {
         rows.slice(1).forEach((row) => fragment.appendChild(row));
         fragment.appendChild(firstRow);
       }
-      
+
       // 一次性更新DOM
       scrollContainer.innerHTML = "";
       scrollContainer.appendChild(fragment);
@@ -253,7 +269,7 @@ export default {
         this.verticalScrollTimer = null;
       }
       if (this.verticalScrollAnimation) {
-        try { this.verticalScrollAnimation.cancel(); } catch (_) {}
+        try { this.verticalScrollAnimation.cancel(); } catch (_) { }
         this.verticalScrollAnimation = null;
       }
       this.isVerticalScrolling = false;
@@ -270,7 +286,7 @@ export default {
         this.$el?.querySelector('.table-body'),
         this.$el?.querySelector('.scroll-container')
       ];
-      
+
       possibleContainers.forEach(container => {
         if (container) {
           container.style.transition = "";
@@ -299,7 +315,7 @@ export default {
      */
     getScrollContainer(options) {
       const { containerSelector, containerType } = options;
-      
+
       if (containerType === 'ref') {
         // 通过Vue引用获取
         return this.$refs[containerSelector];
@@ -307,7 +323,7 @@ export default {
         // 通过选择器获取
         return this.$el?.querySelector(containerSelector);
       }
-      
+
       return null;
     },
 
@@ -319,7 +335,7 @@ export default {
      */
     getScrollRows(container, options) {
       const { rowSelector } = options;
-      
+
       if (rowSelector) {
         // 使用指定的行选择器
         return Array.from(container.querySelectorAll(rowSelector));
@@ -336,13 +352,13 @@ export default {
      */
     getRowHeight(rows) {
       if (!rows.length) return 0;
-      
+
       // 过滤掉可能的克隆元素
-      const originalRows = rows.filter(row => 
+      const originalRows = rows.filter(row =>
         !row.classList.contains('vertical-scroll-clone') &&
         !row.classList.contains('scroll-clone')
       );
-      
+
       const firstRow = originalRows[0] || rows[0];
       return firstRow?.offsetHeight || 0;
     },
@@ -364,17 +380,62 @@ export default {
     },
 
     /**
+     * 标签页可见性：添加监听
+     */
+    addVisibilityListener() {
+      if (this.visibilityListenerAdded) return;
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+        this.visibilityListenerAdded = true;
+      }
+    },
+
+    /**
+     * 标签页可见性：移除监听
+     */
+    removeVisibilityListener() {
+      if (!this.visibilityListenerAdded) return;
+      if (typeof document !== 'undefined' && document.removeEventListener) {
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
+        this.visibilityListenerAdded = false;
+      }
+    },
+
+    /**
+     * 标签页可见性变化处理：不可见时暂停，可见时恢复
+     */
+    onVisibilityChange() {
+      if (typeof document === 'undefined') return;
+      const isHidden = document.visibilityState === 'hidden';
+      console.log("标签页可见性发生变化：", document.visibilityState);
+
+      if (isHidden) {
+        if (this.isVerticalScrolling) {
+          // 标记暂停并停止当前滚动调度与动画
+          this.verticalScrollPaused = true;
+          this.stopVerticalScroll();
+        }
+      } else {
+        // 可见，若之前处于暂停且有快照，恢复滚动
+        if (this.verticalScrollPaused && this.verticalScrollConfigSnapshot && this.verticalScrollOptionsSnapshot) {
+          this.verticalScrollPaused = false;
+          this.startVerticalScroll(this.verticalScrollConfigSnapshot, this.verticalScrollOptionsSnapshot);
+        }
+      }
+    },
+
+    /**
      * 检查是否支持纵向滚动
      * @param {Object} config - 配置对象
      * @returns {boolean} 是否支持纵向滚动
      */
     isVerticalScrollEnabled(config) {
       if (!config) return false;
-      
+
       // 支持多种配置方式
-      return config.animation_type === "纵向滚动" || 
-             config.type === "纵向滚动" ||
-             config.isVerticalScroll === true;
+      return config.animation_type === "纵向滚动" ||
+        config.type === "纵向滚动" ||
+        config.isVerticalScroll === true;
     }
   }
 };
