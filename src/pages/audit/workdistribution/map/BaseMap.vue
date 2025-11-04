@@ -205,8 +205,8 @@ const pass_time = passId.slice(22, 30)
 const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
 
 
-const strTime = route.query?.startTime || moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-const endTime = route.query?.endTime || moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let strTime = route.query?.startTime || moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let endTime = route.query?.endTime || moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
 const listVisible = ref(false)
 const drivingInfo = ref([])
 const userMap = ref(null);
@@ -641,11 +641,32 @@ const getTrafficFlow = (id) => {
  * @Date: 2025-06-06 17:45:45
  */
 const getPointByOriginCenter = () => {
+
+   strTime =  moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+   endTime =  moment(formattedDate).add(1, 'month').format('YYYY-MM-DD HH:mm:ss');
   let cadn = {
     condition: [{ colName: "passid", ruleType: "like", value: passId }],
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getOriginCenterDetails(cadn).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    if (res.data.data && res.data.data.length > 0) {
+      handleCtrlSubmit(true)   //所有从远端中心回来的数据都是可以直接保存的
+      filterPointList(res.data.data, 'ori')
+    }else{
+      getPointByOriginCenterNew()
+    }
+  }).catch(err => { })
+}
+
+const getPointByOriginCenterNew = () => {
+  strTime =  moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+   endTime =  moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+  let cadn = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
+  }
+  orderUtil.getPointByOriginCenterNew(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
     if (res.data.data && res.data.data.length > 0) {
       handleCtrlSubmit(true)   //所有从远端中心回来的数据都是可以直接保存的
@@ -662,10 +683,9 @@ const getPointByOriginCenter = () => {
 const getPointByLocation = () => {
   let cadn = {
     condition: [{ colName: "passid", ruleType: "like", value: passId }],
-    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
+    // divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getLocationCenterDetails(cadn).then(res => {
-    if (res.data.state !== 'SUCCESS') return;
     if (res.data.data && res.data.data.length > 0) {
       //本地存储有数据
       handleCtrlSubmit(false)  //所有从本地回来的数据都是默认是不可以二次直接点击保存的
