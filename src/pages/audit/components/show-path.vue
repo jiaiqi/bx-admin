@@ -93,7 +93,15 @@ export default {
   },
   created() {
   },
-  mounted() {
+  async mounted() {
+     try {
+      const map = await this.asyncLoadMap()
+      console.log(map,'++++++++++++++++++++++')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+    } catch (error) {
+      console.error('加载地图失败：', error);
+    }
     if (this.urlPath.indexOf("/bmap/editor/") !== -1) {
 
     } else if (this.urlPath.indexOf("/bmap/check") !== -1) {
@@ -102,6 +110,26 @@ export default {
     }
   },
   methods: {
+    asyncLoadMap() {
+      return new Promise(function (resolve, reject) {
+        if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
+        if (typeof (BMap) !== "undefined") { return resolve(BMap) }
+        if (!window.APP_CONFIG.serverUrl) return reject('地图配置错误')
+        let script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
+        script.onerror = reject
+        script.onload = function () {
+          const timer = setInterval(() => {
+            if (BMapGL || BMap) {
+              BMapGL ? resolve(BMapGL) : resolve(BMap)
+              clearInterval(timer)
+            }
+          }, 500)
+        }
+        document.head.appendChild(script)
+      })
+    },
     setPointList(list) {
       this.pointList = list;
     },

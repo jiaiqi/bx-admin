@@ -168,6 +168,12 @@ export default {
         return null;
       },
     },
+    mainDispCol: {
+      type: String,
+      default: function () {
+        return null;
+      },
+    },
     readOnly: {
       type: Boolean,
       default: function () {
