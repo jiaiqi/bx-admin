@@ -301,9 +301,17 @@ const getStore = () => {
 
 // 路由守卫 - 集成路由栈管理
 router.beforeEach((to, from, next) => {
+  if (to.meta?.isEditor && !to.query.srvApp || (to.name === 'cardCellEditor' && !to.query.srvApp)) {
+    return next({
+      path: to.path,
+      query: {
+        ...to.query,
+        srvApp: 'config',
+      }
+    })
+  }
   try {
     const store = getStore();
-
     // 只有在路由栈启用时才记录路由
     if (store.getters['routeStack/isEnabled']) {
       // 推入新路由到栈
@@ -312,7 +320,6 @@ router.beforeEach((to, from, next) => {
   } catch (error) {
     console.warn('路由栈管理出错:', error);
   }
-
   next();
 });
 
