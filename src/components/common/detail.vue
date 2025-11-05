@@ -1003,9 +1003,16 @@ export default {
       } else {
         console.error("this.service_name2", dataResp.body, dataResp.response);
         detailData = dataResp.body;
-        this.detailData = dataResp.body;
-        this.mainFormDatas = dataResp.body;
-        this.id = this.detailData[this.pkCol];
+        if (detailData && detailData[this.pkCol]) {
+          this.detailData = detailData;
+          this.id = detailData[this.pkCol];
+          this.mainFormDatas = detailData;
+        } else {
+          this.$message({
+            message: "未查询到详情数据",
+            type: "error",
+          });
+        }
         if (
           dataResp?.response?.hasOwnProperty("chart_data") &&
           Array.isArray(dataResp.response.chart_data)
