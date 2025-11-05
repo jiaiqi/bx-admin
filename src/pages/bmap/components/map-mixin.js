@@ -63,22 +63,22 @@ export default {
         label: '行驶路径',
         type: 'driving',
         color: '#fd503e',
-        selectedColor: activeLineColor,
+        selectedColor: '#fd503e',
       }, {
         label: '收费路径',
         type: 'driving_pay',
         color: '#409eff',
-        selectedColor: activeLineColor,
+        selectedColor: '#409eff',
       }, {
         label: '最小路径',
         type: 'driving_min',
         color: '#eb2df7',
-        selectedColor: activeLineColor,
+        selectedColor: '#eb2df7',
       }, {
         label: '其它',
         type: 'none',
         color: 'rgb(60 189 166)',
-        selectedColor: activeLineColor,
+        selectedColor: '#3cbda6',
       },
 
       ],
@@ -287,7 +287,7 @@ export default {
       let overlays = self.BMap.getOverlays()
       overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line')
       console.log('updateLine', overlays)
-      let selectedColor = activeLineColor;
+      let selectedColor = line.selectedColor;
       if (self.BMap && Array.isArray(overlays) && overlays.length > 0) {
         for (let overlay of overlays) {
 
@@ -439,7 +439,7 @@ export default {
       let self = this
       let linePoints = []
       let points = line['points']
-      let selectedColor = activeLineColor;
+      let selectedColor = line.selectedColor;
       // 判断是否已经绘制
       // console.log('添加线条',line.id,line)
       let overlays = self.BMap.getOverlays()
