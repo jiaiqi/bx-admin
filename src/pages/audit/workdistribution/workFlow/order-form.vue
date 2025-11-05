@@ -1570,22 +1570,33 @@ export default {
       this.preList = []
       this.picIds = ''
     },
-    //获取经营管理单位列列表数据
-    getRelevantInfo() {
+    //获取经营管理单位列列表数据,先查总表并且查月表，两个合并去重，要是总表查不到数据，调ori和月表合并取去重
+    async getRelevantInfo() {
+      const pass_time = this.ruleForm.pass_id.slice(22, 30)
+      const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+      let strTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+      let endTime = moment(formattedDate).add(1, 'month').format('YYYY-MM-DD HH:mm:ss');
       let obj = {
         condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
-        divCond: [{ colName: "create_time", ruleType: "between", value: [this.strTime, this.endTime] }],
+        divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
 
       }
-      orderUtils.getRelevantList(obj).then(res => {
-        orderUtils.getRelevantListNew(obj).then(resData => {
-          let ls = res.data.data;
-          let lsNew = resData.data.data;
-          if(ls&&ls.length>0){
+     const res = await orderUtils.getRelevantList(obj)
+     if(res.data.state === 'SUCCESS'){
+       let ls = res.data.data;
+       if(ls&&ls.length>0){
+        strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+      endTime = moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+      obj = {
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
+        divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
+
+      }
+        const resData = await orderUtils.getRelevantListNew(obj)
+        let lsNew = resData.data.data;
            if(lsNew&&lsNew.length>0){
             ls = [...new Set(ls.concat(lsNew))]
            }
-          }
           let ids = []
           if (ls) {
             ls.map(d => {
@@ -1596,8 +1607,37 @@ export default {
           this.relevantList = ls
           this.ruleForm.relevant_org = ids.join(',')
           console.log('经营单位id', this.ruleForm.relevant_org)
-        })
-      }).catch(err => { })
+       }else{
+         strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+      endTime = moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+      obj = {
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
+        divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
+
+      }
+        const resPriData = await orderUtils.getRelevantListOri(obj)
+        let lsOri = resPriData.data.data;
+        if(lsOri&&lsOri.length>0){
+           const resData = await orderUtils.getRelevantListNew(obj)
+
+         let lsNew = resData.data.data;
+           if(lsNew&&lsNew.length>0){
+            lsOri = [...new Set(lsOri.concat(lsNew))]
+           }
+          let ids = []
+          if (lsOri) {
+            lsOri.map(d => {
+              d.select = true
+              ids.push(d.id)
+            })
+          }
+          this.relevantList = lsOri
+          this.ruleForm.relevant_org = ids.join(',')
+          console.log('经营单位id', this.ruleForm.relevant_org)
+        }
+       }
+     }
+           
     },
     //经营单位删除后数据更新
     handleClose(item) {
