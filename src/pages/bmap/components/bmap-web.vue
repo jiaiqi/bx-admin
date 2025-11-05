@@ -188,9 +188,7 @@
             >
               <span
                 :style="`width:1rem;height:4px;background-color:${
-                  activeLine && activeLine['_editor_type'] == line.type
-                    ? 'rgb(40, 189, 108)'
-                    : line.color
+                  line.color
                 };`"
               >
               </span>
