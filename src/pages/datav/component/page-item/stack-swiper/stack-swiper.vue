@@ -778,7 +778,7 @@ export default {
 
   // CSS变量定义
   --indicator-color: rgba(200, 200, 200, 0.5);
-  --indicator-active-color: var(--primary_color, '#999');
+  --indicator-active-color: var(--primary_color, #999);
 
   .indicator-dot {
     width: 10px;
