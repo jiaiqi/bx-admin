@@ -17,16 +17,18 @@ let bx_auth_ticket = "";
 // const ENV = "dev";
 // const ENV = "saas";
 // const ENV = "audDev"; //稽核开发环境
-// const ENV = "parkProd"; // 延安园区生产环境
+const ENV = "parkProd"; // 延安园区生产环境
 // const ENV = "yananxing"; // 延安行
-const ENV = "yananxingOut"; // 延安行外网
+// const ENV = "yananxingOut"; // 延安行外网
 // const ENV = "yanxue2"; // 研学2.0现网
 // const ENV = "wujingDev";
 // const ENV = "healthProd";
 // const ENV = "gaosu61";
 
 window.env = ENV;
-
+export const getHomePageNo = () => {
+  return pathConfigMap[ENV]?.homePageNo;
+}
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
   // const ENV = "wanxiang";

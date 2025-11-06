@@ -208,11 +208,7 @@ const publicCrudRoutes = [
     component: () => import(/* webpackChunkName: "vxhr" */ "@/vxhr/personal-update"),
   },
 ];
-const routes = [{
-  path: "/",
-  name: "index",
-  component: () => import(/* webpackChunkName: "home" */ "@/pages/index"),
-},
+const routes = [,
 ...publicCrudRoutes,
 // ==================== 西乡项目子路由 ====================
 ...xixiangRoutes,
@@ -275,6 +271,15 @@ routes.push(
   {
     path: "/:pageNo",
     name: "lowcode-view1",
+    meta: {
+      isEditor: false,
+      isView: true,
+    },
+    component: () => import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/view.vue"),
+  },
+  {
+    path: "/",
+    name: "lowcodeHomePage",
     meta: {
       isEditor: false,
       isView: true,

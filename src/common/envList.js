@@ -99,6 +99,7 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
+    homePageNo:"BX2506130908230001"
   },
   gangu: {
     // 甘谷人大

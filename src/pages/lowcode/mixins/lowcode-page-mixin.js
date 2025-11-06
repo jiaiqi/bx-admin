@@ -15,7 +15,7 @@ import carbon from "@iconify/json/json/carbon.json";
 import mdiLight from "@iconify/json/json/mdi-light.json";
 import ri from "@iconify/json/json/ri.json";
 
-import { $selectOne } from "@/common/http";
+import { $selectOne, getHomePageNo } from "@/common/http";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 
 import { buildComponentsTree } from "../utils/common";
@@ -130,8 +130,10 @@ export default {
     }
     if (this.propPageNo) {
       this.pageNo = this.propPageNo
-    } else {
+    } else if(this.$route.query.pageNo || this.$route.params.pageNo){
       this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
+    } else if(getHomePageNo?.()){
+      this.pageNo = getHomePageNo?.();
     }
 
     if (this.pageNo) {
