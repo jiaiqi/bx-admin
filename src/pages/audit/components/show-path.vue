@@ -7,7 +7,7 @@
         :modeUrl="urlPath"
         :no="no"
         :initCheckPointId="initCheckPointId"
-        v-if="data&&data.length"
+        v-if="isvisible&&data&&data.length"
         @setPointList="setPointList"
     ></BMapJs>
   </div>
@@ -49,6 +49,7 @@ export default {
   data() {
     return {
       activePoint: 0,
+      isvisible: false,
       depts: [],
       initCheckPointId: "",
       pointList: [],
@@ -98,7 +99,7 @@ export default {
       const map = await this.asyncLoadMap()
       console.log(map,'++++++++++++++++++++++')
       await new Promise(resolve => setTimeout(resolve, 500))
-      
+      this.isvisible = true
     } catch (error) {
       console.error('加载地图失败：', error);
     }
