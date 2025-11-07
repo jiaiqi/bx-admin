@@ -140,6 +140,7 @@
     <div
       v-else-if="item.parts_type == '富文本'"
       :style="[buildColStyleJson]"
+      class="bx-cell-rich-text"
       v-html="recoverFileAddress4richText(setPartModelData)"
       :ref="partsType"
     ></div>
@@ -1478,5 +1479,10 @@ export default {
   height: 100vh;
   // background-color: rgba(0, 0, 0, 0.1);
   pointer-events: auto;
+}
+::v-deep .bx-cell-rich-text{
+  img, svg, video, canvas, audio, iframe, embed, object{
+    display: inline-block;
+  }
 }
 </style>

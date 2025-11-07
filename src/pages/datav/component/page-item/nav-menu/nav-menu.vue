@@ -402,7 +402,7 @@ export default {
       }
     },
     getCurrentNav() {
-      let pageNo = this.$route.params?.pageNo;
+      let pageNo = this.$route.params?.pageNo || this.$parent.pageNo;
       if (pageNo) {
         let currentNav = this.setSubMenu.find(
           (item) => item.page_no === pageNo

@@ -171,7 +171,7 @@ export default {
         worker.postMessage({ file, chunkSize: that.chunkSize })
         worker.onmessage = (e) => {
           const { fileHash, fileChunkList } = e.data
-          // console.log('useWorker:',e?.data?.percentage);
+          console.log('useWorker:',e?.data?.percentage);
           if (e?.data?.percentage && typeof that.onHashProgress === 'function') {
             that.onHashProgress?.(Math.round(e?.data?.percentage))
           }
