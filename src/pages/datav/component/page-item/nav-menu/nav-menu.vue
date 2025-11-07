@@ -222,6 +222,7 @@ import { $selectList } from "@/common/http";
 import catalogTabs from "./catalog/tabs.vue";
 import ContentWrap from "./catalog/content-wrap.vue";
 import catalogTree from "./catalog/tree.vue";
+import { getFullBaseUrl } from "@/common/common";
 export default {
   name: "NavMenu",
   components: {
@@ -775,7 +776,7 @@ export default {
       if (jump_json?.tmpl_page_json.file_path) {
         path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
       } else {
-        path = `/vpages/#/site/${pageNo}?srvApp=config`;
+        path = `${getFullBaseUrl()}/${pageNo}?srvApp=config`;
       }
       if (jump_json?.obj_type?.includes("锚点") && jump_json?.anchor_com_name) {
         if (path.includes(`/site/${pageNo}`)) {

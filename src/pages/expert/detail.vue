@@ -187,6 +187,8 @@
 </template>
 
 <script>
+import { getFullBaseUrl } from "@/common/common";
+
 export default {
   name: "ExpertDetail",
   components: {
@@ -239,7 +241,7 @@ export default {
     previewPDF(url, type) {
       if (this.isPDF(url)) {
         this.addTabByUrl(
-          `/vpages/#/viewpdf?pdfsrc=${encodeURIComponent(url)}`,
+          `${getFullBaseUrl()}/viewpdf?pdfsrc=${encodeURIComponent(url)}`,
           type
         );
       } else if (this.isImage(url)) {
@@ -248,9 +250,7 @@ export default {
         viewer.show();
       }else{
         this.$message.error('只支持预览图片或者pdf文件')
-      }
-
-      // window.open(`/vpages/#/viewpdf2?pdfsrc=${encodeURIComponent(url)}`)
+      } 
     },
     downloadPDF(url, type) {
       // 创建a标签下载

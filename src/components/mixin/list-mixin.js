@@ -819,31 +819,6 @@ export default {
     toDetail(column = "", data = {}, rowIndex) {
       if (this.isDetailLink(column, data, rowIndex)) {
         this.rowButtonClick(this.detailBtn, data);
-        // let address = `/vpages/#/detail/${this.serviceName}/${this.row.id}?srvApp=${this.app}`;
-        // let tab_title = this.detailButton.service_view_name;
-        // let disp_col = this.detailButton._disp_col;
-        // let disp_value = this.row[disp_col]; //详情页面上的标签
-        // tab_title = tab_title.replace("查询", "");
-        // if (disp_value != null && disp_value != undefined && disp_value != "") {
-        //   tab_title = disp_value + "(" + tab_title + "详情)";
-        // } else {
-        //   tab_title = tab_title + "详情";
-        // }
-        // let page = {
-        //   title: tab_title,
-        //   url: address,
-        //   icon: "",
-        //   app: this.app,
-        // };
-        // if (window.top.tab) {
-        //   window.top.tab.addTab(page);
-        // } else {
-        //   // 没有tab实例，在浏览器中打开新标签页
-        //   const page = window.open(address);
-        //   setTimeout(() => {
-        //     page.document.title = tab_title;
-        //   }, 500);
-        // }
       }
     },
     setPolling() {

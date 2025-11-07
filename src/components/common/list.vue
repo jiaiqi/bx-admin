@@ -1265,7 +1265,7 @@ import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 import inlineEditListMixin from "../mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
 import inlineEditList from "./inline-edit-list.vue";
 import vueChart from "../ui/widget/chart.vue";
-import { blobToBase64 } from "../../common/common";
+import { blobToBase64, getBaseUrl } from "../../common/common";
 
 import {
   IconList,
@@ -1787,7 +1787,7 @@ export default {
         ["pdf", "jpg", "png", "gif", "JPG", "ppt", "pptx"].includes(fileType)
       ) {
         if ((fileType === "pptx" || fileType === "ppt") && file.fileurl) {
-          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.fileurl}`;
+          const previewUrl = `${getBaseUrl()}/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.fileurl}`;
           this.addTabByUrl(previewUrl, "文件预览");
         } else if (fileType === "pdf") {
           self.handlePreview(file);
@@ -1825,7 +1825,7 @@ export default {
           }/file/forward?targetUrl=${encodeURIComponent(file.url)}`;
       }
       if (fileType === "ppt" && file.url) {
-        const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
+        const previewUrl = `${getBaseUrl()}/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
         this.addTabByUrl(previewUrl, "文件预览");
       } else if (file.url.toLowerCase().endsWith(".pdf")) {
         let url = file.url;

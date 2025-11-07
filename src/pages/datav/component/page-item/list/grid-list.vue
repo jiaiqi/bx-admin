@@ -35,6 +35,7 @@
 import { computed, ref, watch } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import { MessageBox } from "element-ui";
+import { getFullBaseUrl } from "@/common/common";
 const props = defineProps({
   config: Object,
   list: Array,
@@ -127,7 +128,7 @@ function openUrl(url) {
       cancelButtonText: "取消",
       type: "warning",
     }).then(() => {
-      top.window.location.href = `${location.origin}/vpages/#/lowcode-grid/view/PG2503180001`;
+      top.window.location.href = `${location.origin}/${getFullBaseUrl()}/lowcode-grid/view/PG2503180001`;
     });
 
     return;

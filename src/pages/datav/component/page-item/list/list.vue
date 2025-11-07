@@ -221,6 +221,7 @@ import GridList from "./grid-list.vue";
 import SimpleAdd from "@/components/common/simple-add.vue";
 import MapCard from "../map-card/index.vue";
 import BxTable from "./BxTable.vue";
+import { getFullBaseUrl } from "@/common/common";
 export default {
   name: "data-view-list",
   components: {
@@ -791,7 +792,7 @@ export default {
       console.log(e, data);
       if (e?.button_type === 'detail') {
         if (e.service_name && data?.id) {
-          let address = `/vpages/#/detail/${e.service_name}/${data.id}`
+          let address = `${getFullBaseUrl()}/detail/${e.service_name}/${data.id}`
           if (e.application) {
             address += `?srvApp=${e.application}`
           }

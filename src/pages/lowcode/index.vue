@@ -308,6 +308,7 @@ import MaterialsView from "./components/materials/index.vue";
 import EditorView from "./components/editor/index.vue";
 import PropertyView from "./components/property/index.vue";
 import lcView from "./components/materials/view.vue";
+import { getFullBaseUrl } from "@/common/common";
 
 export default {
   name: "lowCodeEditor",
@@ -366,7 +367,7 @@ export default {
       const isDev = process.env.NODE_ENV === 'development';
       const baseUrl = isDev ? 'http://192.168.0.196' : '';
       if(isDev){
-        return `/vpages/#/lowcode/view/${this.pageNo}?srvApp=config`
+        return `${getFullBaseUrl()}/lowcode/view/${this.pageNo}?srvApp=config`
       }
       return `${baseUrl}/xmp/views/custom/index/index?page_no=${this.pageNo}`;
     },
@@ -492,7 +493,7 @@ export default {
         this.mobilePreviewVisible = true;
       } else {
         // 桌面端使用原有预览方式
-        const url = `/vpages/#/lowcode/view/${this.pageNo}`;
+        const url = `${getFullBaseUrl()}/lowcode/view/${this.pageNo}`;
         window.open(url, "_blank");
       }
     },

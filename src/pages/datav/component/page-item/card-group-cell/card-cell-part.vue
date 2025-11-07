@@ -262,7 +262,7 @@ import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import weather from "../widgets/weather.vue";
 import { formatStyleData } from "@/pages/datav/common";
-import { setAnimationClass, setAnimationStyle } from "@/common/common";
+import { getBaseUrl, setAnimationClass, setAnimationStyle } from "@/common/common";
 import {
   numberAnimationRun,
   formatNumber,
@@ -1225,7 +1225,7 @@ export default {
       } else if (["ppt", "pptx"].includes(fileType)) {
         // PPT预览
         const filePath = `${window.backendIpAddr}/file/forward?targetUrl=${url}`;
-        const previewUrl = `/vpages/ppt/index.html?file=${encodeURIComponent(
+        const previewUrl = `${getBaseUrl()}/ppt/index.html?file=${encodeURIComponent(
           filePath
         )}`;
         this.addTabByUrl(previewUrl, "文件预览");

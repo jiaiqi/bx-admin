@@ -53,6 +53,7 @@
 </template>
 
 <script>
+import { getFullBaseUrl } from "@/common/common";
 import ExecutorMixin from "../mixin/executor-minx";
 import { ActionInfo } from "../model/ActionInfo";
 import Executor from "./executor.vue";
@@ -301,7 +302,7 @@ export default {
             });
             return
           }
-           let urls=`/vpages/#/pay-month?bill_no=${nos}`
+           let urls=`${getFullBaseUrl()}/pay-month?bill_no=${nos}`
            this.addTabByUrl(urls, "停车缴费");
         }
       }

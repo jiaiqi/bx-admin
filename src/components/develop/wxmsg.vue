@@ -51,6 +51,8 @@
   </div>
 </template>
 <script>
+import { getFullBaseUrl } from '@/common/common';
+
 export default {
   data() {
     return {
@@ -178,7 +180,7 @@ export default {
                 // );
 
                 this.forwardAddTab(
-                  "/vpages/index.html#/list/srvwx_app_template_msg_cfg_select?menuapp=wx&srvApp=wx&time="+(new Date()).getTime(),
+                  `${getFullBaseUrl()}/list/srvwx_app_template_msg_cfg_select?menuapp=wx&srvApp=wx&time=`+(new Date()).getTime(),
                   "群发消息"
                 );
               } else {
@@ -230,7 +232,7 @@ export default {
                 //);
 
                 this.forwardAddTab(
-                  "/vpages/index.html#/list/srvwx_app_template_msg_cfg_select?menuapp=wx&srvApp=wx&time="+(new Date()).getTime(),
+                  `${getFullBaseUrl()}/list/srvwx_app_template_msg_cfg_select?menuapp=wx&srvApp=wx&time=`+(new Date()).getTime(),
                   "群发消息"
                 );
 

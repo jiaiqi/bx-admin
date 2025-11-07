@@ -85,6 +85,8 @@
 </template>
 
 <script>
+import { getFullBaseUrl } from '@/common/common';
+
 export default {
   data() {
     return {
@@ -209,7 +211,7 @@ export default {
   methods: {
     toDetail(row) {
       if (this.curDetailBtn) {
-        const url = `/vpages/index.html#/detail/${this.currentTab.service}/${row.id}?srvApp=${this.currentTab.app}`;
+        const url = `${getFullBaseUrl()}/detail/${this.currentTab.service}/${row.id}?srvApp=${this.currentTab.app}`;
         var exeservice = this.curDetailBtn?.operate_service || this.curDetailBtn.service_name;
         var tab_title = this.curDetailBtn.service_view_name;
         var urlParams =

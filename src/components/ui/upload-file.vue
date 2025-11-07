@@ -254,6 +254,7 @@ import pdf from "vue-pdf";
 import cloneDeep from "lodash/cloneDeep";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
+import { getBaseUrl } from "@/common/common";
 export default {
   components: { pdf },
   mixins: [bigFileUploadMixin, aSaveBMixin],
@@ -768,7 +769,7 @@ export default {
           }
         }
         if (fileType === "pptx" && file.url) {
-          const previewUrl = `/vpages/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
+          const previewUrl = `${getBaseUrl()}/ppt/index.html?file=${window.backendIpAddr}/file/forward?targetUrl=${file.url}`;
           this.addTabByUrl(previewUrl, "文件预览");
         } else if (file.url.toLowerCase().endsWith(".pdf")) {
           let currLocation = window.location.href;

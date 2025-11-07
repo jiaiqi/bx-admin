@@ -20,18 +20,19 @@ import { $axios as $http } from "@/common/http";
 
 function init_util() {
   const eventBus = new Vue();
+
   const common_page_path = {
-    detail: "/vpages/index.html#/detail",
-    list: "/vpages/index.html#/list",
-    "simple-add": "/vpages/index.html#/simple-add",
-    "simple-update": "/vpages/index.html#/simple-update",
-    "start-proc": "/vpages/index.html#/startproc",
-    procdetail: "/vpages/index.html#/procdetail",
-    procdetail_v2: "/vpages/index.html#/v2/procdetail",
-    "start-proc_v2": "/vpages/index.html#/v2/startproc",
-    editgrid: "/vpages/index.html#/editgrid",
-    explain: "/vpages/index.html#/explain?",
-    report: "/vpages/index.html#/reportList",
+    detail: `${prefix}/detail`,
+    list: `${prefix}/list`,
+    "simple-add": `${prefix}/simple-add`,
+    "simple-update": `${prefix}/simple-update`,
+    "start-proc": `${prefix}/startproc`,
+    procdetail: `${prefix}/procdetail`,
+    procdetail_v2: `${prefix}/v2/procdetail`,
+    "start-proc_v2": `${prefix}/v2/startproc`,
+    editgrid: `${prefix}/editgrid`,
+    explain: `${prefix}/explain?`,
+    report: `${prefix}/reportList`,
   };
 
   Vue.prototype.$http = $http;
@@ -299,7 +300,7 @@ function init_util() {
    * @param forceRefreshV2 强制刷新v2 不从store中读取
    * @returns {*}
    */
-  Vue.prototype.loadColsV2 = function (service_name, use_type, app,mainService,forceRefreshV2=false) {
+  Vue.prototype.loadColsV2 = function (service_name, use_type, app, mainService, forceRefreshV2 = false) {
     let fullServiceName = this.resolveDefaultSrvApp() + "." + service_name;
     let cacheP = this.$store && this.$store.getters.getSrvCols(fullServiceName, use_type);
     if (cacheP && forceRefreshV2 !== true) {
@@ -396,7 +397,7 @@ function init_util() {
         //       "          }"
         //   }]
         // }
-      } catch (e) {}
+      } catch (e) { }
 
       //endregion
 
@@ -553,7 +554,7 @@ function init_util() {
       colName: "seq",
       orderType: "asc"
     }]
-    return this.doSelect(url, serviceName, condition,null,order);
+    return this.doSelect(url, serviceName, condition, null, order);
   };
 
   /**查询列表*/
@@ -1277,7 +1278,7 @@ function init_util() {
                 list.form.append.push(child);
               }
             }
-          } catch (error) {}
+          } catch (error) { }
         } else {
           if (config) {
             config = JSON.parse(config);
