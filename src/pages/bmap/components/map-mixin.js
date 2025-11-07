@@ -86,22 +86,22 @@ export default {
         label: '交易点',
         type: 'driving',
         color: 'rgb(253 226 19)',
-        selectedColor: activeLineColor,
+        selectedColor: 'rgb(253 226 19)',
       }, {
         label: '车牌识别',
         type: 'driving',
         color: '#409eff',
-        selectedColor: activeLineColor,
+        selectedColor: '#409eff',
       }, {
         label: '拟合点',
         type: 'driving',
         color: 'rgb(224 31 225)',
-        selectedColor: activeLineColor,
+        selectedColor: 'rgb(224 31 225)',
       }, {
         label: '人工校准',
         type: 'driving',
         color: 'rgb(40 189 108)',
-        selectedColor: activeLineColor,
+        selectedColor: 'rgb(40 189 108)',
       },
 
       ],
@@ -669,6 +669,7 @@ export default {
           marker.addEventListener("click", function (e) {
             let overlay = e.currentTarget
             let overlays = self.BMap.getOverlays()
+            console.log('点击的点1111111111111',overlay)
 
             if (overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'point') {
               self.$set(self, 'activePoint', overlay['_data'])
@@ -692,7 +693,7 @@ export default {
                       zIndex: 999
                     })
                     let activeIconPath = l['_data']['icon_active']
-                    // console.log('activeIconPath 1',overlay['_data'],activeIconPath)
+                    console.log('activeIconPath 1',overlay['_data'],activeIconPath)
                     let activeIcon = new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {
                       anchor: new BMap.Size(l['_data']["icon_anchor"].w, l['_data']["icon_anchor"].h),
                       imageOffset: new BMap.Size(0, 0),   // 设置图片偏移

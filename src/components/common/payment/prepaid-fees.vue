@@ -489,7 +489,7 @@ export default{
       this.showLoading = true;
       this.loadingText = '支付码生成中....';
       try {
-        const payInfoParam = await this.getOnlinePayQrcode(amount);
+        const payInfoParam = await this.handleAddInfoIntoPayment(amount);
         if (payInfoParam) {
           this.getOnlinePayQrcode(payInfoParam)
         } else {
