@@ -124,11 +124,11 @@
         <div class="method-tabs">
           <div 
             class="method-tab" 
-            :class="{ active: paymentMethod === 'cash' }"
-            @click="selectPaymentMethod('cash')"
+            :class="{ active: paymentMethod === 'pubilc' }"
+            @click="selectPaymentMethod('pubilc')"
           >
             <i class="method-icon"></i>
-            <span>现金缴费</span>
+            <span>对公转账</span>
           </div>
           <div 
             class="method-tab" 
@@ -136,7 +136,15 @@
             @click="selectPaymentMethod('qrcode')"
           >
             <i class="method-icon"></i>
-            <span>二维码支付</span>
+            <span>扫码支付</span>
+          </div>
+          <div 
+            class="method-tab" 
+            :class="{ active: paymentMethod === 'cash' }"
+            @click="selectPaymentMethod('cash')"
+          >
+            <i class="method-icon"></i>
+            <span>个人支付</span>
           </div>
         </div>
       </div>
@@ -201,7 +209,7 @@ export default{
       rowDetails:{},
       hasInputError: false,
       errorMessage: '',
-      paymentMethod: 'cash', // 默认选择现金缴费
+      paymentMethod: 'pubilc', // 默认选择对公转账
       finalAmount: 0, // 最终金额值
       qrcodeInfo:{
         qrCd:null,     //二维码地址
@@ -458,7 +466,12 @@ export default{
         await this.handleCashPayment(this.finalAmount);
       }else if (this.paymentMethod === 'qrcode') {
         await this.handleQRCodePayment(this.finalAmount);
+      }else if (this.paymentMethod === 'pubilc') {
+        await this.handlePubilcPayment(this.finalAmount);
       }
+    },
+    handlePubilcPayment(){
+
     },
     async handleCashPayment(amount) {
       try {

@@ -104,6 +104,7 @@ import { onMounted, ref, reactive, computed, nextTick, getCurrentInstance } from
 import { useRoute } from "@/common/vueApi";
 import { getEntranceData } from "@/pages/audit/workdistribution/entrance/entrance";
 import OrderApi from "@/pages/audit/api/order";
+import moment from 'dayjs'
 import { Loading } from 'element-ui';
 const orderUtil = new OrderApi()
 const reverse = ref(false)
@@ -136,8 +137,12 @@ const toggleImageExpand = (index) => {
   expandedImagesMap.value = new Map(expandedImagesMap.value)
 }
 let passId = route.query?.pass_id
-let strTime = route.query?.startTime
-let endTime = route.query?.endTime
+
+const pass_time = passId.slice(22, 30)
+const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+ 
+let strTime = route.query?.startTime||moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let endTime = route.query?.endTime||moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
 const getPic = (item, imgtype, enType) => {
   let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.grantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
   if (enType) {
