@@ -352,6 +352,11 @@ module.exports = {
           "^/baiduApi": "",
         },
       },
+      "/bxmap": {
+        target: "http://192.168.0.151",
+        changeOrigin: true,
+        ws: true
+      },
     },
   },
 };

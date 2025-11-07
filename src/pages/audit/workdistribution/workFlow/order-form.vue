@@ -1269,7 +1269,7 @@ export default {
           'exstationname': resdata[0].exstationname,
           'extime': resdata[0].extime,
          }]
-         if(!(resdata[0].vehicleplate_no&&resdata[0]._vehicletype_disp&&resdata[0].enstationname&&resdata[0].entime&&resdata[0].exstationname&&resdata[0].extime)){
+         if(!resdata[0].passid){
           this.$confirm('暂无车辆通行流水，无法发起工单!', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',

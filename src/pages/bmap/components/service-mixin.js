@@ -1,10 +1,13 @@
 import gantry from '../assets/icon/gantry.png'
 import gantryActive from '../assets/icon/gantry-active.png'
+import fittingActive from '../assets/icon/fitting.png'
+import tradingActive from '../assets/icon/trading.png'
 import startIcon from '../assets/icon/start.png'
 import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
+import qita from '../assets/icon/qita.png'
 import moment from 'dayjs'
 import {getpassconv, getpassconvpath} from "../assets/mockData";
 
@@ -209,7 +212,7 @@ export default {
                         switch (point['_dev_point_type']) {
                             case '门架':
                                 point['icon'] = gantry
-                                point['icon_active'] = gantryActive
+                                point['icon_active'] = this.changeIconType(point['dataoriginal'])
                                 point["icon_size"]={
                                     w:25,
                                     h:30
@@ -302,11 +305,12 @@ export default {
                                     let point = {
                                         ...p
                                     }
+                                    console.log(point, 999999999999999999)
                                     point['_dev_point_type'] = p['category'] || '门架'
                                     switch (point['_dev_point_type']) {
                                         case '门架':
                                             point['icon'] = gantry
-                                            point['icon_active'] = gantryActive
+                                            point['icon_active'] = this.changeIconType(point['dataoriginal'])
                                             point["icon_size"]={
                                                 w:25,
                                                 h:30
@@ -1068,8 +1072,8 @@ export default {
                         let p = self.bxDeepClone(item)
                         p['icon_size'] = p['icon_size'] || {w:25,h:38}
                         p['icon_anchor'] = p['icon_anchor'] || {w:p['icon_size']/2,h:p['icon_size'].h}
-                        p['icon'] = custom
-                        p['icon_active'] = custom
+                        p['icon'] = qita
+                        p['icon_active'] = qita
                         p['_type'] = 'point'
                         p['_editor'] = 'add'
                         p['_dev_point_type'] = p['category']
@@ -1129,6 +1133,27 @@ export default {
                 }
               })
         },
+        changeIconType(type){
+            type = type+''
+            let result = null
+            switch (type) {
+                case '1':
+                    result = tradingActive
+                    break;
+                case '2':
+                    result = gantryActive
+                    break;
+                case '4':
+                    result = fittingActive
+                    break;
+                case '5':
+                    result = custom
+                    break;
+                default:
+                    break;
+            }
+            return result
+        },
         getAllStations(road_no){
             // 查询所有门架
             let self = this
@@ -1183,7 +1208,7 @@ export default {
                                 case '门架':
                                     
                             item['icon'] = gantry
-                            item['icon_active'] = gantryActive
+                            item['icon_active'] = this.changeIconType(item['dataoriginal'])
                                     break;
                                 case '收费站':
                                         
