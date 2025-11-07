@@ -329,7 +329,7 @@ export default {
 
         // 收集所有需要加载的数据
         let allData = [];
-        
+
         // 1. 首先加载根节点的所有同级数据
         const rootSiblings = await this.loadSiblingNodes(loader, null);
         if (rootSiblings && rootSiblings.length > 0) {
@@ -339,7 +339,7 @@ export default {
         // 2. 逐级加载路径上每个节点的子节点（同级数据）
         for (let i = 0; i < pathArray.length; i++) {
           const currentNodeValue = pathArray[i];
-          
+
           // 加载当前节点的子节点（下一级的所有同级数据）
           const childNodes = await this.loadSiblingNodes(loader, currentNodeValue);
           if (childNodes && childNodes.length > 0) {
@@ -371,7 +371,7 @@ export default {
         };
 
         const treeStructure = this.buildTreeStructure(processedData, treeOptions);
-        
+
         console.log('完整路径数据加载完成:', {
           totalNodes: processedData.length,
           treeStructure: treeStructure
@@ -394,7 +394,7 @@ export default {
     async loadSiblingNodes(loader, parentValue = null) {
       try {
         let conditions = this.buildConditions(loader);
-        
+
         if (parentValue === null) {
           // 加载根节点数据
           if (loader.parentCol) {
@@ -418,7 +418,7 @@ export default {
           condition: conditions,
           page: {
             pageNo: 1,
-            pageSize: 1000 // 增加页面大小以确保获取所有同级数据
+            rownumber: 5000 // 增加页面大小以确保获取所有同级数据
           }
         };
 
@@ -446,17 +446,17 @@ export default {
      */
     deduplicateNodes(nodes) {
       if (!nodes || !Array.isArray(nodes)) return [];
-      
+
       const idField = this.props?.value || 'id';
       const uniqueMap = new Map();
-      
+
       nodes.forEach(node => {
         const nodeId = node[idField];
         if (nodeId && !uniqueMap.has(nodeId)) {
           uniqueMap.set(nodeId, node);
         }
       });
-      
+
       return Array.from(uniqueMap.values());
     },
 
@@ -530,10 +530,10 @@ export default {
       };
 
       cleanEmptyChildren(result);
-      
+
       // 处理disabled状态传播
       const processedResult = this.processDisabledState(result);
-      
+
       return processedResult;
     },
 
@@ -652,7 +652,7 @@ export default {
           relation_condition: relation_condition,
           // page: {
           //   pageNo: 1,
-          //   pageSize: 2000,
+          //   rownumber: 2000,
           // },
         };
         const response = await this.$http.post(url, params);
@@ -698,7 +698,7 @@ export default {
         condition: conditions,
         page: {
           pageNo: 1,
-          pageSize: 500,
+          rownumber: 500,
         },
       };
       var url = this.getServiceUrl("select", loader.service);
@@ -724,10 +724,10 @@ export default {
           return item;
         });
         setTreeData(data);
-        
+
         // 处理disabled状态传播
         const processedData = this.processDisabledState(data);
-        
+
         return processedData;
       } else {
         console.error("loadChildren error", response.data);
@@ -836,13 +836,13 @@ export default {
         rdt: "ttd", //2023年11月13日 修改，top tree data特性，后端返回符合条件的树型数据的最顶层节点数据,
         // page: {
         //   pageNo: 1,
-        //   pageSize: 2000,
+        //   rownumber: 2000,
         // },
       };
       if (loader.lazyLoad === false) {
         // params.page = {
         //   pageNo: 1,
-        //   pageSize: 2000,
+        //   rownumber: 2000,
         // };
         delete params.rdt;
         params.treeData = true;
@@ -868,10 +868,10 @@ export default {
           if (this.needRenameLabel()) {
             options.forEach((option) => this.renameLable(option));
           }
-          
+
           // 处理disabled状态传播
           options = this.processDisabledState(options);
-          
+
           if (curVal && response.data.data.length > 0) {
             let item = response.data.data[0];
             // this.selected = [item[this.props.value]];
@@ -995,16 +995,16 @@ export default {
         }
         return item;
       });
-      
+
       // 处理disabled状态传播
       return this.processDisabledState(options);
     },
     async loadDetail() {
       this.loading = true; // 开始加载
-      
+
       try {
         const loader = this.dispLoaderV2;
-        
+
         // 获取当前节点的详细信息
         const conditions = [
           {
@@ -1024,53 +1024,56 @@ export default {
         };
         const url = this.getServiceUrl("select", loader.service);
         const response = await this.$http.post(url, params);
-      
-      if (response && response.data && response.data.data && response.data.data.length > 0) {
-        const item = response.data.data[0];
-        
-        // 如果有路径信息，构建完整的树形结构
-        if (item.path) {
-          try {
-            // 获取完整路径的树形数据
-            const treeStructureData = await this.getFullPathData(item.path);
-            if (treeStructureData && treeStructureData.length > 0) {
-              this.options = treeStructureData;
-              
-              // 设置正确的selected路径
-              const pathArray = item.path.split('/').filter(Boolean);
-              this.selected = pathArray.map((val) => {
-                // 如果value字段是数字类型，需要转换为数字
-                if (typeof item[this.props.value] === "number" && !isNaN(Number(val))) {
-                  return Number(val);
+
+        if (response && response.data && response.data.data && response.data.data.length > 0) {
+          const item = response.data.data[0];
+
+          // 如果有路径信息，构建完整的树形结构
+          if (item.path) {
+            try {
+              // 获取完整路径的树形数据
+              const treeStructureData = await this.getFullPathData(item.path);
+              if (treeStructureData && treeStructureData.length > 0) {
+                if (!treeStructureData.find((item) => item[valCol] === this.field.model)) {
+                  this.options.push(item);
                 }
-                return val;
-              });
-              
-              console.log('默认值路径设置完成:', {
-                path: item.path,
-                selected: this.selected,
-                options: this.options
-              });
-            } else {
-              // 如果无法获取完整路径数据，使用原有逻辑
+                this.options = treeStructureData;
+
+                // 设置正确的selected路径
+                const pathArray = item.path.split('/').filter(Boolean);
+                this.selected = pathArray.map((val) => {
+                  // 如果value字段是数字类型，需要转换为数字
+                  if (typeof item[this.props.value] === "number" && !isNaN(Number(val))) {
+                    return Number(val);
+                  }
+                  return val;
+                });
+
+                console.log('默认值路径设置完成:', {
+                  path: item.path,
+                  selected: this.selected,
+                  options: this.options
+                });
+              } else {
+                // 如果无法获取完整路径数据，使用原有逻辑
+                this.selected = item?.path?.split("/").filter((item) => !!item) || [];
+              }
+            } catch (error) {
+              console.error('构建完整路径失败，使用简单路径:', error);
               this.selected = item?.path?.split("/").filter((item) => !!item) || [];
             }
-          } catch (error) {
-            console.error('构建完整路径失败，使用简单路径:', error);
-            this.selected = item?.path?.split("/").filter((item) => !!item) || [];
+          } else {
+            // 没有路径信息时的处理
+            this.selected = [];
           }
-        } else {
-          // 没有路径信息时的处理
-          this.selected = [];
+
+          // 设置字段模型
+          if (this.allowChangeModel !== false) {
+            this.changeFieldModel(item);
+          } else {
+            this.onlyEmitData(item);
+          }
         }
-        
-        // 设置字段模型
-        if (this.allowChangeModel !== false) {
-          this.changeFieldModel(item);
-        } else {
-          this.onlyEmitData(item);
-        }
-      }
       } catch (error) {
         console.error('loadDetail 执行失败:', error);
       } finally {
@@ -1385,12 +1388,12 @@ export default {
         if (processedNode.children && Array.isArray(processedNode.children) && processedNode.children.length > 0) {
           // 递归处理子节点
           processedNode.children = this.processDisabledState(processedNode.children);
-          
+
           // 检查所有子节点是否都被disabled
-          const allChildrenDisabled = processedNode.children.every(child => 
+          const allChildrenDisabled = processedNode.children.every(child =>
             child.disabled === "是" || child.disabled === true
           );
-          
+
           // 如果所有子节点都被disabled，则将父节点也设置为disabled
           if (allChildrenDisabled && processedNode.children.length > 0) {
             console.log(`父节点 ${processedNode.label || processedNode.name || processedNode.id} 的所有子节点都被disabled，设置父节点为disabled`);
