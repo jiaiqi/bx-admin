@@ -206,7 +206,7 @@ const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' 
 
 
 let strTime = route.query?.startTime || moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-let endTime = route.query?.endTime || moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let endTime = route.query?.endTime || moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 const listVisible = ref(false)
 const drivingInfo = ref([])
 const userMap = ref(null);
@@ -649,10 +649,12 @@ const getPointByOriginCenter = () => {
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getOriginCenterDetails(cadn).then(res => {
+    console.log(res.data, 999999999)
     if (res.data.state !== 'SUCCESS') return;
     if (res.data.data && res.data.data.length > 0) {
       handleCtrlSubmit(true)   //所有从远端中心回来的数据都是可以直接保存的
       filterPointList(res.data.data, 'ori')
+      console.log(res.data.data, 88888888)
     }else{
       getPointByOriginCenterNew()
     }
@@ -661,12 +663,13 @@ const getPointByOriginCenter = () => {
 
 const getPointByOriginCenterNew = () => {
   strTime =  moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
-   endTime =  moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+   endTime =  moment(formattedDate).add(2, 'day').format('YYYY-MM-DD HH:mm:ss');
   let cadn = {
     condition: [{ colName: "passid", ruleType: "like", value: passId }],
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
-  orderUtil.getPointByOriginCenterNew(cadn).then(res => {
+  console.log(cadn, 777777777)
+  orderUtil.getOriginCenterDetailsNew(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
     if (res.data.data && res.data.data.length > 0) {
       handleCtrlSubmit(true)   //所有从远端中心回来的数据都是可以直接保存的

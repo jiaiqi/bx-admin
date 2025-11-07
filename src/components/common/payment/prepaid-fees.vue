@@ -103,6 +103,9 @@
             </div>
                          <div v-else-if="isShowQrcode && qrcodeInfo.qrCd" class="qrcode-display">
                <qr-code :text="qrcodeInfo.qrCd" :size="110"/>
+               <div class="qc_cot22" v-if="isPayed" style="background: #f5f7fa;opacity: 0.9;position: absolute;top: 32.5%;left: 50%;transform: translate(-50.5%, -50%);">
+              <img src="../../../assets/image/pay.png" style="width: 124px;height: 110px;" alt="">
+              </div>
                <div class="qrcode-info">
                  <p>订单号：{{ qrcodeInfo.odrNo }}</p>
                  <p>请使用手机扫码支付</p>
@@ -120,7 +123,7 @@
     <div class="payment-action" v-if="!handleStatus">
       <!-- 支付方式选择 -->
       <div class="payment-method">
-        <h3>支付方式</h3>
+        <h3>支付类型</h3>
         <div class="method-tabs">
           <div 
             class="method-tab" 
@@ -148,12 +151,172 @@
           </div>
         </div>
       </div>
+
+       <div
+       class="payment-method"
+        v-if="isChangePay"
+      >
+        <h3
+        >支付方式：</h3>
+          <div>
+            <el-radio-group
+              v-model="payType"
+              @change="chengPayType"
+            >
+              <el-radio
+                v-for="(item, index) in payOption"
+                :key="item.code"
+                :label="item.code"
+              >
+                {{ item.label }}
+              </el-radio>
+            </el-radio-group>
+          </div>
+      </div>
       
       <button class="pay-btn" @click="handlePayment">
         立即缴费
       </button>
     </div>
-
+     <div v-if="!submitvisible&&payStep === 1&&payType === 1">
+         <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">订单号：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.order_no || '' }}  </span>
+         <el-tooltip v-if="PayPublicOrder?.order_no" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['order_no']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.order_no, 'order_no')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">匹配码：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.mtchCd || '' }}
+          </span>
+         <el-tooltip v-if="PayPublicOrder?.mtchCd" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['mtchCd']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.mtchCd, 'mtchCd')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">商户结算户账号：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNo || '' }}
+          </span>
+        <el-tooltip v-if="PayPublicOrder?.mrchStlAcctNo" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['mrchStlAcctNo']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.mrchStlAcctNo, 'mrchStlAcctNo')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">商户结算户户名：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.mrchStlAcctNm || '' }}
+          </span>
+         <el-tooltip v-if="PayPublicOrder?.mrchStlAcctNm" effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['mrchStlAcctNm']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.mrchStlAcctNm, 'mrchStlAcctNm')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">总行行号：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.recBnkNo || '313791000015' }}
+          </span>
+         <el-tooltip effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['recBnkNo']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.recBnkNo, 'recBnkNo')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
+      </el-row>
+       <el-row
+        :gutter="20"
+        style="margin:5px 0"
+      >
+        <el-col
+          :span="6"
+          style="text-align: right;"
+        >
+        <span class="col_t">总行行名：</span></el-col>
+        <el-col :span="16">
+          <span class="col_t">{{ PayPublicOrder?.recBnkNm || '西安银行股份有限公司' }}
+          </span>
+         <el-tooltip effect="light" content="复制成功" placement="top" v-model="copyTooltipVisible['recBnkNm']" manual>
+       <el-button
+        icon="el-icon-copy-document"
+        size="mini"
+        type="text"
+        @click="handleCopy(PayPublicOrder?.recBnkNm, 'recBnkNm')">
+        </el-button>
+        </el-tooltip>
+        </el-col>
+      </el-row>
+      <div class="tips-container">
+          <el-icon class="tips-icon el-icon-info"></el-icon>
+          <div class="tips-content">请您通过企业对公账户完成转账，务必在转账附言中填写匹配码，
+            系统会根据匹配码自动匹配您的订单。若转账后 24 小时内订单状态未更新，
+            可联系客服提供匹配码查询进度。</div>
+        </div>
+      </div>
     <!-- 支付结果容器 -->
     <div class="payment-result" v-if="handleStatus">
       <div class="result-content">
@@ -207,6 +370,20 @@ export default{
       customAmount: '',
       routeInfo:{},
       rowDetails:{},
+      isPayed:false,
+      isChangePay:true,
+      payType:1,
+      PayPublicOrder:{},
+       payOption:[
+        {
+          code: 1,
+          label: "线上",
+        },
+        {
+          code: 2,
+          label: "线下",
+        },
+      ],
       hasInputError: false,
       errorMessage: '',
       paymentMethod: 'pubilc', // 默认选择对公转账
@@ -239,6 +416,9 @@ export default{
     this.getInitPayInfo()
   },
   methods: {
+     chengPayType(val) {
+      this.payType = val;
+    },
     //获取初始跳转后的原始订单信息
     getInitPayInfo(){
       let obj={
@@ -272,6 +452,11 @@ export default{
       this.errorMessage = '';
     },
     selectPaymentMethod(method) {
+      if(method === 'pubilc'){
+        this.isChangePay = true;
+      }else{
+        this.isChangePay = false;
+      }
       this.paymentMethod = method;
       this.clearQrcodeInfo();
     },
@@ -377,7 +562,7 @@ export default{
           //5s后启动查询
           setTimeout(()=>{
             this.keepStatusInfo()
-          },1000*10)
+          },1000*5)
 
         }
       }).catch(err=>{})
@@ -389,20 +574,24 @@ export default{
       }
       this.payTimer=setInterval(()=>{
         that.handelStatusInfo()
-      },500)
+      },2000)
     },
     //获取二维码支付后状态信息
     handelStatusInfo(status){
-      this.showLoading=true
       payUtils.getPayStatus(this.order_no).then(res => {
         if(res.data.state!=='SUCCESS') return;
-        this.showLoading=false
-        this.handleStatus=true;
-        let ls =res.data.data[0];
-        this.statusText=ls.state
-        this.stepStatus=ls.state==='已支付'||ls.state==='已退款'?true:!(ls.state === '支付失败' || ls.state === '待支付')
-        clearInterval(this.payTimer);
-        this.payTimer=null;
+        // this.handleStatus=true;
+        if(res.data.data[0].state==='已支付'){
+          this.isPayed = true
+           let ls =res.data.data[0];
+         this.statusText=ls.state
+          this.stepStatus=ls.state==='已支付'||ls.state==='已退款'?true:!(ls.state === '支付失败' || ls.state === '待支付')
+          if(this.payTimer){
+          clearTimeout(that.payTimer);
+        }
+        this.payTimer = null
+        }
+       
 
       }).catch(err => {})
     },
@@ -467,11 +656,43 @@ export default{
       }else if (this.paymentMethod === 'qrcode') {
         await this.handleQRCodePayment(this.finalAmount);
       }else if (this.paymentMethod === 'pubilc') {
-        await this.handlePubilcPayment(this.finalAmount);
+        if(this.payType===1){
+          await this.handlePubilcPayment(this.finalAmount);
+        }else{
+           await this.handleCashPayment(this.finalAmount);
+        }
+        
       }
     },
-    handlePubilcPayment(){
-
+   async handlePubilcPayment(){
+      try {
+        const payInfoParam = await this.handleAddInfoIntoPayment();
+        if (payInfoParam) {
+          this.handlePayType(payInfoParam);
+        } else {
+          this.$message.error('获取支付参数失败');
+        }
+      } catch (error) {
+        this.$message.error('现金缴费处理失败');
+      }
+    },
+      // 新线上提交方法
+    handlePayType(payInfoParam){
+       this.showLoading = true;
+      payUtils.handlePayPublicOrder(payInfoParam).then((res) => {
+        this.showLoading = false;
+        console.log(res, 222222222)
+        if(res.data.state !=='SUCCESS'){
+          this.$message.error(res.data.resultMessage || '支付失败');
+          return;
+        }
+        this.PayPublicOrder= res?.data?.response?.[0]?.response || {}
+        if(this.PayPublicOrder){
+          this.submitvisible = false;
+        }
+        
+       console.log(this.PayPublicOrder, 999999999)
+      }).catch((err) => { })
     },
     async handleCashPayment(amount) {
       try {
@@ -691,7 +912,7 @@ export default{
       flex-shrink: 0; // 防止右侧容器被压缩
       
       .qrcode-container {
-        width: 200px;
+        width: 220px;
         height: 220px;
         background: #ffffff;
         border: 2px solid #e8e8e8;
