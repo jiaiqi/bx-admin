@@ -142,9 +142,9 @@ const pass_time = passId.slice(22, 30)
 const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
  
 let strTime = route.query?.startTime||moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-let endTime = route.query?.endTime||moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let endTime = route.query?.endTime||moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 const getPic = (item, imgtype, enType) => {
-  let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.grantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
+  let url = `${window.APP_CONFIG.API_URL_2}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.grantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
   if (enType) {
     url += `&enextype=${enType}`
   }
@@ -184,7 +184,25 @@ const getPointByOriginCenter = () => {
   orderUtil.getOriginCenterDetails(obj).then(res => {
     if (res.data.state !== 'SUCCESS') return;
     isLoading.value = false
-    handleFilterListInfo(res.data.data)
+    if(res.data.data && res.data.data.length > 0){
+      handleFilterListInfo(res.data.data)
+    }else{
+      getPointByOriginCenterNew()
+    }
+    
+  }).catch(err => { })
+}
+
+const getPointByOriginCenterNew = () => {
+  let cadn = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
+  }
+  orderUtil.getOriginCenterDetailsNew(cadn).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    if (res.data.data && res.data.data.length > 0) {
+       handleFilterListInfo(res.data.data)
+    }
   }).catch(err => { })
 }
 

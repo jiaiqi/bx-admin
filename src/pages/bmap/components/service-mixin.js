@@ -211,7 +211,7 @@ export default {
                         point['_dev_point_type'] = p['category']
                         switch (point['_dev_point_type']) {
                             case '门架':
-                                point['icon'] = gantry
+                                point['icon'] = this.changeIconType(point['dataoriginal'])
                                 point['icon_active'] = this.changeIconType(point['dataoriginal'])
                                 point["icon_size"]={
                                     w:25,
@@ -309,7 +309,7 @@ export default {
                                     point['_dev_point_type'] = p['category'] || '门架'
                                     switch (point['_dev_point_type']) {
                                         case '门架':
-                                            point['icon'] = gantry
+                                            point['icon'] = this.changeIconType(point['dataoriginal'])
                                             point['icon_active'] = this.changeIconType(point['dataoriginal'])
                                             point["icon_size"]={
                                                 w:25,
@@ -1207,7 +1207,7 @@ export default {
                             switch (item['category']) {
                                 case '门架':
                                     
-                            item['icon'] = gantry
+                            item['icon'] = this.changeIconType(item['dataoriginal'])
                             item['icon_active'] = this.changeIconType(item['dataoriginal'])
                                     break;
                                 case '收费站':

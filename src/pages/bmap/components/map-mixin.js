@@ -249,6 +249,7 @@ export default {
 
         }
       })
+      this.onEditorType('driving')
     },
     openIsEditor() {
       this.isEditor = true
@@ -1267,7 +1268,7 @@ export default {
     onEditorType(type) {
       if (this.BMap) {
         //
-        console.log('type', type)
+        console.log('type11111111111', type)
         let lines = this.buildResLine.filter(item => item['_editor_type'] == type)
         console.log('lines', lines)
         if (Array.isArray(lines) && lines.length > 0) {
