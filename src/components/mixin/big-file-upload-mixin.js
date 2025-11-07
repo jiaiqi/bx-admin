@@ -162,7 +162,12 @@ export default {
     useWorker(file) {
       const that = this
       return new Promise((resolve) => {
-        const worker = new Worker('./hash-worker.js')
+        // 使用 webpack4 兼容的 file-loader 生成静态 URL，并传递给 Worker
+        // eslint-disable-next-line
+        const worker = new Worker(require('!!file-loader?name=assets/[name].[ext]!@/assets/hash-worker.js'))
+        // 确保 spark-md5.min.js 也被复制到 assets 目录，供 worker 内部 importScripts 使用
+        // eslint-disable-next-line
+        require('!!file-loader?name=assets/[name].[ext]!@/assets/spark-md5.min.js')
         worker.postMessage({ file, chunkSize: that.chunkSize })
         worker.onmessage = (e) => {
           const { fileHash, fileChunkList } = e.data
@@ -189,7 +194,7 @@ export default {
           taskArrItem.allChunkList.length === 0 ||
           taskArrItem.whileRequests.length > 0
         ) {
-          resolve(false);
+          // resolve(false);
           return;
         }
       // 找到文件处于处理中/上传中的 文件列表（是文件而不是切片）
@@ -200,7 +205,7 @@ export default {
       // 实时动态获取并发请求数,每次调请求前都获取一次最大并发数
       // 浏览器同域名同一时间请求的最大并发数限制为6
       // 例如如果有3个文件同时上传/处理中，则每个文件切片接口最多调 6 / 3 == 2个相同的接口
-      // this.maxRequest = Math.ceil(6 / isTaskArrIng.length)
+      this.maxRequest = Math.ceil(6 / isTaskArrIng.length)
 
       // 从数组的末尾开始提取 maxRequest 个元素。
       let whileRequest = taskArrItem.allChunkList.slice(-this.maxRequest)

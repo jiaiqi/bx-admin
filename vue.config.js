@@ -3,15 +3,6 @@ const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const productionGzipExtensions = ["js", "css"];
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-function getProdExternals() {
-  return {
-    lodash: "_",
-    moment: "moment",
-  };
-}
-
-
-
 module.exports = {
   chainWebpack: (config) => {
     // Babel配置优化
@@ -118,6 +109,43 @@ module.exports = {
           ]
         }]);
     }
+
+    // 统一非 JS 资源的输出路径到 assets 下的子目录
+    // 图片资源
+    config.module
+      .rule('images')
+      .use('url-loader')
+      .tap(options => {
+        options.name = 'assets/img/[name].[hash:8].[ext]';
+        return options;
+      });
+
+    // 字体资源
+    config.module
+      .rule('fonts')
+      .use('url-loader')
+      .tap(options => {
+        options.name = 'assets/fonts/[name].[hash:8].[ext]';
+        return options;
+      });
+
+    // 媒体资源（音视频等）
+    config.module
+      .rule('media')
+      .use('url-loader')
+      .tap(options => {
+        options.name = 'assets/media/[name].[hash:8].[ext]';
+        return options;
+      });
+
+    // 统一 CSS 输出到 assets/css
+    if (config.plugins.has('extract-css')) {
+      config.plugin('extract-css').tap(args => {
+        args[0].filename = 'assets/css/[name].[contenthash:8].css';
+        args[0].chunkFilename = 'assets/css/[name].[contenthash:8].css';
+        return args;
+      });
+    }
   },
 
   // 由插件精细化控制 sourcemap，默认关闭全局生产 SourceMap
@@ -128,8 +156,10 @@ module.exports = {
   },
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
-  publicPath:process.env.NODE_ENV==='development' ? '/vpages/' : "./",
+  publicPath:"./",
   outputDir: "vpages",
+  // 将所有构建资源统一置于 outputDir 下的 assets 目录
+  assetsDir: 'assets',
 
   configureWebpack: {
     // 性能优化
@@ -145,6 +175,17 @@ module.exports = {
         '@': require('path').resolve(__dirname, 'src')
       },
       extensions: ['.js', '.vue', '.json']
+    },
+
+    // 统一 JS 输出到 assets/js，区分开发与生产环境的文件名
+    output: process.env.NODE_ENV === 'production' ? {
+      // 生产环境使用 [hash]，避免 webpack4 对 [contenthash]/[chunkhash] 的限制
+      filename: 'assets/js/[name].[hash:8].js',
+      chunkFilename: 'assets/js/[name].[hash:8].js'
+    } : {
+      // 开发环境（启用 HMR）不能使用 contenthash/chunkhash
+      filename: 'assets/js/[name].js',
+      chunkFilename: 'assets/js/[name].js'
     },
 
     // 生产环境优化配置

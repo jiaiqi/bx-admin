@@ -151,8 +151,9 @@
 </template>
 
 <script setup>
+import cloneDeep from 'lodash/cloneDeep';
 import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
-import VideoUtil from "@/pages/dahua-video/video";
+import VideoUtil from "./video";
 import { Notification } from 'element-ui';
 import {
   useRouter,
@@ -160,7 +161,6 @@ import {
   useHttp,
   useUtils
 } from "@/common/vueApi";
-import cloneDeep from 'lodash/cloneDeep';
 
 // 动态加载 videoPlayer.js 的函数
 const loadVideoPlayerScript = () => {
@@ -182,19 +182,23 @@ const loadVideoPlayerScript = () => {
 
     // 创建script标签动态加载
     const script = document.createElement('script');
-    script.src = './dhvideo/videoPlayer.js';
+    // 使用 webpack4 兼容的内联 file-loader，生成静态 URL 到 assets
+    // 注意：需确保项目已包含 file-loader（Vue CLI 默认包含）
+    // 输出路径：assets/dhvideo/videoPlayer.js（不加 hash，便于稳定引用）
+    // eslint-disable-next-line
+    script.src = require('file-loader?name=assets/dhvideo/[name].[ext]!@/assets/dhvideo/videoPlayer.js');
     script.async = true;
-    
+
     script.onload = () => {
       console.log('videoPlayer.js 动态加载成功');
       resolve();
     };
-    
+
     script.onerror = () => {
       console.error('videoPlayer.js 动态加载失败');
       reject(new Error('Failed to load videoPlayer.js'));
     };
-    
+
     document.head.appendChild(script);
   });
 };
@@ -294,7 +298,12 @@ const setReq = () => {
 const filterText = ref(''); //树节点过滤使用
 const tree = ref(null);
 let myVideoPlayer = null;
-const LoginInfo = window.APP_CONFIG.videoInfo
+const LoginInfo = window.APP_CONFIG?.videoInfo || {
+  host: '10.172.20.2',  // icc 平台ip
+  port: '443',  //icc 平台端口 https 默认 443
+  username: 'admin',  // icc 平台用户名
+  password: 'Admin123' // icc 平台密码
+}
 
 // 添加历史回放相关的状态变量
 const playbackStartTime = ref('');
@@ -569,128 +578,128 @@ const initPlayer = async () => {
         console.error('销毁播放器时发生错误:', error);
       }
     }
-    
+
     // 创建新的播放器实例
     return new Promise((resolve, reject) => {
       myVideoPlayer = new VideoPlayer({
-      videoId: "play_dh",
-      windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
-      usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
-      pluginLoginInfo: LoginInfo,
-      division: props.division, // 默认显示9宫格
-      draggable: false, // 窗口拖拽 【暂不支持】
-      showBar: true, // 底部操作栏， 选传，【true - 显示, false - 隐藏】
-      shieldClass: shieldClass, // 如果DOM元素被插件挡住了，把DOM元素的类名传入。
-      coverShieldClass: ['video_cot_area'], // 如果插件要在dom内滚动，需要把DOM元素的类名传入，请查看案例-遮挡
-      parentIframeShieldClass: shieldClass, // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
-      // 创建播放器成功回调
-      createSuccess: (versionInfo) => {
-        console.log(LoginInfo)
-        // 初始化时默认显示9宫格
-        myVideoPlayer.changeDivision(props.division)
-        // 播放器加载完成，隐藏加载动画
-        isPlayerLoading.value = false
-        console.warn('创建播放器成功:', versionInfo);
-        resolve();
-      },
-      // 创建播放器失败回调
-      createError: (err) => {
-        // 有错误码，可打印查看错误信息
-        isPlayerLoading.value = false
-        console.error('创建播放器失败:', err);
-        reject(err);
-      },
-      // 插件公共回调
-      dhPlayerMessage: (info, err) => {
-        console.warn('插件公共回调:', info, err);
-      },
-      // 实时预览成功回调
-      realSuccess: (info) => {
-        console.warn('实时预览成功-init:', info);
-        notifyParentWindowChannelsChange();
-      },
-      // 实时预览失败 回调
-      realError: (info, err) => {
-        console.error('实时预览失败:', info, err);
+        videoId: "play_dh",
+        windowType: isPlaybackMode.value ? 7 : 0,    // 播放器类型，必传， 0 - 实时预览，3 - 录像回放，7- 录像回放（支持倒放）
+        usePluginLogin: true, // 采用登录 (请默认传true，插件内部自动拉流)
+        pluginLoginInfo: LoginInfo,
+        division: props.division, // 默认显示9宫格
+        draggable: false, // 窗口拖拽 【暂不支持】
+        showBar: true, // 底部操作栏， 选传，【true - 显示, false - 隐藏】
+        shieldClass: shieldClass, // 如果DOM元素被插件挡住了，把DOM元素的类名传入。
+        coverShieldClass: ['video_cot_area'], // 如果插件要在dom内滚动，需要把DOM元素的类名传入，请查看案例-遮挡
+        parentIframeShieldClass: shieldClass, // 有 iframe 时，top层 的 dom 元素被插件挡住了，把DOM元素的类名传入。
+        // 创建播放器成功回调
+        createSuccess: (versionInfo) => {
+          console.log(LoginInfo)
+          // 初始化时默认显示9宫格
+          myVideoPlayer.changeDivision(props.division)
+          // 播放器加载完成，隐藏加载动画
+          isPlayerLoading.value = false
+          console.warn('创建播放器成功:', versionInfo);
+          resolve();
+        },
+        // 创建播放器失败回调
+        createError: (err) => {
+          // 有错误码，可打印查看错误信息
+          isPlayerLoading.value = false
+          console.error('创建播放器失败:', err);
+          reject(err);
+        },
+        // 插件公共回调
+        dhPlayerMessage: (info, err) => {
+          console.warn('插件公共回调:', info, err);
+        },
+        // 实时预览成功回调
+        realSuccess: (info) => {
+          console.warn('实时预览成功-init:', info);
+          notifyParentWindowChannelsChange();
+        },
+        // 实时预览失败 回调
+        realError: (info, err) => {
+          console.error('实时预览失败:', info, err);
 
-      },
-      // 对讲成功回调
-      talkSuccess: (info) => {
-        console.warn('对讲成功:', info);
-      },
-      // 对讲失败回调
-      talkError: (info, err) => {
-        console.error('对讲失败:', info, err);
-      },
-      // 录像播放成功回调
-      playbackSuccess: (info) => {
-        console.warn('录像播放成功:', info);
+        },
+        // 对讲成功回调
+        talkSuccess: (info) => {
+          console.warn('对讲成功:', info);
+        },
+        // 对讲失败回调
+        talkError: (info, err) => {
+          console.error('对讲失败:', info, err);
+        },
+        // 录像播放成功回调
+        playbackSuccess: (info) => {
+          console.warn('录像播放成功:', info);
 
-      },
-      // 录像播放失败回调
-      playbackError: (info, err) => {
-        console.error('录像播放失败:', info, err);
+        },
+        // 录像播放失败回调
+        playbackError: (info, err) => {
+          console.error('录像播放失败:', info, err);
 
-      },
-      // 录像播放完成回调
-      playbackFinish: (info) => {
-        console.warn('录像播放完成:', info);
+        },
+        // 录像播放完成回调
+        playbackFinish: (info) => {
+          console.warn('录像播放完成:', info);
 
-      },
-      // 抓图成功回调
-      snapshotSuccess: ({ base64Url, path }, info) => {
-        let byteCharacters = atob(
-          base64Url.replace(/^data:image\/(png|jpeg|jpg);base64,/, "")
-        );
-        let byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        },
+        // 抓图成功回调
+        snapshotSuccess: ({ base64Url, path }, info) => {
+          let byteCharacters = atob(
+            base64Url.replace(/^data:image\/(png|jpeg|jpg);base64,/, "")
+          );
+          let byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          let byteArray = new Uint8Array(byteNumbers);
+          let blob = new Blob([byteArray], {
+            type: undefined,
+          });
+          let aLink = document.createElement("a");
+          aLink.download = "图片名称.jpg"; //这里写保存时的图片名称
+          aLink.href = URL.createObjectURL(blob);
+          aLink.click();
+          console.warn('抓图成功:', info);
+        },
+        // 关闭视频窗口回调
+        closeWindowSuccess: ({ isAll, snum, channelList }) => {
+          console.warn('关闭视频窗口成功:', { isAll, snum, channelList });
+        },
+        // 鼠标单击窗口回调
+        clickWindow: (snum) => {
+          // 点击窗口时，更新当前选择的窗口索引
+          if (!isPlaybackMode.value) {
+            selectedWindow.value = snum;
+            console.warn('当前选择的实时窗口：', snum + 1);
+          }
+          if (isPlaybackMode.value && !isPlaying.value) {
+            selectedWindow.value = snum;
+            console.warn('当前选择的回放窗口：', snum + 1);
+          }
+        },
+        // 鼠标双击窗口回调
+        dbClickWindow: (snum) => {
+          console.warn('鼠标双击窗口:', snum);
+        },
+        // 播放器窗口的数量回调
+        changeDivision: (division) => {
+          console.warn('播放器窗口的数量回调:', division);
+        },
+        // rtsp 流下载录像成功回调
+        downloadRecordSuccess: (info) => {
+          console.warn('rtsp 流下载录像成功:', info);
+        },
+        // rtsp 流下载录像失败回调
+        downloadRecordError: (info, err) => {
+          console.error('rtsp 流下载录像失败:', info, err);
         }
-        let byteArray = new Uint8Array(byteNumbers);
-        let blob = new Blob([byteArray], {
-          type: undefined,
-        });
-        let aLink = document.createElement("a");
-        aLink.download = "图片名称.jpg"; //这里写保存时的图片名称
-        aLink.href = URL.createObjectURL(blob);
-        aLink.click();
-        console.warn('抓图成功:', info);
-      },
-      // 关闭视频窗口回调
-      closeWindowSuccess: ({ isAll, snum, channelList }) => {
-        console.warn('关闭视频窗口成功:', { isAll, snum, channelList });
-      },
-      // 鼠标单击窗口回调
-      clickWindow: (snum) => {
-        // 点击窗口时，更新当前选择的窗口索引
-        if (!isPlaybackMode.value) {
-          selectedWindow.value = snum;
-          console.warn('当前选择的实时窗口：', snum + 1);
-        }
-        if (isPlaybackMode.value && !isPlaying.value) {
-          selectedWindow.value = snum;
-          console.warn('当前选择的回放窗口：', snum + 1);
-        }
-      },
-      // 鼠标双击窗口回调
-      dbClickWindow: (snum) => {
-        console.warn('鼠标双击窗口:', snum);
-      },
-      // 播放器窗口的数量回调
-      changeDivision: (division) => {
-        console.warn('播放器窗口的数量回调:', division);
-      },
-      // rtsp 流下载录像成功回调
-      downloadRecordSuccess: (info) => {
-        console.warn('rtsp 流下载录像成功:', info);
-      },
-      // rtsp 流下载录像失败回调
-      downloadRecordError: (info, err) => {
-        console.error('rtsp 流下载录像失败:', info, err);
-      }
-    });
+      });
 
-  })
+    })
   } catch (error) {
     console.error('初始化播放器时发生错误:', error);
     isPlayerLoading.value = false;
