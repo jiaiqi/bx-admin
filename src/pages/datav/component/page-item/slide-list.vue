@@ -469,6 +469,8 @@ export default {
       if (jumpUrl) {
         open(jumpUrl)
       } else if (item.mini_program_url) {
+      } else if (this.swiperJson?.card_json?.jump_json) {
+        this.jumpAction(this.swiperJson?.card_json?.jump_json, item);
       } else if (item.content_no || item.content) {
         // 跳到文章详情
         this.$router.push({
@@ -551,7 +553,7 @@ export default {
               }
               this.swiperList = list;
             }
-          }else if(!this.getCardJson){
+          } else if (!this.getCardJson) {
             // 纯图的轮播图，过滤没有图片的数据
             this.swiperList = this.swiperList.filter(item => item && item[swiperJson?.srv_col_image]);
           }
