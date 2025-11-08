@@ -179,6 +179,7 @@ export default {
 
   .work_tab {
     width: 4%;
+    min-width: 45px;
     height: 100%;
     background: #f2f6f6;
     display: flex;
