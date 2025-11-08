@@ -4,10 +4,10 @@
     v-loading="isLoading"
     element-loading-text="查询中....."
     element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.8)"
+    element-loading-background="rgba(0, 0, 0, 0.6)"
   >
     <div
-      v-if="list.length == 0"
+      v-if="loaded && list.length == 0"
       class="err_info"
     >
       <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{ passId }}</el-empty>
@@ -99,7 +99,7 @@ const list = ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
 const isLoading = ref(false)
-
+const loaded = ref(false)
 
 const showPicture = (item) => {
   imgSrc.value = getPic(item)
@@ -110,9 +110,9 @@ let passId = route.query?.pass_id
 
 const pass_time = passId.slice(22, 30)
 const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
- 
-let strTime = route.query?.startTime||moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-let endTime = route.query?.endTime||moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
+
+let strTime = route.query?.startTime || moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let endTime = route.query?.endTime || moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 const getPic = (item, imgtype, enType) => {
   return buildGantryImageUrl(window.APP_CONFIG.API_URL_2, item, { imgType: imgtype, enexType: enType })
 }
@@ -145,14 +145,16 @@ const getPointByOriginCenter = () => {
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getOriginCenterDetails(obj).then(res => {
+    loaded.value = true
     if (res.data.state !== 'SUCCESS') return;
     isLoading.value = false
-    if(res.data.data && res.data.data.length > 0){
+    loaded.value = true
+    if (res.data.data && res.data.data.length > 0) {
       handleFilterListInfo(res.data.data)
-    }else{
+    } else {
       getPointByOriginCenterNew()
     }
-    
+
   }).catch(err => { })
 }
 
@@ -164,7 +166,7 @@ const getPointByOriginCenterNew = () => {
   orderUtil.getOriginCenterDetailsNew(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
     if (res.data.data && res.data.data.length > 0) {
-       handleFilterListInfo(res.data.data)
+      handleFilterListInfo(res.data.data)
     }
   }).catch(err => { })
 }
@@ -181,6 +183,7 @@ const getPointByLocation = () => {
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getLocationCenterDetails(obj).then(res => {
+    loaded.value = true
     if (res.data.state !== 'SUCCESS') return;
     if (res.data.data && res.data.data.length > 0) {
       isLoading.value = false
@@ -246,7 +249,7 @@ const getCarTimeLine = (info) => {
     orderUtil.getCarPathInfoById(cadn).then(res => {
       if (res.data.state !== 'SUCCESS') return;
       list.value = res.data.data
-
+      loaded.value = true
     }).catch(err => { })
   }
 }
@@ -269,6 +272,7 @@ onMounted(() => {
 <style scoped>
 .door-frame {
   padding: 15px;
+  height: 100%;
   max-height: calc(100vh - 5rem);
   overflow-y: auto;
 }
@@ -284,5 +288,4 @@ onMounted(() => {
   width: 100%;
   height: calc(100vh - 12.5rem);
 }
-
 </style>
