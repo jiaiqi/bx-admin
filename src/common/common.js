@@ -1,12 +1,11 @@
-import { getRouteMode, getBaseUrl, getFullBaseUrl, getPublicPath, getOutputDir, getAssetsDir } from "./config";
-export {
-  getRouteMode,
-  getBaseUrl,
-  getFullBaseUrl,
-  getPublicPath,
-  getOutputDir,
-  getAssetsDir,
-}
+// 为兼容 CJS 源文件，改为默认导入再按命名方式导出
+import cfg from "./config";
+export const getRouteMode = cfg.getRouteMode;
+export const getBaseUrl = cfg.getBaseUrl;
+export const getFullBaseUrl = cfg.getFullBaseUrl;
+export const getPublicPath = cfg.getPublicPath;
+export const getOutputDir = cfg.getOutputDir;
+export const getAssetsDir = cfg.getAssetsDir;
 
 /**
  * 检查字符串是否为有效的JSON格式

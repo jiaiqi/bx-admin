@@ -1,8 +1,13 @@
 const webpack = require("webpack");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
-const { getPublicPath, getOutputDir, getAssetsDir } = require("@/common/common");
 const productionGzipExtensions = ["js", "css"];
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const { getPublicPath, getOutputDir, getAssetsDir } = require("./src/common/config.js");
+
+// Node 侧从 CommonJS 模块读取公共路径和输出配置
+const publicPath = getPublicPath();
+const outputDir = getOutputDir();
+const assetsDir = getAssetsDir();
 
 module.exports = {
   chainWebpack: (config) => {
@@ -157,10 +162,10 @@ module.exports = {
   },
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
-  publicPath: getPublicPath(),
-  outputDir: getOutputDir(),
+  publicPath: publicPath,
+  outputDir: outputDir,
   // 将所有构建资源统一置于 outputDir 下的 assets 目录
-  assetsDir: getAssetsDir(),
+  assetsDir: assetsDir,
 
   configureWebpack: {
     // 性能优化
