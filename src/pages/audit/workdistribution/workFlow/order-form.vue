@@ -1274,6 +1274,7 @@ export default {
                   'exstationname': resdata[0].exstationname,
                   'extime': resdata[0].extime,
                 }]
+                this.$store.commit('orderForm/handleSetSuspectedData', resdata)
                 if (!resdata[0].passid) {
                   this.$confirm('暂无车辆通行流水，无法发起工单!', '提示', {
                     confirmButtonText: '确定',
@@ -1410,6 +1411,7 @@ export default {
      */
     getTrafficFlow() {
       this.suspectedData = [];
+      this.$store.commit('orderForm/handleClearSuspectedData')
       let cadn = {
         condition: [{ colName: "passid", ruleType: "like", value: this.ruleForm.pass_id }],
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
@@ -1417,6 +1419,7 @@ export default {
       orderUtils.getCarWaysInfo(cadn).then(res => {
         if (res.data.state !== 'SUCCESS') return;
         this.suspectedData = res.data.data ? res.data.data : []
+        this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
         console.log('获取到流水', this.suspectedData)
         if (this.suspectedData?.[0]?.vehicletype) {
           this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''

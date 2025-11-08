@@ -258,6 +258,26 @@ const isEdit = ref(false);
 const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
+
+// 当未获取到通行流水时，从 Vuex 的 suspectedData 回填到 drivingInfo
+const fillDrivingInfoFromSuspectedData = () => {
+  try {
+    const suspected = store.state?.orderForm?.suspectedData;
+    // 优先处理数组结构
+    if (Array.isArray(suspected) && suspected.length > 0) {
+      drivingInfo.value = suspected;
+      return true;
+    }
+    // 兼容对象结构（历史代码可能存单对象）
+    if (suspected && typeof suspected === 'object' && Object.keys(suspected).length > 0) {
+      drivingInfo.value = [suspected];
+      return true;
+    }
+  } catch (e) {
+    console.warn('读取 Vuex suspectedData 回退失败:', e);
+  }
+  return false;
+}
 const ruleForm = reactive({
   orginal_fee: "",             //通行收费
   axlecount: 0,                     //车轴数
@@ -674,8 +694,20 @@ const getTrafficFlow = (id) => {
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
-    if (res.data.state !== 'SUCCESS') return;
+    if (res.data.state !== 'SUCCESS') {
+      // 查询失败，尝试用 Vuex suspectedData 进行回退
+      if (fillDrivingInfoFromSuspectedData()) {
+        console.warn('getTrafficFlow 查询失败，已使用 Vuex suspectedData 作为通行信息');
+      }
+      return;
+    }
     drivingInfo.value = res.data.data;
+    // 未查到数据时，尝试回退使用 Vuex suspectedData
+    if (!drivingInfo.value || !Array.isArray(drivingInfo.value) || drivingInfo.value.length === 0) {
+      if (fillDrivingInfoFromSuspectedData()) {
+        console.warn('getTrafficFlow 未查到数据，已使用 Vuex suspectedData 作为通行信息');
+      }
+    }
     console.log('获取到流水', res.data.data)
   }).catch(err => {
   })
@@ -893,8 +925,12 @@ const filterDataInfo = (info) => {
 //提交时一并提交通行信息
 const handleSubmitDrivingInfo = () => {
   if (!drivingInfo.value || !Array.isArray(drivingInfo.value) || drivingInfo.value.length === 0) {
-    console.warn('没有可提交的通行信息');
-    return;
+    // 首次提交前尝试使用 Vuex suspectedData 作为回退
+    const used = fillDrivingInfoFromSuspectedData();
+    if (!used) {
+      console.warn('没有可提交的通行信息');
+      return;
+    }
   }
 
   try {
