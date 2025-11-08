@@ -34,6 +34,7 @@ const hideDialog = () => {
         :hideTimestamp="false"
         v-for="(activity, index) in data"
         :key="index"
+        :color="index === 0 ? '#0bbd87' : index === data.length - 1 ? '#e80621' : '#3194f6'"
         :timestamp="activity.transtime">
         <div class="info-item">
           <div class="item-list">
