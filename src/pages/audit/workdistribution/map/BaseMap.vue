@@ -1173,11 +1173,12 @@ li {
 
   .driving_tab {
     width: 15%;
+    min-width: 200px;
     max-height: 60%;
     background: #f6f8f8;
     position: absolute;
-    top: 1%;
-    left: 84%;
+    top: .5em;
+    right: .5em;
     z-index: 200;
     box-shadow: 0 0 8px rgba(232, 237, 250, 0.6), 0 2px 4px rgba(232, 237, 250, 0.5);
     opacity: .9;

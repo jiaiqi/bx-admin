@@ -179,6 +179,7 @@ export default {
 
   .work_tab {
     width: 4%;
+    min-width: 45px;
     height: 100%;
     background: #f2f6f6;
     display: flex;
@@ -193,28 +194,24 @@ export default {
   }
 }
 
-.tab_row {
+.tab_row,.act_tab_row {
   margin: 0.9375rem auto;
   width: 90%;
-  padding: 2px 4px;
+  padding: 5px 4px;
   text-align: center;
   font-size: 0.875rem;
   color: #5391ef;
   background: #cccccc;
   cursor: pointer;
   border-radius: 0.1875rem;
+  width: 30px;
+  text-align: center;
 }
 
 .act_tab_row {
-  margin: 0.9375rem auto;
-  width: 90%;
-  padding: 2px 4px;
-  text-align: center;
-  font-size: 0.875rem;
+  
   color: #fff;
   background: #5391ef;
-  cursor: pointer;
-  border-radius: 0.1875rem;
 }
 
 @media screen and (min-width: 768px) and (max-width: 1800px) {
