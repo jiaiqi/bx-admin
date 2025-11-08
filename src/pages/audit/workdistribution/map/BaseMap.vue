@@ -75,87 +75,125 @@
       </div>
     </div>
     <div class="formlist-foot">
-       <el-form
-      :model="ruleForm"
-      :rules="ruleFormRules"
-      label-width="auto"
-      class="demo-ruleForm"
-      :disabled="isDetail === true"
-    >
-       <el-col
-          :span="24"
-          style="display: grid;grid-template-columns: 1fr 1fr 1fr 1fr;"
+      <el-form
+        :model="ruleForm"
+        :rules="ruleFormRules"
+        label-width="80px"
+        class="demo-ruleForm"
+        :disabled="isDetail === true"
+      >
+        <el-row
+          :gutter="12"
+          class="form-row"
         >
-          <el-form-item
-            label="稽核车型"
-            prop="vehicle_type"
+          <el-col
+            :xs="24"
+            :sm="12"
+            :md="12"
+            :lg="6"
+            :xl="6"
           >
-            <el-select
-              v-model="ruleForm.vehicle_type"
-              clearable
-              @change="handleSetVehicleType"
-              placeholder="请选择"
+            <el-form-item
+              label="稽核车型"
+              prop="vehicle_type"
             >
-              <el-option
-                v-for="item in optionsPage.vehicle_type"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item
-            label="是否为大件车辆"
-            prop="isnormel"
-          >
-            <el-select
-              v-model="ruleForm.isnormel"
-              clearable
-              placeholder="请选择"
-              @change="handleSetBigCar"
-            >
-              <el-option
-                v-for="item in optionsPage.isnormel"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item
-            label="车轴数"
-            prop="axlecount"
-          >
-            <el-input
-              v-model="ruleForm.axlecount"
-              clearable
-              @input="handleSetAxleCount"
-              placeholder="请输入..."
-            ></el-input>
-          </el-form-item>
-          <el-form-item
-            label="通行收费(元)"
-            prop="orginal_fee"
-          >
-            <li style="display: flex">
-              <el-input
-                v-model="ruleForm.orginal_fee"
-                @input="handleSetFee"
+              <el-select
+                v-model="ruleForm.vehicle_type"
                 clearable
+                @change="handleSetVehicleType"
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="item in optionsPage.vehicle_type"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col
+            :xs="24"
+            :sm="12"
+            :md="12"
+            :lg="5"
+            :xl="5"
+          >
+            <el-form-item
+              label="是否为大件车辆"
+              label-width="120px"
+              prop="isnormel"
+              class="item-narrow"
+            >
+              <el-select
+                v-model="ruleForm.isnormel"
+                clearable
+                placeholder="请选择"
+                @change="handleSetBigCar"
+              >
+                <el-option
+                  v-for="item in optionsPage.isnormel"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col
+            :xs="24"
+            :sm="12"
+            :md="12"
+            :lg="5"
+            :xl="5"
+          >
+            <el-form-item
+              label="车轴数"
+              prop="axlecount"
+              class="item-narrow"
+            >
+              <el-input
+                v-model="ruleForm.axlecount"
+                clearable
+                @input="handleSetAxleCount"
                 placeholder="请输入..."
               ></el-input>
-              <!-- <el-button
-                type="primary"
-                size="mini"
-                icon="el-icon-edit"
-                @click="handleGetCurrentFree"
-              >计费查询</el-button> -->
-            </li>
-          </el-form-item>
-       </el-col>
-    </el-form>
+            </el-form-item>
+          </el-col>
+          <el-col
+            :xs="24"
+            :sm="12"
+            :md="12"
+            :lg="8"
+            :xl="8"
+          >
+            <el-form-item
+              label="通行收费"
+              prop="orginal_fee"
+              class="item-fee"
+            >
+              <li class="fee-row">
+                <el-input
+                  v-model="ruleForm.orginal_fee"
+                  @input="handleSetFee"
+                  disabled
+                  clearable
+                  placeholder="请输入..."
+                >
+                  <template slot="append">元</template>
+                </el-input>
+                <el-button
+                  type="primary"
+                  icon="el-icon-edit"
+                  @click="handleGetCurrentFree"
+                >计费查询</el-button>
+              </li>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
 
     </div>
     <StationList
@@ -166,8 +204,8 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, computed, reactive } from "vue";
-import { useRoute } from "@/common/vueApi";
+import { onBeforeUnmount, onMounted, ref, computed, reactive, watch } from "vue";
+import { useRoute , useStore } from "@/common/vueApi";
 import MapUtils from "@/pages/audit/workdistribution/map/mapUtils";
 import OrderApi from "@/pages/audit/api/order";
 import { filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn, createOrderNo, formatFeeToYuan, formatFeeToFen } from '../workFlow/filterList'
@@ -187,9 +225,9 @@ import {
 } from "@/pages/audit/workdistribution/map/layerPage";
 import { Message } from 'element-ui';
 import moment from 'dayjs'
-import eventBus from '@/common/eventBus';
 
 const orderUtil = new OrderApi();
+const store = useStore();
 const route = useRoute()
 
 
@@ -198,7 +236,7 @@ const isDetail = computed(() => {
 })
 
 
- const optionsPage= JSON.parse(window.sessionStorage.getItem('optionsPage')) || {}
+const optionsPage = JSON.parse(window.sessionStorage.getItem('optionsPage')) || {}
 const passId = route.query?.pass_id
 
 const pass_time = passId.slice(22, 30)
@@ -220,23 +258,23 @@ const isEdit = ref(false);
 const getImgSrc = (name) => {
   return require(`@/assets/mapIcon/${name}`);
 }
- const ruleForm= reactive({
-        orginal_fee: "",             //通行收费
-        axlecount: 0,                     //车轴数
-        isnormel: "",	                //是否为大件车辆
-        vehicle_type: "",  //稽核车型
-        pass_id: passId,
-        vehicleusertype: "",
-        vehicleclass: "",
-        real_fee: 0,
-        owe_fee: 0,
-        media_type: ""
-      })
-    const ruleFormRules={
-        vehicle_type: [
-          { required: true, message: '请选择稽核车型', trigger: 'blur' }
-        ],
-      }
+const ruleForm = reactive({
+  orginal_fee: "",             //通行收费
+  axlecount: 0,                     //车轴数
+  isnormel: "",	                //是否为大件车辆
+  vehicle_type: "",  //稽核车型
+  pass_id: passId,
+  vehicleusertype: "", // 车辆用户类型
+  vehicleclass: "", // 车种
+  real_fee: 0,
+  owe_fee: 0,
+  media_type: ""
+})
+const ruleFormRules = {
+  vehicle_type: [
+    { required: true, message: '请选择稽核车型', trigger: 'blur' }
+  ],
+}
 const setTabColes = () => {
   isColes.value = !isColes.value
 }
@@ -257,97 +295,105 @@ const initDrawingRoute = async () => {
 
   }
 }
-const handleSetAxleCount=(val) =>{
-      console.log('val', val)
-      ruleForm.axlecount = val
-      eventBus.$emit('updateOrderForm', ruleForm)
-    }
-const handleSetFee=(val) =>{
-      console.log('val', val)
-      ruleForm.orginal_fee = val
-      eventBus.$emit('updateOrderForm', ruleForm)
-    }
- const handleGetCurrentFree=()=> {
+const handleSetAxleCount = (val) => {
+  ruleForm.axlecount = val
+  store.commit('orderForm/handleSetOrderForm', { axlecount: val })
+}
+const handleSetFee = (val) => {
+  ruleForm.orginal_fee = val
+  store.commit('orderForm/handleSetOrderForm', { orginal_fee: val })
+}
+const handleGetCurrentFree = () => {
 
-      if (ruleForm.vehicle_type === '') {
-        Message.error('请在下方发起人信息栏，选择稽核车型后再进行计费查询！');
-      }
-      let obj = {
-        pass_id: ruleForm.pass_id,
-        vehicleusertype: ruleForm.vehicleusertype,
-        vehicleclass: ruleForm.vehicleclass,
-        vehicle_type: ruleForm.vehicle_type,
-        axleCount: ruleForm.axlecount
-      }
+  if (ruleForm.vehicle_type === '') {
+    Message.error('请选择稽核车型后再进行计费查询！');
+  }
+  let obj = {
+    pass_id: ruleForm.pass_id,
+    vehicleusertype: ruleForm.vehicleusertype,
+    vehicleclass: ruleForm.vehicleclass,
+    vehicle_type: ruleForm.vehicle_type,
+    axleCount: ruleForm.axlecount
+  }
       orderUtil.getDriverFreeDetails(obj).then(res => {
         if (res.data.code !== 0) return;
         if (res.data.messageInfo && res.data.messageInfo.tollDetail) {
           let ls = res.data.messageInfo.tollDetail[0]
           ruleForm.orginal_fee = formatFeeToYuan(ls.fee)
           handleChangeFee()
+          store.commit('orderForm/handleSetOrderForm', { orginal_fee: ruleForm.orginal_fee, real_fee: ruleForm.real_fee })
         }
       }).catch(err => { })
+}
+const handleChangeFee = () => {
+  const originalFee = typeof ruleForm.orginal_fee === 'string' ? parseFloat(ruleForm.orginal_fee) : ruleForm.orginal_fee;
+  const realFee = typeof ruleForm.real_fee === 'string' ? parseFloat(ruleForm.real_fee) : ruleForm.real_fee;
+  if (!isNaN(originalFee) && !isNaN(realFee)) {
+    const diff = originalFee - realFee;
+    ruleForm.owe_fee = diff > 0 ? diff : 0;
+  } else {
+    ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
+  }
+}
+//大件车辆类型判断
+const handleSetBigCar = (val) => {
+  ruleForm.isnormel = val
+  store.commit('orderForm/handleSetOrderForm', { isnormel: val })
+}
+const handleSetVehicleType = (val) => {
+  ruleForm.vehicle_type = val
+  store.commit('orderForm/handleSetOrderForm', { vehicle_type: val })
+}
+// 订阅 Vuex 中的 orderForm 以同步关联字段
+const orderFormFromStore = computed(() => store.getters['orderForm/getOrderForm'])
+const linkedKeys = ['vehicle_type', 'isnormel', 'axlecount', 'orginal_fee', 'real_fee', 'owe_fee', 'vehicleusertype', 'vehicleclass']
+watch(orderFormFromStore, (form) => {
+  if (!form) return
+  linkedKeys.forEach((k) => {
+    if (Object.prototype.hasOwnProperty.call(form, k)) {
+      ruleForm[k] = form[k]
     }
-   const handleChangeFee=() =>{
-      const originalFee = typeof ruleForm.orginal_fee === 'string' ? parseFloat(ruleForm.orginal_fee) : ruleForm.orginal_fee;
-      const realFee = typeof ruleForm.real_fee === 'string' ? parseFloat(ruleForm.real_fee) : ruleForm.real_fee;
-      if (!isNaN(originalFee) && !isNaN(realFee)) {
-        const diff = originalFee - realFee;
-        ruleForm.owe_fee = diff > 0 ? diff : 0;
-      } else {
-        ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
-      }
+  })
+}, { deep: true })
+//通过通行介质类型及是否为大件车辆设置默认的车辆用户类型及车种
+const initSpecialType = () => {
+  let eclass = null;
+  let sertype = null
+  let operate_params = getOperateParams();
+  operate_params = JSON.parse(operate_params).data;
+  if (operate_params) {
+    eclass = operate_params[0]?.vehicleclass
+    sertype = operate_params[0]?.vehicleusertype
+  } else {
+    eclass = operate_params.vehicleclass
+    sertype = operate_params.vehicleusertype
+  }
+  if (ruleForm.media_type !== '' && ruleForm.isnormel !== '') {
+    if (ruleForm.media_type === '1' && ruleForm.isnormel === '1') {
+      ruleForm.vehicleusertype = '25';
     }
- //大件车辆类型判断
-  const handleSetBigCar=(val) =>{
-      console.log('val', val)
-      ruleForm.isnormel = val
-      eventBus.$emit('updateOrderForm', ruleForm)
+    else if (ruleForm.media_type === '2' && ruleForm.isnormel === '1') {
+      ruleForm.vehicleclass = '25';
     }
-const handleSetVehicleType=(val) =>{
-      console.log('val', val)
-      ruleForm.vehicle_type = val
-      eventBus.$emit('updateOrderForm', ruleForm)
+    else {
+      ruleForm.vehicleusertype = sertype ? sertype : '0';
+      ruleForm.vehicleclass = eclass ? eclass : '0';
     }
- //通过通行介质类型及是否为大件车辆设置默认的车辆用户类型及车种
-  const initSpecialType=() =>{
-      let eclass = null;
-      let sertype = null
-      let operate_params = getOperateParams();
-      operate_params = JSON.parse(operate_params).data;
-      if (operate_params) {
-        eclass = operate_params[0]?.vehicleclass
-        sertype = operate_params[0]?.vehicleusertype
-      }else{
-        eclass = operate_params.vehicleclass
-         sertype = operate_params.vehicleusertype
-      }
-      if (ruleForm.media_type !== '' && ruleForm.isnormel !== '') {
-        if (ruleForm.media_type === '1' && ruleForm.isnormel === '1') {
-          ruleForm.vehicleusertype = '25';
-        }
-        else if (ruleForm.media_type === '2' && ruleForm.isnormel === '1') {
-          ruleForm.vehicleclass = '25';
-        }
-        else {
-          ruleForm.vehicleusertype = sertype ? sertype : '0';
-          ruleForm.vehicleclass = eclass ? eclass : '0';
-        }
-      } else {
-        ruleForm.vehicleusertype = sertype ? sertype : '0';
-        ruleForm.vehicleclass = eclass ? eclass : '0';
-      }
-    }
-const getAllOptionsList= () =>{
-      orderUtil.getOrderFormList().then(res => {
-        if (!res || res.data.state !== "SUCCESS") return
-        console.log('1111111111111', res.data)
-        let ls = res.data.data
-        let ops = ls.srv_cols
-        Object.assign(optionsPage, filterListByOption(ops, optionsPage))
-        console.log('123123', optionsPage)
-      }).catch(err => { })
-    }
+  } else {
+    ruleForm.vehicleusertype = sertype ? sertype : '0';
+    ruleForm.vehicleclass = eclass ? eclass : '0';
+  }
+}
+const getAllOptionsList = () => {
+  orderUtil.getOrderFormList().then(res => {
+    if (!res || res.data.state !== "SUCCESS") return
+    console.log('1111111111111', res.data)
+    let ls = res.data.data
+    let ops = ls.srv_cols
+    Object.assign(optionsPage, filterListByOption(ops, optionsPage))
+    console.log('123123', optionsPage)
+  }).catch(err => { })
+}
 
 
 /**
@@ -642,8 +688,8 @@ const getTrafficFlow = (id) => {
  */
 const getPointByOriginCenter = () => {
 
-   strTime =  moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
-   endTime =  moment(formattedDate).add(1, 'month').format('YYYY-MM-DD HH:mm:ss');
+  strTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+  endTime = moment(formattedDate).add(1, 'month').format('YYYY-MM-DD HH:mm:ss');
   let cadn = {
     condition: [{ colName: "passid", ruleType: "like", value: passId }],
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
@@ -655,15 +701,15 @@ const getPointByOriginCenter = () => {
       handleCtrlSubmit(true)   //所有从远端中心回来的数据都是可以直接保存的
       filterPointList(res.data.data, 'ori')
       console.log(res.data.data, 88888888)
-    }else{
+    } else {
       getPointByOriginCenterNew()
     }
   }).catch(err => { })
 }
 
 const getPointByOriginCenterNew = () => {
-  strTime =  moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
-   endTime =  moment(formattedDate).add(2, 'day').format('YYYY-MM-DD HH:mm:ss');
+  strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+  endTime = moment(formattedDate).add(2, 'day').format('YYYY-MM-DD HH:mm:ss');
   let cadn = {
     condition: [{ colName: "passid", ruleType: "like", value: passId }],
     divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
@@ -1074,12 +1120,16 @@ onMounted(async () => {
     getPublicColNames('srvaud_audit_passconvdetail_add', 'sta')
     // HandleMapClick(handleMap.value);
   }
+  // 已改为使用 Vuex store 同步，注释掉旧的 eventBus 订阅
+  // eventBus.$on('updateOrderForm', handleUpdateOrderForm)
 })
 
 onBeforeUnmount(() => {
   userMap.value.destroyMap()
   userMap.value = null
   handleMap.value = null
+  // 已改为使用 Vuex store 同步，注释掉旧的 eventBus 取消订阅
+  // eventBus.$off('updateOrderForm', handleUpdateOrderForm)
 })
 </script>
 
@@ -1088,25 +1138,37 @@ onBeforeUnmount(() => {
 li {
   list-style: none;
 }
-.formlist-foot{
-  width: 95%;
-  height: 200px;
-  position: fixed;
+
+.formlist-foot {
+  width: 100%;
+  // position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
   background: #fff;
   z-index: 100;
-  .demo-ruleForm{
-    padding: 0.6125rem;
+  border-top: 1px solid #eaecef;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+  // padding: 6px 10px;
+  // max-height: 160px;
+  overflow-y: auto;
+
+  .demo-ruleForm {
+    padding: 4px 8px;
   }
 }
+
 .map_content {
   width: 100%;
   height: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
 
   .map_cot {
     width: 100%;
-    height: 100%;
+    // height: 100%;
+    flex: 1;
   }
 
   .driving_tab {
@@ -1194,6 +1256,10 @@ li {
     text-align: center;
     line-height: 1.5625rem;
   }
+
+  .form-row {
+    margin: 0;
+  }
 }
 
 .hd_btns {
@@ -1231,5 +1297,41 @@ li {
   justify-content: center;
   width: 100%;
   height: 2.5rem;
+}
+
+::v-deep .el-form-item {
+  .el-form-item__label {
+    margin-bottom: 0;
+  }
+
+  .el-select {
+    width: 100%;
+  }
+
+  .el-form-item__content {
+    display: flex;
+    align-items: center;
+    height: 40px;
+  }
+}
+
+/* 更紧凑的标签与宽度控制 */
+::v-deep .el-form-item__label {
+  padding-right: 6px;
+}
+
+.item-narrow {
+  // max-width: 180px;
+}
+
+.item-fee {
+  // max-width: 320px;
+}
+
+.fee-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 </style>

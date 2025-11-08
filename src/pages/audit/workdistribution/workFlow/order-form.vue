@@ -301,7 +301,7 @@
             <el-select
               v-model="ruleForm.vehicle_type"
               clearable
-              disabled
+              @change="handleSetVehicleType"
               placeholder="请选择"
             >
               <el-option
@@ -326,7 +326,6 @@
             <el-select
               v-model="ruleForm.isnormel"
               clearable
-              disabled
               placeholder="请选择"
               @change="handleSetBigCar"
             >
@@ -346,7 +345,7 @@
             <el-input
               v-model="ruleForm.axlecount"
               clearable
-              disabled
+              @input="handleSetAxleCount"
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
@@ -360,7 +359,9 @@
                 clearable
                 disabled
                 placeholder="请输入..."
-              ></el-input>
+              >
+                <template slot="append">元</template>
+              </el-input>
               <el-button
                 type="primary"
                 size="mini"
@@ -453,7 +454,7 @@
               ></el-button>
             </div>
           </el-form-item>
-           <el-form-item
+          <el-form-item
             label="机构编号"
             prop="org_no"
           >
@@ -875,7 +876,6 @@ import uploadPic from "@/pages/audit/workdistribution/workFlow/upload-pic.vue";
 import moment from 'dayjs'
 const orderUtils = new OrderApi()
 import { mapGetters } from 'vuex';
-import eventBus from '@/common/eventBus';
 
 export default {
   name: "order-form",
@@ -991,43 +991,44 @@ export default {
       return this.$route.query?.pageType === 'detail'
     },
   },
-  methods: {
-    handleUpdateOrderForm(ruleForm) {
-    console.log('Received eventBus data:', ruleForm);
-    if (!ruleForm) return;
-    try {
-      // 逐个属性设置确保响应式
-      for (const key in ruleForm) {
-        if (ruleForm.hasOwnProperty(key)) {
-          // 处理axlecount类型转换和空值
-          if (key === 'axlecount') {
-            const value = ruleForm[key];
-            // 空字符串或null时保持当前值，否则转换为数字
-            const finalValue = value === '' || value === null ? this.ruleForm.axlecount : Number(value) || 0;
-            // this.$set(this.ruleForm, key, finalValue);
-            this.ruleForm = Object.assign(this.ruleForm, { axlecount: finalValue })
-            console.log(`axlecount processed: ${value} → ${finalValue}`);
-          } else {
-            this.ruleForm = Object.assign(this.ruleForm, ruleForm)
-            // this.$set(this.ruleForm, key, ruleForm[key]);
+  watch: {
+    // 订阅 Vuex 中的关联字段，更新到本地 ruleForm
+    getOrderForm: {
+      handler(newVal) {
+        if (!newVal) return
+        const keys = ['vehicle_type', 'isnormel', 'axlecount', 'orginal_fee', 'real_fee', 'owe_fee', 'vehicleusertype', 'vehicleclass']
+        keys.forEach(k => {
+          if (Object.prototype.hasOwnProperty.call(newVal, k)) {
+            this.ruleForm[k] = newVal[k]
           }
-        }
-      }
-      console.log('ruleForm updated:', this.ruleForm);
-    } catch (error) {
-      console.error('Error updating ruleForm:', error);
+        })
+      },
+      deep: true
     }
   },
+  methods: {
+    // 稽核车型变更时提交到 Vuex
+    handleSetVehicleType() {
+      this.$store.commit('orderForm/handleSetOrderForm', { vehicle_type: this.ruleForm.vehicle_type })
+    },
+    // 车轴数输入时提交到 Vuex
+    handleSetAxleCount(val) {
+      this.ruleForm.axlecount = val
+      this.$store.commit('orderForm/handleSetOrderForm', { axlecount: this.ruleForm.axlecount })
+    },
     //通行介质变化检测
     handleSetMedia() {
       this.initSpecialType()
+      this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
     },
     //大件车辆类型判断
     handleSetBigCar() {
       this.initSpecialType()
+      this.$store.commit('orderForm/handleSetOrderForm', { isnormel: this.ruleForm.isnormel })
+      this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
     },
     setPicMod() {
-      if(this.isDetail) return
+      if (this.isDetail) return
       this.showPicMod = true
     },
     /**
@@ -1046,12 +1047,14 @@ export default {
         _this.optionsPage = filterListByOption(ops, _this.optionsPage)
         window.sessionStorage.setItem('optionsPage', JSON.stringify(_this.optionsPage))
         _this.ruleForm = formDataByInitText(this.ruleForm, ops, 'init_expr')
-        console.log('这里的ruleForm4444444444', _this.ruleForm)
-         const cachedData = eventBus.getLatestData('updateOrderForm');
-    if (cachedData) {
-      this.handleUpdateOrderForm(cachedData);
-    }
-        console.log('123123', _this.ruleForm.user_no)
+        // 初始化时将当前关联字段推入 Vuex，便于跨页同步
+        this.$store.commit('orderForm/handleSetOrderForm', {
+          vehicle_type: _this.ruleForm.vehicle_type,
+          isnormel: _this.ruleForm.isnormel,
+          axlecount: _this.ruleForm.axlecount,
+          orginal_fee: _this.ruleForm.orginal_fee,
+          real_fee: _this.ruleForm.real_fee,
+        })
       }).catch(err => { })
     },
     handleSelect(item) {
@@ -1159,138 +1162,140 @@ export default {
     },
     // 20251014调整取值逻辑，通过passid去调用接口去获取初始化参数
     async initForm() {
-      if(this.isDetail){
+      if (this.isDetail) {
         this.order_no = this.$route.query?.order_no
         const resOrder = await this.getWorkOrderDetail()
-        if(resOrder){
-           console.log(resOrder, 3333333)
-           this.ruleForm = formDataByGetInfo(this.ruleForm, resOrder[0])
-           this.ruleForm.vehicle_type = resOrder[0]._trade_vehicle_type_disp
-           this.initSpecialType()
-        this.handleChangeFee()
-        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
-        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
-        this.getTrafficFlow()
-        const pass_time2 = this.ruleForm.pass_id.slice(22, 30)
-        const formattedDate2 = pass_time2.slice(0, 4) + '-' + pass_time2.slice(4, 6) + '-' + pass_time2.slice(6, 8);
-        
-        this.strTime = moment(formattedDate2).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-          this.endTime = moment(formattedDate2).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.getRelevantInfo()
-        }
-      }else{
-         let operate_params = this.getOperateParams();
-      if(operate_params){
-        operate_params = JSON.parse(operate_params).data;
-        console.log(operate_params, 999999)
-      if (operate_params) {
-        // 处理时间参数
-        const passTime = operate_params[0].pass_time;
-        if (passTime) {
-          this.strTime = moment(passTime).subtract(10, 'days').format('YYYY-MM-DD HH:mm:ss');
-          this.endTime = moment(passTime).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
-          console.log('计算的时间范围：', { startTime: this.strTime, endTime: this.endTime });
-        }
-        // this.ruleForm = formDataByGetInfo(this.ruleForm, operate_params[0])
-        this.initSpecialType()
-        this.handleChangeFee()
-        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
-        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
-        this.getTrafficFlow()
-        this.strTime = moment(passTime).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.endTime = moment(passTime).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.getRelevantInfo();
-      }
-      }else{
-        let pass_id = this.$route.query.pass_id;
-        this.ruleForm.pass_id = pass_id
-        if(pass_id){
-        
-        const pass_time = pass_id.slice(22, 30)
-        const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
-        
-        this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
-        this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
-         this.getTrafficFlow()
-        const res = await this.getSusvehPassInfo()
-        console.log(this.ruleForm.pass_id, 2222222222)
-
-         this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.getRelevantInfo();
-        if(res&&res.length>0){
-          this.operate_params = res[0]
-          this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
-          this.ruleForm.media_no = res[0].obusn
-          this.ruleForm.media_type = res[0].mediatype
-          this.ruleForm.pass_time = res[0].extime
-          // this.ruleForm.sus_escape_type = res[0].escape_type
-          this.ruleForm.sus_plate_color = res[0].vehicleplate_color
-          this.ruleForm.sus_vehicle_id = res[0].vehicleplate_no
-          this.ruleForm.suspicion_id = res[0].suspectid
-          this.ruleForm.vehicleclass = res[0].envehicleclass
-          this.ruleForm.vehicleusertype = res[0].vehicleusertype
-        this.initSpecialType()
-        this.handleChangeFee()
-        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
-        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        }else{
-          console.log('这里的pass_id', pass_id)
-          this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
-        const resdata = await this.getPassconvInfo()
-        if(resdata&&resdata.length>0){
-          this.operate_params = resdata[0]
-          // this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
-          this.ruleForm.media_no = resdata[0].obusn
-          this.ruleForm.media_type = resdata[0].mediatype
-          this.ruleForm.pass_time = resdata[0].extime
-          const realfee = await this.getWorkorderFeeInfo()
-        console.log(realfee, 1111111)
-        if(realfee&&realfee.length>0){
-          this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
-        }else{
-          this.ruleForm.real_fee = resdata[0].fee
-        }
-          
-          // this.ruleForm.sus_escape_type = resdata[0].escape_type
-          this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
-          this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
-          // this.ruleForm.suspicion_id = resdata[0].suspectid
-          // this.ruleForm.vehicleclass = resdata[0].envehicleclass
-          this.ruleForm.vehicleusertype = resdata[0].vehicleusertype
-         this.suspectedData = [{
-          'vehicleplate_no': resdata[0].vehicleplate_no,
-          '_vehicletype_disp': resdata[0]._vehicletype_disp,
-          'enstationname': resdata[0].enstationname,
-          'entime': resdata[0].entime,
-          'exstationname': resdata[0].exstationname,
-          'extime': resdata[0].extime,
-         }]
-         if(!resdata[0].passid){
-          this.$confirm('暂无车辆通行流水，无法发起工单!', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            // 用户点击了确定按钮
-            this.closeCurrentPage()
-          })
-          return
-         }
+        if (resOrder) {
+          console.log(resOrder, 3333333)
+          this.ruleForm = formDataByGetInfo(this.ruleForm, resOrder[0])
+          this.ruleForm.vehicle_type = resOrder[0]._trade_vehicle_type_disp
           this.initSpecialType()
+          this.handleChangeFee()
+          this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+          this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+          this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+          this.getTrafficFlow()
+          const pass_time2 = this.ruleForm.pass_id.slice(22, 30)
+          const formattedDate2 = pass_time2.slice(0, 4) + '-' + pass_time2.slice(4, 6) + '-' + pass_time2.slice(6, 8);
+
+          this.strTime = moment(formattedDate2).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+          this.endTime = moment(formattedDate2).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+          this.getRelevantInfo()
+        }
+      } else {
+        let operate_params = this.getOperateParams();
+        if (operate_params) {
+          operate_params = JSON.parse(operate_params).data;
+          console.log(operate_params, 999999)
+          if (operate_params) {
+            // 处理时间参数
+            const passTime = operate_params[0].pass_time;
+            if (passTime) {
+              this.strTime = moment(passTime).subtract(10, 'days').format('YYYY-MM-DD HH:mm:ss');
+              this.endTime = moment(passTime).add(60, 'days').format('YYYY-MM-DD HH:mm:ss');
+              console.log('计算的时间范围：', { startTime: this.strTime, endTime: this.endTime });
+            }
+            // this.ruleForm = formDataByGetInfo(this.ruleForm, operate_params[0])
+            this.initSpecialType()
+            this.handleChangeFee()
+            this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+            this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+            this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+            this.getTrafficFlow()
+            this.strTime = moment(passTime).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+            this.endTime = moment(passTime).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+            this.getRelevantInfo();
+          }
+        } else {
+          let pass_id = this.$route.query.pass_id;
+          this.ruleForm.pass_id = pass_id
+          if (pass_id) {
+
+            const pass_time = pass_id.slice(22, 30)
+            const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+
+            this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
+            this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+            this.getTrafficFlow()
+            const res = await this.getSusvehPassInfo()
+            console.log(this.ruleForm.pass_id, 2222222222)
+
+            this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+            this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+            this.getRelevantInfo();
+      if (res && res.length > 0) {
+        this.operate_params = res[0]
+        this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+        this.ruleForm.media_no = res[0].obusn
+        this.ruleForm.media_type = res[0].mediatype
+        this.ruleForm.pass_time = res[0].extime
+        // this.ruleForm.sus_escape_type = res[0].escape_type
+        this.ruleForm.sus_plate_color = res[0].vehicleplate_color
+        this.ruleForm.sus_vehicle_id = res[0].vehicleplate_no
+        this.ruleForm.suspicion_id = res[0].suspectid
+        this.ruleForm.vehicleclass = res[0].envehicleclass
+        this.ruleForm.vehicleusertype = res[0].vehicleusertype
+        this.initSpecialType()
+        this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
         this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-        // this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
-        }
+      } else {
+              console.log('这里的pass_id', pass_id)
+              this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+              this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+              const resdata = await this.getPassconvInfo()
+              if (resdata && resdata.length > 0) {
+                this.operate_params = resdata[0]
+                // this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+                this.ruleForm.media_no = resdata[0].obusn
+                this.ruleForm.media_type = resdata[0].mediatype
+                this.ruleForm.pass_time = resdata[0].extime
+                const realfee = await this.getWorkorderFeeInfo()
+                console.log(realfee, 1111111)
+                if (realfee && realfee.length > 0) {
+                  this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
+                } else {
+                  this.ruleForm.real_fee = resdata[0].fee
+                }
+
+                // this.ruleForm.sus_escape_type = resdata[0].escape_type
+                this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
+                this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
+                // this.ruleForm.suspicion_id = resdata[0].suspectid
+                // this.ruleForm.vehicleclass = resdata[0].envehicleclass
+                this.ruleForm.vehicleusertype = resdata[0].vehicleusertype
+                this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
+                this.suspectedData = [{
+                  'vehicleplate_no': resdata[0].vehicleplate_no,
+                  '_vehicletype_disp': resdata[0]._vehicletype_disp,
+                  'enstationname': resdata[0].enstationname,
+                  'entime': resdata[0].entime,
+                  'exstationname': resdata[0].exstationname,
+                  'extime': resdata[0].extime,
+                }]
+                if (!resdata[0].passid) {
+                  this.$confirm('暂无车辆通行流水，无法发起工单!', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                  }).then(() => {
+                    // 用户点击了确定按钮
+                    this.closeCurrentPage()
+                  })
+                  return
+                }
+                this.initSpecialType()
+                this.handleChangeFee()
+                this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+                this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+                // this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+              }
+            }
+          }
         }
       }
-    }
-      }
-     
+
     },
     setPromoter() {
       this.showModal = true;
@@ -1341,7 +1346,7 @@ export default {
         if (ls && ls.length === 0) {
           orderUtils.handleSubmitOrder([obj]).then(res => {
             if (res.data.state !== 'SUCCESS') {
-              if(res.data.resultMessage.indexOf('组织ID不能为空')>-1){
+              if (res.data.resultMessage.indexOf('组织ID不能为空') > -1) {
                 this.$message.error('请选择发起人');
                 return;
               }
@@ -1423,63 +1428,63 @@ export default {
     //根据passid获取页面多字段数据
     async getSusPassconvInfo() {
       let obj = {
-        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getSusPassconvInfo(obj)
-      if(res.data){
+      if (res.data) {
         return res.data.data ? res.data.data : []
       }
     },
     //根据订单id去查询工单详情
     async getWorkOrderDetail() {
       let obj = {
-        condition: [{ colName: "order_no",ruleType: "eq", value: "BO202504251528555470001" }],
+        condition: [{ colName: "order_no", ruleType: "eq", value: "BO202504251528555470001" }],
       }
       const res = await orderUtils.getWorkOrderDetail(obj)
-      if(res.data){
+      if (res.data) {
         return res.data.data ? res.data.data : []
       }
     },
     //根据passid查询年表，分表查询条件为当前年和上一年获取页面多字段数据
-     async getSusvehPassInfo() {
+    async getSusvehPassInfo() {
       let obj = {
-        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       try {
         const res = await orderUtils.getSusvehPassInfo(obj)
-        if(res.data){
+        if (res.data) {
           return res.data.data ? res.data.data : []
         }
       } catch (error) {
         const pass_time = this.ruleForm.pass_id.slice(22, 30)
         const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
-        
+
         this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
         return await this.getPassconvInfo()
       }
     },
     //根据passid查询日表，分表查询条件为前后一天获取页面多字段数据
-     async getPassconvInfo() {
+    async getPassconvInfo() {
       let obj = {
-        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
         divCond: [{ colName: "entime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getPassconvInfo(obj)
-      if(res.data){
+      if (res.data) {
         return res.data.data ? res.data.data : []
       }
     },
-     //根据passid查询实际费用
-     async getWorkorderFeeInfo() {
+    //根据passid查询实际费用
+    async getWorkorderFeeInfo() {
       let obj = {
-        condition: [{ colName: "passid",ruleType: "eq", value: this.ruleForm.pass_id }],
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
         divCond: [{ colName: "createtime", ruleType: "between", value: [this.strTime, this.endTime] },]
       }
       const res = await orderUtils.getWorkorderFeeInfo(obj)
-      if(res.data){
+      if (res.data) {
         return res.data.data ? res.data.data : []
       }
     },
@@ -1491,7 +1496,7 @@ export default {
     handleGetCurrentFree() {
 
       if (this.ruleForm.vehicle_type === '') {
-        this.$message.error('请在下方发起人信息栏，选择稽核车型后再进行计费查询！');
+        this.$message.error('请选择稽核车型后再进行计费查询！');
       }
       let obj = {
         pass_id: this.ruleForm.pass_id,
@@ -1506,6 +1511,7 @@ export default {
           let ls = res.data.messageInfo.tollDetail[0]
           this.ruleForm.orginal_fee = formatFeeToYuan(ls.fee)
           this.handleChangeFee()
+          this.$store.commit('orderForm/handleSetOrderForm', { orginal_fee: this.ruleForm.orginal_fee, real_fee: this.ruleForm.real_fee })
         }
       }).catch(err => { })
       console.log('查询计费使用的passid', this.ruleForm.pass_id)
@@ -1525,6 +1531,7 @@ export default {
       } else {
         this.ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
       }
+      this.$store.commit('orderForm/handleSetOrderForm', { orginal_fee: this.ruleForm.orginal_fee, real_fee: this.ruleForm.real_fee, owe_fee: this.ruleForm.owe_fee })
     },
     //通过通行介质类型及是否为大件车辆设置默认的车辆用户类型及车种
     initSpecialType() {
@@ -1535,7 +1542,7 @@ export default {
       if (operate_params) {
         eclass = operate_params[0]?.vehicleclass
         sertype = operate_params[0]?.vehicleusertype
-      }else{
+      } else {
         eclass = this.operate_params.vehicleclass
         sertype = this.operate_params.vehicleusertype
       }
@@ -1554,6 +1561,8 @@ export default {
         this.ruleForm.vehicleusertype = sertype ? sertype : '0';
         this.ruleForm.vehicleclass = eclass ? eclass : '0';
       }
+      // 同步到 Vuex
+      this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
     },
     //重置条件
     restForm() {
@@ -1581,22 +1590,22 @@ export default {
         divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
 
       }
-     const res = await orderUtils.getRelevantList(obj)
-     if(res.data.state === 'SUCCESS'){
-       let ls = res.data.data;
-       if(ls&&ls.length>0){
-        strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
-      endTime = moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
-      obj = {
-        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
-        divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
+      const res = await orderUtils.getRelevantList(obj)
+      if (res.data.state === 'SUCCESS') {
+        let ls = res.data.data;
+        if (ls && ls.length > 0) {
+          strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+          endTime = moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+          obj = {
+            condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
+            divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
 
-      }
-        const resData = await orderUtils.getRelevantListNew(obj)
-        let lsNew = resData.data.data;
-           if(lsNew&&lsNew.length>0){
+          }
+          const resData = await orderUtils.getRelevantListNew(obj)
+          let lsNew = resData.data.data;
+          if (lsNew && lsNew.length > 0) {
             ls = [...new Set(ls.concat(lsNew))]
-           }
+          }
           let ids = []
           if (ls) {
             ls.map(d => {
@@ -1607,37 +1616,37 @@ export default {
           this.relevantList = ls
           this.ruleForm.relevant_org = ids.join(',')
           console.log('经营单位id', this.ruleForm.relevant_org)
-       }else{
-         strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
-      endTime = moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
-      obj = {
-        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
-        divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
+        } else {
+          strTime = moment(formattedDate).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+          endTime = moment(formattedDate).add(1, 'day').format('YYYY-MM-DD HH:mm:ss');
+          obj = {
+            condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
+            divCond: [{ colName: "create_time", ruleType: "between", value: [strTime, endTime] }],
 
-      }
-        const resPriData = await orderUtils.getRelevantListOri(obj)
-        let lsOri = resPriData.data.data;
-        if(lsOri&&lsOri.length>0){
-           const resData = await orderUtils.getRelevantListNew(obj)
-
-         let lsNew = resData.data.data;
-           if(lsNew&&lsNew.length>0){
-            lsOri = [...new Set(lsOri.concat(lsNew))]
-           }
-          let ids = []
-          if (lsOri) {
-            lsOri.map(d => {
-              d.select = true
-              ids.push(d.id)
-            })
           }
-          this.relevantList = lsOri
-          this.ruleForm.relevant_org = ids.join(',')
-          console.log('经营单位id', this.ruleForm.relevant_org)
+          const resPriData = await orderUtils.getRelevantListOri(obj)
+          let lsOri = resPriData.data.data;
+          if (lsOri && lsOri.length > 0) {
+            const resData = await orderUtils.getRelevantListNew(obj)
+
+            let lsNew = resData.data.data;
+            if (lsNew && lsNew.length > 0) {
+              lsOri = [...new Set(lsOri.concat(lsNew))]
+            }
+            let ids = []
+            if (lsOri) {
+              lsOri.map(d => {
+                d.select = true
+                ids.push(d.id)
+              })
+            }
+            this.relevantList = lsOri
+            this.ruleForm.relevant_org = ids.join(',')
+            console.log('经营单位id', this.ruleForm.relevant_org)
+          }
         }
-       }
-     }
-           
+      }
+
     },
     //经营单位删除后数据更新
     handleClose(item) {
@@ -1670,32 +1679,35 @@ export default {
   created() {
     try {
       this.prUrl = orderUtils.dowPicInfoUrl();
-      
+
     } catch (error) {
     }
   },
   mounted() {
     // Check for cached event data
-    this.supColums = SuspectedColumn()
-    this.getAllOptionsList()
-    this.initForm()
-    this.initQuerySearch()
-    this.getSavePicInfo(null)
     //从如果store有存储，从store 中获取一次填入到表单中
     let base = this.getOrderForm;
     if (base) {
       this.ruleForm = { ...base }
     }
+    this.supColums = SuspectedColumn()
+    this.getAllOptionsList()
+    this.initForm()
+    this.initQuerySearch()
+    this.getSavePicInfo(null)
     orderUtils.checkOrderExist(this.ruleForm.pass_id).then(res => {
       if (res === true) {
         // 工单已经发起过了
-        if(this.isDetail) return
+        if (this.isDetail) return
         this.showOrderExistOverlay = true;
       }
     })
+    // 已改为使用 Vuex store 同步，注释掉旧的 eventBus 订阅
+    // eventBus.$on('updateOrderForm', this.handleUpdateOrderForm)
   },
   beforeDestroy() {
-    eventBus.$off('updateOrderForm', this.handleUpdateOrderForm);
+    // 已改为使用 Vuex store 同步，注释掉旧的 eventBus 取消订阅
+    // eventBus.$off('updateOrderForm', this.handleUpdateOrderForm);
     this.$store.commit('orderForm/handleSetOrderForm', this.ruleForm)
   }
 }
