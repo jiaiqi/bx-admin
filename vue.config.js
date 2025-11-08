@@ -156,7 +156,11 @@ module.exports = {
   },
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
-  publicPath:"./",
+  /**
+   * 有VUE_APP_BASE_URL时， publicPath 为 VUE_APP_BASE_URL/，
+   * 无VUE_APP_BASE_URL时则判断路由模式为 history 时，publicPath 为 /，否则为 ./
+   */
+  publicPath: process.env.VUE_APP_BASE_URL ? process.env.VUE_APP_BASE_URL + "/" : process.env.VUE_APP_ROUTE_MODE === 'history' ? '/' : "./",
   outputDir: "vpages",
   // 将所有构建资源统一置于 outputDir 下的 assets 目录
   assetsDir: 'assets',

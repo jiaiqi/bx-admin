@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vue-cli-service serve",
+    "dev:park": "vue-cli-service serve --mode park",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build:audit": "vue-cli-service build --mode audit", 
