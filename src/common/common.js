@@ -1,3 +1,13 @@
+import { getRouteMode, getBaseUrl, getFullBaseUrl, getPublicPath, getOutputDir, getAssetsDir } from "./config";
+export {
+  getRouteMode,
+  getBaseUrl,
+  getFullBaseUrl,
+  getPublicPath,
+  getOutputDir,
+  getAssetsDir,
+}
+
 /**
  * 检查字符串是否为有效的JSON格式
  * @description 尝试解析字符串为JSON对象，判断是否为有效的JSON格式
@@ -720,32 +730,4 @@ export function downloadFileH5(url, fileName) {
       reject(new Error('下载失败'))
     }
   })
-}
-
-/**
- * 获取路由模式配置
- * 来源于环境变量 `VUE_APP_ROUTE_MODE`，可能为 `'hash'` 或 `'history'`。
- */
-export function getRouteMode() {
-  return process.env.VUE_APP_ROUTE_MODE || 'hash'
-}
-/**
- * 获取应用基础地址（不含路由片段）
- * 来源于环境变量 `VUE_APP_BASE_URL`，通常为站点根路径或部署子路径。
- * 例如：`https://example.com/app` 或 `/`。
- */
-export function getBaseUrl() {
-  return process.env.VUE_APP_BASE_URL || ''
-}
-/**
- * 获取完整基础地址（根据路由模式拼接）
- * - 当为 `hash` 模式时，需在基础地址后拼接 `/#`，以使后续路由以哈希片段形式工作。
- * - 当为 `history` 模式时，直接返回基础地址。
- */
-export function getFullBaseUrl() {
-  if (getRouteMode() === 'hash') {
-    return `${getBaseUrl()}/#`
-  } else {
-    return `${getBaseUrl()}`
-  }
 }

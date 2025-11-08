@@ -1,5 +1,6 @@
 const webpack = require("webpack");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
+const { getPublicPath, getOutputDir, getAssetsDir } = require("@/common/common");
 const productionGzipExtensions = ["js", "css"];
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -156,14 +157,10 @@ module.exports = {
   },
   transpileDependencies: ["simple-mind-map", "@svgdotjs", "json-editor-vue"],
   // publicPath: process.env.VUE_APP_TARGET === 'wj' ? './' : "/vpages/",
-  /**
-   * 有VUE_APP_BASE_URL时， publicPath 为 VUE_APP_BASE_URL/，
-   * 无VUE_APP_BASE_URL时则判断路由模式为 history 时，publicPath 为 /，否则为 ./
-   */
-  publicPath: process.env.VUE_APP_BASE_URL ? process.env.VUE_APP_BASE_URL + "/" : process.env.VUE_APP_ROUTE_MODE === 'history' ? '/' : "./",
-  outputDir: "vpages",
+  publicPath: getPublicPath(),
+  outputDir: getOutputDir(),
   // 将所有构建资源统一置于 outputDir 下的 assets 目录
-  assetsDir: 'assets',
+  assetsDir: getAssetsDir(),
 
   configureWebpack: {
     // 性能优化
