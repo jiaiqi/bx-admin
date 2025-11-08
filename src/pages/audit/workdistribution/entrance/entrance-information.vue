@@ -36,38 +36,22 @@
           <div class="item-list">
             计费金额：{{ item.fee_disp ? item.fee_disp : item.fee }}
           </div>
-          <!-- 图片展开/收起区域 -->
-          <div class="image-toggle-section">
-            <div
-              class="toggle-button"
-              @click="toggleImageExpand(index)"
-              :class="{ 'expanded': expandedImages[index] }"
-            >
-              <i :class="expandedImages[index] ? 'el-icon-caret-top' : 'el-icon-caret-bottom'"></i>
-              {{ expandedImages[index] ? '收起图片' : '展开图片' }}
+          <ImageToggle>
+            <div v-if="item.grantry_type === '收费站'">
+              <el-image
+                style="width:43.75rem;height: 18.75rem"
+                :src="getPic(item, 'car', index === 0 ? 'en' : index === list.length - 1 ? 'ex' : '')"
+                lazy
+              ></el-image>
             </div>
-
-            <!-- 图片内容区域 -->
-            <div
-              v-if="expandedImages[index]"
-              class="image-content"
-            >
-              <div v-if="item.grantry_type === '收费站'">
-                <el-image
-                  style="width:43.75rem;height: 18.75rem"
-                  :src="getPic(item, 'car', index === 0 ? 'en' : index === list.length - 1 ? 'ex' : '')"
-                  lazy
-                ></el-image>
-              </div>
-              <div v-else>
-                <el-image
-                  style="width:43.75rem;height: 18.75rem"
-                  :src="getPic(item, 'car', '')"
-                  lazy
-                ></el-image>
-              </div>
+            <div v-else>
+              <el-image
+                style="width:43.75rem;height: 18.75rem"
+                :src="getPic(item, 'car', '')"
+                lazy
+              ></el-image>
             </div>
-          </div>
+          </ImageToggle>
         </div>
       </el-timeline-item>
     </el-timeline>
@@ -100,12 +84,14 @@
 </template>
 <script setup>
 // 门架信息
-import { onMounted, ref, reactive, computed, nextTick, getCurrentInstance } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "@/common/vueApi";
 import { getEntranceData } from "@/pages/audit/workdistribution/entrance/entrance";
 import OrderApi from "@/pages/audit/api/order";
 import moment from 'dayjs'
 import { Loading } from 'element-ui';
+import ImageToggle from '@/pages/audit/components/ImageToggle.vue'
+import { buildGantryImageUrl } from '@/pages/audit/composables/useGantryImages.js'
 const orderUtil = new OrderApi()
 const reverse = ref(false)
 const route = useRoute()
@@ -114,28 +100,12 @@ const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
 const isLoading = ref(false)
 
-// 图片展开状态管理 
-const expandedImagesMap = ref(new Map())
-
-// 创建computed属性来处理模板中的访问
-const expandedImages = computed(() => {
-  const result = {}
-  expandedImagesMap.value.forEach((value, key) => {
-    result[key] = value
-  })
-  return result
-})
 
 const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
 }
 
-const toggleImageExpand = (index) => {
-  const currentState = expandedImagesMap.value.get(index) || false
-  expandedImagesMap.value.set(index, !currentState)
-  expandedImagesMap.value = new Map(expandedImagesMap.value)
-}
 let passId = route.query?.pass_id
 
 const pass_time = passId.slice(22, 30)
@@ -144,14 +114,7 @@ const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' 
 let strTime = route.query?.startTime||moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
 let endTime = route.query?.endTime||moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 const getPic = (item, imgtype, enType) => {
-  let url = `${window.APP_CONFIG.API_URL_2}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.grantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
-  if (enType) {
-    url += `&enextype=${enType}`
-  }
-  if (imgtype) {
-    url += `&imgtype=${imgtype}`
-  }
-  return url
+  return buildGantryImageUrl(window.APP_CONFIG.API_URL_2, item, { imgType: imgtype, enexType: enType })
 }
 /**
  * @Description:根据携带进入的passid进行车辆通行流水查询
@@ -322,56 +285,4 @@ onMounted(() => {
   height: calc(100vh - 12.5rem);
 }
 
-.image-toggle-section {
-  grid-column: 1 / -1;
-  margin-top: 10px;
-}
-
-.toggle-button {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: #f5f7fa;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: #606266;
-  font-size: 14px;
-  user-select: none;
-}
-
-.toggle-button:hover {
-  background-color: #ecf5ff;
-  border-color: #b3d8ff;
-  color: #409eff;
-}
-
-.toggle-button.expanded {
-  background-color: #ecf5ff;
-  border-color: #409eff;
-  color: #409eff;
-}
-
-.toggle-button i {
-  margin-right: 6px;
-  font-size: 16px;
-}
-
-.image-content {
-  margin-top: 10px;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 </style>
