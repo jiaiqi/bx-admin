@@ -1,6 +1,6 @@
 <script setup>
 // 门架信息
-import {ref} from "vue";
+import { ref, computed } from "vue";
 
 const props = defineProps({
   data: {
@@ -15,6 +15,22 @@ const imgSrc = ref(null)
 const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
+}
+// 图片展开状态管理
+const expandedImagesMap = ref(new Map())
+// 在模板中以对象形式访问，保持响应性
+const expandedImages = computed(() => {
+  const result = {}
+  expandedImagesMap.value.forEach((value, key) => {
+    result[key] = value
+  })
+  return result
+})
+const toggleImageExpand = (index) => {
+  const currentState = expandedImagesMap.value.get(index) || false
+  expandedImagesMap.value.set(index, !currentState)
+  // 触发更新
+  expandedImagesMap.value = new Map(expandedImagesMap.value)
 }
 const getPic = (item, imgtype,enType) => {
   let url = `${window.backendIpAddr}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
@@ -53,16 +69,37 @@ const hideDialog = () => {
           <div class="item-list">
             计费金额：{{ activity.fee_disp }}
           </div>
-          <!-- <div class="item-list" v-if="activity.ljfyfee_disp">
-            路径反演金额：{{ activity.ljfyfee_disp }}
-          </div> -->
-          <div>
-            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===data.length-1?'ex':'')" @click="showPicture(activity)"></el-image>
+          <!-- 图片展开/收起区域 -->
+          <div class="image-toggle-section">
+            <div
+              class="toggle-button"
+              @click="toggleImageExpand(index)"
+              :class="{ 'expanded': expandedImages[index] }"
+            >
+              <i :class="expandedImages[index] ? 'el-icon-caret-top' : 'el-icon-caret-bottom'"></i>
+              {{ expandedImages[index] ? '收起图片' : '展开图片' }}
+            </div>
+
+            <!-- 图片内容区域 -->
+            <div v-if="expandedImages[index]" class="image-content">
+              <div v-if="activity.grantry_type === '收费站'">
+                <el-image
+                  style="width:700px;height: 300px"
+                  :src="getPic(activity, 'car', index === 0 ? 'en' : index === data.length - 1 ? 'ex' : '')"
+                  @click="showPicture(activity)"
+                  lazy
+                ></el-image>
+              </div>
+              <div v-else>
+                <el-image
+                  style="width:700px;height: 300px"
+                  :src="getPic(activity, 'car', '')"
+                  @click="showPicture(activity)"
+                  lazy
+                ></el-image>
+              </div>
+            </div>
           </div>
-          <!-- <div class="button" v-else>
-            <el-button type="primary" size="mini" @click="showPicture(activity)"><i class="el-icon-download mr-2"></i>获取图片
-            </el-button>
-          </div> -->
         </div>
       </el-timeline-item>
     </el-timeline>
@@ -100,5 +137,57 @@ const hideDialog = () => {
 .image-box {
   width: 100%;
   height: calc(100vh - 200px);
+}
+
+.image-toggle-section {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #606266;
+  font-size: 14px;
+  user-select: none;
+}
+
+.toggle-button:hover {
+  background-color: #ecf5ff;
+  border-color: #b3d8ff;
+  color: #409eff;
+}
+
+.toggle-button.expanded {
+  background-color: #ecf5ff;
+  border-color: #409eff;
+  color: #409eff;
+}
+
+.toggle-button i {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+.image-content {
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
