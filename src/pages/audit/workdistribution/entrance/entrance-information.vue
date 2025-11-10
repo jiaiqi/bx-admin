@@ -6,12 +6,12 @@
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(0, 0, 0, 0.6)"
   >
-    <div
+    <!-- <div
       v-if="loaded && list.length == 0"
       class="err_info"
     >
       <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{ passId }}</el-empty>
-    </div>
+    </div> -->
     <el-timeline
       :reverse="reverse"
       v-if="list.length > 0"

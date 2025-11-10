@@ -1256,7 +1256,7 @@ export default {
                 if (realfee && realfee.length > 0) {
                   this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
                 } else {
-                  this.ruleForm.real_fee = resdata[0].fee
+                  this.ruleForm.real_fee = formatFeeToYuan(resdata[0].fee)
                 }
 
                 // this.ruleForm.sus_escape_type = resdata[0].escape_type
@@ -1290,7 +1290,7 @@ export default {
                 this.handleChangeFee()
                 this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
                 this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-                // this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+                this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
               }
             }
           }
