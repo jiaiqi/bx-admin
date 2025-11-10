@@ -802,7 +802,7 @@ export default {
 
   computed: {},
   created(){
-    this.getPointList()
+    // this.getPointList()
   },
   methods: {
     async getPointList() {

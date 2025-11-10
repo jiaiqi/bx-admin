@@ -316,8 +316,8 @@
 
         </el-col>
         <el-col
-          :span="24"
-          style="display: grid;grid-template-columns: repeat(4,1fr);gap: 10px;"
+          :span="12"
+          style="display: grid;grid-template-columns: repeat(2,1fr);gap: 10px;"
         >
           <el-form-item
             label="是否为大件车辆"
@@ -349,6 +349,10 @@
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
+        </el-col>
+        <el-col
+          :span="12"
+        >
           <el-form-item
             label="通行收费(元)"
             prop="orginal_fee"
@@ -370,6 +374,11 @@
               >计费查询</el-button>
             </li>
           </el-form-item>
+        </el-col>
+        <el-col
+          :span="12"
+          style="display: grid;grid-template-columns: 1fr 1fr;"
+        >
           <el-form-item
             label="实际费用(元)"
             prop="real_fee"
@@ -381,11 +390,6 @@
               placeholder="请输入..."
             ></el-input>
           </el-form-item>
-        </el-col>
-        <el-col
-          :span="12"
-          style="display:grid;grid-template-columns: 1fr 1fr;"
-        >
           <el-form-item
             label="补缴费用(元)"
             prop="owe_fee"

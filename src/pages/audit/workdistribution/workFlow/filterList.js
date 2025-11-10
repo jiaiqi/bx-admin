@@ -146,8 +146,11 @@ export const createOrderNo= (org_id) => {
 }
     //将费用由分转成元
 export const formatFeeToYuan=(fee)=> {
-    if (fee===0 || fee === null || fee === undefined || isNaN(fee)) return '0';
-    return fee / 100;
+    let newfee = null; 
+     if (fee === 0 || fee === null || fee === undefined || isNaN(fee)) return '0'; 
+     newfee = fee / 100; 
+     const rounded = Math.round(newfee * 100) / 100; 
+     return rounded.toString().replace(/\.?0+$/, '');
 }
 export const formatFeeToFen=(fee)=>{
     if (fee===0 || fee === null || fee === undefined || isNaN(fee)) return '0';

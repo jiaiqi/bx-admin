@@ -174,7 +174,7 @@
           </div>
       </div>
       
-      <button class="pay-btn" @click="handlePayment">
+      <button v-if="submitvisible" class="pay-btn" @click="handlePayment">
         立即缴费
       </button>
     </div>
@@ -373,6 +373,7 @@ export default{
       isPayed:false,
       isChangePay:true,
       payType:1,
+      submitvisible:true,
       PayPublicOrder:{},
        payOption:[
         {
@@ -476,7 +477,6 @@ export default{
       this.stepStatus = false;
       this.statusText = '';
       this.showLoading = false;
-      this.paymentMethod = 'cash';
       this.clearQrcodeInfo();
       // 清空金额选择
       this.selectedAmount = 0;
