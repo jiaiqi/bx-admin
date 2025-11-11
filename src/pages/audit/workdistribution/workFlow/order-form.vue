@@ -1279,7 +1279,13 @@ export default {
                   'extime': resdata[0].extime,
                 }]
                 this.$store.commit('orderForm/handleSetSuspectedData', resdata)
-                if (!resdata[0].passid) {
+                
+                this.initSpecialType()
+                this.handleChangeFee()
+                this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+                this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+                this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
+              }else{
                   this.$confirm('暂无车辆通行流水，无法发起工单!', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -1289,12 +1295,6 @@ export default {
                     this.closeCurrentPage()
                   })
                   return
-                }
-                this.initSpecialType()
-                this.handleChangeFee()
-                this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
-                this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-                this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
               }
             }
           }
