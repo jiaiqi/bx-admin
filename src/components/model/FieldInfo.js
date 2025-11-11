@@ -617,11 +617,9 @@ export class FieldInfo {
     if (this.isFinder() && editable) {
       // finder类型字段 自动加上合法值校验
       // 非自行输入或者不是add表单的时候才加上合法值校验
+      //对于地图选择地址类型没必要进行校验
       // if( this.allowInput !== '自行输入'){
-      if (
-        this.allowInput !== "自行输入" ||
-        srvCol?.service_name?.includes("add") === false
-      ) {
+      if (srvCol?.col_type !== "bxsys_obj_type_gps"&&(this.allowInput !== "自行输入" ||  srvCol?.service_name?.includes("add") === false)) {
         let rule = {
           name: "isValidValue",
           trigger: "change",
