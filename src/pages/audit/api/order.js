@@ -231,6 +231,23 @@ export default class OrderApi {
     return await $http.post(url, req)
   }
 
+      //根据passid查询之前是否填报过数据
+  async getAuditSusvehPassInfo(options) {
+    let url = path + `/aud/select/srvaud_audit_passconv_select?srvaud_audit_passconv_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_audit_passconv_select",
+      condition: options.condition,
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
     //根据passid查询年表，分表查询条件为当前年和上一年获取页面多字段数据
   async getSusvehPassInfo(options) {
     let url = path + `/aud/select/srvaud_susvehpass_select?srvaud_susvehpass_select`
