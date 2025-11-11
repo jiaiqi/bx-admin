@@ -1214,26 +1214,55 @@ export default {
           let pass_id = this.$route.query.pass_id;
           this.ruleForm.pass_id = pass_id
           if (pass_id) {
-
-            const pass_time = pass_id.slice(22, 30)
+            const resAudit = await this.getAuditSusvehPassInfo()
+            if (resAudit && resAudit.length > 0) {
+              this.suspectedData = resAudit[0]
+              this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
+              if (this.suspectedData?.[0]?.vehicletype) {
+               this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
+               }
+             this.operate_params = resAudit[0]
+            this.ruleForm = formDataByGetInfo(this.ruleForm, resAudit[0])
+            this.ruleForm.media_no = resAudit[0].obusn
+            this.ruleForm.media_type = resAudit[0].mediatype
+            this.ruleForm.pass_time = resAudit[0].extime
+        this.ruleForm.sus_escape_type = resAudit[0].suspecttype
+           this.ruleForm.sus_plate_color = resAudit[0].vehicleplate_color
+           this.ruleForm.sus_vehicle_id = resAudit[0].vehicleplate_no
+             this.ruleForm.suspicion_id = resAudit[0].suspectid
+               this.ruleForm.vehicleclass = resAudit[0].envehicleclass
+               this.ruleForm.vehicleusertype = resAudit[0].vehicleusertype
+           this.initSpecialType()
+            this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
+           this.handleChangeFee()
+           this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+            this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+            }else{
+               const pass_time = pass_id.slice(22, 30)
             const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
 
             this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
             this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
-            this.getTrafficFlow()
+            // this.getTrafficFlow()
+            this.suspectedData = [];
+            this.$store.commit('orderForm/handleClearSuspectedData')
             const res = await this.getSusvehPassInfo()
-            console.log(this.ruleForm.pass_id, 2222222222)
 
             this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
             this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
             this.getRelevantInfo();
       if (res && res.length > 0) {
+         this.suspectedData = res.data ? res.data : []
+        this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
+        if (this.suspectedData?.[0]?.vehicletype) {
+          this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
+        }
         this.operate_params = res[0]
-        this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+        this.ruleForm = formDataByGetInfo(this.ruleForm, res[0])
         this.ruleForm.media_no = res[0].obusn
         this.ruleForm.media_type = res[0].mediatype
         this.ruleForm.pass_time = res[0].extime
-        // this.ruleForm.sus_escape_type = res[0].escape_type
+        this.ruleForm.sus_escape_type = res[0].suspecttype
         this.ruleForm.sus_plate_color = res[0].vehicleplate_color
         this.ruleForm.sus_vehicle_id = res[0].vehicleplate_no
         this.ruleForm.suspicion_id = res[0].suspectid
@@ -1251,19 +1280,18 @@ export default {
               const resdata = await this.getPassconvInfo()
               if (resdata && resdata.length > 0) {
                 this.operate_params = resdata[0]
-                // this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
+                this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
                 this.ruleForm.media_no = resdata[0].obusn
                 this.ruleForm.media_type = resdata[0].mediatype
                 this.ruleForm.pass_time = resdata[0].extime
                 const realfee = await this.getWorkorderFeeInfo()
-                console.log(realfee, 1111111)
                 if (realfee && realfee.length > 0) {
                   this.ruleForm.real_fee = formatFeeToYuan(realfee[0].real_fee)
                 } else {
                   this.ruleForm.real_fee = formatFeeToYuan(resdata[0].fee)
                 }
 
-                // this.ruleForm.sus_escape_type = resdata[0].escape_type
+                // this.ruleForm.sus_escape_type = resdata[0].suspecttype
                 this.ruleForm.sus_plate_color = resdata[0].vehicleplate_color
                 this.ruleForm.sus_vehicle_id = resdata[0].vehicleplate_no
                 // this.ruleForm.suspicion_id = resdata[0].suspectid
@@ -1297,6 +1325,8 @@ export default {
                   return
               }
             }
+            }
+           
           }
         }
       }
@@ -1451,6 +1481,26 @@ export default {
       const res = await orderUtils.getWorkOrderDetail(obj)
       if (res.data) {
         return res.data.data ? res.data.data : []
+      }
+    },
+     //根据passid查询上次数据
+    async getAuditSusvehPassInfo() {
+      let obj = {
+        condition: [{ colName: "passid", ruleType: "eq", value: this.ruleForm.pass_id }],
+        divCond: []
+      }
+      try {
+        const res = await orderUtils.getAuditSusvehPassInfo(obj)
+        if (res.data) {
+          return res.data.data ? res.data.data : []
+        }
+      } catch (error) {
+        const pass_time = this.ruleForm.pass_id.slice(22, 30)
+        const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+
+        this.strTime = moment(formattedDate).subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
+        this.endTime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+        return await this.getSusvehPassInfo()
       }
     },
     //根据passid查询年表，分表查询条件为当前年和上一年获取页面多字段数据
