@@ -242,7 +242,6 @@ export default class OrderApi {
       serviceName: "srvaud_audit_passconv_select",
       condition: options.condition,
       divCond: options.divCond,
-      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
       page: { pageNo: 1, rownumber: 10 }
     }
     return await $http.post(url, req)
@@ -259,7 +258,6 @@ export default class OrderApi {
       serviceName: "srvaud_susvehpass_select",
       condition: options.condition,
       divCond: options.divCond,
-      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
       page: { pageNo: 1, rownumber: 10 }
     }
     return await $http.post(url, req)
