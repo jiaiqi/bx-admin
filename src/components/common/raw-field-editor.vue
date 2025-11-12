@@ -538,8 +538,7 @@
             <div v-else-if="
               field.info.editor == null &&
               field.info.type == 'String' &&
-              field.autocompleteInput &&
-              field.isAutocomplete()
+              (field.isAutocomplete()||field.info.subType == 'autocomplete')
             ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
