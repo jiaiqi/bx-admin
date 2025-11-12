@@ -1003,7 +1003,10 @@ export default {
         const keys = ['vehicle_type', 'isnormel', 'axlecount', 'orginal_fee', 'real_fee', 'owe_fee', 'vehicleusertype', 'vehicleclass']
         keys.forEach(k => {
           if (Object.prototype.hasOwnProperty.call(newVal, k)) {
-            this.ruleForm[k] = newVal[k]
+            if(k === 'owe_fee'){
+              newVal[k] = (Math.round(newVal[k] * 100) / 100).toString().replace(/\.?0+$/, '')
+            }
+              this.ruleForm[k] = newVal[k]
           }
         })
       },
@@ -1550,7 +1553,6 @@ export default {
      * @Date: 2025-06-06 17:23:48
      */
     handleGetCurrentFree() {
-
       if (this.ruleForm.vehicle_type === '') {
         this.$message.error('请选择稽核车型后再进行计费查询！');
       }
@@ -1588,6 +1590,7 @@ export default {
       } else {
         this.ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
       }
+      console.log('补缴费用1111111111', this.ruleForm.owe_fee)
       this.$store.commit('orderForm/handleSetOrderForm', { orginal_fee: this.ruleForm.orginal_fee, real_fee: this.ruleForm.real_fee, owe_fee: this.ruleForm.owe_fee })
     },
     //通过通行介质类型及是否为大件车辆设置默认的车辆用户类型及车种
