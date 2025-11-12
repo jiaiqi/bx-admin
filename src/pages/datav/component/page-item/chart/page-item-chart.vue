@@ -409,6 +409,8 @@ onMounted(() => {
       chartConfig.value.mock_data_json || [],
       props.layout
     );
+    cellData.value = chartConfig.value.mock_data_json || [];
+    loaded.value = true;
   } else if (
     chartConfig.value?.more_option?.includes("使用模拟数据") &&
     !pageItem?.srv_req_json &&
@@ -423,6 +425,7 @@ onMounted(() => {
     cellData.value = chartConfig.value.mock_data_json || [];
     //todo 水球数据只需要传入具体的数字
     setLiquidData();
+    loaded.value = true;
   } else if (!pageItem?.srv_req_type && !cellData.value?.length) {
     option.value = setDefaultChartOption(
       chartType.value,

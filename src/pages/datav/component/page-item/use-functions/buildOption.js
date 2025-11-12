@@ -882,53 +882,50 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       ecOptions.series = [];
       console.log(pageItem);
       const mapJson = pageItem?.chart_json?.map_json;
+      console.log("mapJson:", mapJson);
       let datas = [];
+      let scatterDatas = []
       if (cellData?.length) {
-        if (mapJson?.col_label && mapJson?.col_lon && mapJson.col_lat) {
+        if (mapJson?.col_label && mapJson.col_value && mapJson?.col_lon && mapJson.col_lat) {
           for (let i = 0; i < cellData.length; i++) {
             datas.push({
+              name: cellData[i][mapJson.col_label],
+              value: cellData[i][mapJson.col_value]
+            });
+
+            scatterDatas.push({
               name: cellData[i][mapJson.col_label],
               value: [
                 cellData[i][mapJson.col_lat],
                 cellData[i][mapJson.col_lon],
-              ],
-            });
+                cellData[i][mapJson.col_value]
+              ]
+            })
           }
         }
       }
-      // ecOptions.geo3D= {
-      //   map: "mapName", //注册地图的名字
-      //   roam: true, //开启鼠标缩放和平移漫游。默认不开启
-      //   itemStyle: {
-      //     color: "#0057c7", // 背景
-      //     opacity: 1, //透明度
-      //     borderWidth: .1, // 边框宽度
-      //     borderColor: "#eee", // 边框颜色
-      //     fontSize: .1, //
-      //   },
-      //   viewControl: {
-      //     distance: 120,
-      //     alpha: 50, // 上下旋转的角度
-      //     beta: 0, // 左右旋转的角度
-      //   },
 
+      // ecOptions['tooltip'] = {
+      //   trigger: 'item',
+      //   formatter: '{b}<br/>{c}'
       // }
       ecOptions.tooltip = {
         trigger: "item",
         formatter: function (params) {
-          if (typeof params.value[2] == "undefined") {
-            return params.name;
-            // return params.name + " : " + params.value;
-          } else {
+          if (typeof params.value === 'number' && !isNaN(params.value)) {
+            return params.name + " : " + params.value;
+          } else if (Array.isArray(params.value) && params.value.length === 3) {
             return params.name + " : " + params.value[2];
+          } else {
+            return params.name;
           }
         },
       };
+
       if (datas?.length) {
-        let iconSize = 5;
+        let iconSize = 20;
         if (mapJson?.icon_scale) {
           let iconScale = mapJson?.icon_scale || 1;
-          console.log(layout);
           if (layout?.w) {
             iconSize = (layout?.w * iconScale) / 100;
             if (layout.colNum === 100) {
@@ -936,47 +933,82 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             }
           }
         }
-        let serie = {
-          name: "",
-          // type: "scatter3D",
-          type: "scatter",
-          coordinateSystem: "geo",
-          // coordinateSystem: "geo3D",
-          // type: 'bar3D',
-          data: datas,
-          symbol: "circle",
-          // symbol: 'pin',
-          symbolSize: iconSize,
-          itemStyle: {
-            normal: {
-              color: "#c83f24", //标志颜色
-            },
-          },
+
+        let mapSeries = {
+          type: 'map',//地图类型
+          //地图上文字
           label: {
-            show: true,
-            formatter: function (params) {
-              return `${params.name}`;
+            normal: {
+              show: true,//是否显示标签
+              textStyle: {
+                color: '#fff',
+              },
             },
-            textStyle: {
-              color: "#fff",
-              borderColor: "transparent",
-              backgroundColor: "transparent",
-            },
-            // normal: {
-            //   show: true, //显示标签
-            //   textStyle: { color: "#c71585" }, //省份标签字体颜色
-            // },
             emphasis: {
-              //对应的鼠标悬浮效果
-              show: true, //关闭文字 （这东西有问题得关）
-              // textStyle: { color: "#800080" },
-              label: {
-                formatter: "{b}: {@number}",
+              textStyle: {
+                color: '#fff',
               },
             },
           },
+          //地图区域的多边形 图形样式
+          itemStyle: {
+            normal: {
+              borderColor: '#2ab8ff',
+              borderWidth: 1.5,
+              areaColor: '#12235c',
+            },
+            emphasis: {
+              areaColor: '#2AB8FF',
+              borderWidth: 0,
+            },
+          },
+          data: datas,
+          zoom: 1.2,//当前视角的缩放比例
+          //是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
+          roam: false,
+          map: 'customMap', //使用自定义地图
+        }
+        ecOptions.series.push(mapSeries);
+
+        let serie = {
+          //设置为分散点
+          type: 'scatter',
+          //series坐标系类型
+          coordinateSystem: 'geo',
+          //设置图形 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow'
+          symbol: 'pin',
+          // //标记的大小，可以设置成诸如 10 这样单一的数字，也可以用数组分开表示宽和高，例如 [20, 10] 表示标记宽为20，高为10
+          symbolSize: [40, 40],
+          //气泡字体设置
+          label: {
+            normal: {
+              show: true,//是否显示
+              textStyle: {
+                color: '#fff',//字体颜色
+                fontSize: 8,//字体大小
+              },
+              //返回气泡数据
+              formatter(value) {
+                return value.data.value[2]
+              }
+            }
+          },
+          itemStyle: {
+            normal: {
+              color: '#1E90FF', //标志颜色
+            }
+          },
+          //给区域赋值
+          data: scatterDatas,
+          showEffectOn: 'render',//配置何时显示特效。可选：'render' 绘制完成后显示特效。'emphasis' 高亮（hover）的时候显示特效。
+          rippleEffect: {//涟漪特效相关配置。
+            brushType: 'stroke'//波纹的绘制方式，可选 'stroke' 和 'fill'
+          },
+          hoverAnimation: true,//是否开启鼠标 hover 的提示动画效果。
+          zlevel: 1//所属图形的 zlevel 值
         };
         ecOptions.series.push(serie);
+
       }
       break;
     default:
@@ -1288,7 +1320,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       break;
     case "map":
       if (chartJson?.map_base_geojson && eCharts) {
-        eCharts.registerMap("mapName", chartJson?.map_base_geojson);
+        eCharts.registerMap("customMap", chartJson?.map_base_geojson);
       }
       option.legend = {
         show: false,
@@ -1304,31 +1336,66 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         },
       };
 
-      option.geo = {
-        map: "mapName",
-        roam: true,
-        top: "0",
-        // left:'0%',
-        // right:'0%',
-        bottom: "0",
+      option['geo'] = {
+        show: true,
+        map: "customMap",
+        // aspectScale: 1,
+        zoom: 1.1,//当前视角的缩放比例
         label: {
           normal: {
-            show: false,
+            show: true,
+            color: "#fff"
           },
           emphasis: {
-            show: false,
-          },
+            show: true,
+            color: "#fff"
+          }
         },
-        itemStyle: {
+        roam: false,
+        itemStyle: {//地图区域的多边形 图形样式
           normal: {
-            areaColor: "#1180c7",
+            areaColor: '#013C62',//地区颜色
+            shadowColor: '#182f68',//阴影颜色
+            shadowOffsetX: 0,//阴影偏移量
+            shadowOffsetY: 25,//阴影偏移量
           },
           emphasis: {
-            areaColor: "#1180c7",
+            areaColor: '#2AB8FF',//地区颜色
+            label: {
+              show: false,//是否在高亮状态下显示标签
+            },
           },
         },
-      };
-      option.series = [];
+      }
+      option['visualMap'] = {
+        type: 'continuous',
+        seriesIndex: 0,
+        show: true,
+        // min: 0,
+        // max: 100,
+        left: 'left',
+        top: 'bottom',
+        text: ['高', '低'], // 文本，默认为数值文本
+        textStyle: {
+          color: "#fff",
+          fontSize: 16,
+          align: "center",
+        },
+        calculable: true,
+        // seriesIndex: [0],
+        inRange: {
+          // color: ['#3B5077', '#031525'] // 蓝黑
+          // color: ['#ffc0cb', '#800080'] // 红紫
+          // color: ['#3C3B3F', '#605C3C'] // 黑绿
+          // color:['#3C3B3F','#EE2C2C']//黑红
+          // color: ['lightskyblue', 'yellow', 'orangered']
+          // color: ['#0f0c29', '#302b63', '#24243e'] // 黑紫黑
+          // color: ['#23074d', '#cc5333'] // 紫红
+          // color: ['#00467F', '#A5CC82'] // 蓝绿
+          color: ['#1488CC', '#2B32B2'] // 浅蓝
+          // color: ['#00467F', '#A5CC82'] // 蓝绿
+        }
+      }
       break;
   }
   return option;
