@@ -175,7 +175,55 @@ const getDoorFrameData = async () => {
     "serviceName": service,
     "colNames": ["*"],
     "condition": cond,
-    "divCond": cond
+  }
+  const loading = Loading.service({
+    lock: true,
+    text: 'Loading',
+    spinner: 'el-icon-loading',
+    background: 'rgba(0, 0, 0, 0.7)'
+  });
+  setTimeout(() => {
+    loading.close();
+  }, 6000);
+  const res = await $http.post(url, req)
+  loading?.close();
+  if (res?.data?.data?.length) {
+    doorFrameData.value = res.data.data
+  } else{
+    getDoorFrameNewData()
+  }
+  console.log(res.data)
+}
+
+const getDoorFrameNewData = async () => {
+  const service = `srvaud_susvehpasspath_new_select`
+  const url = `${window.backendIpAddr}/aud/select/${service}`
+  const cond = [
+    {
+      "colName": "passid",
+      "ruleType": "eq",
+      "value": passid
+    }, {
+      "colName": "path_type",
+      "ruleType": "eq",
+      "value": '行驶路径'
+    },
+    {
+      'colName': 'grantry_type',
+      "ruleType": "in",
+      "value": '路段门架,收费站'
+    },
+    // {
+    //   "colName": "datatype",
+    //   "ruleType": "eq",
+    //   "value": '3'
+    // },
+    {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}]
+  const req = {
+    "serviceName": service,
+    "colNames": ["*"],
+    "condition": cond,
+    "divCond": cond,
   }
   const loading = Loading.service({
     lock: true,
@@ -197,6 +245,7 @@ const getDoorFrameData = async () => {
   }
   console.log(res.data)
 }
+
 
 const getPathData = async () => {
   // 获取途径点
