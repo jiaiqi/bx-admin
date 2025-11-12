@@ -1279,6 +1279,8 @@ export default {
               console.log('这里的pass_id', pass_id)
               this.strTime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
               this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+               this.suspectedData = [];
+               this.$store.commit('orderForm/handleClearSuspectedData')
               const resdata = await this.getPassconvInfo()
               if (resdata && resdata.length > 0) {
                 this.operate_params = resdata[0]
@@ -1300,16 +1302,11 @@ export default {
                 // this.ruleForm.vehicleclass = resdata[0].envehicleclass
                 this.ruleForm.vehicleusertype = resdata[0].vehicleusertype
                 this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
-                this.suspectedData = [{
-                  'vehicleplate_no': resdata[0].vehicleplate_no,
-                  '_vehicletype_disp': resdata[0]._vehicletype_disp,
-                  'enstationname': resdata[0].enstationname,
-                  'entime': resdata[0].entime,
-                  'exstationname': resdata[0].exstationname,
-                  'extime': resdata[0].extime,
-                }]
-                this.$store.commit('orderForm/handleSetSuspectedData', resdata)
-                
+                this.suspectedData = resdata 
+                this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
+                  if (this.suspectedData?.[0]?.vehicletype) {
+                    this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
+                   }
                 this.initSpecialType()
                 this.handleChangeFee()
                 this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
@@ -1586,7 +1583,8 @@ export default {
       const realFee = typeof this.ruleForm.real_fee === 'string' ? parseFloat(this.ruleForm.real_fee) : this.ruleForm.real_fee;
       if (!isNaN(originalFee) && !isNaN(realFee)) {
         const diff = originalFee - realFee;
-        this.ruleForm.owe_fee = diff > 0 ? diff : 0;
+        const rounded = (Math.round(diff * 100) / 100).toString().replace(/\.?0+$/, ''); 
+        this.ruleForm.owe_fee = diff > 0 ? rounded : 0;
       } else {
         this.ruleForm.owe_fee = 0; // 如果任一费用无效，补缴费用设为0
       }
