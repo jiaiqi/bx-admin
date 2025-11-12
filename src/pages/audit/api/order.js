@@ -241,7 +241,6 @@ export default class OrderApi {
       query_source: "list_page",
       serviceName: "srvaud_audit_passconv_select",
       condition: options.condition,
-      divCond: options.divCond,
       page: { pageNo: 1, rownumber: 10 }
     }
     return await $http.post(url, req)
