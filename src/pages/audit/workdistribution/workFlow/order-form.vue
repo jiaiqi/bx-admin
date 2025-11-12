@@ -1214,9 +1214,11 @@ export default {
           let pass_id = this.$route.query.pass_id;
           this.ruleForm.pass_id = pass_id
           if (pass_id) {
+            this.suspectedData = [];
+            this.$store.commit('orderForm/handleClearSuspectedData')
             const resAudit = await this.getAuditSusvehPassInfo()
             if (resAudit && resAudit.length > 0) {
-              this.suspectedData = resAudit[0]
+              this.suspectedData = resAudit
               this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
               if (this.suspectedData?.[0]?.vehicletype) {
                this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
@@ -1252,7 +1254,7 @@ export default {
             this.endTime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
             this.getRelevantInfo();
       if (res && res.length > 0) {
-         this.suspectedData = res.data ? res.data : []
+         this.suspectedData = res 
         this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
         if (this.suspectedData?.[0]?.vehicletype) {
           this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
