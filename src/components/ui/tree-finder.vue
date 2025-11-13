@@ -1033,6 +1033,7 @@ export default {
             try {
               // 获取完整路径的树形数据
               const treeStructureData = await this.getFullPathData(item.path);
+              const valCol = loader.valueCol || loader.refedCol;
               if (treeStructureData && treeStructureData.length > 0) {
                 if (!treeStructureData.find((item) => item[valCol] === this.field.model)) {
                   this.options.push(item);
