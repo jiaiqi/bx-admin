@@ -2268,7 +2268,30 @@ export default {
       // console.log(cloneDeep(this.filterCondition));
       this.loadTableData();
     },
+    buildDetailListCond(childForeignkey, mainData) {
+      let cond = null;
+      if (childForeignkey?.more_config?.includes("condition")) {
+        try {
+          const moreConfig = JSON.parse(childForeignkey?.more_config);
+          if (Array.isArray(moreConfig?.condition) && moreConfig?.condition.length) {
+            cond = moreConfig?.condition.map(item => {
+              const obj = { ...item }
+              if (item.value?.value_type === 'mainData') {
+                if (item.value.value_key && mainData[item.value.value_key]) {
+                  obj.value = mainData[item.value.value_key]
+                }
+              } else if (item.value?.value || typeof item.value === 'string') {
+                obj.value = item.value?.value || item.value
+              }
+              return obj
+            })
+          }
+        } catch (error) {
 
+        }
+      }
+      return cond;
+    },
     buildQueryConditions() {
       this.condition = [];
       if (this.listType == "wait") {
@@ -2288,6 +2311,16 @@ export default {
       if (Array.isArray(this.defaultCondition)) {
         for (var cMap of this.defaultCondition) {
           this.condition.push(cMap);
+        }
+      }
+
+      if (this.listType === "detaillist") {
+        // 详情子表
+        if (this.childForeignkey?.more_config?.includes("condition")) {
+          let conds = this.buildDetailListCond(this.childForeignkey, this.listMainFormDatas);
+          if (Array.isArray(conds) && conds.length) {
+            this.condition = this.condition.concat(conds);
+          }
         }
       }
 
