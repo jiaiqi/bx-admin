@@ -98,7 +98,6 @@ import Executor from "./executor.vue";
 import Vue from "vue";
 import dayjs from "dayjs";
 import join from "lodash/join";
-import { data } from "jquery";
 export default {
   name: "simple-filter",
   components: {

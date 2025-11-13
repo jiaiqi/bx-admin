@@ -39,7 +39,6 @@
       <simple-filter
         v-if="srv_cols"
         :srv_cols="srv_cols"
-        :defaultValues="setDefaultValue"
         :supportGroup="false"
         v-on:search-clicked="query"
         ref="filter-form"
