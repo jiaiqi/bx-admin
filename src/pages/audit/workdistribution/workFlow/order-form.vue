@@ -1229,7 +1229,7 @@ export default {
              this.operate_params = resAudit[0]
             this.ruleForm = formDataByGetInfo(this.ruleForm, resAudit[0])
             this.ruleForm.media_no = resAudit[0].obusn
-            this.ruleForm.media_type = resAudit[0].mediatype
+            this.ruleForm.media_type = resAudit[0].mediatype+''
             this.ruleForm.pass_time = resAudit[0].extime
         this.ruleForm.sus_escape_type = resAudit[0].suspecttype
            this.ruleForm.sus_plate_color = resAudit[0].vehicleplate_color
@@ -1238,6 +1238,7 @@ export default {
                this.ruleForm.vehicleclass = resAudit[0].envehicleclass
                this.ruleForm.vehicleusertype = resAudit[0].vehicleusertype
            this.initSpecialType()
+            this.getRelevantInfo();
             this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
            this.handleChangeFee()
            this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
@@ -1265,7 +1266,7 @@ export default {
         this.operate_params = res[0]
         this.ruleForm = formDataByGetInfo(this.ruleForm, res[0])
         this.ruleForm.media_no = res[0].obusn
-        this.ruleForm.media_type = res[0].mediatype
+        this.ruleForm.media_type = res[0].mediatype+''
         this.ruleForm.pass_time = res[0].extime
         this.ruleForm.sus_escape_type = res[0].suspecttype
         this.ruleForm.sus_plate_color = res[0].vehicleplate_color
@@ -1289,7 +1290,7 @@ export default {
                 this.operate_params = resdata[0]
                 this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
                 this.ruleForm.media_no = resdata[0].obusn
-                this.ruleForm.media_type = resdata[0].mediatype
+                this.ruleForm.media_type = resdata[0].mediatype+''
                 this.ruleForm.pass_time = resdata[0].extime
                 const realfee = await this.getWorkorderFeeInfo()
                 if (realfee && realfee.length > 0) {
