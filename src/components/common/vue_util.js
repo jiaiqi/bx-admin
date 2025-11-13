@@ -466,7 +466,7 @@ function init_util() {
       });
     }
     // 详情场景：仅当调用方传入 id 值时，追加 { colName: 'id', ... } 2025-09-03
-    if (['detail','detaillist'].includes(use_type) && idVal !== undefined && idVal !== null && idVal !== '') {
+    if (mainSrv && ['detail', 'detaillist', 'treelist'].includes(use_type) && ![null, undefined, ''].includes(idVal)) {
       requestData.condition.push({
         colName: 'id',
         value: idVal,
