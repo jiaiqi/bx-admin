@@ -1174,14 +1174,42 @@ export default {
         const resOrder = await this.getWorkOrderDetail()
         if (resOrder) {
           console.log(resOrder, 3333333)
-          this.ruleForm = formDataByGetInfo(this.ruleForm, resOrder[0])
-          this.ruleForm.vehicle_type = resOrder[0]._trade_vehicle_type_disp
-          this.initSpecialType()
-          this.handleChangeFee()
-          this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
-          this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-          this.ruleForm.real_fee = formatFeeToYuan(this.ruleForm.real_fee);
-          this.getTrafficFlow()
+          this.ruleForm.pass_id = resOrder[0].pass_id
+         this.suspectedData = [];
+            this.$store.commit('orderForm/handleClearSuspectedData')
+            const resAudit = await this.getAuditSusvehPassInfo()
+            if (resAudit && resAudit.length > 0) {
+              this.suspectedData = resAudit
+              this.$store.commit('orderForm/handleSetSuspectedData', this.suspectedData)
+              if (this.suspectedData?.[0]?.vehicletype) {
+               this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
+               }
+        this.operate_params = resOrder[0]
+        // this.ruleForm = formDataByGetInfo(this.ruleForm, resOrder[0])
+        this.ruleForm = resOrder[0]
+        // 将数值类型属性转换为字符串
+        Object.keys(this.ruleForm).forEach(key => {
+          if (typeof this.ruleForm[key] === 'number') {
+            this.ruleForm[key] = this.ruleForm[key].toString();
+          }
+        })
+        // this.ruleForm.media_no = resOrder[0].media_no
+        // this.ruleForm.media_type = resOrder[0].media_type+''
+        // this.ruleForm.pass_time = resOrder[0].pass_time
+        // this.ruleForm.sus_escape_type = resOrder[0].sus_escape_type+''
+        // this.ruleForm.sus_plate_color = resOrder[0].sus_plate_color+''
+        // this.ruleForm.sus_vehicle_id = resOrder[0].sus_vehicle_id
+        // this.ruleForm.suspicion_id = resOrder[0].suspicion_id
+        // this.ruleForm.vehicleclass = resOrder[0].vehicleclass
+        // this.ruleForm.vehicleusertype = resOrder[0].vehicleusertype
+        // this.ruleForm.order_type = resOrder[0].order_type+''
+
+        // this.initSpecialType()
+        // this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
+        // this.handleChangeFee()
+        this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
+        this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
+          console.log(this.ruleForm, 44444444)
           const pass_time2 = this.ruleForm.pass_id.slice(22, 30)
           const formattedDate2 = pass_time2.slice(0, 4) + '-' + pass_time2.slice(4, 6) + '-' + pass_time2.slice(6, 8);
 
@@ -1226,10 +1254,11 @@ export default {
               if (this.suspectedData?.[0]?.vehicletype) {
                this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
                }
+              }
              this.operate_params = resAudit[0]
             this.ruleForm = formDataByGetInfo(this.ruleForm, resAudit[0])
             this.ruleForm.media_no = resAudit[0].obusn
-            this.ruleForm.media_type = resAudit[0].mediatype+''
+            this.ruleForm.media_type = resAudit[0].mediatype
             this.ruleForm.pass_time = resAudit[0].extime
         this.ruleForm.sus_escape_type = resAudit[0].suspecttype
            this.ruleForm.sus_plate_color = resAudit[0].vehicleplate_color
@@ -1238,7 +1267,6 @@ export default {
                this.ruleForm.vehicleclass = resAudit[0].envehicleclass
                this.ruleForm.vehicleusertype = resAudit[0].vehicleusertype
            this.initSpecialType()
-            this.getRelevantInfo();
             this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
            this.handleChangeFee()
            this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
@@ -1266,7 +1294,7 @@ export default {
         this.operate_params = res[0]
         this.ruleForm = formDataByGetInfo(this.ruleForm, res[0])
         this.ruleForm.media_no = res[0].obusn
-        this.ruleForm.media_type = res[0].mediatype+''
+        this.ruleForm.media_type = res[0].mediatype
         this.ruleForm.pass_time = res[0].extime
         this.ruleForm.sus_escape_type = res[0].suspecttype
         this.ruleForm.sus_plate_color = res[0].vehicleplate_color
@@ -1290,7 +1318,7 @@ export default {
                 this.operate_params = resdata[0]
                 this.ruleForm = formDataByGetInfo(this.ruleForm, resdata[0])
                 this.ruleForm.media_no = resdata[0].obusn
-                this.ruleForm.media_type = resdata[0].mediatype+''
+                this.ruleForm.media_type = resdata[0].mediatype
                 this.ruleForm.pass_time = resdata[0].extime
                 const realfee = await this.getWorkorderFeeInfo()
                 if (realfee && realfee.length > 0) {
@@ -1479,7 +1507,7 @@ export default {
     //根据订单id去查询工单详情
     async getWorkOrderDetail() {
       let obj = {
-        condition: [{ colName: "order_no", ruleType: "eq", value: "BO202504251528555470001" }],
+        condition: [{ colName: "order_no", ruleType: "eq", value: this.order_no }],
       }
       const res = await orderUtils.getWorkOrderDetail(obj)
       if (res.data) {
