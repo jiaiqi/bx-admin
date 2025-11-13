@@ -627,7 +627,6 @@ export default {
        this.showLoading = true;
       payUtils.handlePayPublicOrder(payInfoParam).then((res) => {
         this.showLoading = false;
-        console.log(res, 222222222)
         if(res.data.state !=='SUCCESS'){
           this.$message.error(res.data.resultMessage || '支付失败');
           return;
@@ -636,8 +635,6 @@ export default {
         if(this.PayPublicOrder){
           this.submitvisible = false;
         }
-        
-       console.log(this.PayPublicOrder, 999999999)
       }).catch((err) => { })
     },
      // 获取上传组件的field配置
