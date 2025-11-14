@@ -982,7 +982,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           //气泡字体设置
           label: {
             normal: {
-              show: true,//是否显示
+              show: false,//是否显示
               textStyle: {
                 color: '#fff',//字体颜色
                 fontSize: 8,//字体大小
@@ -995,7 +995,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           },
           itemStyle: {
             normal: {
-              color: '#1E90FF', //标志颜色
+              // color: '#1E90FF', //标志颜色
+              color: '#2B32B2', //标志颜色
             }
           },
           //给区域赋值
@@ -1007,8 +1008,23 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           hoverAnimation: true,//是否开启鼠标 hover 的提示动画效果。
           zlevel: 1//所属图形的 zlevel 值
         };
-        ecOptions.series.push(serie);
+        // ecOptions.series.push(serie);
 
+      }
+      if (datas?.length) {
+        const values = datas.map(d => Number(d.value)).filter(v => !isNaN(v));
+        if (values.length) {
+          const rawMin = Math.min(...values);
+          const rawMax = Math.max(...values);
+          const range = rawMax - rawMin;
+          const pad = range === 0 ? Math.max(Math.abs(rawMax), 1) * 0.05 : range * 0.05;
+          ecOptions.visualMap = ecOptions.visualMap || {};
+          ecOptions.visualMap.min = Number((rawMin - pad).toFixed(2));
+          if (ecOptions.visualMap.min < 0) {
+            ecOptions.visualMap.min = 0;
+          }
+          ecOptions.visualMap.max = Number((rawMax + pad).toFixed(2));
+        }
       }
       break;
     default:
@@ -1325,16 +1341,16 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       option.legend = {
         show: false,
       };
-      option.tooltip = {
-        trigger: "item",
-        formatter: function (params) {
-          if (typeof params.value[2] == "undefined") {
-            return params.name + " : " + params.value;
-          } else {
-            return params.name + " : " + params.value[2];
-          }
-        },
-      };
+      // option.tooltip = {
+      //   trigger: "item",
+      //   formatter: function (params) {
+      //     if (typeof params.value[2] == "undefined") {
+      //       return params.name + " : " + params.value;
+      //     } else {
+      //       return params.name + " : " + params.value[2];
+      //     }
+      //   },
+      // };
 
       option['geo'] = {
         show: true,
@@ -1356,8 +1372,8 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           normal: {
             areaColor: '#013C62',//地区颜色
             shadowColor: '#182f68',//阴影颜色
-            shadowOffsetX: 0,//阴影偏移量
-            shadowOffsetY: 25,//阴影偏移量
+            shadowOffsetX: 10,//阴影偏移量
+            shadowOffsetY: 10,//阴影偏移量
           },
           emphasis: {
             areaColor: '#2AB8FF',//地区颜色
@@ -1373,7 +1389,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         show: true,
         // min: 0,
         // max: 100,
-        left: 'left',
+        left: '10',
         top: 'bottom',
         text: ['高', '低'], // 文本，默认为数值文本
         textStyle: {
@@ -1392,7 +1408,8 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           // color: ['#0f0c29', '#302b63', '#24243e'] // 黑紫黑
           // color: ['#23074d', '#cc5333'] // 紫红
           // color: ['#00467F', '#A5CC82'] // 蓝绿
-          color: ['#1488CC', '#2B32B2'] // 浅蓝
+          // color: ['#1488CC', '#2B32B2'] // 浅蓝
+          color: ['#0045FF', '#0FDFDE'] // 浅蓝
           // color: ['#00467F', '#A5CC82'] // 蓝绿
         }
       }
