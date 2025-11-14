@@ -1216,7 +1216,8 @@ export default {
           this.strTime = moment(formattedDate2).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
           this.endTime = moment(formattedDate2).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
           this.getRelevantInfo()
-        }
+      }
+         }
       } else {
         let operate_params = this.getOperateParams();
         if (operate_params) {
@@ -1360,8 +1361,6 @@ export default {
            
           }
         }
-      }
-
     },
     setPromoter() {
       this.showModal = true;
