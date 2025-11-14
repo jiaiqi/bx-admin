@@ -966,7 +966,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: datas,
           zoom: 1.2,//当前视角的缩放比例
           //是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
-          roam: false,
+          roam: true,
           map: 'customMap', //使用自定义地图
         }
         ecOptions.series.push(mapSeries);
@@ -1018,7 +1018,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           const rawMin = Math.min(...values);
           const rawMax = Math.max(...values);
           const range = rawMax - rawMin;
-          const pad = range === 0 ? Math.max(Math.abs(rawMax), 1) * 0.05 : range * 0.05;
+          const pad = range === 0 ? Math.max(Math.abs(rawMax), 1) * 0.1 : range * 0.1
           ecOptions.visualMap = ecOptions.visualMap || {};
           ecOptions.visualMap.min = Number((rawMin - pad).toFixed(2));
           if (ecOptions.visualMap.min < 0) {
@@ -1353,38 +1353,39 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       //   },
       // };
 
-      option['geo'] = {
-        show: true,
-        map: "customMap",
-        // aspectScale: 1,
-        zoom: 1,//当前视角的缩放比例
-        left: '40%', // 地图向右偏移
-        label: {
-          normal: {
-            show: false,
-            color: "#fff"
-          },
-          emphasis: {
-            show: false,
-            color: "#fff"
-          }
-        },
-        roam: false,
-        itemStyle: {//地图区域的多边形 图形样式
-          normal: {
-            areaColor: '#013C62',//地区颜色
-            shadowColor: '#182f68',//阴影颜色
-            shadowOffsetX: 10,//阴影偏移量
-            shadowOffsetY: 10,//阴影偏移量
-          },
-          emphasis: {
-            areaColor: '#2AB8FF',//地区颜色
-            label: {
-              show: false,//是否在高亮状态下显示标签
-            },
-          },
-        },
-      }
+      // option['geo'] = {
+      //   show: true,
+      //   map: "customMap",
+      //   // aspectScale: 1,
+      //   zoom: 1.1,//当前视角的缩放比例
+      //   left: '40%', // 地图向右偏移
+      //   label: {
+      //     normal: {
+      //       show: false,
+      //       color: "#fff"
+      //     },
+      //     emphasis: {
+      //       show: false,
+      //       color: "#fff"
+      //     }
+      //   },
+      //   roam: false,
+      //   itemStyle: {//地图区域的多边形 图形样式
+      //     normal: {
+      //       areaColor: '#013C62',//地区颜色
+      //       // shadowColor: '#182f68',//阴影颜色
+      //       shadowColor: '#03192A',//阴影颜色
+      //       shadowOffsetX: 0,//阴影偏移量
+      //       shadowOffsetY: 30,//阴影偏移量
+      //     },
+      //     emphasis: {
+      //       areaColor: '#2AB8FF',//地区颜色
+      //       label: {
+      //         show: false,//是否在高亮状态下显示标签
+      //       },
+      //     },
+      //   },
+      // }
       option['visualMap'] = {
         type: 'continuous',
         seriesIndex: 0,
