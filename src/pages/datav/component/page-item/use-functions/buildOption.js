@@ -962,6 +962,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               borderWidth: 0,
             },
           },
+          left: '35%',
           data: datas,
           zoom: 1.2,//当前视角的缩放比例
           //是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
@@ -1356,14 +1357,15 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         show: true,
         map: "customMap",
         // aspectScale: 1,
-        zoom: 1.1,//当前视角的缩放比例
+        zoom: 1,//当前视角的缩放比例
+        left: '40%', // 地图向右偏移
         label: {
           normal: {
-            show: true,
+            show: false,
             color: "#fff"
           },
           emphasis: {
-            show: true,
+            show: false,
             color: "#fff"
           }
         },
@@ -1389,7 +1391,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         show: true,
         // min: 0,
         // max: 100,
-        left: '10',
+        left: '20',
         top: 'bottom',
         text: ['高', '低'], // 文本，默认为数值文本
         textStyle: {
