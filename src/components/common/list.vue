@@ -130,7 +130,7 @@
           </div>
         </el-popover>
       </div>
-      <div class="table-head-btns">
+      <div class="table-head-btns" v-if="!readOnly">
         <el-button
           v-if="saveWidthBtn"
           @click="saveColumnWidth"

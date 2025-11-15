@@ -110,7 +110,7 @@
       :list-name="service"
       :childforeignvalue="getRefColValue"
       :def-data-para="defDataPara"
-      :readOnly="readOnly"
+      :readOnly="readOnly || updatable === false"
       :memInitdatasAdd="initDatas"
       @child-loaded="childDataLoadedRun($event)"
       @list-loaded="onListLoaded"
@@ -375,8 +375,18 @@ export default {
     },
     updatable() {
       if (this.foreignKey?.child_read_json) {
-        const json = JSON.parse(this.foreignKey.child_read_json);
-        return evalJson(json, this.mainFormDatas) !== true;
+        try {
+          const json = JSON.parse(this.foreignKey.child_read_json);
+          return evalJson(json, this.mainFormDatas) !== true;
+        } catch (error) {
+          console.error("Error parsing child_read_json:", error);
+          if(typeof this.foreignKey?.child_read_json === 'string'){
+            const mainData = this.mainFormDatas
+            const result = eval(this.foreignKey?.child_read_json);
+            return result !== true;
+          }
+          return false;
+        }
       }
     },
   },

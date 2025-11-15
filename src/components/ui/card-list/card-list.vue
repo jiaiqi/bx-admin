@@ -4,6 +4,10 @@ import { computed } from "vue";
 
 const emit = defineEmits(["onButtonClick"]);
 const props = defineProps({
+  readOnly: {
+    type: Boolean,
+    default: false,
+  },
   gridData: {
     type: Array,
     default: () => {
@@ -106,9 +110,13 @@ const comColMapRun = computed(() => {
   grid-gap: 10px;
   //padding: 10px 20px;
   padding: 6px;
+  // align-items: flex-start;
+  height: 100%;
   ::v-deep .footer-btn {
     width: 100%;
     display: flex;
+    flex: 1;
+    align-items: flex-end;
     justify-content: flex-end;
     padding: 0 10px 10px;
     .footer-btn-item {
