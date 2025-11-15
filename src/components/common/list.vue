@@ -103,6 +103,7 @@
               backgroundColor: listStyle === 'list' ? '#1684fc' : '#fff',
             }"
             @click.native="changeListStyle('list')"
+            title="切换为表格"
           ></icon-list>
           <icon-grid
             :colors="listStyle === 'card' ? ['#fff'] : ['#333']"
@@ -110,6 +111,7 @@
               backgroundColor: listStyle === 'card' ? '#1684fc' : '#fff',
             }"
             @click.native="changeListStyle('card')"
+            title="切换为卡片"
           ></icon-grid>
         </div>
         <el-popover
@@ -2077,16 +2079,20 @@ export default {
   background: rgba(64, 64, 64, 0.9411764705882353);
   color: #fff;
 }
-
+.table-head-btns{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 .list-style-switch {
   border: 1px solid #e7e7e7;
   border-radius: 8px;
   overflow: hidden;
   //margin: 0 14px;
-
+  display: flex;
   .svg-icon {
-    width: 44px;
-    height: 32px;
+    width: 34px;
+    height: 30px;
     padding: 6px 10px;
     cursor: pointer;
   }

@@ -1564,7 +1564,7 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   //margin: 0 14px;
-
+  display: flex;
   .svg-icon {
     width: 44px;
     height: 32px;

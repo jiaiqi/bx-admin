@@ -8,10 +8,13 @@
       childAnimationType == '跑马灯' ? {} : gridStyle,
       {
         // 当启用垂直滚动时，父div作为可视区域容器
-        height: childAnimationType === '纵向滚动' ? `${this.displayRowLimit * this.averageChildHeight}px` : 'auto',
+        height:
+          childAnimationType === '纵向滚动'
+            ? `${this.displayRowLimit * this.averageChildHeight}px`
+            : 'auto',
         overflow: childAnimationType === '纵向滚动' ? 'hidden' : 'visible',
-        position: childAnimationType === '纵向滚动' ? 'relative' : 'static'
-      }
+        position: childAnimationType === '纵向滚动' ? 'relative' : 'static',
+      },
     ]"
     ref="cardRef"
   >
@@ -29,20 +32,26 @@
           position: childAnimationType === '纵向滚动' ? 'absolute' : 'static',
           top: 0,
           left: 0,
-          right: 0
+          right: 0,
         },
       ]"
       class="card-inner-container"
-      :class="{ 
-        'marquee-wrap': childAnimationConfig && childAnimationConfig.type === '跑马灯',
-        'vertical-scroll-container': childAnimationType === '纵向滚动'
+      :class="{
+        'marquee-wrap':
+          childAnimationConfig && childAnimationConfig.type === '跑马灯',
+        'vertical-scroll-container': childAnimationType === '纵向滚动',
       }"
-      v-if="childAnimationConfig && (childAnimationConfig.type === '跑马灯' || childAnimationConfig.type === '纵向滚动')"
+      v-if="
+        childAnimationConfig &&
+        (childAnimationConfig.type === '跑马灯' ||
+          childAnimationConfig.type === '纵向滚动')
+      "
     >
       <template v-for="(cellItemData, index) in cellDataFinal">
         <div
           :class="{
-            'marquee-item': childAnimationConfig && childAnimationConfig.type === '跑马灯'
+            'marquee-item':
+              childAnimationConfig && childAnimationConfig.type === '跑马灯',
           }"
           :data-item-data="getStr(cellItemData, 'item')"
           :data-jump-json="getStr(cellsLayout, 'jumpJson')"
@@ -66,8 +75,14 @@
             @on-click-cell="onClickCell"
             @show-dialog="showDialog"
             @refresh-component="$emit('refresh-component')"
-            :class="{ 'marquee-item': childAnimationConfig && childAnimationConfig.type === '跑马灯' }"
+            :class="{
+              'marquee-item':
+                childAnimationConfig && childAnimationConfig.type === '跑马灯',
+            }"
           >
+            <template #footer>
+              <slot name="footer" :data="cellItemData"></slot>
+            </template>
           </card-cell-layout>
         </div>
       </template>
@@ -94,14 +109,13 @@
           @show-dialog="showDialog"
           @refresh-component="$emit('refresh-component')"
         >
+          <template #footer>
+            <slot name="footer" :data="cellItemData"></slot>
+          </template>
         </card-cell-layout>
       </template>
     </template>
-
-    <custom-dialog
-      :visible.sync="dialogVisible"
-      @close="handleDialogClose"
-    >
+    <custom-dialog :visible.sync="dialogVisible" @close="handleDialogClose">
       <div
         v-if="iframeLoading && dialogPosition && !dialogPosition.pageNo"
         class="iframe-loading"
@@ -271,7 +285,7 @@ export default {
     cardCellPart,
     cardCellLayout,
     customDialog,
-    lowcodePage: () => import('@/pages/lowcode/view.vue')
+    lowcodePage: () => import("@/pages/lowcode/view.vue"),
   },
   name: "card-group-cell",
   mixins: [cardGroupCellMxin, marqueeMixin, verticalScrollMixin],
@@ -300,23 +314,23 @@ export default {
         this.iframeLoading = true;
       }
     },
-    
+
     // 监听数据变化，更新高度缓存
     cellDataFinal: {
       handler(newVal, oldVal) {
         if (newVal !== oldVal) {
           this.updateChildHeightCache();
           // 如果是纵向滚动模式，重启滚动
-          if (this.childAnimationType === '纵向滚动') {
+          if (this.childAnimationType === "纵向滚动") {
             this.$nextTick(() => {
               this.restartVerticalScroll();
             });
           }
         }
       },
-      deep: true
+      deep: true,
     },
-    
+
     // 监听布局变化，更新高度缓存
     cellsLayout: {
       handler(newVal, oldVal) {
@@ -324,13 +338,13 @@ export default {
           this.updateChildHeightCache();
         }
       },
-      deep: true
+      deep: true,
     },
-    
+
     // 监听动画类型变化，启动或停止滚动
     childAnimationType: {
       handler(newVal) {
-        if (newVal === '纵向滚动') {
+        if (newVal === "纵向滚动") {
           this.$nextTick(() => {
             this.startCardVerticalScroll();
           });
@@ -417,12 +431,12 @@ export default {
     // 是否垂直滚动
     isVerticalScroll: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 显示行数限制
     displayRowLimit: {
       type: Number,
-      default: 5
+      default: 5,
     },
     listConfig: {
       type: [Object, null],
@@ -441,17 +455,26 @@ export default {
     childAnimationType() {
       return (
         this.listConfig?.use_animation === "是" &&
-        (this.listConfig?.animation_type || this.listConfig.child_animation_type)
+        (this.listConfig?.animation_type ||
+          this.listConfig.child_animation_type)
       );
     },
     childAnimationConfig() {
       let obj = {};
       if (this.listConfig?.use_animation === "是") {
         // 针对纵向滚动，默认方向设置为向上
-        const defaultDirection = (this.listConfig?.animation_type || this.listConfig.child_animation_type || "跑马灯") === "纵向滚动" ? "向上" : "由左往右";
-        
+        const defaultDirection =
+          (this.listConfig?.animation_type ||
+            this.listConfig.child_animation_type ||
+            "跑马灯") === "纵向滚动"
+            ? "向上"
+            : "由左往右";
+
         obj = {
-          type: this.listConfig?.animation_type || this.listConfig.child_animation_type || "跑马灯",
+          type:
+            this.listConfig?.animation_type ||
+            this.listConfig.child_animation_type ||
+            "跑马灯",
           step: this.listConfig?.animation_step || "100",
           direction: this.listConfig?.animation_direction || defaultDirection,
           interval: (this.listConfig?.animation_interval || 1) * 1000, // 转换为毫秒
@@ -527,7 +550,7 @@ export default {
       // console.log('config',config)
       let height =
         config.hasOwnProperty("style_json") &&
-          config.style_json.hasOwnProperty("height")
+        config.style_json.hasOwnProperty("height")
           ? config.style_json.height
           : "auto";
       let configStyle = config["style_json"] || {};
@@ -594,11 +617,11 @@ export default {
     this.$nextTick(() => {
       this.calculateAverageChildHeight(true);
     });
-    
+
     // 启动动画
     const animationType = this.childAnimationType;
     if (!animationType) return;
-    
+
     if (animationType === "跑马灯") {
       const config = this.childAnimationConfig;
       setTimeout(() => {
@@ -622,11 +645,10 @@ export default {
   beforeDestroy() {
     activeCardTimer && clearInterval(activeCardTimer);
   },
-  
 
   methods: {
     ...mapActions("loginInfo", ["initLoginInfo"]),
-    
+
     /**
      * 计算子元素的平均高度并缓存
      * @param {boolean} forceUpdate - 是否强制更新缓存
@@ -637,35 +659,41 @@ export default {
       if (!forceUpdate && this.cachedAverageChildHeight > 0) {
         return this.cachedAverageChildHeight;
       }
-      
+
       const defaultHeight = 46;
-      
+
       try {
-        if (this.$refs.cardInnerContainer && this.$refs.cardInnerContainer.children.length > 0) {
+        if (
+          this.$refs.cardInnerContainer &&
+          this.$refs.cardInnerContainer.children.length > 0
+        ) {
           const children = this.$refs.cardInnerContainer.children;
           // 过滤出非克隆的原始子元素
-          const originalChildren = Array.from(children).filter(child => 
-            !child.classList.contains('vertical-scroll-clone')
+          const originalChildren = Array.from(children).filter(
+            (child) => !child.classList.contains("vertical-scroll-clone")
           );
-          
+
           if (originalChildren.length > 0) {
-            const totalHeight = originalChildren.reduce((sum, child) => sum + child.offsetHeight, 0);
+            const totalHeight = originalChildren.reduce(
+              (sum, child) => sum + child.offsetHeight,
+              0
+            );
             const avgHeight = Math.round(totalHeight / originalChildren.length);
-            
+
             // 缓存计算结果
             this.cachedAverageChildHeight = avgHeight;
             return avgHeight;
           }
         }
       } catch (error) {
-        console.warn('计算子元素高度时出错:', error);
+        console.warn("计算子元素高度时出错:", error);
       }
-      
+
       // 如果无法获取实际高度，使用默认值并缓存
       this.cachedAverageChildHeight = defaultHeight;
       return defaultHeight;
     },
-    
+
     /**
      * 更新子元素高度缓存
      * 在DOM更新后调用此方法
@@ -675,10 +703,10 @@ export default {
         this.calculateAverageChildHeight(true);
       });
     },
-    
+
     executorComplete(data) {
-      console.log('executorComplete', data);
-      this.handleDialogClose()
+      console.log("executorComplete", data);
+      this.handleDialogClose();
     },
 
     getStr(json, type) {
@@ -940,7 +968,7 @@ export default {
       }
       return style;
     },
-    
+
     /**
      * 开始卡片纵向滚动 - 使用通用混入
      */
@@ -948,17 +976,17 @@ export default {
       const config = {
         interval: this.childAnimationConfig?.interval || 3000,
         direction: this.childAnimationConfig?.direction || "up",
-        duration: this.childAnimationConfig?.duration || 2000
+        duration: this.childAnimationConfig?.duration || 2000,
       };
-      
+
       const options = {
         containerSelector: "cardInnerContainer",
-        containerType: "ref"
+        containerType: "ref",
       };
-      
+
       this.startVerticalScroll(config, options);
     },
-    
+
     /**
      * 停止卡片纵向滚动 - 使用通用混入
      */
@@ -1004,7 +1032,7 @@ export default {
 .vertical-scroll-container {
   position: relative;
   display: block;
-  
+
   // 确保子元素在滚动过程中平滑过渡
   > div {
     position: relative;

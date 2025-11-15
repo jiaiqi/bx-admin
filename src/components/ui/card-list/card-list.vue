@@ -1,32 +1,32 @@
 <script setup>
 import CardGroupCell from "../../../pages/datav/component/page-item/card-group-cell/card-group-cell.vue";
-import {computed} from "vue";
+import { computed } from "vue";
 
-const emit = defineEmits(['onButtonClick'])
+const emit = defineEmits(["onButtonClick"]);
 const props = defineProps({
   gridData: {
     type: Array,
     default: () => {
-      return []
-    }
+      return [];
+    },
   },
   rowButtons: {
     type: Array,
     default: () => {
-      return []
-    }
+      return [];
+    },
   },
   pageItem: {
     type: Object,
     default: () => {
-      return {}
-    }
+      return {};
+    },
   },
   cellsLayoutJson: {
     type: Object,
     default: () => {
-      return {}
-    }
+      return {};
+    },
   },
   cardLayoutJson: {
     type: Object,
@@ -43,57 +43,59 @@ const props = defineProps({
       //     "display": "grid"
       //   }
       // }
-
-    }
+    },
   },
   comColMap: {
     type: Object,
     default: () => {
-      return {}
-    }
-  }
-})
+      return {};
+    },
+  },
+});
 
 const onClickCell = (item) => {
-  console.log('onClickCell:::', item)
-
-}
+  console.log("onClickCell:::", item);
+};
 
 const onClickBlock = (item) => {
-  console.log('onClickBlock:::', item)
-}
+  console.log("onClickBlock:::", item);
+};
 
 const onDataUpdate = (item) => {
-  console.log('onDataUpdate:::', item)
-}
+  console.log("onDataUpdate:::", item);
+};
 const onClickBtn = (btn, data) => {
-  console.log('onClickBtn:::', btn, data)
-  this.$emit('onButtonClick', btn, data)
-}
+  console.log("onClickBtn:::", btn, data);
+  this.$emit("onButtonClick", btn, data);
+};
 
 const comColMapRun = computed(() => {
-  return {}
-})
-
-
+  return {};
+});
 </script>
 
 <template>
   <div class="card-list">
-    <cardGroupCell class="card-item" :key="index" ref="cardGroupCell" :pageItem="pageItem"
-                   :cellsLayout="[cellsLayoutJson]" :cellData="item" :comColMap="comColMapRun"
-                   :cardLayout="cardLayoutJson||null"
-                   @on-click-cell="onClickCell" @on-click-block="onClickBlock" @on-click-icon="onClickBlock"
-                   @data-updated="onDataUpdate" v-for="(item,index) in gridData">
+    <cardGroupCell
+      class="card-item"
+      :key="index"
+      ref="cardGroupCell"
+      :pageItem="pageItem"
+      :cellsLayout="[cellsLayoutJson]"
+      :cellData="item"
+      :comColMap="comColMapRun"
+      :cardLayout="cardLayoutJson || null"
+      @on-click-cell="onClickCell"
+      @on-click-block="onClickBlock"
+      @on-click-icon="onClickBlock"
+      @data-updated="onDataUpdate"
+      v-for="(item, index) in gridData"
+      @click.native="onClickSubBlock(item)"
+    >
       <template #footer>
         <slot name="footer" :data="item"></slot>
       </template>
     </cardGroupCell>
-    <!--    <cardGroupCell  ref="cardGroupCell" :pageItem="pageItem"-->
-    <!--                   :cellsLayout="[cellsLayoutJson]" :cellData=" props.gridData" :comColMap="comColMapRun"-->
-    <!--                   :cardLayout="cardLayoutJson||null"-->
-    <!--                   @on-click-cell="onClickCell" @on-click-block="onClickBlock" @on-click-icon="onClickBlock"-->
-    <!--                   @data-updated="onDataUpdate" ></cardGroupCell>-->
   </div>
 </template>
 
@@ -109,13 +111,14 @@ const comColMapRun = computed(() => {
     display: flex;
     justify-content: flex-end;
     padding: 0 10px 10px;
-    .footer-btn-item{
+    .footer-btn-item {
       margin-left: 10px;
     }
   }
 
   ::v-deep .card-item .bx-card-cell:hover {
-    box-shadow: 0 1px 2px -2px rgba(0, 0, 0, .08), 0 3px 6px 0 rgba(0, 0, 0, .06), 0 5px 12px 4px rgba(0, 0, 0, .04)
+    box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.08),
+      0 3px 6px 0 rgba(0, 0, 0, 0.06), 0 5px 12px 4px rgba(0, 0, 0, 0.04);
   }
 }
 </style>
