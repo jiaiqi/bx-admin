@@ -118,6 +118,7 @@ export default {
       if (event.data) {
         try {
           let data = JSON.parse(event.data);
+          console.error("listener", data);
           if (data?.type === "getData") {
             this.listData = data.data;
           }
