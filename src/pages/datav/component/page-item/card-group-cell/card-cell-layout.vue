@@ -12,6 +12,7 @@
       :comColMap="comColMap"
       :cellItem="item"
       :cellItemData="cellItemData"
+      :cell-data="cellData"
       :readOnly="readOnly"
       :query-options="queryOptions"
       :page-params-model="pageParamsModel"
@@ -59,6 +60,11 @@ const props = defineProps({
     type: [Object, String],
     default: () => {},
   },
+  cellData: {
+    type: [Array],
+    default: () => [],
+  },
+
   comColMap: {
     type: Object,
     default: () => {},
@@ -91,7 +97,6 @@ const emits = defineEmits([
   "show-dialog",
   "mouse-enter",
   "mouse-leave",
-
 ]);
 // jumpJson() {
 //     return JSON.stringify(this.cellLayoutJson?.jump_json || null);
@@ -134,8 +139,7 @@ const mouseLeave = (event) => {
 
 const showDialog = (event) => {
   emits("show-dialog", event);
-}
-
+};
 </script>
 
 <style lang="scss" scoped>

@@ -196,6 +196,7 @@
             :cellItem="subCardPart"
             :comColMap="setComColMap"
             :cellItemData="cellItemData"
+            :cellData="cellData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
             :cellLayoutJson="subCardPart"
@@ -218,6 +219,7 @@
             :cellItem="subCardPart"
             :comColMap="setComColMap"
             :cellItemData="cellItemData"
+            :cellData="cellData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
             :cellLayoutJson="subCardPart"
@@ -262,7 +264,11 @@ import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import weather from "../widgets/weather.vue";
 import { formatStyleData } from "@/pages/datav/common";
-import { getBaseUrl, setAnimationClass, setAnimationStyle } from "@/common/common";
+import {
+  getBaseUrl,
+  setAnimationClass,
+  setAnimationStyle,
+} from "@/common/common";
 import {
   numberAnimationRun,
   formatNumber,
@@ -298,7 +304,7 @@ export default {
     qrCode,
     HlsplayerVideo,
     cardPopup,
-    weather
+    weather,
   },
   data() {
     return {
@@ -330,6 +336,9 @@ export default {
     },
     cellItemData: {
       type: [Object, String],
+    },
+    cellData: {
+      type: Array,
     },
     parentPart: Object,
     readOnly: {
@@ -371,35 +380,35 @@ export default {
       return width;
     },
     setScaleMode() {
-      let scale_mode = this.item.scale_mode 
+      let scale_mode = this.item.scale_mode;
 
       // 微信小程序图片模式到el-image模式的映射
       const modeMap = {
         // 缩放模式映射
-        'scaleToFill': 'fill',      // 不保持纵横比缩放图片，使图片的宽高完全拉伸至填满 image 元素
-        'aspectFit': 'contain',     // 保持纵横比缩放图片，使图片的长边能完全显示出来
-        'aspectFill': 'cover',      // 保持纵横比缩放图片，只保证图片的短边能完全显示出来
-        'widthFix': 'scale-down',   // 宽度不变，高度自动变化，保持原图宽高比不变
-        
+        scaleToFill: "fill", // 不保持纵横比缩放图片，使图片的宽高完全拉伸至填满 image 元素
+        aspectFit: "contain", // 保持纵横比缩放图片，使图片的长边能完全显示出来
+        aspectFill: "cover", // 保持纵横比缩放图片，只保证图片的短边能完全显示出来
+        widthFix: "scale-down", // 宽度不变，高度自动变化，保持原图宽高比不变
+
         // 裁剪模式映射（统一映射到cover模式，因为裁剪模式在el-image中没有直接对应）
-        'top': 'cover',             // 不缩放图片，只显示图片的顶部区域
-        'bottom': 'cover',          // 不缩放图片，只显示图片的底部区域
-        'center': 'cover',          // 不缩放图片，只显示图片的中间区域
-        'left': 'cover',            // 不缩放图片，只显示图片的左边区域
-        'right': 'cover',           // 不缩放图片，只显示图片的右边区域
-        'top left': 'cover',        // 不缩放图片，只显示图片的左上边区域
-        'top right': 'cover',       // 不缩放图片，只显示图片的右上边区域
-        'bottom left': 'cover',     // 不缩放图片，只显示图片的左下边区域
-        'bottom right': 'cover'     // 不缩放图片，只显示图片的右下边区域
-      }
-      
+        top: "cover", // 不缩放图片，只显示图片的顶部区域
+        bottom: "cover", // 不缩放图片，只显示图片的底部区域
+        center: "cover", // 不缩放图片，只显示图片的中间区域
+        left: "cover", // 不缩放图片，只显示图片的左边区域
+        right: "cover", // 不缩放图片，只显示图片的右边区域
+        "top left": "cover", // 不缩放图片，只显示图片的左上边区域
+        "top right": "cover", // 不缩放图片，只显示图片的右上边区域
+        "bottom left": "cover", // 不缩放图片，只显示图片的左下边区域
+        "bottom right": "cover", // 不缩放图片，只显示图片的右下边区域
+      };
+
       // 如果scale_mode存在且在映射表中，返回对应的el-image模式
       if (scale_mode && modeMap[scale_mode]) {
-        return modeMap[scale_mode]
+        return modeMap[scale_mode];
       }
-      
+
       // 默认返回cover模式
-      return 'cover'
+      return "cover";
     },
     setComColMap() {
       let map = this.comColMap || {};
@@ -767,6 +776,21 @@ export default {
       const diff = end.valueOf() - now.valueOf();
       return diff > 0 ? diff : 0;
     },
+    getValByExprFromRow(row, expr) {
+      const rowRegex = /row\[(.*?)=(.*?)\]\.(.*)/;
+      const match = expr.match(rowRegex);
+      if (match) {
+        // 提取row[]中的=两边的值以及].后面的字段col2
+        const col1 = match[1];
+        const val1 = match[2];
+        const col2 = match[3];
+        // 根据提取的值从itemData中获取相应数据
+        // 首先检查itemData中是否存在col1字段且其值等于val1
+        if (Array.isArray(row) && row.length) {
+          return row.find((item) => item[col1] === val1)?.[col2];
+        }
+      }
+    },
     getPartModelData(getTrueValue = false) {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
@@ -774,6 +798,14 @@ export default {
       let type = item.parts_type;
       let key = item.variable || null;
       let val = item.parts_text;
+
+      // 处理row[company_owner=张宁].store_contact格式的key
+      if (key?.includes("row[")) {
+        if (this.getValByExprFromRow(this.cellData, key)) {
+          val = this.getValByExprFromRow(this.cellData, key);
+        }
+      }
+
       switch (type) {
         case "iconImg":
         case "图片":
@@ -1480,8 +1512,15 @@ export default {
   // background-color: rgba(0, 0, 0, 0.1);
   pointer-events: auto;
 }
-::v-deep .bx-cell-rich-text{
-  img, svg, video, canvas, audio, iframe, embed, object{
+::v-deep .bx-cell-rich-text {
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
     display: inline-block;
   }
 }
