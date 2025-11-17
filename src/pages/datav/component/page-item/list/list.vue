@@ -346,11 +346,12 @@ export default {
         let tbl_head_col_width = this.listConfig?.tbl_head_col_width?.split(',') || "";
         return labels?.map((label, index) => {
           let width = undefined
-          if (tbl_head_col_width?.[index]) {
-            if (!isNaN(parseInt(tbl_head_col_width?.[index]))) {
-              width = tbl_head_col_width?.[index] + '%'
+          const _colWidth = tbl_head_col_width?.[index]
+          if (_colWidth) {
+            if (!isNaN(Number(_colWidth))) {
+              width = _colWidth + '%'
             } else {
-              width = tbl_head_col_width?.[index]
+              width = _colWidth
             }
           }
           return {

@@ -230,7 +230,6 @@ export default {
 <style lang="scss" scoped>
 .tabs {
   position: relative;
-  padding: 10px;
   height: 100%;
   display: flex;
   flex-direction: column;
