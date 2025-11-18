@@ -534,8 +534,8 @@ export default {
         "condition": [{ "colName": "vr_no", "ruleType": "eq", "value": vr_no }],
         "page": { "pageNo": 1, "rownumber": 1 },
       }
-      const url = `/park/select/srvpark_vr_sandbox_select?srvpark_vr_sandbox_select`
-      const res = this.$http.post(url, req)
+      const url = `/park/select/srvpark_vr_sandbox_select`
+      const res = await this.$http.post(url, req)
       if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length) {
         return res.data.data[0]
       }
