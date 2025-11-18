@@ -1274,6 +1274,7 @@ export default {
         this.$refs.autocomplete.$refs.input && this.$refs.autocomplete.$refs.input.blur();
         this.$refs.autocomplete.activated = false;
       } else if (queryString) {
+        this.$message.warning("未找到匹配的数据");
         this.inputValue = this.field.model[fieldInfo.dispCol] || this.selected || '';
       }
       try {
