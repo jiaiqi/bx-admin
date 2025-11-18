@@ -64,6 +64,10 @@
                 "
                 @click.stop="toDetail(item)"
               />
+              <div v-else-if="!item.url" class="no-image-placeholder">
+                <i class="el-icon-picture-outline no-image-icon"></i>
+                <span class="no-image-text">暂无图片</span>
+              </div>
             </div>
           </div>
         </el-carousel-item>
@@ -121,6 +125,10 @@
                     (!item.store_video_file || item.file_type !== '视频')
                   "
                 />
+                <div v-else-if="!item.url" class="no-image-placeholder">
+                  <i class="el-icon-picture-outline no-image-icon"></i>
+                  <span class="no-image-text">暂无图片</span>
+                </div>
                 <!-- VR遮罩层 -->
                 <div
                   class="vr-overlay"
@@ -238,6 +246,11 @@
           "
           @click.stop="toDetail(item)"
         />
+        <div v-else-if="!item.url" class="no-image-placeholder">
+          <i class="el-icon-picture-outline no-image-icon"></i>
+          <span class="no-image-text">暂无图片</span>
+        </div>
+        
         <div
           class="title"
           v-if="item._title"
@@ -543,6 +556,7 @@ export default {
     async getSwiperList() {
       const swiperJson = this.pageItem?.swiper_json;
       let data = null;
+      let list = []
       if (swiperJson?.image_origin === "接口请求") {
         let reqJson =
           this.pageItem.swiper_json.srv_req_json || this.pageItem.srv_req_json;
@@ -557,7 +571,7 @@ export default {
         const res = await this.$http.post(url, reqJson);
         if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
           data = res.data.data[0];
-          this.swiperList = res.data.data.map((item, index) => {
+          list = res.data.data.map((item, index) => {
             return {
               ...item,
               url: this.getImagePath(item[swiperJson?.srv_col_image]),
@@ -575,7 +589,7 @@ export default {
             const fileNo = res.data.data[0]?.[swiperJson?.srv_col_image];
             if (fileNo) {
               const response = await this.selectFileList(fileNo);
-              let list = [];
+              list = [];
               const prefix = this.serviceApi().downloadFile;
               for (let i in response.body.data) {
                 let file = response.body.data[i];
@@ -590,19 +604,22 @@ export default {
 
                 list.push(file);
               }
-              this.swiperList = list;
             }
           } else if (!this.getCardJson) {
             // 纯图的轮播图，过滤没有图片的数据
-            this.swiperList = this.swiperList.filter(
+            list = list.filter(
               (item) => item && item[swiperJson?.srv_col_image]
             );
           }
         }
-      } else if (swiperJson?.image_origin === "集中传图" && swiperJson?.image) {
+      }
+
+      // list = list.filter((item) => item && item.url)
+
+      if ((swiperJson?.image_origin === "集中传图" || !list.length) && swiperJson?.image) {
         let res = await this.getFilePath(swiperJson?.image);
         if (Array.isArray(res)) {
-          this.swiperList = res.reduce((pre, cur) => {
+          list = res.reduce((pre, cur) => {
             if (cur.fileurl) {
               cur.url =
                 `${window.backendIpAddr}/file/download?filePath=` +
@@ -615,6 +632,7 @@ export default {
           }, []);
         }
       }
+      this.swiperList = list
       if (swiperJson?.vr_no_col && swiperJson?.vr_cover) {
         let img = swiperJson?.vr_cover;
         let name = "";
@@ -874,5 +892,29 @@ export default {
     font-size: 30px;
     font-weight: 600;
   }
+}
+
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  color: #999;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  min-height: 150px;
+}
+
+.no-image-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  color: #ccc;
+}
+
+.no-image-text {
+  font-size: 16px;
 }
 </style>
