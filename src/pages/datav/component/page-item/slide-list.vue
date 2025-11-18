@@ -911,7 +911,7 @@ export default {
 .no-image-icon {
   font-size: 48px;
   margin-bottom: 10px;
-  color: #ccc;
+  color: var(--primary-color,#4EAAEB);
 }
 
 .no-image-text {
