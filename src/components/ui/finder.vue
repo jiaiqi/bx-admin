@@ -1273,7 +1273,7 @@ export default {
         this.handleSelect(options[0]);
         this.$refs.autocomplete.$refs.input && this.$refs.autocomplete.$refs.input.blur();
         this.$refs.autocomplete.activated = false;
-      } else if (queryString) {
+      } else if (queryString && queryString != this.selected) {
         this.$message.warning("未找到匹配的数据");
         this.inputValue = this.field.model[fieldInfo.dispCol] || this.selected || '';
       }
