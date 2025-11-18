@@ -7,7 +7,7 @@
       :src="getImagePath(pageItem.notice_bar_json.icon)"
       class="notice-icon"
       v-if="pageItem.notice_bar_json"
-    >
+    />
     <el-alert
       :title="item"
       type="warning"
@@ -29,11 +29,11 @@
 
 <script>
 export default {
-  name: 'notice-bar',
+  name: "notice-bar",
   props: {
     pageItem: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   data() {
     return {
@@ -44,55 +44,55 @@ export default {
     };
   },
   mounted() {
-    let params = {}
+    let params = {};
     if (this.pageItem?.srv_req_json) {
-      params = this.pageItem.srv_req_json
+      params = this.pageItem.srv_req_json;
     }
-    this.getNoticeBarData(params)
+    this.getNoticeBarData(params);
   },
   computed: {
     list() {
-      let arr = []
-      this.listData.forEach(item => {
-        if (item.title) arr.push(item.title)
-      })
-      return arr
+      let arr = [];
+      this.listData.forEach((item) => {
+        if (item.title) arr.push(item.title);
+      });
+      return arr;
     },
     mode() {
-      if (this.pageItem.notice_bar_json.direction === '横向') {
-        return 'horizontal'
+      if (this.pageItem.notice_bar_json.direction === "横向") {
+        return "horizontal";
       } else {
-        return 'vertical'
+        return "vertical";
       }
     },
     linkTo(index) {
-      console.log(index)
-    }
+      console.log(index);
+    },
   },
   methods: {
     async getNoticeBarData(p) {
       if (!p.serviceName || !p.mapp) {
-        console.log('getNoticeBarData');
-        this.listData = this.pageItem?.notice_bar_json?.mock_data_json || []
+        console.log("getNoticeBarData");
+        this.listData = this.pageItem?.notice_bar_json?.mock_data_json || [];
         if (!this.listData.length && this.pageItem.mock_data_json) {
-          this.listData = JSON.parse(this.pageItem.mock_data_json)
+          this.listData = JSON.parse(this.pageItem.mock_data_json);
         }
-        return
+        return;
       }
 
-      const url = `/${p.mapp}/select/${p.serviceName}`
-      const req = {
-        "serviceName": p.serviceName,
-        "colNames": p.colNames,
-        "condition": p.condition
+      const url = `/${p.mapp}/select/${p.serviceName}`;
+      const req = p;
+      const res = await this.$axios.post(url, req);
+      if (
+        res?.data?.state === "SUCCESS" &&
+        Array.isArray(res?.data?.data) &&
+        res?.data?.data.length > 0
+      ) {
+        this.listData = res.data.data;
       }
-      const res = await this.$axios.post(url, req)
-      if (res?.data?.state === 'SUCCESS' && Array.isArray(res?.data?.data) && res?.data?.data.length > 0) {
-        this.listData = res.data.data
-      }
-    }
+    },
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>
