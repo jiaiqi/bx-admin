@@ -61,8 +61,8 @@
           :field="field"
           :disabled="setDisabled"
           :prefix-icon="(dispLoaderV2 &&
-              dispLoaderV2.imgType === 'eicon' &&
-              field.getSrvVal()) ||
+            dispLoaderV2.imgType === 'eicon' &&
+            field.getSrvVal()) ||
             ''
             "
           v-model="selected"
@@ -71,8 +71,8 @@
         <el-autocomplete
           ref="autocomplete"
           :prefix-icon="(dispLoaderV2 &&
-              dispLoaderV2.imgType === 'eicon' &&
-              field.getSrvVal()) ||
+            dispLoaderV2.imgType === 'eicon' &&
+            field.getSrvVal()) ||
             ''
             "
           :trigger-on-focus="showAutocomplete"
@@ -273,7 +273,7 @@ export default {
   props: {
     field: Object,
     defaultConditions: Array,
-    finderSelected: [String, Object],
+    finderSelected: [String, Object, Number],
     defaultValues: Object,
     childForeignkey: Object,
     mainformDatas: Object,
@@ -283,7 +283,7 @@ export default {
   data() {
     return {
       selected: null,
-      inputValue:"",
+      inputValue: "",
       popup: false,
       activePopup: "",
       appNo: null,
@@ -579,7 +579,7 @@ export default {
     },
     allowEditAndSelect() {
       // 编辑选择
-      if(this.field.info?._inFilterForm===true){
+      if (this.field.info?._inFilterForm === true) {
         // 过滤表单需要编辑选择
         return false
       }
@@ -996,6 +996,7 @@ export default {
             }
           });
           this.options = this.bxDeepClone(options);
+          
           cb(options);
         } else {
           cb([]);
@@ -1264,6 +1265,17 @@ export default {
     },
 
     handleBlur() {
+      let queryString = this.inputValue
+      let options = this.options
+      const fieldInfo = this.field.info;
+      if (queryString && queryString != this.selected && options.length === 1 && (options[0][fieldInfo.valueCol] == queryString || options[0][fieldInfo.dispCol] == queryString)) {
+        // 如果搜索到的值只有一条而且value字段或者label字段的值完全匹配queryString，则选中这条数据
+        this.handleSelect(options[0]);
+        this.$refs.autocomplete.$refs.input && this.$refs.autocomplete.$refs.input.blur();
+        this.$refs.autocomplete.activated = false;
+      } else if (queryString) {
+        this.inputValue = this.field.model[fieldInfo.dispCol] || this.selected || '';
+      }
       try {
         if (this.field.getSrvVal()) {
           if (
