@@ -1,5 +1,8 @@
 <template>
-  <div class="swiper-list" v-if="!swiperList || swiperList.length === 0">
+  <div
+    class="swiper-list"
+    v-if="!swiperList || swiperList.length === 0"
+  >
     <span v-if="pageItem && pageItem.com_label">{{ pageItem.com_label }}</span>
   </div>
 
@@ -171,7 +174,10 @@
           :key="item.id ? item.id : index"
         ></card-group-cell>
       </div>
-      <div class="thumbnails-container" v-else-if="useThumbnails">
+      <div
+        class="thumbnails-container"
+        v-else-if="useThumbnails"
+      >
         <button
           class="scroll-btn scroll-btn-left"
           @click="scrollThumbnails('left')"
@@ -179,7 +185,10 @@
         >
           <i class="el-icon-arrow-left"></i>
         </button>
-        <div class="thumbnails" ref="thumbnailsContainer">
+        <div
+          class="thumbnails"
+          ref="thumbnailsContainer"
+        >
           <template v-for="(item, index) in swiperList">
             <img
               :key="item.id"
@@ -202,7 +211,10 @@
       </div>
     </div>
 
-    <div class="single-media" v-else>
+    <div
+      class="single-media"
+      v-else
+    >
       <div
         class="swiper-item-box"
         :style="[tagStylefn(pageItem.swiper_json.style_json)]"
@@ -226,7 +238,10 @@
           "
           @click.stop="toDetail(item)"
         />
-        <div class="title" v-if="item._title">{{ item._title }}</div>
+        <div
+          class="title"
+          v-if="item._title"
+        >{{ item._title }}</div>
       </div>
     </div>
   </div>
@@ -512,6 +527,19 @@ export default {
         }
       }
     },
+    async fetchVrInfo(vr_no) {
+      const req = {
+        "serviceName": "srvpark_vr_sandbox_select",
+        "colNames": ["*"],
+        "condition": [{ "colName": "vr_no", "ruleType": "eq", "value": vr_no }],
+        "page": { "pageNo": 1, "rownumber": 1 },
+      }
+      const url = `/park/select/srvpark_vr_sandbox_select?srvpark_vr_sandbox_select`
+      const res = this.$http.post(url, req)
+      if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length) {
+        return res.data.data[0]
+      }
+    },
     async getSwiperList() {
       const swiperJson = this.pageItem?.swiper_json;
       let data = null;
@@ -586,7 +614,7 @@ export default {
           }, []);
         }
       }
-      if (swiperJson?.vr_no && swiperJson?.vr_cover) {
+      if (swiperJson?.vr_no_col && swiperJson?.vr_cover) {
         let img = swiperJson?.vr_cover;
         let name = "";
         let vrNo = swiperJson?.vr_no;
@@ -600,22 +628,6 @@ export default {
               img = data[col] || img;
             }
           }
-          if (swiperJson.vr_name_col) {
-            let col = swiperJson.vr_name_col;
-            if (col?.includes(".") && !col?.includes("${")) {
-              name = this.renderStr("${" + col + "}", data);
-            } else {
-              name = data[col];
-            }
-          }
-          if (swiperJson.vr_link_col) {
-            let col = swiperJson.vr_link_col;
-            if (col?.includes(".") && !col?.includes("${")) {
-              vrLink = this.renderStr("${" + col + "}", data);
-            } else {
-              vrLink = data[col];
-            }
-          }
           if (swiperJson.vr_no_col) {
             let col = swiperJson.vr_no_col;
             if (col?.includes(".") && !col?.includes("${")) {
@@ -626,6 +638,14 @@ export default {
           }
         }
         if (vrNo) {
+          const vrInfo = await this.fetchVrInfo(vrNo)
+          if(vrInfo && vrInfo.vr_cover){
+            img = vrInfo.vr_cover
+          }
+          vrLink = `/VRhome/#/ModView?vr_no=${vrNo}`
+          if (process.env.NODE_ENV === 'development') {
+            vrLink = window.backendIpAddr?.replace('/bxapi', '') + `/VRhome/#/ModView?vr_no=${vrNo}`
+          }
           this.swiperList.unshift({
             _thumbnail: this.getImagePath(img, 100),
             url: this.getImagePath(img),
@@ -817,6 +837,7 @@ export default {
 
 // VR图标脉冲动画
 @keyframes vrPulse {
+
   0%,
   100% {
     transform: scale(0.9);
