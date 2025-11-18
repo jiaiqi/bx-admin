@@ -585,7 +585,8 @@ export default {
                   file.url = file.fileurl;
                 }
 
-                file._thumbnail = `${prefix}${response.body.data[i].fileurl}?thumbnailType=fwsu_40`;
+                // file._thumbnail = `${prefix}${response.body.data[i].fileurl}?thumbnailType=fwsu_40`;
+                file._thumbnail = file.url; //缩略图部分展示不出来，先用原图
 
                 list.push(file);
               }
