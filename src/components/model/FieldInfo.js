@@ -2,7 +2,7 @@ import { createLinkUrlFunc } from "../../util/FieldUtil";
 import cloneDeep from "lodash/cloneDeep";
 import isArray from "lodash/isArray";
 import assign from "lodash/assign";
-
+export const idCardExp = /^(\d{15}|\d{17}[0-9xX])$/
 export class FieldInfo {
   constructor(srvCol, formType) {
     if (!srvCol) {
@@ -356,6 +356,8 @@ export class FieldInfo {
     } else if (this.type === "String" && this.redundant) {
       this.editor = null;
       // this.autocomplete =
+    } else if (this.type === 'IdNo') {
+      this.editor = "id-card";
     } else {
       this.editor = null;
     }
@@ -611,15 +613,13 @@ export class FieldInfo {
 
         map.set(key, rule);
       });
-    let editable =
-      srvCol.col_updatable_expr ||
-      (srvCol.updatable !== 0 && srvCol.updatable !== "0");
+    let editable = srvCol.col_updatable_expr || (srvCol.updatable !== 0 && srvCol.updatable !== "0");
     if (this.isFinder() && editable) {
       // finder类型字段 自动加上合法值校验
       // 非自行输入或者不是add表单的时候才加上合法值校验
       //对于地图选择地址类型没必要进行校验
       // if( this.allowInput !== '自行输入'){
-      if (srvCol?.col_type !== "bxsys_obj_type_gps"&&(this.allowInput !== "自行输入" ||  srvCol?.service_name?.includes("add") === false)) {
+      if (srvCol?.col_type !== "bxsys_obj_type_gps" && (this.allowInput !== "自行输入" || srvCol?.service_name?.includes("add") === false)) {
         let rule = {
           name: "isValidValue",
           trigger: "change",
@@ -627,6 +627,28 @@ export class FieldInfo {
         };
         map.set("isValidValue", rule);
       }
+    }
+
+    if (this.type == 'IdNo' && editable) {
+      // 身份证号码
+      if (!map.get('pattern')) {
+        let rule = {
+          "name": "pattern",
+          "trigger": "change",
+          "pattern": idCardExp,
+          "message": "请输入正确格式的身份证号！"
+        }
+        map.set("pattern", rule);
+      }
+
+      let rule2 = {
+        "name": "ngMaxlength",
+        "ngMaxlength": "18",
+        "trigger": "change",
+        "message": "身份证号长度不得超过18位！"
+      }
+      map.set("ngMaxlength", rule2);
+
     }
 
     // put validator message to map

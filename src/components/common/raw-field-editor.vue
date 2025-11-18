@@ -29,9 +29,24 @@
             </el-image>
           </div>
           <div v-else-if="ifUseRawFieldEditor()">
+            <el-input
+              prefix-icon="el-icon-postcard"
+              v-model="field.model"
+              type="text"
+              show-word-limit
+              :minlength="field.info.getMinLength()"
+              :maxlength="field.info.getMaxLength()"
+              clearable
+              :placeholder="field.info.placeholder"
+              :disabled="getDisabled"
+              @input="checkLength"
+              @change="onIDCardChange"
+              @blur="onBlur"
+              v-if="field.info.editor === 'id-card'"
+            ></el-input>
             <car-no-keyboard
               :field="field"
-              v-if="field.info.editor === 'carNoKeyboard'"
+              v-else-if="field.info.editor === 'carNoKeyboard'"
               v-model="field.model"
               :readonly="getDisabled"
               @field-value-changed="
@@ -538,7 +553,7 @@
             <div v-else-if="
               field.info.editor == null &&
               field.info.type == 'String' &&
-              ((field.isAutocomplete && field.isAutocomplete())||field.info.subType == 'autocomplete')
+              ((field.isAutocomplete && field.isAutocomplete()) || field.info.subType == 'autocomplete')
             ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
@@ -872,6 +887,7 @@
 // 保留必要的工具函数同步引入
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
+import { idCardExp } from "../model/FieldInfo.js";
 export default {
   components: {
     // UI组件 - 异步引入
@@ -1050,6 +1066,15 @@ export default {
   },
 
   methods: {
+    onIDCardChange(val) {
+      const reg = new RegExp(idCardExp)
+      
+      if(reg.test(val) && val.charAt(val.length-1)==='x'){
+        val = val.toUpperCase()
+        this.field.model = val
+      }
+      this.$emit('field-value-changed', this.field.info.name, this.field)
+    },
     jsonError(e) {
       if (
         e?.message?.includes(`Parse error on line 1:
