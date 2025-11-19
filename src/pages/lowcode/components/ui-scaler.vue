@@ -63,7 +63,8 @@ export default {
       if(this.width && this.height) {
         const scaleX = window.innerWidth / this.width;
         const scaleY = window.innerHeight / this.height;
-        
+        // 设置根元素样式
+        this.$root.$el.style.overflow = 'hidden'
         // 更新容器样式
         this.$set(this, 'containerStyle', {
           transform: `scale(${scaleX}, ${scaleY})`,
