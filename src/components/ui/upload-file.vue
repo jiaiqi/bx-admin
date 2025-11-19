@@ -1,15 +1,16 @@
 <template>
-  <div style="padding-bottom: 30px">
+  <div style="padding-bottom: 10px">
     <template v-if="isEdit === false">
       <div
         v-for="(file, index) in moreFileRun"
         :key="index"
+        class="file-item-wrap"
       >
         <span
           @click="handlePreview(file)"
           class="file-name"
         >
-          <i class="el-icon-download"></i>
+          <!-- <i class="el-icon-download " @click.stop="handleDownload(file)"></i> -->
           {{ file.name }}</span>
         <el-button
           type="text"
@@ -18,6 +19,14 @@
         >
           <i class="el-icon-picture-outline"></i>
           预览
+        </el-button>
+        <el-button
+          type="text"
+          class=""
+          @click="handleDownload(file, index)"
+        >
+          <i class="el-icon-download"></i>
+          下载
         </el-button>
       </div>
       <viewer
@@ -169,8 +178,8 @@
     <el-dialog
       custom-class="preview-dialog"
       :title="currentType === 'pdf'
-          ? '第' + currentPage + '页/共' + pageCount + '页'
-          : '预览'
+        ? '第' + currentPage + '页/共' + pageCount + '页'
+        : '预览'
         "
       :visible.sync="centerDialogVisible"
       width="50%"
@@ -370,7 +379,7 @@ export default {
       uploadFile: this.serviceApi().uploadFile,
       fileDesc: (() => {
         let desc = "请上传文件";
-        
+
         // 添加文件类型限制说明
         if (this.field.info.moreConfig && this.field.info.moreConfig.fileType) {
           let fileTypeText = "";
@@ -383,14 +392,14 @@ export default {
             desc += `，支持 ${fileTypeText} 格式`;
           }
         }
-        
+
         // 添加文件大小限制说明
         if (this.field.info.moreConfig && this.field.info.moreConfig.fileMaxSize) {
           desc += `，大小不超过 ${this.field.info.moreConfig.fileMaxSize}MB`;
         } else {
           desc += "，大小不超过200MB";
         }
-        
+
         return desc;
       })(),
       fileType: this.field.info.moreConfig && this.field.info.moreConfig.fileType ? this.field.info.moreConfig.fileType : "",
@@ -445,6 +454,9 @@ export default {
     this.getData();
   },
   methods: {
+    handleDownload(file) {
+      window.open(file.url);
+    },
     async uploadMethod(params) {
       this.progress = 0;
       const that = this;
@@ -819,7 +831,7 @@ export default {
           let type = file.name
             .slice(file.name.lastIndexOf(".") + 1)
             .toLowerCase();
-          
+
           // 处理 fileType 配置，支持字符串和数组两种格式
           let allowedTypes = [];
           if (typeof this.fileType === 'string') {
@@ -827,12 +839,12 @@ export default {
           } else if (Array.isArray(this.fileType)) {
             allowedTypes = this.fileType.map(t => t.trim().toLowerCase());
           }
-          
+
           // 检查文件类型是否在允许列表中
           if (allowedTypes.includes(type)) {
             flag = true;
           }
-          
+
           if (!flag) {
             let allowedTypesText = Array.isArray(this.fileType) ? this.fileType.join("、") : this.fileType;
             this.$message.error(`只能上传 ${allowedTypesText} 格式文件!`);
@@ -994,10 +1006,19 @@ export default {
 .el-table tbody tr td:first-child {
   text-align: center;
 }
-
+.file-item-wrap{
+  display: flex;
+  align-items: center;
+}
 .file-name {
   color: #333;
-  border-bottom: 1px solid rgb(25, 119, 243);
+  margin-right: 10px;
+  /* border-bottom: 1px solid var(--primary-color, #409eff); */
+}
+
+.file-name .el-icon-download:hover {
+  cursor: pointer;
+  color: var(--primary-color, #409eff);
 }
 
 .el-upload-list {
@@ -1008,8 +1029,6 @@ export default {
   text-align: initial;
   padding: 5px 5px 5px !important;
 }
-</style>
-<style>
 .image-list>img {
   height: 5rem;
   width: 5rem !important;

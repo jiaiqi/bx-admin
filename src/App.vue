@@ -395,8 +395,8 @@ span.section-title {
   //   color: var(--primary-color, #409eff);
   // }
 
-  .el-button:focus,
-  .el-button:hover {
+  .el-button:focus:not(.el-button--text),
+  .el-button:hover:not(.el-button--text) {
     color: var(--primary-color, #409eff);
     background-color: var(--menu-bg-light-color, #ecf5ff);
     border-color: var(--menu-light-border-color, #c6e2ff);
