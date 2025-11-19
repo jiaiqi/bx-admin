@@ -81,15 +81,6 @@ export default {
 
       return [condition];
     },
-    getCustomPkCol() {
-      if (this.activeForm === 'update' && this.clickedRow && this.clickedRow[this.activeForm] && this.clickedRow[this.activeForm].com_no) {
-        return 'com_no'
-      } else if (this.pub_field_map?.id) {
-        return this.pub_field_map?.id
-      } else {
-        return null;
-      }
-    },
   },
   watch: {
     activeForm(newValue, oldValue) {
@@ -163,8 +154,8 @@ export default {
       this.$emit('duplicate-form-loaded', form);
     },
 
-    onAddFormExecutorComplete(info){
-      console.log('ssss',info);
+    onAddFormExecutorComplete(info) {
+      console.log('onAddFormExecutorComplete', info);
     },
     onAddFormActionComplete(action) {
       console.log('onAddFormActionComplete', action);
@@ -194,15 +185,36 @@ export default {
       if (action == 'submit' || action == 'save_draft') {
         this.activeForm = null;
       }
-
       if (!this.isMem()) {
         this.loadTableData();
         this.$emit('form-action-complete', action);
       }
     },
+    /**
+     * Get the custom primary key column name for the given type.
+     * @param {*} type 
+     * @returns 
+     */
+    getCustomPkCol(type) {
+      const noCol = this.noCol || this.listV2Data["no_col"];
+      const row = this.clickedRow[type];
+      if(noCol && row && row[noCol]){
+        return noCol
+      }
+      return this.pub_field_map?.id || null
+    },
+    /**
+     * Get the primary key value of the clicked row for the given type.
+     * @param {*} type 
+     * @returns 
+     */
     getClickedRowPk(type) {
-      if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].com_no) {
-        return this.clickedRow[type].com_no.toString()
+      const noCol = this.noCol || this.listV2Data["no_col"];
+      const row = this.clickedRow[type];
+      if (noCol && row && row[noCol]) {
+        return row[noCol]
+      } else if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].id) {
+        return this.clickedRow[type].id.toString()
       } else if (this.pub_field_map?.id && this.clickedRow && this.clickedRow[type] && this.clickedRow[type][this.pub_field_map?.id]) {
         return this.clickedRow[type][this.pub_field_map.id]
       } else {

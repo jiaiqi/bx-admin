@@ -593,6 +593,7 @@
         v-if="activeForm == 'update'"
         :service="getUpdateService"
         :pk="getClickedRowPk('update')"
+        :pkCol="getCustomPkCol('update')"
         :pageIsDraft="activeTabName"
         :initLoad="initLoad"
         :defaultValues="clickedRow['update']"

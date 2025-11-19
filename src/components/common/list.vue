@@ -961,7 +961,7 @@
         :initOrigin="'dialog'"
         :service="getUpdateService"
         :pk="getClickedRowPk('update')"
-        :pkCol="getCustomPkCol"
+        :pkCol="getCustomPkCol('update')"
         :pageIsDraft="activeTabName"
         :initLoad="initLoad"
         :defaultValues="clickedRow['update']"
