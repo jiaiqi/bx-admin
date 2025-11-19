@@ -1017,13 +1017,14 @@ export default {
     .list-view {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       scrollbar-width: none;
       scrollbar-width: thin;
       scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 
       &::-webkit-scrollbar {
         width: 3px;
-        height: 3px;
+        height: 0;
       }
 
       &::-webkit-scrollbar-thumb {
