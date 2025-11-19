@@ -834,6 +834,7 @@
         :childForeignkey="childForeignkey"
         :parentPageType="listType"
         :parentMainFormDatas="listMainFormDatas"
+        :getCurrentListData="getCurrentListData"
         @action-complete="onAddFormActionComplete($event)"
         @executor-complete="onAddFormExecutorComplete"
         @form-loaded="onAddFormLoaded"
@@ -870,6 +871,7 @@
         :childForeignkey="childForeignkey"
         :parentPageType="listType"
         :parentMainFormDatas="listMainFormDatas"
+        :getCurrentListData="getCurrentListData"
         @action-complete="onAddFormActionComplete($event)"
         @form-loaded="onAddChildFormLoaded"
         @executor-complete="onAddChildExecutorComplete($event)"
@@ -936,6 +938,7 @@
           ? clickedRow.duplicatedeep
           : null
           "
+        :getCurrentListData="getCurrentListData"
         @action-complete="onAddFormActionComplete($event)"
         @executor-complete="onAddFormExecutorComplete"
         @form-loaded="onDuplicateFormLoaded"
@@ -970,6 +973,7 @@
         :parentPageType="listType"
         :haveDraft="isDraft"
         :parentMainFormDatas="listMainFormDatas"
+        :getCurrentListData="getCurrentListData"
         :override-data="clickedRow.update._dirtyFlags ? clickedRow.update : null
           "
         @action-complete="onUpdateFormActionComplete($event)"

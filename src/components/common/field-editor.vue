@@ -117,7 +117,9 @@
               :childForeignkey="childForeignkey"
               :defaultCondition="defaultCondition"
               :mainformDatas="mainformDatas || parentAddMainFormDatas"
+              :parentPageType="parentPageType"
               :defaultValues="defaultValues"
+              :getCurrentListData="getCurrentListData"
               :form-model="formModel"
               v-show="
                 contentField.info.readonly
@@ -207,6 +209,12 @@ export default {
     },
     parentAddMainFormDatas: {
       type: Object,
+    },
+    getCurrentListData: {
+      type: Function,
+    },
+    parentPageType: {
+      type: String,
     },
     defaultValues: {
       type: Object,

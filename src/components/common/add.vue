@@ -16,6 +16,7 @@
         :defaultCondition="defaultCondition"
         :srvval-form-model-decorator="srvvalFormModelDecorator"
         :parentAddMainFormDatas="parentMainFormDatas"
+        :getCurrentListData="getCurrentListData"
         :duplicateType="duplicateType"
         :duplicateData="duplicateData"
         @form-loaded="onAddFormLoaded"
@@ -339,14 +340,15 @@ export default {
       type: Boolean,
       default: true,
     },
-
     parentMainFormDatas: {
       type: Object,
       default: function () {
         return null;
       },
     },
-
+    getCurrentListData: {
+      type: Function,
+    },
     pageIsDraft: {
       type: String,
       default: "norm",

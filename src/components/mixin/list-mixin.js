@@ -803,6 +803,9 @@ export default {
     clearInterval(polling);
   },
   methods: {
+    getCurrentListData(){
+      return this.gridDataRun;
+    },
     isDetailLink(column = "", data = {}, rowIndex) {
       if (
         column !== "id" &&

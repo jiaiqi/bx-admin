@@ -148,6 +148,12 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    parentPageType: {
+      type: String,
+    },
+    getCurrentListData: {
+      type: Function,
+    },
   },
   methods: {
     handleChange(val) {
@@ -417,8 +423,23 @@ export default {
     async loadRightData() {
       // 设置初始值
       console.log("loadRightData");
+      if (['addchildlist', 'updatechildlist'].includes(this.parentPageType) && this.getCurrentListData && typeof this.getCurrentListData === 'function') {
+        // 子表 从内存数据中获取已选数据
+        let list = this.getCurrentListData();
+        if (Array.isArray(list) && list.length) {
+          if (Array.isArray(this.value) && this.value.length) {
+            this.value = [...this.value, ...list.map((item) => item[this.field.info.name])]
+            // this.oldValue = cloneDeep(this.value);
+            // this.oldValues = cloneDeep([...this.oldValues, ...list]);
+          } else {
+            this.value = list.map((item) => item[this.field.info.name]);
+            this.oldValue = cloneDeep(this.value);
+            this.oldValues = cloneDeep(this.getCurrentListData());
+          }
 
-      if (this.optionListV2?.transfer?.serviceName) {
+        }
+
+      } else if (this.optionListV2?.transfer?.serviceName) {
         const loader = this.optionListV2.transfer;
         const queryJson = {
           serviceName: loader.serviceName,
@@ -553,6 +574,12 @@ export default {
       deep: true,
     },
   },
+  created() {
+    if (['addchildlist', 'updatechildlist'].includes(this.parentPageType) && this.getCurrentListData && typeof this.getCurrentListData === 'function') {
+      // 子表 从内存数据中获取已选数据
+      this.loadRightData();
+    }
+  }
 };
 </script>
 

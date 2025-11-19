@@ -387,6 +387,8 @@
               :defaultValues="defaultValues"
               :childForeignKey="childForeignkey"
               :mainFormDatas="mainformDatas"
+              :parentPageType="parentPageType"
+              :getCurrentListData="getCurrentListData"
               :form-model="formModel"
               :$srv-app="field.info.srvCol.option_list_v2 &&
                 field.info.srvCol.option_list_v2.srv_app
@@ -888,6 +890,7 @@
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 import { idCardExp } from "../model/FieldInfo.js";
+import transferVue from "@/components/ui/form-widget/multi-select/index.vue";
 export default {
   components: {
     // UI组件 - 异步引入
@@ -914,7 +917,8 @@ export default {
     verifyMobile: () => import("../ui/verifyMobile.vue"), // 手机验证码
     autocompleteInput: () => import("../ui/autocomplete-input.vue"), // 自动完成输入
     carNoKeyboard: () => import("../ui/car-no-keyboard.vue"), // 车牌号输入
-    transferVue: () => import("../ui/form-widget/multi-select/index.vue"), // 多选穿梭框组件
+    transferVue: transferVue,
+    // () => import("../ui/form-widget/multi-select/index.vue"), // 多选穿梭框组件
 
     // 第三方库组件 - 异步引入
     vueJsonEditor: () => import("vue-json-editor-fix-cn"),
@@ -932,12 +936,19 @@ export default {
     mainformDatas: {
       type: Object,
     },
+    parentPageType: {
+      type: String,
+    },
     defaultValues: {
       type: Object,
     },
     formModel: {
       type: Object,
     },
+    getCurrentListData: {
+      type: Function,
+    },
+    
   },
   watch: {},
 
