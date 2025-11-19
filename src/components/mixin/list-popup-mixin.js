@@ -82,7 +82,13 @@ export default {
       return [condition];
     },
     getCustomPkCol() {
-      return this.pub_field_map?.id || null
+      if (this.activeForm === 'update' && this.clickedRow && this.clickedRow[this.activeForm] && this.clickedRow[this.activeForm].com_no) {
+        return 'com_no'
+      } else if (this.pub_field_map?.id) {
+        return this.pub_field_map?.id
+      } else {
+        return null;
+      }
     },
   },
   watch: {
@@ -195,8 +201,8 @@ export default {
       }
     },
     getClickedRowPk(type) {
-      if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].id) {
-        return this.clickedRow[type].id.toString()
+      if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].com_no) {
+        return this.clickedRow[type].com_no.toString()
       } else if (this.pub_field_map?.id && this.clickedRow && this.clickedRow[type] && this.clickedRow[type][this.pub_field_map?.id]) {
         return this.clickedRow[type][this.pub_field_map.id]
       } else {
