@@ -1523,5 +1523,11 @@ export default {
   object {
     display: inline-block;
   }
+  .w-e-text-container blockquote, .w-e-text-container li, .w-e-text-container p, .w-e-text-container td, .w-e-text-container th, .w-e-toolbar *{
+    line-height: 1.5;
+  }
+  div[data-w-e-type="video"]{
+    text-align: center;
+  }
 }
 </style>
