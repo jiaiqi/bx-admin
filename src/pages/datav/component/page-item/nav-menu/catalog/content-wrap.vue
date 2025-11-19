@@ -277,9 +277,13 @@ export default {
         colNames: ["*"],
         condition: [
           { colName: "category_no", ruleType: "eq", value: catalogNo },
+          { colName: "proc_status", ruleType: "eq", value: "完成" }
         ],
         page: { pageNo: 1, rownumber: pageSize || 1 },
-        order: [],
+        order: [{
+          colName: "release_time",
+          orderType: "desc",
+        }],
       };
       if (this.dateRange && this.dateRange.length) {
         req.condition.push({
