@@ -77,7 +77,7 @@
             "
           :trigger-on-focus="showAutocomplete"
           :fetch-suggestions="loadOptions"
-          :value-key="field.info.dispCol"
+          :value-key="field.info.valueCol"
           :disabled="setDisabled"
           v-model="inputValue"
           :placeholder="field.info.placeholder"
@@ -700,7 +700,7 @@ export default {
         this.field.model = this.options[0];
         this.selected =
           loader.showAsPair !== true
-            ? this.options[0][fieldInfo.dispCol]
+            ? (this.options[0][fieldInfo.dispCol]||this.options[0][fieldInfo.valueCol])
             : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
             }`;
         this.hasInit = true;
@@ -792,7 +792,7 @@ export default {
                     return `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]
                       }`;
                   } else {
-                    return item[fieldInfo.dispCol];
+                    return item[fieldInfo.dispCol] || item[fieldInfo.valueCol];
                   }
                 } else {
                   return item[fieldInfo.valueCol];
@@ -979,7 +979,7 @@ export default {
             item.labelFunc = (data) => {
               return loader.showAsPair == true
                 ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
-                : data[fieldInfo.dispCol];
+                : (data[fieldInfo.dispCol] || data[fieldInfo.valueCol]);
             };
           });
           options.forEach((option) => {
@@ -1219,7 +1219,7 @@ export default {
         } else {
           this.selected =
             loader.showAsPair !== true
-              ? item[fieldInfo.dispCol]
+              ? (item[fieldInfo.dispCol] || item[fieldInfo.valueCol])
               : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
         }
       }
@@ -1398,7 +1398,7 @@ export default {
             } else {
               this.selected =
                 loader.showAsPair !== true
-                  ? this.field.model[fieldInfo.dispCol]
+                  ? (this.field.model[fieldInfo.dispCol] || this.field.model[fieldInfo.valueCol])
                   : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
                   }`;
             }
@@ -1445,7 +1445,7 @@ export default {
       let loader = this.dispLoaderV2;
       this.selected =
         loader.showAsPair !== true
-          ? item[fieldInfo.dispCol]
+          ? (item[fieldInfo.dispCol] || item[fieldInfo.valueCol])
           : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
       this.popup = false;
     },
@@ -1507,7 +1507,7 @@ export default {
         } else {
           this.selected =
             loader.showAsPair !== false
-              ? this.field.model[fieldInfo.dispCol]
+              ? (this.field.model[fieldInfo.dispCol] || this.field.model[fieldInfo.valueCol])
               : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
               }`;
         }
