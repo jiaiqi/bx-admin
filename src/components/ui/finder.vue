@@ -1039,12 +1039,14 @@ export default {
           dataItem.value = queryString == null ? "" : queryString;
           dataTemp.data.push(self.bxDeepClone(dataItem));
           relaTemp.data.push(self.bxDeepClone(dataTemp));
-          dataTemp.data = [];
-          dataItem.ruleType = "[like]";
-          dataItem.colName = this.field.info.dispCol;
-          dataItem.value = queryString == null ? "" : queryString;
-          dataTemp.data.push(self.bxDeepClone(dataItem));
-          relaTemp.data.push(self.bxDeepClone(dataTemp));
+          if( queryString && this.field.info.dispCol&&!this.field.info.dispCol.startsWith("_")){
+            dataTemp.data = [];
+            dataItem.ruleType = "[like]";
+            dataItem.colName = this.field.info.dispCol;
+            dataItem.value = queryString == null ? "" : queryString;
+            dataTemp.data.push(self.bxDeepClone(dataItem));
+            relaTemp.data.push(self.bxDeepClone(dataTemp));
+          }
         } else {
           relaTemp.relation = "OR";
           dataTemp.data = [];
@@ -1156,6 +1158,9 @@ export default {
             ) {
               condition.value = valueExpr.value;
             }
+          } else if(valueExpr && typeof valueExpr === "string" && !valueExpr.startsWith("'") && !valueExpr.includes(".") ){
+            // 字符串类型且不以'开头，不包含.，则认为是常量
+            condition.value = valueExpr
           } else if (valueExpr) {
             // literal value or js expr
             if (cond.literalValue) {
