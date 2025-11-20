@@ -202,6 +202,7 @@ import draggable from "vuedraggable";
 import filePicker from "./file-picker/file-picker.vue";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
+import { formatFileSize } from "@/common/common";
 
 export default {
   mixins: [aSaveBMixin, bigFileUploadMixin],
@@ -809,7 +810,7 @@ export default {
 
       // 检查文件大小
       if (file.size / 1024 > this.fileSize) {
-        this.$message.error("文件大小不能超过" + this.fileSize + "kb");
+        this.$message.error("文件大小不能超过" + formatFileSize(this.fileSize * 1024));
         return false;
       }
 

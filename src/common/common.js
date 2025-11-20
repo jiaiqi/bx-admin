@@ -730,3 +730,16 @@ export function downloadFileH5(url, fileName) {
     }
   })
 }
+
+/**
+ * 格式化文件大小
+ * @param {number} bytes  文件大小，以字节为单位
+ * @returns 
+ */
+export function formatFileSize(bytes) {
+  if (bytes === 0) return '0B';
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024 * 1024) return Number((bytes / 1024).toFixed(2)) + 'KB';
+  if (bytes < 1024 * 1024 * 1024) return Number((bytes / 1024 / 1024).toFixed(2)) + 'MB';
+  return Number((bytes / 1024 / 1024 / 1024).toFixed(2)) + 'GB';
+}
