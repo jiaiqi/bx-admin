@@ -962,11 +962,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               borderWidth: 0,
             },
           },
-          left: '35%',
+          left: '40%',
           data: datas,
           zoom: 1.2,//当前视角的缩放比例
           //是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
-          roam: true,
+          roam: false,
           map: 'customMap', //使用自定义地图
         }
         ecOptions.series.push(mapSeries);
@@ -983,7 +983,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           //气泡字体设置
           label: {
             normal: {
-              show: false,//是否显示
+              show: true,//是否显示
               textStyle: {
                 color: '#fff',//字体颜色
                 fontSize: 8,//字体大小
@@ -1009,7 +1009,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           hoverAnimation: true,//是否开启鼠标 hover 的提示动画效果。
           zlevel: 1//所属图形的 zlevel 值
         };
-        // ecOptions.series.push(serie);
+        if(mapJson?.map_option?.includes('显示气泡')){
+          ecOptions.series.push(serie);
+        }
 
       }
       if (datas?.length) {
@@ -1353,38 +1355,44 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       //   },
       // };
 
-      // option['geo'] = {
-      //   show: true,
-      //   map: "customMap",
-      //   // aspectScale: 1,
-      //   zoom: 1.1,//当前视角的缩放比例
-      //   left: '40%', // 地图向右偏移
-      //   label: {
-      //     normal: {
-      //       show: false,
-      //       color: "#fff"
-      //     },
-      //     emphasis: {
-      //       show: false,
-      //       color: "#fff"
-      //     }
-      //   },
-      //   roam: false,
-      //   itemStyle: {//地图区域的多边形 图形样式
-      //     normal: {
-      //       areaColor: '#013C62',//地区颜色
-      //       // shadowColor: '#182f68',//阴影颜色
-      //       shadowColor: '#03192A',//阴影颜色
-      //       shadowOffsetX: 0,//阴影偏移量
-      //       shadowOffsetY: 30,//阴影偏移量
-      //     },
-      //     emphasis: {
-      //       areaColor: '#2AB8FF',//地区颜色
-      //       label: {
-      //         show: false,//是否在高亮状态下显示标签
-      //       },
-      //     },
-      //   },
+
+      const geoCfg = {
+        show: true,
+        map: "customMap",
+        // aspectScale: 1,
+        zoom: 1.2,//当前视角的缩放比例
+        left: '40%', // 地图向右偏移
+        label: {
+          normal: {
+            show: false,
+            color: "#fff"
+          },
+          emphasis: {
+            show: false,
+            color: "#fff"
+          }
+        },
+        roam: false,
+
+        itemStyle: {//地图区域的多边形 图形样式
+          normal: {
+            borderColor: '#2ab8ff',
+            areaColor: '#013C62',//地区颜色
+            // shadowColor: '#182f68',//阴影颜色
+            shadowColor: '#12235c',//阴影颜色
+            shadowOffsetX: 10,//阴影偏移量
+            shadowOffsetY: 10,//阴影偏移量
+          },
+          emphasis: {
+            areaColor: '#2AB8FF',//地区颜色
+            label: {
+              show: false,//是否在高亮状态下显示标签
+            },
+          },
+        },
+      }
+      // if(chartJson?.map_json?.map_option?.includes('显示气泡')){
+        option['geo'] = geoCfg
       // }
       option['visualMap'] = {
         type: 'continuous',
