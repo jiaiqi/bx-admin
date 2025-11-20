@@ -302,7 +302,7 @@ export default {
           const addValues = transferFieldRef?.getAddValues?.();
           const removeValues = transferFieldRef?.getRemoveValues?.();
           console.log("addValues", addValues, "removeValues", removeValues);
-          const queries = [{
+          let queries = [{
             data: []
           }]
           if (Array.isArray(addValues) && addValues.length) {
