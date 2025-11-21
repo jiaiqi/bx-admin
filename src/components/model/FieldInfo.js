@@ -347,6 +347,11 @@ export class FieldInfo {
       if (this.DateRangeEndColName === null) {
         // this.visible = false
       }
+    }else if (this.type === "DateTimeRange") {
+      this.editor = "DateTimeRange";
+      if (this.DateRangeEndColName === null) {
+        // this.visible = false
+      }
     } else if (this.type === "snote") {
       this.editor = "snote";
     } else if (this.type === "Extend") {

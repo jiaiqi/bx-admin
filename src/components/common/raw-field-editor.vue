@@ -283,6 +283,26 @@
             <!-- DateRange -->
             <el-date-picker
               v-else-if="
+                field.info.editor === 'DateTimeRange' &&
+                field.info._DateRangeEndColName
+              "
+              v-show="field.info._DateRangeEndColName"
+              v-model="field['_DateRangeModel']"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              clearable
+              :picker-options="pickerOptions"
+              format="HH:mm"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              :disabled="getDisabled"
+              :placeholder="field.info.placeholder"
+              @blur="$emit('field-value-changed', field.info.name, field)"
+            >
+            </el-date-picker>
+            <el-date-picker
+              v-else-if="
                 field.info.editor === 'DateRange' &&
                 field.info._DateRangeEndColName
               "
@@ -948,7 +968,7 @@ export default {
     getCurrentListData: {
       type: Function,
     },
-    
+
   },
   watch: {},
 
@@ -1079,8 +1099,8 @@ export default {
   methods: {
     onIDCardChange(val) {
       const reg = new RegExp(idCardExp)
-      
-      if(reg.test(val) && val.charAt(val.length-1)==='x'){
+
+      if (reg.test(val) && val.charAt(val.length - 1) === 'x') {
         val = val.toUpperCase()
         this.field.model = val
       }
