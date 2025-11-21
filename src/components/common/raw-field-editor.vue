@@ -294,7 +294,6 @@
               end-placeholder="结束时间"
               clearable
               :picker-options="pickerOptions"
-              format="HH:mm"
               value-format="yyyy-MM-dd HH:mm:ss"
               :disabled="getDisabled"
               :placeholder="field.info.placeholder"
