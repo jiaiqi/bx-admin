@@ -9,7 +9,8 @@
         >
           <div v-on:click="
             imageDialogUrl = o.url;
-          imageDialog = true;
+            currentImageIndex = index;
+            imageDialog = true;
           ">
             <img
               :src="o.url"
@@ -21,29 +22,61 @@
       </ul>
     </template>
     <el-dialog
-      title="图片预览"
-      :visible.sync="imageDialog"
-      width="60%"
-      height="65%"
-      style="text-align: center"
-      append-to-body
-    >
-      <img
-        :src="imageDialogUrl"
-        width="80%"
-        height="70%"
-        style="margin: 0 auto"
-        class="preview-img"
-      /><br />
-      <el-button
-        type="primary"
-        @click="imageDialog = false"
-      >确 定</el-button>
-      <el-button
-        type="primary"
-        @click="dowmlaodUrl()"
-      >下载</el-button>
-    </el-dialog>
+        title="图片预览"
+        :visible.sync="imageDialog"
+        width="60%"
+        height="65%"
+        style="text-align: center"
+        append-to-body
+      >
+        <div class="image-preview-container">
+          <!-- 上一张按钮 -->
+          <el-button
+            class="prev-next-btn prev-btn"
+            @click="prevImage"
+            :disabled="currentImageIndex <= 0"
+            circle
+            icon="el-icon-arrow-left"
+          ></el-button>
+          
+          <!-- 图片显示区域 -->
+          <div class="image-wrapper">
+            <img
+              :src="imageDialogUrl"
+              width="80%"
+              height="80%"
+              style="margin: 0 auto"
+              class="preview-img"
+            />
+            <!-- 图片序号显示 -->
+            <div class="image-index">
+              {{ currentImageIndex + 1 }} / {{ fileLists.length }}
+            </div>
+          </div>
+          
+          <!-- 下一张按钮 -->
+          <el-button
+            class="prev-next-btn next-btn"
+            @click="nextImage"
+            :disabled="currentImageIndex >= fileLists.length - 1"
+            circle
+            icon="el-icon-arrow-right"
+          ></el-button>
+        </div>
+        
+        <!-- 底部操作按钮 -->
+        <div style="margin-top: 20px;">
+          <el-button
+            type="primary"
+            @click="dowmlaodUrl()"
+            style="margin-right: 10px"
+          >下载</el-button>
+          <el-button
+            type="primary"
+            @click="imageDialog = false"
+          >确 定</el-button>
+        </div>
+      </el-dialog>
 
     <div
       style="display: flex; flex-wrap: wrap"
@@ -282,6 +315,7 @@ export default {
         showFilePicker: false,
         fileLists: [],
         fileLength: 0,
+        currentImageIndex: 0,
         fileDesc:
           this.field.info.moreConfig &&
             this.field.info.moreConfig !== null &&
@@ -349,7 +383,23 @@ export default {
     this.initSplitUploadConfig();
   },
   methods: {
-    // 初始化分片上传配置
+      // 上一张图片
+      prevImage() {
+        if (this.fileLists.length > 1) {
+          this.currentImageIndex = (this.currentImageIndex - 1 + this.fileLists.length) % this.fileLists.length;
+          this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
+        }
+      },
+      
+      // 下一张图片
+      nextImage() {
+        if (this.fileLists.length > 1) {
+          this.currentImageIndex = (this.currentImageIndex + 1) % this.fileLists.length;
+          this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
+        }
+      },
+      
+      // 初始化分片上传配置
     initSplitUploadConfig() {
       // 确保使用大文件上传混入的功能
       if (typeof this.initBigFileUpload === 'function') {
@@ -1140,14 +1190,80 @@ export default {
 }
 
 .img-list .el-upload-list--picture-card .el-upload-list__item,
-.preview-img {
-  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
-    linear-gradient(-45deg, #eee 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #eee 75%),
-    linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
-  background-size: 20px 20px !important;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
-}
+  .preview-img {
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+      linear-gradient(-45deg, #eee 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #eee 75%),
+      linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
+    background-size: 20px 20px !important;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
+  }
+  
+  /* 图片预览容器样式 */
+  .image-preview-container {
+    position: relative;
+    width: 100%;
+    height: 70%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  
+  /* 图片包装器 */
+  .image-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* 图片序号样式 */
+  .image-index {
+    margin-top: 10px;
+    padding: 5px 15px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border-radius: 15px;
+    font-size: 14px;
+    position: relative;
+    z-index: 5;
+  }
+  
+  /* 上一张、下一张按钮样式 */
+  .prev-next-btn {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    font-size: 16px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+  }
+  
+  .prev-next-btn:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+  }
+  
+  .prev-next-btn:disabled {
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: not-allowed;
+  }
+  
+  .prev-btn {
+    left: 5%;
+  }
+  
+  .next-btn {
+    right: 5%;
+  }
   /* 调整进度条和文件操作按钮的层级关系 */
   .el-upload-list__item-actions {
     z-index: 10;
