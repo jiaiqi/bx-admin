@@ -123,10 +123,13 @@ export default {
             let activeLine = this.activeLine ? this.bxDeepClone(this.activeLine) : null
             let buildLines = []
             let loadStationsDatas = self.bxDeepClone(self.loadStations)
+            console.log('loadStationsDatas', loadStationsDatas)
             let drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')
             let drivingPayPoints = loadStationsDatas.filter(item => item['path_type'] == '收费路径')
             let drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
-            let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+            let drivingRecogPoints = loadStationsDatas.filter(item => item['path_type'] == '牌识路径')
+            console.log('drivingRecogPoints', drivingRecogPoints)
+            let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
             let reslines = []
             // loadlinks = loadlinks.map(item =>
             for(let item of loadlinks){
@@ -283,17 +286,24 @@ export default {
                         item['_seq'] = index + 1
                         return item
                     })
-                     allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+                    drivingRecogPoints = loadStationsDatas.filter(item => item['path_type'] == '牌识路径')
+                     drivingRecogPoints = drivingRecogPoints.map((item,index) => {
+                        item['_seq'] = index + 1
+                        return item
+                    })
+                     allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
                     // let item['_editor_type'] = 'driving'
                     
                     // 三条路径拆分途径点和拆线
                     if(activeLine && activeLine['_editor_type'] == 'driving_pay'){
-                        allPointsTypes = [drivingPoints,drivingMinPoints,drivingPayPoints]
+                        allPointsTypes = [drivingPoints,drivingMinPoints,drivingPayPoints,drivingRecogPoints]
                     }
                     if(activeLine && activeLine['_editor_type'] == 'driving_min'){
-                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
                     }
-                    console.log(keyNo,allPointsTypes)
+                     if(activeLine && activeLine['_editor_type'] == 'driving_recog'){
+                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
+                    }
                     for(let subpoints of allPointsTypes){
                         if(Array.isArray(subpoints) && subpoints.length > 0){
                             let lineType = subpoints[0]['path_type']
@@ -305,7 +315,6 @@ export default {
                                     let point = {
                                         ...p
                                     }
-                                    console.log(point, 999999999999999999)
                                     point['_dev_point_type'] = p['category'] || '门架'
                                     switch (point['_dev_point_type']) {
                                         case '门架':
@@ -380,7 +389,9 @@ export default {
                                 case '最小费额路径':
                                     obj['_editor_type'] = 'driving_min'
                                     break;
-                            
+                                case '牌识路径':
+                                    obj['_editor_type'] = 'driving_recog'
+                                    break;
                                 default:
                                     obj['_editor_type'] = 'none'
                                     break;

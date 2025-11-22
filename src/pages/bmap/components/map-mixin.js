@@ -75,6 +75,11 @@ export default {
         color: '#eb2df7',
         selectedColor: '#eb2df7',
       }, {
+        label: '牌识路径',
+        type: 'driving_recog',
+        color: '#2df788ff',
+        selectedColor: '#2df788ff',
+      },{
         label: '其它',
         type: 'none',
         color: 'rgb(60 189 166)',
@@ -135,7 +140,7 @@ export default {
       get: function () {
         let lines = []
         let loadLineData = this.bxDeepClone(this.mockLines)
-
+        console.log('loadLineData5555555555555', this.initLinks)
         if (Array.isArray(this.initLinks) && this.initLinks.length > 0) {
           lines = [].map(item => item)
           loadLineData = this.bxDeepClone(this.initLinks)
@@ -194,7 +199,7 @@ export default {
           }
         }
 
-
+        console.log('lines444444444444444', lines)
         return lines
       },
       set: function (point) {
@@ -1213,7 +1218,8 @@ export default {
                   points.push(p);
 
                 }
-                let color = self.lineColors[i % 4]
+                console.log('888888888888888888888888888',loadLine)
+                let color = self.lineColors[i % 5]
                 if (self.modeUrl == '/bmap/editor/') {
                   color = self.lineColors.filter(item => item.type == loadLine['_editor_type'])
                   if (Array.isArray(color) && color.length > 0) {
@@ -1269,8 +1275,9 @@ export default {
       if (this.BMap) {
         //
         console.log('type11111111111', type)
+        console.log('445455454545455445', this.buildResLine)
         let lines = this.buildResLine.filter(item => item['_editor_type'] == type)
-        console.log('lines', lines)
+        console.log('lines1111', lines)
         if (Array.isArray(lines) && lines.length > 0) {
           this.onLineList(lines[0], type)
         }

@@ -854,7 +854,7 @@ export default {
     activeLine: {
       deep: true,
       handler: function (nval, oval) {
-        console.log("activeLine", nval);
+        console.log("activeLine333333333", nval);
         if (nval) {
           this.$nextTick(() => {
             // this.removeOverlays(nval)
