@@ -41,7 +41,7 @@ function init_util() {
 
   Vue.prototype.getImagePath = (no, size) => {
     if (no && typeof no === "string") {
-      if (no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1) {
+      if ((no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1)&& no.indexOf("filePath=") === -1) {
         return no;
       }
       if (no.indexOf("data:image") !== -1 && no.indexOf("base64") !== -1) {

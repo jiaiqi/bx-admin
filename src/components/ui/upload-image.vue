@@ -1,84 +1,60 @@
 <template>
   <div>
     <template v-if="isEdit === false">
-      <ul class="form-imgs">
-        <li
+      <div class="form-imgs">
+        <div
+          class="image-container"
           v-for="(o, index) in fileLists"
           :key="index"
-          class="imgs-item"
         >
-          <div v-on:click="
-            imageDialogUrl = o.url;
-          currentImageIndex = index;
-          imageDialog = true;
-          ">
-            <img
-              :src="o.url"
-              min-width="70"
-              height="70"
-            />
-          </div>
-        </li>
-      </ul>
-    </template>
-    <el-dialog
-      title="图片预览"
-      :visible.sync="imageDialog"
-      width="60%"
-      height="65%"
-      style="text-align: center"
-      append-to-body
-    >
-      <div class="image-preview-container">
-        <!-- 上一张按钮 -->
-        <el-button
-          class="prev-next-btn prev-btn"
-          @click="prevImage"
-          :disabled="currentImageIndex <= 0"
-          circle
-          icon="el-icon-arrow-left"
-        ></el-button>
-
-        <!-- 图片显示区域 -->
-        <div class="image-wrapper">
           <el-image
-            :src="imageDialogUrl"
-            :preview-src-list="srcList"
-            :initial-index="currentImageIndex"
-            width="100%"
-            height="100%"
-            style="margin: 0 auto"
-            class="preview-img"
-          />
-          <!-- 图片序号显示 -->
-          <div class="image-index">
-            {{ currentImageIndex + 1 }} / {{ fileLists.length }}
+            :src="o.url"
+            style="width: 150px; height: 150px"
+            fit="cover"
+            class="preview-image"
+            lazy
+          >
+            <div
+              slot="placeholder"
+              class="image-slot"
+            >
+              加载中<span class="dot">...</span>
+            </div>
+            <div
+              slot="error"
+              class="image-slot"
+            >
+              <i class="el-icon-picture-outline"></i>
+            </div>
+          </el-image>
+          <div class="image-actions">
+            <el-button
+              class="preview-btn"
+              size="mini"
+              type="primary"
+              circle
+              icon="el-icon-view"
+              title="预览"
+              @click.stop="handlePreview(o, index)"
+            ></el-button>
+            <el-button
+              size="mini"
+              type="success"
+              circle
+              icon="el-icon-download"
+              title="下载"
+              @click.stop="downloadUrlByImage(o)"
+            ></el-button>
           </div>
         </div>
-
-        <!-- 下一张按钮 -->
-        <el-button
-          class="prev-next-btn next-btn"
-          @click="nextImage"
-          :disabled="currentImageIndex >= fileLists.length - 1"
-          circle
-          icon="el-icon-arrow-right"
-        ></el-button>
       </div>
-
-      <!-- 底部操作按钮 -->
-      <div style="margin-top: 20px;">
-        <el-button
-          type="primary"
-          @click="dowmlaodUrl()"
-          style="margin-right: 10px"
-        >下载</el-button>
-        <el-button
-          type="primary"
-          @click="imageDialog = false"
-        >关闭</el-button>
-      </div>
-    </el-dialog>
+    </template>
+    <el-image
+      ref="previewImage"
+      :preview-src-list="previewSrcList"
+      :initial-index="currentImageIndex"
+      style="display: none"
+    ></el-image>
 
     <div
       style="display: flex; flex-wrap: wrap"
@@ -110,7 +86,7 @@
                 <span
                   class="el-upload-list__item-preview"
                   title="预览"
-                  @click="handlePictureCardPreviewFileDetail(item)"
+                  @click="handlePreview(item, index)"
                 >
                   <i class="el-icon-zoom-in"></i>
                 </span>
@@ -234,7 +210,6 @@
   </div>
 </template>
 <script>
-import cloneDeep from "lodash/cloneDeep";
 import draggable from "vuedraggable";
 import filePicker from "./file-picker/file-picker.vue";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin";
@@ -260,10 +235,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    // $srvApp: {
-    //   type: String,
-    //   default: "file",
-    // },
   },
   directives: {
     "click-outside": {
@@ -313,9 +284,10 @@ export default {
     isHttp() {
       return this.field.model && this.field.model.startsWith("http");
     },
-    srcList() {
-      return this.fileLists.map((item) => item.url);
-    }
+    // 计算所有图片的预览URL列表
+    previewSrcList() {
+      return this.fileLists.map(file => file.url);
+    },
   },
   data() {
     return {
@@ -338,8 +310,6 @@ export default {
           this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 10 * 1024, // 默认10MB
-      imageDialog: false,
-      imageDialogUrl: "",
       uploadFile: this.serviceApi().uploadFile,
       uploadParams: {
         serviceName: "srv_bxfile_service",
@@ -350,8 +320,6 @@ export default {
         columns: "",
       },
       isEdit: true,
-      dialogVisibleDetail: false,
-      dialogImageDetailUrl: "",
       loading: false,
       onfocus: false,
       uploadProgress: 0,
@@ -390,22 +358,6 @@ export default {
     this.initSplitUploadConfig();
   },
   methods: {
-    // 上一张图片
-    prevImage() {
-      if (this.fileLists.length > 1) {
-        this.currentImageIndex = (this.currentImageIndex - 1 + this.fileLists.length) % this.fileLists.length;
-        this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
-      }
-    },
-
-    // 下一张图片
-    nextImage() {
-      if (this.fileLists.length > 1) {
-        this.currentImageIndex = (this.currentImageIndex + 1) % this.fileLists.length;
-        this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
-      }
-    },
-
     // 初始化分片上传配置
     initSplitUploadConfig() {
       // 确保使用大文件上传混入的功能
@@ -676,6 +628,7 @@ export default {
           if (file?.fileurl?.indexOf("http") === 0) {
             file.url = file.fileurl;
           }
+          file._thumbnail = this.getImagePath(file.url, 200);
           console.log("refreshFileList");
           list.push(file);
         }
@@ -757,11 +710,6 @@ export default {
       }
       this.changeFileSeq(event.newIndex, event.oldIndex);
     },
-    // 放大
-    handlePictureCardPreviewFileDetail(file) {
-      this.imageDialogUrl = file.url;
-      this.imageDialog = true;
-    },
     // 删除
     async handleRemoveFileDetail(file, fileList, index) {
       const isDelete = await this.beforeRemove(file, fileList);
@@ -810,6 +758,7 @@ export default {
           this.fileLists.push({
             url: this.field.model,
             fileurl: this.field.model,
+            _thumbnail: this.field.model,
             name: '外部图片'
           });
         }
@@ -824,6 +773,7 @@ export default {
         this.fileLists.push({
           url: this.field.model,
           fileurl: this.field.model,
+          _thumbnail: this.field.model,
           name: '外部图片'
         });
         return;
@@ -834,6 +784,7 @@ export default {
           file.name = response.body.data[i].src_name;
           // 使用getFileUrl方法统一处理文件路径
           file.url = this.getFileUrl(response.body.data[i].fileurl);
+          file._thumbnail = this.getImagePath(file.url, 100);
           this.fileLists.push(file);
         }
       });
@@ -946,13 +897,6 @@ export default {
       if (fileList.length === 0) {
         this.field.model = "";
       }
-    },
-    handlePreview(file) {
-      if (file.url == null) {
-        //如果是新上传的文件需要获取url
-        file.url = this.serviceApi().downloadFile + file.response.fileurl;
-      }
-      window.open(file.url);
     },
     async beforeRemove(file, fileList) {
       if (file?.file_no) {
@@ -1116,8 +1060,21 @@ export default {
     getSrvVal() {
       return this.field.model;
     },
-    dowmlaodUrl() {
-      window.open(this.imageDialogUrl);
+
+    // 根据图片对象下载图片
+    downloadUrlByImage(image) {
+      const url = image.url;
+      window.open(url);
+    },
+
+    // 处理图片预览
+    handlePreview(image, index) {
+      // if (image.url == null) {
+      //   //如果是新上传的文件需要获取url
+      //   image.url = this.serviceApi().downloadFile + image.response.fileurl;
+      // }
+      this.currentImageIndex = index;
+      this.$refs.previewImage.showViewer = true;
     },
   },
 };
@@ -1193,9 +1150,16 @@ export default {
 
 .form-imgs {
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 
-  .imgs-item {
-    max-width: 200px;
+  .image-slot {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -1207,6 +1171,53 @@ export default {
     linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
   background-size: 20px 20px !important;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
+}
+
+/* 图片容器样式 */
+.image-container {
+  position: relative;
+  display: inline-block;
+  height: 150px;
+  width: 150px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+
+/* 图片操作按钮容器 */
+.image-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  height: 100%;
+  width: 100%;
+  backdrop-filter: blur(2px);
+}
+
+/* 鼠标悬浮时显示操作按钮 */
+.image-container:hover .image-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 图片占位符样式 */
+.image-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f7fa;
+  color: #909399;
+  font-size: 20px;
 }
 
 /* 图片预览容器样式 */
