@@ -210,17 +210,16 @@ export default {
       const activeTab = this.$refs.tabItems[activeIndex];
       if (!activeTab) return;
 
-      // 获取选中标签的宽度和位置
-      const { width, left } = activeTab.getBoundingClientRect();
-      const parentLeft = this.$el
-        .querySelector(".tab-name-box")
-        .getBoundingClientRect().left;
-
+      
+      // 使用offsetLeft和offsetWidth来获取相对于父元素的位置和宽度
+      const width = activeTab.offsetWidth;
+      const left = activeTab.offsetLeft;
+      
       // 计算下划线位置
       this.underlineStyle = {
         "--primary-color": this.tabsJson?.act_color,
         width: `${width}px`,
-        transform: `translateX(${left - parentLeft}px)`,
+        transform: `translateX(${left}px)`,
       };
     },
   },
