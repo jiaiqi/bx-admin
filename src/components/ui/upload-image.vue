@@ -9,8 +9,8 @@
         >
           <div v-on:click="
             imageDialogUrl = o.url;
-            currentImageIndex = index;
-            imageDialog = true;
+          currentImageIndex = index;
+          imageDialog = true;
           ">
             <img
               :src="o.url"
@@ -22,61 +22,63 @@
       </ul>
     </template>
     <el-dialog
-        title="图片预览"
-        :visible.sync="imageDialog"
-        width="60%"
-        height="65%"
-        style="text-align: center"
-        append-to-body
-      >
-        <div class="image-preview-container">
-          <!-- 上一张按钮 -->
-          <el-button
-            class="prev-next-btn prev-btn"
-            @click="prevImage"
-            :disabled="currentImageIndex <= 0"
-            circle
-            icon="el-icon-arrow-left"
-          ></el-button>
-          
-          <!-- 图片显示区域 -->
-          <div class="image-wrapper">
-            <img
-              :src="imageDialogUrl"
-              width="80%"
-              height="80%"
-              style="margin: 0 auto"
-              class="preview-img"
-            />
-            <!-- 图片序号显示 -->
-            <div class="image-index">
-              {{ currentImageIndex + 1 }} / {{ fileLists.length }}
-            </div>
+      title="图片预览"
+      :visible.sync="imageDialog"
+      width="60%"
+      height="65%"
+      style="text-align: center"
+      append-to-body
+    >
+      <div class="image-preview-container">
+        <!-- 上一张按钮 -->
+        <el-button
+          class="prev-next-btn prev-btn"
+          @click="prevImage"
+          :disabled="currentImageIndex <= 0"
+          circle
+          icon="el-icon-arrow-left"
+        ></el-button>
+
+        <!-- 图片显示区域 -->
+        <div class="image-wrapper">
+          <el-image
+            :src="imageDialogUrl"
+            :preview-src-list="srcList"
+            :initial-index="currentImageIndex"
+            width="100%"
+            height="100%"
+            style="margin: 0 auto"
+            class="preview-img"
+          />
+          <!-- 图片序号显示 -->
+          <div class="image-index">
+            {{ currentImageIndex + 1 }} / {{ fileLists.length }}
           </div>
-          
-          <!-- 下一张按钮 -->
-          <el-button
-            class="prev-next-btn next-btn"
-            @click="nextImage"
-            :disabled="currentImageIndex >= fileLists.length - 1"
-            circle
-            icon="el-icon-arrow-right"
-          ></el-button>
         </div>
-        
-        <!-- 底部操作按钮 -->
-        <div style="margin-top: 20px;">
-          <el-button
-            type="primary"
-            @click="dowmlaodUrl()"
-            style="margin-right: 10px"
-          >下载</el-button>
-          <el-button
-            type="primary"
-            @click="imageDialog = false"
-          >确 定</el-button>
-        </div>
-      </el-dialog>
+
+        <!-- 下一张按钮 -->
+        <el-button
+          class="prev-next-btn next-btn"
+          @click="nextImage"
+          :disabled="currentImageIndex >= fileLists.length - 1"
+          circle
+          icon="el-icon-arrow-right"
+        ></el-button>
+      </div>
+
+      <!-- 底部操作按钮 -->
+      <div style="margin-top: 20px;">
+        <el-button
+          type="primary"
+          @click="dowmlaodUrl()"
+          style="margin-right: 10px"
+        >下载</el-button>
+        <el-button
+          type="primary"
+          @click="imageDialog = false"
+        >关闭</el-button>
+      </div>
+    </el-dialog>
 
     <div
       style="display: flex; flex-wrap: wrap"
@@ -98,30 +100,29 @@
               class="el-upload-list__item is-success animated"
             >
               <img
-              v-if="item.url"
-              :src="item.url"
-              alt=""
-              class="el-upload-list__item-thumbnail"
-            />
-            <i class="el-icon-close"></i>
-            <span
-                  class="el-upload-list__item-actions">
-                  <span
-                    class="el-upload-list__item-preview"
-                    title="预览"
-                    @click="handlePictureCardPreviewFileDetail(item)"
-                  >
-                    <i class="el-icon-zoom-in"></i>
-                  </span>
-                  <span
-                    v-if="!disabled"
-                    class="el-upload-list__item-delete"
-                    title="删除"
-                    @click="handleRemoveFileDetail(item, fileLists)"
-                  >
-                    <i class="el-icon-delete"></i>
-                  </span>
+                v-if="item.url"
+                :src="item.url"
+                alt=""
+                class="el-upload-list__item-thumbnail"
+              />
+              <i class="el-icon-close"></i>
+              <span class="el-upload-list__item-actions">
+                <span
+                  class="el-upload-list__item-preview"
+                  title="预览"
+                  @click="handlePictureCardPreviewFileDetail(item)"
+                >
+                  <i class="el-icon-zoom-in"></i>
                 </span>
+                <span
+                  v-if="!disabled"
+                  class="el-upload-list__item-delete"
+                  title="删除"
+                  @click="handleRemoveFileDetail(item, fileLists)"
+                >
+                  <i class="el-icon-delete"></i>
+                </span>
+              </span>
             </li>
           </transition-group>
         </draggable>
@@ -204,15 +205,18 @@
       </el-upload>
 
       <!-- 上传进度条，固定在上传按钮下方 -->
-      <div v-if="uploadProgress > 0 " class="global-progress-container">
-        <el-progress 
-          :percentage="uploadProgress" 
+      <div
+        v-if="uploadProgress > 0"
+        class="global-progress-container"
+      >
+        <el-progress
+          :percentage="uploadProgress"
           :stroke-width="6"
           text-inside
         ></el-progress>
         <div class="upload-status-text">{{ uploadingFileName }} - 上传中...</div>
       </div>
-      
+
       <div
         slot="tip"
         class="el-upload__tip w-full"
@@ -292,13 +296,13 @@ export default {
       const fileType = this.field.fileType || "jpg/png/svg";
       const fileSize = this.fileSize ? this.fileSize / 1024 : 10; // 默认10MB
       let msgArr = []
-      if(fileType){
+      if (fileType) {
         msgArr.push(`请上传${fileType}格式的图片`)
       }
-      if(fileSize){
+      if (fileSize) {
         msgArr.push(`大小不超过${fileSize}MB`)
       }
-      if(this.limit){
+      if (this.limit) {
         msgArr.push(`最多上传${this.limit}张`)
       }
       return msgArr.join("，")
@@ -309,46 +313,49 @@ export default {
     isHttp() {
       return this.field.model && this.field.model.startsWith("http");
     },
+    srcList() {
+      return this.fileLists.map((item) => item.url);
+    }
   },
   data() {
-      return {
-        showFilePicker: false,
-        fileLists: [],
-        fileLength: 0,
-        currentImageIndex: 0,
-        fileDesc:
-          this.field.info.moreConfig &&
-            this.field.info.moreConfig !== null &&
-            this.field.info.moreConfig.fileMaxSize
-            ? "请上传jpg/png/svg格式的图片,大小不超过" +
-            this.field.info.moreConfig.fileMaxSize +
-            "MB"
-            : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
-        fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
-        fileSize:
-          this.field.info.moreConfig &&
-            this.field.info.moreConfig !== null &&
-            this.field.info.moreConfig.fileMaxSize
-            ? this.field.info.moreConfig.fileMaxSize * 1024
-            : 10 * 1024, // 默认10MB
-        imageDialog: false,
-        imageDialogUrl: "",
-        uploadFile: this.serviceApi().uploadFile,
-        uploadParams: {
-          serviceName: "srv_bxfile_service",
-          interfaceName: "add",
-          app_no: this.resolveDefaultSrvApp(),
-          table_name: "",
-          thumbnailType: "fwsu_100",
-          columns: "",
-        },
-        isEdit: true,
-        dialogVisibleDetail: false,
-        dialogImageDetailUrl: "",
-        loading: false,
-        onfocus: false,
-        uploadProgress: 0,
-        uploadingFileName: ""
+    return {
+      showFilePicker: false,
+      fileLists: [],
+      fileLength: 0,
+      currentImageIndex: 0,
+      fileDesc:
+        this.field.info.moreConfig &&
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
+          ? "请上传jpg/png/svg格式的图片,大小不超过" +
+          this.field.info.moreConfig.fileMaxSize +
+          "MB"
+          : "请上传jpg/png/svg格式的图片,大小不超过2Mb",
+      fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
+      fileSize:
+        this.field.info.moreConfig &&
+          this.field.info.moreConfig !== null &&
+          this.field.info.moreConfig.fileMaxSize
+          ? this.field.info.moreConfig.fileMaxSize * 1024
+          : 10 * 1024, // 默认10MB
+      imageDialog: false,
+      imageDialogUrl: "",
+      uploadFile: this.serviceApi().uploadFile,
+      uploadParams: {
+        serviceName: "srv_bxfile_service",
+        interfaceName: "add",
+        app_no: this.resolveDefaultSrvApp(),
+        table_name: "",
+        thumbnailType: "fwsu_100",
+        columns: "",
+      },
+      isEdit: true,
+      dialogVisibleDetail: false,
+      dialogImageDetailUrl: "",
+      loading: false,
+      onfocus: false,
+      uploadProgress: 0,
+      uploadingFileName: ""
     };
   },
   created: function () {
@@ -383,23 +390,23 @@ export default {
     this.initSplitUploadConfig();
   },
   methods: {
-      // 上一张图片
-      prevImage() {
-        if (this.fileLists.length > 1) {
-          this.currentImageIndex = (this.currentImageIndex - 1 + this.fileLists.length) % this.fileLists.length;
-          this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
-        }
-      },
-      
-      // 下一张图片
-      nextImage() {
-        if (this.fileLists.length > 1) {
-          this.currentImageIndex = (this.currentImageIndex + 1) % this.fileLists.length;
-          this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
-        }
-      },
-      
-      // 初始化分片上传配置
+    // 上一张图片
+    prevImage() {
+      if (this.fileLists.length > 1) {
+        this.currentImageIndex = (this.currentImageIndex - 1 + this.fileLists.length) % this.fileLists.length;
+        this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
+      }
+    },
+
+    // 下一张图片
+    nextImage() {
+      if (this.fileLists.length > 1) {
+        this.currentImageIndex = (this.currentImageIndex + 1) % this.fileLists.length;
+        this.imageDialogUrl = this.fileLists[this.currentImageIndex].url;
+      }
+    },
+
+    // 初始化分片上传配置
     initSplitUploadConfig() {
       // 确保使用大文件上传混入的功能
       if (typeof this.initBigFileUpload === 'function') {
@@ -413,7 +420,7 @@ export default {
     onPickerFileChange(event) {
       if (event?.files?.length) {
         const file = event?.files[0];
-        
+
         // 检查文件大小，决定是否使用分片上传
         const fileSizeInMB = file.size / (1024 * 1024);
         if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
@@ -442,14 +449,14 @@ export default {
         }
       }
     },
-    
+
     // 处理大文件上传的统一方法
     handleBigFileUpload(file) {
       const _this = this;
-      
+
       // 显示上传中状态
       this.loading = true;
-      
+
       // 调用分片上传方法
       this.handelUploadBigFile(file, {
         onUploadProgress: (progress) => {
@@ -466,7 +473,7 @@ export default {
           // 上传成功后的处理
           console.log('分片上传成功:', res);
           _this.loading = false;
-          
+
           // 调用handleSuccess方法处理上传结果
           if (res) {
             // 构造类似普通上传的响应格式
@@ -476,7 +483,7 @@ export default {
               fileurl: res.fileurl || res.path || res.url,
               src_name: res.src_name || res.fileName || file.name
             };
-            
+
             // 调用handleSuccess处理响应
             await _this.handleSuccess(response, { ...file, response }, _this.fileLists);
           }
@@ -509,7 +516,7 @@ export default {
       /**调用element的上传方法 需要把base64转换成file上传**/
       let a = this.dataURLtoBlob(file);
       let b = this.blobToFile(a, info);
-      
+
       // 检查文件大小，决定是否使用分片上传
       const fileSizeInMB = b.size / (1024 * 1024);
       if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
@@ -633,11 +640,11 @@ export default {
     handleImage(blob) {
       const reader = new FileReader();
       const _this = this;
-      
+
       // 检查文件大小，决定是否直接使用blob进行分片上传
       // 对于粘贴的图片，通常不会太大，但为了一致性还是保留逻辑
       const fileSizeInMB = blob.size / (1024 * 1024);
-      
+
       if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
         // 对于大文件，直接使用blob创建File对象进行分片上传
         const file = new File([blob], blob.name || 'pasted-image.png', { type: blob.type });
@@ -831,7 +838,7 @@ export default {
         }
       });
     },
-    
+
     // 删除文件方法，支持删除通过分片上传的文件
     async deleteFile(params) {
       try {
@@ -844,7 +851,7 @@ export default {
         return { body: { resultCode: 'ERROR', state: '删除失败' } };
       }
     },
-    
+
     // 检查上传状态方法
     async checkUploadStatus(fileNo) {
       try {
@@ -879,17 +886,17 @@ export default {
       if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
         // 阻止默认上传
         const _this = this;
-        
+
         // 显示上传中状态
         this.loading = true;
-        
+
         // 设置上传参数
         const uploadParams = {
           table_name: this.uploadParams.table_name,
           columns: this.uploadParams.columns,
           app_no: this.resolveDefaultSrvApp()
         };
-        
+
         // 调用分片上传方法
         this.handelUploadBigFile(file, {
           onUploadProgress: (progress) => {
@@ -906,7 +913,7 @@ export default {
             // 上传成功后的处理
             console.log('分片上传成功:', res);
             _this.loading = false;
-            
+
             // 调用handleSuccess方法处理上传结果
             if (res) {
               // 构造类似普通上传的响应格式
@@ -916,7 +923,7 @@ export default {
                 fileurl: res.fileurl || res.path || res.url,
                 src_name: res.src_name || res.fileName || file.name
               };
-              
+
               // 调用handleSuccess处理响应
               await _this.handleSuccess(response, { ...file, response }, _this.fileLists);
             }
@@ -926,11 +933,11 @@ export default {
           _this.loading = false;
           _this.$message.error('文件上传失败，请重试');
         });
-        
+
         // 返回false阻止默认上传
         return false;
       }
-      
+
       // 小文件使用默认上传方式
       return true;
     },
@@ -968,11 +975,11 @@ export default {
         const response = await this.deleteFile(params);
         this.fileLength = fileList.length - 1;
         this.$emit("change", this.field.model);
-        
+
         // 正确处理响应格式，考虑response可能直接包含resultCode或有body嵌套
         const resultCode = response?.resultCode || response?.body?.resultCode;
         const stateMessage = response?.state || response?.body?.state || '操作成功';
-        
+
         if (resultCode === "SUCCESS") {
           this.$message.info(stateMessage);
           // 移除文件的操作由调用beforeRemove的handleRemoveFileDetail方法处理
@@ -991,7 +998,7 @@ export default {
     async handleSuccess(response, file, fileList) {
       // 统一处理分片上传和普通上传的响应格式
       const normalizedResponse = this.normalizeResponse(response);
-      
+
       if (normalizedResponse.fileurl?.startsWith("http")) {
         // 返回的http链接 查询上传状态 上传成功后再继续后面操作 避免未成功上传到华为云就显示在页面上导致显示的图片加载失败
         console.time("handleSuccess");
@@ -1003,13 +1010,13 @@ export default {
         this.loading = false;
         console.timeEnd("handleSuccess");
       }
-      
+
       // 检查是否上传成功
       const isSuccess = normalizedResponse.state === 'SUCCESS' || normalizedResponse.state === undefined;
-      
+
       if (isSuccess) {
         this.$message.info("上传成功！");
-        
+
         // 检查是否有自定义的handleSuccess方法
         let modelValue = normalizedResponse.file_no;
         if (this.field.handleSuccess && typeof this.field.handleSuccess === 'function') {
@@ -1022,15 +1029,15 @@ export default {
             modelValue = normalizedResponse.fileurl;
           }
         }
-        
+
         // 设置model值
         this.field.model = modelValue;
-        
+
         // 设置文件URL
         normalizedResponse.url = this.getFileUrl(normalizedResponse.fileurl);
-        
+
         // 添加到文件列表并触发事件
-          this.fileLists.push(normalizedResponse);
+        this.fileLists.push(normalizedResponse);
         this.$emit("change", this.field.model);
         this.setObjInfo(fileList);
       } else {
@@ -1044,11 +1051,11 @@ export default {
       this.fileLength = this.fileLists.length;
       this.loading = false;
     },
-    
+
     // 统一归一化响应格式，处理分片上传和普通上传的不同响应结构
     normalizeResponse(response) {
       if (!response) return {};
-      
+
       // 从big-file-upload-mixin继承的handleMerge方法返回的数据格式
       if (response.id && !response.file_no) {
         return {
@@ -1058,7 +1065,7 @@ export default {
           src_name: response.src_name || response.fileName || response.name
         };
       }
-      
+
       // 普通上传响应格式
       return {
         ...response,
@@ -1070,14 +1077,14 @@ export default {
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 ${this.limit}个文件`);
     },
-    
+
     // 处理上传进度
     handleProgress(event, file, fileList) {
       // 更新全局上传进度
       const percentage = Math.round(event.percent);
       this.uploadProgress = percentage;
       this.uploadingFileName = file.name;
-      
+
       // 上传完成后重置进度
       if (percentage >= 100) {
         setTimeout(() => {
@@ -1086,13 +1093,13 @@ export default {
         }, 500);
       }
     },
-    
+
     // 为分片上传更新进度
     updateBigFileProgress(file, progress) {
       // 更新全局上传进度
       this.uploadProgress = progress;
       this.uploadingFileName = file.name;
-      
+
       // 上传完成后重置进度
       if (progress >= 100) {
         setTimeout(() => {
@@ -1117,7 +1124,10 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
+<style
+  scoped
+  lang="scss"
+>
 ::v-deep .el-upload-list {
   border: none !important;
 }
@@ -1190,111 +1200,114 @@ export default {
 }
 
 .img-list .el-upload-list--picture-card .el-upload-list__item,
-  .preview-img {
-    background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
-      linear-gradient(-45deg, #eee 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #eee 75%),
-      linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
-    background-size: 20px 20px !important;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
-  }
-  
-  /* 图片预览容器样式 */
-  .image-preview-container {
-    position: relative;
-    width: 100%;
-    height: 70%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-  }
-  
-  /* 图片包装器 */
-  .image-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  /* 图片序号样式 */
-  .image-index {
-    margin-top: 10px;
-    padding: 5px 15px;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    border-radius: 15px;
-    font-size: 14px;
-    position: relative;
-    z-index: 5;
-  }
-  
-  /* 上一张、下一张按钮样式 */
-  .prev-next-btn {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: none;
-    color: white;
-    font-size: 16px;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s;
-  }
-  
-  .prev-next-btn:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-  }
-  
-  .prev-next-btn:disabled {
-    background-color: rgba(0, 0, 0, 0.2);
-    cursor: not-allowed;
-  }
-  
-  .prev-btn {
-    left: 5%;
-  }
-  
-  .next-btn {
-    right: 5%;
-  }
-  /* 调整进度条和文件操作按钮的层级关系 */
-  .el-upload-list__item-actions {
-    z-index: 10;
-  }
-  
-  /* 图片占位样式 */
-  .image-placeholder {
-    width: 100%;
-    height: 100%;
-    background-color: #f5f7fa;
-    background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
-      linear-gradient(-45deg, #eee 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #eee 75%),
-      linear-gradient(-45deg, transparent 75%, #eee 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  }
-  
-  /* 全局进度条样式 */
-  .global-progress-container {
-    margin-top: 12px;
-    margin-bottom: 8px;
-    padding: 10px;
-    background-color: #f5f7fa;
-    border-radius: 4px;
-  }
-  
-  .upload-status-text {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #606266;
-    text-align: center;
-  }
+.preview-img {
+  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
+  background-size: 20px 20px !important;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
+}
+
+/* 图片预览容器样式 */
+.image-preview-container {
+  position: relative;
+  width: 100%;
+  height: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* 图片包装器 */
+.image-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  height: 80%;
+}
+
+/* 图片序号样式 */
+.image-index {
+  margin-top: 10px;
+  padding: 5px 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 15px;
+  font-size: 14px;
+  position: relative;
+  z-index: 5;
+}
+
+/* 上一张、下一张按钮样式 */
+.prev-next-btn {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.prev-next-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.prev-next-btn:disabled {
+  cursor: not-allowed;
+  display: none;
+}
+
+.prev-btn {
+  left: 5%;
+}
+
+.next-btn {
+  right: 5%;
+}
+
+/* 调整进度条和文件操作按钮的层级关系 */
+.el-upload-list__item-actions {
+  z-index: 10;
+}
+
+/* 图片占位样式 */
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f5f7fa;
+  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* 全局进度条样式 */
+.global-progress-container {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding: 10px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.upload-status-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #606266;
+  text-align: center;
+}
 </style>
