@@ -258,7 +258,17 @@ export default {
       // }
       const fileType = this.field.fileType || "jpg/png/svg";
       const fileSize = this.fileSize ? this.fileSize / 1024 : 10; // 默认10MB
-      return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`;
+      let msgArr = []
+      if(fileType){
+        msgArr.push(`请上传${fileType}格式的图片`)
+      }
+      if(fileSize){
+        msgArr.push(`大小不超过${fileSize}MB`)
+      }
+      if(this.limit){
+        msgArr.push(`最多上传${this.limit}张`)
+      }
+      return msgArr.join("，")
     },
     useFilePicker() {
       return this.field.info?.moreConfig?.useFilePicker;
