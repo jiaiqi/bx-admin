@@ -1255,7 +1255,7 @@ export default {
               if (this.suspectedData?.[0]?.vehicletype) {
                this.ruleForm.trade_vehicle_type = this.suspectedData[0].vehicletype + ''
                }
-              }
+              
              this.operate_params = resAudit[0]
             this.ruleForm = formDataByGetInfo(this.ruleForm, resAudit[0])
             this.ruleForm.media_no = resAudit[0].obusn
@@ -1358,7 +1358,7 @@ export default {
               }
             }
             }
-           
+          }
           }
         }
     },
