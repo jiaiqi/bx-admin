@@ -229,7 +229,7 @@ export default {
     },
     limit: {
       type: Number,
-      default: 100,
+      default: Number.MAX_SAFE_INTEGER,
     },
     disabled: {
       type: Boolean,
@@ -273,7 +273,7 @@ export default {
       if (fileSize) {
         msgArr.push(`大小不超过${fileSize}MB`)
       }
-      if (this.limit) {
+      if (this.limit && this.limit !== Number.MAX_SAFE_INTEGER ) {
         msgArr.push(`最多上传${this.limit}张`)
       }
       return msgArr.join("，")

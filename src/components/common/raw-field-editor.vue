@@ -1010,7 +1010,7 @@ export default {
     },
     uploadLimit() {
       const config = this.field.info?.moreConfig;
-      return config?.fileLimit || config?.limit || 100;
+      return config?.fileLimit || config?.limit ;
     },
     updatableJson() {
       if (this.field?.info?.srvCol?.updatable_json) {
