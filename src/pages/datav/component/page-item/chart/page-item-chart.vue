@@ -78,24 +78,44 @@
         :color="setLiquidColor"
       ></LiquidFillChart>
     </div>
+
+    <!-- 卡片弹窗 -->
+    <div
+      class="card-popup-overlay"
+      @click="closeCardPopup"
+      v-if="showCardPopup && popupCardJson"
+    >
+      <card-popup
+        :cardUnitJson="popupCardJson"
+        :data="popupItemData"
+        :click-event="clickEvent"
+        :placement="popupPlacement"
+        @close="closeCardPopup"
+        @click.stop
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
+import dayjs from "dayjs";
+import cloneDeep from "lodash/cloneDeep";
+
 import { computed, watch, onMounted, ref } from "vue";
+import { useUtils } from "@/common/vueApi.js";
+
 import LiquidFillChart from "@/pages/datav/component/page-item/LiquidFillChart.vue";
 import Chart from "./chart.vue";
 import SankeyChart from "./SankeyChart.vue";
 import DateFilter from "./DateFilter.vue";
+import cardPopup from "../card-group/card-popup.vue";
+
 import { $select } from "../../../common/http.js";
 import {
   useBuildOption,
   setDefaultChartOption,
 } from "../use-functions/buildOption.js";
-import { useUtils } from "@/common/vueApi.js";
-import cloneDeep from "lodash/cloneDeep";
 import { formatStyleData } from "@/pages/datav/common";
-import dayjs from "dayjs";
 const { renderStr } = useUtils();
 
 const props = defineProps({
@@ -120,6 +140,10 @@ function deepClone(obj) {
 }
 const pageItem = props.pageItem;
 
+const mapJson = computed(() => {
+  return pageItem?.chart_json?.map_json || {}
+}); // 地图配置
+
 let timer = null;
 const emit = defineEmits(["clickChart"]);
 
@@ -130,8 +154,33 @@ const loaded = ref(false);
 // 日期筛选状态
 const currentDateFilter = ref(null);
 
-const clickChart = () => {
-  emit("clickChart");
+
+const showCardPopup = ref(false);
+const popupItemData = ref(null);
+const clickEvent = ref(null);
+const popupPlacement = ref('上');
+
+const closeCardPopup = () => {
+  showCardPopup.value = false;
+  popupItemData.value = null;
+  clickEvent.value = null;
+}
+// 点击弹出卡片单元
+const popupCardJson = computed(() => {
+  return mapJson.value?.onclick === '弹出卡片' && mapJson.value?.tips_card_unit_json
+});
+
+const clickChart = (params) => {
+  console.log('点击图表-params:', params, cellData.value);
+  if (params.type === 'series' && typeof params.dataIndex === 'number') {
+    params.data = cellData.value[params.dataIndex];
+    if (params.event?.target) {
+      clickEvent.value = params.event;
+      popupItemData.value = params.data;
+      showCardPopup.value = true;
+    }
+  }
+  emit("clickChart", params);
 };
 
 const setLiquidColor = computed(() => {
@@ -601,7 +650,10 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 ::v-deep .el-loading-mask {
   background-color: rgba($color: #000000, $alpha: 0.1);
 }
@@ -696,5 +748,16 @@ defineExpose({
       transform: rotate(360deg);
     }
   }
+}
+
+/* 卡片弹窗样式 */
+.card-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  // background-color: rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
 }
 </style>
