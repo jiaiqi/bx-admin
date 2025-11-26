@@ -1,8 +1,7 @@
 import * as echarts from "echarts";
 import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
 // import "echarts-gl"; //echarts-gl@1.1.2
-import { getImagePath } from '@/common/http.js'
-import eventBus from '@/common/eventBus.js'
+import { getImagePath } from "@/common/http";
 
 let __colors = [
   "#007AFF",
@@ -885,8 +884,6 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       console.log(pageItem);
       const mapJson = pageItem?.chart_json?.map_json;
       console.log("mapJson:", mapJson);
-      const iconUrl = mapJson.icon_default ? getImagePath(mapJson.icon_default) : 'pin';
-      console.log("iconUrl111111111:", iconUrl);
       let datas = [];
       let scatterDatas = []
       if (cellData?.length) {
@@ -967,28 +964,26 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             },
           },
           left: '40%',
-          data: datas,
+          // data: datas,
           zoom: 1.2,//当前视角的缩放比例
           //是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
           roam: false,
           map: 'customMap', //使用自定义地图
         }
-        ecOptions.series.push(mapSeries);
-
+        const iconUrl = mapJson.icon_default ? `image://${getImagePath(mapJson.icon_default)}` : 'pin';
         let serie = {
           //设置为分散点
           type: 'scatter',
           //series坐标系类型
           coordinateSystem: 'geo',
           //设置图形 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow'
-          symbol: `image://${iconUrl}`,
-          symbolSize: [40, 40],  // 确保图标尺寸合适
+          symbol: iconUrl,
           // //标记的大小，可以设置成诸如 10 这样单一的数字，也可以用数组分开表示宽和高，例如 [20, 10] 表示标记宽为20，高为10
           symbolSize: [40, 40],
           //气泡字体设置
           label: {
             normal: {
-              show: true,//是否显示
+              show: false,//是否显示
               textStyle: {
                 color: '#fff',//字体颜色
                 fontSize: 8,//字体大小
@@ -1002,7 +997,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           itemStyle: {
             normal: {
               // color: '#1E90FF', //标志颜色
-              color: '#2B32B2', //标志颜色
+              color: '#FE8428', //标志颜色
+              // color: '#2B32B2', //标志颜色
             }
           },
           //给区域赋值
@@ -1014,9 +1010,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           hoverAnimation: true,//是否开启鼠标 hover 的提示动画效果。
           zlevel: 1//所属图形的 zlevel 值
         };
-        if(mapJson?.map_option?.includes('显示气泡')){
+        if (mapJson?.map_option?.includes('显示气泡')) {
           ecOptions.series.push(serie);
         }
+
+        ecOptions.series.push(mapSeries);
 
       }
       if (datas?.length) {
@@ -1397,7 +1395,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         },
       }
       // if(chartJson?.map_json?.map_option?.includes('显示气泡')){
-        option['geo'] = geoCfg
+      option['geo'] = geoCfg
       // }
       option['visualMap'] = {
         type: 'continuous',
