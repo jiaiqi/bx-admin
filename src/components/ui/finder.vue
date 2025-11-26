@@ -1158,7 +1158,7 @@ export default {
             ) {
               condition.value = valueExpr.value;
             }
-          } else if(valueExpr && typeof valueExpr === "string" && !valueExpr.startsWith("'") && !valueExpr.includes(".") ){
+          } else if(valueExpr && typeof valueExpr === "string" && !valueExpr.startsWith("'") && !valueExpr.includes(".") &&  !valueExpr?.includes('(')){
             // 字符串类型且不以'开头，不包含.，则认为是常量
             condition.value = valueExpr
           } else if (valueExpr) {
