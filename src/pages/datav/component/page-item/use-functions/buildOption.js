@@ -1,6 +1,8 @@
 import * as echarts from "echarts";
 import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
 // import "echarts-gl"; //echarts-gl@1.1.2
+import { getImagePath } from '@/common/http.js'
+import eventBus from '@/common/eventBus.js'
 
 let __colors = [
   "#007AFF",
@@ -883,6 +885,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       console.log(pageItem);
       const mapJson = pageItem?.chart_json?.map_json;
       console.log("mapJson:", mapJson);
+      const iconUrl = mapJson.icon_default ? getImagePath(mapJson.icon_default) : 'pin';
+      console.log("iconUrl111111111:", iconUrl);
       let datas = [];
       let scatterDatas = []
       if (cellData?.length) {
@@ -977,7 +981,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           //series坐标系类型
           coordinateSystem: 'geo',
           //设置图形 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow'
-          symbol: 'pin',
+          symbol: `image://${iconUrl}`,
+          symbolSize: [40, 40],  // 确保图标尺寸合适
           // //标记的大小，可以设置成诸如 10 这样单一的数字，也可以用数组分开表示宽和高，例如 [20, 10] 表示标记宽为20，高为10
           symbolSize: [40, 40],
           //气泡字体设置

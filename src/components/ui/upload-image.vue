@@ -8,6 +8,7 @@
           :key="index"
         >
           <el-image
+          v-if="o.file_type === 'jpg' || o.file_type === 'png' || o.file_type === 'jpeg'"
             :src="o.url"
             style="width: 150px; height: 150px"
             fit="cover"
@@ -27,6 +28,27 @@
               <i class="el-icon-picture-outline"></i>
             </div>
           </el-image>
+          <video
+          v-else-if="o.file_type === 'mp4' || o.file_type === 'avi' || o.file_type === 'mov'"
+            :src="o.url"
+            style="width: 150px; height: 150px"
+            fit="cover"
+            class="preview-image"
+            lazy
+          >
+            <div
+              slot="placeholder"
+              class="image-slot"
+            >
+              加载中<span class="dot">...</span>
+            </div>
+            <div
+              slot="error"
+              class="image-slot"
+            >
+              <i class="el-icon-picture-outline"></i>
+            </div>
+          </video>
           <div class="image-actions">
             <el-button
               class="preview-btn"
@@ -55,6 +77,24 @@
       :initial-index="currentImageIndex"
       style="display: none"
     ></el-image>
+    
+    <!-- 视频预览模态框 -->
+    <el-dialog
+      title="视频预览"
+      :visible.sync="showVideoPreview"
+      width="80%"
+      center
+    >
+      <div style="display: flex; justify-content: center;">
+        <video
+          :src="previewVideoUrl"
+          controls
+          style="max-width: 100%; max-height: 70vh;"
+        >
+          您的浏览器不支持视频播放
+        </video>
+      </div>
+    </el-dialog>
 
     <div
       style="display: flex; flex-wrap: wrap"
@@ -295,6 +335,8 @@ export default {
       fileLists: [],
       fileLength: 0,
       currentImageIndex: 0,
+      showVideoPreview: false,
+      previewVideoUrl: '',
       fileDesc:
         this.field.info.moreConfig &&
           this.field.info.moreConfig !== null &&
@@ -343,6 +385,7 @@ export default {
               }
               // file.url = this.serviceApi().downloadFile + file.fileurl;
               this.fileLists.push(file);
+              console.log(this.fileLists, 3333333333);
             });
             return;
           }
@@ -633,6 +676,7 @@ export default {
           list.push(file);
         }
         this.fileLists = list;
+        console.log(this.fileLists, 3333333333);
         this.loading = false;
       });
     },
@@ -761,6 +805,7 @@ export default {
             _thumbnail: this.field.model,
             name: '外部图片'
           });
+          console.log(this.fileLists, 3333333333);
         }
       } else {
         this.isEdit = false;
@@ -776,6 +821,7 @@ export default {
           _thumbnail: this.field.model,
           name: '外部图片'
         });
+        console.log(this.fileLists, 3333333333);
         return;
       }
       this.selectFileList(this.field.model).then((response) => {
@@ -786,6 +832,7 @@ export default {
           file.url = this.getFileUrl(response.body.data[i].fileurl);
           file._thumbnail = this.getImagePath(file.url, 100);
           this.fileLists.push(file);
+          console.log(this.fileLists, 3333333333);
         }
       });
     },
@@ -1069,12 +1116,17 @@ export default {
 
     // 处理图片预览
     handlePreview(image, index) {
-      // if (image.url == null) {
-      //   //如果是新上传的文件需要获取url
-      //   image.url = this.serviceApi().downloadFile + image.response.fileurl;
-      // }
-      this.currentImageIndex = index;
-      this.$refs.previewImage.showViewer = true;
+      if (image.url) {
+        if (image.file_type === 'jpg' || image.file_type === 'png' || image.file_type === 'jpeg') {
+          this.currentImageIndex = index;
+          this.$refs.previewImage.showViewer = true;
+        } else if (image.file_type === 'mp4' || image.file_type === 'avi' || image.file_type === 'mov') {
+          this.previewVideoUrl = image.url;
+          this.showVideoPreview = true;
+        }
+      } else {
+        this.$message.warning('预览失败');
+      }
     },
   },
 };
