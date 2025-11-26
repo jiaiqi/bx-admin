@@ -276,7 +276,7 @@ import {
 } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
-import cardPopup from "../card-group/card-popup.vue";
+// import cardPopup from "../card-group/card-popup.vue";
 import { getFilePath } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
 // 节流
@@ -303,7 +303,7 @@ export default {
     LiquidFillChart,
     qrCode,
     HlsplayerVideo,
-    cardPopup,
+    cardPopup: () => import("../card-group/card-popup.vue"),
     weather,
   },
   data() {

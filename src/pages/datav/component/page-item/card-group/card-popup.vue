@@ -22,11 +22,11 @@
       </div>
       
       <!-- 小三角箭头 -->
-      <div
+      <!-- <div
         class="card-popup-arrow"
         :class="arrowClass"
         :style="arrowStyle"
-      ></div>
+      ></div> -->
 
       <card-group-cell
         :page-item="{}"
@@ -254,9 +254,9 @@ const popupStyle = computed(() => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      backgroundColor: '#fff',
+      // backgroundColor: '#fff',
       borderRadius: '8px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+      // boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
       zIndex: 10000,
     };
   }
@@ -425,9 +425,9 @@ const popupStyle = computed(() => {
     top: `${top}px`,
     left: `${left}px`,
     transform,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    // boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     zIndex: 10000,
   };
 
