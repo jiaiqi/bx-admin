@@ -603,13 +603,106 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
+                    console.log('121212121221',res)
+                    if(res.data&&res.data.length>0){
+                         self.tolllinks = res.data.map(item => {
+                        item['_editor_type'] = 'driving'
+                        return item
+                    })
+                    this.enpointid = res.data[0].enpointid
+                    this.expointid = res.data[0].expointid
+                    this.vehicletype = res.data[0].vehicletype
+                    this.vehicleid = res.data[0].vehicleid
+                      this.getPassconvpath()
+                    }else{
+                        this.getLaneexit()
+                    }
+                   
+                }else{
+                    this.getLaneexit()
+                   
+                }
+              })
+            
+        },
+        getLaneexit(){
+            // 查询所有分公司下路段
+            let self = this
+            // category取值：门架、收费站
+            // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
+            // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let srv = 'srvaud_laneexit_pass_select';
+            let srvAuth = 'aud'
+             let page = null
+            let order = null
+            let entime = this.$route.query.entime || this.$route.params.entime||this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime||this.extime
+            if(!self.no || !entime || !extime){
+                console.log('初始化参数缺少 passid')
+                return 
+            }
+             let relationCondition = {
+                "relation":"AND",
+                data:[
+                   {
+                colName:'passid',
+                ruleType:'like',
+                value:self.no
+            },{
+                colName:'createtime',
+                ruleType:'between',
+                value:[`${entime}`,`${extime}`]
+            } 
+                ]
+             }
+           
+            let conds = [{
+                colName:'passid',
+                ruleType:'eq',
+                value:self.no
+            },{
+                colName:'createtime',
+                ruleType:'between',
+                value:[`${entime}`,`${extime}`]
+            }]
+            
+           
+            
+            let divCond =  [{
+                "colName":"createtime",
+                "ruleType":"between",
+                "value":[`${entime}`,`${extime}`]
+            }]
+            self.select(
+                srv,
+                conds,
+                page,
+                order,
+                null,
+                null,
+                srvAuth,
+                null,
+                null,
+                relationCondition,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                divCond
+                // srvAuth
+              ).then(res => {
+            // getpassconv().then(res=>{ //mockData
+                // console.log('分公司',res.data)
+                res = res.data
+                if(res.state == "SUCCESS"){
                     self.tolllinks = res.data.map(item => {
                         item['_editor_type'] = 'driving'
                         return item
                     })
-                    console.log('分公司1111111',res.data)
-                    this.enpointid = res.data[0].enpointid
-                    this.expointid = res.data[0].expointid
+                    this.enpointid = res.data[0].enid
+                    this.expointid = res.data[0].exid
                     this.vehicletype = res.data[0].vehicletype
                     this.vehicleid = res.data[0].vehicleid
                       this.getPassconvpath()
@@ -617,8 +710,7 @@ export default {
                     this.$message.error(JSON.stringify(res));
                     // console.log('查询收费路段 异常',res)
                 }
-              })
-            
+              }) 
         },
         async getPassconvpath(){
             // 查询所有门架
