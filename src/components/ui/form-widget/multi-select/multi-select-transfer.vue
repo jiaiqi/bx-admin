@@ -1,5 +1,5 @@
 <template>
-  <transferVue
+  <TreeTransfer
     v-if="dispLoaderV2"
     :calc-titles="calcTitles"
     :is-tree="dispLoaderV2.isTree"
@@ -9,12 +9,11 @@
     :value="value"
     @addToRight="addToRight"
     @removeFromRight="removeFromRight"
-  ></transferVue>
+  ></TreeTransfer>
 </template>
 
 <script>
-import transferVue from "./transfer.vue";
-import uniqBy from "lodash/uniqBy";
+import TreeTransfer from "./tree-transfer.vue";
 import cloneDeep from "lodash/cloneDeep";
 import difference from "lodash/difference";
 import {
@@ -25,7 +24,7 @@ import {
 } from "../utils/fk.js";
 export default {
   components: {
-    transferVue,
+    TreeTransfer,
   },
   data() {
     return {
@@ -39,17 +38,10 @@ export default {
     calcTitles() {
       return [`请选择${this.field.info.label}`, `已选${this.field.info.label}`];
     },
-    // sourceTitle() {
-    //   return `请选择${this.field.info.label}`;
-    // },
-    // targetTitle() {
-    //   return `已选${this.field.info.label}`;
-    // },
     props() {
       let props = {
         key: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
-        // checkStrictly: top?.env?.includes("health") ? false : true,
         checkStrictly: true,
         children: "children",
         isLeaf: "isLeaf",
@@ -120,10 +112,6 @@ export default {
     },
   },
   props: {
-    // value: {
-    //   type: [Array, String],
-    //   default: "",
-    // },
     formModel: {
       type: Object,
       default: () => ({}),
@@ -156,8 +144,12 @@ export default {
     },
   },
   methods: {
-    handleChange(val) {
-      this.field.model = val?.toString();
+    handleChange(val=[]) {
+      if (Array.isArray(val) && val.length) {
+        this.field.model = [...new Set(val)].toString();
+      } else {
+        this.field.model = null;
+      }
       this.$emit("change", val);
       this.$emit("blur", this.field);
       this.emitFieldValueChange();
@@ -233,7 +225,7 @@ export default {
     },
     removeFromRight(checkedNodes) {
       console.log(checkedNodes);
-      this.value = this.value.filter((item) => !checkedNodes.includes(item));
+      this.value = [...new Set(this.value.filter((item) => !checkedNodes.includes(item)))];
       this.handleChange(this.value);
     },
     needRenameLabel() {
@@ -423,16 +415,17 @@ export default {
     async loadRightData() {
       // 设置初始值
       console.log("loadRightData");
-      if (['addchildlist', 'updatechildlist'].includes(this.parentPageType) && this.getCurrentListData && typeof this.getCurrentListData === 'function') {
+      if (['addchildlist', 'updatechildlist'].includes(this.parentPageType) && this.getCurrentListData && typeof this.getCurrentListData === 'function'&&!this.oldValue.length) {
         // 子表 从内存数据中获取已选数据
         let list = this.getCurrentListData();
         if (Array.isArray(list) && list.length) {
           if (Array.isArray(this.value) && this.value.length) {
-            this.value = [...this.value, ...list.map((item) => item[this.field.info.name])]
+            const value = [...this.value, ...list.map((item) => item[this.field.info.name])]
+            this.value = [...new Set(value)];
             // this.oldValue = cloneDeep(this.value);
             // this.oldValues = cloneDeep([...this.oldValues, ...list]);
           } else {
-            this.value = list.map((item) => item[this.field.info.name]);
+            this.value = [...new Set(list.map((item) => item[this.field.info.name]))];
             this.oldValue = cloneDeep(this.value);
             this.oldValues = cloneDeep(this.getCurrentListData());
           }
@@ -478,9 +471,10 @@ export default {
         }
         return this.selectList(queryJson, app).then((response) => {
           if (response && response.data && response.data.data) {
-            this.value = response.data.data.map(
+            const value = response.data.data.map(
               (item) => item[this.field.info.name]
             );
+            this.value = [...new Set(value)];
             this.oldValue = cloneDeep(this.value);
             this.oldValues = cloneDeep(response.data.data);
             if (this.value.length && !this.dispLoaderV2.isTree) {
@@ -583,4 +577,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style
+  lang="scss"
+  scoped
+></style>

@@ -288,14 +288,13 @@ export default {
       return this.$refs.basicForm;
     },
 
-    onSubmitted2mem: function (srvvalFormMode, fields) {
-      // 检测表单中有没有字段是穿梭框
-
+    onSubmitted2mem: function (srvvalFormMode, fields, type) {
       if (typeof fields === "object") {
         const fieldList = []
         for (let i in fields) {
           fieldList.push(fields[i])
         }
+        // 检测表单中有没有字段是穿梭框
         const transferField = fieldList.find((e) => e.isTransfer === true);
         if (transferField) {
           const transferFieldRef = transferField?.editor?.$refs?.editor;
@@ -356,6 +355,7 @@ export default {
             queries = [];
           }
           if (removeValues?.serviceName && removeValues?.data?.length) {
+            this.$emit('deleteFromMem', removeValues?.data)
             const removeQuery = removeValues.data.map((item) => {
               return {
                 serviceName: removeValues.serviceName,
@@ -370,10 +370,18 @@ export default {
             });
             queries = [...queries, ...removeQuery];
           }
-          if (queries?.[0]?.data?.length) {
-            queries?.[0]?.data.forEach((item) => {
-              this.$emit("submitted2mem", item, fields);
-            });
+          if (Array.isArray(queries) && queries.length) {
+            let addValues = queries.reduce((pre, cur) => {
+              if (Array.isArray(cur.data) && cur.data.length && !cur.condition) {
+                pre = [...pre, ...cur.data]
+              }
+              return pre
+            }, [])
+            if (Array.isArray(addValues) && addValues.length) {
+              addValues.forEach((item) => {
+                this.$emit("submitted2mem", item, fields);
+              });
+            }
             return queries
           }
         }

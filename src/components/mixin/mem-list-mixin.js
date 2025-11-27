@@ -291,6 +291,9 @@ export default {
       }
     },
 
+    deleteFromMem(row){
+      this.deleteData(row)
+    },
     /**
      * 内存表格处理添加数据，当弹出add form确定关闭时调用
      * @param srvvalRow

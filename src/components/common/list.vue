@@ -795,7 +795,7 @@
         type="flex"
         class="row-bg py-2"
         justify="center"
-        v-if="showPagination && setShowPagination"
+        v-if="showPagination && setShowPagination&&!isMem()"
         v-show="!hidePagination && gridPage.total > 0 && !isDemo"
       >
         <el-pagination
@@ -840,6 +840,7 @@
         @executor-complete="onAddFormExecutorComplete"
         @form-loaded="onAddFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
+        @deleteFromMem="deleteFromMem"
         @close-dialog="closeDialog"
       >
         <template #dialog-title>
@@ -877,6 +878,7 @@
         @form-loaded="onAddChildFormLoaded"
         @executor-complete="onAddChildExecutorComplete($event)"
         @submitted2mem="onAdd2MemSubmitted"
+        @deleteFromMem="deleteFromMem"
       >
       </add>
     </el-dialog>
@@ -944,6 +946,7 @@
         @executor-complete="onAddFormExecutorComplete"
         @form-loaded="onDuplicateFormLoaded"
         @submitted2mem="onAdd2MemSubmitted"
+        @deleteFromMem="deleteFromMem"
       >
       </add>
     </el-dialog>
