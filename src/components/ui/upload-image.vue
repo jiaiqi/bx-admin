@@ -958,6 +958,8 @@ export default {
       this.setObjInfo(fileList);
       if (fileList.length === 0) {
         this.field.model = "";
+        this.uploadParams.file_no = "";
+        this.$emit("change", this.field.model);
       }
     },
     async beforeRemove(file, fileList) {
@@ -1066,7 +1068,7 @@ export default {
       if (response.id && !response.file_no) {
         return {
           ...response,
-          file_no: response.id,
+          file_no: response.id || response.file_no ,
           fileurl: response.fileurl || response.path || response.url,
           src_name: response.src_name || response.fileName || response.name
         };

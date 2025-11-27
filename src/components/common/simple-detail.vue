@@ -1,7 +1,11 @@
 /* */
 <template>
   <div>
-    <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
+    <el-alert
+      v-if="pagePrompt"
+      :closable="false"
+      :type="pagePrompt.type"
+    >
       <slot>
         <div v-html="recoverFileAddress4richText(pagePrompt.description)"></div>
       </slot>
@@ -17,7 +21,10 @@
         label-suffix=":"
         v-if="formLoaded"
       >
-        <el-row v-for="(formItems, section) in sections" :key="section">
+        <el-row
+          v-for="(formItems, section) in sections"
+          :key="section"
+        >
           <div class="el-col el-col-24 el-col-xl-24">
             <div
               class="el-form-item"
@@ -59,13 +66,19 @@
               @field-value-changed="onFieldValueChanged($event)"
               @field-history-popup="onFieldHistoryPopup($event)"
             >
-              <template #field-child-prepend class="">
+              <template
+                #field-child-prepend
+                class=""
+              >
                 <slot
                   :name="formItem.field.info.name + '-child-prepend'"
                   class="padding-bottom"
                 ></slot>
               </template>
-              <template #field-child-append class="padding-bottom">
+              <template
+                #field-child-append
+                class="padding-bottom"
+              >
                 <slot
                   :name="formItem.field.info.name + '-child-append'"
                   class="padding-bottom"
@@ -97,7 +110,10 @@
 
     <el-row v-if="!isPlatChildForm && hasActions(actions)">
       <el-card>
-        <el-col :span="24" style="text-align: center; padding: 20px">
+        <el-col
+          :span="24"
+          style="text-align: center; padding: 20px"
+        >
           <action
             v-for="item in actions"
             :info="item"
@@ -187,7 +203,11 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column width="160" prop="remark" label="说明">
+        <el-table-column
+          width="160"
+          prop="remark"
+          label="说明"
+        >
         </el-table-column>
       </el-table>
     </el-dialog>

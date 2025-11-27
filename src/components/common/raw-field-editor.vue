@@ -383,6 +383,7 @@
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
                 "
+              @change="$emit('field-value-changed', field.info.name, field)"
             >
             </upload-file>
 
@@ -394,6 +395,7 @@
               @field-value-changed="
                 $emit('field-value-changed', field.info.name, field)
                 "
+              @change="$emit('field-value-changed', field.info.name, field)"
             >
             </upload-image>
             <!-- 穿梭框 -->
@@ -1010,7 +1012,7 @@ export default {
     },
     uploadLimit() {
       const config = this.field.info?.moreConfig;
-      return config?.fileLimit || config?.limit ;
+      return config?.fileLimit || config?.limit;
     },
     updatableJson() {
       if (this.field?.info?.srvCol?.updatable_json) {
@@ -1495,7 +1497,10 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
+<style
+  scoped
+  lang="scss"
+>
 :deep(.jse-main) {
   max-height: 300px;
 }
