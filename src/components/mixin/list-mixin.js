@@ -2436,7 +2436,7 @@ export default {
           return this.selectproc(
             this.service_name,
             this.condition,
-            // page,
+            page,
             this.showPagination ? page : null,
             this.order,
             this.listType,
