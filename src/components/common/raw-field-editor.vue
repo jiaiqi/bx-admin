@@ -1,4 +1,3 @@
-/* */
 <template>
   <div
     class="raw_field_editor"
@@ -392,14 +391,12 @@
               :field="field"
               :limit="uploadLimit"
               ref="editor"
-              @field-value-changed="
-                $emit('field-value-changed', field.info.name, field)
-                "
+              @field-value-changed="$emit('field-value-changed', field.info.name, field)"
               @change="$emit('field-value-changed', field.info.name, field)"
             >
             </upload-image>
             <!-- 穿梭框 -->
-            <transfer-vue
+            <multi-select-transfer
               v-else-if="field.info.isTransfer"
               v-model="field.finderSelected"
               :disabled="getDisabled"
@@ -411,16 +408,12 @@
               :parentPageType="parentPageType"
               :getCurrentListData="getCurrentListData"
               :form-model="formModel"
-              :$srv-app="field.info.srvCol.option_list_v2 &&
-                field.info.srvCol.option_list_v2.srv_app
-                "
+              :$srv-app="srvApp"
               ref="editor"
-              @field-value-changed="
-                $emit('field-value-changed', field.info.name, field)
-                "
+              @field-value-changed="$emit('field-value-changed', field.info.name, field)"
               @blur="onBlur"
             >
-            </transfer-vue>
+            </multi-select-transfer>
             <finder
               v-else-if="field.info.editor === 'finder'"
               :disabled="getDisabled"
@@ -431,27 +424,18 @@
               :childForeignkey="childForeignkey"
               :mainformDatas="mainformDatas"
               :form-model="formModel"
-              :$srv-app="field.info.srvCol.option_list_v2 &&
-                field.info.srvCol.option_list_v2.srv_app
-                "
+              :$srv-app="srvApp"
               ref="editor"
-              @field-value-changed="
-                $emit('field-value-changed', field.info.name, field)
-                "
+              @field-value-changed="$emit('field-value-changed', field.info.name, field)"
               @blur="onBlur"
             >
             </finder>
-
             <multiFinder
               v-else-if="field.info.editor === 'multifinder'"
               :field="field"
-              :$srv-app="field.info.srvCol.option_list_v2 &&
-                field.info.srvCol.option_list_v2.srv_app
-                "
+              :$srv-app="srvApp"
               ref="editor"
-              @field-value-changed="
-                $emit('field-value-changed', field.info.name, field)
-                "
+              @field-value-changed="$emit('field-value-changed', field.info.name, field)"
               @blur="onBlur"
             >
             </multiFinder>
@@ -460,10 +444,8 @@
               v-else-if="field.info.editor === 'tree-finder'"
               ref="editor"
               :field="field"
-              :$srv-app="field.info.srvCol.option_list_v2.srv_app"
-              @field-value-changed="
-                $emit('field-value-changed', field.info.name, field)
-                "
+              :$srv-app="srvApp"
+              @field-value-changed="$emit('field-value-changed', field.info.name, field)"
             >
             </tree-finder>
 
@@ -911,7 +893,7 @@
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 import { idCardExp } from "../model/FieldInfo.js";
-import transferVue from "@/components/ui/form-widget/multi-select/index.vue";
+import multiSelectTransfer from "@/components/ui/form-widget/multi-select/multi-select-transfer.vue";
 export default {
   components: {
     // UI组件 - 异步引入
@@ -938,7 +920,7 @@ export default {
     verifyMobile: () => import("../ui/verifyMobile.vue"), // 手机验证码
     autocompleteInput: () => import("../ui/autocomplete-input.vue"), // 自动完成输入
     carNoKeyboard: () => import("../ui/car-no-keyboard.vue"), // 车牌号输入
-    transferVue: transferVue,
+    multiSelectTransfer: multiSelectTransfer,
     // () => import("../ui/form-widget/multi-select/index.vue"), // 多选穿梭框组件
 
     // 第三方库组件 - 异步引入
@@ -994,6 +976,9 @@ export default {
     };
   },
   computed: {
+    srvApp() {
+      return this.$srvApp || this.field.info.srvCol?.option_list_v2?.srv_app || this.$route.query?.srvApp || this.$route.query?.menuapp || sessionStorage.getItem("current_app");
+    },
     getJsonModel() {
       let val = this.field.model;
       try {
