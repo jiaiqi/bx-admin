@@ -803,7 +803,49 @@ export default {
     clearInterval(polling);
   },
   methods: {
-    getCurrentListData(){
+    selectable(row, index) {
+      const selection = this.selection
+      if (typeof selection === 'boolean') {
+        return selection === true
+      } else if (Array.isArray(selection)) {
+        return selection.every((item) => {
+          const colName = item.colName
+          const value = item.value
+          const ruleType = item.ruleType
+          const rowValue = row[colName]
+          let compareValue
+          if (value.value_type === 'rowData') {
+            compareValue = row[value.value_key]
+          } else if (value.value_type === 'constant') {
+            compareValue = value.value
+          }
+          if (ruleType === 'eq') {
+            return rowValue === compareValue
+          }
+        })
+      }
+      //       样例数据
+      //       {
+      // 	"selection": [
+      // 	{
+      // 		"colName": "table_name",
+      // 		"value": {
+      // 			"value_type": "rowData",
+      // 			"value_key": "table_name"
+      // 		},
+      // 		"ruleType": "eq"
+      // 	},
+      // 	{
+      // 		"colName": "table_column",
+      // 		"value": {
+      // 			"value_type": "constant",
+      // 			"value": "常量"
+      // 		},
+      // 		"ruleType": "eq"
+      // 	}]
+      // }
+    },
+    getCurrentListData() {
       return this.gridDataRun;
     },
     isDetailLink(column = "", data = {}, rowIndex) {

@@ -252,6 +252,7 @@
             label="全选"
             header-align="left"
             width="50px"
+            :selectable="selectable"
             v-if="selection && !readOnly && !isDemo"
           >
           </el-table-column>
