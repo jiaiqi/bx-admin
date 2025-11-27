@@ -162,7 +162,6 @@ import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import uniqBy from "lodash/uniqBy";
-import { options } from "less";
 export default {
   props: {
     field: {
@@ -224,7 +223,7 @@ export default {
       return objInfo
     },
     getFkJson() {
-      if (this.disabled && this.ObjInfo) {
+      if (this.disabled && this.ObjInfo?.a_save_b_obj_col) {
         let row = this.formModel
         let col = cloneDeep(this.field.info)
         col.srvcol = col?.srvCol
@@ -307,6 +306,8 @@ export default {
           }
         }
         return result;
+      } else if (this.disabled && Array.isArray(this.gridData)) {
+        return this.gridData.map(item => item.label)
       }
     },
     displayValue() {
@@ -425,6 +426,8 @@ export default {
     this.initSelected();
     if (this.disabled === true && !this.finderSelected) {
       return;
+    } else if (this.disabled && this.finderSelected) {
+      return this.loadOptionsByFinderSelected();
     }
     this.getListV2()
       .then(() => {
@@ -1024,6 +1027,29 @@ export default {
             });
             resolve(res.data.data);
           }
+        });
+      }
+    },
+    async loadOptionsByFinderSelected() {
+      let queryJson = {
+        serviceName: this.service,
+        colNames: ["*"],
+        condition: [{
+          colName: this.valueCol,
+          ruleType: "in",
+          value: this.finderSelected,
+        }],
+        page: {
+          pageNo: 1,
+          rownumber: 999,
+        },
+      };
+      const res = await this.selectList(queryJson)
+      if (res?.data?.state === "SUCCESS") {
+        this.gridData = res.data.data.map((item) => {
+          item.label = item[this.labelCol];
+          item.value = item[this.valueCol];
+          return item;
         });
       }
     },

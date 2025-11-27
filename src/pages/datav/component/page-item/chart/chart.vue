@@ -28,11 +28,44 @@ let autoPlayTimer = null;
 defineExpose({
   chartObj,
 });
+
+const emit = defineEmits(['click-chart']);
 onMounted(() => {
   if (!domRef.value) return;
 
   // 初始化
   chartObj.value = initChart(domRef.value);
+
+  chartObj.value.on('click', function (params) {
+    console.log('点击图表-params:', params);
+    // console.log('echart点击事件-点击的图表类型:',params.componentType);
+    // console.log('echart点击事件-点击的图表子类型:',params.componentSubType);
+    // console.log('echart点击事件-点击的图表-名称:', params.name);
+    // console.log('echart点击事件-点击的图表-数据:',params.data);
+
+    if (params.componentType === 'series') {
+      let emitObj = {
+        name: params.name,
+        value: params.data.value,
+        dataIndex: params.dataIndex,
+        type: params.componentType,
+        event: params.event.event,
+      }
+      // console.log('echart点击事件-点击的图表-数据-系列索引:',params.seriesIndex);
+      // console.log('echart点击事件-点击的图表-数据-系列名称:',params.seriesName);
+      if (params.seriesType === 'scatter') {
+        // console.log('echart点击事件-点击的图表-数据-系列-散点索引:', params.dataIndex);
+        // console.log('echart点击事件-点击的图表-数据-系列-散点-数据:', params.data.value[2]);
+        emitObj.value = params.data.value[2];
+      } else if (params.seriesType === 'map') {
+        // console.log('echart点击事件-点击的图表-数据-系列-地图-索引:', params.dataIndex);
+        // console.log('echart点击事件-点击的图表-数据-系列-地图-数据:', params.data.value);
+        emitObj.value = params.data.value;
+        return
+      }
+      emit('click-chart', emitObj);
+    }
+  });
 
   objResizeObserver = new ResizeObserver(function (entries) {
     const entry = entries[0];

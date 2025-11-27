@@ -1044,6 +1044,7 @@
           v-show="appvalResult > 0"
           @list-loaded="onRecordListLoaded"
           list-type="procdetaillist"
+          storageType="db"
           :default-order="[{ colName: 'id', orderType: 'desc' }]"
           :default-condition="record_default_condition"
         >
@@ -1055,6 +1056,7 @@
           v-if="resultShow"
           v-show="appvalResult > 0"
           @list-loaded="onRecordListLoaded"
+          storageType="db"
           service="srvprocess_result_select"
           list-type="procdetaillist"
           :default-order="[{ colName: 'id', orderType: 'desc' }]"

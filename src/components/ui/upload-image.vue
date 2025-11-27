@@ -8,7 +8,7 @@
           :key="index"
         >
           <el-image
-          v-if="o.file_type === 'jpg' || o.file_type === 'png' || o.file_type === 'jpeg'"
+            v-if="o.file_type === 'jpg' || o.file_type === 'png' || o.file_type === 'jpeg'"
             :src="o.url"
             style="width: 150px; height: 150px"
             fit="cover"
@@ -29,7 +29,7 @@
             </div>
           </el-image>
           <video
-          v-else-if="o.file_type === 'mp4' || o.file_type === 'avi' || o.file_type === 'mov'"
+            v-else-if="o.file_type === 'mp4' || o.file_type === 'avi' || o.file_type === 'mov'"
             :src="o.url"
             style="width: 150px; height: 150px"
             fit="cover"
@@ -77,7 +77,7 @@
       :initial-index="currentImageIndex"
       style="display: none"
     ></el-image>
-    
+
     <!-- 视频预览模态框 -->
     <el-dialog
       title="视频预览"
@@ -121,23 +121,33 @@
                 alt=""
                 class="el-upload-list__item-thumbnail"
               />
-              <i class="el-icon-close"></i>
-              <span class="el-upload-list__item-actions">
-                <span
-                  class="el-upload-list__item-preview"
-                  title="预览"
-                  @click="handlePreview(item, index)"
-                >
-                  <i class="el-icon-zoom-in"></i>
-                </span>
-                <span
+              <span
+                class="el-upload-list__item-actions"
+                style=" width: 100%; height: 100%;"
+              >
+                <!-- 删除按钮：绝对定位在右上方 -->
+                <el-button
                   v-if="!disabled"
                   class="el-upload-list__item-delete"
+                  size="mini"
+                  type="danger"
+                  circle
+                  icon="el-icon-delete"
                   title="删除"
-                  @click="handleRemoveFileDetail(item, fileLists)"
-                >
-                  <i class="el-icon-delete"></i>
-                </span>
+                  style="position: absolute; top: 5px; right: 5px; z-index: 10; width: 28px; height: 28px; padding: 0;font-size: 14px;background: #F56C6C;color: #fff;"
+                  @click.stop="handleRemoveFileDetail(item, fileLists)"
+                ></el-button>
+                <!-- 预览按钮：居中显示 -->
+                <el-button
+                  class="el-upload-list__item-preview"
+                  size="mini"
+                  type="primary"
+                  circle
+                  icon="el-icon-zoom-in"
+                  title="预览"
+                  style="margin: 0;position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 28px; height: 28px; padding: 0;"
+                  @click.stop="handlePreview(item, index)"
+                ></el-button>
               </span>
             </li>
           </transition-group>
@@ -269,7 +279,7 @@ export default {
     },
     limit: {
       type: Number,
-      default: 100,
+      default: Number.MAX_SAFE_INTEGER,
     },
     disabled: {
       type: Boolean,
@@ -313,7 +323,7 @@ export default {
       if (fileSize) {
         msgArr.push(`大小不超过${fileSize}MB`)
       }
-      if (this.limit) {
+      if (this.limit && this.limit !== Number.MAX_SAFE_INTEGER) {
         msgArr.push(`最多上传${this.limit}张`)
       }
       return msgArr.join("，")
@@ -756,6 +766,11 @@ export default {
     },
     // 删除
     async handleRemoveFileDetail(file, fileList, index) {
+      const confirm = await this.$confirm("确认删除吗？", "删除确认", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
       const isDelete = await this.beforeRemove(file, fileList);
       if (isDelete) {
         this.fileLists.splice(index, 1);

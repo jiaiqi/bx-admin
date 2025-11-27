@@ -22,11 +22,11 @@
       </div>
       
       <!-- 小三角箭头 -->
-      <div
+      <!-- <div
         class="card-popup-arrow"
         :class="arrowClass"
         :style="arrowStyle"
-      ></div>
+      ></div> -->
 
       <card-group-cell
         :page-item="{}"
@@ -51,6 +51,10 @@ const props = defineProps({
     type: Object,
     default: () => { },
   },
+  clickEvent: {
+    type: Object,
+    default: () => { },
+  },
   clickedElement: {
     type: [Element, null],
     default: null,
@@ -61,7 +65,7 @@ const props = defineProps({
   },
 });
 
-const { cardUnitJson, data, clickedElement, placement } = props;
+const { cardUnitJson, data, clickedElement, clickEvent, placement } = props;
 const popupContainer = ref(null);
 const forceUpdate = ref(0);
 
@@ -73,6 +77,31 @@ const updatePosition = () => {
   forceUpdate.value++;
 };
 
+// 获取点击位置的坐标信息
+const getClickPosition = () => {
+  // 优先使用clickEvent
+  if (clickEvent && (clickEvent.clientX !== undefined || clickEvent.pageX !== undefined)) {
+    return {
+      x: clickEvent.clientX || clickEvent.pageX,
+      y: clickEvent.clientY || clickEvent.pageY,
+      type: 'event'
+    };
+  }
+  
+  // 回退到使用clickedElement
+  if (clickedElement) {
+    const rect = clickedElement.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      type: 'element',
+      rect
+    };
+  }
+  
+  return null;
+};
+
 // 计算箭头的CSS类名
 const arrowClass = computed(() => {
   return `arrow-${placement}`;
@@ -80,7 +109,10 @@ const arrowClass = computed(() => {
 
 // 计算箭头的样式
 const arrowStyle = computed(() => {
-  if (!clickedElement) {
+  const clickPos = getClickPosition();
+  
+  // 如果没有位置信息，则不显示箭头
+  if (!clickPos) {
     return { display: 'none' };
   }
 
@@ -212,20 +244,22 @@ const popupStyle = computed(() => {
   // 触发响应式更新
   forceUpdate.value;
 
-  if (!clickedElement) {
+  const clickPos = getClickPosition();
+  console.log('clickPos:', clickPos);
+  
+  // 如果没有任何位置信息，则居中显示
+  if (!clickPos) {
     return {
       position: 'fixed',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      backgroundColor: '#fff',
+      // backgroundColor: '#fff',
       borderRadius: '8px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+      // boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
       zIndex: 10000,
     };
   }
-
-  const rect = clickedElement.getBoundingClientRect();
 
   let top = 0;
   let left = 0;
@@ -234,77 +268,156 @@ const popupStyle = computed(() => {
   // 箭头尺寸
   const arrowSize = 8;
 
-  // 根据placement计算位置（使用fixed定位，直接使用getBoundingClientRect的值）
-  switch (placement) {
-    case '全屏居中':
-      top = window.innerHeight / 2;
-      left = window.innerWidth / 2;
-      transform = 'translate(-50%, -50%)';
-      break;
-    case '上':
-      top = rect.top - arrowSize;
-      left = rect.left + rect.width / 2;
-      transform = 'translate(-50%, -100%)';
-      break;
-    case '上左':
-      top = rect.top - arrowSize;
-      left = rect.left;
-      transform = 'translate(0, -100%)';
-      break;
-    case '上右':
-      top = rect.top - arrowSize;
-      left = rect.right;
-      transform = 'translate(-100%, -100%)';
-      break;
-    case '下':
-      top = rect.bottom + arrowSize;
-      left = rect.left + rect.width / 2;
-      transform = 'translate(-50%, 0)';
-      break;
-    case '下左':
-      top = rect.bottom + arrowSize;
-      left = rect.left;
-      transform = 'translate(0, 0)';
-      break;
-    case '下右':
-      top = rect.bottom + arrowSize;
-      left = rect.right;
-      transform = 'translate(-100%, 0)';
-      break;
-    case '左':
-      top = rect.top + rect.height / 2;
-      left = rect.left - arrowSize;
-      transform = 'translate(-100%, -50%)';
-      break;
-    case '左上':
-      top = rect.top;
-      left = rect.left - arrowSize;
-      transform = 'translate(-100%, 0)';
-      break;
-    case '左下':
-      top = rect.bottom;
-      left = rect.left - arrowSize;
-      transform = 'translate(-100%, -100%)';
-      break;
-    case '右':
-      top = rect.top + rect.height / 2;
-      left = rect.right + arrowSize;
-      transform = 'translate(0, -50%)';
-      break;
-    case '右上':
-      top = rect.top;
-      left = rect.right + arrowSize;
-      transform = 'translate(0, 0)';
-      break;
-    case '右下':
-      top = rect.bottom;
-      left = rect.right + arrowSize;
-      transform = 'translate(0, -100%)';
-      break;
-    default:
-      top = rect.bottom + arrowSize;
-      left = rect.left + rect.width / 2;
-      transform = 'translate(-50%, 0)';
+  // 如果是事件坐标，使用事件位置计算
+  if (clickPos.type === 'event') {
+    const { x, y } = clickPos;
+    
+    switch (placement) {
+      case '全屏居中':
+        top = window.innerHeight / 2;
+        left = window.innerWidth / 2;
+        transform = 'translate(-50%, -50%)';
+        break;
+      case '上':
+        top = y - arrowSize;
+        left = x;
+        transform = 'translate(-50%, -100%)';
+        break;
+      case '上左':
+        top = y - arrowSize;
+        left = x;
+        transform = 'translate(0, -100%)';
+        break;
+      case '上右':
+        top = y - arrowSize;
+        left = x;
+        transform = 'translate(-100%, -100%)';
+        break;
+      case '下':
+        top = y + arrowSize;
+        left = x;
+        transform = 'translate(-50%, 0)';
+        break;
+      case '下左':
+        top = y + arrowSize;
+        left = x;
+        transform = 'translate(0, 0)';
+        break;
+      case '下右':
+        top = y + arrowSize;
+        left = x;
+        transform = 'translate(-100%, 0)';
+        break;
+      case '左':
+        top = y;
+        left = x - arrowSize;
+        transform = 'translate(-100%, -50%)';
+        break;
+      case '左上':
+        top = y;
+        left = x - arrowSize;
+        transform = 'translate(-100%, 0)';
+        break;
+      case '左下':
+        top = y;
+        left = x - arrowSize;
+        transform = 'translate(-100%, -100%)';
+        break;
+      case '右':
+        top = y;
+        left = x + arrowSize;
+        transform = 'translate(0, -50%)';
+        break;
+      case '右上':
+        top = y;
+        left = x + arrowSize;
+        transform = 'translate(0, 0)';
+        break;
+      case '右下':
+        top = y;
+        left = x + arrowSize;
+        transform = 'translate(0, -100%)';
+        break;
+      default:
+        top = y + arrowSize;
+        left = x;
+        transform = 'translate(-50%, 0)';
+    }
+  } else {
+    // 如果是元素坐标，使用原来的逻辑
+    const rect = clickPos.rect;
+
+    switch (placement) {
+      case '全屏居中':
+        top = window.innerHeight / 2;
+        left = window.innerWidth / 2;
+        transform = 'translate(-50%, -50%)';
+        break;
+      case '上':
+        top = rect.top - arrowSize;
+        left = rect.left + rect.width / 2;
+        transform = 'translate(-50%, -100%)';
+        break;
+      case '上左':
+        top = rect.top - arrowSize;
+        left = rect.left;
+        transform = 'translate(0, -100%)';
+        break;
+      case '上右':
+        top = rect.top - arrowSize;
+        left = rect.right;
+        transform = 'translate(-100%, -100%)';
+        break;
+      case '下':
+        top = rect.bottom + arrowSize;
+        left = rect.left + rect.width / 2;
+        transform = 'translate(-50%, 0)';
+        break;
+      case '下左':
+        top = rect.bottom + arrowSize;
+        left = rect.left;
+        transform = 'translate(0, 0)';
+        break;
+      case '下右':
+        top = rect.bottom + arrowSize;
+        left = rect.right;
+        transform = 'translate(-100%, 0)';
+        break;
+      case '左':
+        top = rect.top + rect.height / 2;
+        left = rect.left - arrowSize;
+        transform = 'translate(-100%, -50%)';
+        break;
+      case '左上':
+        top = rect.top;
+        left = rect.left - arrowSize;
+        transform = 'translate(-100%, 0)';
+        break;
+      case '左下':
+        top = rect.bottom;
+        left = rect.left - arrowSize;
+        transform = 'translate(-100%, -100%)';
+        break;
+      case '右':
+        top = rect.top + rect.height / 2;
+        left = rect.right + arrowSize;
+        transform = 'translate(0, -50%)';
+        break;
+      case '右上':
+        top = rect.top;
+        left = rect.right + arrowSize;
+        transform = 'translate(0, 0)';
+        break;
+      case '右下':
+        top = rect.bottom;
+        left = rect.right + arrowSize;
+        transform = 'translate(0, -100%)';
+        break;
+      default:
+        top = rect.bottom + arrowSize;
+        left = rect.left + rect.width / 2;
+        transform = 'translate(-50%, 0)';
+    }
   }
 
   const baseStyle = {
@@ -312,9 +425,9 @@ const popupStyle = computed(() => {
     top: `${top}px`,
     left: `${left}px`,
     transform,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    // boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     zIndex: 10000,
   };
 

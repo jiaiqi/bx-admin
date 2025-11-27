@@ -211,9 +211,7 @@
           ></card-cell-part>
         </template>
       </div>
-      <template
-        v-else-if="getSubJson(cellItem) && getSubJson(cellItem).length > 0"
-      >
+      <template v-else-if="getSubJson(cellItem) && getSubJson(cellItem).length > 0">
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
           <card-cell-part
             :cellItem="subCardPart"
@@ -276,7 +274,7 @@ import {
 } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
-import cardPopup from "../card-group/card-popup.vue";
+// import cardPopup from "../card-group/card-popup.vue";
 import { getFilePath } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
 // 节流
@@ -303,7 +301,7 @@ export default {
     LiquidFillChart,
     qrCode,
     HlsplayerVideo,
-    cardPopup,
+    cardPopup: () => import("../card-group/card-popup.vue"),
     weather,
   },
   data() {
@@ -823,9 +821,7 @@ export default {
         if (this.loginUser && this.loginUser[key]) {
           val = this.loginUser[key] || val || "";
         }
-        return val;
-      }
-      if (item && itemData && !!map) {
+      } else if (item && itemData && !!map) {
         let data = itemData;
         let optionsType = "";
         if (item.hasOwnProperty("sys_fun") && item?.sys_fun) {
@@ -973,6 +969,46 @@ export default {
           val = 0;
         }
         return parseFloat(val);
+      }
+      if (val && typeof val === 'string' && this.cellItem?.more_options?.includes('中间4位脱敏')) {
+        const digits = val.match(/\d/g);
+        if (digits && digits.length >= 4) {
+          const totalDigits = digits.length;
+          
+          if (totalDigits === 11) {
+            // 11位数字：使用特定正则表达式脱敏
+            val = val.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+          } else if (totalDigits > 6) {
+            // 大于6位且非11位数字：按1/3-1/3-1/3比例脱敏
+            let digitIndex = 0;
+            val = val.replace(/\d/g, (match) => {
+              const position = digitIndex++;
+              let result = match;
+              
+              const prefixDigits = Math.ceil(totalDigits / 3);
+              const suffixDigits = Math.ceil(totalDigits / 3);
+              
+              if (position >= prefixDigits && position < totalDigits - suffixDigits) {
+                result = '*';
+              }
+              
+              return result;
+            });
+          } else {
+            // 4-6位数字：保留首尾，中间脱敏
+            let digitIndex = 0;
+            val = val.replace(/\d/g, (match) => {
+              const position = digitIndex++;
+              let result = match;
+              
+              if (position > 0 && position < totalDigits - 1) {
+                result = '*';
+              }
+              
+              return result;
+            });
+          }
+        }
       }
       return val;
     },
@@ -1273,8 +1309,7 @@ export default {
         .map((file, index) => `${index + 1}. ${file.src_name}`)
         .join("\n");
       this.$prompt(
-        `请选择要${
-          action === "download" ? "下载" : "预览"
+        `请选择要${action === "download" ? "下载" : "预览"
         }的文件序号:\n${fileNames}`,
         "文件选择",
         {
@@ -1307,9 +1342,8 @@ export default {
       } else if (url?.indexOf("data:image") === 0) {
         return url;
       } else {
-        return `${
-          this.serviceApi().downloadFile
-        }${url}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+        return `${this.serviceApi().downloadFile
+          }${url}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
       }
     },
     async getFiles(no, size) {
@@ -1442,7 +1476,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 [class^="bx-cell-"] {
   &.cursor-pointer {
     &:hover {
@@ -1512,7 +1549,9 @@ export default {
   // background-color: rgba(0, 0, 0, 0.1);
   pointer-events: auto;
 }
+
 ::v-deep .bx-cell-rich-text {
+
   img,
   svg,
   video,
@@ -1523,10 +1562,17 @@ export default {
   object {
     display: inline-block;
   }
-  .w-e-text-container blockquote, .w-e-text-container li, .w-e-text-container p, .w-e-text-container td, .w-e-text-container th, .w-e-toolbar *{
+
+  .w-e-text-container blockquote,
+  .w-e-text-container li,
+  .w-e-text-container p,
+  .w-e-text-container td,
+  .w-e-text-container th,
+  .w-e-toolbar * {
     line-height: 1.5;
   }
-  div[data-w-e-type="video"]{
+
+  div[data-w-e-type="video"] {
     text-align: center;
   }
 }
