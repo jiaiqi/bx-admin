@@ -335,14 +335,21 @@ export default {
       return this.field.model && this.field.model.startsWith("http");
     },
     // 计算所有图片的预览URL列表
-    previewSrcList() {
-      return this.fileLists.map(file => file.url);
-    },
+    // previewSrcList() {
+    //    let arr =[]
+    //   this.fileLists.forEach((file, index) => {
+    //     if(file.file_type ==='jpg' || file.file_type ==='png' || file.file_type ==='jpeg'){
+    //       arr.push(file.url)
+    //     }
+    //   });
+    //   return arr
+    // },
   },
   data() {
     return {
       showFilePicker: false,
       fileLists: [],
+      previewSrcList:[],
       fileLength: 0,
       currentImageIndex: 0,
       showVideoPreview: false,
@@ -1133,7 +1140,8 @@ export default {
     handlePreview(image, index) {
       if (image.url) {
         if (image.file_type === 'jpg' || image.file_type === 'png' || image.file_type === 'jpeg') {
-          this.currentImageIndex = index;
+          this.previewSrcList = []
+          this.previewSrcList.push(image.url)
           this.$refs.previewImage.showViewer = true;
         } else if (image.file_type === 'mp4' || image.file_type === 'avi' || image.file_type === 'mov') {
           this.previewVideoUrl = image.url;
