@@ -123,7 +123,7 @@
               :form-model="formModel"
               v-show="
                 contentField.info.readonly
-                  ? contentField.info.srvCol.in_detail == 1
+                  ? contentField.info.srvCol.in_detail == 1 || contentField.evalXIf()
                   : contentField.info.bodyVisible
               "
               @field-value-changed="$emit('field-value-changed', $event)"

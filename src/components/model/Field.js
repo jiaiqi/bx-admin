@@ -577,6 +577,9 @@ export class Field {
   }
 
   evalVisible() {
+    if(this.info.xIf){
+      return this.evalXIf();
+    }
     return this.evalXIf() && this.evalVisibleExpr();
   }
 
