@@ -335,21 +335,18 @@ export default {
       return this.field.model && this.field.model.startsWith("http");
     },
     // 计算所有图片的预览URL列表
-    // previewSrcList() {
-    //    let arr =[]
-    //   this.fileLists.forEach((file, index) => {
-    //     if(file.file_type ==='jpg' || file.file_type ==='png' || file.file_type ==='jpeg'){
-    //       arr.push(file.url)
-    //     }
-    //   });
-    //   return arr
-    // },
+    previewSrcList() {
+      // 只返回图片类型文件的URL
+      return this.fileLists
+        .filter(file => ['jpg', 'png', 'jpeg'].includes(file.file_type))
+        .map(file => file.url);
+    },
   },
   data() {
     return {
       showFilePicker: false,
       fileLists: [],
-      previewSrcList:[],
+      // previewSrcList:[],
       fileLength: 0,
       currentImageIndex: 0,
       showVideoPreview: false,
@@ -827,7 +824,6 @@ export default {
             _thumbnail: this.field.model,
             name: '外部图片'
           });
-          console.log(this.fileLists, 3333333333);
         }
       } else {
         this.isEdit = false;
@@ -843,7 +839,6 @@ export default {
           _thumbnail: this.field.model,
           name: '外部图片'
         });
-        console.log(this.fileLists, 3333333333);
         return;
       }
       this.selectFileList(this.field.model).then((response) => {
@@ -854,7 +849,6 @@ export default {
           file.url = this.getFileUrl(response.body.data[i].fileurl);
           file._thumbnail = this.getImagePath(file.url, 100);
           this.fileLists.push(file);
-          console.log(this.fileLists, 3333333333);
         }
       });
     },
@@ -1141,11 +1135,16 @@ export default {
     // 处理图片预览
     handlePreview(image, index) {
       if (image.url) {
-        if (image.file_type === 'jpg' || image.file_type === 'png' || image.file_type === 'jpeg') {
-          this.previewSrcList = []
-          this.previewSrcList.push(image.url)
+        if (['jpg', 'png', 'jpeg'].includes(image.file_type)) {
+          // 计算该图片在纯图片列表中的索引
+          const imageIndex = this.fileLists
+            .slice(0, index)
+            .filter(file => ['jpg', 'png', 'jpeg'].includes(file.file_type))
+            .length;
+          
+          this.currentImageIndex = imageIndex;
           this.$refs.previewImage.showViewer = true;
-        } else if (image.file_type === 'mp4' || image.file_type === 'avi' || image.file_type === 'mov') {
+        } else if (['mp4', 'avi', 'mov'].includes(image.file_type)) {
           this.previewVideoUrl = image.url;
           this.showVideoPreview = true;
         }
