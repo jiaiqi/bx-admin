@@ -977,7 +977,7 @@ export default {
   },
   computed: {
     srvApp() {
-      return this.$srvApp || this.field.info.srvCol?.option_list_v2?.srv_app || this.$route.query?.srvApp || this.$route.query?.menuapp || sessionStorage.getItem("current_app");
+      return this.$srvApp || this.field.info.srvCol?.option_list_v2?.srv_app || this.$route?.query?.srvApp || this.$route?.query?.menuapp || sessionStorage.getItem("current_app");
     },
     getJsonModel() {
       let val = this.field.model;
