@@ -350,14 +350,6 @@ export default {
   mounted() {
     this.initUploadConfig();
     this.initSplitUploadConfig();
-
-    // 优先从服务器加载数据，如果有配置服务名称
-    // if (this.serviceName) {
-    //   this.loadAllImagesFromServer();
-    // } else {
-    //   // 否则从本地数据加载
-    //   this.loadExistingImages();
-    // }
   },
 
   methods: {
@@ -366,37 +358,18 @@ export default {
     },
     // 初始化动态字段名
     initFormModelFields() {
-      // 从field配置中获取动态字段名
-      if (this.field && this.field.info && this.field.info.srvCol) {
-        const srvCol = this.field.info.srvCol;
-
-        // 根据srvCol配置动态设置字段名
+      if (this.field?.info?.srvCol) {
         this.formModel = {
           ...this.formModel,
           [this.frontPhotoColumn]: "",
           [this.backPhotoColumn]: "",
         };
-
-        // 设置关联字段
-        // if (srvCol.relatedCol) {
-        //   this.formModel[srvCol.relatedCol] = this.currentSelected?.id || this.mainformDatas?.id || '';
-        // }
       }
-
-      // 确保基本字段存在
-      // if (!this.formModel.tenant_no && this.mainformDatas?.tenant_no) {
-      //   this.formModel.tenant_no = this.mainformDatas.tenant_no;
-      // }
-      // if (!this.formModel.owner_no && this.mainformDatas?.owner_no) {
-      //   this.formModel.owner_no = this.mainformDatas.owner_no;
-      // }
     },
     async insertRecord() {
       try {
-        // 设置保存状态
         this.isRecordSaving = true;
 
-        // 插入身份证正反面记录
         const url = `/${this.srvApp}/operate/srvsys_type_idcard_add`;
         const req = [
           {
@@ -405,11 +378,7 @@ export default {
               this.serviceName?.replace("_select", "_add") ||
               "srvsys_type_idcard_add",
             condition: [],
-            data: [
-              {
-                ...this.formModel,
-              },
-            ],
+            data: [{ ...this.formModel }],
           },
         ];
 
@@ -425,13 +394,11 @@ export default {
           const respData =
             res.data.response.length > 0 &&
             res.data.response[0].response?.effect_data?.[0];
-          if (respData && respData.rec_no) {
-            // 得到记录编号
+          if (respData?.rec_no) {
             this.formModel.rec_no = respData.rec_no;
             this.recordSaved = true;
 
-            // 显示成功消息
-            Message.success("身份证信息保存成功！");
+            Message.success("身份证信息保存成功!");
 
             this.$emit("input", respData.rec_no);
             this.$emit("on-selected", respData);
@@ -465,10 +432,6 @@ export default {
 
     // 初始化分片上传配置
     initSplitUploadConfig() {
-      // 确保使用大文件上传混入的功能
-      if (typeof this.initBigFileUpload === "function") {
-        this.initBigFileUpload();
-      }
       // 设置分片大小和其他配置参数
       this.chunkSize = 1 * 1024 * 1024; // 默认1MB
       this.limitSize = 20; // 默认超过20MB使用分片上传
@@ -689,90 +652,53 @@ export default {
 
     // 统一设置上传状态
     setUploadingState(type, isUploading) {
-      if (type === "front") {
-        this.frontUploading = isUploading;
-      } else {
-        this.backUploading = isUploading;
-      }
+      this.updateImageInfo(type, { uploading: isUploading });
     },
 
     // 统一设置错误状态
     setErrorState(type, error) {
-      if (type === "front") {
-        this.frontError = error;
-        this.frontUploading = false;
-      } else {
-        this.backError = error;
-        this.backUploading = false;
-      }
+      this.updateImageInfo(type, { 
+        error, 
+        uploading: false, 
+        dragOver: false 
+      });
       this.uploadProgress = 0;
-      this.clearDragOverState(type);
     },
 
     // 清除拖拽状态
     clearDragOverState(type) {
-      if (type === "front") {
-        this.frontDragOver = false;
-      } else {
-        this.backDragOver = false;
-      }
-    },
-
-    // 统一获取图片信息
-    getImageInfo(type) {
-      if (type === "front") {
-        return {
-          url: this.frontImageUrl,
-          file_no: this.frontImageFileNo,
-          uploading: this.frontUploading,
-          error: this.frontError,
-          dragOver: this.frontDragOver,
-        };
-      } else {
-        return {
-          url: this.backImageUrl,
-          file_no: this.backImageFileNo,
-          uploading: this.backUploading,
-          error: this.backError,
-          dragOver: this.backDragOver,
-        };
-      }
+      this.updateImageInfo(type, { dragOver: false });
     },
 
     // 批量更新图片信息
     updateImageInfo(type, data) {
       const key = type === "front" ? "front" : "back";
-      if(data.data && typeof data.data === 'object'){
-        this.formModel[`${key}_json`] = JSON.stringify(data.data);
-      }
-      if (data.url !== undefined) {
-        this[`${key}ImageUrl`] = data.url;
-      }
-      if (data.file_no !== undefined) {
-        this[`${key}ImageFileNo`] = data.file_no;
-      }
-      if (data.uploading !== undefined) {
-        this[`${key}Uploading`] = data.uploading;
-      }
-      if (data.error !== undefined) {
-        this[`${key}Error`] = data.error;
-      }
-      if (data.dragOver !== undefined) {
-        this[`${key}DragOver`] = data.dragOver;
-      }
+      const fields = {
+        data: `${key}_json`,
+        url: `${key}ImageUrl`,
+        file_no: `${key}ImageFileNo`,
+        uploading: `${key}Uploading`,
+        error: `${key}Error`,
+        dragOver: `${key}DragOver`
+      };
+      
+      Object.keys(data).forEach(dataKey => {
+        if (dataKey === 'data' && typeof data.data === 'object') {
+          this.formModel[fields.data] = JSON.stringify(data.data);
+        } else if (fields[dataKey]) {
+          this[fields[dataKey]] = data[dataKey];
+        }
+      });
     },
 
     // 文件验证
     validateFile(file, type) {
-      const isValidType = this.allowedTypes.includes(file.type.split("/")[1]);
+      const fileExtension = file.type.split("/")[1];
+      const isValidType = this.allowedTypes.includes(fileExtension);
       const isLtMaxSize = file.size / 1024 / 1024 < this.maxSize;
+      
       if (!isValidType) {
-        const typeNames = this.allowedTypes
-          .map((type) => {
-            const match = type.match(/\/(\w+)$/);
-            return match ? match[1].toUpperCase() : type;
-          })
-          .join("、");
+        const typeNames = this.allowedTypes.map(t => t.toUpperCase()).join("、");
         throw new Error(`只能上传 ${typeNames} 格式的图片!`);
       }
       if (!isLtMaxSize) {
@@ -782,18 +708,8 @@ export default {
 
     // 显示上传状态
     showUploadingState(type) {
-      if (type === "front") {
-        this.frontUploading = true;
-        this.frontError = "";
-      } else {
-        this.backUploading = true;
-        this.backError = "";
-      }
-
-      // 重置进度
+      this.updateImageInfo(type, { uploading: true, error: "" });
       this.uploadProgress = 0;
-
-      // 触发上传前事件
       this.$emit("before-upload", { type, file: null });
     },
 
@@ -806,19 +722,10 @@ export default {
 
     // 显示图片预览
     showImagePreview(file, type) {
-      // 如果是真实上传的图片，使用返回的URL
-      // 如果是分片上传，在成功回调中处理
-      // 这里主要是为了立即显示预览
-
-      // 检查是否是blob URL（分片上传返回的）
       if (file instanceof File) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          if (type === "front") {
-            this.frontImageUrl = e.target.result;
-          } else {
-            this.backImageUrl = e.target.result;
-          }
+          this.updateImageInfo(type, { url: e.target.result });
         };
         reader.readAsDataURL(file);
       }
@@ -866,16 +773,9 @@ export default {
 
     // 显示错误信息
     showError(type, message) {
-      // 使用统一方法设置错误状态
       this.setErrorState(type, message);
-
       Message.error(message);
-
-      // 触发上传失败事件
-      this.$emit("upload-error", {
-        type,
-        error: message,
-      });
+      this.$emit("upload-error", { type, error: message });
     },
     async deleteImage(fileurl) {
       const url = `/file/delete`;
@@ -891,6 +791,8 @@ export default {
     },
     // 移除图片
     async removeImage(type) {
+      const fileurl = type === "front" ? this.frontImageUrl : this.backImageUrl;
+      
       // 使用统一方法清除图片信息
       this.updateImageInfo(type, {
         data: {},
@@ -910,7 +812,7 @@ export default {
       if (this.$refs[inputRef]) {
         this.$refs[inputRef].value = "";
       }
-      const fileurl = type === "front" ? this.frontImageUrl : this.backImageUrl;
+      
       await this.deleteImage(fileurl);
       const typeName = type === "front" ? "正面" : "反面";
       Message.info(`已删除身份证${typeName}图片`);
@@ -918,162 +820,12 @@ export default {
       this.$emit("image-removed", { type });
 
       // 触发清除事件
-      if (this.frontImageUrl === "" && this.backImageUrl === "") {
+      if (!this.frontImageUrl && !this.backImageUrl) {
         this.$emit("images-cleared");
       }
     },
 
-    // 拖拽事件处理
-    handleDragEnter(event, type) {
-      event.preventDefault();
-      if (this.disabled) return;
 
-      this.updateImageInfo(type, { dragOver: true });
-    },
-
-    handleDragLeave(event, type) {
-      if (this.disabled) return;
-      // 确保离开的是上传区域，而不是进入子元素
-      const uploaderRef = type === "front" ? "frontUploader" : "backUploader";
-      if (!this.$refs[uploaderRef].contains(event.relatedTarget)) {
-        this.clearDragOverState(type);
-      }
-    },
-
-    // 兼容性方法（保留原有方法用于API调用）
-    beforeUploadFront(file) {
-      return this.beforeUpload(file, "front");
-    },
-
-    beforeUploadBack(file) {
-      return this.beforeUpload(file, "back");
-    },
-
-    beforeUpload(file, type) {
-      // 验证文件类型
-      const isValidType = this.allowedTypes.includes(file.type);
-      const isLtMaxSize = file.size / 1024 / 1024 < this.maxSize;
-
-      if (!isValidType) {
-        const typeNames = this.allowedTypes
-          .map((type) => {
-            const match = type.match(/\/(\w+)$/);
-            return match ? match[1].toUpperCase() : type;
-          })
-          .join("、");
-        Message.error(`只能上传 ${typeNames} 格式的图片!`);
-        return false;
-      }
-      if (!isLtMaxSize) {
-        Message.error(`上传图片大小不能超过 ${this.maxSize}MB!`);
-        return false;
-      }
-
-      // 添加上传数据
-      this.uploadData.type = type;
-
-      // 触发上传前事件
-      this.$emit("before-upload", { type, file });
-
-      return true;
-    },
-
-    handleSuccessFront(response, file, fileList) {
-      this.handleSuccess(response, file, fileList, "front");
-    },
-
-    handleSuccessBack(response, file, fileList) {
-      this.handleSuccess(response, file, fileList, "back");
-    },
-
-    handleSuccess(response, file, fileList, type) {
-      if (response && response.code === 200) {
-        const data = response.data;
-
-        // 使用统一方法更新图片信息
-        this.updateImageInfo(type, {
-          data: data,
-          url: data.fileurl,
-          file_no: data.file_no,
-          uploading: false,
-          error: "",
-        });
-
-        Message.success(`身份证${type === "front" ? "正面" : "反面"}上传成功`);
-
-        // 触发上传成功事件
-        this.$emit("upload-success", {
-          type,
-          url: data.url,
-          id: data.id,
-          file: file,
-          fileList: fileList,
-        });
-
-        // 如果配置了自动保存，则保存到服务器
-        if (this.autoSave) {
-          this.saveToServer(type, data);
-        }
-
-        // 检查是否已上传完两张图片
-        this.checkCompletion();
-      } else {
-        Message.error(`上传失败: ${response?.message || "未知错误"}`);
-        // 触发上传失败事件
-        this.$emit("upload-error", {
-          type,
-          error: response?.message || "未知错误",
-          file: file,
-        });
-      }
-    },
-
-    handleError(err, file, fileList, type) {
-      console.error("上传失败:", err);
-
-      // 使用统一方法设置错误状态
-      this.setErrorState(type, `上传失败: ${err.message || "网络错误"}`);
-
-      // 触发上传错误事件
-      this.$emit("upload-error", {
-        type,
-        error: err.message || "网络错误",
-        file: file,
-        fileList: fileList,
-      });
-
-      // 检查是否已上传完两张图片
-      this.checkCompletion();
-    },
-
-    loadExistingImages() {
-      // 从currentSelected或defaultValues加载已有的图片
-      if (this.currentSelected) {
-        this.frontImageUrl =
-          this.currentSelected.frontImageUrl ||
-          this.currentSelected.frontImg ||
-          this.currentSelected.idCardFront ||
-          "";
-        this.frontImageFileNo =
-          this.currentSelected.frontImageFileNo ||
-          this.currentSelected.frontImgId ||
-          "";
-        this.backImageUrl =
-          this.currentSelected.backImageUrl ||
-          this.currentSelected.backImg ||
-          this.currentSelected.idCardBack ||
-          "";
-        this.backImageFileNo =
-          this.currentSelected.backImageFileNo ||
-          this.currentSelected.backImgId ||
-          "";
-      } else if (this.defaultValues) {
-        this.frontImageUrl = this.defaultValues.frontImageUrl || "";
-        this.frontImageFileNo = this.defaultValues.frontImageFileNo || "";
-        this.backImageUrl = this.defaultValues.backImageUrl || "";
-        this.backImageFileNo = this.defaultValues.backImageFileNo || "";
-      }
-    },
 
     checkCompletion() {
       // 检查是否已上传完两张图片
@@ -1095,170 +847,15 @@ export default {
 
     // 提供给父组件的方法，用于手动保存到服务器
     async saveAllToServer() {
-      if (this.frontImageUrl) {
-        await this.saveToServer("front", {
-          url: this.frontImageUrl,
-          id: this.frontImageFileNo,
-        });
-      }
-      if (this.backImageUrl) {
-        await this.saveToServer("back", {
-          url: this.backImageUrl,
-          id: this.backImageFileNo,
-        });
-      }
+      // 当前版本已简化，直接在checkCompletion中自动保存
+      console.warn('saveAllToServer已废弃，改为自动保存机制');
     },
 
     // 清空已上传的图片
     clearImages() {
-      this.frontImageUrl = "";
-      this.frontImageFileNo = "";
-      this.backImageUrl = "";
-      this.backImageFileNo = "";
-
-      // 清空上传组件
-      if (this.$refs.frontUpload) {
-        this.$refs.frontUpload.clearFiles();
-      }
-      if (this.$refs.backUpload) {
-        this.$refs.backUpload.clearFiles();
-      }
-
+      this.updateImageInfo('front', { url: '', file_no: '' });
+      this.updateImageInfo('back', { url: '', file_no: '' });
       this.$emit("images-cleared");
-    },
-
-    getServiceUrl(operateType, serviceName, srvApp) {
-      // 参考location-picker.vue中的getServiceUrl方法实现
-      const app = srvApp || this.srvApp;
-      let url = "";
-
-      if (operateType === "select") {
-        url = `${this.$baseUrl}/bx-data-v/v1/${app}/data/select`;
-      } else if (operateType === "operate") {
-        url = `${this.$baseUrl}/bx-data-v/v1/${app}/data/operate`;
-      }
-
-      return url;
-    },
-
-    async saveToServer(type, data) {
-      try {
-        const serviceName = this.serviceName;
-        if (!serviceName) {
-          console.warn("未配置服务名称，无法保存到服务器");
-          return;
-        }
-
-        // 准备请求数据
-        const reqData = {
-          img_url: data.url,
-          img_id: data.id,
-          img_type: type,
-          // 可以添加其他关联信息
-          related_id: this.currentSelected?.id || this.mainformDatas?.id,
-        };
-
-        let req = [
-          {
-            serviceName: serviceName.replace("_select", "_add"),
-            data: [reqData],
-          },
-        ];
-
-        // 检查是否需要更新而非新增
-        const existingData = await this.getImageFromServer(type);
-        if (existingData) {
-          req[0].serviceName = serviceName.replace("_select", "_update");
-          req[0].condition = [
-            {
-              colName: "id",
-              ruleType: "eq",
-              value: existingData.id,
-            },
-          ];
-        }
-
-        const url = this.getServiceUrl("operate", serviceName, this.srvApp);
-        const res = await this.$http.post(url, req);
-
-        if (res?.data?.state === "SUCCESS") {
-          console.log(
-            `身份证${type === "front" ? "正面" : "反面"}信息保存成功`
-          );
-          this.$emit("save-success", { type, data: reqData });
-        } else if (res?.data?.state === "FAILURE" && res.data.resultMessage) {
-          Message.error(res.data.resultMessage);
-        }
-      } catch (error) {
-        console.error("保存到服务器失败:", error);
-        Message.error("保存到服务器失败");
-      }
-    },
-
-    async getImageFromServer(type) {
-      try {
-        const serviceName = this.serviceName;
-        if (!serviceName) {
-          return null;
-        }
-
-        const req = {
-          serviceName,
-          colNames: ["*"],
-          condition: [
-            {
-              colName: "img_type",
-              ruleType: "eq",
-              value: type,
-            },
-          ],
-          page: {
-            pageNo: 1,
-            rownumber: 1,
-          },
-        };
-
-        // 添加关联条件
-        if (this.currentSelected?.id || this.mainformDatas?.id) {
-          req.condition.push({
-            colName: "related_id",
-            ruleType: "eq",
-            value: this.currentSelected?.id || this.mainformDatas?.id,
-          });
-        }
-
-        const url = this.getServiceUrl("select", serviceName, this.srvApp);
-        const res = await this.$http.post(url, req);
-
-        if (res?.data?.state === "SUCCESS" && res.data.data.length > 0) {
-          return res.data.data[0];
-        }
-      } catch (error) {
-        console.error("从服务器获取图片信息失败:", error);
-      }
-      return null;
-    },
-
-    async loadAllImagesFromServer() {
-      // 从服务器加载所有图片信息
-      const frontData = await this.getImageFromServer("front");
-      const backData = await this.getImageFromServer("back");
-
-      if (frontData) {
-        this.frontImageUrl = frontData.img_url;
-        this.frontImageFileNo = frontData.img_id;
-      }
-
-      if (backData) {
-        this.backImageUrl = backData.img_url;
-        this.backImageFileNo = backData.img_id;
-      }
-
-      // 触发数据加载完成事件
-      this.$emit("data-loaded", {
-        front: frontData,
-        back: backData,
-      });
     },
   },
 };
