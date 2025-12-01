@@ -37,6 +37,15 @@
         :current-selected="field.model"
         @on-selected="onPickerSelected"
       ></location-picker>
+      <id-card-upload
+        v-else-if="isIdCard"
+        :field="field"
+        :disabled="setDisabled"
+        :mainformDatas="mainformDatas"
+        :defaultValues="defaultValues"
+        :current-selected="field.model"
+        @on-selected="onPickerSelected"
+      ></id-card-upload>
       <table-picker
         ref="tablePicker"
         v-bind="$props"
@@ -245,8 +254,7 @@
 </template>
 
 <script>
-import tablePicker from "../common/table-picker.vue";
-import locationPicker from "./location-picker.vue";
+
 import remove from "lodash/remove";
 import cloneDeepWith from "lodash/cloneDeepWith";
 import cloneDeep from "lodash/cloneDeep";
@@ -255,11 +263,18 @@ import isObject from "lodash/isObject";
 import isEqual from "lodash/isEqual";
 import multiTabOptionSelect from "./fk-select/multi-tab-option-select.vue";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
+
+// ui组件
+import tablePicker from "../common/table-picker.vue";
+import locationPicker from "./location-picker.vue";
+import idCardUpload from "./id-card-upload.vue";
+
 export default {
   components: {
     List: () => import("../common/list.vue"),
     tablePicker,
     locationPicker,
+    idCardUpload,
     Add: () => import("../common/add.vue"),
     Update: () => import("../common/update.vue"),
     multiTabOptionSelect,
@@ -548,6 +563,10 @@ export default {
     },
     isLocation() {
       return this.field.info?.type === "bxsys_obj_type_gps";
+    },
+    // 是否是身份证类型，使用身份证上传组件
+    isIdCard() {
+      return this.field.info?.type === "bxsys_type_idcard";
     },
     addSrvCfg() {
       return this.optionListV2?.add_srv_cfg;
