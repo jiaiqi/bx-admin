@@ -42,6 +42,7 @@ export class FieldInfo {
       state: "none",
     }; // 校验唯一性状态 none  ，无需校验， UniqueCheckNone 未校验  UniqueCheckError 错误 UniqueCheckOk 通过 loading 校验中
     if (this.moreConfig !== null && this.moreConfig !== undefined) {
+      // if (this.moreConfig.hasOwnProperty("DateRangeConfig") && formType !== 'filter') {
       if (this.moreConfig.hasOwnProperty("DateRangeConfig")) {
         /**
          * 起止日期配置加载
@@ -312,7 +313,7 @@ export class FieldInfo {
       this.editor = "upload-image";
     } else if (this.type == "UserList") {
       this.editor = "userlist";
-    } else if (['QrCode', 'qrCode','qrcode'].includes(this.type)) {
+    } else if (['QrCode', 'qrCode', 'qrcode'].includes(this.type)) {
       this.editor = "qrcode";
     } else if (['carno', 'CarNo', 'carNo'].includes(this.type)) {
       this.editor = "carNoKeyboard"; //车牌号输入键盘
