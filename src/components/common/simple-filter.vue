@@ -385,7 +385,7 @@ export default {
         fieldInfo.editable = true;
         if (fieldInfo.isNumeric()) {
           field.ruleType = "between";
-        } else if (['MonthRange', 'Date', 'Time', 'DateTime'].includes(fieldInfo.type)) {
+        } else if (['MonthRange', 'Date', 'Time', 'DateTime', 'DateTimeRange', 'DateRange'].includes(fieldInfo.type)) {
           field.ruleType = "between";
         } else if (fieldInfo.type == "Enum" || fieldInfo.type == "Dict") {
           field.ruleType = "in";

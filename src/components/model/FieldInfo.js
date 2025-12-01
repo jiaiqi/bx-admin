@@ -371,11 +371,11 @@ export class FieldInfo {
       this._inFilterForm = true;
       if (this.isNumeric()) {
         this.editor = "input-range";
-      } else if (this.type == "Date") {
+      } else if (this.type == "Date" || this.type == "DateRange") {
         this.editor = "date-range";
       } else if (this.type == "Time") {
         this.editor = "time-range";
-      } else if (this.type == "DateTime") {
+      } else if (this.type == "DateTime" || this.type == "DateTimeRange") {
         this.editor = "date-time-range";
       } else if (this.type == "Enum" || this.type == "Dict") {
         this.editor = "multiselect";
