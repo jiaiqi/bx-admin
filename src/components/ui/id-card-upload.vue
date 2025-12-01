@@ -742,7 +742,9 @@ export default {
     // 批量更新图片信息
     updateImageInfo(type, data) {
       const key = type === "front" ? "front" : "back";
-
+      if(data.data && typeof data.data === 'object'){
+        this.formModel[`${key}_json`] = JSON.stringify(data.data);
+      }
       if (data.url !== undefined) {
         this[`${key}ImageUrl`] = data.url;
       }
@@ -829,6 +831,7 @@ export default {
 
         // 使用统一方法更新图片信息
         this.updateImageInfo(type, {
+          data: response,
           url: data.fileurl,
           file_no: data.file_no,
           uploading: false,
@@ -890,6 +893,7 @@ export default {
     async removeImage(type) {
       // 使用统一方法清除图片信息
       this.updateImageInfo(type, {
+        data: {},
         url: "",
         file_no: "",
         uploading: false,
@@ -988,6 +992,7 @@ export default {
 
         // 使用统一方法更新图片信息
         this.updateImageInfo(type, {
+          data: data,
           url: data.fileurl,
           file_no: data.file_no,
           uploading: false,
