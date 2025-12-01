@@ -15,9 +15,9 @@ let bx_auth_ticket = "";
 // const ENV = "dev2";
 // const ENV = "wanxiang";
 // const ENV = "dev";
-// const ENV = "saas";
+const ENV = "saas";
 // const ENV = "audDev"; //稽核开发环境
-const ENV = "parkProd"; // 延安园区生产环境
+// const ENV = "parkProd"; // 延安园区生产环境
 // const ENV = "yananxing"; // 延安行
 // const ENV = "yananxingOut"; // 延安行外网
 // const ENV = "yanxue2"; // 研学2.0现网
@@ -69,7 +69,7 @@ if (pathConfig) {
         top.pathConfig = pathConfig;
       }
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 if (window.backendIpAddr) {
   baseURL = window.backendIpAddr;
@@ -156,7 +156,7 @@ instance.interceptors.response.use(
             if (top.getLoginAddress) {
               login_page = "/" + top.getLoginAddress();
             }
-          } catch (exception) {}
+          } catch (exception) { }
           getRootWindow().layer.open({
             title: false,
             type: 2,
@@ -174,7 +174,7 @@ instance.interceptors.response.use(
                 console.info("1");
                 login_page = "/" + top.getMainAddress();
               }
-            } catch (exception) {}
+            } catch (exception) { }
             window.location.href = window.location.origin + login_page;
           }
         }
@@ -309,9 +309,8 @@ export const getImagePath = (no, notThumb) => {
     if (no.indexOf("&bx_auth_ticket") !== -1) {
       no = no.split("&bx_auth_ticket")[0];
     }
-    let url = `${backendIpAddr}/file/download?fileNo=${no}&bx_auth_ticket=${
-      bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
-    }`;
+    let url = `${backendIpAddr}/file/download?fileNo=${no}&bx_auth_ticket=${bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+      }`;
     if (location.href?.includes("lowcode-grid/editor/")) {
       // 可视化编辑页面，图片后缀增加时间戳，避免缓存
       url += `&t=${new Date().getTime()}`;
@@ -321,3 +320,28 @@ export const getImagePath = (no, notThumb) => {
     return "";
   }
 };
+
+export const getFilePathByUrl = (url, isThumb) => {
+  // 如果url全是数字，则认为是文件编号，调用getImagePath
+  if (url && typeof url === "string" && /^[0-9]+$/.test(url)) {
+    return getImagePath(url, isThumb);
+  } else {
+    if (url?.indexOf("http") === 0) {
+      return url;
+    } else if (url?.indexOf("data:image") === 0) {
+      return url;
+    } else if (url?.split("/").length > 4) {
+      // 如果url中含有超过四个'/'则认为是filePath
+      let resultUrl = `${backendIpAddr}/file/download?filePath=${url}`;
+      if (isThumb) {
+        resultUrl += `&thumbnailType=fwsu_${typeof isThumb === "number" ? isThumb : 100}`;
+      }
+      if (!url.includes("bx_auth_ticket")) {
+        resultUrl += `&bx_auth_ticket=${bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+          }`;
+      }
+      return resultUrl;
+    }
+  }
+  return url;
+}

@@ -275,7 +275,7 @@ import {
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 // import cardPopup from "../card-group/card-popup.vue";
-import { getFilePath } from "@/common/httpUtil";
+import { getFilePathByNo } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
 // 节流
 function throttle(func, delay = 300) {
@@ -1347,7 +1347,7 @@ export default {
       }
     },
     async getFiles(no, size) {
-      let res = await getFilePath(no);
+      let res = await getFilePathByNo(no);
       if (res?.length) {
         res = res.map((item) => {
           item.__url = this.getFileUrl(item.fileurl);

@@ -225,7 +225,7 @@ export const doSelect = function (option = {}, vm = {}) {
  * @description 根据file_no查找文件列表
  * @param {String} file_no - 文件编号
  */
-export const getFilePath = async function (file_no) {
+export const getFilePathByNo = async function (file_no) {
   const service = 'srvfile_attachment_select'
   const url = `${window.backendIpAddr}/file/select/${service}`
   const req = {

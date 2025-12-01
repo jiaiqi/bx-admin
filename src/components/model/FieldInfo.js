@@ -312,9 +312,9 @@ export class FieldInfo {
       this.editor = "upload-image";
     } else if (this.type == "UserList") {
       this.editor = "userlist";
-    } else if (this.type == "QrCode") {
+    } else if (['QrCode', 'qrCode','qrcode'].includes(this.type)) {
       this.editor = "qrcode";
-    } else if (this.type == "CarNo" || this.type == "carNo") {
+    } else if (['carno', 'CarNo', 'carNo'].includes(this.type)) {
       this.editor = "carNoKeyboard"; //车牌号输入键盘
     } else if (this.isFinder()) {
       this.editor = "finder";
@@ -347,7 +347,7 @@ export class FieldInfo {
       if (this.DateRangeEndColName === null) {
         // this.visible = false
       }
-    }else if (this.type === "DateTimeRange") {
+    } else if (this.type === "DateTimeRange") {
       this.editor = "DateTimeRange";
       if (this.DateRangeEndColName === null) {
         // this.visible = false
