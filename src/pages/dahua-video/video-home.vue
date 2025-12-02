@@ -186,7 +186,7 @@ const loadVideoPlayerScript = () => {
     // 注意：需确保项目已包含 file-loader（Vue CLI 默认包含）
     // 输出路径：assets/dhvideo/videoPlayer.js（不加 hash，便于稳定引用）
     // eslint-disable-next-line
-    script.src = require('file-loader?name=assets/dhvideo/[name].[ext]!@/assets/dhvideo/videoPlayer.js');
+    script.src = require('@/assets/dhvideo/videoPlayer.js');
     script.async = true;
 
     script.onload = () => {
