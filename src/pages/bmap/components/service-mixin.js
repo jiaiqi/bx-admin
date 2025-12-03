@@ -545,7 +545,7 @@ export default {
         
             }
             if(!this.$route.query.extime || !this.$route.params.extime){
-                this.extime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+                this.extime = moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
             }
             this.getPassconv()
         },
