@@ -133,6 +133,15 @@
               </div>
             </el-carousel-item>
           </el-carousel>
+          <div style="width: 550px; padding: 10px 0;">
+            <el-input
+              placeholder="搜索关键字"
+              class="search-input mr-2"
+              clearable
+              v-model="searchKey2"
+              @change="handleSearchChange"
+            ></el-input>
+          </div>
           <cardGroupCell
             :pageParamsModel="pageParamsModel"
             :queryOptions="queryOptions"
@@ -257,6 +266,7 @@ export default {
       tableData: [],
       pageInfo: { pageNo: 1, rownumber: 10, total: 0 },
       searchKey: "",
+      searchKey2: "",
       mapSearchKey: "",
       showAddDialog: false,
       // 滚动相关数据
@@ -570,6 +580,10 @@ export default {
     },
   },
   methods: {
+    handleSearchChange(val) {
+      this.searchKey2 = val;
+      this.onSearch();
+    },
     // 精确测量文字宽度
     measureTextWidth(text, fontSize = '12px', fontFamily = 'Arial') {
       const canvas = document.createElement('canvas');
@@ -609,6 +623,20 @@ export default {
             colName: this.listConfig?.filter_cols,
             ruleType: "like",
             value: this.searchKey,
+          });
+        }
+        if(this.listConfig?.multi_search_cols && this.searchKey2){
+          let multiSearchCols = this.listConfig?.multi_search_cols.split(",");
+          itemReqJson.relation_condition = {
+              relation: 'OR',
+              data: []
+            }
+          multiSearchCols.forEach(col => {
+            itemReqJson.relation_condition.data.push({
+              colName: col,
+              ruleType: "like",
+              value: this.searchKey2,
+            });
           });
         }
         if (this.listConfig?.map_filter_field && this.mapSearchKey) {
@@ -711,6 +739,7 @@ export default {
 
       if (res.data.state === "SUCCESS") {
         this.tableData = res.data.data;
+        console.log("列表数据1111111", this.tableData);
         if (res.data.page) {
           this.pageInfo = res.data.page;
         }
