@@ -37,6 +37,15 @@
     </template>
     <template v-else-if="contentViewMode === '列表'">
       <div class="quick-filter">
+        <el-input
+              placeholder="搜索关键字"
+              class="search-input mr-2"
+              clearable
+              style="width: 300px;"
+              size="small"
+              v-model="searchKey"
+              @change="handleSearchChange"
+            ></el-input>
         <el-button
           class="filter-btn"
           size="small"
@@ -216,11 +225,15 @@ export default {
         total: 0,
       },
       dateType: "",
-
+      searchKey: "",
       dateRange: null,
     };
   },
   methods: {
+    handleSearchChange(val) {
+      this.searchKey = val;
+      this.fetchContentData(this.data.no, 10);
+    },
     dateRangeChange(value) {
       console.log("dateRangeChange", value);
       if (value && value.length) {
@@ -279,6 +292,13 @@ export default {
           { colName: "category_no", ruleType: "eq", value: catalogNo },
           { colName: "proc_status", ruleType: "eq", value: "完成" }
         ],
+        relation_condition:{
+          relation: 'OR',
+          data: [
+            { colName: "title", ruleType: "like", value: this.searchKey },
+            { colName: "summary", ruleType: "like", value: this.searchKey },
+          ]
+        },
         page: { pageNo: 1, rownumber: pageSize || 1 },
         order: [{
           colName: "release_time",
