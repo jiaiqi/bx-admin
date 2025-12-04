@@ -133,7 +133,7 @@
               </div>
             </el-carousel-item>
           </el-carousel>
-          <div v-if="listConfig?.multi_search_cols" style="width: 550px; padding: 10px 0;">
+          <div v-if="listOptions?.includes('聚合搜索') && listConfig?.multi_search_cols" style="width: 550px; padding: 10px 0;">
             <el-input
               placeholder="搜索关键字"
               class="search-input mr-2"
