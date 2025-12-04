@@ -133,7 +133,10 @@
               </div>
             </el-carousel-item>
           </el-carousel>
-          <div v-if="listOptions?.includes('聚合搜索') && listConfig?.multi_search_cols" style="width: 550px; padding: 10px 0;">
+          <div
+            v-if="showFuzzySearch"
+            style="width: 550px; padding: 10px 0;"
+          >
             <el-input
               placeholder="搜索关键字"
               class="search-input mr-2"
@@ -276,6 +279,12 @@ export default {
     };
   },
   computed: {
+    showFuzzySearch() {
+      return (
+        this.listOptions?.includes("聚合搜索") &&
+        this.listConfig?.multi_search_cols
+      );
+    },
     showMoreBtn() {
       return (
         this.listOptions?.includes("更多按钮") &&
@@ -625,12 +634,12 @@ export default {
             value: this.searchKey,
           });
         }
-        if(this.listConfig?.multi_search_cols && this.searchKey2){
+        if (this.listConfig?.multi_search_cols && this.searchKey2) {
           let multiSearchCols = this.listConfig?.multi_search_cols.split(",");
           itemReqJson.relation_condition = {
-              relation: 'OR',
-              data: []
-            }
+            relation: 'OR',
+            data: []
+          }
           multiSearchCols.forEach(col => {
             itemReqJson.relation_condition.data.push({
               colName: col,
@@ -1019,7 +1028,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 .data-view-list {
   position: relative;
   width: 100%;
