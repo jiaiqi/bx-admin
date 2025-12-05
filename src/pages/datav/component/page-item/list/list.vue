@@ -133,17 +133,19 @@
               </div>
             </el-carousel-item>
           </el-carousel>
-          <div
-            v-if="showFuzzySearch"
-            style="width: 550px; padding: 10px 0;"
-          >
-            <el-input
+          <div v-if="listOptions?.includes('聚合搜索') && listConfig?.multi_search_cols" :style="getCardGroupStyle">
+            <div style="display: flex; align-items: center;justify-content: space-between; padding-bottom: 10px;">
+               <el-input
               placeholder="搜索关键字"
               class="search-input mr-2"
               clearable
+              style="width: 85%;"
               v-model="searchKey2"
               @change="handleSearchChange"
+              @keyup.enter.native="handleSearch"
             ></el-input>
+            <el-button icon="el-icon-search" style="width: 15%;" @click="handleSearch"></el-button>
+            </div>
           </div>
           <cardGroupCell
             :pageParamsModel="pageParamsModel"
@@ -279,12 +281,6 @@ export default {
     };
   },
   computed: {
-    showFuzzySearch() {
-      return (
-        this.listOptions?.includes("聚合搜索") &&
-        this.listConfig?.multi_search_cols
-      );
-    },
     showMoreBtn() {
       return (
         this.listOptions?.includes("更多按钮") &&
@@ -412,6 +408,20 @@ export default {
     layoutJson: function () {
       let json = this.listConfig?.layout_json || null;
       return json;
+    },
+    getCardGroupStyle() {
+      let style = {}
+      if (this.layoutJson?.gap_style) {
+        style["display"] =this.layoutJson?.gap_style
+      }
+      if (this.layoutJson?.style_json_diy?.gap) {
+        style["grid-gap"] = this.layoutJson?.style_json_diy?.gap
+      }
+      if (this.layoutJson?.cols_num) {
+        style["grid-template-columns"] = `repeat(${this.layoutJson?.cols_num}, 1fr)`
+      }
+      if (style.display === 'gap') style.display = 'grid';
+      return Object.entries(style).map(([key, value]) => `${key}: ${value};`).join('')
     },
     cardUnitJson: function () {
       let json = this.listConfig?.card_unit_json || null;
@@ -591,6 +601,8 @@ export default {
   methods: {
     handleSearchChange(val) {
       this.searchKey2 = val;
+    },
+    handleSearch() {
       this.onSearch();
     },
     // 精确测量文字宽度
@@ -634,12 +646,12 @@ export default {
             value: this.searchKey,
           });
         }
-        if (this.listConfig?.multi_search_cols && this.searchKey2) {
+        if(this.listConfig?.multi_search_cols && this.searchKey2){
           let multiSearchCols = this.listConfig?.multi_search_cols.split(",");
           itemReqJson.relation_condition = {
-            relation: 'OR',
-            data: []
-          }
+              relation: 'OR',
+              data: []
+            }
           multiSearchCols.forEach(col => {
             itemReqJson.relation_condition.data.push({
               colName: col,
@@ -1028,10 +1040,7 @@ export default {
 };
 </script>
 
-<style
-  lang="scss"
-  scoped
->
+<style lang="scss" scoped>
 .data-view-list {
   position: relative;
   width: 100%;
