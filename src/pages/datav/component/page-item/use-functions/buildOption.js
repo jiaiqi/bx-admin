@@ -549,17 +549,28 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
         // 先构建所有数据项
         let allDataItems = [];
+        // 检查并合并已有的"其它"或"其他"项
+        let existingOthersValue = 0;
+        
         for (let data of cellData) {
-          let dataItem = {
-            value: parseFloat(data[dataColName]),
-            name: data[chartJson?.series_name_cfg || sortAxisCol],
-            itemStyle: {
-              normal: {
-                borderWidth: 5,
+          const name = data[chartJson?.series_name_cfg || sortAxisCol];
+          const value = parseFloat(data[dataColName]);
+          
+          // 检查是否为"其它"或"其他"项
+          if (name === "其它" || name === "其他") {
+            existingOthersValue += value;
+          } else {
+            let dataItem = {
+              value: value,
+              name: name,
+              itemStyle: {
+                normal: {
+                  borderWidth: 5,
+                },
               },
-            },
-          };
-          allDataItems.push(dataItem);
+            };
+            allDataItems.push(dataItem);
+          }
         }
 
         // 按值大小排序（降序）
@@ -575,7 +586,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           processedData = allDataItems.slice(0, keepCount);
 
           // 计算其它项的总和
-          let othersValue = 0;
+          let othersValue = existingOthersValue;
           for (let i = keepCount; i < allDataItems.length; i++) {
             othersValue += allDataItems[i].value;
           }
@@ -594,6 +605,18 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           }
         } else {
           processedData = allDataItems;
+          // 如果没有超过阈值但存在"其它"或"其他"项，直接添加
+          if (existingOthersValue > 0) {
+            processedData.push({
+              value: existingOthersValue,
+              name: "其它",
+              itemStyle: {
+                normal: {
+                  borderWidth: 5,
+                },
+              },
+            });
+          }
         }
 
         // 添加处理后的数据到series
