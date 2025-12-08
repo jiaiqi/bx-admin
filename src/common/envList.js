@@ -47,6 +47,7 @@ export const pathConfigMap = {
     gateway: "http://192.168.0.196/bxapi",
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
+    homePageNo:"PG2509081715270003",
     application: "config",
   },
   yananxingOut: {
@@ -62,6 +63,7 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
+    homePageNo:"PG2509081715270003",
     amapKey: "8d077c460039cabc346d2c8a2859ae3e", //高德地图key
   },
   wujingDev: {
