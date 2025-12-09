@@ -8,12 +8,9 @@
     <i
       class="el-icon-s-home back-button"
       @click="goHome"
-      v-if="homePageNo"
+      v-if="partsSet.indexOf('首页按钮') > -1 && homePageNo"
     ></i>
-    <div
-      class="date-time"
-      :style="{ color: color }"
-    >
+    <div class="date-time" :style="{ color: color }">
       <div class="time">{{ time }}</div>
       <div class="date">
         <div class="ymd">{{ date }}</div>
@@ -25,6 +22,7 @@
 
 <script>
 import dayjs from "dayjs";
+import { getHomePageNo } from "@/common/http";
 
 let timer = "";
 export default {
@@ -36,7 +34,7 @@ export default {
   props: {
     pageConfig: {
       type: Object,
-      default: () => { },
+      default: () => {},
     },
     showSeconds: {
       type: Boolean, //是否显示秒数
@@ -53,13 +51,13 @@ export default {
   },
   computed: {
     homePageNo() {
-      let result = null
-      if(this.pageConfig.page_no && this.partsSet.indexOf('首页按钮') > -1) {
-        result = true
-      }else{
-        result = false
+      let result = "";
+      console.log("homePageNo", this.pageConfig);
+      let homePageNo = getHomePageNo() || "BX2508041432140001"; //暂时写死
+      if (this.pageConfig.page_no && this.pageConfig.page_no !== homePageNo) {
+        result = homePageNo;
       }
-      return result
+      return result;
     },
     date() {
       let format = "";
@@ -121,7 +119,7 @@ export default {
   methods: {
     goHome() {
       if (this.homePageNo) {
-        this.$router.push(`/site/${this.homePageNo}`)
+        this.$router.push(`/site/${this.homePageNo}`);
       }
     },
     goBack() {
@@ -131,7 +129,7 @@ export default {
       } else {
         window.history.back();
       }
-    }
+    },
   },
 };
 </script>

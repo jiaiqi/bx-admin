@@ -47,7 +47,7 @@ export const pathConfigMap = {
     gateway: "http://192.168.0.196/bxapi",
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
-    homePageNo:"PG2509081715270003",
+    homePageNo: "PG2509081715270003",
     application: "config",
   },
   yananxingOut: {
@@ -63,7 +63,7 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
-    homePageNo:"PG2509081715270003",
+    homePageNo: "PG2509081715270003",
     amapKey: "8d077c460039cabc346d2c8a2859ae3e", //高德地图key
   },
   wujingDev: {
@@ -89,6 +89,7 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
+    homePageNo: "BX2506130908230001"
   },
   parkProd: {
     // 延安园区正式环境
@@ -101,7 +102,7 @@ export const pathConfigMap = {
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",
-    homePageNo:"BX2506130908230001"
+    homePageNo: "BX2506130908230001"
   },
   gangu: {
     // 甘谷人大
@@ -204,8 +205,8 @@ export const pathConfigMap = {
     sso_app: "sso",
     application: "ledu",
   },
-  
-   healthDev: {
+
+  healthDev: {
     // 健康科普资源库
     gateway_protocol: "http",
     gateway_ip: "192.168.0.154",
