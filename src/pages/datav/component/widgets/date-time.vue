@@ -3,6 +3,7 @@
     <i
       class="el-icon-arrow-left back-button"
       @click="goBack"
+      v-if="partsSet.indexOf('返回按钮') > -1"
     ></i>
     <i
       class="el-icon-s-home back-button"
@@ -52,17 +53,12 @@ export default {
   },
   computed: {
     homePageNo() {
-      let result = ''
-      console.log('homePageNo', this.pageConfig);
-      let homePageNo = 'BX2508041432140001' //暂时写死
-      if(this.pageConfig.page_no && this.pageConfig.page_no !== homePageNo) {
-        result = homePageNo
+      let result = null
+      if(this.pageConfig.page_no && this.partsSet.indexOf('首页按钮') > -1) {
+        result = true
+      }else{
+        result = false
       }
-      // if (this.pageConfig && this.pageConfig.path) {
-      //   let arr = this.pageConfig.path.split('/')?.filter(val => val)
-      //   result = Array.isArray(arr) && arr.length > 1 ? arr[0] : ''
-      //   console.log('homePageNo', arr, result);
-      // }
       return result
     },
     date() {
