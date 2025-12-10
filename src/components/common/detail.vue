@@ -1008,10 +1008,11 @@ export default {
           this.id = detailData[this.pkCol];
           this.mainFormDatas = detailData;
         } else {
-          this.$message({
-            message: "未查询到详情数据",
-            type: "error",
-          });
+          console.error("未查询到详情数据", dataResp.body,this.service_name,condition);
+          // this.$message({
+          //   message: "未查询到详情数据",
+          //   type: "error",
+          // });
         }
         if (
           dataResp?.response?.hasOwnProperty("chart_data") &&

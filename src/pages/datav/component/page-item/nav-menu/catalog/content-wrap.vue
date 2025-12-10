@@ -351,7 +351,7 @@ export default {
 .content-wrap {
   flex: 1;
   padding: 0 5px;
-
+  overflow: hidden;
   &.level-2 {
     .title {
       display: none;
