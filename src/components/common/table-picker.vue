@@ -1044,6 +1044,15 @@ export default {
           rownumber: 999,
         },
       };
+      if(Array.isArray(this.optionListV2?.conditions)){
+        this.optionListV2?.conditions.forEach(cond=>{
+          const condition = cloneDeep(cond);
+          condition.value = this.evalCondValue(cond.value, this.formModel);
+          if(condition.value){
+            queryJson.condition.push(condition);
+          }
+        })
+      }
       const res = await this.selectList(queryJson)
       if (res?.data?.state === "SUCCESS") {
         this.gridData = res.data.data.map((item) => {
