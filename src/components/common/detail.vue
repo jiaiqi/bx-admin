@@ -596,7 +596,7 @@
             ></simple-detail>
 
             <child-list
-              style="height: calc(100% - 50px); overflow: auto"
+              style="height: calc(100% - 50px);"
               :divCond="buildDivCond"
               :mainService="service_name"
               :main-disp-col="v2Data.key_disp_col"
