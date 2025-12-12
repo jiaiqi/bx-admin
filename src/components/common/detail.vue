@@ -313,7 +313,7 @@
         v-if="hasVisibleChildListTab()"
         style="height: 100%"
       >
-        <el-tab-pane :label="tab_view_name">
+        <el-tab-pane :label="tab_view_name" v-if="detailshow">
           <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
           <simple-detail
@@ -696,12 +696,18 @@ export default {
       handler(val) {
         if (val) {
           this.id = val;
-          this.$refs?.["simple-detail"]?.initDetail().then((event) => {
-            console.log(event);
+          let getDetailFun = null
+          if(this.detailshow){
+            getDetailFun = this.$refs?.["simple-detail"]?.initDetail
+          }else{
+            getDetailFun = this.refreshDetail
+          }
+          getDetailFun?.().then((eventData) => {
+            console.log(eventData);
             this.$nextTick(() => {
-              if (event?.data?.length) {
-                this.detailData = event.data[0];
-                this.mainFormDatas = event.data[0];
+              if (eventData) {
+                this.detailData = eventData;
+                this.mainFormDatas = eventData;
                 if (this.$refs?.["childrenList"]?.length) {
                   this.$refs.childrenList.forEach((vm) => {
                     vm?.$refs?.list?.initGridData?.() ||
@@ -888,7 +894,6 @@ export default {
         }
       }
 
-      let detailData = null;
       let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${this.service_name
         }`;
       console.log(
@@ -896,7 +901,7 @@ export default {
         srvAuthKey,
         this.$route.query.hasOwnProperty(srvAuthKey)
       );
-      await this.selectOne(
+      const response = await this.selectOne(
         this.service_name,
         condition,
         this.$route.query.isdraft,
@@ -904,11 +909,10 @@ export default {
         null,
         null,
         this.buildDivCond || this.$route.query.divCond
-      ).then((response) => {
-        detailData = response.body;
-        this.detailData = response.body;
-        this.mainFormDatas = response.body;
-      });
+      )
+      this.detailData = response.body;
+      this.mainFormDatas = response.body;
+      return response.body;
     },
     async initGridData() {
       var condition = [];

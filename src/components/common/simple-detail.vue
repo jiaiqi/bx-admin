@@ -420,7 +420,7 @@ export default {
             //   return [this.detailData]
             // }
             return loader.run(condition, this.divCond).then((res) => {
-              resolve(res);
+              resolve(res?.data?.[0]);
             });
           })
           .then(() => {
