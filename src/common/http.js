@@ -29,6 +29,26 @@ window.env = ENV;
 export const getHomePageNo = () => {
   return pathConfigMap[ENV]?.homePageNo;
 }
+/**
+ * 从URL查询参数中提取指定参数的值
+ * @param {string} name - 参数名
+ * @returns {string|null} - 参数值或null
+ */
+export function getQueryParam(name) {
+  const reg = new RegExp(`(^|&)${name}=([^&]*)(&|$)`, 'i');
+  // 先从普通查询字符串中提取
+  let r = window.location.search.substr(1).match(reg);
+  // 如果没有找到，从hash路由中提取
+  if (!r && window.location.hash) {
+    const hashSearch = window.location.hash.split('?')[1] || '';
+    r = hashSearch.match(reg);
+  }
+  if (r != null) {
+    return decodeURIComponent(r[2]);
+  }
+  return null;
+}
+
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
   // const ENV = "wanxiang";
@@ -45,11 +65,10 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = 'healthProd'
 
   const pathConfig = pathConfigMap[ENV];
-  if (location.href?.includes?.("menuapp=")) {
-    let app = location.href.split("menuapp=")[1].split(";")[0];
-    if (app) {
-      pathConfig.application = app;
-    }
+  // 从URL查询参数中提取menuapp（兼容低版本浏览器）
+  const menuapp = getQueryParam('menuapp');
+  if (menuapp) {
+    pathConfig.application = menuapp;
   }
   baseURL = pathConfig.gateway; // 正式环境
   if (!top.pathConfig) {
