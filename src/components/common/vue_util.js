@@ -2897,8 +2897,11 @@ function init_util() {
             if (rowData) {
               url = Vue.prototype.renderStr(url, rowData)
             }
-            if (url?.includes(':id')) {
-              url = url.replace(':id', rowData?.id)
+            // 替换所有以:开头的变量
+            if (rowData) {
+              url = url.replace(/:([\w]+)/g, (match, key) => {
+                return rowData[key] !== undefined ? rowData[key] : match
+              })
             }
             if (top.window.addTab) {
               Vue.prototype.addTabByUrl(url, jumpJson?.jump_page_title || '')
