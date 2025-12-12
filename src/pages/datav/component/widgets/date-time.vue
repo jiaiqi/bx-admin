@@ -1,15 +1,16 @@
 <template>
   <div class="date-time-container">
-    <i
+    <a
       class="el-icon-arrow-left back-button"
       @click="goBack"
       v-if="partsSet.indexOf('返回按钮') > -1"
-    ></i>
-    <i
+    ></a>
+    <a
       class="el-icon-s-home back-button"
-      @click="goHome"
+      :href="calcHomePath"
       v-if="partsSet.indexOf('首页按钮') > -1 && homePageNo"
-    ></i>
+      @click.prevent="goHome"
+    ></a>
     <div class="date-time" :style="{ color: color }">
       <div class="time">{{ time }}</div>
       <div class="date">
@@ -54,10 +55,16 @@ export default {
       let result = "";
       console.log("homePageNo", this.pageConfig);
       let homePageNo = getHomePageNo() || "BX2508041432140001"; //暂时写死
+      if(this.pageConfig?.path && this.pageConfig?.path.split("/").length > 1){
+        homePageNo = this.pageConfig?.path.split("/")[1];
+      }
       if (this.pageConfig.page_no && this.pageConfig.page_no !== homePageNo) {
         result = homePageNo;
       }
       return result;
+    },
+    calcHomePath(){
+      return `/site/${this.homePageNo}`;
     },
     date() {
       let format = "";
@@ -119,7 +126,7 @@ export default {
   methods: {
     goHome() {
       if (this.homePageNo) {
-        this.$router.push(`/site/${this.homePageNo}`);
+        this.$router.push(this.calcHomePath);
       }
     },
     goBack() {
@@ -146,10 +153,11 @@ export default {
   padding: 5px;
   border-radius: 4px;
   margin-right: 10px;
-
+  color: currentColor;
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
     transform: translateX(-2px);
+    text-decoration: none;
   }
 
   &:active {
