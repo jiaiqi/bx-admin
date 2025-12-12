@@ -41,7 +41,7 @@ function init_util() {
 
   Vue.prototype.getImagePath = (no, size) => {
     if (no && typeof no === "string") {
-      if ((no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1)&& no.indexOf("filePath=") === -1) {
+      if ((no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1) && no.indexOf("filePath=") === -1) {
         return no;
       }
       if (no.indexOf("data:image") !== -1 && no.indexOf("base64") !== -1) {
@@ -2571,6 +2571,27 @@ function init_util() {
       return `divCol=${result[0].colName}&divStartVal=${result[0].value[0]}&divEndVal=${result[0].value[1]}`;
     }
   };
+  Vue.prototype.evalCondValue = (value, row) => {
+    if (!value || typeof value === "string") {
+      if (value?.includes('${')) {
+        value = Vue.prototype.renderStr(value, row);
+      } else if (value?.includes('data.')) {
+        try {
+          let key = value.split("data.")[1];
+          if (key) {
+            value = row[key];
+          }
+        } catch (error) { }
+      }
+      return value;
+    } else if (value?.value_type === "rowData" && value.value_key) {
+      return row[value.value_key];
+    } else if (value?.value_type === "mainData" && value.value_key) {
+      return mainData[value.value_key];
+    } else if (value?.value_type === "constant" && value.value) {
+      return value.value;
+    }
+  };
   /**
    * 构建自定义按钮配置的divCond
    * @param {*} btn 自定义按钮
@@ -2583,17 +2604,7 @@ function init_util() {
     if (Array.isArray(row) && row.length) {
       row = JSON.parse(JSON.stringify(row[0]));
     }
-    const evalCondValue = (value, row) => {
-      if (!value || typeof value === "string") {
-        return value;
-      } else if (value?.value_type === "rowData" && value.value_key) {
-        return row[value.value_key];
-      } else if (value?.value_type === "mainData" && value.value_key) {
-        return mainData[value.value_key];
-      } else if (value?.value_type === "constant" && value.value) {
-        return value.value;
-      }
-    };
+    const evalCondValue = Vue.prototype.evalCondValue;
     if (btn?.more_config) {
       try {
         const moreConfig = JSON.parse(btn.more_config);
