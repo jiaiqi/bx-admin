@@ -1186,7 +1186,6 @@ import PopupMemList from "./popup-mem-list"; // 弹出内存列表
 import exportLayout from "./export-layout"; // 自定义导出 || 导入
 import batchApprove from "../ui/batch-approve.vue"; // 流程审批
 // import batchApprove from "../ui/batch-approve.vue";   // 流程审批
-import pdf from "vue-pdf";
 import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 
 import inlineEditListMixin from "../mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
@@ -1219,6 +1218,7 @@ export default {
     RawFieldEditor,
     InlineList,
     exportLayout,
+    pdf: () => import(/* webpackChunkName: "vue-pdf" */ "vue-pdf"),
     update: () => import("../common/update.vue"),
     Add: () => import("../common/add.vue"),
     batchApprove,

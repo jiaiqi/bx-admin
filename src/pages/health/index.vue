@@ -5,7 +5,7 @@
 </template>
 
 <script>
-  import RichEditor from '@/components/common/tinymce'
+  const RichEditor = () => import(/* webpackChunkName: "tinymce-editor" */ '@/components/common/tinymce')
   export default {
     components: { RichEditor },
     data () {

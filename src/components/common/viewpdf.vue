@@ -48,10 +48,9 @@
 <script>
 
 import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
-import pdf from 'vue-pdf'
 export default {
   components: {
-    pdf
+    pdf: () => import(/* webpackChunkName: "vue-pdf" */ "vue-pdf")
   },
 
   data () {

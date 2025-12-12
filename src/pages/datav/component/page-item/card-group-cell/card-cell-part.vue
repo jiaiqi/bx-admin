@@ -240,7 +240,7 @@ import {
   animateNumberWithFormat,
 } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
-import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
+// import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
 import { getFilePath } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
@@ -267,7 +267,7 @@ export default {
     Icon,
     LiquidFillChart,
     qrCode,
-    HlsplayerVideo,
+    HlsplayerVideo: () => import(/* webpackChunkName: "hls-video" */ "@/components/common/hls-video/hlsplayer-video.vue"),
     cardPopup,
   },
   data() {

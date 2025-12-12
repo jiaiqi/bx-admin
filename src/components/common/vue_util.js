@@ -1,6 +1,6 @@
 import Vue from "vue";
 import dayjs from "dayjs";
-import Dialog from "../common/dialog.vue";
+// import Dialog from "../common/dialog.vue"; // 改为异步加载
 import * as DataUtil from "../../util/DataUtil";
 import { Loading } from "element-ui";
 import { MessageBox } from "element-ui";
@@ -1302,7 +1302,7 @@ function init_util() {
     // console.log("templateToString",datas,temp,srv)
     return func(datas);
   };
-  Vue.prototype.popupDialog = function (params, callback) {
+  Vue.prototype.popupDialog = async function (params, callback) {
     var btninfo = params["btninfo"];
 
     if (params.formType.startsWith("simple-")) {
@@ -1310,6 +1310,9 @@ function init_util() {
     }
 
     if (!this.dialog) {
+      // 异步加载 Dialog 组件
+      const DialogModule = await import(/* webpackChunkName: "dialog-component" */ "../common/dialog.vue");
+      const Dialog = DialogModule.default || DialogModule;
       // create dialog
       let ComponentClass = Vue.extend(Dialog);
       let dialog = new ComponentClass({
@@ -1368,7 +1371,7 @@ function init_util() {
     dialog.callback = callback;
   };
 
-  Vue.prototype.popuplistFormDialog = function (
+  Vue.prototype.popuplistFormDialog = async function (
     formType,
     service,
     selectService,
@@ -1376,6 +1379,9 @@ function init_util() {
     updateData
   ) {
     if (!this.dialog) {
+      // 异步加载 Dialog 组件
+      const DialogModule = await import(/* webpackChunkName: "dialog-component" */ "../common/dialog.vue");
+      const Dialog = DialogModule.default || DialogModule;
       // create dialog
       let ComponentClass = Vue.extend(Dialog);
       let dialog = new ComponentClass({

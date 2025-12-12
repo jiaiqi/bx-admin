@@ -873,23 +873,23 @@ import InputRange from "../ui/input-range.vue";
 import Finder from "../ui/finder.vue";
 import multiFinder from "../ui/multi-finder.vue";
 import UEditor from "../ui/ueditor.vue";
-import TinymceEditor from "./tinymce/index.vue";
+const TinymceEditor = () => import(/* webpackChunkName: "tinymce-editor" */ "./tinymce/index.vue");
 // import UploadFile from "../ui/upload-file.vue";
 import UploadImage from "../ui/upload-image.vue";
 import TreeFinder from "../ui/tree-finder.vue";
 import BxInputNumber from "../ui/bx-input-number.vue";
 import Userlist from "../ui/userlist.vue";
 import QrCode from "../ui/qrcode.vue";
-import CodeEditor from "../ui/code-editor.vue";
+// import CodeEditor from "../ui/code-editor.vue";
 // import JsonEditor from 'json-editor-vue'
-import vueJsonEditor from "vue-json-editor-fix-cn";
-import jsonTableEditor from "../ui/json-table-editor/index.vue";
+// import vueJsonEditor from "vue-json-editor-fix-cn";
+// import jsonTableEditor from "../ui/json-table-editor/index.vue";
 
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
 import ueditorPlus from "../ui/ueditor-plus.vue";
 // import tiptapEditor from "../ui/tiptap-editor/video-home.vue";
-import wangEditor from "../ui/wang-editor/wang-editor.vue";
+// import wangEditor from "../ui/wang-editor/wang-editor.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
 import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
@@ -903,10 +903,10 @@ export default {
   components: {
     Checkbox,
     Radio,
-    CodeEditor,
+    CodeEditor: () => import("../ui/code-editor.vue"),
     // JsonEditor,
-    vueJsonEditor,
-    jsonTableEditor,
+    vueJsonEditor: () => import(/* webpackChunkName: "json-editor" */ "vue-json-editor-fix-cn"),
+    jsonTableEditor: () => import(/* webpackChunkName: "json-table-editor" */ "../ui/json-table-editor/index.vue"),
     Userlist,
     BxInputNumber,
     TreeFinder,
@@ -916,7 +916,7 @@ export default {
     InputRange,
     Finder,
     ueditorPlus,
-    wangEditor,
+    wangEditor: () => import("../ui/wang-editor/wang-editor.vue"),
     // tiptapEditor,
     ueditor: UEditor,
     TinymceEditor,

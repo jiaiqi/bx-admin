@@ -12,10 +12,10 @@
 import "@/assets/common.scss";
 let $ = require("jquery");
 import commonMixin from "@/components/mixin/global-page-mixin";
-import echarts from "echarts";
+// import echarts from "echarts"; // 改为异步加载
 
-import "bootstrap/js/dist/tooltip";
-import "bootstrap/js/dist/popover";
+// import "bootstrap/js/dist/tooltip";
+// import "bootstrap/js/dist/popover";
 
 export default {
   components: {},
@@ -29,7 +29,8 @@ export default {
     return {
       prop_options: this.option,
       data: {},
-      echarts: null,
+      echarts: null, // echarts 实例
+      echartsLib: null, // 异步加载的 echarts 库
       dom: {
         style: "width:100%;height:500px",
         class: "name-kk-pp",
@@ -319,8 +320,18 @@ export default {
 
   created: function () {},
 
-  mounted: function () {
-    this.echarts = echarts.init(this.$refs.echart);
+  async mounted() {
+    // 异步加载 echarts 和 bootstrap 工具提示
+    const [echartsModule] = await Promise.all([
+      import(/* webpackChunkName: "echarts-vendor" */ "echarts"),
+      import(/* webpackChunkName: "bootstrap-vendor" */ "bootstrap/js/dist/tooltip"),
+      import(/* webpackChunkName: "bootstrap-vendor" */ "bootstrap/js/dist/popover"),
+    ]);
+    
+    this.echartsLib = echartsModule.default || echartsModule;
+    
+    // 初始化 echarts 实例
+    this.echarts = this.echartsLib.init(this.$refs.echart);
     this.parseOption();
   },
 };
