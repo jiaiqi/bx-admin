@@ -1269,9 +1269,6 @@ export default {
           let listData = response.body.data["srv_cols"];
           this.vpageNo = respData.vpage_no;
 
-          if (respData.cfg_json) {
-            this.handleCfgJson(respData.cfg_json);
-          }
           // this.gridButton = response.body.data["gridButton"];
           // this.rowButton = response.body.data["rowButton"];
 
@@ -1365,6 +1362,9 @@ export default {
           let firstColumn = this.gridHeader.find((item) => item["sortable"] && item['show'] !== false);
           if (firstColumn) {
             this.firstColumn = firstColumn["column"];
+          }
+          if (respData.cfg_json) {
+            this.handleCfgJson(respData.cfg_json);
           }
         })
         .then((_) => {

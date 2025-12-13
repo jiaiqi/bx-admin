@@ -2353,6 +2353,11 @@ export default {
         this.condition.push(cMap);
       }
 
+      for (var cMap of this.leftTreeCondition) {
+        this.condition.push(cMap);
+      }
+
+
       if (Array.isArray(this.defaultCondition)) {
         for (var cMap of this.defaultCondition) {
           this.condition.push(cMap);
@@ -3404,9 +3409,6 @@ export default {
             wrapButton(button, "row")
           );
 
-          if (respData.cfg_json) {
-            this.handleCfgJson(respData.cfg_json);
-          }
           if (respData.hasOwnProperty("stats_data")) {
             this.statsData = respData.stats_data;
           }
@@ -3475,7 +3477,9 @@ export default {
 
           this.srv_cols = listData;
           this.buildGridHeaders(listData);
-
+          if (respData.cfg_json) {
+            this.handleCfgJson(respData.cfg_json);
+          }
           if (this.mode === "finder") {
             this.gridButton
               .filter((button) => button.name != "查询")
