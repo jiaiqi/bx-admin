@@ -112,6 +112,7 @@ const comColMapRun = computed(() => {
   padding: 6px;
   // align-items: flex-start;
   height: 100%;
+  overflow: auto;
   ::v-deep .footer-btn {
     width: 100%;
     display: flex;
