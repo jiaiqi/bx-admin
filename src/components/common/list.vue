@@ -182,6 +182,16 @@
     </el-row>
 
     <div class="table-list-row">
+           <el-row
+        type="flex"
+        class="row-bg table-row"
+        justify="center"
+        ref="elTableParentDiv"
+        :style="{
+          // maxHeight: maxTableHeight + 'px'  
+        }"
+      >
+      <!-- 简洁卡片列表 -->
       <simple-card
         v-if="card_no != undefined && init_card_data"
         name="cardlist"
@@ -192,8 +202,8 @@
         @card-loaded="cardLoadinit"
         @card-row-button="rowButtonClick"
       ></simple-card>
-      <!--      卡片列表-->
 
+      <!-- 自定义卡片列表-->
       <card-list
         :grid-data="gridDataRun"
         :read-only="readOnly"
@@ -221,17 +231,10 @@
           </div>
         </template>
       </card-list>
-      <el-row
-        type="flex"
-        class="row-bg table-row"
-        justify="center"
-        ref="elTableParentDiv"
-        :style="{
-          // maxHeight: maxTableHeight + 'px'  
-        }"
-        v-else
-      >
+
+ 
         <el-table
+
           ref="bx-table-layout"
           :data="gridDataRun"
           stripe
@@ -246,6 +249,7 @@
           @header-dragend="onColumnWidthChange"
           :span-method="arraySpanMethod"
           @row-dblclick="onRowDbClicked"
+        v-else
         >
           <el-table-column
             type="selection"
