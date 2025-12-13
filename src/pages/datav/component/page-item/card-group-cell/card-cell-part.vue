@@ -230,7 +230,7 @@ import "animate.css";
 import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
-import LiquidFillChart from "../LiquidFillChart.vue";
+// import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import { formatStyleData } from "@/pages/datav/common";
 import { setAnimationClass, setAnimationStyle } from "@/common/common";
@@ -265,7 +265,7 @@ export default {
   components: {
     cardCellPart: () => import("./card-cell-part.vue"),
     Icon,
-    LiquidFillChart,
+    LiquidFillChart: () => import(/* webpackChunkName: "echarts-vendor" */ "../LiquidFillChart.vue"),
     qrCode,
     HlsplayerVideo: () => import(/* webpackChunkName: "hls-video" */ "@/components/common/hls-video/hlsplayer-video.vue"),
     cardPopup,

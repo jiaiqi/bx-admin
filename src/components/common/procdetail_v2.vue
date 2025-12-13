@@ -1074,7 +1074,7 @@
 
 <script>
 import procSimpleList from "./proc-simple-list.vue";
-import flowStep from "./flowStep.vue";
+// import flowStep from "./flowStep.vue";
 import simpleDetail from "./simple-detail.vue";
 import detail from "./detail.vue";
 import SimpleAdd from "./simple-add";
@@ -1099,7 +1099,7 @@ export default {
     add,
     update,
     detail,
-    flowStep,
+    flowStep:() => import(/* webpackChunkName: "echarts-vendor" */ "./flowStep.vue"),
     procHandler,
   },
   props: {

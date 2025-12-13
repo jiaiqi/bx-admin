@@ -687,7 +687,7 @@ routes.push({
       name: "studentfiles",
       component: () =>
         import(
-          /* webpackChunkName: "xixiang" */ "@/pages/studentfiles/studentfiles.vue"
+          /* webpackChunkName: "echarts-vendor" */ "@/pages/studentfiles/studentfiles.vue"
         ),
     },
     // 学生档案  西乡特有页面

@@ -83,10 +83,16 @@
 </template>
 
 <script setup>
-import { computed, watch, onMounted, ref } from "vue";
-import LiquidFillChart from "@/pages/datav/component/page-item/LiquidFillChart.vue";
+import { computed, watch, onMounted, ref, defineAsyncComponent } from "vue";
+// 异步加载 LiquidFillChart 组件
+const LiquidFillChart = defineAsyncComponent(() => 
+  import(/* webpackChunkName: "echarts-vendor" */ "@/pages/datav/component/page-item/LiquidFillChart.vue")
+);
 import Chart from "./chart.vue";
-import SankeyChart from "./SankeyChart.vue";
+// import SankeyChart from "./SankeyChart.vue";
+const SankeyChart = defineAsyncComponent(() => 
+  import(/* webpackChunkName: "echarts-vendor" */ "./SankeyChart.vue")
+);
 import DateFilter from "./DateFilter.vue";
 import { $select } from "../../../common/http.js";
 import {

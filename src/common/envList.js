@@ -28,7 +28,7 @@ export const pathConfigMap = {
     // gateway_ip: "192.168.0.155",
     port: "",
     // port: "2881",
-    gateway: "http://192.168.0.196/bxapi",
+    gateway: "https://www.gxqcxkj.com/bxapi",
     // gateway: "http://192.168.0.155:2881",
     sso_app: "sso",
     application: "config",

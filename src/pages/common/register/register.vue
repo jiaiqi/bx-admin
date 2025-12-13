@@ -292,6 +292,7 @@
 </template>
 
 <script>
+import "bootstrap/dist/css/bootstrap.min.css";
 import formMixin from "./form-mixin";
 import { setRequest, sendCode } from "./api";
 import upload from "./upload.vue";
@@ -304,6 +305,21 @@ export default {
     FkSelector,
     upload,
     locationPicker,
+    // Bootstrap Vue components - async loading
+    "b-container": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BContainer),
+    "b-row": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BRow),
+    "b-col": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BCol),
+    "b-button": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BButton),
+    "b-form": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BForm),
+    "b-form-group": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BFormGroup),
+    "b-form-select": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BFormSelect),
+    "b-input-group": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BInputGroup),
+    "b-form-input": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BFormInput),
+    "b-form-textarea": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BFormTextarea),
+    "b-form-invalid-feedback": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BFormInvalidFeedback),
+    "b-form-radio-group": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BFormRadioGroup),
+    "b-icon-box-arrow-up-right": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BIconBoxArrowUpRight),
+    "b-icon-check2-circle": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BIconCheck2Circle),
   },
   mixins: [formMixin],
   props: {

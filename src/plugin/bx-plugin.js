@@ -1,8 +1,8 @@
 import { $http } from "@/common/http";
 import Viewer from "v-viewer";
 import "viewerjs/dist/viewer.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
+// import "bootstrap/dist/css/bootstrap.min.css";
+// import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
 
 export default {
   // The install method will be called with the Vue constructor as
@@ -31,8 +31,8 @@ export default {
       },
     });
 
-    Vue.use(BootstrapVue);
-    Vue.use(BootstrapVueIcons);
+    // Vue.use(BootstrapVue);
+    // Vue.use(BootstrapVueIcons);
 
     Vue.mixin({
       props: {

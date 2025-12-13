@@ -483,7 +483,7 @@ routes.push( {
   {
     path:'/studentfiles/:serviceName/:id',
     name:'studentfiles',
-    component:()=>import('@/pages/studentfiles/studentfiles.vue')
+    component:()=>import(/* webpackChunkName: "echarts-vendor" */ '@/pages/studentfiles/studentfiles.vue')
   },
   // 学生档案  西乡特有页面
   {
