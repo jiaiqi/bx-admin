@@ -29,10 +29,16 @@ export default {
         if (pages_attribute['使用服务名作为弹窗标题'] === '是') {
           return this.activeFormName
         }
+      }else if(this.activeForm && this.clickedRow?.[this.activeForm]?._dialog_title) {
+        return this.clickedRow?.[this.activeForm]?._dialog_title
       }
     },
     getAddService: function () {
       let addButton = this.gridButton.filter(item => item.button_type === "add");
+      if (this.clickedRow?.['add']?._add_service) {
+        // clickedRow有指定的添加服务名，则使用clickedRow的服务名
+        return this.clickedRow?.['add']?._add_service
+      }
       if (addButton && addButton.length > 0) {
         return addButton[0].service_name
       } else {
