@@ -596,7 +596,7 @@
             ></simple-detail>
 
             <child-list
-              style="height: calc(100% - 50px);"
+              style="height: calc(100% - 50px); display: flex;flex-direction: column;"
               :divCond="buildDivCond"
               :mainService="service_name"
               :main-disp-col="v2Data.key_disp_col"

@@ -1,5 +1,4 @@
 <template>
-  <div>
     <excel-list
       :mem-initdatas-add="initDatas"
       :disabled="updatable === false"
@@ -128,7 +127,6 @@
       v-else
     >
     </tab-list>
-  </div>
 </template>
 
 <script>

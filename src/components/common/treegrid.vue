@@ -60,7 +60,8 @@
       </div>
     </el-row>
 
-    <el-table
+    <el-row class="row-bg" style="flex: 1; overflow: auto;">
+      <el-table
       ref="treegrid"
       :data="gridData"
       stripe
@@ -466,6 +467,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </el-row>
 
     <el-row
       v-if="!isMem()"
