@@ -60,19 +60,54 @@
       </div>
     </el-row>
 
-    <el-row class="row-bg" style="flex: 1; overflow: auto;">
-      <el-table
-      ref="treegrid"
-      :data="gridData"
-      stripe
-      border
-      lazy
-      :row-class-name="tableRowClassName"
-      :span-method="arraySpanMethod"
-      @filter-change="filterChange"
-      @sort-change="handleSortChange"
-      style="width: 100%"
-    >
+    <div class="table-list-wrap">
+      <list-left-tree
+        :cfg-json="cfgJson"
+        v-if="cfgJson && cfgJson.showTreeFilter"
+        @node-click="handleLeftTreeClick"
+      ></list-left-tree>
+      <div class="table-list-row">
+        <el-row class="row-bg" style="flex: 1; overflow: auto;">
+          <!-- 卡片列表 -->
+          <card-list
+            :grid-data="gridData"
+            :read-only="readOnly"
+            :cells-layout-json="cfgJson?.card_json"
+            :row-buttons="rowButton"
+            v-if="listStyle === 'card' && cfgJson && cfgJson.card_json"
+          >
+            <template #footer="{ data }">
+              <div class="footer-btn" v-if="readOnly !== true">
+                <div
+                  class="footer-btn-item"
+                  v-for="(btn, index) in rowButton"
+                  :key="index"
+                >
+                  <el-button
+                    size="mini"
+                    :type="['detail'].includes(btn.button_type) ? 'primary' : ''"
+                    @click.stop="rowButtonClick(btn, data)"
+                    >{{ btn.button_name }}
+                  </el-button>
+                </div>
+              </div>
+            </template>
+          </card-list>
+          
+          <!-- 表格列表 -->
+          <el-table
+          v-else
+          ref="treegrid"
+          :data="gridData"
+          stripe
+          border
+          lazy
+          :row-class-name="tableRowClassName"
+          :span-method="arraySpanMethod"
+          @filter-change="filterChange"
+          @sort-change="handleSortChange"
+          style="width: 100%"
+        >
       <el-table-column width="50">
         <template slot-scope="scope">
           <el-checkbox
@@ -467,7 +502,9 @@
         </template>
       </el-table-column>
     </el-table>
-    </el-row>
+        </el-row>
+      </div>
+    </div>
 
     <el-row
       v-if="!isMem()"
@@ -735,6 +772,8 @@ import cloneDeep from "lodash/cloneDeep";
 import ImportDialog from "../ui/import-form.vue"; // 导入ui
 import exportLayout from "./export-layout"; // 自定义导出 || 导入
 import FileList from "../ui/file-list/file-list.vue";
+import ListLeftTree from "../ui/list-left-tree/list-left-tree.vue";
+import CardList from "../ui/card-list/card-list.vue";
 
 function deepClone(obj) {
   if (obj == null) return null;
@@ -766,7 +805,9 @@ export default {
     update: () => import("../common/update.vue"),
     ImportDialog,
     exportLayout,
-    FileList
+    FileList,
+    ListLeftTree,
+    CardList
   },
   mixins: [ListPopupMixin, CustButtonMinx, MemListMixin, ListMixin],
 
@@ -797,6 +838,10 @@ export default {
     },
     relationCondition: Object,
     childForeignkey: Object,
+    cfgJson: {
+      type: Object,
+      default: () => {},
+    },
   },
   data() {
     return {
@@ -814,6 +859,7 @@ export default {
       order: [],
       searchFormCondition: [],
       filterCondition: [],
+      leftTreeCondition: [],
       service_name: this.service || this.$route.params.service_name,
       gridPage: {
         pageSizes: [],
@@ -822,6 +868,8 @@ export default {
         total: 0,
       },
       unfoldDataMap: {},
+      listStyle: 'table', // 默认表格样式，可选值：table, card
+      readOnly: false, // 只读模式
     };
   },
   methods: {
@@ -1254,6 +1302,23 @@ export default {
           });
         });
     },
+    // 处理左侧树点击事件
+    handleLeftTreeClick(data, node) {
+      console.log('点击节点:', data, node);
+      // 根据点击的树节点过滤表格数据
+      if (data.value) {
+        // 可以根据需要调整过滤条件
+        this.leftTreeCondition = [{
+          colName: 'path',
+          ruleType: "like",
+          value: `/${data.value}`,
+        }];
+      } else {
+        this.leftTreeCondition = [];
+      }
+      // 刷新表格数据
+      this.loadTableData();
+    },
     async initGridData() {
       //加载serviceCols
       //加载serviceCols
@@ -1392,6 +1457,10 @@ export default {
         this.condition.push(cMap);
       }
 
+      for (var cMap of this.leftTreeCondition) {
+        this.condition.push(cMap);
+      }
+
       for (var cMap of this.searchFormCondition) {
         this.condition.push(cMap);
       }
@@ -1422,7 +1491,7 @@ export default {
       }
 
       //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
-      if (this.searchFormCondition.length == 0) {
+      if (this.searchFormCondition.length == 0 && !this.leftTreeCondition?.length) {
         if (
           !cond.find((item) => item.colName === this.parentCol) &&
           this.defaultCondition.length === 0
@@ -1938,6 +2007,9 @@ export default {
 //   width: 100% !important;
 // }
 .tree-grid {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   ::v-deep .el-table__empty-block {
     width: 100% !important;
   }

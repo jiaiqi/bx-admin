@@ -2562,7 +2562,8 @@ export default {
               //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
               const noCol = this.listV2Data["no_col"];
               const parentCol = this.listV2Data["parent_no_col"];
-              if (this.searchFormCondition.length == 0) {
+
+              if (this.searchFormCondition.length == 0 && !this.leftTreeCondition?.length) {
                 if (!condition.find((item) => item.colName === parentCol)) {
                   var initCondition = {
                     colName: parentCol,
