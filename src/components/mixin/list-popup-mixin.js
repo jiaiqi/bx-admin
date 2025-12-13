@@ -198,6 +198,9 @@ export default {
     getCustomPkCol(type) {
       const noCol = this.noCol || this.listV2Data["no_col"];
       const row = this.clickedRow[type];
+      if (this.clickedRow?._no_col && this.clickedRow[type]?.[this.clickedRow?._no_col]) {
+        return this.clickedRow?._no_col
+      }
       if(noCol && row && row[noCol]){
         return noCol
       }
@@ -211,7 +214,10 @@ export default {
     getClickedRowPk(type) {
       const noCol = this.noCol || this.listV2Data["no_col"];
       const row = this.clickedRow[type];
-      if (noCol && row && row[noCol]) {
+      // 先判断是否有自定义的主键列
+      if (this.clickedRow?._no_col && this.clickedRow[type]?.[this.clickedRow?._no_col]) {
+        return this.clickedRow[type]?.[this.clickedRow?._no_col]
+      } else if (noCol && row && row[noCol]) {
         return row[noCol]
       } else if (this.clickedRow && this.clickedRow[type] && this.clickedRow[type].id) {
         return this.clickedRow[type].id.toString()
