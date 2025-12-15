@@ -1,6 +1,6 @@
 const webpack = require("webpack");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const { getPublicPath, getOutputDir, getAssetsDir } = require("./src/common/config.js");
 
 // Node 侧从 CommonJS 模块读取公共路径和输出配置
@@ -174,7 +174,7 @@ module.exports = {
         // Gzip压缩配置优化
         new CompressionWebpackPlugin({
           algorithm: "gzip",
-          test: new RegExp("\\.(" + productionGzipExtensions.join("|") + ")$"),
+          test: new RegExp("\\.(" + ["js", "css"].join("|") + ")$"),
           threshold: 8192, //最低8k
           minRatio: 0.8,
           deleteOriginalAssets: false//不再保留源文件

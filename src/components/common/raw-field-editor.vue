@@ -889,10 +889,11 @@
 </template>
 
 <script>
+import { Icon } from "@iconify/vue2";
 import InputRange from "../ui/input-range.vue";
 import Finder from "../ui/finder.vue";
 import multiFinder from "../ui/multi-finder.vue";
-import UEditor from "../ui/ueditor.vue";
+// import UEditor from "../ui/ueditor.vue";
 const TinymceEditor = () => import(/* webpackChunkName: "tinymce-editor" */ "./tinymce/index.vue");
 // import UploadFile from "../ui/upload-file.vue";
 import UploadImage from "../ui/upload-image.vue";
@@ -907,7 +908,7 @@ import QrCode from "../ui/qrcode.vue";
 
 import Radio from "../ui/radio.vue";
 import Checkbox from "../ui/checkbox.vue";
-import ueditorPlus from "../ui/ueditor-plus.vue";
+// import ueditorPlus from "../ui/ueditor-plus.vue";
 // import tiptapEditor from "../ui/tiptap-editor/video-home.vue";
 // import wangEditor from "../ui/wang-editor/wang-editor.vue";
 import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
@@ -915,7 +916,7 @@ import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
 import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
 import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 // import transferVue from "../ui/form-widget/transfer.vue";
-import transferVue from "../ui/form-widget/multi-select/index.vue"; // 多选穿梭框组件
+// import transferVue from "../ui/form-widget/multi-select/index.vue"; // 多选穿梭框组件
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 import { idCardExp } from "../model/FieldInfo.js";
@@ -936,10 +937,10 @@ export default {
     UploadFile: () => import("../ui/upload-file.vue"), //异步组件加载方式,
     InputRange,
     Finder,
-    ueditorPlus,
+    // ueditorPlus,
     wangEditor: () => import("../ui/wang-editor/wang-editor.vue"),
     // tiptapEditor,
-    ueditor: UEditor,
+    // ueditor: UEditor,
     TinymceEditor,
     QrCode,
     multiFinder,
@@ -947,8 +948,9 @@ export default {
     verifyMobile,
     autocompleteInput,
     carNoKeyboard,
-    transferVue,
+    // transferVue,
     Icon,
+    multiSelectTransfer
   },
 
   props: {
