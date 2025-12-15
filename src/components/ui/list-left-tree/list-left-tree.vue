@@ -8,7 +8,7 @@
           placeholder="搜索节点"
           prefix-icon="el-icon-search"
           clearable
-          @input="handleFilter"
+          @change="handleFilter"
         />
       </div>
       <!-- 树结构 -->

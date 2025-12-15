@@ -121,9 +121,7 @@ export default {
       let props = {
         value: this.field.info.valueCol,
         label: this.needRenameLabel() ? "valuezh" : this.field.info.dispCol,
-        checkStrictly:
-          top?.env?.includes("health") ||
-            this.optionListV2?.checkStrictly === false ||
+        checkStrictly: this.optionListV2?.checkStrictly === false ||
             this.optionListV2?.["只能选择叶子节点"] === true
             ? false
             : true, //只有健康科普资源库后台需要只能选择最后一级节点,其他都需要
