@@ -66,6 +66,16 @@
         </span>
         <span v-if="mixTitleIcon === '下划线'" class="under-line"></span>
       </div>
+
+      <div
+        class="more-btn"
+        v-if="showMoreBtn && pageItem.more_position !== '数据项后'"
+      >
+        <span @click="toMore" :style="[moreBtnStyle]">
+          {{ pageItem.more_label || "更多" }}
+          <i class="el-icon-arrow-right"></i>
+        </span>
+      </div>
     </div>
     <div class="grid-content" :style="[setGridStyle]">
       <slot></slot>
@@ -191,6 +201,18 @@ export default {
     };
   },
   computed: {
+    moreBtnStyle() {
+      if (typeof this.pageItem?.more_style_json === "object") {
+        // console.log('----', formatStyleData(this.pageItem?.more_style_json))
+        return formatStyleData(this.pageItem?.more_style_json);
+      }
+    },
+    showMoreBtn() {
+      return (
+        this.pageItem?.com_option?.includes("更多") &&
+        this.pageItem?.more_jump_json
+      );
+    },
     useContentWidth() {
       // 只有当父组件是页面容器的布局容器时，才可以使用contentWidth
       return this.$parent?.$parent?.$options?.name === "lc-container";

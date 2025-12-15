@@ -102,6 +102,8 @@ export default {
         query.serviceName?.endsWith("update")
       ) {
         if (!query.data || query.data.length == 0) {
+          // 添加/更新操作时，必须有数据
+          console.error("添加/更新操作时，必须有数据----", query);
           return null;
         }
       } else if (
@@ -109,6 +111,8 @@ export default {
         query?.serviceName?.endsWith("update")
       ) {
         if (!query.condition || query.condition.length == 0) {
+          // 更新/删除操作时，必须有条件
+          console.error("更新/删除操作时，必须有条件---", query);
           return null;
         }
       }

@@ -65,17 +65,8 @@
         <!--        ></div>-->
       </div>
 
-      <!-- 悬浮组件渲染区域 - chat-by-mobile -->
-      <div
-        v-for="(item, index) in floatingComponents"
-        :key="'floating-' + (item.id || index)"
-        class="floating-component-wrapper"
-        :class="{
-          'floating-edit-mode': !isPreview,
-          'selected': !isPreview && currentId === item.id
-        }"
-        @click="!isPreview && handleComponentClick(item)"
-      >
+      <!-- 悬浮组件渲染区域 - chat-by-mobile | float-component -->
+      <template v-for="(item, index) in floatingComponents">
         <component
           :is="getComponentType(item)"
           v-bind="item"
@@ -88,8 +79,35 @@
           :currentId="currentId"
           :onDelete="() => handleDeleteComponent(item, item.id)"
           @position-change="handleFloatingPositionChange(item, $event)"
+          @click="!isPreview && handleComponentClick(item)"
+          v-if="getComponentType(item) == 'float-component'"
         />
-      </div>
+        <div
+          :key="'floating-' + (item.id || index)"
+          class="floating-component-wrapper"
+          :class="{
+            'floating-edit-mode': !isPreview,
+            'selected': !isPreview && currentId === item.id,
+            'float-component': getComponentType(item) == 'float-component'
+          }"
+          @click="!isPreview && handleComponentClick(item)"
+          v-else
+        >
+          <component
+            :is="getComponentType(item)"
+            v-bind="item"
+            :pageItem="item"
+            :layout="item.layout"
+            :screenType="screenType"
+            :pageConfig="pageConfig"
+            :inTabs="false"
+            :inEdit="!isPreview"
+            :currentId="currentId"
+            :onDelete="() => handleDeleteComponent(item, item.id)"
+            @position-change="handleFloatingPositionChange(item, $event)"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -143,14 +161,14 @@ export default {
     normalComponents() {
       return this.currentComponents.filter(item => {
         const componentType = this.getComponentType(item);
-        return componentType !== 'chat-by-mobile';
+        return !['chat-by-mobile', 'float-component'].includes(componentType)
       });
     },
     // 悬浮组件（chat-by-mobile）
     floatingComponents() {
       return this.currentComponents.filter(item => {
         const componentType = this.getComponentType(item);
-        return componentType === 'chat-by-mobile';
+        return ['chat-by-mobile', 'float-component'].includes(componentType)
       });
     }
   },
@@ -288,6 +306,10 @@ export default {
     // 获取组件类型
     getComponentType(item) {
       if (!item) return null
+      // 悬浮组件
+      if (item?.com_type != '咨询入口' && item?.com_option?.includes('悬浮可拖动')) {
+        return 'float-component'
+      }
       // 根据组件类型返回对应的组件名称
       switch (item.com_type) {
         case 'container':
@@ -623,6 +645,15 @@ export default {
             dragData.com_type = "detail";
           }
         }
+        if (dragData.value === "大华视频监控") {
+          dragData.com_type = "大华视频监控";
+          dragData.component = "page-item";
+          if (!dragData._editType) {
+            dragData._editType = "add";
+            dragData.com_name = "大华视频监控";
+            dragData.com_type = "大华视频监控";
+          }
+        }
         if (dragData.value === "咨询入口") {
           dragData.com_type = "咨询入口";
           dragData.component = "chat-by-mobile";
@@ -673,6 +704,7 @@ export default {
         this.$set(this.currentComponents[index], 'layout_x', position.layout_x)
         this.$set(this.currentComponents[index], 'layout_y', position.layout_y)
         this.$set(this.currentComponents[index], 'isPositionChanged', true)
+        this.$set(this.currentComponents[index], '_editType', this.currentComponents[index]?._editType || 'update')
 
         // 触发组件更新事件
         this.$emit('UpdateComponents', this.currentComponents)

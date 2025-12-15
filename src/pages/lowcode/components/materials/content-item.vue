@@ -152,6 +152,7 @@ import dragStore from "../../store/dragStore";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 import canvasPage from '../../../../components/common/canvas-line/canvasPage.vue'
 import {
+  getFullBaseUrl,
   setEnterAnimationClass,
   setEnterAnimationVariables,
 } from "@/common/common";
@@ -426,7 +427,7 @@ export default {
           this.$message.warning("未找到卡片编号");
           return;
         }
-        open(`/vpages/#/card-cell-editor/${cardNo}?srvApp=config`);
+        open(`${getFullBaseUrl()}/card-cell-editor/${cardNo}?srvApp=config`);
       } catch (error) {
         console.error("打开卡片编辑器失败:", error);
         this.$message.error("打开编辑器失败");
@@ -876,6 +877,23 @@ export default {
                  });
                  draggedElement._type = "component";
                }
+               if(draggedElement.value==='大华视频监控'){
+                 draggedElement.com_type = "大华视频监控";
+                 draggedElement.data = {
+                   // ...draggedElement,
+                   com_type: "大华视频监控",
+                 };
+
+                 Object.keys(draggedElement).forEach((key) => {
+                   if (key.startsWith("_default_")) {
+                     draggedElement.data[key.replace("_default_", "")] =
+                         draggedElement[key];
+                   }
+                 });
+                 draggedElement._type = "component";
+               }
+               
+
               if(draggedElement.value==='咨询入口'){
                 draggedElement.com_type = "咨询入口";
                 draggedElement.data = {

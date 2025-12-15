@@ -138,6 +138,7 @@ export default {
       return await new Promise(function (resolve, reject) {
         //异步操做
         const pageInfo = self.pageConfig || self.pageInfo;
+        document.title = pageInfo?.page_title;
         let paraJson =
           pageInfo?.interface_json_data || pageInfo?.para_json;
         let paraJsonV2 = pageInfo?.para_with_map_json_data || null;

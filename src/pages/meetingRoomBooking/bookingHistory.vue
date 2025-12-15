@@ -36,6 +36,14 @@
                 clearable
               ></el-input>
             </el-form-item>
+            <el-form-item label="会议/活动名称">
+              <el-input
+                v-model="searchForm.meetingName"
+                placeholder="会议/活动名称"
+                clearable
+                style="width: 160px;"
+              ></el-input>
+            </el-form-item>
             <el-form-item label="日期范围">
               <el-date-picker
                 v-model="searchForm.dateRange"
@@ -124,6 +132,14 @@
               </el-tag>
             </div>
 
+            <div
+              class="meeting-name"
+              v-if="record.meeting_name"
+            >
+              <i class="el-icon-tickets"></i>
+              <span>{{ record.meeting_name }}</span>
+            </div>
+
             <div class="card-body">
               <div class="info-row">
                 <div class="info-item">
@@ -157,7 +173,7 @@
 
               <div
                 class="info-row"
-                v-if="![1, '1'].includes(record.count)"
+                v-if="record.count && ![1, '1'].includes(record.count)"
               >
                 <div class="info-item">
                   <i class="el-icon-user-solid"></i>
@@ -232,6 +248,13 @@
         <div class="detail-item">
           <span class="detail-label">会议室：</span>
           <span class="detail-value">{{ selectedRecord.rsvo_name }}</span>
+        </div>
+        <div
+          class="detail-item"
+          v-if="selectedRecord.meeting_name"
+        >
+          <span class="detail-label">会议/活动名称：</span>
+          <span class="detail-value">{{ selectedRecord.meeting_name }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">预约日期：</span>
@@ -324,6 +347,7 @@ const selectedRecord = ref(null);
 // 搜索表单
 const searchForm = reactive({
   roomName: "",
+  meetingName: "",
   dateRange: [],
   contacts: "",
   createUserDisp: "",
@@ -355,6 +379,7 @@ const searchRecords = () => {
 // 重置搜索
 const resetSearch = () => {
   searchForm.roomName = "";
+  searchForm.meetingName = "";
   searchForm.dateRange = [];
   searchForm.contacts = "";
   searchForm.createUserDisp = "";
@@ -416,6 +441,14 @@ const fetchRecordList = async () => {
         colName: "create_user_disp",
         ruleType: "like",
         value: searchForm.createUserDisp,
+      });
+    }
+
+    if (searchForm.meetingName) {
+      req.condition.push({
+        colName: "meeting_name",
+        ruleType: "like",
+        value: searchForm.meetingName,
       });
     }
 
@@ -598,6 +631,24 @@ onMounted(() => {
 .history-btn {
   display: flex;
   align-items: center;
+}
+
+.meeting-name {
+  display: flex;
+  align-items: center;
+  margin: 16px 16px 0;
+  color: #666;
+  font-size: 14px;
+
+  i {
+    margin-right: 6px;
+    color: #409eff;
+  }
+
+  span {
+    font-weight: 500;
+  }
+
   gap: 5px;
 
   i {
@@ -678,6 +729,8 @@ onMounted(() => {
       overflow: hidden;
       transition: transform 0.3s, box-shadow 0.3s;
       border: 1px solid #ebeef5;
+      display: flex;
+      flex-direction: column;
 
       &:hover {
         transform: translateY(-5px);
@@ -779,7 +832,7 @@ onMounted(() => {
     line-height: 24px;
 
     .detail-label {
-      width: 100px;
+      width: 140px;
       color: #666;
       text-align: right;
       padding-right: 12px;

@@ -1,6 +1,9 @@
 <!-- tinymc富文本 -->
 <template>
-  <div class="mb-5px" v-if="tinymceId">
+  <div
+    class="mb-5px"
+    v-if="tinymceId"
+  >
     <editor
       v-model="myValue"
       :id="tinymceId"
@@ -15,9 +18,8 @@
         :text-inside="true"
         :stroke-width="24"
         :percentage="hashPercentage"
-        :format="
-          (percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
-        "
+        :format="(percentage) => `正在计算文件哈希值，当前进度：${hashPercentage}%`
+          "
         v-if="hashPercentage && hashPercentage < 100"
       ></el-progress>
       <el-progress
@@ -35,11 +37,8 @@
 <script>
 import tinymce from "tinymce";
 import "tinymce/plugins/paste";
-import Editor from "@tinymce/tinymce-vue";
-
 import "tinymce/skins/ui/oxide/skin.min.css";
-import "tinymce/skins/content/default/content.css";
-import "./langs/zh_CN.js"; // 本地汉化
+import "tinymce/skins/content/default/content.min.css";
 import "tinymce/themes/silver/theme.min.js";
 import "tinymce/plugins/image/plugin";
 import "tinymce/plugins/imagetools/plugin";
@@ -52,9 +51,12 @@ import "tinymce/plugins/wordcount/plugin";
 import "tinymce/plugins/colorpicker/plugin";
 import "tinymce/plugins/textcolor/plugin";
 import "tinymce/icons/default"; // 图标 -解决测试环境找不icon问题
-import { backendIpAddr, $http } from "@/common/http.js";
+
+import Editor from "@tinymce/tinymce-vue";
+
+import "./langs/zh_CN.js"; // 本地汉化
+import { $http } from "@/common/http.js";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
-// import request from '../utils/request'
 export default {
   name: "tinymce",
   mixins: [bigFileUploadMixin],
@@ -111,8 +113,8 @@ export default {
         selector: `#${this.tinymceId}`,
         language_url: "/tinymce/zh_CN.js", // 这里需要单独处理
         language: "zh_CN",
-        skin_url: "/vpages/tinymce/skins/ui/oxide/", // skin路径
-        content_css: "/vpages/tinymce/skins/content/default/content.min.css",
+        // skin_url: "/vpages/tinymce/skins/ui/oxide/", // skin路径
+        // content_css: "/vpages/tinymce/skins/content/default/content.min.css",
         convert_urls: false,
         height: 500,
         plugins: "paste",
@@ -299,7 +301,7 @@ export default {
       hashPercentage: 0,
     };
   },
-  created() {},
+  created() { },
   mounted() {
     this.tinymceId = `tinymce_${this.field.info?.name}_${new Date().getTime()}`;
     this.myValue = this.recoverFileAddress(this.field.model || "");
@@ -543,6 +545,7 @@ export default {
 #myDialog {
   width: 800px;
 }
+
 .mb-5px {
   margin-bottom: 5px;
 }

@@ -70,6 +70,8 @@
               :childForeignkey="childForeignkey"
               :mainformDatas="mainformDatas"
               :parentAddMainFormDatas="parentAddMainFormDatas"
+              :getCurrentListData="getCurrentListData"
+              :parentPageType="parentPageType"
               :form-has-invalid-error="hasInvalidField()"
               @field-value-changed="onFieldValueChanged($event)"
               @child-form-loaded="onChildFormLoaded"
@@ -230,6 +232,9 @@ export default {
     },
     parentAddMainFormDatas: {
       type: Object,
+    },
+    getCurrentListData: {
+      type: Function,
     },
     duplicateType: String,
     duplicateData: Object,

@@ -13,13 +13,14 @@ import cloneDeep from "lodash/cloneDeep";
 import isFunction from "lodash/isFunction";
 import batchAddMixin from "@/components/mixin/batch-add-mixin";
 import { onFetch } from "@/common/httpUtil";
+import inlineEditListMixin from "@/components/mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
 
 export function MissRequiredConditionError(cond) {
   console.error("缺少条件：", cond);
 }
 let polling = null;
 export default {
-  mixins: [batchAddMixin],
+  mixins: [batchAddMixin, inlineEditListMixin],
   data() {
     return {
       tabsConfig: [
@@ -34,6 +35,10 @@ export default {
           len: 0,
         },
       ],
+      firstColumn: null,
+      unfoldDataMap: {},
+      treeNodeLoadingMap: {},
+      _columnWidthCache: null, // 操作列宽度缓存
       initLoad: false,
       activeTabName: "norm",
       activeRowButton: null,
@@ -153,6 +158,18 @@ export default {
     },
     mainFormData: {
       type: Object,
+      default: function () {
+        return null;
+      },
+    },
+    mainDispCol: {
+      type: String,
+      default: function () {
+        return null;
+      },
+    },
+    mainDispCol: {
+      type: String,
       default: function () {
         return null;
       },
@@ -405,6 +422,22 @@ export default {
         // }
       },
     },
+    // 监听按钮变化，清除宽度缓存
+    sortedRowButtons: {
+      handler() {
+        // 清除缓存，触发重新计算
+        this._columnWidthCache = null;
+      },
+      deep: true
+    },
+    // 监听数据变化，清除宽度缓存
+    gridData: {
+      handler() {
+        // 数据变化可能影响按钮可见性，清除缓存
+        this._columnWidthCache = null;
+      },
+      deep: true
+    }
   },
 
   computed: {
@@ -422,6 +455,10 @@ export default {
         sessionStorage.getItem("pages_attribute") || "{}"
       );
       let show = false;
+      if (process.env.NODE_ENV === 'development') {
+        // 开发环境默认显示
+        show = true
+      }
       let operate_mode = "跳转";
       if (
         this.service_name?.indexOf("srvsys_") === 0 ||
@@ -447,34 +484,40 @@ export default {
       }
 
       if (show) {
-        let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService
-          }&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
-        if (this.defaultCondition?.length) {
-          this.defaultCondition.forEach((col) => {
-            if (col.ruleType === "eq") {
-              url += `&${col.colName}=${col.value}`;
-            }
-          });
-          // url += `&topTreeData=true`;
+        // let url = `/dataview/#/sheet/${this.service_name}?srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+        // if (this.defaultCondition?.length) {
+        //   this.defaultCondition.forEach((col) => {
+        //     if (col.ruleType === "eq") {
+        //       url += `&${col.colName}=${col.value}`;
+        //     }
+        //   });
+        //   // url += `&topTreeData=true`;
+        // }
+        // if (this.listV2Data?.is_tree === true) {
+        //   url += `&topTreeData=true`;
+        // }
+        let url = this.excelUrl; // Excel 导出链接
+        let tabTitle = ""; // 标签页标题，优先使用主表显示数据
+        // 优先使用子外键的显示列值作为标题
+        if (this.childForeignkey?.kedispcol && this.listMainFormDatas[this.childForeignkey?.kedispcol]) {
+          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]}`; // 使用子外键显示列的值
+          // 若上述不存在，退化为使用主表显示列的值
+        } else if (this.mainDispCol && this.listMainFormDatas && this.listMainFormDatas[this.mainDispCol]) {
+          tabTitle = `${this.listMainFormDatas[this.mainDispCol]}`; // 使用主表显示列的值
         }
-        if (this.listV2Data?.is_tree === true) {
-          url += `&topTreeData=true`;
+        if (tabTitle) {
+          tabTitle += '/'
         }
-        let tabTitle = "";
-        if (
-          this.childForeignkey?.kedispcol &&
-          this.listMainFormDatas[this.childForeignkey?.kedispcol]
-        ) {
-          tabTitle = `${this.listMainFormDatas[this.childForeignkey?.kedispcol]
-            }`;
-        }
+        // 若有section_name，拼接section_name并标记为 Excel
         if (this.childForeignkey?.section_name) {
-          tabTitle += `/${this.childForeignkey?.section_name}【excel】`;
+          tabTitle += `${this.childForeignkey?.section_name}【excel】`; // 添加小节名
+          // 若已有标题且存在service_view_name，追加service_view_name并标记为 Excel
         } else if (tabTitle && this.service_view_name) {
-          tabTitle += `/${this.service_view_name}【excel】`;
+          tabTitle += `${this.service_view_name}【excel】`; // 添加service_view_name
+          // 若尚无标题但存在service_view_name，直接使用service_view_name并标记为 Excel
         }
         if (!tabTitle && this.service_view_name) {
-          tabTitle = `${this.service_view_name}【excel】`;
+          tabTitle = `${this.service_view_name}【excel】`; // 以service_view_name为标题
         }
         return {
           page_type: "列表",
@@ -497,6 +540,28 @@ export default {
           path_col: "是",
         };
       }
+    },
+    // 专门用于拼接Excel页面URL的计算属性
+    excelUrl() {
+      // 基础URL构建
+      let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.updateService}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+      // let url = `/dataview/#/sheet/${this.service_name}?colSrv=${this.service_name}&srvApp=${this.resolveDefaultSrvApp()}&listType=${this.listType}`;
+
+      // 添加默认条件参数
+      if (this.defaultCondition?.length) {
+        this.defaultCondition.forEach((col) => {
+          if (col.ruleType === "eq") {
+            url += `&${col.colName}=${col.value}`;
+          }
+        });
+      }
+
+      // 如果是树形结构，添加topTreeData参数
+      if (this.listV2Data?.is_tree === true) {
+        url += `&topTreeData=true`;
+      }
+
+      return url;
     },
     tableButtonsPopupRun() {
       let val = this.$store.getters.getTableButtonsPopup;
@@ -715,6 +780,7 @@ export default {
       return this.gridHeader.filter((item) => item.col_type !== "InlineList");
     },
 
+
     maxTableHeight() {
       let ratio = 0.8;
       let h = Math.max(
@@ -737,6 +803,51 @@ export default {
     clearInterval(polling);
   },
   methods: {
+    selectable(row, index) {
+      const selection = this.selection
+      if (typeof selection === 'boolean') {
+        return selection === true
+      } else if (Array.isArray(selection)) {
+        return selection.every((item) => {
+          const colName = item.colName
+          const value = item.value
+          const ruleType = item.ruleType
+          const rowValue = row[colName]
+          let compareValue
+          if (value.value_type === 'rowData') {
+            compareValue = row[value.value_key]
+          } else if (value.value_type === 'constant') {
+            compareValue = value.value
+          }
+          if (ruleType === 'eq') {
+            return rowValue === compareValue
+          }
+        })
+      }
+      //       样例数据
+      //       {
+      // 	"selection": [
+      // 	{
+      // 		"colName": "table_name",
+      // 		"value": {
+      // 			"value_type": "rowData",
+      // 			"value_key": "table_name"
+      // 		},
+      // 		"ruleType": "eq"
+      // 	},
+      // 	{
+      // 		"colName": "table_column",
+      // 		"value": {
+      // 			"value_type": "constant",
+      // 			"value": "常量"
+      // 		},
+      // 		"ruleType": "eq"
+      // 	}]
+      // }
+    },
+    getCurrentListData() {
+      return this.gridDataRun;
+    },
     isDetailLink(column = "", data = {}, rowIndex) {
       if (
         column !== "id" &&
@@ -753,31 +864,6 @@ export default {
     toDetail(column = "", data = {}, rowIndex) {
       if (this.isDetailLink(column, data, rowIndex)) {
         this.rowButtonClick(this.detailBtn, data);
-        // let address = `/vpages/#/detail/${this.serviceName}/${this.row.id}?srvApp=${this.app}`;
-        // let tab_title = this.detailButton.service_view_name;
-        // let disp_col = this.detailButton._disp_col;
-        // let disp_value = this.row[disp_col]; //详情页面上的标签
-        // tab_title = tab_title.replace("查询", "");
-        // if (disp_value != null && disp_value != undefined && disp_value != "") {
-        //   tab_title = disp_value + "(" + tab_title + "详情)";
-        // } else {
-        //   tab_title = tab_title + "详情";
-        // }
-        // let page = {
-        //   title: tab_title,
-        //   url: address,
-        //   icon: "",
-        //   app: this.app,
-        // };
-        // if (window.top.tab) {
-        //   window.top.tab.addTab(page);
-        // } else {
-        //   // 没有tab实例，在浏览器中打开新标签页
-        //   const page = window.open(address);
-        //   setTimeout(() => {
-        //     page.document.title = tab_title;
-        //   }, 500);
-        // }
       }
     },
     setPolling() {
@@ -822,14 +908,10 @@ export default {
           row[column.property] == this.sumConfig.sum_text &&
           !isNaN(Number(this.sumConfig.sum_text_col_span))
         ) {
-          //  console.log({ row, column, rowIndex, columnIndex })
-          // return [1,1]
-
           return {
             rowspan: 1,
             colspan: colspan,
           };
-          // [1, this.sumConfig.sum_text_col_span];
         } else if (columnIndex < colspan) {
           return {
             rowspan: 0,
@@ -841,19 +923,13 @@ export default {
         let colspan = 1;
         let rowSpanCols = [];
         let colName = column.property;
-        if (
-          this.cfgJson &&
-          this.cfgJson.hasOwnProperty("list_style_json") &&
-          this.cfgJson.list_style_json &&
-          this.cfgJson.list_style_json.hasOwnProperty(
-            "list_auto_row_span_cols"
-          ) &&
-          this.cfgJson.list_style_json.list_auto_row_span_cols
-        ) {
-          rowSpanCols =
-            this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
+        if (colName && this.cfgJson?.list_style_json?.list_auto_row_span_cols) {
+          rowSpanCols = this.cfgJson.list_style_json.list_auto_row_span_cols.split(",");
         }
-        let iValue = this.gridDataRun?.[rowIndex]?.[colName] + ""; // 值
+        let iValue = this.gridDataRun?.[rowIndex]?.[colName]; // 值
+        if (iValue) {
+          iValue += ""
+        }
         if (rowSpanCols && rowSpanCols.indexOf(colName) !== -1) {
           let lastValue = "";
           let firstValue = "";
@@ -869,8 +945,7 @@ export default {
             firstValue = this.gridDataRun[rowIndex - 1][colName] + ""; // 前一行
             lastValue = undefined; // 前一行
           }
-
-          if (firstValue !== iValue) {
+          if (iValue && firstValue !== iValue) {
             let allRows = 1;
             let isNext = true;
             for (let i in this.gridDataRun) {
@@ -889,12 +964,11 @@ export default {
             }
             rowspan = allRows;
             colspan = 1;
-          } else if (firstValue == iValue) {
+          } else if (iValue && firstValue == iValue) {
             rowspan = 0;
             colspan = 0;
           }
-
-          // console.log('span Method:',rowIndex,colName,iValue,'跨行：',rowspan)
+          console.log('span Method:', rowIndex, colName, iValue, '跨行：', rowspan)
           return {
             rowspan: rowspan,
             colspan: colspan,
@@ -1576,6 +1650,9 @@ export default {
       } else if ("batch_delete" == type) {
         self.batchDeleteData(exeservice);
       } else if (type === 'pay') {
+        if (this.multipleSelection.length == 0) {
+          return this.$message.warning("请选择需要支付的数据", "提示");
+        }
         this.buttonInfo = button
         this.activeForm = 'pay';
       } else if ("add" == type) {
@@ -1699,7 +1776,7 @@ export default {
           button.application
         );
       } else if ("export" == type) {
-        this.onExportClicked();
+        this.onExportClicked(null, button);
         // this.activeForm = "export"   // 显示导出配置
       } else if ("import" == type) {
         this.onImportClicked(button);
@@ -1975,6 +2052,8 @@ export default {
             this.customize_delete(operate_item, data);
           } else if (operate_item.operate_type == "增加") {
             this.customize_add(operate_item, data);
+          } else if (operate_item.operate_type == "申请弹出") {
+            this.customize_popup(operate_item, data);
           } else {
             operate_item.listservice = this.service;
             this.customizeOperate(operate_item, data, (e) => {
@@ -1992,7 +2071,7 @@ export default {
           buttonMode: operate_item.servcie_type,
           submitState: false,
         };
-        console.log(operate_item);
+        console.log(operate_item, 333333333);
         this.$store.commit("setTableButtonsPopup", {
           ...pageKey,
         });
@@ -2234,7 +2313,30 @@ export default {
       // console.log(cloneDeep(this.filterCondition));
       this.loadTableData();
     },
+    buildDetailListCond(childForeignkey, mainData) {
+      let cond = null;
+      if (childForeignkey?.more_config?.includes("condition")) {
+        try {
+          const moreConfig = JSON.parse(childForeignkey?.more_config);
+          if (Array.isArray(moreConfig?.condition) && moreConfig?.condition.length) {
+            cond = moreConfig?.condition.map(item => {
+              const obj = { ...item }
+              if (item.value?.value_type === 'mainData') {
+                if (item.value.value_key && mainData[item.value.value_key]) {
+                  obj.value = mainData[item.value.value_key]
+                }
+              } else if (item.value?.value || typeof item.value === 'string') {
+                obj.value = item.value?.value || item.value
+              }
+              return obj
+            })
+          }
+        } catch (error) {
 
+        }
+      }
+      return cond;
+    },
     buildQueryConditions() {
       this.condition = [];
       if (this.listType == "wait") {
@@ -2251,9 +2353,24 @@ export default {
         this.condition.push(cMap);
       }
 
+      for (var cMap of this.leftTreeCondition) {
+        this.condition.push(cMap);
+      }
+
+
       if (Array.isArray(this.defaultCondition)) {
         for (var cMap of this.defaultCondition) {
           this.condition.push(cMap);
+        }
+      }
+
+      if (this.listType === "detaillist") {
+        // 详情子表
+        if (this.childForeignkey?.more_config?.includes("condition")) {
+          let conds = this.buildDetailListCond(this.childForeignkey, this.listMainFormDatas);
+          if (Array.isArray(conds) && conds.length) {
+            this.condition = this.condition.concat(conds);
+          }
         }
       }
 
@@ -2366,7 +2483,6 @@ export default {
           return this.selectproc(
             this.service_name,
             this.condition,
-            // page,
             this.showPagination ? page : null,
             this.order,
             this.listType,
@@ -2446,7 +2562,8 @@ export default {
               //树列表，没有搜索条件的时候，默认只查找父节点为空的数据
               const noCol = this.listV2Data["no_col"];
               const parentCol = this.listV2Data["parent_no_col"];
-              if (this.searchFormCondition.length == 0) {
+
+              if (this.searchFormCondition.length == 0 && !this.leftTreeCondition?.length) {
                 if (!condition.find((item) => item.colName === parentCol)) {
                   var initCondition = {
                     colName: parentCol,
@@ -2494,16 +2611,32 @@ export default {
                   this.srvAuthLogin = true;
                 } else {
                   if (this.listType === "treelist") {
-                    response.data = response.data.map((item) => {
-                      item.hasChildren = item.is_leaf !== "是";
-                      if (item.hasChildren === true) {
-                        item.children = [];
-                        item.expanded = false;
-                      }
-                      return item;
+                    // 使用treegrid风格的树形结构处理
+                    response.data.forEach((item) => {
+                      item._children = item.children;
+                      delete item.children;
                     });
+                    this.buildTreeData(response.data, true);
+                    this.gridData = this.setSpaceIcon(response.data, null);
+
+                    // 设置firstColumn
+                    if (this.gridHeader && this.gridHeader.length > 0) {
+                      this.firstColumn = this.gridHeader.find(item =>
+                        this.getGridHeaderDispExps(item, this.listMainFormDatas)
+                      )?.column;
+                    }
+
+                    // 处理已展开的节点
+                    if (this.gridData.length > 0) {
+                      this.gridData.forEach((item) => {
+                        if (this.unfoldDataMap[item.id] === true) {
+                          this.toggle(item);
+                        }
+                      });
+                    }
+                  } else {
+                    this.gridData = response.data;
                   }
-                  this.gridData = response.data;
                   this.originListData = JSON.parse(
                     JSON.stringify(response.data)
                   );
@@ -2912,7 +3045,7 @@ export default {
             colName: fk.column_name,
             ruleType: "eq",
             valueFunc: (_) => {
-              return row[fk.referenced_column_name];
+              return row[fk.referenced_column_name] || null;
             },
           },
         ];
@@ -2924,20 +3057,17 @@ export default {
     },
 
     getColAlign: function (colType) {
+      if (['audit', 'auditDev'].includes(process.env.VUE_APP_TARGET)) {
+        // 稽核开发、生产环境 统一调整为居中
+        return "center";
+      }
       if (
-        colType === "Money" ||
-        colType === "int" ||
-        colType === "Integer" ||
-        colType === "Email" ||
-        colType === "TelNo"
+        ['Float', 'Money', 'int', 'Integer', 'Decimal', 'Email', 'TelNo'].includes(colType)
       ) {
-        return "right";
+        // return "right";
+        return "center"; //2025.9.2改为居中
       } else if (
-        colType === "Enum" ||
-        colType === "Dict" ||
-        colType === "Date" ||
-        colType === "DateRange" ||
-        colType === "DateTime"
+        ['Enum', 'Dict', 'Date', 'DateRange', 'DateTime'].includes(colType)
       ) {
         return "center";
       } else {
@@ -3193,14 +3323,14 @@ export default {
       if (this.listType == "procreadlist") {
         use_type = "procreadlist";
       }
-
       //加载serviceCols
       await this.loadColsV2(
         this.service_name,
         this.mode === 'selectlist' ? this.mode : use_type,
         null,
         this.mainService,
-        forceRefreshV2
+        forceRefreshV2,
+        this.listMainFormDatas?.id
       )
         .then((response) => {
           let respData = response.body.data;
@@ -3280,9 +3410,6 @@ export default {
             wrapButton(button, "row")
           );
 
-          if (respData.cfg_json) {
-            this.handleCfgJson(respData.cfg_json);
-          }
           if (respData.hasOwnProperty("stats_data")) {
             this.statsData = respData.stats_data;
           }
@@ -3351,7 +3478,9 @@ export default {
 
           this.srv_cols = listData;
           this.buildGridHeaders(listData);
-
+          if (respData.cfg_json) {
+            this.handleCfgJson(respData.cfg_json);
+          }
           if (this.mode === "finder") {
             this.gridButton
               .filter((button) => button.name != "查询")
@@ -3365,20 +3494,34 @@ export default {
           this.listLoaded = true;
           this.initLoad = true;
           this.emitEvent("metadata-loaded", this);
+          if (this.listType?.includes('childlist') && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
+            // 子表并且有配置默认数据
+            // 拿到列表v2之后重新加载新增、修改的服务列
+            this.loadAddUpdateSrvCols?.()
+          }
+          this.$emit('metadata-loaded', this)
         });
 
       try {
         if (this.defaultOrder.length > 0) {
           this.order = this.order.concat(this.defaultOrder);
         }
-
-        this.loadTableData().finally((_) => {
-          if (this.defaultInplaceEditMode) {
-            this.onInplaceEditClicked();
-          }
-
+        if (['addchildlist'].includes(this.listType) && Array.isArray(this.memInitdatasAdd) && this.memInitdatasAdd.length) {
+          // 有默认数据，不发请求查找默认数据
           this.$emit("list-loaded", this);
-        });
+        } else {
+          this.loadTableData().finally((_) => {
+            if (this.defaultInplaceEditMode) {
+              this.onInplaceEditClicked();
+            }
+            this.$emit("list-loaded", this);
+          });
+        }
+
+        // } else {
+        //   this.$emit("list-loaded", this);
+        // }
+
       } catch (e) {
         // handle case in add child list
 
@@ -3575,7 +3718,7 @@ export default {
       }
       console.log("onBatchApprove", rows, item);
     },
-    onExportClicked(columns) {
+    onExportClicked(columns, button) {
       // send req to generate excel
       // 导出操作
       console.log("onExportClicked", columns);
@@ -3594,8 +3737,9 @@ export default {
       const relationCondition =
         this.$parent?.$refs?.filterTabs?.buildConditions?.();
       var loading = this.openLoading();
+      const service = button?.operate_service || this.service_name
       this.genExportExcel(
-        this.service_name,
+        service,
         this.buildQueryConditions(),
         null,
         this.order,
@@ -3740,6 +3884,240 @@ export default {
         }
       }
       return datas;
+    },
+
+    // 树形结构相关方法
+    toggleIconShow(record) {
+      return record.is_leaf === "否";
+    },
+
+    async toggle(rowData) {
+      let me = this;
+      const noCol = this.listV2Data["no_col"];
+      const parentCol = this.listV2Data["parent_no_col"];
+
+      let childLen = !rowData._children ? 0 : rowData._children.length;
+
+      if (rowData._expanded) {
+        this.removeChildValue(rowData);
+      } else {
+        if (rowData._children && rowData._children.length > 0) {
+          for (var item of rowData._children) {
+            if (!rowData["_checked"]) {
+              item["_checked"] = false;
+              item["_indeterminate"] = false;
+
+              if (item.is_leaf == "否") {
+                item._expanded = false;
+              }
+            }
+            me.gridData.splice(me.gridData.indexOf(rowData) + 1, 0, item);
+          }
+        } else {
+          // 设置loading状态
+          this.$set(this.treeNodeLoadingMap, rowData.id + "", true);
+
+          var childData = [];
+          var childCondition = [
+            {
+              colName: parentCol,
+              value: rowData[noCol],
+              ruleType: "eq",
+            },
+          ];
+
+          try {
+            await this.select(
+              this.service_name,
+              childCondition,
+              {
+                pageNo: 1,
+                rownumber: 300,
+              },
+              this.order,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              this.vpageNo,
+              "treelist"
+            ).then((response) => {
+              if (response.body.resultCode == "0011") {
+                this.$store.commit("clearSrvCols");
+                this.vpageNo = null;
+                return;
+              }
+              this.buildTreeData(response.body.data, false);
+              childData = response.body.data;
+            });
+
+            var data = me.setSpaceIcon(childData, rowData._level);
+            rowData._children = this.bxDeepClone(data);
+
+            let i = 0;
+            for (var item of rowData._children) {
+              if (rowData["_checked"]) {
+                item["_checked"] = true;
+              }
+              me.gridData.splice(me.gridData.indexOf(rowData) + i + 1, 0, item);
+              i++;
+            }
+          } finally {
+            // 清除loading状态
+            this.$set(this.treeNodeLoadingMap, rowData.id + "", false);
+          }
+        }
+
+        if (rowData._children && rowData._children.length > 0) {
+          rowData._children.forEach((item) => {
+            if (this.unfoldDataMap[item.id] === true) {
+              this.toggle(item);
+            }
+          });
+        }
+      }
+
+      rowData._expanded = !rowData._expanded;
+      this.$set(this.unfoldDataMap, rowData.id + "", rowData._expanded);
+    },
+
+    removeChildValue(rowData) {
+      const noCol = this.listV2Data["no_col"];
+      const parentCol = this.listV2Data["parent_no_col"];
+      var me = this;
+      let dataArr = [];
+      let childLen = rowData._children.length;
+      dataArr.push(rowData);
+      let arr = me.getChildFlowId(dataArr, []);
+
+      for (let i = 0; i < childLen; i++) {
+        if (rowData._children[i]._children != undefined) {
+          var _len = rowData._children[i]._children.length;
+          if (_len > 0) {
+            this.removeChildValue(rowData._children[i]);
+          }
+        }
+
+        me.gridData.map((value) => {
+          if (
+            arr.indexOf(value[parentCol]) > -1 &&
+            !value["_level_node"]
+          ) {
+            this.$set(this.unfoldDataMap, value.id + "", false);
+            this.removeByValue(me.gridData, value);
+          }
+        });
+      }
+    },
+
+    getChildFlowId(data, emptyArr) {
+      const noCol = this.listV2Data["no_col"];
+      let me = this;
+      Array.from(data).forEach((record) => {
+        emptyArr.push(record[noCol]);
+        if (record._children && record._children.length > 0) {
+          let childFlowIdArr = me.getChildFlowId(record._children, emptyArr);
+          emptyArr.concat(childFlowIdArr);
+        }
+      });
+      return emptyArr;
+    },
+
+    setSpaceIcon(data, level) {
+      let me = this;
+      let _level = 0;
+      data.forEach((value) => {
+        value._expanded = false;
+        if (level !== undefined && level !== null) {
+          _level = level + 1;
+        } else {
+          _level = 1;
+        }
+        value._level = _level;
+        if (value._children && value._children.length > 0) {
+          me.setSpaceIcon(value._children, _level);
+        }
+      });
+      return data;
+    },
+
+    buildTreeData(data, _level_node) {
+      if (!data) {
+        return;
+      }
+      for (var item of data) {
+        item._checked = false;
+        item._indeterminate = false;
+        item._level_node = _level_node;
+        if (item.is_leaf == "否") {
+          item._children = [];
+        }
+        if (item._children && item._children.length > 0) {
+          this.buildTreeData(item._children, false);
+        }
+      }
+    },
+
+    removeByValue(sourceData, val) {
+      for (var i = 0; i < sourceData.length; i++) {
+        if (sourceData[i] == val) {
+          sourceData.splice(i, 1);
+          break;
+        }
+      }
+    },
+
+    /**
+     * 计算文本宽度（优化版本）
+     * @param {string} text 文本内容
+     * @param {string} fontSize 字体大小
+     * @param {string} fontFamily 字体族
+     * @returns {number} 文本宽度（像素）
+     */
+    getTextWidth(text, fontSize = '14px', fontFamily = 'Arial') {
+      if (!text) return 0;
+
+      // 使用更精确的字体配置
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = `${fontSize} ${fontFamily}`;
+
+      // 考虑中文字符的宽度差异
+      const width = context.measureText(text).width;
+
+      // 为中文字符添加额外的宽度补偿
+      const chineseCharCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+      const extraWidth = chineseCharCount * 2; // 中文字符通常更宽
+
+      return Math.ceil(width + extraWidth);
+    },
+
+    /**
+     * 获取实际可见的行按钮
+     * @returns {Array} 可见的按钮数组
+     */
+    getVisibleRowButtons() {
+      if (!this.sortedRowButtons || this.sortedRowButtons.length === 0) {
+        return [];
+      }
+
+      // 如果没有数据，返回所有按钮
+      if (!this.gridData || this.gridData.length === 0) {
+        return this.sortedRowButtons;
+      }
+
+      // 只返回在当前数据中至少有一行可见的按钮
+      return this.sortedRowButtons.filter(button => {
+        return this.gridData.some((row, index) =>
+          this.getDispExps(button, row, index) &&
+          this.isRowButtonVisible(button, row, index)
+        );
+      });
     },
   },
 

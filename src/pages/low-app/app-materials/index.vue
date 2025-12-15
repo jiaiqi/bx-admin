@@ -148,7 +148,7 @@ export default {
       // 物料列表
       activeIndex: 0,
       activeSubIndex: 0,
-      materialsTree: materialsTree,
+      materialsTree: materialsTree.filter(item => item.value !== 'layout'),
       comList: [],
       //
       list: [

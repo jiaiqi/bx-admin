@@ -1,6 +1,8 @@
 <script setup>
 // 门架信息
-import {ref} from "vue";
+import { ref } from "vue";
+import ImageToggle from '@/pages/audit/components/ImageToggle.vue'
+import { buildGantryImageUrl } from '@/pages/audit/composables/useGantryImages.js'
 
 const props = defineProps({
   data: {
@@ -16,15 +18,8 @@ const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
 }
-const getPic = (item, imgtype,enType) => {
-  let url = `${window.backendIpAddr}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.tollgrantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
-  if(enType){
-    url+=`&enextype=${enType}`
-  }
-  if(imgtype){
-    url+=`&imgtype=${imgtype}`
-  }
-  return url
+const getPic = (item, imgtype, enType) => {
+  return buildGantryImageUrl(window.backendIpAddr, item, { imgType: imgtype, enexType: enType })
 }
 const hideDialog = () => {
   centerDialogVisible.value = false
@@ -39,6 +34,7 @@ const hideDialog = () => {
         :hideTimestamp="false"
         v-for="(activity, index) in data"
         :key="index"
+        :color="index === 0 ? '#0bbd87' : index === data.length - 1 ? '#e80621' : '#3194f6'"
         :timestamp="activity.transtime">
         <div class="info-item">
           <div class="item-list">
@@ -53,16 +49,24 @@ const hideDialog = () => {
           <div class="item-list">
             计费金额：{{ activity.fee_disp }}
           </div>
-          <!-- <div class="item-list" v-if="activity.ljfyfee_disp">
-            路径反演金额：{{ activity.ljfyfee_disp }}
-          </div> -->
-          <div v-if="activity.grantry_type==='收费站'">
-            <el-image style="width:700px;height: 300px" :src="getPic(activity,'car',index===0?'en':index===data.length-1?'ex':'')"></el-image>
-          </div>
-          <div class="button" v-else>
-            <el-button type="primary" size="mini" @click="showPicture(activity)"><i class="el-icon-download mr-2"></i>获取图片
-            </el-button>
-          </div>
+          <ImageToggle>
+            <div v-if="activity.grantry_type === '收费站'">
+              <el-image
+                style="width:700px;height: 300px"
+                :src="getPic(activity, 'car', index === 0 ? 'en' : index === data.length - 1 ? 'ex' : '')"
+                @click="showPicture(activity)"
+                lazy
+              ></el-image>
+            </div>
+            <div v-else>
+              <el-image
+                style="width:700px;height: 300px"
+                :src="getPic(activity, 'car', '')"
+                @click="showPicture(activity)"
+                lazy
+              ></el-image>
+            </div>
+          </ImageToggle>
         </div>
       </el-timeline-item>
     </el-timeline>
@@ -101,4 +105,6 @@ const hideDialog = () => {
   width: 100%;
   height: calc(100vh - 200px);
 }
+
+
 </style>

@@ -737,7 +737,7 @@
         :initOrigin="'dialog'"
         :service="getUpdateService"
         :pk="getClickedRowPk('update')"
-        :pkCol="getCustomPkCol"
+        :pkCol="getCustomPkCol('update')"
         :pageIsDraft="activeTabName"
         :initLoad="initLoad"
         :defaultValues="clickedRow['update']"
@@ -1027,7 +1027,7 @@ import PopupMemList from "@/components/common/popup-mem-list"; // 弹出内存�
 import exportLayout from "@/components/common/export-layout"; // 自定义导出 || 导入
 import batchApprove from "@/components/ui/batch-approve.vue"; // 流程审批
 
-import inlineEditListMixin from "@/components/mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
+// import inlineEditListMixin from "@/components/mixin/inline-edit-list-mixin"; //行内编辑列表相关逻辑
 import inlineEditList from "@/components/common/inline-edit-list.vue";
 import vueChart from "@/components/ui/widget/chart.vue";
 import { blobToBase64 } from "@/common/common";
@@ -1564,7 +1564,7 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   //margin: 0 14px;
-
+  display: flex;
   .svg-icon {
     width: 44px;
     height: 32px;

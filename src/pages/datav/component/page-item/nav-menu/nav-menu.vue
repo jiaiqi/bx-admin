@@ -1,8 +1,21 @@
 <template>
-  <div v-if="viewMode === '文章栏目'" class="catalog">
-    <div v-if="catalogInfo && catalogInfo.name" class="catalog-wrap">
-      <div class="catalog-name" :style="[setTitleStyle]">
-        <Icon :icon="titleIcon" v-if="titleIcon" class="mr-2"></Icon>
+  <div
+    v-if="viewMode === '文章栏目'"
+    class="catalog"
+  >
+    <div
+      v-if="catalogInfo && catalogInfo.name"
+      class="catalog-wrap"
+    >
+      <div
+        class="catalog-name"
+        :style="[setTitleStyle]"
+      >
+        <Icon
+          :icon="titleIcon"
+          v-if="titleIcon"
+          class="mr-2"
+        ></Icon>
         <span class="">
           {{ catalogInfo.name }}
         </span>
@@ -19,7 +32,10 @@
               <span>
                 {{ item.name }}
               </span>
-              <span class="right-icon" :class="{ unfold: currentUnfold }">
+              <span
+                class="right-icon"
+                :class="{ unfold: currentUnfold }"
+              >
                 <i
                   class="el-icon-arrow-right"
                   v-if="
@@ -52,9 +68,15 @@
       @tap="onTapContentItem"
     ></content-wrap>
   </div>
-  <div v-else-if="viewMode === '面包屑导航'" class="breadcrumb-wrap">
+  <div
+    v-else-if="viewMode === '面包屑导航'"
+    class="breadcrumb-wrap"
+  >
     <div class="home-icon">
-      <router-link :to="homePath" class="link">
+      <router-link
+        :to="homePath"
+        class="link"
+      >
         <Icon icon="ri-home-4-fill"></Icon>
       </router-link>
     </div>
@@ -62,19 +84,29 @@
       <!-- <div class="breadcrumb-item">
         <router-link :to="homePath" class="link"> 首页 </router-link>
       </div> -->
-      <div class="breadcrumb-item" v-for="(item, index) in breadcrumb">
+      <div
+        class="breadcrumb-item"
+        v-for="(item, index) in breadcrumb"
+      >
         <i
           class="breadcrumb-separator el-icon-d-arrow-right"
           v-if="index !== 0"
         ></i>
-        <router-link :to="item.path" v-if="item.path" class="link">
+        <router-link
+          :to="item.path"
+          v-if="item.path"
+          class="link"
+        >
           {{ item.label || "" }}
         </router-link>
         <span v-else>{{ item.label || "" }}</span>
       </div>
     </div>
   </div>
-  <div v-else-if="viewMode === '展开子导航'" class="nav-menu-wrap">
+  <div
+    v-else-if="viewMode === '展开子导航'"
+    class="nav-menu-wrap"
+  >
     <div
       class="nav-menu"
       :class="{ 'follow-theme-color': followThemeColor }"
@@ -107,7 +139,10 @@
       }"
     >
       <div class="child-menu-list">
-        <div class="child-menu" v-for="item in setCurrentSubMenu">
+        <div
+          class="child-menu"
+          v-for="item in setCurrentSubMenu"
+        >
           <div
             class="child-menu-label"
             @click.stop.capture="navTo(item.jump_json, item)"
@@ -124,7 +159,7 @@
     v-else-if="label"
     @mouseenter="
       isHovered = true;
-      showChild = true;
+    showChild = true;
     "
     @mouseleave="isHovered = false"
     ref="navMenu"
@@ -187,6 +222,7 @@ import { $selectList } from "@/common/http";
 import catalogTabs from "./catalog/tabs.vue";
 import ContentWrap from "./catalog/content-wrap.vue";
 import catalogTree from "./catalog/tree.vue";
+import { getFullBaseUrl } from "@/common/common";
 export default {
   name: "NavMenu",
   components: {
@@ -367,7 +403,7 @@ export default {
       }
     },
     getCurrentNav() {
-      let pageNo = this.$route.params?.pageNo;
+      let pageNo = this.$route.params?.pageNo || this.$parent.pageNo;
       if (pageNo) {
         let currentNav = this.setSubMenu.find(
           (item) => item.page_no === pageNo
@@ -585,9 +621,8 @@ export default {
           serviceName: requestJson.serviceName,
           page: requestJson.page || { pageNo: 1, rownumber: 100 },
         };
-        const url = `${requestJson.mapp}/${requestJson.srv_type || "select"}/${
-          req.serviceName
-        }`;
+        const url = `${requestJson.mapp}/${requestJson.srv_type || "select"}/${req.serviceName
+          }`;
         return await this.$http.post(url, req);
       }
     },
@@ -741,7 +776,7 @@ export default {
       if (jump_json?.tmpl_page_json.file_path) {
         path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
       } else {
-        path = `/vpages/#/site/${pageNo}?srvApp=config`;
+        path = `${getFullBaseUrl()}/${pageNo}?srvApp=config`;
       }
       if (jump_json?.obj_type?.includes("锚点") && jump_json?.anchor_com_name) {
         if (path.includes(`/site/${pageNo}`)) {
@@ -770,9 +805,11 @@ export default {
 .catalog {
   display: flex;
   gap: 30px;
+
   .catalog-wrap {
     line-height: 54px;
     text-align: center;
+
     .catalog-name {
       display: flex;
       align-items: center;
@@ -780,27 +817,32 @@ export default {
       font-size: 16px;
       font-weight: 600;
     }
+
     .catalog-list {
       min-width: 250px;
       border: 1px solid #d5d9e4;
       background-color: #f8f8f8;
+
       .catalog-item {
         border-top: 1px solid #d5d9e4;
         border-left: 4px transparent solid;
         // border-right: 4px transparent solid;
         cursor: pointer;
         position: relative;
+
         .catalog-tree {
           display: grid;
           grid-template-rows: 0fr;
           transition: all 0.3s ease;
           overflow: hidden;
           min-height: 0;
+
           &.unfold {
             min-height: 40px;
             grid-template-rows: 1fr;
           }
         }
+
         .catalog-item-name {
           display: flex;
           align-items: center;
@@ -808,6 +850,7 @@ export default {
           font-size: 16px;
           position: relative;
         }
+
         .right-icon {
           position: absolute;
           right: 5px;
@@ -816,18 +859,22 @@ export default {
           font-size: 12px;
           color: #999;
           transition: all 0.3s ease;
+
           &.unfold {
             transform: translateY(-50%) rotate(90deg);
           }
         }
+
         &:first-child {
           border-top: unset;
         }
+
         &:hover,
         &.active {
           background-color: #fff;
           font-weight: bold;
         }
+
         &.active {
           border-left-color: var(--primary-color, #007aff);
         }
@@ -841,6 +888,7 @@ export default {
   margin: unset;
   padding: unset;
   display: flex;
+
   .home-icon {
     font-size: 24px;
     width: 42.94px;
@@ -848,53 +896,58 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(
-      151.99deg,
-      rgba(0, 122, 255, 1) 29.59%,
-      rgba(4, 71, 171, 1) 294.82%
-    );
+    background: var(--primary_color, linear-gradient(151.99deg,
+          rgba(0, 122, 255, 1) 29.59%,
+          rgba(4, 71, 171, 1) 294.82%));
     color: #fff;
     clip-path: polygon(0 0, 100% 0, 74% 99%, 0% 100%);
     padding-right: 5px;
   }
+
   .link {
     color: inherit;
+
     &:hover {
       text-decoration: none;
     }
   }
+
   .breadcrumb-list {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     padding: 0 10px;
-    background: linear-gradient(
-      88.74deg,
-      rgba(241, 246, 255, 1) 1.25%,
-      rgba(241, 246, 246, 0) 90.23%
-    );
+    background: linear-gradient(88.74deg,
+        rgba(241, 246, 255, 1) 1.25%,
+        rgba(241, 246, 246, 0) 90.23%);
     padding-left: 50px;
     margin-left: -40px;
     margin-top: 4px;
+
     .breadcrumb-separator {
       margin-right: 6px;
     }
+
     .breadcrumb-item {
       a {
         color: inherit;
+
         &:hover {
           text-decoration: none;
         }
       }
     }
-    .breadcrumb-item + .breadcrumb-item {
+
+    .breadcrumb-item+.breadcrumb-item {
       padding-left: 6px;
     }
-    .breadcrumb-item + .breadcrumb-item::before {
+
+    .breadcrumb-item+.breadcrumb-item::before {
       content: "";
     }
   }
 }
+
 .nav-menu-wrap {
   display: grid;
   min-height: 100%;
@@ -918,9 +971,11 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+
     &:hover {
       font-weight: bold;
     }
+
     .nav-icon {
       width: 1rem;
       height: 1em;
@@ -928,6 +983,7 @@ export default {
       color: currentColor;
     }
   }
+
   &.follow-theme-color {
     .nav-menu-label {
       background-color: var(--menu-bg-color);
@@ -943,6 +999,7 @@ export default {
         color: var(--menu-hover-active-color, inherit);
       }
     }
+
     &.active-nav-menu {
       .nav-menu-label {
         background-color: var(--menu-active-bg-color);

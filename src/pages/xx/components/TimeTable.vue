@@ -234,10 +234,6 @@ export default {
           loading.close();
         }, 2000);
         this.activeForm = "list";
-        // const url = `/#/list/srvledu_course_schedue_select?menuapp=ledu&operate_params=${JSON.stringify(operate_params)}`
-        // window.open(url)
-        // const url = `/vpages/index.html#/list/srvledu_course_schedue_select?menuapp=ledu&operate_params=${JSON.stringify(operate_params)}`
-        // this.addTabByUrl(url, '课程详情')
       }
     },
     getTodayInfo(date, data) {

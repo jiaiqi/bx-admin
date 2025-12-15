@@ -1,10 +1,14 @@
 import gantry from '../assets/icon/gantry.png'
 import gantryActive from '../assets/icon/gantry-active.png'
+import fittingActive from '../assets/icon/fitting.png'
+import tradingActive from '../assets/icon/trading.png'
 import startIcon from '../assets/icon/start.png'
 import endIcon from '../assets/icon/end.png'
 import toll from '../assets/icon/toll.png'
 import tollActive from '../assets/icon/toll-active.png'
 import custom from '../assets/icon/custom.png'
+import qita from '../assets/icon/qita.png'
+import moment from 'dayjs'
 import {getpassconv, getpassconvpath} from "../assets/mockData";
 
 let waypointsLen = 20  // 最大途径点 包含起终点数量
@@ -35,15 +39,21 @@ export default {
             loadStations:[],
             loadPassconvPath:{},
             tolllinks:[],
-            updatePoints:[]
-
+            updatePoints:[],
+            extime:'',
+            entime:'',
+            enpointid:'',
+            expointid:'',
+            vehicletype:'',
+            service_name:'',
+            vehicleid:''
         }
     },
     computed:{
         buildDivCond(){
             let divCond = []
-            let entime = this.$route.query.entime || this.$route.params.entime
-            let extime = this.$route.query.extime || this.$route.params.extime
+            let entime = this.$route.query.entime || this.$route.params.entime||this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime||this.extime
             divCond =  [{
                 "colName":"entime",
                 "ruleType":"in",
@@ -66,6 +76,33 @@ export default {
               if (operate_Object["condition"]) {
                 cond.push(...operate_Object["condition"])
               }
+            }else{
+               const passid ={
+                colName:'passid',
+                ruleType:'eq',
+                value:this.no
+                }
+                const exid ={
+                    "colName":"exid",
+                    "ruleType":"eq",
+                    "value":this.expointid
+                }
+                 const enid ={
+                    "colName":"enid",
+                    "ruleType":"eq",
+                    "value":this.enpointid
+                }
+                const vehicletype ={
+                    "colName":"vtype",
+                    "ruleType":"eq",
+                    "value":this.vehicletype
+                }
+                const vehicleid ={
+                    "colName":"vehicleid",
+                    "ruleType":"eq",
+                    "value":this.vehicleid
+                }
+                cond.push(passid,exid,enid,vehicletype,vehicleid)
             }
             return cond
         },
@@ -86,10 +123,13 @@ export default {
             let activeLine = this.activeLine ? this.bxDeepClone(this.activeLine) : null
             let buildLines = []
             let loadStationsDatas = self.bxDeepClone(self.loadStations)
+            console.log('loadStationsDatas', loadStationsDatas)
             let drivingPoints = loadStationsDatas.filter(item => item['path_type'] == '行驶路径')
             let drivingPayPoints = loadStationsDatas.filter(item => item['path_type'] == '收费路径')
             let drivingMinPoints = loadStationsDatas.filter(item => item['path_type'] == '最小费额路径')
-            let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+            let drivingRecogPoints = loadStationsDatas.filter(item => item['path_type'] == '牌识路径')
+            console.log('drivingRecogPoints', drivingRecogPoints)
+            let allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
             let reslines = []
             // loadlinks = loadlinks.map(item =>
             for(let item of loadlinks){
@@ -174,8 +214,8 @@ export default {
                         point['_dev_point_type'] = p['category']
                         switch (point['_dev_point_type']) {
                             case '门架':
-                                point['icon'] = gantry
-                                point['icon_active'] = gantryActive
+                                point['icon'] = this.changeIconType(point['dataoriginal'])
+                                point['icon_active'] = this.changeIconType(point['dataoriginal'])
                                 point["icon_size"]={
                                     w:25,
                                     h:30
@@ -246,17 +286,24 @@ export default {
                         item['_seq'] = index + 1
                         return item
                     })
-                     allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+                    drivingRecogPoints = loadStationsDatas.filter(item => item['path_type'] == '牌识路径')
+                     drivingRecogPoints = drivingRecogPoints.map((item,index) => {
+                        item['_seq'] = index + 1
+                        return item
+                    })
+                     allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
                     // let item['_editor_type'] = 'driving'
                     
                     // 三条路径拆分途径点和拆线
                     if(activeLine && activeLine['_editor_type'] == 'driving_pay'){
-                        allPointsTypes = [drivingPoints,drivingMinPoints,drivingPayPoints]
+                        allPointsTypes = [drivingPoints,drivingMinPoints,drivingPayPoints,drivingRecogPoints]
                     }
                     if(activeLine && activeLine['_editor_type'] == 'driving_min'){
-                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints]
+                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
                     }
-                    console.log(keyNo,allPointsTypes)
+                     if(activeLine && activeLine['_editor_type'] == 'driving_recog'){
+                        allPointsTypes = [drivingPoints,drivingPayPoints,drivingMinPoints,drivingRecogPoints]
+                    }
                     for(let subpoints of allPointsTypes){
                         if(Array.isArray(subpoints) && subpoints.length > 0){
                             let lineType = subpoints[0]['path_type']
@@ -271,8 +318,8 @@ export default {
                                     point['_dev_point_type'] = p['category'] || '门架'
                                     switch (point['_dev_point_type']) {
                                         case '门架':
-                                            point['icon'] = gantry
-                                            point['icon_active'] = gantryActive
+                                            point['icon'] = this.changeIconType(point['dataoriginal'])
+                                            point['icon_active'] = this.changeIconType(point['dataoriginal'])
                                             point["icon_size"]={
                                                 w:25,
                                                 h:30
@@ -342,7 +389,9 @@ export default {
                                 case '最小费额路径':
                                     obj['_editor_type'] = 'driving_min'
                                     break;
-                            
+                                case '牌识路径':
+                                    obj['_editor_type'] = 'driving_recog'
+                                    break;
                                 default:
                                     obj['_editor_type'] = 'none'
                                     break;
@@ -464,7 +513,8 @@ export default {
         }
     },
     mounted(){
-        let self = this
+        console.log(this.$route.query, 77777777)
+        let self = this 
         this.initMap()
         if(this.modeUrl == '/bmap/check' || this.modeUrl.indexOf('/bmap/check') !== -1){
             this.isEditor = true
@@ -473,15 +523,32 @@ export default {
                 self.getPointInfo()
             }
         }else if(this.modeUrl == '/bmap/editor/' && this.no){
-            
+            this.getPassIdInfo()
             this.isEditor = false
-            this.getPassconv()
-            this.getPassconvpath()
+            // this.getPassconv()
+            // this.getPassconvpath()
         }
        
        
     },
     methods: {
+        // 处理新取值逻辑，当路径拼接了service_name时，并且passid有时走这个逻辑
+        getServiceName(){
+           
+        },
+        //处理新的取值逻辑，通过passid去接口中查询字段信息
+        getPassIdInfo(){
+             const pass_time = this.no.slice(22, 30)
+            const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+            if(!this.$route.query.entime || !this.$route.params.entime){
+                this.entime = moment(formattedDate).format('YYYY-MM-DD HH:mm:ss');
+        
+            }
+            if(!this.$route.query.extime || !this.$route.params.extime){
+                this.extime = moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
+            }
+            this.getPassconv()
+        },
         getPassconv(){
             // 查询所有分公司下路段
             let self = this
@@ -499,8 +566,8 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            let entime = this.$route.query.entime || this.$route.params.entime
-            let extime = this.$route.query.extime || this.$route.params.extime
+            let entime = this.$route.query.entime || this.$route.params.entime||this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime||this.extime
             if(!self.no || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
@@ -536,16 +603,114 @@ export default {
                 // console.log('分公司',res.data)
                 res = res.data
                 if(res.state == "SUCCESS"){
+                    console.log('121212121221',res)
+                    if(res.data&&res.data.length>0){
+                         self.tolllinks = res.data.map(item => {
+                        item['_editor_type'] = 'driving'
+                        return item
+                    })
+                    this.enpointid = res.data[0].enpointid
+                    this.expointid = res.data[0].expointid
+                    this.vehicletype = res.data[0].vehicletype
+                    this.vehicleid = res.data[0].vehicleid
+                      this.getPassconvpath()
+                    }else{
+                        this.getLaneexit()
+                    }
+                   
+                }else{
+                    this.getLaneexit()
+                   
+                }
+              })
+            
+        },
+        getLaneexit(){
+            // 查询所有分公司下路段
+            let self = this
+            // category取值：门架、收费站
+            // grantry_type取值：路段门架、虚拟门架、省界门架、收费站
+            // company_no：分公司，可通过该字段进行过滤，分公司用户登录时，使用用户的dept_no进行过滤
+            let srv = 'srvaud_laneexit_pass_select';
+            let srvAuth = 'aud'
+             let page = null
+            let order = null
+            let entime = this.$route.query.entime || this.$route.params.entime||this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime||this.extime
+            if(!self.no || !entime || !extime){
+                console.log('初始化参数缺少 passid')
+                return 
+            }
+             let relationCondition = {
+                "relation":"AND",
+                data:[
+                   {
+                colName:'passid',
+                ruleType:'like',
+                value:self.no
+            },{
+                colName:'createtime',
+                ruleType:'between',
+                value:[`${entime}`,`${extime}`]
+            } 
+                ]
+             }
+           
+            let conds = [{
+                colName:'passid',
+                ruleType:'eq',
+                value:self.no
+            },{
+                colName:'createtime',
+                ruleType:'between',
+                value:[`${entime}`,`${extime}`]
+            }]
+            
+           
+            
+            let divCond =  [{
+                "colName":"createtime",
+                "ruleType":"between",
+                "value":[`${entime}`,`${extime}`]
+            }]
+            self.select(
+                srv,
+                conds,
+                page,
+                order,
+                null,
+                null,
+                srvAuth,
+                null,
+                null,
+                relationCondition,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                divCond
+                // srvAuth
+              ).then(res => {
+            // getpassconv().then(res=>{ //mockData
+                // console.log('分公司',res.data)
+                res = res.data
+                if(res.state == "SUCCESS"){
                     self.tolllinks = res.data.map(item => {
                         item['_editor_type'] = 'driving'
                         return item
                     })
-                    // console.log('分公司',res.data)
+                    this.enpointid = res.data[0].enid
+                    this.expointid = res.data[0].exid
+                    this.vehicletype = res.data[0].vehicletype
+                    this.vehicleid = res.data[0].vehicleid
+                      this.getPassconvpath()
                 }else{
                     this.$message.error(JSON.stringify(res));
                     // console.log('查询收费路段 异常',res)
                 }
-              })
+              }) 
         },
         async getPassconvpath(){
             // 查询所有门架
@@ -575,8 +740,8 @@ export default {
             let relationCondition = {}
             let page = null
             let order = null
-            let entime = this.$route.query.entime || this.$route.params.entime
-            let extime = this.$route.query.extime || this.$route.params.extime
+            let entime = this.$route.query.entime || this.$route.params.entime || this.entime
+            let extime = this.$route.query.extime || this.$route.params.extime || this.extime
             if(!passid || !entime || !extime){
                 console.log('初始化参数缺少 passid')
                 return 
@@ -1010,8 +1175,8 @@ export default {
                         let p = self.bxDeepClone(item)
                         p['icon_size'] = p['icon_size'] || {w:25,h:38}
                         p['icon_anchor'] = p['icon_anchor'] || {w:p['icon_size']/2,h:p['icon_size'].h}
-                        p['icon'] = custom
-                        p['icon_active'] = custom
+                        p['icon'] = qita
+                        p['icon_active'] = qita
                         p['_type'] = 'point'
                         p['_editor'] = 'add'
                         p['_dev_point_type'] = p['category']
@@ -1071,6 +1236,27 @@ export default {
                 }
               })
         },
+        changeIconType(type){
+            type = type+''
+            let result = null
+            switch (type) {
+                case '1':
+                    result = tradingActive
+                    break;
+                case '2':
+                    result = gantryActive
+                    break;
+                case '4':
+                    result = fittingActive
+                    break;
+                case '5':
+                    result = custom
+                    break;
+                default:
+                    break;
+            }
+            return result
+        },
         getAllStations(road_no){
             // 查询所有门架
             let self = this
@@ -1124,8 +1310,8 @@ export default {
                             switch (item['category']) {
                                 case '门架':
                                     
-                            item['icon'] = gantry
-                            item['icon_active'] = gantryActive
+                            item['icon'] = this.changeIconType(item['dataoriginal'])
+                            item['icon_active'] = this.changeIconType(item['dataoriginal'])
                                     break;
                                 case '收费站':
                                         

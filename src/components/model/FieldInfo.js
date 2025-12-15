@@ -2,7 +2,7 @@ import { createLinkUrlFunc } from "../../util/FieldUtil";
 import cloneDeep from "lodash/cloneDeep";
 import isArray from "lodash/isArray";
 import assign from "lodash/assign";
-
+export const idCardExp = /^(\d{15}|\d{17}[0-9xX])$/
 export class FieldInfo {
   constructor(srvCol, formType) {
     if (!srvCol) {
@@ -42,6 +42,7 @@ export class FieldInfo {
       state: "none",
     }; // 校验唯一性状态 none  ，无需校验， UniqueCheckNone 未校验  UniqueCheckError 错误 UniqueCheckOk 通过 loading 校验中
     if (this.moreConfig !== null && this.moreConfig !== undefined) {
+      // if (this.moreConfig.hasOwnProperty("DateRangeConfig") && formType !== 'filter') {
       if (this.moreConfig.hasOwnProperty("DateRangeConfig")) {
         /**
          * 起止日期配置加载
@@ -290,13 +291,15 @@ export class FieldInfo {
       this.editor = "date-picker";
       this.subtype = "month";
       this.subType = "month";
+    } else if (this.type == "MonthRange") {
+      this.editor = "month-range";
     } else if (this.type == "DateTime" || this.type == "datetime") {
       this.editor = "date-time-picker";
       // 利用date elmentUi date 默认 format 设置 日期控件格式
       if (this.moreConfig && this.moreConfig.hasOwnProperty("format")) {
-        // this.format = this.moreConfig.format
+        this.format = this.moreConfig.format
         // srv col more_congfig : {"format":"yyyy-MM"}
-        this.format = "yyyy-MM-dd HH:mm";
+        // this.format = "yyyy-MM-dd HH:mm";
       }
     } else if (this.type == "Time") {
       this.editor = "time-picker";
@@ -310,9 +313,9 @@ export class FieldInfo {
       this.editor = "upload-image";
     } else if (this.type == "UserList") {
       this.editor = "userlist";
-    } else if (this.type == "QrCode") {
+    } else if (['QrCode', 'qrCode', 'qrcode'].includes(this.type)) {
       this.editor = "qrcode";
-    } else if (this.type == "CarNo" || this.type == "carNo") {
+    } else if (['carno', 'CarNo', 'carNo'].includes(this.type)) {
       this.editor = "carNoKeyboard"; //车牌号输入键盘
     } else if (this.isFinder()) {
       this.editor = "finder";
@@ -345,6 +348,11 @@ export class FieldInfo {
       if (this.DateRangeEndColName === null) {
         // this.visible = false
       }
+    } else if (this.type === "DateTimeRange") {
+      this.editor = "DateTimeRange";
+      if (this.DateRangeEndColName === null) {
+        // this.visible = false
+      }
     } else if (this.type === "snote") {
       this.editor = "snote";
     } else if (this.type === "Extend") {
@@ -354,18 +362,21 @@ export class FieldInfo {
     } else if (this.type === "String" && this.redundant) {
       this.editor = null;
       // this.autocomplete =
+    } else if (this.type === 'IdNo') {
+      this.editor = "id-card";
     } else {
       this.editor = null;
     }
 
     if (formType == "filter") {
+      this._inFilterForm = true;
       if (this.isNumeric()) {
         this.editor = "input-range";
-      } else if (this.type == "Date") {
+      } else if (this.type == "Date" || this.type == "DateRange") {
         this.editor = "date-range";
       } else if (this.type == "Time") {
         this.editor = "time-range";
-      } else if (this.type == "DateTime") {
+      } else if (this.type == "DateTime" || this.type == "DateTimeRange") {
         this.editor = "date-time-range";
       } else if (this.type == "Enum" || this.type == "Dict") {
         this.editor = "multiselect";
@@ -608,17 +619,13 @@ export class FieldInfo {
 
         map.set(key, rule);
       });
-    let editable =
-      srvCol.col_updatable_expr ||
-      (srvCol.updatable !== 0 && srvCol.updatable !== "0");
+    let editable = srvCol.col_updatable_expr || (srvCol.updatable !== 0 && srvCol.updatable !== "0");
     if (this.isFinder() && editable) {
       // finder类型字段 自动加上合法值校验
       // 非自行输入或者不是add表单的时候才加上合法值校验
+      //对于地图选择地址类型没必要进行校验
       // if( this.allowInput !== '自行输入'){
-      if (
-        this.allowInput !== "自行输入" ||
-        srvCol?.service_name?.includes("add") === false
-      ) {
+      if (srvCol?.col_type !== "bxsys_obj_type_gps" && (this.allowInput !== "自行输入" || srvCol?.service_name?.includes("add") === false)) {
         let rule = {
           name: "isValidValue",
           trigger: "change",
@@ -626,6 +633,28 @@ export class FieldInfo {
         };
         map.set("isValidValue", rule);
       }
+    }
+
+    if (this.type == 'IdNo' && editable) {
+      // 身份证号码
+      if (!map.get('pattern')) {
+        let rule = {
+          "name": "pattern",
+          "trigger": "change",
+          "pattern": idCardExp,
+          "message": "请输入正确格式的身份证号！"
+        }
+        map.set("pattern", rule);
+      }
+
+      let rule2 = {
+        "name": "ngMaxlength",
+        "ngMaxlength": "18",
+        "trigger": "change",
+        "message": "身份证号长度不得超过18位！"
+      }
+      map.set("ngMaxlength", rule2);
+
     }
 
     // put validator message to map

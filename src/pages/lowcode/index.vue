@@ -35,6 +35,15 @@
         >
           <Icon icon="ri-dashboard-horizontal-line" />
         </div>
+        <!-- 添加移动端/桌面端分辨率切换按钮 -->
+        <div
+          @click.stop="toggleMobileView"
+          class="handle-btn"
+          :class="{ active: isMobileView }"
+          title="切换移动端/桌面端分辨率"
+        >
+          <Icon :icon="isMobileView ? 'ri:computer-line' : 'ri:smartphone-line'" />
+        </div>
         <!-- 添加深色模式切换按钮 -->
         <div
           @click.stop="setDarkMode(!isDarkMode)"
@@ -96,7 +105,10 @@
       <div
         class="editor-container"
         @click="currentChange()"
-        :class="{ 'in-edit': !isPreview && !isView }"
+        :class="{ 
+          'in-edit': !isPreview && !isView,
+          'mobile-view': isMobileView
+        }"
         ref="editorContainer"
         @mousedown="handleMouseDown"
         @mousemove="handleMouseMove"
@@ -184,6 +196,7 @@
       </div>
       <div
         class="preview-container"
+        :class="{ 'mobile-preview': isMobileView }"
         :style="[themeVariable]"
       >
         <lc-view
@@ -245,6 +258,30 @@
         </span>
       </el-tree>
     </el-drawer>
+    <!-- 移动端预览弹窗 -->
+    <el-dialog
+      title="移动端预览"
+      :visible.sync="mobilePreviewVisible"
+      width="420px"
+      :modal="true"
+      class="mobile-preview-dialog"
+      @open="onMobilePreviewOpen"
+    >
+      <div class="mobile-preview-content">
+        <!-- 加载动画 -->
+        <div v-if="iframeLoading" class="iframe-loading">
+          <i class="el-icon-loading"></i>
+          <span>页面加载中...</span>
+        </div>
+        <iframe
+          :src="mobilePreviewUrl"
+          frameborder="0"
+          class="mobile-preview-iframe"
+          @load="onIframeLoad"
+          :style="{ opacity: iframeLoading ? 0 : 1 }"
+        ></iframe>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -271,6 +308,7 @@ import MaterialsView from "./components/materials/index.vue";
 import EditorView from "./components/editor/index.vue";
 import PropertyView from "./components/property/index.vue";
 import lcView from "./components/materials/view.vue";
+import { getFullBaseUrl } from "@/common/common";
 
 export default {
   name: "lowCodeEditor",
@@ -313,11 +351,25 @@ export default {
       return list;
     },
     contentAreaWidth() {
+      // 如果是移动端视图，返回固定的移动端宽度
+      if (this.isMobileView) {
+        return '375px';
+      }
+      // 否则使用原有逻辑
       let width = this.pageConfig?.content_area_width || "100%";
       return typeof width === "string" &&
         (width?.includes("%") || width?.includes("vw") || width?.includes("vh"))
         ? width
         : `${parseFloat(width)}px`;
+    },
+    // 移动端预览URL
+    mobilePreviewUrl() {
+      const isDev = process.env.NODE_ENV === 'development';
+      const baseUrl = isDev ? 'http://192.168.0.196' : '';
+      if(isDev){
+        return `${getFullBaseUrl()}/lowcode/view/${this.pageNo}?srvApp=config`
+      }
+      return `${baseUrl}/xmp/views/custom/index/index?page_no=${this.pageNo}`;
     },
   },
   data() {
@@ -356,6 +408,12 @@ export default {
       // 面板调整宽度相关
       isResizingMaterials: false,
       isResizingProperty: false,
+      // 移动端视图状态
+      isMobileView: false,
+      // 移动端预览弹窗状态
+      mobilePreviewVisible: false,
+      // iframe加载状态
+      iframeLoading: true,
     };
   },
   mounted() {
@@ -372,6 +430,11 @@ export default {
     }
     // 设置深色模式
     this.setDarkMode(this.isDarkMode);
+    // 从localStorage中读取移动端视图状态
+    const savedMobileView = localStorage.getItem('lowcode_mobile_view');
+    if (savedMobileView !== null) {
+      this.isMobileView = savedMobileView === 'true';
+    }
   },
   created() {
     // 在组件挂载后，获取editorContainer引用
@@ -425,8 +488,14 @@ export default {
       this.$refs.editorRef.deleteComponent(data);
     },
     openNewTab() {
-      const url = `/vpages/#/lowcode/view/${this.pageNo}`;
-      window.open(url, "_blank");
+      // 如果是移动端视图，使用弹窗在当前页面预览
+      if (this.isMobileView) {
+        this.mobilePreviewVisible = true;
+      } else {
+        // 桌面端使用原有预览方式
+        const url = `${getFullBaseUrl()}/lowcode/view/${this.pageNo}`;
+        window.open(url, "_blank");
+      }
     },
     onDragStart(data) {
       this.draggingComponentType = data.type;
@@ -519,6 +588,22 @@ export default {
     // 切换属性面板
     togglePropertyPanel() {
       this.propertyCollapsed = !this.propertyCollapsed;
+    },
+    // 切换移动端视图
+    toggleMobileView() {
+      this.isMobileView = !this.isMobileView;
+      // 保存状态到localStorage
+      localStorage.setItem('lowcode_mobile_view', this.isMobileView);
+    },
+
+    // 移动端预览弹窗打开时
+    onMobilePreviewOpen() {
+      this.iframeLoading = true;
+    },
+
+    // iframe加载完成
+    onIframeLoad() {
+      this.iframeLoading = false;
     },
 
     findComponentById(components, id) {
@@ -1461,6 +1546,29 @@ export default {
           min-height: 100vh;
         }
       }
+
+      // 移动端视图样式
+      &.mobile-view {
+        display: flex;
+        justify-content: center;
+        .page-item {
+          height: unset;
+        }
+        &.in-edit {
+          .editor-view {
+            width: 375px;
+            min-height: 667px;
+            max-width: 375px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            overflow-y: auto;
+          }
+        }
+      }
     }
 
     // 属性面板容器样式，使用CSS变量控制宽度
@@ -1567,6 +1675,25 @@ export default {
 
   .preview-container {
     border: 1px dashed #ccc;
+    
+    &.mobile-preview {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+      background: #f5f5f5;
+      
+      .lc-view {
+        width: 375px;
+        min-height: 667px;
+        max-width: 375px;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+      }
+    }
   }
 }
 
@@ -1595,6 +1722,52 @@ export default {
     .right-btn {
       display: block;
     }
+  }
+}
+
+/* 移动端预览弹窗样式 */
+.mobile-preview-dialog {
+  .el-dialog__body {
+    padding: 0;
+  }
+}
+
+.mobile-preview-content {
+  position: relative;
+  width: 100%;
+  height: 667px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+}
+
+.mobile-preview-iframe {
+  width: 375px;
+  height: 667px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease;
+}
+
+.iframe-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #666;
+  font-size: 14px;
+  z-index: 10;
+  
+  i {
+    font-size: 24px;
+    color: #409eff;
   }
 }
 </style>

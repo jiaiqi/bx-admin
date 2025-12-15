@@ -63,22 +63,27 @@ export default {
         label: '行驶路径',
         type: 'driving',
         color: '#fd503e',
-        selectedColor: activeLineColor,
+        selectedColor: '#fd503e',
       }, {
         label: '收费路径',
         type: 'driving_pay',
         color: '#409eff',
-        selectedColor: activeLineColor,
+        selectedColor: '#409eff',
       }, {
         label: '最小路径',
         type: 'driving_min',
         color: '#eb2df7',
-        selectedColor: activeLineColor,
+        selectedColor: '#eb2df7',
       }, {
+        label: '牌识路径',
+        type: 'driving_recog',
+        color: '#2df788ff',
+        selectedColor: '#2df788ff',
+      },{
         label: '其它',
         type: 'none',
         color: 'rgb(60 189 166)',
-        selectedColor: activeLineColor,
+        selectedColor: '#3cbda6',
       },
 
       ],
@@ -86,22 +91,22 @@ export default {
         label: '交易点',
         type: 'driving',
         color: 'rgb(253 226 19)',
-        selectedColor: activeLineColor,
+        selectedColor: 'rgb(253 226 19)',
       }, {
         label: '车牌识别',
         type: 'driving',
         color: '#409eff',
-        selectedColor: activeLineColor,
+        selectedColor: '#409eff',
       }, {
         label: '拟合点',
         type: 'driving',
         color: 'rgb(224 31 225)',
-        selectedColor: activeLineColor,
+        selectedColor: 'rgb(224 31 225)',
       }, {
         label: '人工校准',
         type: 'driving',
         color: 'rgb(40 189 108)',
-        selectedColor: activeLineColor,
+        selectedColor: 'rgb(40 189 108)',
       },
 
       ],
@@ -135,7 +140,7 @@ export default {
       get: function () {
         let lines = []
         let loadLineData = this.bxDeepClone(this.mockLines)
-
+        console.log('loadLineData5555555555555', this.initLinks)
         if (Array.isArray(this.initLinks) && this.initLinks.length > 0) {
           lines = [].map(item => item)
           loadLineData = this.bxDeepClone(this.initLinks)
@@ -194,7 +199,7 @@ export default {
           }
         }
 
-
+        console.log('lines444444444444444', lines)
         return lines
       },
       set: function (point) {
@@ -249,6 +254,7 @@ export default {
 
         }
       })
+      this.onEditorType('driving')
     },
     openIsEditor() {
       this.isEditor = true
@@ -287,7 +293,7 @@ export default {
       let overlays = self.BMap.getOverlays()
       overlays = overlays.filter(o => o.hasOwnProperty('_data') && o['_data'] && o['_data']['_type'] == 'line')
       console.log('updateLine', overlays)
-      let selectedColor = activeLineColor;
+      let selectedColor = line.selectedColor;
       if (self.BMap && Array.isArray(overlays) && overlays.length > 0) {
         for (let overlay of overlays) {
 
@@ -439,7 +445,7 @@ export default {
       let self = this
       let linePoints = []
       let points = line['points']
-      let selectedColor = activeLineColor;
+      let selectedColor = line.selectedColor;
       // 判断是否已经绘制
       // console.log('添加线条',line.id,line)
       let overlays = self.BMap.getOverlays()
@@ -617,7 +623,7 @@ export default {
           let point = new BMap.Point(p.lng, p.lat);
           let content = `${p.name}`; // label 显示内容
           if (self.modeUrl == '/bmap/editor/') {
-            content = `${p['_seq']}.${p.name}`; // label 显示内容
+            content = `${p['_seq']}.${p.name} 金额：${p.fee_disp?p.fee_disp:'0'}元`; // label 显示内容
           }
           let label = new BMap.Label(content, {       // 创建文本标注
             position: point,
@@ -643,7 +649,7 @@ export default {
             zIndex: zIndex
           });
           // 创建标注对象并添加到地图
-          let marker = new BMap.Marker(point, {icon: myIcon, title: p.name, enableDragging: this.isEditor});
+          let marker = new BMap.Marker(point, {icon: myIcon, title: `${p['_seq']}.${p.name} 金额：${p.fee_disp?p.fee_disp:'0'}元`, enableDragging: this.isEditor})
 
           marker['_data'] = p
           let labelData = self.bxDeepClone(p)
@@ -669,6 +675,7 @@ export default {
           marker.addEventListener("click", function (e) {
             let overlay = e.currentTarget
             let overlays = self.BMap.getOverlays()
+            console.log('点击的点1111111111111',overlay)
 
             if (overlay.hasOwnProperty('_data') && overlay['_data'] && overlay['_data']['_type'] == 'point') {
               self.$set(self, 'activePoint', overlay['_data'])
@@ -692,7 +699,7 @@ export default {
                       zIndex: 999
                     })
                     let activeIconPath = l['_data']['icon_active']
-                    // console.log('activeIconPath 1',overlay['_data'],activeIconPath)
+                    console.log('activeIconPath 1',overlay['_data'],activeIconPath)
                     let activeIcon = new BMap.Icon(activeIconPath, new BMap.Size(l['_data']["icon_size"].w, l['_data']["icon_size"].h), {
                       anchor: new BMap.Size(l['_data']["icon_anchor"].w, l['_data']["icon_anchor"].h),
                       imageOffset: new BMap.Size(0, 0),   // 设置图片偏移
@@ -845,7 +852,7 @@ export default {
             zIndex: zIndex
           });
           // 创建标注对象并添加到地图
-          let marker = new BMap.Marker(point, {icon: myIcon, title: p.name, enableDragging: this.isEditor});
+          let marker = new BMap.Marker(point, {icon: myIcon, title: `${p['_seq']}.${p.name} 金额：${p.fee_disp?p.fee_disp:'0'}元`, enableDragging: this.isEditor});
 
           marker['_data'] = p
           let labelData = self.bxDeepClone(p)
@@ -1211,7 +1218,8 @@ export default {
                   points.push(p);
 
                 }
-                let color = self.lineColors[i % 4]
+                console.log('888888888888888888888888888',loadLine)
+                let color = self.lineColors[i % 5]
                 if (self.modeUrl == '/bmap/editor/') {
                   color = self.lineColors.filter(item => item.type == loadLine['_editor_type'])
                   if (Array.isArray(color) && color.length > 0) {
@@ -1266,9 +1274,10 @@ export default {
     onEditorType(type) {
       if (this.BMap) {
         //
-        console.log('type', type)
+        console.log('type11111111111', type)
+        console.log('445455454545455445', this.buildResLine)
         let lines = this.buildResLine.filter(item => item['_editor_type'] == type)
-        console.log('lines', lines)
+        console.log('lines1111', lines)
         if (Array.isArray(lines) && lines.length > 0) {
           this.onLineList(lines[0], type)
         }

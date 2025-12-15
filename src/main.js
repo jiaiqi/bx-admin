@@ -2,7 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from "vue";
 import App from "./App.vue";
-import router from "./router.js";
+import router from "./router/index.js";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 // 自定义theme.css
@@ -57,6 +57,104 @@ Vue.directive('clickoutside', clickoutside)
 
 Vue.config.productionTip = false;
 
+// ==================== 路由栈全局方法 ====================
+// 添加全局路由栈操作方法
+Vue.prototype.$routeStack = {
+  // 返回上一个路由
+  goBack() {
+    return store.dispatch('routeStack/goBack', router);
+  },
+  
+  // 前进到下一个路由
+  goForward() {
+    return store.dispatch('routeStack/goForward', router);
+  },
+  
+  // 跳转到指定索引的路由
+  goToIndex(index) {
+    return store.dispatch('routeStack/goToIndex', { index, router });
+  },
+  
+  // 获取路由栈
+  getStack() {
+    return store.getters['routeStack/routeStack'];
+  },
+  
+  // 获取栈大小
+  getStackSize() {
+    return store.getters['routeStack/stackSize'];
+  },
+  
+  // 是否可以返回
+  canGoBack() {
+    return store.getters['routeStack/canGoBack'];
+  },
+  
+  // 是否可以前进
+  canGoForward() {
+    return store.getters['routeStack/canGoForward'];
+  },
+  
+  // 获取上一个路由
+  getPreviousRoute() {
+    return store.getters['routeStack/previousRoute'];
+  },
+  
+  // 获取下一个路由
+  getNextRoute() {
+    return store.getters['routeStack/nextRoute'];
+  },
+  
+  // 获取当前路由
+  getCurrentRoute() {
+    return store.getters['routeStack/currentRoute'];
+  },
+  
+  // 清空路由栈
+  clearStack() {
+    return store.dispatch('routeStack/clearStack');
+  },
+  
+  // 移除指定路由
+  removeRoute(index) {
+    return store.dispatch('routeStack/removeRoute', index);
+  },
+  
+  // 启用/禁用路由栈管理
+  setEnabled(enabled) {
+    return store.dispatch('routeStack/setEnabled', enabled);
+  },
+  
+  // 设置最大栈大小
+  setMaxSize(size) {
+    return store.dispatch('routeStack/setMaxSize', size);
+  },
+  
+  // 智能返回（优先使用栈内路由，否则使用浏览器返回）
+  smartGoBack() {
+    if (this.canGoBack()) {
+      return this.goBack();
+    } else {
+      return router.go(-1);
+    }
+  }
+};
+
+// 添加全局路由栈事件总线
+Vue.prototype.$routeStackBus = new Vue();
+
+// 监听路由栈变化并发送事件
+store.watch(
+  (state) => state.routeStack.stack,
+  (newStack, oldStack) => {
+    Vue.prototype.$routeStackBus.$emit('stack-changed', {
+      newStack,
+      oldStack,
+      size: newStack.length
+    });
+  },
+  { deep: true }
+);
 
 Vue.use(bxPlugin);
 VueInit();

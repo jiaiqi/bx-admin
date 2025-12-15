@@ -1,5 +1,5 @@
 <script setup>
-import { initChart } from "../use-functions/buildOption";
+import { initChart, startPieAutoPlay } from "../use-functions/buildOption";
 import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 const props = defineProps({
   options: {
@@ -22,33 +22,77 @@ const props = defineProps({
 });
 const domRef = ref(null);
 
-let chartObj = null;
+let chartObj = ref(null);
 let objResizeObserver;
+let autoPlayTimer = null;
+defineExpose({
+  chartObj,
+});
+
+const emit = defineEmits(['click-chart']);
 onMounted(() => {
   if (!domRef.value) return;
 
   // 初始化
-  chartObj = initChart(domRef.value);
+  chartObj.value = initChart(domRef.value);
+
+  chartObj.value.on('click', function (params) {
+    console.log('点击图表-params:', params);
+    // console.log('echart点击事件-点击的图表类型:',params.componentType);
+    // console.log('echart点击事件-点击的图表子类型:',params.componentSubType);
+    // console.log('echart点击事件-点击的图表-名称:', params.name);
+    // console.log('echart点击事件-点击的图表-数据:',params.data);
+
+    if (params.componentType === 'series') {
+      let emitObj = {
+        name: params.name,
+        value: params.data.value,
+        dataIndex: params.dataIndex,
+        type: params.componentType,
+        event: params.event.event,
+      }
+      // console.log('echart点击事件-点击的图表-数据-系列索引:',params.seriesIndex);
+      // console.log('echart点击事件-点击的图表-数据-系列名称:',params.seriesName);
+      if (params.seriesType === 'scatter') {
+        // console.log('echart点击事件-点击的图表-数据-系列-散点索引:', params.dataIndex);
+        // console.log('echart点击事件-点击的图表-数据-系列-散点-数据:', params.data.value[2]);
+        emitObj.value = params.data.value[2];
+      } else if (params.seriesType === 'map') {
+        // console.log('echart点击事件-点击的图表-数据-系列-地图-索引:', params.dataIndex);
+        // console.log('echart点击事件-点击的图表-数据-系列-地图-数据:', params.data.value);
+        emitObj.value = params.data.value;
+        return
+      }
+      emit('click-chart', emitObj);
+    }
+  });
 
   objResizeObserver = new ResizeObserver(function (entries) {
     const entry = entries[0];
     if (entry?.target === domRef.value) {
-      chartObj?.resize();
+      chartObj.value?.resize();
     }
   });
 
   // 观察元素尺寸变化
   objResizeObserver.observe(domRef.value);
 
-  setTimeout(() => {
-    chartObj && chartObj.resize();
-  }, 1000);
+  nextTick(() => {
+    setTimeout(() => {
+      chartObj.value && chartObj.value.resize();
+    }, 500);
+  });
 });
 
 onUnmounted(() => {
-  if (chartObj) {
-    chartObj.dispose();
-    chartObj = null;
+  if (chartObj.value) {
+    chartObj.value.dispose();
+    chartObj.value = null;
+  }
+  // 清除自动轮播定时器
+  if (autoPlayTimer) {
+    autoPlayTimer();
+    autoPlayTimer = null;
   }
   // 取消监听
   domRef.value && objResizeObserver.unobserve(domRef.value);
@@ -60,7 +104,7 @@ watch(
   () =>
     setTimeout(() => {
       drawOption();
-    }, 500),
+    }, 200),
   {
     immediate: true,
   }
@@ -69,12 +113,12 @@ watch(
 //加载图表配置
 const drawOption = () => {
   console.log(props.chartType);
-  if (!chartObj) return;
-  chartObj.showLoading({
+  if (!chartObj.value) return;
+  chartObj.value.showLoading({
     text: "加载中...",
     color: "#333",
     textColor: "#333",
-    maskColor: "rgba(255, 255, 255, 0.3)",
+    maskColor: "rgba(255, 255, 255, 0.1)",
     spinnerRadius: 20,
   });
   const options = {
@@ -83,10 +127,28 @@ const drawOption = () => {
   if (props.colors?.length) {
     options.color = props.colors;
   }
+  // 将饼图和环图的起始角度从默认的90度（12点钟方向）改为270度（6点钟方向）
+  if ((props.chartType === 'pie' || props.chartType === 'ring') && !options.series[0]?.startAngle) {
+    options.series = options.series.map(series => ({
+      ...series,
+      startAngle: 270
+    }));
+  }
   setTimeout(() => {
     nextTick(() => {
-      chartObj.setOption(options);
-      chartObj.hideLoading();
+      chartObj.value.setOption(options);
+      chartObj.value.hideLoading();
+
+      // 如果是饼图或环图且配置了自动轮播，启动轮播
+      if ((props.chartType === 'pie' || props.chartType === 'ring') && options._autoPlay) {
+        // 清除之前的轮播定时器
+        if (autoPlayTimer) {
+          autoPlayTimer();
+          autoPlayTimer = null;
+        }
+        // 启动新的轮播
+        autoPlayTimer = startPieAutoPlay(chartObj.value, options);
+      }
     });
   }, 1000);
 };
@@ -94,5 +156,9 @@ const drawOption = () => {
 
 <template>
   <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
-  <div ref="domRef" class="echarts-item" :style="{ width, height }"></div>
+  <div
+    ref="domRef"
+    class="echarts-item"
+    :style="{ width, height }"
+  ></div>
 </template>

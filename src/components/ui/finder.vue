@@ -37,6 +37,15 @@
         :current-selected="field.model"
         @on-selected="onPickerSelected"
       ></location-picker>
+      <id-card-upload
+        v-else-if="isIdCard"
+        :field="field"
+        :disabled="setDisabled"
+        :mainformDatas="mainformDatas"
+        :defaultValues="defaultValues"
+        :current-selected="field.model"
+        @on-selected="onPickerSelected"
+      ></id-card-upload>
       <table-picker
         ref="tablePicker"
         v-bind="$props"
@@ -61,8 +70,8 @@
           :field="field"
           :disabled="setDisabled"
           :prefix-icon="(dispLoaderV2 &&
-              dispLoaderV2.imgType === 'eicon' &&
-              field.getSrvVal()) ||
+            dispLoaderV2.imgType === 'eicon' &&
+            field.getSrvVal()) ||
             ''
             "
           v-model="selected"
@@ -71,13 +80,13 @@
         <el-autocomplete
           ref="autocomplete"
           :prefix-icon="(dispLoaderV2 &&
-              dispLoaderV2.imgType === 'eicon' &&
-              field.getSrvVal()) ||
+            dispLoaderV2.imgType === 'eicon' &&
+            field.getSrvVal()) ||
             ''
             "
           :trigger-on-focus="showAutocomplete"
           :fetch-suggestions="loadOptions"
-          :value-key="field.info.dispCol"
+          :value-key="field.info.valueCol"
           :disabled="setDisabled"
           v-model="inputValue"
           :placeholder="field.info.placeholder"
@@ -245,8 +254,7 @@
 </template>
 
 <script>
-import tablePicker from "../common/table-picker.vue";
-import locationPicker from "./location-picker.vue";
+
 import remove from "lodash/remove";
 import cloneDeepWith from "lodash/cloneDeepWith";
 import cloneDeep from "lodash/cloneDeep";
@@ -255,11 +263,18 @@ import isObject from "lodash/isObject";
 import isEqual from "lodash/isEqual";
 import multiTabOptionSelect from "./fk-select/multi-tab-option-select.vue";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
+
+// ui组件
+import tablePicker from "../common/table-picker.vue";
+import locationPicker from "./location-picker.vue";
+import idCardUpload from "./id-card-upload.vue";
+
 export default {
   components: {
     List: () => import("../common/list.vue"),
     tablePicker,
     locationPicker,
+    idCardUpload,
     Add: () => import("../common/add.vue"),
     Update: () => import("../common/update.vue"),
     multiTabOptionSelect,
@@ -273,7 +288,7 @@ export default {
   props: {
     field: Object,
     defaultConditions: Array,
-    finderSelected: [String, Object],
+    finderSelected: [String, Object, Number],
     defaultValues: Object,
     childForeignkey: Object,
     mainformDatas: Object,
@@ -283,7 +298,7 @@ export default {
   data() {
     return {
       selected: null,
-      inputValue:"",
+      inputValue: "",
       popup: false,
       activePopup: "",
       appNo: null,
@@ -549,6 +564,10 @@ export default {
     isLocation() {
       return this.field.info?.type === "bxsys_obj_type_gps";
     },
+    // 是否是身份证类型，使用身份证上传组件
+    isIdCard() {
+      return this.field.info?.type === "bxsys_type_idcard";
+    },
     addSrvCfg() {
       return this.optionListV2?.add_srv_cfg;
     },
@@ -579,6 +598,10 @@ export default {
     },
     allowEditAndSelect() {
       // 编辑选择
+      if (this.field.info?._inFilterForm === true) {
+        // 过滤表单需要编辑选择
+        return false
+      }
       return (
         this.addSrvCfg?.permission &&
         this.addSrvCfg.srv &&
@@ -696,7 +719,7 @@ export default {
         this.field.model = this.options[0];
         this.selected =
           loader.showAsPair !== true
-            ? this.options[0][fieldInfo.dispCol]
+            ? (this.options[0][fieldInfo.dispCol]||this.options[0][fieldInfo.valueCol])
             : `${this.options[0][fieldInfo.dispCol]}/${this.options[0][fieldInfo.valueCol]
             }`;
         this.hasInit = true;
@@ -788,7 +811,7 @@ export default {
                     return `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]
                       }`;
                   } else {
-                    return item[fieldInfo.dispCol];
+                    return item[fieldInfo.dispCol] || item[fieldInfo.valueCol];
                   }
                 } else {
                   return item[fieldInfo.valueCol];
@@ -975,7 +998,7 @@ export default {
             item.labelFunc = (data) => {
               return loader.showAsPair == true
                 ? `${data[fieldInfo.dispCol]}/${data[fieldInfo.valueCol]}`
-                : data[fieldInfo.dispCol];
+                : (data[fieldInfo.dispCol] || data[fieldInfo.valueCol]);
             };
           });
           options.forEach((option) => {
@@ -992,6 +1015,7 @@ export default {
             }
           });
           this.options = this.bxDeepClone(options);
+          
           cb(options);
         } else {
           cb([]);
@@ -1034,12 +1058,14 @@ export default {
           dataItem.value = queryString == null ? "" : queryString;
           dataTemp.data.push(self.bxDeepClone(dataItem));
           relaTemp.data.push(self.bxDeepClone(dataTemp));
-          dataTemp.data = [];
-          dataItem.ruleType = "[like]";
-          dataItem.colName = this.field.info.dispCol;
-          dataItem.value = queryString == null ? "" : queryString;
-          dataTemp.data.push(self.bxDeepClone(dataItem));
-          relaTemp.data.push(self.bxDeepClone(dataTemp));
+          if( queryString && this.field.info.dispCol&&!this.field.info.dispCol.startsWith("_")){
+            dataTemp.data = [];
+            dataItem.ruleType = "[like]";
+            dataItem.colName = this.field.info.dispCol;
+            dataItem.value = queryString == null ? "" : queryString;
+            dataTemp.data.push(self.bxDeepClone(dataItem));
+            relaTemp.data.push(self.bxDeepClone(dataTemp));
+          }
         } else {
           relaTemp.relation = "OR";
           dataTemp.data = [];
@@ -1151,6 +1177,9 @@ export default {
             ) {
               condition.value = valueExpr.value;
             }
+          } else if(valueExpr && typeof valueExpr === "string" && !valueExpr.startsWith("'") && !valueExpr.includes(".") &&  !valueExpr?.includes('(')){
+            // 字符串类型且不以'开头，不包含.，则认为是常量
+            condition.value = valueExpr
           } else if (valueExpr) {
             // literal value or js expr
             if (cond.literalValue) {
@@ -1214,7 +1243,7 @@ export default {
         } else {
           this.selected =
             loader.showAsPair !== true
-              ? item[fieldInfo.dispCol]
+              ? (item[fieldInfo.dispCol] || item[fieldInfo.valueCol])
               : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
         }
       }
@@ -1260,6 +1289,18 @@ export default {
     },
 
     handleBlur() {
+      let queryString = this.inputValue
+      let options = this.options
+      const fieldInfo = this.field.info;
+      if (queryString && queryString != this.selected && options.length === 1 && (options[0][fieldInfo.valueCol] == queryString || options[0][fieldInfo.dispCol] == queryString)) {
+        // 如果搜索到的值只有一条而且value字段或者label字段的值完全匹配queryString，则选中这条数据
+        this.handleSelect(options[0]);
+        this.$refs.autocomplete.$refs.input && this.$refs.autocomplete.$refs.input.blur();
+        this.$refs.autocomplete.activated = false;
+      } else if (queryString && queryString != this.selected) {
+        this.$message.warning("未找到匹配的数据");
+        this.inputValue = this.field.model[fieldInfo.dispCol] || this.selected || '';
+      }
       try {
         if (this.field.getSrvVal()) {
           if (
@@ -1381,7 +1422,7 @@ export default {
             } else {
               this.selected =
                 loader.showAsPair !== true
-                  ? this.field.model[fieldInfo.dispCol]
+                  ? (this.field.model[fieldInfo.dispCol] || this.field.model[fieldInfo.valueCol])
                   : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
                   }`;
             }
@@ -1428,7 +1469,7 @@ export default {
       let loader = this.dispLoaderV2;
       this.selected =
         loader.showAsPair !== true
-          ? item[fieldInfo.dispCol]
+          ? (item[fieldInfo.dispCol] || item[fieldInfo.valueCol])
           : `${item[fieldInfo.dispCol]}/${item[fieldInfo.valueCol]}`;
       this.popup = false;
     },
@@ -1490,7 +1531,7 @@ export default {
         } else {
           this.selected =
             loader.showAsPair !== false
-              ? this.field.model[fieldInfo.dispCol]
+              ? (this.field.model[fieldInfo.dispCol] || this.field.model[fieldInfo.valueCol])
               : `${this.field.model[fieldInfo.dispCol]}/${this.field.model[fieldInfo.valueCol]
               }`;
         }

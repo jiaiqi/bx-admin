@@ -9,7 +9,7 @@
            <li class="pay_des">订单支付成功:</li>
            <li class="pay_des">{{payAmount+'元'}}</li>
            <li>
-             <el-button @click="closePayment">取消</el-button>
+             <el-button  size="mini" @click="closePayment">取消</el-button>
              <el-button type="primary" size="mini" @click="handleBack">返回支付页面</el-button>
            </li>
          </div>

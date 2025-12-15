@@ -45,6 +45,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 // import NavMenuChild from "./nav-menu-child.vue";
 import NavSubMenu from "./nav-menu-child.vue";
+import { getFullBaseUrl } from "@/common/common";
 const props = defineProps({
   config: Object,
   parentStyle: Object,
@@ -190,7 +191,7 @@ function navToPath(jump_json) {
   if (jump_json?.tmpl_page_json.file_path) {
     path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
   } else {
-    path = `/vpages/index.html#/lowcode-grid/view/${pageNo}?srvApp=config`;
+    path = `${getFullBaseUrl()}/lowcode-grid/view/${pageNo}?srvApp=config`;
   }
   if (pageNo) {
     console.log(path);

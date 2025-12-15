@@ -2,6 +2,7 @@
   <card-cell-part
     :cell-item="cellItem"
     :cell-item-data="cellData"
+    :cell-data="allCellData"
     :query-options="queryOptions"
     :page-params-model="pageParamsModel"
     @on-click-cell="onClickCell"
@@ -22,6 +23,7 @@ export default {
   data() {
     return {
       cellData: null,
+      allCellData: null,
     };
   },
   props: {
@@ -188,6 +190,7 @@ export default {
         );
         if (res.data.state !== "FAILURE" && res.data.data.length > 0) {
           this.cellData = res.data.data[0];
+          this.allCellData = res.data.data;
         } else {
           console.log(res);
         }

@@ -3,6 +3,14 @@
     <header class="header">
       <div class="header-left">
         <h1 class="title">卡片单元设计器</h1>
+        <el-tooltip content="组件大纲" placement="bottom">
+          <div
+            @click.stop="outlineVisible = true"
+            class="handle-btn"
+          >
+            <Icon icon="ri-node-tree" />
+          </div>
+        </el-tooltip>
       </div>
       <div class="header-center">
         <template v-if="cardInfo && cardInfo.card_name">
@@ -10,19 +18,34 @@
         </template>
       </div>
       <div class="header-right">
-        <div class="theme-toggle-btn" @click="changeTheme" title="切换主题模式">
-          <Icon
-            :icon="isDarkMode ? 'ri:sun-line' : 'ri:moon-line'"
-            class="theme-icon"
-          />
-        </div>
-        <el-button class="" @click="refresh" :loading="onSaving"
-          >刷新</el-button
-        >
-        <el-button class="save-btn" @click="saveCard" :loading="onSaving">
-          保存
-        </el-button>
-        <el-button class="preview-btn" @click="previewCard">预览</el-button>
+        <el-tooltip content="切换主题模式" placement="bottom">
+          <div @click="changeTheme" class="handle-btn">
+            <Icon :icon="isDarkMode ? 'ri:sun-fill' : 'ri:moon-fill'" />
+          </div>
+        </el-tooltip>
+        <el-tooltip content="刷新" placement="bottom">
+          <div
+            @click="refresh"
+            class="handle-btn"
+            :class="{ loading: onSaving }"
+          >
+            <Icon icon="ri:refresh-line" />
+          </div>
+        </el-tooltip>
+        <el-tooltip content="保存" placement="bottom">
+          <div
+            @click="saveCard"
+            class="handle-btn"
+            :class="{ loading: onSaving || propertyLoading }"
+          >
+            <Icon icon="ri:save-fill" />
+          </div>
+        </el-tooltip>
+        <el-tooltip content="预览" placement="bottom">
+          <div @click="previewCard" class="handle-btn">
+            <Icon icon="ri:eye-fill" />
+          </div>
+        </el-tooltip>
       </div>
     </header>
     <main class="main">
@@ -78,25 +101,31 @@
                 ""
               }}</span>
               <div class="part-delete">
-                <i title="复制">
-                  <Icon
-                    icon="ri:file-copy-2-fill"
-                    @click.native.stop="handleCopyPart()"
-                  ></Icon>
-                </i>
-                <i title="粘贴">
-                  <Icon
-                    icon="ri:file-copy-2-line"
-                    @click.native.stop="handlePastePart()"
-                  ></Icon>
-                </i>
+                <el-tooltip content="复制" placement="bottom">
+                  <i>
+                    <Icon
+                      icon="ri:file-copy-2-fill"
+                      @click.native.stop="handleCopyPart()"
+                    ></Icon>
+                  </i>
+                </el-tooltip>
+                <el-tooltip content="粘贴" placement="bottom">
+                  <i>
+                    <Icon
+                      icon="ri:file-copy-2-line"
+                      @click.native.stop="handlePastePart()"
+                    ></Icon>
+                  </i>
+                </el-tooltip>
 
-                <i title="删除">
-                  <Icon
-                    icon="ri:delete-bin-line"
-                    @click.native="deletePart(selectedPart)"
-                  ></Icon>
-                </i>
+                <el-tooltip content="删除" placement="bottom">
+                  <i>
+                    <Icon
+                      icon="ri:delete-bin-line"
+                      @click.native="deletePart(selectedPart)"
+                    ></Icon>
+                  </i>
+                </el-tooltip>
               </div>
             </div>
             <div
@@ -138,6 +167,7 @@
             @saved="saved"
             @unit-update="onUnitUpdate"
             @parts-update="onPartsUpdate"
+            @loading-change="onPropertyLoadingChange"
           ></property-editor>
         </div>
       </aside>
@@ -161,6 +191,43 @@
         </div>
       </div>
     </el-dialog>
+    <el-drawer
+      title="组件大纲"
+      :visible.sync="outlineVisible"
+      direction="ltr"
+      size="400px"
+      :modal="false"
+      class="outline-container"
+    >
+      <el-tree
+        :highlight-current="true"
+        :default-expand-all="true"
+        :expand-on-click-node="false"
+        :current-node-key="
+          selectedPart ? selectedPart._id || selectedPart.id : null
+        "
+        :data="outlineTree"
+        :props="outlineTreeProps"
+        @node-click="clickPart"
+      >
+        <span
+          class="custom-tree-node"
+          style="width: 100%; display: flex"
+          slot-scope="{ node, data }"
+        >
+          <span style="flex: 1">{{ node.label }}</span>
+          <span class="right-btn">
+            <el-button
+              type="text"
+              size="mini"
+              @click.stop="() => removePart(node, data)"
+            >
+              删除
+            </el-button>
+          </span>
+        </span>
+      </el-tree>
+    </el-drawer>
   </div>
 </template>
 
@@ -180,6 +247,7 @@ import CardPart from "./components/CardPart.vue";
 import propertyEditor from "./components/propertyEditor.vue";
 import cloneDeep from "lodash/cloneDeep";
 import CardCell from "./components/CardCell.vue";
+import clickoutside from "@/pages/datav/common/clickoutside.js";
 
 /**
  * 常量定义
@@ -334,6 +402,9 @@ export default {
     propertyEditor,
     CardCell,
   },
+  directives: {
+    clickoutside: clickoutside,
+  },
   data() {
     return {
       cardNo: "", // 卡片编号
@@ -343,6 +414,7 @@ export default {
       selectedPart: null, // 当前选中的部件
       draggedPart: null, // 正在拖拽的部件
       onSaving: false, // 是否正在保存
+      propertyLoading: false, // 属性编辑器的保存状态
       isPreview: false, // 是否处于预览模式
       hiddenPartsVisible: false, // 是否显示隐藏的部件
       isDarkMode: false, // 是否为深色模式
@@ -353,6 +425,7 @@ export default {
       saveTimer: null, // 保存操作的定时器
       partHeaderStyleCache: new Map(), // 部件头部样式缓存
       isEditorActive: false, // 编辑器是否处于激活状态
+      outlineVisible: false, // 大纲视图显示状态
     };
   },
   computed: {
@@ -395,8 +468,36 @@ export default {
       const style = this.calcPartHeaderPosition(this.selectedPart);
       return style;
     },
+
+    /**
+     * 组件大纲树形结构属性配置
+     * @returns {Object} 树形组件属性配置
+     */
+    outlineTreeProps() {
+      return {
+        label: "card_parts_name",
+        children: "children",
+      };
+    },
+
+    /**
+     * 组件大纲树形数据
+     * @returns {Array} 树形数据结构
+     */
+    outlineTree() {
+      let list = cloneDeep(this.partsList);
+      return list;
+    },
   },
   methods: {
+    /**
+     * 处理属性编辑器的 loading 状态变化
+     * @param {boolean} loading - loading 状态
+     */
+    onPropertyLoadingChange(loading) {
+      this.propertyLoading = loading;
+    },
+
     handleContainerFocus() {
       console.log("handleContainerFocus");
       this.checkClipboardSupport();
@@ -540,6 +641,11 @@ export default {
         return;
       }
 
+      // 如果属性编辑器正在保存，阻止重复点击
+      if (this.propertyLoading) {
+        return;
+      }
+
       if (this.saveTimer) {
         clearTimeout(this.saveTimer);
       }
@@ -670,6 +776,24 @@ export default {
           }
         );
       });
+    },
+
+    /**
+     * 点击大纲节点选中部件
+     * @param {Object} data - 部件数据
+     */
+    clickPart(data) {
+      console.log("clickPart:", data);
+      this.selectPart(data);
+    },
+
+    /**
+     * 从大纲中删除部件
+     * @param {Object} node - 树节点
+     * @param {Object} data - 部件数据
+     */
+    removePart(node, data) {
+      this.deletePart(data);
     },
 
     /**
@@ -1238,7 +1362,11 @@ export default {
      * @returns {Promise<void>}
      */
     async pasteToSelectedPart(newPart) {
-      if (["row", "block",'行容器','块容器'].includes(this.selectedPart.parts_type)) {
+      if (
+        ["row", "block", "行容器", "块容器"].includes(
+          this.selectedPart.parts_type
+        )
+      ) {
         if (!this.selectedPart.children) {
           this.$set(this.selectedPart, "children", []);
         }
@@ -1292,6 +1420,7 @@ export default {
      * @param {MouseEvent} event - 鼠标事件对象
      */
     handleContainerClick(event) {
+      this.outlineVisible = false;
       if (event.target === event.currentTarget) {
         this.selectPart();
         this.isEditorActive = false;
@@ -1367,6 +1496,7 @@ export default {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -1378,6 +1508,7 @@ export default {
     transform: translateY(-10px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -1388,6 +1519,7 @@ export default {
 ::view-transition-old(root) {
   animation: none;
 }
+
 .card-cell-editor {
   display: flex;
   flex-direction: column;
@@ -1396,22 +1528,27 @@ export default {
   overflow: hidden;
   --bg-color: #fff;
   background-color: var(--bg-color);
+
   &.dark-mode {
     --bg-color: #1a1a1a;
     --primary-color: #4a90e2;
     --menu-bg-color: var(--primary-color);
+
     .header {
       background-color: rgba($color: #2d2d2d, $alpha: 0.5);
       border-bottom-color: #444;
+
       .title {
         color: #ffffff;
       }
+
       .header-right,
       .header-center {
         button {
           color: #ffffff;
           border-color: #444;
           background-color: #333;
+
           &.save-btn {
             background-color: #4a90e2;
             border-color: #4a90e2;
@@ -1438,21 +1575,27 @@ export default {
       .property-panel {
         background-color: #252525;
         border-right-color: #444;
+
         .panel-header {
           border-bottom-color: #444;
+
           .panel-title {
             color: #ffffff;
           }
         }
+
         .panel-content {
           color: #dddddd;
+
           :deep(.property-pane) {
             background-color: #252525;
           }
         }
+
         .material-item {
           background-color: #333;
           border-color: #444;
+
           .material-name {
             color: #dddddd;
           }
@@ -1466,41 +1609,52 @@ export default {
       .editor-content {
         background-color: rgba($color: #2d2d2d, $alpha: 0.5);
         border-color: #444;
+
         .overlay {
           background-color: rgba(0, 0, 0, 0.1);
         }
       }
+
       .property-panel {
         border-left-color: #444;
         background-color: #252525;
+
         :deep(.form-view-wrapper) {
           background-color: #2d2d2d;
+
           .raw_field_editor input {
             --custom-input-color: #ddd;
           }
+
           .el-autocomplete-suggestion {
             background-color: #2d2d2d;
             color: #ffffff;
           }
+
           .el-button {
             background-color: #333;
             border-color: #444;
             color: #dddddd;
+
             &.el-button--primary {
             }
           }
+
           .el-checkbox,
           .el-upload__tip {
             color: #dddddd;
           }
+
           .el-input-group__append {
             background-color: #333;
             border-color: #444;
           }
+
           .el-input__inner {
             background-color: #333;
             border-color: #444;
           }
+
           .el-upload--picture-card {
             background-color: #252525;
             border-color: #444;
@@ -1508,14 +1662,17 @@ export default {
         }
       }
     }
+
     :deep(.el-dialog__wrapper) {
       .el-dialog {
         background-color: #2d2d2d;
+
         .el-dialog__title,
         .el-dialog__headerbtn,
         .el-dialog__close {
           color: #ddd;
         }
+
         .el-dialog__body,
         .preview-mode {
           height: 80vh;
@@ -1543,23 +1700,33 @@ export default {
 
   .header-left {
     flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
     .title {
       font-size: 16px;
       font-weight: bold;
       color: #333;
+      margin: 0;
     }
   }
+
   .header-center {
     justify-content: center;
   }
+
   .header-right {
     justify-content: flex-end;
   }
+
   .header-center,
   .header-right {
     display: flex;
     align-items: center;
+    gap: 10px;
     flex: 1;
+
     .theme-toggle-btn {
       display: flex;
       align-items: center;
@@ -1573,6 +1740,7 @@ export default {
       transition: all 0.3s ease;
       padding: 0;
       margin-right: 10px;
+
       &:hover {
         background-color: #f5f7fa;
       }
@@ -1581,6 +1749,7 @@ export default {
         font-size: 20px;
         color: #606266;
         transition: all 0.3s ease;
+
         &:hover {
           transform: rotate(15deg);
         }
@@ -1597,9 +1766,11 @@ export default {
       cursor: pointer;
       transition: all 0.2s ease-in-out;
       min-width: 80px;
+
       &:active {
         transform: scale(0.98);
       }
+
       &.save-btn {
         background-color: var(--primary-color, #409eff);
         color: #fff;
@@ -1711,6 +1882,7 @@ export default {
     background-color: #f0f0f5;
   }
 }
+
 .preview-mode {
   display: flex;
   justify-content: center;
@@ -1722,9 +1894,11 @@ export default {
   background-size: 20px 20px, 20px 20px;
   background-image: linear-gradient(#f5f5f9 19px, transparent 0),
     linear-gradient(90deg, transparent 19px, #000 0);
+
   .preview-content {
   }
 }
+
 .editor-content {
   display: inline-block;
   padding: 10px;
@@ -1757,6 +1931,7 @@ export default {
       background-color: rgba(103, 194, 58, 0.1);
     }
   }
+
   .card-part-header {
     position: absolute;
     top: 0;
@@ -1771,6 +1946,7 @@ export default {
     border: none;
     line-height: 30px;
     gap: 1px;
+    transition: all 0.2s ease;
     .part-label,
     .part-delete {
       background-color: var(--primary-color, #006cff);
@@ -1780,17 +1956,20 @@ export default {
       height: 30px;
       padding: 0 10px;
     }
+
     .part-label {
       flex: 1;
       text-align: left;
       min-width: max-content;
     }
+
     .part-delete {
       cursor: pointer;
       font-size: 16px;
       min-width: 60px;
       justify-content: center;
       gap: 5px;
+
       .iconify {
         &:hover {
           font-weight: bold;
@@ -1812,6 +1991,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+
   &:after {
     content: "拖拽组件到此处";
     color: #909399;
@@ -1906,6 +2086,175 @@ export default {
     top: 2px;
     left: 2px;
     transition: all 0.3s;
+  }
+}
+
+/* 组件大纲按钮样式 */
+.handle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #606266;
+  background-color: #f5f7fa;
+  padding: 0 8px;
+  gap: 4px;
+  border: 1px solid transparent;
+
+  .text {
+    font-size: 12px;
+  }
+
+  &.loading {
+    background-color: #f5f7fa;
+    color: #666;
+    pointer-events: none;
+    position: relative;
+    cursor: not-allowed;
+    opacity: 0.7;
+    background-color: rgba(45, 45, 45, 0.1);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-top: 2px solid #666;
+      border-radius: 50%;
+      animation: loading-spin 1s linear infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    // 禁用状态下的图标样式
+    .iconify {
+      opacity: 0.5;
+    }
+  }
+}
+
+.handle-btn:hover {
+  background-color: #f5f7fa;
+  color: var(--primary-color, #409eff);
+  border-color: var(--primary-color, #409eff);
+}
+
+.dark-mode .handle-btn {
+  color: #c0c4cc;
+  background-color: #2d2d2d;
+
+  &.loading {
+    background-color: #1f1f1f;
+    color: #999;
+    border-color: #555;
+
+    &::before {
+      border-top-color: #999;
+    }
+
+    .iconify {
+      opacity: 0.4;
+    }
+  }
+}
+
+.dark-mode .handle-btn:hover {
+  background-color: #2d2d2d;
+}
+
+/* 组件大纲drawer样式 */
+.el-drawer__wrapper {
+  width: 400px;
+}
+
+.outline-container .custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 8px;
+}
+
+.outline-container .right-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.outline-container .custom-tree-node:hover .right-btn {
+  opacity: 1;
+}
+
+/* 暗色模式下的组件大纲样式 */
+.dark-mode :deep(.outline-container) {
+  .el-drawer__title,
+  .el-drawer__body,
+  .el-drawer {
+    background-color: #2d2d2d;
+    color: #333;
+    margin-bottom: 0;
+  }
+
+  .el-drawer__header {
+    background-color: #2d2d2d;
+    border-bottom: 1px solid #4c4d4f;
+    color: #e4e7ed;
+    margin-bottom: 10px;
+  }
+
+  .el-drawer__body {
+    background-color: #2d2d2d;
+  }
+
+  .el-tree {
+    background-color: transparent;
+  }
+
+  .el-tree--highlight-current
+    .el-tree-node.is-current
+    > .el-tree-node__content {
+    color: #fff;
+    background-color: #3a3a3a;
+  }
+
+  .el-tree-node {
+    .el-tree-node__content {
+      &:hover {
+        background-color: #3a3a3a;
+        color: #c0c4cc;
+      }
+    }
+
+    .el-tree-node__expand-icon {
+      color: #c0c4cc;
+    }
+  }
+
+  .custom-tree-node {
+    color: #c0c4cc;
+
+    .right-btn {
+      .el-button--text {
+        color: #c0c4cc;
+
+        &:hover {
+          color: #409eff;
+        }
+      }
+    }
+  }
+}
+
+@keyframes loading-spin {
+  0% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-50%) rotate(360deg);
   }
 }
 </style>

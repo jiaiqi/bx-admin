@@ -107,7 +107,8 @@
         <el-tab-pane
           :label="item.finallyLabel || item.label"
           :name="item.key"
-          v-if="item.show"
+          v-show="item.show && activeName == item.key"
+          v-if="item.hide !== true"
         >
           <list
             :ref="item.key"
@@ -179,7 +180,8 @@ export default {
             key: 'cc',
             label: '抄送给我',
             finallyLabel: this.ccNum || '抄送给我',
-            show: this.showCcTab
+            show: this.showCcTab,
+            hide: !this.showCcTab
           },
           {
             key: 'myall',
@@ -203,7 +205,7 @@ export default {
             key: 'userall',
             label: '全部',
             finallyLabel: this.allNum || '全部',
-            show: true
+            show: this.allNum && this.allNum > 0 ? true : false,
           }
         ]
       }
@@ -239,7 +241,7 @@ export default {
     },
     handleClick(activeName) {
       // timerRefresh()
-      this.$refs[activeName].loadTableData()
+      this.$refs[activeName]?.loadTableData?.()
     },
     timerRefresh(listCom) {
       if (top.pathConfig && top.pathConfig.pages_attribute && top.pathConfig.pages_attribute.proc_page_refresh_time) {
@@ -251,7 +253,6 @@ export default {
     },
     setTip(gridData, listProcType) {
       if (gridData.page) {
-        
         if (Array.isArray(this.procTabs) && this.procTabs.length) {
           this.procTabs = this.procTabs.map(item => {
             if (item.key == listProcType) {

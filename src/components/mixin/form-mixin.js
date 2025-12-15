@@ -1142,7 +1142,7 @@ export default {
          * 处理起止日期值分离同步
          */
         let DateRangeEndCol = field.info._DateRangeEndColName;
-        if (field.info.editor === "DateRange" && DateRangeEndCol !== null) {
+        if (['DateRange', 'DateTimeRange'].includes(field.info.editor) && DateRangeEndCol !== null) {
           if (
             field.hasOwnProperty("_DateRangeModel") &&
             field._DateRangeModel !== null
@@ -1166,7 +1166,12 @@ export default {
         }
         this.$nextTick(() => {
           setTimeout(() => {
-            self.handleValidation(fieldName);
+            // 富文本（Note/ueditor）字段仅在提交时校验：
+            const info = field && field.info;
+            const isRichText = info && (info.type === 'Note' || info.editor === 'ueditor');
+            if (!isRichText) {
+              self.handleValidation(fieldName);
+            }
           }, 100);
         });
       }
@@ -1196,7 +1201,7 @@ export default {
         }
       }
       for (let k in this.fields) {
-        if (this.fields[k].info.editor === "DateRange") {
+        if (['DateRange', 'DateTimeRange'].includes(this.fields[k].info.editor)) {
           if (this.fields[k].info._DateRangeEndColName !== null) {
             this.fields[k]._DateRangeModel = [];
             this.fields[k]._DateRangeModel.push(this.fields[k].model);

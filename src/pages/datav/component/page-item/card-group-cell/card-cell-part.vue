@@ -1,5 +1,22 @@
 <template>
   <Fragment v-if="partsShow">
+    <weather
+      v-if="partsType === '天气'"
+      :page-item="pageItem"
+      :style="[buildColStyleJson]"
+    ></weather>
+    <div
+      v-else-if="['附件'].includes(cellItem.parts_type)"
+      class="bx-cell-variable"
+      :class="{
+        'cursor-pointer': isLink,
+      }"
+      @click.stop="onClickSubBlock()"
+      :style="[buildColStyleJson]"
+      :ref="partsType"
+    >
+      {{ getFileName || "" }}
+    </div>
     <LiquidFillChart
       v-if="partsType === '水球图'"
       :value="setPartModelData"
@@ -68,14 +85,15 @@
       :height="buildColStyleJson.height || 'auto'"
       :width="buildColStyleJson.width || '100%'"
       :border-radius="buildColStyleJson['border-radius']"
-      :src="getImagePath(setPartModelData, 150)"
+      :src="getImagePath(setPartModelData, item.img_dpi)"
       class="demo-layout bx-text-cell"
       :class="{
         'cursor-pointer': isLink,
       }"
       :style="[buildColStyleJson]"
-      mode="aspectFill"
-      img-mode="aspectFill"
+      :fit="setScaleMode"
+      :mode="item.scale_mode || 'aspectFill'"
+      :img-mode="item.scale_mode || 'aspectFill'"
       :ref="partsType"
     ></el-image>
     <el-rate
@@ -95,6 +113,10 @@
       :percentage="Number(setPartModelData) || 0"
       :ref="partsType"
     ></el-progress>
+    <div
+      v-else-if="iconPartTypes.includes(item.parts_type) && !setPartModelData"
+      :style="[buildColStyleJson]"
+    ></div>
     <i
       v-else-if="
         iconPartTypes.includes(item.parts_type) &&
@@ -118,6 +140,7 @@
     <div
       v-else-if="item.parts_type == '富文本'"
       :style="[buildColStyleJson]"
+      class="bx-cell-rich-text"
       v-html="recoverFileAddress4richText(setPartModelData)"
       :ref="partsType"
     ></div>
@@ -131,12 +154,15 @@
       @click.native.stop="onClickSubBlock()"
     ></qr-code>
     <div
+      v-else-if="cellItem.parts_type === '倒计时'"
+      :style="[buildColStyleJson]"
+      :ref="partsType"
+    >
+      {{ countdownDisplay }}
+    </div>
+    <div
       ref="bxCellContainer"
-      v-else-if="
-        containerPartTypes.includes(cellItem.parts_type) &&
-        cellItem.hasOwnProperty('sub_card_parts_json') &&
-        cellItem.sub_card_parts_json.length > 0
-      "
+      v-else-if="containerPartTypes.includes(cellItem.parts_type)"
       :class="{
         'marquee-mode': childAnimationType === '跑马灯',
         'cursor-pointer': isLink && childAnimationType !== '跑马灯',
@@ -170,6 +196,7 @@
             :cellItem="subCardPart"
             :comColMap="setComColMap"
             :cellItemData="cellItemData"
+            :cellData="cellData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
             :cellLayoutJson="subCardPart"
@@ -184,12 +211,13 @@
           ></card-cell-part>
         </template>
       </div>
-      <template v-else>
+      <template v-else-if="getSubJson(cellItem) && getSubJson(cellItem).length > 0">
         <template v-for="(subCardPart, subindex) in getSubJson(cellItem)">
           <card-cell-part
             :cellItem="subCardPart"
             :comColMap="setComColMap"
             :cellItemData="cellItemData"
+            :cellData="cellData"
             :readOnly="readOnly"
             :queryOptions="queryOptions"
             :cellLayoutJson="subCardPart"
@@ -232,8 +260,13 @@ import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
 // import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
+import weather from "../widgets/weather.vue";
 import { formatStyleData } from "@/pages/datav/common";
-import { setAnimationClass, setAnimationStyle } from "@/common/common";
+import {
+  getBaseUrl,
+  setAnimationClass,
+  setAnimationStyle,
+} from "@/common/common";
 import {
   numberAnimationRun,
   formatNumber,
@@ -242,7 +275,7 @@ import {
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
 // import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
 import cardPopup from "../card-group/card-popup.vue";
-import { getFilePath } from "@/common/httpUtil";
+import { getFilePathByNo } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
 // 节流
 function throttle(func, delay = 300) {
@@ -269,10 +302,12 @@ export default {
     qrCode,
     HlsplayerVideo: () => import(/* webpackChunkName: "hls-video" */ "@/components/common/hls-video/hlsplayer-video.vue"),
     cardPopup,
+    weather,
   },
   data() {
     return {
       fileNoMap: {},
+      fileList: [],
       liquidColor: "",
       showCardPopup: false,
       popupCardJson: null,
@@ -285,6 +320,9 @@ export default {
       imagePartTypes: ["图片", "iconImg"],
       iconPartTypes: ["icon", "字体图标", "图标"],
       containerPartTypes: ["块容器", "行容器", "block", "row"],
+      countdownTimeMs: 0,
+      countdownDisplay: "00日00时00分00秒",
+      _countdownTimer: null,
     };
   },
   props: {
@@ -296,6 +334,9 @@ export default {
     },
     cellItemData: {
       type: [Object, String],
+    },
+    cellData: {
+      type: Array,
     },
     parentPart: Object,
     readOnly: {
@@ -324,17 +365,48 @@ export default {
   computed: {
     ...mapGetters("loginInfo", ["logined", "loginUser"]),
     getQrcodeSize() {
-      let width = this.buildColStyleJson?.width || 100
-      if (typeof width === 'string') {
-        if (width.indexOf('rpx') > -1) {
-          width = parseInt(width) * 0.5
+      let width = this.buildColStyleJson?.width || 100;
+      if (typeof width === "string") {
+        if (width.indexOf("rpx") > -1) {
+          width = parseInt(width) * 0.5;
         }
       }
-      width = parseInt(width)
+      width = parseInt(width);
       if (isNaN(width)) {
-        width = 100
+        width = 100;
       }
-      return width
+      return width;
+    },
+    setScaleMode() {
+      let scale_mode = this.item.scale_mode;
+
+      // 微信小程序图片模式到el-image模式的映射
+      const modeMap = {
+        // 缩放模式映射
+        scaleToFill: "fill", // 不保持纵横比缩放图片，使图片的宽高完全拉伸至填满 image 元素
+        aspectFit: "contain", // 保持纵横比缩放图片，使图片的长边能完全显示出来
+        aspectFill: "cover", // 保持纵横比缩放图片，只保证图片的短边能完全显示出来
+        widthFix: "scale-down", // 宽度不变，高度自动变化，保持原图宽高比不变
+
+        // 裁剪模式映射（统一映射到cover模式，因为裁剪模式在el-image中没有直接对应）
+        top: "cover", // 不缩放图片，只显示图片的顶部区域
+        bottom: "cover", // 不缩放图片，只显示图片的底部区域
+        center: "cover", // 不缩放图片，只显示图片的中间区域
+        left: "cover", // 不缩放图片，只显示图片的左边区域
+        right: "cover", // 不缩放图片，只显示图片的右边区域
+        "top left": "cover", // 不缩放图片，只显示图片的左上边区域
+        "top right": "cover", // 不缩放图片，只显示图片的右上边区域
+        "bottom left": "cover", // 不缩放图片，只显示图片的左下边区域
+        "bottom right": "cover", // 不缩放图片，只显示图片的右下边区域
+      };
+
+      // 如果scale_mode存在且在映射表中，返回对应的el-image模式
+      if (scale_mode && modeMap[scale_mode]) {
+        return modeMap[scale_mode];
+      }
+
+      // 默认返回cover模式
+      return "cover";
     },
     setComColMap() {
       let map = this.comColMap || {};
@@ -564,7 +636,7 @@ export default {
       return obj;
     },
     setPartModelData() {
-      return this.getPartModelData()
+      return this.getPartModelData();
     },
     partsShow() {
       const item = this.cellItem;
@@ -641,8 +713,82 @@ export default {
       }
       return show;
     },
+    getFileName() {
+      let fileName = this.setPartModelData || "附件1";
+      if (Array.isArray(this.fileList) && this.fileList.length) {
+        fileName = this.fileList[0].src_name || fileName;
+      }
+      return fileName;
+    },
   },
   methods: {
+    startNativeCountdown() {
+      const ms = this.computeCountdownMs(this.setPartModelData);
+      this.countdownTimeMs = ms;
+      this.updateCountdownDisplay(ms);
+      if (this._countdownTimer) {
+        clearInterval(this._countdownTimer);
+        this._countdownTimer = null;
+      }
+      if (ms <= 0) return;
+      this._countdownTimer = setInterval(() => {
+        this.countdownTimeMs = Math.max(0, this.countdownTimeMs - 1000);
+        this.updateCountdownDisplay(this.countdownTimeMs);
+        if (this.countdownTimeMs <= 0) {
+          clearInterval(this._countdownTimer);
+          this._countdownTimer = null;
+        }
+      }, 1000);
+    },
+    updateCountdownDisplay(ms) {
+      const total = Math.max(0, Number(ms) || 0);
+      const day = Math.floor(total / (24 * 60 * 60 * 1000));
+      const hour = Math.floor(
+        (total % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+      );
+      const minute = Math.floor((total % (60 * 60 * 1000)) / (60 * 1000));
+      const second = Math.floor((total % (60 * 1000)) / 1000);
+      const pad = (n) => String(n).padStart(2, "0");
+      this.countdownDisplay = `${pad(day)}日${pad(hour)}时${pad(minute)}分${pad(
+        second
+      )}秒`;
+    },
+    computeCountdownMs(rawVal) {
+      if (!rawVal) return 0;
+      const raw = String(rawVal).trim();
+      let end = dayjs(raw);
+      if (!end.isValid()) {
+        const m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) {
+          const year = Number(m[1]);
+          const month = Number(m[2]) - 1;
+          const day = Number(m[3]);
+          end = dayjs(new Date(year, month, day, 0, 0, 0));
+        } else {
+          return 0;
+        }
+      } else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(raw)) {
+        end = end.startOf("day");
+      }
+      const now = dayjs();
+      const diff = end.valueOf() - now.valueOf();
+      return diff > 0 ? diff : 0;
+    },
+    getValByExprFromRow(row, expr) {
+      const rowRegex = /row\[(.*?)=(.*?)\]\.(.*)/;
+      const match = expr.match(rowRegex);
+      if (match) {
+        // 提取row[]中的=两边的值以及].后面的字段col2
+        const col1 = match[1];
+        const val1 = match[2];
+        const col2 = match[3];
+        // 根据提取的值从itemData中获取相应数据
+        // 首先检查itemData中是否存在col1字段且其值等于val1
+        if (Array.isArray(row) && row.length) {
+          return row.find((item) => item[col1] === val1)?.[col2];
+        }
+      }
+    },
     getPartModelData(getTrueValue = false) {
       const item = this.cellItem;
       const itemData = this.cellItemData || {};
@@ -650,6 +796,14 @@ export default {
       let type = item.parts_type;
       let key = item.variable || null;
       let val = item.parts_text;
+
+      // 处理row[company_owner=张宁].store_contact格式的key
+      if (key?.includes("row[")) {
+        if (this.getValByExprFromRow(this.cellData, key)) {
+          val = this.getValByExprFromRow(this.cellData, key);
+        }
+      }
+
       switch (type) {
         case "iconImg":
         case "图片":
@@ -667,31 +821,33 @@ export default {
         if (this.loginUser && this.loginUser[key]) {
           val = this.loginUser[key] || val || "";
         }
-        return val;
-      }
-      if (item && itemData && !!map) {
+      } else if (item && itemData && !!map) {
         let data = itemData;
         let optionsType = "";
         if (item.hasOwnProperty("sys_fun") && item?.sys_fun) {
           optionsType = item?.sys_fun;
         }
         switch (optionsType) {
-          case '下载':
-          case '预览':
+          case "下载":
+          case "预览":
             if (getTrueValue === true) {
-              key = item.variable
-              if (key && map.hasOwnProperty(key) && itemData.hasOwnProperty(map[key]) &&
-                itemData[map[key]]) {
-                val = itemData[map[key]]
+              key = item.variable;
+              if (
+                key &&
+                map.hasOwnProperty(key) &&
+                itemData.hasOwnProperty(map[key]) &&
+                itemData[map[key]]
+              ) {
+                val = itemData[map[key]];
               } else if (itemData[key]) {
-                val = itemData[key]
+                val = itemData[key];
               } else {
-                val = undefined
+                val = undefined;
               }
             } else {
-              val = item.parts_text
+              val = item.parts_text;
             }
-            break
+            break;
           case "拨打电话":
             key = item?.para_phone_col || item.variable;
             if (
@@ -794,7 +950,12 @@ export default {
         }
       }
       if (type === "时间日期" && item.date_format_rule) {
-        val = dayjs(val).format(item.date_format_rule);
+        // 校验 val 是否为有效日期，不是的话置为空
+        if (val && dayjs(val).isValid()) {
+          val = dayjs(val).format(item.date_format_rule);
+        } else {
+          val = dayjs().format(item.date_format_rule);
+        }
       }
       if (val && type === "iconImg" && item?.img_amount_limit === "多张") {
         // 展示多张图片
@@ -808,6 +969,46 @@ export default {
           val = 0;
         }
         return parseFloat(val);
+      }
+      if (val && typeof val === 'string' && this.cellItem?.more_options?.includes('中间4位脱敏')) {
+        const digits = val.match(/\d/g);
+        if (digits && digits.length >= 4) {
+          const totalDigits = digits.length;
+          
+          if (totalDigits === 11) {
+            // 11位数字：使用特定正则表达式脱敏
+            val = val.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+          } else if (totalDigits > 6) {
+            // 大于6位且非11位数字：按1/3-1/3-1/3比例脱敏
+            let digitIndex = 0;
+            val = val.replace(/\d/g, (match) => {
+              const position = digitIndex++;
+              let result = match;
+              
+              const prefixDigits = Math.ceil(totalDigits / 3);
+              const suffixDigits = Math.ceil(totalDigits / 3);
+              
+              if (position >= prefixDigits && position < totalDigits - suffixDigits) {
+                result = '*';
+              }
+              
+              return result;
+            });
+          } else {
+            // 4-6位数字：保留首尾，中间脱敏
+            let digitIndex = 0;
+            val = val.replace(/\d/g, (match) => {
+              const position = digitIndex++;
+              let result = match;
+              
+              if (position > 0 && position < totalDigits - 1) {
+                result = '*';
+              }
+              
+              return result;
+            });
+          }
+        }
       }
       return val;
     },
@@ -965,7 +1166,11 @@ export default {
                 .then((list) => {
                   if (Array.isArray(list) && list.length > 0) {
                     if (list.length === 1) {
-                      downloadFile(list[0].__url, list[0].file_type, list[0].src_name);
+                      downloadFile(
+                        list[0].__url,
+                        list[0].file_type,
+                        list[0].src_name
+                      );
                     } else {
                       this.showFileSelectionModal(list, "download");
                     }
@@ -1041,9 +1246,9 @@ export default {
             window.location.href = loginUrl;
             break;
           default:
-            if (optionsType?.includes('刷新组件请求')) {
-              console.log('刷新组件请求：', this.cellItem);
-              this.$emit('refresh-component')
+            if (optionsType?.includes("刷新组件请求")) {
+              console.log("刷新组件请求：", this.cellItem);
+              this.$emit("refresh-component");
             }
             console.log("没有点击事件");
             break;
@@ -1071,11 +1276,15 @@ export default {
         url: url,
         file_type: fileType,
         src_name: fileList[index]?.src_name,
-        fileurl: url
+        fileurl: url,
       };
 
       // 根据文件类型进行不同的预览处理
-      if (["jpg", "jpeg", "png", "gif", "JPG", "JPEG", "PNG", "GIF"].includes(fileType)) {
+      if (
+        ["jpg", "jpeg", "png", "gif", "JPG", "JPEG", "PNG", "GIF"].includes(
+          fileType
+        )
+      ) {
         // 图片预览
         // this.onPreView(file, index, fileList);
       } else if (fileType === "pdf") {
@@ -1083,8 +1292,10 @@ export default {
         this.handlePreview(file);
       } else if (["ppt", "pptx"].includes(fileType)) {
         // PPT预览
-        const filePath = `${window.backendIpAddr}/file/forward?targetUrl=${url}`
-        const previewUrl = `/vpages/ppt/index.html?file=${encodeURIComponent(filePath)}`;
+        const filePath = `${window.backendIpAddr}/file/forward?targetUrl=${url}`;
+        const previewUrl = `${getBaseUrl()}/ppt/index.html?file=${encodeURIComponent(
+          filePath
+        )}`;
         this.addTabByUrl(previewUrl, "文件预览");
       } else {
         // 其他文件类型直接下载
@@ -1094,27 +1305,36 @@ export default {
     },
     // 显示文件选择弹窗（多文件时）
     showFileSelectionModal(fileList, action) {
-      const fileNames = fileList.map((file, index) => `${index + 1}. ${file.src_name}`).join('\n');
-      this.$prompt(`请选择要${action === 'download' ? '下载' : '预览'}的文件序号:\n${fileNames}`, '文件选择', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /^[1-9]\d*$/,
-        inputErrorMessage: '请输入有效的文件序号'
-      }).then(({ value }) => {
-        const index = parseInt(value) - 1;
-        if (index >= 0 && index < fileList.length) {
-          const file = fileList[index];
-          if (action === 'download') {
-            downloadFile(file.__url, file.file_type, file.src_name);
-          } else {
-            this.previewFile(file.__url, file.file_type, fileList, index);
-          }
-        } else {
-          this.$message.error('文件序号超出范围');
+      const fileNames = fileList
+        .map((file, index) => `${index + 1}. ${file.src_name}`)
+        .join("\n");
+      this.$prompt(
+        `请选择要${action === "download" ? "下载" : "预览"
+        }的文件序号:\n${fileNames}`,
+        "文件选择",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputPattern: /^[1-9]\d*$/,
+          inputErrorMessage: "请输入有效的文件序号",
         }
-      }).catch(() => {
-        // 用户取消操作
-      });
+      )
+        .then(({ value }) => {
+          const index = parseInt(value) - 1;
+          if (index >= 0 && index < fileList.length) {
+            const file = fileList[index];
+            if (action === "download") {
+              downloadFile(file.__url, file.file_type, file.src_name);
+            } else {
+              this.previewFile(file.__url, file.file_type, fileList, index);
+            }
+          } else {
+            this.$message.error("文件序号超出范围");
+          }
+        })
+        .catch(() => {
+          // 用户取消操作
+        });
     },
     getFileUrl(url) {
       if (url?.indexOf("http") === 0) {
@@ -1127,7 +1347,7 @@ export default {
       }
     },
     async getFiles(no, size) {
-      let res = await getFilePath(no);
+      let res = await getFilePathByNo(no);
       if (res?.length) {
         res = res.map((item) => {
           item.__url = this.getFileUrl(item.fileurl);
@@ -1205,6 +1425,18 @@ export default {
       this.clickedElement = null;
     },
     initPart() {
+      if (this.cellItem.parts_type == "附件") {
+        if (this.setPartModelData) {
+          this.getFiles(this.setPartModelData, "原图").then((res) => {
+            if (Array.isArray(res)) {
+              this.fileList = res;
+            }
+          });
+        }
+      }
+      if (this.cellItem.parts_type === "倒计时") {
+        this.startNativeCountdown();
+      }
       if (this.enableNumberRollAnimation) {
         // 使用数字滚动特效
         this.$nextTick(() => {
@@ -1234,13 +1466,20 @@ export default {
     this.initPart();
   },
   beforeUnmount() {
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+      this._countdownTimer = null;
+    }
     numberAnimationStop?.();
     numberAnimationStop = null;
   },
 };
 </script>
 
-<style lang="scss" scoped>
+<style
+  lang="scss"
+  scoped
+>
 [class^="bx-cell-"] {
   &.cursor-pointer {
     &:hover {
@@ -1309,5 +1548,32 @@ export default {
   height: 100vh;
   // background-color: rgba(0, 0, 0, 0.1);
   pointer-events: auto;
+}
+
+::v-deep .bx-cell-rich-text {
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: inline-block;
+  }
+
+  .w-e-text-container blockquote,
+  .w-e-text-container li,
+  .w-e-text-container p,
+  .w-e-text-container td,
+  .w-e-text-container th,
+  .w-e-toolbar * {
+    line-height: 1.5;
+  }
+
+  div[data-w-e-type="video"] {
+    text-align: center;
+  }
 }
 </style>

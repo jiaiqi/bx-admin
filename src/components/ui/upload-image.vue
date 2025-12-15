@@ -1,48 +1,99 @@
 <template>
   <div>
     <template v-if="isEdit === false">
-      <ul class="form-imgs">
-        <li
+      <div class="form-imgs">
+        <div
+          class="image-container"
           v-for="(o, index) in fileLists"
           :key="index"
-          class="imgs-item"
         >
-          <div v-on:click="
-            imageDialogUrl = o.url;
-          imageDialog = true;
-          ">
-            <img
-              :src="o.url"
-              min-width="70"
-              height="70"
-            />
+          <el-image
+            v-if="o.file_type === 'jpg' || o.file_type === 'png' || o.file_type === 'jpeg'"
+            :src="o.url"
+            style="width: 150px; height: 150px"
+            fit="cover"
+            class="preview-image"
+            lazy
+          >
+            <div
+              slot="placeholder"
+              class="image-slot"
+            >
+              加载中<span class="dot">...</span>
+            </div>
+            <div
+              slot="error"
+              class="image-slot"
+            >
+              <i class="el-icon-picture-outline"></i>
+            </div>
+          </el-image>
+          <video
+            v-else-if="o.file_type === 'mp4' || o.file_type === 'avi' || o.file_type === 'mov'"
+            :src="o.url"
+            style="width: 150px; height: 150px"
+            fit="cover"
+            class="preview-image"
+            lazy
+          >
+            <div
+              slot="placeholder"
+              class="image-slot"
+            >
+              加载中<span class="dot">...</span>
+            </div>
+            <div
+              slot="error"
+              class="image-slot"
+            >
+              <i class="el-icon-picture-outline"></i>
+            </div>
+          </video>
+          <div class="image-actions">
+            <el-button
+              class="preview-btn"
+              size="mini"
+              type="primary"
+              circle
+              icon="el-icon-view"
+              title="预览"
+              @click.stop="handlePreview(o, index)"
+            ></el-button>
+            <el-button
+              size="mini"
+              type="success"
+              circle
+              icon="el-icon-download"
+              title="下载"
+              @click.stop="downloadUrlByImage(o)"
+            ></el-button>
           </div>
-        </li>
-      </ul>
+        </div>
+      </div>
     </template>
+    <el-image
+      ref="previewImage"
+      :preview-src-list="previewSrcList"
+      :initial-index="currentImageIndex"
+      style="display: none"
+    ></el-image>
+
+    <!-- 视频预览模态框 -->
     <el-dialog
-      title="图片预览"
-      :visible.sync="imageDialog"
-      width="60%"
-      height="65%"
-      style="text-align: center"
-      append-to-body
+      title="视频预览"
+      :visible.sync="showVideoPreview"
+      width="80%"
+      center
     >
-      <img
-        :src="imageDialogUrl"
-        width="80%"
-        height="70%"
-        style="margin: 0 auto"
-        class="preview-img"
-      /><br />
-      <el-button
-        type="primary"
-        @click="imageDialog = false"
-      >确 定</el-button>
-      <el-button
-        type="primary"
-        @click="dowmlaodUrl()"
-      >下载</el-button>
+      <div style="display: flex; justify-content: center;">
+        <video
+          :src="previewVideoUrl"
+          controls
+          style="max-width: 100%; max-height: 70vh;"
+        >
+          您的浏览器不支持视频播放
+        </video>
+      </div>
     </el-dialog>
 
     <div
@@ -61,30 +112,42 @@
           <transition-group style="display: flex; flex-wrap: wrap">
             <li
               v-for="(item, index) in fileLists"
-              :key="index"
+              :key="item.id || index"
               class="el-upload-list__item is-success animated"
             >
               <img
+                v-if="item.url"
                 :src="item.url"
                 alt=""
                 class="el-upload-list__item-thumbnail"
               />
-              <i class="el-icon-close"></i>
-              <span class="el-upload-list__item-actions">
-                <span
-                  class="el-upload-list__item-preview"
-                  title="预览"
-                  @click="handlePictureCardPreviewFileDetail(item)"
-                >
-                  <i class="el-icon-zoom-in"></i>
-                </span>
-                <span
+              <span
+                class="el-upload-list__item-actions"
+                style=" width: 100%; height: 100%;"
+              >
+                <!-- 删除按钮：绝对定位在右上方 -->
+                <el-button
+                  v-if="!disabled"
                   class="el-upload-list__item-delete"
+                  size="mini"
+                  type="danger"
+                  circle
+                  icon="el-icon-delete"
                   title="删除"
-                  @click="handleRemoveFileDetail(item, fileLists)"
-                >
-                  <i class="el-icon-delete"></i>
-                </span>
+                  style="position: absolute; top: 5px; right: 5px; z-index: 10; width: 28px; height: 28px; padding: 0;font-size: 14px;background: #F56C6C;color: #fff;"
+                  @click.stop="handleRemoveFileDetail(item, fileLists)"
+                ></el-button>
+                <!-- 预览按钮：居中显示 -->
+                <el-button
+                  class="el-upload-list__item-preview"
+                  size="mini"
+                  type="primary"
+                  circle
+                  icon="el-icon-zoom-in"
+                  title="预览"
+                  style="margin: 0;position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 28px; height: 28px; padding: 0;"
+                  @click.stop="handlePreview(item, index)"
+                ></el-button>
               </span>
             </li>
           </transition-group>
@@ -137,8 +200,7 @@
         ref="upload"
         class="upload-demo"
         :class="{
-          'upload-disabled':
-            limit && fileLength && fileLength >= limit && !isHttp,
+          'upload-disabled': disabled || (limit && (fileLength && fileLength >= limit || fileLists.length >= limit) && !isHttp),
         }"
         :action="uploadFile"
         :with-credentials="true"
@@ -148,36 +210,38 @@
         :before-upload="beforeAvatarUpload"
         :on-remove="handleRemove"
         :on-success="handleSuccess"
+        :on-progress="handleProgress"
         :on-exceed="handleExceed"
         :file-list="fileLists"
         :data="uploadParams"
         clearable
         :limit="limit"
-        :disabled="!field.info.editable"
+        :disabled="disabled || !field.info.editable"
         :show-file-list="false"
         list-type="picture-card"
         :style="useFilePicker ? 'display:none;' : ''"
         v-if="
-          !limit || !fileLength || (limit && fileLength && fileLength < limit)
+          !limit || !fileLength || (limit && fileLength && fileLength < limit && fileLists.length < limit)
         "
       >
         <el-button
           size="small"
           type="primary"
         >点击上传</el-button>
-        <!-- <div
-          slot="tip"
-          class="el-upload__tip"
-          :class="{ 'text-red111': field.getAnyValidateError() }"
-        >
-          <i
-            slot="reference"
-            class="el-icon-warning"
-            v-if="field.getAnyValidateError()"
-          ></i>
-          {{ setFileDesc }}
-        </div> -->
       </el-upload>
+
+      <!-- 上传进度条，固定在上传按钮下方 -->
+      <div
+        v-if="uploadProgress > 0"
+        class="global-progress-container"
+      >
+        <el-progress
+          :percentage="uploadProgress"
+          :stroke-width="6"
+          text-inside
+        ></el-progress>
+        <div class="upload-status-text">{{ uploadingFileName }} - 上传中...</div>
+      </div>
 
       <div
         slot="tip"
@@ -196,13 +260,14 @@
   </div>
 </template>
 <script>
-import cloneDeep from "lodash/cloneDeep";
 import draggable from "vuedraggable";
 import filePicker from "./file-picker/file-picker.vue";
+import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
+import { formatFileSize } from "@/common/common";
 
 export default {
-  mixins: [aSaveBMixin],
+  mixins: [aSaveBMixin, bigFileUploadMixin],
   components: {
     draggable,
     filePicker,
@@ -214,13 +279,12 @@ export default {
     },
     limit: {
       type: Number,
-      default: 100,
+      default: Number.MAX_SAFE_INTEGER,
     },
-
-    // $srvApp: {
-    //   type: String,
-    //   default: "file",
-    // },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   directives: {
     "click-outside": {
@@ -252,7 +316,17 @@ export default {
       // }
       const fileType = this.field.fileType || "jpg/png/svg";
       const fileSize = this.fileSize ? this.fileSize / 1024 : 10; // 默认10MB
-      return `请上传${fileType}格式的图片,大小不超过${fileSize}MB`;
+      let msgArr = []
+      if (fileType) {
+        msgArr.push(`请上传${fileType}格式的图片`)
+      }
+      if (fileSize) {
+        msgArr.push(`大小不超过${fileSize}MB`)
+      }
+      if (this.limit && this.limit !== Number.MAX_SAFE_INTEGER) {
+        msgArr.push(`最多上传${this.limit}张`)
+      }
+      return msgArr.join("，")
     },
     useFilePicker() {
       return this.field.info?.moreConfig?.useFilePicker;
@@ -260,12 +334,23 @@ export default {
     isHttp() {
       return this.field.model && this.field.model.startsWith("http");
     },
+    // 计算所有图片的预览URL列表
+    previewSrcList() {
+      // 只返回图片类型文件的URL
+      return this.fileLists
+        .filter(file => ['jpg', 'png', 'jpeg'].includes(file.file_type))
+        .map(file => file.url);
+    },
   },
   data() {
     return {
       showFilePicker: false,
       fileLists: [],
+      // previewSrcList:[],
       fileLength: 0,
+      currentImageIndex: 0,
+      showVideoPreview: false,
+      previewVideoUrl: '',
       fileDesc:
         this.field.info.moreConfig &&
           this.field.info.moreConfig !== null &&
@@ -281,8 +366,6 @@ export default {
           this.field.info.moreConfig.fileMaxSize
           ? this.field.info.moreConfig.fileMaxSize * 1024
           : 10 * 1024, // 默认10MB
-      imageDialog: false,
-      imageDialogUrl: "",
       uploadFile: this.serviceApi().uploadFile,
       uploadParams: {
         serviceName: "srv_bxfile_service",
@@ -293,10 +376,10 @@ export default {
         columns: "",
       },
       isEdit: true,
-      dialogVisibleDetail: false,
-      dialogImageDetailUrl: "",
       loading: false,
       onfocus: false,
+      uploadProgress: 0,
+      uploadingFileName: ""
     };
   },
   created: function () {
@@ -316,6 +399,7 @@ export default {
               }
               // file.url = this.serviceApi().downloadFile + file.fileurl;
               this.fileLists.push(file);
+              console.log(this.fileLists, 3333333333);
             });
             return;
           }
@@ -326,18 +410,40 @@ export default {
     }
     this.getData();
   },
+  mounted() {
+    // 初始化分片上传相关配置
+    this.initSplitUploadConfig();
+  },
   methods: {
+    // 初始化分片上传配置
+    initSplitUploadConfig() {
+      // 确保使用大文件上传混入的功能
+      if (typeof this.initBigFileUpload === 'function') {
+        this.initBigFileUpload();
+      }
+      // 设置分片大小和其他配置参数
+      this.chunkSize = 1 * 1024 * 1024; // 默认10MB
+      this.limitSize = 500; // 默认超过20MB使用分片上传
+      this.useSplitChuck = true; // 启用分片上传
+    },
     onPickerFileChange(event) {
       if (event?.files?.length) {
         const file = event?.files[0];
-        const newFile = new File([file], file.name, { type: file.type });
-        console.log(this.$refs.upload);
-        const upload = this.$refs.upload;
-        upload.handleStart(newFile);
-        setTimeout(() => {
-          upload.submit();
-        });
-        // this.fileLists.push({ name: file.name, url: URL.createObjectURL(file) });
+
+        // 检查文件大小，决定是否使用分片上传
+        const fileSizeInMB = file.size / (1024 * 1024);
+        if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+          // 对大文件使用分片上传
+          this.handleBigFileUpload(file);
+        } else {
+          // 对小文件使用默认上传
+          const newFile = new File([file], file.name, { type: file.type });
+          const upload = this.$refs.upload;
+          upload.handleStart(newFile);
+          setTimeout(() => {
+            upload.submit();
+          });
+        }
       } else if (event?.url) {
         if (event.url?.indexOf("http") === 0) {
           if (this.fileLists?.length) {
@@ -347,9 +453,55 @@ export default {
           this.fileLists.push({
             fileurl: event.url,
             url: event.url,
+            name: '外部图片'
           });
         }
       }
+    },
+
+    // 处理大文件上传的统一方法
+    handleBigFileUpload(file) {
+      const _this = this;
+
+      // 显示上传中状态
+      this.loading = true;
+
+      // 调用分片上传方法
+      this.handelUploadBigFile(file, {
+        onUploadProgress: (progress) => {
+          // 处理上传进度，更新到界面
+          console.log('上传进度:', progress + '%');
+          _this.updateBigFileProgress(file, progress);
+        },
+        onHashProgress: (progress) => {
+          // 处理文件hash计算进度，显示预处理进度
+          console.log('文件处理进度:', progress + '%');
+          _this.updateBigFileProgress(file, progress);
+        },
+        onUploadSuccess: async (res) => {
+          // 上传成功后的处理
+          console.log('分片上传成功:', res);
+          _this.loading = false;
+
+          // 调用handleSuccess方法处理上传结果
+          if (res) {
+            // 构造类似普通上传的响应格式
+            const response = {
+              ...res,
+              file_no: res.file_no || res.id,
+              fileurl: res.fileurl || res.path || res.url,
+              src_name: res.src_name || res.fileName || file.name
+            };
+
+            // 调用handleSuccess处理响应
+            await _this.handleSuccess(response, { ...file, response }, _this.fileLists);
+          }
+        }
+      }).catch(error => {
+        console.error('分片上传失败:', error);
+        _this.loading = false;
+        _this.$message.error('文件上传失败，请重试');
+      });
     },
     dataURLtoBlob(dataurl) {
       //将base64转换为blob
@@ -373,11 +525,20 @@ export default {
       /**调用element的上传方法 需要把base64转换成file上传**/
       let a = this.dataURLtoBlob(file);
       let b = this.blobToFile(a, info);
-      const upload = this.$refs.upload;
-      upload.handleStart(b);
-      setTimeout(() => {
-        upload.submit();
-      });
+
+      // 检查文件大小，决定是否使用分片上传
+      const fileSizeInMB = b.size / (1024 * 1024);
+      if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+        // 对大文件使用分片上传
+        this.handleBigFileUpload(b);
+      } else {
+        // 对小文件使用默认上传
+        const upload = this.$refs.upload;
+        upload.handleStart(b);
+        setTimeout(() => {
+          upload.submit();
+        });
+      }
     },
     handleClick() {
       // 获取 el-upload 组件实例
@@ -488,17 +649,29 @@ export default {
     handleImage(blob) {
       const reader = new FileReader();
       const _this = this;
-      reader.onload = (event) => {
-        console.log("图片数据:", event.target.result);
-        let base64_str = event.target.result;
-        // 上传逻辑
-        _this.uploadImgFromPaste(base64_str, "paste", {
-          name: blob.name,
-          type: blob.type,
-          size: blob.size,
-        });
-      };
-      reader.readAsDataURL(blob);
+
+      // 检查文件大小，决定是否直接使用blob进行分片上传
+      // 对于粘贴的图片，通常不会太大，但为了一致性还是保留逻辑
+      const fileSizeInMB = blob.size / (1024 * 1024);
+
+      if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+        // 对于大文件，直接使用blob创建File对象进行分片上传
+        const file = new File([blob], blob.name || 'pasted-image.png', { type: blob.type });
+        _this.handleBigFileUpload(file);
+      } else {
+        // 对于小文件，转换为base64后上传
+        reader.onload = (event) => {
+          console.log("图片数据:", event.target.result);
+          let base64_str = event.target.result;
+          // 上传逻辑
+          _this.uploadImgFromPaste(base64_str, "paste", {
+            name: blob.name,
+            type: blob.type,
+            size: blob.size,
+          });
+        };
+        reader.readAsDataURL(blob);
+      }
     },
     refreshFileList() {
       this.loading = true;
@@ -512,10 +685,12 @@ export default {
           if (file?.fileurl?.indexOf("http") === 0) {
             file.url = file.fileurl;
           }
+          file._thumbnail = this.getImagePath(file.url, 200);
           console.log("refreshFileList");
           list.push(file);
         }
         this.fileLists = list;
+        console.log(this.fileLists, 3333333333);
         this.loading = false;
       });
     },
@@ -593,13 +768,13 @@ export default {
       }
       this.changeFileSeq(event.newIndex, event.oldIndex);
     },
-    // 放大
-    handlePictureCardPreviewFileDetail(file) {
-      this.imageDialogUrl = file.url;
-      this.imageDialog = true;
-    },
     // 删除
     async handleRemoveFileDetail(file, fileList, index) {
+      const confirm = await this.$confirm("确认删除吗？", "删除确认", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      });
       const isDelete = await this.beforeRemove(file, fileList);
       if (isDelete) {
         this.fileLists.splice(index, 1);
@@ -635,16 +810,19 @@ export default {
         this.isEdit = true;
         if (
           this.field.model != null &&
-          this.field.model?.indexOf("http") !== 0
+          this.field.model?.indexOf("http") !== 0 &&
+          this.field.model // 确保model有值
         ) {
           //如果有file_no则查询出相关的图片信息
           this.uploadParams.file_no = this.field.model;
           this.queryData();
         } else if (this.field.model?.indexOf("http") === 0) {
-          console.log(2222222222222);
-
+          // 直接使用HTTP URL作为图片源
           this.fileLists.push({
             url: this.field.model,
+            fileurl: this.field.model,
+            _thumbnail: this.field.model,
+            name: '外部图片'
           });
         }
       } else {
@@ -654,10 +832,12 @@ export default {
     },
     queryData() {
       if (this.field.model?.indexOf("http") == 0) {
-        console.log(33333333333);
-
+        // 直接使用HTTP URL作为图片源
         this.fileLists.push({
           url: this.field.model,
+          fileurl: this.field.model,
+          _thumbnail: this.field.model,
+          name: '外部图片'
         });
         return;
       }
@@ -665,59 +845,123 @@ export default {
         for (let i in response.body.data) {
           let file = response.body.data[i];
           file.name = response.body.data[i].src_name;
-          file.url =
-            this.serviceApi().downloadFile + response.body.data[i].fileurl;
-          if (file?.fileurl?.indexOf("http") === 0) {
-            file.url = file.fileurl;
-          }
-          console.log(4444444444444444);
-
+          // 使用getFileUrl方法统一处理文件路径
+          file.url = this.getFileUrl(response.body.data[i].fileurl);
+          file._thumbnail = this.getImagePath(file.url, 100);
           this.fileLists.push(file);
         }
       });
     },
-    beforeAvatarUpload(file) {
-      if (file.size / 1024 > this.fileSize) {
-        this.$message.error("文件大小不能超过" + this.fileSize + "kb");
-        return false;
+
+    // 删除文件方法，支持删除通过分片上传的文件
+    async deleteFile(params) {
+      try {
+        const url = `/file/delete`;
+        const res = await this.$http.post(url, params);
+        return res?.data;
+      } catch (error) {
+        console.error('删除文件失败:', error);
+        this.$message.error('删除文件失败');
+        return { body: { resultCode: 'ERROR', state: '删除失败' } };
       }
+    },
+
+    // 检查上传状态方法
+    async checkUploadStatus(fileNo) {
+      try {
+        const url = `/file/checkStatus`;
+        const res = await this.$http.post(url, { file_no: fileNo });
+        return res?.data;
+      } catch (error) {
+        console.error('检查上传状态失败:', error);
+        return null;
+      }
+    },
+    beforeAvatarUpload(file) {
+      // 检查文件类型
       let flag = false;
       let type = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
       if (this.fileType.includes(type)) {
         flag = true;
       }
-      // for (let i in this.fileType.split("/")) {
-      //   let fileType = this.fileType.split("/")[i];
-      //   if (fileType && typeof fileType === "string") {
-      //     fileType = fileType.toLowerCase();
-      //   }
-      //   if (file.name.toLowerCase().indexOf(fileType.toLowerCase()) !== -1) {
-      //     flag = true;
-      //     break;
-      //   }
-
-      //   // if (file.name.split(".")[1] === fileType) {
-      //   //   flag = true;
-      //   //   break;
-      //   // }
-      // }
       if (!flag) {
         this.$message.error("只能上传" + this.fileType + "文件!");
         return false;
       }
+
+      // 检查文件大小
+      if (file.size / 1024 > this.fileSize) {
+        this.$message.error("文件大小不能超过" + formatFileSize(this.fileSize * 1024));
+        return false;
+      }
+
+      // 判断是否需要使用分片上传
+      const fileSizeInMB = file.size / (1024 * 1024);
+      if (this.useSplitChuck && fileSizeInMB >= this.limitSize) {
+        // 阻止默认上传
+        const _this = this;
+
+        // 显示上传中状态
+        this.loading = true;
+
+        // 设置上传参数
+        const uploadParams = {
+          table_name: this.uploadParams.table_name,
+          columns: this.uploadParams.columns,
+          app_no: this.resolveDefaultSrvApp()
+        };
+
+        // 调用分片上传方法
+        this.handelUploadBigFile(file, {
+          onUploadProgress: (progress) => {
+            // 处理上传进度，更新到界面
+            console.log('上传进度:', progress + '%');
+            _this.updateBigFileProgress(file, progress);
+          },
+          onHashProgress: (progress) => {
+            // 处理文件hash计算进度，显示预处理进度
+            console.log('文件处理进度:', progress + '%');
+            _this.updateBigFileProgress(file, progress);
+          },
+          onUploadSuccess: async (res) => {
+            // 上传成功后的处理
+            console.log('分片上传成功:', res);
+            _this.loading = false;
+
+            // 调用handleSuccess方法处理上传结果
+            if (res) {
+              // 构造类似普通上传的响应格式
+              const response = {
+                ...res,
+                file_no: res.file_no || res.id,
+                fileurl: res.fileurl || res.path || res.url,
+                src_name: res.src_name || res.fileName || file.name
+              };
+
+              // 调用handleSuccess处理响应
+              await _this.handleSuccess(response, { ...file, response }, _this.fileLists);
+            }
+          }
+        }).catch(error => {
+          console.error('分片上传失败:', error);
+          _this.loading = false;
+          _this.$message.error('文件上传失败，请重试');
+        });
+
+        // 返回false阻止默认上传
+        return false;
+      }
+
+      // 小文件使用默认上传方式
+      return true;
     },
     handleRemove(file, fileList) {
       this.setObjInfo(fileList);
       if (fileList.length === 0) {
         this.field.model = "";
+        this.uploadParams.file_no = "";
+        this.$emit("change", this.field.model);
       }
-    },
-    handlePreview(file) {
-      if (file.url == null) {
-        //如果是新上传的文件需要获取url
-        file.url = this.serviceApi().downloadFile + file.response.fileurl;
-      }
-      window.open(file.url);
     },
     async beforeRemove(file, fileList) {
       if (file?.file_no) {
@@ -740,55 +984,138 @@ export default {
         const response = await this.deleteFile(params);
         this.fileLength = fileList.length - 1;
         this.$emit("change", this.field.model);
-        if (response && response.body.resultCode === "SUCCESS") {
-          this.$message.info(response.body.state);
+
+        // 正确处理响应格式，考虑response可能直接包含resultCode或有body嵌套
+        const resultCode = response?.resultCode || response?.body?.resultCode;
+        const stateMessage = response?.state || response?.body?.state || '操作成功';
+
+        if (resultCode === "SUCCESS") {
+          this.$message.info(stateMessage);
+          // 移除文件的操作由调用beforeRemove的handleRemoveFileDetail方法处理
           return true;
         } else {
-          this.$message.info(response.body.state);
+          this.$message.info(stateMessage);
           return false;
         }
       } else if (typeof file === "string" && file.indexOf("http") === 0) {
+        // 对于HTTP URL文件，在handleRemoveFileDetail中会移除
         this.field.model = "";
         this.$emit("change", this.field.model);
         return true;
       }
     },
     async handleSuccess(response, file, fileList) {
-      if (response.fileurl?.startsWith("http")) {
+      // 统一处理分片上传和普通上传的响应格式
+      const normalizedResponse = this.normalizeResponse(response);
+
+      if (normalizedResponse.fileurl?.startsWith("http")) {
         // 返回的http链接 查询上传状态 上传成功后再继续后面操作 避免未成功上传到华为云就显示在页面上导致显示的图片加载失败
         console.time("handleSuccess");
         this.loading = true;
-        if (response?.file_no) {
+        if (normalizedResponse?.file_no) {
           // 查询文件上传状态
-          await this.checkUploadStatus(response.file_no);
+          await this.checkUploadStatus(normalizedResponse.file_no);
         }
-        // await new Promise((resolve) => setTimeout(resolve, 500));
         this.loading = false;
         console.timeEnd("handleSuccess");
       }
-      if (response.state === undefined) {
+
+      // 检查是否上传成功
+      const isSuccess = normalizedResponse.state === 'SUCCESS' || normalizedResponse.state === undefined;
+
+      if (isSuccess) {
         this.$message.info("上传成功！");
-        this.uploadParams.file_no = response.file_no;
-        this.field.model = response.file_no;
-        response.url = this.serviceApi().downloadFile + response.fileurl;
-        if (response.fileurl?.indexOf("http") === 0) {
-          response.url = response.fileurl;
+
+        // 检查是否有自定义的handleSuccess方法
+        let modelValue = normalizedResponse.file_no;
+        if (this.field.handleSuccess && typeof this.field.handleSuccess === 'function') {
+          // 使用自定义的handleSuccess方法处理响应
+          modelValue = this.field.handleSuccess(normalizedResponse);
+        } else {
+          // 默认处理逻辑
+          this.uploadParams.file_no = normalizedResponse.file_no;
+          if (normalizedResponse.fileurl?.indexOf("http") === 0) {
+            modelValue = normalizedResponse.fileurl;
+          }
         }
-        this.fileLists.push(response);
-        if (response.fileurl?.indexOf("http") === 0) {
-          this.field.model = response.fileurl;
-        }
+
+        // 设置model值
+        this.field.model = modelValue;
+
+        // 设置文件URL
+        normalizedResponse.url = this.getFileUrl(normalizedResponse.fileurl);
+
+        // 添加到文件列表并触发事件
+        this.fileLists.push(normalizedResponse);
         this.$emit("change", this.field.model);
         this.setObjInfo(fileList);
       } else {
-        this.$message.error("上传失败！");
-        this.fileLists.splice(this.fileLists.length - 1, 1);
+        this.$message.error("上传失败！" + (normalizedResponse.message || ''));
+        // 从文件列表中移除失败的文件
+        const index = this.fileLists.findIndex(item => item.file_no === normalizedResponse.file_no || item.fileurl === normalizedResponse.fileurl);
+        if (index !== -1) {
+          this.fileLists.splice(index, 1);
+        }
       }
-      this.fileLength = fileList.length;
+      this.fileLength = this.fileLists.length;
       this.loading = false;
+    },
+
+    // 统一归一化响应格式，处理分片上传和普通上传的不同响应结构
+    normalizeResponse(response) {
+      if (!response) return {};
+
+      // 从big-file-upload-mixin继承的handleMerge方法返回的数据格式
+      if (response.id && !response.file_no) {
+        return {
+          ...response,
+          file_no: response.id || response.file_no ,
+          fileurl: response.fileurl || response.path || response.url,
+          src_name: response.src_name || response.fileName || response.name
+        };
+      }
+
+      // 普通上传响应格式
+      return {
+        ...response,
+        file_no: response.file_no || '',
+        fileurl: response.fileurl || '',
+        src_name: response.src_name || response.fileName || ''
+      };
     },
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 ${this.limit}个文件`);
+    },
+
+    // 处理上传进度
+    handleProgress(event, file, fileList) {
+      // 更新全局上传进度
+      const percentage = Math.round(event.percent);
+      this.uploadProgress = percentage;
+      this.uploadingFileName = file.name;
+
+      // 上传完成后重置进度
+      if (percentage >= 100) {
+        setTimeout(() => {
+          this.uploadProgress = 0;
+          this.uploadingFileName = '';
+        }, 500);
+      }
+    },
+
+    // 为分片上传更新进度
+    updateBigFileProgress(file, progress) {
+      // 更新全局上传进度
+      this.uploadProgress = progress;
+      this.uploadingFileName = file.name;
+
+      // 上传完成后重置进度
+      if (progress >= 100) {
+        setTimeout(() => {
+          this.uploadProgress = 0;
+          this.uploadingFileName = '';
+        }, 1000);
+      }
     },
     setSrvVal(srvVal) {
       this.field.model = srvVal;
@@ -798,8 +1125,32 @@ export default {
     getSrvVal() {
       return this.field.model;
     },
-    dowmlaodUrl() {
-      window.open(this.imageDialogUrl);
+
+    // 根据图片对象下载图片
+    downloadUrlByImage(image) {
+      const url = image.url;
+      window.open(url);
+    },
+
+    // 处理图片预览
+    handlePreview(image, index) {
+      if (image.url) {
+        if (['jpg', 'png', 'jpeg'].includes(image.file_type)) {
+          // 计算该图片在纯图片列表中的索引
+          const imageIndex = this.fileLists
+            .slice(0, index)
+            .filter(file => ['jpg', 'png', 'jpeg'].includes(file.file_type))
+            .length;
+          
+          this.currentImageIndex = imageIndex;
+          this.$refs.previewImage.showViewer = true;
+        } else if (['mp4', 'avi', 'mov'].includes(image.file_type)) {
+          this.previewVideoUrl = image.url;
+          this.showVideoPreview = true;
+        }
+      } else {
+        this.$message.warning('预览失败');
+      }
     },
   },
 };
@@ -854,6 +1205,8 @@ export default {
 }
 
 .upload-disabled {
+  display: none;
+
   .el-upload {
     display: none;
   }
@@ -873,9 +1226,16 @@ export default {
 
 .form-imgs {
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 
-  .imgs-item {
-    max-width: 200px;
+  .image-slot {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -887,5 +1247,154 @@ export default {
     linear-gradient(-45deg, transparent 75%, #eee 75%) !important;
   background-size: 20px 20px !important;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
+}
+
+/* 图片容器样式 */
+.image-container {
+  position: relative;
+  display: inline-block;
+  height: 150px;
+  width: 150px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+
+/* 图片操作按钮容器 */
+.image-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  height: 100%;
+  width: 100%;
+  backdrop-filter: blur(2px);
+}
+
+/* 鼠标悬浮时显示操作按钮 */
+.image-container:hover .image-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 图片占位符样式 */
+.image-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f7fa;
+  color: #909399;
+  font-size: 20px;
+}
+
+/* 图片预览容器样式 */
+.image-preview-container {
+  position: relative;
+  width: 100%;
+  height: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* 图片包装器 */
+.image-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  height: 80%;
+}
+
+/* 图片序号样式 */
+.image-index {
+  margin-top: 10px;
+  padding: 5px 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 15px;
+  font-size: 14px;
+  position: relative;
+  z-index: 5;
+}
+
+/* 上一张、下一张按钮样式 */
+.prev-next-btn {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.prev-next-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.prev-next-btn:disabled {
+  cursor: not-allowed;
+  display: none;
+}
+
+.prev-btn {
+  left: 5%;
+}
+
+.next-btn {
+  right: 5%;
+}
+
+/* 调整进度条和文件操作按钮的层级关系 */
+.el-upload-list__item-actions {
+  z-index: 10;
+}
+
+/* 图片占位样式 */
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f5f7fa;
+  background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* 全局进度条样式 */
+.global-progress-container {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding: 10px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.upload-status-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #606266;
+  text-align: center;
 }
 </style>

@@ -1,7 +1,12 @@
 <template>
   <div
     class="bx-table"
-    :style="setTableStyle"
+    :style="[
+      setTableStyle,
+      {
+        '--tbl-border-color': listConfig.tbl_border_color || '',
+      },
+    ]"
     :class="{
       'scroll-animation': isVerticalScroll,
     }"
@@ -9,11 +14,16 @@
     <div class="table-head">
       <div
         class="table-column"
-        v-for="col in tableColumn"
+        v-for="(col, tbh) in tableColumn"
         :key="col.columns"
         :style="{
-          color: setStyle && setStyle.color ? 'var(--tbl_head_color,' + setStyle.color + ')' : null,
+          color:
+            setStyle && setStyle.color
+              ? 'var(--tbl_head_color,' + setStyle.color + ')'
+              : null,
           'font-size': setStyle && setStyle['font-size'],
+          width: col.width || '',
+          flex: col.width ? undefined : 1,
         }"
         :title="col.label"
       >
@@ -46,11 +56,18 @@
             :title="formatValue(item, col)"
             :key="col.columns"
             :style="[
+              getElementStyle,
               {
                 color: setStyle && setStyle.color,
                 'font-size': setStyle && setStyle['font-size'],
+                width: col.width || '',
+                flex: col.width ? undefined : 1,
+                '--first-col-bg':
+                  (index === 0 && listConfig.tbl_first_col_bg) || '',
+                '--first-col-color':
+                  (index === 0 && listConfig.tbl_first_col_color) || '',
+                '--tbl-border-color': listConfig.tbl_border_color || '',
               },
-              getElementStyle
             ]"
           >
             <el-image
@@ -76,7 +93,8 @@
               v-for="btn in setRowButtons"
               :key="btn.button_type"
               @click="onRowButtonClick(btn, item)"
-            >{{ btn.button_name }}</el-button>
+              >{{ btn.button_name }}</el-button
+            >
           </div>
         </div>
       </div>
@@ -86,70 +104,67 @@
 
 <script>
 import { formatStyleData } from "@/pages/datav/common/index.js";
+import verticalScrollMixin from "@/components/mixin/vertical-scroll-mixin.js";
 
 export default {
-  name: 'BxTable',
+  name: "BxTable",
+  mixins: [verticalScrollMixin],
   props: {
     // 表格列配置
     tableColumn: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     // 表格数据
     displayTableData: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     // 样式配置
     setStyle: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     // 表格样式
     setTableStyle: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     // 是否显示斑马纹
     striped: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 是否显示操作按钮
     showRowButtons: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 操作按钮列表
     setRowButtons: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     // 操作按钮样式
     rowButtonBoxStyle: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     // 是否垂直滚动
     isVerticalScroll: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 显示行数限制
     displayRowLimit: {
       type: Number,
-      default: 5
+      default: 5,
     },
     // 列表配置
     listConfig: {
       type: Object,
-      default: () => ({})
-    }
-  },
-  data() {
-    return {
-      scrollTimer: null,
-    };
+      default: () => ({}),
+    },
   },
   computed: {
     getElementStyle() {
@@ -163,7 +178,9 @@ export default {
     },
     // 滚动方向
     scrollDirection() {
-      return this.listConfig?.animation_direction === "由上至下" ? "down" : "up";
+      return this.listConfig?.animation_direction === "由上至下"
+        ? "down"
+        : "up";
     },
   },
   methods: {
@@ -173,128 +190,53 @@ export default {
     },
     // 获取图片路径
     getImagePath(path) {
-      if (!path) return '';
+      if (!path) return "";
       // 如果是完整的URL，直接返回
-      if (path.startsWith('http://') || path.startsWith('https://')) {
+      if (path.startsWith("http://") || path.startsWith("https://")) {
         return path;
       }
       // 如果是相对路径，需要根据项目配置处理
       // 这里假设有一个全局的图片基础路径配置
-      const baseUrl = process.env.VUE_APP_IMAGE_BASE_URL || '';
+      const baseUrl = process.env.VUE_APP_IMAGE_BASE_URL || "";
       return baseUrl + path;
     },
     // 行按钮点击事件
     onRowButtonClick(btn, item) {
-      this.$emit('row-button-click', btn, item);
+      this.$emit("row-button-click", btn, item);
     },
-    // 开始纵向滚动 - 性能优化版本
-    startVerticalScroll() {
+    // 开始纵向滚动 - 使用通用混入
+    startTableVerticalScroll() {
       if (!this.isVerticalScroll) return;
+
+      const config = {
+        interval: Math.max(
+          (this.listConfig?.animation_interval || 3) * 1000,
+          2000
+        ),
+        direction: this.scrollDirection,
+        duration: this.listConfig?.animation_duration || 2000,
+      };
+
+      const options = {
+        containerSelector: ".table-body",
+        containerType: "selector",
+        rowSelector: ".table-row",
+      };
+
+      this.startVerticalScroll(config, options);
+    },
+
+    // 停止纵向滚动 - 使用通用混入
+    stopTableVerticalScroll() {
       this.stopVerticalScroll();
-
-      const interval = Math.max(
-        (this.listConfig?.animation_interval || 3) * 1000,
-        2000
-      );
-
-      this.scrollTimer = setInterval(() => {
-        this.performScrollStep();
-      }, interval);
-    },
-
-    // 执行单步滚动 - 使用transform优化性能
-    performScrollStep() {
-      const tableBody = this.$el?.querySelector(".table-body");
-      if (!tableBody || !tableBody.children.length) return;
-
-      const rows = Array.from(tableBody.children);
-      const rowHeight = rows[0]?.offsetHeight || 0;
-
-      if (rowHeight === 0) return;
-
-      // 使用transform实现平滑滚动，避免DOM重排
-      const translateY =
-        this.scrollDirection === "down" ? rowHeight : -rowHeight;
-      const ANIMATION_DURATION = this.listConfig?.animation_duration || 2000;
-
-      // 添加过渡效果
-      tableBody.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.55, -0.55, 0.5, 1.2)`;
-      tableBody.style.transform = `translateY(${translateY}px)`;
-
-      // 动画完成后重置位置并调整DOM结构
-      setTimeout(() => {
-        this.resetScrollPosition(tableBody, rows);
-      }, ANIMATION_DURATION);
-    },
-
-    // 重置滚动位置并调整DOM结构
-    resetScrollPosition(tableBody, rows) {
-      // 移除过渡效果，立即重置transform
-      tableBody.style.transition = "none";
-      tableBody.style.transform = "translateY(0)";
-
-      // 使用DocumentFragment批量操作DOM，减少重排
-      const fragment = document.createDocumentFragment();
-
-      if (this.scrollDirection === "down") {
-        // 向下滚动：将最后一行移到第一行（显示新的内容）
-        const lastRow = rows[rows.length - 1];
-        fragment.appendChild(lastRow);
-        rows.slice(0, -1).forEach((row) => fragment.appendChild(row));
-      } else {
-        // 向上滚动：将第一行移到最后（显示之前的内容）
-        const firstRow = rows[0];
-        rows.slice(1).forEach((row) => fragment.appendChild(row));
-        fragment.appendChild(firstRow);
-      }
-
-      // 一次性更新DOM
-      tableBody.innerHTML = "";
-      tableBody.appendChild(fragment);
-    },
-
-    // 停止纵向滚动
-    stopVerticalScroll() {
-      if (this.scrollTimer) {
-        clearInterval(this.scrollTimer);
-        this.scrollTimer = null;
-      }
-      // 清理滚动相关样式
-      this.cleanupScrollStyles();
-    },
-
-    // 清理滚动样式，防止内存泄漏
-    cleanupScrollStyles() {
-      const tableBody = this.$el?.querySelector(".table-body");
-      if (tableBody) {
-        tableBody.style.transition = "";
-        tableBody.style.transform = "";
-        tableBody.style.willChange = "auto";
-      }
     },
   },
   mounted() {
     // 组件挂载后启动滚动
     if (this.isVerticalScroll) {
       this.$nextTick(() => {
-        this.startVerticalScroll();
+        this.startTableVerticalScroll();
       });
-    }
-  },
-  beforeDestroy() {
-    // 组件销毁前清理所有资源
-    this.stopVerticalScroll();
-    this.cleanupScrollStyles();
-
-    // 清理可能的事件监听器
-    if (this.$el) {
-      const tableBody = this.$el.querySelector(".table-body");
-      if (tableBody) {
-        tableBody.removeEventListener(
-          "transitionend",
-          this.handleTransitionEnd
-        );
-      }
     }
   },
   watch: {
@@ -303,10 +245,10 @@ export default {
       handler(newVal) {
         if (newVal) {
           this.$nextTick(() => {
-            this.startVerticalScroll();
+            this.startTableVerticalScroll();
           });
         } else {
-          this.stopVerticalScroll();
+          this.stopTableVerticalScroll();
         }
       },
     },
@@ -314,12 +256,12 @@ export default {
       handler(newVal, oldVal) {
         if (this.isVerticalScroll) {
           this.$nextTick(() => {
-            this.startVerticalScroll();
+            this.startTableVerticalScroll();
           });
         }
       },
     },
-  }
+  },
 };
 </script>
 
@@ -338,7 +280,6 @@ export default {
     }
 
     .table-column {
-      flex: 1;
       padding: 8px;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -377,7 +318,11 @@ export default {
           align-items: center;
           justify-content: center;
           border-radius: 4px;
-          background: linear-gradient(151.99deg, rgba(0, 122, 255, 1) 29.59%, rgba(4, 71, 171, 1) 294.82%);
+          background: linear-gradient(
+            151.99deg,
+            rgba(0, 122, 255, 1) 29.59%,
+            rgba(4, 71, 171, 1) 294.82%
+          );
           color: rgba(255, 255, 255, 1);
           font-size: 14px;
         }
@@ -393,7 +338,7 @@ export default {
 
   .table-head {
     color: var(--tbl_head_color);
-    background-color: var(--tbl_head_bg, rgba($color: #F0F3F9, $alpha: 0.1));
+    background-color: var(--tbl_head_bg, rgba($color: #f0f3f9, $alpha: 0.1));
 
     .table-column {
       color: var(--tbl_head_color);

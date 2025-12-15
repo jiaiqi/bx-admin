@@ -71,6 +71,7 @@
           :default-condition="getDefaultConditions"
           :relationCondition="relationCondition"
           :memInitdatasAdd="memInitdatasAdd"
+          :main-disp-col="mainDispCol"
         >
         </treegrid>
         <list
@@ -93,6 +94,7 @@
           :childforeignkey="foreignKey"
           :listMainFormDatas="listMainFormDatas"
           :mainService="mainService"
+          :main-disp-col="mainDispCol"
           :def-data-para="defDataPara"
           :readOnly="readOnly"
           @stats-data-load="statsLoaded"
@@ -112,6 +114,7 @@
           @form-action-complete="$emit('form-action-complete', $event)"
           @customize-action-complete="customizeActionComplete"
           @row-dbclick="$emit('row-dbclick', $event)"
+          @metadata-loaded="metadataLoaded"
           v-else
         >
         </list>
@@ -186,6 +189,7 @@ export default {
     childforeignvalue: [String, Number, Object],
     listMainFormDatas: [Array, Object],
     mainService: String,
+    mainDispCol: String,
     readOnly: Boolean,
     searchForm: {
       type: Boolean,
@@ -748,28 +752,37 @@ export default {
       //     });
       //   })
     },
+    metadataLoaded(vm) {
+      console.log('metadataLoaded:',vm?.listV2Data);
+      let tabs = vm?.listV2Data?.tabs.sort((a, b) => a.orders - b.orders);
+      this.cols = vm?.listV2Data?.srv_cols;
+      if (!tabs || tabs.length == 0) {
+        return;
+      }
+      this.buildSections(tabs);
+    },
   },
 
   mounted: function () {
     window.tabs = this;
-    let self = this;
-    this.loadColsV2(this.getService(), this.getListType).then((response) => {
-      if (
-        response &&
-        response.data &&
-        response.data.data &&
-        response.data.data.tabs
-      ) {
-        let tabs = response.data.data.tabs.sort((a, b) => a.orders - b.orders);
-        this.cols = response.data.data.srv_cols;
-        if (!tabs || tabs.length == 0) {
-          return;
-        }
-        this.buildSections(tabs);
-        //
-      } else {
-      }
-    });
+    // let self = this;
+    // this.loadColsV2(this.getService(), this.getListType).then((response) => {
+    //   if (
+    //     response &&
+    //     response.data &&
+    //     response.data.data &&
+    //     response.data.data.tabs
+    //   ) {
+    //     let tabs = response.data.data.tabs.sort((a, b) => a.orders - b.orders);
+    //     this.cols = response.data.data.srv_cols;
+    //     if (!tabs || tabs.length == 0) {
+    //       return;
+    //     }
+    //     this.buildSections(tabs);
+    //     //
+    //   } else {
+    //   }
+    // });
   },
   watch: {
     isDefault: {

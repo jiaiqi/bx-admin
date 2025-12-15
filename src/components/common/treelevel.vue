@@ -40,8 +40,14 @@
       <el-main>
         <div v-if="mainType == 'detail'">
           <div v-if="currentData&&currentData.id">
-            <detail :detailshow="detailshow" form-type="detail" name="tree-node-detail"
-              ref="tree-node-detail" :service="service_name"  :pkid="getCurrentCondition"></detail>
+            <detail 
+              :detailshow="detailshow" 
+              :service="service_name"
+              :pkid="getCurrentCondition"
+              form-type="detail" 
+              name="tree-node-detail"
+              ref="tree-node-detail"   
+            ></detail>
           </div>
           <!-- <div>
             <detail :detailshow="detailshow" v-if="showTreeDetail == '1'" form-type="detail" name="tree-node-detail"

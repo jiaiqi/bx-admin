@@ -1,5 +1,5 @@
 <template>
-  <div class="property-pane" :key="card_parts_no">
+  <div class="property-pane" :key="card_parts_no" v-loading="saveLoading" element-loading-text="保存中...">
     <simple-update
       name="list-update"
       :defaultValues="cardUnit"
@@ -64,6 +64,7 @@ export default {
   },
   data() {
     return {
+      saveLoading: false, // 添加保存状态的 loading
       cardUnitService: {
         select: "srvpage_cfg_card_unit_select",
         add: "srvpage_cfg_card_unit_add",
@@ -78,101 +79,119 @@ export default {
       },
     };
   },
+  watch: {
+    // 监听 saveLoading 状态变化，通知父组件
+    saveLoading(newVal) {
+      this.$emit('loading-change', newVal);
+    }
+  },
   methods: {
     async onSave() {
       console.log("保存");
-      if (Array.isArray(this.list) && this.list.length) {
-        const oldList = cloneDeep(this.list);
-        const deleteIds = this.findDataByType(oldList, "delete").map(
-          (item) => item.id
-        );
-        if (deleteIds?.length) {
-          const deleteObj = {
-            serviceName: this.cardPartService.delete,
-          };
-          await this.httpOperate("delete", deleteObj, deleteIds.toString());
-        }
-        const updateList = this.findDataByType(oldList, "update");
-        console.log("updateList", updateList);
-        if (updateList?.length) {
-          const updateObj = [];
-          const updateKeys = [
-            "seq",
-            "style_no",
-            "parent_no",
-            "card_parts_name",
-          ];
-          updateList.forEach((item) => {
-            // 组装更新对象
-            const data = {};
-            updateKeys.forEach((key) => {
-              if (item[key]) {
-                data[key] = item[key];
+      
+      // 开始保存时显示 loading
+      this.saveLoading = true;
+      
+      try {
+        if (Array.isArray(this.list) && this.list.length) {
+          const oldList = cloneDeep(this.list);
+          const deleteIds = this.findDataByType(oldList, "delete").map(
+            (item) => item.id
+          );
+          if (deleteIds?.length) {
+            const deleteObj = {
+              serviceName: this.cardPartService.delete,
+            };
+            await this.httpOperate("delete", deleteObj, deleteIds.toString());
+          }
+          const updateList = this.findDataByType(oldList, "update");
+          console.log("updateList", updateList);
+          if (updateList?.length) {
+            const updateObj = [];
+            const updateKeys = [
+              "seq",
+              "style_no",
+              "parent_no",
+              "card_parts_name",
+            ];
+            updateList.forEach((item) => {
+              // 组装更新对象
+              const data = {};
+              updateKeys.forEach((key) => {
+                if (item[key]) {
+                  data[key] = item[key];
+                }
+              });
+              if (!Object.keys(data).length) {
+                return;
               }
+              const obj = {
+                serviceName: this.cardPartService.update,
+                condition: [
+                  {
+                    colName: "id",
+                    ruleType: "eq",
+                    value: item.id,
+                  },
+                ],
+                data: [data],
+              };
+              if (!item.id && item.card_parts_no) {
+                obj.condition = [
+                  {
+                    colName: "card_parts_no",
+                    ruleType: "eq",
+                    value: item.card_parts_no,
+                  },
+                ];
+              }
+              updateObj.push(obj);
             });
-            if (!Object.keys(data).length) {
-              return;
-            }
-            const obj = {
-              serviceName: this.cardPartService.update,
-              condition: [
+            await this.httpOperate("update", updateObj);
+          }
+          const addList = this.findDataByType(oldList, "add");
+          console.log("addList", addList);
+          if (addList.length) {
+            const addObj = {
+              serviceName: this.cardPartService.add,
+              data: this.buildAddReqData(addList),
+            };
+            // 后端复制参数主子表同时提交的时候会有bug 等后端处理了再放开
+            const _duplicate_id = addList.find(
+              (item) => item._duplicate_id
+            )?._duplicate_id;
+            if (_duplicate_id) {
+              addObj.condition = [
                 {
                   colName: "id",
                   ruleType: "eq",
-                  value: item.id,
-                },
-              ],
-              data: [data],
-            };
-            if (!item.id && item.card_parts_no) {
-              obj.condition = [
-                {
-                  colName: "card_parts_no",
-                  ruleType: "eq",
-                  value: item.card_parts_no,
+                  value: _duplicate_id,
                 },
               ];
+              addObj.duplicate = true;
             }
-            updateObj.push(obj);
-          });
-          await this.httpOperate("update", updateObj);
-        }
-        const addList = this.findDataByType(oldList, "add");
-        console.log("addList", addList);
-        if (addList.length) {
-          const addObj = {
-            serviceName: this.cardPartService.add,
-            data: this.buildAddReqData(addList),
-          };
-          // 后端复制参数主子表同时提交的时候会有bug 等后端处理了再放开
-          const _duplicate_id = addList.find(
-            (item) => item._duplicate_id
-          )?._duplicate_id;
-          if (_duplicate_id) {
-            addObj.condition = [
-              {
-                colName: "id",
-                ruleType: "eq",
-                value: _duplicate_id,
-              },
-            ];
-            addObj.duplicate = true;
+            const result = await this.httpOperate(
+              "add",
+              addObj,
+              null,
+              true,
+              false
+            );
+            console.log("result", result);
+            if (result) {
+              this.$emit("saved");
+            }
           }
-          const result = await this.httpOperate(
-            "add",
-            addObj,
-            null,
-            true,
-            false
-          );
-          console.log("result", result);
-          if (result) {
-            this.$emit("saved");
+          if (!deleteIds?.length && !updateList?.length && !addList?.length) {
+            this.$message.error("没有需要保存的内容！");
           }
         }
-        if (!deleteIds?.length && !updateList?.length && !addList?.length) {
-          this.$message.error("没有需要保存的内容！");
-        }
+      } catch (error) {
+        console.error("保存失败:", error);
+        this.$message.error("保存失败，请重试");
+      } finally {
+        // 无论成功还是失败，都要关闭 loading
+        this.saveLoading = false;
       }
     },
     onValueChange(value, type) {

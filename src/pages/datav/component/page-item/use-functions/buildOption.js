@@ -1,6 +1,7 @@
 import * as echarts from "echarts";
 import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
 // import "echarts-gl"; //echarts-gl@1.1.2
+import { getImagePath } from "@/common/http";
 
 let __colors = [
   "#007AFF",
@@ -33,6 +34,26 @@ function addAlphaToRGB(rgb, alpha) {
   const [r, g, b] = rgb.match(/\d+/g);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+//params 要处理的字符串
+//length 每行显示长度
+function getEqualNewlineString(params, length) {
+  let text = ''
+  let count = Math.ceil(params.length / length) // 向上取整数
+  // 一行展示length个
+  if (count > 1) {
+    for (let z = 1; z <= count; z++) {
+      text += params.substr((z - 1) * length, length)
+      if (z < count) {
+        text += '\n'
+      }
+    }
+  } else {
+    text += params.substr(0, length)
+  }
+  return text
+}
+
 
 // 初始化 必须传入dom节点 建议使用vue的ref获取
 export const initChart = (domRef) => {
@@ -74,10 +95,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     color: colors,
     grid: {
       // 这里可以防止Y轴显示不全
-      top: 40,
-      left: 10,
-      right: 10,
-      bottom: 0,
+      top: chartJson.grid_top || 40,
+      left: chartJson.grid_left || 10,
+      right: chartJson.grid_right || 10,
+      bottom: chartJson.grid_bottom || 0,
       containLabel: true,
     },
     legend: {
@@ -360,10 +381,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           if (nOption?.series?.length > 5) {
             ecOptions.grid = {
               // 这里可以防止Y轴显示不全
-              top: 45,
-              left: 10,
-              right: 10,
-              bottom: 0,
+              top: chartJson.grid_top || 45,
+              left: chartJson.grid_left || 10,
+              right: chartJson.grid_right || 10,
+              bottom: chartJson.grid_bottom || 0,
               containLabel: true,
             };
           }
@@ -425,16 +446,12 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "pie":
     case "ring":
       for (let sIndex in seriesName) {
+        console.log(chartJson);
+
         var scale = 1
         var rich = {
-          yellow: {
-            color: "#ffc72b",
-            fontSize: 12 * scale,
-            padding: [5, 4],
-            align: 'center'
-          },
           total: {
-            color: "#ffc72b",
+            color: chartJson?.ring_val_color || "#ffc72b",
             fontSize: 18 * scale,
             align: 'center'
           },
@@ -444,9 +461,15 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             fontSize: 12 * scale,
             padding: [21, 0]
           },
-          blue: {
-            color: '#49dff0',
+          valueColor: {
+            color: chartJson?.ring_val_color || '#49dff0',
             fontSize: 12 * scale,
+            align: 'center'
+          },
+          labelColor: {
+            color: chartJson?.ring_text_color || "#ffc72b",
+            fontSize: 12 * scale,
+            padding: [5, 4],
             align: 'center'
           },
           hr: {
@@ -474,16 +497,20 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                 // formatter: `{b} \r\n {c}${chartJson?.y1_unit || ""}`,
                 // bleedMargin: 3,
                 formatter: function (params, ticket, callback) {
-                  var total = 0; //考生总数量
-                  var percent = 0; //考生占比
+                  let total = 0; //总数量
+                  let percent = 0; //占比
+                  let value = params.value;
+                  // 使用原始cellData计算总数，确保百分比正确
                   cellData.forEach(function (value, index, array) {
                     const num = value[chartJson.series_value_cols || 'value'];
                     if (!isNaN(Number(num))) {
                       total += Number(num)
                     }
                   });
-                  percent = ((params.value / total) * 100).toFixed(1);
-                  return '{yellow|' + params.name + '}{blue|' + percent + '%}';
+                  percent = ((value / total) * 100).toFixed(1);
+                  return `{labelColor|${getEqualNewlineString(params.name, 6)}}${value}${chartJson?.y1_unit || ""}`;
+                  // return '{labelColor|' + getEqualNewlineString(params.name,6) + '}{valueColor|' + percent + '%}'
+                  //  + '({labelColor|' + value + `${chartJson?.y1_unit || ""})` + '}' ;
                 },
                 rich: rich,
               },
@@ -496,7 +523,18 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           },
           tooltip: {
             trigger: 'item',
-            formatter: `{b}<br/>{c}${chartJson?.y1_unit || ""} ({d}%)`
+            formatter: function (params) {
+              // 计算原始数据总和，确保百分比正确
+              let originalTotal = 0;
+              cellData.forEach(function (data) {
+                const num = data[seriesValueCols[0]];
+                if (!isNaN(Number(num))) {
+                  originalTotal += Number(num);
+                }
+              });
+              const percent = ((params.value / originalTotal) * 100).toFixed(1);
+              return `${params.name}<br/>${params.value}${chartJson?.y1_unit || ""} (${percent}%)`;
+            }
           },
           data: [],
         };
@@ -504,39 +542,90 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           series.radius = ["45%", "60%"]
         }
         series.itemStyle.normal.label.show = showLabel;
+
+        // 处理数据，当超过10项时合并为"其它"
+        let processedData = [];
+        let legendData = [];
+
+        // 先构建所有数据项
+        let allDataItems = [];
+        // 检查并合并已有的"其它"或"其他"项
+        let existingOthersValue = 0;
+        
         for (let data of cellData) {
-          // option['xAxis']['data'].push(data[sortAxisCol])
-          let dataItem = {
-            value: parseFloat(data[dataColName]),
-            name: data[chartJson?.series_name_cfg || sortAxisCol],
-            itemStyle: {
-              normal: {
-                borderWidth: 5,
+          const name = data[chartJson?.series_name_cfg || sortAxisCol];
+          const value = parseFloat(data[dataColName]);
+          
+          // 检查是否为"其它"或"其他"项
+          if (name === "其它" || name === "其他") {
+            existingOthersValue += value;
+          } else {
+            let dataItem = {
+              value: value,
+              name: name,
+              itemStyle: {
+                normal: {
+                  borderWidth: 5,
+                },
               },
-            },
-          };
-          series["data"].push(dataItem);
-          // series["data"].push(parseFloat(data[dataColName]))
-          // series["data"].push(data[dataColName])
-          // series["data"].push({
-          //   value: 5,
-          //   name: "",
-          //   itemStyle: {
-          //     normal: {
-          //       label: {
-          //         show: false,
-          //       },
-          //       labelLine: {
-          //         show: false,
-          //       },
-          //       color: "rgba(0, 0, 0, 0)",
-          //       borderColor: "rgba(0, 0, 0, 0)",
-          //       borderWidth: 0,
-          //     },
-          //   },
-          // });
+            };
+            allDataItems.push(dataItem);
+          }
+        }
+
+        // 按值大小排序（降序）
+        allDataItems.sort((a, b) => b.value - a.value);
+
+        // 获取合并阈值配置，默认为5
+        const mergeThreshold = chartJson?.pie_merge_threshold || 5;
+
+        // 如果数据项超过配置的阈值，合并后面的为"其它"
+        if (allDataItems.length > mergeThreshold) {
+          // 取前(阈值-1)项，为"其它"项留出位置
+          const keepCount = mergeThreshold - 1;
+          processedData = allDataItems.slice(0, keepCount);
+
+          // 计算其它项的总和
+          let othersValue = existingOthersValue;
+          for (let i = keepCount; i < allDataItems.length; i++) {
+            othersValue += allDataItems[i].value;
+          }
+
+          // 添加"其它"项
+          if (othersValue > 0) {
+            processedData.push({
+              value: othersValue,
+              name: "其它",
+              itemStyle: {
+                normal: {
+                  borderWidth: 5,
+                },
+              },
+            });
+          }
+        } else {
+          processedData = allDataItems;
+          // 如果没有超过阈值但存在"其它"或"其他"项，直接添加
+          if (existingOthersValue > 0) {
+            processedData.push({
+              value: existingOthersValue,
+              name: "其它",
+              itemStyle: {
+                normal: {
+                  borderWidth: 5,
+                },
+              },
+            });
+          }
+        }
+
+        // 添加处理后的数据到series
+        series["data"] = processedData;
+
+        // 构建图例数据
+        for (let item of processedData) {
           let legendItem = {
-            name: data[chartJson?.series_name_cfg || sortAxisCol],
+            name: item.name,
             icon: "circle",
           };
           ecOptions["legend"]["data"].push(legendItem);
@@ -562,10 +651,16 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       ecOptions.legend.show = false;
       if (type === "ring") {
         const title = chartJson?.ring_sum_label || "总数";
+        // 计算原始数据的总和，确保总数正确
+        let originalTotal = 0;
+        cellData.forEach(function (data) {
+          const num = data[seriesValueCols[0]];
+          if (!isNaN(Number(num))) {
+            originalTotal += Number(num);
+          }
+        });
         ecOptions.title = {
-          text: pieDatas.reduce(function (prev, cur) {
-            return cur.value + prev;
-          }, 0),
+          text: originalTotal,
           left: "center",
           top: "center",
           padding: [24, 0],
@@ -584,6 +679,37 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       }
       delete ecOptions.xAxis;
       delete ecOptions.yAxis;
+
+      // 添加自动轮播功能
+      if (chartJson?.more_option?.includes('自动轮播')) {
+        // 配置轮播间隔时间，默认3秒
+        const interval = chartJson.auto_play_interval || 3000;
+
+        // 在配置中添加轮播相关的事件处理
+        ecOptions.animation = true;
+        ecOptions.animationDuration = 1000;
+        ecOptions.animationEasing = 'cubicOut';
+
+        // 保存原始的数据长度用于轮播
+        let series = ecOptions["series"][0];
+        const dataLength = series.data.length;
+
+        // 添加轮播相关的配置到ecOptions中
+        ecOptions._autoPlay = {
+          dataLength: dataLength,
+          interval: interval,
+          currentIndex: 0
+        };
+
+        // 配置emphasis样式，让选中项更突出
+        series.emphasis = {
+          itemStyle: {
+            shadowBlur: 20,
+            shadowColor: 'rgba(0, 0, 0, 0.9)'
+          }
+        };
+      }
+
       break;
     case "radar":
       // 默认配置
@@ -780,53 +906,50 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
       ecOptions.series = [];
       console.log(pageItem);
       const mapJson = pageItem?.chart_json?.map_json;
+      console.log("mapJson:", mapJson);
       let datas = [];
+      let scatterDatas = []
       if (cellData?.length) {
-        if (mapJson?.col_label && mapJson?.col_lon && mapJson.col_lat) {
+        if (mapJson?.col_label && mapJson.col_value && mapJson?.col_lon && mapJson.col_lat) {
           for (let i = 0; i < cellData.length; i++) {
             datas.push({
+              name: cellData[i][mapJson.col_label],
+              value: cellData[i][mapJson.col_value]
+            });
+
+            scatterDatas.push({
               name: cellData[i][mapJson.col_label],
               value: [
                 cellData[i][mapJson.col_lat],
                 cellData[i][mapJson.col_lon],
-              ],
-            });
+                cellData[i][mapJson.col_value]
+              ]
+            })
           }
         }
       }
-      // ecOptions.geo3D= {
-      //   map: "mapName", //注册地图的名字
-      //   roam: true, //开启鼠标缩放和平移漫游。默认不开启
-      //   itemStyle: {
-      //     color: "#0057c7", // 背景
-      //     opacity: 1, //透明度
-      //     borderWidth: .1, // 边框宽度
-      //     borderColor: "#eee", // 边框颜色
-      //     fontSize: .1, //
-      //   },
-      //   viewControl: {
-      //     distance: 120,
-      //     alpha: 50, // 上下旋转的角度
-      //     beta: 0, // 左右旋转的角度
-      //   },
 
+      // ecOptions['tooltip'] = {
+      //   trigger: 'item',
+      //   formatter: '{b}<br/>{c}'
       // }
       ecOptions.tooltip = {
         trigger: "item",
         formatter: function (params) {
-          if (typeof params.value[2] == "undefined") {
-            return params.name;
-            // return params.name + " : " + params.value;
-          } else {
+          if (typeof params.value === 'number' && !isNaN(params.value)) {
+            return params.name + " : " + params.value;
+          } else if (Array.isArray(params.value) && params.value.length === 3) {
             return params.name + " : " + params.value[2];
+          } else {
+            return params.name;
           }
         },
       };
+
       if (datas?.length) {
-        let iconSize = 5;
+        let iconSize = 20;
         if (mapJson?.icon_scale) {
           let iconScale = mapJson?.icon_scale || 1;
-          console.log(layout);
           if (layout?.w) {
             iconSize = (layout?.w * iconScale) / 100;
             if (layout.colNum === 100) {
@@ -834,47 +957,103 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             }
           }
         }
-        let serie = {
-          name: "",
-          // type: "scatter3D",
-          type: "scatter",
-          coordinateSystem: "geo",
-          // coordinateSystem: "geo3D",
-          // type: 'bar3D',
-          data: datas,
-          symbol: "circle",
-          // symbol: 'pin',
-          symbolSize: iconSize,
-          itemStyle: {
-            normal: {
-              color: "#c83f24", //标志颜色
-            },
-          },
+
+        let mapSeries = {
+          type: 'map',//地图类型
+          //地图上文字
           label: {
-            show: true,
-            formatter: function (params) {
-              return `${params.name}`;
+            normal: {
+              show: true,//是否显示标签
+              textStyle: {
+                color: '#fff',
+              },
             },
-            textStyle: {
-              color: "#fff",
-              borderColor: "transparent",
-              backgroundColor: "transparent",
-            },
-            // normal: {
-            //   show: true, //显示标签
-            //   textStyle: { color: "#c71585" }, //省份标签字体颜色
-            // },
             emphasis: {
-              //对应的鼠标悬浮效果
-              show: true, //关闭文字 （这东西有问题得关）
-              // textStyle: { color: "#800080" },
-              label: {
-                formatter: "{b}: {@number}",
+              textStyle: {
+                color: '#fff',
               },
             },
           },
+          //地图区域的多边形 图形样式
+          itemStyle: {
+            normal: {
+              borderColor: '#2ab8ff',
+              borderWidth: 1.5,
+              areaColor: '#12235c',
+            },
+            emphasis: {
+              areaColor: '#2AB8FF',
+              borderWidth: 0,
+            },
+          },
+          left: '40%',
+          // data: datas,
+          zoom: 1.2,//当前视角的缩放比例
+          //是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
+          roam: false,
+          map: 'customMap', //使用自定义地图
+        }
+        const iconUrl = mapJson.icon_default ? `image://${getImagePath(mapJson.icon_default)}` : 'pin';
+        let serie = {
+          //设置为分散点
+          type: 'scatter',
+          //series坐标系类型
+          coordinateSystem: 'geo',
+          //设置图形 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow'
+          symbol: iconUrl,
+          // //标记的大小，可以设置成诸如 10 这样单一的数字，也可以用数组分开表示宽和高，例如 [20, 10] 表示标记宽为20，高为10
+          symbolSize: [40, 40],
+          //气泡字体设置
+          label: {
+            normal: {
+              show: false,//是否显示
+              textStyle: {
+                color: '#fff',//字体颜色
+                fontSize: 8,//字体大小
+              },
+              //返回气泡数据
+              formatter(value) {
+                return value.data.value[2]
+              }
+            }
+          },
+          itemStyle: {
+            normal: {
+              // color: '#1E90FF', //标志颜色
+              color: '#FE8428', //标志颜色
+              // color: '#2B32B2', //标志颜色
+            }
+          },
+          //给区域赋值
+          data: scatterDatas,
+          showEffectOn: 'render',//配置何时显示特效。可选：'render' 绘制完成后显示特效。'emphasis' 高亮（hover）的时候显示特效。
+          rippleEffect: {//涟漪特效相关配置。
+            brushType: 'stroke'//波纹的绘制方式，可选 'stroke' 和 'fill'
+          },
+          hoverAnimation: true,//是否开启鼠标 hover 的提示动画效果。
+          zlevel: 1//所属图形的 zlevel 值
         };
-        ecOptions.series.push(serie);
+        if (mapJson?.map_option?.includes('显示气泡')) {
+          ecOptions.series.push(serie);
+        }
+
+        ecOptions.series.push(mapSeries);
+
+      }
+      if (datas?.length) {
+        const values = datas.map(d => Number(d.value)).filter(v => !isNaN(v));
+        if (values.length) {
+          const rawMin = Math.min(...values);
+          const rawMax = Math.max(...values);
+          const range = rawMax - rawMin;
+          const pad = range === 0 ? Math.max(Math.abs(rawMax), 1) * 0.1 : range * 0.1
+          ecOptions.visualMap = ecOptions.visualMap || {};
+          ecOptions.visualMap.min = Number((rawMin - pad).toFixed(2));
+          if (ecOptions.visualMap.min < 0) {
+            ecOptions.visualMap.min = 0;
+          }
+          ecOptions.visualMap.max = Number((rawMax + pad).toFixed(2));
+        }
       }
       break;
     default:
@@ -1097,7 +1276,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       }, 0);
       var rich = {
         total: {
-          color: "#ffc72b",
+          color: chartJson?.ring_sum_color || chartJson?.ring_val_color || "#ffc72b",
           fontSize: 40 * scale,
           align: "center",
         },
@@ -1105,6 +1284,11 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           color: "#ddd",
           align: "center",
           padding: [3, 0],
+        },
+        num: {
+          color: chartJson?.ring_val_color || "#ffc72b",
+          fontSize: 24 * scale,
+          align: "center",
         },
       };
       if (chartType === "ring") {
@@ -1159,7 +1343,8 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
                   }
                   percent = ((params.value / total) * 100).toFixed(0);
                   if (params.name !== "") {
-                    return params.name + "\n{white|" + "占比" + percent + "%}";
+                    return params.name + "\n{white|" + "占比" + percent + "%}"
+                    // + "\n{num|" + params.value + "}";
                   } else {
                     return "";
                   }
@@ -1180,48 +1365,149 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
       break;
     case "map":
       if (chartJson?.map_base_geojson && eCharts) {
-        eCharts.registerMap("mapName", chartJson?.map_base_geojson);
+        eCharts.registerMap("customMap", chartJson?.map_base_geojson);
       }
       option.legend = {
         show: false,
       };
-      option.tooltip = {
-        trigger: "item",
-        formatter: function (params) {
-          if (typeof params.value[2] == "undefined") {
-            return params.name + " : " + params.value;
-          } else {
-            return params.name + " : " + params.value[2];
-          }
-        },
-      };
+      // option.tooltip = {
+      //   trigger: "item",
+      //   formatter: function (params) {
+      //     if (typeof params.value[2] == "undefined") {
+      //       return params.name + " : " + params.value;
+      //     } else {
+      //       return params.name + " : " + params.value[2];
+      //     }
+      //   },
+      // };
 
-      option.geo = {
-        map: "mapName",
-        roam: true,
-        top: "0",
-        // left:'0%',
-        // right:'0%',
-        bottom: "0",
+
+      const geoCfg = {
+        show: true,
+        map: "customMap",
+        // aspectScale: 1,
+        zoom: 1.2,//当前视角的缩放比例
+        left: '40%', // 地图向右偏移
         label: {
           normal: {
             show: false,
+            color: "#fff"
           },
           emphasis: {
             show: false,
-          },
+            color: "#fff"
+          }
         },
-        itemStyle: {
+        roam: false,
+
+        itemStyle: {//地图区域的多边形 图形样式
           normal: {
-            areaColor: "#1180c7",
+            borderColor: '#2ab8ff',
+            areaColor: '#013C62',//地区颜色
+            // shadowColor: '#182f68',//阴影颜色
+            shadowColor: '#12235c',//阴影颜色
+            shadowOffsetX: 10,//阴影偏移量
+            shadowOffsetY: 10,//阴影偏移量
           },
           emphasis: {
-            areaColor: "#1180c7",
+            areaColor: '#2AB8FF',//地区颜色
+            label: {
+              show: false,//是否在高亮状态下显示标签
+            },
           },
         },
-      };
-      option.series = [];
+      }
+      // if(chartJson?.map_json?.map_option?.includes('显示气泡')){
+      option['geo'] = geoCfg
+      // }
+      option['visualMap'] = {
+        type: 'continuous',
+        seriesIndex: 0,
+        show: true,
+        // min: 0,
+        // max: 100,
+        left: '20',
+        top: 'bottom',
+        text: ['高', '低'], // 文本，默认为数值文本
+        textStyle: {
+          color: "#fff",
+          fontSize: 16,
+          align: "center",
+        },
+        calculable: true,
+        // seriesIndex: [0],
+        inRange: {
+          // color: ['#3B5077', '#031525'] // 蓝黑
+          // color: ['#ffc0cb', '#800080'] // 红紫
+          // color: ['#3C3B3F', '#605C3C'] // 黑绿
+          // color:['#3C3B3F','#EE2C2C']//黑红
+          // color: ['lightskyblue', 'yellow', 'orangered']
+          // color: ['#0f0c29', '#302b63', '#24243e'] // 黑紫黑
+          // color: ['#23074d', '#cc5333'] // 紫红
+          // color: ['#00467F', '#A5CC82'] // 蓝绿
+          // color: ['#1488CC', '#2B32B2'] // 浅蓝
+          color: ['#0045FF', '#0FDFDE'] // 浅蓝
+          // color: ['#00467F', '#A5CC82'] // 蓝绿
+        }
+      }
       break;
   }
   return option;
+};
+
+// 饼图自动轮播控制函数
+export const startPieAutoPlay = (chartInstance, ecOptions) => {
+  if (!chartInstance || !ecOptions?._autoPlay) return;
+
+  const { dataLength, interval } = ecOptions._autoPlay;
+  let currentIndex = 0;
+
+  // 清除之前的高亮
+  chartInstance.dispatchAction({
+    type: 'downplay',
+    seriesIndex: 0
+  });
+
+  // 高亮当前项
+  const highlightItem = () => {
+    // 先取消所有高亮
+    chartInstance.dispatchAction({
+      type: 'downplay',
+      seriesIndex: 0
+    });
+
+    // 高亮当前项
+    chartInstance.dispatchAction({
+      type: 'highlight',
+      seriesIndex: 0,
+      dataIndex: currentIndex
+    });
+
+    // 显示提示框
+    chartInstance.dispatchAction({
+      type: 'showTip',
+      seriesIndex: 0,
+      dataIndex: currentIndex
+    });
+
+    currentIndex = (currentIndex + 1) % dataLength;
+  };
+
+  // 立即执行一次
+  highlightItem();
+
+  // 设置定时器
+  const timer = setInterval(highlightItem, interval);
+
+  // 返回清除函数
+  return () => {
+    clearInterval(timer);
+    chartInstance.dispatchAction({
+      type: 'downplay',
+      seriesIndex: 0
+    });
+    chartInstance.dispatchAction({
+      type: 'hideTip'
+    });
+  };
 };

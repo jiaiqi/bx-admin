@@ -1,7 +1,7 @@
 <template>
   <div class="table-picker-wrapper">
     <el-popover
-      trigger="focus"
+      trigger="click"
       ref="show_popover"
       :disabled="disabled"
       :append-to-body="false"
@@ -48,9 +48,9 @@
         >
           <el-option
             v-for="item in allData"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+            :key="item.value + ''"
+            :label="item.label + ''"
+            :value="item.value + ''"
           >
           </el-option>
         </el-select>
@@ -162,7 +162,6 @@ import { wrapButton, wrapHeader, getButtonPara } from "../common/wrapper_util";
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import uniqBy from "lodash/uniqBy";
-import { options } from "less";
 export default {
   props: {
     field: {
@@ -219,10 +218,12 @@ export default {
   },
   computed: {
     ObjInfo() {
-      return this.field.info?.srvCol?.option_list_v2?.obj_info
+      let objInfo = this.field.info?.srvCol?.option_list_v2?.obj_info || {}
+
+      return objInfo
     },
     getFkJson() {
-      if (this.disabled && this.ObjInfo) {
+      if (this.disabled && this.ObjInfo?.a_save_b_obj_col) {
         let row = this.formModel
         let col = cloneDeep(this.field.info)
         col.srvcol = col?.srvCol
@@ -231,7 +232,6 @@ export default {
 
         let val = "";
         let result = [];
-        debugger
         if (row && col && col.column && row[col.column]) {
           val = row[col.column];
         }
@@ -271,7 +271,19 @@ export default {
         if (!result || (result && result.length === 0)) {
           switch (colType) {
             case "fks":
-              result = val ? val.split(",") : [];
+              let valJson = null
+              try {
+                valJson = JSON.parse(val)
+              } catch (error) {
+
+              }
+              if (valJson && Array.isArray(valJson) && valJson.length) {
+                result = valJson.map(item => {
+                  return item[dispCol]
+                })
+              } else {
+                result = val ? val.split(",") : [];
+              }
               break;
             case "fkjson":
               try {
@@ -294,6 +306,8 @@ export default {
           }
         }
         return result;
+      } else if (this.disabled && Array.isArray(this.gridData)) {
+        return this.gridData.map(item => item.label)
       }
     },
     displayValue() {
@@ -412,6 +426,8 @@ export default {
     this.initSelected();
     if (this.disabled === true && !this.finderSelected) {
       return;
+    } else if (this.disabled && this.finderSelected) {
+      return this.loadOptionsByFinderSelected();
     }
     this.getListV2()
       .then(() => {
@@ -466,8 +482,13 @@ export default {
     getSelectedData() {
       let result = this.selected;
       if (this.fieldType === "fks") {
-        result = this.allData.filter((item) =>
-          this.selected.includes(item[this.valueCol])
+        result = this.allData.filter((item) => {
+          if (typeof item[this.valueCol] === 'number') {
+            item[this.valueCol] = item[this.valueCol].toString()
+          }
+          return this.selected.includes(item[this.valueCol])
+        }
+
         );
       }
       if (this.isSelectedAll && this.allSelect) {
@@ -701,6 +722,9 @@ export default {
     initTableSelection() {
       if (Array.isArray(this.allData) && this.allData.length > 0) {
         this.gridData = this.gridData.map((item) => {
+          if (typeof item[this.valueCol] === 'number') {
+            item[this.valueCol] = item[this.valueCol].toString()
+          }
           if (this.selected.indexOf(item[this.valueCol]) !== -1) {
             item.checked = true;
           } else {
@@ -1006,6 +1030,38 @@ export default {
         });
       }
     },
+    async loadOptionsByFinderSelected() {
+      let queryJson = {
+        serviceName: this.service,
+        colNames: ["*"],
+        condition: [{
+          colName: this.valueCol,
+          ruleType: "in",
+          value: this.finderSelected,
+        }],
+        page: {
+          pageNo: 1,
+          rownumber: 999,
+        },
+      };
+      if(Array.isArray(this.optionListV2?.conditions)){
+        this.optionListV2?.conditions.forEach(cond=>{
+          const condition = cloneDeep(cond);
+          condition.value = this.evalCondValue(cond.value, this.formModel);
+          if(condition.value){
+            queryJson.condition.push(condition);
+          }
+        })
+      }
+      const res = await this.selectList(queryJson)
+      if (res?.data?.state === "SUCCESS") {
+        this.gridData = res.data.data.map((item) => {
+          item.label = item[this.labelCol];
+          item.value = item[this.valueCol];
+          return item;
+        });
+      }
+    },
     loadOptions(query = {}) {
       let fieldInfo = this.field.info;
       let loader = fieldInfo.fmt;
@@ -1018,16 +1074,16 @@ export default {
           rownumber: this.page.rownumber,
         },
       };
-      if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
-        queryJson.colNames = this.setGridHeader.map((item) => item.column);
-        queryJson.colNames.push(
-          this.listV2.no_col,
-          this.listV2.parent_no_col,
-          "is_leaf",
-          "path",
-          "id"
-        );
-      }
+      // if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
+      //   queryJson.colNames = this.setGridHeader.map((item) => item.column);
+      //   queryJson.colNames.push(
+      //     this.listV2.no_col,
+      //     this.listV2.parent_no_col,
+      //     "is_leaf",
+      //     "path",
+      //     "id"
+      //   );
+      // }
       if (this.fmt && this.fmt.seq_col) {
         if (this.fmt.order_type) {
           queryJson.order = [
@@ -1133,17 +1189,17 @@ export default {
         queryJson.relation_condition = relation_condition;
       }
 
-      if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
-        queryJson.colNames = this.setGridHeader.map((item) => item.column);
-      }
+      // if (Array.isArray(this.setGridHeader) && this.setGridHeader.length > 0) {
+      //   queryJson.colNames = this.setGridHeader.map((item) => item.column);
+      // }
       if (this.listV2?.is_tree === true) {
-        queryJson.colNames.push(
-          this.listV2.no_col,
-          this.listV2.parent_no_col,
-          "is_leaf",
-          "path",
-          "id"
-        );
+        // queryJson.colNames.push(
+        //   this.listV2.no_col,
+        //   this.listV2.parent_no_col,
+        //   "is_leaf",
+        //   "path",
+        //   "id"
+        // );
         queryJson.use_type = "treelist";
         // queryJson.condition.push({
         //   colName: this.listV2.parent_no_col,
@@ -1266,8 +1322,8 @@ export default {
   box-sizing: border-box;
   color: #606266;
   display: inline-block;
-  height: 40px;
-  line-height: 40px;
+  min-height: 40px;
+
   outline: 0;
   padding: 0 15px;
   transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
@@ -1276,6 +1332,7 @@ export default {
   border-color: #E4E7ED;
   color: #C0C4CC;
   cursor: not-allowed;
+  margin-bottom: 10px;
 }
 
 .table-picker-wrapper {

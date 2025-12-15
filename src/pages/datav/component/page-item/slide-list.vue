@@ -5,6 +5,7 @@
   >
     <span v-if="pageItem && pageItem.com_label">{{ pageItem.com_label }}</span>
   </div>
+
   <div
     class="swiper-list"
     :class="{ 'left-bottom-dot': dotPostion === 'left-bottom' }"
@@ -12,6 +13,16 @@
     :data-order-no="pageItem['order_no']"
     v-else-if="pageItem"
   >
+    <stack-swiper
+      :swiper-style="tagStylefn(pageItem.swiper_json.style_json)"
+      :swiper-list="swiperList"
+      :layoutMode="swiperStyle"
+      :page-item="pageItem"
+      :cardJson="getCardJson"
+      @on-tap="toDetail"
+      @change="swiperChange"
+      v-if="swiperStyle && ['堆叠1', '堆叠2'].includes(swiperStyle)"
+    ></stack-swiper>
     <el-carousel
       class="card-swiper square-dot"
       :indicator-dots="false"
@@ -24,36 +35,50 @@
       @change="swiperChange"
       indicator-color="#333"
       indicator-active-color="#E8E8E8"
-      v-if="swiperList.length > 1 && swiperStyle === '卡片'"
+      v-else-if="swiperList.length > 1 && swiperStyle === '卡片'"
     >
-      <el-carousel-item
-        v-for="(item, index) in swiperList"
-        :key="index"
-        :class="current == index ? 'cur' : ''"
-      >
-        <div class="swiper-item">
-          <div class="swiper-item-box">
-            <video
-              :src="item.url"
-              controls
-              :id="item.store_video_file"
-              :poster="item.videoPoster"
-              v-if="item.file_type === '视频' && current === index"
-            ></video>
-            <img
-              lazy-load
-              :src="item.url"
-              mode="scaleToFill"
-              v-else-if="!item.store_video_file || item.file_type !== '视频'"
-              @click.stop="toDetail(item)"
-            />
+      <template v-for="(item, index) in swiperList">
+        <el-carousel-item
+          :key="index"
+          :class="current == index ? 'cur' : ''"
+          v-if="item.url"
+        >
+          <div class="swiper-item">
+            <div class="swiper-item-box">
+              <video
+                :src="item.url"
+                controls
+                :id="item.url && item.store_video_file"
+                :poster="item.videoPoster"
+                v-if="
+                  item.url && item.file_type === '视频' && current === index
+                "
+              ></video>
+              <img
+                lazy-load
+                :src="item.url"
+                mode="scaleToFill"
+                v-else-if="
+                  item.url &&
+                  (!item.store_video_file || item.file_type !== '视频')
+                "
+                @click.stop="toDetail(item)"
+              />
+              <div v-else-if="!item.url" class="no-image-placeholder">
+                <i class="el-icon-picture-outline no-image-icon"></i>
+                <span class="no-image-text">暂无图片</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </el-carousel-item>
+        </el-carousel-item>
+      </template>
     </el-carousel>
     <div
       class="swiper-cot"
-      v-else-if="swiperList.length > 1"
+      v-else-if="
+        swiperList.length > 1 ||
+        (swiperList.length === 1 && swiperList[0].type === 'vr')
+      "
       style="height: 100%"
     >
       <div
@@ -75,64 +100,73 @@
           duration="500"
           @change="swiperChange"
         >
-          <el-carousel-item
-            v-for="(item, index) in swiperList"
-            :key="item.url ? item.url : index"
-            :data-id="item.id"
-            :class="current == index ? 'cur' : ''"
-          >
-            <div
-              class="swiper-item-box"
-              @click.stop="toDetail(item)"
-              :class="{ 'is-vr': item.type === 'vr' && item.vr_no }"
+          <template v-for="(item, index) in swiperList">
+            <el-carousel-item
+              :key="item.url ? item.url : index"
+              :data-id="item.id"
+              :class="current == index ? 'cur' : ''"
+              v-if="item.url"
             >
-              <img
-                :src="item.videoPoster"
-                mode="scaleToFill"
-                v-if="item.file_type === '视频'"
-              />
-              <img
-                :src="item.url"
-                mode="scaleToFill"
-                v-else-if="!item.store_video_file || item.file_type !== '视频'"
-              />
-              <!-- VR遮罩层 -->
               <div
-                class="vr-overlay"
-                v-if="item.type === 'vr' && item.vr_no"
+                class="swiper-item-box"
+                @click.stop="toDetail(item)"
+                :class="{ 'is-vr': item.type === 'vr' }"
               >
-                <a
-                  class="vr-icon"
-                  target="_blank"
-                  :href="getVrUrl(item.vr_no)"
+                <img
+                  :src="item.videoPoster"
+                  mode="scaleToFill"
+                  v-if="item.url && item.file_type === '视频'"
+                />
+                <img
+                  :src="item.url"
+                  mode="scaleToFill"
+                  v-else-if="
+                    item.url &&
+                    (!item.store_video_file || item.file_type !== '视频')
+                  "
+                />
+                <div v-else-if="!item.url" class="no-image-placeholder">
+                  <i class="el-icon-picture-outline no-image-icon"></i>
+                  <span class="no-image-text">暂无图片</span>
+                </div>
+                <!-- VR遮罩层 -->
+                <div
+                  class="vr-overlay"
+                  v-if="item.type === 'vr' && item.vrLink"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    viewBox="0 0 1024 1024"
-                    width="72"
-                    height="72"
-                    style=""
-                    filter="none"
+                  <a
+                    class="vr-icon"
+                    target="_blank"
+                    :href="getVrUrl(item.vr_no, item.vrLink)"
                   >
-                    <g>
-                      <path
-                        d="M779.648 429.952l99.648 144.896c-25.856 0-49.408-1.28-72.768 0.448-18.304 1.344-28.8-4.928-38.848-20.352-25.6-39.744-53.44-78.08-80.064-117.12-3.968-5.76-8.128-8.576-15.36-8.32-13.76 0.64-27.52 0.192-42.88 0.192v144.128H548.352c-0.32-3.264-0.832-6.656-0.832-10.048 0-66.688 0.192-133.312-0.256-199.936-0.064-10.88 3.328-13.824 14.08-13.696 63.488 0.448 126.976 0.256 190.464 0.256h9.472c17.728-0.96 30.848-13.824 30.656-29.824a30.592 30.592 0 0 0-30.784-29.696c-32-0.384-63.872-0.128-95.872-0.128H548.544V212.864c4.16-0.256 8.32-0.64 12.544-0.64h248.448c41.6 0 63.296 21.76 63.616 63.36 0.256 30.464 0.448 60.8 0.384 91.136-0.128 39.68-23.808 63.04-63.488 63.232h-30.4zM136.256 212.288c28.8 0 55.68-0.384 82.368 0.448 3.328 0.128 7.872 5.632 9.6 9.6 27.136 65.472 54.144 130.944 80.896 196.608 4.032 9.856 7.424 19.968 12.352 29.376 2.176 4.288 7.232 10.048 10.88 9.92 3.648-0.128 8.896-5.76 10.752-10.24a26795.52 26795.52 0 0 0 94.208-221.76c4.48-10.624 9.536-14.848 21.376-14.336 23.936 1.024 47.872 0.32 73.92 0.32-2.176 5.44-3.52 8.96-5.12 12.416l-140.16 317.696c-11.008 25.216-28.928 40-57.152 39.552-27.52-0.448-45.184-15.296-55.68-40.128-44.608-105.92-89.344-211.84-134.08-317.696-1.408-3.136-2.304-6.464-4.16-11.776z m-55.168 243.712a151.232 151.232 0 0 0-23.104 20.096C29.312 506.176 29.184 544 57.792 574.336c23.68 25.152 53.248 41.6 84.288 55.744 52.48 23.872 108.288 35.712 164.864 44.096 27.776 4.096 73.92 8.96 138.368 14.528V616.896l126.016 109.696-126.016 110.72v-76.672a2250.88 2250.88 0 0 1-108.672-8.96c-87.68-11.52-172.48-33.28-248.384-80.64a347.648 347.648 0 0 1-60.288-49.088C-5.12 588.928-8.704 546.816 16.576 507.52 43.52 465.92 83.84 441.408 129.6 424.832c-16.256 10.24-32.768 20.224-48.576 31.168z m808.32-27.648c42.432 16.64 94.976 36.096 113.728 76.864 18.752 40.832 8.832 83.392-21.696 116.736-32.96 36.032-119.424 109.888-334.336 129.728-36.736 2.048-44.8-59.712-7.872-68.096 72-16.448 221.888-30.08 308.096-108.16 27.84-27.776 26.624-76.48 0-105.792-22.912-23.424-46.912-33.728-57.92-41.28z"
-                        p-id="13112"
-                        fill="rgba(255,255,255,1)"
-                      ></path>
-                    </g>
-                  </svg>
-                </a>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      xmlns:xlink="http://www.w3.org/1999/xlink"
+                      viewBox="0 0 1024 1024"
+                      width="72"
+                      height="72"
+                      style=""
+                      filter="none"
+                    >
+                      <g>
+                        <path
+                          d="M779.648 429.952l99.648 144.896c-25.856 0-49.408-1.28-72.768 0.448-18.304 1.344-28.8-4.928-38.848-20.352-25.6-39.744-53.44-78.08-80.064-117.12-3.968-5.76-8.128-8.576-15.36-8.32-13.76 0.64-27.52 0.192-42.88 0.192v144.128H548.352c-0.32-3.264-0.832-6.656-0.832-10.048 0-66.688 0.192-133.312-0.256-199.936-0.064-10.88 3.328-13.824 14.08-13.696 63.488 0.448 126.976 0.256 190.464 0.256h9.472c17.728-0.96 30.848-13.824 30.656-29.824a30.592 30.592 0 0 0-30.784-29.696c-32-0.384-63.872-0.128-95.872-0.128H548.544V212.864c4.16-0.256 8.32-0.64 12.544-0.64h248.448c41.6 0 63.296 21.76 63.616 63.36 0.256 30.464 0.448 60.8 0.384 91.136-0.128 39.68-23.808 63.04-63.488 63.232h-30.4zM136.256 212.288c28.8 0 55.68-0.384 82.368 0.448 3.328 0.128 7.872 5.632 9.6 9.6 27.136 65.472 54.144 130.944 80.896 196.608 4.032 9.856 7.424 19.968 12.352 29.376 2.176 4.288 7.232 10.048 10.88 9.92 3.648-0.128 8.896-5.76 10.752-10.24a26795.52 26795.52 0 0 0 94.208-221.76c4.48-10.624 9.536-14.848 21.376-14.336 23.936 1.024 47.872 0.32 73.92 0.32-2.176 5.44-3.52 8.96-5.12 12.416l-140.16 317.696c-11.008 25.216-28.928 40-57.152 39.552-27.52-0.448-45.184-15.296-55.68-40.128-44.608-105.92-89.344-211.84-134.08-317.696-1.408-3.136-2.304-6.464-4.16-11.776z m-55.168 243.712a151.232 151.232 0 0 0-23.104 20.096C29.312 506.176 29.184 544 57.792 574.336c23.68 25.152 53.248 41.6 84.288 55.744 52.48 23.872 108.288 35.712 164.864 44.096 27.776 4.096 73.92 8.96 138.368 14.528V616.896l126.016 109.696-126.016 110.72v-76.672a2250.88 2250.88 0 0 1-108.672-8.96c-87.68-11.52-172.48-33.28-248.384-80.64a347.648 347.648 0 0 1-60.288-49.088C-5.12 588.928-8.704 546.816 16.576 507.52 43.52 465.92 83.84 441.408 129.6 424.832c-16.256 10.24-32.768 20.224-48.576 31.168z m808.32-27.648c42.432 16.64 94.976 36.096 113.728 76.864 18.752 40.832 8.832 83.392-21.696 116.736-32.96 36.032-119.424 109.888-334.336 129.728-36.736 2.048-44.8-59.712-7.872-68.096 72-16.448 221.888-30.08 308.096-108.16 27.84-27.776 26.624-76.48 0-105.792-22.912-23.424-46.912-33.728-57.92-41.28z"
+                          p-id="13112"
+                          fill="rgba(255,255,255,1)"
+                        ></path>
+                      </g>
+                    </svg>
+                  </a>
+                </div>
+                <div
+                  class="title"
+                  v-if="item._title && !isTopSwiperBottomContent"
+                >
+                  {{ item._title }}
+                </div>
               </div>
-              <div
-                class="title"
-                v-if="item._title && !isTopSwiperBottomContent"
-              >
-                {{ item._title }}
-              </div>
-            </div>
-          </el-carousel-item>
+            </el-carousel-item>
+          </template>
         </el-carousel>
       </div>
       <div
@@ -163,15 +197,17 @@
           class="thumbnails"
           ref="thumbnailsContainer"
         >
-          <img
-            v-for="(item, index) in swiperList"
-            :key="item.id"
-            :src="item.url"
-            @click="changeCarousel(index)"
-            :class="{ active: current === index }"
-            alt=""
-            class="thumbnail-img"
-          />
+          <template v-for="(item, index) in swiperList">
+            <img
+              :key="item.id"
+              :src="item._thumbnail || item.url"
+              @click="changeCarousel(index)"
+              :class="{ active: current === index }"
+              alt=""
+              class="thumbnail-img"
+              v-if="item.url"
+            />
+          </template>
         </div>
         <button
           class="scroll-btn scroll-btn-right"
@@ -197,7 +233,7 @@
         <video
           :src="item.url"
           controls
-          v-if="item.file_type === '视频' && current === index"
+          v-if="item.url && item.file_type === '视频' && current === index"
           :id="item.store_video_file"
           :poster="item.videoPoster"
         ></video>
@@ -205,9 +241,16 @@
           lazy-load
           :src="item.url"
           mode="scaleToFill"
-          v-else-if="!item.store_video_file || item.file_type !== '视频'"
+          v-else-if="
+            item.url && (!item.store_video_file || item.file_type !== '视频')
+          "
           @click.stop="toDetail(item)"
         />
+        <div v-else-if="!item.url" class="no-image-placeholder">
+          <i class="el-icon-picture-outline no-image-icon"></i>
+          <span class="no-image-text">暂无图片</span>
+        </div>
+        
         <div
           class="title"
           v-if="item._title"
@@ -220,11 +263,12 @@
 <script>
 import { formatStyleData, rpx2px } from "../../common/index.js";
 import cardGroupCell from "./card-group-cell/card-group-cell.vue";
-
+import StackSwiper from "./stack-swiper/stack-swiper.vue";
 export default {
-  name: "home-swiper-list",
+  name: "slide-list",
   components: {
     cardGroupCell,
+    StackSwiper,
   },
   computed: {
     //判定是否含有缩略图显示选项
@@ -237,8 +281,11 @@ export default {
     getCardJson() {
       return this.pageItem?.swiper_json?.card_json;
     },
+    swiperJson() {
+      return this.pageItem?.swiper_json;
+    },
     swiperStyle() {
-      return this.pageItem?.swiper_style || "平铺";
+      return this.swiperJson?.swiper_layout || "平铺";
     },
     interval() {
       return this.pageItem?.more_config?.interval || 5000;
@@ -305,7 +352,10 @@ export default {
     });
   },
   methods: {
-    getVrUrl(no) {
+    getVrUrl(no, link) {
+      if (link) {
+        return link;
+      }
       return `/VRhome/#/ModView?no=${no}`;
     },
     changeCarousel(index) {
@@ -432,7 +482,7 @@ export default {
     },
     async toDetail(item) {
       if (item?.type === "vr" && item.vr_no) {
-        return
+        return;
         // const url = `/VRhome/#/ModView?no=${item.vr_no}`;
         // open(url);
       } else if (
@@ -449,8 +499,10 @@ export default {
       }
       let jumpUrl = "";
       if (jumpUrl) {
-        open(jumpUrl)
+        open(jumpUrl);
       } else if (item.mini_program_url) {
+      } else if (this.swiperJson?.card_json?.jump_json) {
+        this.jumpAction(this.swiperJson?.card_json?.jump_json, item);
       } else if (item.content_no || item.content) {
         // 跳到文章详情
         this.$router.push({
@@ -488,8 +540,23 @@ export default {
         }
       }
     },
+    async fetchVrInfo(vr_no) {
+      const req = {
+        "serviceName": "srvpark_vr_sandbox_select",
+        "colNames": ["*"],
+        "condition": [{ "colName": "vr_no", "ruleType": "eq", "value": vr_no }],
+        "page": { "pageNo": 1, "rownumber": 1 },
+      }
+      const url = `/park/select/srvpark_vr_sandbox_select`
+      const res = await this.$http.post(url, req)
+      if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length) {
+        return res.data.data[0]
+      }
+    },
     async getSwiperList() {
       const swiperJson = this.pageItem?.swiper_json;
+      let data = null;
+      let list = []
       if (swiperJson?.image_origin === "接口请求") {
         let reqJson =
           this.pageItem.swiper_json.srv_req_json || this.pageItem.srv_req_json;
@@ -503,18 +570,26 @@ export default {
         );
         const res = await this.$http.post(url, reqJson);
         if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
-          this.swiperList = res.data.data.map((item, index) => {
+          data = res.data.data[0];
+          list = res.data.data.map((item, index) => {
             return {
               ...item,
               url: this.getImagePath(item[swiperJson?.srv_col_image]),
-              _title: item[swiperJson?.srv_col_title || "title"] || "",
+              _thumbnail: this.getImagePath(
+                item[swiperJson?.srv_col_image],
+                100
+              ),
+              _title:
+                (swiperJson?.srv_col_title &&
+                  item[swiperJson?.srv_col_title]) ||
+                "",
             };
           });
           if (swiperJson?.swiper_options?.includes("单行数据多张图片")) {
             const fileNo = res.data.data[0]?.[swiperJson?.srv_col_image];
             if (fileNo) {
               const response = await this.selectFileList(fileNo);
-              let list = [];
+              list = [];
               const prefix = this.serviceApi().downloadFile;
               for (let i in response.body.data) {
                 let file = response.body.data[i];
@@ -523,16 +598,28 @@ export default {
                 if (file?.fileurl?.indexOf("http") === 0) {
                   file.url = file.fileurl;
                 }
+
+                // file._thumbnail = `${prefix}${response.body.data[i].fileurl}?thumbnailType=fwsu_40`;
+                file._thumbnail = file.url; //缩略图部分展示不出来，先用原图
+
                 list.push(file);
               }
-              this.swiperList = list;
             }
+          } else if (!this.getCardJson) {
+            // 纯图的轮播图，过滤没有图片的数据
+            list = list.filter(
+              (item) => item && item[swiperJson?.srv_col_image]
+            );
           }
         }
-      } else if (swiperJson?.image_origin === "集中传图" && swiperJson?.image) {
+      }
+
+      // list = list.filter((item) => item && item.url)
+
+      if ((swiperJson?.image_origin === "集中传图" || !list.length) && swiperJson?.image) {
         let res = await this.getFilePath(swiperJson?.image);
         if (Array.isArray(res)) {
-          this.swiperList = res.reduce((pre, cur) => {
+          list = res.reduce((pre, cur) => {
             if (cur.fileurl) {
               cur.url =
                 `${window.backendIpAddr}/file/download?filePath=` +
@@ -545,12 +632,47 @@ export default {
           }, []);
         }
       }
-      if (swiperJson?.vr_no && swiperJson?.vr_cover) {
-        this.swiperList.unshift({
-          url: this.getImagePath(swiperJson?.vr_cover),
-          type: "vr",
-          vr_no: swiperJson?.vr_no,
-        });
+      this.swiperList = list
+      if (swiperJson?.vr_no_col && swiperJson?.vr_cover) {
+        let img = swiperJson?.vr_cover;
+        let name = "";
+        let vrNo = swiperJson?.vr_no;
+        let vrLink = "";
+        if (data && typeof data === "object") {
+          if (swiperJson.vr_img_col) {
+            let col = swiperJson.vr_img_col;
+            if (col?.includes(".") && !col?.includes("${")) {
+              img = this.renderStr("${" + col + "}", data) || img;
+            } else {
+              img = data[col] || img;
+            }
+          }
+          if (swiperJson.vr_no_col) {
+            let col = swiperJson.vr_no_col;
+            if (col?.includes(".") && !col?.includes("${")) {
+              vrNo = this.renderStr("${" + col + "}", data);
+            } else {
+              vrNo = data[col];
+            }
+          }
+        }
+        if (vrNo) {
+          const vrInfo = await this.fetchVrInfo(vrNo)
+          if(vrInfo && vrInfo.vr_cover){
+            img = vrInfo.vr_cover
+          }
+          vrLink = `/VRhome/#/ModView?vr_no=${vrNo}`
+          if (process.env.NODE_ENV === 'development') {
+            vrLink = window.backendIpAddr?.replace('/bxapi', '') + `/VRhome/#/ModView?vr_no=${vrNo}`
+          }
+          this.swiperList.unshift({
+            _thumbnail: this.getImagePath(img, 100),
+            url: this.getImagePath(img),
+            type: "vr",
+            vr_no: vrNo,
+            vrLink,
+          });
+        }
       }
     },
   },
@@ -770,5 +892,29 @@ export default {
     font-size: 30px;
     font-weight: 600;
   }
+}
+
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  color: #999;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  min-height: 150px;
+}
+
+.no-image-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  color: var(--primary-color,#4EAAEB);
+}
+
+.no-image-text {
+  font-size: 16px;
 }
 </style>

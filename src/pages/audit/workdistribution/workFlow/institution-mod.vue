@@ -396,7 +396,7 @@ export default {
 <style scoped lang="scss">
 .promoter_mod {
   width: 90%;
-  margin-top: 15vh;
+  // margin-top: 15vh;
   overflow: auto;
 }
 

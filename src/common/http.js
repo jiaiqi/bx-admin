@@ -16,15 +16,38 @@ let bx_auth_ticket = "";
 // const ENV = "wanxiang";
 // const ENV = "dev";
 // const ENV = "saas";
-// const ENV = "audDev";
-// const ENV = "parkDev"; // 延安园区开发环境
-// const ENV = "parkProd"; // 延安园区生产环境
-const ENV = "yananxing"; // 延安行
+// const ENV = "audDev"; //稽核开发环境
+const ENV = "parkProd"; // 延安园区生产环境
+// const ENV = "yananxing"; // 延安行
+// const ENV = "yananxingOut"; // 延安行外网
+// const ENV = "yanxue2"; // 研学2.0现网
 // const ENV = "wujingDev";
 // const ENV = "healthProd";
 // const ENV = "gaosu61";
 
 window.env = ENV;
+export const getHomePageNo = () => {
+  return pathConfigMap[ENV]?.homePageNo;
+}
+/**
+ * 从URL查询参数中提取指定参数的值
+ * @param {string} name - 参数名
+ * @returns {string|null} - 参数值或null
+ */
+export function getQueryParam(name) {
+  const reg = new RegExp(`(^|&)${name}=([^&]*)(&|$)`, 'i');
+  // 先从普通查询字符串中提取
+  let r = window.location.search.substr(1).match(reg);
+  // 如果没有找到，从hash路由中提取
+  if (!r && window.location.hash) {
+    const hashSearch = window.location.hash.split('?')[1] || '';
+    r = hashSearch.match(reg);
+  }
+  if (r != null) {
+    return decodeURIComponent(r[2]);
+  }
+  return null;
+}
 
 if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = "dev";
@@ -42,11 +65,10 @@ if (process.env.NODE_ENV === "development" || !window.top.pathConfig) {
   // const ENV = 'healthProd'
 
   const pathConfig = pathConfigMap[ENV];
-  if (location.href?.includes?.("menuapp=")) {
-    let app = location.href.split("menuapp=")[1].split(";")[0];
-    if (app) {
-      pathConfig.application = app;
-    }
+  // 从URL查询参数中提取menuapp（兼容低版本浏览器）
+  const menuapp = getQueryParam('menuapp');
+  if (menuapp) {
+    pathConfig.application = menuapp;
   }
   baseURL = pathConfig.gateway; // 正式环境
   if (!top.pathConfig) {
@@ -66,7 +88,7 @@ if (pathConfig) {
         top.pathConfig = pathConfig;
       }
     }
-  } catch (error) {}
+  } catch (error) { }
 }
 if (window.backendIpAddr) {
   baseURL = window.backendIpAddr;
@@ -153,7 +175,7 @@ instance.interceptors.response.use(
             if (top.getLoginAddress) {
               login_page = "/" + top.getLoginAddress();
             }
-          } catch (exception) {}
+          } catch (exception) { }
           getRootWindow().layer.open({
             title: false,
             type: 2,
@@ -171,7 +193,7 @@ instance.interceptors.response.use(
                 console.info("1");
                 login_page = "/" + top.getMainAddress();
               }
-            } catch (exception) {}
+            } catch (exception) { }
             window.location.href = window.location.origin + login_page;
           }
         }
@@ -306,9 +328,8 @@ export const getImagePath = (no, notThumb) => {
     if (no.indexOf("&bx_auth_ticket") !== -1) {
       no = no.split("&bx_auth_ticket")[0];
     }
-    let url = `${backendIpAddr}/file/download?fileNo=${no}&bx_auth_ticket=${
-      bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
-    }`;
+    let url = `${backendIpAddr}/file/download?fileNo=${no}&bx_auth_ticket=${bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+      }`;
     if (location.href?.includes("lowcode-grid/editor/")) {
       // 可视化编辑页面，图片后缀增加时间戳，避免缓存
       url += `&t=${new Date().getTime()}`;
@@ -318,3 +339,28 @@ export const getImagePath = (no, notThumb) => {
     return "";
   }
 };
+
+export const getFilePathByUrl = (url, isThumb) => {
+  // 如果url全是数字，则认为是文件编号，调用getImagePath
+  if (url && typeof url === "string" && /^[0-9]+$/.test(url)) {
+    return getImagePath(url, isThumb);
+  } else {
+    if (url?.indexOf("http") === 0) {
+      return url;
+    } else if (url?.indexOf("data:image") === 0) {
+      return url;
+    } else if (url?.split("/").length > 4) {
+      // 如果url中含有超过四个'/'则认为是filePath
+      let resultUrl = `${backendIpAddr}/file/download?filePath=${url}`;
+      if (isThumb) {
+        resultUrl += `&thumbnailType=fwsu_${typeof isThumb === "number" ? isThumb : 100}`;
+      }
+      if (!url.includes("bx_auth_ticket")) {
+        resultUrl += `&bx_auth_ticket=${bx_auth_ticket || sessionStorage.getItem("bx_auth_ticket")
+          }`;
+      }
+      return resultUrl;
+    }
+  }
+  return url;
+}

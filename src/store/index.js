@@ -9,6 +9,7 @@ import theme from './modules/theme'
 import loginInfo from './modules/loginInfo'
 import orderForm from './modules/order-form'
 import chatInfo from "./modules/chatInfo";
+import routeStack from './modules/route-stack'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -21,7 +22,8 @@ export default new Vuex.Store({
     theme,
     loginInfo,
     orderForm,
-    chatInfo
+    chatInfo,
+    routeStack
   },
   strict: false,
 })

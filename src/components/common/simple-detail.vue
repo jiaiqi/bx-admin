@@ -1,7 +1,11 @@
 /* */
 <template>
   <div>
-    <el-alert v-if="pagePrompt" :closable="false" :type="pagePrompt.type">
+    <el-alert
+      v-if="pagePrompt"
+      :closable="false"
+      :type="pagePrompt.type"
+    >
       <slot>
         <div v-html="recoverFileAddress4richText(pagePrompt.description)"></div>
       </slot>
@@ -17,7 +21,10 @@
         label-suffix=":"
         v-if="formLoaded"
       >
-        <el-row v-for="(formItems, section) in sections" :key="section">
+        <el-row
+          v-for="(formItems, section) in sections"
+          :key="section"
+        >
           <div class="el-col el-col-24 el-col-xl-24">
             <div
               class="el-form-item"
@@ -59,13 +66,19 @@
               @field-value-changed="onFieldValueChanged($event)"
               @field-history-popup="onFieldHistoryPopup($event)"
             >
-              <template #field-child-prepend class="">
+              <template
+                #field-child-prepend
+                class=""
+              >
                 <slot
                   :name="formItem.field.info.name + '-child-prepend'"
                   class="padding-bottom"
                 ></slot>
               </template>
-              <template #field-child-append class="padding-bottom">
+              <template
+                #field-child-append
+                class="padding-bottom"
+              >
                 <slot
                   :name="formItem.field.info.name + '-child-append'"
                   class="padding-bottom"
@@ -97,7 +110,10 @@
 
     <el-row v-if="!isPlatChildForm && hasActions(actions)">
       <el-card>
-        <el-col :span="24" style="text-align: center; padding: 20px">
+        <el-col
+          :span="24"
+          style="text-align: center; padding: 20px"
+        >
           <action
             v-for="item in actions"
             :info="item"
@@ -187,7 +203,11 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column width="160" prop="remark" label="说明">
+        <el-table-column
+          width="160"
+          prop="remark"
+          label="说明"
+        >
         </el-table-column>
       </el-table>
     </el-dialog>
@@ -225,7 +245,6 @@ export default {
       type: String,
       default: "detail",
     },
-
     pkCol: {
       type: [String, Number],
     },
@@ -253,7 +272,6 @@ export default {
       return model;
     },
   },
-
   data() {
     return {
       service_name: this.service || this.$route.params.service_name,
@@ -330,6 +348,8 @@ export default {
     },
     initDetail() {
       return new Promise((resolve) => {
+        // 确保元数据请求携带 main_srv，避免与外层重复请求产生两次调用
+        // this.mainService = this.service_name;
         this.createFields((srvCol) => srvCol.in_detail != 0)
           .then((response) => {
             if (response.data.encryptedCols) {
@@ -400,7 +420,7 @@ export default {
             //   return [this.detailData]
             // }
             return loader.run(condition, this.divCond).then((res) => {
-              resolve(res);
+              resolve(res?.data?.[0]);
             });
           })
           .then(() => {

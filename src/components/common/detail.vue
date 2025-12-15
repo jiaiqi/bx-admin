@@ -1,7 +1,7 @@
 <template>
   <div
     style="height: 100%"
-    v-if="id && id !== 'xxx'"
+    v-if="(id && id !== 'xxx') || (defaultConditions && defaultConditions.length)"
   >
     <card-detail
       :pk-col="pkCol"
@@ -86,9 +86,7 @@
                 <template v-for="(item, index) in childListRun.form.prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_prepend_' + index"
                   >
                     <simple-detail
@@ -101,6 +99,7 @@
                     ></simple-detail>
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -147,9 +146,7 @@
                 <template v-for="(item, index) in childListRun.form.append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_append_' + index"
                   >
                     <simple-detail
@@ -164,6 +161,7 @@
                     ></simple-detail>
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -213,14 +211,13 @@
                 <template v-for="(item, index) in fieldChildRun[col].prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_prepend_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -268,14 +265,13 @@
                 <template v-for="(item, index) in fieldChildRun[col].append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_append_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -317,7 +313,7 @@
         v-if="hasVisibleChildListTab()"
         style="height: 100%"
       >
-        <el-tab-pane :label="tab_view_name">
+        <el-tab-pane :label="tab_view_name" v-if="detailshow">
           <!-- <simple-detail :isHistory="isHistory" :pageIsDraft="pageIsDraft" :form-type="formType" ref="simple-detail" :service="service" :default-conditions="custCondition" :srvval-form-model-decorator="srvvalFormModelDecorator" pk-col="id" :pk="id" @form-loaded="$emit('form-loaded', $event)">
                 </simple-detail> -->
           <simple-detail
@@ -349,9 +345,7 @@
                 <template v-for="(item, index) in childListRun.form.prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_prepend_' + index"
                   >
                     <simple-detail
@@ -366,6 +360,7 @@
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -412,9 +407,7 @@
                 <template v-for="(item, index) in childListRun.form.append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="'form_append_' + index"
                   >
                     <simple-detail
@@ -430,6 +423,7 @@
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       v-else
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
@@ -479,15 +473,14 @@
                 <template v-for="(item, index) in fieldChildRun[col].prepend">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_prepend_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -535,15 +528,14 @@
                 <template v-for="(item, index) in fieldChildRun[col].append">
                   <el-collapse-item
                     :title="item.foreign_key.section_name"
-                    v-show="showChildList(item, detailData) && !isTabsModel(item)
-                      "
-                    :key="index"
+                    v-show="showChildList(item, detailData) && !isTabsModel(item)"
                     :name="col + '_append_' + index"
                   >
                     <!-- <simple-detail v-if="item.foreign_key.view_model=='detail'" form-type="detail" ref="child-simple-detail" :service="item.service_name" :default-condition="getChildListDefaultCondition(item)"></simple-detail> -->
                     <child-list
                       :divCond="buildDivCond"
                       :mainService="service_name"
+                      :main-disp-col="v2Data.key_disp_col"
                       :isTree="item.table_type === '树形表'"
                       :isProc="item.table_type === '流程表'"
                       :list-type="formType == 'procdetail'
@@ -604,9 +596,10 @@
             ></simple-detail>
 
             <child-list
-              style="height: calc(100% - 50px); overflow: auto"
+              style="height: calc(100% - 50px); display: flex;flex-direction: column;"
               :divCond="buildDivCond"
               :mainService="service_name"
+              :main-disp-col="v2Data.key_disp_col"
               v-else
               :isTree="item.table_type === '树形表'"
               :isProc="item.table_type === '流程表'"
@@ -703,12 +696,18 @@ export default {
       handler(val) {
         if (val) {
           this.id = val;
-          this.$refs?.["simple-detail"]?.initDetail().then((event) => {
-            console.log(event);
+          let getDetailFun = null
+          if(this.detailshow){
+            getDetailFun = this.$refs?.["simple-detail"]?.initDetail
+          }else{
+            getDetailFun = this.refreshDetail
+          }
+          getDetailFun?.().then((eventData) => {
+            console.log(eventData);
             this.$nextTick(() => {
-              if (event?.data?.length) {
-                this.detailData = event.data[0];
-                this.mainFormDatas = event.data[0];
+              if (eventData) {
+                this.detailData = eventData;
+                this.mainFormDatas = eventData;
                 if (this.$refs?.["childrenList"]?.length) {
                   this.$refs.childrenList.forEach((vm) => {
                     vm?.$refs?.list?.initGridData?.() ||
@@ -792,9 +791,9 @@ export default {
     };
   },
   methods: {
-    formActionComplete(action){
+    formActionComplete(action) {
       console.log('formActionComplete:', action);
-      
+
     },
     suffixActionsComplete(event) {
       console.log('suffixActionsComplete:', event);
@@ -895,7 +894,6 @@ export default {
         }
       }
 
-      let detailData = null;
       let srvAuthKey = `bx_srv_auth_ticket-${this.resolveDefaultSrvApp()}-${this.service_name
         }`;
       console.log(
@@ -903,7 +901,7 @@ export default {
         srvAuthKey,
         this.$route.query.hasOwnProperty(srvAuthKey)
       );
-      await this.selectOne(
+      const response = await this.selectOne(
         this.service_name,
         condition,
         this.$route.query.isdraft,
@@ -911,11 +909,10 @@ export default {
         null,
         null,
         this.buildDivCond || this.$route.query.divCond
-      ).then((response) => {
-        detailData = response.body;
-        this.detailData = response.body;
-        this.mainFormDatas = response.body;
-      });
+      )
+      this.detailData = response.body;
+      this.mainFormDatas = response.body;
+      return response.body;
     },
     async initGridData() {
       var condition = [];
@@ -942,7 +939,9 @@ export default {
         this.service_name,
         "detail",
         null,
-        this.service_name
+        null,
+        false,
+        this.id
       );
       this.detail_srv_cols = response.body.data["srv_cols"];
       childList = response.body.data["child_service"];
@@ -1008,9 +1007,17 @@ export default {
       } else {
         console.error("this.service_name2", dataResp.body, dataResp.response);
         detailData = dataResp.body;
-        this.detailData = dataResp.body;
-        this.mainFormDatas = dataResp.body;
-        this.id = this.detailData[this.pkCol];
+        if (detailData && detailData[this.pkCol]) {
+          this.detailData = detailData;
+          this.id = detailData[this.pkCol];
+          this.mainFormDatas = detailData;
+        } else {
+          console.error("未查询到详情数据", dataResp.body,this.service_name,condition);
+          // this.$message({
+          //   message: "未查询到详情数据",
+          //   type: "error",
+          // });
+        }
         if (
           dataResp?.response?.hasOwnProperty("chart_data") &&
           Array.isArray(dataResp.response.chart_data)

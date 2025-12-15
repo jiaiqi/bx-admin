@@ -115,6 +115,14 @@ export const materialsTree = [
         "_default_parts_text": new Date().toLocaleString(),
         "icon": "ri-calendar-schedule-fill"
       },
+       {
+        "label": "天气",
+        "value": "天气",
+        "parts_type": "天气",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri:sun-foggy-fill"
+      },
       {
         "label": "视频",
         "value": "视频",
@@ -154,6 +162,14 @@ export const materialsTree = [
         "type": "qrCode",
         "component": "pageItem",
         "icon": "ri-qr-code-fill"
+      },
+      {
+        "label": "倒计时",
+        "value": "倒计时",
+        "parts_type": "倒计时",
+        "type": "cardPart",
+        "component": "pageItem",
+        "icon": "ri:timer-fill"
       }
     ]
   },
@@ -375,7 +391,13 @@ export const materialsTree = [
         value: "咨询入口",
         icon: "ri-radio-button-fill",
         type: "咨询入口"
-      }
+      },
+       {
+        label: "大华视频监控",
+        value: "大华视频监控",
+        icon: "ri:video-on-fill",
+        type: "component"
+      },
     ],
   },
 

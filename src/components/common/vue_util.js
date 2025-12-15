@@ -20,26 +20,28 @@ import isString from "lodash/isString";
 import isFunction from "lodash/isFunction";
 import isEmpty from "lodash/isEmpty";
 import { backendIpAddr } from "@/common/http";
+import { getFullBaseUrl } from "@/common/common";
 
 function init_util() {
   const eventBus = new Vue();
+  const prefix = getFullBaseUrl()
   const common_page_path = {
-    detail: "/vpages/#/detail",
-    list: "/vpages/#/list",
-    "simple-add": "/vpages/#/simple-add",
-    "simple-update": "/vpages/#/simple-update",
-    "start-proc": "/vpages/#/startproc",
-    procdetail: "/vpages/#/procdetail",
-    procdetail_v2: "/vpages/#/v2/procdetail",
-    "start-proc_v2": "/vpages/#/v2/startproc",
-    editgrid: "/vpages/#/editgrid",
-    explain: "/vpages/#/explain?",
-    report: "/vpages/#/reportList",
+    detail: `${prefix}/detail`,
+    list: `${prefix}/list`,
+    "simple-add": `${prefix}/simple-add`,
+    "simple-update": `${prefix}/simple-update`,
+    "start-proc": `${prefix}/startproc`,
+    procdetail: `${prefix}/procdetail`,
+    procdetail_v2: `${prefix}/v2/procdetail`,
+    "start-proc_v2": `${prefix}/v2/startproc`,
+    editgrid: `${prefix}/editgrid`,
+    explain: `${prefix}/explain?`,
+    report: `${prefix}/reportList`,
   };
 
   Vue.prototype.getImagePath = (no, size) => {
     if (no && typeof no === "string") {
-      if (no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1) {
+      if ((no.indexOf("http://") !== -1 || no.indexOf("https://") !== -1) && no.indexOf("filePath=") === -1) {
         return no;
       }
       if (no.indexOf("data:image") !== -1 && no.indexOf("base64") !== -1) {
@@ -49,12 +51,19 @@ function init_util() {
         no = no.split("&bx_auth_ticket")[0];
       }
       let url = `${serviceApi.imageFileNo
-        }${no}&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`;
+        }${no}`;
+      if (sessionStorage.getItem("bx_auth_ticket")) {
+        url += `&bx_auth_ticket=${sessionStorage.getItem("bx_auth_ticket")}`
+      }
       // if (notThumb === false) {
       //   url += `&thumbnailType=fwsu_100`
       // }
-      if (size && typeof size === 'number') {
-        url += `&thumbnailType=fwsu_${size}`
+      let thumbnailSize = size
+      if (thumbnailSize) {
+        thumbnailSize = Number(thumbnailSize)
+      }
+      if (thumbnailSize && typeof thumbnailSize === 'number' && !isNaN(thumbnailSize)) {
+        url += `&thumbnailType=fwsu_${thumbnailSize}`
       }
       if (location.href?.includes('/editor/')) {
         // 可视化编辑页面，图片后缀增加时间戳，避免缓存
@@ -399,7 +408,8 @@ function init_util() {
     use_type,
     app,
     mainSrv,
-    forceRefreshV2 = false
+    forceRefreshV2 = false,
+    idVal
   ) {
     if (!service_name) {
       console.error("service_name is null");
@@ -413,7 +423,7 @@ function init_util() {
       return cacheP;
     }
 
-    let loadedP = this.doLoadColsV2(service_name, use_type, app, mainSrv);
+    let loadedP = this.doLoadColsV2(service_name, use_type, app, mainSrv, idVal);
     this.$store &&
       this.$store.commit("addSrvCols", {
         service: fullServiceName,
@@ -424,7 +434,7 @@ function init_util() {
     return loadedP;
   };
 
-  Vue.prototype.getV2RequestData = function (service_name, use_type, mainSrv) {
+  Vue.prototype.getV2RequestData = function (service_name, use_type, mainSrv, idVal) {
     let requestData = {
       serviceName: "srvsys_service_columnex_v2_select",
       colNames: ["*"],
@@ -455,6 +465,14 @@ function init_util() {
         ruleType: "eq",
       });
     }
+    // 详情场景：仅当调用方传入 id 值时，追加 { colName: 'id', ... } 2025-09-03
+    if (mainSrv && ['detail', 'detaillist', 'treelist'].includes(use_type) && ![null, undefined, ''].includes(idVal)) {
+      requestData.condition.push({
+        colName: 'id',
+        value: idVal,
+        ruleType: 'eq'
+      });
+    }
     let url = decodeURIComponent(window.location.href);
     let params = parseUrlParams(url);
     if (params && params.v2Params) {
@@ -473,8 +491,9 @@ function init_util() {
     return requestData;
   };
 
-  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv) {
-    var data = Vue.prototype.getV2RequestData(service_name, use_type, mainSrv);
+  Vue.prototype.doLoadColsV2 = function (service_name, use_type, app, mainSrv, idVal) {
+    // 使用当前组件实例上下文，仅根据调用方传入的 id 值决定是否追加主键条件
+    var data = this.getV2RequestData(service_name, use_type, mainSrv, idVal);
 
     var url = this.getServiceUrl(
       "select",
@@ -1341,7 +1360,7 @@ function init_util() {
     }
 
     dialog.defaultConditions = params.condition;
-    dialog.defaultValues = params.data;
+    dialog.defaultValues = params.defaultValues || params.data || [];
     dialog.mapcondition = params.mapcondition;
     if (params.otherParams != undefined && params.otherParams != null) {
       var load_old_data = params.otherParams.load_old_data;
@@ -2448,60 +2467,60 @@ function init_util() {
     }
   };
 
- Vue.prototype.renderStr = (str, obj = {}) => {
-  // if(str && str?.includes('.')&&str.split('.').length>1 && !/\$\{(.*?)\}/g.test(str)){
-  // }
-  
-  // 辅助函数：尝试解析 JSON 字符串
-  const tryParseJson = (value) => {
-    if (typeof value === 'string') {
-      try {
-        const parsed = JSON.parse(value);
-        // 只有当解析结果是对象或数组时才返回解析结果
-        if (typeof parsed === 'object' && parsed !== null) {
-          return parsed;
-        }
-      } catch (e) {
-        // 解析失败，返回原值
-      }
-    }
-    return value;
-  };
-  
-  // 如果 obj 本身是 JSON 字符串，先解析它
-  obj = tryParseJson(obj);
-  
-  if (typeof obj === "object" && str && typeof str === "string") {
-    str = str.replace(/\$\{(.*?)\}/g, (match, key) => {
-      key = key.trim();
-      let result = obj[key];
-      let arr = key.split(".");
-      if (arr?.length) {
-        result = obj;
-        arr.forEach((item) => {
-          try {
-            result =
-              result[item] || result[item] === false || result[item] === 0
-                ? result[item]
-                : "";
-            if (result === 0) {
-              result = "0";
-            }
-            // 在每一步访问后，尝试解析 JSON 字符串
-            result = tryParseJson(result);
-          } catch (e) {
-            //TODO handle the exception
+  Vue.prototype.renderStr = (str, obj = {}) => {
+    // if(str && str?.includes('.')&&str.split('.').length>1 && !/\$\{(.*?)\}/g.test(str)){
+    // }
+
+    // 辅助函数：尝试解析 JSON 字符串
+    const tryParseJson = (value) => {
+      if (value && typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value);
+          // 只有当解析结果是对象或数组时才返回解析结果
+          if (typeof parsed === 'object' && parsed !== null) {
+            return parsed;
           }
-        });
-      } else {
-        // 对于单层属性访问，也尝试解析 JSON 字符串
-        result = tryParseJson(result);
+        } catch (e) {
+          // 解析失败，返回原值
+        }
       }
-      return result;
-    });
-  }
-  return str;
-};
+      return value;
+    };
+
+    // 如果 obj 本身是 JSON 字符串，先解析它
+    obj = tryParseJson(obj);
+
+    if (typeof obj === "object" && str && typeof str === "string") {
+      str = str.replace(/\$\{(.*?)\}/g, (match, key) => {
+        key = key.trim();
+        let result = obj[key];
+        let arr = key.split(".");
+        if (arr?.length) {
+          result = obj;
+          arr.forEach((item) => {
+            try {
+              result =
+                result[item] || result[item] === false || result[item] === 0
+                  ? result[item]
+                  : "";
+              if (result === 0) {
+                result = "0";
+              }
+              // 在每一步访问后，尝试解析 JSON 字符串
+              result = tryParseJson(result);
+            } catch (e) {
+              //TODO handle the exception
+            }
+          });
+        } else {
+          // 对于单层属性访问，也尝试解析 JSON 字符串
+          result = tryParseJson(result);
+        }
+        return result;
+      });
+    }
+    return str;
+  };
   /**
    * 将queryString格式的divCond转为数组格式
    * @param {*} url
@@ -2558,6 +2577,27 @@ function init_util() {
       return `divCol=${result[0].colName}&divStartVal=${result[0].value[0]}&divEndVal=${result[0].value[1]}`;
     }
   };
+  Vue.prototype.evalCondValue = (value, row) => {
+    if (!value || typeof value === "string") {
+      if (value?.includes('${')) {
+        value = Vue.prototype.renderStr(value, row);
+      } else if (value?.includes('data.')) {
+        try {
+          let key = value.split("data.")[1];
+          if (key) {
+            value = row[key];
+          }
+        } catch (error) { }
+      }
+      return value;
+    } else if (value?.value_type === "rowData" && value.value_key) {
+      return row[value.value_key];
+    } else if (value?.value_type === "mainData" && value.value_key) {
+      return mainData[value.value_key];
+    } else if (value?.value_type === "constant" && value.value) {
+      return value.value;
+    }
+  };
   /**
    * 构建自定义按钮配置的divCond
    * @param {*} btn 自定义按钮
@@ -2570,17 +2610,7 @@ function init_util() {
     if (Array.isArray(row) && row.length) {
       row = JSON.parse(JSON.stringify(row[0]));
     }
-    const evalCondValue = (value, row) => {
-      if (!value || typeof value === "string") {
-        return value;
-      } else if (value?.value_type === "rowData" && value.value_key) {
-        return row[value.value_key];
-      } else if (value?.value_type === "mainData" && value.value_key) {
-        return mainData[value.value_key];
-      } else if (value?.value_type === "constant" && value.value) {
-        return value.value;
-      }
-    };
+    const evalCondValue = Vue.prototype.evalCondValue;
     if (btn?.more_config) {
       try {
         const moreConfig = JSON.parse(btn.more_config);
@@ -2758,7 +2788,7 @@ function init_util() {
       }
 
       let pageNo = jumpJson?.dest_page_no
-      let url = '/views/custom/index/index'
+      let url = `${getFullBaseUrl()}/`
       let authJson = jumpJson.page_auth_json || null
       if (pageNo) {
         if (jumpJson?.tmpl_page_json?.file_path) {
@@ -2873,8 +2903,11 @@ function init_util() {
             if (rowData) {
               url = Vue.prototype.renderStr(url, rowData)
             }
-            if (url?.includes(':id')) {
-              url = url.replace(':id', rowData?.id)
+            // 替换所有以:开头的变量
+            if (rowData) {
+              url = url.replace(/:([\w]+)/g, (match, key) => {
+                return rowData[key] !== undefined ? rowData[key] : match
+              })
             }
             if (top.window.addTab) {
               Vue.prototype.addTabByUrl(url, jumpJson?.jump_page_title || '')
@@ -2928,6 +2961,11 @@ function init_util() {
     const ticketStr = `bx_auth_ticket=${sessionStorage.bx_auth_ticket}`;
     val = val.replace(/(bx_auth_ticket=)[^&]+/ig, ticketStr);
     return val;
+  }
+
+  Vue.prototype.formatDate = (value, format = 'YYYY-MM-DD HH:mm:ss') => {
+    if (!value) return '';
+    return dayjs(value).format(format);
   }
 }
 

@@ -105,8 +105,9 @@ export const pageCompCols = [
   "enter_direction",
   "enter_animation_duration", "enter_animation_delay", "enter_animation_repeat",
   // 动效相关
-  "migration_json", "animation_type"
+  "migration_json", "animation_type",
   // "owner_tabs_no",
   // "is_leaf",
   // "path",
+  "video_card_channels",//视频通道配置
 ];

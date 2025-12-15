@@ -463,6 +463,7 @@ let DragPos = {x: null, y: null, w: 1, h: 1, i: null};
 
 // 页面参数
 import pageParams from "../common/params/page-params-mixin.js";
+import { getFullBaseUrl } from "@/common/common";
 
 export default {
   // name: "pageEditor",
@@ -912,7 +913,7 @@ export default {
       // window.open(window.location.hash.replace("/editor/", "/view/"));
     },
     preview() {
-      open(`/vpages/#/lowcode-grid/view/${this.pgNo}`);
+      open(`${getFullBaseUrl()}/lowcode-grid/view/${this.pgNo}`);
     },
     previewMobile() {
       // window.open(`/h5/#/views/custom/index/index?page_no=${this.pgNo}`);
@@ -1502,7 +1503,7 @@ export default {
         }).then((action) => {
           if (action === "confirm") {
             window.open(
-              `/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
+              `${getFullBaseUrl()}/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
             );
           }
         });

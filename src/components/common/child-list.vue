@@ -1,5 +1,4 @@
 <template>
-  <div>
     <excel-list
       :mem-initdatas-add="initDatas"
       :disabled="updatable === false"
@@ -11,10 +10,11 @@
       :data="item"
       :type="listType"
       :default-condition="getDefaultConditions"
-      :childForeignkey="foreignKey"
+      :childforeignkey="foreignKey"
       :main-data="mainData"
       :div-cond="divCond"
       :is-tree="isTree"
+      @list-loaded="onListLoaded"
       v-if="
         uiMode === 'excel' &&
         // 'addchildlist' === listType &&
@@ -35,6 +35,7 @@
       :childForeignkey="foreignKey"
       :default-condition="getDefaultConditions"
       :main-data="mainData"
+      :main-disp-col="mainDispCol"
       :div-cond="divCond"
       :memInitdatasAdd="initDatas"
       @list-loaded="onListLoaded()"
@@ -74,6 +75,7 @@
       :merge-col="mergeCol"
       :listMainFormDatas="mainFormDatas"
       :main-data="mainData ? mainData : formModel"
+      :main-disp-col="mainDispCol"
       :$srvApp="$srvApp"
       :div-cond="divCond"
       @child-loaded="childDataLoadedRun($event)"
@@ -103,10 +105,11 @@
       :div-cond="divCond"
       :list-main-form-datas="mainFormDatas"
       :mainService="mainService"
+      :main-disp-col="mainDispCol"
       :list-name="service"
       :childforeignvalue="getRefColValue"
       :def-data-para="defDataPara"
-      :readOnly="readOnly"
+      :readOnly="readOnly || updatable === false"
       :memInitdatasAdd="initDatas"
       @child-loaded="childDataLoadedRun($event)"
       @list-loaded="onListLoaded"
@@ -124,7 +127,6 @@
       v-else
     >
     </tab-list>
-  </div>
 </template>
 
 <script>
@@ -267,6 +269,10 @@ export default {
       type: String,
       default: "",
     },
+    mainDispCol: {
+      type: String,
+      default: "",
+    },
     divCond: Array,
   },
   computed: {
@@ -367,8 +373,18 @@ export default {
     },
     updatable() {
       if (this.foreignKey?.child_read_json) {
-        const json = JSON.parse(this.foreignKey.child_read_json);
-        return evalJson(json, this.mainFormDatas) !== true;
+        try {
+          const json = JSON.parse(this.foreignKey.child_read_json);
+          return evalJson(json, this.mainFormDatas) !== true;
+        } catch (error) {
+          console.error("Error parsing child_read_json:", error);
+          if(typeof this.foreignKey?.child_read_json === 'string'){
+            const mainData = this.mainFormDatas
+            const result = eval(this.foreignKey?.child_read_json);
+            return result !== true;
+          }
+          return false;
+        }
       }
     },
   },

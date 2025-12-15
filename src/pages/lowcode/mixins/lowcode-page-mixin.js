@@ -15,7 +15,7 @@ import { addCollection } from "@iconify/vue2";
 // import mdiLight from "@iconify/json/json/mdi-light.json";
 // import ri from "@iconify/json/json/ri.json";
 
-import { $selectOne } from "@/common/http";
+import { $selectOne, getHomePageNo } from "@/common/http";
 import { formatStyleData } from "@/pages/datav/common/index.js";
 
 import { buildComponentsTree } from "../utils/common";
@@ -53,6 +53,7 @@ export default {
    */
   data() {
     return {
+      appCfg: null,
       pageNo: null,
       pageConfig: null,
       components: [],
@@ -114,44 +115,47 @@ export default {
       immediate: true,
     }
   },
-  created() {
+  async created() {
     if (this.lowCodeJson?.page_no) {
       this.pageNo = this.lowCodeJson.page_no
       this.pageConfig = {
         ...cloneDeep(this.lowCodeJson),
         page_row_json: cloneDeep(this.lowCodeJson)
       }
-      const newData = this.initPageConfig(this.pageConfig);
+      const newData = await this.initPageConfig(this.pageConfig);
       this.initComponents(newData);
       this.initPageParams()
+      this.setThemeVariable();
       return
     }
     if (this.propPageNo) {
       this.pageNo = this.propPageNo
-    } else {
+    } else if(this.$route.query.pageNo || this.$route.params.pageNo){
       this.pageNo = this.$route.query.pageNo || this.$route.params.pageNo;
+    } else if(getHomePageNo?.()){
+      this.pageNo = getHomePageNo?.();
     }
 
     if (this.pageNo) {
-      this.getPageConfig().then(() => {
-        this.$nextTick(() => {
-          let anchorName =
-            this.$route.query.anchorName || this.$route.params.anchorName;
-          if (anchorName) {
-            this.anchorName = anchorName;
-            let ele = document.getElementById(anchorName);
-            if (ele) {
-              ele.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-                inline: "nearest",
-              });
-            } else {
-              console.error("未找到锚点:", anchorName);
-            }
+      await this.getPageConfig()
+      this.$nextTick(() => {
+        let anchorName =
+          this.$route.query.anchorName || this.$route.params.anchorName;
+        if (anchorName) {
+          this.anchorName = anchorName;
+          let ele = document.getElementById(anchorName);
+          if (ele) {
+            ele.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+              inline: "nearest",
+            });
+          } else {
+            console.error("未找到锚点:", anchorName);
           }
-        });
+        }
       });
+      this.setThemeVariable();
     }
   },
   async mounted() {
@@ -169,23 +173,87 @@ export default {
     addCollection(carbon.default || carbon);
     addCollection(mdiLight.default || mdiLight);
     addCollection(ri.default || ri);
-    this.setThemeVariable();
+    // this.setThemeVariable();
   },
   methods: {
     ...mapActions("theme", ["setCurrentTheme", "setThemeList", "initTheme"]),
+
     /**
      * 设置主题变量到DOM
      * @description 将主题变量转换为CSS样式并应用到body元素
      */
     setThemeVariable() {
-      const themeVariable = Object.keys(this.themeVariable).reduce(
+      const appCfg = this.appCfg
+      let appStyleJson = null
+      if (appCfg?.app_style_json) {
+        try {
+          appStyleJson = JSON.parse(appCfg.app_style_json)
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      let appThemeInfo = {}
+      if (appStyleJson?.theme_color) {
+        Object.keys(appStyleJson?.theme_color).forEach(key => {
+          if (appStyleJson?.theme_color[key]) {
+            appThemeInfo[`--${key}`] = appStyleJson?.theme_color[key]
+          }
+        })
+      }
+      let themeVariable = Object.keys(this.themeVariable).reduce(
         (pre, cur) => {
           pre += `${cur}: ${this.themeVariable[cur]};`;
+          if (cur?.includes('_')) {
+            pre += `${cur.replace(/\_/g, '-')}: ${this.themeVariable[cur]};`;
+          }
           return pre;
         },
         ""
       );
+      if (appThemeInfo && Object.keys(appThemeInfo).length) {
+        themeVariable += Object.keys(appThemeInfo).reduce((pre, cur) => {
+          pre += `${cur}: ${appThemeInfo[cur]};`;
+          if (cur?.includes('_')) {
+            pre += `${cur.replace(/\_/g, '-')}: ${appThemeInfo[cur]};`;
+          }
+          return pre;
+        }, '')
+      }
       document.body.setAttribute("style", themeVariable);
+    },
+    /**
+     * 获取应用配置
+     * @description 从服务器获取应用配置，根据应用编号查询应用详情
+     * @param {string} appNo - 应用编号
+     * @returns {Promise<Object|null>} 应用配置对象，如果请求失败或未找到应用则返回null
+     */
+    async getAppConfig(appNo) {
+      if (!appNo) return
+      const service = 'srvpage_cfg_app_guest_select'
+      const req = {
+        "serviceName": service,
+        "colNames": ["*"],
+        "condition": [{
+          colName: 'app_no',
+          ruleType: "eq",
+          value: appNo
+        }],
+        "page": {
+          "pageNo": 1,
+          "rownumber": 1
+        },
+      }
+      try {
+        const res = await this.$http.post(`/config/select/${service}`, req)
+        console.log(res);
+        if (res.data.state === 'SUCCESS' && Array.isArray(res.data.data) && res.data.data.length) {
+          let appCfg = res.data.data[0]
+          sessionStorage.setItem('lowAppCfg', JSON.stringify(appCfg))
+          this.appCfg = appCfg
+        }
+      } catch (error) {
+        console.error(error);
+      }
     },
     /**
      * 获取页面配置数据
@@ -209,7 +277,7 @@ export default {
       };
       const { data, ok, msg } = await $selectOne(url, req);
       if (ok) {
-        let newData = this.initPageConfig(data);
+        let newData = await this.initPageConfig(data);
         this.initComponents(newData);
         this.initPageParams()
       } else if (msg) {
@@ -224,7 +292,7 @@ export default {
      * @returns {Object} 处理后的页面配置数据
      * @description 解析JSON字段，设置页面配置，初始化主题
      */
-    initPageConfig(data) {
+    async initPageConfig(data) {
       Object.keys(data).forEach((key) => {
         if (key && data[key] && key.indexOf("_json") !== -1) {
           if (typeof data[key] === "object") {
@@ -239,6 +307,11 @@ export default {
         }
       });
       this.pageConfig = data;
+      if (data?.app_no) {
+        // 查找app信息
+        await this.getAppConfig(data.app_no)
+      }
+
       // 使用Vuex初始化主题
       if (data?.app_json_data) {
         let currentTheme = data.app_json_data.current_theme;

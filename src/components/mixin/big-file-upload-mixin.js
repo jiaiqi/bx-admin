@@ -162,11 +162,16 @@ export default {
     useWorker(file) {
       const that = this
       return new Promise((resolve) => {
-        const worker = new Worker('./hash-worker.js')
+        // 使用 webpack4 兼容的 file-loader 生成静态 URL，并传递给 Worker
+        // eslint-disable-next-line
+        const worker = new Worker(require('!!file-loader?name=assets/[name].[ext]!@/assets/hash-worker.js'))
+        // 确保 spark-md5.min.js 也被复制到 assets 目录，供 worker 内部 importScripts 使用
+        // eslint-disable-next-line
+        require('!!file-loader?name=assets/[name].[ext]!@/assets/spark-md5.min.js')
         worker.postMessage({ file, chunkSize: that.chunkSize })
         worker.onmessage = (e) => {
           const { fileHash, fileChunkList } = e.data
-          // console.log('useWorker:',e?.data?.percentage);
+          console.log('useWorker:',e?.data?.percentage);
           if (e?.data?.percentage && typeof that.onHashProgress === 'function') {
             that.onHashProgress?.(Math.round(e?.data?.percentage))
           }
@@ -182,13 +187,16 @@ export default {
 
     // 单个文件上传
     uploadSingleFile(taskArrItem) {
-      // 如果没有需要上传的切片 / 正在上传的切片还没传完，就不做处理
-      if (
-        taskArrItem.allChunkList.length === 0 ||
-        taskArrItem.whileRequests.length > 0
-      ) {
-        return false
-      }
+      // 确保始终返回Promise对象
+      return new Promise((resolve, reject) => {
+        // 如果没有需要上传的切片 / 正在上传的切片还没传完，就不做处理
+        if (
+          taskArrItem.allChunkList.length === 0 ||
+          taskArrItem.whileRequests.length > 0
+        ) {
+          // resolve(false);
+          return;
+        }
       // 找到文件处于处理中/上传中的 文件列表（是文件而不是切片）
       const isTaskArrIng = this.uploadFileList.filter(
         (itemB) => itemB.state === 1 || itemB.state === 2
@@ -197,7 +205,7 @@ export default {
       // 实时动态获取并发请求数,每次调请求前都获取一次最大并发数
       // 浏览器同域名同一时间请求的最大并发数限制为6
       // 例如如果有3个文件同时上传/处理中，则每个文件切片接口最多调 6 / 3 == 2个相同的接口
-      // this.maxRequest = Math.ceil(6 / isTaskArrIng.length)
+      this.maxRequest = Math.ceil(6 / isTaskArrIng.length)
 
       // 从数组的末尾开始提取 maxRequest 个元素。
       let whileRequest = taskArrItem.allChunkList.slice(-this.maxRequest)
@@ -212,7 +220,6 @@ export default {
         // 否则总请求数置空,说明已经把没请求的全部放进请求列表了，不需要做过多请求
         taskArrItem.allChunkList = []
       }
-      return new Promise((resolve, reject) => {
         // 单个分片请求
         const uploadChunk = async (needObj, uploadId) => {
           const fd = new FormData()
@@ -283,7 +290,7 @@ export default {
               resolve(mergeResult)
             } else {
               // 如果还没完全上传完，则继续上传
-              this.uploadSingleFile(taskArrItem)
+              this.uploadSingleFile(taskArrItem).then(resolve).catch(reject)
             }
           }
         }
@@ -291,8 +298,7 @@ export default {
         for (const item of whileRequest) {
           uploadChunk(item, taskArrItem.id)
         }
-      })
-
+      });
     },
 
     async mergeChunk(data) {
@@ -337,13 +343,19 @@ export default {
       //  最后赋值文件切片上传完成个数为0
       taskArrItem.finishNumber = 0
       this.onUploadSuccess?.(res)
-      if (res?.fileurl) {
-        const url = this.getFileUrl(res.fileurl);
+      
+      // 尝试多种可能的文件路径字段名
+      let filePath = res?.fileurl || res?.file_path || res?.filePath || res?.path || res?.url;
+      
+      if (filePath) {
+        const url = this.getFileUrl(filePath);
         return {
           url,
-          name: res.src_name,
+          name: res.src_name || res.fileName || res.name || taskArrItem.fileName,
+          fileurl: filePath, // 保持原始fileurl用于后续处理
         };
       } else {
+        console.warn('未找到文件路径字段，返回原始数据:', res);
         return res
       }
     },

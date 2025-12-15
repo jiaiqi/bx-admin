@@ -1,3 +1,12 @@
+// 为兼容 CJS 源文件，改为默认导入再按命名方式导出
+import cfg from "./config";
+export const getRouteMode = cfg.getRouteMode;
+export const getBaseUrl = cfg.getBaseUrl;
+export const getFullBaseUrl = cfg.getFullBaseUrl;
+export const getPublicPath = cfg.getPublicPath;
+export const getOutputDir = cfg.getOutputDir;
+export const getAssetsDir = cfg.getAssetsDir;
+
 /**
  * 检查字符串是否为有效的JSON格式
  * @description 尝试解析字符串为JSON对象，判断是否为有效的JSON格式
@@ -720,4 +729,17 @@ export function downloadFileH5(url, fileName) {
       reject(new Error('下载失败'))
     }
   })
+}
+
+/**
+ * 格式化文件大小
+ * @param {number} bytes  文件大小，以字节为单位
+ * @returns 
+ */
+export function formatFileSize(bytes) {
+  if (bytes === 0) return '0B';
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024 * 1024) return Number((bytes / 1024).toFixed(2)) + 'KB';
+  if (bytes < 1024 * 1024 * 1024) return Number((bytes / 1024 / 1024).toFixed(2)) + 'MB';
+  return Number((bytes / 1024 / 1024 / 1024).toFixed(2)) + 'GB';
 }

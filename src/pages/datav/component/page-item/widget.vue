@@ -27,7 +27,10 @@
     >
     </el-option>
   </el-select>
-  <div v-else-if="widgetType === '文本'" :style="[widgetStyleJson]">
+  <div
+    v-else-if="widgetType === '文本'"
+    :style="[widgetStyleJson]"
+  >
     <span v-if="pageItem && pageItem.widget_json">{{
       pageItem.widget_json.init_val || ""
     }}</span>
@@ -48,6 +51,7 @@
   </div>
   <date-time
     v-else-if="widgetType === '时间日期'"
+    :page-config="pageConfig"
     :show-seconds="showSeconds"
     :parts-set="timeWidgetJson['parts-set']"
     :color="widgetColor"
@@ -64,20 +68,36 @@
       title="退出全屏"
       style="transform: rotate(45deg)"
     ></span>
-    <span class="el-icon-full-screen" v-else title="全屏"></span>
+    <span
+      class="el-icon-full-screen"
+      v-else
+      title="全屏"
+    ></span>
   </div>
+  <weather
+    v-else-if="widgetType === '天气'"
+    :page-item="pageItem"
+    :style="[widgetStyleJson]"
+  ></weather>
+
 </template>
 
 <script>
 import { formatStyleData } from "../../common/index";
 import dateTime from "../widgets/date-time.vue";
 import { mapState, mapGetters, mapActions } from "vuex";
+import weather from "./widgets/weather.vue";
 export default {
   name: "widget",
   components: {
     dateTime,
+    weather
   },
   props: {
+    pageConfig: {
+      type: Object,
+      default: () => { },
+    },
     pageItem: Object,
     pageNo: String,
   },
@@ -382,6 +402,7 @@ export default {
   width: 90px;
   color: var(--text-color, inherit); // 使用主题变量
   background-color: inherit; // 使用主题变量
+
   :deep(.el-input) {
     color: var(--text-color, inherit); // 使用主题变量
     background-color: inherit; // 使用主题变量
@@ -394,6 +415,7 @@ export default {
       height: unset;
       line-height: inherit;
     }
+
     .el-input__icon {
       color: var(--text-color, inherit); // 使用主题变量
       line-height: inherit;

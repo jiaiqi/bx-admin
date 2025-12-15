@@ -101,6 +101,7 @@
 
 <script>
 import dayjs from "dayjs";
+import { getFullBaseUrl } from "@/common/common";
 import { GridLayout, GridItem } from "vue-grid-layout";
 import PageItem from "../component/page-item/page-item.vue";
 import propertyPane from "./property-pane.vue";
@@ -761,7 +762,7 @@ export default {
         }).then((action) => {
           if (action === "confirm") {
             window.open(
-              `/vpages/#/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
+              `${getFullBaseUrl()}/detail/srvpage_cfg_page_component_select/${item.data.id}?srvApp=config`
             );
           }
         });

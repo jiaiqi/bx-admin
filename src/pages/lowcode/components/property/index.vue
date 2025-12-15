@@ -121,101 +121,6 @@
         >
         </simple-update>
       </el-tab-pane>
-      <!-- <template
-        v-if="showPageCompForm && pageCompStyleCols && pageCompStyleCols.length"
-      >
-        <el-tab-pane
-          :label="'组件' + item.label"
-          :name="item.key"
-          v-for="item in pageCompStyleCols"
-          :key="item.key"
-        >
-          <div class="tab-content">
-            <simple-update
-              name="list-update"
-              :navAfterSubmit="false"
-              :service="item.option_list_v2.update_srv_cfg.srv"
-              :pk="item.value"
-              :app-no="item.option_list_v2.app || appNo"
-              :pkCol="item.option_list_v2.refed_col"
-              :group-collapse="true"
-              @executor-complete="
-                onStyleColUpdate($event, 'page-comp-style-col-update', item)
-              "
-              @field-value-changed="
-                onValueChange($event, 'page-comp-style-col-update', item)
-              "
-              ref="pageCompStyleColUpdate"
-              v-if="item.value"
-            >
-            </simple-update>
-            <simple-add
-              :service="item.option_list_v2.add_srv_cfg.srv"
-              :navAfterSubmit="false"
-              @executor-complete="
-                onStyleColUpdate($event, 'page-comp-style-col-add', item)
-              "
-              :defaultValues="{
-                page_no: pageConfig.page_no,
-                com_no: currentItem.com_no,
-                obj_type: '组件',
-                owner_no: currentItem.com_no,
-              }"
-              ref="pageCompStyleColAdd"
-              v-else
-            >
-            </simple-add>
-          </div>
-        </el-tab-pane>
-      </template> -->
-      <!-- <template v-if="showCompForm && compStyleCols && compStyleCols.length">
-        <el-tab-pane
-          :label="'组件配置-' + item.label"
-          :name="item.key"
-          v-for="item in compStyleCols"
-          :key="item.key"
-        >
-          <div class="tab-content">
-            <simple-update
-              name="list-update"
-              :navAfterSubmit="false"
-              :service="item.option_list_v2.update_srv_cfg.srv"
-              :pk="item.value"
-              :app-no="item.option_list_v2.app || appNo"
-              :pkCol="item.option_list_v2.refed_col"
-              :group-collapse="true"
-              @executor-complete="
-                onStyleColUpdate($event, 'comp-style-col-update', item)
-              "
-              @field-value-changed="
-                onValueChange($event, 'comp-style-col-update', item)
-              "
-              ref="compStyleColUpdate"
-              v-if="item.value"
-            >
-            </simple-update>
-            <simple-add
-              :service="item.option_list_v2.add_srv_cfg.srv"
-              :navAfterSubmit="false"
-              @executor-complete="
-                onStyleColUpdate($event, 'comp-style-col-add', item)
-              "
-              :defaultValues="{
-                page_no: pageConfig.page_no,
-                com_no: currentItem.com_no,
-                obj_type: '组件',
-                owner_no: currentItem.com_no,
-              }"
-              ref="compStyleColAdd"
-              v-else
-            >
-            </simple-add>
-          </div>
-        </el-tab-pane>
-      </template> -->
-      <!-- <el-tab-pane label="CSS" name="CSS">
-        <css-editor />
-      </el-tab-pane> -->
     </el-tabs>
   </div>
 </template>
@@ -1167,7 +1072,6 @@ export default {
           // let normalChild = this.findNormalChild(addChildRes);
           console.log(addChildRes);
         }
-        debugger
         // this.$message.success("保存成功");
         return this.$emit("refresh");
         const addNormalComponents = this.findNormalComponents(oldComponents);
@@ -1263,7 +1167,7 @@ export default {
           "modify_user_disp",
           "row_json",
           "page_no",
-          "image",
+          // "image",
           // "preview",
           "cellItem",
           "parentId",
@@ -1368,13 +1272,15 @@ export default {
             case "detail":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
               compObj.data = [{ widget_type: "文本" }];
-
               break;
             case "咨询入口":
               compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
               compObj.data = [{ widget_type: "文本" }];
               break;
-
+            case "大华视频监控":
+              compObj.serviceName = "srvpage_cfg_meta_col_widget_add";
+              compObj.data = [{ widget_type: "视频" }];
+              break;
           }
           addCompArr.push(compObj);
         });

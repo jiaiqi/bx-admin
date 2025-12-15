@@ -133,6 +133,20 @@
               </div>
             </el-carousel-item>
           </el-carousel>
+          <div v-if="listOptions?.includes('聚合搜索') && listConfig?.multi_search_cols" :style="getCardGroupStyle">
+            <div style="display: flex; align-items: center;justify-content: space-between; padding-bottom: 10px;">
+               <el-input
+              placeholder="搜索关键字"
+              class="search-input mr-2"
+              clearable
+              style="width: 85%;"
+              v-model="searchKey2"
+              @change="handleSearchChange"
+              @keyup.enter.native="handleSearch"
+            ></el-input>
+            <el-button icon="el-icon-search" style="width: 15%;" @click="handleSearch"></el-button>
+            </div>
+          </div>
           <cardGroupCell
             :pageParamsModel="pageParamsModel"
             :queryOptions="queryOptions"
@@ -145,6 +159,8 @@
             :comColMap="comColMapJson"
             :cardLayout="layoutJson"
             :rowButtons="listV2RowButtons"
+            :is-vertical-scroll="isVerticalScroll"
+            :display-row-limit="displayRowLimit"
             :list-config="listConfig"
             @on-click-cell="onClickCell"
             @on-click-block="onClickBlock"
@@ -219,6 +235,7 @@ import GridList from "./grid-list.vue";
 import SimpleAdd from "@/components/common/simple-add.vue";
 import MapCard from "../map-card/index.vue";
 import BxTable from "./BxTable.vue";
+import { getFullBaseUrl } from "@/common/common";
 export default {
   name: "data-view-list",
   components: {
@@ -254,6 +271,7 @@ export default {
       tableData: [],
       pageInfo: { pageNo: 1, rownumber: 10, total: 0 },
       searchKey: "",
+      searchKey2: "",
       mapSearchKey: "",
       showAddDialog: false,
       // 滚动相关数据
@@ -340,10 +358,21 @@ export default {
       ) {
         const cols = this.listConfig?.custom_table_head_cols.split(",");
         const labels = this.listConfig?.custom_table_head_label.split(",");
+        let tbl_head_col_width = this.listConfig?.tbl_head_col_width?.split(',') || "";
         return labels?.map((label, index) => {
+          let width = undefined
+          const _colWidth = tbl_head_col_width?.[index]
+          if (_colWidth) {
+            if (!isNaN(Number(_colWidth))) {
+              width = _colWidth + '%'
+            } else {
+              width = _colWidth
+            }
+          }
           return {
             label,
             columns: cols[index],
+            width: width || undefined,
           };
         });
       }
@@ -379,6 +408,20 @@ export default {
     layoutJson: function () {
       let json = this.listConfig?.layout_json || null;
       return json;
+    },
+    getCardGroupStyle() {
+      let style = {}
+      if (this.layoutJson?.gap_style) {
+        style["display"] =this.layoutJson?.gap_style
+      }
+      if (this.layoutJson?.style_json_diy?.gap) {
+        style["grid-gap"] = this.layoutJson?.style_json_diy?.gap
+      }
+      if (this.layoutJson?.cols_num) {
+        style["grid-template-columns"] = `repeat(${this.layoutJson?.cols_num}, 1fr)`
+      }
+      if (style.display === 'gap') style.display = 'grid';
+      return Object.entries(style).map(([key, value]) => `${key}: ${value};`).join('')
     },
     cardUnitJson: function () {
       let json = this.listConfig?.card_unit_json || null;
@@ -475,7 +518,7 @@ export default {
     isVerticalScroll() {
       const displayLimit = this.listConfig.data_disp_limit || 5;
       return (
-        this.listConfig.animation_type === "纵向滚动" &&
+        (this.listConfig.animation_type === "纵向滚动" || this.listConfig.child_animation_type === "纵向滚动") &&
         this.tableData.length > displayLimit
       );
     },
@@ -556,6 +599,12 @@ export default {
     },
   },
   methods: {
+    handleSearchChange(val) {
+      this.searchKey2 = val;
+    },
+    handleSearch() {
+      this.onSearch();
+    },
     // 精确测量文字宽度
     measureTextWidth(text, fontSize = '12px', fontFamily = 'Arial') {
       const canvas = document.createElement('canvas');
@@ -595,6 +644,20 @@ export default {
             colName: this.listConfig?.filter_cols,
             ruleType: "like",
             value: this.searchKey,
+          });
+        }
+        if(this.listConfig?.multi_search_cols && this.searchKey2){
+          let multiSearchCols = this.listConfig?.multi_search_cols.split(",");
+          itemReqJson.relation_condition = {
+              relation: 'OR',
+              data: []
+            }
+          multiSearchCols.forEach(col => {
+            itemReqJson.relation_condition.data.push({
+              colName: col,
+              ruleType: "like",
+              value: this.searchKey2,
+            });
           });
         }
         if (this.listConfig?.map_filter_field && this.mapSearchKey) {
@@ -697,13 +760,14 @@ export default {
 
       if (res.data.state === "SUCCESS") {
         this.tableData = res.data.data;
+        console.log("列表数据1111111", this.tableData);
         if (res.data.page) {
           this.pageInfo = res.data.page;
         }
         // 数据更新后重新启动滚动
         if (this.isVerticalScroll) {
           this.$nextTick(() => {
-            this.startVerticalScroll();
+            // this.startVerticalScroll();
           });
         }
       }
@@ -779,7 +843,7 @@ export default {
       console.log(e, data);
       if (e?.button_type === 'detail') {
         if (e.service_name && data?.id) {
-          let address = `/vpages/#/detail/${e.service_name}/${data.id}`
+          let address = `${getFullBaseUrl()}/detail/${e.service_name}/${data.id}`
           if (e.application) {
             address += `?srvApp=${e.application}`
           }
@@ -1003,13 +1067,14 @@ export default {
     .list-view {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       scrollbar-width: none;
       scrollbar-width: thin;
       scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 
       &::-webkit-scrollbar {
         width: 3px;
-        height: 3px;
+        height: 0;
       }
 
       &::-webkit-scrollbar-thumb {

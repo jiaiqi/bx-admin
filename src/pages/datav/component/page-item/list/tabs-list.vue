@@ -9,6 +9,7 @@
         'justify-start': !vertical && leftTab,
         'justify-end': !vertical && rightTab,
         'justify-center': !vertical && !leftTab && !rightTab,
+        'button-mode': buttonMode,
       }"
       :style="[buildTabsTitleStyle]"
     >
@@ -16,7 +17,7 @@
         class="tab-name"
         v-for="item in components"
         :key="item.id"
-        :style="[activeName === item.com_name ? setActiveStyle : {}]"
+        :style="[activeName === item.com_name ? setActiveStyle : setNormalStyle]"
         :class="{
           active: activeName === item.com_name,
           'button-mode': buttonMode,
@@ -74,6 +75,7 @@ export default {
       tabs: [],
       // 添加下划线样式数据
       underlineStyle: {
+        "--primary-color": this.tabsJson?.act_color,
         width: "0px",
         transform: "translateX(0px)",
       },
@@ -131,8 +133,25 @@ export default {
     components() {
       return this.tabsJson.com_json || [];
     },
+    setNormalStyle() {
+      let style = {
+        ...this.tabsJson?.style_json || {},
+      }
+      return formatStyleData(style);
+    },
     setActiveStyle() {
-      return formatStyleData(this.tabsJson?.active_style_json);
+      let style = {}
+      if (this.buttonMode) {
+        style = {
+          background_color: this.tabsJson?.act_color,
+          border_color: this.tabsJson?.act_color,
+        }
+      }
+      style = {
+        ...style,
+        ...this.tabsJson?.active_style_json || {},
+      }
+      return formatStyleData(style);
     },
     buttonMode() {
       return this.tabsJson?.tabs_options?.includes("按钮样式");
@@ -191,16 +210,16 @@ export default {
       const activeTab = this.$refs.tabItems[activeIndex];
       if (!activeTab) return;
 
-      // 获取选中标签的宽度和位置
-      const { width, left } = activeTab.getBoundingClientRect();
-      const parentLeft = this.$el
-        .querySelector(".tab-name-box")
-        .getBoundingClientRect().left;
-
+      
+      // 使用offsetLeft和offsetWidth来获取相对于父元素的位置和宽度
+      const width = activeTab.offsetWidth;
+      const left = activeTab.offsetLeft;
+      
       // 计算下划线位置
       this.underlineStyle = {
+        "--primary-color": this.tabsJson?.act_color,
         width: `${width}px`,
-        transform: `translateX(${left - parentLeft}px)`,
+        transform: `translateX(${left}px)`,
       };
     },
   },
@@ -210,7 +229,6 @@ export default {
 <style lang="scss" scoped>
 .tabs {
   position: relative;
-  padding: 10px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -246,6 +264,10 @@ export default {
   margin-bottom: 5px;
   border-bottom: 1px solid #BBB;
 
+  &.button-mode {
+    border-bottom: none;
+  }
+
   .tab-name {
     cursor: pointer;
     padding: 0 4px 8px; // 添加底部内边距，为下划线留出空间
@@ -261,8 +283,8 @@ export default {
     }
 
     &.button-mode {
-      color: var(--primary-color, #409eff);
-      border: 1px solid var(--primary-color, #409eff);
+      color: #333;
+      border: 1px solid #eee;
       border-radius: 0;
       padding: 4px 16px;
       margin-right: 10px;
@@ -280,20 +302,20 @@ export default {
     bottom: 0;
     left: 0;
     height: 3px;
-    background-color: var(--primary-color, #409eff); // 默认颜色
+    // background-color: var(--primary-color, #409eff); // 默认颜色
     transition: transform 0.3s ease, width 0.3s ease; // 添加过渡动画
     border-radius: 1px;
 
     &::after {
       content: "";
       position: absolute;
-      bottom: 4px;
+      bottom: 3px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
       border: 5px solid transparent;
-      border-bottom-color: #333;
+      border-bottom-color: var(--primary-color, #409eff);
       z-index: -1;
     }
   }

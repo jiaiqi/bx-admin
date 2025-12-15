@@ -12,6 +12,7 @@ export default {
       newGridData: [],
       allFields: {},
       oldGridData: [],
+      leftTreeCondition: [],
     };
   },
   mounted() {
@@ -593,6 +594,22 @@ export default {
       // console.log('行内编辑配置',e);
       if (e && typeof e === "string") {
         this.cfgJson = JSON.parse(e);
+        if (this.cfgJson?.list_json?.list_json && typeof this.cfgJson?.list_json?.list_json === "string") {
+          try {
+            this.cfgJson._list_json = JSON.parse(this.cfgJson.list_json.list_json);
+            // 树分类筛选 展示树筛选
+            if (this.cfgJson?._list_json?.list_options?.includes("树分类筛选")) {
+              this.cfgJson.showTreeFilter = true;
+              const fkCol = this.cfgJson?._list_json?.tree_filter_list_fk_col;
+              if (fkCol) {
+                this.cfgJson.fkCol = fkCol;
+                this.cfgJson.fkColInfo = this.gridHeader.find((item) => item.column === fkCol)?.srvcol;
+              }
+            }
+          } catch (error) {
+            console.error("list_json.list_json 解析失败", error);
+          }
+        }
         if (
           this.cfgJson?.list_type === "卡片列表" &&
           this.cfgJson?.card_json?.parts_json &&

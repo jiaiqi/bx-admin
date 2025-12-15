@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+let path = process.env.NODE_ENV === "development" ? window.APP_CONFIG.API_URL : window.backendIpAddr
 export default {
   methods: {
     /**
@@ -358,7 +359,6 @@ export default {
         var me = this;
         var operate_params_cfg = butinfo.operate_params;
         var bxRequests = [];
-        debugger
         if (
           (butinfo.select_data == null ||
             butinfo.select_data == undefined ||
@@ -651,6 +651,73 @@ export default {
         mainDetailData
       );
 
+      /*
+      * 处理自定义按钮需要请求接口并将结果拼接到url路径中的场景
+      */
+
+      if (back_url?.includes('isBmapVisualization=1')) {
+        const back_url_param = back_url.substring(back_url.indexOf('?') + 1)
+        const decodebackurl = decodeURIComponent(back_url_param)
+        const queryParams = JSON.parse(decodebackurl.split("&")[0].split("=")[1])
+        console.log(queryParams, 99999999)
+        queryParams.colNames = ["*"]
+        queryParams.queryMethod = "select"
+        queryParams.divCond = []
+        queryParams.query_source = "list_page"
+        queryParams.page = {
+          "pageNo": 1,
+          "rownumber": 10
+        }
+        queryParams.relation_condition = {
+          "relation": "AND",
+          "data": []
+        }
+        queryParams.condition.forEach(item => {
+          if (item.colName === "transtime") {
+            queryParams.relation_condition.data.push({
+              "colName": item.colName,
+              "ruleType": item.ruleType,
+              "value": item.value,
+              "use_div_calc": "是",
+              "use_query": "是"
+            })
+            queryParams.divCond.push(item)
+          }
+          if (item.colName === "vehicleplate_no") {
+            queryParams.relation_condition.data.push({
+              "colName": item.colName,
+              "ruleType": "like",
+              "value": item.value,
+            })
+          }
+          if (item.colName === "vehicleplate") {
+            queryParams.relation_condition.data.push(item)
+          }
+          if (item.colName === "gantryid") {
+            queryParams.relation_condition.data.push(item)
+          }
+          if (item.colName === "vehicleplate_color") {
+            queryParams.relation_condition.data.push(item)
+          }
+        })
+
+        const url = path + `/aud/select/${queryParams.serviceName || queryParams.service_name}`
+        const res = await this.$http.post(url, queryParams)
+        if (res) {
+          console.log(res, 88888888)
+          const passid = res?.data?.data?.[0]?.passid
+          // 在路径'/'后面插入passid，而不是在'?'后面
+          if (passid) {
+            // 查找最后一个'/'的位置
+            const lastSlashIndex = back_url.lastIndexOf('/');
+            if (lastSlashIndex > -1) {
+              // 在最后一个'/'后插入passid
+              back_url = back_url.substring(0, lastSlashIndex + 1) + passid + back_url.substring(lastSlashIndex + 1);
+            }
+          }
+        }
+      }
+
       if (back_url && item["operate_params"] && typeof item["operate_params"] === 'string') {
         var packageData = this.getPackageData(item, operateData);
         const defaultData = packageData?.data
@@ -761,7 +828,9 @@ export default {
         // if(_tab_title==null||_tab_title==""||_tab_title==undefined){
         //   _tab_title=item.button_name;
         // }
-        this.forwardAddTab(address, _tab_title, item);
+        if (address) { // 25-12-13修改 没有地址时不跳转
+          this.forwardAddTab(address, _tab_title, item);
+        }
       }
     },
     //
@@ -833,6 +902,41 @@ export default {
      * @param {*} operateData
      */
     customize_popup(item, operateData, callback) {
+      console.log("customize_update11111111", item, operateData, callback);
+      // 处理form表单不支持列表卡片渲染页面的情况，暂定根据配置地址访问方式适配跳转
+      if (item.operate_type == "申请弹出") {
+        const queryData = {
+          colName: "order_no",
+          ruleType: "eq",
+          value: operateData[0].order_no
+        }
+        let bigquerydata = {
+          colNames: ["*"],
+          condition: [],
+          draft: false,
+          page: { pageNo: 1, rownumber: 10 },
+          query_source: "list_page",
+          serviceName: item.service_name,
+          srvApp: item.application
+        }
+        bigquerydata.condition.push(queryData);
+        var urlAddress = this.getServiceUrl("select", item.service_name, item.application);
+        this.$http.post(urlAddress, bigquerydata).then((response) => {
+          console.log("customize_popup2222222", response);
+          if (response?.data?.data?.length) {
+            let data = response?.data?.data;
+            const param = {
+              service: item.service_name,
+              btninfo: item,
+              formType: 'listupdate',
+              mainService: 'srvedu_rank_score_update',
+              defaultValues: data // 将获取到的数据作为defaultValues传递给弹出的表单组件
+            }
+            this.popupDialog(param, callback)
+          }
+        })
+        return false
+      }
       if (item.more_config && typeof item.more_config === "string") {
         try {
           item["moreConfig"] = JSON.parse(item.more_config);
@@ -1139,7 +1243,6 @@ export default {
       var me = this;
       var bxRequests = [];
       var operate_params_cfg = item.operate_params;
-
       if (
         operateData.length <= 0 &&
         operate_params_cfg != undefined &&
@@ -1282,34 +1385,34 @@ export default {
             })
             .then(() => {
               console.log(bxRequests);
-              // this.operate(bxRequests).then((response) => {
-              //   var state = response.body.state;
+              this.operate(bxRequests).then((response) => {
+                var state = response.body.state;
 
-              //   if ("SUCCESS" == state) {
-              //     var resultMessage = "操作成功!";
+                if ("SUCCESS" == state) {
+                  var resultMessage = "操作成功!";
 
-              //     if (
-              //       resultMessage != "" &&
-              //       resultMessage != null &&
-              //       resultMessage != undefined
-              //     ) {
-              //       resultMessage = response.body.resultMessage;
-              //     }
+                  if (
+                    resultMessage != "" &&
+                    resultMessage != null &&
+                    resultMessage != undefined
+                  ) {
+                    resultMessage = response.body.resultMessage;
+                  }
 
-              //     this.$message({
-              //       type: "success",
-              //       message: resultMessage,
-              //     });
+                  this.$message({
+                    type: "success",
+                    message: resultMessage,
+                  });
 
-              //     this.suffix_actions(item);
-              //     //me.loadTableData();
-              //   } else {
-              //     this.$message({
-              //       type: "error",
-              //       message: response.body.resultMessage,
-              //     });
-              //   }
-              // });
+                  this.suffix_actions(item);
+                  //me.loadTableData();
+                } else {
+                  this.$message({
+                    type: "error",
+                    message: response.body.resultMessage,
+                  });
+                }
+              });
             })
             .catch(() => {
               this.$message({

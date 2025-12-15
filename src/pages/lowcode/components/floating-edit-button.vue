@@ -9,6 +9,8 @@
         v-if="showEditButton"
         class="floating-edit-button"
         @click.stop="handleEditClick"
+        @mouseenter="clearHideCountdown"
+        @mouseleave="startHideCountdown"
       >
         <i class="el-icon-edit"></i>
         <span>编辑</span>
@@ -23,39 +25,36 @@ export default {
   data() {
     return {
       showEditButton: false,
+      hideTimer: null,
     };
   },
   mounted() {
-    // 监听全局点击事件
+    // 监听全局点击事件（仅用来判断点击是否发生在右上角区域，并读取修饰键）
     document.addEventListener('click', this.handleGlobalClick);
-    // 监听键盘事件
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
   },
   beforeDestroy() {
     // 清理事件监听
     document.removeEventListener('click', this.handleGlobalClick);
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
-  },
-  data() {
-    return {
-      showEditButton: false,
-      isCtrlPressed: false,
-    };
+    this.clearHideCountdown();
   },
   methods: {
-    handleKeyDown(event) {
-      if (event.key === 'Control' || event.key === 'Meta') {
-        this.isCtrlPressed = true;
-      }
+    startHideCountdown() {
+      this.clearHideCountdown();
+      this.hideTimer = setTimeout(() => {
+        this.showEditButton = false;
+        this.hideTimer = null;
+      }, 3000);
     },
-    handleKeyUp(event) {
-      if (event.key === 'Control' || event.key === 'Meta') {
-        this.isCtrlPressed = false;
+    clearHideCountdown() {
+      if (this.hideTimer) {
+        clearTimeout(this.hideTimer);
+        this.hideTimer = null;
       }
     },
     handleGlobalClick(event) {
+      // 使用事件本身的修饰键属性，不维护“按住状态”
+      const isCtrl = event.ctrlKey || event.metaKey;
+
       // 检查是否在右上角区域点击
       const rect = this.$el.getBoundingClientRect();
       const clickX = event.clientX;
@@ -75,23 +74,22 @@ export default {
         clickY >= topRightArea.top && 
         clickY <= topRightArea.bottom;
       
-      if (this.isCtrlPressed && isInTopRightArea) {
+      if (isCtrl && isInTopRightArea) {
         this.showEditButton = true;
-        // 3秒后自动隐藏
-        setTimeout(() => {
-          this.showEditButton = false;
-        }, 3000);
+        this.startHideCountdown();
       }
     },
     handleContainerClick() {
       // 点击容器其他区域时隐藏按钮
       if (this.showEditButton) {
+        this.clearHideCountdown();
         this.showEditButton = false;
       }
     },
     handleEditClick() {
       window.open(location.href.replace('site','lowcode/editor'), '_blank')
       // 点击后隐藏按钮
+      this.clearHideCountdown();
       this.showEditButton = false;
     }
   }
@@ -103,8 +101,8 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  width: 50px;
-  height: 100px;
+  width: 0;
+  height: 0;
   z-index: 9999;
   pointer-events: auto;
   cursor: pointer;
@@ -118,7 +116,8 @@ export default {
   color: white;
   border: none;
   border-radius: 25px;
-  padding: 12px 20px;
+  padding: 12px;
+  width: 80px;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   cursor: pointer;
   display: flex;

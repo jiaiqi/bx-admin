@@ -67,6 +67,8 @@
 </template>
 
 <script>
+import { getFullBaseUrl } from '@/common/common';
+
 // import RawFieldEditor from "./raw-field-editor.vue";
 
 // import fieldOptionsAdd from "./add.vue";
@@ -163,13 +165,13 @@ export default {
             const formModel = this.formModel || this.field?.form?.formModel
             if (condition?.length) {
               const value = this.renderStr(condition[0].value, formModel)
-              url = `/vpages/#/detail/${this.btnSrvReq.serviceName}/${condition[0].colName}/${value}`
+              url = `${getFullBaseUrl()}/detail/${this.btnSrvReq.serviceName}/${condition[0].colName}/${value}`
             } else {
               this.$message.error('详情按钮的接口请求必须配置查询条件!')
             }
             break;
           case '列表':
-            url = `/vpages/#/list/${this.btnSrvReq.serviceName}?operate_params=${encodeURIComponent(this.renderStr(JSON.stringify(this.btnSrvReq), this.formModel))}`
+            url = `${getFullBaseUrl()}/list/${this.btnSrvReq.serviceName}?operate_params=${encodeURIComponent(this.renderStr(JSON.stringify(this.btnSrvReq), this.formModel))}`
             break;
           case '新增':
             this.activeForm = 'add';

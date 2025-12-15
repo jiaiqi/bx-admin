@@ -21,67 +21,69 @@
           prop="order_evidence"
           style="margin:0.9375rem 0"
         >
-          <div
-            class="img_list"
-            v-if="fileLists && fileLists.length > 0"
-          >
-            <!-- 使用element-ui自带样式 -->
-            <ul class="el-upload-list el-upload-list--picture-card">
-              <transition-group style="display: flex; flex-wrap: wrap">
-                <li
-                  v-for="(item, index) in fileLists"
-                  :key="item.fileurl"
-                  class="el-upload-list__item is-success animated"
-                  style="position: relative"
-                >
-                  <el-image
-                    class="el-upload-list__item-thumbnail pre_pic"
-                    :src="item.url"
-                    :preview-src-list="preList"
+          <div class="upload-wrap">
+            <div
+              class="img_list"
+              v-if="fileLists && fileLists.length > 0"
+            >
+              <!-- 使用element-ui自带样式 -->
+              <ul class="el-upload-list el-upload-list--picture-card">
+                <transition-group style="display: flex; flex-wrap: wrap">
+                  <li
+                    v-for="(item, index) in fileLists"
+                    :key="item.fileurl"
+                    class="el-upload-list__item is-success animated"
+                    style="position: relative"
                   >
-                  </el-image>
-                  <div class="img_bts">
-                    <span
-                      class="el-upload-list__item-preview"
-                      title="下载"
-                      @click="dowmlaodUrl(item.url)"
+                    <el-image
+                      class="el-upload-list__item-thumbnail pre_pic"
+                      :src="item.url"
+                      :preview-src-list="preList"
                     >
-                      <i class="el-icon-download"></i>
-                    </span>
-                    <span
-                      class="el-upload-list__item-preview"
-                      title="删除"
-                      @click="handleRemoveFileDetail(item, fileLists, index)"
-                    >
-                      <i class="el-icon-delete"></i>
-                    </span>
-                  </div>
-                </li>
-              </transition-group>
-            </ul>
+                    </el-image>
+                    <div class="img_bts">
+                      <span
+                        class="el-upload-list__item-preview"
+                        title="下载"
+                        @click="dowmlaodUrl(item.url)"
+                      >
+                        <i class="el-icon-download"></i>
+                      </span>
+                      <span
+                        class="el-upload-list__item-preview"
+                        title="删除"
+                        @click="handleRemoveFileDetail(item, fileLists, index)"
+                      >
+                        <i class="el-icon-delete"></i>
+                      </span>
+                    </div>
+                  </li>
+                </transition-group>
+              </ul>
+            </div>
+            <el-upload
+              ref="upload"
+              class="upload-demo"
+              :action="url"
+              :with-credentials="true"
+              :headers="getHeaders()"
+              :on-preview="handlePreview"
+              :before-upload="beforeAvatarUpload"
+              :on-success="handleSuccess"
+              :on-remove="handleRemove"
+              :before-remove="beforeRemove"
+              :file-list="fileLists"
+              :data="uploadParams"
+              clearable
+              :show-file-list="false"
+              list-type="picture-card"
+            >
+              <el-button
+                size="small"
+                type="primary"
+              >点击上传</el-button>
+            </el-upload>
           </div>
-          <el-upload
-            ref="upload"
-            class="upload-demo"
-            :action="url"
-            :with-credentials="true"
-            :headers="getHeaders()"
-            :on-preview="handlePreview"
-            :before-upload="beforeAvatarUpload"
-            :on-success="handleSuccess"
-            :on-remove="handleRemove"
-            :before-remove="beforeRemove"
-            :file-list="fileLists"
-            :data="uploadParams"
-            clearable
-            :show-file-list="false"
-            list-type="picture-card"
-          >
-            <el-button
-              size="small"
-              type="primary"
-            >点击上传</el-button>
-          </el-upload>
           <div
             class="el-upload__tip w-full"
             style="margin-top: 0"
@@ -122,7 +124,7 @@ export default {
   data() {
     return {
       preList: [],
-      setFileDesc: '请上传jpg/png格式的图片,大小不超过2MB',
+      setFileDesc: '请上传常见格式的图片(jpg/jpeg/png/gif/bmp/webp等),大小不超过2MB',
       rules: {
         // icon_title: [
         //   { required: true, message: '证据说明不能为空', trigger: 'blur' },
@@ -147,7 +149,7 @@ export default {
         thumbnailType: "fwsu_100",
         columns: "order_evidence",
       },
-      fileType: "jpg/png/svg/PNG/JPG/JPEG/jpeg/gif/GIF/bmp/tif/tiff/webp",
+      fileType: "jpg/jpeg/png/gif/bmp/webp/svg/tif/tiff/PNG/JPG/JPEG/GIF/BMP/WEBP/SVG/TIF/TIFF",
       fileSize: 2,
       limit: 8,
       fileLists: [],
@@ -457,5 +459,10 @@ export default {
   >span {
     margin: 0 0.5rem;
   }
+}
+
+.upload-wrap {
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>

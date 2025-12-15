@@ -7,15 +7,15 @@
         label-position="right"
         label-width="9rem"
         v-if="formLoaded"
+        @keyup.enter.native="onSearchClicked"
       >
         <p v-if="supportGroup">过滤字段</p>
         <field-editor
           v-for="field in sortedFields"
           :field="field"
           :ignore-vif="true"
-          v-show="
-            field.info.name !== 'fflags' && field.info.srvCol.in_cond !== 2
-          "
+          v-show="field.info.name !== 'fflags' && field.info.srvCol.in_cond !== 2
+            "
           :content-fields="[field]"
           :key="field.info.name"
         >
@@ -60,7 +60,10 @@
     </el-row>
 
     <el-row>
-      <el-col :span="24" style="text-align: center">
+      <el-col
+        :span="24"
+        style="text-align: center"
+      >
         <el-button
           type="primary"
           round
@@ -78,7 +81,7 @@
           icon="el-icon-refresh-right"
           @click="resetForm()"
           round
-          >重置
+        >重置
         </el-button>
       </el-col>
     </el-row>
@@ -383,11 +386,7 @@ export default {
         fieldInfo.editable = true;
         if (fieldInfo.isNumeric()) {
           field.ruleType = "between";
-        } else if (fieldInfo.type == "Date") {
-          field.ruleType = "between";
-        } else if (fieldInfo.type == "Time") {
-          field.ruleType = "between";
-        } else if (fieldInfo.type == "DateTime") {
+        } else if (['MonthRange', 'Date', 'Time', 'DateTime', 'DateTimeRange', 'DateRange'].includes(fieldInfo.type)) {
           field.ruleType = "between";
         } else if (fieldInfo.type == "Enum" || fieldInfo.type == "Dict") {
           field.ruleType = "in";
@@ -399,7 +398,7 @@ export default {
           fieldInfo.type == "CarNo"
         ) {
           field.ruleType = "like";
-          if(fieldInfo.editor==='tree-finder'){
+          if (fieldInfo.editor === 'tree-finder') {
             field.ruleType = "eq";
           }
         } else if (fieldInfo.type == "Set") {

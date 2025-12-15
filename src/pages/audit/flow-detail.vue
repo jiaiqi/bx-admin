@@ -7,13 +7,19 @@ import {Loading, Message} from 'element-ui';
 import inOutInfo from './components/in-out-info.vue'
 import doorFrame from './components/door-frame.vue'
 import showPath from './components/show-path.vue'
+import moment from 'dayjs'
 
 const route = useRoute()
 let {passid, entime: entime, extime: extime} = route?.params || {}
-
+console.log(passid, 88888888)
 if (route?.query?.entime && route?.query?.extime) {
   entime = route?.query?.entime
   extime = route?.query?.extime
+}else{
+  const pass_time = passid.slice(22, 30)
+  const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+  entime = moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+  extime = moment(formattedDate).add(1, 'days').format('YYYY-MM-DD HH:mm:ss');
 }
 
 const activeTab = ref('0')
@@ -21,8 +27,49 @@ const inData = ref({})
 const outData = ref({})
 const doorFrameData = ref([])
 const pathData = ref([])
+const passIdData = ref({})
 
-
+const getPassIdData = async () => {
+  const service = `srvaud_passconv_select`
+  const url = `${window.backendIpAddr}/aud/select/${service}`
+  const cond = [
+    {"colName": "passid", "ruleType": "eq", "value": passid},
+    // {"colName": "lanesignbx", "ruleType": "eq", "value": '出口'},
+    {"colName": "entime", "ruleType": "between", "value": [entime, extime]},
+  ]
+  const req = {
+    "serviceName": service,
+    "colNames": ["*"],
+    "condition": cond,
+    "divCond": cond,
+    "page": {"pageNo": 1, "rownumber": 10},
+    "order": [],
+  }
+  const loading = Loading.service({
+    lock: true,
+    text: 'Loading',
+    spinner: 'el-icon-loading',
+    background: 'rgba(0, 0, 0, 0.7)'
+  });
+  setTimeout(() => {
+    loading.close();
+  }, 6000);
+  const res = await $http.post(url, req)
+  loading?.close();
+  if (res?.data?.data?.length) {
+    passIdData.value = res.data.data[0]
+    console.log(passIdData.value, 4444444)
+    entime = passIdData.value.entime
+    extime = passIdData.value.extime
+    getDoorFrameData()
+    getPathData()
+  } else if (res?.data?.state === 'SUCCESS') {
+    Message.error('未查到出口数据')
+  } else if (res?.data?.resultMessage) {
+    Message.error(res?.data?.resultMessage)
+  }
+  console.log(res.data)
+}
 const getInData = async () => {
   if (inData.value?.passid) return
   const service = `srvaud_laneentry_select`
@@ -128,7 +175,55 @@ const getDoorFrameData = async () => {
     "serviceName": service,
     "colNames": ["*"],
     "condition": cond,
-    "divCond": cond
+  }
+  const loading = Loading.service({
+    lock: true,
+    text: 'Loading',
+    spinner: 'el-icon-loading',
+    background: 'rgba(0, 0, 0, 0.7)'
+  });
+  setTimeout(() => {
+    loading.close();
+  }, 6000);
+  const res = await $http.post(url, req)
+  loading?.close();
+  if (res?.data?.data?.length) {
+    doorFrameData.value = res.data.data
+  } else{
+    getDoorFrameNewData()
+  }
+  console.log(res.data)
+}
+
+const getDoorFrameNewData = async () => {
+  const service = `srvaud_susvehpasspath_new_select`
+  const url = `${window.backendIpAddr}/aud/select/${service}`
+  const cond = [
+    {
+      "colName": "passid",
+      "ruleType": "eq",
+      "value": passid
+    }, {
+      "colName": "path_type",
+      "ruleType": "eq",
+      "value": '行驶路径'
+    },
+    {
+      'colName': 'grantry_type',
+      "ruleType": "in",
+      "value": '路段门架,收费站'
+    },
+    // {
+    //   "colName": "datatype",
+    //   "ruleType": "eq",
+    //   "value": '3'
+    // },
+    {"colName": "transtime", "ruleType": "between", "value": [entime, extime]}]
+  const req = {
+    "serviceName": service,
+    "colNames": ["*"],
+    "condition": cond,
+    "divCond": cond,
   }
   const loading = Loading.service({
     lock: true,
@@ -151,6 +246,7 @@ const getDoorFrameData = async () => {
   console.log(res.data)
 }
 
+
 const getPathData = async () => {
   // 获取途径点
   let operateParams = route?.query?.operate_params;
@@ -161,7 +257,7 @@ const getPathData = async () => {
       
     }
   }
-  const service = operateParams?.serviceName || `srvaud_susvehpasspath_select`
+  const service = operateParams?.serviceName || `srvaud_passconvpath_select`
   const url = `${window.backendIpAddr}/aud/select/${service}`
   let divCond = [
     // {
@@ -176,6 +272,13 @@ const getPathData = async () => {
   let cond = [...divCond]
   if(operateParams?.condition?.length){
     cond = [...operateParams.condition]
+  }else{
+    cond = [{"colName":"passid","value":passid,"ruleType":"eq"},
+    {"colName":"path_type","value":"行驶路径","ruleType":"eq"},
+    {"colName":"enid","value":passIdData.value.enpointid,"ruleType":"eq"},
+    {"colName":"exid","value":passIdData.value.expointid,"ruleType":"eq"},
+    {"colName":"vtype","value":passIdData.value.vehicletype,"ruleType":"eq"},
+    {"colName":"vehicleid","value":passIdData.value.vehicleid,"ruleType":"eq"}]
   }
   const req = {
     "serviceName": service,
@@ -209,8 +312,7 @@ const getPathData = async () => {
 onMounted(() => {
   // getInData()
   // getOutData()
-  getDoorFrameData()
-  getPathData()
+  getPassIdData()
 })
 
 const handleClick = (tab, event) => {

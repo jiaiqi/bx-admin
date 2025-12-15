@@ -22,6 +22,7 @@ import { formatStyleData } from "@/pages/datav/common/index.js";
 // import NavSubMenu from "./nav-menu-child.vue";
 // import NavMenu from "./nav-menu.vue";
 import clickoutside from "@/pages/datav/common/clickoutside.js";
+import { getFullBaseUrl } from "@/common/common";
 export default {
   name: "NavMenuChild",
   components: {
@@ -181,7 +182,7 @@ export default {
       if (jump_json?.tmpl_page_json.file_path) {
         path = jump_json?.tmpl_page_json.file_path.replace(":pageNo", pageNo);
       } else {
-        path = `/vpages/index.html#/lowcode-grid/view/${pageNo}?srvApp=config`;
+        path = `${getFullBaseUrl()}/${pageNo}?srvApp=config`;
       }
       if (pageNo) {
         if (jump_json.target_type == "原页面") {

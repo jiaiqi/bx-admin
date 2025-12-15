@@ -1,20 +1,28 @@
 <template>
-  <div class="door-frame"
-       v-loading="isLoading"
-       element-loading-text="查询中....."
-       element-loading-spinner="el-icon-loading"
-       element-loading-background="rgba(0, 0, 0, 0.8)"
+  <div
+    class="door-frame"
+    v-loading="isLoading"
+    element-loading-text="查询中....."
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.6)"
   >
-    <div  v-if="list.length==0" class="err_info">
-      <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{passId}}</el-empty>
-    </div>
-    <el-timeline :reverse="reverse" v-if="list.length>0">
+    <!-- <div
+      v-if="loaded && list.length == 0"
+      class="err_info"
+    >
+      <el-empty description="暂无该passid对应的通行信息，请核对">无效passid为：{{ passId }}</el-empty>
+    </div> -->
+    <el-timeline
+      :reverse="reverse"
+      v-if="list.length > 0"
+    >
       <el-timeline-item
-          :hideTimestamp="false"
-          v-for="(item, index) in list"
-          :key="index"
-          :color="index===0?'#0bbd87':index===list.length-1?'#e80621':'#3194f6'"
-          :timestamp="item.transtime">
+        :hideTimestamp="false"
+        v-for="(item, index) in list"
+        :key="index"
+        :color="index === 0 ? '#0bbd87' : index === list.length - 1 ? '#e80621' : '#3194f6'"
+        :timestamp="item.transtime"
+      >
         <div class="info-item">
           <div class="item-list">
             门架编号：{{ item.tradenodeid }}
@@ -26,65 +34,87 @@
             过车时间：{{ item.transtime }}
           </div>
           <div class="item-list">
-            计费金额：{{ item.fee_disp?item.fee_disp:item.fee }}
+            计费金额：{{ item.fee_disp ? item.fee_disp : item.fee }}
           </div>
-          <div v-if="item.grantry_type==='收费站'">
-            <el-image style="width:43.75rem;height: 18.75rem"
-                      :src="getPic(item,'car',index===0?'en':index===list.length-1?'ex':'')"></el-image>
-          </div>
-          <div v-else>
-            <el-image style="width:43.75rem;height: 18.75rem"
-                      :src="getPic(item,'car','')"></el-image>
-          </div>
+          <ImageToggle>
+            <div v-if="item.grantry_type === '收费站'">
+              <el-image
+                style="width:43.75rem;height: 18.75rem"
+                :src="getPic(item, 'car', index === 0 ? 'en' : index === list.length - 1 ? 'ex' : '')"
+                lazy
+              ></el-image>
+            </div>
+            <div v-else>
+              <el-image
+                style="width:43.75rem;height: 18.75rem"
+                :src="getPic(item, 'car', '')"
+                lazy
+              ></el-image>
+            </div>
+          </ImageToggle>
         </div>
       </el-timeline-item>
     </el-timeline>
     <el-dialog
-        title="图片"
-        fullscreen
-        append-to-body
-        destroy-on-close
-        :visible.sync="centerDialogVisible"
-        center>
+      title="图片"
+      fullscreen
+      append-to-body
+      destroy-on-close
+      :visible.sync="centerDialogVisible"
+      center
+    >
       <div class="image-box">
-        <el-image :src="imgSrc" style="width: 100%;height: 100%" fit="scale-down"></el-image>
+        <el-image
+          :src="imgSrc"
+          style="width: 100%;height: 100%"
+          fit="scale-down"
+        ></el-image>
       </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="hideDialog">关闭</el-button>
+      <span
+        slot="footer"
+        class="dialog-footer"
+      >
+        <el-button
+          type="primary"
+          @click="hideDialog"
+        >关闭</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 <script setup>
 // 门架信息
-import {onMounted, ref} from "vue";
-import {useRoute} from "@/common/vueApi";
-import {getEntranceData} from "@/pages/audit/workdistribution/entrance/entrance";
+import { onMounted, ref } from "vue";
+import { useRoute } from "@/common/vueApi";
+import { getEntranceData } from "@/pages/audit/workdistribution/entrance/entrance";
 import OrderApi from "@/pages/audit/api/order";
+import moment from 'dayjs'
 import { Loading } from 'element-ui';
-const orderUtil= new OrderApi()
+import ImageToggle from '@/pages/audit/components/ImageToggle.vue'
+import { buildGantryImageUrl } from '@/pages/audit/composables/useGantryImages.js'
+const orderUtil = new OrderApi()
 const reverse = ref(false)
 const route = useRoute()
 const list = ref([])
 const centerDialogVisible = ref(false);
 const imgSrc = ref(null)
-const isLoading=ref(false)
+const isLoading = ref(false)
+const loaded = ref(false)
+
 const showPicture = (item) => {
   imgSrc.value = getPic(item)
   centerDialogVisible.value = true
 }
+
 let passId = route.query?.pass_id
-let strTime = route.query?.startTime
-let endTime = route.query?.endTime
+
+const pass_time = passId.slice(22, 30)
+const formattedDate = pass_time.slice(0, 4) + '-' + pass_time.slice(4, 6) + '-' + pass_time.slice(6, 8);
+
+let strTime = route.query?.startTime || moment(formattedDate).subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss');
+let endTime = route.query?.endTime || moment(formattedDate).add(2, 'days').format('YYYY-MM-DD HH:mm:ss');
 const getPic = (item, imgtype, enType) => {
-  let url = `${window.APP_CONFIG.API_URL}/aud/get/gantry/img?passid=${item.passid}&gantryid=${item.grantry_id}&transtime=${item.transtime}&type=${item.grantry_type}&vehicleid=${item.vehicleid}`
-  if (enType) {
-    url += `&enextype=${enType}`
-  }
-  if (imgtype) {
-    url += `&imgtype=${imgtype}`
-  }
-  return url
+  return buildGantryImageUrl(window.APP_CONFIG.API_URL_2, item, { imgType: imgtype, enexType: enType })
 }
 /**
  * @Description:根据携带进入的passid进行车辆通行流水查询
@@ -93,8 +123,8 @@ const getPic = (item, imgtype, enType) => {
  */
 const getTrafficFlow = (id) => {
   let cadn = {
-    condition:[{colName: "passid", ruleType: "like", value: passId}],
-    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
   orderUtil.getCarWaysInfo(cadn).then(res => {
     if (res.data.state !== 'SUCCESS') return;
@@ -108,17 +138,37 @@ const getTrafficFlow = (id) => {
  * @Author:Eirice
  * @Date: 2025-06-06 17:45:45
  */
-const getPointByOriginCenter=()=>{
-  isLoading.value=true
-  let obj={
-    condition:[{colName: "passid", ruleType: "like", value: passId}],
-    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+const getPointByOriginCenter = () => {
+  isLoading.value = true
+  let obj = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
-  orderUtil.getOriginCenterDetails(obj).then(res=>{
-    if(res.data.state !== 'SUCCESS') return;
-    isLoading.value=false
-    handleFilterListInfo(res.data.data)
-  }).catch(err => {})
+  orderUtil.getOriginCenterDetails(obj).then(res => {
+    loaded.value = true
+    if (res.data.state !== 'SUCCESS') return;
+    isLoading.value = false
+    loaded.value = true
+    if (res.data.data && res.data.data.length > 0) {
+      handleFilterListInfo(res.data.data)
+    } else {
+      getPointByOriginCenterNew()
+    }
+
+  }).catch(err => { })
+}
+
+const getPointByOriginCenterNew = () => {
+  let cadn = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
+  }
+  orderUtil.getOriginCenterDetailsNew(cadn).then(res => {
+    if (res.data.state !== 'SUCCESS') return;
+    if (res.data.data && res.data.data.length > 0) {
+      handleFilterListInfo(res.data.data)
+    }
+  }).catch(err => { })
 }
 
 /**
@@ -126,21 +176,22 @@ const getPointByOriginCenter=()=>{
  * @Author:Eirice
  * @Date: 2025-06-06 17:48:49
  */
-const getPointByLocation=()=>{
-   isLoading.value=true
-  let obj={
-    condition:[{colName: "passid", ruleType: "like", value: passId}],
-    divCond:[{colName: "createtime",  ruleType: "between", value: [strTime,endTime]}]
+const getPointByLocation = () => {
+  isLoading.value = true
+  let obj = {
+    condition: [{ colName: "passid", ruleType: "like", value: passId }],
+    divCond: [{ colName: "createtime", ruleType: "between", value: [strTime, endTime] }]
   }
-  orderUtil.getLocationCenterDetails(obj).then(res=>{
-    if(res.data.state !== 'SUCCESS') return;
-    if(res.data.data&&res.data.data.length>0){
-      isLoading.value=false
+  orderUtil.getLocationCenterDetails(obj).then(res => {
+    loaded.value = true
+    if (res.data.state !== 'SUCCESS') return;
+    if (res.data.data && res.data.data.length > 0) {
+      isLoading.value = false
       handleFilterListInfo(res.data.data)
-    }else {
+    } else {
       getPointByOriginCenter()
     }
-  }).catch(err => {})
+  }).catch(err => { })
 }
 
 /**
@@ -170,37 +221,37 @@ const handleFilterListInfo = (data) => {
   });
   // 转换为数组并排序
   const sortedPoints = Array.from(uniquePoints.values())
-      .sort((a, b) => {
-        // 优先使用seq字段排序
-        const seqA = a.seq || a.seq_id || 0;
-        const seqB = b.seq || b.seq_id || 0;
-        return seqA - seqB;
-      });
-  list.value=sortedPoints
+    .sort((a, b) => {
+      // 优先使用seq字段排序
+      const seqA = a.seq || a.seq_id || 0;
+      const seqB = b.seq || b.seq_id || 0;
+      return seqA - seqB;
+    });
+  list.value = sortedPoints
 }
 /**
  * @Description:根据查询到的车辆信息获取车辆通行信息
  * @Author:Eirice
  * @Date: 2025-05-30 14:06:57
  */
-const getCarTimeLine=(info)=>{
-    let tep= info[0]
-   if(tep){
-     let cadn = {
-       condition: [
-         {colName: "passid", value: tep.passid, ruleType: "eq"},
-         {colName: "enid", value: tep.enpointid, ruleType: "eq"},
-         {colName: "exid", value: tep.expointid, ruleType: "eq"},
-         {colName: "vtype", value: 1, ruleType: "eq"}
-       ],
-       divCond:[{colName: "transtime", ruleType: "between", value: [tep.entime, tep.extime]}]
-     }
-     orderUtil.getCarPathInfoById(cadn).then(res=>{
-       if(res.data.state !== 'SUCCESS') return;
-       list.value=res.data.data
-
-     }).catch(err => {})
-   }
+const getCarTimeLine = (info) => {
+  let tep = info[0]
+  if (tep) {
+    let cadn = {
+      condition: [
+        { colName: "passid", value: tep.passid, ruleType: "eq" },
+        { colName: "enid", value: tep.enpointid, ruleType: "eq" },
+        { colName: "exid", value: tep.expointid, ruleType: "eq" },
+        { colName: "vtype", value: 1, ruleType: "eq" }
+      ],
+      divCond: [{ colName: "transtime", ruleType: "between", value: [tep.entime, tep.extime] }]
+    }
+    orderUtil.getCarPathInfoById(cadn).then(res => {
+      if (res.data.state !== 'SUCCESS') return;
+      list.value = res.data.data
+      loaded.value = true
+    }).catch(err => { })
+  }
 }
 const hideDialog = () => {
   centerDialogVisible.value = false
@@ -221,6 +272,7 @@ onMounted(() => {
 <style scoped>
 .door-frame {
   padding: 15px;
+  height: 100%;
   max-height: calc(100vh - 5rem);
   overflow-y: auto;
 }

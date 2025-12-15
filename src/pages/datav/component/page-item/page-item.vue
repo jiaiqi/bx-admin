@@ -62,15 +62,15 @@
             ></span>
             <span
               class="icon2"
-              v-if="mixTitleIcon === '圆形'"
+              v-else-if="mixTitleIcon === '圆形'"
             ></span>
             <span
               class="icon3"
-              v-if="mixTitleIcon === '方块'"
+              v-else-if="mixTitleIcon === '方块'"
             ></span>
             <Icon
               icon="ri-arrow-drop-right-fill"
-              v-if="mixTitleIcon === '三角形'"
+              v-else-if="mixTitleIcon === '三角形'"
             ></Icon>
             <Icon
               :icon="mixTitleIcon"
@@ -212,6 +212,7 @@
       :class="{ mobile: screenType === 'mobile' }"
       v-else-if="pageItemData.com_type === '控件'"
       :ref="pageItemData.com_type"
+      :page-config="pageConfig"
       :pageItem="pageItemData"
       :page-params-model="pageParamsModel"
       :query-options="queryOptions"
@@ -256,6 +257,16 @@
       :query-options="queryOptions"
     >
     </info-details>
+    <DhVideo
+      v-else-if="pageItemData.com_type === '大华视频监控'"
+      :pageItem="pageItemData"
+      :page-config="pageConfig"
+      :video_card_channels="pageItemData.video_card_channels"
+      :division="pageItemData.division"
+      :page-params-model="pageParamsModel"
+      :query-options="queryOptions"
+
+    ></DhVideo>
     <!--    <chat-entrance-->
     <!--        v-else-if="pageItemData.com_type === '咨询入口'"-->
     <!--        :pageItem="pageItemData"-->
@@ -313,6 +324,7 @@ import formAdd from "./form/add.vue";
 import NavMenu from "./nav-menu/nav-menu.vue";
 import CardCellPart from "./card-group-cell/card-cell-part-without-card-group.vue";
 import InfoDetails from "@/pages/datav/component/page-item/info-details.vue";
+import DhVideo from "@/pages/dahua-video/video-home.vue";
 // 页面组件级 参数交互处理
 import pageItemParams from "../../common/params/page-item-params-mixin.js";
 import CanvasPage from "@/components/common/canvas-line/canvasPage.vue";
@@ -345,6 +357,7 @@ export default {
     Icon,
     CardCellPart,
     InfoDetails,
+    DhVideo,//大华视频监控
   },
   props: {
     pageItem: {
@@ -468,6 +481,12 @@ export default {
     },
   },
   methods: {
+    handleWindowChannelsChange(channels) {
+       console.log('窗口通道信息变化:', data.windowChannels);
+  // 在这里保存或处理窗口通道映射信息
+  // 例如：保存到 localStorage 或发送到服务器
+
+    },
     onDelete() {
       this.$emit("delete", this.pageItem);
     },
@@ -589,7 +608,10 @@ export default {
   color: #333;
   display: flex;
   flex-direction: column;
-
+  @media screen and (max-width: 768px) {
+    width: 100%;
+    height: unset;
+  }
   &.mobile {
     background-color: #eee;
     border: 1px solid #ccc;

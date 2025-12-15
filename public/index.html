@@ -18,8 +18,7 @@
   <script type="text/javascript" src="http://30.61.1.37:8119/dugis-demo-3d/api/booter.js"></script>
   <% } %>
 
-  <!--大华视频使用-->
-  <script src="./dhvideo/videoPlayer.js"></script>
+  <!--大华视频使用 - 已改为动态引入-->
 
   <% if (process.env.NODE_ENV === 'production') { %>
     <!--生产环境加载上一级目录的server.js获取接口前缀等配置-->
@@ -32,31 +31,6 @@
   
   <!-- <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=FC190506b9b4fa8b366db9f78cb5e93e"></script> -->
   <!-- <script type="text/javascript" src="http://api.map.baidu.com/api?type=webgl&v=2.0&ak=FC190506b9b4fa8b366db9f78cb5e93e"></script> -->
-  
-
-  <% if (process.env.VUE_APP_TARGET === 'wj') { %>
-  <script>
-    console.log('env', '<%= NODE_ENV %>' === 'development');
-    // 武警环境
-    // if ('<%= VUE_APP_TARGET %>' == 'wj') {
-    top.pathConfig = {
-      "gateway_protocol": "http",
-      "gateway_ip": "18.91.21.147",
-      "port": "8104",
-      "gateway": "http://18.91.21.147:8104",
-      "ws_protocol": "ws",
-      "ws_ip": "18.91.21.147",
-      "ws_port": "55555",
-      "ws_gateway": "",
-      "sso_app": "sso",
-      "application": "config",
-      "app_path": "http://18.91.21.147:8104/config"
-    }
-    sessionStorage.setItem('pathConfig', JSON.stringify(top.pathConfig));
-    // }
-  </script>
-  <% } %>
-
   <title></title>
 </head>
 

@@ -288,7 +288,104 @@ export default {
       return this.$refs.basicForm;
     },
 
-    onSubmitted2mem: function (srvvalFormMode, fields) {
+    onSubmitted2mem: function (srvvalFormMode, fields, type) {
+      if (typeof fields === "object") {
+        const fieldList = []
+        for (let i in fields) {
+          fieldList.push(fields[i])
+        }
+        // 检测表单中有没有字段是穿梭框
+        const transferField = fieldList.find((e) => e.isTransfer === true);
+        if (transferField) {
+          const transferFieldRef = transferField?.editor?.$refs?.editor;
+          const addValues = transferFieldRef?.getAddValues?.();
+          const removeValues = transferFieldRef?.getRemoveValues?.();
+          console.log("addValues", addValues, "removeValues", removeValues);
+          let queries = [{
+            data: []
+          }]
+          if (Array.isArray(addValues) && addValues.length) {
+            const publicData = queries[0].data[0];
+            queries[0].data = addValues.map((item) => {
+              const obj = { ...publicData };
+              obj[transferField.info.name] =
+                item[transferField.info.dispLoader.refedCol];
+              if (transferField?.dependentFields?.size) {
+                // 依赖字段冗余计算处理
+                transferField?.dependentFields.forEach((key) => {
+                  const field = fieldList.find((e) => e.info.name === key);
+                  const fieldRedundant = field?.info?.redundant;
+                  if (fieldRedundant?.refedCol) {
+                    // 冗余
+                    obj[key] = item[field.info.redundant.refedCol];
+                  } else if (fieldRedundant?.func) {
+                    // 计算
+                    let row = obj;
+                    let moment = dayjs;
+                    let ret = eval("var zz=" + func + "(row, vm); zz");
+                    let update = false;
+                    if (fieldRedundant.trigger == "isnull" && field.isEmpty()) {
+                      update = true;
+                    } else if (
+                      !fieldRedundant.trigger ||
+                      fieldRedundant.trigger == "always"
+                    ) {
+                      update = true;
+                    }
+                    if (
+                      update &&
+                      field.getSrvVal() !== ret &&
+                      field.info?.subType !== "autocomplete"
+                    ) {
+                      if (
+                        !["Invalid date"].includes(ret) &&
+                        !["function"].includes(typeof ret)
+                      ) {
+                        obj[key] = ret;
+                        console.log("表内计算：", func);
+                        console.log("表内计算结果：", ret);
+                      }
+                    }
+                  }
+                });
+              }
+              return obj;
+            });
+          } else {
+            queries = [];
+          }
+          if (removeValues?.serviceName && removeValues?.data?.length) {
+            this.$emit('deleteFromMem', removeValues?.data)
+            const removeQuery = removeValues.data.map((item) => {
+              return {
+                serviceName: removeValues.serviceName,
+                condition: [
+                  {
+                    colName: "id",
+                    ruleType: "eq",
+                    value: item.id,
+                  },
+                ],
+              };
+            });
+            queries = [...queries, ...removeQuery];
+          }
+          if (Array.isArray(queries) && queries.length) {
+            let addValues = queries.reduce((pre, cur) => {
+              if (Array.isArray(cur.data) && cur.data.length && !cur.condition) {
+                pre = [...pre, ...cur.data]
+              }
+              return pre
+            }, [])
+            if (Array.isArray(addValues) && addValues.length) {
+              addValues.forEach((item) => {
+                this.$emit("submitted2mem", item, fields);
+              });
+            }
+            return queries
+          }
+        }
+      }
       if (Object.keys(srvvalFormMode).length) {
         Object.keys(srvvalFormMode).forEach(key => {
           if (fields[key]?.moreInfo) {
@@ -413,7 +510,6 @@ export default {
             executor = action.$refs.executor;
           }
         }
-        // 此代码已经弃用！ 由 buildRunQuries 代替
         if (executor && childList.isMem()) {
           childList.buildExecutors4Edit().then((subexecutors) => {
             let fk = childList.foreignKey;

@@ -2,12 +2,12 @@
   <div class="web-layout bg-light">
     <!-- <cMap></cMap> -->
     <BMapJs
-        :depts="depts"
-        :modeUrl="urlPath"
-        :no="no"
-        :initCheckPointId="initCheckPointId"
-        @setPointList="setPointList"
-        v-if="bMapLoaded"
+      :depts="depts"
+      :modeUrl="urlPath"
+      :no="no"
+      :initCheckPointId="initCheckPointId"
+      @setPointList="setPointList"
+      v-if="bMapLoaded"
     ></BMapJs>
     <!--    <div class="point-list">-->
     <!--      <div class="title">路径门架列表</div>-->
@@ -49,7 +49,7 @@ import BMapJs from "./components/bmap-web.vue";
 
 export default {
   name: "b-map-index",
-  components: {BMapJs},
+  components: { BMapJs },
   props: {
     msg: String,
   },
@@ -81,7 +81,7 @@ export default {
   },
   data() {
     return {
-      bMapLoaded:false,
+      bMapLoaded: false,
       activePoint: 0,
       depts: [],
       initCheckPointId: "",
@@ -125,19 +125,42 @@ export default {
       ],
     };
   },
-  created() {
-  },
-  mounted() {
+  async mounted() {
+    try {
+      const map = await this.asyncLoadMap()
+      console.log(map,'++++++++++++++++++++++')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      this.bMapLoaded = true
+    } catch (error) {
+      console.error('加载地图失败：', error);
+    }
     if (this.urlPath.indexOf("/bmap/editor/") !== -1) {
     } else if (this.urlPath.indexOf("/bmap/check") !== -1) {
       this.initCheckPointId = this.$route.query.id;
       this.getAllDepts();
     }
-    setTimeout(()=>{
-      this.bMapLoaded = this.$store.getters.getBMapLoaded()
-    },1000)
   },
   methods: {
+    asyncLoadMap() {
+      return new Promise(function (resolve, reject) {
+        if (typeof (BMapGL) !== 'undefined') return resolve(BMapGL)
+        if (typeof (BMap) !== "undefined") { return resolve(BMap) }
+        if (!window.APP_CONFIG.serverUrl) return reject('地图配置错误')
+        let script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.src = `${window.APP_CONFIG.serverUrl}&callback=init`
+        script.onerror = reject
+        script.onload = function () {
+          const timer = setInterval(() => {
+            if (BMapGL || BMap) {
+              BMapGL ? resolve(BMapGL) : resolve(BMap)
+              clearInterval(timer)
+            }
+          }, 500)
+        }
+        document.head.appendChild(script)
+      })
+    },
     setPointList(list) {
       this.pointList = list;
     },
@@ -159,19 +182,19 @@ export default {
       let page = null;
       let order = null;
       this.select(
-          srv,
-          conds,
-          page,
-          order,
-          null,
-          null,
-          srvAuth,
-          null,
-          null,
-          relationCondition,
-          false,
-          null
-          // srvAuth
+        srv,
+        conds,
+        page,
+        order,
+        null,
+        null,
+        srvAuth,
+        null,
+        null,
+        relationCondition,
+        false,
+        null
+        // srvAuth
       ).then((res) => {
         // console.log('分公司',res.data)
         res = res.data;

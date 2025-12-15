@@ -157,9 +157,9 @@
               >
                 <div class="time-label">{{ time.label }}</div>
                 <div class="status-label">
-                  {{ 
-                    isTimeOccupied(time) ? "已预约" : 
-                    !isTimeSlotBookable(time) ? "已过期" : "空闲" 
+                  {{
+                    isTimeOccupied(time) ? "已预约" :
+                      !isTimeSlotBookable(time) ? "已过期" : "空闲"
                   }}
                 </div>
               </div>
@@ -234,9 +234,19 @@
         :model="formData"
         ref="reservationForm"
         :rules="formRules"
-        label-width="80px"
+        label-width="120px"
         class="mt-4"
       >
+        <el-form-item
+          label="会议/活动名称"
+          prop="meeting_name"
+        >
+          <el-input
+            v-model="formData.meeting_name"
+            placeholder="请输入会议/活动名称"
+            clearable
+          ></el-input>
+        </el-form-item>
         <el-form-item
           label="联系人"
           prop="contacts"
@@ -343,6 +353,7 @@ const reservationForm = ref(null);
 
 // 表单数据
 const formData = reactive({
+  meeting_name: "", // 会议/活动名称
   contacts: "",
   mobilephone: "",
   count: 1,
@@ -351,6 +362,7 @@ const formData = reactive({
 
 // 表单验证规则
 const formRules = {
+  meeting_name: [{ required: true, message: "请输入会议/活动名称", trigger: "blur" }],
   contacts: [{ required: true, message: "请输入联系人姓名", trigger: "blur" }],
   mobilephone: [{ required: true, message: "请输入联系方式", trigger: "blur" }],
 };
@@ -366,12 +378,12 @@ const isTimeSlotBookable = (item) => {
   const now = dayjs();
   const selectedDateTime = dayjs(`${selectedDate.value} ${item.start_time}`);
   const halfHourFromNow = now.subtract(30, 'minute');
-  
+
   // 如果选择的时间段开始时间在当前时间往前推半小时之前，则不能预约
   if (selectedDateTime.isBefore(halfHourFromNow)) {
     return false;
   }
-  
+
   return true;
 };
 
@@ -405,7 +417,7 @@ const canCancelTimeSlot = (item) => {
   // 检查要取消的时间段是否在首尾位置
   const firstIndex = selectedIndexes[0];
   const lastIndex = selectedIndexes[selectedIndexes.length - 1];
-  
+
   // 只能取消首尾时间段
   return cancelItemIndex === firstIndex || cancelItemIndex === lastIndex;
 };
@@ -735,18 +747,22 @@ const submitForm = async () => {
 
         // 构建批量预约请求
         const data = selectedTimes.value[0] || {};
+        const startData = selectedTimes.value[0] || {};
         const endData = selectedTimes.value[selectedTimes.value.length - 1] || {};
         const requestsData = {
           rsvo_no: data.rsvo_no,
           rsvr_date: selectedDate.value || data.datey,
-          start_time: selectedTimes.value.map((item) => item.start_time).toString(),
+          start_time: startData.start_time,
+          start_time_split: selectedTimes.value.map((item) => item.start_time).toString(),
           rsvp_no: data.rsvp_no,
           rsvt_no: selectedTimes.value.map((item) => item.rsvt_no).toString(), // 时间段编号
+          meeting_name: formData.meeting_name, // 会议/活动名称
+          count: formData.count,
           contacts: formData.contacts,
           mobilephone: formData.mobilephone,
           remark: formData.remark, //备注
         }
-        if(endData?.end_time){
+        if (endData?.end_time) {
           requestsData.end_time = endData.end_time;
         }
         const req = [
@@ -767,6 +783,7 @@ const submitForm = async () => {
             path: "/bookingSuccess",
             query: {
               roomName: data.rsvo_name,
+              meetingName: formData.meeting_name,
               timeSlot: `${firstTime.start_time} - ${lastTime.end_time}`,
               count: formData.count,
               date: selectedDate.value,

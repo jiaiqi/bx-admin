@@ -201,6 +201,122 @@ export default class OrderApi {
     }
     return await $http.post(url, req)
   }
+
+  //根据订单id去查询工单详情
+  async getWorkOrderDetail(options) {
+    let url = path + `/aud/select/srvaud_ads_workorder_select?srvaud_ads_workorder_select`
+    let req = {
+      colNames: ["*"],
+      serviceName: "srvaud_ads_workorder_select",
+      condition: options.condition,
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+    //根据passid获取页面多字段数据
+  async getSusPassconvInfo(options) {
+    let url = path + `/aud/select/srvaud_suspassconv_new_select?srvaud_suspassconv_new_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_suspassconv_new_select",
+      condition: options.condition,
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+      //根据passid查询之前是否填报过数据
+  async getAuditSusvehPassInfo(options) {
+    let url = path + `/aud/select/srvaud_audit_passconv_select?srvaud_audit_passconv_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_audit_passconv_select",
+      condition: options.condition,
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+    //根据passid查询年表，分表查询条件为当前年和上一年获取页面多字段数据
+  async getSusvehPassInfo(options) {
+    let url = path + `/aud/select/srvaud_susvehpass_select?srvaud_susvehpass_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_susvehpass_select",
+      condition: options.condition,
+      divCond: options.divCond,
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+    //根据passid查询日表，分表查询条件为前后一天获取页面多字段数据
+  async getPassconvInfo(options) {
+    let url = path + `/aud/select/srvaud_passconv_select?srvaud_passconv_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_passconv_select",
+      condition: options.condition.concat(options.divCond),
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+    //根据passid查询实际费用
+  async getWorkorderFeeInfo(options) {
+    let url = path + `/aud/select/srvaud_ads_workorder_fee_select?srvaud_ads_workorder_fee_select`
+    let req = {
+      colNames: ["*"],
+      draft: false,
+      order: [],
+      query_source: "list_page",
+      serviceName: "srvaud_ads_workorder_fee_select",
+      condition: options.condition.concat(options.divCond),
+      divCond: options.divCond,
+      relation_condition: { relation: "AND", data: options.condition.concat(options.divCond) },
+      page: { pageNo: 1, rownumber: 10 }
+    }
+    return await $http.post(url, req)
+  }
+
+  // 校验工单是否存在
+  async checkOrderExist(passid) {
+    if(!passid) return false
+    let url = path + `/aud/select/srvaud_workorder_passid_select`
+    let req = {
+      colNames: ["*"],
+      serviceName: "srvaud_workorder_passid_select",
+      condition: [
+        {
+          colName:'pass_id',
+          value:passid,
+          ruleType:'eq'
+        }
+      ],
+    }
+    const res =  await $http.post(url, req)
+    if(res.data.state==="SUCCESS"&&res.data.data.length>0){
+      return true
+    }
+  }
+
   //根据车辆流水内的出入时间及passid获取通行信息数据（收费站，门架）
   async getCarPathInfoById(options) {
     let url = path + `/aud/select/srvaud_susvehpasspath_select`
@@ -289,6 +405,16 @@ export default class OrderApi {
     }
     return await $http.post(url, req)
   }
+   async getOriginCenterDetailsNew(params) {
+    let url = path + `/aud/select/srvaud_audit_passconvdetail_ori_new_select`;
+    let req = {
+      colNames: ["*"],
+      serviceName: "srvaud_audit_passconvdetail_ori_new_select",
+      condition: params.condition,
+      divCond: params.divCond,
+    }
+    return await $http.post(url, req)
+  }
   //本地服务中查询车辆通行信息接口（初次进入地图时使用，有数据就用，没有数据使用远端中心接口的返回数据）
   async getLocationCenterDetails(params) {
     let url = path + `/aud/select/srvaud_audit_passconvdetail_select`;
@@ -372,6 +498,36 @@ export default class OrderApi {
       order: [],
       page: { pageNo: 1, rownumber: 10 },
       serviceName: "srvaud_workorder_organ_select",
+      draft: false
+    }
+    return await $http.post(url, req)
+  }
+
+    async getRelevantListNew(params) {
+    let url = path + `/aud/select/srvaud_workorder_organ_new_select`
+    let req = {
+      colNames: ["*"],
+      condition: params.condition,
+      divCond: params.divCond,
+      query_source: "list_page",
+      order: [],
+      page: { pageNo: 1, rownumber: 10 },
+      serviceName: "srvaud_workorder_organ_new_select",
+      draft: false
+    }
+    return await $http.post(url, req)
+  }
+
+   async getRelevantListOri(params) {
+    let url = path + `/aud/select/srvaud_workorder_organ_ori_select`
+    let req = {
+      colNames: ["*"],
+      condition: params.condition,
+      divCond: params.divCond,
+      query_source: "list_page",
+      order: [],
+      page: { pageNo: 1, rownumber: 10 },
+      serviceName: "srvaud_workorder_organ_ori_select",
       draft: false
     }
     return await $http.post(url, req)

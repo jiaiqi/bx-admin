@@ -11,7 +11,7 @@ import split from "lodash/split";
 import join from "lodash/join";
 import clone from "lodash/clone";
 import cloneDeep from "lodash/cloneDeep";
-
+import dayjs from "dayjs";
 export const hotTableMetadata = {
   User: {
     srvApp: "sso",
@@ -132,10 +132,8 @@ export class Field {
 
     this.autocompleteInput = false;
     if (this.info.editor == null && this.info.redundant) {
-      let dependField = this.info.redundant.dependField;
       let field = this;
-      this.autocompleteInput = true;
-
+       
       this.autocompleteFunc = (_) => {
         let dependField = field.form.fields[this.info.redundant.dependField];
         if (Array.isArray(field.form.fields)) {
@@ -162,15 +160,11 @@ export class Field {
             });
           }
           return result;
-          // return (
-          //   (dependField.info.srvCol &&
-          //     dependField.info.srvCol.option_list_v2) ||
-          //   []
-          // );
         } else {
           return [];
         }
       };
+
       this.isAutocomplete = () => {
         //*如果引用的字段是fk字段的显示字段 则自动使用autocomplete特性,并且隐藏掉fk字段
         //?目前先默认不隐藏fk字段，sessionStorage中hide_fk_field为true时再隐藏，后续没啥问题了放开这个限制
@@ -206,9 +200,10 @@ export class Field {
         }
         return false;
       };
+      this.autocompleteInput = this.isAutocomplete();
       // let dependFieldOptionsListV2 = field.form.fields
     } else if (
-      this.info.srvCol?.subtype==='autocomplete' &&
+      this.info.srvCol?.subtype === 'autocomplete' &&
       this.info?.srvCol?.option_list_v2?.serviceName
     ) {
       // 普通字符串 autocomplete特性 既可以输入也可以选择
@@ -387,7 +382,7 @@ export class Field {
             return valKeys;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       return "";
     } else {
@@ -409,7 +404,25 @@ export class Field {
     let fieldType = this.info.type ? this.info.type : "";
     let dispCol = this.info.dispCol;
     let separator = "-";
-    if ("year" === fieldType.toLowerCase()) {
+    if ("date" === fieldType.toLowerCase()) {
+      switch (this.info.subtype) {
+        case 'year':
+          return dayjs(value).format('YYYY')
+        case 'month':
+          return dayjs(value).format('YYYY-MM')
+        default:
+          return dayjs(value).format('YYYY-MM-DD')
+      }
+    } else if ("datetime" === fieldType.toLowerCase()) {
+      switch (this.info.subtype) {
+        case 'hour':
+          return dayjs(value).format('HH')
+        case 'minute':
+          return dayjs(value).format('HH:mm')
+        default:
+          return dayjs(value).format('YYYY-MM-DD HH:mm')
+      }
+    } else if ("year" === fieldType.toLowerCase()) {
       return split(value, separator)[0];
     } else if ("month" === fieldType.toLowerCase()) {
       let parts = split(value, separator).slice(0, 2);
@@ -517,7 +530,7 @@ export class Field {
     ) {
       return false;
     }
-    if(this.info.readonly){
+    if (this.info.readonly) {
       return false;
     }
     return this.evalVersatileFlagVar(this.info.editable);
@@ -564,6 +577,9 @@ export class Field {
   }
 
   evalVisible() {
+    if(this.info.xIf){
+      return this.evalXIf();
+    }
     return this.evalXIf() && this.evalVisibleExpr();
   }
 
