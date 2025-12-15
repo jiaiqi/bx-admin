@@ -444,7 +444,17 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, _) {
-        this.selected = newValue.model ? newValue.model.split(',') : []
+        if(this.fieldType==='fks'){
+          this.selected = newValue.model ? newValue.model.split(',') : []
+        }else if(this.fieldType==='fkjsons'){
+          let selected = newValue.model
+          try {
+            selected = JSON.parse(newValue.model)?.map(x=>x[this.valueCol])?.toString || ""
+          } catch (error) {
+            console.error(error)
+          }
+          this.selected = selected ? selected.split(',') : []
+        }
       },
     },
     gridData: {

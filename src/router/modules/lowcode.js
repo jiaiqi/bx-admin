@@ -1,6 +1,59 @@
 // 低代码相关路由
-export default [
+import { getEnv } from '@/common/http'
+const oldLowCodePages = [{
+    // 网格布局 - 新
+    path:'/lowcode-grid',
+    component:()=>import('@/pages/datav/grid-layout/editor-next.vue'),
+    children:[
+      {
+        //可视化编辑页面 新布局
+        path:'editor',
+        name:"gridEditorAdd",
+        component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+      },
+      {
+        //可视化编辑页面(update) 新布局
+        path:'editor/:no',
+        name:"gridEditorUpdate",
+        component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+      },
+      {
+        //可视化编辑页面(update) 新布局
+        path:'view/:no',
+        name:'gridViewDetail',
+        component:()=>import('@/pages/datav/grid-layout/editor-next.vue')
+      }
+    ]
+  },
+  // 网格布局
+  {
+    path:'/gridview',
+    component:()=>import('@/pages/datav/grid-layout/index.vue'),
+    children:[
+      {
+        //可视化编辑页面
+        path:'editor',
+        name:'gridEditor',
+        component:()=>import('@/pages/datav/grid-layout/index.vue')
+      },
+      {
+        //可视化编辑页面(update)
+        path:'editor/:no',
+        name:'gridEditor2',
+        component:()=>import('@/pages/datav/grid-layout/index.vue')
+      },
+      {
+        // 预览页面
+        path:'view/:no',
+        name:'gridview',
+        component:()=>import('@/pages/datav/grid-layout/index.vue')
+      }
+    ]
+  }]
+
+const lowCodePages = [
   // ==================== 低代码相关 ====================
+  // 最新低代码页面
   {
     path: "/lowcode/editor/:pageNo",
     name: "lowcode-editor",
@@ -78,3 +131,12 @@ export default [
     component: () => import(/* webpackChunkName: "lowcode" */ "@/pages/lowcode/get-page-address/get-page-address.vue"),
   },
 ];
+
+let env = getEnv()
+
+if(env === 'yanxue2'){
+  // 研学用到老版低代码页面
+  lowCodePages.push(...oldLowCodePages)
+}
+
+export default [...lowCodePages]
