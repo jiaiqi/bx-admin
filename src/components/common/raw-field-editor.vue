@@ -889,43 +889,68 @@
 </template>
 
 <script>
-// 保留必要的工具函数同步引入
+import { Icon } from "@iconify/vue2";
+import InputRange from "../ui/input-range.vue";
+import Finder from "../ui/finder.vue";
+import multiFinder from "../ui/multi-finder.vue";
+// import UEditor from "../ui/ueditor.vue";
+const TinymceEditor = () => import(/* webpackChunkName: "tinymce-editor" */ "./tinymce/index.vue");
+// import UploadFile from "../ui/upload-file.vue";
+import UploadImage from "../ui/upload-image.vue";
+import TreeFinder from "../ui/tree-finder.vue";
+import BxInputNumber from "../ui/bx-input-number.vue";
+import Userlist from "../ui/userlist.vue";
+import QrCode from "../ui/qrcode.vue";
+// import CodeEditor from "../ui/code-editor.vue";
+// import JsonEditor from 'json-editor-vue'
+// import vueJsonEditor from "vue-json-editor-fix-cn";
+// import jsonTableEditor from "../ui/json-table-editor/index.vue";
+
+import Radio from "../ui/radio.vue";
+import Checkbox from "../ui/checkbox.vue";
+// import ueditorPlus from "../ui/ueditor-plus.vue";
+// import tiptapEditor from "../ui/tiptap-editor/video-home.vue";
+// import wangEditor from "../ui/wang-editor/wang-editor.vue";
+import dynamicSubTemp from "../ui/dynamic-sub-temp.vue"; // 动态子组件
+import verifyMobile from "../ui/verifyMobile.vue"; // 手机验证码
+import autocompleteInput from "../ui/autocomplete-input.vue"; // 手机验证码
+import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
+// import transferVue from "../ui/form-widget/transfer.vue";
+// import transferVue from "../ui/form-widget/multi-select/index.vue"; // 多选穿梭框组件
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 import { idCardExp } from "../model/FieldInfo.js";
 import multiSelectTransfer from "@/components/ui/form-widget/multi-select/multi-select-transfer.vue";
 export default {
   components: {
-    // UI组件 - 异步引入
-    Checkbox: () => import("../ui/checkbox.vue"),
-    Radio: () => import("../ui/radio.vue"),
-    InputRange: () => import("../ui/input-range.vue"),
-    Finder: () => import("../ui/finder.vue"),
-    TreeFinder: () => import("../ui/tree-finder.vue"),
-    UploadImage: () => import("../ui/upload-image.vue"),
-    UploadFile: () => import("../ui/upload-file.vue"),
-    BxInputNumber: () => import("../ui/bx-input-number.vue"),
-    Userlist: () => import("../ui/userlist.vue"),
-    QrCode: () => import("../ui/qrcode.vue"),
-    multiFinder: () => import("../ui/multi-finder.vue"),
-
-    // 编辑器组件 - 异步引入
+    Checkbox,
+    Radio,
     CodeEditor: () => import("../ui/code-editor.vue"),
-    TinymceEditor: () => import("./tinymce/index.vue"),
+    // JsonEditor,
+    vueJsonEditor: () => import(/* webpackChunkName: "json-editor" */ "vue-json-editor-fix-cn"),
+    jsonTableEditor: () => import(/* webpackChunkName: "json-table-editor" */ "../ui/json-table-editor/index.vue"),
+    Userlist,
+    BxInputNumber,
+    TreeFinder,
+    UploadImage,
+    // UploadFile,
+    UploadFile: () => import("../ui/upload-file.vue"), //异步组件加载方式,
+    InputRange,
+    Finder,
+    // ueditorPlus,
     wangEditor: () => import("../ui/wang-editor/wang-editor.vue"),
-    jsonTableEditor: () => import("../ui/json-table-editor/index.vue"),
-
-    // 表单组件 - 异步引入
-    dynamicSubTemp: () => import("../ui/dynamic-sub-temp.vue"), // 动态子组件
-    verifyMobile: () => import("../ui/verifyMobile.vue"), // 手机验证码
-    autocompleteInput: () => import("../ui/autocomplete-input.vue"), // 自动完成输入
-    carNoKeyboard: () => import("../ui/car-no-keyboard.vue"), // 车牌号输入
-    multiSelectTransfer: multiSelectTransfer,
-    // () => import("../ui/form-widget/multi-select/index.vue"), // 多选穿梭框组件
-
-    // 第三方库组件 - 异步引入
-    vueJsonEditor: () => import("vue-json-editor-fix-cn"),
-    Icon: () => import("@iconify/vue2").then(module => module.Icon),
+    // tiptapEditor,
+    // ueditor: UEditor,
+    TinymceEditor,
+    QrCode,
+    multiFinder,
+    dynamicSubTemp,
+    verifyMobile,
+    autocompleteInput,
+    carNoKeyboard,
+    // transferVue,
+    Icon,
+    multiSelectTransfer
   },
 
   props: {

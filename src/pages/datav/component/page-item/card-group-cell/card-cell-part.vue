@@ -258,7 +258,7 @@ import "animate.css";
 import { mapGetters } from "vuex";
 import { Icon } from "@iconify/vue2";
 import dayjs from "dayjs";
-import LiquidFillChart from "../LiquidFillChart.vue";
+// import LiquidFillChart from "../LiquidFillChart.vue";
 import qrCode from "../qr-code/qr-code.vue";
 import weather from "../widgets/weather.vue";
 import { formatStyleData } from "@/pages/datav/common";
@@ -273,8 +273,8 @@ import {
   animateNumberWithFormat,
 } from "@/common/animations";
 import marqueeMixin from "./marquee-mixin.js"; // 跑马灯混入
-import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
-// import cardPopup from "../card-group/card-popup.vue";
+// import HlsplayerVideo from "@/components/common/hls-video/hlsplayer-video.vue";
+import cardPopup from "../card-group/card-popup.vue";
 import { getFilePathByNo } from "@/common/httpUtil";
 import { downloadFileH5 as downloadFile, isImageFile } from "@/common/common";
 // 节流
@@ -298,10 +298,10 @@ export default {
   components: {
     cardCellPart: () => import("./card-cell-part.vue"),
     Icon,
-    LiquidFillChart,
+    LiquidFillChart: () => import(/* webpackChunkName: "echarts-vendor" */ "../LiquidFillChart.vue"),
     qrCode,
-    HlsplayerVideo,
-    cardPopup: () => import("../card-group/card-popup.vue"),
+    HlsplayerVideo: () => import(/* webpackChunkName: "hls-video" */ "@/components/common/hls-video/hlsplayer-video.vue"),
+    cardPopup,
     weather,
   },
   data() {

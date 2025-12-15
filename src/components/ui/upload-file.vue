@@ -258,14 +258,14 @@
   </div>
 </template>
 <script>
-import pdf from "vue-pdf";
-// import CMapReaderFactory from "vue-pdf/src/CMapReaderFactory.js";
 import cloneDeep from "lodash/cloneDeep";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
 import { getBaseUrl } from "@/common/common";
 export default {
-  components: { pdf },
+  components: {
+    pdf: () => import(/* webpackChunkName: "vue-pdf" */ "vue-pdf"),
+  },
   mixins: [bigFileUploadMixin, aSaveBMixin],
   props: {
     field: {

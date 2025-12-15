@@ -52,8 +52,15 @@ style="display: none;" -->
 </template>
 
 <script>
+import "bootstrap/dist/css/bootstrap.min.css";
 import { deleteFile } from "./api";
 export default {
+  components: {
+    // Bootstrap Vue components - async loading
+    "b-img": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BImg),
+    "b-icon-x": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BIconX),
+    "b-icon-plus": () => import(/* webpackChunkName: "bootstrap-vue" */ "bootstrap-vue").then(m => m.BIconPlus),
+  },
   props: {
     value: {
       type: String,

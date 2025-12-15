@@ -10,10 +10,10 @@ import { useRoute, useStore } from '@/common/vueApi.js'
 import cloneDeep from "lodash/cloneDeep"
 import "animate.css"
 
-import { Icon, addCollection } from "@iconify/vue2"
-import carbon from "@iconify/json/json/carbon.json"
-import mdiLight from "@iconify/json/json/mdi-light.json"
-import ri from "@iconify/json/json/ri.json"
+import { addCollection } from "@iconify/vue2"
+// import carbon from "@iconify/json/json/carbon.json"
+// import mdiLight from "@iconify/json/json/mdi-light.json"
+// import ri from "@iconify/json/json/ri.json"
 
 import { $selectOne } from "@/common/http"
 import { formatStyleData } from "@/pages/datav/common/index.js"
@@ -264,10 +264,21 @@ export function useLowcodePage() {
   })
 
   // 组件挂载时的操作
-  onMounted(() => {
-    addCollection(carbon)
-    addCollection(mdiLight)
-    addCollection(ri)
+  onMounted(async () => {
+    // 异步加载并添加图标集合
+    const [
+      carbon,
+      mdiLight,
+      ri
+    ] = await Promise.all([
+      import(/* webpackChunkName: "iconify" */ "@iconify/json/json/carbon.json"),
+      import(/* webpackChunkName: "iconify" */ "@iconify/json/json/mdi-light.json"),
+      import(/* webpackChunkName: "iconify" */ "@iconify/json/json/ri.json")
+    ]);
+    
+    addCollection(carbon.default || carbon);
+    addCollection(mdiLight.default || mdiLight);
+    addCollection(ri.default || ri);
     setThemeVariable()
   })
 

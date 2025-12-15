@@ -312,8 +312,8 @@ import slideList from "./slide-list.vue";
 import userList from "./user-list.vue";
 import noticeBar from "./notice-bar.vue";
 import mapCard from "./map-card/index.vue";
-import basicChart from "./chart-basic.vue";
-import pageItemChart from "./chart/page-item-chart.vue";
+// import basicChart from "./chart-basic.vue";
+// import pageItemChart from "./chart/page-item-chart.vue";
 import mixList from "./mix-list/list.vue";
 import List from "./list/list.vue";
 import pageWidget from "./widget.vue";
@@ -344,8 +344,8 @@ export default {
     userList,
     noticeBar,
     mapCard,
-    basicChart,
-    pageItemChart,
+    basicChart: () => import(/* webpackChunkName: "echarts-vendor" */ "./chart-basic.vue"),
+    pageItemChart: () => import(/* webpackChunkName: "echarts-vendor" */ "./chart/page-item-chart.vue"),
     mixList,
     List,
     pageWidget,

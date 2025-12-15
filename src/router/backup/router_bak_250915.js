@@ -1,9 +1,10 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import TabList from "@/components/common/tab-list2";
 import { lowCodeRoutes } from "@/pages/lowcode/routes.js";
 import { BookingPages } from "@/pages/meetingRoomBooking/bookingRoutes.js";
 
+const TabList = () =>
+  import(/* webpackChunkName: "list" */ "@/components/common/tab-list2");
 const SimpleAdd = () =>
   import(/* webpackChunkName: "add" */ "@/components/common/simple-add");
 // const viewpdf = () => import("@/components/common/viewpdf");
@@ -397,7 +398,7 @@ let routes = [
     // 摄像头视频播放页
     path: "/video",
     name: "video",
-    component: () => import("@/pages/video/index.vue"),
+    component: () => import(/* webpackChunkName: "ezuikit" */ "@/pages/video/index.vue"),
   },
   {
     // 运单打印
@@ -699,7 +700,7 @@ routes.push({
       name: "studentfiles",
       component: () =>
         import(
-          /* webpackChunkName: "xixiang" */ "@/pages/studentfiles/studentfiles.vue"
+          /* webpackChunkName: "echarts-vendor" */ "@/pages/studentfiles/studentfiles.vue"
         ),
     },
     // 学生档案  西乡特有页面

@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import TabList from "@/components/common/tab-list2";
+const TabList = () => import(/* webpackChunkName: "list" */ "@/components/common/tab-list2");
 
 // 导入路由模块
 import auditRoutes from "./modules/audit"; // 稽核项目相关路由

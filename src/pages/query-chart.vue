@@ -12,7 +12,7 @@ var echartUid = 0;
 
 export default {
   components: {
-    echarts: () => import(/* webpackChunkName: "echarts" */ "echarts"),
+    echarts: () => import(/* webpackChunkName: "echarts-vendor" */ "echarts"),
   },
 
   mixins: [],

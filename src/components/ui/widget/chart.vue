@@ -6,8 +6,12 @@
 </template>
 
 <script setup>
-import pageItemChart from '@/pages/datav/component/page-item/chart/page-item-chart.vue'
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
+
+// 异步加载 page-item-chart 组件
+const pageItemChart = defineAsyncComponent(() => 
+  import(/* webpackChunkName: "echarts-vendor" */ '@/pages/datav/component/page-item/chart/page-item-chart.vue')
+);
 const props = defineProps(['config', 'data'])
 const key = ref(new Date().getTime())
 const pageItem = computed(() => {

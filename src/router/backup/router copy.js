@@ -316,7 +316,7 @@ let routes=[
   { // 摄像头视频播放页
     path:'/video',
     name:'video',
-    component:()=>import('@/pages/video/index.vue')
+    component:()=>import(/* webpackChunkName: "ezuikit" */ '@/pages/video/index.vue')
   },
   { // 运单打印
     path:'/waybill/:type',
@@ -483,7 +483,7 @@ routes.push( {
   {
     path:'/studentfiles/:serviceName/:id',
     name:'studentfiles',
-    component:()=>import('@/pages/studentfiles/studentfiles.vue')
+    component:()=>import(/* webpackChunkName: "echarts-vendor" */ '@/pages/studentfiles/studentfiles.vue')
   },
   // 学生档案  西乡特有页面
   {
