@@ -26,6 +26,10 @@ const ENV = "parkProd"; // 延安园区生产环境
 // const ENV = "gaosu61";
 
 window.env = ENV;
+
+export const getEnv = () => {
+  return ENV;
+}
 export const getHomePageNo = () => {
   return pathConfigMap[ENV]?.homePageNo;
 }
