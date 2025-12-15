@@ -165,11 +165,11 @@
 </template>
 
 <script>
-// 图标相关
-import { Icon, addCollection } from "@iconify/vue2";
-import carbon from "@iconify/json/json/carbon.json";
-import mdiLight from "@iconify/json/json/mdi-light.json";
-import ri from "@iconify/json/json/ri.json";
+  // 图标相关
+  import { Icon, addCollection } from "@iconify/vue2";
+// import carbon from "@iconify/json/json/carbon.json";
+// import mdiLight from "@iconify/json/json/mdi-light.json";
+// import ri from "@iconify/json/json/ri.json";
 
 import { materialsTree } from "../components/materials/materials";
 const cardParts = materialsTree.find((item) => item.value === "cardPart");
@@ -1311,10 +1311,20 @@ export default {
     //   window.removeEventListener("storage", this.handleStorageChange);
     // }
 
-    // 添加图标集合
-    addCollection(carbon);
-    addCollection(mdiLight);
-    addCollection(ri);
+    // 异步加载并添加图标集合
+    const [
+      carbon,
+      mdiLight,
+      ri
+    ] = await Promise.all([
+      import(/* webpackChunkName: "iconify" */ "@iconify/json/json/carbon.json"),
+      import(/* webpackChunkName: "iconify" */ "@iconify/json/json/mdi-light.json"),
+      import(/* webpackChunkName: "iconify" */ "@iconify/json/json/ri.json")
+    ]);
+    
+    addCollection(carbon.default || carbon);
+    addCollection(mdiLight.default || mdiLight);
+    addCollection(ri.default || ri);
   },
   beforeDestroy() {
     // 清除定时器

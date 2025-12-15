@@ -316,7 +316,7 @@ let routes=[
   { // 摄像头视频播放页
     path:'/video',
     name:'video',
-    component:()=>import('@/pages/video/index.vue')
+    component:()=>import(/* webpackChunkName: "ezuikit" */ '@/pages/video/index.vue')
   },
   { // 运单打印
     path:'/waybill/:type',

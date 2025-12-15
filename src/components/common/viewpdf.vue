@@ -46,8 +46,6 @@
 
 
 <script>
-
-import CMapReaderFactory from 'vue-pdf/src/CMapReaderFactory.js'
 export default {
   components: {
     pdf: () => import(/* webpackChunkName: "vue-pdf" */ "vue-pdf")
@@ -123,8 +121,15 @@ export default {
       this.currentPage = 1; // 加载的时候先加载第一页
     }
   },
-  created: function () {
+  async created () {
     if (this.isTopComp() && this.$route && this.$route.query) {
+      // 按需并行加载 pdf 组件及 CMap 工厂
+      const [pdfmod, cmapmod] = await Promise.all([
+        import(/* webpackChunkName: "vue-pdf" */ "vue-pdf"),
+        import(/* webpackChunkName: "vue-pdf" */ "vue-pdf/src/CMapReaderFactory.js")
+      ]);
+      const pdf = pdfmod.default || pdfmod;
+      const CMapReaderFactory = cmapmod.default || cmapmod;
       var pdfsrc = this.$route.query.pdfsrc;
        pdfsrc = decodeURIComponent(pdfsrc);
        this.dowloadpdfsrc = pdfsrc
