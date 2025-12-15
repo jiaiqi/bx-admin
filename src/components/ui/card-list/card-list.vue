@@ -2,7 +2,7 @@
 import CardGroupCell from "../../../pages/datav/component/page-item/card-group-cell/card-group-cell.vue";
 import { computed } from "vue";
 
-const emit = defineEmits(["onButtonClick"]);
+const emit = defineEmits(["onButtonClick", "contextMenu"]);
 const props = defineProps({
   readOnly: {
     type: Boolean,
@@ -73,6 +73,11 @@ const onClickBtn = (btn, data) => {
   this.$emit("onButtonClick", btn, data);
 };
 
+const onContextMenu = (item) => {
+  console.log("onContextMenu:::", event,item);
+  emit("contextMenu",event, item);
+};
+
 const comColMapRun = computed(() => {
   return {};
 });
@@ -95,6 +100,7 @@ const comColMapRun = computed(() => {
       @data-updated="onDataUpdate"
       v-for="(item, index) in gridData"
       @click.native="onClickSubBlock(item)"
+      @contextmenu.native="onContextMenu(item)"
     >
       <template #footer>
         <slot name="footer" :data="item"></slot>
@@ -110,7 +116,7 @@ const comColMapRun = computed(() => {
   grid-gap: 10px;
   //padding: 10px 20px;
   padding: 6px;
-  // align-items: flex-start;
+  align-items: flex-start;
   width: 100%;
   height: 100%;
   overflow: auto;
@@ -120,15 +126,17 @@ const comColMapRun = computed(() => {
     flex: 1;
     align-items: flex-end;
     justify-content: flex-end;
-    padding:10px;
+    padding: 10px;
     .footer-btn-item {
       margin-left: 10px;
     }
   }
 
   ::v-deep .card-item .bx-card-cell:hover {
-    box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.08),
-      0 3px 6px 0 rgba(0, 0, 0, 0.06), 0 5px 12px 4px rgba(0, 0, 0, 0.04);
+    // box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.08),
+    //   0 3px 6px 0 rgba(0, 0, 0, 0.06), 0 5px 12px 4px rgba(0, 0, 0, 0.04);
+    transform: scale(1.01);
+    transition: transform 0.2s ease-in-out;
   }
 }
 </style>

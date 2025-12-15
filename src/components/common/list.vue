@@ -1462,7 +1462,7 @@ export default {
       scale: 100, //放大系数
       currentUrlLike: "",
       imagesRun: [],
-      listStyle: "list",
+      listStyle: "card",
       tableMaxHeight: 500,
       resizeObserver: null,
       blobToBase64,
