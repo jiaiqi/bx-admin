@@ -122,6 +122,7 @@
             @filter-change="filterChange"
             @sort-change="handleSortChange"
             style="width: 100%"
+            height="100%"
           >
             <el-table-column width="50">
               <template slot-scope="scope">

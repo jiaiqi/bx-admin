@@ -237,6 +237,7 @@
             stripe
             border
             style="width: 100%"
+            height="100%"
             :row-class-name="tableRowClassName"
             row-key="id"
             highlight-current-row

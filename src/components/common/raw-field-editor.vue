@@ -1090,6 +1090,10 @@ export default {
     getRichEditorType() {
       // 从环境变量获取配置，默认使用wang-editor
       // return 'tinymce'
+      if(getEnv?.() === 'healthProd'){
+        // 健康科普资源库使用tinymce
+        return 'tinymce'
+      }
       return process.env.VUE_APP_RICH_EDITOR || 'wang-editor';
     },
   },

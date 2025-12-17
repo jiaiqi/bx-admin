@@ -1,8 +1,5 @@
 <template>
-  <div
-    style="height: 100%"
-    v-if="(id && id !== 'xxx') || (defaultConditions && defaultConditions.length)"
-  >
+ 
     <card-detail
       :pk-col="pkCol"
       :pk="id"
@@ -20,12 +17,12 @@
       :detail-data="detailData"
       :cells-layout-json="cfgJson.detail_card_json"
       @action-complete="initGridData"
-      v-if="isCardDetail && cfgJson && cfgJson.detail_card_json"
+      v-if="isShowDetail && isCardDetail && cfgJson && cfgJson.detail_card_json"
     >
     </card-detail>
     <el-card
       class="box-card detail-box-card"
-      v-else
+      v-else-if="isShowDetail"
       :shadow="isPlatChildForm == true ? 'never' : 'always '"
     >
       <div
@@ -630,7 +627,6 @@
         </template>
       </el-tabs>
     </el-card>
-  </div>
 </template>
 
 <script>
@@ -722,6 +718,9 @@ export default {
     },
   },
   computed: {
+    isShowDetail() {
+      return (this.id && this.id !== 'xxx') || (this.defaultConditions && this.defaultConditions.length)
+    },
     isCardDetail() {
       // 展示为卡片详情
       return this.$route?.name?.indexOf("cardDetail") === 0;
@@ -1132,9 +1131,10 @@ export default {
 
     .el-card__body {
       flex: 1;
-
+      overflow-y: hidden;
       .detail-card {
-        height: calc(100% - 60px);
+        height:100%;
+        // height: calc(100% - 60px);
         overflow: auto;
       }
     }
