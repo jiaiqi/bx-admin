@@ -222,6 +222,14 @@ export default {
 
       return objInfo
     },
+    // 当前选中的数据的原始数据
+    currentModelsRaw(){
+      if(this.field.model && typeof this.field.model === 'string'){
+        return this.field.model.split(',').map(value=>{
+          return this.allData.find(item=>item[this.valueCol] === value)
+        }).filter(item=>item)
+      }
+    },
     getFkJson() {
       if (this.disabled && this.ObjInfo?.a_save_b_obj_col) {
         let row = this.formModel
