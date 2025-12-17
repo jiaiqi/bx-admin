@@ -11,6 +11,8 @@ import VueInit from "@/components/common/vue_init";
 import VueUtil from "@/components/common/vue_util";
 import store from "./store";
 import bxPlugin from "./plugin/bx-plugin.js";
+// 更新检查
+import updateChecker from "./common/updateChecker";
 
 import Fragment from "vue-fragment";
 Vue.use(Fragment.Plugin);
@@ -167,3 +169,19 @@ window.app = new Vue({
   router,
   render: (h) => h(App),
 });
+
+// ==================== 更新检查 ====================
+// 仅在生产环境中启用更新检查
+if (process.env.NODE_ENV === 'production') {
+  // 应用启动时检查更新
+  setTimeout(async () => {
+    const updateInfo = await updateChecker.checkUpdate();
+    updateChecker.showUpdateNotification(updateInfo);
+  }, 1000);
+
+  // 定期检查更新（每10分钟）
+  setInterval(async () => {
+    const updateInfo = await updateChecker.checkUpdate();
+    updateChecker.showUpdateNotification(updateInfo);
+  }, 10 * 60 * 1000);
+}

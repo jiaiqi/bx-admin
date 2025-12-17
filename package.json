@@ -7,6 +7,8 @@
     "dev:park": "vue-cli-service serve --mode park",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:version": "node scripts/generate-version.js && npm run build",
+    "generate-version": "node scripts/generate-version.js",
     "build:audit": "vue-cli-service build --mode audit", 
     "build:auditDev": "vue-cli-service build --mode auditDev",
     "build:debug": "vue-cli-service build --mode debug",
