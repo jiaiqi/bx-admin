@@ -920,6 +920,7 @@ import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 import { idCardExp } from "../model/FieldInfo.js";
+import { getEnv } from "@/common/http.js";
 import multiSelectTransfer from "@/components/ui/form-widget/multi-select/multi-select-transfer.vue";
 export default {
   components: {
