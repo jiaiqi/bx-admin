@@ -1,20 +1,36 @@
-import axios from 'axios';
-import { Notification } from 'element-ui';
+
+// import { Notification } from 'element-ui';
 // 本地版本信息
 let localVersionInfo = null;
-const baseUrl = location.origin + location.pathname;
+const baseUrl = location.origin + '/vpages/';
+const versionFileName = 'version.json';
 // 获取本地版本信息
 const getLocalVersion = async () => {
   if (localVersionInfo) {
     return localVersionInfo;
   }
+  if (sessionStorage.getItem('VERSION_INFO')) {
+    localVersionInfo = JSON.parse(sessionStorage.getItem('VERSION_INFO'));
+    return localVersionInfo;
+  }
   console.info('获取本地版本信息:', baseUrl);
   try {
-    const response = await axios.get(`${baseUrl}version.json`, {
-      baseURL: process.env.BASE_URL,
-      timeout: 5000
+    const url = `${baseUrl}${versionFileName}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: 'no-cache'
     });
-    localVersionInfo = response.data;
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    localVersionInfo = await response.json();
     return localVersionInfo;
   } catch (error) {
     console.error('获取本地版本信息失败:', error);
@@ -26,14 +42,25 @@ const getLocalVersion = async () => {
 const getRemoteVersion = async () => {
   console.info('获取远程版本信息:', baseUrl);
   try {
-    const response = await axios.get(`${baseUrl}version.json`, {
-      baseURL: window.location.origin,
-      timeout: 5000,
+    const url = `${baseUrl}${versionFileName}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: 'no-cache',
       headers: {
         'Cache-Control': 'no-cache'
       }
     });
-    return response.data;
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error('获取远程版本信息失败:', error);
     return null;
@@ -102,6 +129,8 @@ const checkUpdate = async () => {
 
 // 显示更新提示
 const showUpdateNotification = (updateInfo) => {
+  const { localVersion, remoteVersion } = updateInfo;
+
   // 构造详细的更新信息
   const updateDetails = {
     本地版本: localVersion.version,
@@ -112,15 +141,27 @@ const showUpdateNotification = (updateInfo) => {
     远程提交时间: remoteVersion.commitTime
   };
   if (updateInfo.hasUpdate) {
-    const { localVersion, remoteVersion } = updateInfo;
 
     // 在控制台打印详细信息
     if (localVersion.version && remoteVersion.version) {
-      console.info('\n========================================');
-      console.info('🔄 发现新版本！');
-      console.info('========================================');
-      console.table(updateDetails);
-      console.info('========================================\n');
+      console.info('%c\n==================================================', 'color: #4CAF50; font-weight: bold;');
+      console.info('%c🔄 发现新版本！', 'color: #2196F3; font-size: 16px; font-weight: bold;');
+      console.info('%c==================================================', 'color: #4CAF50; font-weight: bold;');
+      
+      // 醒目显示版本对比
+      console.info(`%c📌 本地版本：${localVersion.version}`, 'color: #4CAF50; font-size: 16px; font-weight: bold;');
+      console.info(`%c📌 远程版本：${remoteVersion.version}`, 'color: #FF5722; font-size: 16px; font-weight: bold;');
+      
+      // 突出构建号和时间对比
+      console.info('%c\n🏗️  构建信息：', 'color: #2196F3; font-weight: bold;');
+      console.info(`%c📝 本地构建号：${localVersion.build}`, 'color: #4CAF50; font-size: 14px;');
+      console.info(`%c📝 远程构建号：${remoteVersion.build}`, 'color: #FF5722; font-size: 14px;');
+      
+      console.info('%c\n⏰ 时间信息：', 'color: #2196F3; font-weight: bold;');
+      console.info(`%c📅 本地提交时间：${localVersion.commitTime}`, 'color: #4CAF50; font-size: 14px;');
+      console.info(`%c📅 远程提交时间：${remoteVersion.commitTime}`, 'color: #FF5722; font-size: 14px;');
+      
+      console.info('%c\n==================================================\n', 'color: #4CAF50; font-weight: bold;');
 
       // 只有在有新版本时才构造通知消息
       if (remoteVersion.version !== localVersion.version) {
@@ -148,15 +189,68 @@ const showUpdateNotification = (updateInfo) => {
       }
     }
   } else {
-    console.info('\n========================================');
-    console.info('✅ 当前已是最新版本');
-    console.info('========================================');
-    console.table(updateDetails);
-    console.info('========================================\n');
+    // console.info('%c\n========================================', 'color: #4CAF50; font-weight: bold;');
+    // console.info('%c✅ 更新检测：当前已是最新版本', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
+    // console.table(updateDetails);
+    // console.info('%c========================================\n', 'color: #4CAF50; font-weight: bold;');
   }
 };
 
+function checkVersion() {
+  const url = `${baseUrl}${versionFileName}`;
+  
+  // 创建AbortController用于超时控制
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  
+  fetch(url, {
+    signal: controller.signal,
+    cache: 'no-cache'
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (typeof data === 'object' && data.version) {
+      sessionStorage.setItem('VERSION_INFO', JSON.stringify(data));
+      console.info('%c\n==================================================', 'color: #4CAF50; font-weight: bold;');
+      console.info('%c✅ vpages版本信息：', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
+      
+      // 显示版本号
+      console.info(`%c📌 版本：${data.version}`, 'color: #FF5722; font-size: 18px; font-weight: bold; padding: 5px 0;');
+      
+      // 突出提交时间和构建时间
+      console.info('%c\n⏰ 时间信息：', 'color: #2196F3; font-weight: bold;');
+      console.info(`%c📝 提交时间：${data.commitTime}`, 'color: #4CAF50; font-size: 14px;');
+      console.info(`%c🏗️ 构建时间：${data.buildTime}`, 'color: #FF9800; font-size: 14px;');
+      
+      if (data.tagDescription) {
+        console.info('%c\n==================================================', 'color: #409EFF; font-weight: bold;');
+        console.info("%c🚀 更新描述：\n" + data.tagDescription, 'color: #409EFF; font-weight: bold;')
+        console.info('%c==================================================\n', 'color: #409EFF; font-weight: bold;');
+      } else {
+        console.info('%c\n==================================================\n', 'color: #4CAF50; font-weight: bold;');
+      }
+    }
+  })
+  .catch(err => {
+    if (err.name === 'AbortError') {
+      console.error('请求超时:', err);
+    } else {
+      console.error(err);
+    }
+  })
+  .finally(() => {
+    clearTimeout(timeoutId);
+  });
+}
+
+
 export default {
+  checkVersion,
   checkUpdate,
   showUpdateNotification,
   getLocalVersion,

@@ -5,6 +5,8 @@ import App from "./App.vue";
 import router from "./router/index.js";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
+import { checkVersion } from "./common/updateChecker";
+
 // 自定义theme.css
 import "../theme/scss/common-theme.scss";
 import VueInit from "@/components/common/vue_init";
@@ -66,72 +68,72 @@ Vue.prototype.$routeStack = {
   goBack() {
     return store.dispatch('routeStack/goBack', router);
   },
-  
+
   // 前进到下一个路由
   goForward() {
     return store.dispatch('routeStack/goForward', router);
   },
-  
+
   // 跳转到指定索引的路由
   goToIndex(index) {
     return store.dispatch('routeStack/goToIndex', { index, router });
   },
-  
+
   // 获取路由栈
   getStack() {
     return store.getters['routeStack/routeStack'];
   },
-  
+
   // 获取栈大小
   getStackSize() {
     return store.getters['routeStack/stackSize'];
   },
-  
+
   // 是否可以返回
   canGoBack() {
     return store.getters['routeStack/canGoBack'];
   },
-  
+
   // 是否可以前进
   canGoForward() {
     return store.getters['routeStack/canGoForward'];
   },
-  
+
   // 获取上一个路由
   getPreviousRoute() {
     return store.getters['routeStack/previousRoute'];
   },
-  
+
   // 获取下一个路由
   getNextRoute() {
     return store.getters['routeStack/nextRoute'];
   },
-  
+
   // 获取当前路由
   getCurrentRoute() {
     return store.getters['routeStack/currentRoute'];
   },
-  
+
   // 清空路由栈
   clearStack() {
     return store.dispatch('routeStack/clearStack');
   },
-  
+
   // 移除指定路由
   removeRoute(index) {
     return store.dispatch('routeStack/removeRoute', index);
   },
-  
+
   // 启用/禁用路由栈管理
   setEnabled(enabled) {
     return store.dispatch('routeStack/setEnabled', enabled);
   },
-  
+
   // 设置最大栈大小
   setMaxSize(size) {
     return store.dispatch('routeStack/setMaxSize', size);
   },
-  
+
   // 智能返回（优先使用栈内路由，否则使用浏览器返回）
   smartGoBack() {
     if (this.canGoBack()) {
@@ -172,12 +174,21 @@ window.app = new Vue({
 
 // ==================== 更新检查 ====================
 // 仅在生产环境中启用更新检查
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' && sessionStorage.getItem('checkUpdate') === 'true') {
+  if (checkVersion && typeof checkVersion === 'function') {
+    // 首次打开页面 检查更新
+    if(!sessionStorage.getItem('VERSION_INFO')){
+      checkVersion()
+    }
+    if(!top.getVersion){
+      top.getVersion = checkVersion
+    }
+  }
   // 应用启动时检查更新
-  setTimeout(async () => {
-    const updateInfo = await updateChecker.checkUpdate();
-    updateChecker.showUpdateNotification(updateInfo);
-  }, 1000);
+  // setTimeout(async () => {
+  //   const updateInfo = await updateChecker.checkUpdate();
+  //   updateChecker.showUpdateNotification(updateInfo);
+  // }, 1000);
 
   // 定期检查更新（每10分钟）
   setInterval(async () => {
