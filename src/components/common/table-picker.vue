@@ -219,12 +219,14 @@ export default {
   computed: {
     ObjInfo() {
       let objInfo = this.field.info?.srvCol?.option_list_v2?.obj_info || {}
-
       return objInfo
     },
     // 当前选中的数据的原始数据
     currentModelsRaw(){
       if(this.field.model && typeof this.field.model === 'string'){
+        if(Array.isArray(this.field._raw_model) && this.field._raw_model.length){
+          return this.field._raw_model
+        }
         return this.field.model.split(',').map(value=>{
           return this.allData.find(item=>item[this.valueCol] === value)
         }).filter(item=>item)
@@ -357,7 +359,6 @@ export default {
     // optionListV2() {
     //   return this.field?.info?.srvCol?.option_list_v2;
     // },
-
     checkedAll() {
       // 默认选中所有数据 不带分页
       return this.field?.info?.moreConfig?.checkedAll;

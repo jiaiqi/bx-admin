@@ -133,7 +133,7 @@ export class Field {
     this.autocompleteInput = false;
     if (this.info.editor == null && this.info.redundant) {
       let field = this;
-       
+
       this.autocompleteFunc = (_) => {
         let dependField = field.form.fields[this.info.redundant.dependField];
         if (Array.isArray(field.form.fields)) {
@@ -159,6 +159,15 @@ export class Field {
               }
             });
           }
+          if (result?.disp_col && !result?.key_disp_col) {
+            result.key_disp_col = result.disp_col;
+          }
+          if (result?.primary_col && !result?.refed_col) {
+            result.refed_col = result.primary_col;
+          }
+          if (result?.service && !result.serviceName) {
+            result.serviceName = result.service;
+          }
           return result;
         } else {
           return [];
@@ -169,6 +178,12 @@ export class Field {
         //*如果引用的字段是fk字段的显示字段 则自动使用autocomplete特性,并且隐藏掉fk字段
         //?目前先默认不隐藏fk字段，sessionStorage中hide_fk_field为true时再隐藏，后续没啥问题了放开这个限制
         let optionsV2 = this.autocompleteFunc();
+        if (optionsV2?.disp_col && !optionsV2?.key_disp_col) {
+          optionsV2.key_disp_col = optionsV2.disp_col;
+        }
+        if (optionsV2?.primary_col && !optionsV2?.refedCol) {
+          optionsV2.refedCol = optionsV2.primary_col;
+        }
         let redundant = this.info.redundant;
         if (
           optionsV2?.key_disp_col &&
@@ -225,6 +240,15 @@ export class Field {
               return true;
             }
           });
+        }
+        if (result?.disp_col && !result?.key_disp_col) {
+          result.key_disp_col = result.disp_col;
+        }
+        if (result?.primary_col && !result?.refed_col) {
+          result.refed_col = result.primary_col;
+        }
+        if (result?.service && !result.serviceName) {
+          result.serviceName = result.service;
         }
         return result;
       };
@@ -577,7 +601,7 @@ export class Field {
   }
 
   evalVisible() {
-    if(this.info.xIf){
+    if (this.info.xIf) {
       return this.evalXIf();
     }
     return this.evalXIf() && this.evalVisibleExpr();
