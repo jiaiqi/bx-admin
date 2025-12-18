@@ -40,7 +40,7 @@ const getLocalVersion = async () => {
 
 // 获取远程版本信息
 const getRemoteVersion = async () => {
-  console.info('获取远程版本信息:', baseUrl);
+  // console.info('获取远程版本信息:', baseUrl);
   try {
     const url = `${baseUrl}${versionFileName}`;
     const controller = new AbortController();
