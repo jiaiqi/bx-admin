@@ -562,7 +562,7 @@
             ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
-                ref="autocompleteInput"
+                ref="editor"
                 :disabled="getDisabled"
                 @change="autocompleteSelected"
                 @field-value-changed="$emit('field-value-changed', $event)"
@@ -577,7 +577,7 @@
             ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
-                ref="autocompleteInput"
+                ref="editor"
                 @change="autocompleteSelected"
                 :field="field"
               ></autocompleteInput>
@@ -1113,6 +1113,9 @@ export default {
   },
 
   methods: {
+    setSelectedData(options){
+      this.$refs.editor?.setSelectedData?.(options);
+    },
     onIDCardChange(val) {
       const reg = new RegExp(idCardExp)
 

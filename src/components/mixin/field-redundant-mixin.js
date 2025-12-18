@@ -436,27 +436,27 @@ export default {
             }
 
             // 冗余处理 --- 根据当前字段值设置依赖字段值
-            if(field.info.type==='fks' && field.model){
+            if (field.info.type === 'fks' && field.model) {
               // fks字段冗余处理
-              if(typeof field.model === 'string'){
+              if (typeof field.model === 'string') {
                 // model为值，从组件中获取原始数据
-                const modelRawData = field?.editor?.$refs?.editor?.$refs?.tablePicker?.currentModelsRaw || []
-                if(Array.isArray(modelRawData)&&modelRawData.length&&modelRawData.length===field.model.split(',').length){
+                const selectedOptions = field?.editor?.$refs?.editor?.getSelectedData?.() || []
+                if (Array.isArray(selectedOptions) && selectedOptions.length && selectedOptions.length === field.model.split(',').length) {
                   let dependent_field_val_arr = []
-                  modelRawData.forEach(item=>{
-                    if(item && (item[refedCol]||item[refedCol]===0)){
+                  selectedOptions.forEach(item => {
+                    if (item && typeof item === 'object') {
                       dependent_field_val_arr.push(item[refedCol])
                     }
                   })
-                  if(Array.isArray(dependent_field_val_arr)&&dependent_field_val_arr.length){
+                  if (Array.isArray(dependent_field_val_arr) && dependent_field_val_arr.length) {
                     dependentField.setSrvVal(dependent_field_val_arr.join(',')); // 设置依赖字段值
                     field.modelOld = cloneDeep(field.model); // 保存当前值作为旧值记录
-                  }else{
+                  } else {
                     dependentField.reset(); // 重置依赖字段
                   }
                 }
               }
-            }else if (
+            } else if (
               field.model && // 当前字段有值
               (field.model[refedCol] || field.model[refedCol] === 0) // 引用列有值（包括0值）
             ) {

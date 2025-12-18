@@ -23,7 +23,8 @@
     @clear="handleClear"
     @keyup.enter.native="handleEnter"
     @focus="handleFocus"
-    ref="selectRef"
+    ref="input"
+    class="el-select"
   >
     <el-option
       v-for="item in options"
@@ -31,16 +32,6 @@
       :label="item.label"
       :value="item"
     >
-      <!-- <div class="option-table">
-        <div 
-          v-for="(col) in fksDispCols" 
-          :key="col"
-          class="option-column"
-          :style="{ width: `${100 / fksDispCols.length}%` }"
-        >
-          {{ item.option[col] }}
-        </div>
-      </div> -->
     </el-option>
     <el-option
       v-if="showCustomOption"
@@ -65,18 +56,6 @@
     @select="handleSelect"
     @clear="handleClear"
   >
-    <!-- <template slot-scope="{ item }">
-      <div class="option-table">
-        <div 
-          v-for="(col, index) in fksDispCols" 
-          :key="col"
-          class="option-column"
-          :style="{ width: `${100 / fksDispCols.length}%` }"
-        >
-          {{ item.option[col] }}
-        </div>
-      </div>
-    </template> -->
   </el-autocomplete>
 </template>
 
@@ -226,6 +205,23 @@ export default {
   },
 
   methods: {
+    setSrvVal(val) {
+      this.field.model = val;
+      if (this.isMultiple) {
+        let options =
+          this.dependField?.editor?.$refs?.editor?.getSelectedData?.();
+        // this.selected =
+        if (Array.isArray(options) && options.length) {
+          this.selectedTags = options.map((item) => ({
+            option: item,
+            label: item[this.dispCol],
+            value: item[this.valueCol],
+          }));
+        }
+      } else {
+        this.selected = val;
+      }
+    },
     onTreeChange(val) {
       console.log("onTreeChange", val);
       if (val) {
@@ -310,19 +306,14 @@ export default {
         case "finder":
         case "tree-finder":
           if (this.isMultiple) {
-             if (Array.isArray(item) && item.length) {
+            if (Array.isArray(item) && item.length) {
               const model = item.map((i) => i.option).filter((i) => i);
-              const modelValue = model.map((i) => i[this.valueCol]).toString()
-              if(!model?.length){
+              // const modelValue = model.map((i) => i[this.valueCol]).toString()
+              if (!model?.length) {
                 // 都是自定义数据
                 return;
               }
-              dependField.model = modelValue;
-              dependField._raw_model = model;
-              dependField.finderSelected = modelValue;
-              this.$set(dependField, "_raw_model", model);
-              this.$set(dependField, "model", modelValue);
-              this.$emit("change", dependField);
+              dependField?.editor?.setSelectedData?.(model);
             } else {
               dependField.model = null;
               dependField.finderSelected = null;
@@ -386,7 +377,7 @@ export default {
     handleFocus() {
       console.log("Input focused, triggering remoteSearch");
       // 聚焦时触发一次远程搜索，可以传入当前搜索词或空字符串
-      if(!this.searchQuery && !this.selectedTags.length){
+      if (!this.searchQuery && !this.selectedTags.length) {
         this.remoteSearch(this.searchQuery || "");
       }
     },
@@ -480,7 +471,7 @@ export default {
           option.option[this.dispCol] === this.searchQuery
         );
       });
-      if(exactMatches.length === 1){
+      if (exactMatches.length === 1) {
         // 自动选中这条数据
         this.$nextTick(() => {
           if (
@@ -492,7 +483,7 @@ export default {
             this.handleSelectChange(this.selectedTags);
           }
         });
-      }else if (exactMatches.length === 0) {
+      } else if (exactMatches.length === 0) {
         // 没有匹配的数据，显示提示
         this.$message.warning("没有匹配的数据");
       }
@@ -513,18 +504,13 @@ export default {
 };
 </script>
 
-<style scoped>
-.option-table {
-  display: flex;
-  width: 100%;
-}
-
-.option-column {
-  padding: 0 8px;
-  box-sizing: border-box;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+<style scoped lang="scss">
+.el-select {
+  ::v-deep .el-input .el-input__icon{
+    transform: unset;
+  }
+  ::v-deep .el-input .el-icon-:before {
+    content: "\E78C"; /* 替换为 ElementUI Icon 对应的 Unicode */
+  }
 }
 </style>
