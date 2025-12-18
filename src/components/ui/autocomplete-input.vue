@@ -386,7 +386,7 @@ export default {
     handleFocus() {
       console.log("Input focused, triggering remoteSearch");
       // 聚焦时触发一次远程搜索，可以传入当前搜索词或空字符串
-      if(!this.searchQuery){
+      if(!this.searchQuery && !this.selectedTags.length){
         this.remoteSearch(this.searchQuery || "");
       }
     },
