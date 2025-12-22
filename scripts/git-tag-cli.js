@@ -55,6 +55,88 @@ const getNextVersion = () => {
   }
 };
 
+// 格式化提交日志行
+const formatCommitLine = (line) => {
+  // 找到管道符的位置来正确分割
+  const firstPipe = line.indexOf('|');
+  const secondPipe = line.indexOf('|', firstPipe + 1);
+  const thirdPipe = line.indexOf('|', secondPipe + 1);
+  
+  if (firstPipe === -1 || secondPipe === -1 || thirdPipe === -1) {
+    return line;
+  }
+  
+  const hash = line.substring(0, firstPipe);
+  const subject = line.substring(firstPipe + 1, secondPipe);
+  const body = line.substring(secondPipe + 1, thirdPipe);
+  let timestamp = line.substring(thirdPipe + 1);
+  
+  // 去掉时间戳前面的管道符
+  if (timestamp.startsWith('|')) {
+    timestamp = timestamp.substring(1);
+  }
+  
+  // 格式化时间戳
+  const date = new Date(timestamp);
+  const formattedDate = date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  // 构建完整的提交信息
+  let fullMessage = subject;
+  if (body && body.trim()) {
+    // 清理并格式化正文
+    const cleanBody = body.trim().replace(/\s+/g, ' ');
+    if (cleanBody) {
+      // 添加缩进和换行处理
+      fullMessage += '\n  ' + cleanBody.replace(/\n/g, '\n  ');
+    }
+  }
+  
+  // 返回格式化的提交记录，日期时间放在最上面
+  return `${formattedDate}\n${hash.padEnd(8)} - ${fullMessage}`;
+};
+
+// 获取自上次tag以来的提交日志
+const getCommitLogsSinceLastTag = () => {
+  try {
+    // 获取最近的tag
+    const latestTag = execSync('git describe --tags --abbrev=0', { stdio: 'pipe' }).toString().trim();
+    
+    // 获取自上次tag以来的提交日志
+    const commitLogs = execSync(
+      `git log ${latestTag}..HEAD --pretty=format:"%h|%s|%b|%ai" --reverse`,
+      { stdio: 'pipe' }
+    ).toString().trim();
+    
+    if (commitLogs) {
+      const logs = commitLogs.split('\n').map(formatCommitLine);
+      return logs.join('\n\n');
+    }
+    return '暂无提交记录';
+  } catch (error) {
+    // 如果没有tag或获取失败，返回最近10次提交日志
+    try {
+      const recentLogs = execSync(
+        'git log -10 --pretty=format:"%h|%s|%b|%ai" --reverse',
+        { stdio: 'pipe' }
+      ).toString().trim();
+      
+      if (recentLogs) {
+        const logs = recentLogs.split('\n').map(formatCommitLine);
+        return '📋 最近10次提交记录:\n\n' + logs.join('\n\n');
+      }
+    } catch (recentError) {
+      return '无法获取提交记录';
+    }
+    return '暂无提交记录';
+  }
+};
+
 // 获取当前分支
 const getCurrentBranch = () => {
   try {
@@ -96,7 +178,7 @@ const main = async () => {
   const hasUncommittedChanges = checkUncommittedChanges();
   if (hasUncommittedChanges) {
     log('⚠️  警告: 存在未提交的更改，请先提交或暂存更改', 'yellow');
-    const continueAnswer = await askQuestion('是否继续? (y/N)', 'N');
+    const continueAnswer = await askQuestion('是否继续?输入y则忽略未提交的更改，否则会退出流程 (y/N)', 'N');
     if (!continueAnswer.toLowerCase().startsWith('y')) {
       log('操作已取消', 'yellow');
       process.exit(0);
@@ -107,8 +189,25 @@ const main = async () => {
   const suggestedVersion = getNextVersion();
   log(`建议版本号: ${suggestedVersion}`, 'green');
   
+  // 获取自上次tag以来的提交日志
+  const commitLogs = getCommitLogsSinceLastTag();
+  log('\n📋 自上次发布以来的提交记录:', 'blue');
+  log(commitLogs, 'green');
+  
+  // 询问是否使用git日志作为标签描述
+  const useGitLogsAnswer = await askQuestion('是否使用上述提交记录作为标签描述? (Y/n)', 'Y');
+  let tagMessage = '';
+  if (useGitLogsAnswer.toLowerCase() === 'y' || useGitLogsAnswer === '') {
+    // 使用绿色字体显示提交日志
+    log('\n✅ 已选择使用提交记录作为标签描述:', 'green');
+    tagMessage = commitLogs;
+  } else {
+    // 询问用户自定义标签描述
+    tagMessage = await askQuestion('请输入自定义标签描述 (必填)');
+  }
+  
   // 询问用户输入版本号
-  let tagName = await askQuestion('请输入版本号', suggestedVersion);
+  let tagName = await askQuestion('请输入版本号 (必填)', suggestedVersion);
   
   // 确保版本号以v开头
   if (!tagName.startsWith('v')) {
@@ -120,9 +219,6 @@ const main = async () => {
     log('❌ 错误: 版本号格式不符合语义化版本规范', 'red');
     process.exit(1);
   }
-  
-  // 询问标签描述
-  const tagMessage = await askQuestion('请输入标签描述 (可选)');
   
   // 确认操作
   log('\n📋 操作确认', 'blue');
