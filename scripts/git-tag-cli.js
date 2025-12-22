@@ -61,26 +61,50 @@ const getCommitLogsSinceLastTag = () => {
     // 获取最近的tag
     const latestTag = execSync('git describe --tags --abbrev=0', { stdio: 'pipe' }).toString().trim();
 
-    // 获取自上次tag以来的提交日志
+    // 获取自上次tag以来的提交日志，包含影响的文件
     const commitLogs = execSync(
-      `git log ${latestTag}..HEAD --pretty=format:"%ad 【%h】%n%s%n%b" --date=format:"%Y-%m-%d %H:%M" --reverse`,
+      `git log ${latestTag}..HEAD --pretty=format:"%ad 【%h】%n%s%n%b%n文件: " --date=format:"%Y-%m-%d %H:%M" --name-only --reverse`,
       { stdio: 'pipe' }
     ).toString().trim();
 
     if (commitLogs) {
-      return commitLogs
+      // 在每个提交之间添加分隔符
+      const lines = commitLogs.split('\n');
+      const formattedLogs = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        // 检测到新的提交开始（日期行）且不是第一个提交
+        if (lines[i].match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/) && i > 0) {
+          formattedLogs.push('===========================');
+        }
+        formattedLogs.push(lines[i]);
+      }
+      
+      return formattedLogs.join('\n');
     }
     return '暂无提交记录';
   } catch (error) {
     // 如果没有tag或获取失败，返回最近10次提交日志
     try {
       const recentLogs = execSync(
-        'git log -10 --pretty=format:"%ad 【%h】%n%s%n%b" --date=format:"%Y-%m-%d %H:%M" --reverse',
+        'git log -10 --pretty=format:"%ad 【%h】%n%s%n%b%n文件: " --date=format:"%Y-%m-%d %H:%M" --name-only --reverse',
         { stdio: 'pipe' }
       ).toString().trim();
 
       if (recentLogs) {
-        return recentLogs
+        // 在每个提交之间添加分隔符
+        const lines = recentLogs.split('\n');
+        const formattedLogs = [];
+        
+        for (let i = 0; i < lines.length; i++) {
+          // 检测到新的提交开始（日期行）且不是第一个提交
+          if (lines[i].match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/) && i > 0) {
+            formattedLogs.push('===========================');
+          }
+          formattedLogs.push(lines[i]);
+        }
+        
+        return formattedLogs.join('\n');
       }
     } catch (recentError) {
       return '无法获取提交记录';
