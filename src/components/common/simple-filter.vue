@@ -1,7 +1,7 @@
 /** * props: name, service * event: search-clicked */
 <template>
   <el-row class="filter-view">
-    <el-row>
+    <el-row class="filter-form">
       <el-form
         :inline="false"
         label-position="right"
@@ -651,5 +651,23 @@ export default {
   /* background: #fcfcfc; */
   padding: 5px;
   border-radius: 4px;
+}
+.filter-form{
+  max-height: 30vh;
+  overflow: auto;
+}
+.filter-form::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.filter-form::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+.filter-form::-webkit-scrollbar-thumb {
+  background-color: rgba(27, 27, 27, 0.2);
+  border-radius: 4px;
+}
+.filter-form::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
 }
 </style>
