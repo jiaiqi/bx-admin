@@ -1,5 +1,4 @@
-<template>
-  <div v-if="listV2Data">
+  <template v-if="listV2Data">
     <!-- <el-tabs
       v-model="activeName"
       @tab-click="handleClick(activeName)"
@@ -101,12 +100,14 @@
     </el-tabs> -->
     <el-tabs
       v-model="activeName"
+      class="list-proc-wrap"
       @tab-click="handleClick(activeName)"
     >
       <template v-for="item in setTabs">
         <el-tab-pane
           :label="item.finallyLabel || item.label"
           :name="item.key"
+          :key="item.key"
           v-show="item.show && activeName == item.key"
           v-if="item.hide !== true"
         >
@@ -121,8 +122,7 @@
         </el-tab-pane>
       </template>
     </el-tabs>
-  </div>
-</template>
+  </template>
 
 <script>
 import list from "./list";
@@ -291,3 +291,31 @@ export default {
   }
 };
 </script>
+<style scoped lang="scss">
+ ::v-deep.list-proc-wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  &.el-tabs {
+      height: 100%;
+      .el-tabs__content{
+        flex: 1;
+        .el-tab-pane{
+          height: 100%;
+          .list-comp-wrap{
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            .row-bg{
+              flex-wrap: wrap;
+            }
+            .table-list-wrap{
+              flex: 1;
+            }
+          }
+        }
+      }
+    }
+  
+}
+</style>
