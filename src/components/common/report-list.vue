@@ -1,15 +1,15 @@
 <template>
-    <div id="table-view" ref="tableView" style="height:calc(100vh - 70px)">
-        <div v-if="isShowList">
-            <el-row :gutter="20" style="padding:2px;font-weight: 600;">
-                <el-col :span="12">
-                    <span style="font-size:18px;">{{reportTitle||'-' }}</span>
-                </el-col>
-                <el-col :span="12"  style="text-align:right">
-                    <el-button type="success " size="small" icon="el-icon-download" @click="exportExcel('out-table-data',reportTitle)">导出Excel</el-button>
-                    <el-button type="primary" size="small" icon="el-icon-refresh" @click="getReportData">刷新</el-button>
-                </el-col>
-            </el-row>
+  <div id="table-view" ref="tableView" style="height:calc(100vh - 70px)">
+    <div v-if="isShowList">
+        <el-row :gutter="20" style="padding:2px;font-weight: 600;">
+            <el-col :span="12">
+                <span style="font-size:18px;">{{reportTitle||'-' }}</span>
+            </el-col>
+            <el-col :span="12"  style="text-align:right">
+                <el-button type="success " size="small" icon="el-icon-download" @click="exportExcel('out-table-data',reportTitle)">导出Excel</el-button>
+                <el-button type="primary" size="small" icon="el-icon-refresh" @click="getReportData">刷新</el-button>
+            </el-col>
+        </el-row>
         <el-table
             header-row-class-name="reportview"
             border
@@ -42,7 +42,7 @@
                     <!-- // 没有和并列时 --> 
                     <el-dropdown trigger="click"  placement="bottom"  @command="onDims" v-if="headerItem.isdrill && headerItem.drill_dim.length >1 && scope.row[headerItem.colkey]">
                         <span class="el-dropdown-link"  style="color:#0087ff">
-                           {{dataformat(scope.row[headerItem.colkey],headerItem)}}
+                          {{dataformat(scope.row[headerItem.colkey],headerItem)}}
                         </span>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item  v-for="(dimone,dimIndexone) in headerItem.drill_dim" :key="dimIndexone">
@@ -99,8 +99,8 @@
                         v-for="(childItem,j) in item.child"
                         :prop="childItem.colkey"
                         :label="item.label">
-                       
-                         <template slot-scope="scope" v-if="!childItem.hasOwnProperty('child')">
+                      
+                        <template slot-scope="scope" v-if="!childItem.hasOwnProperty('child')">
                             <!-- // 没有和并列时 -->
                             <el-dropdown trigger="click"  placement="bottom" @command="onDims" v-if="childItem.isdrill && childItem.drill_dim.length >1 && scope.row[childItem.colkey]">
                                 <span class="el-dropdown-link"  style="color:blue">
@@ -148,7 +148,7 @@
                     <!-- // 没有和并列时 --> 
                     <el-dropdown trigger="click"  placement="bottom"  @command="onDims" v-if="headerItem.isdrill && headerItem.drill_dim.length >1 && scope.row[headerItem.colkey]">
                         <span class="el-dropdown-link"  style="color:#0087ff">
-                           {{dataformat(scope.row[headerItem.colkey],headerItem)}}
+                          {{dataformat(scope.row[headerItem.colkey],headerItem)}}
                         </span>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item  v-for="(dimone,dimIndexone) in headerItem.drill_dim" :key="dimIndexone">
@@ -205,8 +205,8 @@
                         v-for="(childItem,j) in item.child"
                         :prop="childItem.colkey"
                         :label="item.label">
-                       
-                         <template slot-scope="scope" v-if="!childItem.hasOwnProperty('child')">
+                      
+                        <template slot-scope="scope" v-if="!childItem.hasOwnProperty('child')">
                             <!-- // 没有和并列时 -->
                             <el-dropdown trigger="click"  placement="bottom" @command="onDims" v-if="childItem.isdrill && childItem.drill_dim.length >1 && scope.row[childItem.colkey]">
                                 <span class="el-dropdown-link"  style="color:blue">
@@ -224,20 +224,18 @@
             </el-table-column>
 
         </el-table>
-        
- </div>
-    <div v-else> 
-        <el-alert
-            title="无效报表"
-            type="error">
-        </el-alert>    
-     </div>
     </div>
+    <div v-else> 
+      <el-alert
+          title="无效报表"
+          type="error">
+      </el-alert>    
+    </div>
+  </div>
 </template>
 <script>
 
 import * as DataUtil from "../../util/DataUtil";
-import FileSaver from "file-saver";
 import XLSX from "xlsx";
 export default {
     name:"reportList",
@@ -760,17 +758,12 @@ export default {
                 wb = XLSX.utils.table_to_book(document.querySelector('#'+id),{raw:true});
             }
            
-            /* get binary string as output */
-            var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' })
-            //  console.log('XLSX.write',wbout,wb)
+            /* save the workbook */
             try {
-                FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream;charset=utf-8' }), titleText + '.xlsx')
+                XLSX.writeFile(wb, titleText + '.xlsx')
             } catch (e) {
-                if (typeof console !== 'undefined') {
-                //console.log(e, wbout)
-                }
+              console.error('导出Excel失败',e)
             }
-            return wbout
 
         },
         formatter (value,item,row,prop) {
