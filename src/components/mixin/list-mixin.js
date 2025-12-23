@@ -1028,7 +1028,12 @@ export default {
         // let testFun = new Function(...args, funBody)
         // let mainData = listMainFormDatas || {}
         // isBtnExpShow = testFun(row,mainData)
-        isBtnExpShow = eval(dispExps);
+        try {
+          isBtnExpShow = eval(dispExps);
+        } catch (error) {
+          console.error('eval dispExps error:', error);
+        }
+        
       } else {
         isBtnExpShow = btn.permission;
       }
