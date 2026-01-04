@@ -152,7 +152,7 @@ export const doSelect = function (option = {}, vm = {}) {
           value: item.value,
         };
       });
-      query.condition = query.condition.map((item) => {
+      query.condition = query.condition.filter((item) => item.use_query !== "否").map((item) => {
         return {
           colName: item.colName,
           ruleType: item.ruleType,

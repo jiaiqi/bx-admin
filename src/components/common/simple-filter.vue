@@ -599,7 +599,7 @@ export default {
         Object.keys(this.fields).forEach((key) => {
           if (this.fields[key].info.queryInitValue) {
             const queryInitValue = this.fields[key].info.queryInitValue;
-            if (queryInitValue?.value && queryInitValue?.use_query === "是") {
+            if (queryInitValue?.value && (queryInitValue?.use_query === "是" || queryInitValue?.use_div_calc === "是")) {
               queryInitValueFields.push(key);
               let value = queryInitValue?.value;
               // 按天加上或减去时间
