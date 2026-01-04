@@ -2309,13 +2309,15 @@ export default {
       // this.pageSize = val;
       this.loadTableData();
     },
-
-    query(condtion) {
-      this.searchFormCondition = condtion;
+    onSearchFormConditionChange(condition){
+      this.searchFormCondition = condition;
+      this.searchFormCondition = condition;
       this.gridPage.currentPage = 1;
       this.condition = [];
-      this.buildGridHeaders(this.srv_cols, condtion);
-      // console.log(cloneDeep(this.filterCondition));
+      this.buildGridHeaders(this.srv_cols, condition);
+    },
+    query(condition) {
+      this.onSearchFormConditionChange(condition)
       this.loadTableData();
     },
     buildDetailListCond(childForeignkey, mainData) {
@@ -3506,7 +3508,9 @@ export default {
           }
           this.$emit('metadata-loaded', this)
         });
-
+      if(this.$refs['filter-form']) {
+        await this.$refs['filter-form'].initFilterForm();
+      }
       try {
         if (this.defaultOrder.length > 0) {
           this.order = this.order.concat(this.defaultOrder);

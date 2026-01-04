@@ -32,6 +32,7 @@
         :srv_cols="srv_cols"
         :supportGroup="false"
         v-on:search-clicked="query"
+        v-on:condition-change="onSearchFormConditionChange"
         ref="filter-form"
         @form-loaded="onFilterFormLoaded($refs['filter-form'])"
       >
