@@ -2381,6 +2381,7 @@ export default {
   flex: 1;
   display: flex;
   gap: 10px;
+  min-height: 400px;
   overflow: hidden;
 }
 .table-list-row {
