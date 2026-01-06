@@ -464,6 +464,7 @@
             >
             </code-editor>
             <vue-json-editor
+              ref="vueJsonEditor"
               v-else-if="field.info.editor === 'json-editor'"
               :value="getJsonModel"
               :lang="'zh'"
@@ -1104,6 +1105,13 @@ export default {
     if (this._debounceCheckLengthTimer) {
       clearTimeout(this._debounceCheckLengthTimer);
       this._debounceCheckLengthTimer = null;
+    }
+    // 【拖拽组件点击切换时内存暴增】手动销毁vue-json-editor实例，防止DOM节点累积
+    if (this.field.info.editor === 'json-editor' && this.$refs.vueJsonEditor) {
+      const jsonEditorComponent = this.$refs.vueJsonEditor;
+      if (jsonEditorComponent.editor && typeof jsonEditorComponent.editor.destroy === 'function') {
+        jsonEditorComponent.editor.destroy();
+      }
     }
   },
 

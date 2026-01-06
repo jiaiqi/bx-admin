@@ -388,7 +388,7 @@ export default {
         }
 
         const res = await this.$http.post(url, req);
-        console.log(res);
+        // console.log(res);
 
         if (res.data.state === "SUCCESS") {
           const respData =
@@ -408,7 +408,7 @@ export default {
           Message.error(res.data.resultMessage || "保存失败，请重试");
         }
       } catch (error) {
-        console.error("保存身份证信息失败:", error);
+        // console.error("保存身份证信息失败:", error);
         Message.error("保存失败，请重试");
       } finally {
         this.isRecordSaving = false;
@@ -464,7 +464,7 @@ export default {
 
         return response.data;
       } catch (error) {
-        console.error("Upload error:", error);
+        // console.error("Upload error:", error);
         throw error;
       }
     },
@@ -620,7 +620,7 @@ export default {
             _this.updateProgress(progress, file, type);
           },
           onUploadSuccess: async (res) => {
-            console.log("分片上传成功:", res);
+            // console.log("分片上传成功:", res);
 
             // 构造响应格式
             const response = {
@@ -638,7 +638,7 @@ export default {
           },
         });
       } catch (error) {
-        console.error("分片上传失败:", error);
+        // console.error("分片上传失败:", error);
         throw new Error("文件上传失败，请重试");
       }
     },
@@ -848,7 +848,7 @@ export default {
     // 提供给父组件的方法，用于手动保存到服务器
     async saveAllToServer() {
       // 当前版本已简化，直接在checkCompletion中自动保存
-      console.warn('saveAllToServer已废弃，改为自动保存机制');
+      // console.warn('saveAllToServer已废弃，改为自动保存机制');
     },
 
     // 清空已上传的图片

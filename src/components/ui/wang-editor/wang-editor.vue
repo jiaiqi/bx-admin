@@ -160,7 +160,7 @@ export default {
 
         // 检查是否应该使用分片上传
         if (this.useSplitChuck && fileSize > this.limitSize) {
-          console.log(`使用分片上传${fileType}:`, file.name, fileSize + 'MB');
+          // console.log(`使用分片上传${fileType}:`, file.name, fileSize + 'MB');
 
           // 打开进度覆盖层
           this.showProgress = true;
@@ -180,11 +180,11 @@ export default {
               this.uploadPercentage = Number(percentage) || 0;
             },
             onUploadSuccess: (res) => {
-              console.log('分片上传成功:', res);
+              // console.log('分片上传成功:', res);
             }
           });
 
-          console.log('分片上传结果:', result);
+          // console.log('分片上传结果:', result);
           if (result && result.url) {
             // 统一使用insertFn方法，不管是图片还是视频
             insertFn(result.url);
@@ -207,7 +207,7 @@ export default {
           this.uploadPercentage = 0;
         } else {
           // 使用普通上传
-          console.log(`使用普通上传${fileType}:`, file.name, fileSize + 'MB');
+          // console.log(`使用普通上传${fileType}:`, file.name, fileSize + 'MB');
           const formData = new FormData();
           formData.append('file', file);
           formData.append('serviceName', 'srv_bxfile_service');
@@ -238,7 +238,7 @@ export default {
             if (xhr.readyState === 4) {
               try {
                 const res = JSON.parse(xhr.responseText || '{}');
-                console.log('普通上传结果:', res);
+                // console.log('普通上传结果:', res);
                 if (res.fileurl) {
                   const url = `${window.backendIpAddr}/file/download?filePath=${res.fileurl}`;
                   insertFn(url);
@@ -250,12 +250,12 @@ export default {
                       this.ticket = sessionStorage.getItem("bx_auth_ticket");
                     });
                   } else {
-                    console.error('上传失败:', res);
+                    // console.error('上传失败:', res);
                     throw new Error(res?.resultMessage || '上传失败');
                   }
                 }
               } catch (err) {
-                console.error('上传失败:', err);
+                // console.error('上传失败:', err);
                 this.$message.error('文件上传失败: ' + err.message);
               } finally {
                 // 关闭进度覆盖层
@@ -268,7 +268,7 @@ export default {
           };
 
           xhr.onerror = (err) => {
-            console.error('上传失败:', err);
+            // console.error('上传失败:', err);
             this.$message.error('文件上传失败: 网络错误');
             this.showProgress = false;
             this.isSplitUpload = false;
@@ -279,7 +279,7 @@ export default {
           xhr.send(formData);
         }
       } catch (error) {
-        console.error('上传失败:', error);
+        // console.error('上传失败:', error);
         this.$message.error('文件上传失败: ' + error.message);
         // 异常时关闭进度覆盖层
         this.showProgress = false;
@@ -295,10 +295,10 @@ export default {
         ?.addEventListener("dblclick", this.onDblClick);
     },
     onInput(event) {
-      console.log(event, "oninput");
+      // console.log(event, "oninput");
     },
     onChange(editor) {
-      console.log("onChange", this.innerHtml, this.getSrvVal(), this.field.model); // onChange 时获取编辑器最新内容
+      // console.log("onChange", this.innerHtml, this.getSrvVal(), this.field.model); // onChange 时获取编辑器最新内容
       if (this.getSrvVal() !== this.field.model) {
         this.$set(this.field, "model", this.replaceFileAddressSuffix(this.getSrvVal()));
         this.$emit("change", this.field.info.name, this.field);
@@ -312,7 +312,7 @@ export default {
     printEditorHtml() {
       const editor = this.editor;
       if (editor == null) return;
-      console.log(editor.getHtml());
+      // console.log(editor.getHtml());
     },
     disableHandler() {
       const editor = this.editor;

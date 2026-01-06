@@ -142,7 +142,6 @@ export default {
   },
   methods: {
     getLabel(button) {
-      console.log("getLabel", button);
       if (
         this.inStep === true &&
         this.lastStep !== true &&
