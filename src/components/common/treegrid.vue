@@ -5,6 +5,7 @@
         v-if="srv_cols"
         :srv_cols="srv_cols"
         v-on:search-clicked="query"
+        ref="filter-form"
       ></simple-filter>
     </div>
 
@@ -1501,7 +1502,9 @@ export default {
           this.initLoad = true;
           this.$emit("list-loaded", this);
         });
-
+      if(this.$refs['filter-form']) {
+        await this.$refs['filter-form'].initFilterForm();
+      }
       this.loadTableData(true);
     },
 
