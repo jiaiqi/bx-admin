@@ -1177,7 +1177,7 @@ export default {
       this.form.code = event
     },
     toLogin() {
-      window.location.href = "/main/login.html";
+      window.location.href = "/yx/main/login.html";
     },
     async toRegister() {
       // 第一步 注册

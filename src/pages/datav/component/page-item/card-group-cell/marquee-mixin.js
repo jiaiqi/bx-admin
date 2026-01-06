@@ -22,17 +22,18 @@ export default {
      * @param {Object} config - 动画配置
      * @param {string} containerRef - 容器引用名称
      */
-    startMarqueeAnimation(config, containerRef = 'cardInnerContainer') {
+    async startMarqueeAnimation(config, containerRef = 'cardInnerContainer') {
       if (!config || this.marqueeIsRunning) return;
 
       const marqueeElement = this.$refs[containerRef];
       if (!marqueeElement) return;
 
-      // 延迟启动
+      // 延迟启动动画，避免初始渲染时触发动画
+      await this.$nextTick();
       this.marqueeDelayTimer = setTimeout(() => {
         this.initCSSMarqueeLayout(config, containerRef);
         this.marqueeIsRunning = true;
-      }, config.delay || 0);
+      }, config.delay || 100);
     },
     addEvent(ele) {
       ele.addEventListener('click', (ele) => {

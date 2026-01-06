@@ -111,6 +111,10 @@ $basic-color-info: #909399;
   }
   .el-collapse-item__wrap{
     border-bottom-width: 0;
+    min-height: 400px;
+  }
+  .el-collapse-item__content {
+    min-height: 400px;
   }
 }
 

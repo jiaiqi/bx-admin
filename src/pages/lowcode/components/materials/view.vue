@@ -120,7 +120,7 @@ import lcContainer from "./container.vue";
 import lcContent from "./content-item.vue";
 import PageItem from "@/pages/datav/component/page-item/page-item.vue";
 import floatComponent from "./float-component.vue";
-import { VueDraggable } from "vue-draggable-plus";
+// import { VueDraggable } from "vue-draggable-plus";
 import chatEntrance from "@/pages/datav/component/page-item/chat/chat-entrance.vue";
 import ChatBox from "@/pages/datav/component/page-item/chat/chat-box.vue";
 
@@ -131,7 +131,7 @@ export default {
     lcBlock,
     lcContainer,
     lcContent,
-    VueDraggable,
+    // VueDraggable,
     PageItem,
     lcView: () => import("./view.vue"),
     floatComponent,

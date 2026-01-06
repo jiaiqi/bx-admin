@@ -43,7 +43,7 @@
 // import LcContainer from "../materials/container.vue";
 // import LcContent from "../materials/content-item.vue";
 import lcView from "../materials/view.vue";
-import { VueDraggable } from "vue-draggable-plus";
+// import { VueDraggable } from "vue-draggable-plus";
 import dragStore from "../../store/dragStore";
 export default {
   name: "lowcode-editor",
@@ -52,7 +52,7 @@ export default {
     // LcContainer,
     // LcContent,
     lcView,
-    VueDraggable,
+    // VueDraggable,
   },
   props: {
     currentId: {

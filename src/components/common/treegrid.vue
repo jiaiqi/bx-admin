@@ -5,6 +5,7 @@
         v-if="srv_cols"
         :srv_cols="srv_cols"
         v-on:search-clicked="query"
+        ref="filter-form"
       ></simple-filter>
     </div>
 
@@ -122,6 +123,7 @@
             @filter-change="filterChange"
             @sort-change="handleSortChange"
             style="width: 100%"
+            height="100%"
           >
             <el-table-column width="50">
               <template slot-scope="scope">
@@ -1500,7 +1502,9 @@ export default {
           this.initLoad = true;
           this.$emit("list-loaded", this);
         });
-
+      if(this.$refs['filter-form']) {
+        await this.$refs['filter-form'].initFilterForm();
+      }
       this.loadTableData(true);
     },
 

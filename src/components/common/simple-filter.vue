@@ -1,7 +1,7 @@
 /** * props: name, service * event: search-clicked */
 <template>
   <el-row class="filter-view">
-    <el-row>
+    <el-row class="filter-form">
       <el-form
         :inline="false"
         label-position="right"
@@ -166,6 +166,9 @@ export default {
       let headers = this.supportGroup ? this.buildResultHeader() : null;
 
       this.$emit("search-clicked", this.buildConditions(), groups, headers);
+    },
+    onConditionChange: function () {
+      this.$emit("condition-change", this.buildConditions());
     },
 
     noramlizeFieldName: function (fieldName) {
@@ -550,79 +553,89 @@ export default {
       // fiagsFi.visible = true
       return flagsField;
     },
+    async initFilterForm(){
+
+      let colFilter = (srvCol) => {
+        // return (srvCol.columns !== 'id' || !srvCol.auto_generate) && srvCol.in_cond > 0
+        return srvCol.columns !== "id" && srvCol.in_cond > 0;
+      };
+
+      return await this.createFields(colFilter, this.srv_cols)
+        .then(() => {
+          this.decorateFields();
+
+          if (this.supportGroup) {
+            this.createGroupFields();
+            this.createReduceFields();
+          }
+        })
+        .then((_) => {
+          this.formLoaded = true;
+        })
+        .then((_) => {
+          this.$emit("form-loaded");
+        })
+        .then((_) => {
+          if (!this.supportGroup) {
+            return;
+          }
+
+          this.rflagsField.editor.$on("field-value-changed", (_) => {
+            let selected = this.rflagsField.model;
+            for (let i in selected) {
+              let fieldName = selected[i];
+              this.reduceFields[fieldName].info.seq = i * 100;
+            }
+          });
+
+          this.gflagsField.editor.$on("field-value-changed", (_) => {
+            let selected = this.gflagsField.model;
+            for (let i in selected) {
+              let fieldName = selected[i];
+              this.groupFields[fieldName].info.seq = i * 100;
+            }
+          });
+        })
+        .then(() => {
+          const queryInitValueFields = [];
+          Object.keys(this.fields).forEach((key) => {
+            if (this.fields[key].info.queryInitValue) {
+              const queryInitValue = this.fields[key].info.queryInitValue;
+              if (queryInitValue?.value && (queryInitValue?.use_query === "是" || queryInitValue?.use_div_calc === "是")) {
+                queryInitValueFields.push(key);
+                let value = queryInitValue?.value;
+                // 按天加上或减去时间
+                if (queryInitValue.start_time_diff) {
+                  value = value.map((date) => {
+                    return dayjs(date)
+                      .add(queryInitValue.start_time_diff, "day")
+                      .format("YYYY-MM-DD HH:mm:ss");
+                  });
+                }
+                this.fields[key].setSrvVal(value);
+              }
+            }
+          });
+          if (queryInitValueFields?.length) {
+            return new Promise((resolve) => {
+              this.$nextTick(() => {
+                this.onConditionChange()
+                // this.onSearchClicked();
+                resolve();
+              });
+            })
+          }
+        })
+        .then(() => {
+          this.setFieldsDefaultValue();
+        }).finally(() => {
+          this.$emit("filter-loaded");
+        })
+      },
   },
 
   mounted: function () {
-    let colFilter = (srvCol) => {
-      // return (srvCol.columns !== 'id' || !srvCol.auto_generate) && srvCol.in_cond > 0
-      return srvCol.columns !== "id" && srvCol.in_cond > 0;
-    };
-
-    this.createFields(colFilter, this.srv_cols)
-      .then(() => {
-        this.decorateFields();
-
-        if (this.supportGroup) {
-          this.createGroupFields();
-          this.createReduceFields();
-        }
-      })
-      .then((_) => {
-        this.formLoaded = true;
-      })
-      .then((_) => {
-        this.$emit("form-loaded");
-      })
-      .then((_) => {
-        if (!this.supportGroup) {
-          return;
-        }
-
-        this.rflagsField.editor.$on("field-value-changed", (_) => {
-          let selected = this.rflagsField.model;
-          for (let i in selected) {
-            let fieldName = selected[i];
-            this.reduceFields[fieldName].info.seq = i * 100;
-          }
-        });
-
-        this.gflagsField.editor.$on("field-value-changed", (_) => {
-          let selected = this.gflagsField.model;
-          for (let i in selected) {
-            let fieldName = selected[i];
-            this.groupFields[fieldName].info.seq = i * 100;
-          }
-        });
-      })
-      .then(() => {
-        const queryInitValueFields = [];
-        Object.keys(this.fields).forEach((key) => {
-          if (this.fields[key].info.queryInitValue) {
-            const queryInitValue = this.fields[key].info.queryInitValue;
-            if (queryInitValue?.value && queryInitValue?.use_query === "是") {
-              queryInitValueFields.push(key);
-              let value = queryInitValue?.value;
-              // 按天加上或减去时间
-              if (queryInitValue.start_time_diff) {
-                value = value.map((date) => {
-                  return dayjs(date)
-                    .add(queryInitValue.start_time_diff, "day")
-                    .format("YYYY-MM-DD HH:mm:ss");
-                });
-              }
-              this.fields[key].setSrvVal(value);
-            }
-          }
-        });
-        if (queryInitValueFields?.length) {
-          this.$nextTick(() => {
-            this.onSearchClicked();
-          });
-        }
-      })
-      .then(() => {
-        this.setFieldsDefaultValue();
-      });
+    // this.initFilterForm()
   },
 };
 </script>
@@ -651,5 +664,23 @@ export default {
   /* background: #fcfcfc; */
   padding: 5px;
   border-radius: 4px;
+}
+.filter-form{
+  max-height: 30vh;
+  overflow: auto;
+}
+.filter-form::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.filter-form::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+.filter-form::-webkit-scrollbar-thumb {
+  background-color: rgba(27, 27, 27, 0.2);
+  border-radius: 4px;
+}
+.filter-form::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
 }
 </style>

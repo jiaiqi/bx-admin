@@ -12,7 +12,7 @@
         preventOverflow: {
           options: {
             boundary: 'viewport',
-          }
+          },
         },
       }"
       @show="visibleChange"
@@ -26,6 +26,7 @@
             <el-tag
               size="mini"
               style="margin-right: 4px; margin-bottom: 2px"
+              :key="tag"
               :type="['', 'success', 'warning', 'danger'][tIndex % 4]"
             >
               {{ tag || "--" }}
@@ -55,17 +56,15 @@
           </el-option>
         </el-select>
       </template>
-      <div
-        class="picker-view"
-        :class="{ 'is-selected-all': isSelectedAll }"
-      >
+      <div class="picker-view" :class="{ 'is-selected-all': isSelectedAll }">
         <div class="top-bar">
           <el-checkbox
             v-if="allSelect"
             v-model="isSelectedAll"
             @change="changeSelectedAll"
             class="mr-2"
-          >全选</el-checkbox>
+            >全选</el-checkbox
+          >
           <el-input
             placeholder="输入查询条件"
             suffix-icon="el-icon-search"
@@ -80,7 +79,8 @@
             icon="el-icon-search"
             @click="onSearch"
             :disabled="isSelectedAll === true"
-          >搜索</el-button>
+            >搜索</el-button
+          >
         </div>
         <div class="table-container">
           <el-table
@@ -98,14 +98,12 @@
           >
             <!-- <el-table-column type="selection" width="55" v-if="isMulti">
           </el-table-column> -->
-            <el-table-column
-              width="120"
-              v-if="isMulti"
-            >
+            <el-table-column width="120" v-if="isMulti">
               <template #header>
                 <el-checkbox
-                  :value="gridData.every((item) => selected.includes(item[valueCol]))
-                    "
+                  :value="
+                    gridData.every((item) => selected.includes(item[valueCol]))
+                  "
                   @change="onCheckedAll"
                 ></el-checkbox>
               </template>
@@ -117,14 +115,18 @@
                 ></el-checkbox>
               </template>
             </el-table-column>
-            <el-table-column
-              :min-width="flexColumnWidth(item.label, item.column)"
-              :label="item.label"
-              v-for="item in setGridHeader"
-              :key="item.column"
-              v-if="item.srvcol && (item.srvcol.in_list === 1 || item.srvcol.in_detail === 1)"
-              :prop="item.column"
-            ></el-table-column>
+            <template v-for="item in setGridHeader">
+              <el-table-column
+                :min-width="flexColumnWidth(item.label, item.column)"
+                :label="item.label"
+                :key="item.column"
+                v-if="
+                  item.srvcol &&
+                  (item.srvcol.in_list === 1 || item.srvcol.in_detail === 1)
+                "
+                :prop="item.column"
+              ></el-table-column>
+            </template>
           </el-table>
           <div class="bottom-bar">
             <el-pagination
@@ -266,17 +268,16 @@ export default {
   },
   computed: {
     ObjInfo() {
-      let objInfo = this.field.info?.srvCol?.option_list_v2?.obj_info || {}
-
-      return objInfo
+      let objInfo = this.field.info?.srvCol?.option_list_v2?.obj_info || {};
+      return objInfo;
     },
     getFkJson() {
       if (this.disabled && this.ObjInfo?.a_save_b_obj_col) {
-        let row = this.formModel
-        let col = cloneDeep(this.field.info)
-        col.srvcol = col?.srvCol
-        col.column = col.name
-        col._obj_info = this.ObjInfo
+        let row = this.formModel;
+        let col = cloneDeep(this.field.info);
+        col.srvcol = col?.srvCol;
+        col.column = col.name;
+        col._obj_info = this.ObjInfo;
 
         let val = "";
         let result = [];
@@ -306,29 +307,32 @@ export default {
             // console.log(error);
           }
           if (Array.isArray(result) && result.length > 0) {
-            result = result.map(item => {
-              if (!item[dispCol] && !item[valueCol] && item.label && item.value) {
-                item[dispCol] = item.label
-                item[valueCol] = item.value
+            result = result.map((item) => {
+              if (
+                !item[dispCol] &&
+                !item[valueCol] &&
+                item.label &&
+                item.value
+              ) {
+                item[dispCol] = item.label;
+                item[valueCol] = item.value;
               }
-              return item
-            })
+              return item;
+            });
             result = result.map((item) => item[dispCol] || item[valueCol]);
           }
         }
         if (!result || (result && result.length === 0)) {
           switch (colType) {
             case "fks":
-              let valJson = null
+              let valJson = null;
               try {
-                valJson = JSON.parse(val)
-              } catch (error) {
-
-              }
+                valJson = JSON.parse(val);
+              } catch (error) {}
               if (valJson && Array.isArray(valJson) && valJson.length) {
-                result = valJson.map(item => {
-                  return item[dispCol]
-                })
+                result = valJson.map((item) => {
+                  return item[dispCol];
+                });
               } else {
                 result = val ? val.split(",") : [];
               }
@@ -346,7 +350,7 @@ export default {
             case "fkjsons":
               try {
                 result = val ? JSON.parse(val) : [];
-              } catch (error) { }
+              } catch (error) {}
               if (Array.isArray(result) && result.length > 0) {
                 result = result.map((item) => item[dispCol] || item[valueCol]);
               }
@@ -355,23 +359,18 @@ export default {
         }
         return result;
       } else if (this.disabled && Array.isArray(this.gridData)) {
-        return this.gridData.map(item => item.label)
+        return this.gridData.map((item) => item.label);
       }
     },
     displayValue() {
       if (this.a_save_b_obj_col && this.formModel[this.a_save_b_obj_col]) {
-        const json = this.formModel[this.a_save_b_obj_col]
-        if (typeof json === 'string' && json) {
+        const json = this.formModel[this.a_save_b_obj_col];
+        if (typeof json === "string" && json) {
           try {
-            const obj = JSON.parse(json)
-
-          } catch (error) {
-
-          }
-
+            const obj = JSON.parse(json);
+          } catch (error) {}
         }
       }
-
     },
     allSelect() {
       return this.optionListV2?.allSelect;
@@ -397,7 +396,6 @@ export default {
     // optionListV2() {
     //   return this.field?.info?.srvCol?.option_list_v2;
     // },
-
     checkedAll() {
       // 默认选中所有数据 不带分页
       return this.field?.info?.moreConfig?.checkedAll;
@@ -492,16 +490,18 @@ export default {
       immediate: true,
       deep: true,
       handler(newValue, _) {
-        if(this.fieldType==='fks'){
-          this.selected = newValue.model ? newValue.model.split(',') : []
-        }else if(this.fieldType==='fkjsons'){
-          let selected = newValue.model
+        if (this.fieldType === "fks") {
+          this.selected = newValue.model ? newValue.model.split(",") : [];
+        } else if (this.fieldType === "fkjsons") {
+          let selected = newValue.model;
           try {
-            selected = JSON.parse(newValue.model)?.map(x=>x[this.valueCol])?.toString || ""
+            selected =
+              JSON.parse(newValue.model)?.map((x) => x[this.valueCol])
+                ?.toString || "";
           } catch (error) {
             // console.error(error)
           }
-          this.selected = selected ? selected.split(',') : []
+          this.selected = selected ? selected.split(",") : [];
         }
       },
     },
@@ -522,13 +522,13 @@ export default {
       deep: true,
       handler(newValue, oldValue) {
         if (isEqual(newValue, oldValue)) {
-          return
+          return;
         }
         // console.log("optionListV2变化了:", newValue, oldValue);
         if (!this.field.model && this.selected?.length) {
           this.selected = this.isMulti ? [] : "";
-          this.isSelectedAll = false
-          this.setFieldVal()
+          this.isSelectedAll = false;
+          this.setFieldVal();
         }
       },
     },
@@ -537,26 +537,59 @@ export default {
     visibleChange() {
       // this.isSelectedAll = false;
     },
+    setSelectedData(options) {
+      const labelCol = this.labelCol;
+      const valueCol = this.valueCol;
+      if (Array.isArray(options) && options.length) {
+        this.allData = options.map((item) => {
+          const obj = {
+            ...item,
+            label: item[labelCol],
+            value: item[valueCol],
+          };
+          return obj;
+        });
+        this.selected = options.map((item) => item[this.valueCol]);
+        this.setFieldVal();
+      } else {
+        this.allData = [];
+        this.selected = [];
+        this.setFieldVal();
+      }
+    },
+    // 当前选中的数据的原始数据
     getSelectedData() {
       let result = this.selected;
       if (this.fieldType === "fks") {
-        result = this.allData.filter((item) => {
-          if (typeof item[this.valueCol] === 'number') {
-            item[this.valueCol] = item[this.valueCol].toString()
-          }
-          return this.selected.includes(item[this.valueCol])
+        if (Array.isArray(this.selected) && this.selected.length) {
+          result = [];
+          this.selected.forEach((item) => {
+            let obj = this.allData.find((x) => x[this.valueCol] === item);
+            if (obj) {
+              result.push({
+                ...obj,
+              });
+            }
+          });
         }
-
-        );
+        // result = this.allData.filter((item) => {
+        //   if (typeof item[this.valueCol] === 'number') {
+        //     item[this.valueCol] = item[this.valueCol].toString()
+        //   }
+        //   return this.selected.includes(item[this.valueCol])
+        // }
+        // );
       }
       if (this.isSelectedAll && this.allSelect) {
-        return [{
-          checked: true,
-          label: "全部",
-          value: this.allSelect,
-          [this.valueCol]: this.allSelect,
-          [this.labelCol]: "全部",
-        }]
+        return [
+          {
+            checked: true,
+            label: "全部",
+            value: this.allSelect,
+            [this.valueCol]: this.allSelect,
+            [this.labelCol]: "全部",
+          },
+        ];
       }
       return result;
     },
@@ -666,7 +699,7 @@ export default {
               this.gridData = this.initOptions;
               this.allData = this.initOptions;
             }
-          } catch (error) { }
+          } catch (error) {}
         }
       }
       if (this.allSelect && this.finderSelected === this.allSelect) {
@@ -780,8 +813,8 @@ export default {
     initTableSelection() {
       if (Array.isArray(this.allData) && this.allData.length > 0) {
         this.gridData = this.gridData.map((item) => {
-          if (typeof item[this.valueCol] === 'number') {
-            item[this.valueCol] = item[this.valueCol].toString()
+          if (typeof item[this.valueCol] === "number") {
+            item[this.valueCol] = item[this.valueCol].toString();
           }
           if (this.selected.indexOf(item[this.valueCol]) !== -1) {
             item.checked = true;
@@ -889,7 +922,7 @@ export default {
               if (!this.selected.includes(item)) {
                 this.selected.push(item);
               }
-            })
+            });
           }
         }
       } else {
@@ -927,8 +960,8 @@ export default {
           header.srvcol = serviceCol;
           let more_config =
             serviceCol["more_config"] !== null &&
-              serviceCol["more_config"] !== undefined &&
-              serviceCol["more_config"] !== ""
+            serviceCol["more_config"] !== undefined &&
+            serviceCol["more_config"] !== ""
               ? JSON.parse(serviceCol["more_config"])
               : null;
           let colType = serviceCol["col_type"];
@@ -941,15 +974,15 @@ export default {
           header["list_min_width"] = serviceCol["list_min_width"];
           header["show_option_icon"] =
             serviceCol["more_config"] &&
-              JSON.parse(serviceCol["more_config"]).option_icon &&
-              JSON.parse(serviceCol["more_config"]).option_icon !== null
+            JSON.parse(serviceCol["more_config"]).option_icon &&
+            JSON.parse(serviceCol["more_config"]).option_icon !== null
               ? JSON.parse(serviceCol["more_config"]).option_icon
               : false;
           header["align"] = this.getColAlign(colType);
           header["format"] =
             serviceCol["more_config"] &&
-              JSON.parse(serviceCol["more_config"]).format &&
-              JSON.parse(serviceCol["more_config"]).format !== null
+            JSON.parse(serviceCol["more_config"]).format &&
+            JSON.parse(serviceCol["more_config"]).format !== null
               ? JSON.parse(serviceCol["more_config"]).format
               : null;
           header["more_config"] =
@@ -1004,7 +1037,7 @@ export default {
                 item.value = item[this.valueCol];
                 return item;
               });
-            } catch (error) { }
+            } catch (error) {}
           }
         } else if (this.finderSelected) {
           this.gridData = JSON.parse(this.finderSelected).map((item) => {
@@ -1092,26 +1125,28 @@ export default {
       let queryJson = {
         serviceName: this.service,
         colNames: ["*"],
-        condition: [{
-          colName: this.valueCol,
-          ruleType: "in",
-          value: this.finderSelected,
-        }],
+        condition: [
+          {
+            colName: this.valueCol,
+            ruleType: "in",
+            value: this.finderSelected,
+          },
+        ],
         page: {
           pageNo: 1,
           rownumber: 999,
         },
       };
-      if(Array.isArray(this.optionListV2?.conditions)){
-        this.optionListV2?.conditions.forEach(cond=>{
+      if (Array.isArray(this.optionListV2?.conditions)) {
+        this.optionListV2?.conditions.forEach((cond) => {
           const condition = cloneDeep(cond);
           condition.value = this.evalCondValue(cond.value, this.formModel);
-          if(condition.value){
+          if (condition.value) {
             queryJson.condition.push(condition);
           }
-        })
+        });
       }
-      const res = await this.selectList(queryJson)
+      const res = await this.selectList(queryJson);
       if (res?.data?.state === "SUCCESS") {
         this.gridData = res.data.data.map((item) => {
           item.label = item[this.labelCol];
@@ -1212,7 +1247,7 @@ export default {
               if (!obj.value && this.formModel && this.formModel[key]) {
                 obj.value = this.formModel[key];
               }
-            } catch (error) { }
+            } catch (error) {}
           }
           queryJson.condition.push(obj);
         }
@@ -1376,7 +1411,7 @@ export default {
   -webkit-appearance: none;
   background-image: none;
   border-radius: 4px;
-  border: 1px solid #E4E7ED;
+  border: 1px solid #e4e7ed;
   box-sizing: border-box;
   color: #606266;
   display: inline-block;
@@ -1384,11 +1419,11 @@ export default {
 
   outline: 0;
   padding: 0 15px;
-  transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   width: 100%;
-  background-color: #F5F7FA;
-  border-color: #E4E7ED;
-  color: #C0C4CC;
+  background-color: #f5f7fa;
+  border-color: #e4e7ed;
+  color: #c0c4cc;
   cursor: not-allowed;
   margin-bottom: 10px;
 }
@@ -1467,7 +1502,7 @@ export default {
   padding: 0 4px !important;
 }
 
-.el-table th>.cell {
+.el-table th > .cell {
   padding: 8px;
 }
 

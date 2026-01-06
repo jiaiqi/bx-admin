@@ -30,7 +30,7 @@ export function setRequest(req, type, srv, app = 'sso') {
 
 export function sendCode(data, app) {
   //  获取普通验证码
-  let srvApp = app || 'ws'
+  let srvApp = app || 'sso'
   sessionStorage.setItem('bx_auth_ticket',null)
   return request({
     url: `${host}/${srvApp}/operate/srvmobile_note_send`,

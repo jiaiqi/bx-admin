@@ -35,9 +35,11 @@
         :mainformDatas="mainformDatas"
         :defaultValues="defaultValues"
         :current-selected="field.model"
+        ref="editor"
         @on-selected="onPickerSelected"
       ></location-picker>
       <id-card-upload
+        ref="editor"
         v-else-if="isIdCard"
         :field="field"
         :disabled="setDisabled"
@@ -47,7 +49,7 @@
         @on-selected="onPickerSelected"
       ></id-card-upload>
       <table-picker
-        ref="tablePicker"
+        ref="editor"
         v-bind="$props"
         :optionListV3="optionListV3"
         :optionListV2="optionListV2"
@@ -64,6 +66,7 @@
         style="display: flex; align-items: center"
       >
         <multi-tab-option-select
+          ref="editor"
           v-if="useMultiTabOptionSelect === true"
           :placeholder="field.info.placeholder"
           :optionListV3="optionListV3"
@@ -78,7 +81,7 @@
           @select="multiTabSelectChange"
         ></multi-tab-option-select>
         <el-autocomplete
-          ref="autocomplete"
+          ref="editor"
           :prefix-icon="(dispLoaderV2 &&
             dispLoaderV2.imgType === 'eicon' &&
             field.getSrvVal()) ||
@@ -348,7 +351,7 @@ export default {
             const field = this.field?.info?.upstream?.field;
             if (newValue[field]) {
               // 上游字段值改变后 主动触发el-autocomplate查询数据的方法
-              this.$refs?.autocomplete?.getData();
+              this.$refs?.editor?.getData();
             }
           }
         }
@@ -631,6 +634,13 @@ export default {
     },
   },
   methods: {
+    setSelectedData(options){
+      this.$refs?.editor?.setSelectedData?.(options);
+    },
+    // 当前选中的数据的原始数据
+    getSelectedData(){
+      return this.$refs?.editor?.getSelectedData() || []
+    },
     showPopup(type) {
       if (this.field.info.srvCol.columns === "style_no") {
         let noField = this.field?.form?.srvCols?.find(
@@ -1019,8 +1029,8 @@ export default {
           cb(options);
         } else {
           cb([]);
-          this.$refs.autocomplete.$refs.input &&
-            this.$refs.autocomplete.$refs.input.blur();
+          this.$refs.editor.$refs.input &&
+            this.$refs.editor.$refs.input.blur();
         }
       });
     },
@@ -1257,7 +1267,7 @@ export default {
         // fk字段值改变后，更新其option_list_v3中配置的的a_save_b_obj_col
         let newValue = this.field.model;
         if (this.isFks) {
-          newValue = this.$refs?.tablePicker?.getSelectedData?.();
+          newValue = this.$refs?.editor?.getSelectedData?.();
         }
         const cols = objInfo?.a_save_b_cols.split(",");
         let obj = {};
@@ -1295,8 +1305,8 @@ export default {
       if (queryString && queryString != this.selected && options.length === 1 && (options[0][fieldInfo.valueCol] == queryString || options[0][fieldInfo.dispCol] == queryString)) {
         // 如果搜索到的值只有一条而且value字段或者label字段的值完全匹配queryString，则选中这条数据
         this.handleSelect(options[0]);
-        this.$refs.autocomplete.$refs.input && this.$refs.autocomplete.$refs.input.blur();
-        this.$refs.autocomplete.activated = false;
+        this.$refs.editor.$refs.input && this.$refs.editor.$refs.input.blur();
+        this.$refs.editor.activated = false;
       } else if (queryString && queryString != this.selected) {
         this.$message.warning("未找到匹配的数据");
         this.inputValue = this.field.model[fieldInfo.dispCol] || this.selected || '';
@@ -1482,7 +1492,7 @@ export default {
       this.popup = true;
 
       // hide suggestions
-      this.$refs.autocomplete.activated = false;
+      this.$refs.editor.activated = false;
     },
   },
 
@@ -1506,11 +1516,11 @@ export default {
 
   mounted: function () {
     let vm = this;
-    if (this.$refs.autocomplete) {
-      this.$refs.autocomplete.$refs.input.$on("clear", function () {
+    if (this.$refs.editor) {
+      this.$refs.editor.$refs?.input?.$on("clear", function () {
         vm.selected = null;
         vm.handleSelect(null);
-        setTimeout((_) => vm.$refs.autocomplete.getData(""), 500);
+        setTimeout((_) => vm.$refs.editor.getData(""), 500);
       });
     }
 

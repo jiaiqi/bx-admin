@@ -563,7 +563,7 @@
             ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
-                ref="autocompleteInput"
+                ref="editor"
                 :disabled="getDisabled"
                 @change="autocompleteSelected"
                 @field-value-changed="$emit('field-value-changed', $event)"
@@ -578,7 +578,7 @@
             ">
               <!-- 字符串类型的外键冗余字段 获得建议输入选项特性 -->
               <autocompleteInput
-                ref="autocompleteInput"
+                ref="editor"
                 @change="autocompleteSelected"
                 :field="field"
               ></autocompleteInput>
@@ -921,6 +921,7 @@ import carNoKeyboard from "../ui/car-no-keyboard.vue"; //车牌号输入
 import { blobToBase64 } from "../../common/common";
 import { evalJson } from "@/util/evalJsonExpr.js";
 import { idCardExp } from "../model/FieldInfo.js";
+import { getEnv } from "@/common/http.js";
 import multiSelectTransfer from "@/components/ui/form-widget/multi-select/multi-select-transfer.vue";
 export default {
   components: {
@@ -1091,6 +1092,10 @@ export default {
     getRichEditorType() {
       // 从环境变量获取配置，默认使用wang-editor
       // return 'tinymce'
+      if(getEnv?.() === 'healthProd'){
+        // 健康科普资源库使用tinymce
+        return 'tinymce'
+      }
       return process.env.VUE_APP_RICH_EDITOR || 'wang-editor';
     },
   },
@@ -1116,6 +1121,9 @@ export default {
   },
 
   methods: {
+    setSelectedData(options){
+      this.$refs.editor?.setSelectedData?.(options);
+    },
     onIDCardChange(val) {
       const reg = new RegExp(idCardExp)
 

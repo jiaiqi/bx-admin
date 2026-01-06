@@ -32,6 +32,7 @@
         :srv_cols="srv_cols"
         :supportGroup="false"
         v-on:search-clicked="query"
+        v-on:condition-change="onSearchFormConditionChange"
         ref="filter-form"
         @form-loaded="onFilterFormLoaded($refs['filter-form'])"
       >
@@ -237,6 +238,7 @@
             stripe
             border
             style="width: 100%"
+            height="100%"
             :row-class-name="tableRowClassName"
             row-key="id"
             highlight-current-row
@@ -2379,6 +2381,7 @@ export default {
   flex: 1;
   display: flex;
   gap: 10px;
+  min-height: 400px;
   overflow: hidden;
 }
 .table-list-row {
