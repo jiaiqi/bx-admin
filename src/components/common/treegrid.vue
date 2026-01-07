@@ -1,5 +1,5 @@
 <template>
-  <div class="tree-grid">
+  <div class="tree-grid" ref="list-comp-wrap">
     <div v-show="selectFormShow" v-if="searchForm">
       <simple-filter
         v-if="srv_cols"
@@ -74,7 +74,7 @@
       </div>
     </el-row>
 
-    <div class="table-list-wrap">
+    <div class="table-list-wrap" :style="{ minHeight: calcMinHeight }">
       <list-left-tree
         :cfg-json="cfgJson"
         v-if="cfgJson && cfgJson.showTreeFilter"
