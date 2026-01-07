@@ -250,6 +250,17 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "line":
     case "bar":
     case "lineBar":
+      ecOptions.legend.orient = "horizontal";
+      ecOptions.legend.x = "center";
+      ecOptions.legend.y = "bottom";
+      ecOptions.legend.show = showLegend;
+
+      if (ecOptions.legend.y === "bottom") {
+        ecOptions.grid.bottom = chartJson.grid_bottom || 60;
+      } else if (ecOptions.legend.y === "top") {
+        ecOptions.grid.top = chartJson.grid_top || 60;
+      }
+
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
@@ -374,6 +385,39 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         } else {
           series["type"] = type;
         }
+
+        const baseColor = colors[sIndex % colors.length];
+        const isArea = chartJson?.more_option?.includes('折线面积图');
+        const enableGradient = chartJson?.more_option?.includes('自动渐变色');
+
+        if (series.type === "bar") {
+          series.barMaxWidth = 80;
+          series.barMinWidth = 30;
+          if (enableGradient) {
+            series.itemStyle = {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: baseColor },
+                { offset: 1, color: baseColor + "80" },
+              ]),
+            };
+          }
+        } else if (series.type === "line") {
+          series.lineStyle = {
+            color: baseColor,
+          };
+          series.itemStyle = {
+            color: baseColor,
+          };
+          if (isArea && enableGradient) {
+            series.areaStyle = {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: baseColor + "80" },
+                { offset: 1, color: baseColor + "20" },
+              ]),
+            };
+          }
+        }
+
         ecOptions["series"].push(series);
         if (chartJson?.series_value === "单列多行分组" && cellData?.length) {
           const nOption = buildMultiColSeries(pageItem, cellData, type);
@@ -384,7 +428,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               top: chartJson.grid_top || 45,
               left: chartJson.grid_left || 10,
               right: chartJson.grid_right || 10,
-              bottom: chartJson.grid_bottom || 0,
+              bottom: ecOptions.legend.y === "bottom" ? (chartJson.grid_bottom || 60) : (chartJson.grid_bottom || 0),
               containLabel: true,
             };
           }
@@ -408,31 +452,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           ecOptions.tooltip.trigger = "axis";
         }
       }
-      if (chartJson?.more_option?.includes('折线面积图')) {
+      if (chartJson?.more_option?.includes('序列堆叠')) {
         ecOptions.series.forEach((item, index) => {
-          item.areaStyle = {
-            color: {
-              type: 'linear',
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [{
-                offset: 0, color: __colors[index]  // 0% 处的颜色
-              }, {
-                offset: 0.6, color: hex2rgb(__colors[index], 0.1) // 80% 处的颜色
-              }],
-              global: false // 缺省为 false
-            },
-            shadowColor: 'rgba(0, 0, 0, 0.1)',
-            shadowBlur: 10
-          }
+          item.stack = sortAxisCol;
         })
-        if (chartJson?.more_option?.includes('序列堆叠')) {
-          ecOptions.series.forEach((item, index) => {
-            item.stack = sortAxisCol;
-          })
-        }
       }
       // ecOptions["xAxis"]["data"] = [
       //   ...new Set(ecOptions["xAxis"]["data"] || []),
@@ -1076,6 +1099,12 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
   xAxisData = [...new Set(xAxisData)];
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
+  
+  let colors = [...__colors];
+  if (chartJson?.legend_color_seq) {
+    colors = chartJson?.legend_color_seq.split(",");
+  }
+  
   if (seriesName && Array.isArray(datas) && datas.length > 0) {
     let seriesNames = datas.reduce((pre, cur) => {
       if (!pre.includes(cur[seriesName])) {
@@ -1083,7 +1112,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
       }
       return pre;
     }, []);
-    let series = seriesNames.map((name) => {
+    let series = seriesNames.map((name, index) => {
       let obj = {
         name: name,
         type: type || "line",
@@ -1104,6 +1133,39 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         //   trigger: 'item' // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
         // }, //点击折点 展示的样式
       };
+      
+      const baseColor = colors[index % colors.length];
+      const isArea = chartJson?.more_option?.includes('折线面积图');
+      const enableGradient = chartJson?.more_option?.includes('自动渐变色');
+      
+      if (obj.type === "bar") {
+        obj.barMaxWidth = 80;
+        obj.barMinWidth = 30;
+        if (enableGradient) {
+          obj.itemStyle = {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: baseColor },
+              { offset: 1, color: baseColor + "80" },
+            ]),
+          };
+        }
+      } else if (obj.type === "line") {
+        obj.lineStyle = {
+          color: baseColor,
+        };
+        obj.itemStyle = {
+          color: baseColor,
+        };
+        if (isArea && enableGradient) {
+          obj.areaStyle = {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: baseColor + "80" },
+              { offset: 1, color: baseColor + "20" },
+            ]),
+          };
+        }
+      }
+      
       if (lineVal1 && lineVal2 && lineVal1 !== "none" && lineVal2 !== "none") {
         obj.markLine = {
           symbol: "none",
