@@ -159,6 +159,18 @@ export const doSelect = function (option = {}, vm = {}) {
           value: item.value,
         };
       });
+      if(query['relation_condition']?.data){
+        query['relation_condition'].data = query['relation_condition'].data.filter((item) => item.use_query !== "否").map((item) => {
+          return {
+            colName: item.colName,
+            ruleType: item.ruleType,
+            value: item.value,
+          };
+        });
+        if(!query['relation_condition'].data?.length){
+          delete query['relation_condition']
+        }
+      }
     }
   }
   if (query["divCond"]?.length) {

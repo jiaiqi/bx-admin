@@ -441,6 +441,14 @@ export default {
   },
 
   computed: {
+    calcMinHeight() {
+      const clientHeight = this.$refs["list-comp-wrap"]?.clientHeight || 0;
+      let minHeight = this.gridDataRun.length * 80 + 60;
+      if(clientHeight && clientHeight > 500 && minHeight > clientHeight-100) {
+        minHeight = clientHeight - 100;
+      }
+      return minHeight + 'px';
+    },
     detailBtn() {
       return this.sortedRowButtons?.find(
         (item) => ['procdetail', 'detail'].includes(item.button_type)
