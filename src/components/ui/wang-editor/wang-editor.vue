@@ -15,7 +15,7 @@
       :editor="editor"
       :defaultConfig="toolbarConfig"
       :mode="mode"
-      :key="ticket + 1"
+      :key="ticket"
       ref="toobar"
       v-if="getDisabled !== true"
     />
@@ -29,7 +29,7 @@
       @onCreated="onCreated"
       @customPaste="customPaste"
       ref="editorRef"
-      :key="ticket + 2"
+      :key="ticket"
     />
 
     <!-- 上传进度覆盖层 -->
@@ -289,6 +289,10 @@ export default {
       }
     },
     onCreated(editor) {
+      // 如果已有editor实例，先销毁旧实例，防止内存泄漏
+      if (this.editor && typeof this.editor.destroy === 'function') {
+        this.editor.destroy();
+      }
       this.editor = Object.seal(editor); // 【注意】一定要用 Object.seal() 否则会报错
       this.$refs?.["rich-editor"]
         ?.querySelector(".w-e-text-container")
@@ -460,7 +464,7 @@ export default {
   beforeDestroy() {
     const editor = this.editor;
     if (editor == null) return;
-    editor.destroy(); // 组件销毁时，及时销毁 editor ，重要！！！
+      editor.destroy(); // 组件销毁时，及时销毁 editor ，重要！！！
   },
 };
 </script>
