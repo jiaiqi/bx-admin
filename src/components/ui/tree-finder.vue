@@ -17,6 +17,7 @@
       :value="field.getSrvVal()"
     ></el-input>
     <el-cascader
+      @visible-change="handleVisibleChange"
       class="flex-1"
       v-else
       :placeholder="loading ? '数据加载中...' : field.info.placeholder"
@@ -103,6 +104,8 @@ export default {
   },
   data() {
     return {
+      loadSize: 20,
+      allOptions: [],
       // value组成的路径数组
       selected: [],
       // 树形结构数据
@@ -1001,6 +1004,31 @@ export default {
       // 处理disabled状态传播
       return this.processDisabledState(options);
     },
+    // 监听面板显示
+    handleVisibleChange(visible) {
+      if (visible) {
+        this.$nextTick(() => {
+          const panel = document.querySelector('.el-cascader-menu__wrap');
+          if (panel) {
+            panel.addEventListener('scroll', this.handleScroll);
+          }
+        });
+      } else {
+        const panel = document.querySelector('.el-cascader-menu__wrap');
+        if (panel) {
+          panel.removeEventListener('scroll', this.handleScroll);
+        }
+      }
+    },
+    // 滚动加载更多节点
+    handleScroll() {
+      const panel = document.querySelector('.el-cascader-menu__wrap');
+      if (panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 20) {
+        const start = this.options.length;
+        const end = start + this.loadSize;
+        this.options = this.allOptions.slice(0, end);
+      }
+    },
     async loadDetail() {
       this.loading = true; // 开始加载
 
@@ -1040,7 +1068,12 @@ export default {
                 if (!treeStructureData.find((item) => item[valCol] === this.field.model)) {
                   this.options.push(item);
                 }
-                this.options = treeStructureData;
+                const selectIndex = treeStructureData.findIndex(item => item.com_no === this.selected[0])
+                const temp = treeStructureData[selectIndex]
+                treeStructureData[selectIndex] = treeStructureData[0]
+                treeStructureData[0] = temp
+                this.allOptions = treeStructureData
+                this.options = this.allOptions.slice(0, this.loadSize)
 
                 // 设置正确的selected路径
                 const pathArray = item.path.split('/').filter(Boolean);
@@ -1113,7 +1146,8 @@ export default {
             if (this.needRenameLabel()) {
               options.forEach((option) => this.renameLable(option));
             }
-            this.options = options;
+            this.allOptions = options
+            this.options = this.allOptions.slice(0, this.loadSize)
             this.noData = !options?.length;
           }
         });
