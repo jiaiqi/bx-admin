@@ -514,13 +514,13 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               switch (legendDisp) {
                 case "上":
                   gridConfig.top = chartJson.grid_top || 55;
-                  gridConfig.left = chartJson.grid_left || 10;
+                  gridConfig.left = chartJson.grid_left || 15;
                   gridConfig.right = chartJson.grid_right || 10;
                   gridConfig.bottom = chartJson.grid_bottom || 0;
                   break;
                 case "下":
                   gridConfig.top = chartJson.grid_top || 55;
-                  gridConfig.left = chartJson.grid_left || 10;
+                  gridConfig.left = chartJson.grid_left || 15;
                   gridConfig.right = chartJson.grid_right || 10;
                   gridConfig.bottom = chartJson.grid_bottom || 55;
                   break;
@@ -532,25 +532,25 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
                   break;
                 case "右":
                   gridConfig.top = chartJson.grid_top || 55;
-                  gridConfig.left = chartJson.grid_left || 10;
+                  gridConfig.left = chartJson.grid_left || 15;
                   gridConfig.right = chartJson.grid_right || 55;
                   gridConfig.bottom = chartJson.grid_bottom || 0;
                   break;
                 case "右上":
                   gridConfig.top = chartJson.grid_top || 55;
-                  gridConfig.left = chartJson.grid_left || 10;
+                  gridConfig.left = chartJson.grid_left || 15;
                   gridConfig.right = chartJson.grid_right || 55;
                   gridConfig.bottom = chartJson.grid_bottom || 0;
                   break;
                 default:
                   gridConfig.top = chartJson.grid_top || 55;
-                  gridConfig.left = chartJson.grid_left || 10;
+                  gridConfig.left = chartJson.grid_left || 15;
                   gridConfig.right = chartJson.grid_right || 10;
                   gridConfig.bottom = chartJson.grid_bottom || 0;
               }
             } else {
               gridConfig.top = chartJson.grid_top || 40;
-              gridConfig.left = chartJson.grid_left || 10;
+              gridConfig.left = chartJson.grid_left || 15;
               gridConfig.right = chartJson.grid_right || 10;
               gridConfig.bottom = chartJson.grid_bottom || 0;
             }
@@ -598,7 +598,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           });
           
           if (maxVal > 0) {
-            ecOptions.yAxis[0].max = getNiceMax(maxVal);
+            // ecOptions.yAxis[0].max = getNiceMax(maxVal);
+            ecOptions.yAxis[0].max = undefined
           }
         }
       }
@@ -1375,13 +1376,13 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
       });
     }
     
-    const niceMax = getNiceMax(maxVal);
+    // const niceMax = getNiceMax(maxVal);
     
     return {
       series: series,
       legend: seriesNames,
       min: sortData[0][chartJson.series_value_cols],
-      max: niceMax,
+      // max: niceMax,
     };
   }
 };
