@@ -320,11 +320,11 @@ export default {
         // this.handleSelect(null)
         if (!isEqual(newVal, oldVal) && isObject(oldVal) && this.optionListV3) {
           // optionListV2变化了 清空已选的值
-          console.log(
-            "optionListV2变化了:",
-            cloneDeep(newVal),
-            cloneDeep(oldVal)
-          );
+          // console.log(
+          //   "optionListV2变化了:",
+          //   cloneDeep(newVal),
+          //   cloneDeep(oldVal)
+          // );
           this.handleSelect(null);
         }
         if (
@@ -395,7 +395,7 @@ export default {
       deep: true,
       immediate: true,
       handler: function (newval, olval) {
-        console.log("field.model", this.field.info.name, newval);
+        // console.log("field.model", this.field.info.name, newval);
         this.setInitVal();
       },
     },
@@ -678,7 +678,7 @@ export default {
       }
     },
     submitted2mem(event) {
-      console.log("submitted2mem:", event);
+      // console.log("submitted2mem:", event);
       if (
         typeof event === "object" &&
         Object.keys(event).length &&
@@ -704,7 +704,7 @@ export default {
       this.activePopup = "";
     },
     onExecutorComplete(event) {
-      console.log("onExecutorComplete:", event);
+      // console.log("onExecutorComplete:", event);
       const data = event.data?.response[0]?.response?.effect_data?.[0];
       if (data) {
         this.handleSelect(data);
@@ -1045,7 +1045,7 @@ export default {
         relation: "AND",
         data: [],
       };
-      console.log("dispLoader:", dispLoader);
+      // console.log("dispLoader:", dispLoader);
 
       let relation_condition = {};
       if (dispLoader.conditions) {
@@ -1236,7 +1236,7 @@ export default {
     },
 
     handleSelect(item, loader) {
-      console.log("handleSelect", item);
+      // console.log("handleSelect", item);
       this.field.model = item;
 
       let fieldInfo = this.field.info;
@@ -1288,7 +1288,7 @@ export default {
           col: objInfo.a_save_b_obj_col,
           val: objStr,
         };
-        console.log("更新obj_info", objCol);
+        // console.log("更新obj_info", objCol);
         // 将更新的字段信息保存在_obj_col上，方便在form中获取
         this.$set(this.field, "_obj_col", objCol);
       } else if (this.field?._obj_col?.val) {
@@ -1361,7 +1361,7 @@ export default {
           try {
             json = JSON.parse(srvVal);
           } catch (error) {
-            console.log(error);
+            // console.log(error);
           }
         }
         let valCol = fieldInfo.fmt && fieldInfo.fmt.primary_col;
@@ -1424,7 +1424,7 @@ export default {
           this.field.model = item;
           if (isObject(this.field.model)) {
             // 对象 fk值 设置 默认selected 显示值
-            console.log("setSrvVal", item);
+            // console.log("setSrvVal", item);
             let fieldInfo = this.field.info;
             let loader = this.dispLoaderV2;
             if (this.subType === "select") {
@@ -1508,7 +1508,7 @@ export default {
             return;
           }
         } catch (error) {
-          console.error(error);
+          // console.error(error);
         }
       }
     }
