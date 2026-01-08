@@ -156,9 +156,9 @@ module.exports = {
           parallel: true, // 启用多核并行压缩,提升压缩速度
           terserOptions: {
             compress: {
-              // drop_console: true, // 移除console
-              // drop_debugger: true, // 移除debugger
-              // pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'] // 移除特定函数
+              drop_console: true, // 移除console
+              drop_debugger: true, // 移除debugger
+              pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'] // 移除特定函数
             },
             mangle: {
               safari10: true //Safari 10

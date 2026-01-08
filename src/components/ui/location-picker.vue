@@ -137,7 +137,7 @@ export default {
       }
     },
     async saveLocation(e = {}) {
-      console.log(e);
+      // console.log(e);
       let gno = "";
       if (this.value) {
         let gnoData = await this.getLocationFromSys();
@@ -171,13 +171,13 @@ export default {
       const url = this.getServiceUrl("operate", serviceName, this.srvApp);
 
       const res = await this.$http.post(url, req);
-      console.log(res);
+      // console.log(res);
       const resData = res?.data?.response?.[0]?.response?.effect_data?.[0];
       if (resData) {
         if (resData?.id && !resData[this.optionV2.refed_col]) {
           let gnoData = await this.getLocationFromSys(resData.id);
           if (gnoData?.id&& gnoData[this.optionV2.refed_col]) {
-            console.log('gnoData::', gnoData);
+            // console.log('gnoData::', gnoData);
             resData = gnoData
           }
         }
@@ -192,7 +192,7 @@ export default {
       var loc = event.data;
       if (loc && loc.module == "locationPicker") {
         //防止其他应用也会向该页面post信息，需判断module是否为'locationPicker'
-        console.log("location", loc);
+        // console.log("location", loc);
         this.curSelect = loc;
       }
     },
