@@ -2,6 +2,7 @@ import * as echarts from "echarts";
 import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
 // import "echarts-gl"; //echarts-gl@1.1.2
 import { getImagePath } from "@/common/http";
+import dayjs from "dayjs";
 
 let __colors = [
   "#007AFF",
@@ -41,10 +42,10 @@ function addAlphaToRGB(rgb, alpha) {
  */
 function getNiceMax(maxVal) {
   if (maxVal === 0) return 0;
-  
+
   const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
   const normalized = maxVal / magnitude;
-  
+
   let niceNormalized;
   if (normalized <= 1) {
     niceNormalized = 1;
@@ -55,7 +56,7 @@ function getNiceMax(maxVal) {
   } else {
     niceNormalized = 10;
   }
-  
+
   return (niceNormalized * magnitude).toFixed(2);
 }
 
@@ -201,9 +202,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     ],
     tooltip: {
       trigger: "axis", // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
-      formatter: function(params) {
+      formatter: function (params) {
         let result = params[0].name + '<br/>';
-        params.forEach(function(item) {
+        params.forEach(function (item) {
           if (item.value !== null && item.value !== 0 && item.value !== undefined) {
             let markerColor = item.color;
             if (item.color && typeof item.color === 'object' && item.color.colorStops) {
@@ -293,7 +294,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "bar":
     case "lineBar":
       const legendDisp = chartJson.legend_disp || "上";
-      
+
       if (showLegend) {
         switch (legendDisp) {
           case "上":
@@ -334,7 +335,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             ecOptions.grid.top = chartJson.grid_top || 55;
         }
       }
-      
+
       ecOptions.legend.show = showLegend;
       ecOptions.legend.type = "scroll";
       ecOptions.legend.pageIconColor = pageItem?.style_json?.color || "#848EAC";
@@ -505,11 +506,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           ecOptions["series"] = nOption?.series || [];
           if (nOption?.series?.length > 5) {
             const legendDisp = chartJson.legend_disp || "上";
-            
+
             let gridConfig = {
               containLabel: true,
             };
-            
+
             if (showLegend) {
               switch (legendDisp) {
                 case "上":
@@ -554,7 +555,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               gridConfig.right = chartJson.grid_right || 10;
               gridConfig.bottom = chartJson.grid_bottom || 0;
             }
-            
+
             ecOptions.grid = gridConfig;
           }
           ecOptions.legend.data = nOption?.legend || [];
@@ -581,7 +582,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         ecOptions.series.forEach((item, index) => {
           item.stack = sortAxisCol;
         })
-        
+
         if (!pageItem.max && ecOptions.series.length > 0) {
           let maxVal = 0;
           ecOptions.xAxis.data.forEach(xVal => {
@@ -596,12 +597,30 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
               maxVal = sum;
             }
           });
-          
+
           if (maxVal > 0) {
             // ecOptions.yAxis[0].max = getNiceMax(maxVal);
             ecOptions.yAxis[0].max = undefined
           }
         }
+      }
+      const dateFormatMap = {
+        '年-月-日': 'YYYY-MM-DD',
+        '年/月/日': 'YYYY/MM/DD',
+        '年-月-日 时:分': 'YYYY-MM-DD HH:mm',
+        '年/月/日 时:分': 'YYYY/MM/DD HH:mm',
+        '时:分': 'HH:mm',
+        '月-日 时:分': 'MM月DD日 HH:mm',
+        '年-月-日 时:分:秒': 'YYYY-MM-DD HH:mm:ss',
+      }
+      if (chartJson.x_label_format === '日期时间' && chartJson.x_label_date_format) {
+        ecOptions.xAxis.axisLabel.formatter = function (value) {
+          return dayjs(value).format(dateFormatMap[chartJson.x_label_date_format]);
+        }
+      } else if (chartJson.x_label_format === '字符串模板' && chartJson.x_label_temp_format) {
+        ecOptions.xAxis.axisLabel.formatter = chartJson.x_label_temp_format
+      } else if (chartJson.x_label_custom_format) {
+        ecOptions.xAxis.axisLabel.formatter = eval(`${chartJson.x_label_custom_format}`);
       }
       // ecOptions["xAxis"]["data"] = [
       //   ...new Set(ecOptions["xAxis"]["data"] || []),
@@ -723,11 +742,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         let allDataItems = [];
         // 检查并合并已有的"其它"或"其他"项
         let existingOthersValue = 0;
-        
+
         for (let data of cellData) {
           const name = data[chartJson?.series_name_cfg || sortAxisCol];
           const value = parseFloat(data[dataColName]);
-          
+
           // 检查是否为"其它"或"其他"项
           if (name === "其它" || name === "其他") {
             existingOthersValue += value;
@@ -1253,12 +1272,12 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
   xAxisData = [...new Set(xAxisData)];
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
-  
+
   let colors = [...__colors];
   if (chartJson?.legend_color_seq) {
     colors = chartJson?.legend_color_seq.split(",");
   }
-  
+
   if (seriesName && Array.isArray(datas) && datas.length > 0) {
     let seriesNames = datas.reduce((pre, cur) => {
       if (!pre.includes(cur[seriesName])) {
@@ -1278,7 +1297,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
             (e) => e[seriesName] === name && e[sortAxisCol] === a
           );
           const val = data?.[chartJson.series_value_cols] || 0;
-          if(!isNaN(Number(val))){
+          if (!isNaN(Number(val))) {
             return Number(val.toFixed(2));
           }
         }),
@@ -1290,11 +1309,11 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         //   trigger: 'item' // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
         // }, //点击折点 展示的样式
       };
-      
+
       const baseColor = colors[index % colors.length];
       const isArea = chartJson?.more_option?.includes('折线面积图');
       const enableGradient = chartJson?.more_option?.includes('自动渐变色');
-      
+
       if (obj.type === "bar") {
         obj.barMaxWidth = 50;
         obj.barMinWidth = 20;
@@ -1322,7 +1341,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
           };
         }
       }
-      
+
       if (lineVal1 && lineVal2 && lineVal1 !== "none" && lineVal2 !== "none") {
         obj.markLine = {
           symbol: "none",
@@ -1360,9 +1379,9 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
     let sortData = datas.sort(
       (a, b) => a[chartJson.series_value_cols] - b[chartJson.series_value_cols]
     );
-    
+
     let maxVal = sortData[sortData.length - 1][chartJson.series_value_cols];
-    
+
     if (chartJson?.more_option?.includes('序列堆叠')) {
       maxVal = 0;
       xAxisData.forEach(xVal => {
@@ -1378,9 +1397,9 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         }
       });
     }
-    
+
     // const niceMax = getNiceMax(maxVal);
-    
+
     return {
       series: series,
       legend: seriesNames,
