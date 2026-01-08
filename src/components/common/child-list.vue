@@ -51,6 +51,7 @@
       :disabled="updatable === false"
       v-else-if="isProc"
       :div-cond="divCond"
+      :default-condition="getDefaultConditions"
     >
     </list-proc>
     <tableEdit

@@ -116,6 +116,7 @@
             :list-type="item.key"
             :name="item.key"
             :service="service_name"
+            :default-condition="defaultCondition"
             @gridData-change="setTip"
             @list-loaded="timerRefresh"
           > </list>
@@ -150,6 +151,10 @@ export default {
       type: String,
       default: ''
     },
+    defaultCondition: {
+      type: Array,
+      default: () => []
+    }
   },
   computed: {
     showCcTab() {
