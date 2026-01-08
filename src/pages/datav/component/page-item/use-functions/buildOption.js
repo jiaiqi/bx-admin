@@ -611,6 +611,8 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         '年/月/日 时:分': 'YYYY/MM/DD HH:mm',
         '时:分': 'HH:mm',
         '月-日 时:分': 'MM月DD日 HH:mm',
+        '时:分:秒': 'HH:mm:ss',
+        '年/月/日 时:分:秒': 'YYYY/MM/DD HH:mm:ss',
         '年-月-日 时:分:秒': 'YYYY-MM-DD HH:mm:ss',
       }
       if (chartJson.x_label_format === '日期时间' && chartJson.x_label_date_format) {
