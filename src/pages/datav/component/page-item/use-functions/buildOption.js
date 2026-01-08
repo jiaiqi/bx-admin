@@ -411,7 +411,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           null
         );
         if (chartJson.more_option && chartJson.more_option === "x轴反序") {
-          ecOptions["xAxis"]["data"] = xAxisData.reverse();
+          ecOptions["xAxis"]["data"] = ecOptions["xAxis"]["data"].reverse();
         }
         if (
           chartJson.more_option &&
@@ -570,9 +570,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
             ecOptions.yAxis[0].min = 0;
           }
 
-          ecOptions.yAxis[0].max = (
-            (Number(pageItem.max) || Number(nOption.max)) + val
-          ).toFixed(2);
+          // ecOptions.yAxis[0].max = (
+          //   (Number(pageItem.max) || Number(nOption.max)) + val
+          // ).toFixed(2);
 
           ecOptions.tooltip.trigger = "axis";
         }
@@ -1277,7 +1277,10 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
           const data = datas.find(
             (e) => e[seriesName] === name && e[sortAxisCol] === a
           );
-          return data?.[chartJson.series_value_cols] || 0;
+          const val = data?.[chartJson.series_value_cols] || 0;
+          if(!isNaN(Number(val))){
+            return Number(val.toFixed(2));
+          }
         }),
         symbol: "circle",
         smooth: true,
@@ -1343,7 +1346,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
           },
         };
       }
-      if (chartJson?.more_option?.indexOf("stack")) {
+      if (chartJson?.more_option?.includes("stack")) {
         obj.stack = "stack";
       }
       if (
