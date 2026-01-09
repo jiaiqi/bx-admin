@@ -372,11 +372,11 @@ export class FieldInfo {
       this._inFilterForm = true;
       if (this.isNumeric()) {
         this.editor = "input-range";
-      } else if (this.type == "Date" || this.type == "DateRange") {
+      } else if ((this.type == "Date" && this.srvCol.subtype !== this.type) || this.type == "DateRange") {
         this.editor = "date-range";
-      } else if (this.type == "Time") {
+      } else if (this.type == "Time" && this.srvCol.subtype !== this.type) {
         this.editor = "time-range";
-      } else if (this.type == "DateTime" || this.type == "DateTimeRange") {
+      } else if ((this.type == "DateTime"  && this.srvCol.subtype !== this.type) || this.type == "DateTimeRange") {
         this.editor = "date-time-range";
       } else if (this.type == "Enum" || this.type == "Dict") {
         this.editor = "multiselect";
