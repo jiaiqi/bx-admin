@@ -223,8 +223,8 @@ export default {
   name: "update",
   components: {
     SimpleUpdate,
-    ChildList,
-    // ChildList: () => import("./child-list.vue"),
+    // ChildList,
+    ChildList: () => import("./child-list.vue"),
   },
   mixins: [ParentChildMixin],
   props: {
