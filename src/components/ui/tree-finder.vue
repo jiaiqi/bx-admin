@@ -219,7 +219,7 @@ export default {
   },
   beforeDestroy() {
     this.options = null
-    if(this.$refs.elCascader.dropDownVisible){
+    if(this.$refs.elCascader){
       this.$refs.elCascader.dropDownVisible = false
       this.$refs?.elCascader?.$destroy();
     }
