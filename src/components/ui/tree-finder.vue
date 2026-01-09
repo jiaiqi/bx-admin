@@ -1073,7 +1073,7 @@ export default {
                 if (!treeStructureData.find((item) => item[valCol] === this.field.model)) {
                   this.options.push(item);
                 }
-                const selectIndex = treeStructureData.findIndex(item => item.com_no === this.selected[0])
+                const selectIndex = treeStructureData.findIndex(item => item[this.props.value] === this.selected[0])
                 const temp = treeStructureData[selectIndex]
                 treeStructureData[selectIndex] = treeStructureData[0]
                 treeStructureData[0] = temp
