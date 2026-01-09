@@ -343,7 +343,7 @@ export default {
     onChange() {
       console.log(this.replaceFileAddressSuffix(this.myValue));
       console.log(this.myValue);
-
+      this.$set(this.field, "model", this.replaceFileAddressSuffix(this.myValue));
       this.$emit(
         "field-value-changed",
         this.replaceFileAddressSuffix(this.myValue)
