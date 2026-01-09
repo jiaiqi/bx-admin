@@ -219,8 +219,10 @@ export default {
   },
   beforeDestroy() {
     this.options = null
-    this.$refs.elCascader.dropDownVisible = false
-    this.$refs?.elCascader?.$destroy();
+    if(this.$refs.elCascader.dropDownVisible){
+      this.$refs.elCascader.dropDownVisible = false
+      this.$refs?.elCascader?.$destroy();
+    }
   },
   methods: {
     emitFieldValueChange() {
@@ -605,9 +607,12 @@ export default {
       } else {
         this.onlyEmitData(data);
       }
-      this.$nextTick(() => {
-        this.$refs.elCascader.dropDownVisible = false;
-      });
+      if(this.$refs.elCascader) {
+        this.$nextTick(() => {
+          this.$refs.elCascader.dropDownVisible = false;
+        });
+      }
+     
     },
     onClear() {
       if (this.allowChangeModel !== false) {
