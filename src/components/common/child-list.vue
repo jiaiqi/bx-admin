@@ -157,7 +157,7 @@ export default {
     SimpleUpdate,
     SimpleAdd,
     List,
-    TabList,
+    TabList: () => import("./tab-list2.vue"),
     ListProc,
     tableEdit,
   },

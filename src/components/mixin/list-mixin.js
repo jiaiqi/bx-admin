@@ -442,10 +442,10 @@ export default {
 
   computed: {
     calcMinHeight() {
-      const clientHeight = this.$refs["list-comp-wrap"]?.clientHeight || 0;
+      // const clientHeight = this.$refs["list-comp-wrap"]?.clientHeight || 0;
       let minHeight = this.gridDataRun.length * 80 + 60;
-      if(clientHeight && clientHeight > 500 && minHeight > clientHeight-100) {
-        minHeight = clientHeight - 100;
+      if(minHeight && minHeight > 400) {
+        minHeight = 400;
       }
       return minHeight + 'px';
     },
