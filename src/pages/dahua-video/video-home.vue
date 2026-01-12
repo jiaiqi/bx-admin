@@ -597,6 +597,7 @@ const initPlayer = async () => {
           console.log(LoginInfo)
           // 初始化时默认显示9宫格
           myVideoPlayer.changeDivision(props.division)
+          myVideoPlayer.setTabControlBtn();
           // 播放器加载完成，隐藏加载动画
           isPlayerLoading.value = false
           console.warn('创建播放器成功:', versionInfo);
@@ -923,7 +924,7 @@ const cancelPlayback = () => {
           console.log('播放器创建成功，准备恢复播放');
           // 确保切换到9宫格
           myVideoPlayer.changeDivision(props.division);
-
+          myVideoPlayer.setTabControlBtn();
           // 增加延时确保窗口切换完成
           setTimeout(() => {
             // 使用保存的通道信息
