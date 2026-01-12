@@ -1477,8 +1477,8 @@
         },
         // 设置播放器上方的操作按
         setTabControlBtn(btnList, snum) {
-			// let showBtn = ["BTN_STREAM", "BTN_PTZ", "BTN_QUICKPLAY", "BTN_VOICE", "BTN_TALK", "BTN_RECORD", "BTN_PIC", "BTN_ENLARGE", "BTN_CLOSE"]
-            let showBtn = ["BTN_STREAM", "BTN_VOICE", "BTN_TALK", "BTN_RECORD", "BTN_PIC", "BTN_ENLARGE", "BTN_CLOSE"]
+			let showBtn = ["BTN_STREAM", "BTN_PTZ", "BTN_QUICKPLAY", "BTN_VOICE", "BTN_TALK", "BTN_RECORD", "BTN_PIC", "BTN_ENLARGE", "BTN_CLOSE"]
+            // let showBtn = ["BTN_STREAM", "BTN_VOICE", "BTN_TALK", "BTN_RECORD", "BTN_PIC", "BTN_ENLARGE", "BTN_CLOSE"]
             this.send({
                 method: "video.toolbar.showButton",
                 info: {

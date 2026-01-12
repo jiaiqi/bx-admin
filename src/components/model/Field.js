@@ -532,8 +532,14 @@ export class Field {
 
       // console.log('表单',approval,"var zz=" + self.info.xIf + "(row,mainData,approval); zz")
       let row = self.form.srvValFormModel();
-      let ret = eval("var zz=" + self.info.xIf + "(row,mainData,approval); zz");
-      return !!ret;
+      try {
+        let ret = eval("var zz=" + self.info.xIf + "(row,mainData,approval); zz");
+        return !!ret;
+      } catch (error) {
+        console.error("evalXIf - Error in field:", self.info.name, "xIf:", self.info.xIf);
+        console.error("evalXIf - Error details:", error);
+        throw error;
+      }
     }
   }
 
