@@ -218,7 +218,8 @@ export default {
     },
   },
   beforeDestroy() {
-    this.options = null
+    this.allOptions = []
+    this.options = []
     if(this.$refs.elCascader){
       this.$refs.elCascader.dropDownVisible = false
       this.$refs?.elCascader?.$destroy();
