@@ -611,9 +611,69 @@ const initPlayer = async () => {
           reject(err);
         },
         // 插件公共回调
-        dhPlayerMessage: (info, err) => {
-          console.warn('插件公共回调:', info, err);
-        },
+        dhPlayerMessage: (channelInfo, message) => {
+        // 打印所有插件抛的事件，便于你部署后看实际 PTZ 点击抛什么（测试完可注释）
+          console.warn('[DHPlayer 事件] PTZ 调试:', {
+          channelInfo,
+          message,
+          snum: channelInfo?.snum || selectedWindow.value
+          });
+
+        // 判断是否是 PTZ 按钮点击事件（根据大华常见抛出方式）
+        // 你部署后点 PTZ 图标，看控制台输出什么 message，然后调整下面 if 条件
+        if (
+        message?.eventCode === 704 ||                          // 常见 PTZ 操作/鉴权码
+        message?.type?.toLowerCase() === 'ptz' ||              // 部分版本用 type: 'ptz'
+        (typeof message === 'string' && message.toLowerCase().includes('ptz')) ||  // 字符串包含 ptz
+          message?.i18nKey?.includes('PTZ')                      // 国际化 key 提示
+        ) {
+        // 尝试从 message 中提取方向（实际需根据控制台输出调整）
+        let direction = 'up';  // 默认兜底
+
+          // 根据常见字段匹配（你看日志替换成真实的）
+          if (message?.direction) {
+            direction = message.direction;                       // 如 'up', 'down', 'left', 'right', 'zoomIn', 'zoomOut'
+            } else if (message?.action) {
+            direction = message.action;
+          } else if (message?.key || message?.btn) {
+            // 有些版本用 btn: 'PTZ_UP' 等
+          const key = (message.key || message.btn || '').toLowerCase();
+          if (key.includes('up')) direction = 'up';
+          else if (key.includes('down')) direction = 'down';
+          else if (key.includes('left')) direction = 'left';
+          else if (key.includes('right')) direction = 'right';
+          else if (key.includes('zoomin')) direction = 'zoomIn';
+          else if (key.includes('zoomout')) direction = 'zoomOut';
+        }
+
+        console.warn(`[PTZ 触发] 方向: ${direction}, 窗口: ${channelInfo?.snum || selectedWindow.value}`);
+
+      // 发送云台控制指令（核心调用）
+        myVideoPlayer.send({
+          method: 'video.ptzControl',
+          info: {
+            snum: channelInfo?.snum || selectedWindow.value,  // 当前窗口号
+            action: direction,           // 方向
+            speed: 5,                    // 速度 1~10
+            stop: false                  // false = 开始移动
+            }
+        });
+
+        // 600ms 后自动停止（防止一直转，体验更好）
+        setTimeout(() => {
+          myVideoPlayer.send({
+          method: 'video.ptzControl',
+            info: {
+              snum: channelInfo?.snum || selectedWindow.value,
+              action: direction,
+              speed: 5,
+              stop: true
+         }
+        });
+        console.warn(`[PTZ 自动停止] 方向: ${direction}`);
+        }, 600);
+        }
+      },
         // 实时预览成功回调
         realSuccess: (info) => {
           console.warn('实时预览成功-init:', info);
