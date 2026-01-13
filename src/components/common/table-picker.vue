@@ -200,7 +200,7 @@ export default {
     this.page = null;
     
     // 清理refs
-    this.$refs = null;
+    // this.$refs = null;
     
     // 清理props引用
     this.field = null;
