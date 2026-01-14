@@ -225,6 +225,9 @@
         this.gridPage.pageSizes = gidInfo.pageSizes;
         this.selection = gidInfo.selection;
         this.searchForm = true;
+        if(this.$refs['filter-form']) {
+          this.$refs['filter-form'].initFilterForm?.();
+        }
       },
 
       onFilterFormLoaded: function (form) {
@@ -285,5 +288,3 @@
     }
   }
 </style>
-
-

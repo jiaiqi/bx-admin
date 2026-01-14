@@ -2,6 +2,7 @@ import * as echarts from "echarts";
 import "echarts-wordcloud"; // echarts-wordcloud@1.1.3
 // import "echarts-gl"; //echarts-gl@1.1.2
 import { getImagePath } from "@/common/http";
+import dayjs from "dayjs";
 
 let __colors = [
   "#007AFF",
@@ -33,6 +34,30 @@ function hex2rgb(hex, alpha) {
 function addAlphaToRGB(rgb, alpha) {
   const [r, g, b] = rgb.match(/\d+/g);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+/**
+ * 获取一个最合适的最大值
+ * @param {number} maxVal 原始最大值
+ * @returns {number} 最合适的最大值
+ */
+function getNiceMax(maxVal) {
+  if (maxVal === 0) return 0;
+
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  const normalized = maxVal / magnitude;
+
+  let niceNormalized;
+  if (normalized <= 1) {
+    niceNormalized = 1;
+  } else if (normalized <= 2) {
+    niceNormalized = 2;
+  } else if (normalized <= 5) {
+    niceNormalized = 5;
+  } else {
+    niceNormalized = 10;
+  }
+
+  return (niceNormalized * magnitude).toFixed(2);
 }
 
 //params 要处理的字符串
@@ -67,7 +92,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
   let chartJson = pageItem?.chart_json || {
     chart_no: "CT2212240005",
     chart_type: "折线图",
-    legend_disp: "下",
+    legend_disp: "上",
     series_value: "列数据",
     series_value_cols: "index1,index2,index3",
     series_name_cfg: "收入,订单数,费用",
@@ -107,6 +132,10 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         // color: pageItem?.style_json?.color || "#848EAC",
       },
       textStyle: {
+        color: pageItem?.style_json?.color || "#848EAC",
+      },
+      pageIconColor: pageItem?.style_json?.color || "#848EAC",
+      pageTextStyle: {
         color: pageItem?.style_json?.color || "#848EAC",
       },
     }, //展示的折线图标题
@@ -173,6 +202,20 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     ],
     tooltip: {
       trigger: "axis", // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
+      formatter: function (params) {
+        let result = params[0].name + '<br/>';
+        params.forEach(function (item) {
+          if (item.value !== null && item.value !== 0 && item.value !== undefined) {
+            let markerColor = item.color;
+            if (item.color && typeof item.color === 'object' && item.color.colorStops) {
+              markerColor = item.color.colorStops[0].color;
+            }
+            const marker = `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${markerColor};"></span>`;
+            result += marker + item.seriesName + ': ' + item.value + '<br/>';
+          }
+        });
+        return result;
+      }
     }, //点击折点 展示的样式
     series: [], //y轴展示的数据
   };
@@ -250,6 +293,56 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
     case "line":
     case "bar":
     case "lineBar":
+      const legendDisp = chartJson.legend_disp || "上";
+
+      if (showLegend) {
+        switch (legendDisp) {
+          case "上":
+            ecOptions.legend.orient = "horizontal";
+            ecOptions.legend.x = "center";
+            ecOptions.legend.y = "top";
+            ecOptions.grid.top = chartJson.grid_top || 55;
+            break;
+          case "下":
+            ecOptions.legend.orient = "horizontal";
+            ecOptions.legend.x = "center";
+            ecOptions.legend.y = "bottom";
+            ecOptions.grid.bottom = chartJson.grid_bottom || 55;
+            break;
+          case "左":
+            ecOptions.legend.orient = "vertical";
+            ecOptions.legend.x = "left";
+            ecOptions.legend.y = "center";
+            ecOptions.grid.left = chartJson.grid_left || 55;
+            break;
+          case "右":
+            ecOptions.legend.orient = "vertical";
+            ecOptions.legend.x = "right";
+            ecOptions.legend.y = "center";
+            ecOptions.grid.right = chartJson.grid_right || 55;
+            break;
+          case "右上":
+            ecOptions.legend.orient = "horizontal";
+            ecOptions.legend.x = "right";
+            ecOptions.legend.y = "top";
+            ecOptions.grid.top = chartJson.grid_top || 55;
+            ecOptions.grid.right = chartJson.grid_right || 55;
+            break;
+          default:
+            ecOptions.legend.orient = "horizontal";
+            ecOptions.legend.x = "center";
+            ecOptions.legend.y = "top";
+            ecOptions.grid.top = chartJson.grid_top || 55;
+        }
+      }
+
+      ecOptions.legend.show = showLegend;
+      ecOptions.legend.type = "scroll";
+      ecOptions.legend.pageIconColor = pageItem?.style_json?.color || "#848EAC";
+      ecOptions.legend.pageTextStyle = {
+        color: pageItem?.style_json?.color || "#848EAC",
+      };
+
       for (let sIndex in seriesName) {
         let dataColName = seriesValueCols[sIndex];
         let series = {
@@ -319,7 +412,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           null
         );
         if (chartJson.more_option && chartJson.more_option === "x轴反序") {
-          ecOptions["xAxis"]["data"] = xAxisData.reverse();
+          ecOptions["xAxis"]["data"] = ecOptions["xAxis"]["data"].reverse();
         }
         if (
           chartJson.more_option &&
@@ -374,65 +467,162 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         } else {
           series["type"] = type;
         }
+
+        const baseColor = colors[sIndex % colors.length];
+        const isArea = chartJson?.more_option?.includes('折线面积图');
+        const enableGradient = chartJson?.more_option?.includes('自动渐变色');
+
+        if (series.type === "bar") {
+          series.barMaxWidth = 50;
+          series.barMinWidth = 20;
+          if (enableGradient) {
+            series.itemStyle = {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: baseColor },
+                { offset: 1, color: baseColor + "80" },
+              ]),
+            };
+          }
+        } else if (series.type === "line") {
+          series.lineStyle = {
+            color: baseColor,
+          };
+          series.itemStyle = {
+            color: baseColor,
+          };
+          if (isArea && enableGradient) {
+            series.areaStyle = {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: baseColor + "80" },
+                { offset: 1, color: baseColor + "20" },
+              ]),
+            };
+          }
+        }
+
         ecOptions["series"].push(series);
         if (chartJson?.series_value === "单列多行分组" && cellData?.length) {
           const nOption = buildMultiColSeries(pageItem, cellData, type);
           ecOptions["series"] = nOption?.series || [];
           if (nOption?.series?.length > 5) {
-            ecOptions.grid = {
-              // 这里可以防止Y轴显示不全
-              top: chartJson.grid_top || 45,
-              left: chartJson.grid_left || 10,
-              right: chartJson.grid_right || 10,
-              bottom: chartJson.grid_bottom || 0,
+            const legendDisp = chartJson.legend_disp || "上";
+
+            let gridConfig = {
               containLabel: true,
             };
+
+            if (showLegend) {
+              switch (legendDisp) {
+                case "上":
+                  gridConfig.top = chartJson.grid_top || 55;
+                  gridConfig.left = chartJson.grid_left || 15;
+                  gridConfig.right = chartJson.grid_right || 10;
+                  gridConfig.bottom = chartJson.grid_bottom || 0;
+                  break;
+                case "下":
+                  gridConfig.top = chartJson.grid_top || 55;
+                  gridConfig.left = chartJson.grid_left || 15;
+                  gridConfig.right = chartJson.grid_right || 10;
+                  gridConfig.bottom = chartJson.grid_bottom || 55;
+                  break;
+                case "左":
+                  gridConfig.top = chartJson.grid_top || 55;
+                  gridConfig.left = chartJson.grid_left || 55;
+                  gridConfig.right = chartJson.grid_right || 10;
+                  gridConfig.bottom = chartJson.grid_bottom || 0;
+                  break;
+                case "右":
+                  gridConfig.top = chartJson.grid_top || 55;
+                  gridConfig.left = chartJson.grid_left || 15;
+                  gridConfig.right = chartJson.grid_right || 55;
+                  gridConfig.bottom = chartJson.grid_bottom || 0;
+                  break;
+                case "右上":
+                  gridConfig.top = chartJson.grid_top || 55;
+                  gridConfig.left = chartJson.grid_left || 15;
+                  gridConfig.right = chartJson.grid_right || 55;
+                  gridConfig.bottom = chartJson.grid_bottom || 0;
+                  break;
+                default:
+                  gridConfig.top = chartJson.grid_top || 55;
+                  gridConfig.left = chartJson.grid_left || 15;
+                  gridConfig.right = chartJson.grid_right || 10;
+                  gridConfig.bottom = chartJson.grid_bottom || 0;
+              }
+            } else {
+              gridConfig.top = chartJson.grid_top || 40;
+              gridConfig.left = chartJson.grid_left || 15;
+              gridConfig.right = chartJson.grid_right || 10;
+              gridConfig.bottom = chartJson.grid_bottom || 0;
+            }
+
+            ecOptions.grid = gridConfig;
           }
           ecOptions.legend.data = nOption?.legend || [];
 
           const val =
-            Math.abs(nOption.max - nOption.min) / nOption.legend.length;
+            Math.abs(Number(nOption.max) - Number(nOption.min)) / nOption.legend.length;
           ecOptions.yAxis[0].min = (
             pageItem.min ||
-            nOption.min - val ||
+            Number(nOption.min) - val ||
             0
           ).toFixed(2);
           if (ecOptions.yAxis[0].min < 0) {
             ecOptions.yAxis[0].min = 0;
           }
 
-          ecOptions.yAxis[0].max = (
-            (pageItem.max || nOption.max) + val
-          ).toFixed(2);
+          // ecOptions.yAxis[0].max = (
+          //   (Number(pageItem.max) || Number(nOption.max)) + val
+          // ).toFixed(2);
 
           ecOptions.tooltip.trigger = "axis";
         }
       }
-      if (chartJson?.more_option?.includes('折线面积图')) {
+      if (chartJson?.more_option?.includes('序列堆叠')) {
         ecOptions.series.forEach((item, index) => {
-          item.areaStyle = {
-            color: {
-              type: 'linear',
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [{
-                offset: 0, color: __colors[index]  // 0% 处的颜色
-              }, {
-                offset: 0.6, color: hex2rgb(__colors[index], 0.1) // 80% 处的颜色
-              }],
-              global: false // 缺省为 false
-            },
-            shadowColor: 'rgba(0, 0, 0, 0.1)',
-            shadowBlur: 10
-          }
+          item.stack = sortAxisCol;
         })
-        if (chartJson?.more_option?.includes('序列堆叠')) {
-          ecOptions.series.forEach((item, index) => {
-            item.stack = sortAxisCol;
-          })
+
+        if (!pageItem.max && ecOptions.series.length > 0) {
+          let maxVal = 0;
+          ecOptions.xAxis.data.forEach(xVal => {
+            let sum = 0;
+            ecOptions.series.forEach(series => {
+              const dataIndex = ecOptions.xAxis.data.indexOf(xVal);
+              if (dataIndex >= 0 && series.data[dataIndex] !== null && series.data[dataIndex] !== undefined) {
+                sum += Number(series.data[dataIndex]) || 0;
+              }
+            });
+            if (sum > maxVal) {
+              maxVal = sum;
+            }
+          });
+
+          if (maxVal > 0) {
+            // ecOptions.yAxis[0].max = getNiceMax(maxVal);
+            ecOptions.yAxis[0].max = undefined
+          }
         }
+      }
+      const dateFormatMap = {
+        '年-月-日': 'YYYY-MM-DD',
+        '年/月/日': 'YYYY/MM/DD',
+        '年-月-日 时:分': 'YYYY-MM-DD HH:mm',
+        '年/月/日 时:分': 'YYYY/MM/DD HH:mm',
+        '时:分': 'HH:mm',
+        '月-日 时:分': 'MM月DD日 HH:mm',
+        '时:分:秒': 'HH:mm:ss',
+        '年/月/日 时:分:秒': 'YYYY/MM/DD HH:mm:ss',
+        '年-月-日 时:分:秒': 'YYYY-MM-DD HH:mm:ss',
+      }
+      if (chartJson.x_label_format === '日期时间' && chartJson.x_label_date_format) {
+        ecOptions.xAxis.axisLabel.formatter = function (value) {
+          return dayjs(value).format(dateFormatMap[chartJson.x_label_date_format]);
+        }
+      } else if (chartJson.x_label_format === '字符串模板' && chartJson.x_label_temp_format) {
+        ecOptions.xAxis.axisLabel.formatter = chartJson.x_label_temp_format
+      } else if (chartJson.x_label_custom_format) {
+        ecOptions.xAxis.axisLabel.formatter = eval(`${chartJson.x_label_custom_format}`);
       }
       // ecOptions["xAxis"]["data"] = [
       //   ...new Set(ecOptions["xAxis"]["data"] || []),
@@ -485,7 +675,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           name: "", // 名称
           type: "pie", // 类型 饼图
           //   color: color,
-          // radius: ["45%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
+          // radius: ["55%", "65%"], // 饼图的半径 `50, 250 => 内半径 外半径`
           center: ["50%", "50%"], // 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
           // roseType: "area", // 是否展示成南丁格尔图，通过半径区分数据大小
           itemStyle: {
@@ -524,6 +714,9 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           tooltip: {
             trigger: 'item',
             formatter: function (params) {
+              // if (params.value === null || params.value === 0 || params.value === undefined) {
+              //   return '';
+              // }
               // 计算原始数据总和，确保百分比正确
               let originalTotal = 0;
               cellData.forEach(function (data) {
@@ -539,7 +732,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
           data: [],
         };
         if (type === "ring") {
-          series.radius = ["45%", "60%"]
+          series.radius = ["55%", "60%"]
         }
         series.itemStyle.normal.label.show = showLabel;
 
@@ -551,11 +744,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         let allDataItems = [];
         // 检查并合并已有的"其它"或"其他"项
         let existingOthersValue = 0;
-        
+
         for (let data of cellData) {
           const name = data[chartJson?.series_name_cfg || sortAxisCol];
           const value = parseFloat(data[dataColName]);
-          
+
           // 检查是否为"其它"或"其他"项
           if (name === "其它" || name === "其他") {
             existingOthersValue += value;
@@ -717,6 +910,11 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
         tooltip: {},
         legend: {
           data: ["预算分配", "实际开销"],
+          type: "scroll",
+          pageIconColor: pageItem?.style_json?.color || "#848EAC",
+          pageTextStyle: {
+            color: pageItem?.style_json?.color || "#848EAC",
+          },
         },
         radar: {
           indicator: [
@@ -863,7 +1061,7 @@ export const useBuildOption = (type, pageItem, cellData = [], layout) => {
 
             sizeRange: [12, 40],
 
-            // Text rotation range and step in degree. Text will be rotated randomly in range [-90, 90] by rotationStep 45
+            // Text rotation range and step in degree. Text will be rotated randomly in range [-90, 90] by rotationStep 55
 
             rotationRange: [0, 0],
             rotationStep: 0,
@@ -1076,6 +1274,12 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
   xAxisData = [...new Set(xAxisData)];
   let lineVal1 = chartJson?.refer_line1 || "none";
   let lineVal2 = chartJson?.refer_line2 || "none";
+
+  let colors = [...__colors];
+  if (chartJson?.legend_color_seq) {
+    colors = chartJson?.legend_color_seq.split(",");
+  }
+
   if (seriesName && Array.isArray(datas) && datas.length > 0) {
     let seriesNames = datas.reduce((pre, cur) => {
       if (!pre.includes(cur[seriesName])) {
@@ -1083,7 +1287,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
       }
       return pre;
     }, []);
-    let series = seriesNames.map((name) => {
+    let series = seriesNames.map((name, index) => {
       let obj = {
         name: name,
         type: type || "line",
@@ -1094,7 +1298,10 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
           const data = datas.find(
             (e) => e[seriesName] === name && e[sortAxisCol] === a
           );
-          return data?.[chartJson.series_value_cols] || undefined;
+          const val = data?.[chartJson.series_value_cols] || 0;
+          if (!isNaN(Number(val))) {
+            return Number(val.toFixed(2));
+          }
         }),
         symbol: "circle",
         smooth: true,
@@ -1104,6 +1311,39 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
         //   trigger: 'item' // axis 代表着同列的所有项的值  item  单个项的值  none 什么都不展示 三个值
         // }, //点击折点 展示的样式
       };
+
+      const baseColor = colors[index % colors.length];
+      const isArea = chartJson?.more_option?.includes('折线面积图');
+      const enableGradient = chartJson?.more_option?.includes('自动渐变色');
+
+      if (obj.type === "bar") {
+        obj.barMaxWidth = 50;
+        obj.barMinWidth = 20;
+        if (enableGradient) {
+          obj.itemStyle = {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: baseColor },
+              { offset: 1, color: baseColor + "80" },
+            ]),
+          };
+        }
+      } else if (obj.type === "line") {
+        obj.lineStyle = {
+          color: baseColor,
+        };
+        obj.itemStyle = {
+          color: baseColor,
+        };
+        if (isArea && enableGradient) {
+          obj.areaStyle = {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: baseColor + "80" },
+              { offset: 1, color: baseColor + "20" },
+            ]),
+          };
+        }
+      }
+
       if (lineVal1 && lineVal2 && lineVal1 !== "none" && lineVal2 !== "none") {
         obj.markLine = {
           symbol: "none",
@@ -1127,7 +1367,7 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
           },
         };
       }
-      if (chartJson?.more_option?.indexOf("stack")) {
+      if (chartJson?.more_option?.includes("stack")) {
         obj.stack = "stack";
       }
       if (
@@ -1141,11 +1381,32 @@ const buildMultiColSeries = (pageItem, cellData = [], type) => {
     let sortData = datas.sort(
       (a, b) => a[chartJson.series_value_cols] - b[chartJson.series_value_cols]
     );
+
+    let maxVal = sortData[sortData.length - 1][chartJson.series_value_cols];
+
+    if (chartJson?.more_option?.includes('序列堆叠')) {
+      maxVal = 0;
+      xAxisData.forEach(xVal => {
+        let sum = 0;
+        seriesNames.forEach(name => {
+          const data = datas.find(
+            (e) => e[seriesName] === name && e[sortAxisCol] === xVal
+          );
+          sum += data?.[chartJson.series_value_cols] || 0;
+        });
+        if (sum > maxVal) {
+          maxVal = sum;
+        }
+      });
+    }
+
+    // const niceMax = getNiceMax(maxVal);
+
     return {
       series: series,
       legend: seriesNames,
       min: sortData[0][chartJson.series_value_cols],
-      max: sortData[sortData.length - 1][chartJson.series_value_cols],
+      // max: niceMax,
     };
   }
 };
@@ -1165,6 +1426,10 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
         // color: "#E8E8E8",
       },
       textStyle: {
+        color: "#E8E8E8",
+      },
+      pageIconColor: "#E8E8E8",
+      pageTextStyle: {
         color: "#E8E8E8",
       },
     },
@@ -1446,7 +1711,7 @@ export const setDefaultChartOption = (chartType, chartJson, eCharts) => {
           // color: ['#23074d', '#cc5333'] // 紫红
           // color: ['#00467F', '#A5CC82'] // 蓝绿
           // color: ['#1488CC', '#2B32B2'] // 浅蓝
-          color: ['#0045FF', '#0FDFDE'] // 浅蓝
+          color: ['#0055FF', '#0FDFDE'] // 浅蓝
           // color: ['#00467F', '#A5CC82'] // 蓝绿
         }
       }

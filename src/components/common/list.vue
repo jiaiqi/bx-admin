@@ -1,5 +1,5 @@
 <template>
-  <div v-show="evalVisible()" class="list-comp-wrap">
+  <div v-show="evalVisible()" class="list-comp-wrap" ref="list-comp-wrap">
     <div
       class="chart-box"
       v-if="
@@ -32,6 +32,7 @@
         :srv_cols="srv_cols"
         :supportGroup="false"
         v-on:search-clicked="query"
+        v-on:condition-change="onSearchFormConditionChange"
         ref="filter-form"
         @form-loaded="onFilterFormLoaded($refs['filter-form'])"
       >
@@ -175,7 +176,7 @@
           </div> -->
     </el-row>
 
-    <div class="table-list-wrap">
+    <div class="table-list-wrap" :style="{minHeight: calcMinHeight}">
       <list-left-tree
         :cfg-json="cfgJson"
         v-if="cfgJson && cfgJson.showTreeFilter"
@@ -2380,7 +2381,7 @@ export default {
   flex: 1;
   display: flex;
   gap: 10px;
-  min-height: 400px;
+  // min-height: 400px;
   overflow: hidden;
 }
 .table-list-row {

@@ -302,7 +302,7 @@ export default {
           });
         }
       } catch (error) {
-        console.error("加载选项失败:", error);
+        // console.error("加载选项失败:", error);
       } finally {
         this.loading = false;
       }

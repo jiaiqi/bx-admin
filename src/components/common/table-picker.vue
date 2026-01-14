@@ -165,6 +165,53 @@ import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import uniqBy from "lodash/uniqBy";
 export default {
+  beforeDestroy() {
+    // console.log("table-picker 组件被销毁");
+    
+    // 清除定时器
+    if (this.loadOptionsTimer) {
+      clearTimeout(this.loadOptionsTimer);
+      this.loadOptionsTimer = null;
+    }
+    
+    // 移除事件监听器
+    if (this.$refs?.["multipleTable"] && this.$refs["multipleTable"].$el) {
+      // 移除行点击事件监听
+      this.$refs["multipleTable"].$off("row-click", this.clickRow);
+      // 移除选择变化事件监听
+      this.$refs["multipleTable"].$off("selection-change", this.handleSelectionChange);
+      // 移除展开变化事件监听
+      this.$refs["multipleTable"].$off("expand-change", this.handleExpandChange);
+    }
+    
+    // 关闭弹出层（如果打开）
+    if (this.$refs?.show_popover) {
+      this.$refs.show_popover.doClose();
+    }
+    
+    // 清理数据和引用
+    this.gridData = [];
+    this.allData = [];
+    this.selected = [];
+    this.options = [];
+    this.initOptions = [];
+    this.gridHeader = [];
+    this.listV2 = null;
+    this.page = null;
+    
+    // 清理refs
+    // this.$refs = null;
+    
+    // 清理props引用
+    this.field = null;
+    this.finderSelected = null;
+    this.selectedGridData = null;
+    this.defaultValues = null;
+    this.mainformDatas = null;
+    this.formModel = null;
+    this.optionListV3 = null;
+    this.optionListV2 = null;
+  },
   props: {
     field: {
       type: Object,
@@ -216,6 +263,7 @@ export default {
       isCheckedFirstPage: false, //已经将第一页数据默认选中
       listV2: null,
       isSelectedAll: false,
+      loadOptionsTimer: null, // 保存定时器引用
     };
   },
   computed: {
@@ -256,7 +304,7 @@ export default {
               result = [arr];
             }
           } catch (error) {
-            console.log(error);
+            // console.log(error);
           }
           if (Array.isArray(result) && result.length > 0) {
             result = result.map((item) => {
@@ -293,7 +341,7 @@ export default {
               try {
                 result = val ? JSON.parse(val) : {};
               } catch (error) {
-                console.log(error);
+                // console.log(error);
               }
               if (result && result[dispCol]) {
                 result = [result[dispCol] || result[valueCol]];
@@ -432,7 +480,7 @@ export default {
         return this.buildGridHeader();
       })
       .then(() => {
-        setTimeout(() => {
+        this.loadOptionsTimer = setTimeout(() => {
           this.loadOptions();
         }, 1000);
       });
@@ -451,7 +499,7 @@ export default {
               JSON.parse(newValue.model)?.map((x) => x[this.valueCol])
                 ?.toString || "";
           } catch (error) {
-            console.error(error);
+            // console.error(error)
           }
           this.selected = selected ? selected.split(",") : [];
         }
@@ -476,7 +524,7 @@ export default {
         if (isEqual(newValue, oldValue)) {
           return;
         }
-        console.log("optionListV2变化了:", newValue, oldValue);
+        // console.log("optionListV2变化了:", newValue, oldValue);
         if (!this.field.model && this.selected?.length) {
           this.selected = this.isMulti ? [] : "";
           this.isSelectedAll = false;
@@ -615,7 +663,7 @@ export default {
         try {
           obj = JSON.parse(this.finderSelected);
         } catch (error) {
-          console.log(error);
+          // console.log(error);
         }
       }
 
@@ -778,11 +826,11 @@ export default {
       }
     },
     handleExpandChange(row, expanded) {
-      console.log("handleExpandChange:", row, expanded);
-      this.$set(row, "_expanded", expanded);
+      // console.log("handleExpandChange:", row, expanded);
+      this.$set(row, '_expanded', expanded)
     },
     handleSelectionChange(val) {
-      console.log("handleSelectionChange:", val);
+      // console.log("handleSelectionChange:", val);
       if (Array.isArray(val) && val.length) {
         val.forEach((row) => {
           this.clickRow(row);
@@ -841,7 +889,7 @@ export default {
       this.setFieldVal();
     },
     changeSelected(index, row, scope) {
-      console.log("changeSelected:", scope);
+      // console.log('changeSelected:', scope);
 
       this.clickRow(row, scope);
     },
@@ -981,7 +1029,7 @@ export default {
         // this.buildGridHeaders(respData[ "srv_cols" ]);
         if (this.disabled !== true) {
           if (this.finderSelected) {
-            console.log("finderSelected", this.finderSelected);
+            // console.log("finderSelected", this.finderSelected);
 
             try {
               this.allData = JSON.parse(this.finderSelected).map((item) => {

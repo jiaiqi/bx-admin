@@ -223,6 +223,8 @@ import Action from "./action.vue";
 import { ActionInfo } from "../model/ActionInfo";
 import Vue from "vue";
 import SimpleUpdate from "./simple-update.vue";
+import update from "./update.vue";
+// const update = () => import("./update.vue")
 import CustButtonMinx from "../mixin/cust-button-minx";
 import { hotTableMetadata } from "../model/Field";
 import updateHistory from "../ui/update-history.vue";
@@ -236,7 +238,7 @@ export default {
     action: Action,
     loader: Loader,
     updateHistory,
-    update: () => import("./update.vue"),
+    update,
     collapseArrow
   },
   mixins: [FormMixin, CustButtonMinx, FormValidateMixin, BroadcastMixin],

@@ -215,7 +215,7 @@
 </template>
 
 <script>
-// import ChildList from "./child-list.vue";
+import ChildList from "./child-list.vue";
 import SimpleUpdate from "./simple-update.vue";
 import ParentChildMixin from "../mixin/parent-child-mixin";
 import cloneDeep from "lodash/cloneDeep";
@@ -223,6 +223,7 @@ export default {
   name: "update",
   components: {
     SimpleUpdate,
+    // ChildList,
     ChildList: () => import("./child-list.vue"),
   },
   mixins: [ParentChildMixin],

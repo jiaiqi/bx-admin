@@ -72,7 +72,7 @@
           <span
             v-for="(formItem, fIndex) in formItems"
             :key="fIndex"
-            v-show="!getSectionShow(section)"
+            v-if="!getSectionShow(section)"
           >
             <field-editor
               :field="formItem.field"

@@ -1,10 +1,11 @@
 <template>
-  <div class="tree-grid">
+  <div class="tree-grid" ref="list-comp-wrap">
     <div v-show="selectFormShow" v-if="searchForm">
       <simple-filter
         v-if="srv_cols"
         :srv_cols="srv_cols"
         v-on:search-clicked="query"
+        ref="filter-form"
       ></simple-filter>
     </div>
 
@@ -73,7 +74,7 @@
       </div>
     </el-row>
 
-    <div class="table-list-wrap">
+    <div class="table-list-wrap" :style="{ minHeight: calcMinHeight }">
       <list-left-tree
         :cfg-json="cfgJson"
         v-if="cfgJson && cfgJson.showTreeFilter"
@@ -1501,7 +1502,9 @@ export default {
           this.initLoad = true;
           this.$emit("list-loaded", this);
         });
-
+      if(this.$refs['filter-form']) {
+        await this.$refs['filter-form'].initFilterForm();
+      }
       this.loadTableData(true);
     },
 

@@ -166,9 +166,9 @@ html {
   padding: 0;
 }
 
-body {
+html body {
   height: 100%;
-  margin: 0;
+  margin: 0 !important;
   padding: 0;
 }
 

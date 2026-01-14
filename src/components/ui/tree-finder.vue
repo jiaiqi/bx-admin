@@ -17,6 +17,7 @@
       :value="field.getSrvVal()"
     ></el-input>
     <el-cascader
+      @visible-change="handleVisibleChange"
       class="flex-1"
       v-else
       :placeholder="loading ? '数据加载中...' : field.info.placeholder"
@@ -103,6 +104,8 @@ export default {
   },
   data() {
     return {
+      loadSize: 20,
+      allOptions: [],
       // value组成的路径数组
       selected: [],
       // 树形结构数据
@@ -214,7 +217,14 @@ export default {
       return this.field?.info?.srvCol?.option_list_v2;
     },
   },
-
+  beforeDestroy() {
+    this.allOptions = []
+    this.options = []
+    if(this.$refs.elCascader){
+      this.$refs.elCascader.dropDownVisible = false
+      this.$refs?.elCascader?.$destroy();
+    }
+  },
   methods: {
     emitFieldValueChange() {
       let objCol = null;
@@ -244,7 +254,7 @@ export default {
           col: objInfo.a_save_b_obj_col,
           val: objStr,
         };
-        console.log("更新obj_info", objCol);
+        // console.log("更新obj_info", objCol);
         // 将更新的字段信息保存在_obj_col上，方便在form中获取
         this.$set(this.field, "_obj_col", objCol);
       } else if (this.field?._obj_col?.val) {
@@ -287,7 +297,7 @@ export default {
         // 获取完整路径数据并构建树形结构
         try {
           const treeStructureData = await this.getFullPathData(item.path);
-          console.log('完整路径树形数据:', treeStructureData);
+          // console.log('完整路径树形数据:', treeStructureData);
           this.options = treeStructureData
           // 触发自定义事件，将树形结构数据传递给父组件
           this.$emit('path-data-loaded', {
@@ -296,7 +306,7 @@ export default {
             path: item.path
           });
         } catch (error) {
-          console.error('获取完整路径数据失败:', error);
+          // console.error('获取完整路径数据失败:', error);
         }
       } else {
         this.selected = [];
@@ -316,14 +326,14 @@ export default {
       try {
         const loader = this.dispLoaderV2 || this.field.info.dispLoader;
         if (!loader) {
-          console.error('数据加载器配置不存在');
+          // console.error('数据加载器配置不存在');
           return null;
         }
 
         const pathArray = path.split('/').filter(item => item !== '');
         if (pathArray.length === 0) return null;
 
-        console.log('开始加载完整路径数据:', { path, pathArray });
+        // console.log('开始加载完整路径数据:', { path, pathArray });
 
         // 收集所有需要加载的数据
         let allData = [];
@@ -370,15 +380,15 @@ export default {
 
         const treeStructure = this.buildTreeStructure(processedData, treeOptions);
 
-        console.log('完整路径数据加载完成:', {
-          totalNodes: processedData.length,
-          treeStructure: treeStructure
-        });
+        // console.log('完整路径数据加载完成:', {
+        //   totalNodes: processedData.length,
+        //   treeStructure: treeStructure
+        // });
 
         return treeStructure;
 
       } catch (error) {
-        console.error('获取完整路径数据失败:', error);
+        // console.error('获取完整路径数据失败:', error);
         return null;
       }
     },
@@ -424,15 +434,15 @@ export default {
         const response = await this.$http.post(url, params);
 
         if (response?.data?.state === "SUCCESS" && response.data.data?.length > 0) {
-          console.log(`加载同级节点成功 - 父节点: ${parentValue || 'root'}, 数量: ${response.data.data.length}`);
+          // console.log(`加载同级节点成功 - 父节点: ${parentValue || 'root'}, 数量: ${response.data.data.length}`);
           return response.data.data;
         } else {
-          console.log(`未找到同级节点 - 父节点: ${parentValue || 'root'}`);
+          // console.log(`未找到同级节点 - 父节点: ${parentValue || 'root'}`);
           return [];
         }
 
       } catch (error) {
-        console.error(`加载同级节点失败 - 父节点: ${parentValue || 'root'}`, error);
+        // console.error(`加载同级节点失败 - 父节点: ${parentValue || 'root'}`, error);
         return [];
       }
     },
@@ -585,7 +595,7 @@ export default {
           return;
         }
       }
-      console.log(node, data, "clickNode");
+      // console.log(node, data, "clickNode");
       // this.field.model = data;
       // if (this.dispLoaderV2?.lazyLoad === false) {
       //   this.selected = [data[this.props.value]];
@@ -598,9 +608,12 @@ export default {
       } else {
         this.onlyEmitData(data);
       }
-      this.$nextTick(() => {
-        this.$refs.elCascader.dropDownVisible = false;
-      });
+      if(this.$refs.elCascader) {
+        this.$nextTick(() => {
+          this.$refs.elCascader.dropDownVisible = false;
+        });
+      }
+     
     },
     onClear() {
       if (this.allowChangeModel !== false) {
@@ -622,7 +635,7 @@ export default {
       }
     },
     async beforeFilter(value) {
-      console.log("beforeFilter", value);
+      // console.log("beforeFilter", value);
       let loader = this.dispLoaderV2 || this.field.info.dispLoader;
       if (loader.parentCol) {
         const url = this.getServiceUrl("select", loader.service);
@@ -665,11 +678,11 @@ export default {
       }
     },
     inputChange: debounce(function (e) {
-      console.log(e.target.value);
+      // console.log(e.target.value);
       let val = e.target.value;
       let loader = this.dispLoaderV2 || this.field.info.dispLoader;
       if (loader.parentCol) {
-        console.log(val, "onSelectChange");
+        // console.log(val, "onSelectChange");
         this.treeLazySelect(loader, null, val);
       }
     }, 500),
@@ -728,7 +741,7 @@ export default {
 
         return processedData;
       } else {
-        console.error("loadChildren error", response.data);
+        // console.error("loadChildren error", response.data);
         return [];
       }
     },
@@ -997,6 +1010,31 @@ export default {
       // 处理disabled状态传播
       return this.processDisabledState(options);
     },
+    // 监听面板显示
+    handleVisibleChange(visible) {
+      if (visible) {
+        this.$nextTick(() => {
+          const panel = document.querySelector('.el-cascader-menu__wrap');
+          if (panel) {
+            panel.addEventListener('scroll', this.handleScroll);
+          }
+        });
+      } else {
+        const panel = document.querySelector('.el-cascader-menu__wrap');
+        if (panel) {
+          panel.removeEventListener('scroll', this.handleScroll);
+        }
+      }
+    },
+    // 滚动加载更多节点
+    handleScroll() {
+      const panel = document.querySelector('.el-cascader-menu__wrap');
+      if (panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 20) {
+        const start = this.options.length;
+        const end = start + this.loadSize;
+        this.options = this.allOptions.slice(0, end);
+      }
+    },
     async loadDetail() {
       this.loading = true; // 开始加载
 
@@ -1036,7 +1074,12 @@ export default {
                 if (!treeStructureData.find((item) => item[valCol] === this.field.model)) {
                   this.options.push(item);
                 }
-                this.options = treeStructureData;
+                const selectIndex = treeStructureData.findIndex(item => item[this.props.value] === this.selected[0])
+                const temp = treeStructureData[selectIndex]
+                treeStructureData[selectIndex] = treeStructureData[0]
+                treeStructureData[0] = temp
+                this.allOptions = treeStructureData
+                this.options = this.allOptions.slice(0, this.loadSize)
 
                 // 设置正确的selected路径
                 const pathArray = item.path.split('/').filter(Boolean);
@@ -1048,17 +1091,17 @@ export default {
                   return val;
                 });
 
-                console.log('默认值路径设置完成:', {
-                  path: item.path,
-                  selected: this.selected,
-                  options: this.options
-                });
+                // console.log('默认值路径设置完成:', {
+                //   path: item.path,
+                //   selected: this.selected,
+                //   options: this.options
+                // });
               } else {
                 // 如果无法获取完整路径数据，使用原有逻辑
                 this.selected = item?.path?.split("/").filter((item) => !!item) || [];
               }
             } catch (error) {
-              console.error('构建完整路径失败，使用简单路径:', error);
+              // console.error('构建完整路径失败，使用简单路径:', error);
               this.selected = item?.path?.split("/").filter((item) => !!item) || [];
             }
           } else {
@@ -1074,7 +1117,7 @@ export default {
           }
         }
       } catch (error) {
-        console.error('loadDetail 执行失败:', error);
+        // console.error('loadDetail 执行失败:', error);
       } finally {
         this.loading = false; // 结束加载
       }
@@ -1109,12 +1152,13 @@ export default {
             if (this.needRenameLabel()) {
               options.forEach((option) => this.renameLable(option));
             }
-            this.options = options;
+            this.allOptions = options
+            this.options = this.allOptions.slice(0, this.loadSize)
             this.noData = !options?.length;
           }
         });
       } catch (error) {
-        console.error('loadOptions 执行失败:', error);
+        // console.error('loadOptions 执行失败:', error);
       } finally {
       }
     },
@@ -1154,7 +1198,7 @@ export default {
         }
         let loader = this.dispLoaderV2;
         if (loader.parentCol && !val) {
-          console.log(val, "onSelectChange");
+          // console.log(val, "onSelectChange");
           this.treeLazySelect(loader, val).then((res) => {
             if (Array.isArray(res) && res.length > 0) {
               this.options = res;
@@ -1179,7 +1223,7 @@ export default {
         this.onlyEmitData(data || null, false);
       }
       if (loader.parentCol) {
-        console.log(val, "onSelectChange");
+        // console.log(val, "onSelectChange");
         this.treeLazySelect(loader, val);
       }
       // if (val !== this.field.getSrvVal()) {
@@ -1377,7 +1421,7 @@ export default {
         return nodes;
       }
 
-      console.log('开始处理disabled状态传播，节点数量:', nodes.length);
+      // console.log('开始处理disabled状态传播，节点数量:', nodes.length);
 
       return nodes.map(node => {
         // 创建节点副本，避免修改原数据
@@ -1395,7 +1439,7 @@ export default {
 
           // 如果所有子节点都被disabled，则将父节点也设置为disabled
           if (allChildrenDisabled && processedNode.children.length > 0) {
-            console.log(`父节点 ${processedNode.label || processedNode.name || processedNode.id} 的所有子节点都被disabled，设置父节点为disabled`);
+            // console.log(`父节点 ${processedNode.label || processedNode.name || processedNode.id} 的所有子节点都被disabled，设置父节点为disabled`);
             processedNode.disabled = "是";
           }
         }
@@ -1414,7 +1458,7 @@ export default {
       // 如果没有默认值，加载初始选项
       this.loadOptions();
     }
-    console.log('created:', this.dispLoaderV2);
+    // console.log('created:', this.dispLoaderV2);
 
     // this.loadOptions.then((_) => {
     //   if (this.selected.length == 0 && this.field.model) {
@@ -1455,7 +1499,7 @@ export default {
     "field.model": {
       deep: true,
       handler(newValue, oldValue) {
-        console.log(newValue, oldValue, "field.model", this.field);
+        // console.log(newValue, oldValue, "field.model", this.field);
         if (newValue && oldValue && typeof newValue === typeof oldValue && typeof newValue === 'object') {
           if (this.dispLoaderV2.refedCol && newValue[this.dispLoaderV2.refedCol] === oldValue[this.dispLoaderV2.refedCol]) {
             return

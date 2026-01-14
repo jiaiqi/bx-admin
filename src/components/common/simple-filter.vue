@@ -167,6 +167,9 @@ export default {
 
       this.$emit("search-clicked", this.buildConditions(), groups, headers);
     },
+    onConditionChange: function () {
+      this.$emit("condition-change", this.buildConditions());
+    },
 
     noramlizeFieldName: function (fieldName) {
       if (fieldName.startsWith("_") && fieldName.endsWith("_disp")) {
@@ -386,7 +389,7 @@ export default {
         fieldInfo.editable = true;
         if (fieldInfo.isNumeric()) {
           field.ruleType = "between";
-        } else if (['MonthRange', 'Date', 'Time', 'DateTime', 'DateTimeRange', 'DateRange'].includes(fieldInfo.type)) {
+        } else if (['MonthRange', 'Date', 'Time', 'DateTime', 'DateTimeRange', 'DateRange'].includes(fieldInfo.type) && fieldInfo.srvCol.subtype !== fieldInfo.type) {
           field.ruleType = "between";
         } else if (fieldInfo.type == "Enum" || fieldInfo.type == "Dict") {
           field.ruleType = "in";
@@ -550,79 +553,89 @@ export default {
       // fiagsFi.visible = true
       return flagsField;
     },
+    async initFilterForm(){
+
+      let colFilter = (srvCol) => {
+        // return (srvCol.columns !== 'id' || !srvCol.auto_generate) && srvCol.in_cond > 0
+        return srvCol.columns !== "id" && srvCol.in_cond > 0;
+      };
+
+      return await this.createFields(colFilter, this.srv_cols)
+        .then(() => {
+          this.decorateFields();
+
+          if (this.supportGroup) {
+            this.createGroupFields();
+            this.createReduceFields();
+          }
+        })
+        .then((_) => {
+          this.formLoaded = true;
+        })
+        .then((_) => {
+          this.$emit("form-loaded");
+        })
+        .then((_) => {
+          if (!this.supportGroup) {
+            return;
+          }
+
+          this.rflagsField.editor.$on("field-value-changed", (_) => {
+            let selected = this.rflagsField.model;
+            for (let i in selected) {
+              let fieldName = selected[i];
+              this.reduceFields[fieldName].info.seq = i * 100;
+            }
+          });
+
+          this.gflagsField.editor.$on("field-value-changed", (_) => {
+            let selected = this.gflagsField.model;
+            for (let i in selected) {
+              let fieldName = selected[i];
+              this.groupFields[fieldName].info.seq = i * 100;
+            }
+          });
+        })
+        .then(() => {
+          const queryInitValueFields = [];
+          Object.keys(this.fields).forEach((key) => {
+            if (this.fields[key].info.queryInitValue) {
+              const queryInitValue = this.fields[key].info.queryInitValue;
+              if (queryInitValue?.value && (queryInitValue?.use_query === "是" || queryInitValue?.use_div_calc === "是")) {
+                queryInitValueFields.push(key);
+                let value = queryInitValue?.value;
+                // 按天加上或减去时间
+                if (queryInitValue.start_time_diff) {
+                  value = value.map((date) => {
+                    return dayjs(date)
+                      .add(queryInitValue.start_time_diff, "day")
+                      .format("YYYY-MM-DD HH:mm:ss");
+                  });
+                }
+                this.fields[key].setSrvVal(value);
+              }
+            }
+          });
+          if (queryInitValueFields?.length) {
+            return new Promise((resolve) => {
+              this.$nextTick(() => {
+                this.onConditionChange()
+                // this.onSearchClicked();
+                resolve();
+              });
+            })
+          }
+        })
+        .then(() => {
+          this.setFieldsDefaultValue();
+        }).finally(() => {
+          this.$emit("filter-loaded");
+        })
+      },
   },
 
   mounted: function () {
-    let colFilter = (srvCol) => {
-      // return (srvCol.columns !== 'id' || !srvCol.auto_generate) && srvCol.in_cond > 0
-      return srvCol.columns !== "id" && srvCol.in_cond > 0;
-    };
-
-    this.createFields(colFilter, this.srv_cols)
-      .then(() => {
-        this.decorateFields();
-
-        if (this.supportGroup) {
-          this.createGroupFields();
-          this.createReduceFields();
-        }
-      })
-      .then((_) => {
-        this.formLoaded = true;
-      })
-      .then((_) => {
-        this.$emit("form-loaded");
-      })
-      .then((_) => {
-        if (!this.supportGroup) {
-          return;
-        }
-
-        this.rflagsField.editor.$on("field-value-changed", (_) => {
-          let selected = this.rflagsField.model;
-          for (let i in selected) {
-            let fieldName = selected[i];
-            this.reduceFields[fieldName].info.seq = i * 100;
-          }
-        });
-
-        this.gflagsField.editor.$on("field-value-changed", (_) => {
-          let selected = this.gflagsField.model;
-          for (let i in selected) {
-            let fieldName = selected[i];
-            this.groupFields[fieldName].info.seq = i * 100;
-          }
-        });
-      })
-      .then(() => {
-        const queryInitValueFields = [];
-        Object.keys(this.fields).forEach((key) => {
-          if (this.fields[key].info.queryInitValue) {
-            const queryInitValue = this.fields[key].info.queryInitValue;
-            if (queryInitValue?.value && queryInitValue?.use_query === "是") {
-              queryInitValueFields.push(key);
-              let value = queryInitValue?.value;
-              // 按天加上或减去时间
-              if (queryInitValue.start_time_diff) {
-                value = value.map((date) => {
-                  return dayjs(date)
-                    .add(queryInitValue.start_time_diff, "day")
-                    .format("YYYY-MM-DD HH:mm:ss");
-                });
-              }
-              this.fields[key].setSrvVal(value);
-            }
-          }
-        });
-        if (queryInitValueFields?.length) {
-          this.$nextTick(() => {
-            this.onSearchClicked();
-          });
-        }
-      })
-      .then(() => {
-        this.setFieldsDefaultValue();
-      });
+    // this.initFilterForm()
   },
 };
 </script>

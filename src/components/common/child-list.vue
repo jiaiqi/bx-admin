@@ -51,6 +51,7 @@
       :disabled="updatable === false"
       v-else-if="isProc"
       :div-cond="divCond"
+      :default-condition="getDefaultConditions"
     >
     </list-proc>
     <tableEdit
@@ -133,7 +134,7 @@
 import SimpleAdd from "./simple-add.vue";
 import SimpleUpdate from "./simple-update.vue";
 import List from "./list.vue";
-// import TabList from "./tab-list2.vue";
+import TabList from "./tab-list2.vue";
 import Treegrid from "./treegrid.vue";
 import ListProc from "./listproc.vue";
 import ChildListMixin from "../mixin/child-list-mixin";
@@ -149,6 +150,7 @@ import concat from "lodash/concat";
  * 子表组件， 主要是处理外键相关的逻辑： 例如外籍列、外键disp列隐藏；添加行数据自动添加外键列的值。
  */
 export default {
+  name: "child-list",
   components: {
     excelList,
     Treegrid,
