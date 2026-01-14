@@ -352,6 +352,11 @@
                     >
                       {{ formatDate(scope.row[item.column], "YYYY-MM") }}
                     </template>
+                    <template
+                      v-else-if="item.srvcol && (item.srvcol.table_column === 'month'||item.srvcol.columns === 'month')"
+                    >
+                      {{ formatDate(scope.row[item.column], "YYYY-MM") }}
+                    </template>
                     <template v-else>
                       {{ formatDate(scope.row[item.column], "YYYY-MM-DD") }}
                     </template>
