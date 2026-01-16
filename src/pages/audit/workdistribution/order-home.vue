@@ -61,6 +61,7 @@ export default {
         // 获取当前路由中的时间参数
         const currentStartTime = this.$route.query.startTime;
         const currentEndTime = this.$route.query.endTime;
+        const orderNo = this.$route.query.order_no;
         console.log('切换标签时使用最新的 pass_id：', passId);
         this.$router.push({
           name: item.path,
@@ -68,6 +69,7 @@ export default {
             pass_id: passId,
             startTime: currentStartTime || this.startTime,
             endTime: currentEndTime || this.endTime,
+            order_no: orderNo || '',
             pageType: this.pageType || undefined
           }
         });

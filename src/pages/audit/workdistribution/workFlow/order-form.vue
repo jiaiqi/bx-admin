@@ -1173,7 +1173,6 @@ export default {
         this.order_no = this.$route.query?.order_no
         const resOrder = await this.getWorkOrderDetail()
         if (resOrder) {
-          console.log(resOrder, 3333333)
           this.ruleForm.pass_id = resOrder[0].pass_id
          this.suspectedData = [];
             this.$store.commit('orderForm/handleClearSuspectedData')
@@ -1209,7 +1208,6 @@ export default {
         // this.handleChangeFee()
         this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
         this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
-          console.log(this.ruleForm, 44444444)
           const pass_time2 = this.ruleForm.pass_id.slice(22, 30)
           const formattedDate2 = pass_time2.slice(0, 4) + '-' + pass_time2.slice(4, 6) + '-' + pass_time2.slice(6, 8);
 
@@ -1222,7 +1220,6 @@ export default {
         let operate_params = this.getOperateParams();
         if (operate_params) {
           operate_params = JSON.parse(operate_params).data;
-          console.log(operate_params, 999999)
           if (operate_params) {
             // 处理时间参数
             const passTime = operate_params[0].pass_time;
