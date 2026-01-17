@@ -872,6 +872,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { filterListByOption, formDataByGetInfo, formDataByInitText, SuspectedColumn, createOrderNo, formatFeeToYuan, formatFeeToFen } from './filterList'
 import OrderApi from '@/pages/audit/api/order'
 import promoterMod from "@/pages/audit/workdistribution/workFlow/promoter-mod.vue";
@@ -1024,7 +1025,12 @@ export default {
       this.$store.commit('orderForm/handleSetOrderForm', { axlecount: this.ruleForm.axlecount })
     },
     //通行介质变化检测
-    handleSetMedia() {
+    handleSetMedia(val) {
+      // 使用 Vue.set 确保响应式
+      Vue.set(this.ruleForm, 'media_type', val)
+      // 强制更新视图
+      this.$forceUpdate()
+      
       this.initSpecialType()
       this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
     },
@@ -1256,7 +1262,7 @@ export default {
              this.operate_params = resAudit[0]
             this.ruleForm = formDataByGetInfo(this.ruleForm, resAudit[0])
             this.ruleForm.media_no = resAudit[0].obusn
-            this.ruleForm.media_type = resAudit[0].mediatype
+            this.ruleForm.media_type = resAudit[0].mediatype+''
             this.ruleForm.pass_time = resAudit[0].extime
         this.ruleForm.sus_escape_type = resAudit[0].suspecttype
            this.ruleForm.sus_plate_color = resAudit[0].vehicleplate_color
@@ -1267,6 +1273,7 @@ export default {
            this.initSpecialType()
             this.$store.commit('orderForm/handleSetOrderForm', { vehicleusertype: this.ruleForm.vehicleusertype, vehicleclass: this.ruleForm.vehicleclass })
            this.handleChangeFee()
+           this.getRelevantInfo()
            this.ruleForm.owe_fee = formatFeeToYuan(this.ruleForm.owe_fee);
             this.ruleForm.orginal_fee = formatFeeToYuan(this.ruleForm.orginal_fee)
             }else{
@@ -1292,7 +1299,7 @@ export default {
         this.operate_params = res[0]
         this.ruleForm = formDataByGetInfo(this.ruleForm, res[0])
         this.ruleForm.media_no = res[0].obusn
-        this.ruleForm.media_type = res[0].mediatype
+        this.ruleForm.media_type = res[0].mediatype+''
         this.ruleForm.pass_time = res[0].extime
         this.ruleForm.sus_escape_type = res[0].suspecttype
         this.ruleForm.sus_plate_color = res[0].vehicleplate_color
