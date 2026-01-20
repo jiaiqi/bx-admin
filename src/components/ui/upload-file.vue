@@ -150,7 +150,7 @@
             </el-button>
           </span> 
           <i v-if="file.status === 'uploading'" class="el-icon-upload"></i>
-          <i v-else-if="file.status === 'success'" class="el-icon-circle-check"></i>
+          <i v-else-if="file.status === 'success'" class="el-icon-upload-success el-icon-circle-check"></i>
           <i v-else-if="file.status === 'fail'" class="el-icon-circle-close"></i>
         </span>
       </template>
