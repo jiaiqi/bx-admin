@@ -106,13 +106,15 @@
         />
       </viewer>
       <el-button
+        v-if="!(!field.info.editable && true)"
         size="small"
         type="primary"
       >点击上传</el-button>
       <div
+        v-if="!(!field.info.editable && true)"
         slot="tip"
         class="el-upload__tip"
-      >{{ fileDesc }}</div>
+      >{{ fileDesc + '【支持 Ctrl+V 粘贴上传】'}}</div>
       <div
         slot="tip"
         class="el-upload__tip error"
@@ -127,7 +129,7 @@
         <span class="el-upload-list__item-name" @click="handlePreview(file)">
           <i class="el-icon-document"></i>{{ file.name }}
         </span>
-        <span class="el-upload-list__item-status-label">
+        <span style="position: absolute;right: 42px;top: -3.4px;line-height: inherit;">
           <span class="file-action-buttons">
             <el-button
               type="text"
@@ -148,7 +150,12 @@
               <i class="el-icon-picture-outline"></i>
               预览
             </el-button>
-          </span> 
+          </span>
+        </span>
+        <span class="el-upload-list__item-actions">
+          <span v-if="!(!field.info.editable && true)" class="el-icon-close" @click="elIconClose"></span>
+        </span>
+        <span class="el-upload-list__item-status-label">
           <i v-if="file.status === 'uploading'" class="el-icon-upload"></i>
           <i v-else-if="file.status === 'success'" class="el-icon-upload-success el-icon-circle-check"></i>
           <i v-else-if="file.status === 'fail'" class="el-icon-circle-close"></i>
@@ -486,13 +493,59 @@ export default {
     }
     this.getData();
   },
+  mounted() {
+    if (!this.field.info.editable && true) {
+      this.$refs.upload && (this.$refs.upload.$children[0].$el.style.display = 'none')
+    }
+    // 监听页面粘贴事件
+    this.$refs.upload && this.$refs.upload.$el.addEventListener('paste', this.handlePaste)
+  },
+  destroyed() {
+    // 移除粘贴事件
+    this.$refs.upload && this.$refs.upload.$el.removeEventListener('paste', this.handlePaste);
+  },
   methods: {
+    // 处理粘贴事件
+    handlePaste(event) {
+      const clipboardData = event.clipboardData || window.clipboardData;
+      
+      if (!clipboardData || !clipboardData.items) {
+        return;
+      }
+      // 检查剪贴板中是否有文件
+      for (let i = 0; i < clipboardData.items.length; i++) {
+        const item = clipboardData.items[i];
+        
+        // 如果是文件类型
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          
+          if (file) {
+            event.preventDefault(); // 阻止默认粘贴行为
+            
+            // 创建文件对象
+            const uploadFile = new File([file], file.name || `粘贴的文件_${Date.now()}`, {
+              type: file.type,
+              lastModified: Date.now()
+            });
+            // 将文件添加到 el-upload 组件的文件列表，并触发自动上传
+            this.$refs.upload.handleStart(uploadFile);
+            this.$refs.upload.submit();
+            break;
+          }
+        }
+      }
+    },
+    elIconClose() {
+      this.$refs.upload.handleRemove()
+    },
     handleDownload(file) {
-      window.open(file.url);
+      const url = file.url || (this.serviceApi().downloadFile + file.fileurl)
+      window.open(url);
     },
     handlePreviewButton(file) {
-      console.log(file);
-      openFromUrl(file.url, 'view');
+      const url = file.url || (this.serviceApi().downloadFile + file.fileurl)
+      openFromUrl(url, 'view');
     },
     async uploadMethod(params) {
       this.progress = 0;
@@ -691,10 +744,12 @@ export default {
         this.currentUrlLike = file.url;
         this.currentType = fileType;
         console.log(file);
+      } else if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf'].includes(fileType)) {
+        this.handlePreviewButton(file);
       } else {
         this.$message({
           message:
-            "只支持【pdf】/【jpg】/【png】格式预览，其他格式请点击文件名下载查看",
+            "只支持【pdf】/【jpg】/【png】/【office】/【pdf】格式预览，其他格式请点击文件名下载查看",
           type: "warning",
         });
       }
