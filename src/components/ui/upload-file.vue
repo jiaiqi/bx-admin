@@ -122,6 +122,38 @@
         {{ fileError }}
       </div>
       <!-- <el-progress :percentage="progress" v-if="progress"></el-progress> -->
+      <!-- 自定义文件列表项，添加下载和预览按钮 -->
+      <template slot="file" slot-scope="{ file }">
+        <span class="el-upload-list__item-name" @click="handlePreview(file)">
+          <i class="el-icon-document"></i>{{ file.name }}
+        </span>
+        <span class="el-upload-list__item-status-label">
+          <span class="file-action-buttons">
+            <el-button
+              type="text"
+              size="small"
+              class="file-action-btn"
+              @click.stop="handleDownload(file)"
+            >
+              <i class="el-icon-download"></i>
+              下载
+            </el-button>
+            <el-button
+              v-if="['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf'].includes(file.file_type)"
+              type="text"
+              size="small"
+              class="file-action-btn"
+              @click.stop="handlePreviewButton(file)"
+            >
+              <i class="el-icon-picture-outline"></i>
+              预览
+            </el-button>
+          </span> 
+          <i v-if="file.status === 'uploading'" class="el-icon-upload"></i>
+          <i v-else-if="file.status === 'success'" class="el-icon-upload-success el-icon-circle-check"></i>
+          <i v-else-if="file.status === 'fail'" class="el-icon-circle-close"></i>
+        </span>
+      </template>
     </el-upload>
     <!-- <el-upload
       v-if="isEdit"
@@ -262,6 +294,7 @@ import cloneDeep from "lodash/cloneDeep";
 import bigFileUploadMixin from "@/components/mixin/big-file-upload-mixin.js";
 import aSaveBMixin from "../mixin/a-save-b.mixin";
 import { getBaseUrl } from "@/common/common";
+import { openFromUrl } from "@/plugin/OnlyofficePersonal.js";
 export default {
   components: {
     pdf: () => import(/* webpackChunkName: "vue-pdf" */ "vue-pdf"),
@@ -456,6 +489,10 @@ export default {
   methods: {
     handleDownload(file) {
       window.open(file.url);
+    },
+    handlePreviewButton(file) {
+      console.log(file);
+      openFromUrl(file.url, 'view');
     },
     async uploadMethod(params) {
       this.progress = 0;
