@@ -51,7 +51,7 @@ export default {
       } else {
         req = null
       }
-
+      console.log("initDataSelectReq built:", req);
       return req
     }
   }
@@ -76,12 +76,9 @@ export default {
               }
               return initData
             })
-            console.log(options)
-
           }
         })
-      }
-
+      } 
     },
 
     onListLoaded: function (innerList) {
@@ -94,7 +91,7 @@ export default {
       const child = {
         name: innerList?.service,
         data: innerList?.gridData,
-        constraint_name: innerList?.childforeignkey?.constraint_name,
+        constraint_name: this.foreignKey.constraint_name,
       };
       this.$emit("child-loaded", child);
 
@@ -177,7 +174,6 @@ export default {
     'initDataSelectReq': {
       deep: true,
       handler(newVal, oldVal) {
-        console.log(newVal)
         let dataSourceCfg = this.childListConfig.data_source_cfg
         if (dataSourceCfg && dataSourceCfg.is_reset_data == '是') {
           if (newVal && oldVal && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
