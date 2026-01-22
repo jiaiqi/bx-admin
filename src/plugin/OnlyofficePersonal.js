@@ -106,7 +106,7 @@ function getFileType(fileName) {
 }
 
 function openNewWindow(docConfig) {
-    window.open('./OnlyofficePersonal/onlyoffice.html?docConfig=' + encodeURI(JSON.stringify(docConfig)), '_blank');
+    window.open('../OnlyofficePersonal/onlyoffice.html?docConfig=' + encodeURI(JSON.stringify(docConfig)), '_blank');
 };
 
 export { openFromUrl, getFileType, openNewWindow }
