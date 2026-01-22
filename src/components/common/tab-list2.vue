@@ -583,6 +583,7 @@ export default {
         (tab.default = mc.default || ""),
           (tab.placeholder = mc.placeholder || "请输入...");
         tab.remoteMethod = "";
+        tab.shortcut = tab.more_config && tab.more_config.hasOwnProperty('shortcut') ? tab.more_config.shortcut : false
 
         if (tab._colName) {
           tab._colName = tab._colName.split(",");

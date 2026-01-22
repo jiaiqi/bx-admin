@@ -28,10 +28,24 @@
           </div>
           <div v-if="tab._type === 'between'">
             <el-col :span="11">
-              <el-date-picker value-format="yyyy-MM-dd HH:mm:ss" startPlaceholder="开始日期" endPlaceholder="结束日期"
-                type="datetimerange" appendToBody placeholder="选择日期" v-model="formModel[tab.list_tab_no].value"
-                style="width: 100%"></el-date-picker>
+              <el-date-picker
+                :focus="formModel[tab.list_tab_no].shortcut.value = '自定义'"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                startPlaceholder="开始日期"
+                endPlaceholder="结束日期"
+                type="datetimerange"
+                appendToBody placeholder="选择日期"
+                v-model="formModel[tab.list_tab_no].value"
+                style="width: 100%">
+              </el-date-picker>
               <!-- <el-date-picker startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker> -->
+            </el-col>
+            <el-col style="margin-left: 5%;" :span="10" v-if="tab.inputType == 'BetweenDate' && formModel[tab.list_tab_no].hasOwnProperty('shortcut') && tab.shortcut">
+                <el-radio-group :name="tab.list_tab_no" :ref="tab.list_tab_no+'group'" size="small" v-model="formModel[tab.list_tab_no].shortcutValue" v-if="tab._colSrvData && formModel[tab.list_tab_no].hasOwnProperty('shortcut')"  v-show="formModel[tab.list_tab_no].shortcut.options && formModel[tab.list_tab_no].shortcut.options.length > 0" @input="betweenDateShortcutChange(formModel[tab.list_tab_no].shortcutValue,formModel[tab.list_tab_no],tab.list_tab_no)">
+                    <el-radio-button style="margin-right:0px;padding: 0;"  :label="item.value" name="type" v-for="(item,index) in formModel[tab.list_tab_no].shortcut.options" :key="index">
+                        {{item.label}}
+                    </el-radio-button>
+                </el-radio-group>
             </el-col>
             <!-- <el-col class="line" :span="2">-</el-col>
             <el-col :span="11">
@@ -173,6 +187,58 @@ export default {
   },
   mounted() { },
   methods: {
+    betweenDateShortcutChange(e,formModel,no){
+        let self = this
+        console.log(e,formModel)
+        let start = new Date();
+        let end = new Date();
+        let day = new Date().getDate()
+        let month = new Date().getMonth() + 1
+        let year = new Date().getFullYear()
+        let weekDay = new Date().getDay() == 0 ? 7 : new Date().getDay()
+        
+        switch (e) {
+            case '今天':
+                start = start.setTime(new Date(year + '-' + month + '-' + day + ' 00:00:00').getTime());
+                end = end.setTime(new Date(year + '-' + month + '-' + day + ' 23:59:59').getTime());
+                // end = end.setTime(new Date(year + '-' + month + '-' + day + ' 23:59:59').getTime() + (1000 * 3600 * 24));
+                break;
+            case '昨天':
+                
+                // start = start.setTime(new Date(year + '-' + month + '-' + day + ' 00:00:00').getTime()  - (1000 * 3600 * 24));
+                start = start.setTime(new Date(year + '-' + month + '-' + day + ' 00:00:00').getTime() - (1000 * 3600 * 24));
+                end = end.setTime(new Date(year + '-' + month + '-' + day + ' 23:59:59').getTime() - (1000 * 3600 * 24));
+                break;
+            case '本周':
+                
+                start = start.setTime(new Date(year + '-' + month + '-' + day + ' 00:00:00').getTime()  - (1000 * 3600 * 24 * (weekDay - 1)));
+                // end = end.setTime(new Date(year + '-' + month + '-' + day + ' 00:00:00').getTime() + (1000 * 3600 * 24 * (8 - weekDay)));
+                end = end.setTime(new Date(year + '-' + month + '-' + day + ' 23:59:59').getTime() + (1000 * 3600 * 24 * (7 - weekDay)));
+                break;
+            case '本月':
+                
+                start = start.setTime(new Date(new Date(year + '-' + month).toLocaleDateString() + ' 00:00:00').getTime());
+                end = end.setTime(new Date(new Date(year + '-' + month + '-31').toLocaleDateString() + ' 23:59:59').getTime());
+
+                // end = end.setTime(new Date(year + '-' + month + '-' + day + ' 00:00:00').getTime() + (1000 * 3600 * 24 * (8 - weekDay)));
+                // new Date('2022-11').toLocaleDateString()
+                break;
+            default:
+                break;
+        }
+        // start = new Date(start).toLocaleDateString() + ' ' + '00:00:00'
+        start = new Date(start).toLocaleDateString() + ' 00:00:00' //+ new Date(start).toLocaleTimeString()
+        // end = new Date(end).toLocaleDateString() + ' ' + '00:00:00'
+        end = new Date(end).toLocaleDateString() + ' 23:59:59' //+ new Date(end).toLocaleTimeString()
+        console.log('start,end:',start,end)
+        if(e == '自定义'){
+
+            this.$set(formModel,'value',[])
+        }else{
+            this.$set(formModel,'value',[start,end])
+        }
+        // console.log(start,end,year,month,day)
+    },
     refreshRelatedTabOptions() {
       // 刷新关联tab的options
       if (this.tabs?.length) {
@@ -309,9 +375,33 @@ export default {
         } else if (item._type === "img") {
           col.value = item.default || "";
           model[item.list_tab_no] = col;
-        } else if (item._type === "between") {
-          col.value = item.default || [];
-          model[item.list_tab_no] = col;
+        } else if (item._type === 'between' && item.inputType == 'BetweenDate') {
+          col.value = []
+          model[item.list_tab_no] =col
+
+          model[item.list_tab_no]['shortcut']={
+              "options":[{
+                  label:'今天',
+                  value:'今天'
+              },{
+                  label:'昨天',
+                  value:'昨天'
+              },{
+                  label:'本周',
+                  value:'本周'
+              },{
+                  label:'本月',
+                  value:'本月'
+              },{
+                  label:'自定义',
+                  value:'自定义'
+              }],
+              "value":"自定义",
+              "dataChange":function(e){
+                  console.log(e)
+              }
+          }
+          model[item.list_tab_no].shortcutValue = '自定义'
         }
       });
       self.formModel = model;
