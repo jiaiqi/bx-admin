@@ -56,10 +56,17 @@ export default {
       let res = false;
       if (!this.childrenList?.length) {
         res = true;
+      } else if (!this.childrenListLoaded) {
+        res = true;
       } else {
-        res = Object.keys(this.childDataLoadedMap)?.length === this.childrenList?.length;
+        // 确保childDataLoadedMap中的每个子表都有对应的条目
+        const hasAllChildEntries = this.childrenList.every(child => {
+          return child.foreign_key.constraint_name && 
+                 this.childDataLoadedMap.hasOwnProperty(child.foreign_key.constraint_name);
+        });
+        res = hasAllChildEntries;
       }
-      console.log("allChildDataLoaded", res);
+      console.log("allChildDataLoaded", res, this.childDataLoadedMap, this.childrenList);
       return res;
     },
     selectServiceName() {
@@ -159,6 +166,7 @@ export default {
       //     }
       //   }
       // }
+      console.log(list, 77777777)
       return list;
     },
     fieldChildKeys: function () {
@@ -447,9 +455,16 @@ export default {
         })
         .then((_) => {
           this.$nextTick((_) => {
-            // if(self.child_service.length > 0 || self.childrenList.length > 0){
-            //   self.childrenListLoaded = true
-            // }
+            if((self.child_service && self.child_service.length > 0) || (self.childrenList && self.childrenList.length > 0)){
+              if(self.childrenList && self.childrenList.length > 0){
+                for(let item of self.childrenList){
+                  if(item.foreign_key.constraint_name){
+                    self.$set(self.childDataLoadedMap, item.foreign_key.constraint_name, false);
+                  } 
+                }
+              }
+              self.childrenListLoaded = true;
+            }
           });
         });
     },

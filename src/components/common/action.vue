@@ -206,8 +206,9 @@ export default {
             );
           } else if (self.info.invokeFunc) {
             // return self.$refs.executor.run(self.info,self.draftDataKey,self.isDraft);
-            // return Promise.resolve(self.info.invokeFunc());
-            return Promise.resolve(self.info.invokeFunc());
+            // 确保invokeFunc总是返回一个Promise
+            const result = self.info.invokeFunc();
+            return Promise.resolve(result);
           }
         })
         .then((response) => {
