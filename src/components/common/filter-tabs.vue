@@ -41,7 +41,7 @@
               <!-- <el-date-picker startPlaceholder="开始日期" endPlaceholder="结束日期" type="datetimerange" appendToBody placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker> -->
             </el-col>
             <el-col style="margin-left: 5%;" :span="10" v-if="tab.inputType == 'BetweenDate' && formModel[tab.list_tab_no].hasOwnProperty('shortcut') && tab.shortcut">
-                <el-radio-group :name="tab.list_tab_no" :ref="tab.list_tab_no+'group'" size="small" v-model="formModel[tab.list_tab_no].shortcutValue" v-if="tab._colSrvData && formModel[tab.list_tab_no].hasOwnProperty('shortcut')"  v-show="formModel[tab.list_tab_no].shortcut.options && formModel[tab.list_tab_no].shortcut.options.length > 0" @input="betweenDateShortcutChange(formModel[tab.list_tab_no].shortcutValue,formModel[tab.list_tab_no],tab.list_tab_no)">
+                <el-radio-group style="min-width:320px;" :name="tab.list_tab_no" :ref="tab.list_tab_no+'group'" size="small" v-model="formModel[tab.list_tab_no].shortcutValue" v-if="tab._colSrvData && formModel[tab.list_tab_no].hasOwnProperty('shortcut')"  v-show="formModel[tab.list_tab_no].shortcut.options && formModel[tab.list_tab_no].shortcut.options.length > 0" @input="betweenDateShortcutChange(formModel[tab.list_tab_no].shortcutValue,formModel[tab.list_tab_no],tab.list_tab_no)">
                     <el-radio-button style="margin-right:0px;padding: 0;"  :label="item.value" name="type" v-for="(item,index) in formModel[tab.list_tab_no].shortcut.options" :key="index">
                         {{item.label}}
                     </el-radio-button>
