@@ -167,6 +167,15 @@
             {{ getButtonName(item) }}
           </el-button>
         </template>
+         <el-button
+          v-if="showTableDefineBtn"
+          @click="toTableDefineDetail"
+          title="表定义详情"
+          type="primary"
+          size="small"
+          >
+          <i class="el-icon-setting"></i>
+        </el-button>
       </div>
 
       <!-- <div>
@@ -1476,6 +1485,10 @@ export default {
     };
   },
   computed: {
+    showTableDefineBtn(){
+      // 是否显示表定义详情按钮
+      return top.user?.roles?.includes("admin") || top.user?.roles?.includes("rd"); 
+    },
     // 动态计算操作列宽度，最大300px
     operationColumnWidth() {
       if (!this.sortedRowButtons || !this.sortedRowButtons.buttons) {
@@ -1569,6 +1582,15 @@ export default {
   },
 
   methods: {
+    toTableDefineDetail(){
+      // 跳转到表定义详情页
+      const table_name = this.listV2Data.main_table
+      const table_name_cn = this.listV2Data.service_view_name?.replace(/列表|查询/g,"") + '表定义详情'
+      const service = 'srvsys_table_defined_select'
+      const srvApp = this.resolveDefaultSrvApp()
+      const url = `/vpages/#/detail/${service}/table_name/${table_name}?srvApp=${srvApp}`
+      this.addTabByUrl(url, table_name_cn);
+    },
     // 处理左侧树点击事件
     handleLeftTreeClick(data, node) {
       console.log('点击节点:', data, node);
