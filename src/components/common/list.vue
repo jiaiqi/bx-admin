@@ -1585,7 +1585,7 @@ export default {
     toTableDefineDetail(){
       // 跳转到表定义详情页
       const table_name = this.listV2Data.main_table
-      const table_name_cn = this.listV2Data.service_view_name?.replace(/列表|查询/g,"") + '表定义详情'
+      const table_name_cn = this.listV2Data.service_view_name?.replace(/列表|查询/g,"") + '(表定义详情)'
       const service = 'srvsys_table_defined_select'
       const srvApp = this.resolveDefaultSrvApp()
       const url = `/vpages/#/detail/${service}/table_name/${table_name}?srvApp=${srvApp}`
