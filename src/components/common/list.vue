@@ -1343,7 +1343,7 @@ import simpleFilter from "./simple-filter.vue";
 import simpleCard from "./simple-card.vue";
 import SimpleAdd from "./simple-add.vue";
 import SimpleUpdate from "./simple-update.vue";
-import update from "./update.vue";
+// import update from "./update.vue";
 import ListPopupMixin from "../mixin/list-popup-mixin"; // 弹出列表js
 import CustButtonMinx from "../mixin/cust-button-minx"; // 自定义按钮js
 import MemListMixin from "../mixin/mem-list-mixin"; // 内存列表js
