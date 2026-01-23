@@ -122,9 +122,43 @@ export default {
           },
         });
       }
-      // this.$nextTick(() => {
-      //     this.saveColumnWidth()
-      // })
+
+      // 获取所有列的列宽
+      setTimeout(() => {
+        this.$nextTick(() => {
+          this.getAllColumnsWidth();
+        });
+      }, 200);
+    },
+
+    getAllColumnsWidth() {
+      // 获取所有列的列宽
+      const tableRef = this.$refs['bx-table-layout'];
+      if (tableRef) {
+        //通过el-table的columns属性获取列信息
+        tableRef.columns.forEach(col => {
+          if (col.property) {
+            // 获取实际渲染的列宽
+            const field = this.gridHeader.find(item => item.column === col.property)
+            if (field) {
+              const newWidth = col.realWidth || col.width
+              this.$set(this.columnWidthMap, col.property, {
+                width: newWidth > 50 ? newWidth : 50,
+                fieldInfo: {
+                  id: field.srvcol?.id,
+                  column: col.property,
+                  label: col.label,
+                  service_name: field.srvcol?.service_name,
+                  table_name: field.srvcol?.table_name,
+                },
+              });
+            }
+          }
+        });
+
+        return allColumnsWidth;
+      }
+      return [];
     },
     // 更新服务列的最小宽度
     saveColumnWidth() {
