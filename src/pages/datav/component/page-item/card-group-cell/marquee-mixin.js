@@ -30,6 +30,8 @@ export default {
 
       // 延迟启动动画，避免初始渲染时触发动画
       await this.$nextTick();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       this.marqueeDelayTimer = setTimeout(() => {
         this.initCSSMarqueeLayout(config, containerRef);
         this.marqueeIsRunning = true;
